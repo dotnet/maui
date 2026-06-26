@@ -283,13 +283,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
-#if NET5_0_OR_GREATER
-		[Obsolete("BackgroundColorProperty is obsolete. Use BackgroundProperty instead.",
-			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
-			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
-#else
 		[Obsolete("BackgroundColorProperty is obsolete. Use BackgroundProperty instead.")]
-#endif
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
@@ -569,14 +563,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the <see cref="Color"/> which will fill the background of an element. This is a bindable property.
 		/// </summary>
-		/// <remarks>Use <see cref="Background"/> instead. This property will be removed in .NET 12.</remarks>
-#if NET5_0_OR_GREATER
-		[Obsolete("BackgroundColor is obsolete. Use Background instead.",
-			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
-			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
-#else
+		/// <remarks>Use <see cref="Background"/> instead.</remarks>
 		[Obsolete("BackgroundColor is obsolete. Use Background instead.")]
-#endif
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Color BackgroundColor
 		{

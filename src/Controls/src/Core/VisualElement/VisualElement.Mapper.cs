@@ -46,13 +46,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Updates the handler when <see cref="VisualElement.BackgroundColor"/> changes by re-applying <see cref="VisualElement.Background"/>.</summary>
-#if NET5_0_OR_GREATER
-		[Obsolete("MapBackgroundColor is obsolete and will be removed in .NET 12. BackgroundColor changes are handled via the MAUI0003 diagnostic. Use Background instead.",
-			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
-			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
-#else
-		[Obsolete("MapBackgroundColor is obsolete and will be removed in .NET 12. Use Background instead.")]
-#endif
+		[Obsolete("MapBackgroundColor is obsolete. Use Background instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void MapBackgroundColor(IViewHandler handler, IView view) =>
 			handler.UpdateValue(nameof(Background));
