@@ -434,17 +434,18 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		switch (PlatformView.SelectionMode)
 		{
 			case ItemsViewSelectionMode.Single:
-				if (ItemsView.SelectedItem is null)
+				// FindItemIndexInSource uses object.Equals so it matches null items correctly.
+				// When SelectedItem is null and a null entry exists in the source, Select(index)
+				// is called. When SelectedItem is null and no null entry exists (i.e. selection
+				// was programmatically cleared), selectedIndex is -1 and DeselectAll() is called.
+				var selectedIndex = FindItemIndexInSource(itemList, ItemsView.SelectedItem);
+				if (selectedIndex >= 0)
 				{
-					PlatformView.DeselectAll();
+					PlatformView.Select(selectedIndex);
 				}
 				else
 				{
-					var selectedIndex = FindItemIndexInSource(itemList, ItemsView.SelectedItem);
-					if (selectedIndex >= 0)
-					{
-						PlatformView.Select(selectedIndex);
-					}
+					PlatformView.DeselectAll();
 				}
 
 				break;

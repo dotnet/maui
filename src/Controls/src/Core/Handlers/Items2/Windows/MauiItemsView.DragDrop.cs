@@ -558,7 +558,9 @@ internal partial class MauiItemsView
 	{
 		if (container.Child is not ElementWrapper wrapper || wrapper.VirtualView is not View view)
 		{
-			return false;
+			// Blank container (no ElementWrapper) represents a null data item.
+			// It matches when the dragged item is also null.
+			return item is null;
 		}
 
 		var bound = view.BindingContext;
