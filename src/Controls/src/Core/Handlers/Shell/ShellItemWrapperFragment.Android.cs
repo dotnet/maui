@@ -170,6 +170,13 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
                 _handler._pageChangeCallback = null;
 
+                // Clear adapter before nulling _viewPager to detach FragmentStateAdapter.
+                // FragmentStateAdapter unregisters lifecycle/adapter observers only when cleared,
+                // not when the view is destroyed — mirrors DisconnectHandler line 874.
+                if (_handler._viewPager is not null)
+                {
+                    _handler._viewPager.Adapter = null;
+                }
                 _handler._viewPager = null;
                 _handler._adapter = null;
             }
