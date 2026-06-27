@@ -82,6 +82,9 @@ BeforeAll {
                         throw "Convert-GhTagGlobToRegex: negated bracket expression in glob '$Glob' is not supported; add an explicit translation before using glob negation."
                     }
                     while ($j -lt $n -and $Glob[$j] -ne ']') { $j++ }
+                    if ($j -ge $n) {
+                        throw "Convert-GhTagGlobToRegex: unclosed bracket expression in glob '$Glob'."
+                    }
                     [void]$sb.Append($Glob.Substring($i, $j - $i + 1))
                     $i = $j + 1
                 }
@@ -169,6 +172,13 @@ Describe 'GH glob -> regex translator (fidelity of the simulation)' {
         @{ Glob = '1[^0].0.[0-9]+' }   # regex-style negation (also rejected)
     ) {
         { Convert-GhTagGlobToRegex $Glob } | Should -Throw '*negated bracket*'
+    }
+
+    It 'throws on an unclosed bracket expression (<Glob>) rather than emitting a truncated regex' -ForEach @(
+        @{ Glob = '1[01' }
+        @{ Glob = '[0-9' }
+    ) {
+        { Convert-GhTagGlobToRegex $Glob } | Should -Throw '*unclosed bracket*'
     }
 }
 
