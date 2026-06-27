@@ -668,56 +668,80 @@ function Get-FailureReasonSignature {
     return ''
 }
 
-function Get-FailCountsFromObject {
-    # Shape-robust scan of an arbitrary parsed JSON object (the Helix aggregated endpoint has no
-    # stable schema we can pin) for any NUMERIC property whose name contains 'fail' (Failed,
-    # FailCount, Fail, ...). Returns whether any such count was seen and their sum, so a device-test
-    # job that reports Failed>0 can cap the verdict without hard-coding the response shape. Bools
-    # (e.g. failFast) are ignored -- only real numeric counts.
-    param($Object)
+function Get-HelixWorkItemCounts {
+    # Counts device-test work-item failures from the Helix per-job /workitems endpoint. The
+    # /aggregated endpoint this script used previously returns HTTP 404 anonymously (verified
+    # against live maui jobs on 2026-06-27), so device tests were NEVER Helix-confirmed -- every
+    # read threw and every green device-test check fell to 'unverified'. The per-job /workitems
+    # endpoint IS reachable anonymously and returns one entry per work item, each carrying an
+    # ExitCode (int) and a State ('Finished' | 'Running' | 'Waiting' | ...). A work item is FAILED
+    # when it Finished with a non-zero ExitCode (the XHarness exit-0 blind spot: the AzDO leg can
+    # read green while a Helix work item failed). It is UNVERIFIED -- the run is incomplete and may
+    # still hide a failure -- when ANY of: a work item is not yet Finished, a work item reports no
+    # ExitCode, the job itself never Finished, the returned set is shorter than the job's planned
+    # InitialWorkItemCount, or the response is not the expected array. Returns
+    # sawCount/totalFail/unverified/failedNames so the caller preserves the never-false-green
+    # invariant: any unverified job vetoes positive Failed==0 confirmation, never confirms green.
+    param($WorkItems, $InitialWorkItemCount, $JobFinished)
 
-    $result = [ordered]@{ sawCount = $false; totalFail = 0; truncated = $false }
-    if ($null -eq $Object) { return $result }
-    $stack = New-Object System.Collections.Stack
-    $stack.Push($Object)
-    $guard = 0
-    while ($stack.Count -gt 0 -and $guard -lt 5000) {
-        $guard++
-        $cur = $stack.Pop()
-        if ($null -eq $cur) { continue }
-        if ($cur -is [string] -or $cur -is [bool] -or $cur.GetType().IsPrimitive) { continue }
-        if ($cur -is [System.Collections.IDictionary]) {
-            foreach ($k in $cur.Keys) {
-                $v = $cur[$k]
-                if (([string]$k -match '(?i)fail') -and ($v -is [int] -or $v -is [long] -or $v -is [double] -or $v -is [decimal])) {
-                    $result.sawCount = $true; $result.totalFail += [double]$v
-                }
-                elseif ($null -ne $v -and -not ($v -is [string]) -and -not ($v -is [bool]) -and -not ($v.GetType().IsPrimitive)) {
-                    $stack.Push($v)
-                }
-            }
+    $result = [ordered]@{ sawCount = $false; totalFail = 0; unverified = $false; failedNames = @() }
+
+    # Not the expected work-item array (null, a string, or a non-enumerable error/object shape) ->
+    # we cannot trust any count from it; force unverified so a sibling job can never confirm over it.
+    if ($null -eq $WorkItems -or ($WorkItems -is [string]) -or -not ($WorkItems -is [System.Collections.IEnumerable])) {
+        $result.unverified = $true
+        return $result
+    }
+    $items = @($WorkItems)
+    if ($items.Count -eq 0) {
+        # A device-test job with zero reported work items is a countless/empty shape (infra-aborted
+        # or still-initializing) -> cannot confirm clean over it.
+        $result.unverified = $true
+        return $result
+    }
+    $result.sawCount = $true
+
+    $failedNames = New-Object System.Collections.Generic.List[string]
+    foreach ($w in $items) {
+        $state = [string](Get-ObjectValue -Object $w -Names @('State'))
+        $exitRaw = Get-ObjectValue -Object $w -Names @('ExitCode')
+        if (($state -ne 'Finished') -or ($null -eq $exitRaw)) {
+            # Still running / waiting / no exit code reported -> this work item's outcome is unknown.
+            $result.unverified = $true
             continue
         }
-        if ($cur -is [System.Collections.IEnumerable]) {
-            foreach ($item in $cur) { $stack.Push($item) }
+        $exit = 0
+        if (-not [int]::TryParse([string]$exitRaw, [ref]$exit)) {
+            # A non-integer ExitCode we cannot interpret -> do not silently treat as pass.
+            $result.unverified = $true
             continue
         }
-        foreach ($prop in $cur.PSObject.Properties) {
-            $name = [string]$prop.Name
-            $val = $prop.Value
-            if (($name -match '(?i)fail') -and ($val -is [int] -or $val -is [long] -or $val -is [double] -or $val -is [decimal])) {
-                $result.sawCount = $true; $result.totalFail += [double]$val
-            }
-            elseif ($null -ne $val -and -not ($val -is [string]) -and -not ($val -is [bool]) -and -not ($val.GetType().IsPrimitive)) {
-                $stack.Push($val)
-            }
+        if ($exit -ne 0) {
+            $result.totalFail += 1
+            $failedNames.Add([string](Get-ObjectValue -Object $w -Names @('Name')))
         }
     }
-    # Opus R10 #3: if the scan hit the node-visit guard with work still queued, a *fail* count past
-    # the cutoff was never observed -> sawCount/totalFail are INCOMPLETE. Report truncation so the
-    # caller refuses positive Failed==0 confirmation (symmetric to the read-error/paging guards),
-    # never confirming a green device-test check from an under-counted aggregate.
-    if ($stack.Count -gt 0) { $result.truncated = $true }
+
+    # The job itself must have Finished, or work items may still be reporting (a not-yet-reported
+    # item could carry the real failure). A blank/absent Finished timestamp -> unverified.
+    if ([string]::IsNullOrWhiteSpace([string]$JobFinished)) { $result.unverified = $true }
+
+    # The job's planned work-item count (InitialWorkItemCount) is the ONLY signal for "items were
+    # planned but never reported" (work items dropped before producing a /workitems entry, so their
+    # State/ExitCode are invisible to the per-item scan above). If it is ABSENT or non-integer we
+    # cannot verify the set is complete -> unverified, never a silent confirm over possibly-missing
+    # items. If present, fewer returned items than planned means some never reported -> incomplete.
+    # (Retries only ever make the actual count >= planned, so a shortfall is the sole loss signal;
+    # actual > planned, observed live as 7 vs 6, is normal and does NOT cap.)
+    $initInt = 0
+    if (($null -eq $InitialWorkItemCount) -or -not [int]::TryParse([string]$InitialWorkItemCount, [ref]$initInt)) {
+        $result.unverified = $true
+    }
+    elseif ($items.Count -lt $initInt) {
+        $result.unverified = $true
+    }
+
+    $result.failedNames = $failedNames.ToArray()
     return $result
 }
 
@@ -1545,6 +1569,14 @@ $allUnexplainedLegs = New-Object System.Collections.Generic.List[object]
 foreach ($buildRef in $buildRefsById.Values) {
     Write-Host "Inspecting AzDO build $($buildRef.buildId)..."
 
+    # Reset per-build so a build whose timeline read FAILS cannot inherit the PREVIOUS build's
+    # timeline records. $records is only (re)assigned inside the timeline-readable branch below; the
+    # device-test Helix discovery reads $records OUTSIDE that branch, so without this reset a stale
+    # prior-build leg list would be scanned against THIS build id and could discover a clean partial
+    # job subset -> a false green with no compensating cap. Empty list -> discover nothing -> not
+    # confirmed -> device-test check caps to NHI (the safe outcome for an unreadable timeline).
+    $records = @()
+
     $buildSummary = [ordered]@{
         id = $buildRef.buildId
         org = $buildRef.org
@@ -1653,6 +1685,10 @@ foreach ($buildRef in $buildRefsById.Values) {
     # must still be surfaced to the gate (see the post-loop sweep below). Otherwise a build
     # break past the cap stays invisible while another explained leg keeps the build
     # "accounted", yielding a false green.
+    # jobId -> the device-test leg name that referenced it, so each discovered Helix job can be
+    # mapped back to its platform. The leg name (e.g. "Run DeviceTests iOS (CoreCLR)") is a far more
+    # reliable platform signal than the Helix QueueId, where osx.* does not word-match 'macos'/'ios'.
+    $helixJobLegNames = @{}
     $resolvedFailedRecordIds = @{}
     foreach ($record in $logsToRead) {
         $logId = [int]$record.log.id
@@ -1742,6 +1778,9 @@ foreach ($buildRef in $buildRefsById.Values) {
             $buildSummary.testFailuresFromLogs += @($failures)
 
             if ($build.definition.name -eq "maui-pr-devicetests") {
+                foreach ($hid in (Get-HelixJobIdsFromText -Text $logText)) {
+                    if (-not $helixJobLegNames.ContainsKey($hid)) { $helixJobLegNames[$hid] = [string]$record.name }
+                }
                 $buildSummary.helix.jobIds = @($buildSummary.helix.jobIds + (Get-HelixJobIdsFromText -Text $logText) | Select-Object -Unique)
             }
 
@@ -1817,61 +1856,148 @@ foreach ($buildRef in $buildRefsById.Values) {
 
     if ($build.definition.name -eq "maui-pr-devicetests") {
         $buildSummary.helix.checked = $true
+
+        # Veto flags for the positive Failed==0 confirmation, declared BEFORE discovery so the
+        # discovery pass can veto too (a green leg with no discoverable Helix job is unverifiable).
         $anyHelixFail = $false
         $anyHelixCount = $false
         $anyHelixReadError = $false
         $anyHelixUnverified = $false
+
+        # Green-leg Helix discovery: the failed-leg log loop above only reads result=='failed' legs,
+        # so a GREEN device-test leg's "Sent Helix Job" line is never scanned and its Helix job is
+        # never confirmed -- yet XHarness exits 0 even when a Helix work item fails, so a green leg
+        # can hide a real device failure (the exact blind spot this Helix check exists to catch).
+        # Scan EVERY device-test run leg's log (ANY result) for its Helix job id so green legs are
+        # confirmed too. Job correlation comes from THIS build's own logs (authoritative): the Helix
+        # job 'Build' property is blank for maui, and a source+time-window query would mix concurrent
+        # uitests/devicetests jobs of the same PR (verified -- the source feed returned other builds'
+        # jobs in the same window), risking cross-build misattribution. ($records is reset per build
+        # iteration, so an unreadable timeline yields an empty leg set here -> nothing discovered ->
+        # not confirmed -> the green check caps to NHI, never inherits a prior build's legs.)
+        $deviceRunLegs = @($records | Where-Object { ($_.name -match '(?i)Run\s+DeviceTests') -and $_.log -and $_.log.id })
+        $deviceRunLegsToScan = @($deviceRunLegs | Select-Object -First 40)
+        if ($deviceRunLegs.Count -gt $deviceRunLegsToScan.Count) {
+            # More device-run legs than we will scan: a Helix job in an unscanned leg is undiscovered
+            # and therefore unverifiable. Surface it so the verdict caps to NHI rather than trusting
+            # an incomplete job set.
+            $anyHelixUnverified = $true
+            $allUnexplainedLegs.Add([ordered]@{
+                buildId = $buildRef.buildId
+                recordName = "device-test Helix discovery overflow ($($deviceRunLegs.Count) run legs, only $($deviceRunLegsToScan.Count) scanned)"
+                logId = $null
+                uninspected = $true
+            })
+        }
+        foreach ($leg in $deviceRunLegsToScan) {
+            $legLogId = [int]$leg.log.id
+            try {
+                $legText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$($buildRef.buildId)/logs/$legLogId`?api-version=7.1"
+                $legJobIds = @(Get-HelixJobIdsFromText -Text $legText)
+                foreach ($hid in $legJobIds) {
+                    if (-not $helixJobLegNames.ContainsKey($hid)) { $helixJobLegNames[$hid] = [string]$leg.name }
+                    $buildSummary.helix.jobIds = @($buildSummary.helix.jobIds + $hid | Select-Object -Unique)
+                }
+                # A GREEN device-test *Job* leg that sent its tests to Helix MUST log a Helix job id.
+                # If a green Job leg yields ZERO ids, we have NO work-item evidence for that platform,
+                # yet a SIBLING platform's clean job would otherwise positively confirm over it -> a
+                # false green. Cap. Scoped to type=='Job' (the one execution record per platform that
+                # carries the "Sent Helix Job" line; the duplicate 'Phase' record legitimately logs no
+                # id, verified) and result=='succeeded' (a RED/failed leg is already a failing check
+                # and needs no Helix evidence, so requiring an id there would only over-block).
+                if (([string]$leg.type -eq 'Job') -and ([string]$leg.result -eq 'succeeded') -and ($legJobIds.Count -eq 0)) {
+                    $anyHelixUnverified = $true
+                    $allUnexplainedLegs.Add([ordered]@{
+                        buildId = $buildRef.buildId
+                        recordName = "green device-test leg produced no discoverable Helix job (no work-item evidence): $($leg.name)"
+                        logId = $legLogId
+                        uninspected = $true
+                    })
+                }
+            }
+            catch {
+                # A device-run leg log we could not read may have sent a Helix job we now cannot
+                # discover. Surface it so the verdict caps rather than trusting an incomplete set.
+                $anyHelixUnverified = $true
+                $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $buildRef.buildId
+                    recordName = "device-test run leg log unreadable (Helix job discovery incomplete): $($leg.name)"
+                    logId = $legLogId
+                    uninspected = $true
+                })
+            }
+        }
+
         foreach ($jobId in $buildSummary.helix.jobIds) {
             try {
-                $summary = Invoke-JsonUrl -Url "https://helix.dot.net/api/2019-06-17/jobs/$jobId/aggregated"
-                $counts = Get-FailCountsFromObject -Object $summary
+                # The /aggregated endpoint 404s anonymously (verified); /workitems is the reachable
+                # per-job endpoint and returns one entry per work item with ExitCode + State.
+                $workItems = Invoke-JsonUrl -Url "https://helix.dot.net/api/2019-06-17/jobs/$jobId/workitems"
+                # Job detail supplies the planned work-item count and the job-level Finished
+                # timestamp; both feed Get-HelixWorkItemCounts' completeness veto. A failed detail
+                # read is non-fatal on its own (the work-item scan still runs) but leaves the
+                # completeness cross-check blank, so the per-item State/ExitCode checks still apply.
+                $jobDetail = $null
+                try { $jobDetail = Invoke-JsonUrl -Url "https://helix.dot.net/api/2019-06-17/jobs/$jobId" } catch { $jobDetail = $null }
+                $initialCount = if ($null -ne $jobDetail) { Get-ObjectValue -Object $jobDetail -Names @('InitialWorkItemCount') } else { $null }
+                $jobFinished = if ($null -ne $jobDetail) { Get-ObjectValue -Object $jobDetail -Names @('Finished') } else { $null }
+                $queueId = if ($null -ne $jobDetail) { [string](Get-ObjectValue -Object $jobDetail -Names @('QueueId')) } else { "" }
+                $counts = Get-HelixWorkItemCounts -WorkItems $workItems -InitialWorkItemCount $initialCount -JobFinished $jobFinished
                 if ($counts.sawCount) { $anyHelixCount = $true }
-                # Gemini R10 F2 / Opus R10 #3: a job that returned NO fail count (a countless/empty
-                # aggregate shape, e.g. an infra-aborted or still-initializing job) or whose scan
-                # TRUNCATED leaves THIS job's failures unobserved. A sibling job's clean count must not
-                # confirm clean over it -> veto positive confirmation (over-block to NHI), never a
-                # false green.
-                if ((-not $counts.sawCount) -or $counts.truncated) { $anyHelixUnverified = $true }
+                # A countless/partial work-item set, a not-yet-Finished job, or a short set leaves THIS
+                # job's failures unobserved. A sibling job's clean count must not confirm over it ->
+                # veto positive confirmation (over-block to NHI), never a false green.
+                if ($counts.unverified) { $anyHelixUnverified = $true }
+                $legName = if ($helixJobLegNames.ContainsKey($jobId)) { [string]$helixJobLegNames[$jobId] } else { "" }
                 if ($counts.totalFail -gt 0) {
                     $anyHelixFail = $true
-                    # F1: a Helix aggregate that reports Failed>0 is a REAL hidden device-test
-                    # failure even though XHarness exited 0 and the AzDO job reads green. Emit it as
-                    # a structured failure so it enters dedup/attribution and caps the verdict. It is
-                    # a device-test TEST result (XHarness exit-0 blind spot), so it lands as
-                    # 'indeterminate' -> NHI, never a hard regression.
-                    $hidden = [ordered]@{
-                        testName = "device-test hidden failure ($jobId)"
-                        platform = Get-PlatformFromText -Text "$($build.definition.name) $jobId"
-                        source = "helix-aggregated"
-                        buildId = $buildRef.buildId
-                        buildDefinition = $build.definition.name
-                        helixJobId = $jobId
-                        message = "Helix aggregated reported $($counts.totalFail) failed device-test work item(s) for job $jobId even though XHarness exited 0 (the AzDO job can read green). See https://helix.dot.net/api/2019-06-17/jobs/$jobId/aggregated"
+                    foreach ($wn in $counts.failedNames) {
+                        # A Helix work item that Finished with a non-zero ExitCode is a REAL hidden
+                        # device-test failure even though XHarness exited 0 and the AzDO leg reads
+                        # green. Emit it as a structured failure so it enters dedup/attribution and
+                        # caps the verdict. It is a device-test TEST result (XHarness exit-0 blind
+                        # spot), so it lands as 'indeterminate' -> NHI, never a hard regression.
+                        $hidden = [ordered]@{
+                            testName = "device-test hidden failure ($wn)"
+                            platform = Get-PlatformFromText -Text "$legName $queueId $($build.definition.name) $wn"
+                            source = "helix-workitem"
+                            buildId = $buildRef.buildId
+                            buildDefinition = $build.definition.name
+                            helixJobId = $jobId
+                            helixWorkItem = $wn
+                            message = "Helix work item '$wn' in job $jobId finished with a non-zero ExitCode (a failed device-test work item) even though XHarness can exit 0 and the AzDO leg read green. See https://helix.dot.net/api/2019-06-17/jobs/$jobId/workitems"
+                        }
+                        $buildSummary.testResults += @($hidden)
+                        $allLogFailures.Add($hidden)
                     }
-                    $buildSummary.testResults += @($hidden)
-                    $allLogFailures.Add($hidden)
                 }
                 $buildSummary.helix.summaries += @([ordered]@{
                     jobId = $jobId
+                    legName = $legName
+                    queueId = $queueId
                     failed = $counts.totalFail
                     sawFailCount = $counts.sawCount
-                    summary = $summary
+                    unverified = $counts.unverified
+                    workItemCount = @($workItems).Count
+                    initialWorkItemCount = $initialCount
+                    jobFinished = $jobFinished
                 })
             }
             catch {
                 $buildSummary.helix.error = $_.Exception.Message
-                # Opus F2: a thrown read (transient 500/404/expired blob) leaves THIS job's Failed count
-                # unobserved. The job may have carried the real hidden failures, so an unread job must
-                # never be silently excused -- a partial Helix read can no longer positively confirm zero.
+                # A thrown read (transient 500/404/expired blob, or an unreachable work-item list)
+                # leaves THIS job's work items unobserved. The job may have carried the real hidden
+                # failures, so an unread job must never be silently excused -- a partial Helix read can
+                # no longer positively confirm zero.
                 $anyHelixReadError = $true
             }
         }
-        # Positive Failed==0 confirmation: at least one Helix job reported a fail count, NONE were > 0,
-        # every discovered job was read without error, AND no job was left unverified (countless or
-        # truncated aggregate). Only this lets a GREEN device-test check stay green (see the device-test
-        # unverified cap below). No fail count seen anywhere, any job whose aggregate read threw (Opus
-        # F2), or any job that returned no count / a truncated scan (round-10 Gemini F2 / Opus #3) =
-        # NOT confirmed (cannot trust green over an unobserved job).
+        # Positive Failed==0 confirmation: at least one Helix job reported a work-item set, NONE had a
+        # failed (non-zero-ExitCode) work item, every discovered job was read without error, AND no
+        # job was left unverified (countless set, not-yet-Finished job, short set, or a not-yet-
+        # Finished work item). Only this lets a GREEN device-test check stay green (see the device-test
+        # unverified cap below). No work-item set seen anywhere, any job whose read threw, or any job
+        # left unverified = NOT confirmed (cannot trust green over an unobserved job).
         if ($anyHelixCount -and -not $anyHelixFail -and -not $anyHelixReadError -and -not $anyHelixUnverified) {
             $buildSummary.deviceTestFailedConfirmedZero = $true
         }
@@ -2069,10 +2195,10 @@ if ($BaselineBuildsPerDefinition -gt 0) {
                 # device tests fail (see maui-ci-facts.md "XHarness exit-0 blind spot"), so a
                 # 'succeeded' result does NOT prove the base branch is green. Do not assert the
                 # confident "unlikely to be pre-existing" note here — hand the uncertainty to
-                # the agent, which is instructed to cross-check the Helix aggregated endpoint.
+                # the agent, which is instructed to cross-check the Helix work-item results.
                 $isDeviceTests = $defName -like '*devicetest*'
                 $succeededNote = if ($isDeviceTests) {
-                    "Most recent base-branch build for $defName reported 'succeeded', but XHarness exits 0 even when Helix device tests fail, so baseline cannot be confirmed clean from the build result alone. Cross-check the Helix aggregated endpoint if reachable; if base-branch Helix data is unavailable, treat the baseline as inconclusive rather than concluding matching failures are PR-caused."
+                    "Most recent base-branch build for $defName reported 'succeeded', but XHarness exits 0 even when Helix device tests fail, so baseline cannot be confirmed clean from the build result alone. Cross-check the Helix per-job /workitems results if reachable; if base-branch Helix data is unavailable, treat the baseline as inconclusive rather than concluding matching failures are PR-caused."
                 }
                 else {
                     "Most recent base-branch build for $defName succeeded; matching failures are unlikely to be pre-existing."
@@ -2504,7 +2630,8 @@ foreach ($b in $buildArray) {
 }
 
 # F1: a device-test check that READS GREEN cannot be trusted unless Failed==0 was POSITIVELY
-# confirmed (Helix aggregated all-zero, or the authenticated test-API). XHarness exits 0 even when
+# confirmed (every discovered Helix job's /workitems set read clean, or the authenticated test-API).
+# XHarness exits 0 even when
 # device tests fail, so a green maui-pr-devicetests check is NOT evidence of a clean run. Without a
 # positive confirmation, cap the verdict to NHI -- never a false green. A SKIPPED device-test check
 # means device tests did not run on this PR (nothing to verify, no cap); a RED device-test check is
@@ -2516,11 +2643,25 @@ foreach ($check in $deviceTestChecks) {
     if ($concl -eq 'SKIPPED') { continue }
     $isGreen = ($concl -in @('SUCCESS', 'NEUTRAL')) -or ((-not $concl) -and ($state -in @('SUCCESS', 'NEUTRAL')))
     if (-not $isGreen) { continue }
-    $confirmed = $false
-    foreach ($b in $buildArray) {
-        if (@($b.checkNames) -notcontains [string]$check.name) { continue }
-        if (Get-ObjectValue -Object $b -Names @("deviceTestFailedConfirmedZero") -Default $false) { $confirmed = $true }
+    # A green device-test check is trustworthy ONLY if EVERY backing AzDO build that actually ran
+    # device tests positively confirmed Failed==0. Using ANY-confirms (a single clean build flips the
+    # whole check green) would let a clean re-run or sibling build MASK an unverified build sharing
+    # the SAME check name -> a false green. Require: at least one backing build confirmed, AND no
+    # backing build left unconfirmed. A CANCELED backing build is excused here only because it is
+    # already capped by the canceled-check ceiling; every other unconfirmed backing build
+    # (accessible-but-unverified, or inaccessible with no readable result) blocks confirmation.
+    $backingBuilds = @($buildArray | Where-Object { @($_.checkNames) -contains [string]$check.name })
+    $anyConfirmed = $false
+    $anyUnconfirmed = $false
+    foreach ($b in $backingBuilds) {
+        if (Get-ObjectValue -Object $b -Names @("deviceTestFailedConfirmedZero") -Default $false) {
+            $anyConfirmed = $true
+            continue
+        }
+        $bResult = [string]($b.metadata.result)
+        if ($bResult -notin @('canceled', 'cancelled')) { $anyUnconfirmed = $true }
     }
+    $confirmed = $anyConfirmed -and (-not $anyUnconfirmed)
     if (-not $confirmed -and ($deviceTestUnverified -notcontains [string]$check.name)) {
         $deviceTestUnverified.Add([string]$check.name)
     }
@@ -2644,7 +2785,7 @@ elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $u
         $ceilingReasons.Add("$($canceledBuildChecks.Count) check(s) are backed by an AzDO build whose own result is 'canceled'; a canceled build's legs frequently carry no extractable failure and a dismissible sibling can falsely 'account' for it, so a 'Ready to merge' verdict is forbidden until a human reads them: $((@($canceledBuildChecks) | Select-Object -First 8) -join ', ').")
     }
     if ($deviceTestUnverified.Count -gt 0) {
-        $ceilingReasons.Add("$($deviceTestUnverified.Count) device-test check(s) read GREEN but Failed==0 could NOT be positively confirmed (XHarness exits 0 even when device tests fail; no Helix aggregated all-zero and no authenticated test-API confirmation was available); a green device-test check is not trustworthy evidence of a clean run, so a 'Ready to merge' verdict is forbidden until a human confirms the device-test results: $((@($deviceTestUnverified) | Select-Object -First 8) -join ', ').")
+        $ceilingReasons.Add("$($deviceTestUnverified.Count) device-test check(s) read GREEN but Failed==0 could NOT be positively confirmed (XHarness exits 0 even when device tests fail; no Helix /workitems all-clean confirmation and no authenticated test-API confirmation was available); a green device-test check is not trustworthy evidence of a clean run, so a 'Ready to merge' verdict is forbidden until a human confirms the device-test results: $((@($deviceTestUnverified) | Select-Object -First 8) -join ', ').")
     }
 }
 elseif ($failingChecks.Count -eq 0 -and $dedupedFailures.Count -eq 0) {
@@ -2865,6 +3006,14 @@ else {
         $md.Add("- Distinct log/test failures from this build: $(@($build.testFailuresFromLogs).Count + @($build.testResults | Where-Object { -not $_.error }).Count)")
         if ($build.helix.checked) {
             $md.Add("- Helix job IDs found: $(@($build.helix.jobIds) -join ', ')")
+            foreach ($hs in @($build.helix.summaries)) {
+                $status = if ($hs.failed -gt 0) { "$($hs.failed) failed work item(s)" }
+                          elseif ($hs.unverified) { "unverified (incomplete work-item set)" }
+                          elseif ($hs.sawFailCount) { "0 failed work items (confirmed clean)" }
+                          else { "no work-item count" }
+                $legLabel = if (-not [string]::IsNullOrWhiteSpace([string]$hs.legName)) { " [$($hs.legName)]" } else { "" }
+                $md.Add("  - Job $($hs.jobId)${legLabel}: $status ($($hs.workItemCount)/$($hs.initialWorkItemCount) work items, finished=$($hs.jobFinished))")
+            }
             if ($build.helix.error) {
                 $md.Add("- Helix check error: $($build.helix.error)")
             }

@@ -85,29 +85,48 @@ XHarness (iOS/Android device tests in `maui-pr-devicetests`) **exits with code 0
 when tests fail**. So the AzDO job shows ✅ "Succeeded", `ci-analysis` may report no
 failures, but real failures are hidden inside the Helix work items.
 
-**Detect hidden failures** via the Helix aggregated endpoint:
+**Detect hidden failures** via the Helix per-job **work-items** endpoint:
 
 ```
-GET https://helix.dot.net/api/2019-06-17/jobs/{correlationId}/aggregated
+GET https://helix.dot.net/api/2019-06-17/jobs/{correlationId}/workitems
 ```
 
-Look for `Failed` > 0 even when the AzDO build job is green. Always cross-check this
-for `maui-pr-devicetests` when a job is green but device-test failures are suspected
-(or the PR carries `s/agent-gate-failed`). If Helix aggregate data is absent, state
-that device-test hidden failures could not be verified — do not assume green = clean.
+> ⚠️ The older `/aggregated` endpoint returns **HTTP 404 anonymously** (verified against
+> live maui jobs) — it is unreachable from the gh-aw runner, so do not rely on it. The
+> per-job `/workitems` endpoint **is** reachable anonymously and returns one entry per
+> work item, each carrying an `ExitCode` (int) and `State` (`Finished`/`Running`/...).
+> Job detail (`GET .../jobs/{correlationId}`, also anonymous) supplies `InitialWorkItemCount`
+> and the job-level `Finished` timestamp.
+
+A work item **failed** when it `Finished` with a non-zero `ExitCode`, even when the AzDO
+build job is green. Always cross-check this for `maui-pr-devicetests` when a job is green
+but device-test failures are suspected (or the PR carries `s/agent-gate-failed`). If Helix
+work-item data is absent, state that device-test hidden failures could not be verified —
+do not assume green = clean.
+
+> 🔎 **Job correlation is from the build's own logs, not a Helix query.** The Helix job
+> `Build` property is **blank** for maui, so jobs cannot be correlated to an AzDO build via
+> Helix; a `Source`+time-window query over-discovers (it mixes the concurrent `maui-pr-uitests`
+> and `maui-pr-devicetests` jobs of the *same* PR, and even other builds in the window). The
+> gatherer instead scans **every** `Run DeviceTests` leg's log (green **and** failed) for its
+> `Sent Helix Job ... /jobs/{id}/workitems` line — a green leg's hidden work-item failure
+> would otherwise never be discovered.
 
 **Deterministic enforcement in `/review tests`.** Because XHarness exit-0 makes a green
 device-test check untrustworthy, the gatherer **force-inspects every device-test build**
 (green or not) and only treats a green `maui-pr-devicetests` check as clean when it can
-**positively confirm `Failed == 0`** — either a Helix aggregated read where a fail count
-was observed and all were zero, or the authenticated test-API (when a token is present).
+**positively confirm `Failed == 0`** — either every discovered Helix job's `/workitems`
+set was read clean, or the authenticated test-API (when a token is present).
 That confirmation requires a **complete, error-free read**: every discovered Helix job's
-aggregate must be read without a thrown error (a job whose read fails may have carried the
-hidden failures), and the test-API path **pages through every test run** via the
+work-item set must be read without a thrown error (a job whose read fails may have carried the
+hidden failures) **and** must be *complete* — a job is left **unverified** (which caps the
+verdict) when any work item is not yet `Finished` or reports no `ExitCode`, when the job
+itself never `Finished`, or when fewer work items were returned than the job's
+`InitialWorkItemCount`. The test-API path **pages through every test run** via the
 `x-ms-continuationtoken` header and refuses to confirm when the run set was truncated (a
 retried device build publishes a new run per attempt, so a failing run can sit in an unread
-page tail). When no positive confirmation is available — the common case in the gh-aw runner, which
-has **no AzDO token**, and where the anonymous AzDO test-results API redirects to sign-in —
+page tail). When no positive confirmation is available — e.g. an unreadable/incomplete Helix
+read, or when the anonymous AzDO test-results API redirects to sign-in —
 the green device-test check is counted as `gate.deviceTestUnverified` and **hard-caps the
 verdict ceiling at `Needs human investigation`**. A green device-test check is never a
 false green. (SKIPPED device-test checks did not run, so they do not cap; RED ones are
