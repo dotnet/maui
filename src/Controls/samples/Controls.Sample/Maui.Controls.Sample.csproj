@@ -20,23 +20,6 @@
     <UseMaterial3>false</UseMaterial3>
   </PropertyGroup>
 
-  <!--
-    TEMPORARY WORKAROUND for https://github.com/dotnet/sdk/issues/54779
-    The .NET 11 preview.6 SDK regressed GenerateStaticWebAssetEndpointsManifest: it throws
-    "Sequence contains more than one element" when a MAUI Blazor Hybrid app references a Razor
-    class library together with the BlazorWebView package (exactly this gallery's shape). The
-    regression added a new 'jsmodules.publish.manifest.json' static web asset that collides with
-    the existing '_framework/blazor.modules.json' route, which the publish endpoints manifest
-    cannot disambiguate. Disabling JS module manifest generation removes the colliding asset and
-    unblocks the build while keeping StaticWebAssetsEnabled=true, so MAUI's BlazorWebView asset
-    pipeline (ConvertStaticWebAssetsToMauiAssets) still works. This only affects the gallery's
-    Blazor demo (a cosmetic "Hello from Razor Class Library" JS snippet); no test depends on it.
-    REMOVE this once the SDK fix flows in. Tracked for revert by the linked P/0 follow-up PR.
-  -->
-  <PropertyGroup>
-    <JSModulesEnabled>false</JSModulesEnabled>
-  </PropertyGroup>
-
   <PropertyGroup>
     <ApplicationTitle>.NET MAUI</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
