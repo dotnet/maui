@@ -10,6 +10,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 	// Technically these tests are useless because they cannot test shipping code as they are
 	// none of the platforms. However, they sort of do test the test dispatcher...
 	[Category(TestCategory.Core, TestCategory.Dispatching)]
+	[Collection("GlobalDispatcherState")]
 	public class DispatcherTests : IDisposable
 	{
 		DispatcherProviderStub _dispatcherProvider;
