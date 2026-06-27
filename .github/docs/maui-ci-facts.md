@@ -132,6 +132,54 @@ verdict ceiling at `Needs human investigation`**. A green device-test check is n
 false green. (SKIPPED device-test checks did not run, so they do not cap; RED ones are
 ordinary failing checks.)
 
+**Deep work-item read (Phase 2): turn opaque device-test failures into attributable detail.**
+A failed Helix work item exposes its uploaded files **fully anonymously**, so the gatherer
+deep-reads them instead of emitting one opaque "hidden failure" line:
+
+```
+GET https://helix.dot.net/api/2019-06-17/jobs/{correlationId}/workitems/{workItemName}
+```
+
+returns a `Files[]` array (each `{ FileName, Uri }`) plus a `ConsoleOutputUri`. Each file
+`Uri` (`.../workitems/{name}/files/{file}?api-version=2019-06-17`) responds **HTTP 302 → an
+Azure blob** whose SAS token is embedded in the redirect, so following the redirect needs **no
+auth** (verified live). The useful files are:
+
+- the aggregated `testResults.xml` when present; otherwise the per-category `TestResults-*.xml`
+  files (xUnit v2 `<assemblies><assembly total/passed/failed/skipped/errors><test
+  result="Pass|Fail|Skip">`), which the gatherer merges. Assembly/collection-level
+  `<errors><error>` nodes (fixture/cleanup crashes that carry no `<test result="Fail">`) are also
+  counted as named failures so a fixture crash can't vanish. The xUnit parse runs through an
+  `XmlReader` with `DtdProcessing=Prohibit` + `XmlResolver=$null`, so a malicious/garbled inline
+  `<!DOCTYPE>` (billion-laughs / XXE) safely fails the parse to NHI rather than expanding.
+- `console.*.log` — carries the real failure reason (e.g. `[FAIL] Timeout waiting for
+  HybridWebView test results after 480 seconds`, an unhandled exception, or a non-zero exit line).
+- a `*.dmp` crash dump when the host crashed.
+
+> ⚠️ **Content-type gotcha (decode bug, fixed).** Azure blob serves the `.xml` result files as
+> `application/octet-stream`, so `Invoke-WebRequest`'s `.Content` is a **`byte[]`** — a plain
+> `[string]` cast stringifies it as space-joined decimal byte values (`"60 63 120 …"`) and breaks
+> XML parsing. Decode bytes as UTF-8 and strip any leading BOM (which would also make
+> `XmlDocument.LoadXml` throw). `console.*.log` is served as `text/plain`, so its `.Content` is
+> already a string — that asymmetry is why a console read can succeed while a TRX read silently
+> returns nothing if bytes aren't handled.
+
+**This NEVER relaxes the verdict cap.** A non-zero-ExitCode work item still hard-caps the verdict
+at *Needs human investigation*; the deep read only makes it **intelligible**. Real `result="Fail"`
+tests become NAMED records (`source = helix-trx`) that flow through the normal dedup / base-exact-
+match / known-issue attribution — so a named device-test failure that also fails on base can
+dismiss as pre-existing, exactly like any other test. But an **incomplete** run ALSO emits a
+capping `helix-workitem-incomplete` record **in addition to** any named failures — because a run
+that didn't finish can mask a PR-caused failure in tests that never ran, so even if every named
+failure dismisses on base the work item stays NHI. A run is treated as incomplete when **any** of:
+the console shows it was killed/hung/crashed; a `*.dmp` crash dump **or** a crash signal (`core
+dumped` / `segfault` / `.dmp`) is present (a SIGSEGV can flush a partial result file then kill the
+run — so a crash forces the cap *even when some tests were named*); no result file was readable;
+the result files read were themselves incomplete (a per-category file failed to download/parse, the
+category list overflowed the read cap, or the file **declared** more failures than we could
+extract); or the work item exited non-zero with **zero** named failures. A device-test work item is
+**never** a false green.
+
 ### Container artifact binlogs
 
 MAUI build artifacts are **Container** type, not `PipelineArtifact`:
