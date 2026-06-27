@@ -72,8 +72,15 @@ BeforeAll {
                 }
                 '[' {
                     # Copy the bracket expression verbatim (glob ranges == regex ranges).
+                    # Negated brackets are NOT supported: glob negation spells it '[!...]'
+                    # while .NET regex spells it '[^...]', so copying verbatim would silently
+                    # mistranslate (a '[!0]' glob would become a regex that matches '!' or '0').
+                    # None of the workflow globs use negation, so fail fast rather than emit a
+                    # wrong regex if one is ever introduced.
                     $j = $i + 1
-                    if ($j -lt $n -and $Glob[$j] -eq '!') { $j++ }   # negation (unused by our globs)
+                    if ($j -lt $n -and ($Glob[$j] -eq '!' -or $Glob[$j] -eq '^')) {
+                        throw "Convert-GhTagGlobToRegex: negated bracket expression in glob '$Glob' is not supported; add an explicit translation before using glob negation."
+                    }
                     while ($j -lt $n -and $Glob[$j] -ne ']') { $j++ }
                     [void]$sb.Append($Glob.Substring($i, $j - $i + 1))
                     $i = $j + 1
@@ -155,6 +162,13 @@ Describe 'GH glob -> regex translator (fidelity of the simulation)' {
         @{ Glob = 'releases/**';                    Expected = '^releases/.*$' }
     ) {
         Convert-GhTagGlobToRegex $Glob | Should -BeExactly $Expected
+    }
+
+    It 'throws on a negated bracket expression (<Glob>) rather than mistranslating it' -ForEach @(
+        @{ Glob = '1[!0].0.[0-9]+' }   # glob-style negation
+        @{ Glob = '1[^0].0.[0-9]+' }   # regex-style negation (also rejected)
+    ) {
+        { Convert-GhTagGlobToRegex $Glob } | Should -Throw '*negated bracket*'
     }
 }
 
