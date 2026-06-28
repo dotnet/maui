@@ -3239,10 +3239,17 @@ $gate = [ordered]@{
 }
 
 $limitations = New-Object System.Collections.Generic.List[string]
-if ([string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
-    $limitations.Add("No AZDO_TOKEN or Azure CLI AzDO token was available; authenticated AzDO test-run APIs were skipped. Build metadata, timelines, and logs were still queried when public.")
-}
-elseif ($script:AzDoAuthSource -eq "Azure CLI") {
+# Do NOT emit a standalone "no AzDO token" limitation. The gh-aw CI runner is intentionally
+# token-less (zero-auth by design), so AZDO_TOKEN is empty on every run -- reporting a permanent,
+# by-design condition as a per-run "Limitation" is non-actionable noise that trains readers to
+# ignore the section. The token's ONLY load-bearing consequence -- a GREEN device-test check whose
+# Failed==0 could not be positively confirmed -- is already surfaced WITH its consequence in
+# gate.ceilingReasons (see the deviceTestUnverified reason). After the Phase 2 anonymous Helix
+# /workitems deep-read, device-test failure names/counts/reasons no longer depend on the
+# authenticated test-API, so "authenticated test-run APIs were skipped" would also overstate the
+# gap. A local-only Azure CLI token IS still disclosed below, so an authenticated local run is not
+# mistaken for what CI (public-API-only) actually sees.
+if ($script:AzDoAuthSource -eq "Azure CLI") {
     $limitations.Add("Authenticated AzDO access used an Azure CLI bearer token for local-only data gathering. The gh-aw workflow still relies on public build/timeline/log APIs unless AZDO_TOKEN is provided by the runner environment.")
 }
 if ($buildRefsById.Count -eq 0) {
