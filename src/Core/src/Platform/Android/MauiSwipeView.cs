@@ -133,6 +133,15 @@ namespace Microsoft.Maui.Platform
 			if (_contentView is null || _initialPoint is null)
 				return false;
 
+			// When the content view itself is a WebView, check scroll boundaries directly.
+			// The child-iteration loop below inspects internal Chromium sub-views via
+			// GetChildAt(0) whose dimensions are unreliable. CanScrollHorizontally/Vertically
+			// gives accurate boundary state, mirroring iOS's pan gesture direction logic.
+			if (_contentView is AWebView contentWebView)
+			{
+				return ShouldInterceptWebViewTouch(contentWebView, swipeDirection);
+			}
+
 			var viewGroup = _contentView as ViewGroup;
 
 			if (viewGroup is not null)
@@ -165,6 +174,19 @@ namespace Microsoft.Maui.Platform
 
 			return true;
 		}
+
+		// Mirrors iOS's UIPanGestureRecognizer direction logic: only intercept when the WebView
+		// has reached its scroll boundary in the gesture direction, so the other direction
+		// (e.g. vertical scroll) passes through unimpeded — just like ShouldRecognizeSimultaneously.
+		static bool ShouldInterceptWebViewTouch(AWebView webView, SwipeDirection swipeDirection) =>
+			swipeDirection switch
+			{
+				SwipeDirection.Right => !webView.CanScrollHorizontally(-1), // at left edge
+				SwipeDirection.Left => !webView.CanScrollHorizontally(1),   // at right edge
+				SwipeDirection.Down => !webView.CanScrollVertically(-1),    // at top
+				SwipeDirection.Up => !webView.CanScrollVertically(1),       // at bottom
+				_ => true,
+			};
 
 		static bool ShouldInterceptScrollChildrenTouch(ViewGroup scrollView, bool isHorizontal)
 		{

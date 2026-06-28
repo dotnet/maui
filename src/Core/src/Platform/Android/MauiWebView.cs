@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 
 		readonly WebViewHandler _handler;
 		readonly Rect _clipRect;
+		bool _hasSwipeViewParent;
 
 		public MauiWebView(WebViewHandler handler, Context context) : base(context)
 		{
@@ -36,6 +37,13 @@ namespace Microsoft.Maui.Platform
 
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
 			UpdateClipBounds(Width, Height);
+
+			// Cache whether this WebView lives inside a MauiSwipeView. When it does, we must
+			// not call RequestDisallowInterceptTouchEvent(true) — doing so sets
+			// FLAG_DISALLOW_INTERCEPT on the SwipeView, which causes Android to skip its
+			// OnInterceptTouchEvent for Move events and prevents swipe gesture detection
+			// (issue #36154). Cached here rather than on every touch event for performance.
+			_hasSwipeViewParent = ((View)this).GetParentOfType<MauiSwipeView>() != null;
 		}
 
 		void UpdateClipBounds(int width, int height)
@@ -74,7 +82,15 @@ namespace Microsoft.Maui.Platform
 			{
 				case MotionEventActions.Down:
 				case MotionEventActions.Move:
-					Parent?.RequestDisallowInterceptTouchEvent(true);
+					// Do not request disallow intercept when inside a SwipeView — that would set
+					// FLAG_DISALLOW_INTERCEPT on the SwipeView and prevent it from detecting
+					// horizontal swipe gestures via OnInterceptTouchEvent (issue #36154).
+					// For all other containers (e.g. ScrollView), claim touch ownership normally
+					// so they don't steal scroll events from the WebView (PR #33133).
+					if (!_hasSwipeViewParent)
+					{
+						Parent?.RequestDisallowInterceptTouchEvent(true);
+					}
 					break;
 
 				case MotionEventActions.Up:
