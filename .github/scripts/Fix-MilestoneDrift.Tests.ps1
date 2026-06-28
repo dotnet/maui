@@ -151,18 +151,22 @@ Describe 'Get-PrInfo — merged-after cutoff enforcement' {
         $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''
     }
 
-    It 'skips a PR merged before the cutoff (returns $null)' {
+    It 'skips a PR merged before the cutoff (returns a pre-cutoff sentinel, not $null)' {
         $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01
         Mock Invoke-GhApi { New-FakePr -MergedAt '2025-05-01T00:00:00Z' -Number 100 }
-        Get-PrInfo 100 | Should -BeNullOrEmpty
+        $result = Get-PrInfo 100
+        $result | Should -BeOfType [hashtable]
+        $result.SkippedPreCutoff | Should -BeTrue
+        $result.Number | Should -Be 100
     }
 
-    It 'includes a PR merged on/after the cutoff (returns the object)' {
+    It 'includes a PR merged on/after the cutoff (returns the object, no skip sentinel)' {
         $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01
         Mock Invoke-GhApi { New-FakePr -MergedAt '2026-03-01T00:00:00Z' -Number 101 }
         $pr = Get-PrInfo 101
         $pr | Should -Not -BeNullOrEmpty
         $pr.Number | Should -Be 101
+        $pr.ContainsKey('SkippedPreCutoff') | Should -BeFalse
     }
 
     It 'includes a PR merged exactly at the cutoff boundary (strict less-than)' {
@@ -183,13 +187,57 @@ Describe 'Get-PrInfo — merged-after cutoff enforcement' {
     It 'a raised cutoff skips a PR that the default would include' {
         $script:MergedAfterCutoff = Resolve-MergedAfterCutoff '2026-06-01'
         Mock Invoke-GhApi { New-FakePr -MergedAt '2026-03-01T00:00:00Z' -Number 104 }
-        Get-PrInfo 104 | Should -BeNullOrEmpty
+        $result = Get-PrInfo 104
+        $result.SkippedPreCutoff | Should -BeTrue
+        $result.Number | Should -Be 104
     }
 
     It 'never skips an unmerged PR (no merged_at) regardless of cutoff' {
         $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''
         Mock Invoke-GhApi { New-FakePr -MergedAt $null -Number 105 }
         Get-PrInfo 105 | Should -Not -BeNullOrEmpty
+    }
+}
+
+Describe 'Invoke-AnalyzeRelease — pre-cutoff skips are accounted separately from errors' {
+    BeforeEach {
+        # Minimal mocks so Invoke-AnalyzeRelease reaches the PR loop without touching git/gh.
+        Mock ConvertTo-Milestone { '.NET 10 SR8' }
+        Mock Get-AllTags { @('10.0.70', '10.0.80') }
+        Mock Initialize-MilestoneValidationContext { }
+        Mock Get-MainBranchForVersion { 'net10.0' }
+        Mock Get-AllMilestones { @{ '.NET 10 SR8' = 999 } }
+        Mock Find-MatchingMilestone { @{ Number = 999; Title = '.NET 10 SR8' } }
+        Mock Get-PrNumbersBetweenTags { @(100, 101) }
+        # Defensive: only reached for real (non-skipped, non-null) PRs — never hit in these tests.
+        Mock Test-PrBelongsToVersion { $true }
+        Mock Test-AndRecordCorrection { }
+        Mock Get-LinkedIssues { @() }
+    }
+
+    It 'counts an all-pre-cutoff cohort as skipped, not as errors (no spurious failure)' {
+        # Regression: a cohort whose PRs all predate the cutoff must NOT be reported as
+        # "0 PRs checked, N errors" (which makes the top-level script throw a red run).
+        Mock Get-PrInfo {
+            param([int]$PrNum)
+            return @{ SkippedPreCutoff = $true; Number = $PrNum }
+        }
+        $report = Invoke-AnalyzeRelease '10.0.80' '10.0.70' '.'
+        $report.PrsSkippedPreCutoff | Should -Be 2
+        $report.PrsChecked          | Should -Be 0
+        $report.Errors.Count        | Should -Be 0   # the top-level throw guard keys off Errors.Count
+    }
+
+    It 'still records a genuine fetch failure as an error, distinct from a pre-cutoff skip' {
+        Mock Get-PrInfo {
+            param([int]$PrNum)
+            if ($PrNum -eq 101) { return $null }                   # real fetch failure
+            return @{ SkippedPreCutoff = $true; Number = $PrNum }   # pre-cutoff skip
+        }
+        $report = Invoke-AnalyzeRelease '10.0.80' '10.0.70' '.'
+        $report.PrsSkippedPreCutoff | Should -Be 1
+        $report.Errors.Count        | Should -Be 1
+        $report.Errors[0]           | Should -BeLike '*Failed to fetch PR #101*'
     }
 }
 

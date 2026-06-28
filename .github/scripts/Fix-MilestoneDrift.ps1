@@ -460,7 +460,10 @@ function Get-PrInfo([int]$PrNum) {
             }
             if ($mergedAt -lt $script:MergedAfterCutoff) {
                 Write-Warning "PR #$PrNum merged $($pr.merged_at) — before cutoff ($($script:MergedAfterCutoff.ToString('yyyy-MM-dd'))). Skipping."
-                return $null
+                # Return a distinct sentinel (not $null) so callers can tell an
+                # intentional pre-cutoff skip apart from a real fetch failure and
+                # avoid mis-reporting the skip as an error / failing the whole run.
+                return @{ SkippedPreCutoff = $true; Number = $PrNum }
             }
         }
         return @{
@@ -1020,6 +1023,9 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
 
     # Fetch PR info first — we need merge_commit_sha for version detection
     $pr = Get-PrInfo $PrNum
+    if ($pr -is [hashtable] -and $pr.ContainsKey('SkippedPreCutoff')) {
+        throw "PR #$PrNum was merged before the -MergedAfter cutoff ($($script:MergedAfterCutoff.ToString('yyyy-MM-dd'))). Lower -MergedAfter to process it."
+    }
     if (-not $pr) { throw "Could not fetch PR #$PrNum" }
 
     if ($ReleaseTag) {
@@ -1258,6 +1264,7 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
         TotalPrs          = $prNumbers.Count
         PrsChecked        = 0
         PrsSkippedWrongBranch = 0
+        PrsSkippedPreCutoff = 0
         IssuesChecked     = 0
         AlreadyCorrect    = 0
         Corrections       = [System.Collections.ArrayList]::new()
@@ -1269,6 +1276,13 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
         Write-Verbose "  [$($i+1)/$($prNumbers.Count)] PR #$prNum..."
 
         $pr = Get-PrInfo $prNum
+        if ($pr -is [hashtable] -and $pr.ContainsKey('SkippedPreCutoff')) {
+            # Intentional pre-cutoff skip (see Get-PrInfo) — not a fetch failure.
+            # Count it separately so an all-pre-cutoff cohort exits cleanly instead
+            # of being reported as "0 PRs checked, N errors".
+            $report.PrsSkippedPreCutoff++
+            continue
+        }
         if (-not $pr) {
             [void]$report.Errors.Add("Failed to fetch PR #$prNum")
             continue
@@ -1314,6 +1328,9 @@ function Write-Report([hashtable]$Report) {
     Write-Host "  PRs checked: $($Report.PrsChecked)"
     if ($Report.ContainsKey('PrsSkippedWrongBranch') -and $Report.PrsSkippedWrongBranch -gt 0) {
         Write-Host "  PRs skipped (wrong branch): $($Report.PrsSkippedWrongBranch)"
+    }
+    if ($Report.ContainsKey('PrsSkippedPreCutoff') -and $Report.PrsSkippedPreCutoff -gt 0) {
+        Write-Host "  PRs skipped (merged before cutoff): $($Report.PrsSkippedPreCutoff)"
     }
     Write-Host "  Issues checked: $($Report.IssuesChecked)"
     Write-Host "  Already correct: $($Report.AlreadyCorrect)"

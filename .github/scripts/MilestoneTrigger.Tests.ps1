@@ -81,6 +81,10 @@ BeforeAll {
                     if ($j -lt $n -and ($Glob[$j] -eq '!' -or $Glob[$j] -eq '^')) {
                         throw "Convert-GhTagGlobToRegex: negated bracket expression in glob '$Glob' is not supported; add an explicit translation before using glob negation."
                     }
+                    # NOTE: a literal ']' as the FIRST class member (POSIX '[]...]') is NOT
+                    # handled — the scan below treats that ']' as the closing delimiter. No
+                    # workflow glob needs a literal ']', so this is a documented limitation
+                    # rather than a bug; add explicit handling if a future glob requires it.
                     while ($j -lt $n -and $Glob[$j] -ne ']') { $j++ }
                     if ($j -ge $n) {
                         throw "Convert-GhTagGlobToRegex: unclosed bracket expression in glob '$Glob'."
@@ -160,6 +164,7 @@ Describe 'GH glob -> regex translator (fidelity of the simulation)' {
         @{ Glob = '1[01].0.[0-9]+-preview.*';  Expected = '^1[01]\.0\.[0-9]+-preview\.[^/]*$' }
         @{ Glob = '1[01].0.[0-9]+-rc.*';       Expected = '^1[01]\.0\.[0-9]+-rc\.[^/]*$' }
         @{ Glob = '10.0.[0-9]+';                    Expected = '^10\.0\.[0-9]+$' }
+        @{ Glob = '1[01].0.[0-9]?';                 Expected = '^1[01]\.0\.[0-9]?$' }   # '?' = zero-or-one quantifier
         @{ Glob = 'v*';                             Expected = '^v[^/]*$' }
         @{ Glob = '**';                             Expected = '^.*$' }
         @{ Glob = 'releases/**';                    Expected = '^releases/.*$' }
@@ -364,6 +369,22 @@ Describe 'Guard vs glob consistency' {
     }
 }
 
+Describe 'Guard catches glob-admitted edge cases (defense-in-depth layering)' {
+    # The '-preview.*' / '-rc.*' globs are deliberately permissive: '*' matches any run of
+    # non-'/' chars, INCLUDING zero chars or non-numeric chars. The bash guard is stricter
+    # ('-preview.'/'-rc.' must be followed by a numeric build tail), so it rejects malformed
+    # prerelease tags the glob would let through. This asserts that second layer actually fires
+    # (i.e. the guard is doing real work, not merely re-checking what the glob already enforced).
+    It 'glob admits but guard rejects <Tag>' -Skip:(-not [bool](Get-Command bash -ErrorAction SilentlyContinue)) -ForEach @(
+        @{ Tag = '10.0.0-preview.' }        # trailing dot, no build number
+        @{ Tag = '10.0.0-preview.CAPS' }    # non-numeric build tail
+        @{ Tag = '10.0.0-rc.x' }            # non-numeric build tail
+    ) {
+        Test-GlobTriggers $Tag | Should -BeTrue
+        Test-BashGuardMatches -Regex $script:GuardRegex -Tag $Tag | Should -BeFalse
+    }
+}
+
 Describe 'Workflow trigger structure & injection-safety invariants' {
     It 'declares a push trigger' {
         $script:WorkflowText | Should -Match '(?m)^\s*push:\s*$'
@@ -377,12 +398,30 @@ Describe 'Workflow trigger structure & injection-safety invariants' {
         $script:WorkflowText | Should -Match 'PUSH_TAG:\s*\$\{\{\s*github\.ref_name\s*\}\}'
     }
 
-    It 'the run: script never string-interpolates $\{\{ github.* }} (injection-safe)' {
-        # Capture the last `run: |` block (the milestone step) and assert it only
-        # consumes env vars, never raw ${{ github.* }} expansion in the shell.
-        $idx = ($script:WorkflowLines | Select-String -SimpleMatch 'run: |' | Select-Object -Last 1).LineNumber
-        $idx | Should -Not -BeNullOrEmpty
-        $runBody = ($script:WorkflowLines[$idx..($script:WorkflowLines.Count - 1)]) -join "`n"
+    It 'the milestone step never string-interpolates ${{ github.* }} (injection-safe)' {
+        # Anchor to the NAMED step rather than a positional "last run:" heuristic, so adding a
+        # later step with its own run: block can never silently move this assertion off the
+        # milestone step. Slice from the step's name line to the next sibling step (a '-' at the
+        # same 6-space indent) or EOF, then assert the run: body uses no ${{ ... }} interpolation.
+        $lines = $script:WorkflowLines
+
+        $stepStart = -1
+        for ($k = 0; $k -lt $lines.Count; $k++) {
+            if ($lines[$k] -match '^\s*-\s*name:\s*Run milestone management\s*$') { $stepStart = $k; break }
+        }
+        $stepStart | Should -BeGreaterOrEqual 0
+
+        $stepEnd = $lines.Count - 1
+        for ($k = $stepStart + 1; $k -lt $lines.Count; $k++) {
+            if ($lines[$k] -match '^\s{6}-\s') { $stepEnd = $k - 1; break }
+        }
+
+        $runStart = -1
+        for ($k = $stepStart; $k -le $stepEnd; $k++) {
+            if ($lines[$k] -match '^\s*run:\s*\|') { $runStart = $k + 1; break }
+        }
+        $runStart | Should -BeGreaterThan 0
+        $runBody = ($lines[$runStart..$stepEnd]) -join "`n"
         $runBody | Should -Not -Match '\$\{\{'
     }
 
