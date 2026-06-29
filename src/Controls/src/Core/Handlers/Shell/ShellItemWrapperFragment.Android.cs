@@ -125,6 +125,16 @@ namespace Microsoft.Maui.Controls.Handlers
                     _handler._registeredShell = null;
                 }
 
+                // Unregister displayed-page observer before view is gone.
+                // SwitchToSection() only removes the observer when _shellSection != newSection —
+                // on same-section view recreation, no removal happens, causing AddDisplayedPageObserver
+                // to stack a duplicate entry on each back-stack return.
+                if (_handler._shellSection is not null)
+                {
+                    ((IShellSectionController)_handler._shellSection).RemoveDisplayedPageObserver(_handler);
+                    _handler._shellSection = null;
+                }
+
                 // Null _bottomNavigationView so appearance callbacks don't update stale views
                 // while the fragment sits on the back stack.
                 _handler._bottomNavigationView = null;
@@ -132,9 +142,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 // Tear down TabbedViewManager before view recreation.
                 // SetupTabbedViewManager overwrites _tabbedViewManager/_shellItemAdapter silently —
                 // without teardown here, old BNV listeners and event subscriptions leak.
+                // Note: SetElement(null) already calls RemoveTabs() internally — no need to call it explicitly.
                 if (_handler._tabbedViewManager is not null)
                 {
-                    _handler._tabbedViewManager.RemoveTabs();
                     _handler._tabbedViewManager.SetElement(null);
                     _handler._tabbedViewManager = null;
                 }
@@ -156,8 +166,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 _handler._toolbar = null;
 
-                // Null _appBarLayout — set in SetupToolbar() from OnViewCreated, nulled in
-                // DisconnectHandler (line 872). Leaving it non-null holds a detached view reference.
+                // Null _shellToolbar — mirrors DisconnectHandler's cleanup.
+                // SetupToolbar() creates a new one on OnViewCreated.
+                _handler._shellToolbar = null;
+
+                // Null _appBarLayout — set in SetupToolbar() from OnViewCreated.
+                // Leaving it non-null holds a detached view reference after view destruction.
                 _handler._appBarLayout = null;
 
                 // Unregister page-change callback before nulling _viewPager.
@@ -172,7 +186,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 // Clear adapter before nulling _viewPager to detach FragmentStateAdapter.
                 // FragmentStateAdapter unregisters lifecycle/adapter observers only when cleared,
-                // not when the view is destroyed — mirrors DisconnectHandler line 874.
+                // not when the view is destroyed — mirrors DisconnectHandler's adapter/viewpager cleanup.
                 if (_handler._viewPager is not null)
                 {
                     _handler._viewPager.Adapter = null;

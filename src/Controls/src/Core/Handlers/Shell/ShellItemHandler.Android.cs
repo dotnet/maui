@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers
         Fragment? _parentFragment; // The wrapper fragment that hosts this handler
         IShellBottomNavViewAppearanceTracker? _appearanceTracker;
         internal Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable RemoveAppearanceObserver
-        ShellSection? _shellSection;
+        internal ShellSection? _shellSection;
         Page? _displayedPage;
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
         bool _switchingShellItem; // During SwitchToShellItem, suppress mapper-triggered SwitchToSection
