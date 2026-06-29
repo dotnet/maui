@@ -238,6 +238,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateShowsResults()
 		{
+			// Prevent AutoCompleteTextView from triggering filtering/suggestions when results are disabled.
+			_textBlock.Threshold = SearchHandler.ShowsResults ? 1 : int.MaxValue;
+
 			if (!SearchHandler.ShowsResults || string.IsNullOrEmpty(_textBlock.Text))
 			{
 				_textBlock.DismissDropDown();

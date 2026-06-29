@@ -927,9 +927,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var query = _searchController?.SearchBar.Text;
+			var oldSearchController = _searchController;
 
 			DettachSearchController();
 			DisposeResultsRenderer();
+			oldSearchController?.Dispose();
+
 			AttachSearchController();
 
 			if (_searchController is not null && query is not null)
