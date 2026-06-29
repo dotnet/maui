@@ -437,9 +437,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_control is ContentPanel contentPanel && contentPanel.CrossPlatformLayout is IBorderView)
 			{
-				// A disabled Border must not be keyboard-focusable even if it has a TapGestureRecognizer.
+				// A disabled or input-transparent Border must not be keyboard-focusable even if it has a TapGestureRecognizer.
 				// ContentPanel derives from Panel, so MapIsEnabled does not propagate IsEnabled to it.
-				bool shouldEnable = canAllowTabStop && (Element is not View v || v.IsEnabled);
+				// InputTransparent on Windows only disables hit-testing (mouse), not tab navigation — guard it explicitly.
+				bool shouldEnable = canAllowTabStop && (Element is not View v || (v.IsEnabled && !v.InputTransparent));
 				bool isSubscribed = (_subscriptionFlags & SubscriptionFlags.ContentPanelKeyDownSubscribed) != 0;
 
 				if (shouldEnable && !isSubscribed)
@@ -494,7 +495,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (Element is View view)
 				{
-					if (!view.IsEnabled)
+					if (!view.IsEnabled || view.InputTransparent)
 					{
 						return;
 					}
@@ -1260,11 +1261,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleElementPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName
+			if ((e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
+				 e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				&& _control is ContentPanel { CrossPlatformLayout: IBorderView })
 			{
 				// ContentPanel derives from Panel, so MapIsEnabled does not propagate to it.
-				// Recompute keyboard focus state when IsEnabled changes at runtime.
+				// InputTransparent on Windows only disables hit-testing, not tab navigation — recompute here.
+				// Recompute keyboard focus state when IsEnabled or InputTransparent changes at runtime.
 				UpdatingGestureRecognizers();
 			}
 		}
