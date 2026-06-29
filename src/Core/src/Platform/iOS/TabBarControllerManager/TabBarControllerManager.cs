@@ -38,7 +38,14 @@ namespace Microsoft.Maui.Platform
         public UIViewController[] ViewControllers
         {
             get => _tabBarController.ViewControllers;
-            set => _tabBarController.ViewControllers = value;
+            set
+            {
+                _tabBarController.ViewControllers = value;
+
+                // UIKit resets CustomizableViewControllers to all VCs on each assignment.
+                // Disable tab reordering to match renderer behavior.
+                _tabBarController.CustomizableViewControllers = null;
+            }
         }
 
         /// <summary>

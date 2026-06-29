@@ -29,10 +29,6 @@ namespace Microsoft.Maui.Controls
 		// disconnect handlers for pages that were removed.
 		HashSet<Page> _previousPages;
 
-		// Stores the collection change args from OnPagesChanged so MapItemsSource
-		// can handle Add/Remove incrementally instead of full rebuild.
-		internal NotifyCollectionChangedEventArgs _pendingPagesChangedArgs;
-
 		static UIView OnCreatePlatformView(ViewHandler<ITabbedView, UIView> arg)
 		{
 			if (arg.VirtualView is TabbedPage tabbedPage && arg is TabbedViewHandler handler)

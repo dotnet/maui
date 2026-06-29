@@ -28,6 +28,10 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<TabbedPage>> _platformConfigurationRegistry;
 
+		// Stores the collection change args from OnPagesChanged so MapItemsSource
+		// can handle Add/Remove incrementally instead of full rebuild.
+		internal NotifyCollectionChangedEventArgs _pendingPagesChangedArgs;
+
 		/// <summary>Gets or sets the background color of the tab bar. This is a bindable property.</summary>
 		public Color BarBackgroundColor
 		{

@@ -33,10 +33,6 @@ namespace Microsoft.Maui.Handlers
 
             // Set the ViewController so this handler participates in the VC hierarchy
             ViewController = _manager?.TabBarController;
-
-            // Disable tab reordering (matching renderer behavior)
-            if (_manager != null)
-                _manager.CustomizableViewControllers = null;
         }
 
         protected override void DisconnectHandler(UIView platformView)
