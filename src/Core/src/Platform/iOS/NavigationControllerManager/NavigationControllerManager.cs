@@ -338,9 +338,11 @@ namespace Microsoft.Maui.Platform
                     return;
                 }
 
-                // Set nav bar visibility
-                var (isHidden, shouldAnimate) = manager._delegate.GetNavigationBarVisibility(viewController);
-                navigationController.SetNavigationBarHidden(isHidden, shouldAnimate && animated);
+                // Nav bar visibility is NOT set here — it is handled by the
+                // ParentingViewController's ViewWillAppear (which also fires before
+                // the transition animation begins). This matches the renderer's
+                // behavior and avoids incorrect defaults when the page's Toolbar
+                // is null (e.g. FlyoutPage with HasNavigationBar=false).
 
                 // Handle interactive pop gesture
                 var coordinator = viewController.GetTransitionCoordinator();
@@ -399,12 +401,10 @@ namespace Microsoft.Maui.Platform
                     return false;
                 }
 
-                if (!_managerRef.TryGetTarget(out var manager))
-                {
-                    return false;
-                }
-
-                return manager._delegate.ShouldPop();
+                // Always allow the gesture — matches the renderer, which returns true
+                // and lets UIKit drive the interactive transition. After the gesture
+                // completes, OnInteractivePopCompleted syncs the MAUI stack.
+                return true;
             }
         }
 
