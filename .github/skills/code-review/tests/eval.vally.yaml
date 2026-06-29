@@ -261,6 +261,127 @@ stimuli:
       expect_skills:
         - code-review
 
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 3 — cross-file producer-trace: over-cap from an unconditional
+  # console token (PR #36185, commit 90edd581 → fixed later in the same PR)
+  #
+  # Regression PR:  dotnet/maui#36185 "Fix /review tests device-test
+  #   confirmation to use anonymous Helix /workitems endpoint"
+  #   introducing commit: 90edd5819d237c72bf5e30d73fb99a17d3dcd24c
+  #     ("Harden /review tests Phase 2 deep-read against crash/overflow")
+  #   parent:             4c7978d8d6a95fffb3302c0b091423ab21a40bde
+  #   later fixed in the SAME PR by 6efaf3bab0bac1dce1aaeba0871ce95b6f57b160
+  #     ("Fix device-test deep-read over-cap (Copilot L928)") — so neither
+  #     the PR head nor its squash-merge commit exhibits the bug in a
+  #     HEAD^..HEAD diff; only this introducing commit does. That is why
+  #     this scenario pins to 90edd581, not the merge commit.
+  #
+  # Why this scenario exists: GitHub's built-in Copilot reviewer caught this
+  # at Gather-TestFailureContext.ps1:928, but a multi-model adversarial panel
+  # that reviewed the same PR returned LGTM and MISSED it (retro: the panel
+  # never traced the matched console string back to the tool that produces
+  # it). This corpus entry guards the maui-expert-reviewer's producer-trace +
+  # over-restriction CHECKs (Dimensions 5 & 6) so a future reviewer would
+  # surface it.
+  #
+  # Smoking gun (in the HEAD^..HEAD diff of the pinned commit, file
+  # .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1):
+  #   The new pure parser Get-ConsoleFailureReason sets isIncomplete=$true
+  #   whenever ANY line matches its alternation regex, and that alternation
+  #   includes:  test execution completed with exit code:\s*[1-9]
+  #   New-DeviceWorkItemFailureRecords then ORs that into $incomplete and
+  #   ALWAYS emits a capping 'helix-workitem-incomplete' record.
+  # The producer is OUT OF DIFF: eng/devices/run-windows-devicetests.cmd
+  #   (present in the worktree) echoes, at its :upload tail, UNCONDITIONALLY
+  #   for every run pass or fail:
+  #     echo Test execution completed with exit code: %EXIT_CODE%
+  #   and EXIT_CODE is set to 1 on any test failure. So every failed Windows
+  #   work item matches the regex -> isIncomplete=$true -> a capping record is
+  #   ALWAYS emitted, defeating the design intent of letting cleanly-completed
+  #   NAMED failures flow through baseline/known-issue attribution. (The cap
+  #   is fail-CLOSED, so it is never a false-green — it is an OVER-cap, a real
+  #   usefulness regression that the never-false-green framing can mask.)
+  # The bug is only visible by correlating the in-diff regex with the
+  # unconditional echo in a file the PR did NOT modify — a pure producer-trace.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: producer-trace-console-token-over-cap
+    tags:
+      regression_pr: "36185"
+      regression_file: .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1
+      producer_file: eng/devices/run-windows-devicetests.cmd
+    prompt: >-
+      You are reviewing a single commit pre-merge. The repository is
+      already checked out as a worktree pinned to the commit under review.
+
+      Hypothesis to verify or refute: the new device-test "incompleteness"
+      detector flags a work item as incomplete ONLY when the run genuinely
+      did not finish cleanly (it was killed/hung/crashed), and NOT for an
+      ordinary failed-but-cleanly-completed run.
+
+      Do not fetch any pull request, issue, or external page — use ONLY the
+      local worktree and `git diff HEAD^ HEAD` to inspect what changed. The
+      changed file matches a string/regex against device-test CONSOLE LOG
+      output; to verify the hypothesis you must read the code that PRODUCES
+      that console output (the device-test runner scripts under `eng/`),
+      even though those files are NOT in this diff. Read full source files
+      for changed paths, not just diff hunks. Then deliver a code review
+      using the skill's standard output format (Independent Assessment →
+      Findings → Blast Radius → Verdict + Confidence). Mark each finding
+      with a severity emoji (❌ Error, ⚠️ Warning, or 💡 Info). End with a
+      Verdict line: NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
+    environment:
+      git:
+        type: worktree
+        ref: 90edd5819d237c72bf5e30d73fb99a17d3dcd24c
+        source: .
+    graders:
+      # ── Structural floor (only one hard regex per scenario) ──────────
+      - type: output-matches
+        config:
+          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      - type: prompt
+        name: regression-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent identifies, in Get-ConsoleFailureReason, that the
+        incompleteness regex matches the literal console token
+        "test execution completed with exit code: [1-9]" (i.e. a non-zero
+        exit-code line) as one of the alternatives that sets
+        isIncomplete = $true.
+      - >-
+        The agent TRACES that console token back to the code that PRODUCES
+        it — eng/devices/run-windows-devicetests.cmd — which is NOT in the
+        PR diff, and discovers that the line "Test execution completed with
+        exit code: <N>" is echoed UNCONDITIONALLY at the end of every run
+        (pass or fail), with the exit code set to 1 on any test failure.
+        Reading the out-of-diff producer file to confirm this is the
+        decisive review move; an assessment that never consults the
+        producer does not satisfy this criterion.
+      - >-
+        The agent reasons the consequence: because the token is always
+        present on a failed Windows work item, isIncomplete is ALWAYS true,
+        so New-DeviceWorkItemFailureRecords ALWAYS emits a capping
+        'helix-workitem-incomplete' record — over-capping every failed work
+        item and defeating the intent of letting cleanly-completed NAMED
+        failures flow through baseline/known-issue attribution. Equivalent
+        phrasings — "over-cap", "always treated as incomplete", "the regex
+        over-matches", "fires for normal failures" — all count.
+      - >-
+        The agent recognizes this is an OVER-restriction / usefulness
+        regression even though it is fail-closed (safe w.r.t. never-false-
+        green): "safe direction" does not make over-blocking correct. It
+        flags the finding (❌ Error or ⚠️ Warning) and the verdict is
+        NEEDS_CHANGES or NEEDS_DISCUSSION, not LGTM. A silent LGTM, or an
+        assessment that waves the issue off solely because it is fail-
+        closed, fails this criterion.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - code-review
+
 scoring:
   # Vally 0.10 supports scoring.weights, but this suite deliberately omits
   # them so a trial's score is the unweighted mean of its graders' [0,1]
