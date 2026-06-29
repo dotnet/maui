@@ -142,7 +142,7 @@ is:pr label:s/agent-reviewed
 | `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
 | `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
 | `.github/scripts/Resolve-RerunEligibility.ps1` | Deterministic `/review rerun` checker that can apply `s/agent-ready-for-rerun` |
-| `.github/scripts/Invoke-RerunReviewTrigger.ps1` | Safe-output handler that applies `s/agent-review-in-progress` before triggering AzDO reruns |
+| `.github/scripts/Invoke-RerunReviewTrigger.ps1` | Safe-output handler that validates rerun decisions and emits an actions list; the scanner then dispatches `review-trigger.yml` (which applies `s/agent-review-in-progress` and triggers the AzDO review) |
 | `.github/workflows/review-trigger.yml` | Manual `/review` trigger that applies `s/agent-review-in-progress` before triggering AzDO reviews |
 | `eng/pipelines/ci-copilot.yml` | AzDO review pipeline that removes `s/agent-review-in-progress` in final cleanup |
 | `.github/skills/pr-review/SKILL.md` | Documents label system for the pr-review skill |

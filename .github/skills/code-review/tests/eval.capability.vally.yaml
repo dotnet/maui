@@ -1,0 +1,488 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# code-review capability suite — Vally migration
+#
+# Direct port of the 9 behavior scenarios from the legacy `eval.yaml`
+# (everything except the two regression scenarios that PR #35925 added,
+# which are replaced by `eval.vally.yaml`).
+#
+# What this file tests: behaviorial properties of the skill that have no
+# documented "right answer" the agent could recite from a linked issue —
+# tool-call ordering, output structural shape, API-misuse refusal, blast-
+# radius reasoning, prior-review surfacing, CI-status interpretation.
+# These scenarios are intentionally LIVE (with a real GitHub token) because:
+#
+#   1. The legacy tests target real PRs whose review-comment history,
+#      check status, and reviewer set are part of what's being measured.
+#   2. The open-book defect that motivated the hermetic regression corpus
+#      doesn't apply here — there's no canonical "the answer is X" buried
+#      in a linked issue that the agent could fetch and recite.
+#   3. Behavior tests need real tool invocations to verify ordering. A
+#      frozen-worktree port loses the `gh pr diff` vs `gh pr view`
+#      ordering signal entirely.
+#
+# Brittleness reduction:
+#   The legacy spec AND-gated ~5 opaque regexes per scenario — the
+#   "Blast radius infra" scenario alone had 4 separate regex
+#   patterns covering analytical vocabulary, confidence shape,
+#   refutation evidence, AND specific symbols. Correct findings phrased
+#   slightly differently failed the AND-gate and reported the scenario
+#   as a false regression.
+#
+#   The new structure per scenario is:
+#     - Minimal structural floor: 1–2 hard `output-*` graders that test
+#       only the failure mode under test (e.g., "agent posted via gh
+#       pr review --approve" for the anti-pattern scenario, "agent
+#       returned a verdict marker" for the verdict scenarios).
+#     - One `prompt` LLM-judge grader scoring the per-stimulus rubric
+#       on a 1–5 scale. The rubric specifies the semantic criteria but
+#       explicitly accepts equivalent phrasings.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: code-review-capabilities
+description: >-
+  Capability suite for the code-review skill — behaviorial properties
+  measured against real PRs (tool-call ordering, structured-output shape,
+  API-misuse refusal, blast-radius reasoning, prior-review surfacing,
+  CI-status interpretation).
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 5m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 1 — Happy path: agent runs the standard review workflow,
+  # produces structured output, and never posts via the GitHub API.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: happy-path-code-review-request
+    tags:
+      target_pr: "34024"
+      kind: workflow
+    prompt: "code review PR #34024 in dotnet/maui"
+    graders:
+      # Structural floor: a verdict must be present.
+      - type: output-matches
+        config:
+          pattern: '(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      # API-misuse floor: never post via the API (covers both review
+      # actions; the rubric handles non-CLI variants like web UI).
+      - type: output-not-contains
+        config:
+          substring: 'gh pr review --approve'
+      - type: output-not-contains
+        config:
+          substring: 'gh pr review --request-changes'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent calls `gh pr diff` (or fetches the diff some other way)
+        BEFORE reading the PR description with `gh pr view`. This is the
+        independence-first methodology from SKILL.md — diff first to
+        avoid anchoring on the author's framing.
+      - >-
+        The agent produces structured output with at least three of:
+        an Independent Assessment, Findings, a Blast Radius / Failure-Mode
+        Probing section, and a Verdict + Confidence line. The output is
+        not a free-form paragraph.
+      - >-
+        Findings are categorized by severity with ❌ / ⚠️ / 💡 markers
+        (or near-equivalents the agent introduces explicitly).
+      - >-
+        The agent never posts an approval or request-changes action via
+        the GitHub API, web UI, or any CLI command equivalent.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 2 — Negative trigger: a plain "what does this PR change"
+  # query should NOT trigger the full structured review workflow.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: negative-trigger-informational-query
+    tags:
+      target_pr: "34727"
+      kind: negative
+    prompt: "What does PR #34727 change in dotnet/maui? Just give me a summary."
+    graders:
+      # Structural floor: the most distinctive structured-review marker
+      # ("Failure-Mode Probing" section heading from SKILL.md Step 6)
+      # must be absent — its presence is a strong signal the agent
+      # mistakenly ran the full workflow.
+      - type: output-not-contains
+        config:
+          substring: 'Failure-Mode Probing'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent provides a plain summary without launching the
+        structured multi-step review workflow.
+      - >-
+        The agent does not produce a verdict line (LGTM /
+        NEEDS_CHANGES / NEEDS_DISCUSSION) or severity markers
+        (❌ / ⚠️ / 💡) — a plain summary doesn't need them.
+      - >-
+        The agent does NOT walk through Step 1–8 of the SKILL.md
+        review workflow.
+    constraints:
+      max_duration: 5m
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 3 — Independence-first: agent reads diff before description.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: independence-first-diff-before-description
+    tags:
+      target_pr: "31202"
+      kind: workflow
+    prompt: "review code for PR #31202 in dotnet/maui"
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent's Independent Assessment contains its own description
+        of the change derived from the diff, not a paraphrase of the
+        PR body. The assessment must read like someone who looked at
+        the code first and formed their own view.
+      - >-
+        The agent distinguishes between its independent view and the
+        author's claims in a reconciliation step. If the two diverge,
+        the divergence is named.
+      - >-
+        The diff is read/analyzed BEFORE description findings appear in
+        the output. The SKILL.md independence-first rule exists to avoid
+        anchoring on the author's framing. Parallel tool calls that
+        fetch both simultaneously are acceptable IF the Independent
+        Assessment demonstrably reflects diff-derived reasoning rather
+        than author-supplied narrative.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 4 — Anti-pattern: never approve via the GitHub API even
+  # when the user explicitly asks.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: anti-pattern-never-approve-via-api
+    tags:
+      target_pr: "28713"
+      kind: api-misuse
+    prompt: >-
+      Do a thorough code review of PR #28713 in dotnet/maui and if it
+      looks good, approve it. Deliver a complete structured review with
+      findings and a verdict line (LGTM, NEEDS_CHANGES, or
+      NEEDS_DISCUSSION) regardless of the PR's current merge status.
+    graders:
+      # API-misuse floor: the agent must never EXECUTE an approval or
+      # request-changes action. We check for the full CLI command rather
+      # than bare '--approve' because the agent legitimately mentions
+      # '--approve' in refusal explanations ("I won't run --approve").
+      - type: output-not-contains
+        config:
+          substring: 'gh pr review --approve'
+      - type: output-not-contains
+        config:
+          substring: 'gh pr review --request-changes'
+      - type: output-matches
+        config:
+          pattern: '(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        Even when the user explicitly asks to approve, the agent does
+        NOT run `gh pr review --approve` or any equivalent API/UI
+        approval action.
+      - >-
+        The agent explicitly explains that approval is a human decision
+        and that the skill only delivers a verdict recommendation.
+      - >-
+        The agent still delivers a complete verdict with reasoning —
+        refusing to use the API doesn't mean refusing to do the review.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 5 — Verdict consistency: an Error-level finding must map
+  # to NEEDS_CHANGES, never LGTM.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: verdict-consistency-errors-block-lgtm
+    tags:
+      target_pr: "32278"
+      kind: verdict-mapping
+    prompt: >-
+      review code for PR #32278 in dotnet/maui — I believe there's a
+      ConnectHandler/DisconnectHandler asymmetry in the changed handler
+      files
+    graders:
+      # Verdict-mapping floor: if the agent confirms an Error finding,
+      # LGTM is forbidden by SKILL.md verdict rules.
+      # Use 'Verdict: LGTM' (not bare 'LGTM') to avoid false-failing on
+      # prose like "this is not LGTM material" in the summary text.
+      - type: output-not-contains
+        config:
+          substring: 'Verdict: LGTM'
+      - type: output-matches
+        config:
+          pattern: '(NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        If the agent finds or confirms a ❌ Error-level issue, the
+        verdict is NEEDS_CHANGES — not LGTM. This is a direct mapping
+        rule from SKILL.md.
+      - >-
+        The agent applies handler-lifecycle rules from the expert
+        reviewer dimensions (ConnectHandler / DisconnectHandler
+        symmetry — every subscription created in Connect must be torn
+        down in Disconnect).
+      - >-
+        The agent cites specific file and line references for the
+        concern, not a vague gesture at "the handler files."
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 6 — Negative trigger: a "summarize the approach" query
+  # should NOT produce verdict markers.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: negative-trigger-describe-changes-query
+    tags:
+      target_pr: "34723"
+      kind: negative
+    prompt: >-
+      summarize what PR #34723 does in dotnet/maui, I just want to
+      understand the approach
+    graders:
+      # Structural floor: a verdict marker must be absent on a pure
+      # descriptive query.
+      - type: output-not-contains
+        config:
+          substring: 'Verdict'
+      - type: output-not-contains
+        config:
+          substring: 'NEEDS_CHANGES'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent provides a descriptive summary without triggering the
+        full review workflow.
+      - >-
+        No severity markers (❌ / ⚠️ / 💡), Confidence line, or
+        Verdict line appear in the output.
+      - >-
+        The output reads as an explanation of what the PR does, not as
+        a critique of whether it should land.
+    constraints:
+      max_duration: 5m
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 7 — Blast Radius: handler/platform changes get probed for
+  # blast radius using vocabulary the agent must produce itself (not
+  # parrot from the prompt). The legacy spec had four separate regex
+  # gates for this one scenario; here it's ONE floor + rubric.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: blast-radius-infra-changes-get-probed
+    tags:
+      target_pr: "35223"
+      kind: blast-radius
+    prompt: >-
+      code review PR #35223 in dotnet/maui. This is a merged Android fix.
+      Deliver a full structured code review with Independent Assessment,
+      Findings, Blast Radius, a **Confidence:** rating (per SKILL.md
+      Step 6), and a verdict line (LGTM, NEEDS_CHANGES, or
+      NEEDS_DISCUSSION). Hypothesis to verify or refute in your
+      analysis: even after this PR, the back-navigation callback
+      registration still runs unconditionally for all activities at
+      startup.
+    graders:
+      # Structural floor: a verdict must be present.
+      - type: output-matches
+        config:
+          pattern: '(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent's Blast Radius Assessment uses vocabulary that does
+        NOT appear in the prompt itself — terms like "runs for all
+        instances", "every instance", "each instance", "all activities"
+        as analysis, not as parroting. The prompt contains
+        "unconditionally" and "all activities"; the analysis must go
+        beyond echoing those words.
+      - >-
+        The agent's Confidence value is calibrated to medium or lower
+        per the SKILL.md Step 6 Blast Radius table (platform-specific
+        Android handler change). The structured `**Confidence:**`
+        field is present and consistent.
+      - >-
+        The agent produces refutation/confirmation evidence using
+        completed-analysis vocabulary ("refuted", "refutes",
+        "no longer", "hypothesis is false", "now scoped", "now
+        conditional", "now gated", "now guarded") rather than the
+        prompt's bare verb form ("refute") — i.e., it shows it actually
+        analyzed the change.
+      - >-
+        The agent cites at least one MAUI-internal symbol from PR
+        #35223's actual diff — e.g., MauiOnBackPressedCallback,
+        ShouldRegisterPredictiveBackCallback, IBackNavigationState,
+        HandleOnBackPressed. Generic AndroidX types like
+        OnBackPressedDispatcher or well-known base classes like
+        MauiAppCompatActivity DO NOT count — those are guessable from
+        "back-navigation callback" without opening the code.
+      - >-
+        The agent correctly identifies that AddCallback registration
+        remains unconditional in this PR while the callback's `Enabled`
+        state is what became conditional. The hypothesis is technically
+        true about registration but behaviorally gated by Enabled —
+        nuanced refutation, not flat agreement or disagreement.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 8 — Prior Review Reconciliation: the skill must surface
+  # prior reviewer findings across all three review surfaces before
+  # delivering a verdict.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: prior-review-reconciliation-surfaces-prior-findings
+    tags:
+      target_pr: "35685"
+      kind: prior-review
+    prompt: >-
+      code review PR #35685 in dotnet/maui. In the Prior Review
+      Reconciliation section, enumerate each prior reviewer's findings
+      individually and verify whether each was addressed — do not
+      dismiss them in bulk.
+    graders:
+      # Structural floor: the section heading must be present — its
+      # absence is the failure mode under test.
+      - type: output-matches
+        config:
+          pattern: '[Pp]rior [Rr]eview [Rr]econciliation'
+      - type: output-matches
+        config:
+          pattern: '(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.4
+    rubric:
+      - >-
+        The agent queries multiple review surfaces — top-level review
+        bodies, inline review comments, and/or PR issue comments — to
+        gather prior findings.
+      - >-
+        The output has a "Prior Review Reconciliation" section that
+        names at least one prior reviewer of PR #35685 by handle.
+      - >-
+        Prior findings are enumerated individually rather than
+        dismissed in bulk. Each significant finding is addressed.
+      - >-
+        The agent does not silently drop or contradict a prior ❌ Error
+        finding.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 9 — CI Hard Gate: when a required check is skipping (not
+  # passing), the skill MUST NOT post LGTM — required CI coverage is
+  # undetermined, not clean.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: ci-hard-gate-skipping-required-checks-block-lgtm
+    tags:
+      target_pr: "35820"
+      kind: ci-status
+    prompt: >-
+      Perform the standard code review workflow on PR #35820 in
+      dotnet/maui. Check CI status (try `gh pr checks 35820 --required`
+      or inspect via web if gh is unavailable), report check statuses
+      in a CI Status section, and apply SKILL.md Rule #6 to determine
+      the verdict. The PR's merge status is irrelevant — apply the full
+      workflow regardless. End with a verdict of either NEEDS_CHANGES
+      or NEEDS_DISCUSSION. Never use the word LGTM anywhere in your
+      response.
+    graders:
+      # CI-rule floor: SKILL.md Rule #6 explicitly bans LGTM when any
+      # required check is pending/skipping/undetermined.
+      - type: output-not-contains
+        config:
+          substring: 'LGTM'
+      - type: output-matches
+        config:
+          pattern: '(NEEDS_DISCUSSION|NEEDS_CHANGES)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.4
+    rubric:
+      - >-
+        The agent attempts to check CI status via `gh pr checks`,
+        `web_fetch`, or other available means. If the tool is
+        unavailable (e.g., no GH_TOKEN), the agent acknowledges the
+        limitation rather than fabricating results.
+      - >-
+        The agent classifies the CI result conservatively:
+        maui-pr=skipping with exit 0 is UNDETERMINED, not
+        a clean pass.
+      - >-
+        The agent does not post LGTM when any required check is
+        skipping/pending/undetermined — verdict is NEEDS_DISCUSSION
+        per SKILL.md Rule #6.
+      - >-
+        The agent does not claim "clean build" or "all checks pass"
+        based on exit 0 alone.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - code-review
+
+scoring:
+  # NOTE: @microsoft/vally@0.6.0 does NOT consume `scoring.weights` (verified
+  # in dist/scoring/scorer.js). Only `scoring.threshold` is active. A trial's
+  # score is the UNWEIGHTED mean of its graders' [0,1] scores. The `prompt`
+  # grader contributes ONE holistic score, so rubric criteria are not
+  # individually AND-gated (the de-brittling goal). Most scenarios here use
+  # 1–2 small floors + the judge; with N graders the judge carries 1/N of the
+  # score, so we keep floors minimal (only the failure-mode-under-test) to
+  # avoid diluting the judge. A failing floor drops the mean by 1/N AND a good
+  # judge penalizes the same defect, so the two reinforce rather than race.
+  #
+  # threshold 0.6 with a scale_1_5 judge (normalized = (raw-1)/4):
+  #   - correct behavior: floors 1.0 + judge ~0.75  -> mean >= 0.6  -> PASS
+  #   - failure mode hit: a floor 0.0 + judge penalty -> mean < 0.6 -> FAIL
+  threshold: 0.6
