@@ -38,12 +38,7 @@ namespace Microsoft.Maui.Platform
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
 			UpdateClipBounds(Width, Height);
 
-			// Cache whether this WebView lives inside a MauiSwipeView. When it does, we must
-			// not call RequestDisallowInterceptTouchEvent(true) — doing so sets
-			// FLAG_DISALLOW_INTERCEPT on the SwipeView, which causes Android to skip its
-			// OnInterceptTouchEvent for Move events and prevents swipe gesture detection
-			// (issue #36154). Cached here rather than on every touch event for performance.
-			_hasSwipeViewParent = ((View)this).GetParentOfType<MauiSwipeView>() != null;
+			_hasSwipeViewParent = ((View)this).GetParentOfType<MauiSwipeView>() is not null;
 		}
 
 		void UpdateClipBounds(int width, int height)

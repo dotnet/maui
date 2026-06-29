@@ -60,8 +60,7 @@ public class Issue36154 : ContentPage
 					BackgroundColor = Colors.MediumSeaGreen,
 					Command = new Command(() =>
 					{
-						resultLabel.Text = "✅ LEFT item invoked";
-						Console.WriteLine("ISSUE36154: LEFT item invoked");
+						resultLabel.Text = "LEFT item invoked";
 					})
 				}
 			})
@@ -76,40 +75,7 @@ public class Issue36154 : ContentPage
 					BackgroundColor = Colors.CornflowerBlue,
 					Command = new Command(() =>
 					{
-						resultLabel.Text = "✅ RIGHT item invoked";
-						Console.WriteLine("ISSUE36154: RIGHT item invoked");
-					})
-				}
-			})
-			{ Mode = SwipeMode.Execute, SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.Close },
-
-			TopItems = new SwipeItems(new[]
-			{
-				new SwipeItem
-				{
-					AutomationId = "TopItem",
-					Text = "▲ TOP",
-					BackgroundColor = Colors.Orchid,
-					Command = new Command(() =>
-					{
-						resultLabel.Text = "✅ TOP item invoked";
-						Console.WriteLine("ISSUE36154: TOP item invoked");
-					})
-				}
-			})
-			{ Mode = SwipeMode.Execute, SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.Close },
-
-			BottomItems = new SwipeItems(new[]
-			{
-				new SwipeItem
-				{
-					AutomationId = "BottomItem",
-					Text = "▼ BOTTOM",
-					BackgroundColor = Colors.Tomato,
-					Command = new Command(() =>
-					{
-						resultLabel.Text = "✅ BOTTOM item invoked";
-						Console.WriteLine("ISSUE36154: BOTTOM item invoked");
+						resultLabel.Text = "RIGHT invoked!";
 					})
 				}
 			})
@@ -121,7 +87,6 @@ public class Issue36154 : ContentPage
 		swipeView.SwipeStarted += (s, e) =>
 		{
 			directionLabel.Text = $"Direction: {e.SwipeDirection}    Offset: 0";
-			Console.WriteLine($"ISSUE36154: SwipeStarted direction={e.SwipeDirection}");
 		};
 
 		swipeView.SwipeChanging += (s, e) =>
@@ -130,12 +95,17 @@ public class Issue36154 : ContentPage
 		swipeView.SwipeEnded += (s, e) =>
 		{
 			directionLabel.Text = $"Direction: {e.SwipeDirection}    Open: {e.IsOpen}";
-			Console.WriteLine($"ISSUE36154: SwipeEnded direction={e.SwipeDirection} isOpen={e.IsOpen}");
 		};
 
 		Content = new Grid
 		{
-			RowDefinitions = Rows.Define(Auto, Star, Auto, Auto),
+			RowDefinitions =
+			[
+				new RowDefinition { Height = GridLength.Auto },
+				new RowDefinition { Height = GridLength.Star },
+				new RowDefinition { Height = GridLength.Auto },
+				new RowDefinition { Height = GridLength.Auto },
+			],
 			Children =
 			{
 				new Label

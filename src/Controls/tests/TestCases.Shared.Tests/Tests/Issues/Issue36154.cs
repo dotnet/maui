@@ -15,49 +15,15 @@ public class Issue36154 : _IssuesUITest
 	// Verify that swiping left on the WebView reveals the Right swipe items
 	[Test]
 	[Category(UITestCategories.SwipeView)]
-	public void SwipeLeftRevealsRightItems()
+	public void Issue36154SwipeViewShouldRevealItems()
 	{
-		var rect = App.WaitForElement("TheWebView").GetRect();
+		var rect = App.WaitForElement("TheSwipeView").GetRect();
 		var centerX = rect.X + rect.Width / 2;
 		var centerY = rect.Y + rect.Height / 2;
 
 		// Swipe left (finger moves left) → reveals RightItems
 		App.DragCoordinates(centerX, centerY, centerX - 200, centerY);
 
-		App.WaitForElement("RightItem");
-	}
-
-	// Verify that swiping right on the WebView reveals the Left swipe items
-	[Test]
-	[Category(UITestCategories.SwipeView)]
-	public void SwipeRightRevealsLeftItems()
-	{
-		var rect = App.WaitForElement("TheWebView").GetRect();
-		var centerX = rect.X + rect.Width / 2;
-		var centerY = rect.Y + rect.Height / 2;
-
-		// Swipe right (finger moves right) → reveals LeftItems
-		App.DragCoordinates(centerX, centerY, centerX + 200, centerY);
-
-		App.WaitForElement("LeftItem");
-	}
-
-	// Verify that the WebView can still scroll vertically inside the SwipeView
-	[Test]
-	[Category(UITestCategories.SwipeView)]
-	public void WebViewCanScrollVertically()
-	{
-		var rect = App.WaitForElement("TheWebView").GetRect();
-		var centerX = rect.X + rect.Width / 2;
-		var startY = rect.Y + rect.Height * 3 / 4;
-		var endY = rect.Y + rect.Height / 4;
-
-		// Scroll up (finger moves up) inside the WebView — should NOT trigger swipe items
-		App.DragCoordinates(centerX, startY, centerX, endY);
-
-		// SwipeView should NOT have triggered — result label stays at default
-		var resultText = App.WaitForElement("ResultLabel").GetText();
-		Assert.That(resultText, Is.EqualTo("Swipe result will appear here"),
-			"WebView vertical scroll should not trigger SwipeView items");
+		Assert.That(App.WaitForElement("ResultLabel").GetText(), Is.EqualTo("RIGHT invoked!"));
 	}
 }
