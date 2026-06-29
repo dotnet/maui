@@ -310,6 +310,39 @@ Test execution completed with exit code: 1
         $c = Get-ConsoleFailureReason -Console ''
         $c.isIncomplete | Should -BeFalse
     }
+
+    It 'does NOT over-cap a cleanly-completed Windows run that merely had failing tests' {
+        # run-windows-devicetests.cmd:481 echoes "Test execution completed with exit code: 1"
+        # UNCONDITIONALLY for any non-zero run, and "[FAIL] <test>" is a NAMED failure, not an
+        # incomplete run. Neither may set isIncomplete, or every failed Windows work item would cap to
+        # NHI and a clean named failure could never flow through to base/known-issue attribution.
+        $conNamed = @'
+Running Microsoft.Maui.DeviceTests...
+[FAIL] Microsoft.Maui.DeviceTests.ButtonTests.SomeRealTest
+ERROR: At least 1 test(s) failed
+Test execution completed with exit code: 1
+'@
+        $c = Get-ConsoleFailureReason -Console $conNamed
+        $c.isIncomplete | Should -BeFalse
+        # the [FAIL]/exit-code lines are still captured for the human-readable reason
+        $c.reason | Should -Match 'SomeRealTest'
+    }
+
+    It 'still flags a genuine timeout even when the unconditional exit-code line is present' {
+        # The category-timeout marker (:wait_for_result) and the exit-code tail co-occur; the timeout
+        # marker -- not the exit-code line -- must be what trips isIncomplete.
+        $conTo = @'
+[FAIL] Timeout waiting for HybridWebView test results after 480 seconds
+Test execution completed with exit code: 1
+'@
+        $c = Get-ConsoleFailureReason -Console $conTo
+        $c.isIncomplete | Should -BeTrue
+    }
+
+    It 'flags a total wipeout ("All test processes may have crashed") as incomplete' {
+        $c = Get-ConsoleFailureReason -Console "Launching categories...`nAll test processes may have crashed`nTest execution completed with exit code: 1"
+        $c.isIncomplete | Should -BeTrue
+    }
 }
 
 Describe 'New-DeviceWorkItemFailureRecords (classify ONE failed work item — never a false green)' {
@@ -399,5 +432,25 @@ Describe 'New-DeviceWorkItemFailureRecords (classify ONE failed work item — ne
         $recs.Count | Should -Be 1
         $recs[0]['source'] | Should -Be 'helix-trx'
         @($recs | Where-Object { $_['source'] -eq 'helix-workitem-incomplete' }).Count | Should -Be 0
+    }
+
+    It 'J. SAFETY: a NEGATIVE work-item ExitCode (WorkItemCrashed) STILL caps alongside named failures' {
+        # A signal-killed work item (e.g. Helix ExitCode -4 on PR #36161) can flush a partial TRX with
+        # real named failures before dying. A clean console + complete-looking read must NOT let it
+        # green -- the negative exit code alone forces the incomplete cap.
+        $recs = @(New-DeviceWorkItemFailureRecords -Trx $script:trxFail -Console $script:conOk -HasDump $false -AnyResultFile $true -WorkItemCrashed $true -Context $script:ctx)
+        $recs.Count | Should -Be 2
+        @($recs | Where-Object { $_['source'] -eq 'helix-trx' }).Count | Should -Be 1
+        $inc = @($recs | Where-Object { $_['source'] -eq 'helix-workitem-incomplete' })
+        $inc.Count | Should -Be 1
+        $inc[0]['message'] | Should -Match 'terminated abnormally'
+    }
+
+    It 'K. WorkItemCrashed defaults to $false so a clean named run is unaffected' {
+        # The crash defense must be OPT-IN: omitting -WorkItemCrashed (a normal positive-exit failure)
+        # leaves the clean named-failure flow-through intact.
+        $recs = @(New-DeviceWorkItemFailureRecords -Trx $script:trxFail -Console $script:conOk -HasDump $false -AnyResultFile $true -Context $script:ctx)
+        $recs.Count | Should -Be 1
+        $recs[0]['source'] | Should -Be 'helix-trx'
     }
 }

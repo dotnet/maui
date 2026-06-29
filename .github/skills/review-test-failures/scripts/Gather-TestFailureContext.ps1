@@ -902,28 +902,52 @@ function Get-XUnitFailures {
 function Get-ConsoleFailureReason {
     # PHASE 2 pure parser (no I/O, unit-tested): extract a short human reason from a device-test
     # console log -- the explicit [FAIL] line(s), a timeout/hang/crash marker, or a non-zero
-    # "exit code" line -- plus isTimeout/isCrash/isIncomplete flags. 'isIncomplete' signals the run
-    # did NOT finish cleanly (it was killed/hung/crashed), which is exactly the signal that forces a
-    # capping 'incomplete' record below. NEVER throws; empty input returns a blank, non-incomplete
-    # result (the caller's other incompleteness guards still apply).
+    # "exit code" line -- plus isTimeout/isCrash/isIncomplete flags.
+    #
+    # 'isIncomplete' must signal ONLY that the run did NOT finish cleanly (it was killed / hung /
+    # crashed / timed out), because it forces a capping 'incomplete' record below. It must NOT fire on
+    # a run that completed and merely RECORDED test failures, or the deep read would cap every failed
+    # Windows work item to NHI and never let a cleanly-named failure flow through to base / known-issue
+    # attribution (the whole point of Phase 2).
+    #
+    # Two reason markers are therefore captured for the human-readable reason but deliberately EXCLUDED
+    # from the incompleteness trigger:
+    #   * 'Test execution completed with exit code: N' -- eng/devices/run-windows-devicetests.cmd:481
+    #     echoes this UNCONDITIONALLY for every non-zero run (the cmd only ever does `exit /b 0|1`),
+    #     including a clean run that simply had failing tests. Treating it as incompleteness over-caps
+    #     every failed Windows work item (the bug this split fixes).
+    #   * a bare '[FAIL] <test>' -- that is a NAMED test failure, not an incomplete run.
+    # A genuinely incomplete Windows run still trips isIncomplete via an INDEPENDENT marker that does
+    # NOT depend on the two excluded lines: ':wait_for_result' emits '[FAIL] Timeout waiting for <cat>
+    # test results ...' (caught by 'timeout waiting'), a total wipeout prints 'All test processes may
+    # have crashed', and crashes/dumps print their own crash markers. So narrowing the trigger removes
+    # the over-cap without opening a false-green window.
+    # NEVER throws; empty input returns a blank, non-incomplete result (the caller's other
+    # incompleteness guards still apply).
     param([string]$Console)
 
     $out = [ordered]@{ reason = ''; isTimeout = $false; isCrash = $false; isIncomplete = $false }
     if ([string]::IsNullOrWhiteSpace($Console)) { return $out }
+
+    # Broad: lines worth surfacing as the human-readable reason (incl. the exit-code tail and [FAIL]s).
+    $reasonRegex = '(?i)^\s*\[FAIL\]|timeout waiting|timed out|did not (complete|finish)|unhandled exception|fatal error|core dumped|\bsegfault\b|segmentation fault|\.dmp\b|test execution completed with exit code:\s*[1-9]|process (was )?killed|\bhang(ing|s)?\b|all test processes may have crashed'
+    # Narrow: markers that PROVE the run did not finish cleanly (these set isIncomplete). Identical to
+    # the broad set MINUS the unconditional exit-code line and a bare '[FAIL] <test>' (see header).
+    $incompleteRegex = '(?i)timeout waiting|timed out|did not (complete|finish)|unhandled exception|fatal error|core dumped|\bsegfault\b|segmentation fault|\.dmp\b|process (was )?killed|\bhang(ing|s)?\b|all test processes may have crashed'
 
     $reasonLines = New-Object System.Collections.Generic.List[string]
     foreach ($ln in ($Console -split "`r?`n")) {
         if ([string]::IsNullOrWhiteSpace($ln)) { continue }
         if ($ln -match '(?i)timeout|timed out') { $out.isTimeout = $true }
         if ($ln -match '(?i)crash|unhandled exception|fatal error|core dumped|\bsegfault\b|\.dmp\b') { $out.isCrash = $true }
-        if ($ln -match '(?i)^\s*\[FAIL\]|timeout waiting|timed out|did not (complete|finish)|unhandled exception|fatal error|core dumped|\bsegfault\b|segmentation fault|\.dmp\b|test execution completed with exit code:\s*[1-9]|process (was )?killed|\bhang(ing|s)?\b') {
+        if ($ln -match $incompleteRegex) { $out.isIncomplete = $true }
+        if ($ln -match $reasonRegex) {
             $t = $ln.Trim()
             if ($t.Length -gt 300) { $t = $t.Substring(0, 300) }
             if (-not $reasonLines.Contains($t)) { $reasonLines.Add($t) }
         }
     }
     if ($reasonLines.Count -gt 0) {
-        $out.isIncomplete = $true
         $out.reason = (@($reasonLines) | Select-Object -First 5) -join ' | '
     }
     return $out
@@ -941,13 +965,13 @@ function New-DeviceWorkItemFailureRecords {
     #
     # NEVER-A-FALSE-GREEN INVARIANT: a non-zero-ExitCode work item ALWAYS yields >=1 record, and a
     # capping 'incomplete' record is emitted whenever the outcome is not FULLY accounted -- i.e. the
-    # console shows the run was killed/hung/crashed, OR a crash dump / crash signal is present, OR no
-    # result file was readable, OR the result files read were themselves incomplete (overflow / parse
-    # failure / declared-vs-extracted mismatch), OR zero named failures were extracted (a non-zero exit
-    # with no recorded test failure is NEVER trusted as clean). So even if every named test later
-    # dismisses on base, an incomplete run still caps the verdict to NHI; only a CLEANLY-completed run
-    # whose every failing test also fails on base can be dismissed -- identical to the trust model
-    # already applied to ordinary test failures.
+    # console shows the run was killed/hung/crashed, OR a crash dump / crash signal is present, OR the
+    # work item reports a negative (signal-killed) ExitCode, OR no result file was readable, OR the
+    # result files read were themselves incomplete (overflow / parse failure / declared-vs-extracted
+    # mismatch), OR zero named failures were extracted (a non-zero exit with no recorded test failure is
+    # NEVER trusted as clean). So even if every named test later dismisses on base, an incomplete run
+    # still caps the verdict to NHI; only a CLEANLY-completed run whose every failing test also fails on
+    # base can be dismissed -- identical to the trust model already applied to ordinary test failures.
     param(
         [object]$Trx,
         [object]$Console,
@@ -959,7 +983,15 @@ function New-DeviceWorkItemFailureRecords {
         # failures than we extracted). The set of named failures is then KNOWN to be incomplete, so the
         # run must cap to NHI -- a failure we never saw could be the PR's. Defaults false so the pure
         # unit tests and any older caller stay valid.
-        [bool]$ResultReadIncomplete = $false
+        [bool]$ResultReadIncomplete = $false,
+        # True when the Helix work item itself reports a NEGATIVE ExitCode. The device-test runners only
+        # ever exit with a small non-negative code (run-windows-devicetests.cmd does `exit /b 0|1`;
+        # XHarness returns small positive codes), so a negative code is the signature of an abnormal
+        # Helix/OS kill (e.g. ExitCode -4, observed live on PR #36161) -- the process was terminated by
+        # a signal before it could finish. A kill can flush a partial result file then die, leaving the
+        # PR's regression among the tests that never ran, so it FORCES the incomplete cap even when some
+        # tests were named and the console looked clean. Defaults false so older callers/tests stay valid.
+        [bool]$WorkItemCrashed = $false
     )
 
     $records = New-Object System.Collections.Generic.List[object]
@@ -993,22 +1025,24 @@ function New-DeviceWorkItemFailureRecords {
     }
 
     # Incompleteness guard (the never-false-green backstop). The run is NOT fully accounted when the
-    # console shows it was killed/hung/crashed, OR a crash dump / crash signal is present, OR no result
-    # file was readable at all, OR the result files we DID read were incomplete (overflow/parse/declared
-    # mismatch), OR we extracted zero named failures despite a non-zero ExitCode. In every such case
-    # emit a capping 'incomplete' record IN ADDITION to any named failures so the verdict stays NHI even
-    # if the named failures dismiss on base. A crash dump or detected crash forces the cap even when
-    # some tests were named, because a SIGSEGV/abort can kill the run after a partial result file is
-    # flushed -- leaving the PR's regression among the tests that never executed.
+    # console shows it was killed/hung/crashed, OR a crash dump / crash signal is present, OR the work
+    # item reports a negative (signal-killed) ExitCode, OR no result file was readable at all, OR the
+    # result files we DID read were incomplete (overflow/parse/declared mismatch), OR we extracted zero
+    # named failures despite a non-zero ExitCode. In every such case emit a capping 'incomplete' record
+    # IN ADDITION to any named failures so the verdict stays NHI even if the named failures dismiss on
+    # base. A crash dump, detected crash, or negative ExitCode forces the cap even when some tests were
+    # named, because a SIGSEGV/abort/kill can terminate the run after a partial result file is flushed
+    # -- leaving the PR's regression among the tests that never executed.
     $consoleIncomplete = ($null -ne $Console) -and [bool]$Console.isIncomplete
     $consoleCrash = ($null -ne $Console) -and [bool]$Console.isCrash
     $reason = if ($null -ne $Console) { [string]$Console.reason } else { '' }
-    $incomplete = $consoleIncomplete -or $consoleCrash -or $HasDump -or (-not $AnyResultFile) -or $ResultReadIncomplete -or ($namedFailures -eq 0)
+    $incomplete = $consoleIncomplete -or $consoleCrash -or $HasDump -or $WorkItemCrashed -or (-not $AnyResultFile) -or $ResultReadIncomplete -or ($namedFailures -eq 0)
 
     if ($incomplete) {
         $detail =
             if (-not [string]::IsNullOrWhiteSpace($reason)) { $reason }
             elseif ($HasDump -or $consoleCrash) { 'the work item crashed (crash dump / crash signal present)' }
+            elseif ($WorkItemCrashed) { 'the work item was terminated abnormally (negative Helix ExitCode -- killed/crashed before it could finish)' }
             elseif (-not $AnyResultFile) { 'no test-results file was produced' }
             elseif ($ResultReadIncomplete) { 'some test-result files could not be fully read, so the failure set is incomplete' }
             else { 'the work item exited non-zero but recorded no failed test' }
@@ -2220,8 +2254,10 @@ foreach ($buildRef in $buildRefsById.Values) {
                 $workItems = Invoke-JsonUrl -Url "https://helix.dot.net/api/2019-06-17/jobs/$jobId/workitems"
                 # Job detail supplies the planned work-item count and the job-level Finished
                 # timestamp; both feed Get-HelixWorkItemCounts' completeness veto. A failed detail
-                # read is non-fatal on its own (the work-item scan still runs) but leaves the
-                # completeness cross-check blank, so the per-item State/ExitCode checks still apply.
+                # read does NOT drop failure DETECTION -- the per-item State/ExitCode scan still flags
+                # every non-zero work item -- but it leaves InitialWorkItemCount/Finished blank, which
+                # forces unverified=$true (a clean Failed==0 can no longer be positively CONFIRMED). So
+                # a detail-read failure can only over-cap toward NHI, never produce a false green.
                 $jobDetail = $null
                 try { $jobDetail = Invoke-JsonUrl -Url "https://helix.dot.net/api/2019-06-17/jobs/$jobId" } catch { $jobDetail = $null }
                 $initialCount = if ($null -ne $jobDetail) { Get-ObjectValue -Object $jobDetail -Names @('InitialWorkItemCount') } else { $null }
@@ -2236,6 +2272,19 @@ foreach ($buildRef in $buildRefsById.Values) {
                 $legName = if ($helixJobLegNames.ContainsKey($jobId)) { [string]$helixJobLegNames[$jobId] } else { "" }
                 if ($counts.totalFail -gt 0) {
                     $anyHelixFail = $true
+                    # Map work-item name -> raw ExitCode from the /workitems list (the list is the
+                    # authoritative source for ExitCode). A NEGATIVE code is the signature of an abnormal
+                    # Helix/OS kill (signal termination) -- the runners only ever exit with a small
+                    # non-negative code -- so it forces the incomplete cap below even if a partial result
+                    # file was flushed before the kill.
+                    $wiExitByName = @{}
+                    foreach ($w in @($workItems)) {
+                        $nm = [string](Get-ObjectValue -Object $w -Names @('Name'))
+                        if ([string]::IsNullOrWhiteSpace($nm) -or $wiExitByName.ContainsKey($nm)) { continue }
+                        $ecRaw = Get-ObjectValue -Object $w -Names @('ExitCode')
+                        $ecInt = 0
+                        if ($null -ne $ecRaw -and [int]::TryParse([string]$ecRaw, [ref]$ecInt)) { $wiExitByName[$nm] = $ecInt }
+                    }
                     foreach ($wn in $counts.failedNames) {
                         # A Helix work item that Finished with a non-zero ExitCode is a REAL hidden
                         # device-test failure even though XHarness exited 0 and the AzDO leg reads
@@ -2335,7 +2384,12 @@ foreach ($buildRef in $buildRefsById.Values) {
                                 helixJobId = $jobId
                                 helixWorkItem = $wn
                             }
-                            $deepRecords = New-DeviceWorkItemFailureRecords -Trx $trx -Console $consoleParsed -HasDump $hasDump -AnyResultFile $anyResultFile -ResultReadIncomplete $resultReadIncomplete -Context $wiCtx
+                            # A negative work-item ExitCode means the process was signal-killed (abnormal
+                            # Helix/OS termination), so the result set cannot be trusted as complete ->
+                            # force the incomplete cap regardless of what the partial TRX/console show.
+                            $wiCrashed = $false
+                            if ($wiExitByName.ContainsKey([string]$wn)) { $wiCrashed = ($wiExitByName[[string]$wn] -lt 0) }
+                            $deepRecords = New-DeviceWorkItemFailureRecords -Trx $trx -Console $consoleParsed -HasDump $hasDump -AnyResultFile $anyResultFile -ResultReadIncomplete $resultReadIncomplete -WorkItemCrashed $wiCrashed -Context $wiCtx
                         }
                         catch {
                             # Deep read failed entirely -> keep the opaque fallback record (the work
@@ -2367,7 +2421,7 @@ foreach ($buildRef in $buildRefsById.Values) {
                     legName = $legName
                     queueId = $queueId
                     failed = $counts.totalFail
-                    sawFailCount = $counts.sawCount
+                    sawWorkItemCount = $counts.sawCount
                     unverified = $counts.unverified
                     workItemCount = @($workItems).Count
                     initialWorkItemCount = $initialCount
@@ -3407,7 +3461,7 @@ else {
             foreach ($hs in @($build.helix.summaries)) {
                 $status = if ($hs.failed -gt 0) { "$($hs.failed) failed work item(s)" }
                           elseif ($hs.unverified) { "unverified (incomplete work-item set)" }
-                          elseif ($hs.sawFailCount) { "0 failed work items (confirmed clean)" }
+                          elseif ($hs.sawWorkItemCount) { "0 failed work items (confirmed clean)" }
                           else { "no work-item count" }
                 $legLabel = if (-not [string]::IsNullOrWhiteSpace([string]$hs.legName)) { " [$($hs.legName)]" } else { "" }
                 $md.Add("  - Job $($hs.jobId)${legLabel}: $status ($($hs.workItemCount)/$($hs.initialWorkItemCount) work items, finished=$($hs.jobFinished))")
