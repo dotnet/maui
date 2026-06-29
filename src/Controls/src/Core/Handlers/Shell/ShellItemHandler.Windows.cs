@@ -313,7 +313,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
-					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					UpdateShowsResults();
 					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.Text = _currentSearchHandler.Query;
 					autoSuggestBox.UpdateTextOnSelect = false;
@@ -409,6 +409,20 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
+		void UpdateShowsResults()
+		{
+			if (_currentSearchHandler is null)
+				return;
+
+			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is null)
+				return;
+
+			mauiNavView.AutoSuggestBox.ItemsSource =
+				_currentSearchHandler.ShowsResults
+					? CreateSearchHandlerItemsSource()
+					: null;
+		}
+
 		void OnCurrentSearchHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (_currentSearchHandler is null)
@@ -426,10 +440,13 @@ namespace Microsoft.Maui.Controls.Handlers
 					mauiNavView.AutoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					break;
 				case nameof(SearchHandler.ItemsSource):
-					mauiNavView.AutoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					UpdateShowsResults();
 					break;
 				case nameof(SearchHandler.Query):
 					mauiNavView.AutoSuggestBox.Text = _currentSearchHandler.Query;
+					break;
+				case nameof(SearchHandler.ShowsResults):
+					UpdateShowsResults();
 					break;
 			}
 		}

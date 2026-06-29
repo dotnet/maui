@@ -68,17 +68,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			SearchHandler.SetValue(SearchHandler.QueryProperty, text);
 
-			if (SearchHandler.ShowsResults)
-			{
-				if (string.IsNullOrEmpty(text))
-				{
-					_textBlock.DismissDropDown();
-				}
-				else
-				{
-					_textBlock.ShowDropDown();
-				}
-			}
+			UpdateShowsResults();
 		}
 
 		void ITextWatcher.BeforeTextChanged(ICharSequence s, int start, int count, int after)
@@ -239,6 +229,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (e.PropertyName == SearchHandler.IsSearchEnabledProperty.PropertyName)
 			{
 				_textBlock.Enabled = SearchHandler.IsSearchEnabled;
+			}
+			else if (e.PropertyName == SearchHandler.ShowsResultsProperty.PropertyName)
+			{
+				UpdateShowsResults();
+			}
+		}
+
+		void UpdateShowsResults()
+		{
+			if (!SearchHandler.ShowsResults || string.IsNullOrEmpty(_textBlock.Text))
+			{
+				_textBlock.DismissDropDown();
+			}
+			else
+			{
+				_textBlock.ShowDropDown();
 			}
 		}
 
