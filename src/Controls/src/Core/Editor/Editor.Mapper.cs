@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
 #endif
 			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(Text), MapText);
-			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(TextTransform), MapText);
+			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(TextTransform), MapTextTransform);
 
 #if ANDROID
 			if (RuntimeFeature.IsMaterial3Enabled)
@@ -33,6 +33,17 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 			EditorHandler.CommandMapper.PrependToMapping(nameof(IEditor.Focus), InputView.MapFocus);
 #endif
+		}
+
+		static void MapTextTransform(IEditorHandler handler, Editor editor)
+		{
+			if (editor.IsConnectingHandler())
+			{
+				// If we're connecting the handler, we don't want to map the text multiple times.
+				return;
+			}
+
+			MapText(handler, editor);
 		}
 	}
 }

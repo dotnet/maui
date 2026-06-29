@@ -105,11 +105,11 @@ namespace Microsoft.Maui.Platform
 			var placeholderColor = entry.PlaceholderColor;
 			var foregroundColor = placeholderColor ?? defaultPlaceholderColor;
 
-			textField.AttributedPlaceholder = foregroundColor == null
+			var attrPlaceholder = foregroundColor == null
  				? new NSAttributedString(placeholder)
  				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToPlatform());
 
-			textField.AttributedPlaceholder.WithCharacterSpacing(entry.CharacterSpacing);
+			textField.AttributedPlaceholder = attrPlaceholder.WithCharacterSpacing(entry.CharacterSpacing) ?? attrPlaceholder;
 		}
 
 		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
