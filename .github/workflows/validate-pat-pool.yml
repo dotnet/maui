@@ -155,7 +155,7 @@ jobs:
 
             if [ $invalid -eq 0 ] && [ $unknown -eq 0 ] && [ $valid -eq 0 ]; then
               echo "> [!WARNING]"
-              echo "> **Empty PAT pool** -- agentic workflows will fall back to the default \`COPILOT_GITHUB_TOKEN\`."
+              echo "> **Empty PAT pool** -- no PATs are configured, so this check fails (exit 1) to surface the gap. Agentic workflows themselves fall back to the shared default \`COPILOT_GITHUB_TOKEN\` (more throttling-prone), but the pool should be populated."
               echo ""
             fi
 
