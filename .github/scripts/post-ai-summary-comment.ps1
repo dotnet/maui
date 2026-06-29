@@ -109,8 +109,8 @@ function Test-PhaseContentIsNoOp {
         "regression-check" {
             $withoutHeading = ($normalized -replace '(?m)^##\s+.*Regression Cross-Reference\s*\n+', '').Trim()
             return (
-                $withoutHeading -match '^🟢\s+No implementation files modified\s+[—-]\s+skipping regression cross-reference\.\s*$' -or
-                $withoutHeading -match '^🟢\s+No regression risks detected\.\s+No labeled bug-fix PRs in the last \d+ months touched the modified files\.\s*$'
+                $withoutHeading -match '^(?:●|🟢)\s+No implementation files modified\s+[—-]\s+skipping regression cross-reference\.\s*$' -or
+                $withoutHeading -match '^(?:●|🟢)\s+No regression risks detected\.\s+No labeled bug-fix PRs in the last \d+ months touched the modified files\.\s*$'
             )
         }
         "pr-finalize" {

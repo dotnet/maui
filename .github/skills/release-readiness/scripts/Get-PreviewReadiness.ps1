@@ -124,6 +124,19 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+# Shared nightly-feed freshness helpers (Get-NightlyFeedFreshness / Format-NightlyFeedBanner).
+# Defensive load: the banner is auxiliary signal, not part of the verdict, so a missing
+# helper degrades to "no banner" rather than crashing the unattended preview tracker job.
+# Loaded above the dot-source guard so the pure renderer is reachable from the test harness.
+$Script:NightlyFeedHelperLoaded = $false
+$nightlyFeedHelperPath = Join-Path $PSScriptRoot 'NightlyFeed.ps1'
+if (Test-Path $nightlyFeedHelperPath) {
+    . $nightlyFeedHelperPath
+    $Script:NightlyFeedHelperLoaded = $true
+} else {
+    Write-Warning "NightlyFeed.ps1 helper not found at $nightlyFeedHelperPath — nightly-feed banner disabled." -WarningAction Continue
+}
+
 # ===================================================================
 # BRANCH PARSING
 # ===================================================================
@@ -1346,6 +1359,43 @@ $report = [PSCustomObject]@{
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
     CiScanIssues          = $ciScanIssues
+    NightlyFeed           = $null
+}
+
+# Nightly dogfood feed freshness (preview lane). Tracks the inflight/current dogfood stream
+# (ci.inflight builds) on the dotnet<major> feed; falls back to this preview's preview.N
+# version band when the feed has no inflight builds yet (the common case while a major is
+# still in preview — its newest bits ARE the preview.N builds). Fail-open: any gap (helper
+# unloaded, version unreadable, network error) degrades to "no banner".
+$nightlyFeedBanner = $null
+if ($Script:NightlyFeedHelperLoaded -and
+    (Get-Command Resolve-NightlyDogfoodFreshness -ErrorAction SilentlyContinue) -and
+    (Get-Command Format-NightlyFeedBanner -ErrorAction SilentlyContinue)) {
+    try {
+        $nfFeed = "dotnet$majorVersion"
+        $nfFeedUrl = "https://dev.azure.com/dnceng/public/_artifacts/feed/$nfFeed"
+        $nfIteration = Get-PreReleaseVersionIteration -BranchName $SurveyRef
+        if ([string]::IsNullOrWhiteSpace($nfIteration)) { $nfIteration = "$previewNumber" }
+        $nfBand = "$majorVersion.0.0-preview.$nfIteration"
+        $nfBandPrefix = '^' + [regex]::Escape("$nfBand.")
+
+        $nfFresh = Resolve-NightlyDogfoodFreshness -Feed $nfFeed -BandPrefixRegex $nfBandPrefix
+        if ($null -eq $nfFresh) { $nfFresh = @{ unknown = $true } }
+
+        $nfBuildType = [string](Get-NightlyFeedProp $nfFresh 'buildType')
+        $nfLaneLabel = Format-NightlyFeedLaneLabel -Feed $nfFeed -FeedUrl $nfFeedUrl -BuildType $nfBuildType -BandNote "``$nfBand`` (preview.$nfIteration)"
+        $nfFresh['laneLabel'] = $nfLaneLabel
+        $nfFresh['feedUrl'] = $nfFeedUrl
+        $nfFresh['versionPrefix'] = $nfBandPrefix
+
+        $report.NightlyFeed = $nfFresh
+        $nightlyFeedBanner = Format-NightlyFeedBanner -Freshness $nfFresh -Now ([DateTime]::UtcNow)
+    } catch {
+        # -WarningAction Continue: keep this fail-open even under an ambient
+        # $WarningPreference='Stop', where a bare Write-Warning would be promoted to a
+        # terminating error inside the catch and escape, crashing the unattended job.
+        Write-Warning "Nightly-feed freshness check failed (non-fatal): $($_.Exception.Message)" -WarningAction Continue
+    }
 }
 
 $md = [System.Text.StringBuilder]::new()
@@ -1360,6 +1410,10 @@ if ($Mode -eq 'candidate') {
 [void]$md.AppendLine("")
 [void]$md.AppendLine("**Overall status:** **$overallStatus**")
 [void]$md.AppendLine("")
+if ($nightlyFeedBanner) {
+    [void]$md.AppendLine($nightlyFeedBanner)
+    [void]$md.AppendLine("")
+}
 
 # === HIGH-PRIORITY ITEMS (hoisted to the very top) ===
 # Four categories the release captain must see BEFORE anything else:

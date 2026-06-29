@@ -164,10 +164,15 @@ function Get-VerdictColor {
     param([string]$Verdict)
 
     switch -Regex ($Verdict) {
+        # Overall merge-readiness verdicts
+        'Ready to merge' { return '1a7f37' }
+        'No failures found' { return '1a7f37' }
+        'Not ready' { return 'd1242f' }
+        'Insufficient data' { return '6e7781' }
+        'Needs human' { return 'bf8700' }
+        # Backward-compatible per-failure verdict words
         'Likely PR-caused' { return 'd1242f' }
         'Likely unrelated' { return '1a7f37' }
-        'No failures found' { return '1a7f37' }
-        'Insufficient data' { return '6e7781' }
         default { return 'bf8700' }
     }
 }
@@ -230,11 +235,17 @@ function New-TestFailureReviewBody {
     $verdictColor = Get-VerdictColor -Verdict $verdict
 
     $failureCount = 0
+    $baselineMatchCount = 0
+    $regressedVsBase = 0
+    $unattributedFailures = 0
     $platforms = @()
     if (Test-Path $ContextJsonPath) {
         try {
             $context = Get-Content -Path $ContextJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
             $failureCount = @($context.failures.unique).Count
+            $baselineMatchCount = [int]$context.failures.baselineMatchCount
+            $regressedVsBase = [int]$context.gate.legsRegressedVsBase
+            $unattributedFailures = [int]$context.gate.unattributedFailures
             $platforms = @($context.failures.unique | ForEach-Object { $_.platform } | Where-Object { $_ -and $_ -ne "unknown" } | Select-Object -Unique)
         }
         catch {
@@ -245,6 +256,17 @@ function New-TestFailureReviewBody {
     $badgeLines = @()
     $badgeLines += New-Badge -Label "Overall" -Message $verdict -Color $verdictColor -Alt "Overall $verdict"
     $badgeLines += New-Badge -Label "Failures" -Message "$failureCount" -Color "bf8700" -Alt "Failures $failureCount"
+    $badgeLines += New-Badge -Label "Baseline" -Message "$baselineMatchCount on base" -Color "0969da" -Alt "Baseline $baselineMatchCount on base"
+    # Surface the deterministic job-level regression count (red on PR, green on base) when
+    # any leg regressed -- it is the strongest PR-caused signal and caps the verdict ceiling.
+    if ($regressedVsBase -gt 0) {
+        $badgeLines += New-Badge -Label "Regressed" -Message "$regressedVsBase vs base" -Color "d1242f" -Alt "Regressed $regressedVsBase vs base"
+    }
+    # Surface failures the deterministic prior could not attribute either way -- they cap the
+    # ceiling at "Needs human investigation" (neither dismissible nor provably PR-caused).
+    if ($unattributedFailures -gt 0) {
+        $badgeLines += New-Badge -Label "Unattributed" -Message "$unattributedFailures" -Color "bf8700" -Alt "Unattributed $unattributedFailures"
+    }
     foreach ($platform in $platforms) {
         $badgeLines += New-Badge -Label "Platform" -Message $platform -Color "0969da" -Alt "Platform $platform"
     }
