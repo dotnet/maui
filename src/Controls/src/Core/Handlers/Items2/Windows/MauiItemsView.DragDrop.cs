@@ -549,28 +549,25 @@ internal partial class MauiItemsView
 
 	bool IsContainerBoundToDraggedItem(ItemContainer container)
 	{
-		// Use _draggedSourceIndex as the "drag active" sentinel so that a null
-		// _draggedItem (valid null data row) does not short-circuit the check.
-		return _draggedSourceIndex >= 0 && IsContainerBoundToItem(container, _draggedItem);
+		if (_draggedSourceIndex < 0)
+			return false;
+
+		// For null items, value-equality (Equals(null, null)) would match every blank
+		// container. Use the authoritative index instead so only the source slot matches.
+		if (_draggedItem is null)
+			return container.Tag is int t && t == _draggedSourceIndex;
+
+		return IsContainerBoundToItem(container, _draggedItem);
 	}
 
-	static bool IsContainerBoundToItem(ItemContainer container, object? item)
+	static bool IsContainerBoundToItem(ItemContainer container, object item)
 	{
 		if (container.Child is not ElementWrapper wrapper || wrapper.VirtualView is not View view)
 		{
-			// Blank container (no ElementWrapper) represents a null data item.
-			// It matches when the dragged item is also null.
-			return item is null;
+			return false;
 		}
 
 		var bound = view.BindingContext;
-		// Allow null-bound containers to match a null dragged item.
-		// ReferenceEquals(null, null) == true, Equals(null, null) == true.
-		if (bound is null && item is null)
-		{
-			return true;
-		}
-
 		if (bound is null)
 		{
 			return false;
@@ -839,30 +836,63 @@ internal partial class MauiItemsView
 		int sourceItemIndex = -1;
 		IList? sourceGroup = null;
 
-		for (int g = 0; g < groupsList.Count; g++)
+		if (_draggedItem is null)
 		{
-			if (groupsList[g] is not IEnumerable groupItems)
+			// Value-equality search (Equals(null, null)) would match the first null item
+			// in any group, not the specific row being dragged. Map _draggedSourceIndex
+			// back to the correct group/item using the same flat-index arithmetic as the
+			// target mapping below.
+			int flatPos = 0;
+			for (int g = 0; g < groupsList.Count; g++)
 			{
-				continue;
-			}
+				if (groupsList[g] is not IEnumerable groupItems)
+					continue;
 
-			int i = 0;
-			foreach (var groupItem in groupItems)
-			{
-				if (ReferenceEquals(groupItem, _draggedItem) || Equals(groupItem, _draggedItem))
+				int groupItemCount = groupsList[g] is ICollection coll
+					? coll.Count
+					: groupItems.Cast<object>().Count();
+
+				if (hasHeaders) flatPos++; // skip header
+				int itemsStart = flatPos;
+				flatPos += groupItemCount;
+				if (hasFooters) flatPos++; // skip footer
+
+				if (_draggedSourceIndex >= itemsStart && _draggedSourceIndex < itemsStart + groupItemCount)
 				{
 					sourceGroupIndex = g;
-					sourceItemIndex = i;
+					sourceItemIndex = _draggedSourceIndex - itemsStart;
 					sourceGroup = groupsList[g] as IList;
 					break;
 				}
-
-				i++;
 			}
-
-			if (sourceGroupIndex >= 0)
+		}
+		else
+		{
+			for (int g = 0; g < groupsList.Count; g++)
 			{
-				break;
+				if (groupsList[g] is not IEnumerable groupItems)
+				{
+					continue;
+				}
+
+				int i = 0;
+				foreach (var groupItem in groupItems)
+				{
+					if (ReferenceEquals(groupItem, _draggedItem) || Equals(groupItem, _draggedItem))
+					{
+						sourceGroupIndex = g;
+						sourceItemIndex = i;
+						sourceGroup = groupsList[g] as IList;
+						break;
+					}
+
+					i++;
+				}
+
+				if (sourceGroupIndex >= 0)
+				{
+					break;
+				}
 			}
 		}
 
@@ -1199,6 +1229,16 @@ internal partial class MauiItemsView
 	{
 		var sourceList = GetSourceList();
 		var containerItem = GetContainerItem(container);
+
+		// For null-item containers, Equals(null, null) makes tag validation and
+		// IndexOfItem both return the first null row — wrong when multiple nulls exist.
+		// GetElementIndex is O(1) and always accurate after a layout pass, so use it first.
+		if (containerItem is null && container is ItemContainer nullIc && ItemsRepeaterControl is not null)
+		{
+			int repeaterIdx = ItemsRepeaterControl.GetElementIndex(nullIc);
+			if (repeaterIdx >= 0)
+				return repeaterIdx;
+		}
 
 		// Prefer the Tag set during ElementPrepared — it is the authoritative flat
 		// index and avoids the ambiguity where group headers and footers share the
