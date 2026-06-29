@@ -2,7 +2,6 @@
 using System;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.Carousel;
-using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 

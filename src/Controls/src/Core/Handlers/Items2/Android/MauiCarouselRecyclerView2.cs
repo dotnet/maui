@@ -82,6 +82,8 @@ public class MauiCarouselRecyclerView2 :
         // the empty state here.
         if (GetAdapter() is Items.EmptyViewAdapter)
         {
+            _carouselSnapHelper?.AttachToRecyclerView(null);
+            _carouselSnapHelper = null;
             return new LinearLayoutManager(Context, orientation, false);
         }
 
