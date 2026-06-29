@@ -375,7 +375,7 @@ namespace Microsoft.Maui.Controls
 					RemoveItems(e);
 					break;
 				default: //Move, Replace, Reset
-					ResetItems();
+					ResyncItemsAndReconcileSelection();
 					break;
 			}
 
@@ -414,14 +414,12 @@ namespace Microsoft.Maui.Controls
 				index = Items.Count - 1;
 			}
 
-			bool selectedItemWasRemoved = SelectedItem is not null && e.OldItems.Contains(SelectedItem);
-
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
 
-			if (selectedItemWasRemoved)
+			if (SelectedItem is not null)
 			{
-				ClampSelectedIndex(ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1);
+				ClampSelectedIndex(ItemsSource?.IndexOf(SelectedItem) ?? -1);
 			}
 			else
 			{
@@ -431,6 +429,28 @@ namespace Microsoft.Maui.Controls
 				{
 					ClampSelectedIndex(index);
 				}
+			}
+		}
+
+		void ResyncItemsAndReconcileSelection()
+		{
+			if (ItemsSource == null)
+				return;
+
+			((LockableObservableListWrapper)Items).InternalClear();
+
+			foreach (object item in ItemsSource)
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
+
+			if (SelectedItem is not null)
+			{
+				ClampSelectedIndex(ItemsSource.IndexOf(SelectedItem));
+			}
+			else
+			{
+				ClampSelectedIndex(SelectedIndex);
 			}
 		}
 
@@ -456,8 +476,7 @@ namespace Microsoft.Maui.Controls
 
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
-			var index = SelectedItem is null ? SelectedIndex : ItemsSource.IndexOf(SelectedItem);
-			ClampSelectedIndex(index);
+			ClampSelectedIndex(SelectedIndex);
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
