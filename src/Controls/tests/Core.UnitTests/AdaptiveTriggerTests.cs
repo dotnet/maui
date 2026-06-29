@@ -9,6 +9,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class AdaptiveTriggerTests : BaseTestFixture
 	{
+		// Regression tests for https://github.com/dotnet/maui/issues/36032
+		// AdaptiveTrigger leaks VisualElement when VisualStateGroups are replaced after attach
+
+		[Fact]
+		public void OldAdaptiveTriggerDetachedWhenVSGsReplacedAfterAttach()
+		{
+			// Arrange: set up a label with an AdaptiveTrigger, attach it to a Window
+			var label = new Label();
+			var oldTrigger = new AdaptiveTrigger { MinWindowWidth = 300 };
+			var newTrigger = new AdaptiveTrigger { MinWindowWidth = 500 };
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState
+						{
+							Name = "Large",
+							StateTriggers = { oldTrigger },
+							Setters = { new Setter { Property = Label.BackgroundProperty, Value = new SolidColorBrush(Colors.Green) } }
+						},
+					}
+				}
+			});
+
+			var page = new ContentPage { Content = label };
+			_ = new Window { Page = page };
+
+			// Old trigger should be attached after element joins a Window
+			Assert.True(oldTrigger.IsAttached);
+
+			// Act: replace the VisualStateGroups while the element is already attached to a Window
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState
+						{
+							Name = "ExtraLarge",
+							StateTriggers = { newTrigger },
+							Setters = { new Setter { Property = Label.BackgroundProperty, Value = new SolidColorBrush(Colors.Blue) } }
+						},
+					}
+				}
+			});
+
+			// Assert: old trigger must be detached (unsubscribed from Window.SizeChanged)
+			Assert.False(oldTrigger.IsAttached, "Old AdaptiveTrigger should be detached after VSGs are replaced");
+			// Assert: new trigger should now be attached
+			Assert.True(newTrigger.IsAttached, "New AdaptiveTrigger should be attached after VSGs are replaced");
+		}
+
 		[Fact]
 		public void ResizingWindowPageActivatesTrigger()
 		{

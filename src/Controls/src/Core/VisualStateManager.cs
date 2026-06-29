@@ -50,6 +50,14 @@ namespace Microsoft.Maui.Controls
 							setter.UnApply(oldElement, unapplySpecificity);
 						}
 					}
+
+					// Detach state triggers from the outgoing groups so they unsubscribe from
+					// any window/device events they registered in OnAttached() (e.g. AdaptiveTrigger
+					// unsubscribes from Window.SizeChanged). Without this, replaced triggers retain
+					// a strong reference to the VisualElement even after the element leaves the tree.
+					foreach (var visualState in group.States)
+						foreach (var trigger in visualState.StateTriggers)
+							trigger.SendDetached();
 				}
 				oldVisualStateGroupList.VisualElement = null;
 			}
@@ -62,6 +70,12 @@ namespace Microsoft.Maui.Controls
 			visualElement.ChangeVisualState();
 
 			UpdateStateTriggers(visualElement);
+
+			// Attach state triggers from the incoming groups if the element is already in a Window.
+			// Normally triggers are attached via VisualElement.InvalidateStateTriggers(true) when the
+			// element joins a Window, but that event has already fired before this replacement occurs.
+			if (newValue != null && visualElement.Window != null)
+				visualElement.InvalidateStateTriggers(true);
 		}
 
 		/// <summary>
