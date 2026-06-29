@@ -69,14 +69,12 @@ namespace Microsoft.Maui
 
 		static AColor GetThemeColor(Activity activity, int attribute, AColor fallback)
 		{
-			var typedValue = new global::Android.Util.TypedValue();
+			if (activity.Theme is null)
+				return fallback;
 
-			if (activity.Theme?.ResolveAttribute(attribute, typedValue, true) == true)
-			{
-				return new AColor(typedValue.Data);
-			}
+			using var ta = activity.Theme.ObtainStyledAttributes([attribute]);
 
-			return fallback;
+			return new AColor(ta.GetColor(0, fallback.ToArgb()));
 		}
 
 		static bool IsLightColor(AColor color)
