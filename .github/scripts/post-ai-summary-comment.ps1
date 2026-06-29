@@ -41,7 +41,15 @@ param(
     [int]$PRNumber,
 
     [Parameter(Mandatory = $false)]
-    [switch]$DryRun
+    [switch]$DryRun,
+
+    # Trusted gate verdict supplied by the pipeline (Gate task output variable),
+    # NOT read from the agent-writable PRAgent worktree. Used to veto an APPROVE
+    # review over a FAILED gate. Empty/omitted (local/manual runs that never post
+    # APPROVE) is treated as the non-blocking 'SKIPPED' sentinel.
+    [Parameter(Mandatory = $false)]
+    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', '')]
+    [string]$TrustedGateResult = ''
 )
 
 $ErrorActionPreference = "Stop"
@@ -71,12 +79,13 @@ if (-not (Test-Path $PRAgentDir)) {
 }
 
 $phases = [ordered]@{
-    "uitests"          = @{ File = "uitests/content.md";            Title = "UI Tests" }
-    "regression-check" = @{ File = "regression-check/content.md";   Title = "Regression Cross-Reference" }
-    "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "Pre-Flight — Context & Validation" }
-    "code-review"      = @{ File = "pre-flight/code-review.md";     Title = "Code Review — Deep Analysis" }
-    "try-fix"          = @{ File = "try-fix/content.md";            Title = "Fix — Analysis & Comparison" }
-    "report"           = @{ File = "report/content.md";             Title = "Report — Final Recommendation" }
+    "uitests"          = @{ File = "uitests/content.md";            Title = "📱 UI Tests" }
+    "regression-check" = @{ File = "regression-check/content.md";   Title = "🔗 Regression Cross-Reference" }
+    "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "📋 Pre-Flight — Context & Validation" }
+    "code-review"      = @{ File = "pre-flight/code-review.md";     Title = "🔬 Code Review — Deep Analysis" }
+    "try-fix"          = @{ File = "try-fix/content.md";            Title = "🛠️ Fix — Analysis & Comparison" }
+    "pr-finalize"      = @{ File = "pr-finalize/content.md";        Title = "📝 Recommended PR Title & Description" }
+    "report"           = @{ File = "report/content.md";             Title = "🏁 Report — Final Recommendation" }
 }
 
 function Test-PhaseContentIsNoOp {
@@ -92,13 +101,25 @@ function Test-PhaseContentIsNoOp {
 
     switch ($PhaseKey) {
         "uitests" {
-            return $normalized -match '^No UI test categories needed for this PR \(no UI-relevant changes\)\.?$'
+            return (
+                $normalized -match '^No UI test categories needed for this PR \(no UI-relevant changes\)\.?$' -or
+                $normalized -match '^Full UI test matrix will run \(no specific categories detected from PR changes\)\.?$'
+            )
         }
         "regression-check" {
             $withoutHeading = ($normalized -replace '(?m)^##\s+.*Regression Cross-Reference\s*\n+', '').Trim()
             return (
                 $withoutHeading -match '^(?:●|🟢)\s+No implementation files modified\s+[—-]\s+skipping regression cross-reference\.\s*$' -or
                 $withoutHeading -match '^(?:●|🟢)\s+No regression risks detected\.\s+No labeled bug-fix PRs in the last \d+ months touched the modified files\.\s*$'
+            )
+        }
+        "pr-finalize" {
+            # Keep-as-is verdict: the PR's existing title/description are already good, so
+            # omit the "Recommended PR Title & Description" section entirely (no copy-paste
+            # artifact is needed). Tolerant of an optional "**Assessment:**" prefix and any
+            # trailing optional notes the agent may add.
+            return (
+                $normalized -match '✅\s*Current title and description accurately reflect the change\s*[—-]\s*recommend keeping as-is'
             )
         }
         default {
@@ -124,6 +145,36 @@ function Get-AIReviewEvent {
     }
 
     return 'COMMENT'
+}
+
+function Add-MissingUITestResultsNote {
+    # The UI Tests section starts as a bare "Detected UI test categories: X" placeholder written
+    # during pre-flight; the RunDeepUITests stage is supposed to append real results. When the
+    # platform-pool run produces nothing (most often because the PR build failed or the deep
+    # stage was skipped), that placeholder is posted as-is — an empty, confusing section. Append
+    # a short explanation so the empty section explains itself. No-op for content that already
+    # has results, or for the "no categories"/"full matrix" placeholders.
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content)
+
+    if ([string]::IsNullOrWhiteSpace($Content)) { return $Content }
+    if ($Content -notmatch '(?im)Detected UI test categories') { return $Content }
+    # Already has deep/in-process results — leave it alone.
+    if ($Content -match '(?im)DEEP_UITESTS_BEGIN' -or
+        $Content -match '(?im)Deep UI tests' -or
+        $Content -match '(?im)UI Test Execution Results' -or
+        $Content -match '(?im)\b\d+\s+passed\b') {
+        return $Content
+    }
+
+    $note = @'
+
+> [!WARNING]
+> **No UI test results were produced for the detected categories.** The platform-pool run
+> returned no results — most often because the PR build failed (see the **Gate** section) or
+> the deep UI test stage was skipped. Fix the build/gate issues and comment `/review rerun`
+> to get UI test results.
+'@
+    return ($Content.TrimEnd() + [Environment]::NewLine + $note)
 }
 
 function ConvertTo-TitleCase {
@@ -172,13 +223,29 @@ function Get-GateStatus {
         return 'Unknown'
     }
 
-    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED)') {
-        return ConvertTo-TitleCase $Matches[1]
+    # A FAILED gate may actually be a mixed / inconclusive (partial) outcome: the gate's
+    # verification report flags these via its failure classifications ("regression in
+    # another test" = one test FAIL→PASS but another fails both; "test does not reproduce
+    # the bug" = passes with and without the fix). Surface those as 'Partial' rather than a
+    # flat 'Failed'. A SKIPPED gate means no runnable tests were detected → 'No Tests'.
+    # INCONCLUSIVE means the tests could not be built/run (build or env error) → 'Inconclusive'.
+    $isPartial = ($GateContent -match '(?i)Regression in another test' -or
+                  $GateContent -match '(?i)Test does not reproduce the bug')
+
+    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE)') {
+        switch ($Matches[1].ToUpperInvariant()) {
+            'PASSED'       { return 'Passed' }
+            'SKIPPED'      { return 'No Tests' }
+            'INCONCLUSIVE' { return 'Inconclusive' }
+            'FAILED'       { if ($isPartial) { return 'Partial' } else { return 'Failed' } }
+        }
     }
 
+    if ($GateContent -match '(?i)\binconclusive\b') { return 'Inconclusive' }
+    if ($isPartial) { return 'Partial' }
     if ($GateContent -match '(?i)\bfailed\b') { return 'Failed' }
     if ($GateContent -match '(?i)\bpassed\b') { return 'Passed' }
-    if ($GateContent -match '(?i)\bskipped\b') { return 'Skipped' }
+    if ($GateContent -match '(?i)no tests were detected|\bskipped\b') { return 'No Tests' }
     return 'Unknown'
 }
 
@@ -223,21 +290,17 @@ function Get-PlatformStatus {
 function New-StatusChipRow {
     param(
         [string]$GateStatus,
-        [string]$ReviewStatus,
         [string]$Confidence,
         [string]$Platform
     )
 
     $gateColor = switch ($GateStatus) {
-        'Passed' { '1a7f37' }
-        'Skipped' { 'bf8700' }
-        default { 'd1242f' }
-    }
-    $reviewColor = switch ($ReviewStatus) {
-        'LGTM' { '1a7f37' }
-        'Approved' { '1a7f37' }
-        'Needs Changes' { 'd1242f' }
-        default { '0969da' }
+        'Passed'       { '1a7f37' }   # green
+        'Partial'      { 'bf8700' }   # amber — mixed/inconclusive
+        'Inconclusive' { '0e7490' }   # teal — could not build/run (infra), not a real fail (avoid purple ~ GitHub "merged")
+        'No Tests'     { '57606a' }   # neutral gray — nothing to verify
+        'Failed'       { 'd1242f' }   # red
+        default        { 'd1242f' }
     }
     $confidenceColor = switch ($Confidence) {
         'High' { '0969da' }
@@ -245,11 +308,10 @@ function New-StatusChipRow {
         'Low' { 'd1242f' }
         default { '57606a' }
     }
-    $platformColor = if ($Platform -eq 'Unknown') { '57606a' } else { '8250df' }
+    $platformColor = if ($Platform -eq 'Unknown') { '57606a' } else { '1f6feb' }  # blue (avoid purple ~ GitHub "merged")
 
     $chips = @(
         (New-StatusChip -Label 'Gate' -Value $GateStatus -Color $gateColor),
-        (New-StatusChip -Label 'Code Review' -Value $ReviewStatus -Color $reviewColor),
         (New-StatusChip -Label 'Confidence' -Value $Confidence -Color $confidenceColor),
         (New-StatusChip -Label 'Platform' -Value $Platform -Color $platformColor)
     )
@@ -272,7 +334,7 @@ function New-FutureActionSection {
 ---
 
 <details>
-<summary><strong>Future Action</strong> — review latest findings</summary>
+<summary><strong>🧭 Next Steps</strong> — review latest findings</summary>
 <br/>
 
 No alternative fix was selected for this run. Review the session findings and CI results before merging.
@@ -288,7 +350,7 @@ No alternative fix was selected for this run. Review the session findings and CI
 ---
 
 <details>
-<summary><strong>Future Action</strong> — review latest findings</summary>
+<summary><strong>🧭 Next Steps</strong> — review latest findings</summary>
 <br/>
 
 The workflow could not parse the fix-selection result. Review the session findings and CI results before merging.
@@ -302,7 +364,7 @@ The workflow could not parse the fix-selection result. Review the session findin
 ---
 
 <details>
-<summary><strong>Future Action</strong> — review latest findings</summary>
+<summary><strong>🧭 Next Steps</strong> — review latest findings</summary>
 <br/>
 
 No alternative fix was selected for this run. Review the session findings and CI results before merging.
@@ -348,7 +410,7 @@ No alternative fix was selected for this run. Review the session findings and CI
 ---
 
 <details>
-<summary><strong>Future Action</strong> — alternative fix proposed (<code>$selected</code>)</summary>
+<summary><strong>🧭 Next Steps</strong> — alternative fix proposed (<code>$selected</code>)</summary>
 <br/>
 
 **Automated review — alternative fix proposed**
@@ -390,15 +452,96 @@ function Test-HasNonPRWinner {
     }
 }
 
+function Test-RunValidationFailed {
+    param(
+        [Parameter(Mandatory = $true)][string]$PRAgentDir,
+        [Parameter(Mandatory = $true)][string]$TrustedGateResult
+    )
+
+    # Gate: key off the TRUSTED gate verdict passed in by the pipeline (derived from the
+    # Gate task's process exit code / its freshly-written staging file, captured BEFORE the
+    # untrusted CopilotReview phase runs and frozen as an Azure output variable). Do NOT read
+    # gate/gate-result.txt or gate/content.md from $PRAgentDir — both live in the agent-writable
+    # worktree/artifact, so a prompt-injected review agent could overwrite a real FAILED gate
+    # with "PASSED" before this trusted posting step and bypass the APPROVE veto.
+    if ($TrustedGateResult -match '(?im)^\s*FAILED\s*$') { return $true }
+
+    # UI tests: the pipeline render writes "❌ **Deep UI tests** — N passed, M failed …" with no
+    # "Result:" line, so detect the failure icon on a bold test header or a non-zero "N failed"
+    # count ("marked failed by TRX" on the passing branch has no digit immediately before
+    # "failed", so it does not match). Skip the "no UI tests needed" no-op placeholder.
+    $uiFile = Join-Path $PRAgentDir 'uitests/content.md'
+    if (Test-Path -LiteralPath $uiFile) {
+        $uiContent = Get-Content -Raw -LiteralPath $uiFile -Encoding UTF8
+        if (-not (Test-PhaseContentIsNoOp -PhaseKey 'uitests' -Content $uiContent) -and
+            ($uiContent -match '(?im)❌\s*\*\*[^*\n]*tests\*\*' -or $uiContent -match '(?im)\b[1-9]\d*\s+failed\b')) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-DeepUITestsHadNoSignal {
+    # True when the deep-UI run produced NO positive signal — every category hit a
+    # OneTimeSetUp/fixture-setup failure (HostApp crash / platform-pool infra) and nothing
+    # passed or regularly failed. The pipeline renders this as ⚠️ "… could not run:
+    # OneTimeSetUp/fixture setup failure …" with no "N passed" — so it escapes both the ❌ and
+    # "N failed" veto. An APPROVE over such a run is too generous (zero deep-UI tests actually
+    # completed); callers soften APPROVE→COMMENT (not REQUEST_CHANGES — a crash may be a flake).
+    param([Parameter(Mandatory = $true)][string]$PRAgentDir)
+
+    $uiFile = Join-Path $PRAgentDir 'uitests/content.md'
+    if (-not (Test-Path -LiteralPath $uiFile)) { return $false }
+    $uiContent = Get-Content -Raw -LiteralPath $uiFile -Encoding UTF8
+    if ([string]::IsNullOrWhiteSpace($uiContent)) { return $false }
+
+    # Match either "no-signal" render the pipeline emits when regularFailed==0 and nothing
+    # passed: the OneTimeSetUp/fixture setup-failure header, OR the app-crash header
+    # (ci-copilot.yml ~1906: "the HostApp crashed mid-run, so N … could not complete").
+    # appCrashCategories takes priority over setup failures in the render, so the crash header
+    # — the originally-flagged escape — must be matched explicitly.
+    $noSignalHeader = ($uiContent -match '(?im)could not run:\s*OneTimeSetUp/fixture setup failure') -or
+                      ($uiContent -match '(?im)the HostApp crashed mid-run, so .*could not complete')
+    # Require no completed-test signal at all (no "N passed", no non-zero "N failed"); the
+    # with-passes crash header includes "N passed" and so is correctly excluded.
+    return ($noSignalHeader -and
+            $uiContent -notmatch '(?im)\b\d+\s+passed\b' -and
+            $uiContent -notmatch '(?im)\b[1-9]\d*\s+failed\b')
+}
+
 function Get-AIReviewEventForRun {
     param(
         [string]$ReportContent,
 
         [Parameter(Mandatory = $true)]
-        [string]$PRAgentDir
+        [string]$PRAgentDir,
+
+        [string]$TrustedGateResult
     )
 
+    # Fail closed: the APPROVE veto must never run against an absent gate signal. Callers must
+    # pass the trusted pipeline-supplied verdict explicitly (local/manual callers pass a
+    # non-blocking sentinel such as 'SKIPPED').
+    if ([string]::IsNullOrWhiteSpace($TrustedGateResult)) {
+        throw "TrustedGateResult is required: the APPROVE veto must key off the trusted pipeline gate verdict, not the agent-writable worktree."
+    }
+
     $reviewEvent = Get-AIReviewEvent -ReportContent $ReportContent
+
+    # Validation veto: never post an APPROVE review over a failed gate / device-test validation,
+    # even when the report body recommends APPROVE (the report can be stale vs. current-run results).
+    if ($reviewEvent -eq 'APPROVE' -and (Test-RunValidationFailed -PRAgentDir $PRAgentDir -TrustedGateResult $TrustedGateResult)) {
+        return 'REQUEST_CHANGES'
+    }
+
+    # Soften (not veto) a positive APPROVE when the deep-UI run produced no passing signal at
+    # all — every category crashed / hit a setup failure. COMMENT is neutral; the crash may be
+    # an infra flake rather than a PR regression, so REQUEST_CHANGES would be too harsh.
+    if ($reviewEvent -eq 'APPROVE' -and (Test-DeepUITestsHadNoSignal -PRAgentDir $PRAgentDir)) {
+        return 'COMMENT'
+    }
+
     if ((Test-HasNonPRWinner -PRAgentDir $PRAgentDir) -and $reviewEvent -eq 'COMMENT') {
         return 'REQUEST_CHANGES'
     }
@@ -446,7 +589,7 @@ if (Test-Path $gateFilePath) {
         Write-Host "  ✅ gate ($((Get-Item $gateFilePath).Length) bytes)" -ForegroundColor Green
         $gateSection = @"
 <details>
-<summary><strong>Gate — Test Before & After Fix</strong></summary>
+<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
 <br/>
 
 $gateContent
@@ -475,6 +618,11 @@ foreach ($key in $phases.Keys) {
                 continue
             }
 
+            # For uitests, annotate the "detected categories but no results" placeholder so an
+            # empty section explains itself instead of showing only the detected categories.
+            if ($key -eq "uitests") {
+                $content = Add-MissingUITestResultsNote -Content $content
+            }
             $phaseContentByKey[$key] = $content
             Write-Host "  ✅ $key ($((Get-Item $filePath).Length) bytes)" -ForegroundColor Green
             # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"
@@ -506,8 +654,12 @@ if (-not $gateSection -and $phaseSections.Count -eq 0) {
     throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
 }
 
-$reviewEvent = Get-AIReviewEventForRun -ReportContent $phaseContentByKey['report'] -PRAgentDir $PRAgentDir
-Write-Host "  🧾 PR review event: $reviewEvent" -ForegroundColor Cyan
+# The trusted gate verdict comes from the pipeline (Gate task output variable). For
+# local/manual invocations that never post APPROVE, fall back to the non-blocking 'SKIPPED'
+# sentinel so the veto is a no-op rather than reading any agent-writable worktree file.
+$effectiveGateResult = if ([string]::IsNullOrWhiteSpace($TrustedGateResult)) { 'SKIPPED' } else { $TrustedGateResult }
+$reviewEvent = Get-AIReviewEventForRun -ReportContent $phaseContentByKey['report'] -PRAgentDir $PRAgentDir -TrustedGateResult $effectiveGateResult
+Write-Host "  🧾 PR review event: $reviewEvent (trusted gate: $effectiveGateResult)" -ForegroundColor Cyan
 
 # ============================================================================
 # FETCH PR METADATA (commit + author)
@@ -519,8 +671,6 @@ try {
     Write-Host "⚠️ Failed to fetch commit info: $_" -ForegroundColor Yellow
     $commitJson = $null
 }
-$commitTitle = if ($commitJson) { ($commitJson.message -split "`n")[0] } else { "Unknown" }
-$commitTitle = $commitTitle -replace '&','&amp;' -replace '<','&lt;' -replace '>','&gt;'
 $commitSha7 = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
 $commitFull = if ($commitJson) { $commitJson.sha } else { "" }
 $commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
@@ -548,7 +698,7 @@ $sessionMarkerEnd = "<!-- SESSION:$commitSha7 END -->"
 $newSessionBlock = @"
 $sessionMarkerStart
 <details>
-<summary><strong>Review Sessions</strong> — click to expand</summary>
+<summary><strong>🗂️ Review Sessions</strong> — click to expand</summary>
 <br/>
 
 $phaseContent
@@ -592,19 +742,13 @@ if ($existingRaw) {
 
 $authorPing = ""
 if ($prAuthor) {
-    $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>.`n> **$commitTitle**"
+    $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>."
     $authorPing += ' To request a fresh review after new comments or commits, comment `/review rerun`.'
 }
 
-$reviewStatus = switch ($reviewEvent) {
-    'APPROVE' { 'LGTM' }
-    'REQUEST_CHANGES' { 'Needs Changes' }
-    default { 'In Review' }
-}
 $summaryContent = @($gateContent) + @($phaseContentByKey.Values)
 $statusChipRow = New-StatusChipRow `
     -GateStatus (Get-GateStatus -GateContent $gateContent) `
-    -ReviewStatus $reviewStatus `
     -Confidence (Get-ConfidenceStatus -Contents $summaryContent) `
     -Platform (Get-PlatformStatus -Contents $summaryContent)
 $futureActionSection = New-FutureActionSection -PRAgentDir $PRAgentDir
@@ -617,6 +761,8 @@ $MARKER
 $authorPing
 
 $statusChipRow
+
+---
 
 $newSessionBlock
 

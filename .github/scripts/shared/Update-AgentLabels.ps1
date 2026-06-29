@@ -460,7 +460,14 @@ function Update-AgentReviewedLabel {
 function Parse-PhaseOutcomes {
     <#
     .SYNOPSIS
-        Reads phase output content.md files and determines outcome + signal labels.
+        Determines outcome + signal labels from a review run's artifacts.
+
+    .DESCRIPTION
+        Prefers the authoritative machine-readable artifacts over prose:
+          - Gate  -> gate/gate-result.txt (PASSED|SKIPPED|FAILED); SKIPPED => no gate label.
+          - Fix   -> winner.json (isPRFix); false => 'win' (alternative beat PR),
+                     true => 'lose' (PR fix best); missing => no fix label.
+          - Outcome -> report/content.md Final Recommendation.
 
     .OUTPUTS
         Hashtable with keys: Outcome, GateResult, FixResult
@@ -477,38 +484,51 @@ function Parse-PhaseOutcomes {
         FixResult  = $null  # 'win', 'lose'
     }
 
-    # --- Parse Gate content.md ---
-    $gateFile = Join-Path $baseDir "gate/content.md"
-    if (Test-Path $gateFile) {
-        $gateContent = Get-Content $gateFile -Raw -ErrorAction SilentlyContinue
-        if ($gateContent) {
-            # Match the Result line specifically to avoid false matches from other text
-            if ($gateContent -match '(?im)^\*?\*?Result\*?\*?:.*(?:✅|PASSED)') {
-                $result.GateResult = 'passed'
-            }
-            elseif ($gateContent -match '(?im)^\*?\*?Result\*?\*?:.*(?:❌|FAILED|SKIPPED)') {
-                $result.GateResult = 'failed'
+    # --- Gate result (authoritative: gate/gate-result.txt) ---
+    # The Gate phase writes the canonical verdict (PASSED|SKIPPED|FAILED) to gate-result.txt.
+    # SKIPPED means "no runnable tests were detected" — it is NOT a failure, so it maps to
+    # $null (no gate signal label). Fall back to the gate report header only if the file is
+    # missing (using the real "### Gate Result:" format, not the old broken "^Result:").
+    $gateVerdict = $null
+    $gateResultFile = Join-Path $baseDir "gate/gate-result.txt"
+    if (Test-Path $gateResultFile) {
+        $gateVerdict = (Get-Content $gateResultFile -Raw -ErrorAction SilentlyContinue)
+    }
+    if (-not $gateVerdict) {
+        $gateFile = Join-Path $baseDir "gate/content.md"
+        if (Test-Path $gateFile) {
+            $gateContent = Get-Content $gateFile -Raw -ErrorAction SilentlyContinue
+            if ($gateContent -and $gateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(PASSED|FAILED|SKIPPED)') {
+                $gateVerdict = $matches[1]
             }
         }
     }
+    switch -Regex (($gateVerdict ?? '').Trim()) {
+        '(?i)^PASSED' { $result.GateResult = 'passed' }
+        '(?i)^FAILED' { $result.GateResult = 'failed' }
+        # SKIPPED / empty / anything else => $null (no gate signal label)
+    }
 
-    # --- Parse try-fix content.md for fix result ---
-    $fixFile = Join-Path $baseDir "try-fix/content.md"
-    if (Test-Path $fixFile) {
-        $fixContent = Get-Content $fixFile -Raw -ErrorAction SilentlyContinue
-        if ($fixContent) {
-            # Extract just the fix name (before any reason separator like " — ")
-            # to avoid false matches from reason text containing keywords like "try-fix" or "alternative"
-            if ($fixContent -match '(?i)Selected Fix:\s*\*?\*?\s*(.+?)(?:\s*—|\s*$)') {
-                $fixName = $matches[1].Trim()
-                # Agent wins: fix name starts with Candidate/Alternative/try-fix
-                if ($fixName -match '(?i)^(?:Candidate|Alternative|try-fix)') {
-                    $result.FixResult = 'win'
-                }
-                # Agent loses: fix name starts with PR
-                elseif ($fixName -match '(?i)^(?:\*?\*?\s*)?PR\b') {
-                    $result.FixResult = 'lose'
-                }
+    # --- Fix result (authoritative: winner.json) ---
+    # winner.json is the machine-readable comparison verdict written by the Report phase.
+    #   isPRFix = $false (winner is a try-fix-* candidate) => an alternative beat the PR => 'win'
+    #   isPRFix = $true  (winner is pr / pr-plus-reviewer)  => the PR fix was best        => 'lose'
+    # A missing/invalid winner.json (e.g. review-incomplete) => $null (no fix signal label),
+    # so we never guess a fix outcome the comparison did not actually produce.
+    $winnerFile = Join-Path $baseDir "winner.json"
+    if (Test-Path $winnerFile) {
+        $winner = $null
+        try { $winner = Get-Content $winnerFile -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop } catch { $winner = $null }
+        if ($winner) {
+            $winnerName = [string]$winner.winner
+            if ($null -ne $winner.isPRFix) {
+                $result.FixResult = if ($winner.isPRFix) { 'lose' } else { 'win' }
+            }
+            elseif ($winnerName -match '(?i)^try-fix') {
+                $result.FixResult = 'win'
+            }
+            elseif ($winnerName -match '(?i)^(pr|pr-plus-reviewer)$') {
+                $result.FixResult = 'lose'
             }
         }
     }

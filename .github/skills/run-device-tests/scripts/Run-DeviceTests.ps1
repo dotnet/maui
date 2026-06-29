@@ -419,6 +419,13 @@ if (-not $RepoRoot) {
 $SharedScriptsDir = Join-Path $RepoRoot ".github/scripts/shared"
 . (Join-Path $SharedScriptsDir "shared-utils.ps1")
 
+# Align device-test TargetFrameworks with the checked-out branch (e.g. net11.0-android on the
+# net11.0 branch) instead of the hardcoded net10.0 defaults in $PlatformConfigs above.
+$DotNetTfm = Get-MauiTfmVersion -RepoRoot $RepoRoot
+foreach ($plat in @($PlatformConfigs.Keys)) {
+    $PlatformConfigs[$plat].Tfm = $PlatformConfigs[$plat].Tfm -replace '^net\d+\.\d+', "net$DotNetTfm"
+}
+
 Push-Location $RepoRoot
 
 $platformConfig = $PlatformConfigs[$Platform]
