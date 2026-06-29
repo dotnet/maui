@@ -214,6 +214,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_oldViews = null;
 			InitialPositionSet = false;
 
+			// Cancel any pending iOS 26 scroll debounce so it can't fire after detach
+			_scrollDebounce?.Cancel();
+			_scrollDebounce?.Dispose();
+			_scrollDebounce = null;
+
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			// Clean up orientation notification observer
 			NSNotificationCenter.DefaultCenter.RemoveObserver(this, UIDevice.OrientationDidChangeNotification, null);
@@ -626,6 +631,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 							var updatedCurrentItemPosition = GetIndexForItem(currentCarousel.CurrentItem).Row;
 							var updatedCarouselPosition = currentCarousel.Position;
+
+							// CurrentItem can be null here (e.g. cleared by UpdateItemsSource during a ViewModel
+							// swap), giving -1. Bailing out avoids a spurious ScrollToPosition that would re-sync
+							// Position and corrupt _lastSyncedPosition, causing the position to drift each cycle.
+							if (updatedCurrentItemPosition < 0)
+							{
+								return;
+							}
 
 							ScrollToPosition(updatedCarouselPosition, updatedCurrentItemPosition, currentCarousel.AnimatePositionChanges);
 						});
