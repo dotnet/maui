@@ -33,6 +33,15 @@ namespace Microsoft.Maui.Platform
 		internal bool ShouldSkipOnTouch;
 		internal int HorizontalScrollOffset => _hScrollView?.ScrollX ?? 0;
 
+		// Stores the parent touch listener so horizontal ScrollView taps can be forwarded to it directly.
+		internal IOnTouchListener? _touchListener;
+
+		public override void SetOnTouchListener(IOnTouchListener? touchListener)
+		{
+			_touchListener = touchListener;
+			base.SetOnTouchListener(touchListener);
+		}
+
 		public MauiScrollView(Context context) : base(context)
 		{
 			_context = context;
@@ -555,6 +564,12 @@ namespace Microsoft.Maui.Platform
 			// Request parent to not intercept touch events while we're scrolling
 			// This allows ScrollView to work properly inside containers like DrawerLayout (Shell Flyout)
 			ScrollViewExtensions.HandleTouchEvent(ev, Parent);
+
+			// OnTouchEvent is only called when no child has claimed the touch event, which mirrors
+			// exactly when a vertical ScrollView's touch listener fires. We invoke the parent's
+			// stored touch listener here so TapGestureRecognizers on a horizontal/both ScrollView
+			// fire correctly.
+			_parentScrollView._touchListener?.OnTouch(_parentScrollView, ev);
 
 			// If the touch is caught by the horizontal scrollview, forward it to the parent 
 			_parentScrollView.ShouldSkipOnTouch = true;
