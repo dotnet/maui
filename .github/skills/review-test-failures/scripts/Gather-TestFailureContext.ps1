@@ -752,8 +752,12 @@ function Invoke-HelixFileText {
     # is fully ANONYMOUS (no auth) once the redirect is followed -- verified live on 2026-06-27.
     # Best-effort by contract: ANY failure returns $null and the caller keeps the opaque fallback
     # record, so a transient download error can never drop a failed work item's verdict cap. A byte
-    # cap prevents a pathologically large log from exhausting memory.
-    param([string]$Url, [int]$MaxChars = 4000000)
+    # cap prevents a pathologically large log from exhausting memory; because the cap keeps the HEAD
+    # and the device-test incompleteness markers (timeout / crash / exit-code tail) are printed at the
+    # END of a run, a truncated read can silently drop them -- so an optional [ref]$Truncated out-param
+    # reports truncation, letting the caller treat a truncated console as incompleteness (never-false-
+    # green: unread tail could hold the marker that proves the run did not finish).
+    param([string]$Url, [int]$MaxChars = 4000000, $Truncated = $null)
     if ([string]::IsNullOrWhiteSpace($Url)) { return $null }
     try {
         $resp = Invoke-WebRequest -Uri $Url -UseBasicParsing -MaximumRedirection 5 -ErrorAction Stop
@@ -778,7 +782,10 @@ function Invoke-HelixFileText {
         if ($content.Length -gt 0 -and ($content[0] -eq [char]0xFEFF -or $content[0] -eq [char]0xFFFE)) {
             $content = $content.Substring(1)
         }
-        if ($content.Length -gt $MaxChars) { $content = $content.Substring(0, $MaxChars) }
+        if ($content.Length -gt $MaxChars) {
+            if ($null -ne $Truncated) { $Truncated.Value = $true }
+            $content = $content.Substring(0, $MaxChars)
+        }
         return $content
     }
     catch {
@@ -991,7 +998,16 @@ function New-DeviceWorkItemFailureRecords {
         # a signal before it could finish. A kill can flush a partial result file then die, leaving the
         # PR's regression among the tests that never ran, so it FORCES the incomplete cap even when some
         # tests were named and the console looked clean. Defaults false so older callers/tests stay valid.
-        [bool]$WorkItemCrashed = $false
+        [bool]$WorkItemCrashed = $false,
+        # True when the work item's console log was TRUNCATED (it exceeded the read byte cap). The
+        # device-test incompleteness markers (timeout / crash / "all processes crashed" / the exit-code
+        # tail) are printed at the END of a run, while per-test '[FAIL] <test>' lines (which no longer
+        # set isIncomplete after the L928 split) appear throughout. So a truncated console can drop the
+        # one marker that proves the run did not finish while still showing named failures in its head
+        # -- on XHarness (Android/iOS) the app stdout is piped to the console and can exceed the cap.
+        # An unread tail is unknown data, so a truncated console on a failed work item FORCES the cap
+        # (never trust the absence of a marker we could not read). Defaults false so older callers stay valid.
+        [bool]$ConsoleReadIncomplete = $false
     )
 
     $records = New-Object System.Collections.Generic.List[object]
@@ -1026,7 +1042,8 @@ function New-DeviceWorkItemFailureRecords {
 
     # Incompleteness guard (the never-false-green backstop). The run is NOT fully accounted when the
     # console shows it was killed/hung/crashed, OR a crash dump / crash signal is present, OR the work
-    # item reports a negative (signal-killed) ExitCode, OR no result file was readable at all, OR the
+    # item reports a negative (signal-killed) ExitCode, OR the console log was truncated (its tail --
+    # where the incompleteness markers live -- is unread), OR no result file was readable at all, OR the
     # result files we DID read were incomplete (overflow/parse/declared mismatch), OR we extracted zero
     # named failures despite a non-zero ExitCode. In every such case emit a capping 'incomplete' record
     # IN ADDITION to any named failures so the verdict stays NHI even if the named failures dismiss on
@@ -1036,13 +1053,14 @@ function New-DeviceWorkItemFailureRecords {
     $consoleIncomplete = ($null -ne $Console) -and [bool]$Console.isIncomplete
     $consoleCrash = ($null -ne $Console) -and [bool]$Console.isCrash
     $reason = if ($null -ne $Console) { [string]$Console.reason } else { '' }
-    $incomplete = $consoleIncomplete -or $consoleCrash -or $HasDump -or $WorkItemCrashed -or (-not $AnyResultFile) -or $ResultReadIncomplete -or ($namedFailures -eq 0)
+    $incomplete = $consoleIncomplete -or $consoleCrash -or $HasDump -or $WorkItemCrashed -or $ConsoleReadIncomplete -or (-not $AnyResultFile) -or $ResultReadIncomplete -or ($namedFailures -eq 0)
 
     if ($incomplete) {
         $detail =
             if (-not [string]::IsNullOrWhiteSpace($reason)) { $reason }
             elseif ($HasDump -or $consoleCrash) { 'the work item crashed (crash dump / crash signal present)' }
             elseif ($WorkItemCrashed) { 'the work item was terminated abnormally (negative Helix ExitCode -- killed/crashed before it could finish)' }
+            elseif ($ConsoleReadIncomplete) { 'the console log was truncated, so a timeout/crash marker in the unread tail cannot be ruled out' }
             elseif (-not $AnyResultFile) { 'no test-results file was produced' }
             elseif ($ResultReadIncomplete) { 'some test-result files could not be fully read, so the failure set is incomplete' }
             else { 'the work item exited non-zero but recorded no failed test' }
@@ -2326,7 +2344,7 @@ foreach ($buildRef in $buildRefsById.Values) {
                             $resultReadIncomplete = $false
                             $aggKey = @($fileMap.Keys | Where-Object { $_ -ieq 'testResults.xml' })
                             if ($aggKey.Count -gt 0) {
-                                $aggXml = Invoke-HelixFileText -Url $fileMap[$aggKey[0]]
+                                $aggXml = Invoke-HelixFileText -Url $fileMap[$aggKey[0]] -Truncated ([ref]$resultReadIncomplete)
                                 if (-not [string]::IsNullOrWhiteSpace($aggXml)) {
                                     $parsedAgg = Get-XUnitFailures -Xml $aggXml
                                     if ($parsedAgg.parsed) {
@@ -2347,7 +2365,7 @@ foreach ($buildRef in $buildRefsById.Values) {
                                     $mTotal = 0; $mPass = 0; $mFail = 0; $mSkip = 0; $mDeclared = 0
                                     $mFailed = New-Object System.Collections.Generic.List[object]
                                     foreach ($ck in (@($catKeys) | Select-Object -First 80)) {
-                                        $catXml = Invoke-HelixFileText -Url $fileMap[$ck]
+                                        $catXml = Invoke-HelixFileText -Url $fileMap[$ck] -Truncated ([ref]$resultReadIncomplete)
                                         # A category file that would not download or parse is a real
                                         # result file we could not read -> the failure set is partial.
                                         if ([string]::IsNullOrWhiteSpace($catXml)) { $resultReadIncomplete = $true; continue }
@@ -2368,12 +2386,17 @@ foreach ($buildRef in $buildRefsById.Values) {
                             }
 
                             # Console reason: prefer an uploaded console*.log, else the detail's
-                            # ConsoleOutputUri.
+                            # ConsoleOutputUri. A truncated console read (its tail, where the
+                            # timeout/crash markers print, was dropped by the byte cap) is treated as
+                            # incompleteness so the work item caps to NHI -- on XHarness (Android/iOS)
+                            # the app stdout is piped to the console and can exceed the cap, leaving
+                            # head-only '[FAIL]' lines that no longer prove the run finished.
                             $consoleParsed = $null
+                            $consoleTruncated = $false
                             $conKey = @($fileMap.Keys | Where-Object { $_ -match '(?i)^console.*\.log$' })
                             $conUri = if ($conKey.Count -gt 0) { $fileMap[$conKey[0]] } else { [string](Get-ObjectValue -Object $wiDetail -Names @('ConsoleOutputUri')) }
                             if (-not [string]::IsNullOrWhiteSpace($conUri)) {
-                                $conText = Invoke-HelixFileText -Url $conUri
+                                $conText = Invoke-HelixFileText -Url $conUri -Truncated ([ref]$consoleTruncated)
                                 if (-not [string]::IsNullOrWhiteSpace($conText)) { $consoleParsed = Get-ConsoleFailureReason -Console $conText }
                             }
 
@@ -2389,7 +2412,7 @@ foreach ($buildRef in $buildRefsById.Values) {
                             # force the incomplete cap regardless of what the partial TRX/console show.
                             $wiCrashed = $false
                             if ($wiExitByName.ContainsKey([string]$wn)) { $wiCrashed = ($wiExitByName[[string]$wn] -lt 0) }
-                            $deepRecords = New-DeviceWorkItemFailureRecords -Trx $trx -Console $consoleParsed -HasDump $hasDump -AnyResultFile $anyResultFile -ResultReadIncomplete $resultReadIncomplete -WorkItemCrashed $wiCrashed -Context $wiCtx
+                            $deepRecords = New-DeviceWorkItemFailureRecords -Trx $trx -Console $consoleParsed -HasDump $hasDump -AnyResultFile $anyResultFile -ResultReadIncomplete $resultReadIncomplete -WorkItemCrashed $wiCrashed -ConsoleReadIncomplete $consoleTruncated -Context $wiCtx
                         }
                         catch {
                             # Deep read failed entirely -> keep the opaque fallback record (the work

@@ -453,4 +453,24 @@ Describe 'New-DeviceWorkItemFailureRecords (classify ONE failed work item — ne
         $recs.Count | Should -Be 1
         $recs[0]['source'] | Should -Be 'helix-trx'
     }
+
+    It 'L. SAFETY: a TRUNCATED console (ConsoleReadIncomplete) STILL caps alongside named failures' {
+        # The timeout/crash markers print at the TAIL, so a truncated read can drop them while the head
+        # still shows named '[FAIL]' lines. A truncated console on a failed work item must therefore cap
+        # to NHI -- the unread tail could hold the marker proving the run never finished.
+        $recs = @(New-DeviceWorkItemFailureRecords -Trx $script:trxFail -Console $script:conOk -HasDump $false -AnyResultFile $true -ConsoleReadIncomplete $true -Context $script:ctx)
+        $recs.Count | Should -Be 2
+        @($recs | Where-Object { $_['source'] -eq 'helix-trx' }).Count | Should -Be 1
+        $inc = @($recs | Where-Object { $_['source'] -eq 'helix-workitem-incomplete' })
+        $inc.Count | Should -Be 1
+        $inc[0]['message'] | Should -Match 'console log was truncated'
+    }
+
+    It 'M. ConsoleReadIncomplete defaults to $false so a clean named run is unaffected' {
+        # The truncation guard must be OPT-IN: omitting -ConsoleReadIncomplete (a console that fit under
+        # the read cap) leaves the clean named-failure flow-through intact.
+        $recs = @(New-DeviceWorkItemFailureRecords -Trx $script:trxFail -Console $script:conOk -HasDump $false -AnyResultFile $true -Context $script:ctx)
+        $recs.Count | Should -Be 1
+        $recs[0]['source'] | Should -Be 'helix-trx'
+    }
 }
