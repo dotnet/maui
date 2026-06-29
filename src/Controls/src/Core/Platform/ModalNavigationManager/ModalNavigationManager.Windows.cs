@@ -171,11 +171,15 @@ namespace Microsoft.Maui.Controls.Platform
 					var windowManager = context?.GetNavigationRootManager() ??
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
 
-					// Toggle the titlebar visibility on the new page.
-					// Use NavigationRootManager.SetTitleBarVisibility(bool) so that height
-					// and margins are also reset — not just the container's visual visibility.
-					var navRoot = context?.GetNavigationRootManager();
-					navRoot?.SetTitleBarVisibility(!IsWindowFullScreen());
+					var navRoot = context.GetNavigationRootManager();
+					bool showTitleBar = !IsWindowFullScreen();
+
+					if (navRoot.RootView is WindowRootView wrv && wrv.AppTitleBarContainer is not null)
+					{
+						wrv.SetTitleBarVisibility(showTitleBar ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed);
+					}
+
+					navRoot?.SetTitleBarVisibility(showTitleBar);
 
 					// Restore the titlebar
 					if (previousPage is not null &&
