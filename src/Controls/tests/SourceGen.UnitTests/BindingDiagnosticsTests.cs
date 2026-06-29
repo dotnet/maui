@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
@@ -248,6 +249,58 @@ public class ViewModel
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2024");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+	}
+
+	[Fact]
+	public void BindingWithXReferenceSourceInDataTemplate_DoesNotReportFalsePositive()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:Name="PageRoot"
+	x:DataType="test:ViewModel">
+	<CollectionView ItemsSource="{Binding Items}">
+		<CollectionView.ItemTemplate>
+			<DataTemplate x:DataType="test:ItemModel">
+				<Button Text="{Binding Name}"
+						Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.SelectItemCommand}"
+						CommandParameter="{Binding .}" />
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+	</CollectionView>
+</ContentPage>
+""";
+
+		var csharp =
+"""
+namespace Test;
+
+public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+public class ViewModel
+{
+	public System.Collections.Generic.List<ItemModel> Items { get; set; }
+	public Microsoft.Maui.Controls.Command SelectItemCommand { get; set; }
+}
+
+public class ItemModel
+{
+	public string Name { get; set; }
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		// x:Reference bindings skip compilation entirely — no MAUIG2045 should be emitted
+		// for properties on the DataTemplate's x:DataType (ItemModel).
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045" && d.GetMessage().Contains("ItemModel", StringComparison.Ordinal));
 	}
 
 	[Fact]

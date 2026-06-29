@@ -64,5 +64,31 @@ namespace Microsoft.Maui.DeviceTests
 			});
 			Assert.Equal(expected, color);
 		}
+
+		[Fact(DisplayName = "Foreground Resets to Default When Set to Null")]
+		public async Task ForegroundResetsToDefaultWhenSetToNull()
+		{
+			var checkBoxStub = new CheckBoxStub
+			{
+				Foreground = new SolidPaint(Colors.Red),
+				IsChecked = true
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(checkBoxStub);
+				var native = GetNativeCheckBox(handler);
+
+				// Confirm that the red tint was applied initially
+				Assert.NotNull(native.CheckBoxTintColor);
+
+				// Simulate a dynamic Color = null (Foreground reset to default)
+				checkBoxStub.Foreground = null;
+				handler.UpdateValue(nameof(ICheckBox.Foreground));
+
+				// After reset, the native tint must be null so iOS reverts to its inherited default
+				Assert.Null(native.CheckBoxTintColor);
+			});
+		}
 	}
 }

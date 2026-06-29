@@ -29,10 +29,12 @@ public class FunctionCallContentNative: AIContentNative {
 @objc(FunctionResultContentNative)
 public class FunctionResultContentNative: AIContentNative {
     @objc public var callId: String
+    @objc public var name: String
     @objc public var result: String
     
-    @objc public init(callId: String, result: String) {
+    @objc public init(callId: String, name: String, result: String) {
         self.callId = callId
+        self.name = name
         self.result = result
         super.init()
     }

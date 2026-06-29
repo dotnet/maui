@@ -48,6 +48,30 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, entry);
 		}
 
+		public static void MapBackground(IEntryHandler handler, IEntry entry)
+		{
+			if (handler.PlatformView is not MauiTextField platformView)
+				return;
+
+			if (entry.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+				return;
+			}
+			else if (entry.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+				return;
+			}
+			else
+			{
+				platformView.UpdateBackground(entry);
+			}
+		}
+
 		public static void MapTextColor(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateTextColor(entry);
@@ -136,7 +160,14 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingChanged += OnEditingChanged;
 				platformView.EditingDidEnd += OnEditingEnded;
 				platformView.TextPropertySet += OnTextPropertySet;
-				platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					platformView.ShouldChangeCharactersInRanges += ShouldChangeCharactersInRanges;
+				}
+				else
+				{
+					platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
+				}
 			}
 
 			public void Disconnect(MauiTextField platformView)
@@ -148,7 +179,14 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingChanged -= OnEditingChanged;
 				platformView.EditingDidEnd -= OnEditingEnded;
 				platformView.TextPropertySet -= OnTextPropertySet;
-				platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					platformView.ShouldChangeCharactersInRanges -= ShouldChangeCharactersInRanges;
+				}
+				else
+				{
+					platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
+				}
 
 				if (_set)
 					platformView.SelectionChanged -= OnSelectionChanged;
@@ -190,9 +228,13 @@ namespace Microsoft.Maui.Handlers
 
 			void OnEditingChanged(object? sender, EventArgs e)
 			{
-				if (sender is MauiTextField platformView)
+				if (sender is MauiTextField platformView && VirtualView is not null)
 				{
-					VirtualView?.UpdateText(platformView.Text);
+					// Update cursor position before updating text so that when TextChanged event fires,
+					// the CursorPosition property reflects the current native cursor position
+					VirtualView.UpdateCursorPosition(platformView.GetCursorPosition());
+
+					VirtualView.UpdateText(platformView.Text);
 				}
 			}
 
@@ -211,6 +253,56 @@ namespace Microsoft.Maui.Handlers
 				{
 					VirtualView?.UpdateText(platformView.Text);
 				}
+			}
+
+			bool ShouldChangeCharactersInRanges(UITextField textField, NSValue[] ranges, string replacementString)
+			{
+				if (ranges == null || ranges.Length == 0)
+					return true;
+
+				var maxLength = VirtualView?.MaxLength ?? -1;
+				if (maxLength < 0)
+					return true;
+
+				// Handle null replacement string defensively
+				replacementString ??= string.Empty;
+
+				var currentText = textField.Text ?? string.Empty;
+
+				// Copy and sort ranges (existing code is correct)
+				var count = ranges.Length;
+				var rangeArray = new NSRange[count];
+				for (int i = 0; i < count; i++)
+					rangeArray[i] = ranges[i].RangeValue;
+
+				Array.Sort(rangeArray, (a, b) => (int)(b.Location - a.Location));
+
+				// Simulate all range replacements (existing code is correct)
+				for (int i = 0; i < count; i++)
+				{
+					var range = rangeArray[i];
+					var start = (int)range.Location;
+					var length = (int)range.Length;
+
+					if (start < 0 || length < 0 || start > currentText.Length || start + length > currentText.Length)
+						return false;
+
+					var before = start > 0 ? currentText.Substring(0, start) : string.Empty;
+					var afterIndex = start + length;
+					var after = afterIndex < currentText.Length ? currentText.Substring(afterIndex) : string.Empty;
+					currentText = before + replacementString + after;
+				}
+
+				var shouldChange = currentText.Length <= maxLength;
+
+				// Paste truncation feature (matches pre-iOS 26 behavior)
+				if (VirtualView is not null && !shouldChange && !string.IsNullOrWhiteSpace(replacementString) &&
+					replacementString.Length >= maxLength)
+				{
+					VirtualView.Text = replacementString.AsSpan(0, maxLength).ToString();
+				}
+
+				return shouldChange;
 			}
 
 			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
