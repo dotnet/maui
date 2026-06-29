@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Handlers
 			foreach (var kvp in _viewControllerMap)
 			{
 				kvp.Value.View?.RemoveFromSuperview();
+				(kvp.Value as IDisposable)?.Dispose();
 			}
 			_viewControllerMap.Clear();
 			NavigationStack = new List<IView>();
@@ -365,7 +366,14 @@ namespace Microsoft.Maui.Handlers
 						foreach (var view in handler.NavigationStack)
 						{
 							if (!newSet.Contains(view))
+							{
+								if (handler._viewControllerMap.TryGetValue(view, out var vc))
+								{
+									(vc as IDisposable)?.Dispose();
+								}
+
 								handler._viewControllerMap.Remove(view);
+							}
 						}
 					}
 
@@ -455,11 +463,21 @@ namespace Microsoft.Maui.Handlers
 						}
 					}
 
-					// Find the page that was on top before the pop
+					// Find and clean up pages that were popped
 					IView? poppedPage = null;
-					if (oldStack.Count > newStack.Count && oldStack.Count > 0)
+					var newSet = new HashSet<IView>(newStack);
+
+					foreach (var view in oldStack)
 					{
-						poppedPage = oldStack[oldStack.Count - 1];
+						if (!newSet.Contains(view))
+						{
+							poppedPage = view;
+							if (handler._viewControllerMap.TryGetValue(view, out var vc))
+							{
+								(vc as IDisposable)?.Dispose();
+							}
+							handler._viewControllerMap.Remove(view);
+						}
 					}
 
 					handler.NavigationStack = newStack;

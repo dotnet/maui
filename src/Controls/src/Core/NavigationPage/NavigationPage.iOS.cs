@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage
 	{
+		GradientBrush _currentBarBackgroundBrush;
+
 		public static void MapPrefersLargeTitles(NavigationViewHandler handler, NavigationPage navigationPage) =>
 			MapPrefersLargeTitles((INavigationViewHandler)handler, navigationPage);
 
@@ -30,6 +32,21 @@ namespace Microsoft.Maui.Controls
 
 			var barBackgroundColor = navigationPage.BarBackgroundColor;
 			var barBackground = navigationPage.BarBackground;
+
+			// Manage GradientBrush subscription — matches renderer pattern
+			if (navigationPage._currentBarBackgroundBrush is GradientBrush oldGradientBrush)
+			{
+				oldGradientBrush.Parent = null;
+				oldGradientBrush.InvalidateGradientBrushRequested -= navigationPage.OnBarBackgroundBrushInvalidated;
+			}
+
+			navigationPage._currentBarBackgroundBrush = barBackground as GradientBrush;
+
+			if (navigationPage._currentBarBackgroundBrush is GradientBrush newGradientBrush)
+			{
+				newGradientBrush.Parent = navigationPage;
+				newGradientBrush.InvalidateGradientBrushRequested += navigationPage.OnBarBackgroundBrushInvalidated;
+			}
 
 			if (barBackground is SolidColorBrush scb)
 			{
@@ -95,6 +112,14 @@ namespace Microsoft.Maui.Controls
 			navBar.ScrollEdgeAppearance = navigationBarAppearance;
 		}
 
+		void OnBarBackgroundBrushInvalidated(object sender, EventArgs e)
+		{
+			if (Handler is NavigationViewHandler handler)
+			{
+				MapBarBackground(handler, this);
+			}
+		}
+
 		static void MapIsNavigationBarTranslucent(NavigationViewHandler handler, NavigationPage navigationPage)
 		{
 			// Translucency affects both bar appearance and content layout;
@@ -136,12 +161,34 @@ namespace Microsoft.Maui.Controls
 				};
 			}
 
-			navBar.CompactAppearance.TitleTextAttributes = titleTextAttributes;
-			navBar.CompactAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
-			navBar.StandardAppearance.TitleTextAttributes = titleTextAttributes;
-			navBar.StandardAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
-			navBar.ScrollEdgeAppearance.TitleTextAttributes = titleTextAttributes;
-			navBar.ScrollEdgeAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				// iOS 26 Liquid Glass: in-place mutation may not trigger updates;
+				// use copy/mutate/reassign pattern.
+				var titleCompact = navBar.CompactAppearance;
+				titleCompact.TitleTextAttributes = titleTextAttributes;
+				titleCompact.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.CompactAppearance = titleCompact;
+
+				var titleStandard = navBar.StandardAppearance;
+				titleStandard.TitleTextAttributes = titleTextAttributes;
+				titleStandard.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.StandardAppearance = titleStandard;
+
+				var titleScrollEdge = navBar.ScrollEdgeAppearance;
+				titleScrollEdge.TitleTextAttributes = titleTextAttributes;
+				titleScrollEdge.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.ScrollEdgeAppearance = titleScrollEdge;
+			}
+			else
+			{
+				navBar.CompactAppearance.TitleTextAttributes = titleTextAttributes;
+				navBar.CompactAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.StandardAppearance.TitleTextAttributes = titleTextAttributes;
+				navBar.StandardAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.ScrollEdgeAppearance.TitleTextAttributes = titleTextAttributes;
+				navBar.ScrollEdgeAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+			}
 
 			navBar.TintColor = barTextColor is null
 				? UINavigationBar.Appearance.TintColor
