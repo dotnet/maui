@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Views;
 using AndroidX.Core.View;
+using AColor = Android.Graphics.Color;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Platform;
 
@@ -59,9 +60,29 @@ namespace Microsoft.Maui
 				var isLightTheme = configuration is null ||
 					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 
-				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+				var statusBarColor = GetThemeColor(activity, global::Android.Resource.Attribute.ColorPrimary, new AColor(window.StatusBarColor));
+
+				windowInsetsController.AppearanceLightStatusBars = IsLightColor(statusBarColor);
 				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
 			}
+		}
+
+		static AColor GetThemeColor(Activity activity, int attribute, AColor fallback)
+		{
+			var typedValue = new global::Android.Util.TypedValue();
+
+			if (activity.Theme?.ResolveAttribute(attribute, typedValue, true) == true)
+			{
+				return new AColor(typedValue.Data);
+			}
+
+			return fallback;
+		}
+
+		static bool IsLightColor(AColor color)
+		{
+			var luminance = (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255;
+			return luminance > 0.5;
 		}
 	}
 }
