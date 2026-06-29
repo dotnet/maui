@@ -105,9 +105,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateVisualState()
 		{
-			if (BindingContext is BaseShellItem bsi)
+			if (BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
 			{
-				VisualStateManager.GoToState(View, bsi.IsChecked ? "Selected" : "Normal", force: true);
+				View.IsItemSelected = baseShellItem.IsChecked;
 			}
 		}
 
