@@ -496,9 +496,16 @@ function Test-DeepUITestsHadNoSignal {
     $uiContent = Get-Content -Raw -LiteralPath $uiFile -Encoding UTF8
     if ([string]::IsNullOrWhiteSpace($uiContent)) { return $false }
 
-    # Require an all-setup-failure header AND no completed-test signal at all (no "N passed",
-    # no non-zero "N failed"). Any pass or regular failure means the run produced a signal.
-    return ($uiContent -match '(?im)could not run:\s*OneTimeSetUp/fixture setup failure' -and
+    # Match either "no-signal" render the pipeline emits when regularFailed==0 and nothing
+    # passed: the OneTimeSetUp/fixture setup-failure header, OR the app-crash header
+    # (ci-copilot.yml ~1906: "the HostApp crashed mid-run, so N … could not complete").
+    # appCrashCategories takes priority over setup failures in the render, so the crash header
+    # — the originally-flagged escape — must be matched explicitly.
+    $noSignalHeader = ($uiContent -match '(?im)could not run:\s*OneTimeSetUp/fixture setup failure') -or
+                      ($uiContent -match '(?im)the HostApp crashed mid-run, so .*could not complete')
+    # Require no completed-test signal at all (no "N passed", no non-zero "N failed"); the
+    # with-passes crash header includes "N passed" and so is correctly excluded.
+    return ($noSignalHeader -and
             $uiContent -notmatch '(?im)\b\d+\s+passed\b' -and
             $uiContent -notmatch '(?im)\b[1-9]\d*\s+failed\b')
 }

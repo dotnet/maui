@@ -1233,9 +1233,14 @@ function Write-MarkdownReport {
     # Check for environment / build errors in results — a test that could not be built or
     # run never verified anything, so the gate is INCONCLUSIVE (not a genuine FAILED).
     $hasEnvError = ($WithoutFixResultsList | Where-Object { $_.EnvError }) -or ($WithFixResultsList | Where-Object { $_.EnvError })
-    $hasBuildError = ($WithoutFixResultsList | Where-Object { $_.BuildError }) -or ($WithFixResultsList | Where-Object { $_.BuildError })
+    # Only a BASELINE (without-fix) build error, or an env error, leaves the gate genuinely
+    # unable to verify → INCONCLUSIVE. A with-fix-ONLY build error (baseline compiles, the PR's
+    # own fix does not) is a definitive FAILED — mirror the exit-code split (see $gateInfraError)
+    # so the report headline and the Gate status chip don't frame a non-compiling fix as a
+    # non-blocking infra flake.
+    $baselineBuildError = @($WithoutFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
 
-    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($hasEnvError -or $hasBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($hasEnvError -or $baselineBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     # ─── Improvement #2: classify the failure mode so the headline matches the cause ───

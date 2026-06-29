@@ -323,6 +323,18 @@ Describe 'Test-DeepUITestsHadNoSignal' {
         Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeTrue
     }
 
+    It 'is true for an all-crash run (HostApp crashed mid-run, no passes)' {
+        '⚠️ **Deep UI tests** — the HostApp crashed mid-run, so 8 tests could not complete. An app crash can be an infrastructure flake OR a regression introduced by this PR — review the screenshots + logcat in the drop-deep-uitests artifact before concluding.' |
+            Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeTrue
+    }
+
+    It 'is false for an app crash that still had passes' {
+        '⚠️ **Deep UI tests** — 5 passed; the HostApp crashed mid-run, so 3 tests could not complete.' |
+            Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeFalse
+    }
+
     It 'is false when some tests passed alongside the setup failures' {
         '⚠️ **Deep UI tests** — 5 passed; 1 category (3 tests) could not run: OneTimeSetUp/fixture setup failure on the platform-pool agent — infrastructure, not a PR test failure.' |
             Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
