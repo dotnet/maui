@@ -162,7 +162,17 @@ namespace Microsoft.Maui.Platform
 					!fragmentManager.IsDestroyed(_mauiContext?.Context) &&
 					!fragmentManager.IsStateSaved)
 				{
-					fragmentManager.ExecutePendingTransactionsEx();
+					try
+					{
+						fragmentManager.ExecutePendingTransactionsEx();
+					}
+					catch (Java.Lang.IllegalStateException)
+					{
+						// The FragmentManager is already executing transactions (this teardown
+						// can be reached from a fragment lifecycle callback), so flushing again
+						// would throw "Recursive entry to executePendingTransactions". The pending
+						// detail Replace is already being processed and will complete on its own.
+					}
 				}
 
 				containerView.CurrentView = null;
