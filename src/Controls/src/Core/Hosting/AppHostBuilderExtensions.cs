@@ -204,16 +204,7 @@ public static partial class AppHostBuilderExtensions
 
 #if IOS || MACCATALYST
 		handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
-
-		if (RuntimeFeature.UseiOSTabbedViewHandler)
-		{
-			handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
-		}
-		else
-		{
-			handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
-		}
-
+		handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
 		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 

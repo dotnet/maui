@@ -43,9 +43,7 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-    <UseiOSTabbedViewHandler>true</UseiOSTabbedViewHandler>
-  </PropertyGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\tests\DeviceTests.Shared\Core.DeviceTests.Shared.csproj" />

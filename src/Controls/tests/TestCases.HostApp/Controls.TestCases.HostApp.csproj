@@ -39,9 +39,7 @@
     <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-    <UseiOSTabbedViewHandler>true</UseiOSTabbedViewHandler>
-  </PropertyGroup>
+
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
