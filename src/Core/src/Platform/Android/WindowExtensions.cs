@@ -4,6 +4,7 @@ using Android.Content.Res;
 using Android.Views;
 using AndroidX.Core.View;
 using AColor = Android.Graphics.Color;
+using AndroidX.Core.Graphics;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Platform;
 
@@ -60,8 +61,11 @@ namespace Microsoft.Maui
 				var isLightTheme = configuration is null ||
 					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 
-				var statusBarColor = GetThemeColor(activity, global::Android.Resource.Attribute.ColorPrimary, new AColor(window.StatusBarColor));
-
+				// Use white as the fallback so light-theme apps keep dark status bar icons
+				// if the theme color cannot be resolved. The fallback is defensive; Android
+				// themes should normally resolve colorPrimary.
+				var statusBarColor = GetThemeColor(activity, global::Android.Resource.Attribute.ColorPrimary, AColor.White);
+				
 				windowInsetsController.AppearanceLightStatusBars = IsLightColor(statusBarColor);
 				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
 			}
@@ -78,9 +82,6 @@ namespace Microsoft.Maui
 		}
 
 		static bool IsLightColor(AColor color)
-		{
-			var luminance = (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255;
-			return luminance > 0.5;
-		}
+	=> AndroidX.Core.Graphics.ColorUtils.CalculateLuminance(color.ToArgb()) > 0.5;
 	}
 }
