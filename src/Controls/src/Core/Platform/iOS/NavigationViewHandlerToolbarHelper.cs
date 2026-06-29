@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Layouts;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
@@ -82,9 +84,10 @@ namespace Microsoft.Maui.Controls
 
                 _tracker.CollectionChanged += TrackerOnCollectionChanged;
 
-                NavigationItem.Title = child.Title;
+                NavigationItem.Title = child.Title ?? GetNavigationPageTitle(child);
                 UpdateBackButtonTitle();
                 UpdateToolbarItems();
+                UpdateLeftBarButtonItem();
             }
         }
 
@@ -141,6 +144,10 @@ namespace Microsoft.Maui.Controls
             // (push or pop-back). IconColor is already set before the push,
             // so HandleChildPropertyChanged won't fire — we need this trigger.
             UpdateIconColor();
+
+            // Re-evaluate flyout button when this page appears (e.g., Detail is switched
+            // back to an already-loaded NavigationPage in a FlyoutPage).
+            UpdateLeftBarButtonItem();
 
             base.ViewWillAppear(animated);
         }
@@ -257,7 +264,7 @@ namespace Microsoft.Maui.Controls
             }
             else if (e.PropertyName == Page.TitleProperty.PropertyName)
             {
-                NavigationItem.Title = Child?.Title;
+                NavigationItem.Title = Child?.Title ?? GetNavigationPageTitle(Child);
             }
             else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
             {
@@ -310,6 +317,109 @@ namespace Microsoft.Maui.Controls
                 {
                     return flyoutPage;
                 }
+            }
+
+            return null;
+        }
+
+        static string? GetNavigationPageTitle(Page? page)
+        {
+            if (page?.Parent is NavigationPage navPage)
+                return navPage.Title;
+            return null;
+        }
+
+        void UpdateLeftBarButtonItem()
+        {
+            if (Child is not Page child)
+                return;
+
+            var parentFlyoutPage = FindParentFlyoutPage(child);
+
+            if (parentFlyoutPage is null)
+                return;
+
+            // Only show flyout button on the root page of the nav stack,
+            // or when the back button is hidden. Otherwise the back button takes priority.
+            var isRootPage = NavigationController?.ViewControllers?.FirstOrDefault() == this;
+            if (!isRootPage && NavigationPage.GetHasBackButton(child))
+            {
+                NavigationItem.LeftBarButtonItem = null;
+                return;
+            }
+
+            SetFlyoutLeftBarButton(parentFlyoutPage);
+        }
+
+        void SetFlyoutLeftBarButton(FlyoutPage flyoutPage)
+        {
+            if (!flyoutPage.ShouldShowToolbarButton())
+            {
+                NavigationItem.LeftBarButtonItem = null;
+                return;
+            }
+
+            flyoutPage.Flyout.IconImageSource.LoadImage(flyoutPage.FindMauiContext()!, result =>
+            {
+                var icon = result?.Value;
+                var originalImageSize = icon?.Size ?? CGSize.Empty;
+                var defaultIconHeight = 44f;
+                var buffer = 0.1;
+
+                if (icon is not null)
+                {
+                    if (originalImageSize.Height - defaultIconHeight > buffer)
+                    {
+                        if (flyoutPage.Flyout.IconImageSource is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
+                        {
+                            icon = icon.ResizeImageSource(originalImageSize.Width, defaultIconHeight, originalImageSize);
+                        }
+                    }
+
+                    try
+                    {
+                        NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnItemTapped);
+                    }
+                    catch (Exception)
+                    {
+                        // Throws Exception otherwise would catch more specific exception type
+                    }
+                }
+
+                if (icon == null || NavigationItem.LeftBarButtonItem == null)
+                {
+                    NavigationItem.LeftBarButtonItem = new UIBarButtonItem(flyoutPage.Flyout.Title, UIBarButtonItemStyle.Plain, OnItemTapped);
+                }
+
+                if (!string.IsNullOrEmpty(flyoutPage.AutomationId))
+                    NavigationItem.LeftBarButtonItem!.AccessibilityIdentifier = $"btn_{flyoutPage.AutomationId}";
+            });
+
+            void OnItemTapped(object? sender, EventArgs e)
+            {
+                flyoutPage.IsPresented = !flyoutPage.IsPresented;
+            }
+        }
+
+        static FlyoutPage? FindParentFlyoutPage(Page page)
+        {
+            var parentPages = page.GetParentPages();
+            var flyoutDetail = parentPages.OfType<FlyoutPage>().FirstOrDefault();
+
+            if (flyoutDetail is not null)
+            {
+                // Verify this NavigationPage is the Detail of the FlyoutPage
+                var navPage = page.Parent as NavigationPage;
+                if (navPage is not null && flyoutDetail.Detail == navPage)
+                    return flyoutDetail;
+
+                // Also check if the NavigationPage is wrapped inside the Detail
+                if (navPage is not null && flyoutDetail.Detail is NavigationPage detailNav && detailNav == navPage)
+                    return flyoutDetail;
+
+                // Direct check: is the page (or its NavigationPage parent) the Detail?
+                if (parentPages.Append(page).Contains(flyoutDetail.Detail))
+                    return flyoutDetail;
             }
 
             return null;
