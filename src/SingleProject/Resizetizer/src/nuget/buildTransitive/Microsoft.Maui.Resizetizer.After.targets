@@ -537,6 +537,15 @@
             PlistName="MauiInfo.plist"
             CustomFonts="@(MauiFont)" />
 
+        <!-- Tear down a previously-generated partial info.plist when the last MauiFont is removed.
+             CreatePartialInfoPlistTask above is skipped when there are no fonts, but
+             _CollectMauiFontItems would still register a lingering MauiInfo.plist via its Exists()
+             check, keeping stale UIAppFonts entries on iOS/MacCatalyst. Removing the last font
+             rewrites mauifont.inputs (now empty), so this target re-runs and clears the plist. -->
+        <Delete
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(MauiFont)' == '' And Exists('$(_MauiIntermediateFonts)MauiInfo.plist')"
+            Files="$(_MauiIntermediateFonts)MauiInfo.plist" />
+
         <!-- Touch/create our stamp file for outputs -->
         <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
 
