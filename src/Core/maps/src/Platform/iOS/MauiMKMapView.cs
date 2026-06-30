@@ -180,20 +180,22 @@ namespace Microsoft.Maui.Maps.Platform
 			if (_handlerRef.TryGetTarget(out var handler) && handler?.VirtualView != null)
 			{
 				var members = clusterAnnotation.MemberAnnotations;
+				// Each cluster member carries its pin's MarkerId, so GetPinForAnnotation resolves
+				// reliably here; the resulting list size matches the cluster size in normal operation.
+				var pins = new List<IMapPin>();
 				if (members != null)
 				{
-					var pins = new List<IMapPin>();
 					foreach (var member in members)
 					{
 						var pin = GetPinForAnnotation(member);
 						if (pin != null)
 							pins.Add(pin);
 					}
-
-					var coordinate = clusterAnnotation.Coordinate;
-					var location = new Devices.Sensors.Location(coordinate.Latitude, coordinate.Longitude);
-					clusterImage = handler.VirtualView.GetClusterImage(pins, location);
 				}
+
+				var coordinate = clusterAnnotation.Coordinate;
+				var location = new Devices.Sensors.Location(coordinate.Latitude, coordinate.Longitude);
+				clusterImage = handler.VirtualView.GetClusterImage(pins, location);
 			}
 
 			if (clusterImage != null)
