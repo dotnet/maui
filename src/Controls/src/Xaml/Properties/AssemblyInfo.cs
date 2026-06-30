@@ -12,8 +12,6 @@ using Microsoft.Maui.Controls.Internals;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.Forms")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.SourceGen")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
-
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 
 [assembly: Preserve]
