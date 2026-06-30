@@ -118,8 +118,8 @@
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>4.14.0</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
     <MicrosoftIoRecyclableMemoryStreamVersion>3.0.1</MicrosoftIoRecyclableMemoryStreamVersion>
     <SystemNumericsVectorsVersion>4.6.1</SystemNumericsVectorsVersion>
-    <SystemMemoryPackageVersion>4.5.5</SystemMemoryPackageVersion>
-    <SystemBuffersPackageVersion>4.5.1</SystemBuffersPackageVersion>
+    <SystemMemoryPackageVersion>4.6.3</SystemMemoryPackageVersion>
+    <SystemBuffersPackageVersion>4.6.1</SystemBuffersPackageVersion>
     <SystemIOUnmanagedMemoryStreamPackageVersion>4.3.0</SystemIOUnmanagedMemoryStreamPackageVersion>
     <SystemObjectModelPackageVersion>4.3.0</SystemObjectModelPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>6.1.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
