@@ -101,6 +101,10 @@ public class Issue35826ChildActivity : AndroidX.AppCompat.App.AppCompatActivity
 					? $"Result: Got {result.Count} photo(s)"
 					: "Result: Cancelled";
 			}
+			catch (OperationCanceledException)
+			{
+				_resultLabel.Text = "Result: Cancelled";
+			}
 			catch (Exception ex)
 			{
 				_resultLabel.Text = $"Result: Error - {ex.Message}";

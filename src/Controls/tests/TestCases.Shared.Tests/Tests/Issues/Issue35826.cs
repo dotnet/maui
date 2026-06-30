@@ -52,23 +52,24 @@ public class Issue35826 : _IssuesUITest
 		App.Back();
 
 		// If the bug is present WaitForTextToBePresentInElement times out because the
-		// TaskCompletionSource is never resolved. With the fix it updates promptly.
-		// Also accept "Error" as a valid outcome: what matters is that the call returns
-		// (doesn't hang), not the specific result — emulators may not have a photo picker.
+		// TaskCompletionSource is never resolved. With the fix it updates promptly to
+		// the expected cancellation state. Error indicates a launcher/ownership failure
+		// or another exception path and must fail this regression.
 		var returned = App.WaitForTextToBePresentInElement(ChildActivityResultLabel, "Cancelled",
-			timeout: TimeSpan.FromSeconds(120)) ||
-			App.WaitForTextToBePresentInElement(ChildActivityResultLabel, "Error",
-			timeout: TimeSpan.FromSeconds(5));
+			timeout: TimeSpan.FromSeconds(120));
 
 		var resultText = App.FindElement(ChildActivityResultLabel).GetText();
 
 		Assert.That(returned, Is.True,
-			$"PickPhotosAsync must return from a child activity (not hang indefinitely). " +
+			$"PickPhotosAsync must return from a child activity as a cancellation result after backing out of the picker. " +
 			$"Actual result label: '{resultText}'. " +
-			$"If this fails the result label is still showing 'Picking...' after 120 seconds.");
+			$"If this fails the result label is still showing 'Picking...' after 120 seconds or an exception path was hit.");
 
 		Assert.That(resultText, Does.Not.Contain("Picking"),
 			"PickPhotosAsync must not hang in a child activity.");
+
+		Assert.That(resultText, Does.Not.Contain("Error"),
+			$"PickPhotosAsync should cancel cleanly when backing out of the picker, not surface an exception. Actual result label: '{resultText}'.");
 
 		// Return to the host page
 		App.Back();
