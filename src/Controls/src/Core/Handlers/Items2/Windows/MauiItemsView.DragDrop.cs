@@ -549,25 +549,26 @@ internal partial class MauiItemsView
 
 	bool IsContainerBoundToDraggedItem(ItemContainer container)
 	{
-		if (_draggedSourceIndex < 0)
-			return false;
-
-		// For null items, value-equality (Equals(null, null)) would match every blank
-		// container. Use the authoritative index instead so only the source slot matches.
-		if (_draggedItem is null)
-			return container.Tag is int t && t == _draggedSourceIndex;
-
-		return IsContainerBoundToItem(container, _draggedItem);
+		return _draggedSourceIndex >= 0 && IsContainerBoundToItem(container, _draggedItem);
 	}
 
-	static bool IsContainerBoundToItem(ItemContainer container, object item)
+	static bool IsContainerBoundToItem(ItemContainer container, object? item)
 	{
 		if (container.Child is not ElementWrapper wrapper || wrapper.VirtualView is not View view)
 		{
-			return false;
+			// Blank container (no ElementWrapper) represents a null data item.
+			// It matches when the dragged item is also null.
+			return item is null;
 		}
 
 		var bound = view.BindingContext;
+		// Allow null-bound containers to match a null dragged item.
+		// ReferenceEquals(null, null) == true, Equals(null, null) == true.
+		if (bound is null && item is null)
+		{
+			return true;
+		}
+
 		if (bound is null)
 		{
 			return false;
