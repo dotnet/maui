@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
 
 // NOTE: warning disabled for netstandard projects
 #pragma warning disable 0436
@@ -147,6 +148,55 @@ namespace Microsoft.Maui.Controls
 			if (TryGetSource(out var s))
 			{
 				s.PropertyChanged -= OnPropertyChanged;
+			}
+
+			base.Unsubscribe();
+		}
+	}
+
+	/// <summary>
+	/// A "proxy" class for subscribing to <see cref="IResourceDictionary.ValuesChanged"/> via WeakReference.
+	/// General usage is to store this in a member variable and call Subscribe()/Unsubscribe() appropriately.
+	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakResourcesChangedProxy objects from leaking.
+	/// </summary>
+	class WeakResourcesChangedProxy : WeakEventProxy<IResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+	{
+		public WeakResourcesChangedProxy() { }
+
+		public WeakResourcesChangedProxy(IResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+		{
+			Subscribe(source, handler);
+		}
+
+		void OnValuesChanged(object? sender, ResourcesChangedEventArgs e)
+		{
+			if (TryGetHandler(out var handler))
+			{
+				handler(sender, e);
+			}
+			else
+			{
+				Unsubscribe();
+			}
+		}
+
+		public override void Subscribe(IResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+		{
+			if (TryGetSource(out var s))
+			{
+				s.ValuesChanged -= OnValuesChanged;
+			}
+
+			source.ValuesChanged += OnValuesChanged;
+
+			base.Subscribe(source, handler);
+		}
+
+		public override void Unsubscribe()
+		{
+			if (TryGetSource(out var s))
+			{
+				s.ValuesChanged -= OnValuesChanged;
 			}
 
 			base.Unsubscribe();

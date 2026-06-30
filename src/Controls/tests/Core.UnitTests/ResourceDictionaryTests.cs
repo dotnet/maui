@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Xunit;
 using Xunit.Sdk;
@@ -459,6 +460,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			rd0.Add("foo", "Foo");
 			Assert.Equal("Foo", label.Text);
+		}
+
+		[Fact]
+		public async Task MergedResourceDictionaryDoesNotLeakElement()
+		{
+			// A single, long-lived ResourceDictionary instance that is merged into a
+			// transient element's Resources must not keep that element alive after it is
+			// dropped. The merged (child) dictionary subscribed to the parent dictionary's
+			// ValuesChanged event, which rooted the element for the dictionary's lifetime.
+			var sharedResources = new ResourceDictionary { { "Key", "Value" } };
+
+			WeakReference weakElement;
+			{
+				var element = new ContentView();
+				element.Resources.MergedDictionaries.Add(sharedResources);
+				weakElement = new WeakReference(element);
+			}
+
+			Assert.False(await weakElement.WaitForCollect(), "ContentView should not be alive!");
+			GC.KeepAlive(sharedResources);
 		}
 	}
 }

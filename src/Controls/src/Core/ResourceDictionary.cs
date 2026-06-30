@@ -133,6 +133,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 		IList<ResourceDictionary> _collectionTrack;
+		Dictionary<ResourceDictionary, WeakResourcesChangedProxy> _mergedProxies;
+		EventHandler<ResourcesChangedEventArgs> _mergedValuesChanged;
 
 		void MergedDictionaries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -145,7 +147,7 @@ namespace Microsoft.Maui.Controls
 			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
 				foreach (var dictionary in _collectionTrack)
-					dictionary.ValuesChanged -= Item_ValuesChanged;
+					UnsubscribeFromMergedDictionary(dictionary);
 
 				_collectionTrack.Clear();
 				return;
@@ -158,7 +160,7 @@ namespace Microsoft.Maui.Controls
 				{
 					var rd = (ResourceDictionary)item;
 					_collectionTrack.Add(rd);
-					rd.ValuesChanged += Item_ValuesChanged;
+					SubscribeToMergedDictionary(rd);
 					OnValuesChanged(rd.ToArray());
 				}
 			}
@@ -169,7 +171,7 @@ namespace Microsoft.Maui.Controls
 				foreach (var item in e.OldItems)
 				{
 					var rd = (ResourceDictionary)item;
-					rd.ValuesChanged -= Item_ValuesChanged;
+					UnsubscribeFromMergedDictionary(rd);
 					_collectionTrack.Remove(rd);
 				}
 			}
@@ -178,6 +180,39 @@ namespace Microsoft.Maui.Controls
 		void Item_ValuesChanged(object sender, ResourcesChangedEventArgs e)
 		{
 			OnValuesChanged(e.Values.ToArray());
+		}
+
+		// Merged dictionaries are often long-lived and/or shared across many elements. Subscribing to
+		// their ValuesChanged event directly would let the (shared) child dictionary strongly root this
+		// dictionary - and therefore the owning element - for the child's lifetime. Route the
+		// subscription through a weak proxy so the child no longer keeps this dictionary alive.
+		void SubscribeToMergedDictionary(ResourceDictionary rd)
+		{
+			_mergedProxies ??= new Dictionary<ResourceDictionary, WeakResourcesChangedProxy>();
+			_mergedValuesChanged ??= Item_ValuesChanged;
+
+			if (_mergedProxies.TryGetValue(rd, out var existing))
+				existing.Unsubscribe();
+
+			_mergedProxies[rd] = new WeakResourcesChangedProxy(rd, _mergedValuesChanged);
+		}
+
+		void UnsubscribeFromMergedDictionary(ResourceDictionary rd)
+		{
+			if (_mergedProxies is not null && _mergedProxies.TryGetValue(rd, out var proxy))
+			{
+				proxy.Unsubscribe();
+				_mergedProxies.Remove(rd);
+			}
+		}
+
+		~ResourceDictionary()
+		{
+			if (_mergedProxies is null)
+				return;
+
+			foreach (var proxy in _mergedProxies.Values)
+				proxy.Unsubscribe();
 		}
 
 		void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
