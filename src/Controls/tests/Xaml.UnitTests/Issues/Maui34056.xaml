@@ -45,5 +45,18 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+        <!-- Scenario 4: RelativeSource AncestorType for an Element subclass (ContentPage).
+             AncestorType=ContentPage derives from Element, so SourceGen selects FindAncestor mode
+             (not FindAncestorBindingContext). This verifies the HasImplicitConversion branch in
+             KnownMarkups.TryGetRelativeSourceAncestorType produces the correct mode. -->
+        <CollectionView x:Name="FindAncestorCollectionView"
+                        ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui34056ItemViewModel">
+                    <Label x:Name="FindAncestorLabel"
+                           Text="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=Title}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
     </VerticalStackLayout>
 </ContentPage>

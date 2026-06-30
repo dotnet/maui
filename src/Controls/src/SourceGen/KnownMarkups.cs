@@ -392,10 +392,17 @@ internal class KnownMarkups
 					return true;
 				}
 
-				// Emit property-not-found diagnostic only for x:DataType bindings.
-				// AncestorType and x:Reference bindings silently fall back to runtime —
-				// they were never compiled before, so a new warning would be a regression.
-				if (propertyNotFoundDiagnostic is not null && xRefSourceType is null && !isAncestorTypeSource)
+				// Emit property-not-found diagnostic when the source type was known at compile time
+				// but the binding path doesn't exist on that type. Specifically:
+				// - x:DataType bindings: always emit (existing behavior).
+				// - AncestorType bindings with a resolved type: emit, because the type is known and the
+				//   path is provably wrong — consistent with x:DataType behavior. Suppress only when the
+				//   AncestorType itself failed to resolve (ancestorTypeSymbol == null), since no type
+				//   inference was possible.
+				// - x:Reference bindings: always suppress — they were never compiled before.
+				if (propertyNotFoundDiagnostic is not null
+					&& xRefSourceType is null
+					&& (!isAncestorTypeSource || ancestorTypeSymbol is not null))
 				{
 					context.ReportDiagnostic(propertyNotFoundDiagnostic);
 				}

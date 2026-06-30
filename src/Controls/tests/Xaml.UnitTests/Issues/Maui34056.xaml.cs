@@ -52,7 +52,10 @@ public partial class Maui34056 : ContentPage
             }
             else
             {
-                // XamlC and SourceGen produce a trim-safe TypedBinding for AncestorType bindings.
+                // SourceGen: produces a trim-safe TypedBinding using AncestorType as the source type (the PR fix).
+                // XamlC: produces a TypedBinding here via the inline x:DataType='local:Maui34056PageViewModel'
+                // attribute on the Binding markup — not via AncestorType resolution. XamlC's AncestorType-only
+                // behavior (Scenario 3, no inline x:DataType) still falls back to runtime Binding.
                 var typedBinding = Assert.IsType<TypedBinding<Maui34056PageViewModel, ICommand>>(binding);
 
                 // Verify the RelativeSource is correctly configured (mode + ancestor type).
@@ -129,6 +132,41 @@ public partial class Maui34056 : ContentPage
                 // Runtime: no compile-time type info, always string-based Binding.
                 // SourceGen (the fix): HasRelativeSourceBinding blocks x:DataType path for Self bindings.
                 Assert.IsType<Binding>(binding);
+            }
+        }
+
+        [Theory]
+        [XamlInflatorData]
+        internal void RelativeSourceElementAncestorTypeUsesFindAncestorMode(XamlInflator inflator)
+        {
+            // Verifies that when AncestorType is an Element subclass (ContentPage), SourceGen selects
+            // RelativeBindingSourceMode.FindAncestor (not FindAncestorBindingContext) and produces a
+            // TypedBinding<ContentPage, string>. This exercises the HasImplicitConversion/FindAncestor
+            // branch in KnownMarkups.cs that the other scenarios do not cover.
+            var page = new Maui34056(inflator);
+            page.Title = "TestTitle";
+
+            var template = ((CollectionView)page.FindAncestorCollectionView).ItemTemplate;
+            var content = template.CreateContent() as Label;
+            Assert.NotNull(content);
+
+            var bindingContext = content.GetContext(Label.TextProperty);
+            Assert.NotNull(bindingContext);
+            var binding = bindingContext.Bindings.GetValue();
+
+            if (inflator is XamlInflator.Runtime or XamlInflator.XamlC)
+            {
+                // Runtime: no compile-time type info.
+                // XamlC: pre-existing behavior — does not compile AncestorType without inline x:DataType.
+                Assert.IsType<Binding>(binding);
+            }
+            else
+            {
+                // SourceGen: AncestorType=ContentPage (an Element subclass) → FindAncestor mode.
+                var typedBinding = Assert.IsType<TypedBinding<ContentPage, string>>(binding);
+                var relativeSource = Assert.IsType<RelativeBindingSource>(typedBinding.Source);
+                Assert.Equal(RelativeBindingSourceMode.FindAncestor, relativeSource.Mode);
+                Assert.Equal(typeof(ContentPage), relativeSource.AncestorType);
             }
         }
     }
