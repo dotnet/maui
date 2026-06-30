@@ -70,6 +70,29 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			UpdateStatus();
 		}
 
+		void OnUseClusterProviderClicked(object? sender, EventArgs e)
+		{
+			// Dynamic icon: dotnet_bot for small clusters, a different image for large ones.
+			clusterMap.ClusterImageSource = null;
+			clusterMap.ClusterImageProvider = info =>
+				info.Count >= 10
+					? ImageSource.FromFile("coffee.png")
+					: ImageSource.FromFile("dotnet_bot.png");
+			clusterMap.Pins.Clear();
+			AddPins(60);
+			UpdateStatus();
+		}
+
+		void OnUseStaticClusterIconClicked(object? sender, EventArgs e)
+		{
+			// Static icon: one image for every cluster.
+			clusterMap.ClusterImageProvider = null;
+			clusterMap.ClusterImageSource = ImageSource.FromFile("dotnet_bot.png");
+			clusterMap.Pins.Clear();
+			AddPins(60);
+			UpdateStatus();
+		}
+
 		void OnClusteringToggled(object? sender, ToggledEventArgs e)
 		{
 			clusterMap.IsClusteringEnabled = e.Value;

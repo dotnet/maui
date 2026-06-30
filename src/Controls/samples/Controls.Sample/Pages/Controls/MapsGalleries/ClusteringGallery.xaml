@@ -22,6 +22,12 @@
             <Button
                 Text="Clear Pins"
                 Clicked="OnClearPinsClicked" />
+            <Button
+                Text="Custom Cluster Icon (provider)"
+                Clicked="OnUseClusterProviderClicked" />
+            <Button
+                Text="Static Cluster Icon"
+                Clicked="OnUseStaticClusterIconClicked" />
         </HorizontalStackLayout>
         <HorizontalStackLayout Grid.Row="1" Spacing="5" Padding="5" VerticalOptions="Center">
             <Label Text="Clustering:" VerticalOptions="Center" />
