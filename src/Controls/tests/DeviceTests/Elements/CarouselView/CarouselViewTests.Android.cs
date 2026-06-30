@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls;
@@ -53,6 +54,60 @@ namespace Microsoft.Maui.DeviceTests
 				var platformPosition = GetPlatformPosition(handler);
 				Assert.True(CheckPosition(platformPosition, position));
 			});
+		}
+
+		[Fact(DisplayName = "Vertical Drag On Horizontal CarouselView Is Not Intercepted")]
+		public async Task VerticalDragOnHorizontalCarouselIsNotIntercepted()
+		{
+			SetupBuilder();
+
+			var data = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
+
+			var template = new DataTemplate(() => new Grid { new Label() });
+
+			var carouselView = new CarouselView
+			{
+				ItemTemplate = template,
+				ItemsSource = data,
+				IsSwipeEnabled = true,
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async (handler) =>
+			{
+				var recyclerView = handler.PlatformView;
+				await recyclerView.WaitForLayoutOrNonZeroSize();
+
+				// A vertical-dominant drag with a horizontal component large enough that the base
+				// RecyclerView would otherwise treat it as a horizontal page swipe. The fix must
+				// detect the off-axis gesture and delegate it to nested scrollable content, so
+				// OnInterceptTouchEvent returns false. Without the fix, the carousel intercepts it.
+				bool intercepted = SimulateDragIntercept(recyclerView, deltaX: 80, deltaY: 400);
+
+				Assert.False(intercepted);
+			});
+		}
+
+		// Dispatches a synthetic down/move/up gesture to the RecyclerView's touch-interception
+		// pipeline and reports whether the move was intercepted by the carousel.
+		static bool SimulateDragIntercept(RecyclerView recyclerView, float deltaX, float deltaY)
+		{
+			const float startX = 200f;
+			const float startY = 200f;
+			long downTime = global::Android.OS.SystemClock.UptimeMillis();
+
+			var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, startX, startY, 0);
+			recyclerView.OnInterceptTouchEvent(down);
+			down.Recycle();
+
+			var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, startX + deltaX, startY + deltaY, 0);
+			bool intercepted = recyclerView.OnInterceptTouchEvent(move);
+			move.Recycle();
+
+			var up = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Up, startX + deltaX, startY + deltaY, 0);
+			recyclerView.OnInterceptTouchEvent(up);
+			up.Recycle();
+
+			return intercepted;
 		}
 
 		RecyclerView GetPlatformCarouselView(CarouselViewHandler carouselViewHandler) =>
