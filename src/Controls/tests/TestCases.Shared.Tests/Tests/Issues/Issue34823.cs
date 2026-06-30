@@ -21,6 +21,9 @@ public class Issue34823 : _IssuesUITest
 	{
 		App.WaitForElement("WebButton");
 		App.Tap("WebButton");
+#if IOS
+		App.WaitForElement("Text on a web page");
+#endif
 		VerifyScreenshot();
 	}
 
@@ -30,7 +33,11 @@ public class Issue34823 : _IssuesUITest
 	{
 		App.WaitForElement("WebButton");
 		App.Tap("ThemeButton");
+		App.WaitForElement("WebButton");
 		App.Tap("WebButton");
+#if IOS
+		App.WaitForElement("Text on a web page");
+#endif
 		VerifyScreenshot();
 	}
 }
