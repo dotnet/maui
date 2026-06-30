@@ -25,11 +25,14 @@ namespace Microsoft.Maui.Controls
 		PropertyChangedEventHandler? _strokeShapeChanged;
 		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
 		PropertyChangedEventHandler? _strokeChanged;
+		WeakNotifyCollectionChangedProxy? _strokeDashArrayProxy = null;
+		NotifyCollectionChangedEventHandler? _strokeDashArrayChanged;
 
 		~Border()
 		{
 			_strokeShapeProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
+			_strokeDashArrayProxy?.Unsubscribe();
 		}
 
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
@@ -310,13 +313,21 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (StrokeDashArray is INotifyCollectionChanged oldCollection)
-					oldCollection.CollectionChanged -= OnStrokeDashArrayChanged;
-
 				_strokeDashPattern = StrokeDashArray?.ToFloatArray();
 
+				// Subscribe weakly so a shared/long-lived DoubleCollection does not strongly
+				// root this Border for the collection's lifetime. The proxy is torn down in
+				// ~Border(), mirroring the Stroke/StrokeShape weak proxies above.
 				if (StrokeDashArray is INotifyCollectionChanged newCollection)
-					newCollection.CollectionChanged += OnStrokeDashArrayChanged;
+				{
+					_strokeDashArrayChanged ??= OnStrokeDashArrayChanged;
+					_strokeDashArrayProxy ??= new();
+					_strokeDashArrayProxy.Subscribe(newCollection, _strokeDashArrayChanged);
+				}
+				else
+				{
+					_strokeDashArrayProxy?.Unsubscribe();
+				}
 
 				return _strokeDashPattern;
 			}
