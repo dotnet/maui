@@ -676,16 +676,14 @@ namespace Microsoft.Maui.Maps.Handlers
 					{
 						// Single pin - add as regular marker
 						var pin = cluster.Pins[0];
-						var pinHandler = pin.ToHandler(MauiContext);
-						if (pinHandler is IMapPinHandler iMapPinHandler)
+						if (pin is INotifyPropertyChanged observable)
 						{
-							var marker = Map.AddMarker(iMapPinHandler.PlatformView);
-							if (marker != null)
-							{
-								pin.MarkerId = marker.Id;
-								_markers.Add(marker);
-							}
+							// -= before += because ReclusterPins re-runs AddPins on zoom without DisconnectPins.
+							observable.PropertyChanged -= PinOnPropertyChanged;
+							observable.PropertyChanged += PinOnPropertyChanged;
 						}
+
+						AddPinAsync(pin, ct).FireAndForget();
 					}
 					else
 					{
