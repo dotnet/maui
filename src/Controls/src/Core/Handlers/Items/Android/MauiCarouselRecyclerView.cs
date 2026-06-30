@@ -19,7 +19,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _isVisible;
 		bool _disposed;
 		bool _isInternalPositionUpdate;
-
+		readonly float _touchSlop;
+		float _initialTouchX;
+		float _initialTouchY;
+		bool _directionLocked;
+		bool _delegatingToChild;
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
 
@@ -29,18 +33,92 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_oldViews = new List<View>();
 			_carouselViewLoopManager = new CarouselViewLoopManager();
+			_touchSlop = ViewConfiguration.Get(context).ScaledTouchSlop;
 		}
 
+		// Gets or sets a value indicating whether swipe gestures are enabled for the carousel.
 		public bool IsSwipeEnabled { get; set; }
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
+			// If ItemsView is explicitly disabled, defer to the base implementation so it can
+			// intercept all touch events and block interaction. Returning false here (for either
+			// the swipe-disabled or off-axis delegation paths) would bypass that guard and allow
+			// a disabled CarouselView to delegate gestures to a nested child.
+			if (ItemsView?.IsEnabled == false && !ItemsView.IsExplicitlyEnabled)
+			{
+				return base.OnInterceptTouchEvent(ev);
+			}
+
 			if (!IsSwipeEnabled)
 			{
 				return false;
 			}
 
+			switch (ev.Action)
+			{
+				case MotionEventActions.Down:
+					_initialTouchX = ev.GetX();
+					_initialTouchY = ev.GetY();
+					_directionLocked = false;
+					_delegatingToChild = false;
+					break;
+
+				case MotionEventActions.Move:
+					// Once a gesture has been delegated to a nested child, keep delegating for the
+					// rest of the gesture. This prevents a later ambiguous move - or the child
+					// reaching its scroll boundary - from letting the carousel hijack the swipe and
+					// transition to the next item.
+					if (_delegatingToChild)
+					{
+						return false;
+					}
+
+					if (!_directionLocked)
+					{
+						float deltaX = ev.GetX() - _initialTouchX;
+						float deltaY = ev.GetY() - _initialTouchY;
+
+						// Lock the gesture direction the first time movement exceeds touch slop.
+						if (Math.Abs(deltaX) > _touchSlop || Math.Abs(deltaY) > _touchSlop)
+						{
+							_directionLocked = true;
+
+							if (IsOffAxisGesture(deltaX, deltaY))
+							{
+								// Perpendicular gesture (e.g. a vertical swipe on a horizontal carousel):
+								// it belongs to nested scrollable content, never the carousel.
+								_delegatingToChild = true;
+								return false;
+							}
+						}
+					}
+					break;
+
+				case MotionEventActions.Cancel:
+				case MotionEventActions.Up:
+					// Reset gesture state at the end of the gesture
+					// to prevent old values from being used if we don't get a Down event
+					_initialTouchX = 0;
+					_initialTouchY = 0;
+					_directionLocked = false;
+					_delegatingToChild = false;
+					break;
+			}
+
 			return base.OnInterceptTouchEvent(ev);
+		}
+
+		// Determines whether the gesture's dominant axis is the opposite of the carousel's scroll
+		// orientation (e.g. a vertical swipe on a horizontal carousel). Off-axis gestures belong to
+		// nested scrollable content, so the carousel must not intercept them.
+		bool IsOffAxisGesture(float deltaX, float deltaY)
+		{
+			float absDeltaX = Math.Abs(deltaX);
+			float absDeltaY = Math.Abs(deltaY);
+			bool isVerticalGesture = absDeltaY > absDeltaX;
+
+			return IsHorizontal ? isVerticalGesture : !isVerticalGesture;
 		}
 
 		protected virtual bool IsHorizontal => (Carousel?.ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
