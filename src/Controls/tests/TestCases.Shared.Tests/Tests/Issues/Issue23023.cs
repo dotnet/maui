@@ -17,6 +17,14 @@ public class Issue23023 : _IssuesUITest
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselScrollsToEndItemAfterReset()
 	{
+		// iOS 26 changes UICollectionView scroll callback behavior, causing incorrect
+		// CurrentItem/Position during animated ScrollTo — tracked in:
+		// https://github.com/dotnet/maui/issues/34965
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Skipped on iOS 26+ due to carousel scroll behavior change. Issue: https://github.com/dotnet/maui/issues/34965");
+		}
+
 		App.WaitForElement("Issue23023_ReloadItems");
 		App.Tap("Issue23023_ReloadItems");
 		App.Tap("Issue23023_ScrollToLastItem");
