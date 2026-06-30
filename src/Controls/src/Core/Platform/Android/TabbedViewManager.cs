@@ -747,11 +747,13 @@ internal class TabbedViewManager
         }
 
         var menu = _bottomNavigationView.Menu;
-        menu.Clear();
 
         var tabs = Element.Tabs;
         if (tabs is null || tabs.Count == 0)
         {
+            menu.Clear();
+            _bottomNavigationView.SetOnItemSelectedListener(null);
+            _bottomNavigationView.SetOnItemReselectedListener(null);
             return;
         }
 
@@ -765,43 +767,25 @@ internal class TabbedViewManager
 
         _bottomNavigationView.Visibility = ViewStates.Visible;
 
-        int maxItems = Math.Min(_bottomNavigationView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
-        bool showMore = tabs.Count > maxItems;
-        int end = showMore ? maxItems - 1 : tabs.Count;
-
-        for (int i = 0; i < end; i++)
+        // Use BottomNavigationViewUtils.SetupMenu which does incremental in-place updates
+        // (reuses existing IMenuItem objects at unchanged positions, preserving identity).
+        // This matches the renderer's ShellItemRenderer.SetupMenu behavior and avoids
+        // menu.Clear() which destroys all IMenuItem references on every tab add/remove.
+        var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
+        for (int i = 0; i < tabs.Count; i++)
         {
             var tab = tabs[i];
-            var title = !string.IsNullOrWhiteSpace(tab.Title) ? tab.Title : $"Tab {i + 1}";
-            var menuItem = menu.Add(0, i, i, title);
-
-            if (menuItem is null)
-            {
-                continue;
-            }
-
-            if (!tab.IsEnabled)
-            {
-                menuItem.SetEnabled(false);
-            }
-
-            LoadBottomNavIconAsync(menuItem, tab);
+            items.Add((tab.Title, tab.Icon as ImageSource, tab.IsEnabled));
         }
 
-        // Add "More" overflow item if needed
-        if (showMore)
-        {
-            var moreItem = menu.Add(0, BottomNavigationViewUtils.MoreTabId, maxItems - 1, "More");
-            moreItem?.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
-        }
-
-        // Set initial selection using pre-computed index (avoids wrapper comparison issues)
         var currentIndex = Element.CurrentTabIndex;
-        if (currentIndex >= 0 && currentIndex < tabs.Count)
-        {
-            int targetId = currentIndex >= end ? BottomNavigationViewUtils.MoreTabId : currentIndex;
-            _bottomNavigationView.SelectedItemId = targetId;
-        }
+        BottomNavigationViewUtils.SetupMenu(
+            menu,
+            _bottomNavigationView.MaxItemCount,
+            items,
+            currentIndex,
+            _bottomNavigationView,
+            _context);
 
         _bottomNavigationView.SetShiftMode(false, false);
 
