@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Android.Views;
 using AndroidX.AppCompat.Graphics.Drawable;
@@ -1892,6 +1894,461 @@ namespace Microsoft.Maui.DeviceTests
 						throw new Exception($"Failed to swap to {nextRootPage} from {previousRootPage}", exc);
 					}
 				}
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-PageLayoutDoesNotExceedWindowBounds")]
+		public async Task ShellHandler_PageLayoutDoesNotExceedWindowBounds()
+		{
+			SetupBuilder();
+
+			var button = new Button() { Text = "Test me" };
+			var contentPage = new ContentPage() { Content = button };
+			var shell = new Shell()
+			{
+				CurrentItem = contentPage,
+				FlyoutBehavior = FlyoutBehavior.Disabled
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(contentPage);
+				var pageBounds = contentPage.GetBoundingBox();
+				var window = contentPage.Window;
+
+				Assert.True(pageBounds.X >= 0);
+				Assert.True(pageBounds.Y >= 0);
+				Assert.True(pageBounds.Width <= window.Width);
+				Assert.True(pageBounds.Height <= window.Height);
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-FlyoutWithAsMultipleItemsRendersWithoutCrashing")]
+		public async Task ShellHandler_FlyoutWithAsMultipleItemsRendersWithoutCrashing()
+		{
+			SetupBuilder();
+
+			Shell shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new FlyoutItem()
+				{
+					FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+					Items =
+					{
+						new ShellSection()
+						{
+							FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+							Items = { new ShellContent() { ContentTemplate = new DataTemplate(() => new ContentPage()) } }
+						},
+						new ShellSection()
+						{
+							FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+							Items = { new ShellContent() { ContentTemplate = new DataTemplate(() => new ContentPage()) } }
+						}
+					}
+				});
+			});
+
+			bool finished = false;
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (_) =>
+			{
+				finished = true;
+				return Task.CompletedTask;
+			});
+
+			Assert.True(finished);
+		}
+
+		[Fact(DisplayName = "ShellHandler-Flyout Width Does Not Crash")]
+		public async Task ShellHandler_FlyoutWidthDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
+			});
+
+			bool finished = false;
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (_) =>
+			{
+				finished = true;
+				shell.FlyoutWidth = 1;
+				return Task.CompletedTask;
+			});
+
+			Assert.True(finished);
+		}
+
+		[Fact(DisplayName = "ShellHandler-Appearing Fires Before NavigatedTo")]
+		public async Task ShellHandler_AppearingFiresBeforeNavigatedTo()
+		{
+			SetupBuilder();
+			var contentPage = new ContentPage();
+			int contentPageAppearingFired = 0;
+			int navigatedToFired = 0;
+			int shellNavigatedToFired = 0;
+
+			bool navigatedPartPassed = false;
+			bool navigatedToPartPassed = false;
+
+			contentPage.Appearing += (_, _) =>
+			{
+				contentPageAppearingFired++;
+				Assert.Equal(0, navigatedToFired);
+				Assert.Equal(0, shellNavigatedToFired);
+			};
+
+			contentPage.NavigatedTo += (_, _) =>
+			{
+				navigatedToFired++;
+				navigatedToPartPassed = (contentPageAppearingFired == 1);
+			};
+
+			Shell shell = await CreateShellAsync(shell =>
+			{
+				shell.Navigated += (_, _) =>
+				{
+					shellNavigatedToFired++;
+					navigatedPartPassed = (contentPageAppearingFired == 1);
+				};
+
+				shell.Items.Add(new TabBar()
+				{
+					Items = { new ShellContent() { ContentTemplate = new DataTemplate(() => contentPage) } }
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(contentPage);
+			});
+
+			Assert.True(navigatedPartPassed, "Appearing fired too many times before Navigated fired");
+			Assert.True(navigatedToPartPassed, "Appearing fired too many times before NavigatedTo fired");
+			Assert.Equal(1, contentPageAppearingFired);
+			Assert.Equal(1, shellNavigatedToFired);
+			Assert.Equal(1, navigatedToFired);
+		}
+
+		[Fact(DisplayName = "ShellHandler-Navigating During Navigated Doesnt ReFire Appearing")]
+		public async Task ShellHandler_NavigatingDuringNavigatedDoesntReFireAppearing()
+		{
+			SetupBuilder();
+			var contentPage = new ContentPage();
+			var secondContentPage = new ContentPage();
+			int contentPageAppearingFired = 0;
+			int navigatedToFired = 0;
+			int secondContentPageAppearingFired = 0;
+			int secondNavigatedToFired = 0;
+
+			TaskCompletionSource<object> finishedSecondNavigation = new TaskCompletionSource<object>();
+
+			contentPage.Appearing += (_, _) => contentPageAppearingFired++;
+
+			secondContentPage.Appearing += (_, _) =>
+			{
+				secondContentPageAppearingFired++;
+				Assert.Equal(0, secondNavigatedToFired);
+			};
+
+			secondContentPage.NavigatedTo += (_, _) => secondNavigatedToFired++;
+
+			Shell shell = null;
+			contentPage.NavigatedTo += async (_, _) =>
+			{
+				navigatedToFired++;
+				await shell.Navigation.PushAsync(secondContentPage);
+				finishedSecondNavigation.SetResult(true);
+			};
+
+			shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items = { new ShellContent() { ContentTemplate = new DataTemplate(() => contentPage) } }
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await finishedSecondNavigation.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+				Assert.Equal(1, contentPageAppearingFired);
+				Assert.Equal(1, navigatedToFired);
+				Assert.Equal(1, secondContentPageAppearingFired);
+				Assert.Equal(1, secondNavigatedToFired);
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-Swap Shell Root Page for NavigationPage")]
+		public async Task ShellHandler_SwapShellRootPageForNavigationPage()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				var newPage = new ContentPage();
+				(handler.VirtualView as MauiWindow).Page = new NavigationPage(newPage);
+				await OnNavigatedToAsync(newPage);
+				await OnFrameSetToNotEmpty(newPage);
+				Assert.True(newPage.Frame.Height > 0);
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-PopToRootAsync correctly navigates to root page")]
+		public async Task ShellHandler_PopToRootAsyncCorrectlyNavigationsBackToRootPage()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = rootPage;
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PopToRootAsync();
+				await OnLoadedAsync(rootPage);
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-ChangingToNewMauiContextDoesntCrash")]
+		public async Task ShellHandler_ChangingToNewMauiContextDoesntCrash()
+		{
+			SetupBuilder();
+
+			var shell = new Shell();
+			shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
+			shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem2", Items = { new ContentPage() }, Title = "Flyout Item" });
+
+			var window = new MauiWindow(shell);
+			var mauiContextStub1 = ContextStub.CreateNew(MauiContext);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+				await Task.Delay(100);
+				await shell.GoToAsync("//FlyoutItem2");
+			}, mauiContextStub1);
+
+			var mauiContextStub2 = ContextStub.CreateNew(MauiContext);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+				await Task.Delay(100);
+				await shell.GoToAsync("//FlyoutItem1");
+				await shell.GoToAsync("//FlyoutItem2");
+			}, mauiContextStub2);
+		}
+
+		[Fact(DisplayName = "ShellHandler-Toolbar Title")]
+		public async Task ShellHandler_ToolbarTitle()
+		{
+			SetupBuilder();
+			var navPage = new Shell()
+			{
+				CurrentItem = new ContentPage() { Title = "Page Title" }
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new MauiWindow(navPage), (handler) =>
+			{
+				string title = GetToolbarTitle(handler);
+				Assert.Equal("Page Title", title);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-Toolbar Title View Updates")]
+		public async Task ShellHandler_ToolbarTitleViewUpdates()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage() { Title = "Page 1" };
+			var page2 = new ContentPage() { Title = "Page 2" };
+			var navPage = new Shell() { CurrentItem = page1 };
+
+			var titleView1 = new VerticalStackLayout();
+			var titleView2 = new Label();
+
+			Shell.SetTitleView(page2, titleView1);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new MauiWindow(navPage), async (handler) =>
+			{
+				bool viewIsTitleView(IView view)
+				{
+					return view.Handler != null && view.ToPlatform() == GetTitleView(handler);
+				}
+
+				await navPage.Navigation.PushAsync(page2);
+				await AssertEventually(() => viewIsTitleView(titleView1));
+				Shell.SetTitleView(page2, titleView2);
+				await AssertEventually(() => viewIsTitleView(titleView2));
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-Toolbar Title Updates")]
+		public async Task ShellHandler_ToolbarTitleUpdates()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage() { Title = "Page 1" };
+			var page2 = new ContentPage() { Title = "Page 2" };
+			var navPage = new Shell() { CurrentItem = page1 };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new MauiWindow(navPage), async (handler) =>
+			{
+				await navPage.Navigation.PushAsync(page2);
+				await AssertEventually(() => "Page 2" == GetToolbarTitle(handler));
+				page2.Title = "New Title";
+				page1.Title = "Previous Page Title";
+				await AssertEventually(() => "New Title" == GetToolbarTitle(handler));
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-Title View Measures")]
+		public async Task ShellHandler_TitleViewMeasures()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage() { Title = "Page 1" };
+			var navPage = new Shell() { CurrentItem = page1 };
+
+			var titleView1 = new VerticalStackLayout()
+			{
+				new Label() { Text = "Title View" }
+			};
+
+			Shell.SetTitleView(page1, titleView1);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new MauiWindow(navPage), async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(titleView1);
+				var containerSize = GetTitleViewExpectedSize(handler);
+				var titleView1PlatformSize = titleView1.GetBoundingBox();
+				Assert.Equal(containerSize.Width, titleView1PlatformSize.Width);
+				Assert.Equal(containerSize.Height, titleView1PlatformSize.Height);
+				Assert.True(containerSize.Height > 0);
+				Assert.True(containerSize.Width > 0);
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-HideSoftInputOnTapped Doesn't Crash If Entry Is Still Focused After Window Is Null")]
+		public async Task ShellHandler_HideSoftInputOnTappedDoesntCrashIfEntryIsStillFocusedAfterWindowIsNull()
+		{
+			SetupBuilder();
+
+			Entry entry1;
+			Entry entry2;
+
+			var rootPage = CreatePage(out entry1);
+			var nextPage = CreatePage(out entry2);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = rootPage;
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				entry1.Focus();
+				await entry1.WaitForFocused();
+
+				await rootPage.Navigation.PushAsync(nextPage);
+				entry2.Focus();
+				await entry2.WaitForFocused();
+
+				await shell.GoToAsync("..", false);
+			});
+
+			ContentPage CreatePage(out Entry entry)
+			{
+				entry = new Entry();
+				return new ContentPage()
+				{
+					HideSoftInputOnTapped = true,
+					Content = new VerticalStackLayout() { entry }
+				};
+			}
+		}
+
+		[Fact(DisplayName = "ShellHandler-Can Reuse Pages")]
+		public async Task ShellHandler_CanReusePages()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = rootPage;
+			});
+
+			var reusedPage = new ContentPage
+			{
+				Content = new Label { Text = "HEY" }
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(reusedPage);
+				await shell.Navigation.PopAsync();
+				await shell.Navigation.PushAsync(reusedPage);
+				await OnLoadedAsync(reusedPage.Content);
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-Can Clear ShellContent")]
+		public async Task ShellHandler_CanClearShellContent()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ShellContent { Content = page };
+			});
+
+			var appearanceObserversField = shell.GetType().GetField("_appearanceObservers", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(appearanceObserversField);
+			var appearanceObservers = appearanceObserversField.GetValue(shell) as IList;
+			Assert.NotNull(appearanceObservers);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, _ =>
+			{
+				int count = appearanceObservers.Count;
+				shell.Items.Clear();
+				shell.CurrentItem = new ShellContent { Content = page };
+				Assert.Equal(count, appearanceObservers.Count);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "ShellHandler-FlyoutIsPresented=true sets the visible status of the Shell Flyout.")]
+		public async Task ShellHandler_FlyoutIsPresentedOpenDrawer()
+		{
+			await RunShellTest(shell =>
+			{
+				shell.FlyoutContent = new VerticalStackLayout() { new Label() { Text = "Flyout Content" } };
+			},
+			async (shell, handler) =>
+			{
+				shell.FlyoutIsPresented = true;
+
+				var dl = GetDrawerLayout(handler);
+				Assert.NotNull(dl);
+
+				await AssertionExtensions.AssertEventually(() =>
+				{
+					var flyoutFrame = GetFlyoutFrame(handler);
+					return flyoutFrame.Width > 0 && flyoutFrame.Height > 0 && dl.IsOpen;
+				});
 			});
 		}
 
