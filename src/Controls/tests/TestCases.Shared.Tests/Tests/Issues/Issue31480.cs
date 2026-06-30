@@ -15,15 +15,6 @@ public class Issue31480 : _IssuesUITest
 	public void LabelFormattedTextShouldRespectRTLFlowDirection()
 	{
 		App.WaitForElement("RTLFormattedLabel");
-		App.WaitForElement("LTRFormattedLabel");
-
-		var rtlRect = App.FindElement("RTLFormattedLabel").GetRect();
-		var ltrRect = App.FindElement("LTRFormattedLabel").GetRect();
-
-		// Both labels have the same width container; with RTL FlowDirection the text
-		// should be right-aligned, so the right edge (X + Width) of the RTL label
-		// should be further right (or the label layout should differ visually).
-		// We verify via screenshot that RTL renders differently from LTR.
 		VerifyScreenshot();
 	}
 }

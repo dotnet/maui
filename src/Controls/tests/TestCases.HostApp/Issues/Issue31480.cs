@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 31480, "Label FormattedText does not respect FlowDirection RightToLeft", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 31480, "Label FormattedText does not respect FlowDirection RightToLeft", PlatformAffected.iOS)]
 public class Issue31480 : ContentPage
 {
 	public Issue31480()
