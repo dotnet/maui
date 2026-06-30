@@ -829,35 +829,36 @@ internal partial class MauiItemsView
 		bool hasHeaders = groupableView.GroupHeaderTemplate is not null;
 		bool hasFooters = groupableView.GroupFooterTemplate is not null;
 
-		// Find which group the dragged item belongs to using _draggedSourceIndex with
-		// flat-index arithmetic. This is more reliable than value-equality search for
-		// all items: null items would match the first null in any group, and duplicate
-		// non-null items would match the wrong occurrence. _draggedSourceIndex is
-		// captured at DragStarting via GetContainerIndex and is always accurate.
+		// Find which group the dragged item belongs to.
+		// Groups may be IEnumerable-only (e.g., IGrouping<K,V>), so enumerate rather
+		// than requiring IList for the search. IList is still required for mutation.
 		int sourceGroupIndex = -1;
 		int sourceItemIndex = -1;
 		IList? sourceGroup = null;
 
-		int flatPos = 0;
 		for (int g = 0; g < groupsList.Count; g++)
 		{
 			if (groupsList[g] is not IEnumerable groupItems)
-				continue;
-
-			int groupItemCount = groupsList[g] is ICollection coll
-				? coll.Count
-				: groupItems.Cast<object>().Count();
-
-			if (hasHeaders) flatPos++; // skip header
-			int itemsStart = flatPos;
-			flatPos += groupItemCount;
-			if (hasFooters) flatPos++; // skip footer
-
-			if (_draggedSourceIndex >= itemsStart && _draggedSourceIndex < itemsStart + groupItemCount)
 			{
-				sourceGroupIndex = g;
-				sourceItemIndex = _draggedSourceIndex - itemsStart;
-				sourceGroup = groupsList[g] as IList;
+				continue;
+			}
+
+			int i = 0;
+			foreach (var groupItem in groupItems)
+			{
+				if (ReferenceEquals(groupItem, _draggedItem) || Equals(groupItem, _draggedItem))
+				{
+					sourceGroupIndex = g;
+					sourceItemIndex = i;
+					sourceGroup = groupsList[g] as IList;
+					break;
+				}
+
+				i++;
+			}
+
+			if (sourceGroupIndex >= 0)
+			{
 				break;
 			}
 		}
@@ -872,7 +873,7 @@ internal partial class MauiItemsView
 		int targetGroupIndex = -1;
 		int targetItemIndex = -1;
 		IList? targetGroup = null;
-		flatPos = 0;
+		int flatPos = 0;
 
 		for (int g = 0; g < groupsList.Count; g++)
 		{
@@ -1195,16 +1196,6 @@ internal partial class MauiItemsView
 	{
 		var sourceList = GetSourceList();
 		var containerItem = GetContainerItem(container);
-
-		// For null-item containers, Equals(null, null) makes tag validation and
-		// IndexOfItem both return the first null row — wrong when multiple nulls exist.
-		// GetElementIndex is O(1) and always accurate after a layout pass, so use it first.
-		if (containerItem is null && container is ItemContainer nullIc && ItemsRepeaterControl is not null)
-		{
-			int repeaterIdx = ItemsRepeaterControl.GetElementIndex(nullIc);
-			if (repeaterIdx >= 0)
-				return repeaterIdx;
-		}
 
 		// Prefer the Tag set during ElementPrepared — it is the authoritative flat
 		// index and avoids the ambiguity where group headers and footers share the
