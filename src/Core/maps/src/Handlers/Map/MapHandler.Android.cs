@@ -684,23 +684,8 @@ namespace Microsoft.Maui.Maps.Handlers
 					}
 					else
 					{
-						// Multiple pins - create cluster marker
-						var options = new MarkerOptions();
-						options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
-						options.SetTitle($"{cluster.Pins.Count} items");
-						options.Anchor(0.5f, 0.5f);
-						
-						// Create a circular cluster icon with count
-						var icon = CreateClusterIcon(cluster.Pins.Count);
-						if (icon != null)
-							options.SetIcon(icon);
-						
-						var marker = Map.AddMarker(options);
-						if (marker != null)
-						{
-							_markers.Add(marker);
-							_clusterMarkers[marker.Id] = cluster;
-						}
+						// Multiple pins - create a cluster marker (custom image if provided, else default bubble).
+						AddClusterMarkerAsync(cluster, ct).FireAndForget();
 					}
 				}
 				
@@ -870,7 +855,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			_markers.Add(marker);
 		}
 
-		async Task UpdatePinImageSourceAsync(IMapPin pin, Marker marker, CancellationToken ct)
+async Task UpdatePinImageSourceAsync(IMapPin pin, Marker marker, CancellationToken ct)
 		{
 			var mauiContext = MauiContext;
 
@@ -914,6 +899,39 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
 				return null;
+			}
+		}
+
+		async Task AddClusterMarkerAsync(MapCluster cluster, CancellationToken ct)
+		{
+			if (Map == null || MauiContext == null || VirtualView == null)
+				return;
+
+			var center = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
+
+			var options = new MarkerOptions();
+			options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
+			options.SetTitle($"{cluster.Pins.Count} items");
+			options.Anchor(0.5f, 0.5f);
+
+			// Resolve a custom cluster image (provider -> static), falling back to the default bubble.
+			var image = VirtualView.GetClusterImage(cluster.Pins, center);
+			BitmapDescriptor? icon = image != null ? await LoadPinIconAsync(image, MauiContext, ct) : null;
+
+			if (ct.IsCancellationRequested || Map == null)
+				return;
+
+			icon ??= CreateClusterIcon(cluster.Pins.Count);
+			if (icon != null)
+				options.SetIcon(icon);
+
+			var marker = Map.AddMarker(options);
+			if (marker != null)
+			{
+				_markers ??= new List<Marker>();
+				_markers.Add(marker);
+				if (_clusterMarkers != null)
+					_clusterMarkers[marker.Id] = cluster;
 			}
 		}
 
