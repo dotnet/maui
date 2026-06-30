@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 
 public class ButtonFeatureTests : _GalleryUITest
 {
-	const string MainLabel = "ClickedEventLabel";
+	const string MainLabel = "MainLabel";
 	public const string ButtonFeatureMatrix = "Button Feature Matrix";
 
 	public override string GalleryPageName => ButtonFeatureMatrix;
