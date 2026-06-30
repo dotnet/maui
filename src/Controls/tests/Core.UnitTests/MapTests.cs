@@ -1136,5 +1136,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(location.Latitude, eventArgs.Location.Latitude);
 			Assert.Equal(location.Longitude, eventArgs.Location.Longitude);
 		}
+
+		[Fact]
+		public void ClusterInfoExposesConstructorValues()
+		{
+			var pins = new List<Pin> { new Pin { Label = "A" }, new Pin { Label = "B" } };
+			var location = new Location(1.0, 2.0);
+
+			var info = new ClusterInfo(2, "restaurants", pins, location);
+
+			Assert.Equal(2, info.Count);
+			Assert.Equal("restaurants", info.ClusteringIdentifier);
+			Assert.Same(pins, info.Pins);
+			Assert.Equal(location, info.Location);
+		}
 	}
 }

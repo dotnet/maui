@@ -1,5 +1,11 @@
 ﻿#nullable enable
 Microsoft.Maui.Controls.Maps.Circle.CircleClicked -> System.EventHandler?
+Microsoft.Maui.Controls.Maps.ClusterInfo
+Microsoft.Maui.Controls.Maps.ClusterInfo.ClusterInfo(int count, string! clusteringIdentifier, System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> void
+Microsoft.Maui.Controls.Maps.ClusterInfo.ClusteringIdentifier.get -> string!
+Microsoft.Maui.Controls.Maps.ClusterInfo.Count.get -> int
+Microsoft.Maui.Controls.Maps.ClusterInfo.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Controls.Maps.ClusterInfo.Pins.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>!
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.ClusterClickedEventArgs(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> void
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.Handled.get -> bool
