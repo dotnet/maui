@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 		public override WebResourceResponse? ShouldInterceptRequest(WebView? view, IWebResourceRequest? request)
 		{
 			// Block sub-resource requests (iframes, images, scripts) to disallowed domains
-			if (request?.Url is Android.Net.Uri url && _handler.TryGetTarget(out var handler) && handler?.VirtualView is not null)
+			if (request?.Url is global::Android.Net.Uri url && _handler.TryGetTarget(out var handler) && handler?.VirtualView is not null)
 			{
 				var urlString = url.ToString();
 				if (!string.IsNullOrEmpty(urlString) && !WebViewDomainAllowlist.IsUrlAllowed(urlString, handler.VirtualView))
