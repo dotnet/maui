@@ -757,6 +757,12 @@ function Invoke-HelixFileText {
     # END of a run, a truncated read can silently drop them -- so an optional [ref]$Truncated out-param
     # reports truncation, letting the caller treat a truncated console as incompleteness (never-false-
     # green: unread tail could hold the marker that proves the run did not finish).
+    # >> REQUIRED for completeness judgments: ANY call site that reads a console.*.log here to decide
+    # >> whether a run finished MUST pass -Truncated ([ref]$flag) and OR that $flag into the work
+    # >> item's incomplete cap (see the New-DeviceWorkItemFailureRecords -ConsoleReadIncomplete param).
+    # >> Omitting it re-opens the head-only-'[FAIL]' truncation window this contract closes -- a >4 MB
+    # >> XHarness console keeps only the HEAD (where per-test '[FAIL]' lines live) and drops the TAIL
+    # >> (where the timeout/crash marker prints). Result-file reads pass it for the same reason.
     param([string]$Url, [int]$MaxChars = 4000000, $Truncated = $null)
     if ([string]::IsNullOrWhiteSpace($Url)) { return $null }
     try {
@@ -926,9 +932,14 @@ function Get-ConsoleFailureReason {
     #   * a bare '[FAIL] <test>' -- that is a NAMED test failure, not an incomplete run.
     # A genuinely incomplete Windows run still trips isIncomplete via an INDEPENDENT marker that does
     # NOT depend on the two excluded lines: ':wait_for_result' emits '[FAIL] Timeout waiting for <cat>
-    # test results ...' (caught by 'timeout waiting'), a total wipeout prints 'All test processes may
-    # have crashed', and crashes/dumps print their own crash markers. So narrowing the trigger removes
-    # the over-cap without opening a false-green window.
+    # test results ...' (run-windows-devicetests.cmd:503, caught by 'timeout waiting'), a total wipeout
+    # prints 'All test processes may have crashed' (run-windows-devicetests.cmd:430), and crashes/dumps
+    # print their own crash markers. So narrowing the trigger removes the over-cap without opening a
+    # false-green window.
+    # >> COUPLING: $incompleteRegex below is load-bearingly tied to those exact cmd echo strings. If
+    # >> they are reworded in run-windows-devicetests.cmd, mirror the change here or the never-false-
+    # >> green cap silently weakens with NO test failing (see .github/docs/maui-ci-facts.md, the
+    # >> "Never-false-green coupling" note).
     # NEVER throws; empty input returns a blank, non-incomplete result (the caller's other
     # incompleteness guards still apply).
     param([string]$Console)

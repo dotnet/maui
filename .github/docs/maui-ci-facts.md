@@ -180,6 +180,23 @@ category list overflowed the read cap, or the file **declared** more failures th
 extract); or the work item exited non-zero with **zero** named failures. A device-test work item is
 **never** a false green.
 
+> 🔒 **Never-false-green coupling — keep these in sync (load-bearing).** The Phase-2
+> incompleteness cap narrows `isIncomplete` to markers that *prove* a run didn't finish, and that
+> narrowing is **coupled to the Windows runner's exact echo strings**:
+> - `[FAIL] Timeout waiting for <category> test results after N seconds` — `eng/devices/run-windows-devicetests.cmd:503` (an unfinished category)
+> - `All test processes may have crashed` — `run-windows-devicetests.cmd:430` (a total wipeout)
+> - `Test execution completed with exit code: N` — `run-windows-devicetests.cmd:481` is **deliberately EXCLUDED** from the cap: the cmd echoes it **unconditionally** on every non-zero run (it only ever `exit /b 0|1`), so treating it as incompleteness over-caps *every* failed Windows work item and never lets a cleanly-named failure flow to base/known-issue attribution.
+>
+> The first two strings are the *independent* incompleteness markers in `Get-ConsoleFailureReason`'s
+> `$incompleteRegex`. **If anyone rewords them in the cmd, mirror the change in
+> `$incompleteRegex` (`Gather-TestFailureContext.ps1`)** — otherwise the cap silently weakens **with
+> no test failing** (the coupling is enforced only by comments + this note, not by a shared
+> constant). Also: any **new** call site that reads a `console.*.log` via `Invoke-HelixFileText` to
+> judge completeness **must** pass `-Truncated ([ref]$flag)` and OR that flag into the incomplete
+> cap — a console read without it reopens the head-only-`[FAIL]` truncation window (a >4 MB XHarness
+> console keeps only the HEAD, where per-test `[FAIL]` lines live, and drops the TAIL where the
+> timeout/crash marker prints).
+
 ### Container artifact binlogs
 
 MAUI build artifacts are **Container** type, not `PipelineArtifact`:
