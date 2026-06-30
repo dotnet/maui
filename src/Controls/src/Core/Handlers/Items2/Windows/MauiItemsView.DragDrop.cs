@@ -829,70 +829,36 @@ internal partial class MauiItemsView
 		bool hasHeaders = groupableView.GroupHeaderTemplate is not null;
 		bool hasFooters = groupableView.GroupFooterTemplate is not null;
 
-		// Find which group the dragged item belongs to.
-		// Groups may be IEnumerable-only (e.g., IGrouping<K,V>), so enumerate rather
-		// than requiring IList for the search. IList is still required for mutation.
+		// Find which group the dragged item belongs to using _draggedSourceIndex with
+		// flat-index arithmetic. This is more reliable than value-equality search for
+		// all items: null items would match the first null in any group, and duplicate
+		// non-null items would match the wrong occurrence. _draggedSourceIndex is
+		// captured at DragStarting via GetContainerIndex and is always accurate.
 		int sourceGroupIndex = -1;
 		int sourceItemIndex = -1;
 		IList? sourceGroup = null;
 
-		if (_draggedItem is null)
+		int flatPos = 0;
+		for (int g = 0; g < groupsList.Count; g++)
 		{
-			// Value-equality search (Equals(null, null)) would match the first null item
-			// in any group, not the specific row being dragged. Map _draggedSourceIndex
-			// back to the correct group/item using the same flat-index arithmetic as the
-			// target mapping below.
-			int flatPos = 0;
-			for (int g = 0; g < groupsList.Count; g++)
+			if (groupsList[g] is not IEnumerable groupItems)
+				continue;
+
+			int groupItemCount = groupsList[g] is ICollection coll
+				? coll.Count
+				: groupItems.Cast<object>().Count();
+
+			if (hasHeaders) flatPos++; // skip header
+			int itemsStart = flatPos;
+			flatPos += groupItemCount;
+			if (hasFooters) flatPos++; // skip footer
+
+			if (_draggedSourceIndex >= itemsStart && _draggedSourceIndex < itemsStart + groupItemCount)
 			{
-				if (groupsList[g] is not IEnumerable groupItems)
-					continue;
-
-				int groupItemCount = groupsList[g] is ICollection coll
-					? coll.Count
-					: groupItems.Cast<object>().Count();
-
-				if (hasHeaders) flatPos++; // skip header
-				int itemsStart = flatPos;
-				flatPos += groupItemCount;
-				if (hasFooters) flatPos++; // skip footer
-
-				if (_draggedSourceIndex >= itemsStart && _draggedSourceIndex < itemsStart + groupItemCount)
-				{
-					sourceGroupIndex = g;
-					sourceItemIndex = _draggedSourceIndex - itemsStart;
-					sourceGroup = groupsList[g] as IList;
-					break;
-				}
-			}
-		}
-		else
-		{
-			for (int g = 0; g < groupsList.Count; g++)
-			{
-				if (groupsList[g] is not IEnumerable groupItems)
-				{
-					continue;
-				}
-
-				int i = 0;
-				foreach (var groupItem in groupItems)
-				{
-					if (ReferenceEquals(groupItem, _draggedItem) || Equals(groupItem, _draggedItem))
-					{
-						sourceGroupIndex = g;
-						sourceItemIndex = i;
-						sourceGroup = groupsList[g] as IList;
-						break;
-					}
-
-					i++;
-				}
-
-				if (sourceGroupIndex >= 0)
-				{
-					break;
-				}
+				sourceGroupIndex = g;
+				sourceItemIndex = _draggedSourceIndex - itemsStart;
+				sourceGroup = groupsList[g] as IList;
+				break;
 			}
 		}
 
@@ -906,7 +872,7 @@ internal partial class MauiItemsView
 		int targetGroupIndex = -1;
 		int targetItemIndex = -1;
 		IList? targetGroup = null;
-		int flatPos = 0;
+		flatPos = 0;
 
 		for (int g = 0; g < groupsList.Count; g++)
 		{
