@@ -41,6 +41,12 @@ namespace Microsoft.Maui.Platform
 			_hasSwipeViewParent = ((View)this).GetParentOfType<MauiSwipeView>() is not null;
 		}
 
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
+			_hasSwipeViewParent = false;
+		}
+
 		void UpdateClipBounds(int width, int height)
 		{
 			if (width > 0 && height > 0)
@@ -79,9 +85,7 @@ namespace Microsoft.Maui.Platform
 				case MotionEventActions.Move:
 					// Do not request disallow intercept when inside a SwipeView — that would set
 					// FLAG_DISALLOW_INTERCEPT on the SwipeView and prevent it from detecting
-					// horizontal swipe gestures via OnInterceptTouchEvent (issue #36154).
-					// For all other containers (e.g. ScrollView), claim touch ownership normally
-					// so they don't steal scroll events from the WebView (PR #33133).
+					// swipe gestures
 					if (!_hasSwipeViewParent)
 					{
 						Parent?.RequestDisallowInterceptTouchEvent(true);
