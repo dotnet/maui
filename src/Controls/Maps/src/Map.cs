@@ -34,6 +34,9 @@ namespace Microsoft.Maui.Controls.Maps
 		/// <summary>Bindable property for <see cref="IsClusteringEnabled"/>.</summary>
 		public static readonly BindableProperty IsClusteringEnabledProperty = BindableProperty.Create(nameof(IsClusteringEnabled), typeof(bool), typeof(Map), default(bool));
 
+		/// <summary>Bindable property for <see cref="ClusterImageSource"/>.</summary>
+		public static readonly BindableProperty ClusterImageSourceProperty = BindableProperty.Create(nameof(ClusterImageSource), typeof(ImageSource), typeof(Map), default(ImageSource));
+
 		/// <summary>Bindable property for <see cref="MapStyle"/>.</summary>
 		public static readonly BindableProperty MapStyleProperty = BindableProperty.Create(nameof(MapStyle), typeof(string), typeof(Map), default(string));
 
@@ -139,7 +142,33 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets the style of the map. Default value is <see cref="MapType.Street"/>. 
+		/// Gets or sets a static custom icon used for every cluster marker when clustering is enabled.
+		/// Ignored if <see cref="ClusterImageProvider"/> returns a non-null image for a cluster.
+		/// When <see langword="null"/> (and no provider image is returned) the default cluster marker is used.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>The image is shown as-is; no pin count is drawn over it.</remarks>
+		public ImageSource? ClusterImageSource
+		{
+			get => (ImageSource?)GetValue(ClusterImageSourceProperty);
+			set => SetValue(ClusterImageSourceProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets a callback that returns a custom icon for a cluster marker, computed from the
+		/// supplied <see cref="ClusterInfo"/> (count, clustering identifier, pins, location).
+		/// Return <see langword="null"/> to fall back to <see cref="ClusterImageSource"/>, then to the
+		/// default cluster marker. Only used when clustering is enabled.
+		/// </summary>
+		/// <remarks>
+		/// The callback returns the complete icon (draw the count yourself if desired). The returned
+		/// <see cref="ImageSource"/> is loaded asynchronously by the platform handler, like
+		/// <see cref="Pin.ImageSource"/>.
+		/// </remarks>
+		public Func<ClusterInfo, ImageSource?>? ClusterImageProvider { get; set; }
+
+		/// <summary>
+		/// Gets or sets the style of the map. Default value is <see cref="MapType.Street"/>.
 		/// This is a bindable property.
 		/// </summary>
 		public MapType MapType

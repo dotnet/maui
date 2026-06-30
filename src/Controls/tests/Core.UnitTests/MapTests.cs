@@ -1150,5 +1150,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Same(pins, info.Pins);
 			Assert.Equal(location, info.Location);
 		}
+
+		[Fact]
+		public void ClusterImageSourceDefaultIsNull()
+		{
+			var map = new Map();
+			Assert.Null(map.ClusterImageSource);
+		}
+
+		[Fact]
+		public void ClusterImageSourceCanBeSet()
+		{
+			var map = new Map();
+			var image = ImageSource.FromFile("cluster.png");
+			map.ClusterImageSource = image;
+			Assert.Same(image, map.ClusterImageSource);
+		}
+
+		[Fact]
+		public void ClusterImageProviderDefaultIsNull()
+		{
+			var map = new Map();
+			Assert.Null(map.ClusterImageProvider);
+		}
+
+		[Fact]
+		public void ClusterImageProviderCanBeSet()
+		{
+			var map = new Map();
+#nullable enable
+			Func<ClusterInfo, ImageSource?> provider = _ => null;
+#nullable restore
+			map.ClusterImageProvider = provider;
+			Assert.Same(provider, map.ClusterImageProvider);
+		}
 	}
 }
