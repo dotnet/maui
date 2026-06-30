@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
@@ -38,8 +39,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal ushort _triggerCount = 0;
-		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity = new Dictionary<TriggerBase, SetterSpecificity>();
-		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
+		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity = new();
+		readonly Dictionary<int, BindablePropertyContext> _properties = new(4);
 		bool _applying;
 		WeakReference _inheritedContext;
 
@@ -172,12 +173,13 @@ namespace Microsoft.Maui.Controls
 			return context == null ? property.DefaultValue : context.Values.GetValue();
 		}
 
+		// Used by Visual Studio Live Property Explorer via reflection; do not remove without coordinating with VS.
 		internal LocalValueEnumerator GetLocalValueEnumerator() => new LocalValueEnumerator(this);
 
 		internal sealed class LocalValueEnumerator : IEnumerator<LocalValueEntry>
 		{
-			Dictionary<BindableProperty, BindablePropertyContext>.Enumerator _propertiesEnumerator;
-			internal LocalValueEnumerator(BindableObject bindableObject) => _propertiesEnumerator = bindableObject._properties.GetEnumerator();
+			Dictionary<int, BindablePropertyContext>.ValueCollection.Enumerator _propertiesEnumerator;
+			internal LocalValueEnumerator(BindableObject bindableObject) => _propertiesEnumerator = bindableObject._properties.Values.GetEnumerator();
 
 			object IEnumerator.Current => Current;
 			public LocalValueEntry Current { get; private set; }
@@ -186,7 +188,8 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_propertiesEnumerator.MoveNext())
 				{
-					Current = new LocalValueEntry(_propertiesEnumerator.Current.Key, _propertiesEnumerator.Current.Value.Values.GetValue(), _propertiesEnumerator.Current.Value.Attributes);
+					var context = _propertiesEnumerator.Current;
+					Current = new LocalValueEntry(context.Property, context.Values.GetValue(), context.Attributes);
 					return true;
 				}
 				return false;
@@ -217,21 +220,17 @@ namespace Microsoft.Maui.Controls
 
 		internal (bool IsSet, T Value)[] GetValues<T>(BindableProperty[] propArray)
 		{
-			Dictionary<BindableProperty, BindablePropertyContext> properties = _properties;
+			var properties = _properties;
 			var resultArray = new (bool IsSet, T Value)[propArray.Length];
 
 			for (int i = 0; i < propArray.Length; i++)
 			{
-				if (properties.TryGetValue(propArray[i], out var context))
+				ref var result = ref resultArray[i];
+				if (properties.TryGetValue(propArray[i].InternalId, out var context))
 				{
 					var pair = context.Values.GetSpecificityAndValue();
-					resultArray[i].IsSet = pair.Key != SetterSpecificity.DefaultValue;
-					resultArray[i].Value = (T)pair.Value;
-				}
-				else
-				{
-					resultArray[i].IsSet = false;
-					resultArray[i].Value = default(T);
+					result.IsSet = pair.Key != SetterSpecificity.DefaultValue;
+					result.Value = (T)pair.Value;
 				}
 			}
 
@@ -749,7 +748,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		BindablePropertyContext CreateAndAddContext(BindableProperty property)
+		BindablePropertyContext CreateContext(BindableProperty property)
 		{
 			var defaultValueCreator = property.DefaultValueCreator;
 			var context = new BindablePropertyContext { Property = property };
@@ -758,15 +757,31 @@ namespace Microsoft.Maui.Controls
 			if (defaultValueCreator != null)
 				context.Attributes = BindableContextAttributes.IsDefaultValueCreated;
 
-			_properties.Add(property, context);
 			return context;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal BindablePropertyContext GetContext(BindableProperty property) => _properties.TryGetValue(property, out var result) ? result : null;
+		internal BindablePropertyContext GetContext(BindableProperty property) => _properties.TryGetValue(property.InternalId, out var result) ? result : null;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		BindablePropertyContext GetOrCreateContext(BindableProperty property) => GetContext(property) ?? CreateAndAddContext(property);
+		BindablePropertyContext GetOrCreateContext(BindableProperty property)
+		{
+#if NETSTANDARD
+			var context = GetContext(property);
+			if (context is null)
+			{
+				context = CreateContext(property);
+				_properties.Add(property.InternalId, context);
+			}
+#else
+			ref var context = ref CollectionsMarshal.GetValueRefOrAddDefault(_properties, property.InternalId, out var exists);
+			if (!exists)
+			{
+				context = CreateContext(property);
+			}
+#endif
+			return context;
+		}
 
 		void RemoveBinding(BindableProperty property, BindablePropertyContext context, SetterSpecificity specificity)
 		{

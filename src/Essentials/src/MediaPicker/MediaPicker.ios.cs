@@ -497,6 +497,14 @@ namespace Microsoft.Maui.Media
 
 		public override void DidFinishPicking(PHPickerViewController picker, PHPickerResult[] results)
 		{
+			// Null out the presentation delegate handler before dismiss to prevent a GC race condition.
+			// Without this, Dispose() on PhotoPickerPresentationControllerDelegate can fire tcs.TrySetResult([])
+			// while the async CompletedHandler is still processing (especially slow for HEIC transcoding).
+			if (picker.PresentationController?.Delegate is PhotoPickerPresentationControllerDelegate pd)
+			{
+				pd.Handler = null;
+			}
+
 			var captured = results?.Length > 0 ? results : [];
             picker.DismissViewController(true, () => CompletedHandler?.Invoke(captured));
 		}

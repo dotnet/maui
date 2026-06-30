@@ -1,0 +1,1408 @@
+# Skill validation for PRs touching .github/skills/.
+#
+# Two modes:
+#   1. Static checks  — run automatically on every PR that touches skills.
+#   2. LLM evaluation — runs automatically for contributor PRs, or can be
+#      triggered by a repo contributor posting "/evaluate-skills" on any PR.
+#      Requires COPILOT_GITHUB_TOKEN secret (Copilot API access).
+#
+# Trigger model:
+#   - pull_request_target: runs in the base repo context with full permissions
+#     and secret access, even for fork PRs. Workflow YAML is always from the
+#     default branch (not the PR), ensuring security.
+#   - issue_comment (/evaluate-skills): same security model as pull_request_target.
+#     Always runs workflow YAML from the default branch.
+#
+# Security model:
+#   - Workflow YAML: always from the default branch (enforced by both triggers)
+#   - Evaluator: @microsoft/vally-cli, pinned + run via npx from npm (trusted)
+#   - Skill/test content: checked out from the PR (markdown/YAML data files;
+#     the evaluate job needs full history for frozen-worktree fixtures)
+#   - No PR code is compiled or executed
+#   - LLM evaluation is HERMETIC: the agent-under-test gets model-auth only
+#     (COPILOT_GITHUB_TOKEN, a name `gh` does not read) and NO GITHUB_TOKEN /
+#     GH_TOKEN, so it cannot recite documented fixes via the live GitHub API.
+#     A dedicated hermeticity-gate job asserts this with a positive control.
+#   - LLM evaluation: only runs for PRs from contributors with write+ access,
+#     or when explicitly triggered via /evaluate-skills by a contributor
+
+name: Skill Validation
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/skills/**'
+      - '.github/plugin.json'
+      - '.github/workflows/skill-validation.yml'
+
+  issue_comment:
+    types: [created]
+
+  workflow_dispatch:
+    inputs:
+      skills:
+        description: "Comma-separated skill names to evaluate (blank = all skills that have eval*.vally.yaml)"
+        required: false
+        default: ""
+      runs:
+        description: "Trials per stimulus (blank = 3)"
+        required: false
+        default: ""
+
+concurrency:
+  group: >-
+    skill-validation-${{
+      github.event_name == 'issue_comment'
+        && startsWith(github.event.comment.body, '/evaluate-skills')
+        && format('eval-{0}', github.event.issue.number)
+      || github.event_name == 'issue_comment'
+        && format('noop-{0}-{1}', github.event.issue.number, github.event.comment.id)
+      || github.event_name == 'pull_request_target'
+        && format('pr-{0}', github.event.pull_request.number)
+      || github.run_id
+    }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  statuses: write
+  checks: write
+
+env:
+  # Vally CLI is run via npx from npm. Pinned for reproducibility.
+  # @github/copilot-sdk (vally's executor) requires Node ^20.19 || >=22.12,
+  # so we pin Node 22 on the runners.
+  VALLY_VERSION: "0.6.0"
+  NODE_VERSION: "22"
+
+jobs:
+  # ==========================================================================
+  # PR GATE (pull_request_target)
+  # Determine PR source, author permissions, and changed files.
+  # ==========================================================================
+  pr-gate:
+    name: PR gate
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      head_sha: ${{ github.event.pull_request.head.sha }}
+      head_repo: ${{ github.event.pull_request.head.repo.full_name }}
+      pr_number: ${{ github.event.pull_request.number }}
+      is_contributor: ${{ steps.perms.outputs.is_contributor }}
+      is_fork: ${{ steps.info.outputs.is_fork }}
+      changed_skills: ${{ steps.discover.outputs.changed_skills }}
+    steps:
+      - name: Determine fork status
+        id: info
+        env:
+          HEAD: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE: ${{ github.event.pull_request.base.repo.full_name }}
+        run: |
+          IS_FORK=$([[ "$HEAD" != "$BASE" ]] && echo true || echo false)
+          echo "is_fork=$IS_FORK" >> $GITHUB_OUTPUT
+          echo "PR from $HEAD → $BASE (fork=$IS_FORK)"
+
+      - name: Check PR author permissions
+        id: perms
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          AUTHOR="$AUTHOR"
+          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${AUTHOR}/permission" \
+            --jq '.permission' 2>/dev/null || echo "none")
+          echo "PR author $AUTHOR has permission: $PERMISSION"
+          if [[ "$PERMISSION" == "admin" || "$PERMISSION" == "write" || "$PERMISSION" == "maintain" ]]; then
+            echo "is_contributor=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_contributor=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Discover changed files
+        id: discover
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
+            --paginate --jq '.[].filename')
+
+          SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
+            sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
+
+          DELIM="EOF_$(openssl rand -hex 8)"
+          echo "changed_skills<<$DELIM" >> $GITHUB_OUTPUT
+          echo "$SKILL_DIRS" >> $GITHUB_OUTPUT
+          echo "$DELIM" >> $GITHUB_OUTPUT
+
+          echo "Changed skills: $SKILL_DIRS"
+
+  # ==========================================================================
+  # SLASH COMMAND GATE (/evaluate-skills)
+  # ==========================================================================
+  slash-gate:
+    name: Gate (/evaluate-skills)
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/evaluate-skills')
+    runs-on: ubuntu-latest
+    outputs:
+      head_sha: ${{ steps.pr.outputs.head_sha }}
+      head_repo: ${{ steps.pr.outputs.head_repo }}
+      pr_number: ${{ steps.pr.outputs.pr_number }}
+    steps:
+      - name: Check commenter permissions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+        run: |
+          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${COMMENTER}/permission" \
+            --jq '.permission')
+          echo "Commenter $COMMENTER has permission: $PERMISSION"
+          if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
+            echo "::error::User does not have write access"
+            exit 1
+          fi
+
+      - name: Get PR details
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          PR_NUMBER="$ISSUE_NUMBER"
+          PR_DATA=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}")
+          HEAD_SHA=$(echo "$PR_DATA" | jq -r '.head.sha')
+          HEAD_REPO=$(echo "$PR_DATA" | jq -r '.head.repo.full_name')
+          echo "head_sha=${HEAD_SHA}" >> $GITHUB_OUTPUT
+          echo "head_repo=${HEAD_REPO}" >> $GITHUB_OUTPUT
+          echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+
+      - name: Add reaction to comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}/reactions" \
+            -X POST -f content='eyes' || true
+
+      - name: Set pending commit status
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/statuses/${{ steps.pr.outputs.head_sha }}" \
+            -f state=pending \
+            -f context="skill-validation" \
+            -f description="Skill evaluation in progress..." \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # ==========================================================================
+  # STATIC VALIDATION
+  # Always runs for PRs (all types) and slash-commands.
+  # ==========================================================================
+  static-check:
+    name: Static validation
+    needs: [pr-gate, slash-gate]
+    if: >-
+      always() && !cancelled() && (
+        needs.pr-gate.result == 'success' ||
+        needs.slash-gate.result == 'success' ||
+        github.event_name == 'workflow_dispatch'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      exit_code: ${{ steps.check.outputs.exit_code }}
+    steps:
+      - name: Checkout PR content
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
+          sparse-checkout: |
+            .github/skills
+            .github/agents
+            .github/plugin.json
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # ── Lint eval specs with Vally ────────────────────────────────
+      # Lint ONLY the *.vally.yaml eval specs. `vally lint --eval-spec <file>`
+      # validates the spec and SKIPS SKILL.md structural linting. We do NOT
+      # lint SKILL.md / *.agent.md here on purpose: vally's skill linter flags
+      # two PRE-EXISTING repo issues unrelated to this migration (try-fix
+      # SKILL.md exceeds the 500-line limit; find-regression-risk is missing
+      # name/description frontmatter) that would false-red this gate. Those are
+      # tracked as follow-ups in the PR description.
+      - name: Lint eval specs
+        id: check
+        shell: bash
+        run: |
+          mkdir -p sv-results
+          : > sv-output.txt
+          rc=0
+          spec_count=0
+          mapfile -t SPECS < <(find .github/skills -name '*.vally.yaml' | sort)
+          if [ ${#SPECS[@]} -eq 0 ]; then
+            echo "No *.vally.yaml eval specs found." | tee -a sv-output.txt
+          fi
+          for f in "${SPECS[@]}"; do
+            spec_count=$((spec_count + 1))
+            echo "::group::lint $f"
+            echo "── $f" >> sv-output.txt
+            npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint --eval-spec "$f" --strict 2>&1 | tee -a sv-output.txt
+            lint_rc=${PIPESTATUS[0]}
+            echo "::endgroup::"
+            if [ "$lint_rc" -ne 0 ]; then rc=1; fi
+          done
+
+          # Strip ANSI so the comment job can parse findings stably.
+          sed -i 's/\x1b\[[0-9;]*m//g' sv-output.txt || true
+
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          echo "spec_count=$spec_count" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## vally lint (eval specs)"
+            echo ""
+            if [ "$rc" -eq 0 ]; then
+              echo "All **${spec_count}** eval spec(s) are valid."
+            else
+              echo "One or more eval specs failed strict lint."
+              echo ""
+              echo '```text'
+              tail -n 200 sv-output.txt
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── Upload results for comment job ────────────────────────────
+      - name: Save results artifact
+        if: always()
+        run: |
+          mkdir -p sv-results
+          skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+          echo "$skill_count" > sv-results/skill-count.txt
+          agent_count=$(find .github/agents -mindepth 1 -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
+          echo "$agent_count" > sv-results/agent-count.txt
+          echo "${{ steps.check.outputs.spec_count }}" > sv-results/spec-count.txt
+          echo "${{ steps.check.outputs.exit_code }}" > sv-results/exit-code.txt
+          if [ -f sv-output.txt ]; then
+            cp sv-output.txt sv-results/sv-output.txt
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-check-results
+          path: sv-results/
+          retention-days: 1
+
+      - name: Fail if checks failed
+        if: steps.check.outputs.exit_code != '0'
+        run: exit 1
+
+  # ==========================================================================
+  # DISCOVER EVALUATABLE SKILLS
+  # Only runs when LLM eval should happen (contributor PR or slash-command).
+  # ==========================================================================
+  discover-eval:
+    name: Discover skills to evaluate
+    needs: [pr-gate, slash-gate]
+    if: >-
+      always() && !cancelled() && (
+        (needs.pr-gate.result == 'success' && needs.pr-gate.outputs.is_contributor == 'true') ||
+        needs.slash-gate.result == 'success' ||
+        github.event_name == 'workflow_dispatch'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      entries: ${{ steps.find.outputs.entries }}
+      has_entries: ${{ steps.find.outputs.has_entries }}
+    steps:
+      - name: Checkout PR content
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
+          sparse-checkout: |
+            .github/skills
+            .github/plugin.json
+          persist-credentials: false
+
+      - name: Discover changed files
+        id: changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.pr-gate.outputs.pr_number || needs.slash-gate.outputs.pr_number }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_SKILLS: ${{ github.event.inputs.skills }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            # Manual run: evaluate the requested skills, or every skill that
+            # ships an eval*.vally.yaml when none are named. No PR diff exists.
+            # INPUT_SKILLS comes via env (never interpolated into the script).
+            if [ -n "$INPUT_SKILLS" ]; then
+              SKILL_DIRS=$(printf '%s' "$INPUT_SKILLS" | tr ',' '\n' \
+                | sed 's/[[:space:]]//g' | grep -v '^$' | sort -u)
+              EVAL_ALL=false
+            else
+              SKILL_DIRS=""
+              EVAL_ALL=true
+            fi
+          else
+            CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
+              --paginate --jq '.[].filename')
+            SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
+              sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
+            # Workflow change ⇒ evaluate all skills with specs.
+            WORKFLOW_CHANGES=$(echo "$CHANGED" | grep '^\.github/workflows/skill-validation' || true)
+            if [ -n "$WORKFLOW_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
+          fi
+
+          DELIM="EOF_$(openssl rand -hex 8)"
+          echo "skill_dirs<<$DELIM" >> $GITHUB_OUTPUT
+          echo "$SKILL_DIRS" >> $GITHUB_OUTPUT
+          echo "$DELIM" >> $GITHUB_OUTPUT
+          echo "eval_all=$EVAL_ALL" >> $GITHUB_OUTPUT
+
+      - name: Find skills with eval tests
+        id: find
+        shell: pwsh
+        env:
+          SKILL_DIRS: ${{ steps.changed.outputs.skill_dirs }}
+          EVAL_ALL: ${{ steps.changed.outputs.eval_all }}
+        run: |
+          $entries = @()
+          $evalAll = $env:EVAL_ALL -eq "true"
+
+          if ($evalAll) {
+            Write-Host "Workflow changes detected - evaluating all skills with tests"
+            $skills = @(Get-ChildItem -Path ".github/skills" -Directory |
+              Select-Object -ExpandProperty Name)
+          } else {
+            $raw = $env:SKILL_DIRS
+            $skills = @($raw.Split("`n", [StringSplitOptions]::RemoveEmptyEntries) |
+              ForEach-Object { $_.Trim() } |
+              Where-Object { $_ })
+          }
+
+          foreach ($skill in $skills) {
+            $testsDir = ".github/skills/$skill/tests"
+            $specs = @()
+            if (Test-Path $testsDir) {
+              # Capability suites only: eval*.vally.yaml. This deliberately
+              # EXCLUDES hermeticity.vally.yaml (the hermeticity gate),
+              # which is run by the dedicated hermeticity-gate job.
+              $specs = @(Get-ChildItem -Path $testsDir -Filter "eval*.vally.yaml" -File -ErrorAction SilentlyContinue)
+            }
+            if ($specs.Count -gt 0) {
+              Write-Host "  -> $skill has $($specs.Count) eval spec(s)"
+              $entries += @{
+                name = $skill
+                tests_path = $testsDir
+              }
+            } else {
+              Write-Host "  -> $skill has NO eval*.vally.yaml (static-only)"
+            }
+          }
+
+          if ($entries.Count -eq 0) {
+            Write-Host "No skills with eval tests to evaluate"
+            echo "entries=[]" >> $env:GITHUB_OUTPUT
+            echo "has_entries=false" >> $env:GITHUB_OUTPUT
+          } else {
+            $json = $entries | ConvertTo-Json -Compress -AsArray
+            Write-Host "Entries to evaluate: $json"
+            echo "entries=$json" >> $env:GITHUB_OUTPUT
+            echo "has_entries=true" >> $env:GITHUB_OUTPUT
+          }
+
+  # ==========================================================================
+  # LLM EVALUATION (matrix)
+  # Runs `vally eval` for each changed skill's capability specs (eval*.vally.yaml).
+  # ==========================================================================
+  evaluate:
+    name: evaluate (${{ matrix.entry.name }})
+    needs: [pr-gate, slash-gate, discover-eval]
+    if: >-
+      always() && !cancelled() &&
+      needs.discover-eval.result == 'success' &&
+      needs.discover-eval.outputs.has_entries == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        entry: ${{ fromJson(needs.discover-eval.outputs.entries || '[]') }}
+    steps:
+      - name: Checkout PR content
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
+          # Full history (NOT sparse): capability suites pin frozen worktrees
+          # at historical merge commits via `environment.git.ref`, and
+          # `git worktree add <SHA>` must be able to resolve them.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Ensure fixture history is available
+        run: |
+          # Capability suites freeze fixtures at historical dotnet/maui merge
+          # commits (the `ref:` values in *.vally.yaml). On a same-repo PR with
+          # fetch-depth:0 these are already present; for FORK PRs the head repo
+          # may not contain them, so fetch each referenced SHA from the base
+          # repo's network. SHAs are discovered dynamically so this never
+          # drifts from the specs.
+          BASE_REPO="${{ github.repository }}"
+          git remote add upstream "https://github.com/${BASE_REPO}.git" 2>/dev/null || true
+          REFS=$(grep -rhoE 'ref:[[:space:]]*[0-9a-f]{40}' .github/skills/*/tests/*.vally.yaml 2>/dev/null \
+            | grep -oE '[0-9a-f]{40}' | sort -u || true)
+          for sha in $REFS; do
+            if git cat-file -e "${sha}^{commit}" 2>/dev/null; then
+              echo "fixture ${sha} present"
+            else
+              echo "Fetching fixture commit ${sha} from upstream..."
+              # depth=2: fetch the commit AND its first parent so that
+              # `git diff HEAD^ HEAD` works inside worktrees pinned to it.
+              git fetch --no-tags --depth=2 upstream "$sha" 2>/dev/null \
+                || echo "::warning::Could not fetch fixture commit ${sha}; worktree stimuli pinned to it may error."
+            fi
+          done
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # ── Select Copilot token ──────────────────────────────────────
+      - name: Select Copilot token
+        id: select-token
+        env:
+          TOKEN_1: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          TOKEN_2: ${{ secrets.COPILOT_GITHUB_TOKEN_2 }}
+          TOKEN_3: ${{ secrets.COPILOT_GITHUB_TOKEN_3 }}
+        run: |
+          TOKENS=()
+          NAMES=()
+          for i in 1 2 3; do
+            var="TOKEN_$i"
+            val="${!var}"
+            if [ -n "$val" ]; then
+              TOKENS+=("$val")
+              if [ "$i" -eq 1 ]; then
+                NAMES+=("COPILOT_GITHUB_TOKEN")
+              else
+                NAMES+=("COPILOT_GITHUB_TOKEN_$i")
+              fi
+            fi
+          done
+
+          if [ ${#TOKENS[@]} -eq 0 ]; then
+            echo "::error::No COPILOT_GITHUB_TOKEN secrets are configured"
+            exit 1
+          fi
+
+          JOB_INDEX="${{ strategy.job-index }}"
+          RUN_ID="${{ github.run_id }}"
+          if [ -n "$JOB_INDEX" ] && [ ${#TOKENS[@]} -gt 1 ]; then
+            IDX=$(( (JOB_INDEX + RUN_ID) % ${#TOKENS[@]} ))
+          elif [ -n "$JOB_INDEX" ]; then
+            IDX=0
+          else
+            IDX=$((RANDOM % ${#TOKENS[@]}))
+          fi
+          echo "Selected ${NAMES[$IDX]} (1 of ${#TOKENS[@]} available tokens, job-index=${JOB_INDEX:-random})"
+
+          echo "::add-mask::${TOKENS[$IDX]}"
+          echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
+
+      # ── Run LLM evaluation (Vally) ───────────────────────────────
+      - name: Run Vally evaluation
+        id: eval-run
+        env:
+          # MODEL AUTH ONLY. COPILOT_GITHUB_TOKEN is what the bundled Copilot
+          # CLI reads to authenticate model calls; `gh` and most HTTP tooling
+          # do NOT read this name, so the agent-under-test cannot reuse it to
+          # recite documented fixes via the live GitHub API. There is
+          # deliberately NO GITHUB_TOKEN / GH_TOKEN here — that env-level
+          # open-book leak was the legacy harness's hermeticity defect.
+          COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+          RESULTS_PATH: eval-results/${{ matrix.entry.name }}
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+          RUNS: ${{ github.event.inputs.runs }}
+        run: |
+          # Collect this skill's capability specs. The eval*.vally.yaml glob
+          # EXCLUDES hermeticity.vally.yaml (run by its own gate job).
+          SPECS=()
+          for f in "$TESTS_PATH"/eval*.vally.yaml; do
+            [ -e "$f" ] || continue
+            SPECS+=("-e" "$f")
+          done
+          if [ ${#SPECS[@]} -eq 0 ]; then
+            echo "No eval*.vally.yaml specs found under $TESTS_PATH"
+            echo "eval_passed=true" >> "$GITHUB_OUTPUT"
+            echo "eval_exit_code=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Evaluating specs: ${SPECS[*]}"
+
+          # Trials per stimulus: use each spec's defaults.runs unless the
+          # workflow_dispatch caller provided an explicit override.
+          RUNS_ARGS=()
+          if [ -n "${RUNS:-}" ]; then
+            RUNS_N=$(printf '%s' "$RUNS" | tr -cd '0-9')
+            if [ -n "$RUNS_N" ]; then
+              RUNS_ARGS=(--runs "$RUNS_N")
+              echo "runs per stimulus: $RUNS_N (workflow override)"
+            fi
+          fi
+          [ ${#RUNS_ARGS[@]} -eq 0 ] && echo "runs per stimulus: (spec default)"
+
+          # Advisory exit: vally sets exit 1 on threshold miss / execution
+          # error. We capture it but DON'T propagate, deriving the real verdict
+          # from the JUnit report (preserves the legacy warn-only behavior).
+          set +e
+          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+            "${SPECS[@]}" \
+            --skill-dir .github/skills \
+            --output-dir "$RESULTS_PATH" \
+            --junit \
+            --model claude-opus-4.6 \
+            --judge-model claude-opus-4.6 \
+            "${RUNS_ARGS[@]}" \
+            --workers 4 \
+            --verbose
+          EVAL_RC=$?
+          set -e
+          echo "vally exit code: $EVAL_RC (advisory)"
+          echo "eval_exit_code=$EVAL_RC" >> "$GITHUB_OUTPUT"
+
+          # Verdict from JUnit (source of truth). The root <testsuites> element
+          # carries aggregate failures/errors across every suite produced for
+          # this matrix entry.
+          JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
+          if [ -n "$JUNIT" ]; then
+            ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
+            if [ -z "$ROOT" ]; then
+              echo "::warning::JUnit file exists but contains no <testsuites> element — treating as failure"
+              echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+            else
+              FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
+              ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
+              echo "JUnit aggregate: failures=$FAILS errors=$ERRS"
+              if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
+                # Guard: if Vally exited non-zero but JUnit shows no failures,
+                # an execution error may have been swallowed (partial output).
+                if [ "$EVAL_RC" -ne 0 ]; then
+                  echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as failure (possible partial output)"
+                  echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+                else
+                  echo "eval_passed=true" >> "$GITHUB_OUTPUT"
+                fi
+              else
+                echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+              fi
+            fi
+          else
+            echo "::warning::No JUnit report under $RESULTS_PATH"
+            echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-eval-results-${{ matrix.entry.name }}
+          path: eval-results/${{ matrix.entry.name }}/
+          include-hidden-files: true
+          retention-days: 14
+
+  # ==========================================================================
+  # HERMETICITY GATE (positive assertion)
+  # Runs hermeticity.vally.yaml — a single stimulus that passes only when
+  # the agent reports the anonymous rate limit (CORE_LIMIT:60). A pass
+  # means hermetic; a fail means a token may have leaked or the probe
+  # errored (both warrant investigation).
+  # NON-BLOCKING for now (never fails the job); surfaced in the PR comment so
+  # the env + exit-code wiring can be promoted to blocking after first green.
+  # ==========================================================================
+  hermeticity-gate:
+    name: Harness hermeticity gate
+    needs: [pr-gate, slash-gate, discover-eval]
+    if: >-
+      always() && !cancelled() &&
+      needs.discover-eval.result == 'success' &&
+      needs.discover-eval.outputs.has_entries == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout PR content
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
+          sparse-checkout: |
+            .github/skills
+            .github/plugin.json
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Select Copilot token
+        id: select-token
+        env:
+          TOKEN_1: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          TOKEN_2: ${{ secrets.COPILOT_GITHUB_TOKEN_2 }}
+          TOKEN_3: ${{ secrets.COPILOT_GITHUB_TOKEN_3 }}
+        run: |
+          TOKENS=()
+          for i in 1 2 3; do
+            var="TOKEN_$i"
+            val="${!var}"
+            [ -n "$val" ] && TOKENS+=("$val")
+          done
+          if [ ${#TOKENS[@]} -eq 0 ]; then
+            echo "::error::No COPILOT_GITHUB_TOKEN secrets are configured"
+            exit 1
+          fi
+          IDX=$((RANDOM % ${#TOKENS[@]}))
+          echo "::add-mask::${TOKENS[$IDX]}"
+          echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
+
+      - name: Run hermeticity control
+        id: herm
+        env:
+          # Same model-auth-only env the evaluate job uses. If correct, the
+          # positive assertion PASSES (agent reports CORE_LIMIT:60 — anonymous).
+          # If a GitHub-shaped token leaks in, the rate limit is elevated and
+          # the assertion FAILS → hermeticity not verified.
+          COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+        run: |
+          SPEC=.github/skills/code-review/tests/hermeticity.vally.yaml
+          mkdir -p hermeticity-results
+          if [ ! -f "$SPEC" ]; then
+            echo "::warning::hermeticity spec not found at $SPEC"
+            echo "inconclusive" > hermeticity-results/verdict.txt
+            exit 0
+          fi
+
+          set +e
+          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval -e "$SPEC" \
+            --skill-dir .github/skills \
+            --output-dir hermeticity-results/out \
+            --junit \
+            --model claude-opus-4.6 \
+            --judge-model claude-opus-4.6 \
+            --runs 1 \
+            --workers 1 \
+            --verbose
+          EVAL_RC=$?
+          set -e
+          echo "vally exit code: $EVAL_RC (advisory)"
+
+          JUNIT=$(find hermeticity-results/out -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
+          if [ -z "$JUNIT" ]; then
+            echo "::warning::no JUnit produced by hermeticity run"
+            echo "inconclusive" > hermeticity-results/verdict.txt
+            exit 0
+          fi
+
+          ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
+          if [ -z "$ROOT" ]; then
+            echo "::warning::Hermeticity JUnit contains no <testsuites> element"
+            echo "inconclusive" > hermeticity-results/verdict.txt
+            exit 0
+          fi
+          FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
+          ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
+          echo "hermeticity-control: failures=$FAILS errors=$ERRS"
+
+          # Positive assertion: the stimulus passes ONLY when the agent
+          # reports the anonymous rate limit (CORE_LIMIT:60).
+          #   both 0      → stimulus passed → agent is anonymous  → HERMETIC (good)
+          #   errors>=1   → run errored                            → INCONCLUSIVE
+          #   failures>=1 → agent NOT anonymous, or probe errored  → BROKEN
+          if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
+            # Guard: if Vally exited non-zero but JUnit shows no failures,
+            # an execution error may have been swallowed (partial output).
+            if [ "$EVAL_RC" -ne 0 ]; then
+              echo "inconclusive" > hermeticity-results/verdict.txt
+              echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as inconclusive (possible partial output)"
+            else
+              echo "hermetic" > hermeticity-results/verdict.txt
+              echo "✅ Hermetic: agent reported anonymous rate limit (CORE_LIMIT:60); no GitHub token leaked."
+            fi
+          elif [ "$ERRS" -ge 1 ]; then
+            echo "inconclusive" > hermeticity-results/verdict.txt
+            echo "::warning::Hermeticity inconclusive (execution error in hermeticity control)."
+          else
+            echo "broken" > hermeticity-results/verdict.txt
+            echo "::warning::Hermeticity BROKEN: agent did not report anonymous rate limit. A GitHub token may have leaked into the eval env. Non-blocking for now."
+          fi
+          # Non-blocking: never fail this job.
+          exit 0
+
+      - name: Upload hermeticity results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermeticity-results
+          path: hermeticity-results/
+          include-hidden-files: true
+          retention-days: 14
+
+  # ==========================================================================
+  # POST PR COMMENT
+  # Consolidated results (static + eval) posted directly to the PR.
+  # pull_request_target has write permissions, so no separate workflow needed.
+  # ==========================================================================
+  comment:
+    name: Post results comment
+    needs: [pr-gate, slash-gate, static-check, discover-eval, evaluate, hermeticity-gate]
+    if: >-
+      always() && !cancelled() && (
+        needs.pr-gate.result == 'success' ||
+        needs.slash-gate.result == 'success'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    outputs:
+      eval_passed: ${{ steps.post-comment.outputs.eval_passed }}
+    steps:
+      - name: Download static check results
+        uses: actions/download-artifact@v4
+        with:
+          name: static-check-results
+          path: static-results/
+        continue-on-error: true
+
+      - name: Download eval result artifacts
+        if: needs.evaluate.result == 'success' || needs.evaluate.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: skill-eval-results-*
+          path: eval-results/
+          merge-multiple: false
+        continue-on-error: true
+
+      - name: Download hermeticity results
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          name: hermeticity-results
+          path: hermeticity-results/
+        continue-on-error: true
+
+      - name: Post comment
+        id: post-comment
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ needs.pr-gate.outputs.pr_number || needs.slash-gate.outputs.pr_number }}
+          STATIC_RESULT: ${{ needs.static-check.result }}
+          EVAL_RESULT: ${{ needs.evaluate.result }}
+          HAS_ENTRIES: ${{ needs.discover-eval.outputs.has_entries }}
+          DISCOVER_RESULT: ${{ needs.discover-eval.result }}
+          IS_CONTRIBUTOR: ${{ needs.pr-gate.outputs.is_contributor || 'true' }}
+          HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const prNumber = parseInt(process.env.PR_NUMBER, 10);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const marker = '<!-- skill-validation-results -->';
+            // Metadata fetch is decorative; never let a transient failure (rate-limit/5xx) sink the whole results comment.
+            let prData = {};
+            try {
+              const r = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+              prData = r.data;
+            } catch (e) {
+              console.log('pulls.get failed, using fallbacks:', e.message);
+            }
+            // Use the gated SHA the validation actually ran against — the live PR head may have moved during a slow /evaluate-skills run.
+            const headSha = process.env.HEAD_SHA || prData.head?.sha || '';
+            const headSha7 = headSha ? headSha.substring(0, 7) : 'unknown';
+            const commitUrl = headSha ? `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/commit/${headSha}` : runUrl;
+            const prTitle = (prData.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const prAuthor = prData.user?.login || '';
+            const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+            function badge(label, message, color) {
+              const safeLabel = encodeURIComponent(label).replace(/-/g, '--');
+              const safeMessage = encodeURIComponent(message).replace(/-/g, '--');
+              const safeAlt = `${label} ${message}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              return `  <img alt="${safeAlt}" src="https://img.shields.io/badge/${safeLabel}-${safeMessage}-${color}?labelColor=30363d&style=flat-square">`;
+            }
+
+            function colorFor(status) {
+              if (status === 'Passed') return '1a7f37';
+              if (status === 'Failed') return 'd1242f';
+              if (status === 'Skipped') return '6e7781';
+              return 'bf8700';
+            }
+
+            const staticResult = process.env.STATIC_RESULT;
+            const evalResult = process.env.EVAL_RESULT;
+            const hasEntries = process.env.HAS_ENTRIES === 'true';
+            const discoverResult = process.env.DISCOVER_RESULT;
+            const isContributor = process.env.IS_CONTRIBUTOR === 'true';
+            const evalRan = discoverResult === 'success';
+
+            const lines = [];
+
+            // ── Static check section ──────────────────────────────
+            let staticOutput = '';
+            try {
+              if (fs.existsSync('static-results/sv-output.txt')) {
+                staticOutput = fs.readFileSync('static-results/sv-output.txt', 'utf8')
+                  .replace(/\x1b\[[0-9;]*m/g, '').trim();
+              }
+            } catch (e) { /* ignore */ }
+
+            const skillCount = (() => {
+              try { return fs.readFileSync('static-results/skill-count.txt', 'utf8').trim(); }
+              catch { return '?'; }
+            })();
+            const agentCount = (() => {
+              try { return fs.readFileSync('static-results/agent-count.txt', 'utf8').trim(); }
+              catch { return '?'; }
+            })();
+            const specCount = (() => {
+              try { return fs.readFileSync('static-results/spec-count.txt', 'utf8').trim(); }
+              catch { return '?'; }
+            })();
+
+            if (staticResult === 'success') {
+              lines.push('### ✅ Static Checks Passed');
+            } else if (staticResult === 'failure') {
+              lines.push('### ❌ Static Checks Failed');
+            } else {
+              lines.push(`### ⚠️ Static Checks: ${staticResult}`);
+            }
+            lines.push(`Skills: ${skillCount} | Eval specs linted: ${specCount}`);
+            lines.push('');
+
+            if (staticOutput) {
+              // vally lint prints "✔ ... is valid" for passing specs and error
+              // lines (often containing ✖/✗/"error"/"invalid") for failures.
+              const findings = staticOutput.split('\n')
+                .map(l => l.trim())
+                .filter(l => /(✖|✗|❌|error|invalid)/i.test(l))
+                .slice(0, 10);
+
+              if (findings.length > 0) {
+                lines.push('| Finding |');
+                lines.push('|---|');
+                for (const line of findings) {
+                  const text = line.replace(/^[✖✗❌⚠ℹ️\s]+/, '').replace(/\|/g, '\\|');
+                  lines.push(`| ${text} |`);
+                }
+                lines.push('');
+              }
+
+              lines.push('<details>');
+              lines.push('<summary>Full lint output</summary>');
+              lines.push('');
+              lines.push('```text');
+              lines.push(staticOutput.replace(/```/g, '` ` `'));
+              lines.push('```');
+              lines.push('');
+              lines.push('</details>');
+              lines.push('');
+            }
+
+            // ── Parse eval results from JUnit XML ─────────────────
+            // Vally writes <output-dir>/<timestamp>/eval-results.junit.xml.
+            // Each <testsuite> is one eval spec (its passed/overallScore/
+            // threshold come from suite <property> tags); each <testcase> is a
+            // stimulus trial (a <failure>/<error> child marks it failed). The
+            // suite `passed` property is the authoritative per-spec verdict.
+            function findFilesByName(root, name) {
+              const out = [];
+              const stack = [root];
+              while (stack.length) {
+                const d = stack.pop();
+                let ents = [];
+                try { ents = fs.readdirSync(d, { withFileTypes: true }); } catch { continue; }
+                for (const e of ents) {
+                  const fp = path.join(d, e.name);
+                  if (e.isDirectory()) stack.push(fp);
+                  else if (e.name === name) out.push(fp);
+                }
+              }
+              return out;
+            }
+            function xmlDecode(s) {
+              return (s || '')
+                .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+                .replace(/&amp;/g, '&');
+            }
+            function suiteProp(block, key) {
+              const m = block.match(new RegExp('<property name="' + key + '" value="([^"]*)"'));
+              return m ? xmlDecode(m[1]) : null;
+            }
+            function tagAttr(tag, key) {
+              const m = (tag || '').match(new RegExp(key + '="([^"]*)"'));
+              return m ? xmlDecode(m[1]) : null;
+            }
+
+            const suites = [];
+            let evalPassed = true;
+            let hasResults = false;
+            if (fs.existsSync('eval-results')) {
+              const junitFiles = findFilesByName('eval-results', 'eval-results.junit.xml');
+              for (const jf of junitFiles) {
+                let xml = '';
+                try { xml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
+                const blocks = xml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
+                for (const block of blocks) {
+                  hasResults = true;
+                  const openTag = (block.match(/<testsuite\b[^>]*>/) || [''])[0];
+                  const label = suiteProp(block, 'evalName') || tagAttr(openTag, 'name') || '(unnamed)';
+                  const score = suiteProp(block, 'overallScore');
+                  const threshold = suiteProp(block, 'threshold');
+                  const passed = suiteProp(block, 'passed') === 'true';
+                  if (!passed) evalPassed = false;
+                  // Failing/erroring stimuli, deduped by testcase name (runs>1
+                  // flattens each stimulus into one testcase per trial).
+                  const failures = new Map();
+                  const tcs = block.match(/<testcase\b[\s\S]*?(?:\/>|<\/testcase>)/g) || [];
+                  for (const tc of tcs) {
+                    const tcOpen = (tc.match(/<testcase\b[^>]*?(?:>|\/>)/) || [''])[0];
+                    const tcName = tagAttr(tcOpen, 'name') || '(stimulus)';
+                    const fm = tc.match(/<failure\b[^>]*message="([^"]*)"/);
+                    const em = tc.match(/<error\b[^>]*message="([^"]*)"/);
+                    if (fm || em) {
+                      const kind = em ? 'error' : 'fail';
+                      const msg = xmlDecode((em && em[1]) || (fm && fm[1]) || '')
+                        .split('\n')[0].slice(0, 240);
+                      if (!failures.has(tcName)) failures.set(tcName, { kind, msg });
+                    }
+                  }
+                  suites.push({ label, score, threshold, passed, failures: [...failures.entries()] });
+                }
+              }
+            }
+
+            // ── LLM evaluation section ────────────────────────────
+            if (!evalRan && !isContributor) {
+              lines.push('### ⏭️ LLM Evaluation: Skipped');
+              lines.push('');
+              lines.push('> 💡 LLM evaluation was not run for this external PR.');
+              lines.push('> A repository contributor can post `/evaluate-skills` on this PR to trigger full evaluation.');
+              lines.push('');
+            } else if (!hasEntries) {
+              lines.push('### ⏭️ LLM Evaluation: Skipped');
+              lines.push('_No changed skills with eval specs found._');
+              lines.push('');
+            } else if (hasResults) {
+              if (evalPassed) {
+                lines.push('### ✅ LLM Evaluation Passed');
+              } else {
+                lines.push('### ❌ LLM Evaluation Failed');
+              }
+              const passedCount = suites.filter(s => s.passed).length;
+              lines.push(`${passedCount}/${suites.length} eval suite(s) met threshold`);
+              lines.push('');
+
+              // ── Per-suite results table ─────────────────────────
+              lines.push('| Suite | Score | Threshold | Verdict |');
+              lines.push('|-------|-------|-----------|---------|');
+              for (const s of suites) {
+                const sc = s.score != null && s.score !== '' ? Number(s.score).toFixed(2) : '—';
+                const th = s.threshold != null && s.threshold !== '' ? Number(s.threshold).toFixed(2) : '—';
+                const v = s.passed ? '✅' : '❌';
+                const label = (s.label || '').replace(/\|/g, '\\|');
+                lines.push(`| ${label} | ${sc} | ${th} | ${v} |`);
+              }
+              lines.push('');
+
+              // ── Failing stimuli detail ──────────────────────────
+              for (const s of suites.filter(x => x.failures.length > 0)) {
+                const label = (s.label || '').replace(/\|/g, '\\|');
+                lines.push('<details>');
+                lines.push(`<summary>❌ ${label} — ${s.failures.length} failing stimulus(es)</summary>`);
+                lines.push('');
+                for (const [name, info] of s.failures) {
+                  const tag = info.kind === 'error' ? '🛑 error' : '❌ fail';
+                  const safeName = String(name).replace(/\|/g, '\\|');
+                  const safeMsg = (info.msg || '').replace(/\|/g, '\\|');
+                  lines.push(`- **${safeName}** (${tag}): ${safeMsg}`);
+                }
+                lines.push('');
+                lines.push('</details>');
+                lines.push('');
+              }
+            } else if (evalResult === 'success') {
+              lines.push('### ✅ LLM Evaluation Passed');
+              lines.push('');
+            } else if (evalResult === 'failure') {
+              lines.push('### ❌ LLM Evaluation Failed');
+              lines.push('');
+            } else if (evalResult === 'skipped') {
+              lines.push('### ⏭️ LLM Evaluation: Skipped');
+              lines.push('');
+            } else {
+              lines.push(`### ⚠️ LLM Evaluation: ${evalResult}`);
+              lines.push('');
+            }
+
+            // ── Harness hermeticity (negative control) ────────────
+            let hermVerdict = '';
+            try { hermVerdict = fs.readFileSync('hermeticity-results/verdict.txt', 'utf8').trim(); }
+            catch { /* gate may not have run */ }
+            if (hermVerdict) {
+              lines.push('### Harness hermeticity (negative control)');
+              if (hermVerdict === 'hermetic') {
+                lines.push('✅ Hermetic — the negative-control stimulus correctly came back **unauthenticated** (anonymous core rate limit; no GitHub token leaked into the agent env).');
+              } else if (hermVerdict === 'broken') {
+                lines.push('❌ **NOT hermetic** — the negative-control stimulus was **authenticated** against the GitHub API (elevated rate limit). A GitHub token leaked into the eval env and regression suites may be open-book. _(non-blocking for now)_');
+              } else {
+                lines.push('⚠️ Inconclusive — the negative-control run errored before it could prove hermeticity. _(non-blocking)_');
+              }
+              lines.push('');
+            }
+
+            // ── Detailed eval reports (vally eval-results.md) ─────
+            if (fs.existsSync('eval-results')) {
+              const mdFiles = findFilesByName('eval-results', 'eval-results.md');
+              for (const mf of mdFiles) {
+                let md = '';
+                try { md = fs.readFileSync(mf, 'utf8').trim(); } catch { continue; }
+                if (!md) continue;
+                const rel = path.relative('eval-results', mf);
+                const skillName = rel.split(path.sep)[0].replace('skill-eval-results-', '');
+                if (md.length > 12000) md = md.slice(0, 12000) + '\n…(truncated — see artifacts)…';
+                lines.push('<details>');
+                lines.push(`<summary>📊 ${skillName} — eval report</summary>`);
+                lines.push('');
+                lines.push(md.replace(/```/g, '` ` `').replace(/<\/details>/gi, '&lt;/details&gt;'));
+                lines.push('');
+                lines.push('</details>');
+                lines.push('');
+              }
+            }
+
+            // ── Investigation prompt for failures ─────────────────
+            let investigatePrompt = '';
+            if (hasResults && !evalPassed) {
+              const runId = context.runId;
+              const repo = `${context.repo.owner}/${context.repo.repo}`;
+              investigatePrompt = [
+                '',
+                '> **To investigate failures**, paste this to your AI coding agent:',
+                '>',
+                `> _For PR #${prNumber} in ${repo}, download eval artifacts with ` +
+                `\`gh run download ${runId} --repo ${repo} --pattern "skill-eval-results-*" --dir ./eval-results\`. ` +
+                `Each suite has \`eval-results.md\` (human summary), \`eval-results.junit.xml\` (per-stimulus pass/fail with judge evidence), ` +
+                `and per-trial session logs under \`executor-session-logs/\`. Read the failing \`<testcase>\` entries and their \`<failure>\` evidence, diagnose each, ` +
+                `and propose fixes to the skill content or the eval*.vally.yaml rubric. Tell me what to fix first._`,
+              ].join('\n');
+            }
+
+            // ── Pipeline link ─────────────────────────────────────
+            lines.push(`[🔍 Full results and investigation steps](${runUrl})`);
+
+            const staticStatus = staticResult === 'success'
+              ? 'Passed'
+              : staticResult === 'failure'
+                ? 'Failed'
+                : (staticResult || 'Unknown');
+            let evalStatus;
+            if (!evalRan && !isContributor) {
+              evalStatus = 'Skipped';
+            } else if (discoverResult !== 'success') {
+              evalStatus = 'Needs attention';  // discovery job failed → can't tell if eval was needed; don't mask as Skipped/Passed
+            } else if (!hasEntries) {
+              evalStatus = 'Skipped';
+            } else if (hasResults) {
+              evalStatus = evalPassed ? 'Passed' : 'Failed';
+            } else if (evalResult === 'success') {
+              evalStatus = 'Passed';
+            } else if (evalResult === 'failure') {
+              evalStatus = 'Failed';
+            } else if (evalResult === 'skipped') {
+              evalStatus = 'Skipped';
+            } else {
+              evalStatus = evalResult || 'Unknown';
+            }
+            const overallStatus = staticStatus === 'Failed' || evalStatus === 'Failed'
+              ? 'Failed'
+              : (staticStatus === 'Passed' && (evalStatus === 'Passed' || evalStatus === 'Skipped'))
+                ? 'Passed'
+                : 'Needs attention';
+            const overallIcon = overallStatus === 'Passed' ? '✅' : overallStatus === 'Failed' ? '❌' : '⚠️';
+            // Wrap badge + body construction so a future undefined variable or formatting
+            // error can never sink the whole job: on failure we log loudly and fall back to a
+            // minimal plain-text body so the results comment ALWAYS posts.
+            let body;
+            try {
+              const badges = [
+                badge('Overall', overallStatus, colorFor(overallStatus)),
+                badge('Static', staticStatus, colorFor(staticStatus)),
+                badge('LLM', evalStatus, colorFor(evalStatus)),
+                badge('Skills', String(skillCount), '8250df'),
+                badge('Agents', String(agentCount), '0969da'),
+              ].join('\n');
+              const authorLine = prAuthor
+                ? `> @${prAuthor} — new skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`
+                : `> New skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`;
+              const content = lines.join('\n');
+              body = [
+                marker,
+                '',
+                '## Skill Validation Results',
+                '',
+                authorLine,
+                '> To request a fresh validation after new comments or commits, comment `/evaluate-skills`.',
+                '',
+                '<p align="left">',
+                badges,
+                '</p>',
+                '',
+                `<!-- SESSION:${headSha7} START -->`,
+                '<details>',
+                `<summary>${overallIcon} <strong>Skill Validation Results</strong> — <a href="${commitUrl}"><code>${headSha7}</code></a> · <strong>${prTitle}</strong> · <em>${timestamp}</em></summary>`,
+                '<br/>',
+                '',
+                content,
+                '',
+                '</details>',
+                `<!-- SESSION:${headSha7} END -->`,
+              ].join('\n').replace(/<details\s+open>/g, '<details>');
+            } catch (err) {
+              const detail = err && err.stack ? err.stack : String(err);
+              console.error(`Failed to build formatted Skill Validation comment body: ${detail}`);
+              core.warning(`Skill Validation comment formatting failed; posting plain-text fallback instead: ${err && err.message ? err.message : detail}`);
+              // Keep the marker so the upsert logic still finds/updates this comment, and use
+              // only the already-computed status values (no badge formatting that could rethrow).
+              body = [
+                marker,
+                '',
+                '## Skill Validation Results',
+                '',
+                `Overall: ${overallStatus} · Static: ${staticStatus} · LLM: ${evalStatus}`,
+                '',
+                `Commit: \`${headSha7}\``,
+                '',
+                `[🔍 Full results and investigation steps](${runUrl})`,
+                '',
+                '> _Result badges could not be rendered due to an internal formatting error; see the workflow run logs for details._',
+              ].join('\n');
+            }
+
+            // ── Write step summary with investigation prompt ──────
+            const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+            if (summaryPath) {
+              const summaryLines = ['## Skill Validation Results', ''];
+              summaryLines.push(body.replace(marker, '').trim());
+              if (investigatePrompt) {
+                summaryLines.push(investigatePrompt);
+              }
+              fs.appendFileSync(summaryPath, summaryLines.join('\n') + '\n');
+            }
+
+            // Upsert comment (find existing with marker, update or create)
+            // Paginate to handle PRs with 100+ comments
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                per_page: 100,
+              }
+            );
+
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+              console.log(`Updated existing comment ${existing.id}`);
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+              console.log('Created new PR comment');
+            }
+
+            // Save eval pass/fail for downstream jobs
+            const outputPath = process.env.GITHUB_OUTPUT;
+            if (outputPath) {
+              fs.appendFileSync(outputPath, `eval_passed=${hasResults ? evalPassed : 'na'}\n`);
+            }
+
+  # ==========================================================================
+  # REPORT STATUS
+  # Post final commit status on PR head SHA.
+  # ==========================================================================
+  report-status:
+    name: Report status
+    needs: [pr-gate, slash-gate, static-check, discover-eval, evaluate, comment]
+    if: >-
+      always() && !cancelled() && (
+        needs.pr-gate.result == 'success' ||
+        needs.slash-gate.result == 'success'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+      checks: write
+      issues: write
+    steps:
+      - name: Set commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          HEAD_SHA="${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}"
+          if [ -z "$HEAD_SHA" ]; then
+            echo "No head SHA (workflow_dispatch?) — skipping status"
+            exit 0
+          fi
+
+          STATIC="${{ needs.static-check.result }}"
+          EVAL="${{ needs.evaluate.result }}"
+          DISCOVER="${{ needs.discover-eval.result }}"
+          HAS_ENTRIES="${{ needs.discover-eval.outputs.has_entries }}"
+          EVAL_PASSED="${{ needs.comment.outputs.eval_passed }}"
+
+          if [[ "$STATIC" == "success" ]]; then
+            if [[ "$DISCOVER" != "success" || "$HAS_ENTRIES" != "true" ]]; then
+              STATE="success"
+              DESC="Skill validation passed (static only)"
+            elif [[ "$EVAL_PASSED" == "true" ]]; then
+              STATE="success"
+              DESC="Skill validation passed"
+            elif [[ "$EVAL_PASSED" == "false" ]]; then
+              STATE="failure"
+              DESC="LLM evaluation failed"
+            elif [[ "$EVAL" == "failure" ]]; then
+              STATE="failure"
+              DESC="LLM evaluation failed"
+            else
+              STATE="error"
+              DESC="Evaluation incomplete ($EVAL)"
+            fi
+          elif [[ "$STATIC" == "failure" ]]; then
+            STATE="failure"
+            DESC="Static validation failed"
+          else
+            STATE="error"
+            DESC="Validation incomplete (static: $STATIC)"
+          fi
+
+          # Post commit status (appears in PR status checks)
+          gh api "repos/${{ github.repository }}/statuses/${HEAD_SHA}" \
+            -f state="$STATE" \
+            -f context="skill-validation" \
+            -f description="$DESC" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      # Create a Check Run on the PR head SHA so it shows in the PR Checks tab.
+      # pull_request_target runs are associated with the base branch, not the PR,
+      # so without this the workflow link won't appear on the PR.
+      - name: Create check run
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const headSha = '${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}';
+            if (!headSha) return;
+
+            const staticResult = '${{ needs.static-check.result }}';
+            const evalPassed = '${{ needs.comment.outputs.eval_passed }}';
+            const evalResult = '${{ needs.evaluate.result }}';
+            const hasEntries = '${{ needs.discover-eval.outputs.has_entries }}' === 'true';
+
+            let conclusion, title;
+            if (staticResult !== 'success') {
+              conclusion = 'failure';
+              title = 'Static validation failed';
+            } else if (!hasEntries) {
+              conclusion = 'success';
+              title = 'Skill validation passed (static only)';
+            } else if (evalPassed === 'true') {
+              conclusion = 'success';
+              title = 'Skill validation passed';
+            } else if (evalPassed === 'false') {
+              conclusion = 'failure';
+              title = 'LLM evaluation failed';
+            } else if (evalResult === 'failure') {
+              conclusion = 'failure';
+              title = 'LLM evaluation failed';
+            } else {
+              conclusion = 'neutral';
+              title = `Evaluation: ${evalResult}`;
+            }
+
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Skill Validation',
+              head_sha: headSha,
+              status: 'completed',
+              conclusion,
+              output: {
+                title,
+                summary: `[View full results](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              },
+              details_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+            console.log(`Created check run: ${conclusion} - ${title}`);
+
+      # Remove eyes reaction (slash command only)
+      - name: Remove reaction
+        if: needs.slash-gate.result == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          COMMENT_ID="${{ github.event.comment.id }}"
+          REACTION_ID=$(gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}/reactions" \
+            --jq '.[] | select(.content == "eyes" and .user.login == "github-actions[bot]") | .id' \
+            | head -1 || echo "")
+          if [[ -n "$REACTION_ID" && "$REACTION_ID" != "null" ]]; then
+            gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}/reactions/${REACTION_ID}" \
+              -X DELETE || true
+          fi

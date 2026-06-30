@@ -4,3 +4,4 @@ override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() ->
 static Microsoft.Maui.LifecycleEvents.WindowsLifecycleBuilderExtensions.OnAppInstanceActivated(this Microsoft.Maui.LifecycleEvents.IWindowsLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated! del) -> Microsoft.Maui.LifecycleEvents.IWindowsLifecycleBuilder!
 virtual Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated.Invoke(Microsoft.UI.Xaml.Application! application, Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
 virtual Microsoft.Maui.MauiWinUIApplication.OnAppInstanceActivated(Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
+override Microsoft.Maui.Platform.ContentPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
