@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
@@ -266,8 +267,30 @@ namespace Microsoft.Maui.Controls.Platform
 				// activity's WindowCompat.EnableEdgeToEdge configuration, so it must be applied here.
 				WindowCompat.EnableEdgeToEdge(dialog.Window);
 
+				// EnableEdgeToEdge handles transparency/scrim but not bar icon colors; apply those
+				// from the app theme so the modal's status/navigation bar icons match the main window.
+				var modalActivity = Context?.GetActivity();
+				if (modalActivity is not null)
+				{
+					dialog.Window.ConfigureTranslucentSystemBars(modalActivity);
+				}
 
 				return dialog;
+			}
+
+			public override void OnConfigurationChanged(Configuration newConfig)
+			{
+				base.OnConfigurationChanged(newConfig);
+
+				// Re-apply system bar icon colors to the modal's own Dialog window on a theme
+				// (light/dark) change. The Dialog is a separate Window that OnCreateDialog configures
+				// once; like the activity, it must be re-applied here so the modal's status/navigation
+				// bar icons track the theme. EnableEdgeToEdge handles transparency/scrim, not icon colors.
+				var modalActivity = Context?.GetActivity();
+				if (Dialog?.Window is { } dialogWindow && modalActivity is not null)
+				{
+					dialogWindow.ConfigureTranslucentSystemBars(modalActivity);
+				}
 			}
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)

@@ -19,6 +19,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Activity platformView)
 		{
 			base.ConnectHandler(platformView);
+
+			// Edge-to-edge transparency/scrim is enabled in MauiAppCompatActivity via EnableEdgeToEdge,
+			// which does not manage bar icon colors. Apply the initial icon appearance from the app theme.
+			platformView.Window?.ConfigureTranslucentSystemBars(platformView);
+
 			UpdateVirtualViewFrame(platformView);
 		}
 
