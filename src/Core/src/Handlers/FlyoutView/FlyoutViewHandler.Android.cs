@@ -124,9 +124,19 @@ namespace Microsoft.Maui.Handlers
 			return _detailHostFragment;
 		}
 
-		// Removes the detail host (and with it the ChildFragmentManager hosting the detail page) so
-		// the detail graph is released and no fragment is left orphaned in the activity
-		// FragmentManager after the FlyoutView is disconnected.
+		// Removes the detail host (and with it the ChildFragmentManager hosting the detail page) when
+		// the FlyoutView is disconnected, so the detail graph is released and no host fragment is
+		// left orphaned in the activity FragmentManager.
+		//
+		// The Remove is committed with SetReorderingAllowed(true). This matters when the host's own
+		// add is still pending (committed but not yet executed): queuing a reorder-allowed Remove in
+		// the same looper cycle lets the FragmentManager collapse the pending Add+Remove, so the
+		// host view is never created and never calls findViewById(navigationlayout_content) against a
+		// container that NavigationRootManager may have synchronously detached. Contains() stays true
+		// across that window (FragmentManager.FindFragmentById resolves a fragment as soon as its add
+		// is committed), so the guard below does not skip the Remove. IsStateSaved IS skipped, because
+		// committing after onSaveInstanceState throws; on that path the activity FragmentManager is
+		// itself being torn down, so the host is reclaimed with it.
 		void RemoveDetailHost()
 		{
 			var detailHost = _detailHostFragment;

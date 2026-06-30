@@ -1,7 +1,6 @@
 using System;
 using Android.OS;
 using Android.Views;
-using Android.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
@@ -28,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 	// child FragmentManager.
 	sealed class FlyoutDetailFragment : Fragment
 	{
-		FrameLayout? _detailContainer;
+		FragmentContainerView? _detailContainer;
 		int _detailContainerId;
 		ScopedFragment? _detailFragment;
 		IDisposable? _pendingDetail;
@@ -46,7 +45,11 @@ namespace Microsoft.Maui.Handlers
 			if (_detailContainerId == 0)
 				_detailContainerId = AView.GenerateViewId();
 
-			_detailContainer = new FrameLayout(RequireContext())
+			// FragmentContainerView (not a bare FrameLayout) is the container type every other
+			// fragment host on Android uses (navigationlayout_content, fragment_backstack,
+			// NavigationViewFragment). It dispatches WindowInsets to the hosted fragment and
+			// z-orders exiting/entering fragments correctly during transitions.
+			_detailContainer = new FragmentContainerView(RequireContext())
 			{
 				Id = _detailContainerId,
 				LayoutParameters = new ViewGroup.LayoutParams(
@@ -131,8 +134,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				_detailFragment = new ScopedFragment(detail, scopedMauiContext);
 				fm
-					.BeginTransaction()
-					.Replace(containerId, _detailFragment)
+					.BeginTransactionEx()
+					.ReplaceEx(containerId, _detailFragment)
 					.SetReorderingAllowed(true)
 					.Commit();
 			});
