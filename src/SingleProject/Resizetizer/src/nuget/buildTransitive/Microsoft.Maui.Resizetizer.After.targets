@@ -563,6 +563,20 @@
             <_MauiFontCopied Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
         </ItemGroup>
 
+        <!-- De-duplicate the mapped paths: two @(MauiFont) items whose filenames collide (e.g. one
+             from this project and one from a ProjectReference, both 'OpenSans.ttf') flatten to the
+             same intermediate path and would otherwise register duplicate
+             AndroidAsset/BundleResource/ContentWithTargetPath items. The previous glob over the
+             intermediate folder was implicitly de-duplicated by the filesystem, so preserve that
+             behavior here before the platform-specific registrations below. -->
+        <RemoveDuplicates Inputs="@(_MauiFontCopied)">
+            <Output TaskParameter="Filtered" ItemName="_MauiFontCopiedUnique" />
+        </RemoveDuplicates>
+        <ItemGroup>
+            <_MauiFontCopied Remove="@(_MauiFontCopied)" />
+            <_MauiFontCopied Include="@(_MauiFontCopiedUnique)" />
+        </ItemGroup>
+
         <!-- iOS -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''">
 
