@@ -24,6 +24,21 @@ namespace Microsoft.Maui.Controls.Maps
 			return args.Handled;
 		}
 
+		Microsoft.Maui.IImageSource? IMap.GetClusterImage(IReadOnlyList<IMapPin> pins, Location location)
+		{
+			var provider = ClusterImageProvider;
+			if (provider is not null)
+			{
+				var controlPins = pins.OfType<Pin>().ToList();
+				var identifier = controlPins.Count > 0 ? controlPins[0].ClusteringIdentifier : Pin.DefaultClusteringIdentifier;
+				var image = provider(new ClusterInfo(controlPins.Count, identifier, controlPins, location));
+				if (image is not null)
+					return image;
+			}
+
+			return ClusterImageSource;
+		}
+
 		void IMap.UserLocationUpdated(Location location)
 		{
 			if (Equals(_lastUserLocation, location))

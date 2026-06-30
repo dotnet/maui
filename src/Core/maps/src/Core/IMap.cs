@@ -92,6 +92,14 @@ namespace Microsoft.Maui.Maps
 		bool ClusterClicked(IReadOnlyList<IMapPin> pins, Location location);
 
 		/// <summary>
+		/// Called by the handler when building a cluster marker to obtain a custom image for it.
+		/// </summary>
+		/// <param name="pins">The pins contained in the cluster.</param>
+		/// <param name="location">The location (centroid) of the cluster.</param>
+		/// <returns>The image to use for the cluster marker, or <see langword="null"/> to use the default marker.</returns>
+		IImageSource? GetClusterImage(IReadOnlyList<IMapPin> pins, Location location);
+
+		/// <summary>
 		/// Method called by the handler when user long-presses on the Map.
 		/// </summary>
 		void LongClicked(Location position);

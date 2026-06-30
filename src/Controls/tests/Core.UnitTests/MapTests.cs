@@ -1184,5 +1184,66 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ClusterImageProvider = provider;
 			Assert.Same(provider, map.ClusterImageProvider);
 		}
+
+		[Fact]
+		public void GetClusterImagePrefersProviderOverStatic()
+		{
+			var map = new Map();
+			var providerImage = ImageSource.FromFile("provider.png");
+			var staticImage = ImageSource.FromFile("static.png");
+			map.ClusterImageSource = staticImage;
+			map.ClusterImageProvider = _ => providerImage;
+
+			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
+			var result = ((IMap)map).GetClusterImage(pins, new Location(1, 2));
+
+			Assert.Same(providerImage, result);
+		}
+
+		[Fact]
+		public void GetClusterImageFallsBackToStaticWhenProviderNullOrAbsent()
+		{
+			var map = new Map();
+			var staticImage = ImageSource.FromFile("static.png");
+			map.ClusterImageSource = staticImage;
+			// no provider
+			var pins = new List<IMapPin> { new Pin { Label = "A" } };
+			Assert.Same(staticImage, ((IMap)map).GetClusterImage(pins, new Location(1, 2)));
+
+			// provider that returns null also falls back
+			map.ClusterImageProvider = _ => null;
+			Assert.Same(staticImage, ((IMap)map).GetClusterImage(pins, new Location(1, 2)));
+		}
+
+		[Fact]
+		public void GetClusterImageReturnsNullWhenNothingConfigured()
+		{
+			var map = new Map();
+			var pins = new List<IMapPin> { new Pin { Label = "A" } };
+			Assert.Null(((IMap)map).GetClusterImage(pins, new Location(1, 2)));
+		}
+
+		[Fact]
+		public void GetClusterImagePassesClusterInfoToProvider()
+		{
+			var map = new Map();
+#nullable enable
+			ClusterInfo? captured = null;
+			map.ClusterImageProvider = info => { captured = info; return null; };
+#nullable restore
+
+			var pins = new List<IMapPin>
+			{
+				new Pin { Label = "A", ClusteringIdentifier = "cafes" },
+				new Pin { Label = "B", ClusteringIdentifier = "cafes" }
+			};
+			((IMap)map).GetClusterImage(pins, new Location(10, 20));
+
+			Assert.NotNull(captured);
+			Assert.Equal(2, captured!.Count);
+			Assert.Equal("cafes", captured.ClusteringIdentifier);
+			Assert.Equal(2, captured.Pins.Count);
+			Assert.Equal(new Location(10, 20), captured.Location);
+		}
 	}
 }
