@@ -445,7 +445,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				primaries.Reverse();
 			}
 
-			if (secondaries is not null && secondaries.Count > 0)
+			// UIBarButtonItem(UIImage, UIMenu) requires iOS 14 / Mac Catalyst 14, so only
+			// build the secondary overflow menu button when running on a supported version.
+			if (secondaries is not null && secondaries.Count > 0
+				&& (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
 			{
 				UIImage? secondaryIcon = null;
 				if (ViewController?.ParentViewController is ShellSectionRenderer ssr)

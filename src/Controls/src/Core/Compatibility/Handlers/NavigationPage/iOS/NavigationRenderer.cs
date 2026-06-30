@@ -1697,15 +1697,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var rect = RectangleF.Empty;
 				var size = rect.Size;
 
-				UIGraphics.BeginImageContext(size);
-				var context = UIGraphics.GetCurrentContext();
-				context?.SetFillColor(1, 1, 1, 0);
-				context?.FillRect(rect);
-
-				var empty = UIGraphics.GetImageFromCurrentImageContext();
-				context?.Dispose();
-
-				return empty;
+				// UIGraphics.BeginImageContext / GetImageFromCurrentImageContext are unsupported on
+				// iOS 17+. Use UIGraphicsImageRenderer (iOS 10+ / Mac Catalyst 13+) to build the same
+				// transparent, empty-sized back indicator image.
+				using var renderer = new UIGraphicsImageRenderer(size);
+				return renderer.CreateImage((UIGraphicsImageRendererContext rendererContext) =>
+				{
+					var context = rendererContext.CGContext;
+					context.SetFillColor(1, 1, 1, 0);
+					context.FillRect(rect);
+				});
 			}
 
 			/// <summary>
@@ -2057,7 +2058,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					primaries.Reverse();
 				}
 
-				if (secondaries is not null && secondaries.Count > 0)
+				// UIBarButtonItem(UIImage, UIMenu) requires iOS 14 / Mac Catalyst 14, so only
+				// build the secondary overflow menu button when running on a supported version.
+				if (secondaries is not null && secondaries.Count > 0
+					&& (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
 				{
 					UIImage secondaryIcon = null;
 					if (_navigation.TryGetTarget(out NavigationRenderer navRenderer))

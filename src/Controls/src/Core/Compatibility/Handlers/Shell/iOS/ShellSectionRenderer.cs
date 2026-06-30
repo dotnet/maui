@@ -686,7 +686,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
-				viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+
+				// UINavigationItem.BackAction (and UIAction.Create) require iOS 16 / Mac Catalyst 16.
+				if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				{
+					viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+				}
+
 				HandleMoreNavigationCompletionTasks(viewController);
 			}
 			else
