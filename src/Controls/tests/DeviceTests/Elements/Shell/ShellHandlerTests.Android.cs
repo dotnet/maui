@@ -80,7 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		// =========================================================
-		// Tests from ShellTests.Android.cs (15 tests)
+		// Tests from ShellTests.Android.cs
 		// =========================================================
 
 		[Fact(DisplayName = "ShellHandler-No crash going back using 'Shell.Current.GoToAsync(\"..\")'")]
@@ -558,7 +558,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		// =========================================================
-		// Tests from ShellTests.cs — Android-applicable (16 tests)
+		// Tests from ShellTests.cs
 		// =========================================================
 
 		[Fact(DisplayName = "ShellHandler-SearchHandlerRendersCorrectly")]
@@ -1040,7 +1040,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		// =========================================================
-		// Tests from ShellFlyoutTests.cs — Android-applicable (4 tests)
+		// Tests from ShellFlyoutTests.cs
 		// =========================================================
 
 		[Fact(DisplayName = "ShellHandler-FlyoutContentUpdatesAfterChange")]
@@ -1182,7 +1182,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		// =========================================================
-		// Tests from ShellTabBarTests.cs (4 tests)
+		// Tests from ShellTabBarTests.cs
 		// =========================================================
 
 		[Fact(DisplayName = "ShellHandler-ForegroundColor sets icon and title color sets title")]
@@ -1616,7 +1616,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		// =========================================================
-		// Tests from ModalTests.cs — Shell-specific (5 tests)
+		// Tests from ModalTests.cs — Shell-specific
 		// =========================================================
 
 		[Fact(DisplayName = "ShellHandler-AppearingAndDisappearingFireOnWindowAndModal (Shell)")]
@@ -1818,7 +1818,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		// =========================================================
-		// Tests from WindowTests.cs — Shell-specific (2 tests)
+		// Tests from WindowTests.cs — Shell-specific
 		// =========================================================
 
 		[Fact(DisplayName = "ShellHandler-Toolbar Items Update when swapping out Main Page on Handler")]
