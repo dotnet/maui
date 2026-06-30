@@ -125,7 +125,6 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static Microsoft.Maui.Controls.Shell.SetBackground(Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Brush value) -> void
 ~static readonly Microsoft.Maui.Controls.Shell.BackgroundProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.SetColors(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker, Microsoft.Maui.Graphics.Color foreground, Microsoft.Maui.Controls.Brush background, Microsoft.Maui.Graphics.Color title) -> void
-*REMOVED*~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.SetColors(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker, Microsoft.Maui.Graphics.Color foreground, Microsoft.Maui.Graphics.Color background, Microsoft.Maui.Graphics.Color title) -> void
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
 Microsoft.Maui.Controls.Handlers.ShellHandler

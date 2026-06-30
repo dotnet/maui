@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -54,6 +55,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
 			shellToolbar.BarBackground = background ?? new SolidColorBrush(ShellRenderer.DefaultBackgroundColor);
 			shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
+		}
+
+		[Obsolete("Use SetColors(AToolbar, IShellToolbarTracker, Color, Brush, Color) instead.")]
+		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
+		{
+			SetColors(toolbar, toolbarTracker, foreground, background is not null ? new SolidColorBrush(background) : null, title);
 		}
 
 		#region IDisposable
