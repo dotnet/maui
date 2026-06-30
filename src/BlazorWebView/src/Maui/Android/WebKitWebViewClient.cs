@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return false;
 			}
 
-			if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _webViewHandler.VirtualView?.AllowedDomains, AppOriginUri))
+			if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _webViewHandler.VirtualView, AppOriginUri))
 			{
 				return true;
 			}
@@ -97,6 +97,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			if (view is not null && request is not null && !string.IsNullOrEmpty(requestUri))
 			{
+				// 0. Block sub-resource requests (scripts, images, XHR/fetch, etc.) to disallowed domains.
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(requestUri, _webViewHandler?.VirtualView, AppOriginUri))
+				{
+					logger?.LogDebug("Request for {Url} blocked by AllowedDomains.", requestUri);
+					return new WebResourceResponse("text/plain", "UTF-8", 403, "Forbidden", null, new System.IO.MemoryStream());
+				}
+
 				// 1. Check if the app wants to modify or override the request
 				var response = WebRequestInterceptingWebView.TryInterceptResponseStream(_webViewHandler, view, request, requestUri, logger);
 				if (response is not null)

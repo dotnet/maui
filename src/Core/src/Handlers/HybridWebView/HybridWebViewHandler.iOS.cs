@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
-			var allowedDomains = VirtualView?.AllowedDomains;
+			var allowedDomains = (VirtualView as IAllowedDomainsWebView)?.AllowedDomains;
 			if (allowedDomains is not null && allowedDomains.Count > 0)
 			{
 				if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14))

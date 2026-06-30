@@ -10,7 +10,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void NullAllowedDomainsAllowsAll()
 		{
-			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://example.com", null));
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://example.com", (IList<string>)null));
 		}
 
 		[Fact]
@@ -85,12 +85,61 @@ namespace Microsoft.Maui.UnitTests
 		[Theory]
 		[InlineData("data:text/html,<h1>Hello</h1>")]
 		[InlineData("about:blank")]
-		[InlineData("javascript:void(0)")]
 		[InlineData("blob:https://example.com/abc")]
 		public void SpecialSchemesAreAlwaysAllowed(string url)
 		{
 			var domains = new List<string> { "example.com" };
 			Assert.True(WebViewDomainAllowlist.IsUrlAllowed(url, domains));
+		}
+
+		[Fact]
+		public void JavaScriptSchemeIsBlockedWhenAllowlistActive()
+		{
+			// 'javascript:' navigations execute arbitrary script and are a known allowlist-bypass vector.
+			var domains = new List<string> { "example.com" };
+			Assert.False(WebViewDomainAllowlist.IsUrlAllowed("javascript:void(0)", domains));
+		}
+
+		[Fact]
+		public void JavaScriptSchemeIsAllowedWhenNoAllowlist()
+		{
+			// With no allowlist configured, behavior is unchanged (everything is allowed).
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("javascript:void(0)", (IList<string>)null));
+		}
+
+		[Fact]
+		public void IdnUnicodeAllowlistMatchesUnicodeUrl()
+		{
+			var domains = new List<string> { "münchen.de" };
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://münchen.de/page", domains));
+		}
+
+		[Fact]
+		public void IdnUnicodeAllowlistMatchesPunycodeUrl()
+		{
+			var domains = new List<string> { "münchen.de" };
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://xn--mnchen-3ya.de/page", domains));
+		}
+
+		[Fact]
+		public void IdnPunycodeAllowlistMatchesUnicodeUrl()
+		{
+			var domains = new List<string> { "xn--mnchen-3ya.de" };
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://münchen.de/page", domains));
+		}
+
+		[Fact]
+		public void IdnSubdomainMatchIsAllowed()
+		{
+			var domains = new List<string> { "münchen.de" };
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://shop.xn--mnchen-3ya.de/page", domains));
+		}
+
+		[Fact]
+		public void IdnDifferentDomainIsBlocked()
+		{
+			var domains = new List<string> { "münchen.de" };
+			Assert.False(WebViewDomainAllowlist.IsUrlAllowed("https://evil.de/page", domains));
 		}
 
 		[Fact]

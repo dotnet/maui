@@ -14,7 +14,7 @@ using PlatformImage = Microsoft.Graphics.Canvas.CanvasBitmap;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class WebViewStub : StubBase, IWebView
+	public class WebViewStub : StubBase, IWebView, IAllowedDomainsWebView
 	{
 		public Func<WebNavigationEvent, string, bool> NavigatingDelegate { get; set; }
 		public Action<WebNavigationEvent, string, WebNavigationResult> NavigatedDelegate { get; set; }

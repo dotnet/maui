@@ -120,9 +120,6 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionBadge(Microsoft.Maui.Controls.ShellSection shellSection, int index) -> void
-Microsoft.Maui.Controls.WebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>!
-Microsoft.Maui.Controls.WebView.AllowedDomains.set -> void
-static readonly Microsoft.Maui.Controls.WebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.HybridWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
 Microsoft.Maui.Controls.HybridWebView.AllowedDomains.set -> void
 static readonly Microsoft.Maui.Controls.HybridWebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -199,3 +196,6 @@ override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreate(A
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnResume() -> void
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnViewCreated(Android.Views.View! view, Android.OS.Bundle? savedInstanceState) -> void
+Microsoft.Maui.Controls.WebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
+Microsoft.Maui.Controls.WebView.AllowedDomains.set -> void
+static readonly Microsoft.Maui.Controls.WebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!

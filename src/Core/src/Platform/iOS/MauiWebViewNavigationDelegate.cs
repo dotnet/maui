@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Platform
 			var lastUrl = request.Url?.ToString() ?? string.Empty;
 
 			// Check AllowedDomains before raising the Navigating event
-			if (!WebViewDomainAllowlist.IsUrlAllowed(lastUrl, virtualView.AllowedDomains))
+			if (!WebViewDomainAllowlist.IsUrlAllowed(lastUrl, virtualView))
 			{
 				decisionHandler(WKNavigationActionPolicy.Cancel);
 				return;

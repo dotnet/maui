@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
 			// When AllowedDomains is set, enable WKAppBoundDomains enforcement for sub-resource blocking
-			var allowedDomains = VirtualView.AllowedDomains;
+			var allowedDomains = (VirtualView as IAllowedDomainsWebView)?.AllowedDomains;
 			if (allowedDomains is not null && allowedDomains.Count > 0)
 			{
 				if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14))

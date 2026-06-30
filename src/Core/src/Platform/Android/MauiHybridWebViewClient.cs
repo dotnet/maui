@@ -31,8 +31,7 @@ namespace Microsoft.Maui.Platform
 			if (string.IsNullOrEmpty(url))
 				return base.ShouldOverrideUrlLoading(view, request);
 
-			var allowedDomains = Handler?.VirtualView?.AllowedDomains;
-			if (!Handlers.WebViewDomainAllowlist.IsUrlAllowed(url, allowedDomains, HybridWebViewHandler.AppOriginUri))
+			if (!Handlers.WebViewDomainAllowlist.IsUrlAllowed(url, Handler?.VirtualView, HybridWebViewHandler.AppOriginUri))
 				return true;
 
 			return base.ShouldOverrideUrlLoading(view, request);
@@ -48,8 +47,7 @@ namespace Microsoft.Maui.Platform
 
 			if (view is not null && request is not null && !string.IsNullOrEmpty(url))
 			{
-				var allowedDomains = Handler?.VirtualView?.AllowedDomains;
-				if (!Handlers.WebViewDomainAllowlist.IsUrlAllowed(url, allowedDomains, HybridWebViewHandler.AppOriginUri))
+				if (!Handlers.WebViewDomainAllowlist.IsUrlAllowed(url, Handler?.VirtualView, HybridWebViewHandler.AppOriginUri))
 				{
 					logger?.LogDebug("Request for {Url} blocked by AllowedDomains.", url);
 					return new WebResourceResponse("text/plain", "UTF-8", 403, "Forbidden", GetHeaders("text/plain"), new MemoryStream());

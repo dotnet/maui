@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 			if (request?.Url is Android.Net.Uri url && _handler.TryGetTarget(out var handler) && handler?.VirtualView is not null)
 			{
 				var urlString = url.ToString();
-				if (!string.IsNullOrEmpty(urlString) && !WebViewDomainAllowlist.IsUrlAllowed(urlString, handler.VirtualView.AllowedDomains))
+				if (!string.IsNullOrEmpty(urlString) && !WebViewDomainAllowlist.IsUrlAllowed(urlString, handler.VirtualView))
 				{
 					// Return an empty response to block the request
 					return new WebResourceResponse("text/plain", "UTF-8", null);

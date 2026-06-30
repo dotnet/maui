@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
 #if WEBVIEW2_MAUI
-				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _blazorWebViewHandler.VirtualView?.AllowedDomains, AppOriginUri))
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _blazorWebViewHandler.VirtualView, AppOriginUri))
 				{
 					args.Cancel = true;
 					return;
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// Block iframe navigations to disallowed domains
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
-				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _blazorWebViewHandler.VirtualView?.AllowedDomains, AppOriginUri))
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _blazorWebViewHandler.VirtualView, AppOriginUri))
 				{
 					args.Cancel = true;
 				}

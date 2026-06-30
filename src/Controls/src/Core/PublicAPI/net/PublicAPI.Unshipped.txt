@@ -44,8 +44,6 @@ Microsoft.Maui.Controls.StyleableElement.InvalidateStyle() -> void
 ~Microsoft.Maui.Controls.ToolbarItem.BadgeText.set -> void
 ~Microsoft.Maui.Controls.ToolbarItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ToolbarItem.BadgeTextColor.set -> void
-~Microsoft.Maui.Controls.WebView.AllowedDomains.get -> System.Collections.Generic.IList<string>
-~Microsoft.Maui.Controls.WebView.AllowedDomains.set -> void
 ~const Microsoft.Maui.Controls.AppThemeBinding.AppThemeResource = "__MAUI_ApplicationTheme__" -> string
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
@@ -107,5 +105,7 @@ static readonly Microsoft.Maui.Controls.HybridWebView.AllowedDomainsProperty -> 
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.WebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
+Microsoft.Maui.Controls.WebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
+Microsoft.Maui.Controls.WebView.AllowedDomains.set -> void
+static readonly Microsoft.Maui.Controls.WebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!

@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Handlers
 
 			logger?.LogDebug("Intercepting request for {Url}.", url);
 
-			if (!WebViewDomainAllowlist.IsUrlAllowed(url, VirtualView?.AllowedDomains, AppOriginUri))
+			if (!WebViewDomainAllowlist.IsUrlAllowed(url, VirtualView, AppOriginUri))
 			{
 				logger?.LogDebug("Request for {Url} blocked by AllowedDomains.", url);
 				eventArgs.Response = sender.Environment!.CreateWebResourceResponse(

@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Handlers
 				return true;
 
 			// Check AllowedDomains before raising the Navigating event
-			if (!WebViewDomainAllowlist.IsUrlAllowed(url, VirtualView.AllowedDomains))
+			if (!WebViewDomainAllowlist.IsUrlAllowed(url, VirtualView))
 				return true;
 
 			SyncPlatformCookies(url);

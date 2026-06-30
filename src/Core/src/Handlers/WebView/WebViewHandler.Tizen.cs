@@ -13,6 +13,7 @@
 		{
 			base.ConnectHandler(platformView);
 			platformView.PageLoadFinished += OnPageLoadFinished;
+			platformView.NavigationPolicyDecided += OnNavigationPolicyDecided;
 		}
 
 		protected override void DisconnectHandler(MauiWebView platformView)
@@ -22,6 +23,21 @@
 
 			base.DisconnectHandler(platformView);
 			platformView.PageLoadFinished -= OnPageLoadFinished;
+			platformView.NavigationPolicyDecided -= OnNavigationPolicyDecided;
+		}
+
+		// Enforces AllowedDomains at the navigation level on Tizen. When no allowlist is configured,
+		// IsUrlAllowed returns true and the navigation proceeds (Use), preserving default behavior.
+		void OnNavigationPolicyDecided(object? sender, Tizen.NUI.WebViewPolicyDecidedEventArgs e)
+		{
+			var maker = e.ResponsePolicyDecisionMaker;
+			if (maker is null)
+				return;
+
+			if (WebViewDomainAllowlist.IsUrlAllowed(maker.Url, VirtualView))
+				maker.Use();
+			else
+				maker.Ignore();
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)

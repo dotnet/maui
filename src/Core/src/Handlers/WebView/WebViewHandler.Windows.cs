@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
 			{
 				// Check AllowedDomains before raising the Navigating event
-				if (!WebViewDomainAllowlist.IsUrlAllowed(uri.AbsoluteUri, VirtualView.AllowedDomains))
+				if (!WebViewDomainAllowlist.IsUrlAllowed(uri.AbsoluteUri, VirtualView))
 				{
 					args.Cancel = true;
 					_eventState = WebNavigationEvent.NewPage;
@@ -98,11 +98,34 @@ namespace Microsoft.Maui.Handlers
 			// Block iframe navigations to disallowed domains
 			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
 			{
-				if (!WebViewDomainAllowlist.IsUrlAllowed(uri.AbsoluteUri, VirtualView.AllowedDomains))
+				if (!WebViewDomainAllowlist.IsUrlAllowed(uri.AbsoluteUri, VirtualView))
 				{
 					args.Cancel = true;
 				}
 			}
+		}
+
+		// Blocks sub-resource requests (scripts, images, XHR/fetch, etc.) to domains that are not in
+		// the AllowedDomains allowlist. Navigation-level blocking only covers top-level/iframe loads,
+		// so this closes the sub-resource bypass.
+		void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
+		{
+			if (VirtualView is null)
+				return;
+
+			if (!WebViewDomainAllowlist.IsUrlAllowed(args.Request.Uri, VirtualView))
+			{
+				args.Response = sender.Environment!.CreateWebResourceResponse(
+					Content: null, StatusCode: 403, ReasonPhrase: "Forbidden", Headers: "");
+			}
+		}
+
+		// Sets up sub-resource filtering only when an allowlist is active, so default web views
+		// (no AllowedDomains) keep their fast path with no WebResourceRequested interception.
+		internal static void MapAllowedDomains(IWebViewHandler handler, IWebView webView)
+		{
+			if (handler is WebViewHandler platformHandler)
+				platformHandler._proxy.EnsureWebResourceRequestedForAllowedDomains();
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)
@@ -357,6 +380,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			WeakReference<Window>? _window;
 			WeakReference<WebViewHandler>? _handler;
+			bool _webResourceRequestedSubscribed;
 
 			Window? Window => _window is not null && _window.TryGetTarget(out var w) ? w : null;
 			WebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
@@ -384,6 +408,11 @@ namespace Microsoft.Maui.Handlers
 					webView2.FrameNavigationStarting -= OnFrameNavigationStarting;
 					webView2.NavigationCompleted -= OnNavigationCompleted;
 					webView2.ProcessFailed -= OnProcessFailed;
+					if (_webResourceRequestedSubscribed)
+					{
+						webView2.WebResourceRequested -= OnWebResourceRequested;
+						_webResourceRequestedSubscribed = false;
+					}
 					webView2.Stop();
 				}
 
@@ -416,10 +445,42 @@ namespace Microsoft.Maui.Handlers
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
 					sender.UpdateBackground(handler.VirtualView);
+					EnsureWebResourceRequestedForAllowedDomains();
 					if (sender.Source is not null)
 					{
 						handler.SyncPlatformCookies(sender.Source.ToString()).FireAndForget();
 					}
+				}
+			}
+
+			// Subscribes to WebResourceRequested (with a wildcard filter) only when an allowlist is
+			// active, so the cost of intercepting every sub-resource is paid only by web views that
+			// opt into AllowedDomains. Safe to call multiple times.
+			internal void EnsureWebResourceRequestedForAllowedDomains()
+			{
+				if (_webResourceRequestedSubscribed)
+					return;
+
+				if (Handler is not WebViewHandler handler)
+					return;
+
+				var allowedDomains = (handler.VirtualView as IAllowedDomainsWebView)?.AllowedDomains;
+				if (allowedDomains is null || allowedDomains.Count == 0)
+					return;
+
+				if (handler.PlatformView?.CoreWebView2 is not CoreWebView2 core)
+					return;
+
+				core.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+				core.WebResourceRequested += OnWebResourceRequested;
+				_webResourceRequestedSubscribed = true;
+			}
+
+			void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.OnWebResourceRequested(sender, args);
 				}
 			}
 

@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 	[nameof(IView.FlowDirection)] = MapFlowDirection,
 	[nameof(IView.Background)] = MapBackground,
+	[nameof(IAllowedDomainsWebView.AllowedDomains)] = MapAllowedDomains,
 #endif
 #if __ANDROID__
 			[nameof(WebViewClient)] = MapWebViewClient,

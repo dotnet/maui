@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #elif MACCATALYST
 	[SupportedOSPlatform(MacCatalystSupportedOSPlatformVersion)]
 #endif
-	public partial class BlazorWebView : View, IBlazorWebView
+	public partial class BlazorWebView : View, IBlazorWebView, IAllowedDomainsWebView
 	{
 		// NOTE: keep these in *reasonably* in sync with:
 		// * src\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj
