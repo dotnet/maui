@@ -484,7 +484,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		[Obsolete("Use Reset(SKPaint, SKFont, SKPaint, SKPaint) instead")]
 		public void Reset(SKPaint fontPaint, SKPaint fillPaint, SKPaint strokePaint)
 		{
-			Reset(fontPaint, fontPaint?.ToFont(), fillPaint, strokePaint);
+			// SKPaint no longer carries text/font information (SkiaSharp 4.x removed those members),
+			// so pass a null font; FontFont lazily rebuilds a default font when next accessed.
+			Reset(fontPaint, (SKFont)null, fillPaint, strokePaint);
 		}
 
 		public void Reset(SKPaint fontPaint, SKFont fontFont, SKPaint fillPaint, SKPaint strokePaint)
