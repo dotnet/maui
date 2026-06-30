@@ -1,7 +1,11 @@
 #nullable enable
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
+Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
+Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
+Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 *REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
 *REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color
+*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor -> Microsoft.Maui.Graphics.Color
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 Microsoft.Maui.Controls.BoxView.~BoxView() -> void
@@ -92,11 +96,13 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
+~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler2 handler, Microsoft.Maui.Controls.Editor editor) -> void
 ~static Microsoft.Maui.Controls.Entry.MapImeOptions(Microsoft.Maui.Handlers.EntryHandler2 handler, Microsoft.Maui.Controls.Entry entry) -> void
 ~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.EntryHandler2 handler, Microsoft.Maui.Controls.Entry entry) -> void
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor.get -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
 ~static Microsoft.Maui.Controls.NavigationPage.SetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page, string value) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler2 handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
@@ -120,3 +126,76 @@ static readonly Microsoft.Maui.Controls.WebView.AllowedDomainsProperty -> Micros
 Microsoft.Maui.Controls.HybridWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
 Microsoft.Maui.Controls.HybridWebView.AllowedDomains.set -> void
 static readonly Microsoft.Maui.Controls.HybridWebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!
+override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
+Microsoft.Maui.Controls.Handlers.ShellHandler
+Microsoft.Maui.Controls.Handlers.ShellHandler.ShellHandler() -> void
+Microsoft.Maui.Controls.Handlers.ShellItemHandler
+Microsoft.Maui.Controls.Handlers.ShellItemHandler.BottomNavigationView.get -> Google.Android.Material.BottomNavigation.BottomNavigationView?
+Microsoft.Maui.Controls.Handlers.ShellItemHandler.ShellItemHandler() -> void
+Microsoft.Maui.Controls.Handlers.ShellSectionHandler
+Microsoft.Maui.Controls.Handlers.ShellSectionHandler.ShellSectionHandler() -> void
+override Microsoft.Maui.Controls.Handlers.ShellHandler.ConnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiDrawerLayout!
+override Microsoft.Maui.Controls.Handlers.ShellHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemHandler.ConnectHandler(AndroidX.ViewPager2.Widget.ViewPager2! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemHandler.CreatePlatformElement() -> AndroidX.ViewPager2.Widget.ViewPager2!
+override Microsoft.Maui.Controls.Handlers.ShellItemHandler.DisconnectHandler(AndroidX.ViewPager2.Widget.ViewPager2! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.ConnectHandler(Android.Views.View! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.CreatePlatformElement() -> Android.Views.View!
+override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.DisconnectHandler(Android.Views.View! platformView) -> void
+~static Microsoft.Maui.Controls.Handlers.ShellHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.ShellHandler>
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlowDirection(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyout(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutBackdrop(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutBackground(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutBackgroundImage(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutBehavior(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutFooter(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutHeader(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutHeaderBehavior(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutHeight(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutVerticalScrollMode(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutWidth(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapIsPresented(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+~static Microsoft.Maui.Controls.Handlers.ShellHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.ShellHandler>
+static Microsoft.Maui.Controls.Handlers.ShellItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ShellItem!, Microsoft.Maui.Controls.Handlers.ShellItemHandler!>!
+static Microsoft.Maui.Controls.Handlers.ShellItemHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellItemHandler! handler, Microsoft.Maui.Controls.ShellItem! shellItem) -> void
+static Microsoft.Maui.Controls.Handlers.ShellItemHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ShellItem!, Microsoft.Maui.Controls.Handlers.ShellItemHandler!>!
+static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ShellSection!, Microsoft.Maui.Controls.Handlers.ShellSectionHandler!>!
+static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler, Microsoft.Maui.Controls.ShellSection! shellSection) -> void
+static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ShellSection!, Microsoft.Maui.Controls.Handlers.ShellSectionHandler!>!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateBottomNavViewAppearanceTracker(Microsoft.Maui.Controls.ShellItem! shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellBottomNavViewAppearanceTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateFragmentForPage(Microsoft.Maui.Controls.Page! page) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellObservableFragment!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellFlyoutContentRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellItemRenderer(Microsoft.Maui.Controls.ShellItem! shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellSectionRenderer(Microsoft.Maui.Controls.ShellSection! shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateTabLayoutAppearanceTracker(Microsoft.Maui.Controls.ShellSection! shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellTabLayoutAppearanceTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateToolbarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarAppearanceTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateTrackerForToolbar(AndroidX.AppCompat.Widget.Toolbar! toolbar) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.CreateMoreBottomSheet(System.Action<int, Google.Android.Material.BottomSheet.BottomSheetDialog!>! selectCallback, System.Collections.Generic.List<(string! title, Microsoft.Maui.Controls.ImageSource? icon, bool tabEnabled)>! items) -> Google.Android.Material.BottomSheet.BottomSheetDialog!
+virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.OnSectionChanged(Microsoft.Maui.Controls.ShellSection! shellSection, bool animate) -> void
+virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.OnTabReselected(Microsoft.Maui.Controls.ShellSection! shellSection) -> void
+virtual Microsoft.Maui.Controls.Handlers.ShellSectionHandler.OnCreateNavigationAnimation(Android.Content.Context! context, bool isPopping, bool enter) -> Android.Views.Animations.Animation?
+virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.UpdateVerticalScrollMode() -> void
+Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment
+Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.ShellContentNavigationFragment() -> void
+Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.ShellContentNavigationFragment(Microsoft.Maui.Controls.ShellContent? shellContent, Microsoft.Maui.IMauiContext? mauiContext, Microsoft.Maui.Controls.Handlers.ShellSectionHandler? handler) -> void
+Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment
+Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.ShellItemWrapperFragment() -> void
+Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.ShellItemWrapperFragment(Microsoft.Maui.Controls.Handlers.ShellItemHandler! handler) -> void
+Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment
+Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.ShellSectionWrapperFragment() -> void
+Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.ShellSectionWrapperFragment(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler) -> void
+override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
+override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnDestroyView() -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnViewCreated(Android.Views.View! view, Android.OS.Bundle? savedInstanceState) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnResume() -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnViewCreated(Android.Views.View! view, Android.OS.Bundle? savedInstanceState) -> void

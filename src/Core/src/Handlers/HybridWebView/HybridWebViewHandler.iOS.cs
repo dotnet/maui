@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
@@ -135,10 +134,6 @@ namespace Microsoft.Maui.Handlers
 		}
 
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
@@ -157,10 +152,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
