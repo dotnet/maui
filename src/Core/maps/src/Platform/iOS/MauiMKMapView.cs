@@ -175,21 +175,54 @@ namespace Microsoft.Maui.Maps.Platform
 
 		MKAnnotationView GetViewForClusterAnnotation(MKMapView mapView, MKClusterAnnotation clusterAnnotation)
 		{
+			// Resolve a custom cluster image from the virtual view (provider -> static).
+			IImageSource? clusterImage = null;
+			if (_handlerRef.TryGetTarget(out var handler) && handler?.VirtualView != null)
+			{
+				var members = clusterAnnotation.MemberAnnotations;
+				if (members != null)
+				{
+					var pins = new List<IMapPin>();
+					foreach (var member in members)
+					{
+						var pin = GetPinForAnnotation(member);
+						if (pin != null)
+							pins.Add(pin);
+					}
+
+					var coordinate = clusterAnnotation.Coordinate;
+					var location = new Devices.Sensors.Location(coordinate.Latitude, coordinate.Longitude);
+					clusterImage = handler.VirtualView.GetClusterImage(pins, location);
+				}
+			}
+
+			if (clusterImage != null)
+			{
+				const string customClusterId = "customClusterPin";
+				var customView = mapView.DequeueReusableAnnotation(customClusterId) as MKAnnotationView
+					?? new MKAnnotationView(clusterAnnotation, customClusterId);
+				customView.CanShowCallout = false;
+				customView.Annotation = clusterAnnotation;
+				customView.Image = null;
+				ApplyCustomClusterImageAsync(customView, clusterImage).FireAndForget();
+				return customView;
+			}
+
 			const string clusterId = "clusterPin";
 			var clusterView = mapView.DequeueReusableAnnotation(clusterId) as MKMarkerAnnotationView;
-			
+
 			if (clusterView == null)
 			{
 				clusterView = new MKMarkerAnnotationView(clusterAnnotation, clusterId);
 				clusterView.CanShowCallout = false; // Don't show callout for clusters
 			}
-			
+
 			clusterView.Annotation = clusterAnnotation;
-			
+
 			// Display the count of pins in the cluster
 			var count = clusterAnnotation.MemberAnnotations?.Length ?? 0;
 			clusterView.GlyphText = count.ToString();
-			
+
 			return clusterView;
 		}
 
@@ -278,6 +311,38 @@ namespace Microsoft.Maui.Maps.Platform
 				{
 					var logger = currentHandler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
 					logger?.LogWarning(ex, "Failed to load custom pin icon");
+				}
+			}
+		}
+
+		async System.Threading.Tasks.Task ApplyCustomClusterImageAsync(MKAnnotationView annotationView, IImageSource imageSource)
+		{
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			if (handler?.MauiContext == null)
+				return;
+
+			var targetAnnotation = annotationView.Annotation;
+
+			try
+			{
+				var result = await imageSource.GetPlatformImageAsync(handler.MauiContext);
+
+				// Verify the annotation view hasn't been reused for a different cluster.
+				if (annotationView.Annotation != targetAnnotation)
+					return;
+
+				if (result?.Value is UIImage image)
+				{
+					var scaledImage = ScaleImage(image, new CoreGraphics.CGSize(32, 32));
+					annotationView.Image = scaledImage;
+				}
+			}
+			catch (Exception ex)
+			{
+				if (_handlerRef.TryGetTarget(out var currentHandler))
+				{
+					var logger = currentHandler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
+					logger?.LogWarning(ex, "Failed to load custom cluster icon");
 				}
 			}
 		}
