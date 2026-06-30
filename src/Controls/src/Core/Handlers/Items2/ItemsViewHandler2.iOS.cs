@@ -242,23 +242,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height == 0) ||
 				(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width == 0))
 			{
-				// Controller.IsEmpty is true when there are no items AND no EmptyView is being shown.
-				// In that case the CV should collapse to zero — no expansive fallback needed.
-				if (Controller.IsEmpty)
+				// Empty CV should collapse to zero, not fire the expansive fallback.
+				if (VirtualView is CollectionView && Controller.IsEmpty)
 				{
 					return contentSize;
 				}
 
 				var collectionView = Controller.CollectionView;
 
-				// Detect a post-mount zero-frame: the CV is attached to a window but its
-				// frame in the scroll direction is still 0.
-				// UICollectionViewCompositionalLayout measures items relative to the collection view's bounds,
-				// so a 0-height bounds → ContentSize stays 0 → circular. Force a layout pass with
-				// real constraints so the layout can produce the correct content size.
-				bool frameIsZeroInScrollDirection =
-					(scrollDirection == UICollectionViewScrollDirection.Vertical && collectionView.Frame.Height == 0) ||
-					(scrollDirection == UICollectionViewScrollDirection.Horizontal && collectionView.Frame.Width == 0);
+				// CV is mounted but its frame in the scroll direction is still 0
+				// because it was previously collapsed by the IsEmpty guard above.
+				// CompositionalLayout needs non-zero bounds to compute item sizes,
+				// so we force a temporary layout pass in the block below.
+				bool frameIsZeroInScrollDirection = VirtualView is CollectionView &&
+					((scrollDirection == UICollectionViewScrollDirection.Vertical && collectionView.Frame.Height == 0) ||
+					 (scrollDirection == UICollectionViewScrollDirection.Horizontal && collectionView.Frame.Width == 0));
 
 				// When the CollectionView has not yet been added to a window (pre-mount measurement),
 				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore

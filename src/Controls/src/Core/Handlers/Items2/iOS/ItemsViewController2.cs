@@ -485,9 +485,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		// True when the CV has no items AND no EmptyView is showing.
+		// Uses _isEmpty field (defaults to true, updated in CheckForEmptySource) rather than
+		// ItemsSource?.ItemCount == 0 to correctly handle a null ItemsSource.
 		// Exposed so the handler can avoid the expansive-size fallback without
 		// reaching into _emptyViewDisplayed or ItemsSource directly.
-		internal bool IsEmpty => !_emptyViewDisplayed && (ItemsSource?.ItemCount == 0);
+		internal bool IsEmpty => _isEmpty && !_emptyViewDisplayed;
 
 		internal UICollectionViewScrollDirection GetScrollDirection()
 		{
