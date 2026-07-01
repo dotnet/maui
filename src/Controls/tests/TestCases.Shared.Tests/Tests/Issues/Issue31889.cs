@@ -12,7 +12,7 @@ public class Issue31889 : _IssuesUITest
 	private const string TestEditorId = "TestEditor";
 	private const string DarkThemeButtonId = "DarkThemeButton";
 	private const string LightThemeButtonId = "LightThemeButton";
-	private const string DoneButtonId = "Done";
+	string DoneButtonId => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
 	private const string TextColorDarkTheme = "EntryAndEditorTextColorAppThemeBindingUpdatesOnDarkTheme";
 	private const string TextColorLightTheme = "EntryAndEditorTextColorAppThemeBindingUpdatesOnLightTheme";
 	private const string PlaceholderColorDarkTheme = "EntryAndEditorPlaceholderTextColorAppThemeBindingUpdatesOnDarkTheme";

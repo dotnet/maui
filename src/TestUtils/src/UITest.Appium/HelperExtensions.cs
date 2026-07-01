@@ -92,6 +92,10 @@ namespace UITest.Appium
 			{
 				app.Tap("Cancel");
 			}
+			else if (app is AppiumIOSApp iosApp && IsIOS26OrHigher(iosApp))
+			{
+				app.Tap("selected");
+			}
 			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
 			{
 				app.Tap("Done");
