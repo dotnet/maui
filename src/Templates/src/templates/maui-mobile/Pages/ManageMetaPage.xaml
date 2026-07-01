@@ -19,7 +19,7 @@
 
         <Style TargetType="Entry">
             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
-            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="FontFamily" Value="OpenSansRegular"/>
             <Setter Property="FontSize" Value="{OnIdiom 16,Desktop=24}" />
             <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
