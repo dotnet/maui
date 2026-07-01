@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Handlers
 		static readonly bool s_shouldBeDelayed = DeviceInfo.Idiom != DeviceIdiom.Desktop;
 		bool _set;
 
+		// Suppress Completed() for IME candidate-confirmation Enter (VirtualKey.Process at KeyDown, Enter only at KeyUp).
+		bool _enterKeyDownSeen;
+
 		protected override TextBox CreatePlatformView() =>
 			new MauiPasswordTextBox()
 			{
@@ -32,6 +35,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(TextBox platformView)
 		{
+			platformView.KeyDown += OnPlatformKeyDown;
 			platformView.KeyUp += OnPlatformKeyUp;
 			platformView.TextChanged += OnPlatformTextChanged;
 			platformView.SizeChanged += OnPlatformViewSizeChanged;
@@ -40,6 +44,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(TextBox platformView)
 		{
 			platformView.SizeChanged -= OnPlatformViewSizeChanged;
+			platformView.KeyDown -= OnPlatformKeyDown;
 			platformView.KeyUp -= OnPlatformKeyUp;
 			platformView.TextChanged -= OnPlatformTextChanged;
 
@@ -114,10 +119,32 @@ namespace Microsoft.Maui.Handlers
 				VirtualView?.UpdateText(PlatformView.Text);
 		}
 
+		void OnPlatformKeyDown(object? sender, KeyRoutedEventArgs args)
+		{
+			if (args?.Key == VirtualKey.Enter)
+			{
+				_enterKeyDownSeen = true;
+			}
+			else
+			{
+				_enterKeyDownSeen = false;
+			}
+		}
+
 		void OnPlatformKeyUp(object? sender, KeyRoutedEventArgs args)
 		{
 			if (args?.Key != VirtualKey.Enter)
+			{
 				return;
+			}
+
+			// IME candidate-confirmation Enter has no preceding KeyDown(Enter) — suppress it.
+			if (!_enterKeyDownSeen)
+			{
+				return;
+			}
+
+			_enterKeyDownSeen = false;
 
 			if (VirtualView?.ReturnType == ReturnType.Next)
 			{
