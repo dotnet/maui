@@ -175,9 +175,9 @@ namespace Microsoft.Maui.Media
 				}
 
 				// Save to gallery if requested
-				if (captureResult is not null && options?.SaveToGallery == true)
+				if (capturePath is not null && options?.SaveToGallery == true)
 				{
-					await SaveToGalleryAsync(captureResult, photo);
+					await SaveToGalleryAsync(capturePath, photo);
 				}
 
 				// Return the file that we just captured
@@ -563,66 +563,96 @@ namespace Microsoft.Maui.Media
 		}
 
 		/// <summary>
-		/// Saves the captured media file to the device's gallery using MediaStore.
-		/// On API 29+, uses scoped storage with IsPending flag. On older versions, uses direct file copy.
+		/// Saves the captured media file to the device's gallery.
+		/// On API 29+, uses MediaStore with scoped storage and IsPending flag. On older versions, copies to public external storage and scans the copied file.
 		/// </summary>
 		static async Task SaveToGalleryAsync(string filePath, bool isPhoto)
 		{
+			var context = Application.Context ?? throw new InvalidOperationException("An Android application context is required to save media to the gallery.");
+			var fileName = System.IO.Path.GetFileName(filePath);
+			var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+			var mimeType = GetMimeType(extension, isPhoto);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+			{
+				await SaveToMediaStoreAsync(context, filePath, fileName, mimeType, isPhoto);
+				return;
+			}
+
+			SaveToExternalStorageAndScan(context, filePath, fileName, mimeType, isPhoto);
+		}
+
+		static async Task SaveToMediaStoreAsync(Context context, string filePath, string fileName, string mimeType, bool isPhoto)
+		{
+			var contentResolver = context.ContentResolver ?? throw new InvalidOperationException("An Android content resolver is required to save media to the gallery.");
+			var contentValues = new ContentValues();
+			contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
+			contentValues.Put(MediaStore.IMediaColumns.MimeType, mimeType);
+			contentValues.Put(MediaStore.IMediaColumns.RelativePath,
+				isPhoto ? global::Android.OS.Environment.DirectoryPictures : global::Android.OS.Environment.DirectoryMovies);
+			contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
+
+			var collection = isPhoto
+				? MediaStore.Images.Media.ExternalContentUri
+				: MediaStore.Video.Media.ExternalContentUri;
+
+			var insertUri = contentResolver.Insert(collection, contentValues)
+				?? throw new IOException("Unable to create a MediaStore entry for the captured media.");
+
 			try
 			{
-				var context = Application.Context;
-				var contentResolver = context.ContentResolver;
-				if (contentResolver is null)
-					return;
-
-				var fileName = System.IO.Path.GetFileName(filePath);
-				var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-				var mimeType = GetMimeType(extension, isPhoto);
-
-				var contentValues = new ContentValues();
-				contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
-				contentValues.Put(MediaStore.IMediaColumns.MimeType, mimeType);
-
-				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				using (var outputStream = contentResolver.OpenOutputStream(insertUri) ?? throw new IOException("Unable to open the MediaStore entry for writing."))
+				using (var inputStream = File.OpenRead(filePath))
 				{
-					contentValues.Put(MediaStore.IMediaColumns.RelativePath,
-						isPhoto ? global::Android.OS.Environment.DirectoryPictures : global::Android.OS.Environment.DirectoryMovies);
-					contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
+					await inputStream.CopyToAsync(outputStream);
 				}
 
-				var collection = isPhoto
-					? MediaStore.Images.Media.ExternalContentUri
-					: MediaStore.Video.Media.ExternalContentUri;
+				contentValues.Clear();
+				contentValues.Put(MediaStore.IMediaColumns.IsPending, 0);
 
-				var insertUri = contentResolver.Insert(collection, contentValues);
-
-				if (insertUri is not null)
+				if (contentResolver.Update(insertUri, contentValues, null, null) == 0)
 				{
-					using var outputStream = contentResolver.OpenOutputStream(insertUri);
-					if (outputStream is not null)
-					{
-						using var inputStream = File.OpenRead(filePath);
-						await inputStream.CopyToAsync(outputStream);
-					}
-					else
-					{
-						// Clean up the pending entry if we couldn't write to it
-						contentResolver.Delete(insertUri, null, null);
-						return;
-					}
-
-					if (OperatingSystem.IsAndroidVersionAtLeast(29))
-					{
-						contentValues.Clear();
-						contentValues.Put(MediaStore.IMediaColumns.IsPending, 0);
-						contentResolver.Update(insertUri, contentValues, null, null);
-					}
+					throw new IOException("Unable to publish the captured media to the gallery.");
 				}
 			}
-			catch (Exception ex)
+			catch (Exception saveException)
 			{
-				System.Diagnostics.Debug.WriteLine($"Failed to save to gallery: {ex.Message}");
+				try
+				{
+					contentResolver.Delete(insertUri, null, null);
+				}
+				catch (Exception cleanupException)
+				{
+					throw new System.AggregateException("Failed to save media to the gallery and clean up the pending MediaStore entry.", saveException, cleanupException);
+				}
+
+				throw;
 			}
+		}
+
+		static void SaveToExternalStorageAndScan(Context context, string filePath, string fileName, string mimeType, bool isPhoto)
+		{
+			var directory = global::Android.OS.Environment.GetExternalStoragePublicDirectory(
+				isPhoto ? global::Android.OS.Environment.DirectoryPictures : global::Android.OS.Environment.DirectoryMovies);
+
+			if (directory?.AbsolutePath is not string directoryPath || string.IsNullOrEmpty(directoryPath))
+			{
+				throw new IOException("Unable to find the public gallery directory for the captured media.");
+			}
+
+			Directory.CreateDirectory(directoryPath);
+
+			var destinationPath = System.IO.Path.Combine(directoryPath, fileName);
+			if (!string.Equals(filePath, destinationPath, StringComparison.Ordinal))
+			{
+				File.Copy(filePath, destinationPath, overwrite: true);
+			}
+
+			global::Android.Media.MediaScannerConnection.ScanFile(
+				context,
+				new[] { destinationPath },
+				new[] { mimeType },
+				null);
 		}
 
 		static string GetMimeType(string extension, bool isPhoto)

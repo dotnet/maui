@@ -492,20 +492,26 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		static async Task SaveToPhotoLibraryAsync(FileResult fileResult)
 		{
+			string tempPath = null;
+
 			try
 			{
 				using var stream = await fileResult.OpenReadAsync();
 				var extension = System.IO.Path.GetExtension(fileResult.FileName);
-				var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{Guid.NewGuid()}{extension}");
+				tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{Guid.NewGuid()}{extension}");
 				using (var fileStream = File.Create(tempPath))
 				{
-					stream.Position = 0;
+					if (stream.CanSeek)
+					{
+						stream.Position = 0;
+					}
+
 					await stream.CopyToAsync(fileStream);
 				}
 
-				var url = NSUrl.FromFilename(tempPath);
+				using var url = NSUrl.FromFilename(tempPath);
 
-				await PHPhotoLibrary.SharedPhotoLibrary.PerformChangesAsync(() =>
+				await PerformPhotoLibraryChangesAsync(() =>
 				{
 					if (IsImageFile(fileResult.FileName))
 					{
@@ -516,12 +522,50 @@ namespace Microsoft.Maui.Media
 						PHAssetChangeRequest.FromVideo(url);
 					}
 				});
+			}
+			finally
+			{
+				DeleteTemporaryPhotoLibraryFile(tempPath);
+			}
+		}
 
-				try { File.Delete(tempPath); } catch (IOException) { }
+		static Task PerformPhotoLibraryChangesAsync(Action changeHandler)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+
+			PHPhotoLibrary.SharedPhotoLibrary.PerformChanges(changeHandler, (success, error) =>
+			{
+				if (success)
+				{
+					tcs.TrySetResult(true);
+				}
+				else if (error is not null)
+				{
+					tcs.TrySetException(new NSErrorException(error));
+				}
+				else
+				{
+					tcs.TrySetException(new InvalidOperationException("Unable to save the captured media to the photo library."));
+				}
+			});
+
+			return tcs.Task;
+		}
+
+		static void DeleteTemporaryPhotoLibraryFile(string tempPath)
+		{
+			if (string.IsNullOrEmpty(tempPath))
+			{
+				return;
+			}
+
+			try
+			{
+				File.Delete(tempPath);
 			}
 			catch (Exception ex)
 			{
-				System.Diagnostics.Debug.WriteLine($"Failed to save to photo library: {ex.Message}");
+				System.Diagnostics.Debug.WriteLine($"Failed to delete temporary photo library file: {ex.Message}");
 			}
 		}
 
