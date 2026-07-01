@@ -23,10 +23,10 @@
     The project/module to test. Available values depend on TestType:
 
     Unit tests:   Controls, Xaml, BindingSourceGen, SourceGen, ControlsDesign,
-                  Core, Essentials, Graphics, Resizetizer, Compatibility, DualScreen, AI
+                  Core, Essentials, Graphics, Resizetizer, Compatibility, DualScreen
                   (omit to run ALL unit test projects)
 
-    Device tests: Controls, Core, Essentials, Graphics, BlazorWebView, AI
+    Device tests: Controls, Core, Essentials, Graphics, BlazorWebView
 
 .PARAMETER Platform
     Target platform (required for Device and UI tests):
@@ -149,7 +149,6 @@ $UnitTestProjects = [ordered]@{
     "Resizetizer"       = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
     "Compatibility"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
     "DualScreen"        = "src/Controls/Foldable/test/Controls.DualScreen.UnitTests.csproj"
-    "AI"                = "src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj"
 }
 
 # Device test projects: Key → matches Run-DeviceTests.ps1 -Project parameter
@@ -159,7 +158,6 @@ $DeviceTestProjects = [ordered]@{
     "Essentials"   = "src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj"
     "Graphics"     = "src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj"
     "BlazorWebView"= "src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj"
-    "AI"           = "src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj"
 }
 
 # Integration test categories
