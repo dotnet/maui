@@ -43,16 +43,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<EventArgs> Invoked;
 
-		Paint ISwipeItemMenuItem.Background
-		{
-			get
-			{
-				if (BackgroundColor.IsNotDefault())
-					return new SolidPaint(BackgroundColor);
-
-				return null;
-			}
-		}
+		Paint ISwipeItemMenuItem.Background => new SolidPaint(BackgroundColor);
 
 		Visibility ISwipeItemMenuItem.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
 
@@ -67,24 +58,6 @@ namespace Microsoft.Maui.Controls
 
 		void IImageSourcePart.UpdateIsLoading(bool isLoading)
 		{
-		}
-
-		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
-		{
-			base.OnHandlerChangingCore(args);
-
-			if (Application.Current is null)
-				return;
-
-			// Always unsubscribe first to prevent duplicate subscriptions on handler swap
-			Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
-			if (args.NewHandler is not null)
-				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
-		}
-
-		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
-		{
-			this.RefreshPropertyValue(BackgroundColorProperty, BackgroundColor);
 		}
 	}
 }
