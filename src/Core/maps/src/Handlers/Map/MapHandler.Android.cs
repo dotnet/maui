@@ -849,23 +849,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			// Load custom image if specified
 			if (pin.ImageSource != null)
 			{
-				try
-				{
-					var result = await pin.ImageSource.GetPlatformImageAsync(MauiContext);
-					if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
-						return;
-
-					var bitmap = DrawableToBitmap(drawable);
-					if (bitmap != null)
-					{
-						markerOptions.SetIcon(BitmapDescriptorFactory.FromBitmap(bitmap));
-					}
-				}
-				catch (System.Exception ex)
-				{
-					var logger = MauiContext?.Services?.GetService<ILogger<MapHandler>>();
-					logger?.LogWarning(ex, "Failed to load custom pin icon");
-				}
+				var icon = await LoadPinIconAsync(pin.ImageSource, MauiContext, ct);
+				if (icon != null)
+					markerOptions.SetIcon(icon);
 			}
 
 			// Re-check after async operation since handler may have been disconnected
@@ -898,28 +884,36 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			if (requestedSource != null)
 			{
-				try
-				{
-					using var result = await requestedSource.GetPlatformImageAsync(mauiContext);
-					if (ct.IsCancellationRequested || !ReferenceEquals(pin.ImageSource, requestedSource) || (pin.MarkerId as string) != marker.Id || result?.Value is not ADrawable drawable)
-						return;
-
-					var bitmap = DrawableToBitmap(drawable);
-					if (bitmap != null)
-					{
-						icon = BitmapDescriptorFactory.FromBitmap(bitmap);
-					}
-				}
-				catch (System.Exception ex)
-				{
-					mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to update custom pin icon");
+				icon = await LoadPinIconAsync(requestedSource, mauiContext, ct);
+				// null means load failed/cancelled - leave the marker's current icon untouched.
+				if (icon == null)
 					return;
-				}
 			}
 
+			// icon is null here only when ImageSource was cleared, so SetIcon(null) resets to the default.
 			if (!ct.IsCancellationRequested && ReferenceEquals(pin.ImageSource, requestedSource) && (pin.MarkerId as string) == marker.Id)
 			{
 				marker.SetIcon(icon);
+			}
+		}
+
+		// Loads imageSource into a BitmapDescriptor
+		// Returns null on cancel/failure/no drawable.
+		static async Task<BitmapDescriptor?> LoadPinIconAsync(IImageSource imageSource, IMauiContext mauiContext, CancellationToken ct)
+		{
+			try
+			{
+				using var result = await imageSource.GetPlatformImageAsync(mauiContext);
+				if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
+					return null;
+
+				var bitmap = DrawableToBitmap(drawable);
+				return bitmap != null ? BitmapDescriptorFactory.FromBitmap(bitmap) : null;
+			}
+			catch (System.Exception ex)
+			{
+				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
+				return null;
 			}
 		}
 
