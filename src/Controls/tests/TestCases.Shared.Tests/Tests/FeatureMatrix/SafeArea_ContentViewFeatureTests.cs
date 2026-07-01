@@ -43,17 +43,8 @@ namespace Microsoft.Maui.TestCases.Tests
 #if IOS
 			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
 			{
-				var rect = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeApplication[@name=\"Controls.TestCases.HostApp\"]/XCUIElementTypeWindow[3]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther[1]")).GetRect();
-				var orientation = ((AppiumApp)App).Driver.Orientation;
-				bool isLandscape = orientation == OpenQA.Selenium.ScreenOrientation.Landscape;
-				if (isLandscape)
-				{
-					return rect.X;
-				}
-				else
-				{
-					return rect.Y;
-				}
+				var rect = App.WaitForElement("Toolbar").GetRect();
+				return rect.Y;
 			}
 			else
 			{
