@@ -1,1 +1,3 @@
 #nullable enable
+~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.set -> void
