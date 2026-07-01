@@ -41,7 +41,7 @@ public class Issue35643 : ContentPage
 					FontSize = 20
 				};
 				label.SetBinding(Label.TextProperty, ".");
-				return new Frame { Content = label, BackgroundColor = Colors.LightBlue };
+				return new Border { Content = label, BackgroundColor = Colors.LightBlue };
 			})
 		};
 		carousel.SetBinding(CarouselView.ItemsSourceProperty, new Binding(nameof(Issue35643ViewModel.Items)));
@@ -90,7 +90,7 @@ public class Issue35643 : ContentPage
 					FontSize = 20
 				};
 				label.SetBinding(Label.TextProperty, ".");
-				return new Frame { Content = label, BackgroundColor = Colors.LightCoral };
+				return new Border { Content = label, BackgroundColor = Colors.LightCoral };
 			})
 		};
 		loopCarousel.SetBinding(CarouselView.ItemsSourceProperty, new Binding(nameof(Issue35643ViewModel.LoopItems)));
