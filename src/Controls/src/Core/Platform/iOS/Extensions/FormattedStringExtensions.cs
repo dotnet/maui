@@ -21,17 +21,28 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static NSAttributedString? ToNSAttributedString(this Label label)
-			=> ToNSAttributedString(
-				label.FormattedText,
-				label.RequireFontManager(),
-				label.LineHeight,
-				label.HorizontalTextAlignment,
-				label.ToFont(),
-				label.TextColor,
-				label.TextTransform,
-				label.LineBreakMode,
-				label.CharacterSpacing,
-				label.FlowDirection);
+		{
+			// Resolve the *effective* flow direction so that inherited RTL is honored
+			// (e.g. FlowDirection="MatchParent" under an RTL parent), matching how the
+			// plain-text path uses EffectiveUserInterfaceLayoutDirection.
+			var effectiveFlowDirection = ((IVisualElementController)label).EffectiveFlowDirection;
+			var flowDirection =
+			 effectiveFlowDirection.IsRightToLeft() ? FlowDirection.RightToLeft :
+			 effectiveFlowDirection.IsExplicit() ? FlowDirection.LeftToRight :
+			 FlowDirection.MatchParent;
+
+			return ToNSAttributedString(
+			 label.FormattedText,
+			 label.RequireFontManager(),
+			 label.LineHeight,
+			 label.HorizontalTextAlignment,
+			 label.ToFont(),
+			 label.TextColor,
+			 label.TextTransform,
+			 label.LineBreakMode,
+			 label.CharacterSpacing,
+			 flowDirection);
+		}
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
