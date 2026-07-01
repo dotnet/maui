@@ -9,6 +9,8 @@ using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.System;
+using Windows.UI.Input.Preview.Injection;
 using Xunit;
 
 using NativeTextAlignment = Microsoft.UI.Xaml.TextAlignment;
@@ -193,6 +195,45 @@ namespace Microsoft.Maui.DeviceTests
 				var ip = ap.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
 				ip?.Invoke();
 			});
+		}
+
+		// Simulates the key-event sequence produced by IME candidate-window confirmation:
+		// The IME intercepts and consumes the physical Enter (no KeyDown(Enter) reaches the TextBox),
+		// and only the KeyUp(Enter) leaks through — which is what caused the original bug.
+		static void SimulateIMECandidateEnter(TextBox platformView)
+		{
+			var injector = InputInjector.TryCreate();
+
+			// Inject ONLY KeyUp(Enter) with no preceding KeyDown(Enter).
+			// This is the exact sequence the TextBox receives during IME candidate confirmation —
+			// the IME swallows the KeyDown entirely; only the physical key-release (KeyUp) leaks.
+			injector.InjectKeyboardInput(new[]
+			{
+				new InjectedInputKeyboardInfo
+				{
+					VirtualKey = (ushort)VirtualKey.Enter,
+					KeyOptions = InjectedInputKeyOptions.KeyUp
+				}
+			});
+		}
+
+		[Fact(DisplayName = "Completed does not fire on IME candidate confirmation Enter")]
+		public async Task CompletedDoesNotFireOnIMECandidateEnter()
+		{
+			var entry = new EntryStub();
+			int completedCount = 0;
+			entry.Completed += (s, e) => completedCount++;
+
+			await AttachAndRun(entry, async (handler) =>
+			{
+				handler.PlatformView.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+				await Task.Delay(100);
+
+				SimulateIMECandidateEnter(handler.PlatformView);
+				await Task.Delay(100);
+			});
+
+			Assert.Equal(0, completedCount);
 		}
 	}
 }
