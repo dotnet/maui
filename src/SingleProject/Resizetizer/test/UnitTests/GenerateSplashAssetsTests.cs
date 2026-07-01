@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[Fact]
 		public void SplashInputsIncludeResizeQualityMetadata()
 		{
-			var targetsFile = Path.GetFullPath(Path.Combine(GetTestProjectRoot(), "../../src/nuget/buildTransitive/Microsoft.Maui.Resizetizer.After.targets"));
+			var targetsFile = Path.Combine(AppContext.BaseDirectory, "nuget", "buildTransitive", "Microsoft.Maui.Resizetizer.After.targets");
 			var targets = File.ReadAllText(targetsFile);
 
 			Assert.Contains("FileHash=%(FileHash);ResizeQuality=%(ResizeQuality)", targets, StringComparison.Ordinal);

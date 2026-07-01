@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			return Path.Combine(TestImagesFolderName, name, methodName, filename);
 		}
 
-		protected static string GetTestProjectRoot()
+		private static string GetTestProjectRoot()
 		{
 			var cwd = Directory.GetCurrentDirectory();
 
