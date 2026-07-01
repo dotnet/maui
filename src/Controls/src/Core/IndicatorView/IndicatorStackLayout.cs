@@ -130,9 +130,11 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
+#pragma warning disable CS0618 // BackgroundColor — IndicatorView backward compatibility
 				visualElement.BackgroundColor = isSelected
 					? GetColorOrDefault(_indicatorView.SelectedIndicatorColor, Colors.Gray)
 					: GetColorOrDefault(_indicatorView.IndicatorColor, Colors.Silver);
+#pragma warning restore CS0618
 
 
 				VisualStateManager.GoToState(visualElement, isSelected
