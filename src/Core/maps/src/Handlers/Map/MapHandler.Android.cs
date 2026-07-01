@@ -69,6 +69,10 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override void DisconnectHandler(MapView platformView)
 		{
+			_addPinsCts?.Cancel();
+			_addPinsCts?.Dispose();
+			_addPinsCts = null;
+
 			DisconnectPins();
 
 			base.DisconnectHandler(platformView);
@@ -646,6 +650,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			// Cancel any previously running pin additions to avoid stale markers
 			_addPinsCts?.Cancel();
+			_addPinsCts?.Dispose();
 			_addPinsCts = new CancellationTokenSource();
 			var ct = _addPinsCts.Token;
 
@@ -675,15 +680,7 @@ namespace Microsoft.Maui.Maps.Handlers
 					if (cluster.Pins.Count == 1)
 					{
 						// Single pin - add as regular marker
-						var pin = cluster.Pins[0];
-						if (pin is INotifyPropertyChanged observable)
-						{
-							// -= before += because ReclusterPins re-runs AddPins on zoom without DisconnectPins.
-							observable.PropertyChanged -= PinOnPropertyChanged;
-							observable.PropertyChanged += PinOnPropertyChanged;
-						}
-
-						AddPinAsync(pin, ct).FireAndForget();
+						AddRegularPin(cluster.Pins[0], ct);
 					}
 					else
 					{
@@ -714,15 +711,21 @@ namespace Microsoft.Maui.Maps.Handlers
 			// Normal non-clustered pins
 			foreach (var p in pins)
 			{
-				IMapPin pin = (IMapPin)p;
-				if (pin is INotifyPropertyChanged observable)
-				{
-					observable.PropertyChanged += PinOnPropertyChanged;
-				}
-
-				AddPinAsync(pin, ct).FireAndForget();
+				AddRegularPin((IMapPin)p, ct);
 			}
 			_pins = null;
+		}
+
+		void AddRegularPin(IMapPin pin, CancellationToken ct)
+		{
+			if (pin is INotifyPropertyChanged observable)
+			{
+				// -= before += because ReclusterPins re-runs AddPins on zoom without DisconnectPins.
+				observable.PropertyChanged -= PinOnPropertyChanged;
+				observable.PropertyChanged += PinOnPropertyChanged;
+			}
+
+			AddPinAsync(pin, ct).FireAndForget();
 		}
 
 		void PinOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -764,6 +767,9 @@ namespace Microsoft.Maui.Maps.Handlers
 					break;
 				case nameof(IMapPin.Address):
 					marker.Snippet = pin.Address;
+					break;
+				case nameof(IMapPin.ImageSource):
+					UpdatePinImageSourceAsync(pin, marker, _addPinsCts?.Token ?? CancellationToken.None).FireAndForget();
 					break;
 			}
 		}
@@ -876,6 +882,42 @@ namespace Microsoft.Maui.Maps.Handlers
 			
 			_markers ??= new List<Marker>();
 			_markers.Add(marker);
+		}
+
+		async Task UpdatePinImageSourceAsync(IMapPin pin, Marker marker, CancellationToken ct)
+		{
+			var mauiContext = MauiContext;
+
+			if (mauiContext == null || ct.IsCancellationRequested || (pin.MarkerId as string) != marker.Id)
+				return;
+
+			BitmapDescriptor? icon = null;
+
+			if (pin.ImageSource != null)
+			{
+				try
+				{
+					var result = await pin.ImageSource.GetPlatformImageAsync(mauiContext);
+					if (ct.IsCancellationRequested || (pin.MarkerId as string) != marker.Id || result?.Value is not ADrawable drawable)
+						return;
+
+					var bitmap = DrawableToBitmap(drawable);
+					if (bitmap != null)
+					{
+						icon = BitmapDescriptorFactory.FromBitmap(bitmap);
+					}
+				}
+				catch (System.Exception ex)
+				{
+					mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to update custom pin icon");
+					return;
+				}
+			}
+
+			if (!ct.IsCancellationRequested && (pin.MarkerId as string) == marker.Id)
+			{
+				marker.SetIcon(icon);
+			}
 		}
 
 		static ABitmap? DrawableToBitmap(ADrawable drawable)
