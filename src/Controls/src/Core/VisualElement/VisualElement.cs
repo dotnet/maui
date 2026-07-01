@@ -563,7 +563,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the <see cref="Color"/> which will fill the background of an element. This is a bindable property.
 		/// </summary>
-		/// <remarks>Use <see cref="Background"/> instead.</remarks>
+		/// <remarks>Use <see cref="Background"/> instead. This property will be removed in .NET 12.</remarks>
 		[Obsolete("BackgroundColor is obsolete. Use Background instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Color BackgroundColor
