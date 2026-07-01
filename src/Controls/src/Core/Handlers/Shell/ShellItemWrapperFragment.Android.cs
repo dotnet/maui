@@ -135,6 +135,10 @@ namespace Microsoft.Maui.Controls.Handlers
                     _handler._shellSection = null;
                 }
 
+                // Reset _displayedPage so UpdateDisplayedPage re-runs fully on back-stack return
+                // instead of early-returning due to the same page reference, leaving the toolbar unconfigured.
+                _handler._displayedPage = null;
+
                 // Null _bottomNavigationView so appearance callbacks don't update stale views
                 // while the fragment sits on the back stack.
                 _handler._bottomNavigationView = null;

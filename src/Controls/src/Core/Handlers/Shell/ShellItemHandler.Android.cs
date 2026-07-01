@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers
         IShellBottomNavViewAppearanceTracker? _appearanceTracker;
         internal Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable RemoveAppearanceObserver
         internal ShellSection? _shellSection;
-        Page? _displayedPage;
+        internal Page? _displayedPage;
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
         bool _switchingShellItem; // During SwitchToShellItem, suppress mapper-triggered SwitchToSection
         bool _pendingAdapterUpdate; // After adapter rebuild, suppress next smooth scroll to avoid VP2 overshoot
