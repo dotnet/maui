@@ -891,14 +891,17 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (mauiContext == null || ct.IsCancellationRequested || (pin.MarkerId as string) != marker.Id)
 				return;
 
+			// Captured before the await; if ImageSource changes meanwhile, this stale load is dropped.
+			var requestedSource = pin.ImageSource;
+
 			BitmapDescriptor? icon = null;
 
-			if (pin.ImageSource != null)
+			if (requestedSource != null)
 			{
 				try
 				{
-					var result = await pin.ImageSource.GetPlatformImageAsync(mauiContext);
-					if (ct.IsCancellationRequested || (pin.MarkerId as string) != marker.Id || result?.Value is not ADrawable drawable)
+					using var result = await requestedSource.GetPlatformImageAsync(mauiContext);
+					if (ct.IsCancellationRequested || !ReferenceEquals(pin.ImageSource, requestedSource) || (pin.MarkerId as string) != marker.Id || result?.Value is not ADrawable drawable)
 						return;
 
 					var bitmap = DrawableToBitmap(drawable);
@@ -914,7 +917,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				}
 			}
 
-			if (!ct.IsCancellationRequested && (pin.MarkerId as string) == marker.Id)
+			if (!ct.IsCancellationRequested && ReferenceEquals(pin.ImageSource, requestedSource) && (pin.MarkerId as string) == marker.Id)
 			{
 				marker.SetIcon(icon);
 			}
