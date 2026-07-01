@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using SkiaSharp;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -92,6 +93,27 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
 			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/Contents.json");
+			AssertFileNotExists("Assets.xcassets/MauiSplashColor.colorset/Contents.json");
+		}
+
+		[Fact]
+		public void DarkTintColorOnlyGeneratesTintedDarkImage()
+		{
+			var splash = new TaskItem("images/camera.svg", new Dictionary<string, string>
+			{
+				["DarkTintColor"] = "#ff0000",
+				["BaseSize"] = "44",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/Contents.json");
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.png", 44, 44);
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.png", 44, 44);
+			AssertFileContains("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.png", SKColors.Red);
+			AssertFileDoesNotContain("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.png", SKColors.Red);
 			AssertFileNotExists("Assets.xcassets/MauiSplashColor.colorset/Contents.json");
 		}
 

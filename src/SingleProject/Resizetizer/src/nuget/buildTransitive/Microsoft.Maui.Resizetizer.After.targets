@@ -419,7 +419,8 @@
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
             <_MauiHasSplashScreens Condition="'@(MauiSplashScreen->Count())' != '0'">true</_MauiHasSplashScreens>
-            <_MauiFirstSplashScreenIdentity Condition="'$(_MauiHasSplashScreens)' == 'true'">@(MauiSplashScreen->'%(Identity)')[0]</_MauiFirstSplashScreenIdentity>
+            <_MauiSplashScreenIdentities>@(MauiSplashScreen)</_MauiSplashScreenIdentities>
+            <_MauiFirstSplashScreenIdentity Condition="'$(_MauiHasSplashScreens)' == 'true'">$(_MauiSplashScreenIdentities.Split(';')[0])</_MauiFirstSplashScreenIdentity>
             <_MauiShouldGenerateSplashScreen Condition="'$(_MauiHasSplashScreens)' == 'true'">true</_MauiShouldGenerateSplashScreen>
             <_MauiShouldGenerateSplashScreen Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' != 'true' and '$(EnableBlankMauiSplashScreen)' == 'true'">true</_MauiShouldGenerateSplashScreen>
             <_MauiAppleThemedSplashSupported Condition="'$(SupportedOSPlatformVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(SupportedOSPlatformVersion)', '14.0'))">true</_MauiAppleThemedSplashSupported>

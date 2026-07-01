@@ -236,7 +236,6 @@ namespace Microsoft.Maui.Resizetizer
 		static readonly string[] NightOriginalResourceDirectories =
 		{
 			"drawable-night",
-			"drawable-night-v31",
 		};
 
 		static readonly string[] NightDensityResourceDirectories =

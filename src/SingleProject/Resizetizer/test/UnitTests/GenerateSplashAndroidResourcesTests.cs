@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using SkiaSharp;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -104,6 +105,26 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			AssertFileSize("drawable-night-xhdpi/camera.png", 3584, 3584);
 			AssertImageFile("maui_splash_image.xml", _drawableNight, "@drawable/camera");
 			AssertImageFile("maui_splash_image_v31.xml", _drawableNight_v31, "@drawable/camera");
+		}
+
+		[Fact]
+		public void DarkTintColorOnlyGeneratesTintedNightImage()
+		{
+			var splash = new TaskItem("images/camera.svg", new Dictionary<string, string>
+			{
+				["DarkTintColor"] = "#ff0000",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileSize("drawable-mdpi/camera.png", 1792, 1792);
+			AssertFileSize("drawable-night-mdpi/camera.png", 1792, 1792);
+			AssertFileContains("drawable-night-mdpi/camera.png", SKColors.Red, 350, 350);
+			AssertFileDoesNotContain("drawable-mdpi/camera.png", SKColors.Red, 350, 350);
+			AssertImageFile("maui_splash_image.xml", _drawableNight, "@drawable/camera");
+			Assert.False(File.Exists(_colorsNight), "Night colors should not be generated without dark color metadata.");
 		}
 
 		[Fact]
