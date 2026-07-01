@@ -7,6 +7,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Hosting;
+using Windows.UI.Input.Preview.Injection;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -227,6 +228,126 @@ namespace Microsoft.Maui.DeviceTests
 				// Re-enable at runtime → must re-enter the tab order
 				await InvokeOnMainThreadAsync(() => border.IsEnabled = true);
 				Assert.True(contentPanel.IsTabStop);
+			});
+		}
+
+		[Fact(DisplayName = "Border ContentPanel IsTabStop is false when Border is InputTransparent")]
+		public async Task ContentPanelIsTabStopFalseWhenBorderIsInputTransparent()
+		{
+			SetupBuilder();
+
+			var border = new Border()
+			{
+				Content = new Label { Text = "InputTransparent Border" },
+				StrokeShape = new Rectangle(),
+				WidthRequest = 300,
+				HeightRequest = 100,
+				InputTransparent = true
+			};
+
+			border.GestureRecognizers.Add(new TapGestureRecognizer());
+
+			await AttachAndRun(border, handler =>
+			{
+				var contentPanel = GetNativeBorder(handler as BorderHandler);
+				// InputTransparent=true must keep Border out of the tab order even with a recognizer present.
+				Assert.False(contentPanel.IsTabStop);
+			});
+		}
+
+		[Fact(DisplayName = "Border ContentPanel IsTabStop updates when InputTransparent toggles at runtime")]
+		public async Task ContentPanelIsTabStopUpdatesOnRuntimeInputTransparentToggle()
+		{
+			SetupBuilder();
+
+			var border = new Border()
+			{
+				Content = new Label { Text = "Border" },
+				StrokeShape = new Rectangle(),
+				WidthRequest = 300,
+				HeightRequest = 100,
+				InputTransparent = false
+			};
+
+			border.GestureRecognizers.Add(new TapGestureRecognizer());
+
+			await AttachAndRun(border, async handler =>
+			{
+				var contentPanel = GetNativeBorder(handler as BorderHandler);
+
+				// InputTransparent=false + has recognizer → should be keyboard-focusable
+				Assert.True(contentPanel.IsTabStop);
+
+				// Set InputTransparent=true at runtime → must leave the tab order
+				await InvokeOnMainThreadAsync(() => border.InputTransparent = true);
+				Assert.False(contentPanel.IsTabStop);
+
+				// Restore InputTransparent=false at runtime → must re-enter the tab order
+				await InvokeOnMainThreadAsync(() => border.InputTransparent = false);
+				Assert.True(contentPanel.IsTabStop);
+			});
+		}
+
+		[Fact(DisplayName = "Border ContentPanel IsTabStop is false when TapGestureRecognizer is only on a child element")]
+		public async Task ContentPanelIsTabStopFalseWhenGestureIsOnChild()
+		{
+			SetupBuilder();
+
+			var childLabel = new Label { Text = "Child with gesture" };
+			childLabel.GestureRecognizers.Add(new TapGestureRecognizer());
+
+			var border = new Border()
+			{
+				Content = childLabel,
+				StrokeShape = new Rectangle(),
+				WidthRequest = 300,
+				HeightRequest = 100
+			};
+
+			// Border itself has NO GestureRecognizers — only the child does.
+			await AttachAndRun(border, handler =>
+			{
+				var contentPanel = GetNativeBorder(handler as BorderHandler);
+				// Child gestures must not promote the parent Border into the tab order.
+				Assert.False(contentPanel.IsTabStop);
+			});
+		}
+
+		[Fact(DisplayName = "Border ContentPanel fires TapGestureRecognizer on Enter key press")]
+		public async Task ContentPanelFiresTapGestureRecognizerOnEnterKey()
+		{
+			SetupBuilder();
+
+			var tappedCount = 0;
+			var border = new Border()
+			{
+				Content = new Label { Text = "Border" },
+				StrokeShape = new Rectangle(),
+				WidthRequest = 300,
+				HeightRequest = 100
+			};
+
+			var tapRecognizer = new TapGestureRecognizer();
+			tapRecognizer.Tapped += (s, e) => tappedCount++;
+			border.GestureRecognizers.Add(tapRecognizer);
+
+			await AttachAndRun(border, async handler =>
+			{
+				var contentPanel = GetNativeBorder(handler as BorderHandler);
+				var injector = InputInjector.TryCreate();
+				if (injector == null)
+					return;
+
+				await InvokeOnMainThreadAsync(() => contentPanel.Focus(Microsoft.UI.Xaml.FocusState.Programmatic));
+
+				injector.InjectKeyboardInput(new[]
+				{
+					new InjectedInputKeyboardInfo { VirtualKey = 13 },                                        // Enter KeyDown
+					new InjectedInputKeyboardInfo { VirtualKey = 13, KeyOptions = InjectedInputKeyOptions.KeyUp }  // Enter KeyUp
+				});
+
+				await Task.Delay(100);
+				Assert.Equal(1, tappedCount);
 			});
 		}
 
