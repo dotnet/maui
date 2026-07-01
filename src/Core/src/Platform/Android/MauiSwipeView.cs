@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		// Determines whether the WebView should intercept touch events based on its scroll position and the swipe direction.
+		// Determines whether the SwipeView should intercept touch events when the content is a WebView, based on the WebView's scroll position and the swipe direction.
 		static bool ShouldInterceptWebViewTouch(AWebView webView, SwipeDirection swipeDirection) =>
 			swipeDirection switch
 			{
