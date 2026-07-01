@@ -461,8 +461,11 @@ static class UpdateComponentCodeWriter
 		// Recursively create grandchildren
 		EmitNewElementChildren(codeWriter, newElement, childVar, entry.NewNodeId, newIds, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
-		// Set as content
-		codeWriter.WriteLine($"{parentAccessor}.{contentPropertyName} = (global::Microsoft.Maui.IView){childVar};");
+		// Set as content. Assign the concrete child directly: a single content property (e.g.
+		// ContentPage.Content, typed View) is not IView-typed, so casting up to IView would fail
+		// (IView -> View is not an implicit conversion, CS0266). childVar is already declared as the
+		// concrete node type, which implicitly converts to the content property type.
+		codeWriter.WriteLine($"{parentAccessor}.{contentPropertyName} = {childVar};");
 
 		// Register the new child
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{entry.NewNodeId}\", {childVar});");
@@ -656,7 +659,9 @@ static class UpdateComponentCodeWriter
 					codeWriter.WriteLine($"var {childVar} = new {childType.ToFQDisplayString()}();");
 					EmitNewElementProperties(codeWriter, childElement, childVar, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 					EmitNewElementChildren(codeWriter, childElement, childVar, childNodeId, newIds, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
-					codeWriter.WriteLine($"{varName}.{contentProp} = (global::Microsoft.Maui.IView){childVar};");
+					// Assign the concrete child directly (not cast to IView): a content property is not
+					// IView-typed, so an IView -> View cast would fail with CS0266. See EmitContentPropertyChange.
+					codeWriter.WriteLine($"{varName}.{contentProp} = {childVar};");
 					codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{childNodeId}\", {childVar});");
 					break; // content property only has one child
 				}
