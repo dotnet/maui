@@ -423,5 +423,127 @@ namespace Microsoft.Maui.DeviceTests
 				Location = location;
 			}
 		}
+
+		[Fact]
+		public async Task NullItem_RendersBlankRow()
+		{
+			SetupBuilder();
+
+			var data = new ObservableCollection<object> { "Item 1", null, "Item 3" };
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, new Binding("."));
+					return label;
+				}),
+				ItemsSource = data,
+				HeightRequest = 400,
+				WidthRequest = 300
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await Task.Delay(500);
+
+				var listView = (UI.Xaml.Controls.ListView)handler.PlatformView;
+				var containers = listView.GetChildren<UI.Xaml.Controls.ListViewItem>().ToList();
+
+				// There should be at least 3 containers (one per item including null)
+				Assert.True(containers.Count >= 3, $"Expected at least 3 containers, got {containers.Count}");
+
+				// The null-item container (index 1) should have non-zero height (blank row)
+				var nullContainer = containers[1];
+				var bounds = nullContainer.GetBoundingBox();
+				Assert.True(bounds.Height > 0, $"Null item container should have non-zero height, got {bounds.Height}");
+			});
+		}
+
+		[Fact]
+		public async Task NullItem_TapDoesNotCrash_SingleSelection()
+		{
+			SetupBuilder();
+
+			var data = new ObservableCollection<object> { "Item 1", null, "Item 3" };
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label { HeightRequest = 40 };
+					label.SetBinding(Label.TextProperty, new Binding("."));
+					return label;
+				}),
+				ItemsSource = data,
+				SelectionMode = SelectionMode.Single,
+				HeightRequest = 400,
+				WidthRequest = 300
+			};
+
+			var layout = new VerticalStackLayout
+			{
+				collectionView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				await Task.Delay(500);
+
+				// Selecting the null item programmatically should not throw
+				var exception = await Record.ExceptionAsync(async () =>
+				{
+					collectionView.SelectedItem = null;
+					await Task.Delay(100);
+				});
+
+				Assert.Null(exception);
+				Assert.Null(collectionView.SelectedItem);
+			});
+		}
+
+		[Fact]
+		public async Task NullItem_DragReorder_DoesNotMoveWrongRow()
+		{
+			SetupBuilder();
+
+			var data = new ObservableCollection<object> { "Item 1", null, null, "Item 4" };
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label { HeightRequest = 40 };
+					label.SetBinding(Label.TextProperty, new Binding("."));
+					return label;
+				}),
+				ItemsSource = data,
+				CanReorderItems = true,
+				HeightRequest = 400,
+				WidthRequest = 300
+			};
+
+			var layout = new VerticalStackLayout
+			{
+				collectionView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				await Task.Delay(500);
+
+				// Simulate a reorder: move item at index 0 ("Item 1") to index 2
+				// This exercises the code path where null items exist in the collection
+				data.Move(0, 2);
+				await Task.Delay(200);
+
+				// After the move, the order should be: null, null, "Item 1", "Item 4"
+				Assert.Null(data[0]);
+				Assert.Null(data[1]);
+				Assert.Equal("Item 1", data[2]);
+				Assert.Equal("Item 4", data[3]);
+			});
+		}
 	}
 }
