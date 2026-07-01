@@ -18,12 +18,10 @@ public partial class Maui34056StringAncestorType : ContentPage
         [Fact]
         internal void RelativeSourceAncestorTypeAsStringGeneratesCompiledBinding()
         {
-            // Concern 2 from review #4492884861:
-            // TryGetRelativeSourceAncestorType only handled the {x:Type ...} ElementNode form.
-            // The bare string form AncestorType="local:MyViewModel" (a ValueNode) was not handled
-            // and silently fell back to a runtime string Binding.
-            // After the fix it should produce a trim-safe TypedBinding<Maui34056PageViewModel, ICommand>.
-            var page = new Maui34056StringAncestorType();
+            // Covers AncestorType specified as a bare string (ValueNode form), e.g. AncestorType="local:MyViewModel".
+            // Previously this silently fell back to a runtime string Binding; after the fix it should compile to
+            // a trim-safe TypedBinding<Maui34056PageViewModel, ICommand>.
+            var page = new Maui34056StringAncestorType(XamlInflator.SourceGen);
 
             var template = page.StringAncestorTypeCollectionView.ItemTemplate;
             var content = template.CreateContent() as Button;

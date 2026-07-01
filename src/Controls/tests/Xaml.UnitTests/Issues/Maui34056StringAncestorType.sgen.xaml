@@ -2,9 +2,7 @@
 <!-- SourceGen-only: AncestorType as a bare string (ValueNode form).
      XamlC does not support this syntax (XC0009), so this file is .sgen.xaml
      to limit compilation to SourceGen only.
-     This covers Concern 2 from review #4492884861: TryGetRelativeSourceAncestorType
-     previously only handled the {x:Type ...} ElementNode form. The string form
-     silently fell back to a runtime Binding. After the fix it produces a TypedBinding. -->
+     Previously the string form silently fell back to a runtime Binding; after the fix it produces a TypedBinding. -->
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
