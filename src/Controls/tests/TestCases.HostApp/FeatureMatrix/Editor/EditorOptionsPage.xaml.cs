@@ -23,7 +23,12 @@ public partial class EditorOptionsPage : ContentPage
 	{
 		if (sender is Button button)
 		{
-			_viewModel.TextColor = button.BackgroundColor;
+			_viewModel.TextColor = button.AutomationId switch
+			{
+				"TextColorRed" => Colors.Red,
+				"TextColorBlue" => Colors.Blue,
+				_ => null
+			};
 		}
 	}
 
@@ -47,7 +52,12 @@ public partial class EditorOptionsPage : ContentPage
 	{
 		if (sender is Button button)
 		{
-			_viewModel.PlaceholderColor = button.BackgroundColor;
+			_viewModel.PlaceholderColor = button.AutomationId switch
+			{
+				"PlaceholderColorRed" => Colors.Red,
+				"PlaceholderColorBlue" => Colors.Blue,
+				_ => null
+			};
 		}
 	}
 	private void HorizontalAlignmentButton_Clicked(object sender, EventArgs e)
@@ -79,28 +89,31 @@ public partial class EditorOptionsPage : ContentPage
 		}
 	}
 
-	private void ReturnTypeButton_Clicked(object sender, EventArgs e)
-	{
-		if (sender is Button button)
-		{
-			_viewModel.ReturnType = button.AutomationId switch
-			{
-				"Done" => ReturnType.Done,
-				"Next" => ReturnType.Next,
-				"Go" => ReturnType.Go,
-				"Search" => ReturnType.Search,
-				"Send" => ReturnType.Send,
-				"Default" => ReturnType.Default,
-				_ => _viewModel.ReturnType
-			};
-		}
-	}
-
 	private void MaxLengthButton_Clicked(object sender, EventArgs e)
 	{
 		if (int.TryParse(MaxLengthEntry.Text, out int maxLength))
 		{
 			_viewModel.MaxLength = maxLength;
+		}
+	}
+
+	private void HeightRequest_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(HeightRequestEntry.Text, out double heightRequest))
+		{
+			// Clamp negative values to -1 (unset), otherwise non-negative
+			heightRequest = heightRequest < 0 ? -1 : heightRequest;
+			_viewModel.HeightRequest = heightRequest;
+		}
+	}
+
+	private void WidthRequest_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(WidthRequestEntry.Text, out double widthRequest))
+		{
+			// Clamp negative values to -1 (unset), otherwise non-negative
+			widthRequest = widthRequest < 0 ? -1 : widthRequest;
+			_viewModel.WidthRequest = widthRequest;
 		}
 	}
 
@@ -179,6 +192,19 @@ public partial class EditorOptionsPage : ContentPage
 		_viewModel.FontFamily = FontFamilyEntry.Text;
 	}
 
+	private void BackgroundColorButton_Clicked(object sender, EventArgs e)
+	{
+		if (sender is Button button)
+		{
+			_viewModel.BackgroundColor = button.AutomationId switch
+			{
+				"BackgroundColorYellow" => Colors.Yellow,
+				"BackgroundColorLightBlue" => Colors.LightBlue,
+				_ => null
+			};
+		}
+	}
+
 	private void FlowDirection_CheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (sender == FlowDirectionLeftToRight)
@@ -231,20 +257,17 @@ public partial class EditorOptionsPage : ContentPage
 		}
 	}
 
-	private void FontAttributes_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void FontAttributesCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (sender == FontAttributesBold)
-		{
-			_viewModel.FontAttributes = FontAttributes.Bold;
-		}
-		else if (sender == FontAttributesNone)
-		{
-			_viewModel.FontAttributes = FontAttributes.None;
-		}
-		else if (sender == FontAttributesItalic)
-		{
-			_viewModel.FontAttributes = FontAttributes.Italic;
-		}
+		var attributes = FontAttributes.None;
+
+		if (FontAttributesBoldCheckBox.IsChecked)
+			attributes |= FontAttributes.Bold;
+
+		if (FontAttributesItalicCheckBox.IsChecked)
+			attributes |= FontAttributes.Italic;
+
+		_viewModel.FontAttributes = attributes;
 	}
 
 	private void AutoSize_CheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -260,4 +283,15 @@ public partial class EditorOptionsPage : ContentPage
 			_viewModel.AutoSizeOption = EditorAutoSizeOption.Disabled;
 		}
 	}
+
+	private void OpacityEditor_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double opacity))
+		{
+			// Clamp opacity between 0.0 and 1.0
+			opacity = Math.Clamp(opacity, 0.0, 1.0);
+			_viewModel.Opacity = opacity;
+		}
+	}
 }
+
