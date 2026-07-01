@@ -100,6 +100,8 @@ Based ONLY on the code (no PR description), answer:
 3. **Is the approach sound?** Would a simpler alternative work?
 4. **What problems do you see?** Run through the agent's dimension CHECKs for matched dimensions
 
+**Regression risk check:** If the changed files touch historically high-regression component families — CollectionView/CarouselView, Image/Graphics, Theme/Style, Gesture/Tap, Button/Entry, Toolbar, or Shell/TabBar — treat the **Blast Radius Assessment and Failure-Mode Probing (Step 6)** as mandatory rather than optional, and confirm the expert reviewer's **Regression Prevention** dimension (Step 2) actually fired for the matched files. These families regress most often, and the usual miss is an untested *adjacent* scenario — a spacing/layout fix that also runs on scroll-position restoration, or a touch-handling fix that also affects tap/swipe/gesture. Conversely, a documentation-only or comment-only change to these files carries no such risk and must **not** attract regression scrutiny.
+
 ### Step 4: Read PR Narrative and Reconcile
 
 Now read the PR description, linked issue, and comments. Treat these as **claims to verify**, not facts.
