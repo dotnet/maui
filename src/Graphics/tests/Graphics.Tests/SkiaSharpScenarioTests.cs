@@ -40,7 +40,10 @@ public class SkiaSharpScenarioTests
 		}
 
 		// file existed, compare
-		ImageAssert.Equivalent(bmp.SKImage, expectedImagePath, GetErrorsImageDirectory(), 0.07);
+		// Threshold accounts for minor text antialiasing differences across SkiaSharp
+		// versions/architectures (bumped from 0 -> 0.07 in #27684 for arm64, then raised
+		// for the SkiaSharp 4.x text rasterization changes).
+		ImageAssert.Equivalent(bmp.SKImage, expectedImagePath, GetErrorsImageDirectory(), 0.2);
 	}
 
 	private static string ProjectRoot =>
