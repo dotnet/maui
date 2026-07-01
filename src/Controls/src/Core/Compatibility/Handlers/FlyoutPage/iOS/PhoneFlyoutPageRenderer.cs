@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdatePresented(((FlyoutPage)Element).IsPresented, true);
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.IsGestureEnabledProperty.PropertyName)
 				UpdatePanGesture();
-			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackground();
@@ -546,7 +546,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						View.UpdateBackground(Element.Background);
 					else
 					{
-						View.BackgroundColor = UIColor.White;
+						if (Element.BackgroundColor == null)
+							View.BackgroundColor = UIColor.White;
+						else
+							View.BackgroundColor = Element.BackgroundColor.ToPlatform();
 					}
 				}
 			});

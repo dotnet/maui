@@ -9,7 +9,7 @@
         MinimumHeightRequest="250"
         x:DataType="models:Project">
     <shimmer:SfShimmer
-        Background="Transparent"
+        BackgroundColor="Transparent"
         IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
         <shimmer:SfShimmer.CustomView>
             <VerticalStackLayout Spacing="15">

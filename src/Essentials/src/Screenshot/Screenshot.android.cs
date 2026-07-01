@@ -11,7 +11,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
-	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot, IViewScreenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
 	{
 		static IWindowManager WindowManager =>
 			Application.Context.GetSystemService(Context.WindowService) as IWindowManager;
@@ -46,11 +46,6 @@ namespace Microsoft.Maui.Media
 
 			return Task.FromResult<IScreenshotResult>(result);
 		}
-
-#nullable enable annotations
-		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
-			platformView is View view ? CaptureAsync(view)! : Task.FromResult<IScreenshotResult?>(null);
-#nullable restore
 
 		static Bitmap Render(View view)
 		{

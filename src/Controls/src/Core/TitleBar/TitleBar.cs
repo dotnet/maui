@@ -461,6 +461,11 @@ namespace Microsoft.Maui.Controls
 			};
 
 			contentGrid.SetBinding(
+				BackgroundColorProperty,
+				static (TitleBar tb) => tb.BackgroundColor,
+				source: RelativeBindingSource.TemplatedParent);
+
+			contentGrid.SetBinding(
 				BackgroundProperty,
 				static (TitleBar tb) => tb.Background,
 				source: RelativeBindingSource.TemplatedParent);
