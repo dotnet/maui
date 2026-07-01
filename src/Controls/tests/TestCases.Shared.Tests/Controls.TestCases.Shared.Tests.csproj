@@ -5,8 +5,6 @@
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <GenerateMSBuildEditorConfigFile>False</GenerateMSBuildEditorConfigFile>
     <RootNamespace>Microsoft.Maui.TestCases.Tests</RootNamespace>
-     <!-- TODO: remove these obsolete nowarns and fix it in code -->
-     <NoWarn>$(NoWarn);CS0618</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -9,7 +9,7 @@
     x:DataType="models:ProjectTask">
 
         <shimmer:SfShimmer
-            Background="Transparent"
+            BackgroundColor="Transparent"
             VerticalOptions="Fill"
             IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
             <shimmer:SfShimmer.CustomView>

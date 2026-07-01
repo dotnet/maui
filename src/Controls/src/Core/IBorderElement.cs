@@ -1,5 +1,4 @@
 #nullable disable
-using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 
@@ -11,20 +10,13 @@ namespace Microsoft.Maui.Controls
 		//note to implementor: implement this property publicly
 		Color BorderColor { get; }
 		int CornerRadius { get; }
-
-		/// <inheritdoc cref="VisualElement.BackgroundColor"/>
-		[Obsolete("BackgroundColor is obsolete. Use Background instead.")]
 		Color BackgroundColor { get; }
-
 		Brush Background { get; }
 		double BorderWidth { get; }
 
 		//note to implementor: but implement the methods explicitly
 		void OnBorderColorPropertyChanged(Color oldValue, Color newValue);
 		bool IsCornerRadiusSet();
-
-		/// <summary>Returns whether <see cref="BackgroundColor"/> has been explicitly set. Use <see cref="IsBackgroundSet"/> instead.</summary>
-		[Obsolete("IsBackgroundColorSet is obsolete. Use IsBackgroundSet instead.")]
 		bool IsBackgroundColorSet();
 		bool IsBackgroundSet();
 		bool IsBorderColorSet();

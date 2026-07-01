@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(() => _uiRequestedPop = true);
 
 			UpdateToolBarVisible();
-			UpdateBackground();
+			UpdateBackgroundColor();
 			Current = navPage.CurrentPage;
 		}
 
@@ -409,7 +409,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the control adheres to changes in UI theme
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
-				UpdateBackground();
+				UpdateBackgroundColor();
 		}
 
 		/// <summary>
@@ -554,9 +554,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateBarTextColor();
 				SetStatusBarStyle();
 			}
-			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 			{
-				UpdateBackground();
+				UpdateBackgroundColor();
 			}
 			else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
 			{
@@ -799,9 +799,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}, TaskScheduler.FromCurrentSynchronizationContext());
 		}
 
-		void UpdateBackground()
+		void UpdateBackgroundColor()
 		{
-			View.UpdateBackground(Element.Background);
+			var color = Element.BackgroundColor == null ? Maui.Platform.ColorExtensions.BackgroundColor : Element.BackgroundColor.ToPlatform();
+			View.BackgroundColor = color;
 		}
 
 		void OnBarBackgroundChanged(object sender, EventArgs e)

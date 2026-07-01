@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.ComponentModel;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
@@ -35,6 +34,7 @@ namespace Microsoft.Maui.Controls
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
 #endif
+			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColor);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
@@ -45,9 +45,6 @@ namespace Microsoft.Maui.Controls
 			commandMapper.ModifyMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
 		}
 
-		/// <summary>Updates the handler when <see cref="VisualElement.BackgroundColor"/> changes by re-applying <see cref="VisualElement.Background"/>.</summary>
-		[Obsolete("MapBackgroundColor is obsolete. Use Background instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void MapBackgroundColor(IViewHandler handler, IView view) =>
 			handler.UpdateValue(nameof(Background));
 

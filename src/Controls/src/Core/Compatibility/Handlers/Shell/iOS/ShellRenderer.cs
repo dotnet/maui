@@ -351,12 +351,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		// Todo : Method name is misleading, it should be UpdateBackground
 		protected virtual void UpdateBackgroundColor()
 		{
-			FlyoutRenderer.View.UpdateBackground(Shell.Background);
-			if (Brush.IsNullOrEmpty(Shell.Background))
-				FlyoutRenderer.View.BackgroundColor = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor;
+			var color = Shell.BackgroundColor?.ToPlatform();
+			if (color == null)
+				color = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor;
+
+			FlyoutRenderer.View.BackgroundColor = color;
 		}
 
 		void SetupCurrentShellItem()
