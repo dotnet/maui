@@ -18,9 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// margin, placing it at a fractional UIKit coordinate. GetPosition(relativeTo: ReferenceBox)
 			// should therefore return coordinates with a fractional component.
 			// Before the fix, an explicit (int) cast in CalculatePosition truncated these values.
-			App.WaitForElement("TapTarget");
+			var tapRect = App.WaitForElement("TapTarget").GetRect();
 
-			App.Tap("TapTarget");
+			// Tap at integer screen coordinates so position relative to the 0.5-point reference box
+			// is expected to include a fractional component.
+			App.TapCoordinates((int)tapRect.CenterX(), (int)tapRect.CenterY());
 
 			// "Success" appears when the coordinates have a fractional component;
 			// "Failure" appears when they are truncated to integers.
