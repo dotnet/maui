@@ -70,6 +70,16 @@ function Test-IsNet11OrLater([string]$TargetFramework) {
     return [int]$Matches.Major -ge 11
 }
 
+function Add-NativeAotArguments([string[]]$Arguments) {
+    return $Arguments + @(
+        "-p:PublishAot=true",
+        "-p:PublishAotUsingRuntimePack=true",
+        "-p:_IsPublishing=true",
+        "-p:IlcTreatWarningsAsErrors=false",
+        "-p:TrimmerSingleWarn=false"
+    )
+}
+
 $projectFile = Get-ChildItem -Path $ProjectPath -Filter "*.csproj" -Recurse | Select-Object -First 1
 if (-not $projectFile) {
     throw "No project file was found in '$ProjectPath'."
@@ -146,6 +156,7 @@ switch ($Platform) {
 
         if (Test-IsNet11OrLater $TargetFramework) {
             $arguments += "-p:UseMonoRuntime=false"
+            $arguments = Add-NativeAotArguments $arguments
         }
 
         if ($Publish) {
@@ -196,12 +207,15 @@ switch ($Platform) {
             "-p:ValidateXcodeVersion=false"
         ) + $binlogArguments
 
-        if (Test-IsNet11OrLater $TargetFramework) {
+        $useNet11OrLater = Test-IsNet11OrLater $TargetFramework
+        if ($useNet11OrLater) {
             $arguments += "-p:UseMonoRuntime=false"
         }
 
         if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
             $arguments += @("-r", $RuntimeIdentifier)
+        } elseif ($useNet11OrLater) {
+            $arguments += "-p:RuntimeIdentifiers=maccatalyst-x64;maccatalyst-arm64"
         }
 
         if ($Publish) {
