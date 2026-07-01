@@ -487,6 +487,41 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		Assert.True(pe.Length > 0, "Compiled assembly should not be empty");
 	}
 
+	// Regression test for https://github.com/dotnet/maui/issues/36256:
+	// replacing the page's root content with a different control made UpdateComponent emit
+	// `this.Content = (IView)__na_0;`, which fails to compile (CS0266) because ContentPage.Content
+	// is typed View, not IView. The generated content-property assignment must not cast to IView.
+	[Fact]
+	public void RootContentReplaced_CompilesCleanly()
+	{
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <CollectionView />
+			</ContentPage>
+			""";
+
+		var (_, icV2, ucV2) = RunSourceGenTwoPhase(xamlV1, xamlV2);
+		Assert.NotNull(ucV2);
+
+		// The generated content assignment must be type-correct; CompileSources fails on CS0266.
+		Assert.DoesNotContain(".Content = (global::Microsoft.Maui.IView)", ucV2!, StringComparison.Ordinal);
+		var (pe, _, _) = CompileSources(PageStub, icV2, StripGeneratedCodeAttribute(ucV2!));
+		Assert.True(pe.Length > 0, "Compiled assembly should not be empty");
+	}
+
 	[Fact]
 	public void ResourceAdded_CompilesCleanly()
 	{
