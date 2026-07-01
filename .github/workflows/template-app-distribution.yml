@@ -278,10 +278,15 @@ jobs:
       - name: Install MAUI workload
         shell: pwsh
         run: |
+          $nugetConfig = Join-Path "${{ github.workspace }}" "source/NuGet.config"
+          $installArgs = @("workload", "install", "${{ matrix.workload }}", "--configfile", $nugetConfig)
           if ("${{ matrix.platform }}" -eq "ios" -or "${{ matrix.platform }}" -eq "maccatalyst") {
-            dotnet workload install ${{ matrix.workload }} --skip-manifest-update
-          } else {
-            dotnet workload install ${{ matrix.workload }}
+            $installArgs += "--skip-manifest-update"
+          }
+
+          dotnet @installArgs
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
           }
 
       - name: Pack local templates
@@ -312,7 +317,8 @@ jobs:
             -DisplayName "${{ matrix.displayName }}" `
             -DotNetSdk "${{ needs.prepare.outputs.dotnet_sdk }}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
-            -AppBuildNumber "$env:APP_BUILD_NUMBER"
+            -AppBuildNumber "$env:APP_BUILD_NUMBER" `
+            -NuGetConfigPath "${{ github.workspace }}/source/NuGet.config"
 
       - name: Build generated app
         id: build
@@ -537,10 +543,15 @@ jobs:
       - name: Install MAUI workload
         shell: pwsh
         run: |
+          $nugetConfig = Join-Path "${{ github.workspace }}" "source/NuGet.config"
+          $installArgs = @("workload", "install", "${{ matrix.workload }}", "--configfile", $nugetConfig)
           if ("${{ matrix.platform }}" -eq "ios" -or "${{ matrix.platform }}" -eq "maccatalyst") {
-            dotnet workload install ${{ matrix.workload }} --skip-manifest-update
-          } else {
-            dotnet workload install ${{ matrix.workload }}
+            $installArgs += "--skip-manifest-update"
+          }
+
+          dotnet @installArgs
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
           }
 
       - name: Set app version and release notes
@@ -585,7 +596,8 @@ jobs:
             -DisplayName "${{ matrix.displayName }}" `
             -DotNetSdk "${{ needs.prepare.outputs.dotnet_sdk }}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
-            -AppBuildNumber "$env:APP_BUILD_NUMBER"
+            -AppBuildNumber "$env:APP_BUILD_NUMBER" `
+            -NuGetConfigPath "${{ github.workspace }}/source/NuGet.config"
 
       - name: Install Apple signing assets
         if: ${{ matrix.platform == 'ios' || matrix.platform == 'maccatalyst' }}
@@ -623,7 +635,7 @@ jobs:
             -Publish
 
       - name: Upload artifact copy
-        if: always()
+        if: ${{ always() && steps.build.outputs.package_path != '' }}
         uses: actions/upload-artifact@v7
         with:
           name: template-app-publish-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}

@@ -38,7 +38,10 @@ param(
     [string]$AppDisplayVersion,
 
     [Parameter(Mandatory)]
-    [string]$AppBuildNumber
+    [string]$AppBuildNumber,
+
+    [Parameter(Mandatory)]
+    [string]$NuGetConfigPath
 )
 
 $ErrorActionPreference = "Stop"
@@ -83,17 +86,11 @@ New-Item -ItemType Directory -Path $nugetPackages -Force | Out-Null
 $env:DOTNET_CLI_HOME = $dotnetHome
 $env:NUGET_PACKAGES = $nugetPackages
 
-$nugetConfig = @"
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <clear />
-    <add key="dotnet-public" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" />
-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-  </packageSources>
-</configuration>
-"@
-$nugetConfig | Out-File -FilePath (Join-Path $projectRoot "NuGet.config") -Encoding utf8
+if (-not (Test-Path $NuGetConfigPath)) {
+    throw "NuGet.config was not found at '$NuGetConfigPath'."
+}
+
+Copy-Item -Path $NuGetConfigPath -Destination (Join-Path $projectRoot "NuGet.config") -Force
 
 Write-Host "Installing template package $TemplatePackagePath"
 dotnet new install $TemplatePackagePath
