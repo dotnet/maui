@@ -29,8 +29,8 @@ namespace Microsoft.Maui.Platform
 				var urlString = url.ToString();
 				if (!string.IsNullOrEmpty(urlString) && !WebViewDomainAllowlist.IsUrlAllowed(urlString, handler.VirtualView))
 				{
-					// Return an empty response to block the request
-					return new WebResourceResponse("text/plain", "UTF-8", null);
+					// Return a 403 with an empty stream to reliably block the request across WebView implementations
+					return new WebResourceResponse("text/plain", "UTF-8", 403, "Forbidden", null, new System.IO.MemoryStream());
 				}
 			}
 

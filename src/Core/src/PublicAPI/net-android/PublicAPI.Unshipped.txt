@@ -287,6 +287,7 @@ virtual Microsoft.Maui.Handlers.TimePickerHandler2.CreateTimePickerDialog(int ho
 Microsoft.Maui.IAllowedDomainsWebView
 Microsoft.Maui.IAllowedDomainsWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
 override Microsoft.Maui.Platform.MauiWebViewClient.ShouldInterceptRequest(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> Android.Webkit.WebResourceResponse?
+override Microsoft.Maui.Platform.MauiHybridWebViewClient.ShouldOverrideUrlLoading(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> bool
 Microsoft.Maui.ITab
 Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.ITab.IsEnabled.get -> bool

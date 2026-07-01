@@ -120,12 +120,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		// Sets up sub-resource filtering only when an allowlist is active, so default web views
+		// Adds or removes sub-resource filtering as the allowlist changes, so default web views
 		// (no AllowedDomains) keep their fast path with no WebResourceRequested interception.
 		internal static void MapAllowedDomains(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
-				platformHandler._proxy.EnsureWebResourceRequestedForAllowedDomains();
+				platformHandler._proxy.UpdateWebResourceRequestedForAllowedDomains();
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)
@@ -445,7 +445,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
 					sender.UpdateBackground(handler.VirtualView);
-					EnsureWebResourceRequestedForAllowedDomains();
+					UpdateWebResourceRequestedForAllowedDomains();
 					if (sender.Source is not null)
 					{
 						handler.SyncPlatformCookies(sender.Source.ToString()).FireAndForget();
@@ -453,27 +453,33 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			// Subscribes to WebResourceRequested (with a wildcard filter) only when an allowlist is
-			// active, so the cost of intercepting every sub-resource is paid only by web views that
-			// opt into AllowedDomains. Safe to call multiple times.
-			internal void EnsureWebResourceRequestedForAllowedDomains()
+			// Keeps the WebResourceRequested subscription (with a wildcard filter) in sync with the
+			// allowlist: it is added only while an allowlist is active — so the cost of intercepting
+			// every sub-resource is paid only by web views that opt into AllowedDomains — and removed
+			// again when the allowlist is cleared, restoring the fast path. Safe to call multiple times.
+			internal void UpdateWebResourceRequestedForAllowedDomains()
 			{
-				if (_webResourceRequestedSubscribed)
-					return;
-
 				if (Handler is not WebViewHandler handler)
-					return;
-
-				var allowedDomains = (handler.VirtualView as IAllowedDomainsWebView)?.AllowedDomains;
-				if (allowedDomains is null || allowedDomains.Count == 0)
 					return;
 
 				if (handler.PlatformView?.CoreWebView2 is not CoreWebView2 core)
 					return;
 
-				core.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
-				core.WebResourceRequested += OnWebResourceRequested;
-				_webResourceRequestedSubscribed = true;
+				var allowedDomains = (handler.VirtualView as IAllowedDomainsWebView)?.AllowedDomains;
+				var wantsFiltering = allowedDomains is not null && allowedDomains.Count > 0;
+
+				if (wantsFiltering && !_webResourceRequestedSubscribed)
+				{
+					core.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+					core.WebResourceRequested += OnWebResourceRequested;
+					_webResourceRequestedSubscribed = true;
+				}
+				else if (!wantsFiltering && _webResourceRequestedSubscribed)
+				{
+					core.WebResourceRequested -= OnWebResourceRequested;
+					core.RemoveWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+					_webResourceRequestedSubscribed = false;
+				}
 			}
 
 			void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)

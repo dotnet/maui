@@ -56,20 +56,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var navigatingCancelled = false;
 			var webView = new WebView
 			{
 				WidthRequest = 100,
 				HeightRequest = 100,
 				AllowedDomains = new List<string> { "example.com" },
-			};
-
-			webView.Navigating += (s, e) =>
-			{
-				// If the domain is blocked by our handler code,
-				// the Navigating event may still fire but the handler cancels it
-				if (e.Url?.Contains("evil.com", StringComparison.Ordinal) == true)
-					navigatingCancelled = true;
 			};
 
 			await AttachAndRun(webView, async handler =>

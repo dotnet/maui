@@ -10,7 +10,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void NullAllowedDomainsAllowsAll()
 		{
-			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://example.com", (IList<string>)null));
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://example.com", allowedDomains: null));
 		}
 
 		[Fact]
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.UnitTests
 		public void JavaScriptSchemeIsAllowedWhenNoAllowlist()
 		{
 			// With no allowlist configured, behavior is unchanged (everything is allowed).
-			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("javascript:void(0)", (IList<string>)null));
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("javascript:void(0)", allowedDomains: null));
 		}
 
 		[Fact]

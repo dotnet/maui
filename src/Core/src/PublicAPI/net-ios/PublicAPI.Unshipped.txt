@@ -1,7 +1,6 @@
 ﻿#nullable enable
 Microsoft.Maui.IAllowedDomainsWebView
 Microsoft.Maui.IAllowedDomainsWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
-#nullable enable
 Microsoft.Maui.HybridWebViewInvoker
 Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScriptTarget, System.Type? invokeJavaScriptType) -> void
 Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!

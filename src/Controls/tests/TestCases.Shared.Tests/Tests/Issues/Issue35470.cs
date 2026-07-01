@@ -21,18 +21,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("LoadAllowedButton");
 			App.Tap("LoadAllowedButton");
 
-			// Wait for navigation to complete
-			App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(15));
-			var status = App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(15)).GetText();
+			// Wait for navigation to complete (network navigation can be slow)
+			App.WaitForTextToBePresentInElement("StatusLabel", "NavigationComplete", timeout: TimeSpan.FromSeconds(30));
 
-			// The navigation should complete successfully (either NavigationComplete or the page loads)
-			// Give it some time since network navigation can be slow
-			for (int i = 0; i < 10 && status == "Loading..."; i++)
-			{
-				Thread.Sleep(1000);
-				status = App.FindElement("StatusLabel").GetText();
-			}
-
+			var status = App.FindElement("StatusLabel").GetText();
 			Assert.That(status, Is.EqualTo("NavigationComplete"),
 				"Navigation to an allowed domain should succeed");
 		}
@@ -46,19 +38,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("LoadBlockedButton");
 			App.Tap("LoadBlockedButton");
 
-			// Wait for the blocked detection timer (3 seconds + buffer)
-			App.WaitForElement("BlockedLabel", timeout: TimeSpan.FromSeconds(10));
+			// Wait for the blocked detection (timer-based, ~3 seconds + buffer)
+			App.WaitForTextToBePresentInElement("BlockedLabel", "NavigationBlocked", timeout: TimeSpan.FromSeconds(15));
 
-			// Poll for the "NavigationBlocked" text
-			string blockedText = "";
-			for (int i = 0; i < 10; i++)
-			{
-				blockedText = App.FindElement("BlockedLabel").GetText();
-				if (blockedText == "NavigationBlocked")
-					break;
-				Thread.Sleep(1000);
-			}
-
+			var blockedText = App.FindElement("BlockedLabel").GetText();
 			Assert.That(blockedText, Is.EqualTo("NavigationBlocked"),
 				"Navigation to a blocked domain should be blocked");
 		}
