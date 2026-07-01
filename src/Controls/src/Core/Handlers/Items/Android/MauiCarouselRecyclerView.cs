@@ -509,7 +509,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// value is shown, WITHOUT rebuilding the adapter (UpdateAdapter resets
 				// Position/CurrentItem, which caused a visible flash to position 0 and a
 				// cascade of PositionChanged/CurrentItemChanged events).
-				RebindVisibleLoopItem(e.OldStartingIndex, count);
+				// Iterate over the full replaced range in case the Replace event covers more
+				// than one item (e.g. from a custom INotifyCollectionChanged source).
+				var replaceCount = e.OldItems?.Count ?? 1;
+				for (int i = 0; i < replaceCount; i++)
+				{
+					RebindVisibleLoopItem(e.OldStartingIndex + i, count);
+				}
 
 				Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
 				{

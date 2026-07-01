@@ -28,5 +28,23 @@ public class Issue35643 : _IssuesUITest
 		Assert.That(App.FindElement("PositionLabel").GetText(), Is.EqualTo("2"),
 			"Position should stay at 2 after replacing the item");
 	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void CurrentItemShouldUpdateWhenCurrentItemIsReplacedInLoopMode()
+	{
+		App.WaitForElement("LoopCurrentItemLabel");
+		Assert.That(App.FindElement("LoopCurrentItemLabel").GetText(), Is.EqualTo("C"), "Initial CurrentItem should be 'C'");
+		Assert.That(App.FindElement("LoopPositionLabel").GetText(), Is.EqualTo("2"), "Initial Position should be 2");
+
+		App.ScrollTo("LoopReplaceButton");
+		App.Tap("LoopReplaceButton");
+
+		App.WaitForElement("LoopCurrentItemLabel");
+		Assert.That(App.FindElement("LoopCurrentItemLabel").GetText(), Is.EqualTo("C2"),
+			"CurrentItem should be 'C2' after replacing the item in loop mode");
+		Assert.That(App.FindElement("LoopPositionLabel").GetText(), Is.EqualTo("2"),
+			"Position should stay at 2 after replacing the item in loop mode");
+	}
 }
 #endif
