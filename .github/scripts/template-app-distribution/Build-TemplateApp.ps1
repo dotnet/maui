@@ -62,6 +62,14 @@ function Invoke-DotNetPublish([string[]]$Arguments, [string]$Description) {
     }
 }
 
+function Test-IsNet11OrLater([string]$TargetFramework) {
+    if ($TargetFramework -notmatch "^net(?<Major>\d+)\.") {
+        return $false
+    }
+
+    return [int]$Matches.Major -ge 11
+}
+
 $projectFile = Get-ChildItem -Path $ProjectPath -Filter "*.csproj" -Recurse | Select-Object -First 1
 if (-not $projectFile) {
     throw "No project file was found in '$ProjectPath'."
@@ -136,6 +144,10 @@ switch ($Platform) {
             "-p:ValidateXcodeVersion=false"
         ) + $binlogArguments
 
+        if (Test-IsNet11OrLater $TargetFramework) {
+            $arguments += "-p:UseMonoRuntime=false"
+        }
+
         if ($Publish) {
             $codesignKey = Assert-EnvironmentValue "IOS_CODESIGN_KEY"
             $codesignProvision = Assert-EnvironmentValue "IOS_CODESIGN_PROVISION"
@@ -183,6 +195,10 @@ switch ($Platform) {
             "-p:ApplicationVersion=$AppBuildNumber",
             "-p:ValidateXcodeVersion=false"
         ) + $binlogArguments
+
+        if (Test-IsNet11OrLater $TargetFramework) {
+            $arguments += "-p:UseMonoRuntime=false"
+        }
 
         if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
             $arguments += @("-r", $RuntimeIdentifier)

@@ -69,6 +69,59 @@ function Set-PlistBooleanFalse([string]$Path, [string]$Key) {
     Set-Content -Path $Path -Value $plistContent -Encoding utf8
 }
 
+function Get-DotNetMajorVersion([string]$DotNetTfm) {
+    if ($DotNetTfm -notmatch "^net(?<Major>\d+)\.") {
+        return $null
+    }
+
+    return [int]$Matches.Major
+}
+
+function Test-UsesImplicitXamlXmlns([string]$ProjectDirectory) {
+    $xamlFiles = Get-ChildItem -Path $ProjectDirectory -Filter "*.xaml" -Recurse -File
+    foreach ($xamlFile in $xamlFiles) {
+        $xaml = Get-Content -Path $xamlFile.FullName -Raw
+        $usesXamlPrefixWithoutDeclaration = $xaml -match "\bx:[A-Za-z_][A-Za-z0-9_]*" -and $xaml -notmatch "\sxmlns:x\s*="
+        $usesDefaultImplicitNamespace = $xaml -notmatch "\sxmlns\s*=" -and $xaml -match "<\s*[A-Za-z_][A-Za-z0-9_.]*"
+        if ($usesXamlPrefixWithoutDeclaration -or $usesDefaultImplicitNamespace) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Set-ProjectProperty([string]$Content, [string]$Name, [string]$Value) {
+    $propertyPattern = "(?s)<$([regex]::Escape($Name))>.*?</$([regex]::Escape($Name))>"
+    $property = "<$Name>$Value</$Name>"
+    if ($Content -match $propertyPattern) {
+        return [regex]::Replace($Content, $propertyPattern, $property, 1)
+    }
+
+    $firstPropertyGroupEnd = [regex]::Match($Content, "\r?\n\s*</PropertyGroup>")
+    if (-not $firstPropertyGroupEnd.Success) {
+        throw "Could not find a PropertyGroup in the generated project."
+    }
+
+    return $Content.Insert($firstPropertyGroupEnd.Index, "`r`n`t`t$property")
+}
+
+function Add-ProjectDefineConstant([string]$Content, [string]$Constant) {
+    $defineConstantsPattern = "(?s)<DefineConstants>(?<Value>.*?)</DefineConstants>"
+    $defineConstantsMatch = [regex]::Match($Content, $defineConstantsPattern)
+    if ($defineConstantsMatch.Success) {
+        $constants = [string]$defineConstantsMatch.Groups["Value"].Value
+        if ($constants.Split(';', [System.StringSplitOptions]::RemoveEmptyEntries) -contains $Constant) {
+            return $Content
+        }
+
+        $value = "$constants;$Constant"
+        return [regex]::Replace($Content, $defineConstantsPattern, "<DefineConstants>$value</DefineConstants>", 1)
+    }
+
+    return Set-ProjectProperty $Content "DefineConstants" "`$(DefineConstants);$Constant"
+}
+
 if (-not (Test-Path $TemplatePackagePath)) {
     throw "Template package was not found at '$TemplatePackagePath'."
 }
@@ -141,6 +194,13 @@ if ($TargetFramework.Contains("-windows", [System.StringComparison]::OrdinalIgno
 "@
 
     $content = $content -replace "</Project>\s*$", "$runtimeIdentifierOverridePropertyGroup`r`n</Project>"
+}
+
+$dotNetMajorVersion = Get-DotNetMajorVersion $DotNetTfm
+if ($dotNetMajorVersion -and $dotNetMajorVersion -ge 11 -and (Test-UsesImplicitXamlXmlns $projectDir)) {
+    Write-Host "Generated XAML uses implicit xmlns declarations; enabling MAUI implicit xmlns compatibility."
+    $content = Add-ProjectDefineConstant $content "MauiAllowImplicitXmlnsDeclaration"
+    $content = Set-ProjectProperty $content "EnablePreviewFeatures" "true"
 }
 
 Set-Content -Path $projectFile.FullName -Value $content -Encoding utf8
