@@ -52,53 +52,104 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Transform)GetValue(RenderTransformProperty); }
 		}
 
+		WeakGeometryChangedProxy _dataProxy;
+		WeakNotifyPropertyChangedProxy _renderTransformProxy;
+		EventHandler _dataChanged;
+		PropertyChangedEventHandler _renderTransformChanged;
+
+		~Path()
+		{
+			_dataProxy?.Unsubscribe();
+			_renderTransformProxy?.Unsubscribe();
+		}
+
 		static void OnGeometryPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue != null)
-			{
-				(oldValue as Geometry).PropertyChanged -= (bindable as Path).OnGeometryPropertyChanged;
+			if (newValue is Geometry geometry)
+				((Path)bindable).NotifyGeometryChanges(geometry);
+			else
+				((Path)bindable).StopNotifyingGeometryChanges();
+		}
 
-				if (oldValue is PathGeometry pathGeometry)
-					pathGeometry.InvalidatePathGeometryRequested -= (bindable as Path).OnInvalidatePathGeometryRequested;
-			}
+		void NotifyGeometryChanges(Geometry geometry)
+		{
+			_dataChanged ??= (sender, e) => OnPropertyChanged(nameof(Data));
+			_dataProxy ??= new();
+			_dataProxy.Subscribe(geometry, _dataChanged);
+		}
 
-			if (newValue != null)
-			{
-				(newValue as Geometry).PropertyChanged += (bindable as Path).OnGeometryPropertyChanged;
-
-				if (newValue is PathGeometry pathGeometry)
-					pathGeometry.InvalidatePathGeometryRequested += (bindable as Path).OnInvalidatePathGeometryRequested;
-			}
+		void StopNotifyingGeometryChanges()
+		{
+			_dataProxy?.Unsubscribe();
 		}
 
 		static void OnTransformPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue != null)
+			if (newValue is Transform transform)
+				((Path)bindable).NotifyTransformChanges(transform);
+			else
+				((Path)bindable).StopNotifyingTransformChanges();
+		}
+
+		void NotifyTransformChanges(Transform transform)
+		{
+			_renderTransformChanged ??= (sender, e) =>
 			{
-				(oldValue as Transform).PropertyChanged -= (bindable as Path).OnTransformPropertyChanged;
+				if (e.PropertyName == Transform.ValueProperty.PropertyName)
+					OnPropertyChanged(nameof(RenderTransform));
+			};
+			_renderTransformProxy ??= new();
+			_renderTransformProxy.Subscribe(transform, _renderTransformChanged);
+		}
+
+		void StopNotifyingTransformChanges()
+		{
+			_renderTransformProxy?.Unsubscribe();
+		}
+
+		class WeakGeometryChangedProxy : WeakEventProxy<Geometry, EventHandler>
+		{
+			void OnGeometryChanged(object sender, EventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+				{
+					handler(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
 			}
 
-			if (newValue != null)
+			public override void Subscribe(Geometry source, EventHandler handler)
 			{
-				(newValue as Transform).PropertyChanged += (bindable as Path).OnTransformPropertyChanged;
+				if (TryGetSource(out var s))
+				{
+					s.PropertyChanged -= OnGeometryChanged;
+
+					if (s is PathGeometry pg)
+						pg.InvalidatePathGeometryRequested -= OnGeometryChanged;
+				}
+
+				source.PropertyChanged += OnGeometryChanged;
+
+				if (source is PathGeometry pathGeometry)
+					pathGeometry.InvalidatePathGeometryRequested += OnGeometryChanged;
+
+				base.Subscribe(source, handler);
 			}
-		}
 
-		void OnGeometryPropertyChanged(object sender, PropertyChangedEventArgs args)
-		{
-			OnPropertyChanged(nameof(Data));
-		}
-
-		void OnInvalidatePathGeometryRequested(object sender, EventArgs e)
-		{
-			OnPropertyChanged(nameof(Data));
-		}
-
-		void OnTransformPropertyChanged(object sender, PropertyChangedEventArgs args)
-		{
-			if (args.PropertyName == Transform.ValueProperty.PropertyName)
+			public override void Unsubscribe()
 			{
-				OnPropertyChanged(nameof(RenderTransform));
+				if (TryGetSource(out var s))
+				{
+					s.PropertyChanged -= OnGeometryChanged;
+
+					if (s is PathGeometry pg)
+						pg.InvalidatePathGeometryRequested -= OnGeometryChanged;
+				}
+
+				base.Unsubscribe();
 			}
 		}
 
