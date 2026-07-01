@@ -439,9 +439,10 @@ Font scaling, WinUI accessible elements, and property propagation.
 
 External or caller-supplied values reaching file, path, process, parser, or navigation operations without a containment or validation step. This dimension is about concrete mechanical failures — a path escaping its directory, a value changing how a command parses — not about intent.
 
-**Every finding in this dimension MUST show a source → sink trace:** where the value originates (archive entry, URI, deep/app link, HybridWebView message, picked-file name, environment variable), the operation it reaches (file write, process argument, deserialization, navigation), and the specific missing guard. No trace → no finding.
+**Every finding in this dimension MUST show a source → sink trace:** where the value originates (archive entry, URI, deep/app link, HybridWebView message, picked-file name, environment variable), the operation it reaches (file write, process argument, deserialization, navigation), and the specific missing guard. No trace → no finding. **Exception:** the committed-credentials CHECK below is a value-at-rest concern with no runtime sink — it is exempt from the trace requirement; cite the file and line of the committed value instead.
 
 Report all findings at `[major]`. This dimension does not escalate to `[critical]`; leave any judgment about how serious or what category an issue is to the human reviewer.
+When Wave 3 trims to the top findings by severity, do not drop a committed-credential finding from this dimension solely because other dimensions contributed `[critical]` items — keep at least one representative committed-credential finding in the posted set.
 
 - CHECK: Archive/asset extraction validates each entry and verifies the resolved path stays under the destination root; bulk extraction APIs are used only for archives produced locally by the same build/test step
 - CHECK: Paths built from external or caller-supplied values are normalized and prefix-checked against the intended root, accounting for directory-boundary false matches (`/root` vs `/rootother`)
@@ -452,7 +453,7 @@ Report all findings at `[major]`. This dimension does not escalate to `[critical
 - CHECK: High-confidence real tokens, keys, connection strings, or passwords are not committed in source, test fixtures, or config (excludes obvious placeholders and sample/test data)
 
 #### Platform notes
-- **Android**: `content://`/`file://` inputs (FilePicker/MediaPicker) resolve only into app-controlled locations; provider-supplied display names are canonicalized before use as file names
+- **Android**: `content://`/`file://` inputs (FilePicker/MediaPicker) may resolve to an absolute path outside the app sandbox (shared/external storage) before any copy into app cache — treat the returned path as external and apply containment/canonicalization before using it in further path operations; provider-supplied display names are canonicalized before use as file names
 - **All**: HybridWebView web-resource handling keeps resolved asset paths under the configured app root
 
 ---
@@ -472,7 +473,7 @@ Do not waste reviewer time on these:
 | **Comment style** | Only flag if a comment is factually wrong or stale. |
 | **PR commit count/squash** | That's the author's workflow choice. |
 
-**Framing rule for all findings:** State only the concrete mechanical failure — what breaks and the input or path that triggers it. Do not categorize a finding or decide whether it belongs to a sensitive class of issue; that determination belongs to the human reviewer, not the agent. A change that appears to harden against misuse may simply be a correctness fix — never assume intent, and never editorialize about a finding's category.
+**Framing rule for all findings:** State only the concrete mechanical failure — what breaks and the input or path that triggers it. Beyond the required `**[severity] Dimension**` label, do not assign any sensitivity or risk classification and do not speculate about intent; that determination belongs to the human reviewer, not the agent. A change that appears to harden against misuse may simply be a correctness fix — never assume.
 
 ---
 
@@ -534,6 +535,8 @@ Map each changed file against this table to determine which dimensions to activa
 | `eng/cake/**`, `eng/scripts/**` | Input and Path Correctness | all |
 | `src/Controls/src/Core/HybridWebView/**`, `src/Core/src/Handlers/HybridWebView/**` | Input and Path Correctness, Cross-Platform Consistency | all |
 | `src/Core/src/Handlers/WebView/**` | Input and Path Correctness, Logic and Correctness | all |
+| `src/Essentials/src/FilePicker/**`, `src/Essentials/src/MediaPicker/**`, `src/Essentials/src/FileSystem/**` | Input and Path Correctness | all |
+| `src/Essentials/src/AppActions/**`, `src/Essentials/src/Launcher/**`, `src/Essentials/src/WebAuthenticator/**`, `src/Controls/src/Core/AppLinkEntry.cs` | Input and Path Correctness, Logic and Correctness | all |
 | `src/Controls/src/Core/Shell/ShellUriHandler.cs`, `src/Controls/src/Core/Shell/ShellNavigationManager.cs` | Input and Path Correctness, Logic and Correctness | all |
 
 ### Platform Detection
