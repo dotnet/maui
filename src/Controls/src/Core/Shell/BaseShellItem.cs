@@ -494,15 +494,15 @@ namespace Microsoft.Maui.Controls
 				{
 					selectedState.Setters.Add(new Setter
 					{
-						Property = VisualElement.BackgroundColorProperty,
-						Value = new AppThemeBinding() { Light = Colors.Black.MultiplyAlpha(0.1f), Dark = Colors.White.MultiplyAlpha(0.1f) }
+						Property = VisualElement.BackgroundProperty,
+						Value = new AppThemeBinding() { Light = new SolidColorBrush(Colors.Black.MultiplyAlpha(0.1f)), Dark = new SolidColorBrush(Colors.White.MultiplyAlpha(0.1f)) }
 					});
 				}
 
 				normalState.Setters.Add(new Setter
 				{
-					Property = VisualElement.BackgroundColorProperty,
-					Value = Colors.Transparent
+					Property = VisualElement.BackgroundProperty,
+					Value = new SolidColorBrush(Colors.Transparent)
 				});
 
 				commonGroup.States.Add(selectedState);

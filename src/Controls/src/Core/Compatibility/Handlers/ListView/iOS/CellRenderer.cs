@@ -141,8 +141,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					if (cell.RealParent is VisualElement element && element.BackgroundColor != null)
-						uiBgColor = element.BackgroundColor.ToPlatform();
+					if (cell.RealParent is VisualElement element && element.Background is SolidColorBrush solidBrush && solidBrush.Color != null)
+						uiBgColor = solidBrush.Color.ToPlatform();
 				}
 #pragma warning restore CS0618 // Type or member is obsolete
 			}

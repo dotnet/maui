@@ -283,7 +283,15 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);
+		[Obsolete("BackgroundColorProperty is obsolete. Use BackgroundProperty instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), propertyChanged: (bindable, oldvalue, newvalue) =>
+			{
+				if(bindable is VisualElement ve)
+				{
+					ve.Background = newvalue is Color color ? new SolidColorBrush(color) : null;
+				}
+			});
 
 		/// <summary>Bindable property for <see cref="Background"/>.</summary>
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
@@ -555,7 +563,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the <see cref="Color"/> which will fill the background of an element. This is a bindable property.
 		/// </summary>
-		/// <remarks>For background gradients and such, use <see cref="Background"/>.</remarks>
+		/// <remarks>Use <see cref="Background"/> instead. This property will be removed in .NET 12.</remarks>
+		[Obsolete("BackgroundColor is obsolete. Use Background instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Color BackgroundColor
 		{
 			get { return (Color)GetValue(BackgroundColorProperty); }
@@ -2023,8 +2033,6 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!Brush.IsNullOrEmpty(Background))
 					return Background;
-				if (BackgroundColor.IsNotDefault())
-					return new SolidColorBrush(BackgroundColor);
 
 				return null;
 			}

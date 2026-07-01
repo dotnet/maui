@@ -130,9 +130,9 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
-				visualElement.BackgroundColor = isSelected
-					? GetColorOrDefault(_indicatorView.SelectedIndicatorColor, Colors.Gray)
-					: GetColorOrDefault(_indicatorView.IndicatorColor, Colors.Silver);
+				visualElement.Background = new SolidColorBrush(isSelected
+						? GetColorOrDefault(_indicatorView.SelectedIndicatorColor, Colors.Gray)
+						: GetColorOrDefault(_indicatorView.IndicatorColor, Colors.Silver));
 
 
 				VisualStateManager.GoToState(visualElement, isSelected

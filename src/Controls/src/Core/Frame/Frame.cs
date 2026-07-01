@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
 
-		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
+		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundProperty);
 
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
 

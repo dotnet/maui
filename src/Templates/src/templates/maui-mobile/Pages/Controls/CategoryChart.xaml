@@ -11,7 +11,7 @@
         Style="{StaticResource CardStyle}">
     <shimmer:SfShimmer
         AutomationProperties.IsInAccessibleTree="False"
-        BackgroundColor="Transparent"
+        Background="Transparent"
         VerticalOptions="Fill"
         IsActive="{Binding IsBusy}">
         <shimmer:SfShimmer.CustomView>

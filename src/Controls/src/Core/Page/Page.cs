@@ -818,8 +818,6 @@ namespace Microsoft.Maui.Controls
 					return Background;
 				if (!ImageSource.IsNullOrEmpty(BackgroundImageSource))
 					return new ImageSourcePaint(BackgroundImageSource);
-				if (BackgroundColor.IsNotDefault())
-					return new SolidColorBrush(BackgroundColor);
 
 				return null;
 			}

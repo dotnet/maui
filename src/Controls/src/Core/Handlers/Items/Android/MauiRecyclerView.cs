@@ -328,18 +328,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return _snapManager;
 		}
 
-		// TODO hartez 2018/08/09 09:30:17 Package up background color and flow direction providers so we don't have to re-implement them here	
 		protected virtual void UpdateBackgroundColor(Color color = null)
 		{
 			if (ItemsView == null)
 				return;
 
-			var backgroundColor = color ?? ItemsView.BackgroundColor;
-
-			if (backgroundColor == null)
+			if (color == null)
 				return;
 
-			SetBackgroundColor(backgroundColor.ToPlatform());
+			SetBackgroundColor(color.ToPlatform());
 		}
 
 		protected virtual void UpdateBackground(Brush brush = null)
