@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var formatted = (FormattedString)_searchHandler.Placeholder ?? string.Empty;
 			var targetColor = _searchHandler.PlaceholderColor;
 			var placeHolderColor = targetColor ?? Microsoft.Maui.Platform.ColorExtensions.PlaceholderColor.ToColor();
-			textField.AttributedPlaceholder = formatted.ToNSAttributedString(_fontManager, defaultHorizontalAlignment: _searchHandler.HorizontalTextAlignment, defaultColor: placeHolderColor);
+			textField.AttributedPlaceholder = formatted.ToNSAttributedString(_fontManager, defaultHorizontalAlignment: _searchHandler.HorizontalTextAlignment, defaultColor: placeHolderColor, defaultLineBreakMode: LineBreakMode.WordWrap);
 
 			//Center placeholder
 			//var width = (_uiSearchBar.Frame.Width / 2) - textField.AttributedPlaceholder.Size.Width;

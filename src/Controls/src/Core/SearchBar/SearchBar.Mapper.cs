@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			{
 				// Material3 SearchBar handler mappings
 				SearchBarHandler2.Mapper.ReplaceMapping<SearchBar, SearchBarHandler2>(nameof(Text), MapText);
-				SearchBarHandler2.Mapper.ReplaceMapping<SearchBar, SearchBarHandler2>(nameof(TextTransform), MapText);
+				SearchBarHandler2.Mapper.ReplaceMapping<SearchBar, SearchBarHandler2>(nameof(TextTransform), MapTextTransform);
 			}
 			else
 			{

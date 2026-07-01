@@ -39,6 +39,16 @@ namespace Microsoft.Maui.Controls.Platform
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
+			TextTransform defaultTextTransform = TextTransform.Default)
+			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultLineBreakMode: LineBreakMode.WordWrap);
+
+		public static NSAttributedString ToNSAttributedString(
+			this FormattedString formattedString,
+			IFontManager fontManager,
+			double defaultLineHeight = -1,
+			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
+			Font? defaultFont = null,
+			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default,
 			LineBreakMode defaultLineBreakMode = LineBreakMode.WordWrap)
 			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultLineBreakMode, defaultCharacterSpacing: 0d);
@@ -74,6 +84,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return attributed;
 		}
+
+		public static NSAttributedString ToNSAttributedString(
+			this Span span,
+			IFontManager fontManager,
+			double defaultLineHeight = -1,
+			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
+			Font? defaultFont = null,
+			Color? defaultColor = null,
+			TextTransform defaultTextTransform = TextTransform.Default)
+			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultLineBreakMode: LineBreakMode.WordWrap);
 
 		public static NSAttributedString ToNSAttributedString(
 			this Span span,
