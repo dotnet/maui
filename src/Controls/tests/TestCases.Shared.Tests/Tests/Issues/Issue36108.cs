@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-// Regression guard for https://github.com/dotnet/maui/pull/36133
+// Regression guard for https://github.com/dotnet/maui/issues/36108
 // Verifies that after navigating between FlyoutItems (A → B → A), the Shell tab bar
 // and page content are still correctly rendered — guarding against the stale
 // _displayedPage guard in UpdateDisplayedPage skipping toolbar/tab configuration.
