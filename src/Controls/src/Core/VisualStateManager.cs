@@ -38,6 +38,15 @@ namespace Microsoft.Maui.Controls
 
 				foreach (var group in oldVisualStateGroupList)
 				{
+					// Detach triggers first so OnDetached() unsubscribes window events before visual cleanup.
+					foreach (var visualState in group.States)
+					{
+						foreach (var trigger in visualState.StateTriggers)
+						{
+							trigger.SendDetached();
+						}
+					}
+
 					if (group.CurrentState is { } state)
 					{
 						// Only promote system-driven states (Disabled, Focused, etc.) to full VSM priority.
@@ -62,6 +71,14 @@ namespace Microsoft.Maui.Controls
 			visualElement.ChangeVisualState();
 
 			UpdateStateTriggers(visualElement);
+
+			// Attach state triggers from the incoming groups if the element is already in a Window.
+			// Normally triggers are attached via VisualElement.InvalidateStateTriggers(true) when the
+			// element joins a Window, but that event has already fired before this replacement occurs.
+			if (newValue != null && visualElement.Window != null)
+			{
+				visualElement.InvalidateStateTriggers(true);
+			}
 		}
 
 		/// <summary>
