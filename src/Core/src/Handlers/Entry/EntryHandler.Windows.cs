@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Handlers
 		static readonly bool s_shouldBeDelayed = DeviceInfo.Idiom != DeviceIdiom.Desktop;
 		bool _set;
 
-		// Suppress Completed() for IME candidate-confirmation Enter (VirtualKey.Process at KeyDown, Enter only at KeyUp).
+		// Some Windows IMEs use Enter to confirm the current composition.
+		// Those Enter presses should not trigger Entry.Completed.
 		bool _enterKeyDownSeen;
 
 		protected override TextBox CreatePlatformView() =>
@@ -125,10 +126,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				_enterKeyDownSeen = true;
 			}
-			else
-			{
-				_enterKeyDownSeen = false;
-			}
 		}
 
 		void OnPlatformKeyUp(object? sender, KeyRoutedEventArgs args)
@@ -138,7 +135,10 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			// IME candidate-confirmation Enter has no preceding KeyDown(Enter) — suppress it.
+			// Some Windows IMEs raise KeyDown(Process) followed by KeyUp(Enter)
+			// when Enter is used to confirm an IME candidate. Since this is not a
+			// user submission, suppress Completed unless an actual Enter KeyDown
+			// preceded the KeyUp.
 			if (!_enterKeyDownSeen)
 			{
 				return;
