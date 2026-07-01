@@ -410,11 +410,21 @@ internal partial class MauiItemsView
 		var itemContainer = (ItemContainer)sender;
 
 		// Check whether this container is bound to a source slot at all.
-		// A container that has an ElementWrapper with a View IS bound — the item
-		// itself may be null (valid null data row), so we must not treat null as
-		// "no binding". We store the result so the null-item path shares the same
-		// cancel logic as the "container not yet set up" path.
+			// A container with an ElementWrapper + View is a normal (non-null) data row.
+			// A blank container (no Child) whose Tag was set during ElementPrepared is a
+			// null data row — ItemFactory returns a plain ItemContainer for null items.
+			// In both cases the drag should proceed; only containers with no Tag at all
+			// (never prepared, or cleared by ElementClearing) must cancel the drag.
 		bool hasBinding = itemContainer.Child is ElementWrapper _ew && _ew.VirtualView is View;
+
+			// Blank null-data container: ItemFactory creates an ElementWrapper-less
+			// ItemContainer for null data items. The Tag is set by ApplyDragAffordance
+			// during ElementPrepared and cleared to null by ElementClearing, so a valid
+			// int Tag means the container is currently realised for a null data row.
+			if (!hasBinding && itemContainer.Child is null && itemContainer.Tag is int)
+			{
+				hasBinding = true;
+			}
 
 		// Use the container's currently bound item first. The Tag/index can become
 		// stale after a reorder because the element is reused without being recreated.
@@ -549,9 +559,18 @@ internal partial class MauiItemsView
 
 	bool IsContainerBoundToDraggedItem(ItemContainer container)
 	{
-		// Use _draggedSourceIndex as the "drag active" sentinel so that a null
-		// _draggedItem (valid null data row) does not short-circuit the check.
-		return _draggedSourceIndex >= 0 && IsContainerBoundToItem(container, _draggedItem);
+			if (_draggedSourceIndex < 0)
+				return false;
+
+			// Blank null-data containers: use the Tag (flat repeater index) to identify
+			// the specific slot. Value equality (null == null) cannot distinguish multiple
+			// null items across groups — the Tag is the only per-slot discriminator.
+			if (container.Child is not ElementWrapper)
+			{
+				return container.Tag is int tagIndex && tagIndex == _draggedSourceIndex;
+			}
+
+			return IsContainerBoundToItem(container, _draggedItem);
 	}
 
 	static bool IsContainerBoundToItem(ItemContainer container, object? item)
