@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Platform
 
 		readonly WebViewHandler _handler;
 		readonly Rect _clipRect;
+		bool _hasSwipeViewParent;
 		volatile bool _detachPending;
 
 		// True after the first layout pass where exactly one dimension is positive and the other is zero.
@@ -60,6 +61,8 @@ namespace Microsoft.Maui.Platform
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
 			UpdateClipBounds(Width, Height);
 
+			_hasSwipeViewParent = ((View)this).GetParentOfType<MauiSwipeView>() is not null;
+
 			if (RefreshViewWebViewScrollCapture.IsInsideMauiSwipeRefreshLayout(this))
 			{
 				RefreshViewWebViewScrollCapture.Attach(this);
@@ -99,6 +102,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			base.OnDetachedFromWindow();
+			_hasSwipeViewParent = false;
 		}
 
 		void UpdateClipBounds(int width, int height)
@@ -151,7 +155,13 @@ namespace Microsoft.Maui.Platform
 			{
 				case MotionEventActions.Down:
 				case MotionEventActions.Move:
-					Parent?.RequestDisallowInterceptTouchEvent(true);
+					// Do not request disallow intercept when inside a SwipeView — that would set
+					// FLAG_DISALLOW_INTERCEPT on the SwipeView and prevent it from detecting
+					// swipe gestures
+					if (!_hasSwipeViewParent)
+					{
+						Parent?.RequestDisallowInterceptTouchEvent(true);
+					}
 					break;
 
 				case MotionEventActions.Up:
