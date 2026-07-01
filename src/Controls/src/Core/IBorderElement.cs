@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 
@@ -10,6 +11,8 @@ namespace Microsoft.Maui.Controls
 		//note to implementor: implement this property publicly
 		Color BorderColor { get; }
 		int CornerRadius { get; }
+
+		[Obsolete("BackgroundColor is obsolete. Use Background instead.")]
 		Color BackgroundColor { get; }
 		Brush Background { get; }
 		double BorderWidth { get; }
@@ -17,6 +20,8 @@ namespace Microsoft.Maui.Controls
 		//note to implementor: but implement the methods explicitly
 		void OnBorderColorPropertyChanged(Color oldValue, Color newValue);
 		bool IsCornerRadiusSet();
+
+		[Obsolete("IsBackgroundColorSet is obsolete. Use IsBackgroundSet instead.")]
 		bool IsBackgroundColorSet();
 		bool IsBackgroundSet();
 		bool IsBorderColorSet();

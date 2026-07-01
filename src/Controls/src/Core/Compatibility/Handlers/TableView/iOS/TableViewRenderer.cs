@@ -109,7 +109,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateRowHeight();
 			else if (e.PropertyName == TableView.HasUnevenRowsProperty.PropertyName)
 				SetSource();
+#pragma warning disable CS0618 // BackgroundColor — Compatibility renderer property change listener
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+#pragma warning restore CS0618
 				UpdateBackgroundView();
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -149,7 +151,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateBackgroundView()
 		{
+#pragma warning disable CS0618 // BackgroundColor — Compatibility renderer backward compatibility
 			Control.BackgroundView = Element.BackgroundColor == null ? _originalBackgroundView : null;
+#pragma warning restore CS0618
 			Control.BackgroundView.UpdateBackground(Element.Background);
 		}
 
