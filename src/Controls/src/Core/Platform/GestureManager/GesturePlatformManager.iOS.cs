@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (platformRecognizer == null)
 			{
 				if (virtualView == element)
-					return new Point((int)originPoint.X, (int)originPoint.Y);
+					return new Point(originPoint.X, originPoint.Y);
 
 				var targetViewScreenLocation = virtualView.GetLocationOnScreen();
 
@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (result == null)
 				return null;
 
-			return new Point((int)result.Value.X, (int)result.Value.Y);
+			return new Point(result.Value.X, result.Value.Y);
 		}
 
 		protected virtual List<UIGestureRecognizer?>? GetPlatformRecognizer(IGestureRecognizer recognizer)
