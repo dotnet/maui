@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		public iOSMauiAssetFileProvider(string contentRootDir)
 		{
-			_bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, contentRootDir);
+			_bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath!, contentRootDir);
 		}
 
 		public IDirectoryContents GetDirectoryContents(string subpath)

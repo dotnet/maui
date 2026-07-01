@@ -141,12 +141,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GroupNamesMustBeUniqueWithinGroupList()
+		public void GroupWithDuplicateNameReplacesExisting()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
 			var secondGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			secondGroup.States.Add(new VisualState { Name = NormalStateName });
 
-			Assert.Throws<InvalidOperationException>(() => vsgs.Add(secondGroup));
+			// Adding a group with the same name should replace the existing one, not throw
+			vsgs.Add(secondGroup);
+			Assert.Single(vsgs);
+			Assert.Same(secondGroup, vsgs[0]);
 		}
 
 		[Fact]
@@ -645,6 +649,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Transition to the custom state — custom state is NOT promoted, so ManualValueSetter still wins
 			VisualStateManager.GoToState(button, customStateName);
 			Assert.Equal(localColor, button.BackgroundColor);
+		}
+
+		[Fact]
+		public void InvalidateVisualStatesReappliesMutatedSetter()
+		{
+			var label = new Label();
+			var normalState = new VisualState { Name = NormalStateName };
+			normalState.Setters.Add(new Setter { Property = Label.TextProperty, Value = "original" });
+
+			var group = new VisualStateGroup { Name = CommonStatesGroupName };
+			group.States.Add(normalState);
+
+			var groups = new VisualStateGroupList { group };
+			VisualStateManager.SetVisualStateGroups(label, groups);
+
+			// Initial state should be applied
+			Assert.Equal("original", label.Text);
+
+			// Mutate the setter in-place — the label should NOT update yet
+			normalState.Setters[0].Value = "mutated";
+			Assert.Equal("original", label.Text);
+
+			// After InvalidateVisualStates, the new value should be applied
+			VisualStateManager.InvalidateVisualStates(label);
+			Assert.Equal("mutated", label.Text);
+		}
+
+		[Fact]
+		public void InvalidateVisualStatesWithNoGroupsDoesNotThrow()
+		{
+			var label = new Label();
+			var exception = Record.Exception(() => VisualStateManager.InvalidateVisualStates(label));
+			Assert.Null(exception);
+		}
+
+		[Fact]
+		public void InvalidateVisualStatesWithNoCurrentStateDoesNotThrow()
+		{
+			var label = new Label();
+			var groups = CreateStateGroupsWithoutNormalState();
+			VisualStateManager.SetVisualStateGroups(label, groups);
+
+			// No current state is set (no Normal state)
+			var exception = Record.Exception(() => VisualStateManager.InvalidateVisualStates(label));
+			Assert.Null(exception);
 		}
 	}
 }

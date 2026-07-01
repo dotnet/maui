@@ -150,8 +150,7 @@ RunTarget(TARGET);
 void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	bool isUsingCoreClr = useCoreClr.ToString().Equals("true", StringComparison.CurrentCultureIgnoreCase);
-	var monoRuntime = isUsingCoreClr ? "coreclr" : "mono";
+	var monoRuntime = useCoreClr ? "coreclr" : "mono";
 	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-android.binlog";
 
 	DotNetBuild(project, new DotNetBuildSettings
@@ -168,7 +167,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 			args.Append("/p:EmbedAssembliesIntoApk=true")
 				.Append("/bl:" + binlog);
 
-			if (isUsingCoreClr)
+			if (useCoreClr)
 			{
 				args.Append("/p:UseMonoRuntime=false");
 			}

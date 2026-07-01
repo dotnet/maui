@@ -74,13 +74,13 @@ jobs:
     # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
     ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
       name: AzurePipelines-EO
-      image: 1ESPT-Windows2022
+      image: 1ESPT-Windows2025
       demands: Cmd
       os: windows
     # If it's not devdiv, it's dnceng
     ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
       name: NetCore1ESPool-Publishing-Internal
-      image: windows.vs2019.amd64
+      image: windows.vs2026.amd64
       os: windows
   steps:
   - ${{ if eq(parameters.is1ESPipeline, '') }}:
@@ -91,8 +91,8 @@ jobs:
       fetchDepth: 3
       clean: true
 
-    - ${{ if eq(parameters.isAssetlessBuild, 'false') }}: 
-      - ${{ if eq(parameters.publishingVersion, 3) }}: 
+    - ${{ if eq(parameters.isAssetlessBuild, 'false') }}:
+      - ${{ if eq(parameters.publishingVersion, 3) }}:
         - task: DownloadPipelineArtifact@2
           displayName: Download Asset Manifests
           inputs:
@@ -117,7 +117,7 @@ jobs:
             flattenFolders: true
           condition: ${{ parameters.condition }}
           continueOnError: ${{ parameters.continueOnError }}
-    
+
     - task: NuGetAuthenticate@1
 
     # Populate internal runtime variables.
@@ -125,7 +125,7 @@ jobs:
       ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
         parameters:
             legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
-    
+
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
     - task: AzureCLI@2
@@ -145,7 +145,7 @@ jobs:
 
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
-    
+
     - task: powershell@2
       displayName: Create ReleaseConfigs Artifact
       inputs:
@@ -172,17 +172,18 @@ jobs:
             targetPath: '$(Build.ArtifactStagingDirectory)/MergedManifest.xml'
             artifactName: AssetManifests
             displayName: 'Publish Merged Manifest'
-            retryCountOnTaskFailure: 10 # for any logs being locked
-            sbomEnabled: false  # we don't need SBOM for logs
+            retryCountOnTaskFailure: 10 # for any files being locked
+            isProduction: false # just metadata for publishing
 
-    - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+    - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
       parameters:
         is1ESPipeline: ${{ parameters.is1ESPipeline }}
         args:
           displayName: Publish ReleaseConfigs Artifact
-          pathToPublish: '$(Build.StagingDirectory)/ReleaseConfigs'
-          publishLocation: Container
+          targetPath: '$(Build.StagingDirectory)/ReleaseConfigs'
           artifactName: ReleaseConfigs
+          retryCountOnTaskFailure: 10 # for any files being locked
+          isProduction: false # just metadata for publishing
 
     - ${{ if or(eq(parameters.publishAssetsImmediately, 'true'), eq(parameters.isAssetlessBuild, 'true')) }}:
       - template: /eng/common/core-templates/post-build/setup-maestro-vars.yml
@@ -190,7 +191,7 @@ jobs:
           BARBuildId: ${{ parameters.BARBuildId }}
           PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
           is1ESPipeline: ${{ parameters.is1ESPipeline }}
-
+          
       # Darc is targeting 8.0, so make sure it's installed
       - task: UseDotNet@2
         inputs:
@@ -218,4 +219,5 @@ jobs:
       - template: /eng/common/core-templates/steps/publish-logs.yml
         parameters:
           is1ESPipeline: ${{ parameters.is1ESPipeline }}
-          JobLabel: 'Publish_Artifacts_Logs'     
+          StageLabel: 'BuildAssetRegistry'
+          JobLabel: 'Publish_Artifacts_Logs'

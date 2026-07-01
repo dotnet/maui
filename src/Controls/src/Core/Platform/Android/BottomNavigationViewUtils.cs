@@ -27,11 +27,32 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		internal const int MoreTabId = 99;
 
+		/// <summary>
+		/// Maximum number of items allowed in the bottom navigation bar.
+		/// Newer versions of the Xamarin.Google.Android.Material package report
+		/// <c>BottomNavigationView.MaxItemCount</c> as 6, whereas older versions returned 5.
+		/// Clamped to 5 for consistent behavior regardless of the Material library version.
+		/// See https://github.com/dotnet/maui/pull/33450
+		/// </summary>
+		internal const int MaxBottomNavigationItems = 5;
+
 		public static Drawable CreateItemBackgroundDrawable()
 		{
 			var stateList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.2f).ToPlatform());
 			var colorDrawable = new ColorDrawable(AColor.White);
 			return new RippleDrawable(stateList, colorDrawable, null);
+		}
+
+		internal static Drawable CreateItemBackgroundDrawable(Context context)
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled)
+			{
+				return CreateItemBackgroundDrawable();
+			}
+
+			var rippleColor = new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface, 0.10f));
+			var stateList = ColorStateList.ValueOf(rippleColor);
+			return new RippleDrawable(stateList, new ColorDrawable(AColor.Transparent), null);
 		}
 
 		internal static void UpdateEnabled(bool tabEnabled, IMenuItem menuItem)
@@ -71,6 +92,7 @@ namespace Microsoft.Maui.Controls.Platform
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext)
 		{
+			maxBottomItems = Math.Min(maxBottomItems, MaxBottomNavigationItems);
 			Context context = mauiContext.Context;
 
 			while (items.Count < menu.Size())
@@ -162,7 +184,7 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext mauiContext,
 			List<(string title, ImageSource icon, bool tabEnabled)> items)
 		{
-			return CreateMoreBottomSheet(selectCallback, mauiContext, items, 5);
+			return CreateMoreBottomSheet(selectCallback, mauiContext, items, MaxBottomNavigationItems);
 		}
 
 		internal static BottomSheetDialog CreateMoreBottomSheet(
@@ -171,6 +193,7 @@ namespace Microsoft.Maui.Controls.Platform
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
 			int maxItemCount)
 		{
+			maxItemCount = Math.Min(maxItemCount, MaxBottomNavigationItems);
 			var context = mauiContext.Context;
 			var bottomSheetDialog = new BottomSheetDialog(context);
 			var bottomSheetLayout = new LinearLayout(context);
@@ -187,7 +210,7 @@ namespace Microsoft.Maui.Controls.Platform
 				using (var innerLayout = new LinearLayout(context))
 				{
 					innerLayout.ClipToOutline = true;
-					innerLayout.SetBackground(CreateItemBackgroundDrawable());
+					innerLayout.SetBackground(CreateItemBackgroundDrawable(context));
 					innerLayout.SetPadding(0, (int)context.ToPixels(6), 0, (int)context.ToPixels(6));
 					innerLayout.Orientation = Orientation.Horizontal;
 					using (var param = new LP(LP.MatchParent, LP.WrapContent))
@@ -215,7 +238,10 @@ namespace Microsoft.Maui.Controls.Platform
 					image.LayoutParameters = lp;
 					lp.Dispose();
 
-					image.ImageTintList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.6f).ToPlatform());
+					image.ImageTintList = ColorStateList.ValueOf(
+						RuntimeFeature.IsMaterial3Enabled
+							? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
+							: Colors.Black.MultiplyAlpha(0.6f).ToPlatform());
 
 					shellContent.icon.LoadImage(mauiContext, result =>
 					{
@@ -227,7 +253,10 @@ namespace Microsoft.Maui.Controls.Platform
 					using (var text = new TextView(context))
 					{
 						text.SetTypeface(Typeface.Create("sans-serif-medium", TypefaceStyle.Normal), TypefaceStyle.Normal);
-						text.SetTextColor(AColor.Black);
+						text.SetTextColor(
+							RuntimeFeature.IsMaterial3Enabled
+								? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
+								: AColor.Black);
 						text.Text = shellContent.title;
 						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
 						{

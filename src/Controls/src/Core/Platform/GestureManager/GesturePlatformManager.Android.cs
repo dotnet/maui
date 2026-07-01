@@ -15,7 +15,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IDisposable
+	class GesturePlatformManager : IGesturePlatformManager
 	{
 		IViewHandler? _handler;
 		Lazy<ScaleGestureDetector> _scaleDetector;
@@ -142,7 +142,8 @@ namespace Microsoft.Maui.Controls.Platform
 				new PanGestureHandler(() => View),
 				new SwipeGestureHandler(() => View),
 				InitializeDragAndDropHandler(),
-				pointerHandler
+				pointerHandler,
+				new LongPressGestureHandler(() => _handler, () => View)
 			);
 
 			var detector = new TapAndPanGestureDetector(context, listener);
@@ -241,8 +242,8 @@ namespace Microsoft.Maui.Controls.Platform
 					platformView.Touch += OnPlatformViewTouched;
 				}
 
-				// If we have a TapGestureRecognizer, we need to handle key presses
-				if (View.HasAccessibleTapGesture())
+				// If we have a TapGestureRecognizer or LongPressGestureRecognizer, we need to handle key presses
+				if (View.HasAccessibleTapGesture() || View.HasAccessibleLongPressGesture())
 				{
 					platformView.KeyPress += OnKeyPress;
 					_focusableDefaultValue ??= platformView.Focusable;
@@ -269,9 +270,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			if (e.KeyCode.IsConfirmKey() &&
-				View.HasAccessibleTapGesture(out var tapGestureRecognizer) &&
-				e.Event.HasNoModifiers)
+			if (e.KeyCode.IsConfirmKey() && e.Event.HasNoModifiers)
 			{
 				if (!platformView.Enabled)
 				{
@@ -280,7 +279,15 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				if (!e.Event.IsCanceled)
-					tapGestureRecognizer.SendTapped(View, (v) => Point.Zero);
+				{
+					// Prefer Tap over LongPress for accessibility key activation.
+					// A confirm key press is a discrete action that maps to Tap semantics.
+					// LongPress only fires if no Tap recognizer exists.
+					if (View.HasAccessibleTapGesture(out var tapGestureRecognizer))
+						tapGestureRecognizer.SendTapped(View, (v) => Point.Zero);
+					else if (View.HasAccessibleLongPressGesture(out var longPressGestureRecognizer))
+						longPressGestureRecognizer.SendLongPressed(View, (v) => Point.Zero);
+				}
 			}
 
 			e.Handled = false;

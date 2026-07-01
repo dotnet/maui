@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages.ScrollViewPages
 			InitializeComponent();
 		}
 
-		private void OnCounterClicked(object sender, EventArgs e)
+		private void OnCounterClicked(object? sender, EventArgs e)
 		{
 			count++;
 

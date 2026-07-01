@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
 			RectF pathBounds;
 
-			if (result.Width != 0 && result.Height != 0)
+			if (result.Width != 0 && result.Height != 0 && result.Width > Margin.HorizontalThickness && result.Height > Margin.VerticalThickness)
 			{
 				return result;
 			}
@@ -507,6 +507,12 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			result.Height += StrokeThickness;
 			result.Width += StrokeThickness;
+			if (this is Line or Path or Polyline)
+			{
+				result.Height += Margin.VerticalThickness;
+				result.Width += Margin.HorizontalThickness;
+			}
+
 			return result;
 		}
 
@@ -531,50 +537,6 @@ namespace Microsoft.Maui.Controls.Shapes
 				// If the shape has never been arranged, then Height won't actually have a value;
 				// use the fallback value instead.
 				return height == -1 ? _fallbackHeight : height;
-			}
-		}
-
-		class WeakBrushChangedProxy : WeakEventProxy<Brush, EventHandler>
-		{
-			void OnBrushChanged(object? sender, EventArgs e)
-			{
-				if (TryGetHandler(out var handler))
-				{
-					handler(sender, e);
-				}
-				else
-				{
-					Unsubscribe();
-				}
-			}
-
-			public override void Subscribe(Brush source, EventHandler handler)
-			{
-				if (TryGetSource(out var s))
-				{
-					s.PropertyChanged -= OnBrushChanged;
-
-					if (s is GradientBrush g)
-						g.InvalidateGradientBrushRequested -= OnBrushChanged;
-				}
-
-				source.PropertyChanged += OnBrushChanged;
-				if (source is GradientBrush gradientBrush)
-					gradientBrush.InvalidateGradientBrushRequested += OnBrushChanged;
-
-				base.Subscribe(source, handler);
-			}
-
-			public override void Unsubscribe()
-			{
-				if (TryGetSource(out var s))
-				{
-					s.PropertyChanged -= OnBrushChanged;
-
-					if (s is GradientBrush g)
-						g.InvalidateGradientBrushRequested -= OnBrushChanged;
-				}
-				base.Unsubscribe();
 			}
 		}
 	}
