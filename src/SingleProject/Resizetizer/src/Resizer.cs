@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -75,21 +77,52 @@ namespace Microsoft.Maui.Resizetizer
 			return new ResizedImageInfo { Filename = destination, Dpi = dpi };
 		}
 
-		static bool IsUpToDate(string inputFile, string outputFile, string inputsFile, ILogger logger)
+		internal static bool IsUpToDate(string inputFile, string outputFile, string inputsFile, ILogger logger)
 		{
-			var fileIn = new FileInfo(inputFile);
-			var fileOut = new FileInfo(outputFile);
-			var fileInputs = inputsFile is null ? null : new FileInfo(inputsFile);
+			var fileInputs = string.IsNullOrEmpty(inputsFile) ? null : new FileInfo(inputsFile);
+			if (fileInputs?.Exists != true)
+				return false;
 
-			if (fileIn.Exists && fileOut.Exists && fileInputs?.Exists == true
-				&& fileIn.LastWriteTimeUtc <= fileOut.LastWriteTimeUtc
-				&& fileInputs.LastWriteTimeUtc <= fileOut.LastWriteTimeUtc)
+			return IsUpToDate(new[] { inputFile }, outputFile, inputsFile, logger, inputFile);
+		}
+
+		internal static bool IsUpToDate(IEnumerable<string> inputFiles, string outputFile, string inputsFile, ILogger logger, string inputDescription = null)
+		{
+			var fileOut = new FileInfo(outputFile);
+			if (!fileOut.Exists)
+				return false;
+
+			var newestInput = DateTime.MinValue;
+			var hasInput = false;
+
+			foreach (var inputFile in inputFiles)
 			{
-				logger.Log($"Skipping '{inputFile}' as output '{outputFile}' is already up to date.");
-				return true;
+				if (string.IsNullOrEmpty(inputFile))
+					continue;
+
+				var fileIn = new FileInfo(inputFile);
+				if (!fileIn.Exists)
+					continue;
+
+				hasInput = true;
+				if (fileIn.LastWriteTimeUtc > newestInput)
+					newestInput = fileIn.LastWriteTimeUtc;
 			}
 
-			return false;
+			var fileInputs = string.IsNullOrEmpty(inputsFile) ? null : new FileInfo(inputsFile);
+			if (fileInputs?.Exists == true)
+			{
+				hasInput = true;
+				if (fileInputs.LastWriteTimeUtc > newestInput)
+					newestInput = fileInputs.LastWriteTimeUtc;
+			}
+
+			if (!hasInput || newestInput > fileOut.LastWriteTimeUtc)
+				return false;
+
+			var description = string.IsNullOrEmpty(inputDescription) ? "inputs" : inputDescription;
+			logger.Log($"Skipping '{description}' as output '{outputFile}' is already up to date.");
+			return true;
 		}
 
 		public ResizedImageInfo Resize(DpiPath dpi, string inputsFile)

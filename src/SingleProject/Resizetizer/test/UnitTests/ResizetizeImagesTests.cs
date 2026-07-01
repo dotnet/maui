@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			protected ITaskItem GetCopiedResource(ResizetizeImages task, string path) =>
 				task.CopiedResources.Single(c => c.ItemSpec.Replace('\\', '/').EndsWith(path, StringComparison.Ordinal));
+
 		}
 
 		public abstract class ExecuteForPlatformApp : ExecuteForApp
@@ -564,6 +565,61 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				Assert.True(differentPixels > 0,
 					"End-to-end: Fastest and Auto must produce different pixel output");
+			}
+
+			[Fact]
+			public void AppIconResizeQualityMetadataChangeRegeneratesIncrementalOutputs()
+			{
+				var inputsFile = Path.Combine(DestinationDirectory, "mauiimage.inputs");
+				var appIconFile = "mipmap-mdpi/quality_icon.png";
+				var adaptiveForegroundFile = "mipmap-mdpi/quality_icon_foreground.png";
+
+				Directory.CreateDirectory(DestinationDirectory);
+				File.WriteAllText(inputsFile, "ResizeQuality=Fastest");
+				var itemsFastest = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = "quality_icon",
+						["ResizeQuality"] = "Fastest",
+					}),
+				};
+
+				var task = GetNewTask(itemsFastest);
+				task.InputsFile = inputsFile;
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				var fastestAppIconPixels = ReadPixels(appIconFile);
+				var fastestAdaptiveForegroundPixels = ReadPixels(adaptiveForegroundFile);
+				var appIconOutput = Path.Combine(DestinationDirectory, appIconFile);
+
+				File.WriteAllText(inputsFile, "ResizeQuality=Auto");
+				File.SetLastWriteTimeUtc(inputsFile, File.GetLastWriteTimeUtc(appIconOutput).AddSeconds(2));
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+
+				var itemsAuto = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = "quality_icon",
+						["ResizeQuality"] = "Auto",
+					}),
+				};
+
+				task = GetNewTask(itemsAuto);
+				task.InputsFile = inputsFile;
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertPixelsDiffer(fastestAppIconPixels, ReadPixels(appIconFile),
+					"App icon output should regenerate when only ResizeQuality metadata changes.");
+				AssertPixelsDiffer(fastestAdaptiveForegroundPixels, ReadPixels(adaptiveForegroundFile),
+					"Adaptive icon foreground output should regenerate when only ResizeQuality metadata changes.");
 			}
 
 			[Fact]

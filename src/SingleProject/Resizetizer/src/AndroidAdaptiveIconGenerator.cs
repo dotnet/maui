@@ -7,17 +7,20 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class AndroidAdaptiveIconGenerator
 	{
-		public AndroidAdaptiveIconGenerator(ResizeImageInfo info, string appIconName, string intermediateOutputPath, ILogger logger)
+		public AndroidAdaptiveIconGenerator(ResizeImageInfo info, string appIconName, string intermediateOutputPath, string inputsFile, ILogger logger)
 		{
 			Info = info;
 			Logger = logger;
 			IntermediateOutputPath = intermediateOutputPath;
 			AppIconName = appIconName;
+			InputsFile = inputsFile;
 		}
 
 		public ResizeImageInfo Info { get; }
 
 		public string IntermediateOutputPath { get; }
+
+		public string InputsFile { get; }
 
 		public ILogger Logger { get; private set; }
 
@@ -65,7 +68,7 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessBackground(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var backgroundFile = Info.Filename;
-			var (backgroundExists, backgroundModified) = Utils.FileExists(backgroundFile);
+			var (backgroundExists, _) = Utils.FileExists(backgroundFile);
 			var backgroundDestFilename = AppIconName + "_background.png";
 
 			if (backgroundExists)
@@ -77,12 +80,10 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, backgroundDestFilename);
-				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				if (destinationModified > backgroundModified)
+				if (Resizer.IsUpToDate(new[] { backgroundFile }, destination, InputsFile, Logger, backgroundFile))
 				{
-					Logger.Log($"Skipping `{backgroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessForeground(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var foregroundFile = Info.ForegroundFilename;
-			var (foregroundExists, foregroundModified) = Utils.FileExists(foregroundFile);
+			var (foregroundExists, _) = Utils.FileExists(foregroundFile);
 			var foregroundDestFilename = AppIconName + "_foreground.png";
 
 			if (foregroundExists)
@@ -121,12 +122,10 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, foregroundDestFilename);
-				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				if (destinationModified > foregroundModified)
+				if (Resizer.IsUpToDate(new[] { foregroundFile }, destination, InputsFile, Logger, foregroundFile))
 				{
-					Logger.Log($"Skipping `{foregroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}
@@ -153,7 +152,7 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessMonochrome(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var monochromeFile = Info.MonochromeFilename;
-			var (monochromeExists, monochromeModified) = Utils.FileExists(monochromeFile);
+			var (monochromeExists, _) = Utils.FileExists(monochromeFile);
 			var monochromeDestFilename = AppIconName + "_monochrome.png";
 
 			if (monochromeExists)
@@ -165,12 +164,10 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, monochromeDestFilename);
-				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				if (destinationModified > monochromeModified)
+				if (Resizer.IsUpToDate(new[] { monochromeFile }, destination, InputsFile, Logger, monochromeFile))
 				{
-					Logger.Log($"Skipping `{monochromeFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}

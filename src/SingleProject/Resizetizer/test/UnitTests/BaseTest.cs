@@ -62,6 +62,19 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(File.Exists(file), $"File did not exist: {file}");
 		}
 
+		protected SKColor[] ReadPixels(string file)
+		{
+			file = Path.Combine(DestinationDirectory, file);
+			using var bitmap = SKBitmap.Decode(file);
+			return bitmap.Pixels.ToArray();
+		}
+
+		protected static void AssertPixelsDiffer(SKColor[] expected, SKColor[] actual, string because)
+		{
+			Assert.Equal(expected.Length, actual.Length);
+			Assert.True(expected.Where((pixel, index) => pixel != actual[index]).Any(), because);
+		}
+
 		protected void AssertFileNotExists(string file)
 		{
 			file = Path.Combine(DestinationDirectory, file);
@@ -188,7 +201,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			return Path.Combine(TestImagesFolderName, name, methodName, filename);
 		}
 
-		private static string GetTestProjectRoot()
+		protected static string GetTestProjectRoot()
 		{
 			var cwd = Directory.GetCurrentDirectory();
 
