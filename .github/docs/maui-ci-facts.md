@@ -85,33 +85,117 @@ XHarness (iOS/Android device tests in `maui-pr-devicetests`) **exits with code 0
 when tests fail**. So the AzDO job shows ✅ "Succeeded", `ci-analysis` may report no
 failures, but real failures are hidden inside the Helix work items.
 
-**Detect hidden failures** via the Helix aggregated endpoint:
+**Detect hidden failures** via the Helix per-job **work-items** endpoint:
 
 ```
-GET https://helix.dot.net/api/2019-06-17/jobs/{correlationId}/aggregated
+GET https://helix.dot.net/api/2019-06-17/jobs/{correlationId}/workitems
 ```
 
-Look for `Failed` > 0 even when the AzDO build job is green. Always cross-check this
-for `maui-pr-devicetests` when a job is green but device-test failures are suspected
-(or the PR carries `s/agent-gate-failed`). If Helix aggregate data is absent, state
-that device-test hidden failures could not be verified — do not assume green = clean.
+> ⚠️ The older `/aggregated` endpoint returns **HTTP 404 anonymously** (verified against
+> live maui jobs) — it is unreachable from the gh-aw runner, so do not rely on it. The
+> per-job `/workitems` endpoint **is** reachable anonymously and returns one entry per
+> work item, each carrying an `ExitCode` (int) and `State` (`Finished`/`Running`/...).
+> Job detail (`GET .../jobs/{correlationId}`, also anonymous) supplies `InitialWorkItemCount`
+> and the job-level `Finished` timestamp.
+
+A work item **failed** when it `Finished` with a non-zero `ExitCode`, even when the AzDO
+build job is green. Always cross-check this for `maui-pr-devicetests` when a job is green
+but device-test failures are suspected (or the PR carries `s/agent-gate-failed`). If Helix
+work-item data is absent, state that device-test hidden failures could not be verified —
+do not assume green = clean.
+
+> 🔎 **Job correlation is from the build's own logs, not a Helix query.** The Helix job
+> `Build` property is **blank** for maui, so jobs cannot be correlated to an AzDO build via
+> Helix; a `Source`+time-window query over-discovers (it mixes the concurrent `maui-pr-uitests`
+> and `maui-pr-devicetests` jobs of the *same* PR, and even other builds in the window). The
+> gatherer instead scans **every** `Run DeviceTests` leg's log (green **and** failed) for its
+> `Sent Helix Job ... /jobs/{id}/workitems` line — a green leg's hidden work-item failure
+> would otherwise never be discovered.
 
 **Deterministic enforcement in `/review tests`.** Because XHarness exit-0 makes a green
 device-test check untrustworthy, the gatherer **force-inspects every device-test build**
 (green or not) and only treats a green `maui-pr-devicetests` check as clean when it can
-**positively confirm `Failed == 0`** — either a Helix aggregated read where a fail count
-was observed and all were zero, or the authenticated test-API (when a token is present).
+**positively confirm `Failed == 0`** — either every discovered Helix job's `/workitems`
+set was read clean, or the authenticated test-API (when a token is present).
 That confirmation requires a **complete, error-free read**: every discovered Helix job's
-aggregate must be read without a thrown error (a job whose read fails may have carried the
-hidden failures), and the test-API path **pages through every test run** via the
+work-item set must be read without a thrown error (a job whose read fails may have carried the
+hidden failures) **and** must be *complete* — a job is left **unverified** (which caps the
+verdict) when any work item is not yet `Finished` or reports no `ExitCode`, when the job
+itself never `Finished`, or when fewer work items were returned than the job's
+`InitialWorkItemCount`. The test-API path **pages through every test run** via the
 `x-ms-continuationtoken` header and refuses to confirm when the run set was truncated (a
 retried device build publishes a new run per attempt, so a failing run can sit in an unread
-page tail). When no positive confirmation is available — the common case in the gh-aw runner, which
-has **no AzDO token**, and where the anonymous AzDO test-results API redirects to sign-in —
+page tail). When no positive confirmation is available — e.g. an unreadable/incomplete Helix
+read, or when the anonymous AzDO test-results API redirects to sign-in —
 the green device-test check is counted as `gate.deviceTestUnverified` and **hard-caps the
 verdict ceiling at `Needs human investigation`**. A green device-test check is never a
 false green. (SKIPPED device-test checks did not run, so they do not cap; RED ones are
 ordinary failing checks.)
+
+**Deep work-item read (Phase 2): turn opaque device-test failures into attributable detail.**
+A failed Helix work item exposes its uploaded files **fully anonymously**, so the gatherer
+deep-reads them instead of emitting one opaque "hidden failure" line:
+
+```
+GET https://helix.dot.net/api/2019-06-17/jobs/{correlationId}/workitems/{workItemName}
+```
+
+returns a `Files[]` array (each `{ FileName, Uri }`) plus a `ConsoleOutputUri`. Each file
+`Uri` (`.../workitems/{name}/files/{file}?api-version=2019-06-17`) responds **HTTP 302 → an
+Azure blob** whose SAS token is embedded in the redirect, so following the redirect needs **no
+auth** (verified live). The useful files are:
+
+- the aggregated `testResults.xml` when present; otherwise the per-category `TestResults-*.xml`
+  files (xUnit v2 `<assemblies><assembly total/passed/failed/skipped/errors><test
+  result="Pass|Fail|Skip">`), which the gatherer merges. Assembly/collection-level
+  `<errors><error>` nodes (fixture/cleanup crashes that carry no `<test result="Fail">`) are also
+  counted as named failures so a fixture crash can't vanish. The xUnit parse runs through an
+  `XmlReader` with `DtdProcessing=Prohibit` + `XmlResolver=$null`, so a malicious/garbled inline
+  `<!DOCTYPE>` (billion-laughs / XXE) safely fails the parse to NHI rather than expanding.
+- `console.*.log` — carries the real failure reason (e.g. `[FAIL] Timeout waiting for
+  HybridWebView test results after 480 seconds`, an unhandled exception, or a non-zero exit line).
+- a `*.dmp` crash dump when the host crashed.
+
+> ⚠️ **Content-type gotcha (decode bug, fixed).** Azure blob serves the `.xml` result files as
+> `application/octet-stream`, so `Invoke-WebRequest`'s `.Content` is a **`byte[]`** — a plain
+> `[string]` cast stringifies it as space-joined decimal byte values (`"60 63 120 …"`) and breaks
+> XML parsing. Decode bytes as UTF-8 and strip any leading BOM (which would also make
+> `XmlDocument.LoadXml` throw). `console.*.log` is served as `text/plain`, so its `.Content` is
+> already a string — that asymmetry is why a console read can succeed while a TRX read silently
+> returns nothing if bytes aren't handled.
+
+**This NEVER relaxes the verdict cap.** A non-zero-ExitCode work item still hard-caps the verdict
+at *Needs human investigation*; the deep read only makes it **intelligible**. Real `result="Fail"`
+tests become NAMED records (`source = helix-trx`) that flow through the normal dedup / base-exact-
+match / known-issue attribution — so a named device-test failure that also fails on base can
+dismiss as pre-existing, exactly like any other test. But an **incomplete** run ALSO emits a
+capping `helix-workitem-incomplete` record **in addition to** any named failures — because a run
+that didn't finish can mask a PR-caused failure in tests that never ran, so even if every named
+failure dismisses on base the work item stays NHI. A run is treated as incomplete when **any** of:
+the console shows it was killed/hung/crashed; a `*.dmp` crash dump **or** a crash signal (`core
+dumped` / `segfault` / `.dmp`) is present (a SIGSEGV can flush a partial result file then kill the
+run — so a crash forces the cap *even when some tests were named*); no result file was readable;
+the result files read were themselves incomplete (a per-category file failed to download/parse, the
+category list overflowed the read cap, or the file **declared** more failures than we could
+extract); or the work item exited non-zero with **zero** named failures. A device-test work item is
+**never** a false green.
+
+> 🔒 **Never-false-green coupling — keep these in sync (load-bearing).** The Phase-2
+> incompleteness cap narrows `isIncomplete` to markers that *prove* a run didn't finish, and that
+> narrowing is **coupled to the Windows runner's exact echo strings**:
+> - `[FAIL] Timeout waiting for <category> test results after N seconds` — `eng/devices/run-windows-devicetests.cmd:503` (an unfinished category)
+> - `All test processes may have crashed` — `run-windows-devicetests.cmd:430` (a total wipeout)
+> - `Test execution completed with exit code: N` — `run-windows-devicetests.cmd:481` is **deliberately EXCLUDED** from the cap: the cmd echoes it **unconditionally** on every non-zero run (it only ever `exit /b 0|1`), so treating it as incompleteness over-caps *every* failed Windows work item and never lets a cleanly-named failure flow to base/known-issue attribution.
+>
+> The first two strings are the *independent* incompleteness markers in `Get-ConsoleFailureReason`'s
+> `$incompleteRegex`. **If anyone rewords them in the cmd, mirror the change in
+> `$incompleteRegex` (`Gather-TestFailureContext.ps1`)** — otherwise the cap silently weakens **with
+> no test failing** (the coupling is enforced only by comments + this note, not by a shared
+> constant). Also: any **new** call site that reads a `console.*.log` via `Invoke-HelixFileText` to
+> judge completeness **must** pass `-Truncated ([ref]$flag)` and OR that flag into the incomplete
+> cap — a console read without it reopens the head-only-`[FAIL]` truncation window (a >4 MB XHarness
+> console keeps only the HEAD, where per-test `[FAIL]` lines live, and drops the TAIL where the
+> timeout/crash marker prints).
 
 ### Container artifact binlogs
 
