@@ -37,8 +37,9 @@ end
 
 def testflight_processing_timeout?(error)
   message = error.to_s
-  message.include?("processing") &&
-    (message.include?("timeout") || message.include?("timed out") || message.include?("waited"))
+  message.include?("BuildWatcher exceeded") ||
+    (message.include?("processing") &&
+      (message.include?("timeout") || message.include?("timed out") || message.include?("waited")))
 end
 
 default_platform(:ios)
