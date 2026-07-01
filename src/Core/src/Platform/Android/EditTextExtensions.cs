@@ -382,6 +382,11 @@ namespace Microsoft.Maui.Platform
 				if (editText.InputType.HasFlag(InputTypes.ClassNumber))
 					editText.InputType |= InputTypes.NumberVariationPassword;
 			}
+			else if (textInput is IEntry)
+			{
+				editText.InputType &= ~InputTypes.TextVariationPassword;
+				editText.InputType &= ~InputTypes.NumberVariationPassword;
+			}
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
