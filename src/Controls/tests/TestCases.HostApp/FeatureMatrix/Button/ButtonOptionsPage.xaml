@@ -10,11 +10,11 @@
                            Clicked="ApplyButton_Clicked"
                            AutomationId="Apply"/>
        </ContentPage.ToolbarItems>
-       <Grid ColumnSpacing="3"
-             RowSpacing="-2"
-             Padding="1"
-             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-             ColumnDefinitions="Auto,Auto">
+              <Grid ColumnSpacing="3"
+                    RowSpacing="-2"
+                    Padding="1"
+                    RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+                    ColumnDefinitions="Auto,Auto">
 
               <!-- Text -->
               <Label Grid.Row="0"
