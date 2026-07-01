@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(ImageSource))]
-	class ImageBrush : Brush
+	public class ImageBrush : Brush
 	{
 		public ImageBrush()
 		{

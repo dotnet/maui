@@ -221,8 +221,17 @@ namespace Microsoft.Maui.Platform
 				platformView.UpdateBorderStroke(border);
 		}
 
-		public static void UpdateBackground(this AView platformView, IView view) =>
+		public static void UpdateBackground(this AView platformView, IView view)
+		{
+			if (view.Background is ImageSourcePaint image)
+			{
+				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
+				return;
+			}
+
 			platformView.UpdateBackground(view, false);
+		}
 
 		internal static void UpdateBackground(this AView platformView, IView view, bool treatTransparentAsNull) =>
 			platformView.UpdateBackground(view.Background, treatTransparentAsNull);
