@@ -375,23 +375,13 @@ namespace Microsoft.Maui.Platform
 				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
 
-			if (textInput is IEntry entry && entry.IsPassword)
-			{
-				if (editText.InputType.HasFlag(InputTypes.ClassText))
-					editText.InputType |= InputTypes.TextVariationPassword;
-				if (editText.InputType.HasFlag(InputTypes.ClassNumber))
-					editText.InputType |= InputTypes.NumberVariationPassword;
-			}
-			else if (textInput is IEntry)
-			{
-				editText.InputType &= ~InputTypes.TextVariationPassword;
-				editText.InputType &= ~InputTypes.NumberVariationPassword;
 			if (textInput is IEntry entry)
 			{
 				if (entry.IsPassword)
-				{				
+				{
 					if (editText.InputType.HasFlag(InputTypes.ClassText))
 						editText.InputType |= InputTypes.TextVariationPassword;
+
 					if (editText.InputType.HasFlag(InputTypes.ClassNumber))
 						editText.InputType |= InputTypes.NumberVariationPassword;
 				}
