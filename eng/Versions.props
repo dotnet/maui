@@ -72,10 +72,10 @@
     <MicrosoftiOSSdknet110_265PackageVersion>26.5.11717-net11-p6</MicrosoftiOSSdknet110_265PackageVersion>
     <MicrosofttvOSSdknet110_265PackageVersion>26.5.11717-net11-p6</MicrosofttvOSSdknet110_265PackageVersion>
     <!-- This is a subscription of the .NET 10 latest stable versions of our packages -->
-    <MicrosoftMacCatalystSdknet100_265PackageVersion>26.5.10299</MicrosoftMacCatalystSdknet100_265PackageVersion>
-    <MicrosoftmacOSSdknet100_265PackageVersion>26.5.10299</MicrosoftmacOSSdknet100_265PackageVersion>
-    <MicrosoftiOSSdknet100_265PackageVersion>26.5.10299</MicrosoftiOSSdknet100_265PackageVersion>
-    <MicrosofttvOSSdknet100_265PackageVersion>26.5.10299</MicrosofttvOSSdknet100_265PackageVersion>
+    <MicrosoftMacCatalystSdknet100_265PackageVersion>26.5.10301</MicrosoftMacCatalystSdknet100_265PackageVersion>
+    <MicrosoftmacOSSdknet100_265PackageVersion>26.5.10301</MicrosoftmacOSSdknet100_265PackageVersion>
+    <MicrosoftiOSSdknet100_265PackageVersion>26.5.10301</MicrosoftiOSSdknet100_265PackageVersion>
+    <MicrosofttvOSSdknet100_265PackageVersion>26.5.10301</MicrosofttvOSSdknet100_265PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- wasdk -->

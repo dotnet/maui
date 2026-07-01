@@ -34,21 +34,21 @@
       <Sha>5bf7d00bec4a09ba623398bea41429ab1be795a1</Sha>
     </Dependency>
     <!-- Previous .NET iOS version(s) -->
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_26.5" Version="26.5.10299" CoherentParentDependency="Microsoft.MacCatalyst.Sdk.net11.0_26.5">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_26.5" Version="26.5.10301" CoherentParentDependency="Microsoft.MacCatalyst.Sdk.net11.0_26.5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>ce562026607fbe214874862de1f333064a0d2ff9</Sha>
+      <Sha>e6aeff4eaafa3918d4a27db2dcf5aba43cc3443c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net10.0_26.5" Version="26.5.10299" CoherentParentDependency="Microsoft.macOS.Sdk.net11.0_26.5">
+    <Dependency Name="Microsoft.macOS.Sdk.net10.0_26.5" Version="26.5.10301" CoherentParentDependency="Microsoft.macOS.Sdk.net11.0_26.5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>ce562026607fbe214874862de1f333064a0d2ff9</Sha>
+      <Sha>e6aeff4eaafa3918d4a27db2dcf5aba43cc3443c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net10.0_26.5" Version="26.5.10299" CoherentParentDependency="Microsoft.iOS.Sdk.net11.0_26.5">
+    <Dependency Name="Microsoft.iOS.Sdk.net10.0_26.5" Version="26.5.10301" CoherentParentDependency="Microsoft.iOS.Sdk.net11.0_26.5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>ce562026607fbe214874862de1f333064a0d2ff9</Sha>
+      <Sha>e6aeff4eaafa3918d4a27db2dcf5aba43cc3443c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net10.0_26.5" Version="26.5.10299" CoherentParentDependency="Microsoft.tvOS.Sdk.net11.0_26.5">
+    <Dependency Name="Microsoft.tvOS.Sdk.net10.0_26.5" Version="26.5.10301" CoherentParentDependency="Microsoft.tvOS.Sdk.net11.0_26.5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>ce562026607fbe214874862de1f333064a0d2ff9</Sha>
+      <Sha>e6aeff4eaafa3918d4a27db2dcf5aba43cc3443c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
