@@ -134,6 +134,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateClearButtonVisibility(entry);
 
+		// NOTE: This method routes through UpdateValue() rather than calling platform methods
+		// directly. This means any AppendToMapping/ModifyMapping customizations on MaxLength,
+		// CharacterSpacing, and HorizontalTextAlignment will also fire here, and subclass
+		// overrides of MapMaxLength/MapCharacterSpacing/MapHorizontalTextAlignment will be
+		// invoked. This is intentional for extensibility but is a behavioral change vs. prior
+		// releases where MapFormatting bypassed the mapper entirely for these three properties.
 		public static void MapFormatting(IEntryHandler handler, IEntry entry)
 		{
 			handler.UpdateValue(nameof(IEntry.MaxLength));

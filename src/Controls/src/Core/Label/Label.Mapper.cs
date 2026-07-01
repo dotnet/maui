@@ -170,7 +170,10 @@ namespace Microsoft.Maui.Controls
 			{
 				// if there is formatted text,
 				// then we re-apply the whole formatted text
-				handler.UpdateValue(nameof(FormattedText));
+				if (!handler.IsConnectingHandler())
+				{
+					handler.UpdateValue(nameof(FormattedText));
+				}
 			}
 			else if (label.TextType == TextType.Text || !label.TextColor.IsDefault())
 			{
