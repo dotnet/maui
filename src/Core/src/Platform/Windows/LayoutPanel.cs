@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = global::Windows.Foundation.Rect;
@@ -11,6 +12,14 @@ namespace Microsoft.Maui.Platform
 	{
 		Canvas? _backgroundLayer;
 		public bool ClipsToBounds { get; set; }
+
+		// Creates a MauiLayoutAutomationPeer so a Layout's AutomationId is visible to UI Automation
+		// clients while keeping anonymous layouts out of the screen-reader tree. On net10/main the peer
+		// is internal; the net11 version (https://github.com/dotnet/maui/pull/35597) makes it public.
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return new MauiLayoutAutomationPeer(this);
+		}
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.LayoutVirtualView
 		// If you make changes here please review if those changes should also

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Shapes;
 
 // NOTE: warning disabled for netstandard projects
 #pragma warning disable 0436
@@ -105,6 +106,53 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <summary>
+	/// A "proxy" class for subscribing BindableObject.PropertyChanging via WeakReference.
+	/// General usage is to store this in a member variable and call Subscribe()/Unsubscribe() appropriately.
+	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakNotifyPropertyChangingProxy objects from leaking.
+	/// </summary>
+	class WeakNotifyPropertyChangingProxy : WeakEventProxy<BindableObject, PropertyChangingEventHandler>
+	{
+		public WeakNotifyPropertyChangingProxy() { }
+
+		public WeakNotifyPropertyChangingProxy(BindableObject source, PropertyChangingEventHandler handler)
+		{
+			Subscribe(source, handler);
+		}
+
+		void OnPropertyChanging(object? sender, PropertyChangingEventArgs e)
+		{
+			if (TryGetHandler(out var handler))
+			{
+				handler(sender, e);
+			}
+			else
+			{
+				Unsubscribe();
+			}
+		}
+
+		public override void Subscribe(BindableObject source, PropertyChangingEventHandler handler)
+		{
+			if (TryGetSource(out var s))
+			{
+				s.PropertyChanging -= OnPropertyChanging;
+			}
+
+			source.PropertyChanging += OnPropertyChanging;
+			base.Subscribe(source, handler);
+		}
+
+		public override void Unsubscribe()
+		{
+			if (TryGetSource(out var s))
+			{
+				s.PropertyChanging -= OnPropertyChanging;
+			}
+			base.Unsubscribe();
+		}
+	}
+
+	/// <summary>
 	/// A "proxy" class for subscribing INotifyPropertyChanged via WeakReference.
 	/// General usage is to store this in a member variable and call Subscribe()/Unsubscribe() appropriately.
 	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakNotifyPropertyChangedProxy objects from leaking.
@@ -147,6 +195,64 @@ namespace Microsoft.Maui.Controls
 			if (TryGetSource(out var s))
 			{
 				s.PropertyChanged -= OnPropertyChanged;
+			}
+
+			base.Unsubscribe();
+		}
+	}
+
+	/// <summary>
+	/// A "proxy" class for subscribing Geometry and PathGeometry invalidation via WeakReference.
+	/// General usage is to store this in a member variable and call Subscribe()/Unsubscribe() appropriately.
+	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakGeometryChangedProxy objects from leaking.
+	/// </summary>
+	class WeakGeometryChangedProxy : WeakEventProxy<Geometry, EventHandler>
+	{
+		public WeakGeometryChangedProxy() { }
+
+		public WeakGeometryChangedProxy(Geometry source, EventHandler handler)
+		{
+			Subscribe(source, handler);
+		}
+
+		void OnGeometryChanged(object? sender, EventArgs e)
+		{
+			if (TryGetHandler(out var handler))
+			{
+				handler(sender, e);
+			}
+			else
+			{
+				Unsubscribe();
+			}
+		}
+
+		public override void Subscribe(Geometry source, EventHandler handler)
+		{
+			if (TryGetSource(out var s))
+			{
+				s.PropertyChanged -= OnGeometryChanged;
+
+				if (s is PathGeometry oldPathGeometry)
+					oldPathGeometry.InvalidatePathGeometryRequested -= OnGeometryChanged;
+			}
+
+			source.PropertyChanged += OnGeometryChanged;
+
+			if (source is PathGeometry pathGeometry)
+				pathGeometry.InvalidatePathGeometryRequested += OnGeometryChanged;
+
+			base.Subscribe(source, handler);
+		}
+
+		public override void Unsubscribe()
+		{
+			if (TryGetSource(out var s))
+			{
+				s.PropertyChanged -= OnGeometryChanged;
+
+				if (s is PathGeometry pathGeometry)
+					pathGeometry.InvalidatePathGeometryRequested -= OnGeometryChanged;
 			}
 
 			base.Unsubscribe();

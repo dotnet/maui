@@ -8,8 +8,10 @@ using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
+using AView = Android.Views.View;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -37,6 +39,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
 		readonly DataChangeObserver _itemsUpdateScrollObserver;
+		readonly Func<MotionEvent, bool> _dispatchTouchEventToRecyclerView;
+		ParentScrollGestureDispatcher _parentScrollGestureDispatcher;
 
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = ScrollBarVisibility.Default;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = ScrollBarVisibility.Default;
@@ -47,6 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
+		Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
 
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -57,6 +62,75 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
+			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
+			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
+		}
+
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				PostTrySetAppBarLiftTargetIfOnScreen();
+			}
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			// Clean up AppBar listener while the ViewTreeObserver is still valid.
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				ClearAppBarLiftTargetAndPendingPost();
+			}
+
+			base.OnDetachedFromWindow();
+		}
+
+		protected override void OnVisibilityChanged(AView changedView, ViewStates visibility)
+		{
+			base.OnVisibilityChanged(changedView, visibility);
+
+			if (changedView != this)
+			{
+				return;
+			}
+
+			if (!RuntimeFeature.IsMaterial3Enabled)
+			{
+				return;
+			}
+
+			if (visibility == ViewStates.Visible)
+			{
+				PostTrySetAppBarLiftTargetIfOnScreen();
+			}
+			else
+			{
+				ClearAppBarLiftTargetAndPendingPost();
+			}
+		}
+
+		void PostTrySetAppBarLiftTargetIfOnScreen()
+		{
+			var runnable = GetOrCreateSetAppBarLiftTargetRunnable();
+			RemoveCallbacks(runnable);
+			Post(runnable);
+		}
+
+		void ClearAppBarLiftTargetAndPendingPost()
+		{
+			if (_setAppBarLiftTargetRunnable is not null)
+			{
+				RemoveCallbacks(_setAppBarLiftTargetRunnable);
+			}
+
+			this.ClearAppBarLiftTarget();
+		}
+
+		Java.Lang.IRunnable GetOrCreateSetAppBarLiftTargetRunnable()
+		{
+			return _setAppBarLiftTargetRunnable ??= new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		public virtual void TearDownOldElement(TItemsView oldElement)
@@ -370,10 +444,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateAdapter();
 
 			// Set up any properties which require observing data changes in the adapter
-			UpdateItemsUpdatingScrollMode();
-
 			UpdateEmptyView();
 			AddOrUpdateScrollListener();
+			UpdateItemsUpdatingScrollMode();
 			UpdateSnapBehavior();
 		}
 
@@ -381,6 +454,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsViewAdapter == null || ItemsView == null)
 				return;
+
+			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				ScrollHelper.AddScrollListener();
+			}
+			else
+			{
+				ScrollHelper.RemoveScrollListener();
+			}
 
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
@@ -461,6 +543,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		private static object FindBoundItemInGroup(ScrollToRequestEventArgs args, IGroupableItemsViewSource groupItemSource)
 		{
+			// When no group index is specified (groupIndex < 0), fall back to flat index lookup.
+			// This handles the case where ScrollTo(index) is called without a group on a grouped CollectionView.
+			if (args.GroupIndex < 0)
+			{
+				return groupItemSource.GetItem(args.Index);
+			}
+
 			var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
 
 			// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a  header (UngroupedItemsSource does not do this)
@@ -547,6 +636,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return base.OnTouchEvent(e);
 		}
 
+		bool DispatchTouchEventToRecyclerView(MotionEvent e) => base.DispatchTouchEvent(e);
+
+		public override bool DispatchTouchEvent(MotionEvent e)
+		{
+			if (ItemsView?.IsEnabled == false && !ItemsView.IsExplicitlyEnabled)
+			{
+				return base.DispatchTouchEvent(e);
+			}
+
+			if (_parentScrollGestureDispatcher?.TryDispatchToParent(e, _dispatchTouchEventToRecyclerView, out var handled) == true)
+			{
+				return handled;
+			}
+
+			return base.DispatchTouchEvent(e);
+		}
+
 		public override bool OnInterceptTouchEvent(MotionEvent e)
 		{
 			// If ItemsView is disabled, intercept all touch events to prevent interactions.
@@ -574,8 +680,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollHelper?.AdjustScroll();
 		}
 
+		protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
+		{
+			base.OnSizeChanged(w, h, oldw, oldh);
+
+			// When the RecyclerView's size changes (e.g., after an orientation change while
+			// the CollectionView was not visible), we need to invalidate all visible item views
+			// to ensure they are re-measured with the new dimensions.
+			if (oldw > 0 && oldh > 0 && (Math.Abs(w - oldw) > 1 || Math.Abs(h - oldh) > 1))
+			{
+				InvalidateItemMeasures();
+			}
+		}
+
+		void InvalidateItemMeasures()
+		{
+			// Clear the adapter's static size cache (used by MeasureFirstItem strategy)
+			ItemsViewAdapter?.ClearMeasureCache();
+
+			// Force all visible children to invalidate their cached sizes and re-measure
+			for (int i = 0; i < ChildCount; i++)
+			{
+				if (GetChildAt(i) is ItemContentView itemContentView)
+				{
+					itemContentView.InvalidateCachedSize();
+					itemContentView.ForceLayout();
+				}
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
+			if (disposing)
+			{
+				_parentScrollGestureDispatcher?.Dispose();
+				_parentScrollGestureDispatcher = null;
+			}
+
 			base.Dispose(disposing);
 			if (disposing)
 			{
@@ -584,6 +725,283 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		internal ScrollHelper ScrollHelper => _scrollHelper ??= new ScrollHelper(this);
+
+		bool CanHandleOwnScrollDirection => this is not MauiCarouselRecyclerView carouselRecyclerView || carouselRecyclerView.IsSwipeEnabled;
+
+		class ParentScrollGestureDispatcher : IDisposable
+		{
+			readonly MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> _owner;
+			readonly DescendantDisallowInterceptListener _disallowInterceptListener;
+			readonly int[] _targetLocation = new int[2];
+			MotionEvent _downEvent;
+			AView _parentScrollTarget;
+			float _touchStartX;
+			float _touchStartY;
+			int? _scaledTouchSlop;
+			bool _descendantDisallowedIntercept;
+			GestureOwner _gestureOwner;
+
+			public ParentScrollGestureDispatcher(MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> owner)
+			{
+				_owner = owner;
+				_disallowInterceptListener = new DescendantDisallowInterceptListener(this);
+				_owner.AddOnItemTouchListener(_disallowInterceptListener);
+			}
+
+			public bool TryDispatchToParent(MotionEvent e, Func<MotionEvent, bool> dispatchToRecyclerView, out bool handled)
+			{
+				handled = false;
+
+				if (_gestureOwner == GestureOwner.Parent)
+				{
+					ForwardToParent(e);
+
+					if (IsTouchEnd(e))
+					{
+						Reset();
+					}
+
+					handled = true;
+					return true;
+				}
+
+				if (_gestureOwner == GestureOwner.RecyclerView)
+				{
+					if (IsTouchEnd(e))
+					{
+						Reset();
+					}
+
+					return false;
+				}
+
+				switch (e.ActionMasked)
+				{
+					case MotionEventActions.Down:
+						TrackDown(e);
+						return false;
+					case MotionEventActions.Move:
+						return TryStartForwardingToParent(e, dispatchToRecyclerView, out handled);
+					case MotionEventActions.Up:
+					case MotionEventActions.Cancel:
+						Reset();
+						return false;
+				}
+
+				return false;
+			}
+
+			public void Dispose()
+			{
+				_owner.RemoveOnItemTouchListener(_disallowInterceptListener);
+				_disallowInterceptListener.Dispose();
+				Reset();
+			}
+
+			public void RequestDisallowInterceptTouchEvent(bool disallowIntercept)
+			{
+				if (_gestureOwner != GestureOwner.Parent)
+				{
+					_descendantDisallowedIntercept = disallowIntercept;
+				}
+			}
+
+			void TrackDown(MotionEvent e)
+			{
+				Reset();
+				_touchStartX = e.RawX;
+				_touchStartY = e.RawY;
+				_downEvent = MotionEvent.Obtain(e);
+				_owner.Parent?.RequestDisallowInterceptTouchEvent(false);
+			}
+
+			bool TryStartForwardingToParent(MotionEvent e, Func<MotionEvent, bool> dispatchToRecyclerView, out bool handled)
+			{
+				handled = false;
+
+				var layoutManager = _owner.GetLayoutManager();
+
+				if (layoutManager is null)
+				{
+					return false;
+				}
+
+				var canScrollHorizontally = layoutManager.CanScrollHorizontally();
+				var canScrollVertically = layoutManager.CanScrollVertically();
+
+				if (canScrollHorizontally == canScrollVertically)
+				{
+					return false;
+				}
+
+				var deltaX = Math.Abs(e.RawX - _touchStartX);
+				var deltaY = Math.Abs(e.RawY - _touchStartY);
+
+				if (deltaX < ScaledTouchSlop && deltaY < ScaledTouchSlop)
+				{
+					return false;
+				}
+
+				var movesInOwnScrollDirection = canScrollHorizontally
+					? deltaX >= deltaY
+					: deltaY >= deltaX;
+
+				if (movesInOwnScrollDirection)
+				{
+					_gestureOwner = GestureOwner.RecyclerView;
+					_owner.Parent?.RequestDisallowInterceptTouchEvent(_owner.CanHandleOwnScrollDirection);
+					return false;
+				}
+
+				var target = FindParentScrollTarget(e, canScrollHorizontally);
+
+				if (target is null)
+				{
+					return false;
+				}
+
+				var recyclerViewHandled = dispatchToRecyclerView(e);
+
+				if (_descendantDisallowedIntercept)
+				{
+					handled = recyclerViewHandled;
+					return true;
+				}
+
+				_parentScrollTarget = target;
+				_gestureOwner = GestureOwner.Parent;
+				_owner.Parent?.RequestDisallowInterceptTouchEvent(false);
+				CancelRecyclerViewGesture(e, dispatchToRecyclerView);
+
+				if (_downEvent is not null)
+				{
+					ForwardToParent(_downEvent);
+				}
+
+				ForwardToParent(e);
+				handled = true;
+				return true;
+			}
+
+			AView FindParentScrollTarget(MotionEvent e, bool recyclerViewScrollsHorizontally)
+			{
+				var scrollDirection = recyclerViewScrollsHorizontally
+					? Math.Sign(_touchStartY - e.RawY)
+					: Math.Sign(_touchStartX - e.RawX);
+
+				if (scrollDirection == 0)
+				{
+					return null;
+				}
+
+				var parent = _owner.Parent;
+
+				while (parent is not null)
+				{
+					if (parent is AView view)
+					{
+						var canScroll = recyclerViewScrollsHorizontally
+							? view.CanScrollVertically(scrollDirection)
+							: view.CanScrollHorizontally(scrollDirection);
+
+						if (canScroll)
+						{
+							return view;
+						}
+					}
+
+					parent = parent.GetParent();
+				}
+
+				return null;
+			}
+
+			void CancelRecyclerViewGesture(MotionEvent e, Func<MotionEvent, bool> dispatchToRecyclerView)
+			{
+				var cancelEvent = MotionEvent.Obtain(e);
+				cancelEvent.Action = MotionEventActions.Cancel;
+
+				try
+				{
+					dispatchToRecyclerView(cancelEvent);
+				}
+				finally
+				{
+					cancelEvent.Recycle();
+				}
+			}
+
+			void ForwardToParent(MotionEvent source)
+			{
+				if (_parentScrollTarget is null)
+				{
+					return;
+				}
+
+				var targetEvent = MotionEvent.Obtain(source);
+				_parentScrollTarget.GetLocationOnScreen(_targetLocation);
+				targetEvent.SetLocation(source.RawX - _targetLocation[0], source.RawY - _targetLocation[1]);
+
+				try
+				{
+					_parentScrollTarget.OnTouchEvent(targetEvent);
+				}
+				finally
+				{
+					targetEvent.Recycle();
+				}
+			}
+
+			void Reset()
+			{
+				_owner.Parent?.RequestDisallowInterceptTouchEvent(false);
+				_parentScrollTarget = null;
+				_descendantDisallowedIntercept = false;
+				_gestureOwner = GestureOwner.Undecided;
+
+				if (_downEvent is not null)
+				{
+					_downEvent.Recycle();
+					_downEvent = null;
+				}
+			}
+
+			int ScaledTouchSlop => _scaledTouchSlop ??= ViewConfiguration.Get(_owner.Context).ScaledTouchSlop;
+
+			static bool IsTouchEnd(MotionEvent e) =>
+				e.ActionMasked == MotionEventActions.Up || e.ActionMasked == MotionEventActions.Cancel;
+
+			enum GestureOwner
+			{
+				Undecided,
+				RecyclerView,
+				Parent
+			}
+
+			sealed class DescendantDisallowInterceptListener : Java.Lang.Object, RecyclerView.IOnItemTouchListener
+			{
+				readonly ParentScrollGestureDispatcher _dispatcher;
+
+				public DescendantDisallowInterceptListener(ParentScrollGestureDispatcher dispatcher)
+				{
+					_dispatcher = dispatcher;
+				}
+
+				public bool OnInterceptTouchEvent(RecyclerView rv, MotionEvent e)
+				{
+					return false;
+				}
+
+				public void OnTouchEvent(RecyclerView rv, MotionEvent e)
+				{
+				}
+
+				public void OnRequestDisallowInterceptTouchEvent(bool disallowIntercept)
+				{
+					_dispatcher.RequestDisallowInterceptTouchEvent(disallowIntercept);
+				}
+			}
+		}
 
 		internal void UpdateEmptyViewVisibility()
 		{
@@ -689,8 +1107,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (RecyclerViewScrollListener == null)
 				return;
 
+			RemoveOnScrollListener(RecyclerViewScrollListener);
 			RecyclerViewScrollListener.Dispose();
-			ClearOnScrollListeners();
 			RecyclerViewScrollListener = null;
 		}
 	}

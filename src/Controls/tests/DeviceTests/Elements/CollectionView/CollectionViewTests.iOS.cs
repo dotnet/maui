@@ -251,6 +251,86 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(source.IsIndexPathValid(invalidSection));
 		}
 
+		private async Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<THandler>()
+			where THandler : class, IElementHandler
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, THandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var labels = new List<Label>();
+			var items = new ObservableCollection<string>
+			{
+				"one",
+				"two",
+				"three",
+				"four"
+			};
+
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label
+					{
+						LineBreakMode = LineBreakMode.WordWrap
+					};
+
+					label.SetBinding(Label.TextProperty, ".");
+					labels.Add(label);
+
+					return label;
+				})
+			};
+
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<THandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+
+				Assert.NotEmpty(labels);
+
+				// Change text of all the labels to force a relayout, including those that were
+				// only used for measurement cell. Now we should be sure that all visible cells
+				// have their MeasureInvalidated == true.
+				foreach (var label in labels)
+					label.Text = label.Text + " with enough extra text to invalidate the measured cell size";
+				// Add another item to force an animation
+				items.Add("five");
+				// Reset the data source to force another animation and a layout pass
+				collectionView.ItemsSource = null;
+
+				var platformView = (UIView)handler.PlatformView;
+				var uiCollectionView = platformView as UICollectionView ?? platformView.Subviews.OfType<UICollectionView>().FirstOrDefault();
+				Assert.NotNull(uiCollectionView);
+				// Force synchronous flush of the ItemsSource reloading
+				await uiCollectionView.PerformBatchUpdatesAsync(() => { });
+				// Force a layout
+				platformView.LayoutIfNeeded();
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView Does Not Crash After Resetting Source With Running Animation")]
+		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash()
+		{
+			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler>();
+		}
+
+		[Fact(DisplayName = "CollectionViewHandler2 Does Not Crash After Resetting Source With Running Animation")]
+		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash2()
+		{
+			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler2>();
+		}
+
 		[Fact(DisplayName = "CollectionView Does Not Leak With Default ItemsLayout")]
 		public async Task CollectionViewDoesNotLeakWithDefaultItemsLayout()
 		{
@@ -485,6 +565,155 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 			return null;
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/36010
+		// CollectionViewHandler2 must not throw NullReferenceException when a
+		// GridItemsLayout property changes after the handler has been disconnected
+		// and then reconnected (the cached-workspace / native-host restore pattern).
+		[Theory(DisplayName = "CollectionViewHandler2 Does Not Crash After Disconnect-Restore-PropertyChange")]
+		[InlineData(nameof(GridItemsLayout.Span))]
+		[InlineData(nameof(GridItemsLayout.HorizontalItemSpacing))]
+		[InlineData(nameof(GridItemsLayout.VerticalItemSpacing))]
+		[InlineData(nameof(ItemsLayout.SnapPointsType))]
+		[InlineData(nameof(ItemsLayout.SnapPointsAlignment))]
+		[Category(TestCategory.CollectionView)]
+		public async Task CollectionViewHandler2DoesNotCrashAfterDisconnectRestorePropertyChange(string propertyName)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var itemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical)
+			{
+				HorizontalItemSpacing = 8,
+				VerticalItemSpacing = 8
+			};
+
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 300,
+				WidthRequest = 300,
+				ItemsLayout = itemsLayout,
+				ItemsSource = Enumerable.Range(1, 12).Select(i => $"Item {i}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await Task.Delay(200);
+
+				// Step 1: Shelve — disconnect the handler (sets _layoutPropertyCache = null)
+				var mauiContext = handler.MauiContext;
+				((IElementHandler)handler).DisconnectHandler();
+
+				await Task.Delay(50);
+
+				// Step 2: Restore — re-attach the same handler instance
+				((IElementHandler)handler).SetMauiContext(mauiContext);
+				((IElementHandler)handler).SetVirtualView(collectionView);
+
+				await Task.Delay(50);
+
+				// Step 3: Change a GridItemsLayout property — must NOT throw NullReferenceException.
+				// Before the fix, _layoutPropertyCache was null here and TryGetValue crashed.
+				var exception = await Record.ExceptionAsync(async () =>
+				{
+					await InvokeOnMainThreadAsync(() =>
+					{
+						switch (propertyName)
+						{
+							case nameof(GridItemsLayout.Span):
+								itemsLayout.Span = 4;
+								break;
+							case nameof(GridItemsLayout.HorizontalItemSpacing):
+								itemsLayout.HorizontalItemSpacing = 16;
+								break;
+							case nameof(GridItemsLayout.VerticalItemSpacing):
+								itemsLayout.VerticalItemSpacing = 16;
+								break;
+							case nameof(ItemsLayout.SnapPointsType):
+								itemsLayout.SnapPointsType = SnapPointsType.MandatorySingle;
+								break;
+							case nameof(ItemsLayout.SnapPointsAlignment):
+								itemsLayout.SnapPointsAlignment = SnapPointsAlignment.Center;
+								break;
+						}
+					});
+				});
+
+				Assert.Null(exception);
+			});
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/36010 (LinearItemsLayout path)
+		// ItemSpacing change on a LinearItemsLayout must also survive disconnect+restore.
+		[Fact(DisplayName = "CollectionViewHandler2 Does Not Crash After Disconnect-Restore-LinearItemSpacingChange")]
+		[Category(TestCategory.CollectionView)]
+		public async Task CollectionViewHandler2DoesNotCrashAfterDisconnectRestoreLinearItemSpacingChange()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+			{
+				ItemSpacing = 4
+			};
+
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 300,
+				WidthRequest = 300,
+				ItemsLayout = itemsLayout,
+				ItemsSource = Enumerable.Range(1, 12).Select(i => $"Item {i}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await Task.Delay(200);
+
+				var mauiContext = handler.MauiContext;
+				((IElementHandler)handler).DisconnectHandler();
+
+				await Task.Delay(50);
+
+				((IElementHandler)handler).SetMauiContext(mauiContext);
+				((IElementHandler)handler).SetVirtualView(collectionView);
+
+				await Task.Delay(50);
+
+				var exception = await Record.ExceptionAsync(async () =>
+				{
+					await InvokeOnMainThreadAsync(() =>
+					{
+						itemsLayout.ItemSpacing = 20;
+					});
+				});
+
+				Assert.Null(exception);
+			});
 		}
 	}
 }
