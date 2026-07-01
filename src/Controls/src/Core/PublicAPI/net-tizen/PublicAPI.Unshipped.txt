@@ -1,4 +1,13 @@
 #nullable enable
+Microsoft.Maui.Controls.ImageBrush
+Microsoft.Maui.Controls.ImageBrush.ImageBrush() -> void
+Microsoft.Maui.Controls.ImageBrush.ImageBrush(Microsoft.Maui.Controls.ImageSource! imageSource) -> void
+override Microsoft.Maui.Controls.ImageBrush.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.ImageBrush.GetHashCode() -> int
+override Microsoft.Maui.Controls.ImageBrush.IsEmpty.get -> bool
+static readonly Microsoft.Maui.Controls.ImageBrush.ImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.ImageBrush.ImageSource.get -> Microsoft.Maui.Controls.ImageSource?
+virtual Microsoft.Maui.Controls.ImageBrush.ImageSource.set -> void
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
