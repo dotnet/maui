@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Media
 		///   The <c>PhotosAddOnly</c> permission will be requested.</description></item>
 		///   <item><description><b>Android</b>: On API &lt; 29, <c>WRITE_EXTERNAL_STORAGE</c> permission is required.
 		///   On API 29+, <c>MediaStore</c> is used and no additional permission is needed.</description></item>
-		///   <item><description><b>macOS (Mac Catalyst)</b>: The <c>NSPhotoLibraryAddUsageDescription</c> key must be present in <c>Info.plist</c>.
+		///   <item><description><b>Mac Catalyst</b>: The <c>NSPhotoLibraryAddUsageDescription</c> key must be present in <c>Info.plist</c>.
 		///   The <c>PhotosAddOnly</c> permission will be requested.</description></item>
 		///   <item><description><b>Windows</b>: Not supported. This property is ignored on Windows. The captured media is saved to a
 		///   temporary cache folder and the user can save it manually.</description></item>
