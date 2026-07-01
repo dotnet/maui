@@ -215,7 +215,7 @@ switch ($Platform) {
         if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
             $arguments += @("-r", $RuntimeIdentifier)
         } elseif ($useNet11OrLater) {
-            $arguments += "-p:RuntimeIdentifiers=maccatalyst-x64%3Bmaccatalyst-arm64"
+            $arguments += @("-r", "maccatalyst-x64")
         }
 
         if ($Publish) {

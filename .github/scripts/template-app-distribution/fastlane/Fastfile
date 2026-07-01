@@ -21,6 +21,12 @@ def truthy_environment?(key)
   ["1", "true", "yes"].include?(ENV[key].to_s.downcase)
 end
 
+def testflight_review_conflict?(error)
+  message = error.to_s
+  message.include?("Another build is in review") ||
+    message.include?("already in beta review")
+end
+
 default_platform(:ios)
 
 platform :android do
@@ -87,6 +93,14 @@ platform :ios do
       upload_options[:reject_build_waiting_for_review] = true if truthy_environment?("TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW")
     end
 
-    upload_to_testflight(upload_options)
+    begin
+      upload_to_testflight(upload_options)
+    rescue => error
+      if testflight_review_conflict?(error)
+        UI.important("The build was uploaded, but another build in this train is already in beta review. Treating this as a successful upload.")
+      else
+        raise
+      end
+    end
   end
 end
