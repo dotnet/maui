@@ -30,6 +30,7 @@
 # - TEMPLATE_APP_PLAY_RELEASE_STATUS (variable): defaults to completed; use draft for first uploads to draft Play apps.
 # - TEMPLATE_APP_TESTFLIGHT_GROUPS (variable): defaults to no explicit group distribution.
 # - TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW (variable): set to true to reject a prior waiting Beta App Review build and submit the latest one.
+# - TEMPLATE_APP_TESTFLIGHT_WAIT_TIMEOUT_SECONDS (variable): defaults to 2700 seconds.
 # Store uploads use fastlane lanes from .github/scripts/template-app-distribution/fastlane.
 
 name: Template App Distribution
@@ -356,6 +357,7 @@ jobs:
       TEMPLATE_APP_PLAY_RELEASE_STATUS: ${{ vars.TEMPLATE_APP_PLAY_RELEASE_STATUS || 'completed' }}
       TEMPLATE_APP_TESTFLIGHT_GROUPS: ${{ vars.TEMPLATE_APP_TESTFLIGHT_GROUPS }}
       TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW: ${{ vars.TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW || 'false' }}
+      TEMPLATE_APP_TESTFLIGHT_WAIT_TIMEOUT_SECONDS: ${{ vars.TEMPLATE_APP_TESTFLIGHT_WAIT_TIMEOUT_SECONDS || '2700' }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}

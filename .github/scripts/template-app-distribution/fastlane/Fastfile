@@ -21,10 +21,24 @@ def truthy_environment?(key)
   ["1", "true", "yes"].include?(ENV[key].to_s.downcase)
 end
 
+def integer_environment(key, default_value)
+  value = ENV[key].to_s.strip
+  return default_value if value.empty?
+  Integer(value)
+rescue ArgumentError
+  UI.user_error!("Invalid integer environment value for #{key}: #{value}")
+end
+
 def testflight_review_conflict?(error)
   message = error.to_s
   message.include?("Another build is in review") ||
     message.include?("already in beta review")
+end
+
+def testflight_processing_timeout?(error)
+  message = error.to_s
+  message.include?("processing") &&
+    (message.include?("timeout") || message.include?("timed out") || message.include?("waited"))
 end
 
 default_platform(:ios)
@@ -73,6 +87,7 @@ platform :ios do
       app_identifier: required_option(options, :app_identifier),
       api_key: api_key,
       uses_non_exempt_encryption: false,
+      wait_processing_timeout_duration: integer_environment("TEMPLATE_APP_TESTFLIGHT_WAIT_TIMEOUT_SECONDS", 2700),
       skip_waiting_for_build_processing: groups.empty? && changelog.nil?
     }
 
@@ -98,6 +113,8 @@ platform :ios do
     rescue => error
       if testflight_review_conflict?(error)
         UI.important("The build was uploaded, but another build in this train is already in beta review. Treating this as a successful upload.")
+      elsif testflight_processing_timeout?(error)
+        UI.important("The build was uploaded, but App Store Connect did not finish processing it before the configured wait timeout. Treating this as a successful upload.")
       else
         raise
       end
