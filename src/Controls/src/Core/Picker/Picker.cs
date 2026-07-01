@@ -79,12 +79,19 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
+		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
+
 		/// <summary>Initializes a new instance of the Picker class.</summary>
 		public Picker()
 		{
 			((INotifyCollectionChanged)Items).CollectionChanged += OnItemsCollectionChanged;
+			_collectionChangedEventHandler = CollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Picker>>(() => new PlatformConfigurationRegistry<Picker>(this));
 		}
+
+		~Picker() => _collectionChangedProxy.Unsubscribe();
+
 		/// <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither. This is a bindable property.</summary>
 		public FontAttributes FontAttributes
 		{
@@ -306,12 +313,12 @@ namespace Microsoft.Maui.Controls
 		{
 			var oldObservable = oldValue as INotifyCollectionChanged;
 			if (oldObservable != null)
-				oldObservable.CollectionChanged -= CollectionChanged;
+				_collectionChangedProxy.Unsubscribe();
 
 			var newObservable = newValue as INotifyCollectionChanged;
 			if (newObservable != null)
 			{
-				newObservable.CollectionChanged += CollectionChanged;
+				_collectionChangedProxy.Subscribe(newObservable, _collectionChangedEventHandler);
 			}
 
 			if (newValue != null)

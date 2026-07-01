@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -851,6 +852,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Assert: SelectedItem should still be "Dog", and index should now be 2
 			Assert.Equal("Dog", picker.SelectedItem);
 			Assert.Equal(2, picker.SelectedIndex);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task PickerItemsSourceDoesNotLeak()
+		{
+			// A long-lived / shared collection (for example a ViewModel-owned ObservableCollection)
+			// must not keep every Picker it was assigned to alive.
+			var sharedItemsSource = new ObservableCollection<string> { "a", "b", "c" };
+
+			WeakReference weakPicker;
+			{
+				var picker = new Picker();
+				picker.ItemsSource = sharedItemsSource;
+				weakPicker = new WeakReference(picker);
+			}
+
+			Assert.False(await weakPicker.WaitForCollect(), "Picker should not be alive!");
+			GC.KeepAlive(sharedItemsSource);
 		}
 	}
 }
