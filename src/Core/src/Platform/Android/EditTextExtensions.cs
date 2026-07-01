@@ -386,6 +386,20 @@ namespace Microsoft.Maui.Platform
 			{
 				editText.InputType &= ~InputTypes.TextVariationPassword;
 				editText.InputType &= ~InputTypes.NumberVariationPassword;
+			if (textInput is IEntry entry)
+			{
+				if (entry.IsPassword)
+				{				
+					if (editText.InputType.HasFlag(InputTypes.ClassText))
+						editText.InputType |= InputTypes.TextVariationPassword;
+					if (editText.InputType.HasFlag(InputTypes.ClassNumber))
+						editText.InputType |= InputTypes.NumberVariationPassword;
+				}
+				else
+				{
+					editText.InputType &= ~InputTypes.TextVariationPassword;
+					editText.InputType &= ~InputTypes.NumberVariationPassword;
+				}
 			}
 
 			if (textInput is IEditor)
