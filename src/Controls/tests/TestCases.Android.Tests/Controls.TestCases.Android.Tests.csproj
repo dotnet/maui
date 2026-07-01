@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <MauiTestProject>true</MauiTestProject>
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
     <RootNamespace>Microsoft.Maui.TestCases.Tests</RootNamespace>
     <DefineConstants>$(DefineConstants);ANDROID;TEST_FAILS_ON_IOS;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_WINDOWS</DefineConstants>
   </PropertyGroup>

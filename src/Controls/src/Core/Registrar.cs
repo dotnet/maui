@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls.Internals
 			// but this caused problem for trimming, so instead of scanning for the global assemblies, the attributes were moved here
 			// with the least amount of changes to the existing code.
 			StylePropertyAttribute[] styleAttributes = [
-				new StylePropertyAttribute("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundColorProperty)),
+				new StylePropertyAttribute("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundProperty)),
 				new StylePropertyAttribute("background", typeof(VisualElement), nameof(VisualElement.BackgroundProperty)),
 				new StylePropertyAttribute("background-image", typeof(Page), nameof(Page.BackgroundImageSourceProperty)),
 				new StylePropertyAttribute("border-color", typeof(IBorderElement), nameof(BorderElement.BorderColorProperty)),

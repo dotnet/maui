@@ -32,12 +32,9 @@ namespace Microsoft.Maui.Controls.Platform
 					if (result == UIKit.UIModalPresentationStyle.FullScreen)
 					{
 						var modalPage = (Page)_modal.VirtualView;
-						Color modalBkgndColor = modalPage.BackgroundColor;
 						Brush modalBackground = modalPage.Background;
 
-						bool shouldUseOverFullScreen = !Brush.IsNullOrEmpty(modalBackground)
-							? Brush.HasTransparency(modalBackground)
-							: modalBkgndColor?.Alpha < 1;
+						bool shouldUseOverFullScreen = !Brush.IsNullOrEmpty(modalBackground) && Brush.HasTransparency(modalBackground);
 
 						if (shouldUseOverFullScreen)
 						{
@@ -62,7 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			UpdateBackgroundColor();
+			UpdateBackground();
 			_ = modal?.ViewController?.View ?? throw new InvalidOperationException("View Controller Not Initialized on Modal Page");
 
 			View!.AddSubview(modal.ViewController.View);
@@ -169,7 +166,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void ViewWillAppear(bool animated)
 		{
 			if (!_isDisposed)
-				UpdateBackgroundColor();
+				UpdateBackground();
 
 			base.ViewWillAppear(animated);
 		}
@@ -208,19 +205,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Page.BackgroundColorProperty.PropertyName)
-				UpdateBackgroundColor();
+			if (e.PropertyName == Page.BackgroundProperty.PropertyName)
+				UpdateBackground();
 		}
 
-		void UpdateBackgroundColor()
+		void UpdateBackground()
 		{
 			if (_isDisposed)
 				return;
 
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{
-				Color modalBkgndColor = Page.BackgroundColor;
-				View!.BackgroundColor = modalBkgndColor?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
+				View!.UpdateBackground(Page.Background);
+				if (Brush.IsNullOrEmpty(Page.Background))
+					View!.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
 			}
 			else
 			{

@@ -138,6 +138,13 @@ namespace Microsoft.Maui.Controls.Platform
 				_navigationView.Content = _flyoutView.ToPlatform(MauiContext!);
 		}
 
+		public void UpdateBackground(Brush brush)
+		{
+			_navigationView.BackgroundColor = brush is SolidColorBrush solidBrush && solidBrush.Color.IsNotDefault()
+				? solidBrush.Color.ToNUIColor()
+				: DefaultBackgroundColor.ToNUIColor();
+		}
+
 		public void UpdateBackgroundColor(GColor color)
 		{
 			_navigationView.BackgroundColor = color.IsNotDefault() ? color.ToNUIColor() : DefaultBackgroundColor.ToNUIColor();

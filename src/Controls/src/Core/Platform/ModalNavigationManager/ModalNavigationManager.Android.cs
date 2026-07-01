@@ -288,7 +288,7 @@ namespace Microsoft.Maui.Controls.Platform
 					page.HandlerChanged -= OnPageHandlerChanged;
 				}
 
-				UpdateBackgroundColor();
+				UpdateBackground();
 			}
 
 			void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -305,13 +305,13 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 
-				if (e.IsOneOf(Page.BackgroundColorProperty, Page.BackgroundProperty))
+				if (e.PropertyName == Page.BackgroundProperty.PropertyName)
 				{
-					UpdateBackgroundColor();
+					UpdateBackground();
 				}
 			}
 
-			void UpdateBackgroundColor()
+			void UpdateBackground()
 			{
 				if (_modal is not IView view || view.Handler is not IPlatformViewHandler platformViewHandler)
 				{
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_navigationRootManager = modalContext.GetNavigationRootManager();
 				_navigationRootManager.Connect(_modal, modalContext);
 
-				UpdateBackgroundColor();
+				UpdateBackground();
 
 				var rootView = _navigationRootManager?.RootView ??
 					throw new InvalidOperationException("Root view not initialized");

@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					RemovePage(previousPage, popping);
 				}
-				else if (newPage.BackgroundColor.IsDefault() && newPage.Background.IsEmpty)
+				else if (newPage.Background.IsEmpty)
 				{
 					RemovePage(previousPage, popping);
 				}

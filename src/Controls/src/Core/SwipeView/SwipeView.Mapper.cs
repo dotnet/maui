@@ -16,18 +16,10 @@ namespace Microsoft.Maui.Controls
 			if (swipeView.Content is not null)
 			{
 				var contentBackgroundIsNull = Brush.IsNullOrEmpty(swipeView.Content.Background);
-				var contentBackgroundColorIsNull = swipeView.Content.BackgroundColor == null;
 
-				if (contentBackgroundIsNull && contentBackgroundColorIsNull)
+				if (contentBackgroundIsNull && !Brush.IsNullOrEmpty(swipeView.Background))
 				{
-					if (!Brush.IsNullOrEmpty(swipeView.Background))
-					{
-						swipeView.Content.Background = swipeView.Background;
-					}
-					else if (swipeView.BackgroundColor != null)
-					{
-						swipeView.Content.BackgroundColor = swipeView.BackgroundColor;
-					}
+					swipeView.Content.Background = swipeView.Background;
 				}
 			}
 		}
