@@ -387,8 +387,7 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					editText.InputType &= ~InputTypes.TextVariationPassword;
-					editText.InputType &= ~InputTypes.NumberVariationPassword;
+					editText.InputType &= ~(InputTypes.TextVariationPassword | InputTypes.NumberVariationPassword);
 				}
 			}
 
