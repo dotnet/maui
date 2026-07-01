@@ -149,6 +149,58 @@ public class ResizetizerTests : BaseBuildTest
 			$"Font '{fontFileName}' is missing from the Android assets folder after an incremental build.");
 	}
 
+	// Regression test for https://github.com/dotnet/maui/issues/33092 (consolidated from #35962):
+	// after a successful build, deleting the generated font/splash intermediate outputs must
+	// re-trigger ProcessMauiFonts / ProcessMauiSplashScreens on the next build. This is guaranteed by
+	// tracking the generated files in mauifont.outputs / mauisplash.outputs manifests that feed the
+	// targets' Outputs (see _ReadMauiFontOutputs / _ReadMauiSplashOutputs), replacing the old stamp
+	// files whose timestamps could stay newer than the deleted outputs. A final no-op build asserts
+	// both targets are skipped when nothing changed.
+	[Fact]
+	public void BuildRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing()
+	{
+		SetTestIdentifier("MissingResizetizerOutputs");
+
+		// Builds every TFM of the default maui template (Android + iOS + MacCatalyst), which only
+		// fully builds on macOS, so this is gated accordingly. The Android first-build path is
+		// additionally covered on Windows by FontsAreCopiedToAndroidAssetsOnFirstBuild.
+		if (!TestEnvironment.IsMacOS)
+			return;
+
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		const string config = "Debug";
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui. Check test output for errors.");
+
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+		var intermediateOutputRoots = GetResizetizerOutputRoots(projectDir, config);
+		AssertBuiltTargetPlatforms(intermediateOutputRoots);
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
+
+		foreach (var intermediateOutputRoot in intermediateOutputRoots)
+		{
+			DeleteDirectory(Path.Combine(intermediateOutputRoot, "resizetizer", "f"));
+			DeleteDirectory(Path.Combine(intermediateOutputRoot, "resizetizer", "sp"));
+		}
+
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to rebuild. Check test output/attachments for errors.");
+
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
+
+		var noOpBinlogPath = Path.Combine(projectDir, "no-op.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, binlogPath: noOpBinlogPath, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to no-op rebuild. Check test output/attachments for errors.");
+
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiFonts", intermediateOutputRoots.Count);
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiSplashScreens", intermediateOutputRoots.Count);
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
+	}
+
 	static bool FontExistsInAndroidAssets(string androidObjDir, string fontFileName)
 	{
 		if (!Directory.Exists(androidObjDir))
@@ -192,5 +244,71 @@ public class ResizetizerTests : BaseBuildTest
 			}
 		}
 		return (started, skipped);
+	}
+
+	static IReadOnlyList<string> GetResizetizerOutputRoots(string projectDir, string config)
+	{
+		var intermediateOutputPath = Path.Combine(projectDir, "obj", config);
+		var outputRoots = Directory
+			.GetFiles(intermediateOutputPath, "mauifont.outputs", SearchOption.AllDirectories)
+			.Select(Path.GetDirectoryName)
+			.Where(root => root is not null && File.Exists(Path.Combine(root, "mauisplash.outputs")))
+			.Cast<string>()
+			.OrderBy(root => root, StringComparer.OrdinalIgnoreCase)
+			.ToArray();
+
+		Assert.NotEmpty(outputRoots);
+		return outputRoots;
+	}
+
+	static void AssertBuiltTargetPlatforms(IReadOnlyList<string> intermediateOutputRoots)
+	{
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-android"));
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-ios"));
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-maccatalyst"));
+
+		if (TestEnvironment.IsWindows)
+			Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-windows"));
+	}
+
+	static bool ContainsTargetFramework(string path, string targetFramework) =>
+		path.Contains(targetFramework, StringComparison.OrdinalIgnoreCase);
+
+	static void AssertIntermediateOutputsExist(IReadOnlyList<string> intermediateOutputRoots)
+	{
+		foreach (var intermediateOutputRoot in intermediateOutputRoots)
+		{
+			var fontsDir = Path.Combine(intermediateOutputRoot, "resizetizer", "f");
+			Assert.True(File.Exists(Path.Combine(fontsDir, "OpenSans-Regular.ttf")),
+				$"Missing OpenSans-Regular.ttf in {fontsDir}.");
+			Assert.True(File.Exists(Path.Combine(fontsDir, "OpenSans-Semibold.ttf")),
+				$"Missing OpenSans-Semibold.ttf in {fontsDir}.");
+
+			if (!ContainsTargetFramework(intermediateOutputRoot, $"{DotNetCurrent}-maccatalyst"))
+			{
+				var splashDir = Path.Combine(intermediateOutputRoot, "resizetizer", "sp");
+				Assert.True(
+					Directory.Exists(splashDir) && Directory.EnumerateFiles(splashDir, "*", SearchOption.AllDirectories).Any(),
+					$"Missing generated splash screen files in {splashDir}.");
+			}
+		}
+	}
+
+	static void DeleteDirectory(string path)
+	{
+		if (Directory.Exists(path))
+			Directory.Delete(path, recursive: true);
+	}
+
+	static void AssertTargetSkipped(string binlogPath, string targetName, int minimumSkipCount)
+	{
+		var skipCount = new BinLogReader()
+			.ReadRecords(binlogPath)
+			.Count(record => record.Args is BuildMessageEventArgs { Message: string message } &&
+				message.Contains($"Skipping target \"{targetName}\"", StringComparison.Ordinal) &&
+				message.Contains("because all output files are up-to-date", StringComparison.OrdinalIgnoreCase));
+
+		Assert.True(skipCount >= minimumSkipCount,
+			$"Expected target '{targetName}' to be skipped at least {minimumSkipCount} times, but found {skipCount}. See binlog: {binlogPath}");
 	}
 }

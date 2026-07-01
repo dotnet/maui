@@ -50,18 +50,28 @@ The `.buildtasks/` directory at the repo root contains a local copy of the Resiz
 - Outer build: `obj/Release/net10.0-android/`
 - Inner build (arm64): `obj/Release/net10.0-android/android-arm64/`
 
-This means stamp files, input tracking files, and intermediate outputs are at **different paths** in outer vs inner builds.
+This means stamp/manifest files, input tracking files, and intermediate outputs are at **different paths** in outer vs inner builds.
 
-### Stamp Files (Incremental Build Tracking)
+### Incremental Build Tracking (Stamp & Output-Manifest Files)
 
-| Stamp File | Tracks |
-|------------|--------|
-| `mauifont.stamp` | Font processing (ProcessMauiFonts) |
-| `mauiimage.stamp` | Image resizing (ResizetizeImages) |
-| `mauisplash.stamp` | Splash screen processing |
-| `mauimanifest.stamp` | Platform manifest generation |
+Two mechanisms drive the `Inputs`/`Outputs` up-to-date checks:
 
-Each stamp file (except `mauimanifest.stamp`) has a companion `.inputs` file containing serialized metadata for change detection.
+| File | Tracks | Mechanism |
+|------|--------|-----------|
+| `mauifont.outputs` | Font processing (`ProcessMauiFonts`) | Output manifest |
+| `mauisplash.outputs` | Splash screen processing (`ProcessMauiSplashScreens`) | Output manifest |
+| `mauiimage.stamp` + `mauiimage.outputs` | Image resizing (`ResizetizeImages`) | Stamp + output manifest |
+| `mauimanifest.stamp` | Platform manifest generation | Stamp |
+
+Each processing target (except `mauimanifest.stamp`) has a companion `.inputs` file containing serialized metadata for change detection.
+
+**⚠️ Prefer output manifests over bare stamp files.** A bare stamp (`<Touch>` + `Outputs="$(stamp)"`) only records *when* a target last ran — its timestamp can stay newer than a generated output that was later deleted (e.g. a partial `obj` clean or concurrent build), so MSBuild wrongly treats the target as up-to-date and the package ships without the missing font/splash (regression #33092). Instead:
+
+1. Write the list of generated files to a `*.outputs` manifest with `WriteLinesToFile`.
+2. Read it back **before** the up-to-date check via a `_Read*Outputs` target wired through `DependsOnTargets`.
+3. Include those files in the target `Outputs`, e.g. `Outputs="$(_MauiFontOutputsFile);@(_MauiFontOutputs)"`.
+
+Now if any generated file disappears, MSBuild sees a missing output and re-runs *only* that target. `ProcessMauiFonts` / `ProcessMauiSplashScreens` use this pattern; `ResizetizeImages` keeps its legacy stamp alongside its own `mauiimage.outputs`.
 
 ## Target Pipeline
 
@@ -103,15 +113,30 @@ MSBuild's `Inputs`/`Outputs` incremental check skips **tasks** when outputs are 
 2. **Collection target** (NO `Inputs`/`Outputs`): Registers platform-specific items — always runs
 
 ```xml
-<!-- Target 1: Does work, can be skipped by incremental build -->
+<!-- Target 1: Does work, can be skipped by incremental build. Tracks its generated outputs
+     in a manifest (read back by _ReadMauiFontOutputs) so a deleted output re-triggers it. -->
 <Target Name="ProcessMauiFonts"
-    Inputs="@(MauiFont)" Outputs="$(_MauiFontStampFile)"
+    Inputs="@(MauiFont);$(_MauiFontInputsFile)"
+    Outputs="$(_MauiFontOutputsFile);@(_MauiFontOutputs)"
+    DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)"
     ...>
     <Copy SourceFiles="@(MauiFont)" DestinationFolder="$(_MauiIntermediateFonts)" />
-    <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
+    <ItemGroup>
+        <_MauiFontOutput Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_MauiFontOutputsFile)" Lines="@(_MauiFontOutput->'%(FullPath)')"
+        Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <Touch Files="$(_MauiFontOutputsFile);@(_MauiFontOutput)" AlwaysCreate="True" />
 </Target>
 
-<!-- Target 2: Registers items, ALWAYS runs -->
+<!-- Reads the previous manifest (via DependsOnTargets) so the up-to-date check knows the outputs -->
+<Target Name="_ReadMauiFontOutputs">
+    <ReadLinesFromFile File="$(_MauiFontOutputsFile)" Condition="Exists('$(_MauiFontOutputsFile)')">
+        <Output TaskParameter="Lines" ItemName="_MauiFontOutputs" />
+    </ReadLinesFromFile>
+</Target>
+
+<!-- Target 2: Registers items, ALWAYS runs (no Inputs/Outputs) -->
 <Target Name="_CollectMauiFontItems"
     DependsOnTargets="ProcessMauiFonts"
     ...>
@@ -167,6 +192,8 @@ iOS requires fonts to be declared in Info.plist via `UIAppFonts`. The `CreatePar
 **Important**: The plist generation (`CreatePartialInfoPlistTask`) is inside `ProcessMauiFonts` (the incremental target), while the `PartialAppManifest` registration is in `_CollectMauiFontItems` (always runs). This is correct because:
 - The plist only needs regeneration when fonts change (handled by Inputs/Outputs)
 - The plist FILE registration must happen every build (handled by always-run target using `Exists()` check)
+- The generated `MauiInfo.plist` is added to `mauifont.outputs`, so deleting it also re-triggers `ProcessMauiFonts`
+- Fonts are de-duplicated by intermediate filename before `CreatePartialInfoPlistTask` so colliding names (e.g. a project and a `ProjectReference` both shipping `OpenSans.ttf`) don't emit duplicate `UIAppFonts` entries
 
 ## ResizetizeCollectItems
 

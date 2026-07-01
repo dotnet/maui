@@ -75,9 +75,9 @@
         <_ResizetizerOutputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
         <_ResizetizerStampFile>$(_ResizetizerIntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
         <_MauiFontInputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
-        <_MauiFontStampFile>$(_ResizetizerIntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
+        <_MauiFontOutputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.outputs</_MauiFontOutputsFile>
         <_MauiSplashInputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
-        <_MauiSplashStampFile>$(_ResizetizerIntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
+        <_MauiSplashOutputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.outputs</_MauiSplashOutputsFile>
         <_MauiManifestStampFile>$(_ResizetizerIntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
 
         <_ResizetizerIntermediateOutputRoot>$(_ResizetizerIntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
@@ -120,11 +120,16 @@
             ProcessMauiSplashScreens;
             _ReadResizetizeImagesOutputs;
         </ResizetizeDependsOnTargets>
+        <ProcessMauiSplashScreensDependsOnTargets>
+            $(ProcessMauiSplashScreensDependsOnTargets);
+            _ReadMauiSplashOutputs;
+        </ProcessMauiSplashScreensDependsOnTargets>
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);
             ResizetizeCollectItems;
             ProcessMauiAssets;
             ProcessMauiSplashScreens;
+            _ReadMauiFontOutputs;
         </ProcessMauiFontsDependsOnTargets>
     </PropertyGroup>
 
@@ -399,7 +404,8 @@
     <Target Name="ProcessMauiSplashScreens"
         Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
-        Outputs="$(_MauiSplashStampFile)">
+        Outputs="$(_MauiSplashOutputsFile);@(_MauiSplashOutputs)"
+        DependsOnTargets="$(ProcessMauiSplashScreensDependsOnTargets)">
 
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
@@ -505,21 +511,37 @@
             <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
 
-        <!-- Stamp file for Outputs -->
+        <!-- Track the generated splash outputs in an obj-scoped manifest so the incremental
+             check re-runs this target if any generated file disappears (see _ReadMauiSplashOutputs
+             and the @(_MauiSplashOutputs) entries in this target's Outputs). Replaces the previous
+             stamp file, whose timestamp could stay newer than deleted outputs. -->
         <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
-        <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
+        <WriteLinesToFile
+            File="$(_MauiSplashOutputsFile)"
+            Lines="@(_MauiSplashAssets->'%(FullPath)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+        />
+        <Touch Files="$(_MauiSplashOutputsFile)" AlwaysCreate="True" />
+        <Touch Files="@(_MauiSplashAssets)" Condition="'@(_MauiSplashAssets)' != ''" />
 
         <ItemGroup>
             <FileWrites Include="@(_MauiSplashAssets)" />
-            <FileWrites Include="$(_MauiSplashStampFile)" />
+            <FileWrites Include="$(_MauiSplashOutputsFile)" />
         </ItemGroup>
 
+    </Target>
+
+    <Target Name="_ReadMauiSplashOutputs">
+        <ReadLinesFromFile File="$(_MauiSplashOutputsFile)" Condition="Exists ('$(_MauiSplashOutputsFile)')">
+            <Output TaskParameter="Lines" ItemName="_MauiSplashOutputs" />
+        </ReadLinesFromFile>
     </Target>
 
     <Target Name="ProcessMauiFonts"
         Condition="'$(EnableMauiFontProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
-        Outputs="$(_MauiFontStampFile)"
+        Outputs="$(_MauiFontOutputsFile);@(_MauiFontOutputs)"
         AfterTargets="$(ProcessMauiFontsAfterTargets)"
         BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
         DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)">
@@ -530,12 +552,27 @@
             DestinationFolder="$(_MauiIntermediateFonts)"
             SkipUnchangedFiles="true" />
 
-        <!-- Create a partial info.plist for iOS -->
+        <!-- Predict the copied font paths and de-duplicate by intermediate filename so a project and
+             a ProjectReference that both supply e.g. 'OpenSans.ttf' collapse to a single output.
+             Because every font is copied flat into $(_MauiIntermediateFonts), de-duplicating these
+             mapped paths is equivalent to de-duplicating @(MauiFont) by %(Filename)%(Extension). This
+             keeps the generated plist's UIAppFonts and the output manifest free of duplicates,
+             matching the de-dup applied to _MauiFontCopied in _CollectMauiFontItems. -->
+        <ItemGroup>
+            <_MauiFontOutput Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
+        </ItemGroup>
+        <RemoveDuplicates Inputs="@(_MauiFontOutput)">
+            <Output TaskParameter="Filtered" ItemName="_MauiFontOutputUnique" />
+        </RemoveDuplicates>
+
+        <!-- Create a partial info.plist for iOS. CreatePartialInfoPlistTask only reads each font's
+             file name, so the de-duplicated intermediate paths yield the same UIAppFonts entries as
+             @(MauiFont) while avoiding duplicate <string> entries when filenames collide. -->
         <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(MauiFont)' != ''"
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontOutputUnique)' != ''"
             IntermediateOutputPath="$(_MauiIntermediateFonts)"
             PlistName="MauiInfo.plist"
-            CustomFonts="@(MauiFont)" />
+            CustomFonts="@(_MauiFontOutputUnique)" />
 
         <!-- Tear down a previously-generated partial info.plist when the last MauiFont is removed.
              CreatePartialInfoPlistTask above is skipped when there are no fonts, but
@@ -546,12 +583,29 @@
             Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(MauiFont)' == '' And Exists('$(_MauiIntermediateFonts)MauiInfo.plist')"
             Files="$(_MauiIntermediateFonts)MauiInfo.plist" />
 
-        <!-- Touch/create our stamp file for outputs -->
-        <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
-
-        <!-- Include our stamp file as filewrite so it doesn't get rm'd -->
+        <!-- Track the generated font outputs (copied fonts + any iOS partial plist) in an obj-scoped
+             manifest so the incremental check re-runs this target if any generated file disappears
+             (see _ReadMauiFontOutputs and the @(_MauiFontOutputs) entries in this target's Outputs).
+             Replaces the previous stamp file, whose timestamp could stay newer than deleted outputs. -->
         <ItemGroup>
-            <FileWrites Include="$(_MauiFontStampFile)" />
+            <_MauiFontOutputUnique Include="$(_MauiIntermediateFonts)MauiInfo.plist"
+                Condition="'$(_ResizetizerIsiOSApp)' == 'True' And Exists('$(_MauiIntermediateFonts)MauiInfo.plist')" />
+        </ItemGroup>
+
+        <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
+        <WriteLinesToFile
+            File="$(_MauiFontOutputsFile)"
+            Lines="@(_MauiFontOutputUnique->'%(FullPath)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+        />
+        <Touch Files="$(_MauiFontOutputsFile)" AlwaysCreate="True" />
+        <Touch Files="@(_MauiFontOutputUnique)" Condition="'@(_MauiFontOutputUnique)' != ''" />
+
+        <!-- Include our fonts and output manifest as filewrites so they don't get rm'd -->
+        <ItemGroup>
+            <FileWrites Include="$(_MauiFontOutputsFile)" />
+            <FileWrites Include="@(_MauiFontOutputUnique)" />
         </ItemGroup>
     </Target>
 
@@ -644,6 +698,12 @@
         <ItemGroup>
             <FileWrites Include="@(_MauiFontCopied)" />
         </ItemGroup>
+    </Target>
+
+    <Target Name="_ReadMauiFontOutputs">
+        <ReadLinesFromFile File="$(_MauiFontOutputsFile)" Condition="Exists ('$(_MauiFontOutputsFile)')">
+            <Output TaskParameter="Lines" ItemName="_MauiFontOutputs" />
+        </ReadLinesFromFile>
     </Target>
 
     <Target Name="_ReadResizetizeImagesOutputs">
