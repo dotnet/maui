@@ -97,6 +97,35 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
+		public void RemovingColorMetadataDeletesStaleColorAsset()
+		{
+			var splashWithColor = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Color"] = "#ffffff",
+				["DarkColor"] = "#000000",
+				["DarkFile"] = "images/camera_color.png",
+				["BaseSize"] = "44",
+			});
+
+			var firstTask = GetNewTask(splashWithColor);
+			var firstSuccess = firstTask.Execute();
+			Assert.True(firstSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+			AssertFileExists("Assets.xcassets/MauiSplashColor.colorset/Contents.json");
+
+			var splashWithoutColor = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["DarkFile"] = "images/camera_color.png",
+				["BaseSize"] = "44",
+			});
+
+			var secondTask = GetNewTask(splashWithoutColor);
+			var secondSuccess = secondTask.Execute();
+			Assert.True(secondSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileNotExists("Assets.xcassets/MauiSplashColor.colorset/Contents.json");
+		}
+
+		[Fact]
 		public void DarkTintColorOnlyGeneratesTintedDarkImage()
 		{
 			var splash = new TaskItem("images/camera.svg", new Dictionary<string, string>

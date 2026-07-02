@@ -50,6 +50,10 @@ namespace Microsoft.Maui.Resizetizer
 
 					WriteColorSet(info.Color ?? SKColors.White, info.DarkColor ?? info.Color ?? SKColors.White);
 				}
+				else
+				{
+					DeleteColorSet();
+				}
 
 				return !Log.HasLoggedErrors;
 			}
@@ -256,6 +260,13 @@ namespace Microsoft.Maui.Resizetizer
 			var storyboard = Path.Combine(IntermediateOutputPath, "MauiSplash.storyboard");
 			if (File.Exists(storyboard))
 				File.Delete(storyboard);
+		}
+
+		private void DeleteColorSet()
+		{
+			var colorSetPath = Path.Combine(IntermediateOutputPath, DpiPath.Ios.SplashColorSetPath);
+			if (Directory.Exists(colorSetPath))
+				Directory.Delete(colorSetPath, recursive: true);
 		}
 
 		void ILogger.Log(string message)

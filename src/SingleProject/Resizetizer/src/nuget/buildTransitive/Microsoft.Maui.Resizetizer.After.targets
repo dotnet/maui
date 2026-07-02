@@ -419,22 +419,24 @@
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
             <_MauiHasSplashScreens Condition="'@(MauiSplashScreen->Count())' != '0'">true</_MauiHasSplashScreens>
-            <_MauiSplashScreenIdentities>@(MauiSplashScreen)</_MauiSplashScreenIdentities>
-            <_MauiFirstSplashScreenIdentity Condition="'$(_MauiHasSplashScreens)' == 'true'">$(_MauiSplashScreenIdentities.Split(';')[0])</_MauiFirstSplashScreenIdentity>
+            <_MauiSplashScreenIdentities>@(MauiSplashScreen->'%(Identity)', '|')</_MauiSplashScreenIdentities>
+            <_MauiSplashScreenColors>@(MauiSplashScreen->'%(Color)', '|')</_MauiSplashScreenColors>
+            <_MauiSplashScreenDarkColors>@(MauiSplashScreen->'%(DarkColor)', '|')</_MauiSplashScreenDarkColors>
+            <_MauiSplashScreenDarkFiles>@(MauiSplashScreen->'%(DarkFile)', '|')</_MauiSplashScreenDarkFiles>
+            <_MauiSplashScreenDarkTintColors>@(MauiSplashScreen->'%(DarkTintColor)', '|')</_MauiSplashScreenDarkTintColors>
+            <_MauiFirstSplashScreenIdentity Condition="'$(_MauiHasSplashScreens)' == 'true'">$(_MauiSplashScreenIdentities.Split('|')[0])</_MauiFirstSplashScreenIdentity>
+            <_MauiFirstSplashScreenColor Condition="'$(_MauiHasSplashScreens)' == 'true'">$(_MauiSplashScreenColors.Split('|')[0])</_MauiFirstSplashScreenColor>
+            <_MauiFirstSplashScreenDarkColor Condition="'$(_MauiHasSplashScreens)' == 'true'">$(_MauiSplashScreenDarkColors.Split('|')[0])</_MauiFirstSplashScreenDarkColor>
+            <_MauiFirstSplashScreenDarkFile Condition="'$(_MauiHasSplashScreens)' == 'true'">$(_MauiSplashScreenDarkFiles.Split('|')[0])</_MauiFirstSplashScreenDarkFile>
+            <_MauiFirstSplashScreenDarkTintColor Condition="'$(_MauiHasSplashScreens)' == 'true'">$(_MauiSplashScreenDarkTintColors.Split('|')[0])</_MauiFirstSplashScreenDarkTintColor>
             <_MauiShouldGenerateSplashScreen Condition="'$(_MauiHasSplashScreens)' == 'true'">true</_MauiShouldGenerateSplashScreen>
             <_MauiShouldGenerateSplashScreen Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' != 'true' and '$(EnableBlankMauiSplashScreen)' == 'true'">true</_MauiShouldGenerateSplashScreen>
             <_MauiAppleThemedSplashSupported Condition="'$(SupportedOSPlatformVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(SupportedOSPlatformVersion)', '14.0'))">true</_MauiAppleThemedSplashSupported>
         </PropertyGroup>
 
-        <ItemGroup>
-            <_MauiFirstSplashScreen Include="@(MauiSplashScreen)" Condition="'%(MauiSplashScreen.Identity)' == '$(_MauiFirstSplashScreenIdentity)'" />
-            <_MauiSplashScreenWithDarkMetadata Include="@(_MauiFirstSplashScreen)" Condition="'%(_MauiFirstSplashScreen.DarkFile)' != '' Or '%(_MauiFirstSplashScreen.DarkColor)' != '' Or '%(_MauiFirstSplashScreen.DarkTintColor)' != ''" />
-            <_MauiSplashScreenWithColorMetadata Include="@(_MauiFirstSplashScreen)" Condition="'%(_MauiFirstSplashScreen.Color)' != '' Or '%(_MauiFirstSplashScreen.DarkColor)' != ''" />
-        </ItemGroup>
-
         <PropertyGroup>
-            <_MauiHasThemedSplashScreen Condition="'@(_MauiSplashScreenWithDarkMetadata)' != ''">true</_MauiHasThemedSplashScreen>
-            <_MauiLaunchScreenColorName Condition="'@(_MauiSplashScreenWithColorMetadata)' != ''">MauiSplashColor</_MauiLaunchScreenColorName>
+            <_MauiHasThemedSplashScreen Condition="'$(_MauiFirstSplashScreenDarkFile)' != '' Or '$(_MauiFirstSplashScreenDarkColor)' != '' Or '$(_MauiFirstSplashScreenDarkTintColor)' != ''">true</_MauiHasThemedSplashScreen>
+            <_MauiLaunchScreenColorName Condition="'$(_MauiFirstSplashScreenColor)' != '' Or '$(_MauiFirstSplashScreenDarkColor)' != ''">MauiSplashColor</_MauiLaunchScreenColorName>
             <_MauiShouldUseThemedAppleSplashScreen Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true' and '$(_MauiHasThemedSplashScreen)' == 'true' and '$(_MauiAppleThemedSplashSupported)' == 'true'">true</_MauiShouldUseThemedAppleSplashScreen>
         </PropertyGroup>
 

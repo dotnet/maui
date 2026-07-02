@@ -39,13 +39,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				    <SupportedOSPlatformVersion>14.0</SupportedOSPlatformVersion>
 				  </PropertyGroup>
 				  <ItemGroup>
-				    <MauiSplashScreen Include="first.png" DarkFile="first-dark.png" />
-				    <MauiSplashScreen Include="second.png" Color="#ffffff" />
+				    <MauiSplashScreen Include="splash.png" DarkFile="first-dark.png" />
+				    <MauiSplashScreen Include="splash.png" Color="#ffffff" />
 				  </ItemGroup>
 				  <Target Name="Validate">
 				{{metadataElements}}
-				    <Message Importance="high" Text="First=@(_MauiFirstSplashScreen); Themed=$(_MauiHasThemedSplashScreen); Color=$(_MauiLaunchScreenColorName)" />
-				    <Error Condition="'@(_MauiFirstSplashScreen)' != 'first.png'" Text="Expected the first splash screen item, got '@(_MauiFirstSplashScreen)'." />
+				    <Message Importance="high" Text="First=$(_MauiFirstSplashScreenIdentity); DarkFile=$(_MauiFirstSplashScreenDarkFile); FirstColor=$(_MauiFirstSplashScreenColor); Themed=$(_MauiHasThemedSplashScreen); Color=$(_MauiLaunchScreenColorName)" />
+				    <Error Condition="'$(_MauiFirstSplashScreenIdentity)' != 'splash.png'" Text="Expected the first splash screen identity, got '$(_MauiFirstSplashScreenIdentity)'." />
+				    <Error Condition="'$(_MauiFirstSplashScreenDarkFile)' != 'first-dark.png'" Text="Expected dark metadata from the first duplicate splash screen item, got '$(_MauiFirstSplashScreenDarkFile)'." />
+				    <Error Condition="'$(_MauiFirstSplashScreenColor)' != ''" Text="Expected color metadata from the second duplicate splash screen item to be ignored, got '$(_MauiFirstSplashScreenColor)'." />
 				    <Error Condition="'$(_MauiHasThemedSplashScreen)' != 'true'" Text="Expected the first splash screen dark metadata to enable themed Apple splash screens." />
 				    <Error Condition="'$(_MauiLaunchScreenColorName)' != ''" Text="Expected color metadata from later splash screen items to be ignored, got '$(_MauiLaunchScreenColorName)'." />
 				    <Error Condition="'$(_MauiShouldUseThemedAppleSplashScreen)' != 'true'" Text="Expected themed Apple splash screen generation to be enabled." />
@@ -55,7 +57,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			var output = RunDotnetMSBuild(projectFile);
 
-			Assert.Contains("First=first.png; Themed=true; Color=", output, StringComparison.Ordinal);
+			Assert.Contains("First=splash.png; DarkFile=first-dark.png; FirstColor=; Themed=true; Color=", output, StringComparison.Ordinal);
 		}
 
 		[Fact]
@@ -101,17 +103,17 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		{
 			var doc = XDocument.Load(targetFile);
 			var processSplashScreens = Assert.Single(doc.Root.Elements().Where(e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ProcessMauiSplashScreens"));
-			var groups = processSplashScreens
+			var propertyGroups = processSplashScreens
 				.Elements()
-				.Where(e => e.Name.LocalName is "PropertyGroup" or "ItemGroup")
-				.Take(3)
+				.Where(e => e.Name.LocalName == "PropertyGroup")
 				.ToArray();
 
-			Assert.Equal(new[] { "PropertyGroup", "ItemGroup", "PropertyGroup" }, groups.Select(e => e.Name.LocalName).ToArray());
+			var firstSplashMetadata = Assert.Single(propertyGroups.Where(e => e.Elements().Any(child => child.Name.LocalName == "_MauiHasSplashScreens")));
+			var themedSplashMetadata = Assert.Single(propertyGroups.Where(e => e.Elements().Any(child => child.Name.LocalName == "_MauiHasThemedSplashScreen")));
 
 			var elements = includeWarnings
-				? groups.Concat(processSplashScreens.Elements().Where(e => e.Name.LocalName == "Warning"))
-				: groups;
+				? new[] { firstSplashMetadata, themedSplashMetadata }.Concat(processSplashScreens.Elements().Where(e => e.Name.LocalName == "Warning"))
+				: new[] { firstSplashMetadata, themedSplashMetadata };
 
 			return string.Join(Environment.NewLine, elements.Select(e => StripNamespace(e).ToString(SaveOptions.DisableFormatting)));
 		}
@@ -141,9 +143,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			using var process = Process.Start(startInfo);
 			Assert.NotNull(process);
 
-			var output = process.StandardOutput.ReadToEnd();
-			var error = process.StandardError.ReadToEnd();
+			var outputTask = process.StandardOutput.ReadToEndAsync();
+			var errorTask = process.StandardError.ReadToEndAsync();
 			process.WaitForExit();
+			var output = outputTask.GetAwaiter().GetResult();
+			var error = errorTask.GetAwaiter().GetResult();
 
 			Output.WriteLine(output);
 			Output.WriteLine(error);
