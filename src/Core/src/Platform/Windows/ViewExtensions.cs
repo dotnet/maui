@@ -297,6 +297,13 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
 		{
+			if (layout.Background is ImageSourcePaint image)
+			{
+				var provider = layout.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				layoutPanel?.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(layout.Handler);
+				return;
+			}
+
 			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
 		}
 

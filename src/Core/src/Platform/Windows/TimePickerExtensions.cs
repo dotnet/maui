@@ -77,6 +77,13 @@ public static class TimePickerExtensions
 
 	public static void UpdateBackground(this TimePicker platformTimePicker, ITimePicker timePicker)
 	{
+		if (timePicker?.Background is ImageSourcePaint image)
+		{
+			var provider = timePicker.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformTimePicker.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(timePicker.Handler);
+			return;
+		}
+
 		var brush = timePicker?.Background?.ToPlatform();
 
 		if (brush is null)
