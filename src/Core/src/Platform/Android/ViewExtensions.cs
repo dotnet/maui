@@ -233,8 +233,17 @@ namespace Microsoft.Maui.Platform
 			platformView.UpdateBackground(view, false);
 		}
 
-		internal static void UpdateBackground(this AView platformView, IView view, bool treatTransparentAsNull) =>
+		internal static void UpdateBackground(this AView platformView, IView view, bool treatTransparentAsNull)
+		{
+			if (view.Background is ImageSourcePaint image)
+			{
+				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
+				return;
+			}
+
 			platformView.UpdateBackground(view.Background, treatTransparentAsNull);
+		}
 
 		internal static void UpdateBackground(this TextView platformView, IView view) =>
 			UpdateBackground(platformView, view, true);
@@ -243,6 +252,13 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformView is null || platformView.Context is null)
 			{
+				return;
+			}
+
+			if (view.Background is ImageSourcePaint image)
+			{
+				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
 				return;
 			}
 
