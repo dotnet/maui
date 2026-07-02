@@ -9,6 +9,36 @@ namespace Microsoft.Maui.Controls
 	public partial class NavigationPage
 	{
 		GradientBrush _currentBarBackgroundBrush;
+		NavigationType? _deferredNavigationType;
+
+		/// <summary>
+		/// On iOS, the handler connects before the Window parents the page,
+		/// so NavigationProxy.Inner is null during OnHandlerChangedCore.
+		/// If Inner is null, defer SendNavigated (NavigatedTo) to ViewDidAppear
+		/// when navigation infrastructure is fully wired.
+		/// See NavigationPage.cs partial method declarations for full explanation.
+		/// </summary>
+		partial void ShouldDeferNavigatedTo(ref bool defer)
+		{
+			if (((Internals.NavigationProxy)Navigation).Inner is null)
+			{
+				defer = true;
+				_deferredNavigationType = DetermineNavigationType();
+			}
+		}
+
+		/// <summary>
+		/// Fires the deferred SendNavigated that was skipped in OnHandlerChangedCore.
+		/// Called from OnControllerAppeared (ViewDidAppear) in NavigationPage.Mapper.cs.
+		/// </summary>
+		partial void FireDeferredNavigatedTo()
+		{
+			if (_deferredNavigationType is NavigationType navType)
+			{
+				_deferredNavigationType = null;
+				SendNavigated(null, navType);
+			}
+		}
 
 		public static void MapPrefersLargeTitles(NavigationViewHandler handler, NavigationPage navigationPage) =>
 			MapPrefersLargeTitles((INavigationViewHandler)handler, navigationPage);

@@ -172,6 +172,17 @@ namespace Microsoft.Maui.Handlers
 
 			NavigationStack = new List<IView>(newStack);
 			NavigationView.NavigationFinished(NavigationStack);
+
+			// After mid-stack changes, the top VC's left bar button may need updating
+			// (e.g., flyout icon → back button after InsertPageBefore at root).
+			if (ControlsConfiguration?.OnMidStackChanged is { } onMidStackChanged)
+			{
+				var topVC = _navManager?.NavigationController.TopViewController;
+				if (topVC is not null)
+				{
+					onMidStackChanged(topVC);
+				}
+			}
 		}
 
 		void SyncMiddleOfStack(IReadOnlyList<IView> newStack)
@@ -311,26 +322,10 @@ namespace Microsoft.Maui.Handlers
 
 			public bool ShouldPop()
 			{
-				if (!_handlerRef.TryGetTarget(out var handler))
-				{
-					return true;
-				}
-
-				// Dispatch to the next run loop iteration to avoid re-entrancy in shouldPopItem:
-				// which would cause UIKit to skip DidShowViewController callbacks.
-				var window = handler.MauiContext?.GetPlatformWindow()?.GetWindow();
-
-				if (window is not null)
-				{
-					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
-					{
-						window.BackButtonClicked();
-					});
-
-					return false;
-				}
-
-				// No window — allow UIKit pop (harmless fallback).
+				// Return true to let UIKit handle the pop directly, matching the renderer's
+				// shouldPopItem behavior. After the pop animation completes,
+				// DidShowViewController fires and OnNavigationComplete →
+				// SyncNativeStackToMaui syncs the MAUI stack.
 				return true;
 			}
 
@@ -534,5 +529,12 @@ namespace Microsoft.Maui.Handlers
 		/// Fires SendDisappearing for tab switch scenarios (H3 fix).
 		/// </summary>
 		public required Action<IStackNavigationView> OnControllerDisappeared { get; init; }
+
+		/// <summary>
+		/// Callback invoked on the top VC after a mid-stack insert/remove changes the
+		/// underlying stack without a push/pop animation. The visible page may need to
+		/// update its left bar button item (e.g., flyout icon → back button).
+		/// </summary>
+		public Action<UIViewController>? OnMidStackChanged { get; init; }
 	}
 }

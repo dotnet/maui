@@ -65,6 +65,10 @@ namespace Microsoft.Maui.Controls
         {
             base.ViewDidLoad();
 
+            // Set a system background so this VC isn't transparent when the child
+            // view is hidden (e.g., FlyoutPage.IsVisible = false).
+            View!.BackgroundColor = UIColor.SystemBackground;
+
             if (Child is Page child)
             {
                 var parentPages = child.GetParentPages();
@@ -89,6 +93,15 @@ namespace Microsoft.Maui.Controls
                 UpdateToolbarItems();
                 UpdateLeftBarButtonItem();
             }
+        }
+
+        /// <summary>
+        /// Called by the handler after a mid-stack insert/remove to re-evaluate
+        /// the left bar button item (flyout icon vs back button).
+        /// </summary>
+        internal void NotifyStackChanged()
+        {
+            UpdateLeftBarButtonItem();
         }
 
         public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
@@ -339,9 +352,15 @@ namespace Microsoft.Maui.Controls
             if (parentFlyoutPage is null)
                 return;
 
-            // Only show flyout button on the root page of the nav stack,
-            // or when the back button is hidden. Otherwise the back button takes priority.
-            var isRootPage = NavigationController?.ViewControllers?.FirstOrDefault() == this;
+            // Use the MAUI NavigationStack to determine if this is the root page,
+            // not UIKit's ViewControllers — UIKit may not have committed a pending
+            // SetViewControllers yet (the property is event-queue-deferred on iOS).
+            // This matches the renderer's approach of passing pageBeingRemoved to
+            // compensate for stale ViewControllers.
+            var navPage = child.Parent as NavigationPage;
+            var isRootPage = navPage?.Navigation?.NavigationStack?.Count > 0
+                && navPage.Navigation.NavigationStack[0] == child;
+
             if (!isRootPage && NavigationPage.GetHasBackButton(child))
             {
                 NavigationItem.LeftBarButtonItem = null;
@@ -830,6 +849,13 @@ namespace Microsoft.Maui.Controls
         {
             get
             {
+                // On iOS 26+ with autoresizing masks, AlignmentRectInsets can cause UIKit
+                // to inflate the frame. Margins are applied in the Frame setter instead.
+                if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+                {
+                    return base.AlignmentRectInsets;
+                }
+
                 if (_child?.VirtualView is IView view)
                 {
                     var margin = view.Margin;
@@ -851,6 +877,23 @@ namespace Microsoft.Maui.Controls
                         !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
                     {
                         value.Y = Superview.Bounds.Y;
+
+                        // On iOS 26+ with autoresizing masks, apply margins directly
+                        // in the Frame setter since AlignmentRectInsets is not used.
+                        if (_child?.VirtualView is IView view)
+                        {
+                            var margin = view.Margin;
+                            var newWidth = value.Width - (nfloat)(margin.Left + margin.Right);
+                            if (newWidth < 0)
+                                newWidth = 0;
+
+                            value = new RectangleF(
+                                value.X + (nfloat)margin.Left,
+                                value.Y + (nfloat)margin.Top,
+                                newWidth,
+                                value.Height
+                            );
+                        }
                     }
 
                     value.Height = ToolbarHeight;
