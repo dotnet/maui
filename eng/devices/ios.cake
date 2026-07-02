@@ -159,11 +159,6 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 			{
 				args.Append("/p:UseMonoRuntime=false");
 			}
-			else
-			{
-				args.Append("/p:UseMonoRuntime=true")
-					.Append("/p:_DisableCheckForUnsupportedMonoMobileRuntime=true");
-			}
 
 			return args;
 		}

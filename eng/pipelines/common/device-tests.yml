@@ -92,33 +92,6 @@ stages:
               useArtifacts: ${{ parameters.useArtifacts }}
               useCoreClr: true
 
-    # Smoke coverage that MAUI still builds and runs iOS device tests under Mono.
-    # Single representative project and version to keep this to one smoke leg.
-    - ${{ if eq(platform, 'ios') }}:
-      - ${{ each project in parameters.projects }}:
-        - ${{ if and(ne(project.ios, ''), eq(project.name, 'controls')) }}:
-          - template: device-tests-jobs.yml
-            parameters:
-              platform: ios
-              timeoutInMinutes: 120
-              pool: ${{ parameters.iOSPool }}
-              versions: [ 'simulator-26.0' ]
-              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
-              checkoutDirectory: ${{ parameters.checkoutDirectory }}
-              project:
-                name: ${{ project.name }}
-                desc: ${{ project.desc }}
-                path: ${{ project.ios }}
-                versionsExclude: ${{ project.iosVersionsCoreClrExclude }}
-                configuration: ${{ project.iOSConfiguration }}
-              provisionatorChannel: ${{ parameters.provisionatorChannel }}
-              skipProvisioning: ${{ parameters.skipProvisioning }}
-              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-              artifactName: ${{ parameters.artifactName }}
-              artifactItemPattern: ${{ parameters.artifactItemPattern }}
-              useArtifacts: ${{ parameters.useArtifacts }}
-              useCoreClr: false
-
     - ${{ if eq(platform, 'catalyst') }}:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.catalyst, '') }}:

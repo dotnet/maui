@@ -248,6 +248,119 @@ stages:
             WorkItemTimeout: 04:00:00
             XUnitWorkItemTimeout: 04:00:00
 
+# Smoke coverage that device tests still build and run on iOS under Mono.
+- stage: devicetests_build_mono
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono iOS Helix Tests
+  dependsOn: []
+  jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.buildPool }}
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
+      - job: builddevice_tests_mono
+        displayName: Build Device Tests (Mono)
+        timeoutInMinutes: 120
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        steps:
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        # Run on public pipeline
+        - script: dotnet cake --target=dotnet-buildtasks --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Build BuildTasks
+          retryCountOnTaskFailure: 3
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
+
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=true /p:_DisableCheckForUnsupportedMonoMobileRuntime=true /bl:BuildDeviceTests.binlog
+          displayName: Build DeviceTests (Mono)
+
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Succeeded Artifacts Directory
+          condition: succeeded()
+          artifact: ${{ parameters.appArtifactName }}_mono
+
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Failed Artifacts Directory
+          condition: not(succeeded())
+          artifact: ${{ parameters.appArtifactName }}_mono_failed_$(System.JobAttempt)
+
+- stage: devicetests_ios_mono
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono iOS Helix Tests Run
+  dependsOn: 
+    - devicetests_build_mono
+  jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.testPool }}
+      enableMicrobuild: false
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
+      - job: device_tests_ios_mono
+        displayName: Run DeviceTests iOS (Mono)
+        timeoutInMinutes: 240
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download Build'
+          condition: succeeded()
+          inputs:
+            artifactName: ${{ parameters.appArtifactName }}_mono
+            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
+
+        - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
+          parameters:
+            HelixProjectPath: ${{ parameters.helixProject }}
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig)_Mono /p:TestRunNamePrefix=DeviceTestsIOS_Mono_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig)_Mono /p:TestRunNamePrefix=DeviceTestsIOS_Mono_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
+            HelixConfiguration: $(_BuildConfig)
+            IncludeDotNetCli: true
+            DisplayNamePrefix: DeviceTestsIOS_Mono
+            WorkItemTimeout: 04:00:00
+            XUnitWorkItemTimeout: 04:00:00
+
 - stage: devicetests_catalyst_coreclr
   displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR MacCatalyst Helix Tests
   dependsOn: 
