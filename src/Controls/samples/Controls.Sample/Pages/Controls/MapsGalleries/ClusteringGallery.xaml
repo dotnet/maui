@@ -13,10 +13,13 @@
             <Button 
                 Text="Add 50 Pins" 
                 Clicked="OnAdd50PinsClicked" />
-            <Button 
-                Text="Add 100 Pins" 
+            <Button
+                Text="Add 100 Pins"
                 Clicked="OnAdd100PinsClicked" />
-            <Button 
+            <Button
+                Text="Add Custom-Icon Pins"
+                Clicked="OnAddCustomPinsClicked" />
+            <Button
                 Text="Clear Pins"
                 Clicked="OnClearPinsClicked" />
         </HorizontalStackLayout>

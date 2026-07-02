@@ -129,6 +129,9 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 Microsoft.Maui.Controls.HybridWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
 Microsoft.Maui.Controls.HybridWebView.AllowedDomains.set -> void
 static readonly Microsoft.Maui.Controls.HybridWebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
+static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
 Microsoft.Maui.Controls.Handlers.ShellHandler
 Microsoft.Maui.Controls.Handlers.ShellHandler.ShellHandler() -> void
