@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public class GeometryGroup : Geometry
 	{
-		readonly HashSet<Geometry> _subscribedChildren = new();
+		readonly Dictionary<Geometry, int> _subscriptionRefCounts = new();
 
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
@@ -162,9 +162,13 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (geometry == null)
 				return;
 
-			if (!_subscribedChildren.Add(geometry))
+			if (_subscriptionRefCounts.TryGetValue(geometry, out var count))
+			{
+				_subscriptionRefCounts[geometry] = count + 1;
 				return;
+			}
 
+			_subscriptionRefCounts[geometry] = 1;
 			geometry.PropertyChanged += OnChildrenPropertyChanged;
 		}
 
@@ -173,20 +177,27 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (geometry == null)
 				return;
 
-			if (!_subscribedChildren.Remove(geometry))
+			if (!_subscriptionRefCounts.TryGetValue(geometry, out var count))
 				return;
 
+			if (count > 1)
+			{
+				_subscriptionRefCounts[geometry] = count - 1;
+				return;
+			}
+
+			_subscriptionRefCounts.Remove(geometry);
 			geometry.PropertyChanged -= OnChildrenPropertyChanged;
 		}
 
 		void UnsubscribeFromAllChildren()
 		{
-			foreach (var geometry in _subscribedChildren)
+			foreach (var geometry in _subscriptionRefCounts.Keys)
 			{
 				geometry.PropertyChanged -= OnChildrenPropertyChanged;
 			}
 
-			_subscribedChildren.Clear();
+			_subscriptionRefCounts.Clear();
 		}
 
 		void OnChildrenPropertyChanged(object sender, PropertyChangedEventArgs e)
