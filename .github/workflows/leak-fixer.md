@@ -63,7 +63,7 @@ tools:
     toolsets: [pull_requests, repos, issues, search]
     min-integrity: approved
   edit:
-  bash: ["dotnet", "git", "find", "ls", "cat", "grep", "head", "tail", "wc", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod", "curl"]
+  bash: ["dotnet", "git", "gh", "find", "ls", "cat", "grep", "head", "tail", "wc", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod", "curl"]
 
 checkout:
   fetch-depth: 200
@@ -106,25 +106,46 @@ safe-outputs:
       - "**/PublicAPI.Unshipped.txt"
     labels: [agentic-workflows]
     allowed-labels: [agentic-workflows]
+  # Track C — respond to review feedback on this workflow's OWN open leak PRs.
+  # Both are scoped by required-title-prefix so they can only touch [leak-fix]/[leak-test] PRs.
+  push-to-pull-request-branch:
+    target: "*"                     # agent supplies pull_request_number (its own leak PR)
+    required-title-prefix: "[leak-" # only [leak-fix] / [leak-test] PRs
+    max: 1
+    if-no-changes: "ignore"
+    # Same managed allowlist as create-pull-request (a review fix touches the same surface).
+    allowed-files:
+      - "src/Controls/src/**"
+      - "src/Controls/tests/Core.UnitTests/**"
+      - "src/Controls/tests/DeviceTests/**"
+      - "src/Core/src/**"
+      - "src/Essentials/src/**"
+      - "**/PublicAPI.Unshipped.txt"
+  add-comment:
+    target: "*"                     # agent supplies the leak PR number
+    required-title-prefix: "[leak-"
+    max: 1
 ---
 
 # Memory Leak Fixer — dotnet/maui
 
-You take ONE open issue filed by the Daily Memory Leak Hunter and turn it into a single
-**draft pull request**. There are two kinds of issue and two matching tracks:
+Each run you take **exactly one action**, choosing the highest-priority track:
 
-- **`[leak-scan]` — a confirmed runtime leak → Track A.** You produce a `[leak-fix]` PR that
-  contains BOTH a regression test that FAILS without the fix and the managed product fix that
-  makes it PASS.
-- **`[leak-test-gap]` — a missing memory-leak test → Track B.** You produce a `[leak-test]` PR
-  that ADDS the proposed coverage (the issue body contains a ready-to-paste stub) so a future
-  regression in that control/scenario is caught.
+- **Track C — respond to review feedback (HIGHEST PRIORITY, do this FIRST).** If one of *this
+  workflow's own* open `[leak-fix]`/`[leak-test]` PRs has a review that **requested changes**
+  you haven't addressed yet, work on THAT PR: apply the changes (push a commit to its branch)
+  and/or post a comment pushing back on any request that is wrong or doesn't make sense. Then
+  stop — do not also do new work this run.
+- **Track A — `[leak-scan]` runtime leak.** Otherwise, produce a `[leak-fix]` PR that contains
+  BOTH a regression test that FAILS without the fix and the managed product fix that makes it
+  PASS.
+- **Track B — `[leak-test-gap]` missing test.** Otherwise, produce a `[leak-test]` PR that ADDS
+  the proposed coverage so a future regression is caught.
 
-The PR base is always `main`. You build MAUI **from source** to validate (unlike the hunter,
-which uses the shipped package). All scratch state goes under `/tmp/gh-aw/agent/` (each bash
-call is a fresh subshell; persist what you need). The only write you may perform is the single
-`create-pull-request` safe-output. Never push directly, never comment, never edit anything
-outside the fix/test.
+The PR base is always `main`. You build MAUI **from source** to validate. All scratch state goes
+under `/tmp/gh-aw/agent/` (each bash call is a fresh subshell; persist what you need). Your only
+writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch`, `add-comment`)
+— never push with raw git, never edit anything outside the fix/test.
 
 ## Hard rules — non-negotiable
 
@@ -139,32 +160,37 @@ outside the fix/test.
      (write the fix too). Device-only tests (`src/Controls/tests/DeviceTests/**`) cannot run on
      this runner — validate that they **compile** and rely on `maui-pr-devicetests` to execute
      them; say so plainly in the PR.
+   - **Track C (review response):** any code you push must keep the PR's tests valid — re-run the
+     affected test so Track A stays red→green / the Track B guard still passes. Never push a
+     change that breaks the PR's own test just to satisfy a review.
 2. **If a Track A leak is already fixed on `main`, open NO PR.** When your faithful regression
    test passes on the *unpatched* source, the leak no longer reproduces — record
    `skipped: already fixed on main (test green without fix)` and stop.
-3. **Managed scope for product fixes.** Any *product* change (Track A) must live in managed
-   cross-platform code (`src/Controls/src`, `src/Core/src`, `src/Essentials/src`). If a
-   `[leak-scan]` leak can only be reproduced with a platform handler / native peer, it is out of
-   scope — `skipped: requires device test (out of scope)`. Track B may add a device-test
+3. **Managed scope for product fixes.** Any *product* change (Track A / a Track C code fix) must
+   live in managed cross-platform code (`src/Controls/src`, `src/Core/src`, `src/Essentials/src`).
+   If a `[leak-scan]` leak can only be reproduced with a platform handler / native peer, it is out
+   of scope — `skipped: requires device test (out of scope)`. Track B may add a device-test
    `[InlineData]` (that is coverage, not a product change) even for a platform-tested control.
 4. **Never mute, skip, weaken, or delete any existing test**, and never add `[ActiveIssue]`,
-   `Skip=`, `#if false`, timeout bumps, or retries. Reject your own attempt if the only change
-   that makes things green is a mute.
+   `Skip=`, `#if false`, timeout bumps, or retries. Reject any change whose only effect is a mute
+   — including when a review *asks* for one: push back with a comment instead.
 5. **Fix the root cause the issue describes** (Track A) — typically: replace a plain
    `event += instanceMethod` with a weak subscription (`WeakNotifyCollectionChangedProxy` /
    `WeakNotifyPropertyChangedProxy` / `WeakEventManager` — all already used in the codebase), or
    add the missing `-=` / teardown on the unload path. Prefer the minimal, idiomatic change that
    matches how the surrounding code already hardens similar subscriptions.
-6. **One issue, one draft PR per run.** Pick exactly one target. Honour the de-dup and
-   attempt-cap gates (Step 3) so you never stack a second open PR on the same issue.
-7. **AI attribution.** The PR body must clearly state it was generated by this workflow.
+6. **One action per run.** Either respond to ONE PR's review (Track C) OR open ONE new draft PR
+   (Track A/B) — never both, never two of a kind. Honour the de-dup / attempt-cap / already-
+   addressed gates so you never repeat yourself.
+7. **AI attribution.** Every PR body and every comment must clearly state it was generated by
+   this workflow.
 
 ## Step 0 — Run mode (dispatch inputs)
 
-- `issue_number` (optional): if set, target exactly that issue (either `[leak-scan]` or
-  `[leak-test-gap]`). If blank (e.g. the scheduled run), auto-pick a target in Step 2.
-- `dry_run` (optional, default false): if `"true"`, do the full local work but **emit NO PR** —
-  print the would-be PR (base, branch, title, body, `git diff --stat`) to the run log instead.
+- `issue_number` (optional): if set, SKIP Track C and target exactly that issue (Track A/B). If
+  blank (e.g. the scheduled run), do Track C first (Step R), then auto-pick a target in Step 2.
+- `dry_run` (optional, default false): if `"true"`, do the full local work but **emit no
+  safe-output** — print what you *would* push/comment/open to the run log instead.
 
 ```bash
 mkdir -p /tmp/gh-aw/agent
@@ -183,6 +209,96 @@ git log --oneline -1
 The base branch is `main`. The product source you fix is whatever is on `main` now — NOT the
 shipped package the issue's repro referenced. Always re-locate the cited APIs in the live tree
 (line numbers will have drifted; the code may already be partly hardened).
+
+# ===================== TRACK C — RESPOND TO REVIEW FEEDBACK (do this FIRST) =====================
+
+Skip this entire section if a `issue_number` input was provided (that's an explicit Track A/B
+request). Otherwise, BEFORE looking for new work, see whether one of this workflow's own open
+`[leak-fix]`/`[leak-test]` PRs has a review requesting changes that you have not yet addressed.
+
+## Step R1 — Find an open leak PR with UN-addressed requested changes
+
+```bash
+# This workflow's own open leak PRs (its create-pull-request output labels them agentic-workflows).
+gh pr list --repo "$GITHUB_REPOSITORY" --state open \
+  --search 'in:title "[leak-fix]" OR "[leak-test]"' \
+  --json number,title,headRefName,url,updatedAt \
+  | jq 'sort_by(.number)' > /tmp/gh-aw/agent/my-open-prs.json
+jq -r '.[] | "\(.number)\t\(.headRefName)\t\(.title)"' /tmp/gh-aw/agent/my-open-prs.json
+```
+
+For each PR, fetch its reviews and its last commit time, and decide whether there is a
+**CHANGES_REQUESTED review that is newer than both (a) the PR's most recent commit and (b) the
+most recent comment THIS workflow already posted on that PR**:
+
+```bash
+N=<pr-number>
+gh api "repos/$GITHUB_REPOSITORY/pulls/$N/reviews" \
+  --jq 'map(select(.state=="CHANGES_REQUESTED")) | sort_by(.submitted_at) | last' \
+  > /tmp/gh-aw/agent/review_${N}.json          # newest changes-requested review (or null)
+gh pr view "$N" --repo "$GITHUB_REPOSITORY" --json commits \
+  --jq '.commits | last | .committedDate' > /tmp/gh-aw/agent/lastcommit_${N}.txt
+# Inline review comments (may carry specific line-level requests):
+gh api "repos/$GITHUB_REPOSITORY/pulls/$N/comments" \
+  --jq 'map({path,line,body,user:.user.login,created_at})' > /tmp/gh-aw/agent/inline_${N}.json
+# Have you (this workflow) already replied AFTER the review? Look for your marker.
+gh api "repos/$GITHUB_REPOSITORY/issues/$N/comments" \
+  --jq 'map(select(.body|test("gh-aw-workflow-id: [^\n]*leak-fixer"))) | sort_by(.created_at) | last | .created_at' \
+  > /tmp/gh-aw/agent/mylastcomment_${N}.txt 2>/dev/null || true
+```
+
+The review is **UN-addressed** (actionable) only if its `submitted_at` is **after** both
+`lastcommit_${N}` and `mylastcomment_${N}`. This ordering is your loop-guard: once you push a
+commit or post a comment (below), the review becomes older than your action, so the next run will
+not re-process it. Pick the **oldest** PR with an un-addressed CHANGES_REQUESTED review. If there
+is none, skip to Step 2 (new work).
+
+## Step R2 — Read the requested changes and classify each
+
+Read the review `body` (the reviewer's findings — e.g. MauiBot emits `#### ❌ Error`,
+`#### ⚠️ Warning`, `#### 💡 Suggestion` sections with a `file:line`) plus every inline comment.
+For each distinct request, classify:
+
+- **APPLY** — it's correct and improves the PR (a real bug the reviewer found, a valid cleanup,
+  a comment/typo fix). Plan the minimal managed change.
+- **PUSH BACK** — it's wrong, would regress behaviour, asks you to mute/weaken a test, or doesn't
+  make sense. Do NOT change code for it; record a concise technical reason (with evidence).
+
+## Step R3 — Check out the PR branch and apply the APPLY items
+
+```bash
+N=<pr-number>; BR=<headRefName>
+git fetch origin "$BR" --quiet
+git checkout -B "$BR" "origin/$BR"
+```
+
+Make the minimal, idiomatic managed changes for the APPLY items only (same non-muting rules as
+Track A). Then **re-validate on the runner** so the PR stays valid — rebuild + run the PR's own
+test with the net-only flags (Step 6/8 flags) and confirm it still holds (Track A: the fix test
+still passes and would still fail without the fix; Track B: the guard still passes). If an APPLY
+change breaks the PR's test, it was wrong — revert that item and move it to PUSH BACK.
+
+Commit with the injection-safe heredoc + fresh-random-delimiter discipline (see Step 9), subject
+`[leak-fix] Address review feedback (refs #<issue>)`. If you applied nothing (everything was
+PUSH BACK), make no commit.
+
+## Step R4 — Emit the response (push and/or comment) — ONE PR, then STOP
+
+- If you committed APPLY changes: emit ONE `push-to-pull-request-branch` targeting PR `N`
+  (`pull_request_number: N`) with your commit.
+- Emit ONE `add-comment` on PR `N` (`pull_request_number: N`) that:
+  - is clearly **AI-generated** (name this workflow),
+  - lists what you **applied** (per finding) and the re-validation result, and
+  - for each **PUSH BACK** finding, states plainly why you did not change it (technical reason +
+    evidence). Be courteous and specific; it is fine to disagree with a review when you are right.
+  - If the reviewer's instructions mention a rerun trigger (e.g. `/review rerun`), you may include
+    it so the review re-runs against your new commit.
+
+> **Dry-run gate:** if `dry_run == "true"`, do NOT emit — print what you would push (diff --stat)
+> and the comment body to the run log instead.
+
+Track C uses this run's single action. **Stop here — do not also do Track A/B.** If no PR needed
+a response, fall through to Step 2.
 
 ## Step 2 — Select the target issue (either type) and its track
 
