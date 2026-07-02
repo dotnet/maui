@@ -210,7 +210,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact]
 		[Category(TestCategory.Entry)]
-		public async Task KeyboardPasswordDoesNotForcePasswordVisibilityWhenIsPasswordIsFalse()
+		public async Task KeyboardPasswordDoesNotForcePasswordVisibilityWhenIsPasswordFalse()
 		{
 			var entry = new Entry
 			{
@@ -257,6 +257,28 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
 				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.NumberVariationPassword));
+			});
+		}
+
+		[Fact]
+		[Category(TestCategory.Entry)]
+		public async Task KeyboardUrlPreservesUrlInputTypeWhenIsPasswordFalse()
+		{
+			var entry = new Entry
+			{
+				Keyboard = Keyboard.Url,
+				IsPassword = false,
+				Text = "https://dot.net"
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.ClassText));
+				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationUri));
+				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
 			});
 		}
 	}
