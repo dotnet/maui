@@ -75,11 +75,19 @@ class Issue32987BarStatePage : ContentPage
 		if (window is null)
 			return;
 
-#pragma warning disable CA1422 // StatusBarColor/NavigationBarColor getters are deprecated on API 35+ but still report the current value
-		var statusArgb = (uint)window.StatusBarColor;
-		var navArgb = (uint)window.NavigationBarColor;
-#pragma warning restore CA1422
-		bool barsTransparent = (statusArgb >> 24) == 0 && (navArgb >> 24) == 0; // alpha channel == 0
+		// API 35+ enforces edge-to-edge, so the bars are always transparent there. Below 35 the color
+		// getters (not deprecated on those versions) report the actual bar color.
+		bool barsTransparent;
+		if (OperatingSystem.IsAndroidVersionAtLeast(35))
+		{
+			barsTransparent = true;
+		}
+		else
+		{
+			var statusArgb = (uint)window.StatusBarColor;
+			var navArgb = (uint)window.NavigationBarColor;
+			barsTransparent = (statusArgb >> 24) == 0 && (navArgb >> 24) == 0; // alpha channel == 0
+		}
 
 		bool navScrim = OperatingSystem.IsAndroidVersionAtLeast(29) && window.NavigationBarContrastEnforced;
 
