@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -398,6 +399,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			Assert.Equal(125, frame1.Width);
 			Assert.Equal(175, frame2.Width);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task FlexLayoutDoesNotLeak()
+		{
+			// When a FlexLayout is parented it builds a Flex.Item tree (_root) and gives
+			// each child a SelfSizing closure that captures that child (see AddFlexItem in
+			// FlexLayout.cs). Nothing static roots that graph today, so a detached layout
+			// and its children must be collectible. This guards against a future change
+			// (e.g. pooling/caching Flex.Items) turning that graph into a leak.
+			WeakReference reference;
+
+			{
+				var root = new Grid();
+				var flexLayout = new FlexLayout();
+				root.Add(flexLayout);
+
+				// Parented, so AddFlexItem now creates the _root items and the per-child
+				// SelfSizing closures; measuring runs them.
+				flexLayout.Add(new Label());
+				flexLayout.Add(new Label());
+				_ = ((IFlexLayout)flexLayout).CrossPlatformMeasure(1000, 1000);
+
+				reference = new(flexLayout);
+			}
+
+			await TestHelpers.Collect();
+
+			Assert.False(await reference.WaitForCollect(), "FlexLayout should not be alive!");
 		}
 	}
 }

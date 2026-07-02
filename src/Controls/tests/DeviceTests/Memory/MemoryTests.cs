@@ -213,6 +213,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning restore CS0618 // Type or member is obsolete
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Grid))]
+	[InlineData(typeof(FlexLayout))]
 	[InlineData(typeof(HybridWebView))]
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(ImageButton))]
