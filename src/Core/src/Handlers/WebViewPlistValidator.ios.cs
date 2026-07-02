@@ -42,10 +42,19 @@ namespace Microsoft.Maui.Handlers
 			if (allowedDomains is null || allowedDomains.Count == 0)
 				return;
 
-			var plistDomains = ReadWKAppBoundDomainsFromPlist();
+			// Normalize both sides to ASCII/punycode (and drop empty/whitespace entries) so the
+			// comparison uses the same host normalization as WebViewDomainAllowlist. This avoids false
+			// mismatch warnings when AllowedDomains is expressed in Unicode (e.g. "münchen.de") but the
+			// Info.plist uses punycode ("xn--mnchen-3ya.de"), or vice versa.
+			var normalizedAllowed = NormalizeDomains(allowedDomains);
+			if (normalizedAllowed.Count == 0)
+				return;
 
-			var allowedSet = new HashSet<string>(allowedDomains, StringComparer.OrdinalIgnoreCase);
-			var plistSet = new HashSet<string>(plistDomains, StringComparer.OrdinalIgnoreCase);
+			var plistDomains = ReadWKAppBoundDomainsFromPlist();
+			var normalizedPlist = NormalizeDomains(plistDomains);
+
+			var allowedSet = new HashSet<string>(normalizedAllowed, StringComparer.OrdinalIgnoreCase);
+			var plistSet = new HashSet<string>(normalizedPlist, StringComparer.OrdinalIgnoreCase);
 
 			if (plistDomains.Count == 0)
 			{
@@ -54,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 					"Navigation-level blocking will work, but sub-resource blocking (images, scripts, CSS) " +
 					"requires WKAppBoundDomains in Info.plist. Add the following to your Info.plist: " +
 					"<key>WKAppBoundDomains</key><array>{Domains}</array>",
-					string.Join("", allowedDomains.Select(d => $"<string>{d}</string>")));
+					string.Join("", normalizedAllowed.Select(d => $"<string>{d}</string>")));
 				return;
 			}
 
@@ -85,6 +94,23 @@ namespace Microsoft.Maui.Handlers
 					"These domains are allowed at the OS level but will be blocked by the AllowedDomains property.",
 					string.Join(", ", extraInPlist));
 			}
+		}
+
+		static List<string> NormalizeDomains(IEnumerable<string> domains)
+		{
+			var normalized = new List<string>();
+
+			foreach (var domain in domains)
+			{
+				if (string.IsNullOrWhiteSpace(domain))
+					continue;
+
+				var ascii = WebViewDomainAllowlist.ToAsciiHost(domain.Trim());
+				if (!string.IsNullOrEmpty(ascii))
+					normalized.Add(ascii);
+			}
+
+			return normalized;
 		}
 	}
 }

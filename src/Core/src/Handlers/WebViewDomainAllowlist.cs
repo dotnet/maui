@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
-		static string ToAsciiHost(string domain)
+		internal static string ToAsciiHost(string domain)
 		{
 			try
 			{
