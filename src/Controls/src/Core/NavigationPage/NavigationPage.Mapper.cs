@@ -48,10 +48,22 @@ namespace Microsoft.Maui.Controls
 						ve.RefreshPlatformLoadedStatus();
 					}
 					(navigationView as Page)?.SendAppearing();
+
+					// Fire deferred NavigatedTo if it was skipped in OnHandlerChangedCore
+					// because NavigationProxy.Inner wasn't wired yet at handler init time.
+					// By ViewDidAppear, the Window has parented the page and Inner is set.
+					(navigationView as NavigationPage)?.FireDeferredNavigatedTo();
 				},
 				OnControllerDisappeared = (navigationView) =>
 				{
 					(navigationView as Page)?.SendDisappearing();
+				},
+				OnMidStackChanged = (topVC) =>
+				{
+					if (topVC is NavigationHandlerParentingViewController parentingVC)
+					{
+						parentingVC.NotifyStackChanged();
+					}
 				}
 			};
 #endif

@@ -60,6 +60,19 @@ namespace Microsoft.Maui.Controls
 
 		partial void Init();
 
+		// Deferred NavigatedTo support (iOS/MacCatalyst only):
+		// On iOS, the handler connects (OnHandlerChangedCore) before the Window parents
+		// the page, so NavigationProxy.Inner is null at that point. If NavigatedTo fires
+		// immediately, any PushModalAsync called from a NavigatedTo handler will silently
+		// fail (NavigationProxy queues the request and returns Task.CompletedTask).
+		// With the renderer, OnHandlerChangedCore was skipped (IsShimmed()=true) and
+		// NavigatedTo fired later from the renderer's ViewDidAppear.
+		// These partial methods let iOS defer SendNavigated to OnControllerAppeared
+		// (ViewDidAppear), when Inner is wired. On Android/Windows these are no-ops
+		// because Inner is already set before the handler connects.
+		partial void ShouldDeferNavigatedTo(ref bool defer);
+		partial void FireDeferredNavigatedTo();
+
 		const bool UseMauiHandler = true;
 
 		bool _setForMaui;
@@ -744,12 +757,18 @@ namespace Microsoft.Maui.Controls
 
 				var navigationType = DetermineNavigationType();
 
+				// On iOS, ShouldDeferNavigatedTo sets defer=true when Inner is null.
+				// When deferred, SendNavigated is skipped here and fired later from
+				// OnControllerAppeared (ViewDidAppear) via FireDeferredNavigatedTo.
+				bool deferNavigatedTo = false;
+				ShouldDeferNavigatedTo(ref deferNavigatedTo);
+
 				SendHandlerUpdateAsync(false, null,
 				() =>
 				{
 					FireAppearing(CurrentPage);
 				},
-				() =>
+				deferNavigatedTo ? null : () =>
 				{
 					SendNavigated(null, navigationType);
 				})
