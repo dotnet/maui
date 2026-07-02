@@ -20,3 +20,5 @@ static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storag
 ~override Microsoft.Maui.ApplicationModel.Permissions.PostNotifications.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 Microsoft.Maui.Media.IViewScreenshot
 Microsoft.Maui.Media.IViewScreenshot.CaptureViewAsync(object! platformView) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
+Microsoft.Maui.Media.MediaPickerOptions.SaveToGallery.get -> bool
+Microsoft.Maui.Media.MediaPickerOptions.SaveToGallery.set -> void
