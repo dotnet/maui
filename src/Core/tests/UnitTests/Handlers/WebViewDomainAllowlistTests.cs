@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -256,6 +258,55 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var domains = new List<string> { "example.com" };
 			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://example.com/page", domains, null));
+		}
+
+		[Fact]
+		public void LargeAllowlistStillMatches()
+		{
+			// Exercises the snapshot path with a bigger list.
+			var domains = new List<string>();
+			for (int i = 0; i < 200; i++)
+				domains.Add($"domain{i}.com");
+			domains.Add("example.com");
+
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://sub.example.com/page", domains));
+			Assert.False(WebViewDomainAllowlist.IsUrlAllowed("https://evil.com/page", domains));
+		}
+
+		[Fact]
+		public void ConcurrentMutationDoesNotThrow()
+		{
+			// Platform sub-resource callbacks (e.g. Android ShouldInterceptRequest) run on a background
+			// thread while the app may mutate AllowedDomains from another thread. The defensive snapshot
+			// must let matching iterate safely; without it, reading the live list throws on the race.
+			var domains = new List<string> { "example.com", "test.com", "cdn.example.com" };
+			var stop = 0;
+
+			var mutator = Task.Run(() =>
+			{
+				var n = 0;
+				while (Volatile.Read(ref stop) == 0)
+				{
+					domains.Add($"d{n++}.com");
+					if (domains.Count > 4)
+						domains.RemoveAt(domains.Count - 1);
+				}
+			});
+
+			try
+			{
+				for (int i = 0; i < 50_000; i++)
+				{
+					// Must not throw regardless of concurrent mutation on the other thread.
+					WebViewDomainAllowlist.IsUrlAllowed("https://example.com/page", domains);
+					WebViewDomainAllowlist.IsUrlAllowed("https://evil.com/page", domains);
+				}
+			}
+			finally
+			{
+				Volatile.Write(ref stop, 1);
+				mutator.Wait();
+			}
 		}
 	}
 }

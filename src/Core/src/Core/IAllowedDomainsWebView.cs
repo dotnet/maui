@@ -27,6 +27,12 @@ namespace Microsoft.Maui
 		/// When <see langword="null"/> or empty, all domains are allowed. When populated, only the listed domains
 		/// (and their subdomains) are permitted.
 		/// </para>
+		/// <para>
+		/// On iOS and Mac Catalyst, OS-level sub-resource enforcement (<c>WKAppBoundDomains</c> /
+		/// <c>LimitsNavigationsToAppBoundDomains</c>) is configured when the underlying <c>WKWebView</c> is
+		/// created, so set <see cref="AllowedDomains"/> before the handler is created. Changing it afterward
+		/// still updates navigation-level checks, but the OS-level app-bound configuration is not re-applied.
+		/// </para>
 		/// </remarks>
 		IList<string>? AllowedDomains { get; }
 	}

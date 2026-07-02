@@ -65,9 +65,15 @@ namespace Microsoft.Maui.Handlers
 			if (string.IsNullOrEmpty(host))
 				return false;
 
-			for (int i = 0; i < allowedDomains.Count; i++)
+			// Iterate a private, immutable snapshot rather than the caller's live list. Some platform
+			// sub-resource callbacks (e.g. Android ShouldInterceptRequest) run on a background thread
+			// while the app may mutate AllowedDomains from the UI thread; snapshotting avoids a torn
+			// read / out-of-range on a concurrent Count/index change.
+			var domains = SnapshotDomains(allowedDomains);
+
+			for (int i = 0; i < domains.Length; i++)
 			{
-				var domain = allowedDomains[i];
+				var domain = domains[i];
 				if (string.IsNullOrWhiteSpace(domain))
 					continue;
 
@@ -83,6 +89,32 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return false;
+		}
+
+		// Takes a defensive copy of the allowlist so callers iterate a stable, immutable snapshot even
+		// if the list is mutated on another thread. If the list keeps changing while it is being copied
+		// we fail closed (empty snapshot -> nothing matches -> blocked) rather than risk a torn read.
+		static string[] SnapshotDomains(IList<string> allowedDomains)
+		{
+			for (var attempt = 0; attempt < 4; attempt++)
+			{
+				try
+				{
+					var snapshot = new string[allowedDomains.Count];
+					allowedDomains.CopyTo(snapshot, 0);
+					return snapshot;
+				}
+				catch (ArgumentException)
+				{
+					// Count changed between sizing and copying (concurrent mutation) - retry.
+				}
+				catch (IndexOutOfRangeException)
+				{
+					// Some IList implementations surface this on a concurrent shrink - retry.
+				}
+			}
+
+			return Array.Empty<string>();
 		}
 
 		internal static string ToAsciiHost(string domain)

@@ -454,9 +454,12 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// Keeps the WebResourceRequested subscription (with a wildcard filter) in sync with the
-			// allowlist: it is added only while an allowlist is active — so the cost of intercepting
-			// every sub-resource is paid only by web views that opt into AllowedDomains — and removed
-			// again when the allowlist is cleared, restoring the fast path. Safe to call multiple times.
+			// allowlist: it is added while an allowlist is in use (the property is non-null) — so the
+			// cost of intercepting every sub-resource is paid only by web views that opt into
+			// AllowedDomains — and removed again when the property is cleared to null, restoring the
+			// fast path. A non-null (even empty) list keeps the filter registered so that later
+			// in-place mutations (e.g. AllowedDomains.Add(...)) are enforced without reassigning the
+			// property. Safe to call multiple times.
 			internal void UpdateWebResourceRequestedForAllowedDomains()
 			{
 				if (Handler is not WebViewHandler handler)
@@ -466,7 +469,7 @@ namespace Microsoft.Maui.Handlers
 					return;
 
 				var allowedDomains = (handler.VirtualView as IAllowedDomainsWebView)?.AllowedDomains;
-				var wantsFiltering = allowedDomains is not null && allowedDomains.Count > 0;
+				var wantsFiltering = allowedDomains is not null;
 
 				if (wantsFiltering && !_webResourceRequestedSubscribed)
 				{
