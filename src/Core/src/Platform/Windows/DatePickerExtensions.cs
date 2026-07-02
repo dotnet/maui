@@ -134,6 +134,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
+			if (datePicker?.Background is ImageSourcePaint image)
+			{
+				var provider = datePicker.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				platformDatePicker.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(datePicker.Handler);
+				return;
+			}
+
 			var brush = datePicker?.Background?.ToPlatform();
 
 			if (brush is null)
