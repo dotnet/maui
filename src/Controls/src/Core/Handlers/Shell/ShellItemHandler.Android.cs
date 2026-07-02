@@ -299,7 +299,9 @@ namespace Microsoft.Maui.Controls.Handlers
             // Track the current section
             _shellSection = newSection;
 
-            // Track displayed page changes
+            // Remove before adding to guard against duplicate observers from re-entrant calls
+            // (SwitchToShellItem triggers SwitchToSection twice for the same section).
+            ((IShellSectionController)newSection).RemoveDisplayedPageObserver(this);
             ((IShellSectionController)newSection).AddDisplayedPageObserver(this, UpdateDisplayedPage);
         }
 

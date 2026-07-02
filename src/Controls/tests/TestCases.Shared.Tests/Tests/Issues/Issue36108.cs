@@ -38,6 +38,11 @@ public class Issue36108 : _IssuesUITest
 
 		// Tab 1 content must be visible — UpdateDisplayedPage must not early-return
 		App.WaitForElement("Tab1Label");
+
+		// Defensive: verify tab bar is functional after round-trip.
+		// If UpdateTabBarVisibility was skipped (due to stale _displayedPage early-return),
+		// the bottom nav tabs may be hidden or misconfigured — Tab 2 would be unreachable.
+		App.WaitForElement("Tab 2");
 	}
 
 	// After navigating A → B → A, verify that tapping Tab 2 correctly shows Tab 2 content.

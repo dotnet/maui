@@ -381,6 +381,7 @@ namespace Microsoft.Maui.Platform
 
 		// Used by NavigationPage: connects the navigation view without an external
 		// FragmentContainerView (NavigationPage owns and manages its own container internally).
+		// To intercept all Connect calls in a subclass, override the two-arg overload below.
 		public virtual void Connect(IView navigationView) => Connect(navigationView, null);
 
 		// Shell provides an external FragmentContainerView; NavigationPage passes null,
