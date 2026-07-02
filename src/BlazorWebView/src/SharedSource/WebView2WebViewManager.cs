@@ -412,6 +412,16 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// The ExternalLinkCallback is not invoked.
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
+#if WEBVIEW2_MAUI
+				// If an AllowedDomains allowlist is active, don't open a new window / external browser
+				// for a target outside it. NewWindowRequested bypasses NavigationStarting, so without
+				// this check an allowed page could still launch a disallowed URL externally.
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _blazorWebViewHandler.VirtualView, AppOriginUri))
+				{
+					args.Handled = true;
+					return;
+				}
+#endif
 				LaunchUriInExternalBrowser(uri);
 				args.Handled = true;
 			}

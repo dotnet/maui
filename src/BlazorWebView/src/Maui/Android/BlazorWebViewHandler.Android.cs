@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webViewClient = new WebKitWebViewClient(this);
 			blazorAndroidWebView.SetWebViewClient(_webViewClient);
 
-			_webChromeClient = new BlazorWebChromeClient();
+			_webChromeClient = new BlazorWebChromeClient(this);
 			blazorAndroidWebView.SetWebChromeClient(_webChromeClient);
 
 			Logger.CreatedAndroidWebkitWebView();
