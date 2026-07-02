@@ -161,7 +161,6 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 			}
 			else
 			{
-				// Mono lane: select Mono explicitly and opt out of the NETSDK1242 check.
 				args.Append("/p:UseMonoRuntime=true")
 					.Append("/p:_DisableCheckForUnsupportedMonoMobileRuntime=true");
 			}
