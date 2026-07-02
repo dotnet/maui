@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Platform
 			if (slider.Background is ImageSourcePaint image)
 			{
 				var provider = slider.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				platformSlider.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(slider.Handler);
+				platformSlider.UpdateBackgroundImageForAllStatesAsync(image.ImageSource, provider, BackgroundColorResourceKeys).FireAndForget(slider.Handler);
 				return;
 			}
 

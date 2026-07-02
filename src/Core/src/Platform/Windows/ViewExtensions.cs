@@ -286,6 +286,24 @@ namespace Microsoft.Maui.Platform
 				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
 		}
 
+		internal static async Task UpdateBackgroundImageForAllStatesAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider, string[] resourceKeys)
+		{
+			if (provider is null || imageSource is null)
+			{
+				return;
+			}
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+			var imageBrush = new ImageBrush { ImageSource = nativeImageSource?.Value };
+
+			if (platformView is Control control)
+			{
+				control.Resources.SetValueForAllKey(resourceKeys, imageBrush);
+				control.RefreshThemeResources();
+			}
+		}
+
 		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
 		{
 			ToolTipService.SetToolTip(platformView, tooltip?.Content);

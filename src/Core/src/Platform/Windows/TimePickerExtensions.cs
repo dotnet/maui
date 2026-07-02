@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -80,7 +81,7 @@ public static class TimePickerExtensions
 		if (timePicker?.Background is ImageSourcePaint image)
 		{
 			var provider = timePicker.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-			platformTimePicker.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(timePicker.Handler);
+			platformTimePicker.UpdateTimePickerBackgroundImageAsync(image.ImageSource, provider).FireAndForget(timePicker.Handler);
 			return;
 		}
 
@@ -127,6 +128,22 @@ public static class TimePickerExtensions
 		"TimePickerButtonBackgroundDisabled",
 		"TimePickerButtonBackgroundFocused",
 	};
+
+	static async Task UpdateTimePickerBackgroundImageAsync(this TimePicker platformTimePicker, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+	{
+		if (provider is null || imageSource is null)
+		{
+			return;
+		}
+
+		var service = provider.GetRequiredImageSourceService(imageSource);
+		var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+		var imageBrush = new ImageBrush { ImageSource = nativeImageSource?.Value };
+
+		// Set resource keys for hover/focus/pressed/disabled visual states
+		platformTimePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, imageBrush);
+		platformTimePicker.Background = imageBrush;
+	}
 
 	internal static void UpdateIsOpen(this TimePicker platformTimePicker, ITimePicker timePicker)
 	{
