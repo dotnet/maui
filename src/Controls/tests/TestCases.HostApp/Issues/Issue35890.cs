@@ -108,7 +108,81 @@ public class Issue35890 : TestShell
 						AutomationId = "HomeButton",
 						Command = new Command(() => resultLabel.Text = "Button Tapped")
 					},
+					new Button
+					{
+						Text = "Push NavPageA (classic push navigation scenario)",
+						AutomationId = "PushNavPageAButton",
+						Command = new Command(async () => await Navigation.PushAsync(new NavPageA35890()))
+					},
 					resultLabel
+				}
+			};
+		}
+	}
+
+	// The following pages exercise the classic push/pop navigation scenario (as used by
+	// NavigationPage), where NavigatedFrom always fires correctly. This locks in that
+	// HideSoftInputOnTapped is respected per-page and is not tracked globally: pushing
+	// NavPageB35890 (HideSoftInputOnTapped = false) on top of NavPageA35890
+	// (HideSoftInputOnTapped = true) must NOT dismiss the keyboard when tapping outside
+	// the Entry on NavPageB35890.
+	class NavPageA35890 : ContentPage
+	{
+		public NavPageA35890()
+		{
+			HideSoftInputOnTapped = true;
+			Title = "NavPageA";
+
+			Content = new VerticalStackLayout
+			{
+				Spacing = 20,
+				Padding = 20,
+				Children =
+				{
+					new Label
+					{
+						Text = "NavPageA — HideSoftInputOnTapped = True",
+						AutomationId = "NavPageALabel"
+					},
+					new Button
+					{
+						Text = "Push NavPageB",
+						AutomationId = "PushNavPageBButton",
+						Command = new Command(async () => await Navigation.PushAsync(new NavPageB35890()))
+					}
+				}
+			};
+		}
+	}
+
+	class NavPageB35890 : ContentPage
+	{
+		public NavPageB35890()
+		{
+			HideSoftInputOnTapped = false;
+			Title = "NavPageB";
+
+			Content = new VerticalStackLayout
+			{
+				Spacing = 20,
+				Padding = 20,
+				Children =
+				{
+					new Label
+					{
+						Text = "NavPageB — HideSoftInputOnTapped = False",
+						AutomationId = "NavPageBLabel"
+					},
+					new Entry
+					{
+						Placeholder = "Tap to show keyboard",
+						AutomationId = "NavPageBEntry"
+					},
+					new Label
+					{
+						Text = "Tap here (outside the Entry)",
+						AutomationId = "NavPageBEmptySpace"
+					}
 				}
 			};
 		}
