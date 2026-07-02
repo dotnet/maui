@@ -203,14 +203,11 @@ public class ResizetizerTests : BaseBuildTest
 
 	static bool FontExistsInAndroidAssets(string androidObjDir, string fontFileName)
 	{
-		if (!Directory.Exists(androidObjDir))
-			return false;
-
-		// The intermediate copy lives under resizetizer\f\; only the file staged under an "assets"
-		// folder proves the font was actually registered as an AndroidAsset and packaged.
-		return Directory.EnumerateFiles(androidObjDir, fontFileName, SearchOption.AllDirectories)
-			.Any(path => path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-				.Any(segment => string.Equals(segment, "assets", StringComparison.OrdinalIgnoreCase)));
+		// A registered AndroidAsset is staged by .NET for Android into $(IntermediateOutputPath)assets/,
+		// i.e. obj/{config}/{tfm}/assets/ — a deterministic path (no RID segment for a default build).
+		// The intermediate resizetizer copy under resizetizer/f/ is NOT proof of registration; only the
+		// staged copy under assets/ is. Confirmed empirically with a Release net*-android build.
+		return File.Exists(Path.Combine(androidObjDir, "assets", fontFileName));
 	}
 
 	static bool WasTargetSkipped(string binlogPath, string targetName)
@@ -295,9 +292,15 @@ public class ResizetizerTests : BaseBuildTest
 			if (!ContainsTargetFramework(intermediateOutputRoot, $"{DotNetCurrent}-maccatalyst"))
 			{
 				var splashDir = Path.Combine(intermediateOutputRoot, "resizetizer", "sp");
-				Assert.True(
-					Directory.Exists(splashDir) && Directory.EnumerateFiles(splashDir, "*", SearchOption.AllDirectories).Any(),
-					$"Missing generated splash screen files in {splashDir}.");
+				// Assert a deterministic generated splash marker per platform instead of scanning the
+				// whole directory (confirmed with Release builds):
+				//  - Android: resizetizer/sp/drawable/maui_splash_image.xml
+				//  - iOS:     resizetizer/sp/MauiSplash.storyboard
+				var splashMarker = ContainsTargetFramework(intermediateOutputRoot, $"{DotNetCurrent}-android")
+					? Path.Combine(splashDir, "drawable", "maui_splash_image.xml")
+					: Path.Combine(splashDir, "MauiSplash.storyboard");
+				Assert.True(File.Exists(splashMarker),
+					$"Missing generated splash marker '{splashMarker}'.");
 			}
 		}
 	}
