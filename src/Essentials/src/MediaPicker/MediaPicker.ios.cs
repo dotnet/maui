@@ -98,6 +98,11 @@ namespace Microsoft.Maui.Media
 			}
 			else
 			{
+				if (!pickExisting && options?.SaveToGallery == true)
+				{
+					await Permissions.EnsureGrantedAsync<Permissions.PhotosAddOnly>();
+				}
+
 				var sourceType = pickExisting
 					? UIImagePickerControllerSourceType.PhotoLibrary
 					: UIImagePickerControllerSourceType.Camera;
@@ -163,6 +168,12 @@ namespace Microsoft.Maui.Media
 
 			PickerRef?.Dispose();
 			PickerRef = null;
+
+			// Save captured media to the photo gallery if requested
+			if (!pickExisting && result is not null && options?.SaveToGallery == true)
+			{
+				await SaveToPhotoLibraryAsync(result);
+			}
 
 			return result;
 		}
@@ -473,6 +484,88 @@ namespace Microsoft.Maui.Media
 			{
 				System.Diagnostics.Debug.WriteLine($"Error rotating image: {ex.Message}");
 				return original;
+			}
+		}
+		
+		/// <summary>
+		/// Saves the captured media file to the device's photo library using PHPhotoLibrary.
+		/// </summary>
+		static async Task SaveToPhotoLibraryAsync(FileResult fileResult)
+		{
+			string tempPath = null;
+
+			try
+			{
+				using var stream = await fileResult.OpenReadAsync();
+				var extension = System.IO.Path.GetExtension(fileResult.FileName);
+				tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{Guid.NewGuid()}{extension}");
+				using (var fileStream = File.Create(tempPath))
+				{
+					if (stream.CanSeek)
+					{
+						stream.Position = 0;
+					}
+
+					await stream.CopyToAsync(fileStream);
+				}
+
+				using var url = NSUrl.FromFilename(tempPath);
+
+				await PerformPhotoLibraryChangesAsync(() =>
+				{
+					if (IsImageFile(fileResult.FileName))
+					{
+						PHAssetChangeRequest.FromImage(url);
+					}
+					else
+					{
+						PHAssetChangeRequest.FromVideo(url);
+					}
+				});
+			}
+			finally
+			{
+				DeleteTemporaryPhotoLibraryFile(tempPath);
+			}
+		}
+
+		static Task PerformPhotoLibraryChangesAsync(Action changeHandler)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+
+			PHPhotoLibrary.SharedPhotoLibrary.PerformChanges(changeHandler, (success, error) =>
+			{
+				if (success)
+				{
+					tcs.TrySetResult(true);
+				}
+				else if (error is not null)
+				{
+					tcs.TrySetException(new NSErrorException(error));
+				}
+				else
+				{
+					tcs.TrySetException(new InvalidOperationException("Unable to save the captured media to the photo library."));
+				}
+			});
+
+			return tcs.Task;
+		}
+
+		static void DeleteTemporaryPhotoLibraryFile(string tempPath)
+		{
+			if (string.IsNullOrEmpty(tempPath))
+			{
+				return;
+			}
+
+			try
+			{
+				File.Delete(tempPath);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Failed to delete temporary photo library file: {ex.Message}");
 			}
 		}
 

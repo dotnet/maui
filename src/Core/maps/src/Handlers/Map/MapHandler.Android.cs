@@ -69,6 +69,10 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override void DisconnectHandler(MapView platformView)
 		{
+			_addPinsCts?.Cancel();
+			_addPinsCts?.Dispose();
+			_addPinsCts = null;
+
 			DisconnectPins();
 
 			base.DisconnectHandler(platformView);
@@ -646,6 +650,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			// Cancel any previously running pin additions to avoid stale markers
 			_addPinsCts?.Cancel();
+			_addPinsCts?.Dispose();
 			_addPinsCts = new CancellationTokenSource();
 			var ct = _addPinsCts.Token;
 
@@ -675,17 +680,7 @@ namespace Microsoft.Maui.Maps.Handlers
 					if (cluster.Pins.Count == 1)
 					{
 						// Single pin - add as regular marker
-						var pin = cluster.Pins[0];
-						var pinHandler = pin.ToHandler(MauiContext);
-						if (pinHandler is IMapPinHandler iMapPinHandler)
-						{
-							var marker = Map.AddMarker(iMapPinHandler.PlatformView);
-							if (marker != null)
-							{
-								pin.MarkerId = marker.Id;
-								_markers.Add(marker);
-							}
-						}
+						AddRegularPin(cluster.Pins[0], ct);
 					}
 					else
 					{
@@ -716,15 +711,21 @@ namespace Microsoft.Maui.Maps.Handlers
 			// Normal non-clustered pins
 			foreach (var p in pins)
 			{
-				IMapPin pin = (IMapPin)p;
-				if (pin is INotifyPropertyChanged observable)
-				{
-					observable.PropertyChanged += PinOnPropertyChanged;
-				}
-
-				AddPinAsync(pin, ct).FireAndForget();
+				AddRegularPin((IMapPin)p, ct);
 			}
 			_pins = null;
+		}
+
+		void AddRegularPin(IMapPin pin, CancellationToken ct)
+		{
+			if (pin is INotifyPropertyChanged observable)
+			{
+				// -= before += because ReclusterPins re-runs AddPins on zoom without DisconnectPins.
+				observable.PropertyChanged -= PinOnPropertyChanged;
+				observable.PropertyChanged += PinOnPropertyChanged;
+			}
+
+			AddPinAsync(pin, ct).FireAndForget();
 		}
 
 		void PinOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -766,6 +767,9 @@ namespace Microsoft.Maui.Maps.Handlers
 					break;
 				case nameof(IMapPin.Address):
 					marker.Snippet = pin.Address;
+					break;
+				case nameof(IMapPin.ImageSource):
+					UpdatePinImageSourceAsync(pin, marker, _addPinsCts?.Token ?? CancellationToken.None).FireAndForget();
 					break;
 			}
 		}
@@ -845,23 +849,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			// Load custom image if specified
 			if (pin.ImageSource != null)
 			{
-				try
-				{
-					var result = await pin.ImageSource.GetPlatformImageAsync(MauiContext);
-					if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
-						return;
-
-					var bitmap = DrawableToBitmap(drawable);
-					if (bitmap != null)
-					{
-						markerOptions.SetIcon(BitmapDescriptorFactory.FromBitmap(bitmap));
-					}
-				}
-				catch (System.Exception ex)
-				{
-					var logger = MauiContext?.Services?.GetService<ILogger<MapHandler>>();
-					logger?.LogWarning(ex, "Failed to load custom pin icon");
-				}
+				var icon = await LoadPinIconAsync(pin.ImageSource, MauiContext, ct);
+				if (icon != null)
+					markerOptions.SetIcon(icon);
 			}
 
 			// Re-check after async operation since handler may have been disconnected
@@ -878,6 +868,53 @@ namespace Microsoft.Maui.Maps.Handlers
 			
 			_markers ??= new List<Marker>();
 			_markers.Add(marker);
+		}
+
+		async Task UpdatePinImageSourceAsync(IMapPin pin, Marker marker, CancellationToken ct)
+		{
+			var mauiContext = MauiContext;
+
+			if (mauiContext == null || ct.IsCancellationRequested || (pin.MarkerId as string) != marker.Id)
+				return;
+
+			// Captured before the await; if ImageSource changes meanwhile, this stale load is dropped.
+			var requestedSource = pin.ImageSource;
+
+			BitmapDescriptor? icon = null;
+
+			if (requestedSource != null)
+			{
+				icon = await LoadPinIconAsync(requestedSource, mauiContext, ct);
+				// null means load failed/cancelled - leave the marker's current icon untouched.
+				if (icon == null)
+					return;
+			}
+
+			// icon is null here only when ImageSource was cleared, so SetIcon(null) resets to the default.
+			if (!ct.IsCancellationRequested && ReferenceEquals(pin.ImageSource, requestedSource) && (pin.MarkerId as string) == marker.Id)
+			{
+				marker.SetIcon(icon);
+			}
+		}
+
+		// Loads imageSource into a BitmapDescriptor
+		// Returns null on cancel/failure/no drawable.
+		static async Task<BitmapDescriptor?> LoadPinIconAsync(IImageSource imageSource, IMauiContext mauiContext, CancellationToken ct)
+		{
+			try
+			{
+				using var result = await imageSource.GetPlatformImageAsync(mauiContext);
+				if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
+					return null;
+
+				var bitmap = DrawableToBitmap(drawable);
+				return bitmap != null ? BitmapDescriptorFactory.FromBitmap(bitmap) : null;
+			}
+			catch (System.Exception ex)
+			{
+				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
+				return null;
+			}
 		}
 
 		static ABitmap? DrawableToBitmap(ADrawable drawable)

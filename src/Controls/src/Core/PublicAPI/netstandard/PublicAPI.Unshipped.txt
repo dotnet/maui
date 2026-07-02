@@ -1,5 +1,21 @@
 #nullable enable
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
+~Microsoft.Maui.Controls.Binding.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Binding.ConverterCulture.set -> void
+~Microsoft.Maui.Controls.MultiBinding.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.MultiBinding.ConverterCulture.set -> void
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.set -> void
+~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.get -> string
+~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeText.get -> string
+~Microsoft.Maui.Controls.BaseShellItem.BadgeText.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.set -> void
+~Microsoft.Maui.Controls.BoxView.Fill.get -> Microsoft.Maui.Controls.Brush
+~Microsoft.Maui.Controls.BoxView.Fill.set -> void
 Microsoft.Maui.Controls.BoxView.~BoxView() -> void
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
@@ -50,16 +66,6 @@ static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouch
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.StateProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
-~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.get -> string
-~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.set -> void
-~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.set -> void
-~Microsoft.Maui.Controls.BaseShellItem.BadgeText.get -> string
-~Microsoft.Maui.Controls.BaseShellItem.BadgeText.set -> void
-~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.set -> void
-~Microsoft.Maui.Controls.BoxView.Fill.get -> Microsoft.Maui.Controls.Brush
-~Microsoft.Maui.Controls.BoxView.Fill.set -> void
 ~Microsoft.Maui.Controls.Editor.ReturnCommand.get -> System.Windows.Input.ICommand
 ~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
 ~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
@@ -93,4 +99,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
+static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
