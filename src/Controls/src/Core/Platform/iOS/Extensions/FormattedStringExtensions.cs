@@ -24,12 +24,11 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			// Resolve the *effective* flow direction so that inherited RTL is honored
 			// (e.g. FlowDirection="MatchParent" under an RTL parent), matching how the
-			// plain-text path uses EffectiveUserInterfaceLayoutDirection.
+			// plain-text path uses EffectiveUserInterfaceLayoutDirection. ToFlowDirection()
+			// always resolves to a concrete LeftToRight/RightToLeft (never MatchParent), so
+			// an already-resolved LTR label does not fall back to NSWritingDirection.Natural.
 			var effectiveFlowDirection = ((IVisualElementController)label).EffectiveFlowDirection;
-			var flowDirection =
-			 effectiveFlowDirection.IsRightToLeft() ? FlowDirection.RightToLeft :
-			 effectiveFlowDirection.IsExplicit() ? FlowDirection.LeftToRight :
-			 FlowDirection.MatchParent;
+			var flowDirection = effectiveFlowDirection.ToFlowDirection();
 
 			return ToNSAttributedString(
 			 label.FormattedText,
@@ -149,6 +148,7 @@ namespace Microsoft.Maui.Controls.Platform
 				TextAlignment.Start => isRtl ? UITextAlignment.Right : UITextAlignment.Left,
 				TextAlignment.Center => UITextAlignment.Center,
 				TextAlignment.End => isRtl ? UITextAlignment.Left : UITextAlignment.Right,
+				TextAlignment.Justify => UITextAlignment.Justified,
 				_ => isRtl ? UITextAlignment.Right : UITextAlignment.Left
 			};
 
@@ -176,8 +176,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
 
 			// CharacterSpacing with validation
-			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
-				? span.CharacterSpacing 
+			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty)
+				? span.CharacterSpacing
 				: defaultCharacterSpacing;
 			characterSpacing = Math.Max(0, characterSpacing);
 
