@@ -7,8 +7,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue32275 : _IssuesUITest
 {
-	const string FlyoutItem = "FlyoutItem";
-	const string ResetButton = "Reset";
 	public override string Issue => "Shell Flyout SafeArea Rendering";
 
 	protected override bool ResetAfterEachTest => true;
