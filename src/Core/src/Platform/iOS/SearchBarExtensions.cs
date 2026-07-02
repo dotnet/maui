@@ -42,6 +42,11 @@ namespace Microsoft.Maui.Platform
 					uiSearchBar.BarTintColor = UISearchBar.Appearance.BarTintColor;
 					break;
 
+				case ImageSourcePaint image:
+					var provider = searchBar.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+					uiSearchBar.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(searchBar.Handler);
+					break;
+
 				case SolidPaint solid:
 					if (solid.Color == Colors.Transparent)
 					{

@@ -2,6 +2,7 @@
 using Google.Android.Material.Button;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
+using AView = Android.Views.View;
 using R = Android.Resource;
 
 namespace Microsoft.Maui.Platform
@@ -60,6 +61,13 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateButtonBackground(this MaterialButton platformView, IButton button)
 		{
+			if (button.Background is ImageSourcePaint image)
+			{
+				var provider = button.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				((AView)platformView).UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(button.Handler);
+				return;
+			}
+
 			platformView.UpdateMauiRippleDrawableBackground(
 				button.Background,
 				button,
