@@ -337,6 +337,9 @@ namespace Microsoft.Maui.Handlers
 			}
 #endif
 
+#if IOS || MACCATALYST
+			MapInputTransparentToContainer(handler, view);
+#endif
 			((PlatformView?)handler.PlatformView)?.UpdateIsEnabled(view);
 		}
 
@@ -529,6 +532,10 @@ namespace Microsoft.Maui.Handlers
 			else
 				handler.HasContainer = view.NeedsContainer();
 
+#if IOS || MACCATALYST
+			MapInputTransparentToContainer(handler, view);
+#endif
+
 			if (hasContainerOldValue != handler.HasContainer)
 			{
 				handler.UpdateValue(nameof(IView.Visibility));
@@ -610,14 +617,21 @@ namespace Microsoft.Maui.Handlers
 
 #if IOS || MACCATALYST
 			// Containers on iOS/Mac Catalyst may be hit testable, so we need to
-			// propagate the the view's values to its container view.
-			if (handler.ContainerView is WrapperView wrapper)
-				wrapper.UpdateInputTransparent(handler, view);
+			// propagate the view's values to its container view.
+			MapInputTransparentToContainer(handler, view);
 #endif
 
 			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(handler, view);
 #endif
 		}
+
+#if IOS || MACCATALYST
+		static void MapInputTransparentToContainer(IViewHandler handler, IView view)
+		{
+			if (handler.ContainerView is WrapperView wrapper)
+				wrapper.UpdateInputTransparent(handler, view);
+		}
+#endif
 
 		/// <summary>
 		/// Maps the abstract <see cref="IView.Unfocus"/> method to the platform-specific implementations.
