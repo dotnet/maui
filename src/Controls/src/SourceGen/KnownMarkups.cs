@@ -745,6 +745,12 @@ internal class KnownMarkups
 		// with a resolvable AncestorType. If so, returns the already-resolved AncestorType
 		// symbol from context.Types (populated earlier by ProvideValueForRelativeSourceExtension).
 		// This allows AncestorType bindings to use the compiled (trim-safe) TypedBinding path.
+		//
+		// Ordering guarantee: RelativeSourceExtension is registered in GetKnownEarlyMarkupExtensions
+		// and BindingExtension in GetKnownLateMarkupExtensions (see NodeSGExtensions.cs). Early markup
+		// extensions are always resolved before late ones, so context.Types is guaranteed to already
+		// contain the AncestorType symbol (if resolvable) by the time this method runs — no re-resolution
+		// or ordering fallback is needed here.
 		static bool TryGetRelativeSourceAncestorType(ElementNode bindingNode, SourceGenContext context, out ITypeSymbol? ancestorType, out bool hasAncestorType)
 		{
 			ancestorType = null;
