@@ -59,6 +59,7 @@ concurrency:
   cancel-in-progress: false
 
 timeout-minutes: 120
+max-ai-credits: -1
 
 tools:
   github:
