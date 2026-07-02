@@ -248,21 +248,36 @@ namespace Microsoft.Maui.Maps.Platform
 			SetVisibleMapRect(paddedRect, true);
 		}
 
+		// Refreshes a pin already on the map after its ImageSource changed at runtime, updating the
+		// live annotation view in place. Pins with no individual view (off-screen or collapsed into a
+		// cluster) are skipped; GetViewForAnnotation applies the current ImageSource when they appear.
+		internal void UpdatePinImage(IMapPin pin)
+		{
+			if (pin.MarkerId is not IMKAnnotation annotation || ViewForAnnotation(annotation) is not MKAnnotationView view)
+				return;
+
+			view.Image = null;
+			if (pin.ImageSource is not null)
+				ApplyCustomImageAsync(view, pin).FireAndForget();
+		}
+
 		async System.Threading.Tasks.Task ApplyCustomImageAsync(MKAnnotationView annotationView, IMapPin pin)
 		{
 			_handlerRef.TryGetTarget(out IMapHandler? handler);
 			if (handler?.MauiContext == null || pin.ImageSource == null)
 				return;
 
-			// Capture the annotation before the async operation to detect reuse
+			// Capture the annotation and requested source before the async operation, to detect both
+			// view reuse and a newer ImageSource change that started while this load was in flight.
 			var targetAnnotation = annotationView.Annotation;
+			var requestedSource = pin.ImageSource;
 
 			try
 			{
-				var result = await pin.ImageSource.GetPlatformImageAsync(handler.MauiContext);
+				var result = await requestedSource.GetPlatformImageAsync(handler.MauiContext);
 
-				// Verify the annotation view hasn't been reused for a different pin
-				if (annotationView.Annotation != targetAnnotation)
+				// Drop this load if the view was reused or the pin's ImageSource changed since.
+				if (annotationView.Annotation != targetAnnotation || !ReferenceEquals(pin.ImageSource, requestedSource))
 					return;
 
 				if (result?.Value is UIImage image)
