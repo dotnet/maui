@@ -215,6 +215,22 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void WhitespacePaddedDomainEntryMatches()
+		{
+			// Entries with surrounding whitespace should be trimmed so they still match.
+			var domains = new List<string> { "  example.com  " };
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("https://example.com/page", domains));
+		}
+
+		[Fact]
+		public void WhitespaceOnlyDomainEntryIsSkipped()
+		{
+			// A whitespace-only entry must not accidentally allow everything.
+			var domains = new List<string> { "   ", "example.com" };
+			Assert.False(WebViewDomainAllowlist.IsUrlAllowed("https://evil.com/page", domains));
+		}
+
+		[Fact]
 		public void UrlWithPortIsChecked()
 		{
 			var domains = new List<string> { "example.com" };

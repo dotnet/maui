@@ -68,10 +68,10 @@ namespace Microsoft.Maui.Handlers
 			for (int i = 0; i < allowedDomains.Count; i++)
 			{
 				var domain = allowedDomains[i];
-				if (string.IsNullOrEmpty(domain))
+				if (string.IsNullOrWhiteSpace(domain))
 					continue;
 
-				var asciiDomain = ToAsciiHost(domain);
+				var asciiDomain = ToAsciiHost(domain.Trim());
 				if (string.IsNullOrEmpty(asciiDomain))
 					continue;
 
