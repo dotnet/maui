@@ -8,6 +8,8 @@ applyTo:
 
 Guidance for working with .NET MAUI's Resizetizer build system, which processes images, fonts, splash screens, and assets at build time.
 
+> **See also:** .NET for Android's [MSBuild Best Practices](https://github.com/dotnet/android/blob/main/Documentation/guides/MSBuildBestPractices.md) is the canonical guide for MSBuild target authoring. Its *Incremental Builds*, *Stamp Files*, *FileWrites and IncrementalClean*, *When to not use Inputs and Outputs?*, and *Should I use BeforeTargets or AfterTargets?* sections directly inform the patterns documented below.
+
 ## Architecture Overview
 
 The Resizetizer is an MSBuild-integrated pipeline that processes `MauiImage`, `MauiFont`, `MauiSplashScreen`, and `MauiAsset` items into platform-specific resources during the build. All core logic lives in a single file:
@@ -100,7 +102,7 @@ ResizetizeCollectItems          ← Collects items from project + references
 
 ### The Problem
 
-MSBuild's `Inputs`/`Outputs` incremental check skips **tasks** when outputs are up-to-date, but **still evaluates ItemGroups and PropertyGroups** via [output inference](https://learn.microsoft.com/en-us/visualstudio/msbuild/incremental-builds#output-inference). However, this is dangerous when ItemGroups depend on side-effects of skipped tasks:
+MSBuild's `Inputs`/`Outputs` incremental check skips **targets** when outputs are up-to-date, but **still evaluates ItemGroups and PropertyGroups** via [output inference](https://learn.microsoft.com/en-us/visualstudio/msbuild/incremental-builds#output-inference). However, this is dangerous when ItemGroups depend on side-effects of skipped tasks:
 
 - Wildcard globs (`$(_MauiIntermediateFonts)*`) depend on files created by `Copy` tasks — if the intermediate directory is missing (partial clean, concurrent builds), the glob evaluates to nothing
 - Tasks like `CreatePartialInfoPlistTask` are genuinely skipped — their output files won't exist if they haven't run
@@ -221,24 +223,42 @@ This target is the starting point for the pipeline. It:
 
 **⚠️ CRITICAL**: `DependsOnTargets` alone does NOT trigger a target. Something must invoke the target first (via `AfterTargets`, `BeforeTargets`, or another target's `DependsOnTargets`).
 
-### Common Pitfall: Items Dependent on Task Side-Effects
-
-**Never use wildcard globs that depend on files created by tasks in the same target.** During output inference (when the target is skipped), tasks don't run but ItemGroups ARE evaluated — globs will find nothing if the intermediate files don't exist yet.
+**✅ Prefer `DependsOnTargets` via an overridable property where possible.** Express ordering as `DependsOnTargets="$(_MyTargetDependsOn)"` and define the list as a property so consumers can extend the chain without editing the target. This is how the Resizetizer wires its read-manifest targets, e.g.:
 
 ```xml
-<!-- ❌ DANGEROUS: glob depends on Copy task having run -->
+<PropertyGroup>
+    <ProcessMauiFontsDependsOnTargets>
+        $(ProcessMauiFontsDependsOnTargets);
+        _ReadMauiFontOutputs;
+    </ProcessMauiFontsDependsOnTargets>
+</PropertyGroup>
+<Target Name="ProcessMauiFonts" DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)" ... />
+```
+
+Reserve `AfterTargets`/`BeforeTargets` for one-off push-based hooks into SDK targets you don't own (e.g. `AssignTargetPaths`, `_ComputeAndroidResourcePaths`). See [Should I use BeforeTargets or AfterTargets?](https://github.com/dotnet/android/blob/main/Documentation/guides/MSBuildBestPractices.md#should-i-use-beforetargets-or-aftertargets).
+
+### Common Pitfall: Items Dependent on Task Side-Effects
+
+A wildcard glob over an intermediate directory populated by a task in the **same** target is usually fine on a normal incremental build: when the target is skipped as up-to-date, the files from the previous run are still on disk, so the glob still finds them. It becomes a problem in two specific cases:
+
+1. **The generated files are deleted out-of-band while the target still skips** — e.g. a partial `obj` clean, a concurrent/parallel build racing on the same intermediate folder, or a tool deleting intermediate files. If the up-to-date check is driven by a bare stamp whose timestamp stays newer than the (now missing) outputs, MSBuild skips the target, the glob finds nothing, and the item is silently dropped. **Fix:** track the real generated files in an output manifest (see [Incremental Build Tracking](#incremental-build-tracking-stamp--output-manifest-files)) so a missing output re-runs the target (issue #33092).
+2. **A consumer needs the registered items even when the processing target is skipped or runs later in the schedule** — item registration that lives inside the incremental processing target is not guaranteed to be visible to the target that packages it. **Fix:** register platform items in a companion always-run collection target (issue #23268).
+
+Predictive mapping from the source items is also preferred over a filesystem glob because it never picks up stale files left over from deleted sources:
+
+```xml
+<!-- ⚠️ Glob over the intermediate dir: correct only while the files are on disk,
+     and retains stale outputs from removed sources -->
 <Copy SourceFiles="@(MauiFont)" DestinationFolder="$(_MauiIntermediateFonts)" />
 <ItemGroup>
     <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
 </ItemGroup>
 
-<!-- ✅ SAFE: predictive mapping from source items, filesystem-independent -->
+<!-- ✅ Predictive mapping from source items: filesystem-independent and stale-free -->
 <ItemGroup>
     <_MauiFontCopied Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
 </ItemGroup>
 ```
-
-This is the root cause of issue #23268.
 
 ## Platform Detection Properties
 

@@ -214,20 +214,27 @@ public class ResizetizerTests : BaseBuildTest
 	}
 
 	static bool WasTargetSkipped(string binlogPath, string targetName)
-		=> GetTargetStatus(binlogPath, targetName).skipped;
+	{
+		var (started, skipped) = GetTargetStatus(binlogPath, targetName);
+		// A skipped (up-to-date) invocation emits BOTH a TargetStarted and a TargetSkipped event,
+		// while an executed invocation emits only TargetStarted. In multi-RID / outer+inner builds a
+		// target can be invoked several times, so the target counts as "skipped" only when every
+		// invocation was skipped: at least one skip and no net executions (started == skipped).
+		return skipped > 0 && started == skipped;
+	}
 
 	static bool WasTargetExecuted(string binlogPath, string targetName)
 	{
 		var (started, skipped) = GetTargetStatus(binlogPath, targetName);
-		// An up-to-date incremental target emits BOTH a TargetStarted and a TargetSkipped event, so
-		// "executed" means it started and was not skipped.
-		return started && !skipped;
+		// Each skipped invocation consumes one TargetStarted, so the number of real executions is
+		// (started - skipped). The target executed if at least one invocation actually ran.
+		return started > skipped;
 	}
 
-	static (bool started, bool skipped) GetTargetStatus(string binlogPath, string targetName)
+	static (int started, int skipped) GetTargetStatus(string binlogPath, string targetName)
 	{
-		bool started = false;
-		bool skipped = false;
+		int started = 0;
+		int skipped = 0;
 		if (File.Exists(binlogPath))
 		{
 			foreach (var record in new BinLogReader().ReadRecords(binlogPath))
@@ -235,10 +242,10 @@ public class ResizetizerTests : BaseBuildTest
 				switch (record.Args)
 				{
 					case TargetStartedEventArgs s when string.Equals(s.TargetName, targetName, StringComparison.Ordinal):
-						started = true;
+						started++;
 						break;
 					case TargetSkippedEventArgs sk when string.Equals(sk.TargetName, targetName, StringComparison.Ordinal):
-						skipped = true;
+						skipped++;
 						break;
 				}
 			}
@@ -263,12 +270,13 @@ public class ResizetizerTests : BaseBuildTest
 
 	static void AssertBuiltTargetPlatforms(IReadOnlyList<string> intermediateOutputRoots)
 	{
+		// This is only reached from BuildRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing,
+		// which is gated to macOS (it builds the Apple TFMs), so only the Apple + Android roots are
+		// asserted here. Windows is covered separately by FontsAreCopiedToAndroidAssetsOnFirstBuild's
+		// sibling Windows lanes and CollectsAssets, and is never built by this macOS-only test.
 		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-android"));
 		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-ios"));
 		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-maccatalyst"));
-
-		if (TestEnvironment.IsWindows)
-			Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-windows"));
 	}
 
 	static bool ContainsTargetFramework(string path, string targetFramework) =>
@@ -302,13 +310,14 @@ public class ResizetizerTests : BaseBuildTest
 
 	static void AssertTargetSkipped(string binlogPath, string targetName, int minimumSkipCount)
 	{
-		var skipCount = new BinLogReader()
-			.ReadRecords(binlogPath)
-			.Count(record => record.Args is BuildMessageEventArgs { Message: string message } &&
-				message.Contains($"Skipping target \"{targetName}\"", StringComparison.Ordinal) &&
-				message.Contains("because all output files are up-to-date", StringComparison.OrdinalIgnoreCase));
+		Assert.True(File.Exists(binlogPath), $"Binlog not found: {binlogPath}");
 
-		Assert.True(skipCount >= minimumSkipCount,
-			$"Expected target '{targetName}' to be skipped at least {minimumSkipCount} times, but found {skipCount}. See binlog: {binlogPath}");
+		// Count TargetSkippedEventArgs directly instead of matching localized/implementation-specific
+		// log message text ("Skipping target ... because all output files are up-to-date"), which is
+		// brittle across MSBuild versions and non-English locales.
+		var (_, skipped) = GetTargetStatus(binlogPath, targetName);
+
+		Assert.True(skipped >= minimumSkipCount,
+			$"Expected target '{targetName}' to be skipped at least {minimumSkipCount} times, but found {skipped}. See binlog: {binlogPath}");
 	}
 }
