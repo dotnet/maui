@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -11,6 +12,8 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public class GeometryGroup : Geometry
 	{
+		readonly Dictionary<Geometry, int> _subscriptionRefCounts = new();
+
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
 			BindableProperty.Create(nameof(Children), typeof(GeometryCollection), typeof(GeometryGroup), null,
@@ -55,52 +58,146 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdateChildren(GeometryCollection oldCollection, GeometryCollection newCollection)
 		{
-			if (oldCollection != null)
-			{
-				oldCollection.CollectionChanged -= OnChildrenCollectionChanged;
+			DetachCollection(oldCollection);
+			AttachCollection(newCollection);
 
-				foreach (var oldChildren in oldCollection)
-				{
-					oldChildren.PropertyChanged -= OnChildrenPropertyChanged;
-				}
-			}
+			Invalidate();
+		}
 
-			if (newCollection == null)
+		void AttachCollection(GeometryCollection collection)
+		{
+			if (collection == null)
 				return;
 
-			newCollection.CollectionChanged += OnChildrenCollectionChanged;
+			collection.CollectionChanged += OnChildrenCollectionChanged;
 
-			foreach (var newChildren in newCollection)
+			foreach (var geometry in collection)
 			{
-				newChildren.PropertyChanged += OnChildrenPropertyChanged;
+				SubscribeToGeometry(geometry);
+			}
+		}
+
+		void DetachCollection(GeometryCollection collection)
+		{
+			if (collection == null)
+				return;
+
+			collection.CollectionChanged -= OnChildrenCollectionChanged;
+
+			foreach (var geometry in collection)
+			{
+				UnsubscribeFromGeometry(geometry);
 			}
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.OldItems != null)
+			switch (e.Action)
 			{
-				foreach (var oldItem in e.OldItems)
-				{
-					if (!(oldItem is Geometry oldGeometry))
-						continue;
+				case NotifyCollectionChangedAction.Add:
+					if (e.NewItems != null)
+					{
+						foreach (Geometry geometry in e.NewItems)
+						{
+							SubscribeToGeometry(geometry);
+						}
+					}
+					break;
 
-					oldGeometry.PropertyChanged -= OnChildrenPropertyChanged;
-				}
-			}
+				case NotifyCollectionChangedAction.Remove:
+					if (e.OldItems != null)
+					{
+						foreach (Geometry geometry in e.OldItems)
+						{
+							UnsubscribeFromGeometry(geometry);
+						}
+					}
+					break;
 
-			if (e.NewItems != null)
-			{
-				foreach (var newItem in e.NewItems)
-				{
-					if (!(newItem is Geometry newGeometry))
-						continue;
+				case NotifyCollectionChangedAction.Replace:
+					if (e.OldItems != null)
+					{
+						foreach (Geometry geometry in e.OldItems)
+						{
+							UnsubscribeFromGeometry(geometry);
+						}
+					}
 
-					newGeometry.PropertyChanged += OnChildrenPropertyChanged;
-				}
+					if (e.NewItems != null)
+					{
+						foreach (Geometry geometry in e.NewItems)
+						{
+							SubscribeToGeometry(geometry);
+						}
+					}
+					break;
+
+				case NotifyCollectionChangedAction.Move:
+					// No subscription changes required.
+					break;
+
+				case NotifyCollectionChangedAction.Reset:
+					ResubscribeCollection(sender as GeometryCollection);
+					break;
 			}
 
 			Invalidate();
+		}
+
+		void ResubscribeCollection(GeometryCollection collection)
+		{
+			UnsubscribeFromAllChildren();
+
+			if (collection == null)
+				return;
+
+			foreach (var geometry in collection)
+			{
+				SubscribeToGeometry(geometry);
+			}
+		}
+
+		void SubscribeToGeometry(Geometry geometry)
+		{
+			if (geometry == null)
+				return;
+
+			if (_subscriptionRefCounts.TryGetValue(geometry, out var count))
+			{
+				_subscriptionRefCounts[geometry] = count + 1;
+				return;
+			}
+
+			_subscriptionRefCounts[geometry] = 1;
+			geometry.PropertyChanged += OnChildrenPropertyChanged;
+		}
+
+		void UnsubscribeFromGeometry(Geometry geometry)
+		{
+			if (geometry == null)
+				return;
+
+			if (!_subscriptionRefCounts.TryGetValue(geometry, out var count))
+				return;
+
+			if (count > 1)
+			{
+				_subscriptionRefCounts[geometry] = count - 1;
+				return;
+			}
+
+			_subscriptionRefCounts.Remove(geometry);
+			geometry.PropertyChanged -= OnChildrenPropertyChanged;
+		}
+
+		void UnsubscribeFromAllChildren()
+		{
+			foreach (var geometry in _subscriptionRefCounts.Keys)
+			{
+				geometry.PropertyChanged -= OnChildrenPropertyChanged;
+			}
+
+			_subscriptionRefCounts.Clear();
 		}
 
 		void OnChildrenPropertyChanged(object sender, PropertyChangedEventArgs e)
