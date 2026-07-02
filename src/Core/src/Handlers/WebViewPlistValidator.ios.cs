@@ -91,7 +91,10 @@ namespace Microsoft.Maui.Handlers
 			{
 				logger?.LogWarning(
 					"WKAppBoundDomains contains domains not in AllowedDomains: {Domains}. " +
-					"These domains are allowed at the OS level but will be blocked by the AllowedDomains property.",
+					"Top-level navigations to these domains are blocked by the AllowedDomains property, but their " +
+					"sub-resources (scripts, images, CSS) can still load: WebKit permits any WKAppBoundDomains entry at " +
+					"the OS level and there is no per-resource callback to apply AllowedDomains. Remove them from Info.plist " +
+					"if you want them fully blocked.",
 					string.Join(", ", extraInPlist));
 			}
 		}
