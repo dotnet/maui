@@ -328,7 +328,12 @@
     />
 
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
-    <PackageReference Update="Microsoft.Signed.WiX" Version="$(MicrosoftSignedWixVersion)" />
+    <!-- WiX 6 packages -->
+    <PackageReference Update="Microsoft.Wix" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixVersion)" />
     <PackageReference Update="MicroBuild.Plugins.SwixBuild.Dotnet" Version="$(MicroBuildPluginsSwixBuildDotnetPackageVersion)" />
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)"/>
   </ItemGroup>
