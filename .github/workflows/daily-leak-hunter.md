@@ -49,6 +49,7 @@ concurrency:
 
 timeout-minutes: 90
 max-ai-credits: -1
+max-daily-ai-credits: -1
 
 tools:
   github:
