@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -24,6 +25,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this RadioButton platformRadioButton, IRadioButton button)
 		{
+			if (button.Background is ImageSourcePaint image)
+			{
+				var provider = button.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				platformRadioButton.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(button.Handler);
+				return;
+			}
+
 			if (button.Background is SolidPaint solidPaint)
 			{
 				UpdateColors(platformRadioButton.Resources, _backgroundColorKeys, solidPaint.ToPlatform());
