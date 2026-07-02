@@ -51,6 +51,13 @@ namespace Microsoft.Maui.Handlers
 #if MACCATALYST
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
+			if (button.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				handler.PlatformView?.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(handler);
+				return;
+			}
+
 			//If this is a Mac optimized interface
 			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
 			{
@@ -80,6 +87,13 @@ namespace Microsoft.Maui.Handlers
 		// TODO: Make this public in .NET 11
 		internal static void MapBackground(IButtonHandler handler, IButton button)
 		{
+			if (button.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				handler.PlatformView?.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(handler);
+				return;
+			}
+
 			handler.PlatformView?.UpdateBackground(button.Background);
 		}
 #endif

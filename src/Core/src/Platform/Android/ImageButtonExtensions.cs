@@ -2,6 +2,7 @@
 using Google.Android.Material.ImageView;
 using Google.Android.Material.Shape;
 using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
@@ -62,6 +63,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
 		{
+			if (button.Background is ImageSourcePaint image)
+			{
+				var provider = button.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				((AView)platformView).UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(button.Handler);
+				return;
+			}
+
 			platformView.UpdateMauiRippleDrawableBackground(
 				button.Background ?? new SolidPaint(Colors.Transparent), // transparent to force some background
 				button,
