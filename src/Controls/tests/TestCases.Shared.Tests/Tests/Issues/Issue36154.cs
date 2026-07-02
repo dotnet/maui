@@ -22,7 +22,7 @@ public class Issue36154 : _IssuesUITest
 		var centerY = rect.Y + rect.Height / 2;
 
 		// Swipe left (finger moves left) → reveals RightItems
-		App.DragCoordinates(centerX, centerY, centerX - 200, centerY);
+		App.DragCoordinates(centerX, centerY, centerX - 300, centerY);
 
 		Assert.That(App.WaitForElement("ResultLabel").GetText(), Is.EqualTo("RIGHT invoked!"));
 	}
