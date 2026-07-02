@@ -50,6 +50,10 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		CancellationTokenSource? _addPinsCts;
 
+		// Pins subscribed to PropertyChanged; tracked so DisconnectPins can unsubscribe pins already
+		// removed from VirtualView.Pins (the live collection no longer lists them).
+		readonly HashSet<INotifyPropertyChanged> _subscribedPins = new();
+
 		public GoogleMap? Map { get; private set; }
 
 		static Bundle? s_bundle;
@@ -723,6 +727,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				// -= before += because ReclusterPins re-runs AddPins on zoom without DisconnectPins.
 				observable.PropertyChanged -= PinOnPropertyChanged;
 				observable.PropertyChanged += PinOnPropertyChanged;
+				_subscribedPins.Add(observable);
 			}
 
 			AddPinAsync(pin, ct).FireAndForget();
@@ -776,17 +781,18 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void DisconnectPins()
 		{
+			// Unsubscribe every pin we actually subscribed to, including ones already removed from
+			// VirtualView.Pins, so a removed-but-subscribed pin can no longer keep this handler alive.
+			foreach (var observable in _subscribedPins)
+				observable.PropertyChanged -= PinOnPropertyChanged;
+			_subscribedPins.Clear();
+
 			if (VirtualView == null)
 				return;
 
 			for (int i = 0; i < VirtualView.Pins.Count; i++)
 			{
-				var pin = VirtualView.Pins[i];
-				if (pin is INotifyPropertyChanged observable)
-				{
-					observable.PropertyChanged -= PinOnPropertyChanged;
-				}
-				pin?.Handler?.DisconnectHandler();
+				VirtualView.Pins[i]?.Handler?.DisconnectHandler();
 			}
 		}
 
