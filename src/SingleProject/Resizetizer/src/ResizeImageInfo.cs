@@ -122,7 +122,8 @@ namespace Microsoft.Maui.Resizetizer
 			if (float.TryParse(image.GetMetadata("ForegroundScale"), NumberStyles.Number, CultureInfo.InvariantCulture, out var fsc))
 				info.ForegroundScale = fsc;
 
-			if (Enum.TryParse<ResizeQuality>(image.GetMetadata("ResizeQuality"), ignoreCase: true, out var quality))
+			if (Enum.TryParse<ResizeQuality>(image.GetMetadata("ResizeQuality"), ignoreCase: true, out var quality) &&
+				Enum.IsDefined(typeof(ResizeQuality), quality))
 				info.Quality = quality;
 
 			var fgFile = image.GetMetadata("ForegroundFile");

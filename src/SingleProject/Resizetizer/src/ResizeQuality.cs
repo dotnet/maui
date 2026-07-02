@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Resizetizer
 		/// <summary>
 		/// Highest quality output using Mitchell cubic resampler.
 		/// Provides high-fidelity scaling when preserving smooth detail is critical.
-		/// Auto preserves the existing mipmapped downscale behavior.
+		/// Uses cubic resampling for smoother results than the default bilinear output.
 		/// </summary>
 		Best = 1,
 

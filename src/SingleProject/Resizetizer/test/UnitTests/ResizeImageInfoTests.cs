@@ -130,6 +130,19 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(ResizeQuality.Auto, info.Quality);
 			}
 
+			[Fact]
+			public void QualityDefaultsToAutoForUndefinedNumericValue()
+			{
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path, new Dictionary<string, string>
+				{
+					["ResizeQuality"] = "3"
+				});
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
+			}
+
 			[Theory]
 			[InlineData("auto")]
 			[InlineData("FASTEST")]
