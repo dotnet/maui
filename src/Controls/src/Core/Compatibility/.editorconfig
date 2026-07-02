@@ -1,0 +1,7 @@
+# MemoryAnalyzers (MEM0001-0003) is being adopted incrementally (reviving dotnet/maui#18318).
+# Modern handlers are enforced (error); the legacy Compatibility/ renderers are downgraded to
+# suggestion for now and tracked for follow-up burn-down.
+[*.cs]
+dotnet_diagnostic.MEM0001.severity = suggestion
+dotnet_diagnostic.MEM0002.severity = suggestion
+dotnet_diagnostic.MEM0003.severity = suggestion

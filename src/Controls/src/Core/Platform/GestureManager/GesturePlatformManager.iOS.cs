@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Runtime.Versioning;
@@ -957,6 +958,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class FakeRightClickContextMenuInteraction : UIContextMenuInteraction
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The strong reference is required to keep the UIContextMenuInteractionDelegate alive for the interaction lifetime.")]
 			FakeRightClickDelegate? _dontCollectMePlease;
 
 			public FakeRightClickContextMenuInteraction(TapGestureRecognizer tapGestureRecognizer, GesturePlatformManager gestureManager)
@@ -995,6 +997,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class FakeRightClickPointerInteraction : UIContextMenuInteraction
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The strong reference is required to keep the UIContextMenuInteractionDelegate alive for the interaction lifetime.")]
 			FakeRightClickPointerDelegate? _dontCollectMePlease;
 			bool _disposed;
 

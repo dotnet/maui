@@ -1,6 +1,7 @@
 #nullable disable
 #if __MOBILE__
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 	[SupportedOSPlatform("ios11.0")]
 	class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The drag/drop delegate releases the handler reference in Disconnect when the platform interactions are disconnected.")]
 		IPlatformViewHandler _viewHandler;
 		PlatformDragStartingEventArgs _platformDragStartingEventArgs;
 
@@ -361,6 +363,7 @@ namespace Microsoft.Maui.Controls.Platform
 		class CustomLocalStateData : NSObject
 		{
 			public View View { get; set; }
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The local drag state is session-scoped and released by UIKit when the drag session ends.")]
 			public IViewHandler Handler { get; set; }
 			public DataPackage DataPackage { get; set; }
 		}

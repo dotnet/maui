@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TItemsView : ReorderableItemsView
 	{
 		bool _disposed;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UILongPressGestureRecognizer _longPressGestureRecognizer;
 		nint _lastMoveSourceSection = -1;
 		nint _lastMoveDestinationSection = -1;
