@@ -570,6 +570,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the <see cref="Brush"/> which will be used to fill the background of an element. This is a bindable property.
 		/// </summary>
 		[TypeConverter(typeof(BrushTypeConverter))]
+		public Brush Background
 		{
 			get { return (Brush)GetValue(BackgroundProperty); }
 			set { SetValue(BackgroundProperty, value); }
