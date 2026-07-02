@@ -93,22 +93,23 @@ stages:
               useCoreClr: true
 
     # Smoke coverage that MAUI still builds and runs iOS device tests under Mono.
+    # Single representative project and version to keep this to one smoke leg.
     - ${{ if eq(platform, 'ios') }}:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.ios, '') }}:
+        - ${{ if and(ne(project.ios, ''), eq(project.name, 'controls')) }}:
           - template: device-tests-jobs.yml
             parameters:
               platform: ios
               timeoutInMinutes: 120
               pool: ${{ parameters.iOSPool }}
-              versions: ${{ parameters.iosVersions }}
+              versions: [ 'simulator-26.0' ]
               targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
               checkoutDirectory: ${{ parameters.checkoutDirectory }}
               project:
                 name: ${{ project.name }}
                 desc: ${{ project.desc }}
                 path: ${{ project.ios }}
-                versionsExclude: ${{ project.iosVersionsExclude }}
+                versionsExclude: ${{ project.iosVersionsCoreClrExclude }}
                 configuration: ${{ project.iOSConfiguration }}
               provisionatorChannel: ${{ parameters.provisionatorChannel }}
               skipProvisioning: ${{ parameters.skipProvisioning }}
