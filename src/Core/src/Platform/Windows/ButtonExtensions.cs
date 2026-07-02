@@ -85,6 +85,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this Button platformButton, IButton button)
 		{
+			if (button.Background is ImageSourcePaint image)
+			{
+				var provider = button.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				platformButton.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(button.Handler);
+				return;
+			}
+
 			var brush = button.Background?.ToPlatform();
 
 			if (brush is null)
