@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{

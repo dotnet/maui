@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{

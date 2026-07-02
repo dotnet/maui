@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -32,8 +33,13 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutHeader = layout;
 				shell.FlyoutContent = new ScrollView() { Content = new Label() { Text = "FlyoutContent" } };
 			},
-			async (shell, handler) =>
+			// RunShellTest's callback signature was changed from Func<Shell, IShellContext, Task>
+			// to Func<Shell, Task> so Android handler subclasses can inherit the test without
+			// a platform-specific handler type leaking into the shared callback signature.
+			// The handler is now accessed directly from shell.Handler inside the lambda.
+			async shell =>
 			{
+				var handler = (ShellRenderer)shell.Handler;
 				await OpenFlyout(handler);
 				var flyout = GetFlyoutPlatformView(handler);
 				var header = flyout.Subviews.OfType<ShellFlyoutHeaderContainer>().First();
