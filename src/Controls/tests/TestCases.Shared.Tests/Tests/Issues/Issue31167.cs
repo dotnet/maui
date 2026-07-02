@@ -37,7 +37,7 @@ public class Issue31167 : _IssuesUITest
 		// Simulate user interaction by opening and closing the DatePicker
 		App.Tap("MyDatePicker");
 		
-		// On iOS, tap Done to close the picker
+		// On iOS, tap Done (or "selected" on iOS 26+) to close the picker
 		App.WaitForElement(doneButton);
 		App.Tap(doneButton);
 

@@ -23,7 +23,7 @@ public class Issue34848 : _IssuesUITest
 		App.Tap("Issue34848TestDatePicker");
 
 #if IOS
-		// iOS DatePicker uses a wheel picker, so we can just tap the "Done" button to close it
+		// iOS DatePicker uses a wheel picker, so we can just tap the "Done" button (or "selected" on iOS 26+) to close it
 		App.Tap(doneButton);
 #elif WINDOWS
 		// On Windows, we can tap a date to close the DatePicker
