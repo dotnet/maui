@@ -116,7 +116,6 @@ namespace Microsoft.Maui.Media
 		Task<IScreenshotResult?> CaptureViewAsync(object platformView);
 	}
 
-
 	/// <summary>
 	/// A representation of a screenshot, as a result of a screenshot captured by the user.
 	/// </summary>

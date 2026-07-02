@@ -82,9 +82,6 @@ namespace Microsoft.Maui.Media
 			return Task.FromResult<IScreenshotResult?>(result);
 		}
 
-		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
-			platformView is UIView view ? CaptureAsync(view)! : Task.FromResult<IScreenshotResult?>(null);
-
 		public Task<IScreenshotResult?> CaptureAsync(CALayer layer, bool skipChildren)
 		{
 			_ = layer ?? throw new ArgumentNullException(nameof(layer));
