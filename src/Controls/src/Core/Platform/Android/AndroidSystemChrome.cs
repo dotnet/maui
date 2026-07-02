@@ -93,6 +93,11 @@ namespace Microsoft.Maui.Controls.Platform
 			Color? statusBarBackgroundColor = null,
 			Color? navigationBarBackgroundColor = null)
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+			{
+				return;
+			}
+
 			var activity = context?.GetActivity();
 			if (window is null)
 			{

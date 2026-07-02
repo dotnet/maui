@@ -383,6 +383,10 @@
                                       Condition="'$(UseWindowsCollectionView2Handler)' != ''"
                                       Value="$(UseWindowsCollectionView2Handler)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.UseMauiAndroidSystemBarBackgrounds"
+                                      Condition="'$(MauiAndroidSystemBarsUseMauiChrome)' != ''"
+                                      Value="$(MauiAndroidSystemBarsUseMauiChrome)"
+                                      Trim="true" />
     </ItemGroup>
   </Target>
 
