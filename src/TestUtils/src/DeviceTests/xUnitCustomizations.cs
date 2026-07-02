@@ -213,13 +213,89 @@ namespace Microsoft.Maui
 			return _categoryPrefix;
 		}
 
+#if ANDROID
+		// Cache of "does this declaring type have any known subclass in its own assembly" so we only
+		// scan each type's assembly once, not once per test case.
+		static readonly Dictionary<Type, bool> s_hasKnownSubclassCache = new();
+
+		static bool HasKnownSubclassInAssembly(Type baseType)
+		{
+			if (!s_hasKnownSubclassCache.TryGetValue(baseType, out var hasSubclass))
+			{
+				hasSubclass = false;
+
+				try
+				{
+					hasSubclass = baseType.Assembly.GetTypes().Any(t => t != baseType && baseType.IsAssignableFrom(t));
+				}
+				catch (ReflectionTypeLoadException ex)
+				{
+					// Not every type in the assembly is guaranteed to load on device (e.g. platform-specific
+					// types, trimming). Fall back to whichever types did load successfully rather than crashing
+					// the whole test run over a display-name convenience feature.
+					hasSubclass = ex.Types.Any(t => t is not null && t != baseType && baseType.IsAssignableFrom(t));
+				}
+				catch
+				{
+					// Never let display-name resolution crash the test run.
+					hasSubclass = false;
+				}
+
+				s_hasKnownSubclassCache[baseType] = hasSubclass;
+			}
+
+			return hasSubclass;
+		}
+#endif
+
+		string? _reuseVariantPrefix;
+
+		// Android-only: Shell/Modal/Window tests reuse the same test bodies across a renderer base
+		// class and a handler subclass (see ShellHandlerSubclasses.Android.cs), so DisplayName alone
+		// can't tell them apart. Tag the subclass run as "[Handler]" and the base run as "[Renderer]".
+		string GetReuseVariantPrefix()
+		{
+			if (_reuseVariantPrefix == null)
+			{
+#if ANDROID
+				try
+				{
+					var declaringType = _inner.TestMethod.Method.ToRuntimeMethod()?.DeclaringType;
+					var runningType = _inner.TestMethod.TestClass.Class.ToRuntimeType();
+
+					if (declaringType is not null && runningType is not null && declaringType != runningType)
+					{
+						_reuseVariantPrefix = "[Handler] ";
+					}
+					else if (declaringType is not null && HasKnownSubclassInAssembly(declaringType))
+					{
+						_reuseVariantPrefix = "[Renderer] ";
+					}
+					else
+					{
+						_reuseVariantPrefix = string.Empty;
+					}
+				}
+				catch
+				{
+					// Never let display-name resolution crash the test run.
+					_reuseVariantPrefix = string.Empty;
+				}
+#else
+				_reuseVariantPrefix = string.Empty;
+#endif
+			}
+
+			return _reuseVariantPrefix;
+		}
+
 		string? _displayName;
 
 		public string DisplayName
 		{
 			get
 			{
-				_displayName = _displayName ?? $"{GetCategoryPrefix()}{_inner.DisplayName}";
+				_displayName = _displayName ?? $"{GetCategoryPrefix()}{GetReuseVariantPrefix()}{_inner.DisplayName}";
 				return _displayName;
 			}
 		}
