@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Platform
 			if (datePicker?.Background is ImageSourcePaint image)
 			{
 				var provider = datePicker.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				platformDatePicker.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(datePicker.Handler);
+				platformDatePicker.UpdateBackgroundImageForAllStatesAsync(image.ImageSource, provider, BackgroundColorResourceKeys).FireAndForget(datePicker.Handler);
 				return;
 			}
 

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 			if (view.Background is ImageSourcePaint image)
 			{
 				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				textBox.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
+				textBox.UpdateBackgroundImageForAllStatesAsync(image.ImageSource, provider, BackgroundResourceKeys).FireAndForget(view.Handler);
 				return;
 			}
 

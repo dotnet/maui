@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Platform
 			if (button.Background is ImageSourcePaint image)
 			{
 				var provider = button.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				platformButton.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(button.Handler);
+				platformButton.UpdateBackgroundImageForAllStatesAsync(image.ImageSource, provider, BackgroundResourceKeys).FireAndForget(button.Handler);
 				return;
 			}
 

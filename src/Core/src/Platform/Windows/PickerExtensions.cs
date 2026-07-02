@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 			if (picker.Background is ImageSourcePaint image)
 			{
 				var provider = picker.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				nativeComboBox.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(picker.Handler);
+				nativeComboBox.UpdateBackgroundImageForAllStatesAsync(image.ImageSource, provider, BackgroundColorResourceKeys).FireAndForget(picker.Handler);
 				return;
 			}
 

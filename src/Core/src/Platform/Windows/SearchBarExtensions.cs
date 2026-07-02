@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 			if (searchBar.Background is ImageSourcePaint image)
 			{
 				var provider = searchBar.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				platformControl.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(searchBar.Handler);
+				platformControl.UpdateBackgroundImageForAllStatesAsync(image.ImageSource, provider, _backgroundColorKeys).FireAndForget(searchBar.Handler);
 				return;
 			}
 
