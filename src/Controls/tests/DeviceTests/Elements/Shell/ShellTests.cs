@@ -958,6 +958,32 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC(pageReference);
 		}
 
+		[Fact(DisplayName = "Shell Does Not Leak")]
+		public async Task ShellDoesNotLeak()
+		{
+			SetupBuilder();
+
+			var references = new List<WeakReference>();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage() { Title = "Page 1" };
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+
+				references.Add(new WeakReference(shell));
+				references.Add(new WeakReference(shell.Handler));
+				references.Add(new WeakReference(shell.CurrentPage));
+			});
+
+			// After CreateHandlerAndAddToWindow tears the window/handler down, the
+			// Shell itself, its handler, and its content page must all be collectible.
+			await AssertionExtensions.WaitForGC([.. references]);
+		}
+
 		class LeakyShellPage : ContentPage
 		{
 			public LeakyShellPage()
