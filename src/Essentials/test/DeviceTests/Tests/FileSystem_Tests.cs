@@ -34,7 +34,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			using var reader = new StreamReader(stream);
 
-			// Sync read to work around dotnet/runtime#129813 (async miscompile on Apple-mobile CoreCLR).
 			var text = reader.ReadToEnd();
 
 			Assert.Equal(contents, text);
@@ -82,8 +81,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			await File.WriteAllTextAsync(filePath, expectedContent);
 
 			var fileResult = new FileResult(filePath);
-
-			// Sync reads below to work around dotnet/runtime#129813 (async miscompile on Apple-mobile CoreCLR).
 
 			// First call to OpenReadAsync
 			using (var firstStream = await fileResult.OpenReadAsync())
