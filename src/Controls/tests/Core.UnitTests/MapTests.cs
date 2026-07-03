@@ -1195,7 +1195,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ClusterImageProvider = _ => providerImage;
 
 			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
-			var result = ((IMap)map).GetClusterImage(pins, new Location(1, 2));
+			var result = ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
 
 			Assert.Same(providerImage, result);
 		}
@@ -1208,11 +1208,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ClusterImageSource = staticImage;
 			// no provider
 			var pins = new List<IMapPin> { new Pin { Label = "A" } };
-			Assert.Same(staticImage, ((IMap)map).GetClusterImage(pins, new Location(1, 2)));
+			Assert.Same(staticImage, ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
 
 			// provider that returns null also falls back
 			map.ClusterImageProvider = _ => null;
-			Assert.Same(staticImage, ((IMap)map).GetClusterImage(pins, new Location(1, 2)));
+			Assert.Same(staticImage, ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
 		}
 
 		[Fact]
@@ -1220,7 +1220,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var map = new Map();
 			var pins = new List<IMapPin> { new Pin { Label = "A" } };
-			Assert.Null(((IMap)map).GetClusterImage(pins, new Location(1, 2)));
+			Assert.Null(((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
 		}
 
 		[Fact]
@@ -1237,7 +1237,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				new Pin { Label = "A", ClusteringIdentifier = "cafes" },
 				new Pin { Label = "B", ClusteringIdentifier = "cafes" }
 			};
-			((IMap)map).GetClusterImage(pins, new Location(10, 20));
+			((IMap)map).GetClusterImage(pins, pins.Count, new Location(10, 20));
 
 			Assert.NotNull(captured);
 			Assert.Equal(2, captured!.Count);
@@ -1258,13 +1258,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ClusterImageProvider = info => { captured = info; return null; };
 #nullable restore
 
-			var result = ((IMap)map).GetClusterImage(new List<IMapPin>(), new Location(1, 2));
+			var result = ((IMap)map).GetClusterImage(new List<IMapPin>(), 0, new Location(1, 2));
 
 			Assert.NotNull(captured);
 			Assert.Equal(0, captured!.Count);
 			Assert.Equal(Pin.DefaultClusteringIdentifier, captured.ClusteringIdentifier);
 			Assert.Empty(captured.Pins);
 			Assert.Same(staticImage, result);
+		}
+
+		[Fact]
+		public void GetClusterImageUsesAuthoritativeCountIndependentOfResolvedPins()
+		{
+			// Regresses an iOS scenario: MKClusterAnnotation.MemberAnnotations.Length is the true
+			// cluster size, but GetPinForAnnotation can resolve fewer pins into the passed list
+			// (e.g. a lookup miss). Count must reflect the true size, not pins.Count.
+			var map = new Map();
+#nullable enable
+			ClusterInfo? captured = null;
+			map.ClusterImageProvider = info => { captured = info; return null; };
+#nullable restore
+
+			var pins = new List<IMapPin> { new Pin { Label = "A" } };
+			((IMap)map).GetClusterImage(pins, 5, new Location(1, 2));
+
+			Assert.NotNull(captured);
+			Assert.Equal(5, captured!.Count);
+			Assert.Single(captured.Pins);
 		}
 
 		[Fact]

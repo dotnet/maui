@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
+		Dictionary<IImageSource, BitmapDescriptor>? _clusterIconCache;
 
 		CancellationTokenSource? _addPinsCts;
 
@@ -94,6 +95,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_clusters?.Clear();
 			_clusterMarkers?.Clear();
+			_clusterIconCache?.Clear();
 			_mapReady = null;
 		}
 
@@ -915,8 +917,20 @@ namespace Microsoft.Maui.Maps.Handlers
 			options.Anchor(0.5f, 0.5f);
 
 			// Resolve a custom cluster image (provider -> static), falling back to the default bubble.
-			var image = VirtualView.GetClusterImage(cluster.Pins, center);
-			BitmapDescriptor? icon = image != null ? await LoadPinIconAsync(image, MauiContext, ct) : null;
+			var image = VirtualView.GetClusterImage(cluster.Pins, cluster.Pins.Count, center);
+			BitmapDescriptor? icon = null;
+			if (image != null)
+			{
+				_clusterIconCache ??= new Dictionary<IImageSource, BitmapDescriptor>(ReferenceEqualityComparer.Instance);
+				if (!_clusterIconCache.TryGetValue(image, out icon))
+				{
+					icon = await LoadPinIconAsync(image, MauiContext, ct);
+					if (ct.IsCancellationRequested || MauiContext == null)
+						return;
+					if (icon != null)
+						_clusterIconCache[image] = icon;
+				}
+			}
 
 			if (ct.IsCancellationRequested || Map == null)
 				return;

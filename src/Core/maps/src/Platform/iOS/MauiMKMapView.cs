@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Maps.Platform
 
 		UILongPressGestureRecognizer? _mapLongClickedGestureRecognizer;
 		List<IMapElement>? _trackedMapElements;
+		Dictionary<IImageSource, UIImage>? _clusterIconCache;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
@@ -180,8 +181,9 @@ namespace Microsoft.Maui.Maps.Platform
 			if (_handlerRef.TryGetTarget(out var handler) && handler?.VirtualView != null)
 			{
 				var members = clusterAnnotation.MemberAnnotations;
-				// Each cluster member carries its pin's MarkerId, so GetPinForAnnotation resolves
-				// reliably here; the resulting list size matches the cluster size in normal operation.
+				// Each cluster member carries its pin's MarkerId, so GetPinForAnnotation usually
+				// resolves all of them; count is taken from MemberAnnotations directly (not the
+				// resolved pins list) so it stays accurate even on an occasional lookup miss.
 				var pins = new List<IMapPin>();
 				if (members != null)
 				{
@@ -195,7 +197,7 @@ namespace Microsoft.Maui.Maps.Platform
 
 				var coordinate = clusterAnnotation.Coordinate;
 				var location = new Devices.Sensors.Location(coordinate.Latitude, coordinate.Longitude);
-				clusterImage = handler.VirtualView.GetClusterImage(pins, location);
+				clusterImage = handler.VirtualView.GetClusterImage(pins, members?.Length ?? 0, location);
 			}
 
 			if (clusterImage != null)
@@ -205,8 +207,16 @@ namespace Microsoft.Maui.Maps.Platform
 					?? new MKAnnotationView(clusterAnnotation, customClusterId);
 				customView.CanShowCallout = false;
 				customView.Annotation = clusterAnnotation;
-				customView.Image = null;
-				ApplyCustomClusterImageAsync(customView, clusterImage).FireAndForget();
+
+				if (_clusterIconCache != null && _clusterIconCache.TryGetValue(clusterImage, out var cachedImage))
+				{
+					customView.Image = cachedImage;
+				}
+				else
+				{
+					customView.Image = null;
+					ApplyCustomClusterImageAsync(customView, clusterImage).FireAndForget();
+				}
 				return customView;
 			}
 
@@ -337,6 +347,8 @@ namespace Microsoft.Maui.Maps.Platform
 				{
 					var scaledImage = ScaleImage(image, new CoreGraphics.CGSize(32, 32));
 					annotationView.Image = scaledImage;
+					_clusterIconCache ??= new Dictionary<IImageSource, UIImage>(ReferenceEqualityComparer.Instance);
+					_clusterIconCache[imageSource] = scaledImage;
 				}
 			}
 			catch (Exception ex)
@@ -487,6 +499,7 @@ namespace Microsoft.Maui.Maps.Platform
 			RegionChanged -= MkMapViewOnRegionChanged;
 			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
 			DidUpdateUserLocation -= MkMapViewOnUserLocationUpdated;
+			_clusterIconCache?.Clear();
 		}
 
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)

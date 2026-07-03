@@ -31,4 +31,4 @@ static Microsoft.Maui.Maps.Handlers.MapHandler.MapMapStyle(Microsoft.Maui.Maps.H
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapShowInfoWindow(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map, object? arg) -> void
 static Microsoft.Maui.Maps.Handlers.MapPinHandler.MapImageSource(Microsoft.Maui.Maps.Handlers.IMapPinHandler! handler, Microsoft.Maui.Maps.IMapPin! mapPin) -> void
 static Microsoft.Maui.Maps.MapSpan.FromLocations(System.Collections.Generic.IEnumerable<Microsoft.Maui.Devices.Sensors.Location!>! locations) -> Microsoft.Maui.Maps.MapSpan!
-Microsoft.Maui.Maps.IMap.GetClusterImage(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.Maps.IMap.GetClusterImage(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>! pins, int count, Microsoft.Maui.Devices.Sensors.Location! location) -> Microsoft.Maui.IImageSource?
