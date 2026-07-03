@@ -132,5 +132,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Ensure the shared FormattedString isn't collected during the test
 			GC.KeepAlive(formattedString);
 		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task LabelIsNotKeptAliveBySpanGestureRecognizers()
+		{
+			// A Span exposes a GestureRecognizers collection, and the Label wires a
+			// subscription to each Span's GestureRecognizersCollectionChanged so it can
+			// forward gesture changes. If that subscription is strong, a long-lived/shared
+			// FormattedString (whose Spans carry gesture recognizers) keeps every Label it
+			// was ever assigned to alive. This verifies the Span -> Label path is weak too.
+			var formattedString = new FormattedString();
+			var span = new Span { Text = "Tap me" };
+			span.GestureRecognizers.Add(new TapGestureRecognizer());
+			formattedString.Spans.Add(span);
+
+			WeakReference CreateReference()
+			{
+				var label = new Label { FormattedText = formattedString };
+				return new(label);
+			}
+
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
+
+			Assert.False(await reference.WaitForCollect(), "Label should not be alive!");
+
+			// Ensure the shared FormattedString (and its Span) isn't collected during the test
+			GC.KeepAlive(formattedString);
+		}
 	}
 }
