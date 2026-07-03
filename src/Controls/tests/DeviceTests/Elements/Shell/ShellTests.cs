@@ -31,6 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.Renderer)] // See RendererHandlerVariant.cs
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		protected virtual void SetupBuilder()

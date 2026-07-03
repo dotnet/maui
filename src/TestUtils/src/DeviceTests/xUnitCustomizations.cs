@@ -213,41 +213,6 @@ namespace Microsoft.Maui
 			return _categoryPrefix;
 		}
 
-#if ANDROID
-		// Cache of "does this declaring type have any known subclass in its own assembly" so we only
-		// scan each type's assembly once, not once per test case.
-		static readonly Dictionary<Type, bool> s_hasKnownSubclassCache = new();
-
-		static bool HasKnownSubclassInAssembly(Type baseType)
-		{
-			if (!s_hasKnownSubclassCache.TryGetValue(baseType, out var hasSubclass))
-			{
-				hasSubclass = false;
-
-				try
-				{
-					hasSubclass = baseType.Assembly.GetTypes().Any(t => t != baseType && baseType.IsAssignableFrom(t));
-				}
-				catch (ReflectionTypeLoadException ex)
-				{
-					// Not every type in the assembly is guaranteed to load on device (e.g. platform-specific
-					// types, trimming). Fall back to whichever types did load successfully rather than crashing
-					// the whole test run over a display-name convenience feature.
-					hasSubclass = ex.Types.Any(t => t is not null && t != baseType && baseType.IsAssignableFrom(t));
-				}
-				catch
-				{
-					// Never let display-name resolution crash the test run.
-					hasSubclass = false;
-				}
-
-				s_hasKnownSubclassCache[baseType] = hasSubclass;
-			}
-
-			return hasSubclass;
-		}
-#endif
-
 		string? _reuseVariantPrefix;
 
 		// Android-only: Shell/Modal/Window tests reuse the same test bodies across a renderer base
@@ -260,16 +225,23 @@ namespace Microsoft.Maui
 #if ANDROID
 				try
 				{
-					var declaringType = _inner.TestMethod.Method.ToRuntimeMethod()?.DeclaringType;
-					var runningType = _inner.TestMethod.TestClass.Class.ToRuntimeType();
-
-					if (declaringType is not null && runningType is not null && declaringType != runningType)
+					if (Traits.TryGetValue("Variant", out var variants) && variants is not null)
 					{
-						_reuseVariantPrefix = "[Handler] ";
-					}
-					else if (declaringType is not null && HasKnownSubclassInAssembly(declaringType))
-					{
-						_reuseVariantPrefix = "[Renderer] ";
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "Renderer" trait, so Traits may contain both values for this key.
+						// These literals must stay in sync with RendererHandlerVariant.cs (Controls.DeviceTests).
+						if (variants.Contains("Handler"))
+						{
+							_reuseVariantPrefix = "[Handler] ";
+						}
+						else if (variants.Contains("Renderer"))
+						{
+							_reuseVariantPrefix = "[Renderer] ";
+						}
+						else
+						{
+							_reuseVariantPrefix = string.Empty;
+						}
 					}
 					else
 					{
