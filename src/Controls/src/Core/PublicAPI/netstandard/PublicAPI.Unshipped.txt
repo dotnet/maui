@@ -80,20 +80,6 @@ static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouch
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.StateProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
-~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.get -> string
-~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.set -> void
-~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.set -> void
-~Microsoft.Maui.Controls.BaseShellItem.BadgeText.get -> string
-~Microsoft.Maui.Controls.BaseShellItem.BadgeText.set -> void
-~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.set -> void
-~Microsoft.Maui.Controls.BoxView.Fill.get -> Microsoft.Maui.Controls.Brush
-~Microsoft.Maui.Controls.BoxView.Fill.set -> void
-~Microsoft.Maui.Controls.Editor.ReturnCommand.get -> System.Windows.Input.ICommand
-~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
-~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
-~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.Keys.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResolveValue(string key) -> object
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResourcesChangedEventArgs(System.Collections.Generic.IEnumerable<string> keys, System.Func<string, object> resolver) -> void
