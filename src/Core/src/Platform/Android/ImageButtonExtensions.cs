@@ -63,10 +63,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
 		{
-			if (button.Background is ImageSourcePaint image)
+			if (((AView)platformView).TryUpdateBackgroundImage(button))
 			{
-				var provider = button.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				((AView)platformView).UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(button.Handler);
 				return;
 			}
 

@@ -51,10 +51,8 @@ namespace Microsoft.Maui.Handlers
 #if MACCATALYST
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			if (button.Background is ImageSourcePaint image)
+			if (handler.PlatformView?.TryUpdateBackgroundImage(button) is true)
 			{
-				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-				handler.PlatformView?.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(handler);
 				return;
 			}
 
@@ -87,10 +85,8 @@ namespace Microsoft.Maui.Handlers
 		// TODO: Make this public in .NET 11
 		internal static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			if (button.Background is ImageSourcePaint image)
+			if (handler.PlatformView?.TryUpdateBackgroundImage(button) is true)
 			{
-				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-				handler.PlatformView?.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(handler);
 				return;
 			}
 

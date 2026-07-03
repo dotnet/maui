@@ -25,10 +25,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this RadioButton platformRadioButton, IRadioButton button)
 		{
-			if (button.Background is ImageSourcePaint image)
+			if (platformRadioButton.TryUpdateBackgroundImageForAllStates(button, _backgroundColorKeys))
 			{
-				var provider = button.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				platformRadioButton.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(button.Handler);
 				return;
 			}
 
