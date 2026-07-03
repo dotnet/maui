@@ -1,7 +1,6 @@
 #nullable enable
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.get -> System.Globalization.CultureInfo
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.set -> void
-﻿#nullable enable
 Microsoft.Maui.Controls.Xaml.XamlComponentRegistry
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.FindStaticResource(object! element, string! key) -> object?
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetComponent(object! page, string! nodeId) -> object?
