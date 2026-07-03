@@ -855,7 +855,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			_markers.Add(marker);
 		}
 
-async Task UpdatePinImageSourceAsync(IMapPin pin, Marker marker, CancellationToken ct)
+		async Task UpdatePinImageSourceAsync(IMapPin pin, Marker marker, CancellationToken ct)
 		{
 			var mauiContext = MauiContext;
 
