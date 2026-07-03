@@ -38,13 +38,35 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		}
 	}
 
+	// UIKit's compositional layout does not always add its embedded orthogonal UIScrollView(s)
+	// through AddSubview - depending on the iOS version/layout it can be inserted via
+	// InsertSubview/InsertSubviewBelow, which bypasses the AddSubview override above. This is
+	// most noticeable when IsSwipeEnabled is set to false before the CarouselView is ever
+	// displayed (e.g. at load time in XAML), because the embedded scroller can be created
+	// during the very first layout pass, before SetSwipeEnabled(false) below runs.
+	// Reapplying the cached state on every layout pass guarantees the embedded scroller always
+	// reflects the current IsSwipeEnabled value, regardless of when/how it was added.
+	public override void LayoutSubviews()
+	{
+		base.LayoutSubviews();
+
+		if (_isSwipeEnabled.HasValue)
+		{
+			ApplySwipeEnabledToEmbeddedScrollViews(_isSwipeEnabled.Value);
+		}
+	}
+
 	// Controls ScrollEnabled on the embedded orthogonal UIScrollView(s) created by
 	// UICollectionViewCompositionalLayout for CarouselView2 paging. Caches the state
-	// so that scrollers added later (via AddSubview) also get the correct value.
+	// so that scrollers added later (via AddSubview/LayoutSubviews) also get the correct value.
 	internal void SetSwipeEnabled(bool enabled)
 	{
 		_isSwipeEnabled = enabled;
+		ApplySwipeEnabledToEmbeddedScrollViews(enabled);
+	}
 
+	void ApplySwipeEnabledToEmbeddedScrollViews(bool enabled)
+	{
 		foreach (var subview in Subviews)
 		{
 			if (subview is UIScrollView scrollView && subview is not UICollectionView)
