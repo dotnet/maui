@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Platform
 
 			if (background is ImageSourcePaint sourcePaint)
 			{
-				platformDatePicker.UpdateBackgroundImageForAllStates(sourcePaint.ImageSource, datePicker.Handler, BackgroundColorResourceKeys);
+				platformDatePicker.UpdateBackgroundImageForAllStates(sourcePaint.ImageSource, datePicker?.Handler, BackgroundColorResourceKeys);
 			}
 			else if (brush is null)
 			{
