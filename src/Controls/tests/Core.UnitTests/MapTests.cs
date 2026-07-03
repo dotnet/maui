@@ -1245,5 +1245,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, captured.Pins.Count);
 			Assert.Equal(new Location(10, 20), captured.Location);
 		}
+
+		[Fact]
+		public void SettingClusterImageSourceRebuildsPins()
+		{
+			var map = new Map();
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ClusterImageSource = ImageSource.FromFile("cluster.png");
+
+			Assert.Contains(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void SettingClusterImageProviderRebuildsPins()
+		{
+			var map = new Map();
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ClusterImageProvider = _ => null;
+
+			Assert.Contains(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
 	}
+
+#nullable enable
+	class UpdateValueTrackingHandlerStub : IViewHandler
+	{
+		public List<string> UpdatedProperties { get; } = new();
+
+		public void SetMauiContext(IMauiContext mauiContext) { }
+		public void SetVirtualView(IElement view) { }
+		public void UpdateValue(string property) => UpdatedProperties.Add(property);
+		public void Invoke(string command, object? args = null) { }
+		public void DisconnectHandler() { }
+		public object? PlatformView => null;
+		public IElement? VirtualView { get; set; }
+		IView? IViewHandler.VirtualView => VirtualView as IView;
+		public IMauiContext? MauiContext => null;
+		public bool HasContainer { get; set; }
+		public object? ContainerView => null;
+		public Microsoft.Maui.Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint) => default;
+		public void PlatformArrange(Microsoft.Maui.Graphics.Rect frame) { }
+	}
+#nullable restore
 }

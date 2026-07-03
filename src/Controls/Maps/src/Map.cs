@@ -35,7 +35,8 @@ namespace Microsoft.Maui.Controls.Maps
 		public static readonly BindableProperty IsClusteringEnabledProperty = BindableProperty.Create(nameof(IsClusteringEnabled), typeof(bool), typeof(Map), default(bool));
 
 		/// <summary>Bindable property for <see cref="ClusterImageSource"/>.</summary>
-		public static readonly BindableProperty ClusterImageSourceProperty = BindableProperty.Create(nameof(ClusterImageSource), typeof(ImageSource), typeof(Map), default(ImageSource));
+		public static readonly BindableProperty ClusterImageSourceProperty = BindableProperty.Create(nameof(ClusterImageSource), typeof(ImageSource), typeof(Map), default(ImageSource),
+			propertyChanged: (b, o, n) => ((Map)b).OnClusterImageChanged());
 
 		/// <summary>Bindable property for <see cref="MapStyle"/>.</summary>
 		public static readonly BindableProperty MapStyleProperty = BindableProperty.Create(nameof(MapStyle), typeof(string), typeof(Map), default(string));
@@ -61,6 +62,7 @@ namespace Microsoft.Maui.Controls.Maps
 		MapSpan? _visibleRegion;
 		MapSpan? _lastMoveToRegion;
 		Location? _lastUserLocation;
+		Func<ClusterInfo, ImageSource?>? _clusterImageProvider;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Map"/> class with a region.
@@ -147,7 +149,10 @@ namespace Microsoft.Maui.Controls.Maps
 		/// When <see langword="null"/> (and no provider image is returned) the default cluster marker is used.
 		/// This is a bindable property.
 		/// </summary>
-		/// <remarks>The image is shown as-is; no pin count is drawn over it.</remarks>
+		/// <remarks>
+		/// The image is shown as-is; no pin count is drawn over it. Changing this value rebuilds
+		/// existing cluster markers immediately.
+		/// </remarks>
 		public ImageSource? ClusterImageSource
 		{
 			get => (ImageSource?)GetValue(ClusterImageSourceProperty);
@@ -163,9 +168,17 @@ namespace Microsoft.Maui.Controls.Maps
 		/// <remarks>
 		/// The callback returns the complete icon (draw the count yourself if desired). The returned
 		/// <see cref="ImageSource"/> is loaded asynchronously by the platform handler, like
-		/// <see cref="Pin.ImageSource"/>.
+		/// <see cref="Pin.ImageSource"/>. Setting this value rebuilds existing cluster markers immediately.
 		/// </remarks>
-		public Func<ClusterInfo, ImageSource?>? ClusterImageProvider { get; set; }
+		public Func<ClusterInfo, ImageSource?>? ClusterImageProvider
+		{
+			get => _clusterImageProvider;
+			set
+			{
+				_clusterImageProvider = value;
+				OnClusterImageChanged();
+			}
+		}
 
 		/// <summary>
 		/// Gets or sets the style of the map. Default value is <see cref="MapType.Street"/>.
@@ -361,6 +374,10 @@ namespace Microsoft.Maui.Controls.Maps
 				MoveToRegion(newRegion);
 			}
 		}
+
+		// Rebuild pins/clusters so a changed ClusterImageSource/ClusterImageProvider is reflected
+		// immediately, instead of waiting for the next unrelated recluster (e.g. a zoom).
+		void OnClusterImageChanged() => Handler?.UpdateValue(nameof(IMap.Pins));
 
 		void PinsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
