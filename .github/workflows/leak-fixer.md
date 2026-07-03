@@ -213,12 +213,21 @@ request). Otherwise, BEFORE looking for new work, see whether one of this workfl
 
 ```bash
 # This workflow's own open [leak-fix] PRs (its create-pull-request output labels them agentic-workflows).
+# Track C pushes fixes via push-to-pull-request-branch, which can ONLY reach PR heads hosted on
+# this same repo — scheduled runs have no credentials for FORK-hosted heads. So consider only
+# same-repo (dotnet/maui-hosted) PRs here; skip fork-hosted [leak-fix] PRs entirely.
+OWNER="${GITHUB_REPOSITORY%%/*}"
 gh pr list --repo "$GITHUB_REPOSITORY" --state open \
   --search '"[leak-fix]" in:title' \
-  --json number,title,headRefName,url,updatedAt \
-  | jq 'sort_by(.number)' > /tmp/gh-aw/agent/my-open-prs.json
+  --json number,title,headRefName,headRepositoryOwner,url,updatedAt \
+  | jq --arg owner "$OWNER" '[.[] | select((.headRepositoryOwner.login // "") == $owner)] | sort_by(.number)' \
+  > /tmp/gh-aw/agent/my-open-prs.json
 jq -r '.[] | "\(.number)\t\(.headRefName)\t\(.title)"' /tmp/gh-aw/agent/my-open-prs.json
 ```
+
+Only same-repo PRs appear above. A fork-hosted `[leak-fix]` PR with an un-addressed review is
+**left for a human** — do NOT act on it and do NOT emit a missing-tool / incomplete report for
+it (the fork-push limitation is expected, not a fault). Just skip to Step 2.
 
 For each PR, fetch its reviews and its last commit time, and decide whether there is a
 **CHANGES_REQUESTED review that is newer than both (a) the PR's most recent commit and (b) the
