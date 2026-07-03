@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
 using Xunit;
 using Xunit.Sdk;
@@ -18,9 +19,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class TypedBinding2UnitTests : BindingBaseUnitTests
 	{
+		readonly bool _enableDiagnosticsInitialState;
 
 		public TypedBinding2UnitTests()
 		{
+			// Binding failures are only logged when diagnostics are enabled. Enable them here
+			// (and restore in Dispose) so tests asserting on logged failures are deterministic
+			// and don't depend on a process-wide AppContext switch flipped by other test classes.
+			_enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			RuntimeFeature.EnableMauiDiagnostics = true;
 
 			ApplicationExtensions.CreateAndSetMockApplication();
 		}
@@ -29,6 +36,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			if (disposing)
 			{
+				RuntimeFeature.EnableMauiDiagnostics = _enableDiagnosticsInitialState;
 				Application.ClearCurrent();
 			}
 
@@ -269,12 +277,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
 			var binding = new TypedBinding<ComplexMockViewModel, string>(
 				cmvm => (cmvm.Model.Model.Text, true),
-				(cmvm, s) => cmvm.Model.Model.Text = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Text")
-				})
+				(cmvm, s) => cmvm.Model.Model.Text = s,
+				handlersCount: 3,
+				handlers: GetHandlers)
 			{ Mode = bindingMode };
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(ComplexMockViewModel source)
+			{
+				yield return (source, "Model");
+				yield return (source.Model, "Model");
+				yield return (source.Model.Model, "Text");
+			}
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -375,12 +388,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
 			var binding = new TypedBinding<ComplexMockViewModel, string>(
 				cmvm => (cmvm.Model.Model.Text, true),
-				(cmvm, s) => cmvm.Model.Model.Text = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Text")
-				})
+				(cmvm, s) => cmvm.Model.Model.Text = s,
+				handlersCount: 3,
+				handlers: GetHandlers)
 			{ Mode = bindingMode };
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(ComplexMockViewModel source)
+			{
+				yield return (source, "Model");
+				yield return (source.Model, "Model");
+				yield return (source.Model.Model, "Text");
+			}
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -431,12 +449,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
 			var binding = new TypedBinding<ComplexMockViewModel, string>(
 				cmvm => (cmvm.Model.Model[1], true),
-				(cmvm, s) => cmvm.Model.Model[1] = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Indexer[1]")
-				})
+				(cmvm, s) => cmvm.Model.Model[1] = s,
+				handlersCount: 3,
+				handlers: GetHandlers)
 			{ Mode = bindingMode };
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(ComplexMockViewModel source)
+			{
+				yield return (source, "Model");
+				yield return (source.Model, "Model");
+				yield return (source.Model.Model, "Indexer[1]");
+			}
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -534,12 +557,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
 			var binding = new TypedBinding<ComplexMockViewModel, string>(
 				cmvm => (cmvm.Model.Model[1], true),
-				(cmvm, s) => cmvm.Model.Model[1] = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Indexer[1]")
-				})
+				(cmvm, s) => cmvm.Model.Model[1] = s,
+				handlersCount: 3,
+				handlers: GetHandlers)
 			{ Mode = bindingMode };
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(ComplexMockViewModel source)
+			{
+				yield return (source, "Model");
+				yield return (source.Model, "Model");
+				yield return (source.Model.Model, "Indexer[1]");
+			}
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -1851,6 +1879,95 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		//https://github.com/dotnet/maui/issues/34428
+		public void TypedBinding_NestedProperty_ResubscribesAfterNullIntermediateBecomesNonNull()
+		{
+			// Regression: when an intermediate object in the path starts as null and later becomes
+			// non-null, the binding must re-establish subscriptions to nested properties.
+			// Previously, the _isSubscribed flag prevented re-subscribing after the first Apply.
+
+			var vm = new ComplexMockViewModel
+			{
+				Model = null  // Start with null intermediate
+			};
+
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), null);
+
+			var binding = new TypedBinding<ComplexMockViewModel, string>(
+				cvm => cvm.Model is { } m ? (m.Text, true) : (null, false),
+				(cvm, t) => { if (cvm.Model is { } m) m.Text = t; },
+				handlersCount: 2,
+				handlers: GetHandlers)
+			{ Mode = BindingMode.OneWay };
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(ComplexMockViewModel source)
+			{
+				yield return (source, "Model");
+				yield return (source.Model, "Text");
+			}
+
+			var bindable = new MockBindable();
+			bindable.SetBinding(property, binding);
+			bindable.BindingContext = vm;
+
+			// Initially null model → binding returns null/default
+			Assert.Null(bindable.GetValue(property));
+
+			// Set Model to non-null → binding should pick up the value
+			vm.Model = new ComplexMockViewModel { Text = "Initial" };
+			Assert.Equal("Initial", (string)bindable.GetValue(property));
+
+			// Change nested property → binding MUST update (this was the regression)
+			vm.Model.Text = "Updated";
+			Assert.Equal("Updated", (string)bindable.GetValue(property));
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/34428
+		public void TypedBinding_NestedProperty_ResubscribesAfterIntermediateReplaced()
+		{
+			// When the intermediate object is replaced (non-null → different non-null object),
+			// the binding must switch subscriptions to the new object.
+
+			var child1 = new ComplexMockViewModel { Text = "Child1" };
+			var child2 = new ComplexMockViewModel { Text = "Child2" };
+			var vm = new ComplexMockViewModel { Model = child1 };
+
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), null);
+
+			var binding = new TypedBinding<ComplexMockViewModel, string>(
+				cvm => cvm.Model is { } m ? (m.Text, true) : (null, false),
+				(cvm, t) => { if (cvm.Model is { } m) m.Text = t; },
+				handlersCount: 2,
+				handlers: GetHandlers)
+			{ Mode = BindingMode.OneWay };
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(ComplexMockViewModel source)
+			{
+				yield return (source, "Model");
+				yield return (source.Model, "Text");
+			}
+
+			var bindable = new MockBindable();
+			bindable.SetBinding(property, binding);
+			bindable.BindingContext = vm;
+
+			Assert.Equal("Child1", (string)bindable.GetValue(property));
+
+			// Replace intermediate with a different object
+			vm.Model = child2;
+			Assert.Equal("Child2", (string)bindable.GetValue(property));
+
+			// Changing the OLD intermediate should NOT fire the binding
+			child1.Text = "OldChildChanged";
+			Assert.Equal("Child2", (string)bindable.GetValue(property));
+
+			// Changing the NEW intermediate SHOULD fire the binding
+			child2.Text = "Child2Updated";
+			Assert.Equal("Child2Updated", (string)bindable.GetValue(property));
+		}
+
+		[Fact]
 		public void OneTimeBindingDoesntUpdateOnPropertyChanged()
 		{
 			var view = new VisualElement();
@@ -1926,9 +2043,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			BindingBase binding = new TypedBinding<MockViewModel, string>(
 				getter: mvm => (mvm.Text, true),
 				setter: (mvm, s) => mvm.Text = s,
-				handlers: new[] {
-					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
-				});
+				handlersCount: 1,
+				handlers: GetHandlers);
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(MockViewModel source)
+			{
+				yield return (source, "Text");
+			}
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
