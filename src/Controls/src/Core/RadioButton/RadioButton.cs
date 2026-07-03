@@ -383,6 +383,15 @@ namespace Microsoft.Maui.Controls
 			{
 				Handler?.UpdateValue(nameof(IRadioButton.StrokeThickness));
 			}
+			else
+			{
+#pragma warning disable CS0618 
+				if (propertyName == BackgroundColorProperty.PropertyName)
+				{
+					base.OnPropertyChanged(nameof(BackgroundColorBridge));
+				}
+#pragma warning restore CS0618
+			}
 		}
 
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(BorderElement.CornerRadiusProperty);
