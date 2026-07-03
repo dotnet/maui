@@ -18,12 +18,16 @@
 
 		protected override void DisconnectHandler(MauiWebView platformView)
 		{
+			// Unsubscribe before the HasBody() guard so a WebView disconnected during early
+			// creation / body teardown can't leave these native callbacks attached to a disconnected
+			// handler (NavigationPolicyDecided is subscribed in ConnectHandler).
+			platformView.PageLoadFinished -= OnPageLoadFinished;
+			platformView.NavigationPolicyDecided -= OnNavigationPolicyDecided;
+
 			if (!platformView.HasBody())
 				return;
 
 			base.DisconnectHandler(platformView);
-			platformView.PageLoadFinished -= OnPageLoadFinished;
-			platformView.NavigationPolicyDecided -= OnNavigationPolicyDecided;
 		}
 
 		// Enforces AllowedDomains at the navigation level on Tizen. When no allowlist is configured,

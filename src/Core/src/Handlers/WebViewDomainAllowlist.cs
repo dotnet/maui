@@ -50,15 +50,20 @@ namespace Microsoft.Maui.Handlers
 			if (string.Equals(scheme, "javascript", StringComparison.OrdinalIgnoreCase))
 				return false;
 
-			// 'data:', 'about:', 'blob:' and 'file:' have no network domain to match against. They
-			// reference in-page / in-memory content (data: images, blob: object URLs, about:blank) or
-			// local/packaged files (file:///android_asset/..., app bundle resources) rather than a
-			// network host, so blocking them would break legitimate rendering / local content loading
-			// without adding a meaningful domain-level security boundary. They remain allowed.
+			// 'data:', 'about:' and 'blob:' have no network host to match against. They reference
+			// in-page / in-memory content (data: images, blob: object URLs, about:blank) produced by the
+			// already-loaded (allowed) document, so blocking them would break legitimate rendering
+			// without adding a meaningful security boundary. They remain allowed.
 			if (string.Equals(scheme, "data", StringComparison.OrdinalIgnoreCase) ||
 				string.Equals(scheme, "about", StringComparison.OrdinalIgnoreCase) ||
-				string.Equals(scheme, "blob", StringComparison.OrdinalIgnoreCase) ||
-				string.Equals(scheme, "file", StringComparison.OrdinalIgnoreCase))
+				string.Equals(scheme, "blob", StringComparison.OrdinalIgnoreCase))
+				return true;
+
+			// A host-less 'file:' URI (file:///android_asset/..., app bundle resources) is local /
+			// packaged content with no network domain, so it is allowed. A UNC file URI
+			// (file://server/share) DOES carry a network host, so it is NOT allowed here and must match
+			// the allowlist via the host check below.
+			if (string.Equals(scheme, "file", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(uri.Host))
 				return true;
 
 			// Compare using the ASCII/punycode host so internationalized domain names (IDN) match

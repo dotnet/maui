@@ -266,6 +266,17 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void UncFileUriIsSubjectToAllowlist()
+		{
+			var domains = new List<string> { "example.com" };
+			// Host-less file URIs are local/packaged content and remain allowed...
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("file:///android_asset/index.html", domains));
+			// ...but a UNC file URI carries a network host, so it must match the allowlist.
+			Assert.False(WebViewDomainAllowlist.IsUrlAllowed("file://evil.com/share/x", domains));
+			Assert.True(WebViewDomainAllowlist.IsUrlAllowed("file://example.com/share/x", domains));
+		}
+
+		[Fact]
 		public void LargeAllowlistStillMatches()
 		{
 			// Exercises the snapshot path with a bigger list.

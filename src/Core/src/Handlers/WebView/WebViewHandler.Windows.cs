@@ -411,6 +411,7 @@ namespace Microsoft.Maui.Handlers
 					if (_webResourceRequestedSubscribed)
 					{
 						webView2.WebResourceRequested -= OnWebResourceRequested;
+						webView2.RemoveWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 						_webResourceRequestedSubscribed = false;
 					}
 					webView2.Stop();
