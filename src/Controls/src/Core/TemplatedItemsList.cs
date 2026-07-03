@@ -771,7 +771,7 @@ namespace Microsoft.Maui.Controls.Internals
 						getter: static list => (list.Name, true),
 						setter: static (list, val) => list.Name = val,
 						handlersCount: 1,
-						handlers: static list => [(list, "Name")]));
+						handlers: static list => [(list, nameof(list.Name))]));
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 

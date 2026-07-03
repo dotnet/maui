@@ -182,7 +182,6 @@ public static class BindingCodeWriter
 			Append(handlersCount > 0 ? "GetHandlers" : "handlers: null");
 			Append(")");
 			Unindent();
-			Unindent();
 			
 			// Only generate property setters for the properties indicated by the flags
 			AppendBindingPropertySetters(propertyFlags);
