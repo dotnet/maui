@@ -540,3 +540,92 @@ new
         $context | Should -Match 'New non-command author comments: 0'
     }
 }
+
+Describe 'Resolve-AutonomousRerunEligibility' {
+    It 'rejects a PR that was never AI-reviewed (no AI Summary)' {
+        $comments = @(
+            New-TestComment -Id 1 -Body 'Some author update.' -CreatedAt '2026-05-31T09:00:00Z'
+        )
+
+        $result = Resolve-AutonomousRerunEligibility -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
+        $result.Eligible | Should -BeFalse
+        $result.Reason | Should -Be 'no-ai-summary'
+    }
+
+    It 'accepts a new PR-author comment after the latest AI Summary' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body 'I pushed the requested update.' -CreatedAt '2026-05-31T09:45:00Z'
+        )
+
+        $result = Resolve-AutonomousRerunEligibility -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
+        $result.Eligible | Should -BeTrue
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
+    }
+
+    It 'accepts a new commit after the latest AI Summary' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+        )
+        $commits = @(
+            New-TestCommit -Sha 'aaaaaaa' -Date '2026-05-31T09:45:00Z'
+        )
+
+        $result = Resolve-AutonomousRerunEligibility -Comments $comments -Commits $commits -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
+        $result.Eligible | Should -BeTrue
+        $result.Reason | Should -Be 'new-commit-after-ai-summary'
+    }
+
+    It 'accepts a head SHA that differs from the last reviewed SHA' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+        )
+
+        $result = Resolve-AutonomousRerunEligibility -Comments $comments -Commits @() -CurrentHeadSha '2222222abcdef' -PRAuthorLogin 'dev-user'
+        $result.Eligible | Should -BeTrue
+        $result.Reason | Should -Be 'new-head-commit'
+    }
+
+    It 'skips when the ready-for-rerun label is already present' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body 'I pushed the requested update.' -CreatedAt '2026-05-31T09:45:00Z'
+        )
+
+        $result = Resolve-AutonomousRerunEligibility -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user' -CurrentLabels @('s/agent-ready-for-rerun')
+        $result.Eligible | Should -BeTrue
+        $result.Reason | Should -Be 'label-already-present'
+    }
+
+    It 'skips when a review is already in progress' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body 'I pushed the requested update.' -CreatedAt '2026-05-31T09:45:00Z'
+        )
+
+        $result = Resolve-AutonomousRerunEligibility -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user' -CurrentLabels @('s/agent-review-in-progress')
+        $result.Eligible | Should -BeFalse
+        $result.Reason | Should -Be 'review-in-progress'
+    }
+
+    It 'rejects when there is no new activity since the AI Summary' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+        )
+
+        $result = Resolve-AutonomousRerunEligibility -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
+        $result.Eligible | Should -BeFalse
+        $result.Reason | Should -Be 'no-new-comments-or-commits'
+    }
+
+    It 'ignores a maintainer (non-author) comment after the AI Summary' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body 'Please address the AI feedback.' -CreatedAt '2026-05-31T09:45:00Z' -Login 'maintainer'
+        )
+
+        $result = Resolve-AutonomousRerunEligibility -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
+        $result.Eligible | Should -BeFalse
+        $result.Reason | Should -Be 'no-new-comments-or-commits'
+    }
+}

@@ -9,6 +9,9 @@ on:
     paths:
       - '.github/workflows/pr-review-queue.yml'
       - '.github/skills/find-reviewable-pr/**'
+      - '.github/scripts/Query-AutoRerunCandidates.ps1'
+      - '.github/scripts/Resolve-RerunEligibility.ps1'
+      - '.github/scripts/shared/Update-AgentLabels.ps1'
 
 permissions:
   contents: read
@@ -85,6 +88,28 @@ jobs:
             --label "report" \
             --label "s/triaged"
 
+      # Autonomously apply s/agent-ready-for-rerun to PRs with genuinely new
+      # PR-author activity since their last AI review — the same deterministic
+      # signal as a maintainer's `/review rerun`. The hourly rerun-review-scanner
+      # then picks these up and re-reviews them. Failures here are surfaced as a
+      # warning and never block the queue issue that was already created above.
+      - name: Auto-label rerun-ready PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          set +e
+          pwsh .github/scripts/Query-AutoRerunCandidates.ps1 \
+            -Owner "$REPO_OWNER" \
+            -Repo "$REPO_NAME" \
+            -OutputPath auto-rerun-decisions.json
+          rc=$?
+          set -e
+          if [ $rc -ne 0 ]; then
+            echo "::warning::Auto-rerun labeling step failed (rc=$rc); the queue issue was still created."
+          fi
+
   # Dry-run on PRs: validate the script works without creating issues
   validate:
     runs-on: ubuntu-latest
@@ -123,3 +148,24 @@ jobs:
 
           echo "✅ Validation passed — report preview:"
           cat pr-review-queue-body.md
+
+      - name: Validate auto-rerun labeler (dry-run)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          set +e
+          pwsh .github/scripts/Query-AutoRerunCandidates.ps1 \
+            -Owner "$REPO_OWNER" \
+            -Repo "$REPO_NAME" \
+            -DryRun \
+            -OutputPath auto-rerun-decisions.json
+          rc=$?
+          set -e
+          if [ $rc -ne 0 ]; then
+            echo "::error::Auto-rerun labeler dry-run failed"
+            exit 1
+          fi
+          echo "✅ Auto-rerun labeler dry-run passed:"
+          cat auto-rerun-decisions.json

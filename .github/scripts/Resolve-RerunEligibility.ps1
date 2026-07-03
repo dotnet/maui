@@ -626,6 +626,62 @@ function New-RerunContextMarkdown {
     return ($lines -join "`n")
 }
 
+function Resolve-AutonomousRerunEligibility {
+    <#
+    .SYNOPSIS
+        Deterministically decides whether an already-AI-reviewed PR should be
+        auto-marked ready for rerun WITHOUT a `/review rerun` comment.
+
+    .DESCRIPTION
+        This is the autonomous counterpart of Resolve-RerunEligibility used by
+        the PR Review Queue workflow. It applies the SAME deterministic signal —
+        genuinely new PR-author activity (a new non-command author comment, a new
+        commit, or a head SHA that differs from the last reviewed SHA) since the
+        latest AI Summary — but is not gated on a maintainer's `/review rerun`
+        comment. No AI is used and untrusted text is never inspected
+        semantically. A prior MauiBot AI Summary is REQUIRED: PRs that were never
+        AI-reviewed do not qualify.
+    #>
+    param(
+        [object[]]$Comments,
+        [object[]]$Commits,
+        [string]$CurrentHeadSha,
+        [string]$PRAuthorLogin,
+        [object[]]$CurrentLabels = @()
+    )
+
+    if (@($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0) {
+        return [pscustomobject]@{ Eligible = $false; Reason = 'review-in-progress'; Label = $ReadyForRerunLabel }
+    }
+
+    $latestSummary = Get-LatestAISummaryComment -Comments $Comments
+    if (-not $latestSummary) {
+        return [pscustomobject]@{ Eligible = $false; Reason = 'no-ai-summary'; Label = $ReadyForRerunLabel }
+    }
+
+    if (@($CurrentLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0) {
+        return [pscustomobject]@{ Eligible = $true; Reason = 'label-already-present'; Label = $ReadyForRerunLabel }
+    }
+
+    $summaryCreatedAt = Get-ObjectDate $latestSummary 'created_at'
+    $latestReviewedSha = Get-LatestReviewedSha -AISummaryBody $latestSummary.body
+
+    if (Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $latestReviewedSha) {
+        return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
+    }
+
+    $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    if (Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $summaryCreatedAt -CurrentCommentId 0 -PRAuthorLogin $normalizedPRAuthorLogin) {
+        return [pscustomobject]@{ Eligible = $true; Reason = 'new-author-comment-after-ai-summary'; Label = $ReadyForRerunLabel }
+    }
+
+    if (Test-HasCommitAfter -Commits $Commits -Checkpoint $summaryCreatedAt) {
+        return [pscustomobject]@{ Eligible = $true; Reason = 'new-commit-after-ai-summary'; Label = $ReadyForRerunLabel }
+    }
+
+    return [pscustomobject]@{ Eligible = $false; Reason = 'no-new-comments-or-commits'; Label = $ReadyForRerunLabel }
+}
+
 function Resolve-RerunEligibility {
     param(
         [object[]]$Comments,
