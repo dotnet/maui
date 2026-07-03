@@ -18,13 +18,16 @@ The Resizetizer is an MSBuild-integrated pipeline that processes `MauiImage`, `M
 
 ### File Loading Order
 
-| File | Purpose |
-|------|---------|
-| `Microsoft.Maui.Resizetizer.props` | Early property defaults (currently empty) |
-| `Microsoft.Maui.Resizetizer.Before.targets` | Pre-SDK target hooks (currently empty) |
-| `Microsoft.Maui.Resizetizer.After.targets` | **All logic** — targets, item registration, platform dispatch |
+These files are auto-imported by the NuGet package (`<PackageId>.props` / `<PackageId>.targets`), which then pulls in the named hook files:
 
-`After.targets` is imported via `AfterMicrosoftNETSdkTargets`, ensuring it runs after the .NET SDK targets are loaded.
+| File | Loaded | Purpose |
+|------|--------|---------|
+| `Microsoft.Maui.Resizetizer.props` | auto (package) | Early property defaults — currently empty (`<Project />`) |
+| `Microsoft.Maui.Resizetizer.targets` | auto (package) | **SDK registration**: sets `UsingMicrosoftMauiResizetizerSdk`, imports `Before.targets`, and appends `After.targets` to `AfterMicrosoftNETSdkTargets` |
+| `Microsoft.Maui.Resizetizer.Before.targets` | imported by `.targets` | Pre-SDK target hooks — currently empty (`<Project />`) |
+| `Microsoft.Maui.Resizetizer.After.targets` | via `AfterMicrosoftNETSdkTargets` | **All logic** — targets, item registration, platform dispatch |
+
+`Microsoft.Maui.Resizetizer.targets` appends `After.targets` to `AfterMicrosoftNETSdkTargets`, ensuring the logic runs after the .NET SDK targets are loaded.
 
 ### Local Testing with `.buildtasks/`
 
