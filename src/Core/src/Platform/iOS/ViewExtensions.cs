@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				// Non-UIControl views (like UICollectionView) only get interaction disable
-				platformView.UserInteractionEnabled = view.IsEnabled;
+				platformView.UserInteractionEnabled = view.IsEnabled && !view.InputTransparent;
 			}
 		}
 
@@ -626,7 +626,9 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			platformView.UserInteractionEnabled = !view.InputTransparent;
+			platformView.UserInteractionEnabled = platformView is UIControl
+				? !view.InputTransparent
+				: view.IsEnabled && !view.InputTransparent;
 		}
 
 		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent)
