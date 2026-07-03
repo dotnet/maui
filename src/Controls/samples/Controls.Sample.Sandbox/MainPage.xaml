@@ -1,3 +1,55 @@
 ﻿<ContentPage x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="CV2 Null-Item Repro">
+    <ScrollView>
+        <VerticalStackLayout Spacing="12" Padding="16">
+
+            <!-- Scenario 1 & 2: null item renders as blank row + tap must not crash -->
+            <Label Text="1 &amp; 2 — Null item: blank row + tap (Single selection)"
+                   FontAttributes="Bold"/>
+            <Label Text="Source: [&quot;Item A&quot;, null, &quot;Item C&quot;]" FontSize="12"/>
+            <CollectionView x:Name="TapCV"
+                            HeightRequest="160"
+                            SelectionMode="Single"
+                            SelectionChanged="TapCV_SelectionChanged">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding .}"
+                               HeightRequest="44"
+                               VerticalTextAlignment="Center"
+                               BackgroundColor="LightGray"
+                               Padding="12,0"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Label x:Name="TapStatus"
+                   Text="Tap the blank row (index 1) — must not crash"/>
+
+            <!-- Scenario 3: drag-reorder with multiple null items -->
+            <Label Text="3 — Drag-reorder with two null items"
+                   FontAttributes="Bold"
+                   Margin="0,12,0,0"/>
+            <Label Text="Source: [&quot;Item 1&quot;, null, null, &quot;Item 4&quot;]" FontSize="12"/>
+            <CollectionView x:Name="ReorderCV"
+                            HeightRequest="200"
+                            CanReorderItems="True">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding .}"
+                               HeightRequest="44"
+                               VerticalTextAlignment="Center"
+                               BackgroundColor="LightBlue"
+                               Padding="12,0"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Label x:Name="ReorderStatus"/>
+            <Button Text="Simulate: move Item 1 → index 2"
+                    HorizontalOptions="Start"
+                    Clicked="SimulateReorder_Clicked"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

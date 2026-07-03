@@ -6,13 +6,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WSetter = Microsoft.UI.Xaml.Setter;
 
 namespace Microsoft.Maui.DeviceTests
@@ -427,7 +430,14 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task NullItem_RendersBlankRow()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
 
 			var data = new ObservableCollection<object> { "Item 1", null, "Item 3" };
 
@@ -435,7 +445,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				ItemTemplate = new Controls.DataTemplate(() =>
 				{
-					var label = new Label();
+					var label = new Label { HeightRequest = 40 };
 					label.SetBinding(Label.TextProperty, new Binding("."));
 					return label;
 				}),
@@ -444,12 +454,12 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 300
 			};
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await Task.Delay(500);
 
-				var listView = (UI.Xaml.Controls.ListView)handler.PlatformView;
-				var containers = listView.GetChildren<UI.Xaml.Controls.ListViewItem>().ToList();
+				var itemsView = (WItemsView)handler.PlatformView;
+				var containers = itemsView.GetChildren<ItemContainer>().ToList();
 
 				// There should be at least 3 containers (one per item including null)
 				Assert.True(containers.Count >= 3, $"Expected at least 3 containers, got {containers.Count}");
@@ -464,7 +474,15 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task NullItem_TapDoesNotCrash_SingleSelection()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
 
 			var data = new ObservableCollection<object> { "Item 1", null, "Item 3" };
 
@@ -506,7 +524,15 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task NullItem_DragReorder_DoesNotMoveWrongRow()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
 
 			var data = new ObservableCollection<object> { "Item 1", null, null, "Item 4" };
 
