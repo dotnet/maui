@@ -34,12 +34,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			using var reader = new StreamReader(stream);
 
-			// Read the content synchronously to work around dotnet/runtime#129813: a runtime-async
-			// codegen regression that miscompiles the Stream.ReadAsync(Memory<byte>) tail-call
-			// forwarder into a NullReferenceException on the Apple-mobile CoreCLR runtime packs
-			// (iOS/MacCatalyst). The async path is incidental here — this test validates that the
-			// app-package file is present and has the expected content. Once the runtime fix flows
-			// in, this can be reverted back to ReadToEndAsync.
+			// Sync read to work around dotnet/runtime#129813 (async miscompile on Apple-mobile CoreCLR).
 			var text = reader.ReadToEnd();
 
 			Assert.Equal(contents, text);
@@ -88,12 +83,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			var fileResult = new FileResult(filePath);
 
-			// Read the content synchronously to work around dotnet/runtime#129813: a runtime-async
-			// codegen regression that miscompiles the Stream.ReadAsync(Memory<byte>) tail-call
-			// forwarder into a NullReferenceException on the Apple-mobile CoreCLR runtime packs
-			// (iOS/MacCatalyst). The async read is incidental here — this test validates that
-			// FileResult.OpenReadAsync can be called multiple times. Once the runtime fix flows in,
-			// this can be reverted back to ReadToEndAsync.
+			// Sync reads below to work around dotnet/runtime#129813 (async miscompile on Apple-mobile CoreCLR).
 
 			// First call to OpenReadAsync
 			using (var firstStream = await fileResult.OpenReadAsync())
