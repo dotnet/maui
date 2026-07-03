@@ -22,8 +22,6 @@ public class IntegrationTests
 
 		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
 
-        var x = result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-3-7.g.cs"];
-
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""

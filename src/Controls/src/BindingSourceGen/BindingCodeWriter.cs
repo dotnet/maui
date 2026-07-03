@@ -180,7 +180,7 @@ public static class BindingCodeWriter
 			Indent();
 
 			Append(handlersCount > 0 ? "GetHandlers" : "handlers: null");
-			Append(")");;
+			Append(")");
 			Unindent();
 			Unindent();
 			

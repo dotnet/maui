@@ -103,6 +103,8 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			_getter = getter ?? throw new ArgumentNullException(nameof(getter));
 			_setter = setter;
+			if (handlersCount < 0)
+				throw new ArgumentOutOfRangeException(nameof(handlersCount));
 			_propertyChangeHandler = new PropertyChangeHandler(this, handlersCount, handlers);
 		}
 #nullable disable
@@ -672,8 +674,16 @@ namespace Microsoft.Maui.Controls.Internals
 
 				foreach ((INotifyPropertyChanged? part, string propertyName) in _handlers(source))
 				{
-					if (part is null || index >= _listeners.Length)
+					if (part is null)
 						break;
+
+					if (index >= _listeners.Length)
+					{
+#if DEBUG
+						System.Diagnostics.Debug.Fail($"TypedBinding: the handlers function yielded more items than handlersCount ({_listeners.Length}). Extra handlers are ignored.");
+#endif
+						break;
+					}
 
 					_propertyNames[index] = propertyName;
 					var listener = _listeners[index] ??= new(this, index);

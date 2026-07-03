@@ -196,7 +196,7 @@ internal struct CompiledBindingMarkup
 		code.WriteLine("setter,");
 		code.WriteLine("handlersCount,");
 		code.Write(localFunctionCode is not null ? "GetHandlers" : "null");
-		code.Write(")");;
+		code.Write(")");
 		code.Indent--;
 
 		// Object initializer if any properties are set
