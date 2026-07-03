@@ -44,15 +44,16 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	// most noticeable when IsSwipeEnabled is set to false before the CarouselView is ever
 	// displayed (e.g. at load time in XAML), because the embedded scroller can be created
 	// during the very first layout pass, before SetSwipeEnabled(false) below runs.
-	// Reapplying the cached state on every layout pass guarantees the embedded scroller always
-	// reflects the current IsSwipeEnabled value, regardless of when/how it was added.
+	// We only reapply when swipe is explicitly disabled: a freshly-created embedded scroller
+	// defaults to ScrollEnabled = true, so the enabled case needs no work and we avoid
+	// allocating Subviews on every layout pass (this is a hot path).
 	public override void LayoutSubviews()
 	{
 		base.LayoutSubviews();
 
-		if (_isSwipeEnabled.HasValue)
+		if (_isSwipeEnabled == false)
 		{
-			ApplySwipeEnabledToEmbeddedScrollViews(_isSwipeEnabled.Value);
+			ApplySwipeEnabledToEmbeddedScrollViews(false);
 		}
 	}
 
