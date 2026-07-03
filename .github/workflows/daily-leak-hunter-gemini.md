@@ -1,5 +1,5 @@
 ---
-name: "Daily Memory Leak Hunter"
+name: "Daily Memory Leak Hunter (Gemini)"
 description: |
   Periodic (every 12h) AI-driven, TWO-MODE memory-leak workflow for MAUI's managed code.
   Both modes run on a standard GitHub runner — no platform workload, no emulator, no
@@ -41,10 +41,10 @@ permissions:
 
 engine:
   id: copilot
-  model: claude-opus-4.8
+  model: gemini-2.5-pro
 
 concurrency:
-  group: "daily-leak-hunter"
+  group: "daily-leak-hunter-gemini"
   cancel-in-progress: false
 
 timeout-minutes: 90

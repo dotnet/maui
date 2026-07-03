@@ -1,5 +1,5 @@
 ---
-name: "Daily Memory Leak Hunter"
+name: "Daily Memory Leak Hunter (GPT-5)"
 description: |
   Periodic (every 12h) AI-driven, TWO-MODE memory-leak workflow for MAUI's managed code.
   Both modes run on a standard GitHub runner — no platform workload, no emulator, no
@@ -41,10 +41,10 @@ permissions:
 
 engine:
   id: copilot
-  model: claude-opus-4.8
+  model: gpt-5
 
 concurrency:
-  group: "daily-leak-hunter"
+  group: "daily-leak-hunter-gpt"
   cancel-in-progress: false
 
 timeout-minutes: 90
