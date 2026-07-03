@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Builds and runs .NET MAUI device tests locally using xharness (Apple/Android) or vstest (Windows).
+    Builds and runs .NET MAUI device tests locally using xharness (Apple/Android) or the Windows device-test app directly.
 
 .DESCRIPTION
     This script builds a specified MAUI device test project for the target platform
@@ -138,6 +138,224 @@ $AppNames = @{
     "Graphics"      = "Microsoft.Maui.Graphics.DeviceTests"
     "BlazorWebView" = "Microsoft.Maui.MauiBlazorWebView.DeviceTests"
     "AI"            = "Microsoft.Maui.Essentials.AI.DeviceTests"
+}
+
+$WindowsDeviceTestPackageIds = @{
+    "Controls"      = "Microsoft.Maui.Controls.DeviceTests"
+    "Core"          = "Microsoft.Maui.Core.DeviceTests"
+    "Essentials"    = "Microsoft.Maui.Essentials.DeviceTests"
+    "Graphics"      = "Microsoft.Maui.Graphics.DeviceTests"
+    "BlazorWebView" = "Microsoft.Maui.MauiBlazorWebView.DeviceTests"
+    "AI"            = "Microsoft.Maui.Essentials.AI.DeviceTests"
+}
+
+function Get-CategoryFiltersFromTestFilter {
+    param([string]$Filter)
+
+    if ([string]::IsNullOrWhiteSpace($Filter)) {
+        return @()
+    }
+
+    $categories = @()
+    $matches = [regex]::Matches($Filter, '(?i)\bCategory\s*=\s*([^\|&(),]+)')
+    foreach ($match in $matches) {
+        $value = $match.Groups[1].Value.Trim().Trim('"', "'")
+        if (-not [string]::IsNullOrWhiteSpace($value)) {
+            $categories += $value
+        }
+    }
+
+    if ($categories.Count -eq 0 -and $Filter -notmatch '[=~]') {
+        $categories = @($Filter -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    }
+
+    return @($categories | Select-Object -Unique)
+}
+
+function Select-WindowsDeviceTestCategories {
+    param(
+        [string[]]$AllCategories,
+        [string]$Filter
+    )
+
+    $filters = @(Get-CategoryFiltersFromTestFilter -Filter $Filter)
+    if ($filters.Count -eq 0) {
+        return @($AllCategories)
+    }
+
+    return @($AllCategories | Where-Object {
+        $category = $_
+        @($filters | Where-Object {
+            $category.Equals($_, [System.StringComparison]::OrdinalIgnoreCase) -or
+            $category.IndexOf($_, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+        }).Count -gt 0
+    })
+}
+
+function Wait-ForPath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [int]$TimeoutSeconds,
+
+        [System.Diagnostics.Process]$Process
+    )
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
+        if (Test-Path $Path) {
+            return $true
+        }
+
+        if ($Process -and $Process.HasExited) {
+            Start-Sleep -Seconds 1
+            if (Test-Path $Path) {
+                return $true
+            }
+            return $false
+        }
+
+        Start-Sleep -Seconds 1
+    }
+
+    return (Test-Path $Path)
+}
+
+function Get-WindowsDeviceTestResultSummary {
+    param([Parameter(Mandatory = $true)][string[]]$ResultFiles)
+
+    $summary = @{
+        Total = 0
+        Passed = 0
+        Failed = 0
+        Skipped = 0
+        Errors = 0
+    }
+
+    foreach ($file in $ResultFiles) {
+        if (-not (Test-Path $file)) {
+            continue
+        }
+
+        [xml]$xml = Get-Content $file -Raw
+        $assemblies = @($xml.SelectNodes('/assemblies/assembly'))
+        foreach ($assembly in $assemblies) {
+            $summary.Total += [int]($assembly.total ?? 0)
+            $summary.Passed += [int]($assembly.passed ?? 0)
+            $summary.Failed += [int]($assembly.failed ?? 0)
+            $summary.Skipped += [int]($assembly.skipped ?? 0)
+            $summary.Errors += [int]($assembly.errors ?? 0)
+        }
+    }
+
+    return $summary
+}
+
+function Invoke-WindowsDeviceTestApp {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AppPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Project,
+
+        [Parameter(Mandatory = $true)]
+        [string]$AppName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$OutputDirectory,
+
+        [string]$TestFilter,
+
+        [string]$Timeout = "01:00:00"
+    )
+
+    $timeoutSeconds = [int][TimeSpan]::Parse($Timeout).TotalSeconds
+    if ($timeoutSeconds -le 0) {
+        $timeoutSeconds = 3600
+    }
+
+    if (-not (Test-Path $OutputDirectory)) {
+        New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+    }
+
+    $packageId = $WindowsDeviceTestPackageIds[$Project]
+    if (-not $packageId) {
+        $packageId = $AppName
+    }
+
+    $resultBase = Join-Path $OutputDirectory "TestResults-$($packageId.Replace('.', '_'))"
+    $resultFile = "$resultBase.xml"
+    $categoriesFile = Join-Path $OutputDirectory "devicetestcategories.txt"
+    Remove-Item -LiteralPath $categoriesFile -Force -ErrorAction SilentlyContinue
+    Remove-Item -Path "$resultBase*.xml" -Force -ErrorAction SilentlyContinue
+
+    $resultFiles = @()
+    if ($Project -eq "Controls") {
+        Write-Host "Discovering Windows device test categories..." -ForegroundColor Gray
+        $discoveryProcess = Start-Process -FilePath $AppPath -ArgumentList @($resultFile, "-1") -PassThru
+        if (-not (Wait-ForPath -Path $categoriesFile -TimeoutSeconds 120 -Process $discoveryProcess)) {
+            if ($discoveryProcess -and -not $discoveryProcess.HasExited) {
+                Stop-Process -Id $discoveryProcess.Id -Force -ErrorAction SilentlyContinue
+            }
+            throw "Windows device test category discovery did not create $categoriesFile"
+        }
+
+        $allCategories = @(Get-Content $categoriesFile | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        $selectedCategories = @(Select-WindowsDeviceTestCategories -AllCategories $allCategories -Filter $TestFilter)
+        if ($selectedCategories.Count -eq 0) {
+            throw "Test filter '$TestFilter' matched 0 Windows device test categories. Available categories: $($allCategories -join ', ')"
+        }
+
+        Write-Host "Running $($selectedCategories.Count) of $($allCategories.Count) Windows device test categor$(if ($selectedCategories.Count -eq 1) { 'y' } else { 'ies' }): $($selectedCategories -join ', ')" -ForegroundColor Yellow
+
+        foreach ($category in $selectedCategories) {
+            $categoryIndex = [Array]::IndexOf($allCategories, $category)
+            if ($categoryIndex -lt 0) {
+                throw "Could not find category '$category' in discovered category list."
+            }
+
+            $categoryResultFile = "$resultBase`_$category.xml"
+            Remove-Item -LiteralPath $categoryResultFile -Force -ErrorAction SilentlyContinue
+            Write-Host "Running Windows device test category '$category' (index $categoryIndex)..." -ForegroundColor Gray
+            $process = Start-Process -FilePath $AppPath -ArgumentList @($resultFile, [string]$categoryIndex) -PassThru
+            if (-not (Wait-ForPath -Path $categoryResultFile -TimeoutSeconds $timeoutSeconds -Process $process)) {
+                if ($process -and -not $process.HasExited) {
+                    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+                }
+                throw "Windows device test category '$category' did not create $categoryResultFile"
+            }
+
+            $resultFiles += $categoryResultFile
+        }
+    } else {
+        if ($TestFilter) {
+            Write-Warning "Windows non-Controls device tests do not support dynamic category filtering; running the full $Project device test app."
+        }
+
+        Write-Host "Running Windows device test app directly..." -ForegroundColor Gray
+        $process = Start-Process -FilePath $AppPath -ArgumentList @($resultFile) -PassThru
+        if (-not (Wait-ForPath -Path $resultFile -TimeoutSeconds $timeoutSeconds -Process $process)) {
+            if ($process -and -not $process.HasExited) {
+                Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+            }
+            throw "Windows device test app did not create $resultFile"
+        }
+
+        $resultFiles += $resultFile
+    }
+
+    $summary = Get-WindowsDeviceTestResultSummary -ResultFiles $resultFiles
+    $script:WindowsDeviceTestSummary = $summary
+    $script:WindowsDeviceTestResultFiles = $resultFiles
+
+    if (($summary.Failed + $summary.Errors) -eq 0) {
+        return 0
+    }
+
+    return 1
 }
 
 # Android package names (lowercase)
@@ -576,32 +794,29 @@ try {
         $testExitCode = $LASTEXITCODE
     } else {
         # ═══════════════════════════════════════════════════════════
-        # VSTEST EXECUTION (Windows)
+        # WINDOWS DEVICE TEST EXECUTION
         # ═══════════════════════════════════════════════════════════
-        
-        Write-Host "Running tests with vstest..." -ForegroundColor Gray
-        Write-Host ""
-        
-        $vstestArgs = @(
-            "test"
-            $projectPath
-            "-c", $Configuration
-            "-f", $platformConfig.Tfm
-            "--no-build"
-            "--logger", "trx;LogFileName=TestResults.trx"
-            "--results-directory", $OutputDirectory
-        )
 
-        if ($TestFilter) {
-            $vstestArgs += "--filter", $TestFilter
+        Write-Host "Running Windows device test app directly..." -ForegroundColor Gray
+        Write-Host "This matches eng/devices/windows.cake and avoids VSTest/testhost for MAUI Windows device apps." -ForegroundColor Gray
+        Write-Host ""
+
+        $testExitCode = Invoke-WindowsDeviceTestApp `
+            -AppPath $appPath `
+            -Project $Project `
+            -AppName $appName `
+            -OutputDirectory $OutputDirectory `
+            -TestFilter $TestFilter `
+            -Timeout $Timeout
+
+        if ($script:WindowsDeviceTestSummary) {
+            Write-Host ""
+            Write-Output "  Passed: $($script:WindowsDeviceTestSummary.Passed)"
+            Write-Output "  Failed: $($script:WindowsDeviceTestSummary.Failed + $script:WindowsDeviceTestSummary.Errors)"
+            Write-Output "  Skipped: $($script:WindowsDeviceTestSummary.Skipped)"
+            Write-Output "  Total: $($script:WindowsDeviceTestSummary.Total)"
+            Write-Host "  Result file(s): $($script:WindowsDeviceTestResultFiles -join ', ')" -ForegroundColor Gray
         }
-
-        Write-Host "Running: dotnet $($vstestArgs -join ' ')" -ForegroundColor Gray
-        Write-Host ""
-
-        & dotnet @vstestArgs
-
-        $testExitCode = $LASTEXITCODE
     }
 
     # ═══════════════════════════════════════════════════════════

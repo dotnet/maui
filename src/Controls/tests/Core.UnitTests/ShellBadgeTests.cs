@@ -93,6 +93,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void BadgePropertiesPropagateFromShellContentToImplicitShellSection()
+		{
+			var shellContent = new ShellContent
+			{
+				BadgeText = "3",
+				BadgeColor = Colors.Red,
+				BadgeTextColor = Colors.White
+			};
+
+			var tabBar = new TabBar();
+			tabBar.Items.Add(shellContent);
+			var shellSection = tabBar.Items[0];
+
+			Assert.Equal("3", shellSection.BadgeText);
+			Assert.Equal(Colors.Red, shellSection.BadgeColor);
+			Assert.Equal(Colors.White, shellSection.BadgeTextColor);
+		}
+
+		[Fact]
+		public void BadgePropertyChangesPropagateFromShellContentToImplicitShellSection()
+		{
+			var shellContent = new ShellContent
+			{
+				BadgeText = "3",
+				BadgeColor = Colors.Red,
+				BadgeTextColor = Colors.White
+			};
+
+			var shellSection = ShellSection.CreateFromShellContent(shellContent);
+
+			shellContent.BadgeText = "";
+			shellContent.BadgeColor = Colors.Blue;
+			shellContent.BadgeTextColor = Colors.Black;
+
+			Assert.Equal("", shellSection.BadgeText);
+			Assert.Equal(Colors.Blue, shellSection.BadgeColor);
+			Assert.Equal(Colors.Black, shellSection.BadgeTextColor);
+
+			shellContent.BadgeText = null;
+			shellContent.BadgeColor = null;
+			shellContent.BadgeTextColor = null;
+
+			Assert.Null(shellSection.BadgeText);
+			Assert.Null(shellSection.BadgeColor);
+			Assert.Null(shellSection.BadgeTextColor);
+		}
+
+		[Fact]
 		public void BadgeTextWorksOnShellItem()
 		{
 			var shellItem = new ShellItem();

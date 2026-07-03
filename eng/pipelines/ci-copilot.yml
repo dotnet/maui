@@ -12,8 +12,7 @@ pr: none  # Not triggered by PRs
 parameters:
   - name: PRNumber
     displayName: 'Pull Request Number'
-    type: string
-    default: ''
+    type: number
 
   - name: Platform
     displayName: 'Target Platform'
@@ -80,7 +79,10 @@ stages:
         steps:
           - checkout: self
             fetchDepth: 0
-            persistCredentials: true
+            persistCredentials: false
+            # persistCredentials is false — tasks that need GitHub access
+            # (Setup, Post) use GH_TOKEN env var instead. This limits the
+            # blast radius: Gate and CopilotReview tasks cannot push to the repo.
 
           # Validate Parameters
           # PRNumber is received via env var to avoid compile-time shell injection.
@@ -122,7 +124,10 @@ stages:
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
-              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
+              # AVD is created by the inline 'Create AVD and boot Android Emulator' script below
+              # with specific config (playstore image variant, partition shrink, ADB key pre-auth)
+              # that ProvisionAndroidSdkAvdCreateAvds doesn't replicate.
+              skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
@@ -376,24 +381,11 @@ stages:
               echo "GitHub CLI ready"
             displayName: 'Install GitHub CLI'
 
-          - bash: |
-              echo "Authenticating with GitHub CLI..."
-              if [ -z "$GH_TOKEN" ]; then
-                echo "##vso[task.logissue type=error]GH_TOKEN env var (from pipeline variable GH_COMMENT_TOKEN) is not set. Please configure the pipeline variable."
-                exit 1
-              fi
-              gh auth status
-              if [ $? -ne 0 ]; then
-                echo "$GH_TOKEN" | gh auth login --with-token 2>/dev/null || true
-                if ! gh auth status; then
-                  echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
-                  exit 1
-                fi
-              fi
-              echo "GitHub CLI authenticated successfully"
-            displayName: 'Authenticate GitHub CLI'
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
+          # NOTE: Removed `gh auth login` step. With the phased task design,
+          # GH_TOKEN is passed as an env var only to Setup and Post tasks, and
+          # `gh` uses GH_TOKEN directly without needing `gh auth login`. This
+          # avoids persisting credentials in the agent's gh auth store where
+          # Gate and CopilotReview tasks could access them.
 
           - bash: |
               echo "Installing GitHub Copilot CLI..."
@@ -575,16 +567,16 @@ stages:
             timeoutInMinutes: 6
             retryCountOnTaskFailure: 2
 
+          # ─────────────────────────────────────────────────────────
+          #  Task 1 — SETUP: symlink copilot, git config, env prep,
+          #  copy trusted scripts, invoke Review-PR.ps1 -Phase Setup
+          #  env: GH_TOKEN (for branch checkout / PR merge)
+          # ─────────────────────────────────────────────────────────
           - bash: |
-              echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
-              echo "Reviewing PR #${{ parameters.PRNumber }}..."
+              echo "═══ TASK 1: SETUP ═══"
+
               # Ensure copilot CLI is accessible to pwsh subprocess.
-              # npm global install on Linux goes to UseNode@1 toolcache path which may not
-              # be on PATH inside pwsh even when exported from bash. Create a symlink in
-              # /usr/local/bin (Unix) or verify PATH (Windows).
               if [[ "$(uname -o 2>/dev/null || uname -s)" == *"Msys"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"Windows"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"MINGW"* ]]; then
-                # Windows (Git Bash): npm global bin is usually already on PATH
-                echo "Windows detected — verifying copilot is on PATH..."
                 COPILOT_PATH=$(which copilot 2>/dev/null || true)
                 echo "copilot location: ${COPILOT_PATH:-not found}"
                 if [ -z "$COPILOT_PATH" ]; then
@@ -592,7 +584,6 @@ stages:
                   exit 1
                 fi
               else
-                # Linux/macOS: symlink to /usr/local/bin
                 COPILOT_PATH=$(which copilot 2>/dev/null || find /opt/hostedtoolcache/node -name copilot -type f 2>/dev/null | head -1)
                 if [ -n "$COPILOT_PATH" ] && [ ! -f /usr/local/bin/copilot ]; then
                   sudo ln -sf "$COPILOT_PATH" /usr/local/bin/copilot
@@ -605,84 +596,149 @@ stages:
                   exit 1
                 fi
               fi
-              # Verify pwsh can find it
               pwsh -NoProfile -c 'Write-Host "pwsh sees copilot at: $(Get-Command copilot -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"'
-              
-              # Configure git identity (required for merge operations on self-hosted agents)
+
+              # Configure git identity
               git config user.email "copilot-ci@microsoft.com"
               git config user.name "Copilot CI"
-              echo "Git identity configured"
-              
-              # Create Directory.Build.Override.props to skip Xcode version check (not needed on Windows)
+
+              # Create Directory.Build.Override.props
               cp Directory.Build.Override.props.in Directory.Build.Override.props
               if [[ "$(uname)" == "Linux" ]]; then
                 sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               elif [[ "$(uname)" == "Darwin" ]]; then
                 sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               else
-                # Windows (Git Bash) — GNU sed, same as Linux
                 sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               fi
-              
-              # Create artifacts directory for Copilot outputs
+
+              # Create artifacts directory
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
-              
-              # Invoke the PR reviewer using our PowerShell script
-              # The script will merge the PR into the current branch
-              # -PostSummaryComment and -RunFinalize handle posting comments
-              echo "Review platform: ${{ parameters.Platform }}"
-              
+
+              # Copy trusted scripts from the checked-out commit so later tasks
+              # (which may be on a merged/modified worktree) use the same .github/
+              # files that were reviewed and approved on main.
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              mkdir -p "$TRUSTED"
+              cp -r .github/scripts "$TRUSTED/scripts"
+              cp -r .github/skills  "$TRUSTED/skills"
+              cp -r eng/scripts     "$TRUSTED/eng-scripts"
+              chmod -R a-w "$TRUSTED"
+              echo "Trusted scripts copied to $TRUSTED"
+
+              # Run Setup phase (branch checkout + PR merge)
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
-              COPILOT_EXIT_CODE=$?
+              pwsh -NoProfile .github/scripts/Review-PR.ps1 \
+                -PRNumber "${PARAM_PR_NUMBER}" \
+                -Platform "${{ parameters.Platform }}" \
+                -Phase Setup \
+                -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              SETUP_EXIT=$?
               set -e
-              
-              echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
-              
-              # Terminate any orphaned copilot CLI processes that could hold this step's
-              # stdout fd open and prevent the bash step from exiting.
-              # Only target processes whose command line includes the copilot CLI path.
-              echo "Cleaning up orphaned copilot processes..."
-              SELF_PID=$$
-              for proc in $(pgrep -f "[c]opilot" 2>/dev/null || true); do
-                if [ -n "$proc" ] && [ "$proc" != "$SELF_PID" ]; then
-                  PROC_CMD=$(ps -p "$proc" -o args= 2>/dev/null || true)
-                  if echo "$PROC_CMD" | grep -q "copilot"; then
-                    echo "  Stopping copilot process $proc: $PROC_CMD"
-                    kill "$proc" 2>/dev/null || true
-                  fi
-                fi
-              done
-              
-              # Copy any Copilot session files (bash — works on Linux/macOS)
-              if [ -d "$HOME/.copilot" ]; then
-                echo "Copying Copilot session state..."
-                cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state || true
-              fi
-              
-              # Check for failure indicators in output
-              if [ $COPILOT_EXIT_CODE -ne 0 ]; then
-                echo "##vso[task.logissue type=error]Review-PR.ps1 exited with code $COPILOT_EXIT_CODE"
-                # Don't exit yet - let artifacts be published first
+
+              if [ $SETUP_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Setup phase failed with exit code $SETUP_EXIT"
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
               fi
-              
-              # Check output for common failure patterns
-              if grep -qi "error\|failed\|exception" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
-                if grep -qi "simulator.*not\|emulator.*not\|workload.*not\|sdk.*not found" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
-                  echo "##vso[task.logissue type=warning]Copilot encountered environment issues. Check artifacts for details."
-                fi
+            name: RunSetup
+            displayName: 'Task 1: Setup (branch + merge)'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+          # ─────────────────────────────────────────────────────────
+          #  Task 2 — GATE: UI detection, test runs, regression,
+          #  gate verification. GH_TOKEN is read-only here — needed
+          #  by Detect-TestsInDiff.ps1 for PR metadata/label fetches.
+          #  No COPILOT_GITHUB_TOKEN — the agent can't run here.
+          # ─────────────────────────────────────────────────────────
+          - bash: |
+              echo "═══ TASK 2: GATE ═══"
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -PRNumber "${PARAM_PR_NUMBER}" \
+                -Platform "${{ parameters.Platform }}" \
+                -Phase Gate \
+                -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              GATE_EXIT=$?
+              set -e
+
+              if [ $GATE_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=warning]Gate phase exited with code $GATE_EXIT"
+                echo "##vso[task.setvariable variable=GateFailed]true"
               fi
-              
-              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
-            name: RunReview                       # referenceable name so the new RunDeepUITests / UpdateAISummaryComment stages can read this step's output variables (detectedCategories, detectedPlatform) via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.<var>'])
-            displayName: 'Run PR Reviewer Agent'
+            name: RunGate
+            displayName: 'Task 2: Gate (test verification)'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+          # ─────────────────────────────────────────────────────────
+          #  Task 3 — COPILOT REVIEW: expert review + try-fix.
+          #  env: COPILOT_GITHUB_TOKEN (for copilot agent).
+          #  NO GH_TOKEN — the agent can't push or post comments.
+          # ─────────────────────────────────────────────────────────
+          - bash: |
+              echo "═══ TASK 3: COPILOT REVIEW ═══"
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+
+              echo "Review platform: ${{ parameters.Platform }}"
+
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -PRNumber "${PARAM_PR_NUMBER}" \
+                -Platform "${{ parameters.Platform }}" \
+                -Phase CopilotReview \
+                -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              REVIEW_EXIT=$?
+              set -e
+
+              if [ $REVIEW_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=error]CopilotReview phase failed with exit code $REVIEW_EXIT"
+                echo "##vso[task.setvariable variable=CopilotFailed]true"
+              fi
+            name: RunReview
+            displayName: 'Task 3: Copilot Review (expert review + try-fix)'
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
+
+          # ─────────────────────────────────────────────────────────
+          #  Task 4 — POST: gate comment, AI summary, labels.
+          #  env: GH_TOKEN (for posting comments).
+          # ─────────────────────────────────────────────────────────
+          - bash: |
+              echo "═══ TASK 4: POST ═══"
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -PRNumber "${PARAM_PR_NUMBER}" \
+                -Platform "${{ parameters.Platform }}" \
+                -Phase Post \
+                -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              POST_EXIT=$?
+              set -e
+
+              if [ $POST_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Post phase failed with exit code $POST_EXIT"
+                echo "##vso[task.setvariable variable=CopilotFailed]true"
+              fi
+
+              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
+            name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryReviewId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId']). Note: detectedCategories comes from RunGate, not RunPost.
+            displayName: 'Task 4: Post (comments + labels)'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               DEFER_COMMENT_TO_STAGE3: "true"
 
           # Copy review artifacts into the CopilotLogs staging dir.
@@ -734,20 +790,26 @@ stages:
               publishLocation: 'pipeline'
             condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
 
-          # Fail the pipeline if Copilot failed
+          # Fail the pipeline if any phase failed
           - bash: |
+              FAILED=0
               if [ "$(CopilotFailed)" = "true" ]; then
                 echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
-                exit 1
+                FAILED=1
               fi
-            displayName: 'Check Copilot Result'
+              if [ "$(GateFailed)" = "true" ]; then
+                echo "##vso[task.logissue type=warning]Gate phase failed — test verification did not pass."
+                FAILED=1
+              fi
+              exit $FAILED
+            displayName: 'Check Review Result'
             condition: succeededOrFailed()
 
   # ─────────────────────────────────────────────────────────────────────────────
   #  STAGE: RunDeepUITests
   # ─────────────────────────────────────────────────────────────────────────────
   # After the Copilot review agent has detected UI test categories and posted
-  # an initial AI summary comment with in-process per-category results, this
+  # an initial AI summary review with in-process per-category results, this
   # stage re-runs those same categories on a real platform-appropriate pool
   # (Tahoe iOS sim / Ubuntu Android emu / Windows-2022 / macOS-14) instead of
   # whatever VM the Copilot agent happened to land on. Each category becomes
@@ -767,12 +829,20 @@ stages:
   - stage: RunDeepUITests
     displayName: 'Deep UI Tests (platform pool)'
     dependsOn: ReviewPR
-    condition: and(in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], ''), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], 'NONE'))
+    # Prefer AI-refreshed categories from CopilotReview (RunReview) when available,
+    # falling back to Gate-detected categories (RunGate). RunReview is only set when
+    # the Tier 3 AI refresh actually changed the categories; otherwise it's empty.
+    condition: >-
+      and(
+        in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), ''),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), 'NONE')
+      )
     jobs:
       - job: RunUITests
         displayName: 'Run detected UI test categories'
         variables:
-          detectedCategories: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'] ]
+          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories']) ]
         # Use the SAME platform-pool selection logic as the CopilotReview
         # job — the deep-test agent should be the right OS for the
         # requested target platform.
@@ -790,6 +860,7 @@ stages:
         steps:
           - checkout: self
             fetchDepth: 0
+            persistCredentials: false
 
           # Bring in .NET + workloads + tasks DLL — same prerequisites the
           # CopilotReview job used. Reusing the install-dotnet template
@@ -803,7 +874,10 @@ stages:
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
-              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
+              # AVD is created by the inline 'Create AVD and boot Android Emulator' script below
+              # with specific config (playstore image variant, partition shrink, ADB key pre-auth)
+              # that ProvisionAndroidSdkAvdCreateAvds doesn't replicate.
+              skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
@@ -1204,12 +1278,13 @@ stages:
               }
 
               if ($hadFailure) {
-                # Don't fail the stage — the AI summary comment is the
+                # Don't fail the stage — the AI summary review is the
                 # deliverable; failed tests get reported there. Stage-level
                 # failure would prevent the UpdateAISummaryComment stage
                 # from running.
                 Write-Host "##vso[task.logissue type=warning]One or more deep UI test categories failed (see TRX in drop-deep-uitests artifact)"
               }
+              exit 0
             displayName: 'Run deep UI tests (per-category loop)'
             timeoutInMinutes: 220
 
@@ -1235,32 +1310,33 @@ stages:
   #  STAGE: PostAISummaryComment
   # ─────────────────────────────────────────────────────────────────────────────
   # Final stage. Depends on both ReviewPR (which posted the initial AI
-  # summary comment and emitted aiSummaryCommentId) and RunDeepUITests
+  # summary review and emitted aiSummaryReviewId) and RunDeepUITests
   # (which produced the TRX artifacts on the right pool). Downloads the
   # artifacts, parses them via Aggregate-UITestArtifacts.ps1, and edits
-  # the existing PR comment to replace the in-process STEP 3 section
+  # the existing PR review to replace the in-process STEP 3 section
   # with the deep-test results.
   - stage: UpdateAISummaryComment
-    displayName: 'Post AI Summary Comment'
+    displayName: 'Post AI Summary Review'
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['CopilotReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
     jobs:
       - job: UpdateComment
-        displayName: 'Post AI summary with review + deep test results'
+        displayName: 'Post AI summary review with deep test results'
         # Job-level variables can use $[ stageDependencies... ] (cross-stage,
         # job context). The stage condition above already gated emptiness;
-        # this just makes the value available as $(aiSummaryCommentId)
+        # this just makes the value available as $(aiSummaryReviewId)
         # inside the steps.
         variables:
-          aiSummaryCommentId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.aiSummaryCommentId'] ]
+          aiSummaryReviewId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId'] ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
         timeoutInMinutes: 30
         steps:
           - checkout: self
+            persistCredentials: false
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download CopilotLogs'
@@ -1290,12 +1366,12 @@ stages:
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
               $prNumber = "${{ parameters.PRNumber }}"
-              $commentId = "$(aiSummaryCommentId)"
-              $isDeferred = ($commentId -eq 'DEFERRED')
+              $reviewId = "$(aiSummaryReviewId)"
+              $isDeferred = ([string]::IsNullOrWhiteSpace($reviewId) -or $reviewId -eq 'DEFERRED')
 
               # Diagnostic logging for Stage 3 debugging
               Write-Host "=== Stage 3 Diagnostics ===" -ForegroundColor Cyan
-              Write-Host "  commentId: '$commentId'"
+              Write-Host "  reviewId: '$reviewId'"
               Write-Host "  isDeferred: $isDeferred"
               Write-Host "  artDir exists: $(Test-Path $artDir)"
               Write-Host "  copilotLogsDir exists: $(Test-Path $copilotLogsDir)"
@@ -1307,16 +1383,16 @@ stages:
                 }
               }
 
-              if ([string]::IsNullOrWhiteSpace($commentId)) {
-                # Reviewer crashed before posting the initial comment. If deep
+              if ([string]::IsNullOrWhiteSpace($reviewId)) {
+                # Reviewer crashed before posting the initial review. If deep
                 # tests produced results, fall back to DEFERRED mode to post
-                # a degraded comment with test results only.
+                # a degraded review with test results only.
                 if (Test-Path $artDir) {
-                  Write-Host "No AI summary comment ID but deep test artifacts exist — falling back to DEFERRED mode"
-                  $commentId = 'DEFERRED'
+                  Write-Host "No AI summary review ID but deep test artifacts exist — falling back to DEFERRED mode"
+                  $reviewId = 'DEFERRED'
                   $isDeferred = $true
                 } else {
-                  Write-Host "No AI summary comment ID and no deep test artifacts — nothing to do"
+                  Write-Host "No AI summary review ID and no deep test artifacts — nothing to do"
                   exit 0
                 }
               }
@@ -1343,6 +1419,7 @@ stages:
 
               # Render the new STEP 3 section.
               $totalPassed = 0; $totalFailed = 0
+              $setupFailureCategories = 0; $setupImpactedTests = 0; $emptyCategories = 0
               $sb = [System.Text.StringBuilder]::new()
               [void]$sb.AppendLine()
               [void]$sb.AppendLine("### 🧪 UI Test Execution Results (deep, platform pool)")
@@ -1350,6 +1427,7 @@ stages:
               [void]$sb.AppendLine("| Category | Tests | Snapshot diffs |")
               [void]$sb.AppendLine("|---|---|---|")
               $perCategoryFailures = [ordered]@{}
+              $perCategorySetupFailures = [ordered]@{}
               foreach ($k in ($byCat.Keys | Sort-Object)) {
                 $b = $byCat[$k]
                 $totalPassed += [int]$b.Passed
@@ -1357,7 +1435,16 @@ stages:
                 $tCount = [int]$b.Total
                 $tPass  = [int]$b.Passed
                 $tFail  = [int]$b.Failed
-                $col = if ($tCount -eq 0) { '—' }
+                $isSetupFailure = ($b.ContainsKey('SetupFailure') -and [bool]$b.SetupFailure)
+                if ($isSetupFailure) {
+                  $setupFailureCategories++
+                  $setupImpactedTests += [int]$b.SetupFailureCount
+                }
+                if ($tCount -eq 0) {
+                  $emptyCategories++
+                }
+                $col = if ($tCount -eq 0) { '0 tests' }
+                       elseif ($isSetupFailure) { "$tPass/$tCount (setup failed; $tFail marked failed)" }
                        elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
                        else { "$tPass/$tCount ✓" }
                 # Count snapshot-diff PNGs we shipped in this artifact subdir
@@ -1372,6 +1459,15 @@ stages:
                 # Capture failed test entries from the parsed TRX so we can
                 # render a per-category disclosure section listing the actual
                 # failing test names + the first line of their error message.
+                if ($isSetupFailure) {
+                  $perCategorySetupFailures[$k] = [pscustomobject]@{
+                    Count          = [int]$b.SetupFailureCount
+                    Message        = $b.SetupFailureMessage -as [string]
+                    Stack          = $b.SetupFailureStack -as [string]
+                    SignatureCount = [int]$b.SetupFailureSignatureCount
+                  }
+                  continue
+                }
                 $catFailed = @()
                 foreach ($r in @($b.Results)) {
                   if ($r.status -eq 'Failed') {
@@ -1384,6 +1480,41 @@ stages:
                 }
                 if ($catFailed.Count -gt 0) {
                   $perCategoryFailures[$k] = $catFailed
+                }
+              }
+
+              # Fixture setup failures usually mark every test in the fixture as
+              # failed even though no individual test body ran. Render one
+              # representative setup error instead of dozens of duplicate tests.
+              if ($perCategorySetupFailures.Count -gt 0) {
+                [void]$sb.AppendLine()
+                foreach ($cat in $perCategorySetupFailures.Keys) {
+                  $info = $perCategorySetupFailures[$cat]
+                  $setupCount = [int]$info.Count
+                  $setupTestText = if ($setupCount -eq 1) { '1 test' } else { "$setupCount tests" }
+                  [void]$sb.AppendLine("<details><summary>⚠️ <code>$cat</code> — fixture setup failed for $setupTestText</summary>")
+                  [void]$sb.AppendLine("<br/>")
+                  [void]$sb.AppendLine()
+                  [void]$sb.AppendLine("NUnit reported a `OneTimeSetUp`/fixture setup failure before test bodies ran; the TRX marked each affected test failed.")
+                  if ([int]$info.SignatureCount -gt 1) {
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("_Multiple setup failure signatures were present; showing the first one. See the TRX artifact for all details._")
+                  }
+                  $errText = if (-not [string]::IsNullOrWhiteSpace($info.Message)) { $info.Message.Trim() } else { '' }
+                  $stackText = if (-not [string]::IsNullOrWhiteSpace($info.Stack)) { $info.Stack.Trim() } else { '' }
+                  $combined = $errText
+                  if ($stackText) { $combined = $combined + [Environment]::NewLine + $stackText }
+                  if ($combined.Length -gt 1500) { $combined = $combined.Substring(0, 1500) + [Environment]::NewLine + '...' }
+                  if ($combined) {
+                    [void]$sb.AppendLine()
+                    $fence = [string]::new([char]96, 3)
+                    [void]$sb.AppendLine($fence)
+                    [void]$sb.AppendLine($combined)
+                    [void]$sb.AppendLine($fence)
+                  }
+                  [void]$sb.AppendLine()
+                  [void]$sb.AppendLine("</details>")
+                  [void]$sb.AppendLine()
                 }
               }
 
@@ -1434,7 +1565,23 @@ stages:
               [void]$sb.AppendLine()
 
               $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
-              $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $($byCat.Count) categor$(if ($byCat.Count -eq 1) {'y'} else {'ies'}) on platform-pool agent (replaces in-process counts above)."
+              $categoryText = if ($byCat.Count -eq 1) { '1 category' } else { "$($byCat.Count) categories" }
+              $regularFailed = [Math]::Max(0, $totalFailed - $setupImpactedTests)
+              if ($setupFailureCategories -gt 0) {
+                $setupCategoryText = if ($setupFailureCategories -eq 1) { '1 category setup failure' } else { "$setupFailureCategories category setup failures" }
+                $setupImpactedText = if ($setupImpactedTests -eq 1) { '1 impacted test' } else { "$setupImpactedTests impacted tests" }
+                if ($regularFailed -eq 0) {
+                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed; $setupCategoryText ($setupImpactedText marked failed by TRX) across $categoryText on platform-pool agent (replaces in-process counts above)."
+                } else {
+                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed, plus $setupCategoryText ($setupImpactedText marked failed by TRX) across $categoryText on platform-pool agent (replaces in-process counts above)."
+                }
+              } else {
+                $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $categoryText on platform-pool agent (replaces in-process counts above)."
+              }
+              if ($emptyCategories -gt 0) {
+                $emptyText = if ($emptyCategories -eq 1) { '1 category reported 0 tests.' } else { "$emptyCategories categories reported 0 tests." }
+                $headerLine = "$headerLine $emptyText"
+              }
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
@@ -1442,19 +1589,14 @@ stages:
               } # end if ($byCat.Count -gt 0)
 
               if ($isDeferred) {
-                # ── DEFERRED MODE: Post full comment with deep results included ──
-                # Guard against duplicate comments on pipeline retry: check if
-                # an AI Summary comment already exists for this PR.
-                $existingComment = gh api "repos/dotnet/maui/issues/$prNumber/comments?per_page=100" --paginate --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -Last 1
-                if ($existingComment) {
-                  Write-Host "Existing AI Summary comment found ($existingComment) — will PATCH instead of creating new"
-                  $commentId = $existingComment
-                  $isDeferred = $false
-                }
+                # Keep deferred mode even if a prior AI Summary exists. The
+                # posting script preserves current-run artifacts, hides stale
+                # generated comments/reviews, then posts a fresh summary review.
+                Write-Host "Deferred AI Summary posting will hide stale generated artifacts before posting"
               }
 
               if ($isDeferred) {
-                # ── DEFERRED MODE (first run): Post full comment ──
+                # ── DEFERRED MODE (first run): Post full review ──
                 # Find the PRAgent content dir from CopilotLogs artifact
                 $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
                 if (-not $prAgentDir) {
@@ -1487,7 +1629,7 @@ stages:
                       Write-Host "Replaced in-process results with deep results"
                     }
                   } else {
-                    Write-Host "No deep results — posting review-only comment"
+                    Write-Host "No deep results — posting review-only summary"
                   }
 
                   # Copy PRAgent dir to expected location for post-ai-summary-comment.ps1
@@ -1495,13 +1637,13 @@ stages:
                   New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetDir) | Out-Null
                   Copy-Item -Path $prAgentDir.FullName -Destination $targetDir -Recurse -Force
 
-                  # Post the full comment
+                  # Post the full review
                   $postScript = ".github/scripts/post-ai-summary-comment.ps1"
                   if (Test-Path $postScript) {
-                    Write-Host "Posting full AI summary comment with deep results..."
+                    Write-Host "Posting full AI summary review with deep results..."
                     $output = & $postScript -PRNumber $prNumber
                     $output | ForEach-Object { Write-Host $_ }
-                    Write-Host "✅ Full AI summary comment posted with deep results"
+                    Write-Host "✅ Full AI summary review posted with deep results"
                   }
 
                   # Apply labels
@@ -1517,14 +1659,14 @@ stages:
                   }
                 }
               } else {
-                # ── PATCH MODE: Update existing comment with deep results ──
+                # ── PATCH MODE: Update existing review with deep results ──
                 if (-not $deepBlock) {
-                  Write-Host "No deep results and comment already exists — nothing to patch"
+                  Write-Host "No deep results and review already exists — nothing to patch"
                   exit 0
                 }
-                $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join [Environment]::NewLine
+                $existing = (gh api "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --jq '.body') -join [Environment]::NewLine
                 if ([string]::IsNullOrWhiteSpace($existing)) {
-                  Write-Host "Could not fetch comment body — aborting"
+                  Write-Host "Could not fetch review body — aborting"
                   exit 0
                 }
 
@@ -1550,9 +1692,42 @@ stages:
 
                 $tmp = New-TemporaryFile
                 @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
-                gh api -X PATCH "repos/dotnet/maui/issues/comments/$commentId" --input $tmp.FullName | Out-Null
-                Write-Host "✅ Patched comment $commentId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
+                gh api -X PATCH "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --input $tmp.FullName | Out-Null
+                Write-Host "✅ Patched review $reviewId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
               }
-            displayName: 'Post AI summary comment'
+            displayName: 'Post AI summary review'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+  - stage: CleanupReviewLock
+    displayName: 'Cleanup review lock'
+    dependsOn:
+      - ReviewPR
+      - RunDeepUITests
+      - UpdateAISummaryComment
+    condition: always()
+    jobs:
+      - job: CleanupReviewLock
+        displayName: 'Remove PR review in-progress label'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 5
+        steps:
+          - bash: |
+              set -euo pipefail
+
+              PR_NUM="${PARAM_PR_NUMBER}"
+              if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "Skipping lock cleanup; invalid PR number: '${PR_NUM}'"
+                exit 0
+              fi
+
+              echo "Removing s/agent-review-in-progress from PR #${PR_NUM} if present..."
+              gh api \
+                --method DELETE \
+                "repos/dotnet/maui/issues/${PR_NUM}/labels/s%2Fagent-review-in-progress" >/dev/null 2>&1 || true
+            displayName: 'Remove in-progress label'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}

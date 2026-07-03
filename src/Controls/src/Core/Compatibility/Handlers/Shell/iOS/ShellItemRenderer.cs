@@ -355,7 +355,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var renderer = RendererForShellContent(shellSection);
 				if (renderer is not null)
 				{
-					UpdateTabBarItemBadge(renderer.ViewController?.TabBarItem, shellSection, TabBar);
+					UpdateTabBarItemBadge(renderer.ViewController?.TabBarItem, shellSection);
 				}
 			}
 		}
@@ -397,12 +397,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
 				{
 					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
-					UpdateTabBarItemBadge(TabBar.Items[tabIndex], items[tabIndex], TabBar);
+					UpdateTabBarItemBadge(TabBar.Items[tabIndex], items[tabIndex]);
 				}
 			}
 		}
 
-		internal static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection, UITabBar tabBar = null)
+		internal static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection)
 		{
 			if (tabBarItem is null)
 				return;
@@ -426,89 +426,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var attrs = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
 				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Focused);
 			}
 			else
 			{
 				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Focused);
 			}
-
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
-				UpdateTabBarItemBadgeAppearance(tabBarItem, tabBar, badgeColor, badgeTextColor);
-		}
-
-		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
-		static void UpdateTabBarItemBadgeAppearance(UITabBarItem tabBarItem, UITabBar tabBar, Color badgeColor, Color badgeTextColor)
-		{
-			if (badgeColor is null && badgeTextColor is null)
-			{
-				tabBarItem.StandardAppearance = null;
-				tabBarItem.ScrollEdgeAppearance = null;
-				return;
-			}
-
-			var standardAppearance = CreateTabBarBadgeAppearance(tabBarItem.StandardAppearance, tabBar?.StandardAppearance);
-			UpdateTabBarItemBadgeAppearance(standardAppearance, badgeColor, badgeTextColor);
-			tabBarItem.StandardAppearance = standardAppearance;
-
-			var scrollEdgeAppearance = CreateTabBarBadgeAppearance(tabBarItem.ScrollEdgeAppearance, tabBar?.ScrollEdgeAppearance ?? tabBar?.StandardAppearance);
-			UpdateTabBarItemBadgeAppearance(scrollEdgeAppearance, badgeColor, badgeTextColor);
-			tabBarItem.ScrollEdgeAppearance = scrollEdgeAppearance;
-		}
-
-		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
-		static UITabBarAppearance CreateTabBarBadgeAppearance(UITabBarAppearance itemAppearance, UITabBarAppearance tabBarAppearance)
-		{
-			if (itemAppearance is not null)
-				return new UITabBarAppearance(itemAppearance);
-
-			if (tabBarAppearance is not null)
-				return new UITabBarAppearance(tabBarAppearance);
-
-			var appearance = new UITabBarAppearance();
-			appearance.ConfigureWithDefaultBackground();
-			return appearance;
-		}
-
-		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
-		static void UpdateTabBarItemBadgeAppearance(UITabBarAppearance appearance, Color badgeColor, Color badgeTextColor)
-		{
-			UpdateTabBarItemBadgeAppearance(appearance.StackedLayoutAppearance, badgeColor, badgeTextColor);
-			UpdateTabBarItemBadgeAppearance(appearance.InlineLayoutAppearance, badgeColor, badgeTextColor);
-			UpdateTabBarItemBadgeAppearance(appearance.CompactInlineLayoutAppearance, badgeColor, badgeTextColor);
-		}
-
-		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
-		static void UpdateTabBarItemBadgeAppearance(UITabBarItemAppearance appearance, Color badgeColor, Color badgeTextColor)
-		{
-			UpdateTabBarItemBadgeAppearance(appearance.Normal, badgeColor, badgeTextColor);
-			UpdateTabBarItemBadgeAppearance(appearance.Selected, badgeColor, badgeTextColor);
-			UpdateTabBarItemBadgeAppearance(appearance.Disabled, badgeColor, badgeTextColor);
-			UpdateTabBarItemBadgeAppearance(appearance.Focused, badgeColor, badgeTextColor);
-		}
-
-		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
-		static void UpdateTabBarItemBadgeAppearance(UITabBarItemStateAppearance appearance, Color badgeColor, Color badgeTextColor)
-		{
-			appearance.BadgeBackgroundColor = badgeColor?.ToPlatform();
-
-			if (badgeTextColor is not null)
-			{
-				appearance.WeakBadgeTextAttributes = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() }.Dictionary;
-				return;
-			}
-
-			var badgeTextAttributes = appearance.WeakBadgeTextAttributes;
-			if (badgeTextAttributes?[UIStringAttributeKey.ForegroundColor] is null)
-				return;
-
-			var mutableBadgeTextAttributes = new NSMutableDictionary(badgeTextAttributes);
-			mutableBadgeTextAttributes.Remove(UIStringAttributeKey.ForegroundColor);
-			appearance.WeakBadgeTextAttributes = mutableBadgeTextAttributes;
 		}
 
 		void UpdateIsInMoreTabForRenderers()

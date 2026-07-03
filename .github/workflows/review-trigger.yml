@@ -38,6 +38,7 @@ jobs:
     timeout-minutes: 2
     outputs:
       matched: ${{ steps.check.outputs.matched }}
+      command: ${{ steps.check.outputs.command }}
     steps:
       - name: Match /review command
         id: check
@@ -46,19 +47,126 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
+            echo "command=review" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          if [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+rerun$ ]]; then
+            echo "matched=true" >> "$GITHUB_OUTPUT"
+            echo "command=rerun" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+rerun([[:space:]]|$) ]]; then
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            echo "command=none" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           # Match `/review` as the first non-whitespace token, optionally followed by args.
           # Allows arbitrary leading whitespace (spaces, tabs, newlines).
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
+          # `/review tests` is reserved for the gh-aw test-failure review workflow.
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+tests([[:space:]]|$) ]]; then
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
+            echo "command=review" >> "$GITHUB_OUTPUT"
           else
             echo "matched=false" >> "$GITHUB_OUTPUT"
+            echo "command=none" >> "$GITHUB_OUTPUT"
+          fi
+
+  mark-rerun-ready:
+    needs: match
+    if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'rerun'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: review-trigger-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Check actor permission
+        id: auth
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          PERMISSION=$(gh api "repos/${REPOSITORY}/collaborators/${ACTOR}/permission" --jq '.permission')
+          PR_AUTHOR=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" --jq '.user.login')
+          PR_AUTHOR_ASSOCIATION=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" --jq '.author_association')
+          echo "User ${ACTOR} has permission: ${PERMISSION}"
+          echo "PR #${PR_NUMBER} author: ${PR_AUTHOR} (${PR_AUTHOR_ASSOCIATION})"
+          # /review rerun can queue privileged review infrastructure. Maintainers
+          # can rerun any PR; non-first-time PR authors can rerun only their own
+          # PR after the deterministic eligibility check confirms new activity.
+          if [[ "${PERMISSION}" == "admin" || "${PERMISSION}" == "maintain" || "${PERMISSION}" == "write" ]]; then
+            exit 0
+          fi
+          if [[ "${ACTOR}" == "${PR_AUTHOR}" && "${PR_AUTHOR_ASSOCIATION}" != "FIRST_TIMER" && "${PR_AUTHOR_ASSOCIATION}" != "FIRST_TIME_CONTRIBUTOR" && "${PR_AUTHOR_ASSOCIATION}" != "NONE" ]]; then
+            echo "User ${ACTOR} is a non-first-time PR author; allowing /review rerun."
+            exit 0
+          fi
+
+          echo "::error::User ${ACTOR} does not have sufficient access. Only write/maintain/admin users or non-first-time PR authors can trigger /review rerun."
+          exit 1
+
+      - name: Checkout repository scripts
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Determine rerun eligibility and apply label
+        id: rerun
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          .github/scripts/Resolve-RerunEligibility.ps1 `
+            -Owner '${{ github.repository_owner }}' `
+            -Repo '${{ github.event.repository.name }}' `
+            -PRNumber ${{ github.event.issue.number }} `
+            -CurrentCommentId ${{ github.event.comment.id }} `
+            -ApplyLabel
+
+      - name: Summarize rerun decision
+        shell: pwsh
+        run: |
+          "### /review rerun" >> $env:GITHUB_STEP_SUMMARY
+          "Eligible: ${{ steps.rerun.outputs.eligible }}" >> $env:GITHUB_STEP_SUMMARY
+          "Reason: ${{ steps.rerun.outputs.reason }}" >> $env:GITHUB_STEP_SUMMARY
+          "Label: ${{ steps.rerun.outputs.label }}" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Hide the /review rerun command comment as resolved
+        if: ${{ !cancelled() && github.event_name == 'issue_comment' && steps.auth.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
+        run: |
+          # Always collapse the /review rerun command comment once we reach this step: the
+          # actor is authorized (the permission gate above already passed) and the command was
+          # recognized, so the comment is hidden regardless of the eligibility outcome
+          # (eligible OR ineligible) to keep the conversation decluttered no matter the result.
+          #
+          # We MINIMIZE (hide as resolved) rather than delete: the rerun scanner replays the
+          # PR's REST comment history to reconstruct rerun state (Resolve-RerunEligibility.ps1 /
+          # Query-RerunReadyPRs.ps1 / Get-LatestRerunCommentBefore). It keys on comment id, body
+          # and created_at — never on isMinimized — and minimized comments are still returned by
+          # the REST list endpoint, so collapsing them is transparent to the scanner. Deleting
+          # would erase that durable checkpoint and re-qualify unchanged commits. A failed hide
+          # must never fail the job.
+          if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
+            echo "Hid /review rerun command comment ${COMMENT_NODE_ID} as resolved"
+          else
+            echo "::warning::Could not hide /review rerun command comment ${COMMENT_NODE_ID}"
           fi
 
   trigger-review:
     needs: match
-    if: needs.match.outputs.matched == 'true'
+    if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'review'
     runs-on: ubuntu-latest
     concurrency:
       group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}
@@ -67,9 +175,11 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      pull-requests: read
+      issues: write
+      pull-requests: write
     steps:
       - name: Check actor permission
+        id: auth
         if: github.event_name == 'issue_comment'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -113,11 +223,23 @@ jobs:
             set -- ${ARGS}
             while [ $# -gt 0 ]; do
               case "$1" in
+                --branch=*|-b=*)
+                  PIPELINE_REF="${1#*=}"
+                  ;;
                 --branch|-b)
                   shift
                   if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
                     PIPELINE_REF="$1"
                   fi
+                  ;;
+                --platform=*|-p=*)
+                  CANDIDATE=$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')
+                  for p in ${VALID_PLATFORMS}; do
+                    if [ "${CANDIDATE}" = "${p}" ]; then
+                      PLATFORM="${p}"
+                      break
+                    fi
+                  done
                   ;;
                 --platform|-p)
                   shift
@@ -145,6 +267,9 @@ jobs:
             done
           fi
 
+          # The AzDO payload adds refs/heads/, so accept either branch names or
+          # fully-qualified refs/heads/<branch> input without double-prefixing.
+          PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's|^refs/heads/||')
           # Sanitize ref to valid git ref characters only
           PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\-]//g')
           # Reject path traversal, empty segments, and leading /
@@ -183,7 +308,46 @@ jobs:
           echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
           echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Checkout repository scripts
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set review in-progress lock
+        id: review_lock
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+        run: |
+          . .github/scripts/shared/Update-AgentLabels.ps1
+          $labels = Get-AgentLabels -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
+          if ($labels -contains 's/agent-review-in-progress') {
+            if (Test-AgentReviewInProgressIsStale -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
+              Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
+            } else {
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
+              "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
+              exit 0
+            }
+          }
+
+          $locked = Set-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
+          if (-not $locked) {
+            throw "Failed to apply s/agent-review-in-progress to PR #$($env:PR_NUMBER)."
+          }
+          if ($labels -contains 's/agent-ready-for-rerun') {
+            if (Remove-Label -PRNumber $env:PR_NUMBER -LabelName 's/agent-ready-for-rerun' -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
+              Write-Host "  ✅ Removed stale queue label: s/agent-ready-for-rerun"
+            } else {
+              Write-Host "  ⚠️  Could not remove stale queue label: s/agent-ready-for-rerun" -ForegroundColor Yellow
+            }
+          }
+          "locked=false" >> $env:GITHUB_OUTPUT
+
       - name: Infer platform
+        if: steps.review_lock.outputs.locked != 'true'
         id: infer
         env:
           GH_TOKEN: ${{ github.token }}
@@ -226,6 +390,7 @@ jobs:
           echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
 
       - name: Get OIDC Token
+        if: steps.review_lock.outputs.locked != 'true'
         id: oidc
         run: |
           OIDC_TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
@@ -239,6 +404,7 @@ jobs:
           echo "oidc_token=${OIDC_TOKEN}" >> "$GITHUB_OUTPUT"
 
       - name: Exchange for AzDO Token
+        if: steps.review_lock.outputs.locked != 'true'
         id: token
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
@@ -262,6 +428,8 @@ jobs:
           echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
 
       - name: Trigger maui-copilot pipeline
+        id: trigger_azdo
+        if: steps.review_lock.outputs.locked != 'true'
         env:
           AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
@@ -300,4 +468,36 @@ jobs:
             echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
             echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
             exit 1
+          fi
+
+      - name: Clear review lock on trigger failure
+        if: always() && steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome != 'success'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+        run: |
+          . .github/scripts/shared/Update-AgentLabels.ps1
+          Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
+
+      - name: Hide the /review command comment as resolved
+        if: ${{ !cancelled() && github.event_name == 'issue_comment' && steps.auth.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
+        run: |
+          # Always collapse the /review command comment once the actor is authorized
+          # (steps.auth succeeded) and the command was recognized — no matter the trigger
+          # outcome, including a lock-skip (locked == 'true') or a failed AzDO trigger.
+          # !cancelled() lets this run even when an upstream step failed; the steps.auth gate
+          # still keeps an unauthorized commenter's comment fully visible.
+          #
+          # We MINIMIZE (hide as resolved) rather than delete so the command — and its
+          # --branch/--platform options — survives in the REST comment history that the rerun
+          # scanner replays. Minimized comments are still returned by the REST list endpoint;
+          # only collapsed in the web UI. A failed hide must never fail the review trigger.
+          if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
+            echo "Hid /review command comment ${COMMENT_NODE_ID} as resolved"
+          else
+            echo "::warning::Could not hide /review command comment ${COMMENT_NODE_ID}"
           fi

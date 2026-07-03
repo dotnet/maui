@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
@@ -31,6 +32,12 @@ namespace Microsoft.Maui.Controls.Xaml
 		/// Gets or sets a parameter to pass to the converter.
 		/// </summary>
 		public object ConverterParameter { get; set; }
+
+		/// <summary>
+		/// Gets or sets the culture information used by the converter.
+		/// </summary>
+		[TypeConverter(typeof(CultureInfoConverter))]
+		public CultureInfo ConverterCulture { get; set; }
 
 		/// <summary>
 		/// Gets or sets a format string to use when converting the bound value to a string.
@@ -70,6 +77,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			TypedBinding.Mode = Mode;
 			TypedBinding.Converter = Converter;
 			TypedBinding.ConverterParameter = ConverterParameter;
+			TypedBinding.ConverterCulture = ConverterCulture;
 			TypedBinding.StringFormat = StringFormat;
 			TypedBinding.Source = Source;
 			TypedBinding.UpdateSourceEventName = UpdateSourceEventName;
@@ -92,6 +100,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
 				{
+					ConverterCulture = ConverterCulture,
 					UpdateSourceEventName = UpdateSourceEventName,
 					FallbackValue = FallbackValue,
 					TargetNullValue = TargetNullValue,

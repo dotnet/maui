@@ -271,5 +271,105 @@ namespace Tests
 			var expected = $"a{Path.DirectorySeparatorChar}b{Path.DirectorySeparatorChar}c";
 			Assert.Equal(expected, result);
 		}
+
+		// ============================================================
+		// EnsureFileName
+		// ============================================================
+
+		[Theory]
+		[InlineData("photo.jpg", null, "photo.jpg")]
+		[InlineData("document.pdf", ".pdf", "document.pdf")]
+		[InlineData("readme.txt", ".doc", "readme.txt")]
+		public void EnsureFileName_SimpleNameWithExtension_ReturnsUnchanged(string displayName, string? extension, string expected)
+		{
+			var result = FileSystemUtils.EnsureFileName(displayName, extension);
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData("screenshot_12345", ".png", "screenshot_12345.png")]
+		[InlineData("download", ".pdf", "download.pdf")]
+		[InlineData("photo", "jpg", "photo.jpg")]
+		public void EnsureFileName_NoExtension_AppendsExtension(string displayName, string extension, string expected)
+		{
+			var result = FileSystemUtils.EnsureFileName(displayName, extension);
+			Assert.Equal(expected, result);
+		}
+
+		[Fact]
+		public void EnsureFileName_NoExtensionAndNoKnownExtension_ReturnsAsIs()
+		{
+			var result = FileSystemUtils.EnsureFileName("screenshot_12345", null);
+			Assert.Equal("screenshot_12345", result);
+		}
+
+		[Theory]
+		[InlineData("/storage/emulated/0/DCIM/photo.jpg", null, "photo.jpg")]
+		[InlineData("/data/user/0/com.app/files/doc.pdf", ".pdf", "doc.pdf")]
+		[InlineData("some/relative/path/image.png", null, "image.png")]
+		public void EnsureFileName_PathWithDirectories_StripsToFilename(string displayName, string? extension, string expected)
+		{
+			var result = FileSystemUtils.EnsureFileName(displayName, extension);
+			Assert.Equal(expected, result);
+		}
+
+		[Fact]
+		public void EnsureFileName_PathWithDirectoriesNoExtension_AppendsExtension()
+		{
+			var result = FileSystemUtils.EnsureFileName("/storage/emulated/0/DCIM/screenshot", ".png");
+			Assert.Equal("screenshot.png", result);
+		}
+
+		[Fact]
+		public void EnsureFileName_Null_GeneratesGuid()
+		{
+			var result = FileSystemUtils.EnsureFileName(null, ".jpg");
+			Assert.NotNull(result);
+			Assert.EndsWith(".jpg", result, StringComparison.Ordinal);
+			// GUID "N" format is 32 hex chars; with extension it's 32 + ".jpg" = 36
+			Assert.True(result.Length > 4);
+		}
+
+		[Theory]
+		[InlineData("")]
+		[InlineData("   ")]
+		public void EnsureFileName_EmptyOrWhitespace_GeneratesGuid(string displayName)
+		{
+			var result = FileSystemUtils.EnsureFileName(displayName, ".pdf");
+			Assert.NotNull(result);
+			Assert.EndsWith(".pdf", result, StringComparison.Ordinal);
+			Assert.True(result.Length > 4);
+		}
+
+		[Fact]
+		public void EnsureFileName_TrailingSeparator_GeneratesGuid()
+		{
+			// Path.GetFileName("foo/") returns "" — guard against that
+			var result = FileSystemUtils.EnsureFileName("foo/", ".txt");
+			Assert.NotNull(result);
+			Assert.EndsWith(".txt", result, StringComparison.Ordinal);
+			Assert.True(result.Length > 4);
+		}
+
+		[Theory]
+		[InlineData(".")]
+		[InlineData("..")]
+		public void EnsureFileName_DotOrDotDot_GeneratesGuid(string displayName)
+		{
+			// "." and ".." would resolve to parent dirs in Java.IO.File(parent, child)
+			var result = FileSystemUtils.EnsureFileName(displayName, ".jpg");
+			Assert.NotNull(result);
+			Assert.EndsWith(".jpg", result, StringComparison.Ordinal);
+			Assert.NotEqual(".", result);
+			Assert.NotEqual("..", result);
+			Assert.True(result.Length > 4);
+		}
+
+		[Fact]
+		public void EnsureFileName_EmptyExtension_DoesNotAppend()
+		{
+			var result = FileSystemUtils.EnsureFileName("noext", "");
+			Assert.Equal("noext", result);
+		}
 	}
 }

@@ -27,6 +27,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			var shell = await CreateShellAsync(shell =>
 			{
+				Shell.SetTabBarBackgroundColor(shell, Colors.White);
+				Shell.SetTabBarForegroundColor(shell, Colors.Black);
+				Shell.SetTabBarTitleColor(shell, Colors.Black);
+
 				shell.Items.Add(new TabBar()
 				{
 					Items =
@@ -139,7 +143,47 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertEventually(() =>
 					NativeTabBarItemHasBadgeColors(tab, badgeColor, null) &&
-					!NativeTabBarItemHasBadgeAppearanceTextColor(tab, badgeTextColor), timeout: 2000);
+					!NativeTabBarItemHasAnyBadgeTextColor(tab, badgeTextColor), timeout: 2000);
+			});
+		}
+
+		[Fact(DisplayName = "Shell Tab Badge Colors Stay Independent Across Selected Tabs")]
+		public async Task ShellTabBadgeColorsStayIndependentAcrossSelectedTabs()
+		{
+			SetupBuilder();
+
+			var tab1BadgeColor = Colors.Blue;
+			var tab2BadgeColor = Colors.Red;
+			var tab1 = CreateBadgeTab("Tab1", "white_tab.png", tab1BadgeColor, Colors.White);
+			var tab2 = CreateBadgeTab("Tab2", "white_tab.png", tab2BadgeColor, Colors.White);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						tab1,
+						tab2
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await AssertEventually(() =>
+					NativeTabBarItemHasBadgeColors(tab1, tab1BadgeColor, Colors.White) &&
+					NativeTabBarItemHasBadgeColors(tab2, tab2BadgeColor, Colors.White) &&
+					!NativeTabBarItemHasBadgeAppearanceColors(tab1) &&
+					!NativeTabBarItemHasBadgeAppearanceColors(tab2), timeout: 2000);
+
+				await InvokeOnMainThreadAsync(() => shell.CurrentItem.CurrentItem = tab2);
+				await AssertEventually(() =>
+					NativeTabBarItemHasBadgeColors(tab1, tab1BadgeColor, Colors.White) &&
+					NativeTabBarItemHasBadgeColors(tab2, tab2BadgeColor, Colors.White) &&
+					!NativeTabBarItemHasBadgeAppearanceColors(tab1) &&
+					!NativeTabBarItemHasBadgeAppearanceColors(tab2), timeout: 2000);
 			});
 		}
 
@@ -198,90 +242,69 @@ namespace Microsoft.Maui.DeviceTests
 			if (tabBarItem is null || tabBarItem.BadgeValue != item.BadgeText)
 				return false;
 
-			var badgeAttributes = tabBarItem.GetBadgeTextAttributes(UIControlState.Normal);
-
 			if (!ColorComparison.ARGBEquivalent(tabBarItem.BadgeColor, badgeColor.ToPlatform()))
 				return false;
 
-			if (badgeTextColor is not null && !ColorComparison.ARGBEquivalent(badgeAttributes?.ForegroundColor, badgeTextColor.ToPlatform()))
+			if (badgeTextColor is not null && !NativeTabBarItemHasBadgeTextColor(item, badgeTextColor))
 			{
 				return false;
 			}
 
-			return NativeTabBarItemHasBadgeAppearance(tabBarItem, badgeColor, badgeTextColor);
+			return true;
 		}
 
-		bool NativeTabBarItemHasBadgeAppearance(UITabBarItem tabBarItem, Color badgeColor, Color badgeTextColor)
+		bool NativeTabBarItemHasAnyBadgeTextColor(ShellSection item, Color badgeTextColor)
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
-				return true;
+			var tabBarItem = GetRendererTabBarItem(item);
+			if (tabBarItem is null)
+				return false;
 
-			return TabBarAppearanceHasBadgeColors(tabBarItem.StandardAppearance, badgeColor, badgeTextColor) &&
-				TabBarAppearanceHasBadgeColors(tabBarItem.ScrollEdgeAppearance, badgeColor, badgeTextColor);
+			return BadgeTextAttributesHaveColor(tabBarItem, UIControlState.Normal, badgeTextColor) ||
+				BadgeTextAttributesHaveColor(tabBarItem, UIControlState.Selected, badgeTextColor) ||
+				BadgeTextAttributesHaveColor(tabBarItem, UIControlState.Disabled, badgeTextColor) ||
+				BadgeTextAttributesHaveColor(tabBarItem, UIControlState.Focused, badgeTextColor);
 		}
 
-		bool NativeTabBarItemHasBadgeAppearanceTextColor(ShellSection item, Color badgeTextColor)
+		bool NativeTabBarItemHasBadgeTextColor(ShellSection item, Color badgeTextColor)
+		{
+			var tabBarItem = GetRendererTabBarItem(item);
+			if (tabBarItem is null)
+				return false;
+
+			return BadgeTextAttributesHaveColor(tabBarItem, UIControlState.Normal, badgeTextColor) &&
+				BadgeTextAttributesHaveColor(tabBarItem, UIControlState.Selected, badgeTextColor) &&
+				BadgeTextAttributesHaveColor(tabBarItem, UIControlState.Disabled, badgeTextColor) &&
+				BadgeTextAttributesHaveColor(tabBarItem, UIControlState.Focused, badgeTextColor);
+		}
+
+		bool BadgeTextAttributesHaveColor(UITabBarItem tabBarItem, UIControlState state, Color badgeTextColor) =>
+			ColorComparison.ARGBEquivalent(tabBarItem.GetBadgeTextAttributes(state)?.ForegroundColor, badgeTextColor.ToPlatform());
+
+		bool NativeTabBarItemHasBadgeAppearanceColors(ShellSection item)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
 				return false;
 
 			var tabBarItem = GetRendererTabBarItem(item);
 			return tabBarItem is not null &&
-				(TabBarAppearanceHasBadgeTextColor(tabBarItem.StandardAppearance, badgeTextColor) ||
-				TabBarAppearanceHasBadgeTextColor(tabBarItem.ScrollEdgeAppearance, badgeTextColor));
+				(TabBarAppearanceHasBadgeColors(tabBarItem.StandardAppearance) ||
+				TabBarAppearanceHasBadgeColors(tabBarItem.ScrollEdgeAppearance));
 		}
 
-		bool TabBarAppearanceHasBadgeColors(UITabBarAppearance appearance, Color badgeColor, Color badgeTextColor)
-		{
-			if (appearance is null)
-				return false;
+		bool TabBarAppearanceHasBadgeColors(UITabBarAppearance appearance) =>
+			appearance is not null &&
+			(TabBarItemAppearanceHasBadgeColors(appearance.StackedLayoutAppearance) ||
+			TabBarItemAppearanceHasBadgeColors(appearance.InlineLayoutAppearance) ||
+			TabBarItemAppearanceHasBadgeColors(appearance.CompactInlineLayoutAppearance));
 
-			return TabBarItemAppearanceHasBadgeColors(appearance.StackedLayoutAppearance, badgeColor, badgeTextColor) &&
-				TabBarItemAppearanceHasBadgeColors(appearance.InlineLayoutAppearance, badgeColor, badgeTextColor) &&
-				TabBarItemAppearanceHasBadgeColors(appearance.CompactInlineLayoutAppearance, badgeColor, badgeTextColor);
-		}
+		bool TabBarItemAppearanceHasBadgeColors(UITabBarItemAppearance appearance) =>
+			TabBarItemStateAppearanceHasBadgeColors(appearance.Normal) ||
+			TabBarItemStateAppearanceHasBadgeColors(appearance.Selected) ||
+			TabBarItemStateAppearanceHasBadgeColors(appearance.Disabled) ||
+			TabBarItemStateAppearanceHasBadgeColors(appearance.Focused);
 
-		bool TabBarItemAppearanceHasBadgeColors(UITabBarItemAppearance appearance, Color badgeColor, Color badgeTextColor)
-		{
-			return TabBarItemStateAppearanceHasBadgeColors(appearance.Normal, badgeColor, badgeTextColor) &&
-				TabBarItemStateAppearanceHasBadgeColors(appearance.Selected, badgeColor, badgeTextColor) &&
-				TabBarItemStateAppearanceHasBadgeColors(appearance.Disabled, badgeColor, badgeTextColor) &&
-				TabBarItemStateAppearanceHasBadgeColors(appearance.Focused, badgeColor, badgeTextColor);
-		}
-
-		bool TabBarAppearanceHasBadgeTextColor(UITabBarAppearance appearance, Color badgeTextColor)
-		{
-			return appearance is not null &&
-				(TabBarItemAppearanceHasBadgeTextColor(appearance.StackedLayoutAppearance, badgeTextColor) ||
-				TabBarItemAppearanceHasBadgeTextColor(appearance.InlineLayoutAppearance, badgeTextColor) ||
-				TabBarItemAppearanceHasBadgeTextColor(appearance.CompactInlineLayoutAppearance, badgeTextColor));
-		}
-
-		bool TabBarItemAppearanceHasBadgeTextColor(UITabBarItemAppearance appearance, Color badgeTextColor)
-		{
-			return TabBarItemStateAppearanceHasBadgeTextColor(appearance.Normal, badgeTextColor) ||
-				TabBarItemStateAppearanceHasBadgeTextColor(appearance.Selected, badgeTextColor) ||
-				TabBarItemStateAppearanceHasBadgeTextColor(appearance.Disabled, badgeTextColor) ||
-				TabBarItemStateAppearanceHasBadgeTextColor(appearance.Focused, badgeTextColor);
-		}
-
-		bool TabBarItemStateAppearanceHasBadgeColors(UITabBarItemStateAppearance appearance, Color badgeColor, Color badgeTextColor)
-		{
-			if (!ColorComparison.ARGBEquivalent(appearance.BadgeBackgroundColor, badgeColor.ToPlatform()))
-				return false;
-
-			var foregroundColor = appearance.WeakBadgeTextAttributes?[UIStringAttributeKey.ForegroundColor] as UIColor;
-
-			if (badgeTextColor is null)
-				return true;
-
-			return ColorComparison.ARGBEquivalent(foregroundColor, badgeTextColor.ToPlatform());
-		}
-
-		bool TabBarItemStateAppearanceHasBadgeTextColor(UITabBarItemStateAppearance appearance, Color badgeTextColor)
-		{
-			var foregroundColor = appearance.WeakBadgeTextAttributes?[UIStringAttributeKey.ForegroundColor] as UIColor;
-			return ColorComparison.ARGBEquivalent(foregroundColor, badgeTextColor.ToPlatform());
-		}
+		bool TabBarItemStateAppearanceHasBadgeColors(UITabBarItemStateAppearance appearance) =>
+			appearance.BadgeBackgroundColor is not null ||
+			appearance.WeakBadgeTextAttributes?[UIStringAttributeKey.ForegroundColor] is not null;
 	}
 }

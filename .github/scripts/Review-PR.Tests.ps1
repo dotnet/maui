@@ -9,7 +9,7 @@
                                 when TRX is missing)
 
     These functions sit on the critical path of STEP 3 (UI Test Execution
-    Results in the AI summary comment). A regression here can silently
+    Results in the AI summary review). A regression here can silently
     misrender per-test counts (e.g. "1/1 (1 ❌)" instead of "75/619 (544 ❌)")
     so they're worth pinning with focused tests.
 

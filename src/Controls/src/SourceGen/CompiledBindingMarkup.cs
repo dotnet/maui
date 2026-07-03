@@ -92,6 +92,7 @@ internal struct CompiledBindingMarkup
 			propertyFlags |= BindingPropertyFlags.FallbackValue;
 		if (_node.HasProperty("TargetNullValue"))
 			propertyFlags |= BindingPropertyFlags.TargetNullValue;
+		var hasConverterCulture = !isTemplateBinding && _node.HasProperty("ConverterCulture");
 
 		//Generate the complete inline binding creation method
 		using var stringWriter = new StringWriter();
@@ -199,7 +200,7 @@ internal struct CompiledBindingMarkup
 		code.Indent--;
 
 		// Object initializer if any properties are set
-		if (propertyFlags != BindingPropertyFlags.None)
+		if (propertyFlags != BindingPropertyFlags.None || hasConverterCulture)
 		{
 			code.WriteLine();
 			code.WriteLine("{");
@@ -211,6 +212,8 @@ internal struct CompiledBindingMarkup
 				code.WriteLine("Converter = extension.Converter,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.ConverterParameter))
 				code.WriteLine("ConverterParameter = extension.ConverterParameter,");
+			if (hasConverterCulture)
+				code.WriteLine("ConverterCulture = extension.ConverterCulture,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.StringFormat))
 				code.WriteLine("StringFormat = extension.StringFormat,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.Source))

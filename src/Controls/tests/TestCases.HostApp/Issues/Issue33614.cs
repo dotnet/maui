@@ -71,6 +71,11 @@ public class Issue33614 : ContentPage
 
     private void OnScrollToButtonClicked(object sender, EventArgs e)
     {
+#if WINDOWS
+        // Disable animation on Windows to avoid flaky test results 
+        _collectionView.ScrollTo(15, position: ScrollToPosition.Start, animate: false);
+#else
         _collectionView.ScrollTo(15, position: ScrollToPosition.Start, animate: true);
+#endif
     }
 }

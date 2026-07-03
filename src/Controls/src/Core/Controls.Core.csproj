@@ -61,6 +61,10 @@
       Include="..\..\..\Controls\src\BindingSourceGen\Controls.BindingSourceGen.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false" />
+    <ProjectReference
+      Include="..\..\..\Core\src\HybridWebViewSourceGen\Core.HybridWebViewSourceGen.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

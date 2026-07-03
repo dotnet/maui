@@ -99,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Platform\iOS\CALayerAutosizeObserver.cs" />
+    <Compile Remove="HybridWebViewSourceGen\**" />
   </ItemGroup>
 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">

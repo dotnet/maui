@@ -309,6 +309,9 @@ namespace Microsoft.Maui.Controls
 			shellSection.SetBinding(TitleProperty, static (BaseShellItem item) => item.Title, BindingMode.OneWay, source: shellContent);
 			shellSection.SetBinding(IconProperty, static (BaseShellItem item) => item.Icon, BindingMode.OneWay, source: shellContent);
 			shellSection.SetBinding(FlyoutIconProperty, static (BaseShellItem item) => item.FlyoutIcon, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(BadgeTextProperty, static (BaseShellItem item) => item.BadgeText, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(BadgeColorProperty, static (BaseShellItem item) => item.BadgeColor, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(BadgeTextColorProperty, static (BaseShellItem item) => item.BadgeTextColor, BindingMode.OneWay, source: shellContent);
 
 			return shellSection;
 		}
