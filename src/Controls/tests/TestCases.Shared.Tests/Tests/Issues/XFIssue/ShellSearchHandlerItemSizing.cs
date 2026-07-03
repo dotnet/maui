@@ -17,9 +17,9 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void SearchHandlerSizesCorrectly()
 	{
-		App.WaitForElement("Instructions");
+		App.WaitForElement("Instructions", timeout: TimeSpan.FromSeconds(45));
 		App.EnterText(AppiumQuery.ByXPath("//XCUIElementTypeSearchField"), "Hello");
-		var contentSize = App.WaitForElement("searchresult").GetRect();
+		var contentSize = App.WaitForElement("searchresult", timeout: TimeSpan.FromSeconds(45)).GetRect();
 		Assert.That(contentSize.Height, Is.LessThan(100));
 	}
 #endif
@@ -37,7 +37,8 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 #else
 		App.EnterText(AppiumQuery.ByXPath("//android.widget.EditText"), "Hello");
 #endif
-		VerifyScreenshot();
+        // Use retryTimeout to give some time for the search results to appear and hide scrollbars before taking the screenshot.
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

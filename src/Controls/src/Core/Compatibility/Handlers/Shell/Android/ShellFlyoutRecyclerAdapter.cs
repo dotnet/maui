@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void OnViewRecycled(Java.Lang.Object holder)
 		{
-			if (holder is ElementViewHolder evh)
+			if (holder is ElementViewHolder evh && _listItems is not null)
 			{
 				// only clear out the Element if the item has been removed
 				bool found = false;
@@ -139,6 +139,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var container = new ContainerView(parent.Context, content, MauiContext);
 			container.MatchWidth = true;
+
+			// In Auto or Disabled scroll modes, RecyclerView passes an EXACTLY heightMeasureSpec,
+			// causing items to be measured to the full RecyclerView height.
+			// Setting MeasureHeight = true forces UNSPECIFIED mode, allowing items to use their natural height (~48dp).
+			// This enables RecyclerView to detect when scrolling is needed and to create all required view holders.
+			if (_shellContext.Shell.FlyoutVerticalScrollMode != ScrollMode.Enabled)
+			{
+				container.MeasureHeight = true;
+			}
+
 			container.LayoutParameters = new LP(LP.MatchParent, LP.WrapContent);
 			linearLayout.AddView(container);
 
@@ -198,7 +208,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -212,8 +224,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
+			if (_shellContext is null)
+			{
+				return;
+			}
+
 			if (Shell is IShellController scc)
+			{
 				scc.FlyoutItemsChanged -= OnFlyoutItemsChanged;
+			}
 
 			_listItems = null;
 			_selectedCallback = null;

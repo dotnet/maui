@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:MapViewModel"
+             x:Class="Maui.Controls.Sample.MapControlMainPage"
+             Title="MapControlPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+       </ContentPage.ToolbarItems>
+
+       <StackLayout Padding="20"
+                    Spacing="20">
+              <maps:Map x:Name="TestMap"
+                        AutomationId="MapView"
+                        IsShowingUser="{Binding IsShowingUser}"
+                        IsScrollEnabled="{Binding IsScrollEnabled}"
+                        IsTrafficEnabled="{Binding IsTrafficEnabled}"
+                        IsZoomEnabled="{Binding IsZoomEnabled}"
+                        IsVisible="{Binding IsVisible}"
+                        MapType="{Binding MapType}"
+                        MapClicked="OnMapClicked"
+                        VerticalOptions="FillAndExpand"
+                        HorizontalOptions="FillAndExpand"/>
+              <!-- Map Clicked and Marker Clicked Event Labels -->
+              <StackLayout Spacing="2"
+                           Padding="10,0,10,0">
+                     <Label x:Name="MapClickedLabel"
+                            Text="Map Clicked: "
+                            FontSize="10"
+                            TextColor="DarkBlue"
+                            AutomationId="MapClickedLabel"/>
+                     <Label x:Name="MarkerClickedLabel"
+                            Text="Marker Clicked: "
+                            FontSize="10"
+                            TextColor="DarkBlue"
+                            AutomationId="MarkerClickedLabel"/>
+                     <Label Text="{Binding ItemsSource, StringFormat='ItemsSource: {0}'}"
+                            FontSize="10"
+                            TextColor="DarkGreen"/>
+                     <Label Text="{Binding ItemTemplate, StringFormat='ItemTemplate: {0}'}"
+                            FontSize="10"
+                            TextColor="DarkGreen"/>
+                     <Label Text="{Binding ItemTemplateSelector, StringFormat='ItemTemplateSelector: {0}'}"
+                            FontSize="10"
+                            TextColor="DarkGreen"/>
+                     <Label Text="{Binding VisibleRegion.LatitudeDegrees, StringFormat='VisibleRegion LatitudeDegrees: {0.00000000}'}"
+                            FontSize="10"
+                            AutomationId="VisibleRegionLatitudeDegrees"
+                            TextColor="DarkGreen"/>
+                     <Label Text="{Binding VisibleRegion.LongitudeDegrees, StringFormat='VisibleRegion LongitudeDegrees: {0.00000000}'}"
+                            FontSize="10"
+                            AutomationId="VisibleRegionLongitudeDegrees"
+                            TextColor="DarkGreen"/>
+              </StackLayout>
+       </StackLayout>
+</ContentPage>

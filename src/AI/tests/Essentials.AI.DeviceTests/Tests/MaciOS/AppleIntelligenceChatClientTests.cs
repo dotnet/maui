@@ -4,34 +4,34 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientCancellationTests : ChatClientCancellationTestsBase<AppleIntelligenceChatClient>
 {
 }
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientFunctionCallingTestsBase : ChatClientFunctionCallingTestsBase<AppleIntelligenceChatClient>
 {
 }
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientGetServiceTests : ChatClientGetServiceTestsBase<AppleIntelligenceChatClient>
 {
 	protected override string ExpectedProviderName => "apple";
 	protected override string ExpectedDefaultModelId => "apple-intelligence";
 }
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientInstantiationTests : ChatClientInstantiationTestsBase<AppleIntelligenceChatClient>
 {
 }
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientMessagesTests : ChatClientMessagesTestsBase<AppleIntelligenceChatClient>
 {
 }
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientOptionsTests : ChatClientOptionsTestsBase<AppleIntelligenceChatClient>
 {
 	/// <summary>
@@ -86,17 +86,17 @@ public class AppleIntelligenceChatClientOptionsTests : ChatClientOptionsTestsBas
 	}
 }
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientResponseTests : ChatClientResponseTestsBase<AppleIntelligenceChatClient>
 {
 }
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientStreamingTests : ChatClientStreamingTestsBase<AppleIntelligenceChatClient>
 {
 }
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientJsonSchemaTests : ChatClientJsonSchemaTestsBase<AppleIntelligenceChatClient>
 {
 	[Fact(Skip = "Apple Intelligence requires a JSON schema for structured responses, so this test is not applicable.")]

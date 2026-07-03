@@ -1,9 +1,16 @@
 name: Add Dogfooding Comment
 
 on:
-  # Trigger when the maui-pr build check completes
-  check_run:
-    types: [completed]
+  # Use pull_request_target to run in the context of the base branch
+  # This allows commenting on PRs from forks
+  # Note: check_run trigger doesn't work because Azure DevOps check runs
+  # don't populate the pull_requests[] field, so we can't get the PR number.
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+    branches:
+      - 'main'
+      - 'net*'
+      - 'release/**'
 
   # Allow manual triggering
   workflow_dispatch:
@@ -15,23 +22,13 @@ on:
 
 # Ensure only one instance runs at a time per PR to prevent duplicate comments
 concurrency:
-  group: dogfood-comment-${{ github.event.check_run.pull_requests[0].number || github.event.inputs.pr_number || 'unknown' }}
+  group: dogfood-comment-${{ github.event.pull_request.number || github.event.inputs.pr_number }}
   cancel-in-progress: true
 
 jobs:
   add-dogfood-comment:
-    # Only run on the dotnet org, for the maui-pr check, when it completes successfully
-    if: |
-      github.repository_owner == 'dotnet' && 
-      (
-        github.event_name == 'workflow_dispatch' ||
-        (
-          github.event_name == 'check_run' &&
-          github.event.check_run.name == 'maui-pr (Pack .NET MAUI Pack Windows)' &&
-          github.event.check_run.conclusion == 'success' &&
-          github.event.check_run.pull_requests[0] != null
-        )
-      )
+    # Only run on the dotnet org to avoid running on forks
+    if: ${{ github.repository_owner == 'dotnet' }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -41,8 +38,8 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
-            // Get PR number from either the check_run event or manual input
-            const prNumber = context.payload.check_run?.pull_requests?.[0]?.number || context.payload.inputs?.pr_number;
+            // Get PR number from either the PR event or manual input
+            const prNumber = context.payload.pull_request?.number || context.payload.inputs?.pr_number;
 
             const bashScript = 'https://raw.githubusercontent.com/dotnet/maui/main/eng/scripts/get-maui-pr.sh';
             const psScript = 'https://raw.githubusercontent.com/dotnet/maui/main/eng/scripts/get-maui-pr.ps1';

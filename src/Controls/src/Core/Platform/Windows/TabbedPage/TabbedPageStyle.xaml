@@ -7,10 +7,18 @@
             x:Name="navViewItem"
             Content="{Binding Content}"
             Background="{Binding Background}" 
+            IsEnabled="{Binding IsEnabled}"
             IsSelected="{Binding IsSelected, Mode=TwoWay}"
             MenuItemsSource="{Binding MenuItemsSource}"
-            Icon="{Binding Icon}"
-            />
+            Icon="{Binding Icon}">
+            <NavigationViewItem.InfoBadge>
+                <InfoBadge
+                    Value="{Binding BadgeValue}"
+                    Background="{Binding BadgeBackground}"
+                    Foreground="{Binding BadgeForeground}"
+                    Visibility="{Binding BadgeVisibility}" />
+            </NavigationViewItem.InfoBadge>
+        </NavigationViewItem>
     </DataTemplate>
 
 

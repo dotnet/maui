@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Handlers
 			_proxy.Connect(this, VirtualView, platformView);
 
 			base.ConnectHandler(platformView);
+
+			// Prevent UIKit double safe-area inset (#34551)
+			platformView.InsetsLayoutMarginsFromSafeArea = false;
 		}
 
 		protected override void DisconnectHandler(MauiSearchBar platformView)
@@ -41,7 +44,10 @@ namespace Microsoft.Maui.Handlers
 			if (double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint))
 			{
 				PlatformView.SizeToFit();
-				return new Size(PlatformView.Frame.Width, PlatformView.Frame.Height);
+
+				double constrainedWidth = ViewHandlerExtensions.ResolveConstraints(PlatformView.Frame.Width, VirtualView.Width, VirtualView.MinimumWidth, VirtualView.MaximumWidth);
+				double constrainedHeight = ViewHandlerExtensions.ResolveConstraints(PlatformView.Frame.Height, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
+				return new Size(constrainedWidth, constrainedHeight);
 			}
 
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
@@ -136,6 +142,18 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsReadOnly(searchBar);
 		}
 
+		// make it public in .net 11
+		internal static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateCursorPosition(searchBar);
+		}
+
+		// make it public in .net 11
+		internal static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateSelectionLength(searchBar);
+		}
+
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButton(searchBar);
@@ -182,6 +200,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.ShouldChangeTextInRange += ShouldChangeText;
 				platformView.OnEditingStarted += OnEditingStarted;
 				platformView.OnEditingStopped += OnEditingStopped;
+				platformView.SelectionChanged += OnSelectionChanged;
 
 				if (handler.QueryEditor is UITextField editor)
 					editor.EditingChanged += OnEditingChanged;
@@ -199,6 +218,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.OnMovedToWindow -= OnMovedToWindow;
 				platformView.OnEditingStarted -= OnEditingStarted;
 				platformView.OnEditingStopped -= OnEditingStopped;
+				platformView.SelectionChanged -= OnSelectionChanged;
 
 				if (editor is not null)
 					editor.EditingChanged -= OnEditingChanged;
@@ -252,7 +272,7 @@ namespace Microsoft.Maui.Handlers
 
 			void OnEditingChanged(object? sender, EventArgs e)
 			{
-				if (sender is UITextField textField && VirtualView is ISearchBar virtualView)
+				if (Handler?.QueryEditor is UITextField textField && VirtualView is ISearchBar virtualView)
 				{
 					virtualView.UpdateText(textField.Text);
 				}
@@ -260,6 +280,29 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is SearchBarHandler handler)
 				{
 					handler.UpdateCancelButtonVisibility();
+				}
+			}
+
+			void OnSelectionChanged(object? sender, EventArgs e)
+			{
+				if (Handler is SearchBarHandler handler && VirtualView is ISearchBar virtualView)
+				{
+					var editor = handler.QueryEditor;
+					if (editor != null && editor.SelectedTextRange != null && editor.IsFirstResponder)
+					{
+						var cursorPosition = editor.GetCursorPosition();
+						var selectedTextLength = editor.GetSelectedTextLength();
+
+						if (virtualView.CursorPosition != cursorPosition)
+						{
+							virtualView.CursorPosition = cursorPosition;
+						}
+
+						if (virtualView.SelectionLength != selectedTextLength)
+						{
+							virtualView.SelectionLength = selectedTextLength;
+						}
+					}
 				}
 			}
 

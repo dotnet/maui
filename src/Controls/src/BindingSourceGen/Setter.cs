@@ -73,6 +73,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 			IndexAccess indexAccess => indexAccess.Index switch
 			{
 				int numericIndex => $"{accessAccumulator}[{numericIndex}] = {assignedValueExpression};",
+				EnumIndex enumIndex => $"{accessAccumulator}[{enumIndex.FullyQualifiedEnumValue}] = {assignedValueExpression};",
 				string stringIndex => $"{accessAccumulator}[\"{stringIndex}\"] = {assignedValueExpression};",
 				_ => throw new NotSupportedException($"Unsupported index type: {indexAccess.Index.GetType()}"),
 			},

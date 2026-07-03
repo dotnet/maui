@@ -89,9 +89,11 @@ public class MemoryTests : ControlsHandlerTestBase
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
 				handlers.AddHandler<TabbedPage, TabbedRenderer>();
+				handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
 #else
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 				handlers.AddHandler<TabbedPage, TabbedViewHandler>();
+				handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
 #endif
 			});
 		});
@@ -99,11 +101,12 @@ public class MemoryTests : ControlsHandlerTestBase
 
 	[Theory("Pages Do Not Leak")]
 	[InlineData(typeof(ContentPage))]
-#if !ANDROID
 	[InlineData(typeof(NavigationPage))]
-	//https://github.com/dotnet/maui/issues/27411
-#endif
+	// Issue #27411 (partially) and #33918 have been fixed - NavigationPage no longer leaks on Android
 	[InlineData(typeof(TabbedPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ContentPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(NavigationPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(TabbedPage))]
 	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
@@ -149,6 +152,52 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
+
+	#if ANDROID
+	[Fact("FlyoutPage Detail Navigation Does Not Leak")]
+	public async Task FlyoutPageDetailNavigationDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+
+		var initialDetail = new NavigationPage(new ContentPage { Title = "Initial Detail" });
+
+		var flyoutPage = new FlyoutPage
+		{
+			Flyout = new ContentPage { Title = "Flyout" },
+			Detail = initialDetail
+		};
+
+		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				var detailPage = new ContentPage
+				{
+					Title = $"Detail {i}",
+					Content = new Label { Text = $"Content {i}" }
+				};
+				var navPage = new NavigationPage(detailPage);
+
+				flyoutPage.Detail = navPage;
+				flyoutPage.IsPresented = false;
+
+				await OnLoadedAsync(detailPage);
+
+				references.Add(new(detailPage));
+				references.Add(new(navPage));
+			}
+		});
+
+
+		// The last page will be alive and attached to the FlyoutPage
+		references.RemoveAt(references.Count - 1);
+		references.RemoveAt(references.Count - 1);
+
+		await AssertionExtensions.WaitForGC(references.ToArray());
+	}
+#endif
 
 	[Theory("Handler Does Not Leak")]
 	[InlineData(typeof(ActivityIndicator))]
@@ -303,7 +352,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #if IOS || MACCATALYST
 	//[InlineData(typeof(CollectionView2))] Fails, Check https://github.com/dotnet/maui/issues/29619
 #endif
-	public async Task CollectionViewHeaderFooterDoesntLeak(Type type)
+	public async Task CollectionViewHeaderFooterDoesntLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -374,7 +423,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(PointerGestureRecognizer))]
 	[InlineData(typeof(SwipeGestureRecognizer))]
 	[InlineData(typeof(TapGestureRecognizer))]
-	public async Task GestureDoesNotLeak(Type type)
+	public async Task GestureDoesNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -432,7 +481,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(ViewCell))]
 #pragma warning restore CS0618 // Type or member is obsolete
-	public async Task CellsDoNotLeak(Type type)
+	public async Task CellsDoNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 

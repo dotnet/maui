@@ -74,6 +74,15 @@ public sealed record IndexAccess(string DefaultMemberName, object Index, bool Is
 	}
 }
 
+/// <summary>
+/// Represents an enum value used as an index in a binding path.
+/// This is distinct from string indices because the generated code should not quote the value.
+/// </summary>
+public sealed record EnumIndex(string FullyQualifiedEnumValue)
+{
+	public override string ToString() => FullyQualifiedEnumValue;
+}
+
 public sealed record ConditionalAccess(IPathPart Part) : IPathPart
 {
 	public string? PropertyName => Part.PropertyName;

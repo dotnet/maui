@@ -119,7 +119,17 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				dialogFragment.Dismiss();
+				// When batch-dismissing modals (e.g., PopToRoot), use DismissNow() to
+				// remove the fragment synchronously. This prevents intermediate modals
+				// from briefly flashing on screen between sequential pops.
+				bool isBatchPopping = _window.Page is Shell shell
+					&& shell.CurrentItem?.CurrentItem?.IsPoppingModalStack == true;
+
+				if (isBatchPopping)
+					dialogFragment.DismissNow();
+				else
+					dialogFragment.Dismiss();
+
 				source.TrySetResult(modal);
 			}
 
@@ -495,6 +505,25 @@ namespace Microsoft.Maui.Controls.Platform
 					});
 
 					return handled || base.OnKeyUp(keyCode, e);
+				}
+
+				public override bool DispatchTouchEvent(MotionEvent? e)
+				{
+					if (e is null)
+					{
+						return false;
+					}
+
+					bool handled = base.DispatchTouchEvent(e);
+
+					// Modal dialogs have their own Android Window, so touch events don't
+					// reach the Activity's DispatchTouchEvent. Forward them to the MAUI
+					// Window so that HideSoftInputOnTappedChangedManager can detect taps
+					// and dismiss the keyboard when HideSoftInputOnTapped is enabled.
+					bool implHandled =
+						(Context.GetWindow() as IPlatformEventsListener)?.DispatchTouchEvent(e) == true;
+
+					return handled || implHandled;
 				}
 
 				sealed class CallBack : OnBackPressedCallback

@@ -1,4 +1,5 @@
 trigger:
+  batch: true
   branches:
     include:
     - main
@@ -109,7 +110,7 @@ parameters:
     default:
       name: AcesShared
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals $(AcesMacImageOverride)
   
   - name: androidPoolLinuxPublic
     type: object
@@ -123,7 +124,7 @@ parameters:
     default:
       name: AcesShared
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals $(AcesMacImageOverride)
   
   - name: windowsBuildPoolPublic
     type: object
@@ -167,12 +168,12 @@ stages:
       # BuildNativeAOT is false by default, but true in devdiv environment
       BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
-      ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '18.4' ]
+        iosVersions: [ '18.5', 'latest' ]
       ${{ else }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '18.4' ]
+        iosVersions: [ 'latest' ]
       projects:
         - name: controls
           desc: Controls
@@ -183,5 +184,3 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-
-

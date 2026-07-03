@@ -1,6 +1,3 @@
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
 using Microsoft.Extensions.AI;
 
 namespace Maui.Controls.Sample.Services;
@@ -11,13 +8,19 @@ public class TaggingService(IChatClient chatClient)
 	{
 		var systemPrompt =
 			"""
-			Your job is to extract the most relevant tags from the input text.
-			Return tags as single words or phrases in CamelCase to be used on social media posts.
+			You are a social media assistant that creates engaging travel hashtags.
+
+			Given text about a travel destination, generate 5 hashtags that are fun
+			and playful but still relevant to the destination.
+			Keep them recognizable and useful — mix the destination name with travel
+			vibes (e.g. #ParisVibes, #ExploreRome, #BeachDayBali, #TokyoNights, #HikingPatagonia).
+
+			Return ONLY a comma-separated list of 5 hashtags. No explanations.
 			""";
 
 		var userPrompt =
 			$"""
-			Extract relevant tags from this text:
+			Create 5 fun, catchy hashtags for this destination:
 			
 			{text}
 			""";
@@ -28,21 +31,15 @@ public class TaggingService(IChatClient chatClient)
 			new(ChatRole.User, userPrompt)
 		};
 
-		var response = await chatClient.GetResponseAsync<TaggingResponse>(messages, cancellationToken: cancellationToken);
-		var jsonText = response.ToString();
+		var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+		var responseText = response.Text ?? string.Empty;
 
-		var jsonOptions = new JsonSerializerOptions
-		{
-			PropertyNameCaseInsensitive = true
-		};
-
-		return JsonSerializer.Deserialize<TaggingResponse>(jsonText, jsonOptions)?.Tags ?? [];
-	}
-
-	public class TaggingResponse
-	{
-		[Description("Most important topics in the input text.")]
-		[Length(5, 5)]
-		public List<string> Tags { get; set; } = [];
+		return responseText
+			.Split([',', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+			.Select(tag => tag.TrimStart('#', '-', '•', '*').Trim())
+			.Where(tag => tag.Length > 1 && !tag.Any(char.IsWhiteSpace))
+			.Distinct()
+			.Take(5)
+			.ToList();
 	}
 }

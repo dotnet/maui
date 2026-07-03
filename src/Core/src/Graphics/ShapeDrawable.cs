@@ -84,8 +84,7 @@ namespace Microsoft.Maui.Graphics
 			// Set Stroke
 			var stroke = ShapeView.Stroke;
 
-			// TODO: Add Paint support for Stroke in Microsoft.Maui.Graphics.
-			// For now, only support a solid color.
+			// TODO: Add Paint support for Stroke in Microsoft.Maui.Graphics for Windows
 			canvas.StrokeColor = stroke.ToColor();
 
 			// Set StrokeLineCap
@@ -108,6 +107,12 @@ namespace Microsoft.Maui.Graphics
 			var strokeMiterLimit = ShapeView.StrokeMiterLimit;
 			canvas.MiterLimit = strokeMiterLimit;
 
+			// Use SetFillPaint to configure gradient state (shader/CGGradient)
+			// which PlatformDrawPath will apply to the stroke rendering.
+			// Use path.Bounds so the gradient maps to the shape geometry,
+			// not the full dirty rect (which would misalign gradients on
+			// shapes that don't fill the entire view).
+			canvas.SetFillPaint(stroke, path.Bounds);
 			canvas.DrawPath(path);
 
 			canvas.RestoreState();

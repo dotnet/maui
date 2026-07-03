@@ -3,10 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Android.Text;
 using Android.Text.Method;
+using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AColor = Android.Graphics.Color;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -14,6 +16,108 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		// Regression tests for https://github.com/dotnet/maui/issues/30779
+		// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
+
+		[Fact(DisplayName = "CursorPosition Updates After SetQuery (Issue 30779)")]
+		public async Task CursorPositionUpdatesAfterSetQuery()
+		{
+			var searchBar = new SearchBarStub();
+
+			await AttachAndRun(searchBar, async (handler) =>
+			{
+				// Simulate user typing by calling the native SetQuery method
+				var searchView = GetNativeSearchBar(handler);
+				searchView.SetQuery("Hello", false);
+
+				// The fix uses Post() to defer cursor reads (SearchView timing quirk: setQuery()
+				// calls setText() before setSelection()). Wait for the deferred update.
+				await AssertEventually(() => searchBar.CursorPosition == 5);
+			});
+
+			// After SetQuery("Hello"), cursor should be at position 5 (end of text),
+			// not stuck at 0 as it was before the fix
+			Assert.Equal(5, searchBar.CursorPosition);
+		}
+
+		[Fact(DisplayName = "SelectionLength Updates When Text Is Selected Natively (Issue 30779)")]
+		public async Task SelectionLengthUpdatesWhenTextIsSelectedNatively()
+		{
+			var searchBar = new SearchBarStub { Text = "Hello World" };
+
+			await AttachAndRun(searchBar, async (handler) =>
+			{
+				var control = GetNativeSearchBar(handler);
+				var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
+
+				// Simulate a native selection gesture: set native selection then trigger
+				// the handler's selection-change reader (mirrors what touch/key listeners do).
+				editText?.SetSelection(0, 5);
+				handler.OnQueryEditorSelectionChanged();
+
+				// The fix uses Post() to defer cursor reads; wait for the deferred update.
+				await AssertEventually(() => searchBar.SelectionLength == 5);
+			});
+
+			// Selection of 5 characters starting at position 0 should be reflected in the VirtualView
+			Assert.Equal(0, searchBar.CursorPosition);
+			Assert.Equal(5, searchBar.SelectionLength);
+		}
+
+		[Fact(DisplayName = "CursorPosition Set Programmatically Updates Native Cursor (Issue 30779)")]
+		public async Task CursorPositionSetProgrammaticallyUpdatesNativeCursor()
+		{
+			var searchBar = new SearchBarStub { Text = "Hello World" };
+
+			await AttachAndRun(searchBar, async (handler) =>
+			{
+				var control = GetNativeSearchBar(handler);
+				var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
+
+				// Set cursor position via MAUI property (programmatic MAUI → native direction).
+				// UpdateCursorSelection uses Post() when EditText is focused, deferring SetSelection
+				// to the next UI cycle — use AssertEventually to wait for it.
+				searchBar.CursorPosition = 3;
+				SearchBarHandler.MapCursorPosition(handler, searchBar);
+
+				await AssertEventually(() => editText?.SelectionStart == 3);
+			});
+		}
+
+		[Fact(DisplayName = "SelectionLength Updates When Text Is Selected Via Keyboard (Issue 30779)")]
+		public async Task SelectionLengthUpdatesWhenTextIsSelectedViaKeyboard()
+		{
+			var searchBar = new SearchBarStub { Text = "Hello World" };
+
+			await AttachAndRun(searchBar, async (handler) =>
+			{
+				var control = GetNativeSearchBar(handler);
+				var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
+
+				// Simulate Shift+Arrow keyboard selection:
+				// 1. Set the native selection as if the user had selected with Shift+Arrow
+				editText?.SetSelection(0, 5);
+
+				// 2. Dispatch a DpadRight KEY_UP which triggers QueryEditorKeyListener.
+				//    The listener checks IsNavigationKey() — arrow/Home/End/PageUp/Down are
+				//    the keys that actually fire OnQueryEditorSelectionChanged(). Modifier-only
+				//    keys like ShiftLeft are intentionally ignored by the listener.
+				//    Using only KEY_UP (no preceding KEY_DOWN) means the EditText won't
+				//    modify the selection; our listener just reads the current state.
+				if (editText != null)
+				{
+					var keyEvent = new KeyEvent(KeyEventActions.Up, Keycode.DpadRight);
+					editText.DispatchKeyEvent(keyEvent);
+				}
+
+				// QueryEditorKeyListener.OnKey fires on ACTION_UP and schedules a Post() read.
+				await AssertEventually(() => searchBar.SelectionLength == 5);
+			});
+
+			Assert.Equal(0, searchBar.CursorPosition);
+			Assert.Equal(5, searchBar.SelectionLength);
+		}
+
 		[Fact(DisplayName = "ReturnType Initializes Correctly")]
 		public async Task ReturnTypeInitializesCorrectly()
 		{

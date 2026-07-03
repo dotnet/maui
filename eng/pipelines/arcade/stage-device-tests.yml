@@ -79,221 +79,11 @@ parameters:
     - name: MauiBlazorWebView.DeviceTests
       path: src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
       packageId: Microsoft.Maui.MauiBlazorWebView.DeviceTests
+    - name: Essentials.AI.DeviceTests
+      path: src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj
+      packageId: com.microsoft.maui.ai.devicetests
 
 stages:
-- stage: devicetests_build
-  displayName: ${{ parameters.TargetFrameworkVersion }} Mono ios/catalyst/android Helix Tests
-  dependsOn: []
-  jobs:
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
-    parameters:
-      helixRepo: dotnet/maui
-      pool: ${{ parameters.buildPool }}
-      enableMicrobuild: ${{ parameters.enableMicrobuild }}
-      enablePublishUsingPipelines: true
-      enablePublishBuildAssets: ${{ parameters.publishAssets }}
-      enableTelemetry: true
-      enableSourceBuild: ${{ parameters.enableSourceBuild }}
-      enableSourceIndex: ${{ parameters.enableSourceIndex }}
-      sourceIndexParams: ${{ parameters.sourceIndexParams }}
-      publishAssetsImmediately: true
-      enablePublishBuildArtifacts: true
-      enablePublishTestResults: false
-      workspace:
-        clean: all
-      jobs:
-      - job: builddevice_tests
-        displayName: Build Device Tests (Mono)
-        timeoutInMinutes: 120
-        variables:
-        - name: _BuildConfig
-          value: ${{ parameters.BuildConfiguration }}
-        preSteps:
-        - checkout: self
-          fetchDepth: 1
-          clean: true
-
-        steps:
-        - ${{ each step in parameters.prepareSteps }}:
-          - ${{ each pair in step }}:
-              ${{ pair.key }}: ${{ pair.value }}
-
-        # Run on public pipeline
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
-          displayName: Build BuildTasks
-
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog
-          displayName: Build DeviceTests
-
-        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
-          displayName: Publish Succeeded Artifacts Directory
-          condition: succeeded()
-          artifact: ${{ parameters.appArtifactName }}
-
-        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
-          displayName: Publish Failed Artifacts Directory
-          condition: not(succeeded())
-          artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
-
-- stage: devicetests_ios
-  displayName: ${{ parameters.TargetFrameworkVersion }} Mono iOS Helix Tests
-  dependsOn: 
-    - devicetests_build
-  jobs:
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
-    parameters:
-      helixRepo: dotnet/maui
-      pool: ${{ parameters.testPool }}
-      enableMicrobuild: false
-      enablePublishUsingPipelines: true
-      enablePublishBuildAssets: ${{ parameters.publishAssets }}
-      enableTelemetry: true
-      enableSourceBuild: ${{ parameters.enableSourceBuild }}
-      enableSourceIndex: ${{ parameters.enableSourceIndex }}
-      sourceIndexParams: ${{ parameters.sourceIndexParams }}
-      publishAssetsImmediately: true
-      enablePublishBuildArtifacts: true
-      enablePublishTestResults: false
-      workspace:
-        clean: all
-      jobs:
-      - job: device_tests_ios
-        displayName: Run DeviceTests iOS (Mono)
-        timeoutInMinutes: 240
-        variables:
-        - name: _BuildConfig
-          value: ${{ parameters.BuildConfiguration }}
-        preSteps:
-        - checkout: self
-          fetchDepth: 1
-          clean: true
-
-        - task: DownloadPipelineArtifact@2
-          displayName: 'Download Build'
-          condition: succeeded()
-          inputs:
-            artifactName: ${{ parameters.appArtifactName }}
-            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
-
-        - template: /eng/common/templates-official/steps/send-to-helix.yml
-          parameters:
-            HelixProjectPath: ${{ parameters.helixProject }}
-            ${{ if eq(parameters.runAsPublic, true) }}:
-              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=False
-            ${{ else }}:
-              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=True
-            HelixAccessToken: ${{ parameters.HelixAccessToken }}
-            HelixConfiguration: $(_BuildConfig)
-            IncludeDotNetCli: true
-            DisplayNamePrefix: DeviceTestsIOS
-            WorkItemTimeout: 04:00:00
-            XUnitWorkItemTimeout: 04:00:00
-
-- stage: devicetests_catalyst
-  displayName: ${{ parameters.TargetFrameworkVersion }} Mono MacCatalyst Helix Tests
-  dependsOn: 
-    - devicetests_build
-  jobs:
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
-    parameters:
-      helixRepo: dotnet/maui
-      pool: ${{ parameters.testPool }}
-      enableMicrobuild: ${{ parameters.enableMicrobuild }}
-      enablePublishUsingPipelines: true
-      enablePublishBuildAssets: ${{ parameters.publishAssets }}
-      enableTelemetry: true
-      enableSourceBuild: ${{ parameters.enableSourceBuild }}
-      enableSourceIndex: ${{ parameters.enableSourceIndex }}
-      sourceIndexParams: ${{ parameters.sourceIndexParams }}
-      publishAssetsImmediately: true
-      enablePublishBuildArtifacts: true
-      enablePublishTestResults: false
-      workspace:
-        clean: all
-      jobs:
-      - job: device_tests_maccatalyst
-        displayName: Run DeviceTests MacCatalyst (Mono)
-        timeoutInMinutes: 240
-        variables:
-        - name: _BuildConfig
-          value: ${{ parameters.BuildConfiguration }}
-        preSteps:
-        - checkout: self
-          fetchDepth: 1
-          clean: true
-
-        - task: DownloadPipelineArtifact@2
-          displayName: 'Download Build'
-          condition: succeeded()
-          inputs:
-            artifactName: ${{ parameters.appArtifactName }}
-            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
-
-        - template: /eng/common/templates-official/steps/send-to-helix.yml
-          parameters:
-            HelixProjectPath: ${{ parameters.helixProject }}
-            ${{ if eq(parameters.runAsPublic, true) }}:
-              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=False
-            ${{ else }}:
-              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=True
-            HelixAccessToken: ${{ parameters.HelixAccessToken }}
-            HelixConfiguration: $(_BuildConfig)
-            IncludeDotNetCli: true
-            DisplayNamePrefix: DeviceTestsMacCatalyst
-
-- stage: devicetests_android
-  displayName: ${{ parameters.TargetFrameworkVersion }} Mono Android Helix Tests
-  dependsOn: 
-    - devicetests_build
-  jobs:
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
-    parameters:
-      helixRepo: dotnet/maui
-      pool: ${{ parameters.testPool }}
-      enableMicrobuild: ${{ parameters.enableMicrobuild }}
-      enablePublishUsingPipelines: true
-      enablePublishBuildAssets: ${{ parameters.publishAssets }}
-      enableTelemetry: true
-      enableSourceBuild: ${{ parameters.enableSourceBuild }}
-      enableSourceIndex: ${{ parameters.enableSourceIndex }}
-      sourceIndexParams: ${{ parameters.sourceIndexParams }}
-      publishAssetsImmediately: true
-      enablePublishBuildArtifacts: true
-      enablePublishTestResults: false
-      workspace:
-        clean: all
-      jobs:
-      - job: device_tests_android
-        displayName: Run DeviceTests Android (Mono)
-        timeoutInMinutes: 60
-        variables:
-        - name: _BuildConfig
-          value: ${{ parameters.BuildConfiguration }}
-        preSteps:
-        - checkout: self
-          fetchDepth: 1
-          clean: true
-
-        - task: DownloadPipelineArtifact@2
-          displayName: 'Download Build'
-          condition: succeeded()
-          inputs:
-            artifactName: ${{ parameters.appArtifactName }}
-            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
-
-        - template: /eng/common/templates-official/steps/send-to-helix.yml
-          parameters:
-            HelixProjectPath: ${{ parameters.helixProject }}
-            ${{ if eq(parameters.runAsPublic, true) }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=False
-            ${{ else }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=True
-            HelixAccessToken: ${{ parameters.HelixAccessToken }}
-            HelixConfiguration: $(_BuildConfig)
-            IncludeDotNetCli: true
-            DisplayNamePrefix: DeviceTestsAndroid
-
-# CoreCLR Device Tests Stages
 - stage: devicetests_build_coreclr
   displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR ios/catalyst/android Helix Tests
   dependsOn: []
@@ -332,8 +122,12 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
-          displayName: Build BuildTasks
+        - script: dotnet cake --target=dotnet-buildtasks --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Build BuildTasks
+          retryCountOnTaskFailure: 3
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
 
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /bl:BuildDeviceTests.binlog
           displayName: Build DeviceTests (CoreCLR)
@@ -546,9 +340,9 @@ stages:
             displayName: 'Restore .NET tools'
             retryCountOnTaskFailure: 3
 
-          # Install .NET SDK and workloads using Arcade build script
-          - script: ./build.cmd -restore -configuration Release
-            displayName: 'Install .NET'
+          # Build BuildTasks using Cake (provisions SDK, cleans stale manifests, builds)
+          - script: dotnet cake --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+            displayName: Provision SDK & Build BuildTasks
             retryCountOnTaskFailure: 3
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
@@ -556,10 +350,6 @@ stages:
 
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
-
-          # Build BuildTasks first (need -restore to ensure SDK is available)
-          - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
-            displayName: Build the MSBuild Tasks
 
           # Build Unpackaged tests FIRST (self-contained .exe for direct execution)
           # Must build unpackaged BEFORE packaged so we can save the publish output
@@ -571,7 +361,7 @@ stages:
 
           # Save unpackaged publish output before packaged builds overwrite artifacts/bin
           - pwsh: |
-              $artifactNames = @("Controls.DeviceTests", "Core.DeviceTests", "Graphics.DeviceTests", "Essentials.DeviceTests", "MauiBlazorWebView.DeviceTests")
+              $artifactNames = @("Controls.DeviceTests", "Core.DeviceTests", "Graphics.DeviceTests", "Essentials.DeviceTests", "MauiBlazorWebView.DeviceTests", "Essentials.AI.DeviceTests")
               foreach ($name in $artifactNames) {
                 $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)/artifacts/bin/$name" -Filter "publish" -Recurse -Directory | Select-Object -First 1
                 if ($publishDir) {
@@ -604,7 +394,8 @@ stages:
                 @{ Name = "Core.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Core.DeviceTests" },
                 @{ Name = "Graphics.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Graphics.DeviceTests" },
                 @{ Name = "Essentials.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Essentials.DeviceTests" },
-                @{ Name = "MauiBlazorWebView.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/MauiBlazorWebView.DeviceTests" }
+                @{ Name = "MauiBlazorWebView.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/MauiBlazorWebView.DeviceTests" },
+                @{ Name = "Essentials.AI.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/AI/tests/Essentials.AI.DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Essentials.AI.DeviceTests" }
               )
               
               foreach ($project in $projects) {

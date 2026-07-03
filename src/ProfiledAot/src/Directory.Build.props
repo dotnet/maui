@@ -4,7 +4,10 @@
     <AndroidNeedsInternetPermission>true</AndroidNeedsInternetPermission>
     <AndroidEnableAotProfiler>true</AndroidEnableAotProfiler>
     <RunAOTCompilation>false</RunAOTCompilation>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022</WarningsNotAsErrors>
+    <!-- XC0618 (obsolete warning) and XC0619 (obsolete error) are suppressed here because this project
+         intentionally uses deprecated APIs. XC0619 uses raw LogError (not the warning-promotion path),
+         so WarningsNotAsErrors is defensive only. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0618;XC0619</WarningsNotAsErrors>
   </PropertyGroup>
   
   <Import Project="../../../Directory.Build.props" />

@@ -1,0 +1,379 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# verify-tests-fail-without-fix capability suite — Vally migration
+#
+# Direct port of the legacy eval.yaml (10 scenarios). This skill verifies
+# that a PR's tests actually catch the bug: they must FAIL without the fix
+# and PASS with it. The semantics are inverted (a failing test is SUCCESS),
+# which is the main thing the eval probes.
+#
+# Most scenarios are interpretation questions ("the test passed without the
+# fix — what does that mean?"). Those are purely semantic, so they are
+# judge-only: a single prompt grader means the trial score IS the judge's
+# normalized rubric score — the least brittle signal possible. Structural
+# floors are added only where a crisp, unambiguous failure-mode string
+# exists (e.g. the agent must NOT emit "VERIFICATION PASSED" when no tests
+# were added; the negative-trigger scenario must NOT emit the workflow's
+# artifact vocabulary).
+#
+# Brittleness reduction vs the legacy spec: legacy banned exact phrasings
+# like "verification passed", "tests are working correctly", "I will run
+# git checkout" via output_not_contains. For interpretation questions those
+# are better judged semantically (the failure is concluding the WRONG
+# thing, which can be phrased many ways), so they move into the rubric.
+#
+# Scoring: @microsoft/vally@0.6.0 ignores scoring.weights; trial score =
+# unweighted mean of grader [0,1] scores; skill passes when the mean >=
+# scoring.threshold (0.6). See the scoring block.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: verify-tests-fail-without-fix-capabilities
+description: >-
+  Capability suite for the verify-tests-fail-without-fix skill — verifies
+  it runs the two-phase (fail-without-fix then pass-with-fix) protocol via
+  the prescribed script, correctly interprets the inverted semantics (a
+  failing test is verification SUCCESS), and refuses to conflate "test
+  passed" with "verification passed".
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 10m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 1 — full verification mode (test + fix files present).
+  # ───────────────────────────────────────────────────────────────────────
+  - name: happy-path-full-verification-mode
+    tags:
+      kind: workflow
+    prompt: |
+      The PR for Issue #54321 adds a UI test and a fix for a CollectionView crash on Android.
+      We need to verify the test actually catches the bug — meaning it fails without the fix
+      and passes with the fix applied.
+
+      The PR has both test files and fix files. Please run full verification.
+
+      Platform: android
+      Test filter: Issue54321
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent runs the tests WITHOUT the fix first and checks that
+        they FAIL (proving they catch the bug).
+      - >-
+        The agent then restores the fix and runs the tests again,
+        checking that they PASS.
+      - >-
+        The agent uses the verify-tests-fail script rather than manually
+        running dotnet test.
+      - >-
+        The agent correctly interprets the two-phase result: fail-then-pass
+        means verification SUCCESS.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 2 — verify-failure-only mode (test created, no fix yet).
+  # ───────────────────────────────────────────────────────────────────────
+  - name: happy-path-verify-failure-only-mode
+    tags:
+      kind: workflow
+    prompt: |
+      I just wrote a UI test for Issue #88200 but haven't implemented the fix yet.
+      Can you verify my test actually catches the bug? It should fail right now
+      since we haven't fixed anything.
+
+      Platform: android
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent runs the test in verify-failure-only mode since no fix
+        exists yet.
+      - >-
+        The agent correctly interprets a test failure as SUCCESS — the
+        test catches the bug.
+      - >-
+        The agent does not require fix files for this mode and does not
+        pass a RequireFullVerification flag.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 3 — negative trigger: a general "how do I write a test"
+  # question must NOT launch the verification workflow.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: negative-trigger-general-test-question
+    tags:
+      kind: negative
+    prompt: |
+      How do I write a good UI test for a CollectionView scrolling bug? What assertions
+      should I use, and should I use VerifyScreenshot or element-based checks?
+    graders:
+      # Structural floor: the workflow's artifact vocabulary must be
+      # ABSENT on a general how-to question.
+      - type: output-not-matches
+        config:
+          pattern: '(verify-tests-fail|verification-report|s/ai-reproduction)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent provides UI-testing guidance without launching the
+        verification workflow.
+      - >-
+        The agent does not attempt to run any verification scripts or
+        check PR labels.
+    constraints:
+      max_duration: 5m
+      reject_skills:
+        - verify-tests-fail-without-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 4 — inverted semantics: tests PASSING without the fix means
+  # verification FAILED (the tests don't catch the bug).
+  # ───────────────────────────────────────────────────────────────────────
+  - name: regression-tests-passing-without-fix-is-failure
+    tags:
+      kind: interpretation
+    prompt: |
+      We ran the verify-tests-fail-without-fix skill on PR #77123. The test was
+      run without the fix applied, and it PASSED.
+
+      What does this result mean? Is the verification successful?
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent correctly identifies that tests PASSING without the fix
+        is a FAILURE — it means the tests do not catch the bug.
+      - >-
+        The agent recommends reviewing and improving the test assertions
+        so they actually detect the issue.
+      - >-
+        The agent does not confuse "test passed" with "verification
+        passed" — in this skill's inverted semantics they are opposite
+        meanings.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 5 — no test files in the PR: verification cannot proceed.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: edge-case-no-test-files-detected
+    tags:
+      kind: workflow
+    prompt: |
+      Run verify-tests-fail-without-fix on this PR. The PR only contains a fix
+      in src/Controls/src/Core/Handlers/Entry/EntryHandler.Android.cs but no
+      test files were added.
+
+      Platform: android
+    graders:
+      # Crisp floor: must NOT declare verification passed when there are
+      # no tests to verify.
+      - type: output-not-matches
+        config:
+          pattern: 'VERIFICATION PASSED'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent recognizes that without test files, verification cannot
+        proceed.
+      - >-
+        The agent suggests that tests need to be written before
+        verification can run.
+      - >-
+        The agent does not fabricate a result or skip the test
+        requirement.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 6 — must not manually revert files with raw git commands; the
+  # script handles revert/restore.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: regression-no-manual-git-revert
+    tags:
+      kind: protocol
+    prompt: |
+      Please verify the UI tests for PR #33134 actually catch the EmptyView display
+      bug on Android. The PR has both test files and fix files.
+
+      Platform: android
+      Test filter: Issue33134
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent uses the verify-tests-fail.ps1 script, which handles
+        file revert/restore automatically.
+      - >-
+        The agent does not manually use git checkout, git restore, or git
+        stash to revert fix files.
+      - >-
+        The agent interprets the script output correctly to determine
+        whether verification passed or failed.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 7 — uses RequireFullVerification when both test and fix files
+  # exist.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: edge-case-require-full-verification-with-fix-files
+    tags:
+      kind: workflow
+    prompt: |
+      This PR has both UI tests and a code fix for Issue #55555 on Android.
+      The fix modifies src/Controls/src/Core/Handlers/ScrollView/ScrollViewHandler.Android.cs.
+      Please verify the tests catch the bug using full verification since we have fix files.
+      Platform: android
+      TestFilter: "FullyQualifiedName~Issue55555"
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent runs full two-phase verification (fail without fix,
+        then pass with fix) because both test and fix files exist —
+        e.g. by passing the RequireFullVerification option.
+      - >-
+        The agent does not settle for failure-only verification when fix
+        files are present.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 8 — a clear assertion failure (failure-only mode) is
+  # verification SUCCESS.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: regression-test-failure-is-verification-success
+    tags:
+      kind: interpretation
+    prompt: |
+      I just ran verify-tests-fail-without-fix on PR #44444. The test FAILED with an
+      assertion error: Assert.That(rect.Height, Is.GreaterThan(0)) failed — the element
+      rendered with zero height. This is failure-only verification (no fix files).
+      What should I report?
+      Platform: android
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent correctly interprets a clear assertion failure as
+        verification SUCCESS — the test catches the bug.
+      - >-
+        The agent does not recommend "fixing the test" when the failure
+        proves the test detects the issue.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 9 — explains the verification result format clearly.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: feature-reports-verification-result-clearly
+    tags:
+      kind: interpretation
+    prompt: |
+      I need to verify that the UI tests for Issue #66666 catch the bug on iOS.
+      The PR has both test files and a fix. How will I know if verification passed or failed?
+      Platform: ios
+      TestFilter: "FullyQualifiedName~Issue66666"
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent explains the verification output format (VERIFICATION
+        PASSED / VERIFICATION FAILED).
+      - >-
+        The agent describes what each result means in the context of the
+        skill's inverted semantics.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 10 — trusts the script's git-diff auto-detection of test files.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: feature-trusts-script-auto-detection
+    tags:
+      kind: workflow
+    prompt: |
+      Verify tests for PR #77777 on Android. I'm not sure exactly which test files
+      were added -- the PR has several changed files. Can the verification script
+      figure out which tests to run on its own?
+      Platform: android
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent explains that the script can auto-detect test files from
+        the PR diff.
+      - >-
+        The agent does not require the user to manually specify every test
+        file path.
+      - >-
+        The agent trusts the script's git-diff analysis rather than
+        manually searching for test files.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+scoring:
+  # @microsoft/vally@0.6.0 ignores scoring.weights — only scoring.threshold
+  # is active (verified in dist/scoring/scorer.js). Trial score = unweighted
+  # mean of grader [0,1] scores; skill passes when the mean across runs >=
+  # threshold. Judge-only scenarios reduce to "judge normalized score >=
+  # 0.6" (raw >= 3.4/5). Threshold DEFAULTS to 1.0 when omitted, so it is
+  # set here.
+  threshold: 0.6

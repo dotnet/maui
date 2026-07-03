@@ -1,0 +1,22 @@
+# Merge net11.0 → next release branch
+# Target branch is configured in /github-merge-flow-release-11.jsonc (MergeToBranch)
+
+name: Merge net11.0 to next release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - net11.0
+  schedule:
+    - cron: '0 4 * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  Merge:
+    uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@main
+    with:
+      configuration_file_path: 'github-merge-flow-release-11.jsonc'

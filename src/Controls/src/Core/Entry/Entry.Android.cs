@@ -29,5 +29,32 @@ namespace Microsoft.Maui.Controls
 
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, entry);
 		}
+
+		// MaterialEntryHandler-specific overloads
+		public static void MapImeOptions(EntryHandler2 handler, Entry entry)
+		{
+			if (handler.PlatformView?.EditText is null)
+			{
+				return;
+			}
+
+			Platform.EditTextExtensions.UpdateImeOptions(handler.PlatformView.EditText, entry);
+		}
+
+		public static void MapText(EntryHandler2 handler, Entry entry)
+		{
+			if (handler.PlatformView?.EditText is null)
+			{
+				return;
+			}
+
+			if (handler.DataFlowDirection == DataFlowDirection.FromPlatform)
+			{
+				Platform.EditTextExtensions.UpdateTextFromPlatform(handler.PlatformView.EditText, entry);
+				return;
+			}
+
+			Platform.EditTextExtensions.UpdateText(handler.PlatformView.EditText, entry);
+		}
 	}
 }

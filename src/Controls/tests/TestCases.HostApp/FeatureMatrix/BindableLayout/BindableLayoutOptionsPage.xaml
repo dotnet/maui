@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.BindableLayoutOptionsPage"
+             x:DataType="local:BindableLayoutViewModel"
+             Title="BindableLayoutOptionsPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Apply"
+                     Clicked="ApplyButton_Clicked"
+                     AutomationId="Apply"/>
+    </ContentPage.ToolbarItems>
+    <VerticalStackLayout>
+        <!-- ItemsSource Selection -->
+        <Label Text="ItemsSource:"
+               FontAttributes="Bold"
+               FontSize="11"/>
+        <HorizontalStackLayout Spacing="10">
+            <RadioButton x:Name="ItemsSourceNone"
+                         Content="None"
+                         FontSize="10"
+                         IsChecked="True"
+                         GroupName="ItemsSourceGroup"
+                         CheckedChanged="OnItemsSourceChanged"
+                         AutomationId="ItemsSourceNone"/>
+            <RadioButton x:Name="ItemsSourceObservableCollection"
+                         Content="ObservableCollection"
+                         FontSize="10"
+                         GroupName="ItemsSourceGroup"
+                         CheckedChanged="OnItemsSourceChanged"
+                         AutomationId="ItemsSourceObservableCollection"/>
+            <RadioButton x:Name="ItemsSourceEmptyCollection"
+                         Content="Empty Collection"
+                         FontSize="10"
+                         GroupName="ItemsSourceGroup"
+                         CheckedChanged="OnItemsSourceChanged"
+                         AutomationId="ItemsSourceEmptyCollection"/>
+        </HorizontalStackLayout>
+        <!-- Empty View -->
+        <Label Text="EmptyView:"
+               FontSize="12"
+               FontAttributes="Bold"/>
+        <StackLayout Orientation="Horizontal">
+            <RadioButton x:Name="EmptyViewNone"
+                         Content="None"
+                         GroupName="EmptyView"
+                         IsChecked="True"
+                         CheckedChanged="OnEmptyViewChanged"
+                         FontSize="11"
+                         AutomationId="EmptyViewNone"/>
+            <RadioButton x:Name="EmptyViewString"
+                         Content="String"
+                         GroupName="EmptyView"
+                         CheckedChanged="OnEmptyViewChanged"
+                         FontSize="11"
+                         AutomationId="EmptyViewString"/>
+            <RadioButton x:Name="EmptyViewGrid"
+                         Content="View"
+                         GroupName="EmptyView"
+                         CheckedChanged="OnEmptyViewChanged"
+                         FontSize="11"
+                         AutomationId="EmptyViewGrid"/>
+        </StackLayout>
+        <!-- EmptyViewTemplate -->
+        <Label Text="EmptyViewTemplate"
+               FontSize="12"
+               FontAttributes="Bold"/>
+        <StackLayout Orientation="Horizontal">
+            <RadioButton x:Name="EmptyViewTemplateNone"
+                         Content="None"
+                         IsChecked="True"
+                         GroupName="EmptyViewTemplateGroup"
+                         CheckedChanged="OnEmptyViewTemplateChanged"
+                         FontSize="11"
+                         AutomationId="EmptyViewTemplateNone"/>
+            <RadioButton x:Name="EmptyViewTemplateGrid"
+                         Content="View"
+                         GroupName="EmptyViewTemplateGroup"
+                         CheckedChanged="OnEmptyViewTemplateChanged"
+                         FontSize="11"
+                         AutomationId="EmptyViewTemplateGrid"/>
+        </StackLayout>
+        <!-- ItemTemplate -->
+        <Label Text="Item Template:"
+               FontSize="12"
+               FontAttributes="Bold"/>
+        <StackLayout Orientation="Horizontal">
+            <RadioButton x:Name="ItemTemplateNone"
+                         Content="None"
+                         FontSize="11"
+                         IsChecked="True"
+                         GroupName="ItemTemplateGroup"
+                         CheckedChanged="OnItemTemplateChanged"
+                         AutomationId="ItemTemplateNone"/>
+            <RadioButton x:Name="ItemTemplateBasic"
+                         Content="Basic DataTemplate"
+                         FontSize="11"
+                         GroupName="ItemTemplateGroup"
+                         CheckedChanged="OnItemTemplateChanged"
+                         AutomationId="ItemTemplateBasic"/>
+            <RadioButton x:Name="ItemTemplateGrid"
+                         Content="View"
+                         FontSize="11"
+                         GroupName="ItemTemplateGroup"
+                         CheckedChanged="OnItemTemplateChanged"
+                         AutomationId="ItemTemplateGrid"/>
+        </StackLayout>
+        <!-- ItemTemplateSelector -->
+        <Label Text="Item Template Selector:"
+               FontSize="12"
+               FontAttributes="Bold"/>
+        <StackLayout Orientation="Horizontal">
+            <RadioButton x:Name="ItemTemplateSelectorNone"
+                         Content="None"
+                         GroupName="ItemTemplateSelectorGroup"
+                         IsChecked="True"
+                         CheckedChanged="OnItemTemplateSelectorChanged"
+                         FontSize="11"
+                         AutomationId="ItemTemplateSelectorNone"/>
+            <RadioButton x:Name="ItemTemplateSelectorAlternate"
+                         Content="Data Template Selector"
+                         GroupName="ItemTemplateSelectorGroup"
+                         CheckedChanged="OnItemTemplateSelectorChanged"
+                         FontSize="11"
+                         AutomationId="ItemTemplateSelectorAlternate"/>
+        </StackLayout>
+    </VerticalStackLayout>
+</ContentPage>

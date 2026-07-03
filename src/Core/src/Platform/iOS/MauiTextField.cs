@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 
 				base.Text = value;
 
-				if (old != value)
+				if (old != value && !_suppressTextPropertySet)
 					TextPropertySet?.Invoke(this, EventArgs.Empty);
 			}
 		}
@@ -84,5 +84,17 @@ namespace Microsoft.Maui.Platform
 		public event EventHandler? TextPropertySet;
 		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal event EventHandler? SelectionChanged;
+
+		/// <summary>
+		/// When set to <c>true</c>, suppresses the <see cref="TextPropertySet"/> event during
+		/// controlled text updates (e.g., preserving text across IsPassword toggles) to avoid
+		/// triggering unintended binding/handler side effects.
+		/// </summary>
+		bool _suppressTextPropertySet;
+
+		internal void SuppressTextPropertySet(bool suppress)
+		{
+			_suppressTextPropertySet = suppress;
+		}
 	}
 }

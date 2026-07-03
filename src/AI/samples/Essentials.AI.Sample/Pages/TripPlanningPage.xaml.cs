@@ -7,11 +7,9 @@ public partial class TripPlanningPage : ContentPage
 	public TripPlanningPage(TripPlanningViewModel viewModel)
 	{
 		InitializeComponent();
-
 		BindingContext = viewModel;
 
-		Loaded += async (_, _) => await viewModel.InitializeAsync();
-
+		Loaded += (_, _) => _ = viewModel.InitializeAsync();
 		NavigatingFrom += (_, _) => viewModel.Cancel();
 	}
 

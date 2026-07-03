@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using PassKit;
@@ -181,6 +182,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 			}
 
+			CollectionView.ScrollsToTop = true;
+
 			RegisterViewTypes();
 
 			EnsureLayoutInitialized();
@@ -296,6 +299,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
+			// iOS/MacCatalyst: UIKit does not reset ContentOffset during ReloadData.
+			// ResetScrollTracking must run before the assignment so the UIKit-triggered
+			// scrollViewDidScroll callback computes delta from zero, not the stale previous offset.
+			if (CollectionView.ContentOffset != CoreGraphics.CGPoint.Empty)
+			{
+				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
+				CollectionView.ContentOffset = CoreGraphics.CGPoint.Empty;
+			}
+
 			(ItemsView as IView)?.InvalidateMeasure();
 		}
 
@@ -304,25 +316,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (ItemsView.Handler.PlatformView is UIView itemsView)
 			{
 				itemsView.UpdateFlowDirection(ItemsView);
-				if (ItemsView.ItemTemplate is not null)
+				foreach (var child in ItemsView.LogicalChildrenInternal)
 				{
-					foreach (var child in ItemsView.LogicalChildrenInternal)
+					if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
 					{
-						if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
-						{
-							view.UpdateFlowDirection(ve);
-						}
+						view.UpdateFlowDirection(ve);
 					}
 				}
-				else
+
+				// If we don't have an ItemTemplate, then we need to update the default cell's flow direction
+				if (ItemsView.ItemTemplate is null && CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
 				{
-					// If we don't have an ItemTemplate, then we need to update the default cell's flow direction
-					if (CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
+					foreach (var cell in visibleCells.OfType<DefaultCell2>())
 					{
-						foreach (var cell in visibleCells.OfType<DefaultCell2>())
-						{
-							cell.Label.UpdateFlowDirection(ItemsView);
-						}
+						cell.Label.UpdateFlowDirection(ItemsView);
 					}
 				}
 	

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ImageMagick;
+using ImageMagick.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using UITest.Appium;
@@ -102,6 +103,13 @@ namespace Microsoft.Maui.TestCases.Tests
 					}
 					
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
+					break;
+				case TestDevice.Mac:
+					var macAppPath = Environment.GetEnvironmentVariable("MAC_APP_PATH") ?? "";
+					if (!string.IsNullOrEmpty(macAppPath))
+					{
+						config.SetProperty("AppPath", macAppPath);
+					}
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
@@ -380,6 +388,14 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Windows:
 						environmentName = "windows";
+						
+						// Check if using CollectionView1 handler via TEST_CONFIGURATION_ARGS environment variable
+						// This uses a separate snapshot directory for visual regression testing
+						var testConfigurationArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
+						if (testConfigurationArgs.Contains("UseWindowsCV1:true", StringComparison.OrdinalIgnoreCase))
+						{
+							environmentName = "windows-cv1";
+						}
 						break;
 
 					case TestDevice.Mac:
@@ -661,8 +677,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Take the screenshot
 			var bytes = App.Screenshot();
 
+			if (width <= 0 || height <= 0)
+				return bytes;
+
 			// Draw a rounded rectangle with the app window bounds as mask
-			using var surface = new MagickImage(MagickColors.Transparent, width, height);
+			using var surface = new MagickImage(MagickColors.Transparent, (uint)width, (uint)height);
 			new Drawables()
 				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
 				.FillColor(MagickColors.Black)

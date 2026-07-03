@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Internals
 	{
 		IValueConverter _converter;
 		object _converterParameter;
+		CultureInfo _converterCulture;
 		object _source;
 		string _updateSourceEventName;
 
@@ -41,6 +42,20 @@ namespace Microsoft.Maui.Controls.Internals
 				_converterParameter = value;
 			}
 		}
+
+		/// <summary>Gets or sets the culture information used by the converter.</summary>
+		[TypeConverter(typeof(CultureInfoConverter))]
+		public CultureInfo ConverterCulture
+		{
+			get { return _converterCulture ?? CultureInfo.CurrentUICulture; }
+			set
+			{
+				ThrowIfApplied();
+				_converterCulture = value;
+			}
+		}
+
+		internal CultureInfo ConverterCultureValue => _converterCulture;
 
 		/// <summary>Gets or sets the source object for the binding.</summary>
 		public object Source
@@ -147,7 +162,6 @@ namespace Microsoft.Maui.Controls.Internals
 		List<WeakReference<Element>> _ancestryChain;
 		bool _isBindingContextRelativeSource;
 		BindingMode _cachedMode;
-		bool _isSubscribed;
 		bool _isTSource; // cached type check result
 		object _cachedDefaultValue; // cached default value
 		bool _hasDefaultValue;
@@ -238,6 +252,7 @@ namespace Microsoft.Maui.Controls.Internals
 				Mode = Mode,
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
+				ConverterCulture = ConverterCultureValue,
 				StringFormat = StringFormat,
 				Source = Source,
 				UpdateSourceEventName = UpdateSourceEventName,
@@ -264,7 +279,7 @@ namespace Microsoft.Maui.Controls.Internals
 		internal override object GetSourceValue(object value, Type targetPropertyType)
 		{
 			if (Converter != null)
-				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+				value = Converter.Convert(value, targetPropertyType, ConverterParameter, ConverterCulture);
 
 			return base.GetSourceValue(value, targetPropertyType);
 		}
@@ -272,7 +287,7 @@ namespace Microsoft.Maui.Controls.Internals
 		internal override object GetTargetValue(object value, Type sourcePropertyType)
 		{
 			if (Converter != null)
-				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, ConverterCulture);
 
 			//return base.GetTargetValue(value, sourcePropertyType);
 			return value;
@@ -289,7 +304,6 @@ namespace Microsoft.Maui.Controls.Internals
 			if (_handlers != null)
 				Unsubscribe();
 
-			_isSubscribed = false;
 			_cachedMode = BindingMode.Default;
 			_hasDefaultValue = false;
 			_cachedDefaultValue = null;
@@ -332,11 +346,12 @@ namespace Microsoft.Maui.Controls.Internals
 
 			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
 
-			// Only subscribe once per binding lifetime
-			if (!_isSubscribed && isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay) && _handlers != null)
+			// Subscribe on every Apply so that intermediate objects that changed are re-subscribed.
+			// Subscribe() is idempotent: it diffs old vs new subscription targets and only
+			// updates what changed, so calling this repeatedly is safe.
+			if (isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay) && _handlers != null)
 			{
 				Subscribe((TSource)sourceObject);
-				_isSubscribed = true;
 			}
 
 			if (needsGetter)

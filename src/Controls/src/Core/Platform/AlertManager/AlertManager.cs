@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class AlertManager
+	internal partial class AlertManager : IAlertManager
 	{
 		readonly Window _window;
 
@@ -64,18 +64,6 @@ namespace Microsoft.Maui.Controls.Platform
 			_subscription?.OnPageBusy(page, isBusy);
 
 		private partial IAlertManagerSubscription CreateSubscription(IMauiContext mauiContext);
-
-		internal interface IAlertManagerSubscription
-		{
-			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments);
-
-			void OnAlertRequested(Page sender, AlertArguments arguments);
-
-			void OnPromptRequested(Page sender, PromptArguments arguments);
-
-			[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET11.")]
-			void OnPageBusy(Page sender, bool enabled);
-		}
 
 		internal partial class AlertRequestHelper : IAlertManagerSubscription
 		{

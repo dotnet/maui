@@ -35,6 +35,7 @@ public static class MauiProgram
 		{
 			fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 			fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+			fonts.AddFont("FluentSystemIcons-Regular.ttf", FluentUI.FontFamily);
 		});
 
 		// Register AI agents and workflow
@@ -47,18 +48,25 @@ public static class MauiProgram
 
 		// Register Pages
 		builder.Services.AddTransient<LandmarksPage>();
+		builder.Services.AddTransient<LandmarkDetailPage>();
 		builder.Services.AddTransient<TripPlanningPage>();
 
 		// Register ViewModels
 		builder.Services.AddTransient<LandmarksViewModel>();
+		builder.Services.AddTransient<LandmarkDetailViewModel>();
 		builder.Services.AddTransient<TripPlanningViewModel>();
+		builder.Services.AddSingleton<ChatViewModel>();
 
 		// Register Services
 		builder.Services.AddSingleton<DataService>();
-		builder.Services.AddSingleton<LanguagePreferenceService>();
 		builder.Services.AddTransient<ItineraryService>();
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();
+		builder.Services.AddSingleton<ChatService>();
+
+		// Semantic search — uses whatever IEmbeddingGenerator is registered (Apple NL or OpenAI)
+		builder.Services.AddSingleton<ISemanticSearchService>(sp =>
+			new EmbeddingSearchService(sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()));
 
 		// Configure Logging
 		builder.Services.AddLogging();
@@ -110,9 +118,6 @@ public static class MauiProgram
 			return appleClient
 				.AsBuilder()
 				.UseLogging(loggerFactory)
-				// This prevents double tool invocation when using Microsoft Agent Framework
-				// TODO: workaround for https://github.com/dotnet/extensions/issues/7204
-				.Use(cc => new NonFunctionInvokingChatClient(cc, loggerFactory, sp))
 				.Build();
 		});
 
@@ -141,6 +146,9 @@ public static class MauiProgram
 				.UseLogging(loggerFactory)
 				.Build();
 		});
+
+		// Semantic search backed by NL embeddings (also registered in common services above,
+		// but this line is kept in case the common registration is removed in the future)
 
 		return builder;
 	}
@@ -183,7 +191,6 @@ public static class MauiProgram
 		});
 
 		// Add chat client for local model with function calling
-		// TODO: Replace with actual local model client when available
 		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (provider, _) =>
 		{
 			var lf = provider.GetRequiredService<ILoggerFactory>();

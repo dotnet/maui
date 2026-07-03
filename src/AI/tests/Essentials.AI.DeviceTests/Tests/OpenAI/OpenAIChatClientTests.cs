@@ -12,12 +12,12 @@ public class OpenAIChatClient : DelegatingChatClient
 	}
 }
 
-[Category("OpenAIChatClient")]
+[Category(Traits.OpenAIChatClient)]
 public class OpenAIChatClientCancellationTests : ChatClientCancellationTestsBase<OpenAIChatClient>
 {
 }
 
-[Category("OpenAIChatClient")]
+[Category(Traits.OpenAIChatClient)]
 public class OpenAIChatClientFunctionCallingTestsBase : ChatClientFunctionCallingTestsBase<OpenAIChatClient>
 {
 	protected override IChatClient EnableFunctionCalling(OpenAIChatClient client)
@@ -28,39 +28,39 @@ public class OpenAIChatClientFunctionCallingTestsBase : ChatClientFunctionCallin
 	}
 }
 
-[Category("OpenAIChatClient")]
+[Category(Traits.OpenAIChatClient)]
 public class OpenAIChatClientGetServiceTests : ChatClientGetServiceTestsBase<OpenAIChatClient>
 {
 	protected override string ExpectedProviderName => "openai";
 	protected override string ExpectedDefaultModelId => "gpt-4o";
 }
 
-[Category("OpenAIChatClient")]
+[Category(Traits.OpenAIChatClient)]
 public class OpenAIChatClientInstantiationTests : ChatClientInstantiationTestsBase<OpenAIChatClient>
 {
 }
 
-[Category("OpenAIChatClient")]
+[Category(Traits.OpenAIChatClient)]
 public class OpenAIChatClientMessagesTests : ChatClientMessagesTestsBase<OpenAIChatClient>
 {
 }
 
-[Category("OpenAIChatClient")]
+[Category(Traits.OpenAIChatClient)]
 public class OpenAIChatClientOptionsTests : ChatClientOptionsTestsBase<OpenAIChatClient>
 {
 }
 
-[Category("OpenAIChatClient")]
+[Category(Traits.OpenAIChatClient)]
 public class OpenAIChatClientResponseTests : ChatClientResponseTestsBase<OpenAIChatClient>
 {
 }
 
-[Category("OpenAIChatClient")]
+[Category(Traits.OpenAIChatClient)]
 public class OpenAIChatClientStreamingTests : ChatClientStreamingTestsBase<OpenAIChatClient>
 {
 }
 
-[Category("OpenAIChatClient")]
+[Category(Traits.OpenAIChatClient)]
 public class OpenAIChatClientJsonSchemaTests : ChatClientJsonSchemaTestsBase<OpenAIChatClient>
 {
 }

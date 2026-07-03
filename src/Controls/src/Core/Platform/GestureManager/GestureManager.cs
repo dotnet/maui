@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _didHaveWindow;
 
 		public bool IsConnected => GesturePlatformManager != null;
-		public GesturePlatformManager? GesturePlatformManager { get; private set; }
+		public IGesturePlatformManager? GesturePlatformManager { get; private set; }
 
 		public GestureManager(IControlsView view)
 		{
@@ -76,11 +76,43 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
-			GesturePlatformManager = new GesturePlatformManager(handler);
+			GesturePlatformManager = CreateGesturePlatformManager(handler);
+
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;
 			_didHaveWindow = _view.Window != null;
+		}
+
+		IGesturePlatformManager CreateGesturePlatformManager(IViewHandler handler)
+		{
+			// Prefer an application-registered factory (issue #33364: resolve via Services),
+			// then a handler-scoped provider, then the default platform manager.
+			var factory = GetOptionalGesturePlatformManagerFactory(handler.MauiContext?.Services);
+			if (factory is not null)
+			{
+				return factory.CreateGesturePlatformManager(handler)
+					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerFactory)}.{nameof(IGesturePlatformManagerFactory.CreateGesturePlatformManager)} cannot return null.");
+			}
+
+			if (handler is IGesturePlatformManagerProvider provider)
+			{
+				return provider.CreateGesturePlatformManager()
+					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerProvider)}.{nameof(IGesturePlatformManagerProvider.CreateGesturePlatformManager)} cannot return null.");
+			}
+
+			return new GesturePlatformManager(handler);
+		}
+
+		// Resolves the optional gesture factory. Uses the non-generic GetService with a cast
+		// to return null on both unregistered services and type mismatches, without swallowing
+		// genuine construction failures from the factory itself.
+		static IGesturePlatformManagerFactory? GetOptionalGesturePlatformManagerFactory(IServiceProvider? services)
+		{
+			if (services is null)
+				return null;
+
+			return services.GetService(typeof(IGesturePlatformManagerFactory)) as IGesturePlatformManagerFactory;
 		}
 	}
 }

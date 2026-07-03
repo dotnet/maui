@@ -415,6 +415,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SwipeItemViewCommandCanExecuteUpdatesIsEnabled()
+		{
+			var expectedParameter = new object();
+			var canExecute = false;
+			var command = new Command(
+				_ => { },
+				parameter => canExecute && ReferenceEquals(parameter, expectedParameter));
+			var swipeItemView = new SwipeItemView
+			{
+				CommandParameter = expectedParameter,
+				Command = command
+			};
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			canExecute = true;
+			command.ChangeCanExecute();
+
+			Assert.True(swipeItemView.IsEnabled);
+
+			swipeItemView.CommandParameter = new object();
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			swipeItemView.CommandParameter = expectedParameter;
+
+			Assert.True(swipeItemView.IsEnabled);
+
+			swipeItemView.IsEnabled = false;
+			command.ChangeCanExecute();
+
+			Assert.False(swipeItemView.IsEnabled);
+		}
+
+		[Fact]
 		public void SwipeItemsRemainInLogicalTreeWhenContentIsSet()
 		{
 			var swipeView = new SwipeView();
@@ -485,6 +520,86 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		class TestViewModel
 		{
 			public Command TestCommand { get; set; }
+		}
+
+		static object GetPrivateField(object obj, string fieldName)
+		{
+			var field = obj.GetType().GetField(fieldName,
+				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+			return field?.GetValue(obj);
+		}
+
+		[Fact]
+		public void SwipeViewFindsScrollParentDirectlyWhenTreeIsConnected()
+		{
+			// Non-DataTemplate scenario: SwipeView added to an already-connected ScrollView
+			var scrollView = new ScrollView();
+			var contentView = new ContentView();
+			scrollView.Content = contentView;
+
+			var swipeView = new SwipeView();
+			contentView.Content = swipeView;
+
+			// SwipeView should find the ScrollView via direct parent walk
+			Assert.Equal(scrollView, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewFindsScrollParentAfterTemplateParentConnected()
+		{
+			// DataTemplate scenario: SwipeView inside ContentView (template root with no parent)
+			var swipeView = new SwipeView();
+			var contentView = new ContentView { Content = swipeView };
+
+			// At this point contentView.Parent is null, simulating an unattached template root.
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Connect the template root to a ScrollView (simulating CollectionView adding the item)
+			var scrollView = new ScrollView { Content = contentView };
+
+			// SwipeView should now have discovered the ScrollView via deferred discovery
+			Assert.Equal(scrollView, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewResubscribesToScrollParentAfterRemovalAndReaddition()
+		{
+			var swipeView = new SwipeView();
+			var contentView1 = new ContentView { Content = swipeView };
+			var scrollView1 = new ScrollView { Content = contentView1 };
+
+			Assert.Equal(scrollView1, GetPrivateField(swipeView, "_scrollParent"));
+
+			// Remove SwipeView from the tree entirely
+			contentView1.Content = null;
+
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Re-add SwipeView to a different tree with a different ScrollView
+			var contentView2 = new ContentView { Content = swipeView };
+			var scrollView2 = new ScrollView { Content = contentView2 };
+
+			// SwipeView should discover the new ScrollView, not remain stuck on the old one
+			Assert.Equal(scrollView2, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewRediscoversScrollParentWhenTemplateRootIsReparented()
+		{
+			// Simulate virtualization: template root is detached then reattached
+			var swipeView = new SwipeView();
+			var contentView = new ContentView { Content = swipeView };
+
+			var scrollView1 = new ScrollView { Content = contentView };
+			Assert.Equal(scrollView1, GetPrivateField(swipeView, "_scrollParent"));
+
+			// Detach the template root (virtualization removal)
+			scrollView1.Content = null;
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Reattach to a different ScrollView (virtualization re-use)
+			var scrollView2 = new ScrollView { Content = contentView };
+			Assert.Equal(scrollView2, GetPrivateField(swipeView, "_scrollParent"));
 		}
 	}
 }

@@ -49,7 +49,7 @@ parameters:
   type: object
   default:
     name: Azure Pipelines
-    vmImage: macOS-15
+    vmImage: $(HostedMacImage)
     os: macOS
 
 resources:
@@ -65,6 +65,8 @@ extends:
   ${{ else }}:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive, CFSClean, CFSClean2
     pool: ${{ parameters.WindowsPool }}
     sdl:
       binskim:
@@ -125,6 +127,3 @@ extends:
         - Pack
         publishDependsOn:
         - Validate
-        # This is to enable SDL runs part of Post-Build Validation Stage
-        SDLValidationParameters:
-          enable: false

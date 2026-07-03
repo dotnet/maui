@@ -11,6 +11,7 @@ using System.Collections;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace Microsoft.Maui.Layouts.Flex
 {
@@ -618,13 +619,6 @@ namespace Microsoft.Maui.Layouts.Flex
 
 					flex_layout.flex_layout_line line = layout.lines![i];
 
-					if (layout.reverse2)
-					{
-						pos -= line.size;
-						pos -= spacing;
-						old_pos -= line.size;
-					}
-
 					// Re-position the children of this line, honoring any child
 					// alignment previously set within the line.
 					for (int j = line.child_begin; j < line.child_end; j++)
@@ -646,7 +640,13 @@ namespace Microsoft.Maui.Layouts.Flex
 						child.Frame[layout.frame_pos2_i] = pos + (child.Frame[layout.frame_pos2_i] - old_pos);
 					}
 
-					if (!layout.reverse2)
+					if (layout.reverse2)
+					{
+						pos -= line.size;
+						pos -= spacing;
+						old_pos -= line.size;
+					}
+					else
 					{
 						pos += line.size;
 						pos += spacing;
@@ -800,10 +800,15 @@ namespace Microsoft.Maui.Layouts.Flex
 				float flex_size = 0;
 				if (layout.flex_dim > 0)
 				{
+					// Only the free space is distributed proportionally,
+					// not the total container space. layout.flex_dim was inflated by extra_flex_dim
+					// (the sum of measured sizes of growing items), so we recover the actual free
+					// space by subtracting it back. The item's measured size is preserved and the
+					// proportional share of free space is added on top.
+					float freeSpace = Math.Max(0, layout.flex_dim - layout.extra_flex_dim);
 					if (child.Grow != 0)
 					{
-						child.Frame[layout.frame_size_i] = 0; // Ignore previous size when growing.
-						flex_size = (layout.flex_dim / layout.flex_grows) * child.Grow;
+						flex_size = (freeSpace / layout.flex_grows) * child.Grow;
 					}
 				}
 				else if (layout.flex_dim < 0)
@@ -1022,29 +1027,12 @@ namespace Microsoft.Maui.Layouts.Flex
 				ordered_indices_count = 0;
 				if (item.ShouldOrderChildren && item.Count > 0)
 				{
-					var indices = ArrayPool<int>.Shared.Rent(item.Count);
-					ordered_indices_count = item.Count;
-					// Creating a list of item indices sorted using the children's `order'
-					// attribute values. We are using a simple insertion sort as we need
-					// stability (insertion order must be preserved) and cross-platform
-					// support. We should eventually switch to merge sort (or something
-					// else) if the number of items becomes significant enough.
-					for (int i = 0; i < item.Count; i++)
-					{
-						indices[i] = i;
-						for (int j = i; j > 0; j--)
-						{
-							int prev = indices[j - 1];
-							int curr = indices[j];
-							if (item[prev].Order <= item[curr].Order)
-							{
-								break;
-							}
-							indices[j - 1] = curr;
-							indices[j] = prev;
-						}
-					}
-					ordered_indices = indices;
+					// Sort original indices by each child's Order using a stable sort.
+					// OrderBy is guaranteed stable in .NET, preserving insertion order
+					// for children with equal Order values.
+					ordered_indices = Enumerable.Range(0, item.Count)
+						.OrderBy(i => item[i].Order)
+						.ToArray();
 				}
 
 				flex_dim = 0;

@@ -1,5 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Reflection;
+using System.Threading.Tasks;
+using CoreAnimation;
+using CoreGraphics;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 
@@ -104,6 +110,78 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			});
 
 			Assert.Equal(UIUserInterfaceLayoutDirection.LeftToRight, labelFlowDirection);
+		}
+
+		[Fact]
+		public async Task RemoveContentMaskDoesNotThrowWhenDisposed()
+		{
+			// Verify that removing a subview with an active clip mask does not throw
+			// ObjectDisposedException when the underlying CAShapeLayer is already disposed.
+			// Related: https://github.com/dotnet/macios/issues/10562
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var contentView = new Microsoft.Maui.Platform.ContentView();
+				contentView.Frame = new CGRect(0, 0, 200, 200);
+
+				var content = new UIView { Tag = Microsoft.Maui.Platform.ContentView.ContentTag };
+				content.Frame = new CGRect(0, 0, 200, 200);
+				contentView.AddSubview(content);
+
+				// Set a clip to trigger _contentMask creation via UpdateClip
+				contentView.Clip = new BorderStrokeStub();
+				contentView.LayoutSubviews();
+
+				// Verify the mask was created
+				Assert.IsAssignableFrom<CAShapeLayer>(content.Layer.Mask);
+
+				// Create a deterministically-disposed CAShapeLayer.
+				// A freshly-created layer with zero native retains is guaranteed
+				// to have Handle == IntPtr.Zero after Dispose(), regardless of
+				// platform-specific retain-count or GC timing behavior.
+				var disposedLayer = new CAShapeLayer();
+				disposedLayer.Dispose();
+				Assert.True(disposedLayer.Handle == IntPtr.Zero, "Disposed layer must have a zeroed Handle");
+
+				// Use reflection to inject the disposed layer into the private
+				// _contentMask field, simulating the race condition where iOS
+				// deallocates the native layer during view teardown while our
+				// managed field still holds a reference.
+				var field = typeof(Microsoft.Maui.Platform.ContentView)
+					.GetField("_contentMask", BindingFlags.NonPublic | BindingFlags.Instance);
+				Assert.NotNull(field);
+				field!.SetValue(contentView, disposedLayer);
+
+				// RemoveFromSuperview triggers WillRemoveSubview → RemoveContentMask.
+				// Without the Handle guard, this would throw ObjectDisposedException
+				// when calling RemoveFromSuperLayer() on the disposed mask.
+				var ex = Record.Exception(() => content.RemoveFromSuperview());
+				Assert.Null(ex);
+			});
+		}
+
+		/// <summary>
+		/// Minimal IBorderStroke stub for testing clip mask creation.
+		/// </summary>
+		class BorderStrokeStub : IBorderStroke
+		{
+			public IShape Shape { get; set; } = new RectangleShape();
+			public Paint Stroke { get; set; }
+			public double StrokeThickness { get; set; } = 1;
+			public LineCap StrokeLineCap { get; set; }
+			public LineJoin StrokeLineJoin { get; set; }
+			public float[] StrokeDashPattern { get; set; }
+			public float StrokeDashOffset { get; set; }
+			public float StrokeMiterLimit { get; set; }
+		}
+
+		class RectangleShape : IShape
+		{
+			public PathF PathForBounds(Rect bounds)
+			{
+				var path = new PathF();
+				path.AppendRectangle(bounds);
+				return path;
+			}
 		}
 	}
 }

@@ -489,6 +489,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			if (ItemsSource is null || ItemsSource.ItemCount == 0 || goToPosition >= ItemsSource.ItemCount)
+			{
+				return;
+			}
+
 			if (carousel.Loop)
 			{
 				carouselPosition = _carouselViewLoopManager?.GetCorrectPositionForCenterItem(CollectionView) ?? -1;
@@ -555,9 +560,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			if (currentItemIndex.Row < 0)
+			{
+				return;
+			}
 
-			ScrollToPosition(currentItemPosition, carousel.Position, carousel.AnimateCurrentItemChanges);
+			ScrollToPosition(currentItemIndex.Row, carousel.Position, carousel.AnimateCurrentItemChanges);
 
 			UpdateVisualStates();
 		}
@@ -580,7 +589,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			var currentItemPosition = currentItemIndex.Row;
 			var carouselPosition = carousel.Position;
 			if (carouselPosition == _gotoPosition)
 			{
