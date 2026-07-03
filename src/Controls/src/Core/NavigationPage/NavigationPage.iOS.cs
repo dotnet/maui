@@ -361,20 +361,21 @@ namespace Microsoft.Maui.Controls
 			}
 
 			bool shouldHide = iOSSpecificNavigationPage.GetHideNavigationBarSeparator(navigationPage);
+			var shadowColor = shouldHide ? UIColor.Clear : UIColor.FromRGBA(0, 0, 0, 76);
 
-			if (shouldHide)
-			{
-				navBar.CompactAppearance.ShadowColor = UIColor.Clear;
-				navBar.StandardAppearance.ShadowColor = UIColor.Clear;
-				navBar.ScrollEdgeAppearance.ShadowColor = UIColor.Clear;
-			}
-			else
-			{
-				var defaultShadowColor = UIColor.FromRGBA(0, 0, 0, 76);
-				navBar.CompactAppearance.ShadowColor = defaultShadowColor;
-				navBar.StandardAppearance.ShadowColor = defaultShadowColor;
-				navBar.ScrollEdgeAppearance.ShadowColor = defaultShadowColor;
-			}
+			// Use copy/mutate/reassign pattern — in-place mutation is not detected
+			// by UIKit on iOS 26 Liquid Glass.
+			var compact = navBar.CompactAppearance;
+			compact.ShadowColor = shadowColor;
+			navBar.CompactAppearance = compact;
+
+			var standard = navBar.StandardAppearance;
+			standard.ShadowColor = shadowColor;
+			navBar.StandardAppearance = standard;
+
+			var scrollEdge = navBar.ScrollEdgeAppearance;
+			scrollEdge.ShadowColor = shadowColor;
+			navBar.ScrollEdgeAppearance = scrollEdge;
 		}
 	}
 }

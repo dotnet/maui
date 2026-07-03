@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		internal UINavigationController? NavigationController => _navManager?.NavigationController;
 
-		UIViewController IPlatformViewHandler.ViewController => _navManager?.NavigationController ?? throw new InvalidOperationException("Handler not connected");
+		UIViewController? IPlatformViewHandler.ViewController => _navManager?.NavigationController;
 
 		protected override UIView CreatePlatformView()
 		{
@@ -173,6 +173,25 @@ namespace Microsoft.Maui.Handlers
 
 			NavigationStack = new List<IView>(newStack);
 			NavigationView.NavigationFinished(NavigationStack);
+
+			// Clean up VCs for pages removed from the stack (mid-stack removals).
+			// Without this, removed pages' VCs stay in _viewControllerMap with active
+			// PropertyChanged/CollectionChanged subscriptions, leaking the page.
+			if (midStackChanged)
+			{
+				var newSet = new HashSet<IView>(newStack);
+				foreach (var view in oldStack)
+				{
+					if (!newSet.Contains(view))
+					{
+						if (_viewControllerMap.TryGetValue(view, out var vc))
+						{
+							(vc as IDisposable)?.Dispose();
+						}
+						_viewControllerMap.Remove(view);
+					}
+				}
+			}
 
 			// After mid-stack changes, the top VC's left bar button may need updating
 			// (e.g., flyout icon → back button after InsertPageBefore at root).
