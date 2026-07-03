@@ -43,8 +43,7 @@ namespace Microsoft.Maui.Platform
 					break;
 
 				case ImageSourcePaint image:
-					var provider = searchBar.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-					uiSearchBar.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(searchBar.Handler);
+					uiSearchBar.UpdateBackgroundImageSource(image.ImageSource, searchBar.Handler);
 					break;
 
 				case SolidPaint solid:

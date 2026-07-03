@@ -73,12 +73,16 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this UIView platformView, IView view)
 		{
-			if (platformView.TryUpdateBackgroundImage(view))
-			{
-				return;
-			}
+			var background = view.Background;
 
-			platformView.UpdateBackground(view.Background, view as IButtonStroke);
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				platformView.UpdateBackgroundImageSource(sourcePaint.ImageSource, view.Handler);
+			}
+			else
+			{
+				platformView.UpdateBackground(background, view as IButtonStroke);
+			}
 		}
 
 		public static void UpdateBackground(this UIView platformView, Paint? paint, IButtonStroke? stroke = null)
@@ -450,20 +454,10 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		/// <summary>
-		/// Checks if the view's background is an image source and updates it asynchronously.
-		/// Returns true if handled, false if not an image background.
-		/// </summary>
-		internal static bool TryUpdateBackgroundImage(this UIView platformView, IView view)
+		internal static void UpdateBackgroundImageSource(this UIView platformView, IImageSource? imageSource, IElementHandler? handler)
 		{
-			if (view.Background is not ImageSourcePaint image)
-			{
-				return false;
-			}
-
-			var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-			platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
-			return true;
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateBackgroundImageSourceAsync(imageSource, provider).FireAndForget(handler);
 		}
 
 		public static int IndexOfSubview(this UIView platformView, UIView subview)

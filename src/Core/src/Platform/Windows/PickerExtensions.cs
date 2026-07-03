@@ -18,17 +18,21 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
 		{
-			if (nativeComboBox.TryUpdateBackgroundImageForAllStates(picker, BackgroundColorResourceKeys))
+			var background = picker.Background;
+			var brush = background?.ToPlatform();
+
+			if (background is ImageSourcePaint sourcePaint)
 			{
-				return;
+				nativeComboBox.UpdateBackgroundImageForAllStates(sourcePaint.ImageSource, picker.Handler, BackgroundColorResourceKeys);
 			}
-
-			var platformBrush = picker.Background?.ToPlatform();
-
-			if (platformBrush == null)
+			else if (brush is null)
+			{
 				nativeComboBox.Resources.RemoveKeys(BackgroundColorResourceKeys);
+			}
 			else
-				nativeComboBox.Resources.SetValueForAllKey(BackgroundColorResourceKeys, platformBrush);
+			{
+				nativeComboBox.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
+			}
 
 			nativeComboBox.RefreshThemeResources();
 		}

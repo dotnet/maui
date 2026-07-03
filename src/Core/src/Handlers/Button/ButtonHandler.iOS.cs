@@ -51,13 +51,12 @@ namespace Microsoft.Maui.Handlers
 #if MACCATALYST
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			if (handler.PlatformView?.TryUpdateBackgroundImage(button) is true)
+			if (button.Background is ImageSourcePaint sourcePaint)
 			{
-				return;
+				handler.PlatformView?.UpdateBackgroundImageSource(sourcePaint.ImageSource, handler);
 			}
-
 			//If this is a Mac optimized interface
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+			else if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
 			{
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.Background is Paint paint)
@@ -85,12 +84,14 @@ namespace Microsoft.Maui.Handlers
 		// TODO: Make this public in .NET 11
 		internal static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			if (handler.PlatformView?.TryUpdateBackgroundImage(button) is true)
+			if (button.Background is ImageSourcePaint sourcePaint)
 			{
-				return;
+				handler.PlatformView?.UpdateBackgroundImageSource(sourcePaint.ImageSource, handler);
 			}
-
-			handler.PlatformView?.UpdateBackground(button.Background);
+			else
+			{
+				handler.PlatformView?.UpdateBackground(button.Background);
+			}
 		}
 #endif
 

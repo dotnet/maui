@@ -221,24 +221,21 @@ namespace Microsoft.Maui.Platform
 				platformView.UpdateBorderStroke(border);
 		}
 
-		public static void UpdateBackground(this AView platformView, IView view)
-		{
-			if (platformView.TryUpdateBackgroundImage(view))
-			{
-				return;
-			}
-
+		public static void UpdateBackground(this AView platformView, IView view) =>
 			platformView.UpdateBackground(view, false);
-		}
 
 		internal static void UpdateBackground(this AView platformView, IView view, bool treatTransparentAsNull)
 		{
-			if (platformView.TryUpdateBackgroundImage(view))
-			{
-				return;
-			}
+			var background = view.Background;
 
-			platformView.UpdateBackground(view.Background, treatTransparentAsNull);
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				platformView.UpdateBackgroundImageSource(sourcePaint.ImageSource, view.Handler);
+			}
+			else
+			{
+				platformView.UpdateBackground(background, treatTransparentAsNull);
+			}
 		}
 
 		internal static void UpdateBackground(this TextView platformView, IView view) =>
@@ -251,11 +248,6 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (platformView.TryUpdateBackgroundImage(view))
-			{
-				return;
-			}
-
 			// The user has removed the background from the platform view in platform code
 			// so we need to make sure to do absolutely nothing.
 			if (platformView.Background is null)
@@ -263,70 +255,77 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			// Get the current background of the edit text so we can make sure to not overwite it
-			// if it is not something that we have set in MAUI.
-			var previousDrawable = platformView.Background;
-
-			// Remove the previous MAUI background (if any).
-			if (previousDrawable is MauiDrawable || previousDrawable is MauiLayerDrawable)
+			if (view.Background is ImageSourcePaint sourcePaint)
 			{
-				platformView.Background = null;
-				previousDrawable.Dispose();
-				previousDrawable = null;
-			}
-
-			// Get the new background from the virtual view
-			var paint = view.Background;
-			var backgroundDrawable = paint.ToDrawable(platformView.Context);
-
-			if (backgroundDrawable is not null || previousDrawable is null)
-			{
-				// There is a new background to set, or we removed a previous background and
-				// now we have to re-apply just the default "line" background.
-
-				// Regardless of what the new background is, we will need to apply the default
-				// background "line" on top of it.
-				// If for some reason this returns null, then there is nothing we can do because
-				// AndroidX is probably broken since this is a resource from the AndroidX library.
-				var defaultBackground = ContextCompat.GetDrawable(platformView.Context, Resource.Drawable.abc_edit_text_material);
-
-				if (backgroundDrawable is not null)
-				{
-					// The user set some background, so we need to apply it below the default "line".
-					// If there is a broken AndroidX, then nothing we can do but just use ours.
-					SetBackground(platformView, defaultBackground is null
-						? new MauiLayerDrawable(backgroundDrawable)
-						: new MauiLayerDrawable(backgroundDrawable, defaultBackground));
-				}
-				else if (previousDrawable is null)
-				{
-					// The user set null in the virtual view (or did not set anything/kept the defaults)
-					// as we just removed a MAUI background from the platform view.
-					// This means we just use the default Material background (the "line").
-					SetBackground(platformView, defaultBackground);
-				}
+				((AView)platformView).UpdateBackgroundImageSource(sourcePaint.ImageSource, view.Handler);
 			}
 			else
 			{
-				// The drawable currently in use was not a MAUI drawable nor are we setting a new
-				// one so just do nothing and keep whatever the user has set in platform code.
-			}
+				// Get the current background of the edit text so we can make sure to not overwite it
+				// if it is not something that we have set in MAUI.
+				var previousDrawable = platformView.Background;
 
-			// A helper method to set the background and re-apply the padding since
-			// Android will reset the padding when setting a Background drawable.
-			static void SetBackground(EditText platformView, Drawable? background)
-			{
-				// Cache the current padding
-				var padLeft = platformView.PaddingLeft;
-				var padTop = platformView.PaddingTop;
-				var padRight = platformView.PaddingRight;
-				var padBottom = platformView.PaddingBottom;
+				// Remove the previous MAUI background (if any).
+				if (previousDrawable is MauiDrawable || previousDrawable is MauiLayerDrawable)
+				{
+					platformView.Background = null;
+					previousDrawable.Dispose();
+					previousDrawable = null;
+				}
 
-				// Set the new background
-				platformView.Background = background;
+				// Get the new background from the virtual view
+				var paint = view.Background;
+				var backgroundDrawable = paint.ToDrawable(platformView.Context);
 
-				// Apply previous padding
-				platformView.SetPadding(padLeft, padTop, padRight, padBottom);
+				if (backgroundDrawable is not null || previousDrawable is null)
+				{
+					// There is a new background to set, or we removed a previous background and
+					// now we have to re-apply just the default "line" background.
+
+					// Regardless of what the new background is, we will need to apply the default
+					// background "line" on top of it.
+					// If for some reason this returns null, then there is nothing we can do because
+					// AndroidX is probably broken since this is a resource from the AndroidX library.
+					var defaultBackground = ContextCompat.GetDrawable(platformView.Context, Resource.Drawable.abc_edit_text_material);
+
+					if (backgroundDrawable is not null)
+					{
+						// The user set some background, so we need to apply it below the default "line".
+						// If there is a broken AndroidX, then nothing we can do but just use ours.
+						SetBackground(platformView, defaultBackground is null
+							? new MauiLayerDrawable(backgroundDrawable)
+							: new MauiLayerDrawable(backgroundDrawable, defaultBackground));
+					}
+					else if (previousDrawable is null)
+					{
+						// The user set null in the virtual view (or did not set anything/kept the defaults)
+						// as we just removed a MAUI background from the platform view.
+						// This means we just use the default Material background (the "line").
+						SetBackground(platformView, defaultBackground);
+					}
+				}
+				else
+				{
+					// The drawable currently in use was not a MAUI drawable nor are we setting a new
+					// one so just do nothing and keep whatever the user has set in platform code.
+				}
+
+				// A helper method to set the background and re-apply the padding since
+				// Android will reset the padding when setting a Background drawable.
+				static void SetBackground(EditText platformView, Drawable? background)
+				{
+					// Cache the current padding
+					var padLeft = platformView.PaddingLeft;
+					var padTop = platformView.PaddingTop;
+					var padRight = platformView.PaddingRight;
+					var padBottom = platformView.PaddingBottom;
+
+					// Set the new background
+					platformView.Background = background;
+
+					// Apply previous padding
+					platformView.SetPadding(padLeft, padTop, padRight, padBottom);
+				}
 			}
 		}
 
@@ -500,20 +499,10 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		/// <summary>
-		/// Checks if the view's background is an image source and updates it asynchronously.
-		/// Returns true if handled, false if not an image background.
-		/// </summary>
-		internal static bool TryUpdateBackgroundImage(this AView platformView, IView view)
+		internal static void UpdateBackgroundImageSource(this AView platformView, IImageSource? imageSource, IElementHandler? handler)
 		{
-			if (view.Background is not ImageSourcePaint image)
-			{
-				return false;
-			}
-
-			var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-			platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
-			return true;
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateBackgroundImageSourceAsync(imageSource, provider).FireAndForget(handler);
 		}
 
 		public static void UpdateToolTip(this AView view, ToolTip? tooltip)

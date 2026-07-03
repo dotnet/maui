@@ -25,17 +25,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this RadioButton platformRadioButton, IRadioButton button)
 		{
-			if (platformRadioButton.TryUpdateBackgroundImageForAllStates(button, _backgroundColorKeys))
-			{
-				return;
-			}
+			var background = button.Background;
 
-			if (button.Background is SolidPaint solidPaint)
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				platformRadioButton.UpdateBackgroundImageForAllStates(sourcePaint.ImageSource, button.Handler, _backgroundColorKeys);
+			}
+			else if (background is SolidPaint solidPaint)
 			{
 				UpdateColors(platformRadioButton.Resources, _backgroundColorKeys, solidPaint.ToPlatform());
-
-				platformRadioButton.RefreshThemeResources();
 			}
+
+			platformRadioButton.RefreshThemeResources();
 		}
 
 		private static readonly string[] _foregroundColorKeys =

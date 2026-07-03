@@ -63,29 +63,31 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
 		{
-			if (((AView)platformView).TryUpdateBackgroundImage(button))
+			if (button.Background is ImageSourcePaint sourcePaint)
 			{
-				return;
+				((AView)platformView).UpdateBackgroundImageSource(sourcePaint.ImageSource, button.Handler);
 			}
+			else
+			{
+				platformView.UpdateMauiRippleDrawableBackground(
+					button.Background ?? new SolidPaint(Colors.Transparent), // transparent to force some background
+					button,
+					beforeSet: () =>
+					{
+						// We have a background, so we need to remove the things that were set on the
+						// platform view as they are now in the drawable.
 
-			platformView.UpdateMauiRippleDrawableBackground(
-				button.Background ?? new SolidPaint(Colors.Transparent), // transparent to force some background
-				button,
-				beforeSet: () =>
-				{
-					// We have a background, so we need to remove the things that were set on the
-					// platform view as they are now in the drawable.
+						platformView.StrokeColor = null;
 
-					platformView.StrokeColor = null;
+						platformView.StrokeWidth = 0;
 
-					platformView.StrokeWidth = 0;
-
-					platformView.ShapeAppearanceModel =
-						platformView.ShapeAppearanceModel
-							.ToBuilder()
-							.SetAllCornerSizes(0)
-							.Build();
-				});
+						platformView.ShapeAppearanceModel =
+							platformView.ShapeAppearanceModel
+								.ToBuilder()
+								.SetAllCornerSizes(0)
+								.Build();
+					});
+			}
 		}
 
 		public static void UpdateRippleColor(this ShapeableImageView platformView, Color rippleColor)
