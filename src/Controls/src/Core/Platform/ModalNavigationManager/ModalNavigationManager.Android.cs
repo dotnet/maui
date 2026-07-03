@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning restore CA1422
 				}
 
-				if (mainActivityWindow is not null)
+				if (RuntimeFeature.UseMauiAndroidSystemBarBackgrounds && mainActivityWindow is not null)
 				{
 					CopySystemBarForegroundAppearance(mainActivityWindow, dialog.Window);
 				}

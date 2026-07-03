@@ -173,8 +173,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "NavigationPage BarBackgroundColor respects Android system bar opt-out")]
-		public async Task BarBackgroundColorDoesNotUpdateAndroidStatusBarWhenRuntimeFeatureDisabled()
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor respects Android system chrome opt-out")]
+		public async Task BarBackgroundColorDoesNotUpdateAndroidSystemChromeWhenRuntimeFeatureDisabled()
 		{
 			SetupBuilder();
 
@@ -208,11 +208,13 @@ namespace Microsoft.Maui.DeviceTests
 
 					try
 					{
+						var originalAppBarBackgroundColor = GetAppBarBackgroundColor(appBar);
 						platformWindow.SetStatusBarColor(expectedSystemBarColor.ToPlatform());
 
 						navPage.BarBackgroundColor = barBackgroundColor;
 
-						await AssertEventually(() => GetAppBarBackgroundColor(appBar) == barBackgroundColor.ToPlatform().ToArgb());
+						await Task.Delay(100);
+						Assert.Equal(originalAppBarBackgroundColor, GetAppBarBackgroundColor(appBar));
 						Assert.Equal(expectedSystemBarColor.ToPlatform().ToArgb(), platformWindow.StatusBarColor);
 					}
 					finally
