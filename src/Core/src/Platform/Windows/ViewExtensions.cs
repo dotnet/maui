@@ -118,12 +118,16 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this FrameworkElement platformView, IView view)
 		{
-			if (platformView.TryUpdateBackgroundImage(view))
-			{
-				return;
-			}
+			var background = view.Background;
 
-			platformView?.UpdatePlatformViewBackground(view);
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				platformView?.UpdateBackgroundImageSource(sourcePaint.ImageSource, view.Handler);
+			}
+			else
+			{
+				platformView?.UpdatePlatformViewBackground(view);
+			}
 		}
 
 		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
@@ -302,36 +306,16 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		/// <summary>
-		/// Checks if the view's background is an image source and updates all visual state resources.
-		/// Returns true if handled, false if not an image background.
-		/// </summary>
-		internal static bool TryUpdateBackgroundImageForAllStates(this FrameworkElement platformView, IView view, string[] resourceKeys)
+		internal static void UpdateBackgroundImageForAllStates(this FrameworkElement platformView, IImageSource? imageSource, IElementHandler? handler, string[] resourceKeys)
 		{
-			if (view.Background is not ImageSourcePaint image)
-			{
-				return false;
-			}
-
-			var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-			platformView.UpdateBackgroundImageForAllStatesAsync(image.ImageSource, provider, resourceKeys).FireAndForget(view.Handler);
-			return true;
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateBackgroundImageForAllStatesAsync(imageSource, provider, resourceKeys).FireAndForget(handler);
 		}
 
-		/// <summary>
-		/// Checks if the view's background is an image source and updates it asynchronously.
-		/// Returns true if handled, false if not an image background.
-		/// </summary>
-		internal static bool TryUpdateBackgroundImage(this FrameworkElement platformView, IView view)
+		internal static void UpdateBackgroundImageSource(this FrameworkElement platformView, IImageSource? imageSource, IElementHandler? handler)
 		{
-			if (view.Background is not ImageSourcePaint image)
-			{
-				return false;
-			}
-
-			var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-			platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
-			return true;
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateBackgroundImageSourceAsync(imageSource, provider).FireAndForget(handler);
 		}
 
 		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
@@ -345,12 +329,16 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
 		{
-			if (layoutPanel.TryUpdateBackgroundImage(layout))
-			{
-				return;
-			}
+			var background = layout.Background;
 
-			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				layoutPanel?.UpdateBackgroundImageSource(sourcePaint.ImageSource, layout.Handler);
+			}
+			else
+			{
+				layoutPanel.UpdateInputTransparent(layout.InputTransparent, background?.ToPlatform());
+			}
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)

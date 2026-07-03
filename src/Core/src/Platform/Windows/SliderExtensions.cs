@@ -148,12 +148,16 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBackgroundColor(this MauiSlider platformSlider, ISlider slider)
 		{
-			if (platformSlider.TryUpdateBackgroundImageForAllStates(slider, BackgroundColorResourceKeys))
-			{
-				return;
-			}
+			var background = slider.Background;
 
-			UpdateColor(platformSlider, BackgroundColorResourceKeys, slider.Background?.ToPlatform());
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				platformSlider.UpdateBackgroundImageForAllStates(sourcePaint.ImageSource, slider.Handler, BackgroundColorResourceKeys);
+			}
+			else
+			{
+				UpdateColor(platformSlider, BackgroundColorResourceKeys, background?.ToPlatform());
+			}
 		}
 
 		static void UpdateColor(Slider platformSlider, string[] keys, Brush? brush)

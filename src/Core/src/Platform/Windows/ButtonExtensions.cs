@@ -85,17 +85,21 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this Button platformButton, IButton button)
 		{
-			if (platformButton.TryUpdateBackgroundImageForAllStates(button, BackgroundResourceKeys))
+			var background = button.Background;
+			var brush = background?.ToPlatform();
+
+			if (background is ImageSourcePaint sourcePaint)
 			{
-				return;
+				platformButton.UpdateBackgroundImageForAllStates(sourcePaint.ImageSource, button.Handler, BackgroundResourceKeys);
 			}
-
-			var brush = button.Background?.ToPlatform();
-
-			if (brush is null)
+			else if (brush is null)
+			{
 				platformButton.Resources.RemoveKeys(BackgroundResourceKeys);
+			}
 			else
+			{
 				platformButton.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
+			}
 
 			platformButton.RefreshThemeResources();
 		}
