@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -12,17 +13,38 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	public class ShellFlyoutContentRenderer : UIViewController, IShellFlyoutContentRenderer
 	{
 		CGSize _previousBounds;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The blur view is owned by this renderer and released in Dispose.")]
 		UIVisualEffectView _blurView;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The background image view is owned by this renderer and released in Dispose.")]
 		UIImageView _bgImage;
-		readonly IShellContext _shellContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The shell context is retained for the renderer lifetime and released after Shell.PropertyChanged is unsubscribed in Dispose.")]
+		IShellContext _shellContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The header container is owned by this renderer and disposed when replaced or in Dispose.")]
 		UIContainerView _headerView;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The footer container is owned by this renderer and disposed when replaced or in Dispose.")]
 		UIContainerView _footerView;
 		View _footer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The table view controller is a child controller owned by this renderer and released in Dispose.")]
 		ShellTableViewController _tableViewController;
 		ShellFlyoutLayoutManager _shellFlyoutContentManager;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The view ordering cache only references renderer-owned subviews and is cleared in Dispose.")]
 		UIView[] _uIViews;
-		public event EventHandler WillAppear;
-		public event EventHandler WillDisappear;
+		event EventHandler WillAppear;
+		event EventHandler WillDisappear;
+
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "IShellFlyoutContentRenderer exposes this lifecycle event, so the explicit interface event must remain available to interface consumers.")]
+		event EventHandler IShellFlyoutContentRenderer.WillAppear
+		{
+			add => WillAppear += value;
+			remove => WillAppear -= value;
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "IShellFlyoutContentRenderer exposes this lifecycle event, so the explicit interface event must remain available to interface consumers.")]
+		event EventHandler IShellFlyoutContentRenderer.WillDisappear
+		{
+			add => WillDisappear += value;
+			remove => WillDisappear -= value;
+		}
 
 		const short HeaderIndex = 0;
 		const short FooterIndex = 1;
@@ -46,6 +68,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return new ShellTableViewController(_shellContext, OnElementSelected);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The Shell.PropertyChanged subscription is removed in Dispose before the shell context is released.")]
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.IsOneOf(
@@ -137,6 +160,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var oldRenderer = (IPlatformViewHandler)_footer.Handler;
 				var oldFooterView = _footerView;
+				_footer.MeasureInvalidated -= OnFooterMeasureInvalidated;
 				_tableViewController.FooterView = null;
 				_footerView?.Disconnect();
 				_footerView = null;
@@ -206,6 +230,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			View.AddSubview(newView);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The footer MeasureInvalidated subscription is removed when the footer is replaced and in Dispose.")]
 		void OnFooterMeasureInvalidated(object sender, System.EventArgs e)
 		{
 			ReMeasureFooter();
@@ -403,6 +428,44 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnElementSelected(Element element)
 		{
 			((IShellController)_shellContext.Shell).OnFlyoutItemSelected(element);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (_shellContext?.Shell is not null)
+					_shellContext.Shell.PropertyChanged -= HandleShellPropertyChanged;
+
+				if (_footer is not null)
+					_footer.MeasureInvalidated -= OnFooterMeasureInvalidated;
+
+				_headerView?.Disconnect();
+				_footerView?.Disconnect();
+				_headerView?.RemoveFromSuperview();
+				_footerView?.RemoveFromSuperview();
+				_blurView?.RemoveFromSuperview();
+				_bgImage?.RemoveFromSuperview();
+				_bgImage?.Image?.Dispose();
+				_bgImage?.Dispose();
+				_blurView?.Dispose();
+				_headerView?.Dispose();
+				_footerView?.Dispose();
+				_tableViewController?.RemoveFromParentViewController();
+				_tableViewController?.Dispose();
+			}
+
+			_bgImage = null;
+			_blurView = null;
+			_headerView = null;
+			_footerView = null;
+			_footer = null;
+			_tableViewController = null;
+			_shellFlyoutContentManager = null;
+			_shellContext = null;
+			_uIViews = null;
+
+			base.Dispose(disposing);
 		}
 	}
 }
