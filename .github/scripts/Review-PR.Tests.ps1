@@ -7,9 +7,10 @@
       - Get-TrxResults  (parses VSTest TRX produced by `dotnet test --logger trx`)
       - Get-DotNetTestResults  (legacy console-output scraper, still used as fallback
                                 when TRX is missing)
+      - Copilot token usage helpers
 
     These functions sit on the critical path of STEP 3 (UI Test Execution
-    Results in the AI summary comment). A regression here can silently
+    Results in the AI summary review). A regression here can silently
     misrender per-test counts (e.g. "1/1 (1 ❌)" instead of "75/619 (544 ❌)")
     so they're worth pinning with focused tests.
 
@@ -41,6 +42,206 @@ BeforeAll {
 
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TrxResults')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-DotNetTestResults')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-IsNumericValue')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'ConvertTo-AzdoSafeConsole')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-ObjectMemberValue')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotUsageTokenFields')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TokenFieldSum')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TokenFieldPathDepth')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Select-CanonicalTokenFields')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotTokenMetrics')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Convert-CopilotCompactNumber')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotCliUsageLineData')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotOtelTokenMetrics')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
+}
+
+Describe 'Copilot token usage helpers' {
+    It 'normalizes known token fields while preserving raw token field paths' {
+        $usage = [pscustomobject]@{
+            inputTokens        = 100
+            outputTokens       = 40
+            totalApiDurationMs = 1234
+            nested             = [pscustomobject]@{
+                cachedInputTokens = 12
+            }
+        }
+
+        $metrics = Get-CopilotTokenMetrics -Usage $usage
+
+        $metrics.inputTokens | Should -Be 100
+        $metrics.outputTokens | Should -Be 40
+        $metrics.cachedInputTokens | Should -Be 12
+        $metrics.totalTokens | Should -Be 140
+        @($metrics.rawTokenFields).Count | Should -Be 3
+        @($metrics.rawTokenFields | Where-Object { $_.Path -eq 'nested.cachedInputTokens' }).Count | Should -Be 1
+    }
+
+    It 'prefers the root token aggregate over a nested per-model breakdown (no double-count)' {
+        # Regression guard: a payload carrying BOTH a root aggregate and a per-model
+        # breakdown must not sum both (1000 + 600 + 400 = 2000); the root wins.
+        $usage = [pscustomobject]@{
+            inputTokens  = 1000
+            outputTokens = 200
+            perModel     = @(
+                [pscustomobject]@{ inputTokens = 600; outputTokens = 120 },
+                [pscustomobject]@{ inputTokens = 400; outputTokens = 80 }
+            )
+        }
+
+        $metrics = Get-CopilotTokenMetrics -Usage $usage
+
+        $metrics.inputTokens | Should -Be 1000
+        $metrics.outputTokens | Should -Be 200
+    }
+
+    It 'sums a nested-only token breakdown when no root aggregate exists' {
+        # When only the per-model breakdown is present, it should be summed.
+        $usage = [pscustomobject]@{
+            perModel = @(
+                [pscustomobject]@{ inputTokens = 600 },
+                [pscustomobject]@{ inputTokens = 400 }
+            )
+        }
+
+        $metrics = Get-CopilotTokenMetrics -Usage $usage
+
+        $metrics.inputTokens | Should -Be 1000
+    }
+
+    It 'parses Copilot CLI AIC and context footer lines' {
+        $aicLine = Get-CopilotCliUsageLineData -Line 'Session: 1030 AIC used'
+        $contextLine = Get-CopilotCliUsageLineData -Line 'GPT-5.5 • 1.1M context'
+
+        $aicLine.aicUsed | Should -Be 1030
+        $contextLine.model | Should -Be 'GPT-5.5'
+        $contextLine.contextWindowRaw | Should -Be '1.1M'
+        $contextLine.contextWindow | Should -Be 1100000
+    }
+
+    It 'reads token counts from Copilot OTel spans with both cache/reasoning naming variants' {
+        $otelPath = Join-Path ([System.IO.Path]::GetTempPath()) "copilot-otel-$([guid]::NewGuid()).jsonl"
+        try {
+            @(
+                [ordered]@{
+                    type       = 'span'
+                    attributes = [ordered]@{
+                        'gen_ai.usage.input_tokens'            = 1000
+                        'gen_ai.usage.output_tokens'           = 200
+                        'gen_ai.usage.cache_read.input_tokens' = 800
+                        'gen_ai.usage.reasoning.output_tokens' = 50
+                        'github.copilot.cost'                  = 7.5
+                    }
+                },
+                [ordered]@{
+                    type       = 'span'
+                    attributes = [ordered]@{
+                        'gen_ai.usage.input_tokens'            = 500
+                        'gen_ai.usage.output_tokens'           = 40
+                        'gen_ai.usage.cache_read_input_tokens' = 400
+                        'gen_ai.usage.reasoning_output_tokens' = 10
+                    }
+                }
+            ) | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } | Set-Content $otelPath -Encoding UTF8
+
+            $metrics = Get-CopilotOtelTokenMetrics -Path $otelPath
+
+            $metrics.available | Should -Be $true
+            $metrics.inputTokens | Should -Be 1500
+            $metrics.outputTokens | Should -Be 240
+            $metrics.cachedInputTokens | Should -Be 1200
+            $metrics.reasoningOutputTokens | Should -Be 60
+            $metrics.totalTokens | Should -Be 1740
+            $metrics.copilotCost | Should -Be 7.5
+        } finally {
+            Remove-Item $otelPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'builds a telemetry record with raw usage and no hardcoded cost estimate' {
+        $usage = [pscustomobject]@{
+            prompt_tokens      = 25
+            completion_tokens  = 15
+            total_tokens       = 45
+            totalApiDurationMs = 2000
+        }
+
+        $record = New-CopilotTokenUsageRecord `
+            -PRNumber 35677 `
+            -Platform 'android' `
+            -Phase 'CopilotReview' `
+            -StepName 'STEP 5a: TRY-FIX' `
+            -ModelName 'gpt-5.5' `
+            -StartedAtUtc ([DateTimeOffset]::Parse('2026-06-05T10:00:00Z')) `
+            -EndedAtUtc ([DateTimeOffset]::Parse('2026-06-05T10:00:05Z')) `
+            -DurationMs 5000 `
+            -TurnCount 2 `
+            -ToolCount 3 `
+            -FailedToolCount 1 `
+            -Usage $usage `
+            -OtelMetrics $null `
+            -AicUsed 1030 `
+            -ContextWindow 1100000 `
+            -ContextWindowRaw '1.1M' `
+            -ResultEventSeen $true `
+            -ExitCode 0
+
+        $record.prNumber | Should -Be 35677
+        $record.scriptPhase | Should -Be 'CopilotReview'
+        $record.copilotStep | Should -Be 'STEP 5a: TRY-FIX'
+        $record.apiDurationMs | Should -Be 2000
+        $record.normalizedTokens.inputTokens | Should -Be 25
+        $record.normalizedTokens.outputTokens | Should -Be 15
+        $record.normalizedTokens.totalTokens | Should -Be 45
+        $record.cliUsage.aicUsed | Should -Be 1030
+        $record.cliUsage.contextWindow | Should -Be 1100000
+        $record.cliUsage.contextWindowRaw | Should -Be '1.1M'
+        $record.usage.total_tokens | Should -Be 45
+        $record.costEstimateAvailable | Should -Be $false
+    }
+
+    It 'uses OTel token metrics when result usage has no token fields' {
+        $otelMetrics = [ordered]@{
+            inputTokens           = 500
+            outputTokens          = 75
+            cachedInputTokens     = 400
+            reasoningOutputTokens = 25
+            totalTokens           = 575
+            copilotCost           = 7.5
+            file                  = '/tmp/copilot-otel.jsonl'
+        }
+
+        $record = New-CopilotTokenUsageRecord `
+            -PRNumber 35677 `
+            -Platform 'android' `
+            -Phase 'CopilotReview' `
+            -StepName 'STEP 5a: TRY-FIX' `
+            -ModelName 'gpt-5.5' `
+            -StartedAtUtc ([DateTimeOffset]::Parse('2026-06-05T10:00:00Z')) `
+            -EndedAtUtc ([DateTimeOffset]::Parse('2026-06-05T10:00:05Z')) `
+            -DurationMs 5000 `
+            -TurnCount 2 `
+            -ToolCount 3 `
+            -FailedToolCount 0 `
+            -Usage ([pscustomobject]@{ totalApiDurationMs = 1000 }) `
+            -OtelMetrics $otelMetrics `
+            -AicUsed $null `
+            -ContextWindow $null `
+            -ContextWindowRaw $null `
+            -ResultEventSeen $true `
+            -ExitCode 0
+
+        $record.normalizedTokens.inputTokens | Should -Be 500
+        $record.normalizedTokens.outputTokens | Should -Be 75
+        $record.normalizedTokens.cachedInputTokens | Should -Be 400
+        $record.normalizedTokens.reasoningOutputTokens | Should -Be 25
+        $record.normalizedTokens.totalTokens | Should -Be 575
+        $record.normalizedTokens.otelFile | Should -Be '/tmp/copilot-otel.jsonl'
+        # aicUsed stays AIC-only (null here); the dollar cost is reported in its own field,
+        # never conflated into aicUsed.
+        $record.cliUsage.aicUsed | Should -BeNullOrEmpty
+        $record.cliUsage.copilotCost | Should -Be 7.5
+    }
 }
 
 Describe 'Get-TrxResults' {
@@ -233,5 +434,21 @@ Describe 'Get-DotNetTestResults (console-scrape fallback)' {
 
     It 'returns an empty array for empty input' {
         (Get-DotNetTestResults -Lines @()).Count | Should -Be 0
+    }
+}
+
+Describe 'ConvertTo-AzdoSafeConsole' {
+    It 'defangs ##vso[ and ##[ logging-command prefixes' {
+        ConvertTo-AzdoSafeConsole '##vso[task.setvariable variable=x]y' | Should -Be '## vso[task.setvariable variable=x]y'
+        ConvertTo-AzdoSafeConsole '##[command]z' | Should -Be '## [command]z'
+    }
+
+    It 'collapses CR/LF that could fabricate a fresh column-0 log line' {
+        ConvertTo-AzdoSafeConsole "safe`r##vso[task.complete]" | Should -Be 'safe ## vso[task.complete]'
+        ConvertTo-AzdoSafeConsole "Reviewing`n##vso[task.complete result=Succeeded;]done" | Should -Be 'Reviewing ## vso[task.complete result=Succeeded;]done'
+    }
+
+    It 'leaves ordinary text untouched' {
+        ConvertTo-AzdoSafeConsole 'Reading file src/Foo.cs (## of total)' | Should -Be 'Reading file src/Foo.cs (## of total)'
     }
 }
