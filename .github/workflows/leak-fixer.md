@@ -31,7 +31,7 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: "Scope to ONE [leak-scan] or [leak-test-gap] issue number (blank = auto-pick the oldest open one without a fix PR)."
+        description: "Scope to ONE [leak-scan] issue number (blank = auto-pick the oldest open one without a fix PR)."
         required: false
         type: string
       dry_run:
@@ -86,9 +86,8 @@ network:
 
 safe-outputs:
   create-pull-request:
-    # No fixed title-prefix: the agent writes the FULL title starting with the mode tag —
-    # "[leak-fix] " when it fixes a runtime leak (a [leak-scan] issue) or "[leak-test] "
-    # when it adds missing coverage (a [leak-test-gap] issue). At most ONE PR per run.
+    # No fixed title-prefix: the agent writes the FULL title starting with "[leak-fix] "
+    # (it fixes a runtime leak from a [leak-scan] issue). At most ONE PR per run.
     draft: true
     max: 1
     # This workflow transports the fix as a patch relative to ONE base branch.
@@ -97,10 +96,8 @@ safe-outputs:
       - "main"
     allowed-branches:
       - "leak-fix/**"
-      - "leak-test/**"
     # Enforced allowlist of paths a run may touch: a runtime-leak fix is a managed product
-    # change + a Core.UnitTests regression test (+ PublicAPI); a coverage-gap fix adds the
-    # proposed memory-leak test (Core.UnitTests unit test and/or DeviceTests InlineData).
+    # change + a Core.UnitTests regression test (+ PublicAPI).
     allowed-files:
       - "src/Controls/src/**"
       - "src/Controls/tests/Core.UnitTests/**"
@@ -110,11 +107,11 @@ safe-outputs:
       - "**/PublicAPI.Unshipped.txt"
     labels: [agentic-workflows]
     allowed-labels: [agentic-workflows]
-  # Track C — respond to review feedback on this workflow's OWN open leak PRs.
-  # Both are scoped by required-title-prefix so they can only touch [leak-fix]/[leak-test] PRs.
+  # Track C — respond to review feedback on this workflow's OWN open [leak-fix] PRs.
+  # Scoped by required-title-prefix so it can only touch [leak-fix] PRs.
   push-to-pull-request-branch:
     target: "*"                     # agent supplies pull_request_number (its own leak PR)
-    required-title-prefix: "[leak-" # only [leak-fix] / [leak-test] PRs
+    required-title-prefix: "[leak-fix" # only [leak-fix] PRs
     max: 1
     if-no-changes: "ignore"
     # Same managed allowlist as create-pull-request (a review fix touches the same surface).
@@ -136,15 +133,16 @@ safe-outputs:
 Each run you take **exactly one action**, choosing the highest-priority track:
 
 - **Track C — respond to review feedback (HIGHEST PRIORITY, do this FIRST).** If one of *this
-  workflow's own* open `[leak-fix]`/`[leak-test]` PRs has a review that **requested changes**
+  workflow's own* open `[leak-fix]` PRs has a review that **requested changes**
   you haven't addressed yet, work on THAT PR: apply the changes (push a commit to its branch)
   and/or post a comment pushing back on any request that is wrong or doesn't make sense. Then
   stop — do not also do new work this run.
 - **Track A — `[leak-scan]` runtime leak.** Otherwise, produce a `[leak-fix]` PR that contains
   BOTH a regression test that FAILS without the fix and the managed product fix that makes it
   PASS.
-- **Track B — `[leak-test-gap]` missing test.** Otherwise, produce a `[leak-test]` PR that ADDS
-  the proposed coverage so a future regression is caught.
+
+You produce **only `[leak-fix]` PRs for empirically-proven leaks** — there is no coverage-gap /
+"add a missing test" mode. Never open a `[leak-test]` PR or act on a `[leak-test-gap]` issue.
 
 The PR base is always `main`. You build MAUI **from source** to validate. All scratch state goes
 under `/tmp/gh-aw/agent/` (each bash call is a fresh subshell; persist what you need). Your only
@@ -153,28 +151,20 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
 
 ## Hard rules — non-negotiable
 
-1. **Empirical validation, appropriate to the track.**
+1. **Empirical validation.**
    - **Track A (`[leak-scan]`):** you MUST observe the new regression test **FAIL on the
      unpatched source** and then **PASS after your fix**, in this run, before emitting a PR. A
      fix without a demonstrated red→green transition is not allowed.
-   - **Track B (`[leak-test-gap]`):** the added test must **build and — when it is a runner-
-     runnable `Controls.Core.UnitTests` test — PASS on current `main`** (it is a regression
-     *guard*; the control is not expected to leak today). If adding the test unexpectedly makes
-     it **FAIL**, you have found a real live leak: switch to Track A for that control instead
-     (write the fix too). Device-only tests (`src/Controls/tests/DeviceTests/**`) cannot run on
-     this runner — validate that they **compile** and rely on `maui-pr-devicetests` to execute
-     them; say so plainly in the PR.
    - **Track C (review response):** any code you push must keep the PR's tests valid — re-run the
-     affected test so Track A stays red→green / the Track B guard still passes. Never push a
-     change that breaks the PR's own test just to satisfy a review.
+     affected test so Track A stays red→green. Never push a change that breaks the PR's own test
+     just to satisfy a review.
 2. **If a Track A leak is already fixed on `main`, open NO PR.** When your faithful regression
    test passes on the *unpatched* source, the leak no longer reproduces — record
    `skipped: already fixed on main (test green without fix)` and stop.
 3. **Managed scope for product fixes.** Any *product* change (Track A / a Track C code fix) must
    live in managed cross-platform code (`src/Controls/src`, `src/Core/src`, `src/Essentials/src`).
    If a `[leak-scan]` leak can only be reproduced with a platform handler / native peer, it is out
-   of scope — `skipped: requires device test (out of scope)`. Track B may add a device-test
-   `[InlineData]` (that is coverage, not a product change) even for a platform-tested control.
+   of scope — `skipped: requires device test (out of scope)`.
 4. **Never mute, skip, weaken, or delete any existing test**, and never add `[ActiveIssue]`,
    `Skip=`, `#if false`, timeout bumps, or retries. Reject any change whose only effect is a mute
    — including when a review *asks* for one: push back with a comment instead.
@@ -191,8 +181,9 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
 
 ## Step 0 — Run mode (dispatch inputs)
 
-- `issue_number` (optional): if set, SKIP Track C and target exactly that issue (Track A/B). If
-  blank (e.g. the scheduled run), do Track C first (Step R), then auto-pick a target in Step 2.
+- `issue_number` (optional): if set, SKIP Track C and target exactly that `[leak-scan]` issue
+  (Track A). If blank (e.g. the scheduled run), do Track C first (Step R), then auto-pick a
+  `[leak-scan]` target in Step 2.
 - `dry_run` (optional, default false): if `"true"`, do the full local work but **emit no
   safe-output** — print what you *would* push/comment/open to the run log instead.
 
@@ -216,16 +207,16 @@ shipped package the issue's repro referenced. Always re-locate the cited APIs in
 
 # ===================== TRACK C — RESPOND TO REVIEW FEEDBACK (do this FIRST) =====================
 
-Skip this entire section if a `issue_number` input was provided (that's an explicit Track A/B
+Skip this entire section if a `issue_number` input was provided (that's an explicit Track A
 request). Otherwise, BEFORE looking for new work, see whether one of this workflow's own open
-`[leak-fix]`/`[leak-test]` PRs has a review requesting changes that you have not yet addressed.
+`[leak-fix]` PRs has a review requesting changes that you have not yet addressed.
 
 ## Step R1 — Find an open leak PR with UN-addressed requested changes
 
 ```bash
-# This workflow's own open leak PRs (its create-pull-request output labels them agentic-workflows).
+# This workflow's own open [leak-fix] PRs (its create-pull-request output labels them agentic-workflows).
 gh pr list --repo "$GITHUB_REPOSITORY" --state open \
-  --search 'in:title "[leak-fix]" OR "[leak-test]"' \
+  --search '"[leak-fix]" in:title' \
   --json number,title,headRefName,url,updatedAt \
   | jq 'sort_by(.number)' > /tmp/gh-aw/agent/my-open-prs.json
 jq -r '.[] | "\(.number)\t\(.headRefName)\t\(.title)"' /tmp/gh-aw/agent/my-open-prs.json
@@ -278,8 +269,8 @@ git checkout -B "$BR" "origin/$BR"
 
 Make the minimal, idiomatic managed changes for the APPLY items only (same non-muting rules as
 Track A). Then **re-validate on the runner** so the PR stays valid — rebuild + run the PR's own
-test with the net-only flags (Step 6/8 flags) and confirm it still holds (Track A: the fix test
-still passes and would still fail without the fix; Track B: the guard still passes). If an APPLY
+test with the net-only flags (Step 6/8 flags) and confirm it still holds (the fix test still
+passes and would still fail without the fix). If an APPLY
 change breaks the PR's test, it was wrong — revert that item and move it to PUSH BACK.
 
 Commit with the injection-safe heredoc + fresh-random-delimiter discipline (see Step 9), subject
@@ -304,13 +295,11 @@ PUSH BACK), make no commit.
 Track C uses this run's single action. **Stop here — do not also do Track A/B.** If no PR needed
 a response, fall through to Step 2.
 
-## Step 2 — Select the target issue (either type) and its track
+## Step 2 — Select the target `[leak-scan]` issue
 
-If `issue_number` was provided, use it — determine its track from the title tag
-(`[leak-scan]` → Track A; `[leak-test-gap]` → Track B). Otherwise auto-pick: list this
-scanner's open issues of **both** types (oldest first) and take the first that does NOT already
-have an open fix PR (Step 3 confirms). **Prefer a `[leak-scan]` over a `[leak-test-gap]`** when
-both are equally old — fixing a live leak outranks adding a guard.
+If `issue_number` was provided, use it (it must be a `[leak-scan]` issue → Track A). Otherwise
+auto-pick: list this scanner's open `[leak-scan]` issues (oldest first) and take the first that
+does NOT already have an open fix PR (Step 3 confirms).
 
 ```bash
 # Open [leak-scan] (Track A) issues, oldest first.
@@ -318,48 +307,33 @@ gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
   --state open --label agentic-workflows --limit 100 \
   --json number,title,createdAt,body \
   | jq 'sort_by(.createdAt)' > /tmp/gh-aw/agent/leakscan-issues.json
-# Open [leak-test-gap] (Track B) issues, oldest first.
-gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-test-gap]" in:title' \
-  --state open --label agentic-workflows --limit 100 \
-  --json number,title,createdAt,body \
-  | jq 'sort_by(.createdAt)' > /tmp/gh-aw/agent/leaktestgap-issues.json
-echo "--- [leak-scan] (Track A) ---";     jq -r '.[] | "\(.number)\t\(.title)"' /tmp/gh-aw/agent/leakscan-issues.json
-echo "--- [leak-test-gap] (Track B) ---"; jq -r '.[] | "\(.number)\t\(.title)"' /tmp/gh-aw/agent/leaktestgap-issues.json
+echo "--- [leak-scan] (Track A) ---"; jq -r '.[] | "\(.number)\t\(.title)"' /tmp/gh-aw/agent/leakscan-issues.json
 ```
 
-(The Daily Memory Leak Hunter files both types with the `agentic-workflows` label.)
+(The Daily Memory Leak Hunter files `[leak-scan]` issues with the `agentic-workflows` label.)
 
-Read the chosen issue's body in full (`gh issue view <N> --json title,body`). Extract, for a
-**Track A `[leak-scan]`**:
+Read the chosen issue's body in full (`gh issue view <N> --json title,body`). Extract:
 
 - the **rooting API** (e.g. `IndicatorView.ItemsSource`),
 - the **retention path** `root -> … -> transient` with the cited file:line(s),
 - the **suggested fix** shape, and
 - any **non-default / disabling condition**.
 
-…or, for a **Track B `[leak-test-gap]`**:
-
-- the **control / scenario** that lacks coverage,
-- the **proposed test** stub the issue provides (usually an `[InlineData(typeof(X))]` line on
-  the `HandlerDoesNotLeak` theory in `src/Controls/tests/DeviceTests/Memory/MemoryTests.cs`,
-  possibly plus a `handlers.AddHandler<…>()` registration), and
-- which test file(s) it names.
-
 ## Step 3 — De-dup + attempt cap (live GitHub searches)
 
 A fix PR carries `Fixes #<N>` (and `Refs: <owner>/<repo>#<N>`) in its body — that is the join
-key, regardless of whether it is a `[leak-fix]` or a `[leak-test]` PR.
+key.
 
 ```bash
 N=<issue-number>
-# Open fix PR (either tag) already addressing this issue?
-gh pr list --repo "$GITHUB_REPOSITORY" --state open --search 'in:title "[leak-fix]" OR "[leak-test]"' \
+# Open [leak-fix] PR already addressing this issue?
+gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title' \
   --json number,title,body \
   | jq --arg n "$N" '[.[] | select((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b"))]' \
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 # Closed-unmerged attempts for this issue (attempt cap = 3).
-gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search 'in:title "[leak-fix]" OR "[leak-test]"' \
+gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:title' \
   --json number,title,body,mergedAt \
   | jq --arg n "$N" '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b")) and (.mergedAt == null))]' \
   > /tmp/gh-aw/agent/closed-fix-prs.json
@@ -371,12 +345,9 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 - If **3+ closed-unmerged** attempts exist → `skipped: attempt cap reached (3)` and stop.
 - An issue that is already CLOSED → `skipped: issue closed` (nothing to do).
 
-If you auto-selected in Step 2 and the first candidate is gated out, move to the next oldest
-(across both types, `[leak-scan]` first).
+If you auto-selected in Step 2 and the first candidate is gated out, move to the next oldest.
 
-**Now branch by track:**
-- Track A (`[leak-scan]`) → Steps 4–10.
-- Track B (`[leak-test-gap]`) → **skip to Step 11**.
+Then proceed with **Track A** (`[leak-scan]`) → Steps 4–10.
 
 ## Step 4 — Create the fix branch (Track A)
 
@@ -574,108 +545,3 @@ Before emitting, re-read your body and confirm the `Target branch:` line says `m
 If no PR was emitted this run (already-fixed, gated out, or validation failed), produce no
 output — that is an acceptable outcome. Otherwise you have produced exactly one validated,
 draft `[leak-fix]` PR.
-
-# ===================== TRACK B — ADD MISSING COVERAGE (`[leak-test-gap]`) =====================
-
-Reached from Step 3 when the selected issue is a `[leak-test-gap]`. The goal: ADD the memory-
-leak test the issue proposes, so a future regression is caught. You are adding a **test only**
-— no product change.
-
-## Step 11 — Create the test branch (Track B)
-
-```bash
-N=<issue-number>
-git checkout -B "leak-test/issue-${N}" "origin/main"
-git rev-parse --abbrev-ref HEAD | tee /tmp/gh-aw/agent/branch.txt
-test "$(cat /tmp/gh-aw/agent/branch.txt)" = "leak-test/issue-${N}"
-```
-
-## Step 12 — Add the proposed test
-
-The `[leak-test-gap]` issue body contains a ready-to-paste stub. Apply it faithfully, choosing
-the right home:
-
-- **Control-coverage gap (the usual case)** — the issue proposes an `[InlineData(typeof(X))]`
-  on the `HandlerDoesNotLeak` theory in `src/Controls/tests/DeviceTests/Memory/MemoryTests.cs`.
-  Add exactly that line (keep the list ordering/style), AND add the matching
-  `handlers.AddHandler<X, XHandler>();` in `SetupBuilder` **iff** it is not already registered
-  (many controls resolve through an existing base registration such as
-  `AddHandler<Layout, LayoutHandler>()` — do not add a duplicate). Verify the type is public,
-  concrete, and parameterless-constructible.
-- **Scenario gap** — the issue proposes a small `[Fact]`/`[Theory]`. Add it to the test file
-  the issue names, matching the surrounding pattern.
-- **Runner-runnable variant (preferred when it exists).** If the control's retention can be
-  expressed as a purely-managed `Controls.Core.UnitTests` test (`WeakReference` +
-  `WaitForCollect()`), add that too/instead — it is validated on this runner (Step 13) and is a
-  strong regression guard. Model it on `WeakEventProxyTests.cs` / `BindableLayoutTests.cs`.
-
-Never weaken/mute anything; never touch product code in Track B.
-
-## Step 13 — Validate the added test (as far as the runner allows)
-
-```bash
-FLAGS="-p:IncludeIosTargetFrameworks=false -p:IncludeAndroidTargetFrameworks=false -p:IncludeMacCatalystTargetFrameworks=false -p:IncludeWindowsTargetFrameworks=false -p:IncludeTizenTargetFrameworks=false -p:TreatWarningsAsErrors=false"
-```
-
-- **If you added a `Controls.Core.UnitTests` test:** build + run it.
-  ```bash
-  dotnet test src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj -c Debug $FLAGS \
-    --filter "FullyQualifiedName~<YourTestName>" --logger "console;verbosity=normal" \
-    2>&1 | tee /tmp/gh-aw/agent/guard.log | tail -40
-  ```
-  It MUST build and **PASS on current `main`** — the control is a regression *guard*, not
-  expected to leak today. **If it FAILS**, you have found a real live leak: abandon Track B and
-  restart as **Track A** for this control (write the product fix + red→green, Steps 4–10), then
-  emit a `[leak-fix]` PR instead.
-- **If the proposed test is a `DeviceTests` `[InlineData]` (device-only):** it cannot run on
-  this runner (needs a platform workload/emulator). Do NOT attempt a full device build. Instead
-  validate **structurally**: the `[InlineData(typeof(X))]` line is added to the correct theory,
-  `X` exists and is concrete/parameterless, and a handler registration is present. Note in the
-  PR that the test executes on `maui-pr-devicetests`.
-
-## Step 14 — Format, commit (injection-safe), and emit the draft `[leak-test]` PR
-
-Format (`dotnet format …/Controls.Core.csproj --no-restore || true` when a `.cs` was touched),
-then commit with the same heredoc + fresh-random-delimiter discipline as Step 9 (subject
-`[leak-test] Add memory-leak coverage for <control> (Fixes #<N>)`), and confirm ≥1 commit on
-`origin/main..HEAD` (else `skipped: no commit produced`).
-
-> **Dry-run gate:** if `dry_run == "true"`, print `DRY RUN — would open PR` (base `main`,
-> branch `leak-test/issue-<N>`, title, body, `git --no-pager diff --stat "origin/main..HEAD"`)
-> and stop.
-
-Emit exactly one `create-pull-request` safe-output. Do NOT set a `base` field. Source `branch`
-MUST be `leak-test/issue-<N>`. Title MUST start with the literal tag **`[leak-test] `**. Body:
-
-```markdown
-> [!NOTE]
-> Are you waiting for the changes in this PR to be merged?
-> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
-
-> [!NOTE]
-> 🤖 **AI-generated PR** — produced automatically by the **Memory Leak Fixer** agentic workflow from issue #<N> (coverage-gap track). It ADDS a memory-leak test; no product code changes. Please review before merging.
-
-Fixes #<N>
-Refs: <owner>/<repo>#<N>
-Target branch: main
-
-## The gap
-<which control/scenario had no memory-leak test, per the issue.>
-
-## The added test
-<name + file. State whether it is a runner-run Controls.Core.UnitTests guard or a
-DeviceTests HandlerDoesNotLeak InlineData (runs on maui-pr-devicetests).>
-
-## Validation
-| Test | Where it runs | Result |
-|---|---|---|
-| <name> | <Core.UnitTests on the runner / maui-pr-devicetests> | <✅ PASSES on main (guard) / compiles; runs on CI> |
-
-<paste the guard.log pass line if you ran it.>
-
-## Scope
-Test-only change (no product code touched).
-```
-
-Confirm the `Target branch:` line says `main` and `Fixes #<N>` is present, else
-`skipped: PR self-check failed`. If nothing was emitted, produce no output.
