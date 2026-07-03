@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID || IOS || MACCATALYST
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
-	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.Renderer)] // See RendererHandlerVariant.cs
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
 		protected virtual void SetupBuilder()

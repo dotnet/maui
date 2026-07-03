@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
-	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.Handler)] // See RendererHandlerVariant.cs
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellHandler)] // See RendererHandlerVariant.cs
 	public partial class ShellHandlerTests_Shell : ShellTests
 	{
 		protected override void SetupBuilder()
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 
 	[Category(TestCategory.Modal)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
-	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.Handler)] // See RendererHandlerVariant.cs
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellHandler)] // See RendererHandlerVariant.cs
 	public partial class ModalHandlerTests : ModalTests
 	{
 		protected override void SetupBuilder()
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 
 	[Category(TestCategory.Window)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
-	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.Handler)] // See RendererHandlerVariant.cs
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellHandler)] // See RendererHandlerVariant.cs
 	public partial class WindowHandlerTests : WindowTests
 	{
 		protected override void SetupBuilder()
