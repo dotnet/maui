@@ -41,6 +41,12 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 
 		void OnAddCustomPinsClicked(object? sender, EventArgs e)
 		{
+			// Clear any cluster-icon demo state so these pins can't be swallowed into a
+			// custom-icon cluster bubble - the point is to show each pin's own ImageSource.
+			clusterMap.ClusterImageProvider = null;
+			clusterMap.ClusterImageSource = null;
+			clusterMap.Pins.Clear();
+
 			// Spread these pins far apart so they stay un-clustered (cluster of 1)
 			// even with clustering enabled. Their custom ImageSource must still be
 			// applied - this is the case the Android handler previously dropped.
