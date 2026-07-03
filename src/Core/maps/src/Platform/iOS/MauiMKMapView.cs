@@ -100,8 +100,20 @@ namespace Microsoft.Maui.Maps.Platform
 			if (userLocationAnnotation != null)
 				return null!;
 
-			// Handle cluster annotations
-			if (annotation is MKClusterAnnotation clusterAnnotation)
+			// Handle cluster annotations. The delegate parameter is sometimes handed to us as a
+			// generic wrapper around the native object rather than the concrete MKClusterAnnotation
+			// subclass (observed with the iOS 26.5/net11 preview.5 bindings), so a plain `is` check
+			// can miss a real cluster annotation. Only re-resolve via the native handle when the type
+			// is this specific ambiguous wrapper - Runtime.GetNSObject<T> throws InvalidCastException
+			// (rather than returning null) for a handle whose real class doesn't match T, so calling
+			// it on every regular pin (typically MKPointAnnotation) would crash instead of falling
+			// through to normal pin handling.
+			var clusterAnnotation = annotation as MKClusterAnnotation;
+			if (clusterAnnotation == null && annotation.GetType().FullName == "MapKit.MKAnnotationWrapper")
+			{
+				clusterAnnotation = Runtime.GetNSObject<MKClusterAnnotation>(annotation.Handle);
+			}
+			if (clusterAnnotation != null)
 			{
 				return GetViewForClusterAnnotation(mapView, clusterAnnotation);
 			}
@@ -144,7 +156,7 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 
 			mapPin.Annotation = annotation;
-			
+
 			// Set clustering identifier if clustering is enabled
 			if (_isClusteringEnabled && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
