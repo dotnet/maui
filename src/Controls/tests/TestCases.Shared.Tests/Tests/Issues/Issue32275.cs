@@ -1,4 +1,3 @@
-#if ANDROID			//More info : https://github.com/dotnet/maui/pull/33335
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -7,8 +6,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue32275 : _IssuesUITest
 {
-	const string FlyoutItem = "FlyoutItem";
-	const string ResetButton = "Reset";
 	public override string Issue => "Shell Flyout SafeArea Rendering";
 
 	protected override bool ResetAfterEachTest => true;
@@ -34,8 +31,8 @@ public class Issue32275 : _IssuesUITest
 		App.Tap("ToggleHeaderFooter");
 		App.WaitForElement("PageLoaded");
 		App.ShowFlyout();
-		App.WaitForElement("Header");
-		App.WaitForElement("Footer");
+		App.WaitForElement("Header View");
+		App.WaitForElement("Footer View");
 		VerifyScreenshot();
 	}
 
@@ -62,8 +59,8 @@ public class Issue32275 : _IssuesUITest
 		App.Tap("ToggleHeaderFooter");
 		App.WaitForElement("PageLoaded");
 		App.ShowFlyout();
-		App.WaitForElement("Header");
-		App.WaitForElement("Footer");
+		App.WaitForElement("Header View");
+		App.WaitForElement("Footer View");
 		VerifyScreenshot();
 	}
 
@@ -92,9 +89,8 @@ public class Issue32275 : _IssuesUITest
 		App.WaitForElement("PageLoaded");
 		App.ShowFlyout();
 		App.WaitForElement("ContentView");
-		App.WaitForElement("Header");
-		App.WaitForElement("Footer");
+		App.WaitForElement("Header View");
+		App.WaitForElement("Footer View");
 		VerifyScreenshot();
 	}
 }
-#endif
