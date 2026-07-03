@@ -1,30 +1,21 @@
 ---
 name: "Daily Memory Leak Hunter"
 description: |
-  Periodic (every 12h) AI-driven, TWO-MODE memory-leak workflow for MAUI's managed code.
-  Both modes run on a standard GitHub runner — no platform workload, no emulator, no
-  simulator, no MAUI source build.
+  Periodic (every 12h) AI-driven memory-leak workflow for MAUI's managed code. Runs on a
+  standard GitHub runner — no platform workload, no emulator, no simulator, no MAUI source
+  build.
 
-  PASS A — Runtime leak hunt. Scans the shared/managed surface (src/Core/src,
-  src/Controls/src/Core, src/Essentials/src) for the leak signature — a long-lived/static
-  root that holds a strong reference to a transient with no teardown — writes a
-  control/leaky/mitigation xUnit repro (referencing the SHIPPED Microsoft.Maui.Controls
-  package) that measures retention with WeakReference + a forced GC, runs it, and ONLY if
-  the leak is empirically confirmed files a `[leak-scan]` issue with the metrics.
+  Runtime leak hunt. Scans the shared/managed surface (src/Core/src, src/Controls/src/Core,
+  src/Essentials/src) for the leak signature — a long-lived/static root that holds a strong
+  reference to a transient with no teardown — writes a control/leaky/mitigation xUnit repro
+  (referencing the SHIPPED Microsoft.Maui.Controls package) that measures retention with
+  WeakReference + a forced GC, runs it, and ONLY if the leak is EMPIRICALLY CONFIRMED by the
+  test files a `[leak-scan]` issue with the metrics. It files ONLY proven leaks — no
+  coverage-gap / "missing test" proposals. If a run confirms nothing, it files nothing.
 
-  PASS B — Leak-test coverage-gap scan (only when Pass A files nothing). Statically
-  compares MAUI's concrete control surface against its memory-leak TEST coverage
-  (src/Controls/tests/DeviceTests/Memory/MemoryTests.cs InlineData lists + per-control
-  `*DoesNotLeak` device tests + the Appium MemoryTests). When a shipping control or
-  high-value scenario has NO memory-leak test, it files a `[leak-test-gap]` issue
-  proposing the precise missing test (with a ready-to-paste stub following the existing
-  pattern). This keeps every run productive once the runtime surface is hardened, and
-  proactively closes the holes through which future leaks slip in untested.
-
-  Platform-specific (native peer / GREF / NSObject cycle) leaks are OUT OF SCOPE for Pass
-  A — those need device tests, which run on the AzDO/Helix pipeline, not gh-aw. Pass A
-  flags only what a unit test can prove on a standard runner; Pass B may legitimately
-  point at device-test gaps (the scan is static; the proposed test runs later on Helix).
+  Platform-specific (native peer / GREF / NSObject cycle) leaks are OUT OF SCOPE — those need
+  device tests, which run on the AzDO/Helix pipeline, not gh-aw. This workflow flags only what
+  a unit test can prove on a standard runner.
 
 environment: gh-aw-agents
 
@@ -70,9 +61,9 @@ network:
 safe-outputs:
   create-issue:
     # No auto title-prefix: the agent writes the FULL title, starting with the mode tag —
-    # "[leak-scan] " for a confirmed runtime leak (Pass A) or "[leak-test-gap] " for a
-    # missing-memory-leak-test proposal (Pass B). Up to `max` issues per run — Pass A files
-    # one per DISTINCT empirically-confirmed leak (sweep all focus areas), Pass B one per gap.
+    # The agent writes the FULL title, starting with the tag "[leak-scan] ". Up to `max`
+    # issues per run — one per DISTINCT empirically-confirmed leak (sweep all focus areas).
+    # ONLY proven leaks — never a coverage-gap / "missing test" proposal.
     labels: [agentic-workflows]
     allowed-labels: [agentic-workflows]
     max: 8
@@ -82,49 +73,41 @@ safe-outputs:
 
 # Daily Memory Leak Hunter — dotnet/maui
 
-You run a **two-pass** memory-leak workflow per run. Neither pass needs an
-emulator/simulator or a MAUI source build.
+You run a **runtime memory-leak hunt** per run. It does not need an emulator/simulator or a
+MAUI source build.
 
-- **Pass A — runtime leak hunt.** Find as many *new* cross-platform **managed** leaks as you
-  can this run — **sweep every focus area**, not just one — prove each with a `dotnet test`
-  against the shipped `Microsoft.Maui.Controls` package, and file a **`[leak-scan]`** issue
-  for **each DISTINCT confirmed leak** (up to the 8-issue cap). Filing several strong,
-  empirically-proven leaks in one run is the goal — do not stop after the first.
-- **Pass B — leak-test coverage-gap scan.** Run this **only if Pass A confirmed and filed
-  nothing** (no new confirmable leak). Statically find shipping controls / high-value
-  scenarios that have **no memory-leak test**, and file **`[leak-test-gap]`** issues (up to
-  the remaining cap) proposing the precise missing tests.
+- **Find as many *new* cross-platform managed leaks as you can this run** — **sweep every focus
+  area**, not just one — prove **each** with a `dotnet test` against the shipped
+  `Microsoft.Maui.Controls` package, and file a **`[leak-scan]`** issue for **each DISTINCT
+  empirically-confirmed leak** (up to the 8-issue cap). Filing several strong, test-proven
+  leaks in one run is the goal — do not stop after the first.
 
-So a run files one or more confirmed `[leak-scan]` leaks (preferred), else one or more
-`[leak-test-gap]` proposals, else (rarely) nothing. **Volume matters** — the surface is large
-(hundreds of documented MAUI leaks exist); each confirmed leak you file is high-value, so hunt
-hard and file every distinct one you can prove.
+You file **ONLY empirically-proven leaks**. There is **no** coverage-gap / "missing test" mode —
+never file a `[leak-test-gap]` or any "this control has no test" issue. If a run confirms no new
+leak, it files **nothing** (a quiet run is a perfectly good outcome).
 
 All intermediate state goes under `/tmp/gh-aw/agent/` (each bash call is a fresh subshell;
-persist anything you need). The only write you may perform is the single `create-issue`
-safe-output. Never push, never open a PR, never comment, never edit product or test code in
-the repo (Pass B only *proposes* a test in the issue body — it does not commit it).
+persist anything you need). The only write you may perform is the `create-issue` safe-output.
+Never push, never open a PR, never comment, never edit product or test code in the repo.
 
 ## Hard rules — non-negotiable
 
 1. **File one issue per DISTINCT confirmed leak, up to 8 per run.** Sweep all focus areas and
-   file a `[leak-scan]` for every runtime leak you empirically confirm this run. Only if Pass A
-   confirms **none** do you fall through to Pass B `[leak-test-gap]` issues. Never file a Pass A
-   and Pass B issue for the same underlying leak.
-2. **Pass A: only file on EMPIRICAL confirmation.** If your unit test does not show the
-   Leaky scenario retaining while Control AND Mitigation release, file nothing in Pass A and
-   fall through to Pass B. A false positive is far worse than a quiet Pass A.
-3. **Pass A is managed cross-platform code only.** Restrict the hunt to `src/Core/src`,
+   file a `[leak-scan]` for every runtime leak you empirically confirm this run. If you confirm
+   **none**, file nothing — there is no fallback mode.
+2. **Only file on EMPIRICAL confirmation.** If your unit test does not show the Leaky scenario
+   retaining while Control AND Mitigation release, file nothing. A false positive is far worse
+   than a quiet run.
+3. **Managed cross-platform code only.** Restrict the hunt to `src/Core/src`,
    `src/Controls/src/Core`, and `src/Essentials/src`. Do NOT chase platform handler /
    renderer / native-peer leaks (`*.Android.cs`, `*.iOS.cs`, `Platform/**`) — those need
-   device tests and are out of scope for Pass A.
-4. **Pass A: skip weak-proxied code.** If the suspect uses `WeakEventManager`,
+   device tests and are out of scope.
+4. **Skip weak-proxied code.** If the suspect uses `WeakEventManager`,
    `ConditionalWeakTable`, `WeakReference`, or any `Weak*Proxy`, it does not leak — move on.
-5. **Per-mode de-dup against THIS SCANNER's own OPEN issues.** Before filing, fetch this
-   workflow's open issues. For Pass A skip a leak already covered by an OPEN `[leak-scan]`
-   issue (same rooting API / retention path); for Pass B skip a control/scenario already
-   covered by an OPEN `[leak-test-gap]` issue. Do NOT suppress a Pass A candidate because
-   AdamEssenmacher (or anyone else) has a repro/issue for it — duplicating those is fine. A
+5. **De-dup against THIS SCANNER's own OPEN issues.** Before filing, fetch this workflow's open
+   `[leak-scan]` issues and skip a leak already covered by one (same rooting API / retention
+   path). Do NOT suppress a candidate because AdamEssenmacher (or anyone else) has a repro/issue
+   for it — duplicating those is fine. A
    candidate whose only prior issue from this scanner is CLOSED may be re-filed.
 6. **Never weaken or disable anything, and never commit code.** You only READ repo source
    and (Pass A) ADD a throwaway test under `/tmp`. Never edit product code, never
@@ -139,31 +122,26 @@ the repo (Pass B only *proposes* a test in the issue body — it does not commit
    candidate with a **standalone** test that references the **shipped `Microsoft.Maui.Controls`
    NuGet package** from nuget.org (Step 4) — no source build, no workload, no emulator.
 
-## Step 2 — Fetch this scanner's own OPEN issues (per-mode de-dup)
+## Step 2 — Fetch this scanner's own OPEN issues (de-dup)
 
-The only de-dup that matters is not posting a second OPEN copy of something THIS workflow
-already filed — separately for each mode. You do **not** care about AdamEssenmacher's repro
-branches or anyone else's issues for Pass A leaks — duplicating those is explicitly fine.
+The only de-dup that matters is not posting a second OPEN copy of a leak THIS workflow already
+filed. You do **not** care about AdamEssenmacher's repro branches or anyone else's issues —
+duplicating those is explicitly fine.
 
-Fetch this scanner's own open issues (both modes) on the repo the workflow runs in:
+Fetch this scanner's own open `[leak-scan]` issues on the repo the workflow runs in:
 
 ```
 gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
   --state open --label memory-leak --limit 100 --json number,title,body \
   > /tmp/gh-aw/agent/my-open-leakscan.json
-gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-test-gap]" in:title' \
-  --state open --label memory-leak --limit 100 --json number,title,body \
-  > /tmp/gh-aw/agent/my-open-testgap.json
 ```
 
-- A **Pass A** candidate is OUT only if an open `[leak-scan]` issue already covers the same
-  rooting API / retention path.
-- A **Pass B** candidate is OUT only if an open `[leak-test-gap]` issue already proposes a
-  test for the same control / scenario.
+- A candidate is OUT only if an open `[leak-scan]` issue already covers the same rooting API /
+  retention path.
 
 A candidate whose only prior issue from this scanner is CLOSED may be re-filed.
 
-# ===================== PASS A — RUNTIME LEAK HUNT =====================
+# ===================== RUNTIME LEAK HUNT =====================
 
 ## Step 3 — Scan for the leak signature
 
@@ -217,7 +195,7 @@ For each candidate, write down the precise retention path
 distinct candidate** across all focus areas that is not already an open `[leak-scan]` issue —
 build a candidate list (aim for several). Rank them strongest-first, then confirm as many as
 you can in Step 4/5. If — after a genuine sweep — there is no convincing candidate at all, stop
-and create nothing in Pass A (a quiet Pass A is fine; fall through to Pass B).
+and create nothing (a quiet run is fine — there is no coverage-gap fallback).
 
 ## Step 4 — Write a standalone control/leaky/mitigation test (shipped package)
 
@@ -282,10 +260,10 @@ no MAUI source build, no emulator.
 ## Step 6 — File the issues (Pass A — one per confirmed leak)
 
 For **every** leak Step 5 confirmed, emit a `create-issue` safe-output (up to the 8 cap) — one
-issue per distinct leak — then **stop** (do not run Pass B if you filed at least one). De-dup
-each against open `[leak-scan]` issues AND against the other issues you're filing this run (no
-two issues for the same rooting API). Each title MUST start with the literal tag
-**`[leak-scan] `** followed by a precise one-liner naming the rooting API. Body (markdown):
+issue per distinct leak. De-dup each against open `[leak-scan]` issues AND against the other
+issues you're filing this run (no two issues for the same rooting API). Each title MUST start
+with the literal tag **`[leak-scan] `** followed by a precise one-liner naming the rooting API.
+Body (markdown):
 
 - A clear **AI-generated** banner naming this workflow.
 - **Description** of the leak and why it retains.
@@ -300,88 +278,5 @@ two issues for the same rooting API). Each title MUST start with the literal tag
   path) and a short, **honest scope note** (is it a clear framework bug, or a usage footgun
   the framework could harden?).
 
-If **no** leak was confirmed this run, file nothing in Pass A and **continue to Pass B**.
-
-# ===================== PASS B — LEAK-TEST COVERAGE-GAP SCAN =====================
-
-Run Pass B **only if Pass A filed nothing.** Pass B is purely static — it READS repo source
-and files a proposal; it never builds, runs tests, or commits code. The goal: find ONE
-shipping control (or a high-value, currently-untested leak scenario) that has **no
-memory-leak test**, and propose the specific test that would cover it.
-
-## Step 7 — Build the memory-leak TEST coverage map
-
-Read the repo's existing memory-leak tests and extract the set of types/scenarios already
-covered. The authoritative sources (read all that exist):
-
-```
-# (1) Central device tests — the InlineData lists are the main coverage signal.
-sed -n '1,800p' src/Controls/tests/DeviceTests/Memory/MemoryTests.cs
-# (2) Per-control device tests with a *DoesNotLeak / memory assertion.
-grep -rlnE "DoesNotLeak|AssertionExtensions.*[Ll]eak|new WeakReference" \
-  src/Controls/tests/DeviceTests/Elements
-# (3) Appium-side memory tests (controls that were moved out of device tests).
-sed -n '1,200p' src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/MemoryTests.cs
-```
-
-From these, list every control/type that has memory-leak coverage today (e.g. the
-`HandlerDoesNotLeak` `[InlineData(typeof(X))]` set, `PagesDoNotLeak`, the cells theory,
-`BindableLayout`, `Window`, plus per-control files like Border/Label/ScrollView/
-NavigationPage/TabbedPage/FlyoutPage/CollectionView/CarouselView/Slider/TitleBar, and the
-Appium DatePicker/WebView/Image). Note commented-out / `ActiveIssue`-linked entries (e.g.
-`CollectionView2`) — those are KNOWN gaps and are valid targets.
-
-## Step 8 — Enumerate the concrete control surface and diff
-
-Enumerate the **public, concrete, parameterless-constructible** controls that ship in
-`Microsoft.Maui.Controls` — i.e. real views/layouts/pages a user instantiates:
-
-```
-# Public concrete View/Layout/Page/Cell subtypes (skip abstract/internal/<T> generic bases).
-grep -rnE "public (sealed )?class [A-Za-z0-9_]+ *: *(View|Layout|TemplatedView|ContentView|Page|Cell|VisualElement|StackBase|Shell|GraphicsView|StackLayout|Compatibility\.)" \
-  src/Controls/src/Core | grep -vE "abstract|internal|<" | sort -u
-```
-
-Cross-reference with `src/Controls/src/Core/Layout` (FlexLayout, AbsoluteLayout, StackLayout,
-VerticalStackLayout, HorizontalStackLayout, Grid, …) and the Shell family.
-
-**The gap set = concrete shipping controls that appear NOWHERE in the Step 7 coverage map**
-(and are not already an open `[leak-test-gap]` issue from Step 2). Known examples at time of
-writing (verify against the live tree — some may have gained coverage): `FlexLayout`,
-`AbsoluteLayout`, `StackLayout`, `Shell`, `MenuBar`, plus any commented-out InlineData such
-as `CollectionView2` (CV2 handler). Prefer a control that is **widely used** and whose leak
-would be **high-impact** (layouts and Shell rank high; obscure cells rank low).
-
-Pick the strongest gaps — file up to the remaining issue cap (one per distinct uncovered
-control/scenario), strongest/highest-impact first. If — and only if — you genuinely find NO
-uncovered concrete control and NO commented-out coverage entry, file nothing (a fully-covered
-surface is a valid quiet outcome, but it is rare; look thoroughly before giving up).
-
-## Step 9 — File the coverage-gap issues (Pass B)
-
-Emit one `create-issue` safe-output **per distinct gap** (up to the remaining cap), de-duped
-against open `[leak-test-gap]` issues and each other. Each title MUST start with the literal tag
-**`[leak-test-gap] `** followed by a precise one-liner, e.g.
-`[leak-test-gap] FlexLayout has no memory-leak (HandlerDoesNotLeak) test`. Body (markdown):
-
-- A clear **AI-generated** banner naming this workflow (Pass B / coverage-gap scan).
-- **The gap**: which control/scenario, and proof it is untested — cite the coverage sources
-  you checked (file paths) and show it is absent from the `HandlerDoesNotLeak` InlineData
-  list and from every per-control memory test. If it's a commented-out InlineData, link the
-  tracking issue in the comment.
-- **Why it matters**: how the control is used, and a plausible retention path that such a
-  test would catch (cite product file:line if you can — e.g. a non-weak subscription).
-- **Proposed test** — a ready-to-paste change that follows the EXISTING pattern. Usually
-  that's a single new `[InlineData(typeof(TheControl))]` line on the `HandlerDoesNotLeak`
-  theory in `src/Controls/tests/DeviceTests/Memory/MemoryTests.cs` (plus, if the control
-  needs a handler registration, the matching `handlers.AddHandler<...>()` line in
-  `SetupBuilder`). For a scenario gap (not a whole control), paste a small new `[Fact]` test
-  body modeled on the nearby tests. Make it copy-paste-ready.
-- **Where it runs**: note that this test executes on the AzDO/Helix **device-test** pipeline
-  (`maui-pr-devicetests`), not on gh-aw — Pass B's scan is static; the proposed test is what
-  runs on a device later.
-- A short **scope note**: is this a true coverage hole, or is the control intentionally
-  excluded (if so, say why and don't file).
-
-If Pass B also finds nothing to file, produce no output. That is acceptable but should be
-rare — there is almost always another untested control.
+If **no** leak was confirmed this run, file nothing — a quiet run is a perfectly good outcome.
+There is no coverage-gap fallback.
