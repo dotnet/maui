@@ -223,10 +223,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this AView platformView, IView view)
 		{
-			if (view.Background is ImageSourcePaint image)
+			if (platformView.TryUpdateBackgroundImage(view))
 			{
-				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
 				return;
 			}
 
@@ -235,10 +233,8 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBackground(this AView platformView, IView view, bool treatTransparentAsNull)
 		{
-			if (view.Background is ImageSourcePaint image)
+			if (platformView.TryUpdateBackgroundImage(view))
 			{
-				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
 				return;
 			}
 
@@ -255,10 +251,8 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (view.Background is ImageSourcePaint image)
+			if (platformView.TryUpdateBackgroundImage(view))
 			{
-				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
-				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
 				return;
 			}
 
@@ -504,6 +498,22 @@ namespace Microsoft.Maui.Platform
 				if (platformView.IsAlive())
 					platformView.Background = backgroundImageDrawable;
 			}
+		}
+
+		/// <summary>
+		/// Checks if the view's background is an image source and updates it asynchronously.
+		/// Returns true if handled, false if not an image background.
+		/// </summary>
+		internal static bool TryUpdateBackgroundImage(this AView platformView, IView view)
+		{
+			if (view.Background is not ImageSourcePaint image)
+			{
+				return false;
+			}
+
+			var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget(view.Handler);
+			return true;
 		}
 
 		public static void UpdateToolTip(this AView view, ToolTip? tooltip)

@@ -304,6 +304,22 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		/// <summary>
+		/// Checks if the view's background is an image source and updates all visual state resources.
+		/// Returns true if handled, false if not an image background.
+		/// </summary>
+		internal static bool TryUpdateBackgroundImageForAllStates(this FrameworkElement platformView, IView view, string[] resourceKeys)
+		{
+			if (view.Background is not ImageSourcePaint image)
+			{
+				return false;
+			}
+
+			var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateBackgroundImageForAllStatesAsync(image.ImageSource, provider, resourceKeys).FireAndForget(view.Handler);
+			return true;
+		}
+
 		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
 		{
 			ToolTipService.SetToolTip(platformView, tooltip?.Content);
