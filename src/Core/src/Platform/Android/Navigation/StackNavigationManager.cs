@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Android.Content;
 using Android.OS;
 using Android.Views;
+using Android.Views.Animations;
 using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
@@ -22,6 +23,9 @@ namespace Microsoft.Maui.Platform
 		FragmentManager? _fragmentManager;
 		FragmentContainerView? _fragmentContainerView;
 		Type _navigationViewFragmentType = typeof(NavigationViewFragment);
+		Queue<NavigationRequest> _navigationQueue = new Queue<NavigationRequest>();
+
+		bool _processingQueue;
 
 		internal IView? VirtualView { get; private set; }
 		internal IStackNavigation? NavigationView { get; private set; }
@@ -83,10 +87,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (IsNavigating && OnResumeRequestedArgs is null)
 			{
-				// This should really never fire for the developer. Our xplat code should be handling waiting for navigation to
-				// complete before requesting another navigation from Core
-				// Maybe some day we'll put a navigation queue into Core? For now we won't
-				throw new InvalidOperationException("Previous Navigation Request is still Processing");
+				// Queue the navigation request to be processed after the current one completes
+				_navigationQueue.Enqueue(args);
+				return;
 			}
 
 			if (args.NavigationStack.Count == 0)
@@ -247,12 +250,63 @@ namespace Microsoft.Maui.Platform
 			return destination;
 		}
 
+		/// <summary>
+		/// Creates the animation for a navigation transition. Override to provide custom page transition animations.
+		/// Called by <see cref="NavigationViewFragment.OnCreateAnimation"/> during push/pop navigation.
+		/// </summary>
+		/// <param name="context">The Android context for loading animation resources.</param>
+		/// <param name="isPopping">True if navigating back, false if navigating forward.</param>
+		/// <param name="enter">True for the entering fragment's animation, false for the exiting fragment's animation.</param>
+		/// <returns>The animation to use, or null to skip animation.</returns>
+		public virtual Animation? OnCreateNavigationAnimation(Context context, bool isPopping, bool enter)
+		{
+			int id;
+			if (isPopping)
+			{
+				id = enter
+					? Resource.Animation.nav_default_pop_enter_anim
+					: Resource.Animation.nav_default_pop_exit_anim;
+			}
+			else
+			{
+				id = enter
+					? Resource.Animation.nav_default_enter_anim
+					: Resource.Animation.nav_default_exit_anim;
+			}
+
+			return id > 0 ? AnimationUtils.LoadAnimation(context, id) : null;
+		}
+
 		internal void NavigationFinished(IStackNavigation? navigationView)
 		{
 			IsInitialNavigation = false;
 			IsPopping = null;
 			ActiveRequestedArgs = null;
 			navigationView?.NavigationFinished(NavigationStack);
+
+			// Process queued navigation requests
+			ProcessNavigationQueue();
+		}
+
+		void ProcessNavigationQueue()
+		{
+			if (_processingQueue || _navigationQueue.Count == 0)
+				return;
+
+			_processingQueue = true;
+
+			try
+			{
+				while (_navigationQueue.Count > 0 && !IsNavigating)
+				{
+					var nextRequest = _navigationQueue.Dequeue();
+					ApplyNavigationRequest(nextRequest);
+				}
+			}
+			finally
+			{
+				_processingQueue = false;
+			}
 		}
 
 		// This occurs when the navigation page is first being renderer so we sync up the
@@ -301,6 +355,8 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			_navigationQueue.Clear();
+
 			if (IsNavigating)
 				NavigationFinished(NavigationView);
 
@@ -323,23 +379,42 @@ namespace Microsoft.Maui.Platform
 			_fragmentManager = null;
 		}
 
-		public virtual void Connect(IView navigationView)
+		// Extended to accept an optional FragmentContainerView for Shell sections that
+		// create their own container externally. The default (null) preserves backward
+		// compatibility — callers using the original Connect(IView) signature still work.
+		public virtual void Connect(IView navigationView, FragmentContainerView? fragmentContainerView = null)
 		{
 			VirtualView = navigationView;
 			NavigationView = (IStackNavigation)navigationView;
 
-			_fragmentContainerView = navigationView.Handler?.PlatformView as FragmentContainerView;
+			// For Shell sections the FragmentContainerView is created externally
+			// so we accept it as a parameter.
+			if (fragmentContainerView is not null)
+			{
+				_fragmentContainerView = fragmentContainerView;
+			}
+			else
+			{
+				_fragmentContainerView = navigationView.Handler?.PlatformView as FragmentContainerView;
+			}
 
 			_fragmentManager = MauiContext?.GetFragmentManager();
 
 			_ = _fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
 			_ = NavigationView ?? throw new InvalidOperationException($"VirtualView cannot be null");
 
-			var navHostFragment = _fragmentManager.FindFragmentById(Resource.Id.nav_host);
+			// Use the container's actual ID instead of hardcoded Resource.Id.nav_host
+			// This allows each Shell tab to have its own unique navigation container
+			var containerId = _fragmentContainerView?.Id ?? Resource.Id.nav_host;
+
+			var navHostFragment = _fragmentManager.FindFragmentById(containerId);
+
 			SetNavHost(navHostFragment as NavHostFragment);
 
-			if (_navHost == null)
+			if (_navHost is null)
+			{
 				throw new InvalidOperationException($"No NavHostFragment found");
+			}
 
 			if (_fragmentContainerView is not null)
 			{

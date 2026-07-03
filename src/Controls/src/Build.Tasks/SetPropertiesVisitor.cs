@@ -384,6 +384,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 							if (bindingExtensionType.Value.Item3 == "BindingExtension")
 							{
+								// extension.TypedBinding.ConverterCulture = extension.ConverterCulture;
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "ConverterCulture"));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "ConverterCulture"));
 								// // extension.TypedBinding.Source = extension.Source;
 								yield return Create(Ldloc, vardefref.VariableDefinition);
 								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));

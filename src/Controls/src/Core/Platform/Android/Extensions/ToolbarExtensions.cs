@@ -17,7 +17,6 @@ using AndroidX.Core.View.Accessibility;
 using Google.Android.Material.Badge;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
-using AGraphics = Android.Graphics;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = global::Android.Views.View;
@@ -149,11 +148,14 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					// Reinitialize navigation icon to display flyout (hamburger) menu
-    				// This ensures the icon is shown when back button is not visible
-					nativeToolbar.NavigationIcon = new DrawerArrowDrawable(context!);
+					// Preserve any custom flyout icon assigned by ShellToolbarTracker.
+					// Only create a default drawer arrow when no navigation icon exists.
+					nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
+
 					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+					{
 						iconDrawable.Progress = 0;
+					}
 
 					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
 				}
@@ -199,7 +201,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (nativeToolbar.NavigationIcon is Drawable navigationIcon)
 			{
 				if (navigationIcon is DrawerArrowDrawable dad)
-					dad.Color = AGraphics.Color.White;
+				{
+					dad.Color = global::Android.Graphics.Color.White;
+				}
 
 				navigationIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
 			}
@@ -213,6 +217,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var textColor = toolbar.BarTextColor;
+			var iconColor = toolbar.IconColor;
 
 			// Because we use the same toolbar across multiple navigation pages (think tabbed page with nested NavigationPage)
 			// We need to reset the toolbar text color to the default color when it's unset
@@ -234,12 +239,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (nativeToolbar.NavigationIcon is DrawerArrowDrawable icon)
 			{
-				if (textColor != null)
+				// IconColor is the explicit source of truth for nav icon tint when set.
+				// Only fall back to BarTextColor for icon tint when IconColor is unset.
+				if (iconColor is null && textColor != null)
 				{
 					_defaultNavigationIconColor = icon.Color;
 					icon.Color = textColor.ToPlatform().ToArgb();
 				}
-				else if (_defaultNavigationIconColor != null)
+				else if (iconColor is null && _defaultNavigationIconColor != null)
 				{
 					icon.Color = _defaultNavigationIconColor.Value;
 				}

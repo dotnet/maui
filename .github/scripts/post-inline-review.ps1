@@ -164,10 +164,13 @@ foreach ($f in $findings) {
         continue
     }
 
+    $rawBody = if ($f.body) { [string]$f.body } elseif ($f.message) { [string]$f.message } elseif ($f.content) { [string]$f.content } else { "(no description)" }
+    $aiMarker = "> 🔍 **AI-Generated Review** (multi-model)`n`n"
+    
     $comment = @{
         path = $p
         line = [int]$f.line
-        body = if ($f.body) { [string]$f.body } elseif ($f.message) { [string]$f.message } elseif ($f.content) { [string]$f.content } else { "(no description)" }
+        body = $aiMarker + $rawBody
     }
     # GitHub API requires 'side' for pull request review comments
     $comment['side'] = 'RIGHT'

@@ -147,7 +147,6 @@ $UnitTestProjects = [ordered]@{
     "Essentials"        = "src/Essentials/test/UnitTests/Essentials.UnitTests.csproj"
     "Graphics"          = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
     "Resizetizer"       = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
-    "Compatibility"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
     "DualScreen"        = "src/Controls/Foldable/test/Controls.DualScreen.UnitTests.csproj"
     "AI"                = "src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj"
 }

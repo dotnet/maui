@@ -81,17 +81,7 @@ public static partial class AppHostBuilderExtensions
 		// via [ElementHandler] attributes on the view types.
 		builder.ConfigureMauiHandlers(configureDelegate: null);
 
-		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios.
-		// HybridWebViewHandler uses dynamic System.Text.Json features and cannot be referenced
-		// via [ElementHandler] attribute because that would create a hard type reference that
-		// ILC cannot eliminate based on the feature switch.
-		if (RuntimeFeature.IsHybridWebViewSupported)
-		{
-#pragma warning disable IL2026, IL3050 // Guarded by RuntimeFeature.IsHybridWebViewSupported.
-			builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<HybridWebView, HybridWebViewHandler>());
-#pragma warning restore IL2026, IL3050
-			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
-		}
+		builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
 
 		builder.ConfigureMauiControlsDiagnostics();
 
