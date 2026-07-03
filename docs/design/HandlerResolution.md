@@ -29,7 +29,7 @@ builder.ConfigureMauiHandlers(handlers =>
 });
 ```
 
-If an attribute-based API is made public for third-party libraries, prefer `[ElementHandler(typeof(THandler))]` for concrete controls when the handler type can be selected statically and the handler has a public parameterless constructor. Use a custom `ElementHandlerAttribute` subclass only when handler selection needs additional logic. The Android Material UI controls are the intended pattern: their nested attributes override `GetHandlerType()` and return either the Material 3 handler or the default handler based on `RuntimeFeature.IsMaterial3Enabled`, so the inactive handler implementation does not need to be rooted unconditionally.
+If an attribute-based API is made public for third-party libraries, prefer `[ElementHandler(typeof(THandler))]` for concrete controls when the handler type can be selected statically and the handler has a public parameterless constructor. Use a custom `ElementHandlerAttribute` subclass only when handler selection needs additional logic. The Android Material UI controls are the intended pattern: their nested attributes override `GetHandlerType()` and return either the Material 3 handler or the default handler based on `RuntimeFeature.IsMaterial3Enabled`, so the inactive handler implementation does not need to be rooted unconditionally. `CollectionView` uses the same technique on Windows, selecting `CollectionViewHandler2` or the legacy `CollectionViewHandler` based on `RuntimeFeature.IsWindowsCollectionView2HandlerEnabled`.
 
 Continue to use `ConfigureMauiHandlers(... AddHandler ...)` when an application needs to override an existing handler, when registering handlers for interfaces, or when a handler must be constructed through DI because it requires constructor parameters.
 
@@ -64,10 +64,15 @@ How a handler instance is created depends on how it was resolved:
 - **`[ElementHandler]` attribute** (step 3): Instantiated directly via `Activator.CreateInstance` — no DI involvement.
 - **Fallback in `ElementExtensions.ToHandler()`**: When `Activator.CreateInstance` fails with a `MissingMethodException` (e.g., the handler requires constructor parameters), `ActivatorUtilities.CreateInstance` is used instead, which supports constructor injection from the DI container.
 
-> **Note:** Handlers registered via `[ElementHandler]` must have a public parameterless constructor.
-> They are instantiated with `Activator.CreateInstance()`, not through the DI container.
-> The `ActivatorUtilities.CreateInstance()` fallback only applies to DI-registered handlers
-> resolved through `ElementExtensions.ToHandler()`.
+> **Note:** Handlers resolved via `[ElementHandler]` are instantiated with `Activator.CreateInstance()`
+> (not through the DI container), so a public parameterless constructor is expected on the common path.
+> `ElementExtensions.ToHandler()` provides a safety net: if `Activator.CreateInstance()` throws a
+> `MissingMethodException` (for example, the handler requires constructor parameters), it retries through
+> `ActivatorUtilities.CreateInstance()`, which supplies constructor arguments from the DI container.
+> This fallback applies to any handler resolved through `ToHandler()` — including `[ElementHandler]`-resolved
+> handlers, not only DI-registered ones — but callers that use `GetHandler()` directly do not get it.
+> Declaring handlers with a parameterless constructor (and using DI registration when constructor
+> injection is required) remains the recommended approach.
 
 ### Controls mapper remapping
 
