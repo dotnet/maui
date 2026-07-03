@@ -1,4 +1,3 @@
-#if IOS		//More info : https://github.com/dotnet/maui/pull/34510
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -95,4 +94,3 @@ public class Issue32275 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif
