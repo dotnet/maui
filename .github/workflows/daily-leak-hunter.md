@@ -51,6 +51,7 @@ concurrency:
 
 timeout-minutes: 90
 max-ai-credits: -1
+max-daily-ai-credits: -1
 
 tools:
   github:
@@ -72,31 +73,34 @@ safe-outputs:
   create-issue:
     # No auto title-prefix: the agent writes the FULL title, starting with the mode tag —
     # "[leak-scan] " for a confirmed runtime leak (Pass A) or "[leak-test-gap] " for a
-    # missing-memory-leak-test proposal (Pass B). At most ONE issue per run.
+    # missing-memory-leak-test proposal (Pass B). Up to `max` issues per run — Pass A files
+    # one per DISTINCT empirically-confirmed leak (sweep all focus areas), Pass B one per gap.
     labels: [agentic-workflows]
     allowed-labels: [agentic-workflows]
-    max: 1
+    max: 8
   noop:
     report-as-issue: false
 ---
 
 # Daily Memory Leak Hunter — dotnet/maui
 
-You run a **two-pass** memory-leak workflow per run and file **at most ONE** issue.
-Neither pass needs an emulator/simulator or a MAUI source build.
+You run a **two-pass** memory-leak workflow per run. Neither pass needs an
+emulator/simulator or a MAUI source build.
 
-- **Pass A — runtime leak hunt.** Find ONE *new* cross-platform **managed** leak, prove it
-  with a `dotnet test` against the shipped `Microsoft.Maui.Controls` package, and file a
-  **`[leak-scan]`** issue **only if the test confirms it**.
-- **Pass B — leak-test coverage-gap scan.** Run this **only if Pass A produced no issue**
-  (no new confirmable leak — the expected case now that the managed surface is hardened).
-  Statically find ONE shipping control / high-value scenario that has **no memory-leak
-  test**, and file a **`[leak-test-gap]`** issue proposing the precise missing test.
+- **Pass A — runtime leak hunt.** Find as many *new* cross-platform **managed** leaks as you
+  can this run — **sweep every focus area**, not just one — prove each with a `dotnet test`
+  against the shipped `Microsoft.Maui.Controls` package, and file a **`[leak-scan]`** issue
+  for **each DISTINCT confirmed leak** (up to the 8-issue cap). Filing several strong,
+  empirically-proven leaks in one run is the goal — do not stop after the first.
+- **Pass B — leak-test coverage-gap scan.** Run this **only if Pass A confirmed and filed
+  nothing** (no new confirmable leak). Statically find shipping controls / high-value
+  scenarios that have **no memory-leak test**, and file **`[leak-test-gap]`** issues (up to
+  the remaining cap) proposing the precise missing tests.
 
-So every run files exactly one of: a confirmed `[leak-scan]` leak, a `[leak-test-gap]`
-coverage proposal, or (rarely) nothing. **Pass B is what keeps runs productive** — there is
-always another untested control, and closing these gaps stops future leaks from shipping
-untested.
+So a run files one or more confirmed `[leak-scan]` leaks (preferred), else one or more
+`[leak-test-gap]` proposals, else (rarely) nothing. **Volume matters** — the surface is large
+(hundreds of documented MAUI leaks exist); each confirmed leak you file is high-value, so hunt
+hard and file every distinct one you can prove.
 
 All intermediate state goes under `/tmp/gh-aw/agent/` (each bash call is a fresh subshell;
 persist anything you need). The only write you may perform is the single `create-issue`
@@ -105,8 +109,10 @@ the repo (Pass B only *proposes* a test in the issue body — it does not commit
 
 ## Hard rules — non-negotiable
 
-1. **File at most ONE issue per run.** Prefer a Pass A `[leak-scan]` when a runtime leak is
-   empirically confirmed; otherwise a Pass B `[leak-test-gap]`. Never file both.
+1. **File one issue per DISTINCT confirmed leak, up to 8 per run.** Sweep all focus areas and
+   file a `[leak-scan]` for every runtime leak you empirically confirm this run. Only if Pass A
+   confirms **none** do you fall through to Pass B `[leak-test-gap]` issues. Never file a Pass A
+   and Pass B issue for the same underlying leak.
 2. **Pass A: only file on EMPIRICAL confirmation.** If your unit test does not show the
    Leaky scenario retaining while Control AND Mitigation release, file nothing in Pass A and
    fall through to Pass B. A false positive is far worse than a quiet Pass A.
@@ -163,33 +169,35 @@ A candidate whose only prior issue from this scanner is CLOSED may be re-filed.
 
 ## Step 3 — Scan for the leak signature
 
-### Step 3.0 — Pick this run's focus (rotate, so runs find DIFFERENT leaks)
+### Step 3.0 — Sweep ALL focus areas this run (fan-out)
 
-To avoid fixating on the same area every run, compute a rotating focus index and scan that
-area first/hardest this run:
+Do **not** limit the run to one area. Work through **every** focus area below and collect a
+candidate list from each — the more areas you cover, the more distinct leaks you file. Start at
+a rotating index just to vary ordering across runs, then continue through all of them:
 
 ```
-# Rotate by run number so successive runs (and dispatches) explore different areas.
-FOCUS=$(( ${GITHUB_RUN_NUMBER:-1} % 8 ))
-echo "focus index: $FOCUS"
+# Rotate the STARTING point so successive runs vary order; but cover ALL areas.
+START=$(( ${GITHUB_RUN_NUMBER:-1} % 8 ))
+echo "start focus index: $START (then sweep all 8)"
 ```
 
-| Index | Focus this run (all PURELY MANAGED — testable on plain `net10.0`) |
+Each row lists **catalog-proven signatures** — real MAUI leak shapes that have been confirmed
+before. Hunt for NEW instances of these shapes (different control/API, same mechanism):
+
+| Index | Focus (all PURELY MANAGED — testable on plain `net10.0`) — proven signatures to hunt |
 |------:|----------------|
-| 0 | `static event` / static delegate fields in `src/Controls/src/Core` and `src/Core/src` |
-| 1 | `static` mutable collections (`Dictionary`/`List`/`HashSet`/`ConcurrentDictionary`) holding transients (exclude `ConditionalWeakTable` + type/registry caches) |
-| 2 | Shared `ResourceDictionary` / `MergedDictionaries` / resources-changed-listener plumbing |
-| 3 | Binding / `DynamicResource` / `AppThemeBinding` plumbing |
-| 4 | Shared bindable values (a collection or `Element` used as a resource) the element subscribes to via `CollectionChanged` / `PropertyChanged` without a weak proxy |
-| 5 | Animation / `IAnimationManager` / tweener / ticker plumbing |
-| 6 | `AttachedCollection` / triggers / behaviors / VisualStateManager retention |
-| 7 | Shapes / Geometry / Brush change-notification (`StrokeDashArray`, `GradientStops`, Path geometry, …) |
+| 0 | `static event` / static delegate fields in `src/Controls/src/Core` + `src/Core/src` (e.g. `AppActions.OnAppAction`-style static publishers never unsubscribed) |
+| 1 | `static` mutable collections (`Dictionary`/`List`/`HashSet`/`ConcurrentDictionary`) holding transients (static route tables, request-tables, `AnimationExtensions.s_animations`-style caches; exclude `ConditionalWeakTable` + type/registry caches) |
+| 2 | Shared `ResourceDictionary` retained via `MergedDictionaries` **or** direct `VisualElement.Resources` assignment — strong `ValuesChanged` subscription from a page-local dict with no unload teardown |
+| 3 | Binding / `DynamicResource` / `AppThemeBinding` plumbing (shared source strongly rooting the target) |
+| 4 | **Shared publisher → strong subscription with no weak proxy** — the #1 catalog pattern. A control subscribes to an *external/shared/long-lived* collection or element via `CollectionChanged` / `PropertyChanged` and never unsubscribes: `Picker.ItemsSource`, `TableView`/`TableRoot` section collection, `SelectableItemsView.SelectedItems`, `CarouselView` item source, etc. |
+| 5 | **Shared `ICommand` → `CanExecuteChanged`** roots the control (strong subscription, no teardown): `ListView.RefreshCommand`, `SwipeItemView.Command`, `BackButtonBehavior.Command`, `MenuItem.Command`, toolbar/refresh commands. |
+| 6 | Animation / `IAnimationManager` / tweener / ticker plumbing (tickers/animators not stopped/disposed on teardown; `AnimatableKey`/animation-cache retention) |
+| 7 | `AttachedCollection` / triggers / behaviors / **VisualStateManager**: state triggers (`OrientationStateTrigger`, `DisplayRotationStateTrigger`, `CompareStateTrigger`, `AdaptiveTrigger`) that subscribe to a shared source (e.g. `DeviceDisplay.MainDisplayInfoChanged`) and stay subscribed when VSGroups are replaced; `Shapes`/`Geometry`/`Brush` change-notification (`StrokeDashArray`, `GradientBrush.GradientStops`, `Path` geometry). |
 
-Treat the table as a *starting point*, not a cage — if the focus area is exhausted (its leaks
-are already open `[leak-scan]` issues), move to the next index. Over many runs the rotation
-covers the whole managed surface. (Essentials sensors / `Connectivity` / `Battery` /
-`DeviceDisplay` are intentionally absent — they need a device and are out of scope for this
-no-emulator workflow.)
+Cover every row. Within a row, look for MULTIPLE instances (e.g. area 5 alone spans several
+controls that each take an `ICommand`). If a row is fully hardened or already covered by open
+`[leak-scan]` issues, note it and move on. Over the sweep you should surface several candidates.
 
 ### Step 3.1 — Hunt
 
@@ -207,11 +215,11 @@ transient object (page / view / view-model / handler) with no teardown**, e.g.:
   only on a path that navigation-away doesn't trigger.
 
 For each candidate, write down the precise retention path
-`root -> ... -> transient` with file:line citations, then cross-check Step 2. Pick the ONE
-strongest candidate that is not already an open `[leak-scan]` issue (Step 2). If there is no
-convincing candidate, stop and
-create nothing (a quiet run is a success — the surface is heavily hardened, so most runs find
-nothing; the value is catching NEW leaks as code lands).
+`root -> ... -> transient` with file:line citations, then cross-check Step 2. **Collect EVERY
+distinct candidate** across all focus areas that is not already an open `[leak-scan]` issue —
+build a candidate list (aim for several). Rank them strongest-first, then confirm as many as
+you can in Step 4/5. If — after a genuine sweep — there is no convincing candidate at all, stop
+and create nothing in Pass A (a quiet Pass A is fine; fall through to Pass B).
 
 ## Step 4 — Write a standalone control/leaky/mitigation test (shipped package)
 
@@ -239,11 +247,16 @@ package (so restore uses nuget.org, NOT the repo's Azure DevOps feeds):
 
 (Use a `10.0.x` version that restores; `10.0.0` is known to work.)
 
-`/tmp/gh-aw/agent/leakprobe/LeakTest.cs`: a single `[Fact]` that
+`/tmp/gh-aw/agent/leakprobe/LeakTest.cs`: **one `[Fact]` per candidate** (name them clearly,
+e.g. `Picker_ItemsSource_Leaks`, `ListView_RefreshCommand_Leaks`), each of which:
 1. allocates N (e.g. 30) subjects, each owning a `new byte[1024*1024]` payload tracked by a `WeakReference`;
 2. runs Control / Leaky / Mitigation;
 3. forces a full GC (`for (i in 0..6) { GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect(); }`);
 4. asserts `Assert.Equal(N, leakyAlive)`, `Assert.Equal(0, controlAlive)`, `Assert.Equal(0, mitigationAlive)`.
+
+Put ALL candidates in this ONE project (one restore, one `dotnet test` run confirms them all).
+Each `[Fact]` that PASSES is one empirically-confirmed leak you will file in Step 6; each that
+FAILS to build or assert is a wrong hypothesis — drop just that candidate and keep the rest.
 
 **CRITICAL — pick a PURELY-MANAGED candidate that is testable on plain `net10.0`.** The leak's
 subscribe/teardown path must use only managed types that work without a platform — e.g.
@@ -263,16 +276,18 @@ cd /tmp/gh-aw/agent/leakprobe && dotnet test --logger "console;verbosity=normal"
 This restores `Microsoft.Maui.Controls` from nuget.org and runs on the runner — no workload,
 no MAUI source build, no emulator.
 
-- If it **passes**, the leak is confirmed (Leaky retains; Control + Mitigation release).
-- If it **fails to build** (the API isn't in the shipped package) or the assertions don't hold,
-  your hypothesis is wrong — iterate once on a different candidate, otherwise stop and create
-  nothing.
+- For **each `[Fact]`**: if it **passes**, that leak is confirmed (Leaky retains; Control +
+  Mitigation release) → file it in Step 6. If it **fails to build** (API not in the shipped
+  package) or its assertions don't hold, that candidate's hypothesis is wrong — drop it and
+  keep the others. Confirming several in one run is expected and good.
 
-## Step 6 — File the issue (Pass A — only on a confirmed leak)
+## Step 6 — File the issues (Pass A — one per confirmed leak)
 
-If (and only if) Step 5 confirmed the leak, emit exactly one `create-issue` safe-output and
-**stop** (do not run Pass B). Title MUST start with the literal tag **`[leak-scan] `**
-followed by a precise one-liner naming the rooting API. Body (markdown):
+For **every** leak Step 5 confirmed, emit a `create-issue` safe-output (up to the 8 cap) — one
+issue per distinct leak — then **stop** (do not run Pass B if you filed at least one). De-dup
+each against open `[leak-scan]` issues AND against the other issues you're filing this run (no
+two issues for the same rooting API). Each title MUST start with the literal tag
+**`[leak-scan] `** followed by a precise one-liner naming the rooting API. Body (markdown):
 
 - A clear **AI-generated** banner naming this workflow.
 - **Description** of the leak and why it retains.
@@ -339,13 +354,15 @@ writing (verify against the live tree — some may have gained coverage): `FlexL
 as `CollectionView2` (CV2 handler). Prefer a control that is **widely used** and whose leak
 would be **high-impact** (layouts and Shell rank high; obscure cells rank low).
 
-Pick the ONE strongest gap. If — and only if — you genuinely find NO uncovered concrete
-control and NO commented-out coverage entry, file nothing (a fully-covered surface is a valid
-quiet outcome, but it is rare; look thoroughly before giving up).
+Pick the strongest gaps — file up to the remaining issue cap (one per distinct uncovered
+control/scenario), strongest/highest-impact first. If — and only if — you genuinely find NO
+uncovered concrete control and NO commented-out coverage entry, file nothing (a fully-covered
+surface is a valid quiet outcome, but it is rare; look thoroughly before giving up).
 
-## Step 9 — File the coverage-gap issue (Pass B)
+## Step 9 — File the coverage-gap issues (Pass B)
 
-Emit exactly one `create-issue` safe-output. Title MUST start with the literal tag
+Emit one `create-issue` safe-output **per distinct gap** (up to the remaining cap), de-duped
+against open `[leak-test-gap]` issues and each other. Each title MUST start with the literal tag
 **`[leak-test-gap] `** followed by a precise one-liner, e.g.
 `[leak-test-gap] FlexLayout has no memory-leak (HandlerDoesNotLeak) test`. Body (markdown):
 
