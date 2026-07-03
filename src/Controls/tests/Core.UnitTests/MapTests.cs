@@ -1247,6 +1247,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void GetClusterImageWithEmptyPinsUsesDefaultIdentifierAndFallsBackToStatic()
+		{
+			var map = new Map();
+			var staticImage = ImageSource.FromFile("static.png");
+			map.ClusterImageSource = staticImage;
+
+#nullable enable
+			ClusterInfo? captured = null;
+			map.ClusterImageProvider = info => { captured = info; return null; };
+#nullable restore
+
+			var result = ((IMap)map).GetClusterImage(new List<IMapPin>(), new Location(1, 2));
+
+			Assert.NotNull(captured);
+			Assert.Equal(0, captured!.Count);
+			Assert.Equal(Pin.DefaultClusteringIdentifier, captured.ClusteringIdentifier);
+			Assert.Empty(captured.Pins);
+			Assert.Same(staticImage, result);
+		}
+
+		[Fact]
 		public void SettingClusterImageSourceRebuildsPins()
 		{
 			var map = new Map();
