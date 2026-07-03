@@ -357,8 +357,11 @@ namespace Microsoft.Maui.Controls
             // SetViewControllers yet (the property is event-queue-deferred on iOS).
             // This matches the renderer's approach of passing pageBeingRemoved to
             // compensate for stale ViewControllers.
+            // Guard with NavigationController != null to avoid evaluating during
+            // orientation re-hosting when the VC is temporarily disconnected.
             var navPage = child.Parent as NavigationPage;
-            var isRootPage = navPage?.Navigation?.NavigationStack?.Count > 0
+            var isRootPage = NavigationController is not null
+                && navPage?.Navigation?.NavigationStack?.Count > 0
                 && navPage.Navigation.NavigationStack[0] == child;
 
             if (!isRootPage && NavigationPage.GetHasBackButton(child))

@@ -87,6 +87,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// Determine what navigation operation(s) to perform
+			bool midStackChanged = false;
 			if (oldStack.Count == 0)
 			{
 				// Initial load — push all pages
@@ -161,13 +162,13 @@ namespace Microsoft.Maui.Handlers
 				else
 				{
 					// Top page same — just mid-stack removals
-					SyncMiddleOfStack(newStack);
+					midStackChanged = SyncMiddleOfStack(newStack);
 				}
 			}
 			else
 			{
 				// Stack size same, top page same — mid-stack changes only
-				SyncMiddleOfStack(newStack);
+				midStackChanged = SyncMiddleOfStack(newStack);
 			}
 
 			NavigationStack = new List<IView>(newStack);
@@ -175,7 +176,9 @@ namespace Microsoft.Maui.Handlers
 
 			// After mid-stack changes, the top VC's left bar button may need updating
 			// (e.g., flyout icon → back button after InsertPageBefore at root).
-			if (ControlsConfiguration?.OnMidStackChanged is { } onMidStackChanged)
+			// Only fire when SyncMiddleOfStack actually modified VCs to avoid extra
+			// ShouldShowToolbarButton calls during initial setup or no-op syncs.
+			if (midStackChanged && ControlsConfiguration?.OnMidStackChanged is { } onMidStackChanged)
 			{
 				var topVC = _navManager?.NavigationController.TopViewController;
 				if (topVC is not null)
@@ -185,11 +188,11 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void SyncMiddleOfStack(IReadOnlyList<IView> newStack)
+		bool SyncMiddleOfStack(IReadOnlyList<IView> newStack)
 		{
 			if (_navManager is null)
 			{
-				return;
+				return false;
 			}
 
 			var currentVCs = _navManager.ActiveViewControllers();
@@ -207,7 +210,10 @@ namespace Microsoft.Maui.Handlers
 			{
 				_navManager.NavigationController.SetViewControllers(expectedVCs, false);
 				_navManager.ClearPendingViewControllers();
+				return true;
 			}
+
+			return false;
 		}
 
 		UIViewController GetOrCreateViewController(IView view)
