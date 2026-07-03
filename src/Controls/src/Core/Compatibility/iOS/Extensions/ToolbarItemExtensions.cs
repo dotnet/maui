@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -125,11 +126,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			protected override void Dispose(bool disposing)
 			{
-				if (disposing && _item.TryGetTarget(out var item))
-					item.PropertyChanged -= OnPropertyChanged;
+				if (disposing)
+				{
+					if (_item.TryGetTarget(out var item))
+						item.PropertyChanged -= OnPropertyChanged;
+				}
 				base.Dispose(disposing);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ToolbarItem PropertyChanged subscription is removed in Dispose.")]
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (!_item.TryGetTarget(out var item))
@@ -296,6 +301,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The TouchUpInside subscription is removed in Dispose.")]
 			void OnClicked(object sender, EventArgs e)
 			{
 				if (_item.TryGetTarget(out var item))
@@ -306,11 +312,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			protected override void Dispose(bool disposing)
 			{
-				if (disposing && _item.TryGetTarget(out var item))
-					item.PropertyChanged -= OnPropertyChanged;
+				if (disposing)
+				{
+					((SecondaryToolbarItemContent)CustomView).TouchUpInside -= OnClicked;
+
+					if (_item.TryGetTarget(out var item))
+						item.PropertyChanged -= OnPropertyChanged;
+				}
 				base.Dispose(disposing);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ToolbarItem PropertyChanged subscription is removed in Dispose.")]
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (!_item.TryGetTarget(out var item))
@@ -357,7 +369,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			sealed class SecondaryToolbarItemContent : UIControl
 			{
+				[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The image view is a child view owned by SecondaryToolbarItemContent for its UIControl lifetime.")]
 				readonly UIImageView _imageView;
+				[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The label is a child view owned by SecondaryToolbarItemContent for its UIControl lifetime.")]
 				readonly UILabel _label;
 
 				public SecondaryToolbarItemContent()

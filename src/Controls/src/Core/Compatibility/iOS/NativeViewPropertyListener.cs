@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 
 #if __MOBILE__
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			TargetProperty = targetProperty;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "PropertyChanged must be public to implement INotifyPropertyChanged for the native property listener.")]
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		public override void ObserveValue(NSString keyPath, NSObject ofObject, NSDictionary change, IntPtr context)

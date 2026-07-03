@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Maui.Controls.Internals;
@@ -25,13 +26,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		UIColor _defaultBarColor;
 		bool _defaultBarColorSet;
 		bool? _defaultBarTranslucent;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The Maui context is required for the compatibility renderer lifetime and is not exposed outside the handler.")]
 		IMauiContext _mauiContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The tab bar appearance is owned by the renderer and disposed in Dispose.")]
 		UITabBarAppearance _tabBarAppearance;
 		WeakReference<VisualElement> _element;
 
 		Brush _currentBarBackground;
 
 		IMauiContext MauiContext => _mauiContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The mapper is static shared handler metadata and is not retained by renderer instances.")]
 		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewMapper);
 		public static CommandMapper<TabbedPage, TabbedRenderer> CommandMapper = new CommandMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewCommandMapper);
 
@@ -67,6 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public VisualElement Element => _viewHandlerWrapper?.Element ?? _element?.GetTargetOrDefault();
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "ElementChanged is a legacy public compatibility renderer event kept for API compatibility.")]
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		public Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -77,6 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return View; }
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "TabbedPage PropertyChanged and PagesChanged subscriptions are removed in Dispose.")]
 		public void SetElement(VisualElement element)
 		{
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
@@ -152,7 +158,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					tabbed.PropertyChanged -= OnPropertyChanged;
 					tabbed.PagesChanged -= OnPagesChanged;
+
+					foreach (var page in tabbed.Children)
+						page.PropertyChanged -= OnPagePropertyChanged;
 				}
+
+				if (_currentBarBackground is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 
 				FinishedCustomizingViewControllers -= HandleFinishedCustomizingViewControllers;
 			}
@@ -367,6 +379,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateTabBarVisibility();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Page PropertyChanged subscriptions are removed in TeardownPage and Dispose.")]
 		void SetupPage(Page page, int index)
 		{
 			var renderer = (IPlatformViewHandler)page.ToHandler(_mauiContext);
@@ -410,6 +423,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Gradient brush InvalidateGradientBrushRequested is removed before replacing the brush and in Dispose.")]
 		void UpdateBarBackground()
 		{
 			if (Tabbed is not TabbedPage tabbed || TabBar == null)

@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
@@ -15,16 +16,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class PhoneFlyoutPageRenderer : UIViewController, IPlatformViewHandler
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The click-off view is owned by the renderer and disposed in Dispose.")]
 		UIView _clickOffView;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The detail child controller is owned by the renderer while its containers are packed and emptied in Dispose.")]
 		UIViewController _detailController;
 		WeakReference<VisualElement> _element;
 		bool _disposed;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The flyout child controller is owned by the renderer while its containers are packed and emptied in Dispose.")]
 		UIViewController _flyoutController;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The pan gesture recognizer is removed from the view and disposed in Dispose.")]
 		UIPanGestureRecognizer _panGesture;
 
 		bool _presented;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The tap gesture recognizer is removed from the click-off view and disposed in Dispose.")]
 		UIGestureRecognizer _tapGesture;
 
 		bool _applyShadow;
@@ -34,6 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		Page Page => Element as Page;
 		IFlyoutPageController FlyoutPageController => FlyoutPage;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The Maui context is required for the compatibility renderer lifetime and is not exposed outside the handler.")]
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
 
@@ -58,6 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		bool IsRTL => (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The mapper is static shared handler metadata and is not retained by renderer instances.")]
 		public static IPropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer> Mapper = new PropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewMapper);
 		public static CommandMapper<FlyoutPage, PhoneFlyoutPageRenderer> CommandMapper = new CommandMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewCommandMapper);
 		ViewHandlerDelegator<FlyoutPage> _viewHandlerWrapper;
@@ -77,6 +85,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public VisualElement Element => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault();
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "ElementChanged is a legacy public compatibility renderer event kept for API compatibility.")]
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		public Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -89,6 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return View; }
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The Element SizeChanged subscription is removed in Dispose.")]
 		public void SetElement(VisualElement element)
 		{
 
@@ -163,6 +173,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateLeftBarButton();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The FlyoutPage PropertyChanged subscription is removed in Dispose.")]
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
@@ -242,6 +253,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				Element.SizeChanged -= PageOnSizeChanged;
 				Element.PropertyChanged -= HandlePropertyChanged;
+				if (Element is FlyoutPage flyoutPage)
+					flyoutPage.Flyout.PropertyChanged -= HandleFlyoutPropertyChanged;
 
 				if (_tapGesture != null)
 				{
@@ -555,6 +568,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			});
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The Flyout page PropertyChanged subscription is removed when containers update and in Dispose.")]
 		void UpdateFlyoutPageContainers()
 		{
 			((FlyoutPage)Element).Flyout.PropertyChanged -= HandleFlyoutPropertyChanged;
