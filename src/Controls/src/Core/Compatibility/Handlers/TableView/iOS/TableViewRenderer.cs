@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		const int DefaultRowHeight = 44;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Original background view is retained so UpdateBackgroundView can restore the UITableView background.")]
 		UIView _originalBackgroundView;
 		RectangleF _previousFrame;
 

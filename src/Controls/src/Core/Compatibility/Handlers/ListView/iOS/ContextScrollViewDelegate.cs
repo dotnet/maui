@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using ObjCRuntime;
 using UIKit;
@@ -42,14 +43,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	internal sealed class ContextScrollViewDelegate : UIScrollViewDelegate
 	{
 		readonly nfloat _finalButtonSize;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Background view reference is cleared in Dispose(bool) or after RestoreHighlight reinserts it.")]
 		UIView _backgroundView;
 		List<UIButton> _buttons;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Tap recognizer is removed and disposed by ClearCloserRecognizer or Dispose(bool).")]
 		UITapGestureRecognizer _closer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Container view reference is cleared in Dispose(bool) when the delegate is released.")]
 		UIView _container;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Global close recognizer is removed from the table and disposed by ClearCloserRecognizer or Dispose(bool).")]
 		Controls.Compatibility.Platform.iOS.GlobalCloseContextGestureRecognizer _globalCloser;
 
 		bool _isDisposed;
 		static WeakReference<UIScrollView> s_scrollViewBeingScrolled;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Table view reference is cleared in Dispose(bool) and when the global close recognizer is removed.")]
 		UITableView _table;
 
 		public ContextScrollViewDelegate(UIView container, List<UIButton> buttons, bool isOpen)
@@ -70,6 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public nfloat ButtonsWidth { get; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Callback is cleared in Dispose(bool) when the delegate is released.")]
 		public Action ClosedCallback { get; set; }
 
 		public bool IsOpen { get; private set; }
@@ -215,6 +222,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (disposing)
 			{
 				ClosedCallback = null;
+
+				if (_closer != null)
+				{
+					_closer.Dispose();
+					_closer = null;
+				}
+
+				if (_globalCloser != null)
+				{
+					_table?.RemoveGestureRecognizer(_globalCloser);
+					_globalCloser.Dispose();
+					_globalCloser = null;
+				}
 
 				s_scrollViewBeingScrolled = null;
 				_table = null;

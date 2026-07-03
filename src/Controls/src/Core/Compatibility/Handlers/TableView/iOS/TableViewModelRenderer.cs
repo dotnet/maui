@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 #pragma warning disable CS0618 // Type or member is obsolete
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ModelChanged handler only reloads the weak PlatformView reference for this table source lifetime.")]
 		public TableViewModelRenderer(TableView model)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{

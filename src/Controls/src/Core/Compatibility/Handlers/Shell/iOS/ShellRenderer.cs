@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class ShellRenderer : UIViewController, IShellContext, IPlatformViewHandler
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Static mapper is shared for the renderer type and does not capture renderer instances.")]
 		public static IPropertyMapper<Shell, ShellRenderer> Mapper = new PropertyMapper<Shell, ShellRenderer>(ViewHandler.ViewMapper);
 		public static CommandMapper<Shell, ShellRenderer> CommandMapper = new CommandMapper<Shell, ShellRenderer>(ViewHandler.ViewCommandMapper);
 
@@ -92,11 +94,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		#endregion IShellContext
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Current item renderer is owned by ShellRenderer and disposed when replaced or when ShellRenderer is disposed.")]
 		IShellItemRenderer _currentShellItemRenderer;
 		bool _disposed;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Flyout renderer is owned by ShellRenderer and disposed in Dispose(bool).")]
 		IShellFlyoutRenderer _flyoutRenderer;
 		Task _activeTransition = Task.CompletedTask;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Incoming item renderer is a transient transition reference cleared when ShellRenderer is disposed.")]
 		IShellItemRenderer _incomingRenderer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "MauiContext is provided by the handler and cleared when ShellRenderer is disposed.")]
 		IMauiContext _mauiContext;
 
 		IShellFlyoutRenderer FlyoutRenderer
@@ -113,6 +119,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set { _flyoutRenderer = value; }
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Event is cleared in Dispose(bool) when ShellRenderer is released.")]
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		public VisualElement Element { get; private set; }
@@ -208,9 +215,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (disposing && !_disposed)
 			{
 				_disposed = true;
+
+				if (Element != null)
+					Element.PropertyChanged -= OnElementPropertyChanged;
+
+				ElementChanged = null;
+
+				if (!ReferenceEquals(_incomingRenderer, _currentShellItemRenderer))
+				{
+					(_incomingRenderer as IDisconnectable)?.Disconnect();
+					_incomingRenderer?.Dispose();
+				}
+
+				(_currentShellItemRenderer as IDisconnectable)?.Disconnect();
+				_currentShellItemRenderer?.Dispose();
 				FlyoutRenderer?.Dispose();
 			}
 
+			_incomingRenderer = null;
+			_currentShellItemRenderer = null;
+			_mauiContext = null;
 			FlyoutRenderer = null;
 		}
 
@@ -280,6 +304,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Shell PropertyChanged subscription is removed in Dispose(bool).")]
 		protected virtual void OnElementSet(Shell element)
 		{
 			if (element == null)

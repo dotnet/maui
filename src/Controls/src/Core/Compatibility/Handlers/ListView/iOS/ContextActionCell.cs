@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -27,8 +28,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning disable CS0618 // Type or member is obsolete
 		Cell _cell;
 #pragma warning restore CS0618 // Type or member is obsolete
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Button is owned for the context-actions cell lifetime and disposed in Dispose(bool).")]
 		UIButton _moreButton;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Scroll view is owned for the context-actions cell lifetime and disposed in Dispose(bool).")]
 		UIScrollView _scroller;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Table view reference is cleared in Dispose(bool) when the cell is released.")]
 		UITableView _tableView;
 		bool _isDiposed;
 
@@ -55,6 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Content cell is removed during updates and cleared in Dispose(bool).")]
 		public UITableViewCell ContentCell { get; private set; }
 
 		public bool IsOpen => ScrollDelegate.IsOpen;
@@ -131,6 +136,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 #pragma warning disable CS0618 // Type or member is obsolete
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Cell and context-action subscriptions are removed in Update and Dispose(bool).")]
 		public void Update(UITableView tableView, Cell cell, UITableViewCell nativeCell)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
@@ -280,6 +286,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_tableView = null;
+				ContentCell = null;
 
 				_moreButton?.Dispose();
 				_moreButton = null;
@@ -520,6 +527,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Button handlers are attached to buttons owned by this cell and the buttons are disposed in Update and Dispose(bool).")]
 		UIView SetupButtons(nfloat width, nfloat height)
 		{
 			MenuItem destructive = null;
@@ -641,6 +649,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		private sealed class SelectGestureRecognizer : UITapGestureRecognizer
 		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Gesture recognizer stores only the last touched index path while attached to the table view.")]
 			NSIndexPath _lastPath;
 
 			public SelectGestureRecognizer() : base(Tapped)

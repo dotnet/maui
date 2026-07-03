@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -10,11 +11,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	public class UIContainerView : UIView
 	{
 		readonly View _view;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Renderer is owned by the container view and cleared in Dispose(bool).")]
 		IPlatformViewHandler _renderer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Platform view is owned as a UIKit subview and cleared in Dispose(bool).")]
 		UIView _platformView;
 		bool _disposed;
 		double _measuredHeight;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Event is unsubscribed by ShellFlyoutLayoutManager.TearDown when the header view is released.")]
 		internal event EventHandler HeaderSizeChanged;
 
 		public UIContainerView(View view)
