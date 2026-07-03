@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Util;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -50,7 +51,32 @@ namespace Microsoft.Maui
 		//TODO : Make it public in NET 11.
 		internal static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+			{
+				ConfigureLegacyTranslucentSystemBars(window, activity);
+				return;
+			}
+
 			window.UpdateSystemBarAppearance(activity, updateStatusBar: true, updateNavigationBar: true);
+		}
+
+		static void ConfigureLegacyTranslucentSystemBars(Window? window, Activity activity)
+		{
+			if (window is null)
+			{
+				return;
+			}
+
+			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
+			if (windowInsetsController is not null)
+			{
+				var configuration = activity.Resources?.Configuration;
+				var isLightTheme = configuration is null ||
+					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
+
+				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
+			}
 		}
 
 		internal static void UpdateSystemBarAppearance(

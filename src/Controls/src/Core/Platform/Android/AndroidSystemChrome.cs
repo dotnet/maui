@@ -22,6 +22,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static void UpdateTopChrome(AView? chromeView, Brush? background)
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+			{
+				return;
+			}
+
 			if (chromeView is null)
 			{
 				return;
@@ -39,6 +44,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static void UpdateBottomChrome(AView? chromeView, Brush? background)
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+			{
+				return;
+			}
+
 			if (chromeView is null)
 			{
 				return;
