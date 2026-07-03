@@ -50,13 +50,15 @@ namespace Microsoft.Maui.Handlers
 			if (string.Equals(scheme, "javascript", StringComparison.OrdinalIgnoreCase))
 				return false;
 
-			// 'data:', 'about:' and 'blob:' have no network host to match against. They reference
-			// in-page / in-memory content (e.g. data: images, blob: object URLs, about:blank) that is
-			// produced by the already-loaded (allowed) document, so blocking them would break legitimate
-			// rendering without adding a meaningful security boundary. They remain allowed.
+			// 'data:', 'about:', 'blob:' and 'file:' have no network domain to match against. They
+			// reference in-page / in-memory content (data: images, blob: object URLs, about:blank) or
+			// local/packaged files (file:///android_asset/..., app bundle resources) rather than a
+			// network host, so blocking them would break legitimate rendering / local content loading
+			// without adding a meaningful domain-level security boundary. They remain allowed.
 			if (string.Equals(scheme, "data", StringComparison.OrdinalIgnoreCase) ||
 				string.Equals(scheme, "about", StringComparison.OrdinalIgnoreCase) ||
-				string.Equals(scheme, "blob", StringComparison.OrdinalIgnoreCase))
+				string.Equals(scheme, "blob", StringComparison.OrdinalIgnoreCase) ||
+				string.Equals(scheme, "file", StringComparison.OrdinalIgnoreCase))
 				return true;
 
 			// Compare using the ASCII/punycode host so internationalized domain names (IDN) match

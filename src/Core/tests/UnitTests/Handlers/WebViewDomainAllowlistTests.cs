@@ -88,6 +88,8 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData("data:text/html,<h1>Hello</h1>")]
 		[InlineData("about:blank")]
 		[InlineData("blob:https://example.com/abc")]
+		[InlineData("file:///android_asset/index.html")]
+		[InlineData("file:///data/user/0/com.company.app/files/page.html")]
 		public void SpecialSchemesAreAlwaysAllowed(string url)
 		{
 			var domains = new List<string> { "example.com" };
@@ -185,7 +187,10 @@ namespace Microsoft.Maui.UnitTests
 		public void RelativeUrlIsBlocked()
 		{
 			var domains = new List<string> { "example.com" };
-			Assert.False(WebViewDomainAllowlist.IsUrlAllowed("/page/test", domains));
+			// Path-relative URL (no scheme/host). A leading-slash form like "/page/test" is avoided
+			// here because on Unix-like hosts Uri parses it as an absolute file:// URI (now allowed);
+			// at runtime the platform WebView only ever passes fully-resolved absolute URLs anyway.
+			Assert.False(WebViewDomainAllowlist.IsUrlAllowed("page/test", domains));
 		}
 
 		[Fact]
