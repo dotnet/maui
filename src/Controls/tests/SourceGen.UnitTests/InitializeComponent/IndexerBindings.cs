@@ -311,6 +311,9 @@ public class TestViewModel
 		// For arrays, the handler should use empty string for indexer name (no property to listen to on the array itself)
 		// The array itself can't notify about element changes - only the containing property can
 		Assert.Contains("\"Names\"", generated, StringComparison.Ordinal);
+
+		// Verify the handler shape (handlersCount) is generated for the indexer binding
+		Assert.Contains("var handlersCount =", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
