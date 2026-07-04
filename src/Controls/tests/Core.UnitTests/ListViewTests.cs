@@ -35,6 +35,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(LayoutOptions.FillAndExpand, listView.VerticalOptions);
 		}
 
+		[Fact]
+		public async Task RefreshCommandDoesNotLeakListView()
+		{
+			// A long-lived command whose CanExecuteChanged is a *strong* .NET event, as with a
+			// custom ICommand or CommunityToolkit's RelayCommand. (Microsoft.Maui.Controls.Command
+			// routes CanExecuteChanged through a WeakEventManager and would not reproduce the leak.)
+			ICommand command = new StrongCanExecuteCommand();
+
+			// Create the ListView in a separate method so no local in this frame roots it.
+			WeakReference CreateReference()
+			{
+				var listView = new ListView { RefreshCommand = command };
+				return new WeakReference(listView);
+			}
+
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
+
+			// The command out-lives the ListView; subscribing to its CanExecuteChanged must not
+			// keep the ListView (and its cells, templates and binding context) alive.
+			Assert.False(await reference.WaitForCollect(), "ListView should not be alive!");
+
+			GC.KeepAlive(command);
+		}
+
+		sealed class StrongCanExecuteCommand : ICommand
+		{
+			public event EventHandler CanExecuteChanged;
+
+			public bool CanExecute(object parameter) => true;
+
+			public void Execute(object parameter) { }
+
+			public void ChangeCanExecute() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+		}
+
 		internal class ListItem
 		{
 			public string Name { get; set; }
