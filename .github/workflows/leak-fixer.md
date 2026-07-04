@@ -329,17 +329,30 @@ Read the chosen issue's body in full (`gh issue view <N> --json title,body`). Ex
 ## Step 3 — De-dup + attempt cap (live GitHub searches)
 
 A fix PR carries `Fixes #<N>` (and `Refs: <owner>/<repo>#<N>`) in its body — that is the join
-key.
+key. But the same underlying leak can be filed under MULTIPLE issue numbers (duplicate
+`[leak-scan]` issues, or a pre-existing upstream issue), so also de-dup by the **rooting
+`Type.Member`** the target names — never open a second fix for a leak already being fixed.
 
 ```bash
 N=<issue-number>
-# Open [leak-fix] PR already addressing this issue?
+# The rooting Type.Member this issue is about (titles lead with it: "[leak-scan] Type.Member — ...").
+API=$(gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title -q '.title' \
+  | sed -E 's/^\[leak-scan\] *//; s/[ :—].*$//')
+echo "target rooting API: $API"
+# (a) Open [leak-fix] PR already addressing THIS issue number?
 gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title' \
   --json number,title,body \
   | jq --arg n "$N" '[.[] | select((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b"))]' \
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
-# Closed-unmerged attempts for this issue (attempt cap = 3).
+# (b) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
+#     [leak-fix] PR titles are "Fix <Type>.<Member> memory leak".
+gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title' \
+  --json number,title \
+  | jq --arg api "$API" '[.[] | select(.title | test("Fix +"+$api+"([. ]|$)"))]' \
+  > /tmp/gh-aw/agent/same-api-prs.json
+jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/same-api-prs.json
+# (c) Closed-unmerged attempts for this issue (attempt cap = 3).
 gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:title' \
   --json number,title,body,mergedAt \
   | jq --arg n "$N" '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b")) and (.mergedAt == null))]' \
@@ -347,8 +360,9 @@ gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:
 jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 ```
 
-- If an **open** fix PR already refs this issue → `skipped: open fix PR exists` and stop (or, if
-  `issue_number` was explicit, just stop).
+- If an **open** fix PR already refs this issue (a) OR already fixes the same rooting
+  `Type.Member` (b) → `skipped: leak already being fixed` and stop (or, if `issue_number` was
+  explicit, just stop). Also double-check the leak isn't already fixed on `main` (Step 8 gate).
 - If **3+ closed-unmerged** attempts exist → `skipped: attempt cap reached (3)` and stop.
 - An issue that is already CLOSED → `skipped: issue closed` (nothing to do).
 
