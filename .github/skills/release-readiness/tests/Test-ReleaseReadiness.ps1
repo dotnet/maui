@@ -3650,6 +3650,44 @@ Assert-Eq -Label "foreign-major: empty haystack → false" `
 Assert-Eq -Label "foreign-major: whitespace-only haystack → false" `
     -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack '   ' -Major 11)
 
+# --- Preview milestone coupling: tracker exists ⇒ milestone must exist ---
+# Policy check for Test-PreviewMilestoneExists. Deterministic: Get-AllMilestones
+# is stubbed in this dot-sourced scope (later definition wins, so the function
+# under test resolves the stub at call time) — no gh/network is touched. A
+# missing own-preview milestone is a BLOCKED ship-readiness gap, not a
+# wait-til-cut cleanup.
+Write-Host "`n[Unit] Test-PreviewMilestoneExists — preview milestone coupling" -ForegroundColor Cyan
+
+function Get-AllMilestones { [PSCustomObject]@{ Success = $true; Data = @(
+    [PSCustomObject]@{ title = '.NET 11.0-preview6' },
+    [PSCustomObject]@{ title = '.NET 10 SR9' }
+) } }
+$msPresent = Test-PreviewMilestoneExists -Major 11 -Preview 6
+Assert-Eq -Label "milestone present (.NET 11.0-preview6) → Exists"        -Expected $true  -Actual $msPresent.Exists
+Assert-Eq -Label "milestone present → not QueryFailed"                    -Expected $false -Actual $msPresent.QueryFailed
+Assert-Eq -Label "milestone present → MatchedTitle echoed"               -Expected '.NET 11.0-preview6' -Actual $msPresent.MatchedTitle
+
+# preview7 milestone absent from the same list → not Exists, and the expected
+# title is computed so the caller can render a create-it next-action.
+$msMissing = Test-PreviewMilestoneExists -Major 11 -Preview 7
+Assert-Eq -Label "milestone missing (preview7) → not Exists"              -Expected $false -Actual $msMissing.Exists
+Assert-Eq -Label "milestone missing → not QueryFailed"                    -Expected $false -Actual $msMissing.QueryFailed
+Assert-Eq -Label "milestone missing → ExpectedTitle computed"            -Expected '.NET 11.0-preview7' -Actual $msMissing.ExpectedTitle
+
+# Legacy title form (no '.NET ' prefix) still counts as present — don't false-BLOCK.
+function Get-AllMilestones { [PSCustomObject]@{ Success = $true; Data = @([PSCustomObject]@{ title = '11.0-preview7' }) } }
+Assert-Eq -Label "legacy '11.0-preview7' milestone counts as present"     -Expected $true  -Actual (Test-PreviewMilestoneExists -Major 11 -Preview 7).Exists
+
+# Case-insensitive match.
+function Get-AllMilestones { [PSCustomObject]@{ Success = $true; Data = @([PSCustomObject]@{ title = '.NET 11.0-PREVIEW7' }) } }
+Assert-Eq -Label "case-insensitive milestone match"                       -Expected $true  -Actual (Test-PreviewMilestoneExists -Major 11 -Preview 7).Exists
+
+# gh outage must surface as QueryFailed (caller emits UNKNOWN), never a false BLOCK.
+function Get-AllMilestones { [PSCustomObject]@{ Success = $false; Data = @() } }
+$msFail = Test-PreviewMilestoneExists -Major 11 -Preview 7
+Assert-Eq -Label "query failure → QueryFailed (not a false BLOCK)"        -Expected $true  -Actual $msFail.QueryFailed
+Assert-Eq -Label "query failure → Exists false"                          -Expected $false -Actual $msFail.Exists
+
 Write-Host "`n[Unit] Format-MarkdownCell collapses embedded newlines (table-row safety)" -ForegroundColor Cyan
 # A malformed upstream title with a literal CR/LF (observed live: ci-scan issue
 # #35957) must be collapsed to a single line so it cannot split the markdown table
