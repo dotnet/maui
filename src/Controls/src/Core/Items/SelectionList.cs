@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Controls
 		static readonly IList<object> s_empty = new List<object>(0);
 		readonly SelectableItemsView _selectableItemsView;
 		readonly IList<object> _internal;
+		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
 		IList<object> _shadow;
 		bool _externalChange;
 
@@ -20,12 +22,15 @@ namespace Microsoft.Maui.Controls
 			_selectableItemsView = selectableItemsView ?? throw new ArgumentNullException(nameof(selectableItemsView));
 			_internal = items ?? new List<object>();
 			_shadow = Copy();
+			_collectionChangedEventHandler = OnCollectionChanged;
 
 			if (items is INotifyCollectionChanged incc)
 			{
-				incc.CollectionChanged += OnCollectionChanged;
+				_collectionChangedProxy.Subscribe(incc, _collectionChangedEventHandler);
 			}
 		}
+
+		~SelectionList() => _collectionChangedProxy.Unsubscribe();
 
 		public object this[int index] { get => _internal[index]; set => _internal[index] = value; }
 

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
 using Xunit;
 
@@ -56,6 +58,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindingContext = new object();
 			itemsView.BindingContext = bindingContext;
 			Assert.Equal(itemsView.BindingContext, linearItemsLayout.BindingContext);
+		}
+
+		[Fact]
+		public async Task SelectedItemsDoesNotLeakCollectionView()
+		{
+			// Assigning a long-lived INotifyCollectionChanged collection to SelectedItems is the
+			// idiomatic multi-selection binding (e.g. a view-model ObservableCollection reused
+			// across navigations). SelectableItemsView wraps the value in a SelectionList that
+			// subscribes to the collection's CollectionChanged; if that subscription is strong and
+			// never torn down, the shared collection roots the whole control. See
+			// https://github.com/dotnet/maui/issues/36350
+			var sharedSelection = new ObservableCollection<object> { "a", "b", "c" };
+
+			WeakReference weakCollectionView;
+
+			{
+				var collectionView = new CollectionView
+				{
+					SelectionMode = SelectionMode.Multiple,
+					SelectedItems = sharedSelection,
+				};
+
+				weakCollectionView = new WeakReference(collectionView);
+			}
+
+			Assert.False(await weakCollectionView.WaitForCollect(), "CollectionView should not be alive!");
+			GC.KeepAlive(sharedSelection);
 		}
 	}
 }
