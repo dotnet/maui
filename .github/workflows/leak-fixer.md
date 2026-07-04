@@ -482,8 +482,12 @@ attempt: `skipped: could not validate a non-muting fix`.
 ## Step 9 — Format, then commit (injection-safe)
 
 ```bash
+# A leak fix must ONLY touch managed src/** — never workflow/infra files. Defensively reset
+# .github to origin/main and stage only src/** so nothing unrelated can enter the patch.
+# (No-op when running on main; strips the test-branch's own workflow delta in pre-merge runs.)
+git checkout origin/main -- .github 2>/dev/null || true
 dotnet format src/Controls/src/Controls.Core.csproj --no-restore 2>&1 | tail -5 || true
-git add -A
+git add -A -- src
 git --no-pager diff --stat "origin/main..HEAD" || true
 git --no-pager diff --staged --stat
 ```
