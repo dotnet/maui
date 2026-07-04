@@ -621,15 +621,29 @@ if (-not (Test-Path $detectScriptPath)) {
 
 # ─────────── E2E: Run detection against this repo and validate trackers ───────────
 
+# highestShippedTag advances every time an SR ships (10.0.71 -> 10.0.80 -> ...), so
+# freezing it as a literal guarantees this E2E block rots on the next release. Derive
+# the expected value from the SAME local tags the detector reads (via the repo path it
+# reports in its JSON), mirroring the detector's own rule: the highest STABLE `N.0.M`
+# tag for the major (pre-release tags like `-preview`/`-rc` excluded). This still catches
+# a real detector bug (wrong tag / bad sort) without pinning a value that goes stale.
+function Get-ExpectedHighestShippedTag {
+    param([string]$RepoPath, [int]$Major)
+    $stable = & git -C $RepoPath tag --list "$Major.0.*" |
+        Where-Object { $_ -match "^$Major\.0\.\d+$" }
+    if (-not $stable) { return $null }
+    return ($stable | Sort-Object { [version]$_ } | Select-Object -Last 1)
+}
+
 if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection against live repo" -ForegroundColor Cyan
-    Write-Host "  Under the tag-existence rule + Lane 1 staleness guard we expect TWO trackers:" -ForegroundColor DarkGray
-    Write-Host "    - SR8 (patch=80, no tag 10.0.80)        - in-flight, active" -ForegroundColor DarkGray
+    Write-Host "  Under the tag-existence rule + Lane 1 staleness guard we expect ONE tracker:" -ForegroundColor DarkGray
     Write-Host "    - SR9 (candidate off main)              - active" -ForegroundColor DarkGray
-    Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark 71):" -ForegroundColor DarkGray
+    Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark 80):" -ForegroundColor DarkGray
     Write-Host "    - SR2 (patch=21, no tag 10.0.21)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
     Write-Host "    - SR3 (patch=33, no tag 10.0.33)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
-    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71); no longer produces a tracker." -ForegroundColor DarkGray
+    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71) and SR8 shipped 2026-07-03 (tag 10.0.80);" -ForegroundColor DarkGray
+    Write-Host "          neither produces a tracker any longer." -ForegroundColor DarkGray
 
     $detectOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -642,11 +656,13 @@ if (-not $SkipE2E) {
 
             Assert-Eq -Label "majorVersion is 10"             -Expected 10 -Actual $detected.majorVersion
             Assert-Eq -Label "mainBranch is 'main'"            -Expected 'main' -Actual $detected.mainBranch
-            Assert-Eq -Label "highestShippedTag is '10.0.71'"  -Expected '10.0.71' -Actual $detected.highestShippedTag
+            $expectedHighestShipped = Get-ExpectedHighestShippedTag -RepoPath $detected.repo -Major ([int]$detected.majorVersion)
+            Assert-Eq -Label "highestShippedTag matches highest stable N.0.M tag (derived, drift-proof)" `
+                      -Expected $expectedHighestShipped -Actual $detected.highestShippedTag
             Assert-Eq -Label "highestShippedPreviewTag carries net10's last preview" `
                       -Expected '10.0.0-preview.7.25406.3' -Actual $detected.highestShippedPreviewTag
-            Assert-Eq -Label "tracker count is 2 (SR8+SR9 — SR7 shipped; SR2/SR3 dropped as stale)" `
-                      -Expected 2 -Actual $detected.trackers.Count
+            Assert-Eq -Label "tracker count is 1 (SR9 only — SR7+SR8 shipped; SR2/SR3 dropped as stale)" `
+                      -Expected 1 -Actual $detected.trackers.Count
             # All trackers in single-major net10 mode must be SR-flavored. (Net10's
             # previews 1–7 all shipped + no in-flight preview branch -> no preview tracker.)
             foreach ($t in $detected.trackers) {
@@ -659,39 +675,31 @@ if (-not $SkipE2E) {
 
             # SR2 (tag-absent but STALE — Lane 1 staleness guard drops it so the
             # workflow matrix never spins up a no-op job for it).
-            Assert-Eq -Label "SR2 tracker absent (stale: patch 21 < 71, no recent activity)" `
+            Assert-Eq -Label "SR2 tracker absent (stale: patch 21 < 80, no recent activity)" `
                       -Expected $false -Actual ($bySr.ContainsKey(2))
 
             # SR3 (tag-absent but STALE — dropped by the staleness guard)
-            Assert-Eq -Label "SR3 tracker absent (stale: patch 33 < 71, no recent activity)" `
+            Assert-Eq -Label "SR3 tracker absent (stale: patch 33 < 80, no recent activity)" `
                       -Expected $false -Actual ($bySr.ContainsKey(3))
 
             # SR7 (shipped 2026-06-05 as 10.0.71 — Lane 1 should NOT emit a tracker)
-            Assert-Eq -Label "SR7 tracker absent (shipped)" `
+            Assert-Eq -Label "SR7 tracker absent (shipped as 10.0.71)" `
                       -Expected $false -Actual ($bySr.ContainsKey(7))
 
-            # SR8 (in-flight, ACTIVE)
-            if ($bySr.ContainsKey(8)) {
-                $sr8 = $bySr[8]
-                Assert-Eq -Label "SR8 mode = in-flight"         -Expected 'in-flight' -Actual $sr8.mode
-                Assert-Eq -Label "SR8 canonicalKey"             -Expected 'net10-sr8' -Actual $sr8.canonicalKey
-                Assert-Eq -Label "SR8 branchName"               -Expected 'release/10.0.1xx-sr8' -Actual $sr8.branchName
-                Assert-Eq -Label "SR8 branchExists = true"      -Expected $true -Actual $sr8.branchExists
-                Assert-Eq -Label "SR8 expectedTag = 10.0.80"    -Expected '10.0.80' -Actual $sr8.expectedTag
-                # hasRecentActivity is a 7-day-window signal (git log --since=7.days
-                # against the live branch), so its VALUE is wall-clock dependent and
-                # MUST NOT be pinned here — SR8 idling >7 days at the tail of a cycle
-                # is a NORMAL state that would (correctly) report $false. Assert only
-                # that the detector emits it as a real [bool]. The window math itself
-                # is covered deterministically by the synthetic-fixture unit test
-                # ([Unit] Get-RecentCommitCount recency window).
-                Assert-Eq -Label "SR8 hasRecentActivity is a [bool] (value is date-dependent)" `
-                          -Expected $true -Actual ($sr8.hasRecentActivity -is [bool])
-                Assert-Eq -Label "SR8 regression labels"        `
-                          -Expected 'regressed-in-10.0.70,regressed-in-10.0.80' `
-                          -Actual ($sr8.regressionLabels -join ',')
-            } else {
-                Write-Host "  ❌ SR8 tracker missing" -ForegroundColor Red; $script:failed++
+            # SR8 (shipped 2026-07-03 as 10.0.80 — its in-flight tracker retired on ship,
+            # exactly like SR7 before it). This transition is why the tracker set dropped
+            # from {SR8,SR9} to {SR9}.
+            Assert-Eq -Label "SR8 tracker absent (shipped as 10.0.80)" `
+                      -Expected $false -Actual ($bySr.ContainsKey(8))
+
+            # Drift-proof invariant behind the two lines above: ANY SR that surfaces as an
+            # active tracker must NOT already have its ship tag in git (a shipped SR is
+            # excluded), no matter how many ship. Uses the tracker's own expectedTag so the
+            # non-uniform patch convention (SR7 shipped as 10.0.71, SR8 as 10.0.80) is honored.
+            foreach ($active in @($detected.trackers | Where-Object branchType -eq 'sr')) {
+                Assert-Eq -Label "active SR$($active.srNumber) has no ship tag $($active.expectedTag) yet [shipped-exclusion invariant]" `
+                          -Expected $false `
+                          -Actual ([bool](& git -C $detected.repo tag --list $active.expectedTag))
             }
 
             # SR9 (candidate from main, ACTIVE)
@@ -722,9 +730,9 @@ if (-not $SkipE2E) {
             # for "active": an active SR can legitimately sit idle for >7 days near
             # the tail of a cycle and report hasRecentActivity=$false. So assert the
             # flag is a real [bool] — never a hardcoded, date-dependent $true. SR7
-            # shipped 2026-06-05 and is no longer in the tracker set; only SR8 + SR9
-            # are active.
-            foreach ($srNum in @(8, 9)) {
+            # shipped 2026-06-05 and SR8 shipped 2026-07-03; both left the tracker set,
+            # so only SR9 is active.
+            foreach ($srNum in @(9)) {
                 if ($bySr.ContainsKey($srNum)) {
                     Assert-Eq -Label "SR$srNum hasRecentActivity is a [bool] (active SR; value date-dependent)" `
                               -Expected $true -Actual ($bySr[$srNum].hasRecentActivity -is [bool])
@@ -744,16 +752,17 @@ if (-not $SkipE2E) {
     # ──────────── E2E: -AllActiveMajors multi-major envelope ────────────
     # In the unified post-consolidation shape, one invocation must surface every
     # active major (main's + any net<N>.0 ≥ main). Expected current state:
-    #   - net10 -> 2 SR trackers (SR8, SR9), no preview tracker
-    #     (SR7 shipped 2026-06-05; SR2/SR3 dropped by the Lane 1 staleness guard;
-    #      every net10 preview branch already shipped + net10.0 isn't in preview cycle)
-    #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 1 preview tracker
-    #     (preview6 candidate from net11.0)
+    #   - net10 -> 1 SR tracker (SR9 candidate), no preview tracker
+    #     (SR7 shipped 2026-06-05 + SR8 shipped 2026-07-03; SR2/SR3 dropped by the Lane 1
+    #      staleness guard; every net10 preview branch already shipped + net10.0 isn't in
+    #      preview cycle)
+    #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 2 preview trackers
+    #     (preview6 in-flight from release/11.0.1xx-preview6; preview7 candidate from net11.0)
     Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
     Write-Host "  Expected:" -ForegroundColor DarkGray
     Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
-    Write-Host "    - net10 trackers: 2 SR (sr8/sr9), 0 preview (SR7 shipped 2026-06-05; SR2/SR3 stale-dropped)" -ForegroundColor DarkGray
-    Write-Host "    - net11 trackers: 0 SR (pre-GA), 1 preview (preview6 candidate from net11.0)" -ForegroundColor DarkGray
+    Write-Host "    - net10 trackers: 1 SR (sr9), 0 preview (SR7+SR8 shipped; SR2/SR3 stale-dropped)" -ForegroundColor DarkGray
+    Write-Host "    - net11 trackers: 0 SR (pre-GA), 2 preview (preview6 in-flight, preview7 candidate)" -ForegroundColor DarkGray
 
     $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -776,56 +785,93 @@ if (-not $SkipE2E) {
             if ($byMajor.ContainsKey(10)) {
                 $net10 = $byMajor[10]
                 Assert-Eq -Label "net10 mainBranch is 'main'"               -Expected 'main' -Actual $net10.mainBranch
-                Assert-Eq -Label "net10 highestShippedTag is '10.0.71'"      -Expected '10.0.71' -Actual $net10.highestShippedTag
-                Assert-Eq -Label "net10 tracker count is 2 (no preview lane, SR7 shipped, SR2/SR3 stale-dropped)" -Expected 2 -Actual $net10.trackers.Count
+                $expectedNet10Highest = Get-ExpectedHighestShippedTag -RepoPath $multi.repo -Major 10
+                Assert-Eq -Label "net10 highestShippedTag matches highest stable 10.0.M tag (derived)" `
+                          -Expected $expectedNet10Highest -Actual $net10.highestShippedTag
+                Assert-Eq -Label "net10 tracker count is 1 (no preview lane, SR7+SR8 shipped, SR2/SR3 stale-dropped)" -Expected 1 -Actual $net10.trackers.Count
                 $srCount = @($net10.trackers | Where-Object branchType -eq 'sr').Count
                 $previewCount = @($net10.trackers | Where-Object branchType -eq 'preview').Count
-                Assert-Eq -Label "net10 has 2 SR trackers"      -Expected 2 -Actual $srCount
+                Assert-Eq -Label "net10 has 1 SR tracker"       -Expected 1 -Actual $srCount
                 Assert-Eq -Label "net10 has 0 preview trackers" -Expected 0 -Actual $previewCount
             } else {
                 Write-Host "  ❌ majors[] missing net10 entry" -ForegroundColor Red; $script:failed++
             }
 
-            # net11 — pre-GA: no SR trackers; expects preview6 candidate from net11.0.
+            # net11 — pre-GA: no SR trackers; two preview trackers now that preview6 has
+            # been cut. preview6 is IN-FLIGHT (branch release/11.0.1xx-preview6 exists) and
+            # preview7 is the CANDIDATE from net11.0 (exactly the role preview6 held before
+            # its branch was cut).
             if ($byMajor.ContainsKey(11)) {
                 $net11 = $byMajor[11]
                 Assert-Eq -Label "net11 mainBranch is 'net11.0'"          -Expected 'net11.0' -Actual $net11.mainBranch
                 Assert-Eq -Label "net11 highestShippedTag is null (pre-GA)" -Expected $true -Actual ([string]::IsNullOrEmpty($net11.highestShippedTag))
                 Assert-Eq -Label "net11 highestShippedPreviewTag carries preview5 tag" `
                           -Expected '11.0.0-preview.5.26304.4' -Actual $net11.highestShippedPreviewTag
-                Assert-Eq -Label "net11 tracker count is 1 (preview6 only)" -Expected 1 -Actual $net11.trackers.Count
+                Assert-Eq -Label "net11 tracker count is 2 (preview6 in-flight + preview7 candidate)" -Expected 2 -Actual $net11.trackers.Count
                 $previewTrackers = @($net11.trackers | Where-Object branchType -eq 'preview')
-                Assert-Eq -Label "net11 has 1 preview tracker"            -Expected 1 -Actual $previewTrackers.Count
+                Assert-Eq -Label "net11 has 2 preview trackers"          -Expected 2 -Actual $previewTrackers.Count
                 $srTrackers = @($net11.trackers | Where-Object branchType -eq 'sr')
                 Assert-Eq -Label "net11 has 0 SR trackers (pre-GA -> Lane 2 skipped)" -Expected 0 -Actual $srTrackers.Count
 
-                $preview6 = $previewTrackers[0]
-                Assert-Eq -Label "preview6 canonicalKey"              -Expected 'net11-preview6'       -Actual $preview6.canonicalKey
-                Assert-Eq -Label "preview6 mode = candidate"          -Expected 'candidate'           -Actual $preview6.mode
-                Assert-Eq -Label "preview6 surveyRef = net11.0"       -Expected 'net11.0'             -Actual $preview6.surveyRef
-                Assert-Eq -Label "preview6 expectedTagPrefix"         -Expected '11.0.0-preview.6.'   -Actual $preview6.expectedTagPrefix
-                Assert-Eq -Label "preview6 previewNumber = 6"         -Expected 6                      -Actual $preview6.previewNumber
-                Assert-Eq -Label "preview6 milestone name"            -Expected '.NET 11.0-preview6'  -Actual $preview6.milestoneName
-                Assert-Eq -Label "preview6 issue title format"        `
-                          -Expected '[Release Readiness] .NET 11.0 preview6 — candidate from net11.0' `
-                          -Actual $preview6.issueTitle
-                Assert-Eq -Label "preview6 branchName = canonical proposed slug" `
-                          -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
-                Assert-Eq -Label "preview6 branchExists = false (no branch yet)" `
-                          -Expected $false -Actual $preview6.branchExists
-                # hasRecentActivity is a 7-day-window signal, not a marker of an
-                # "active preview cycle" — net11.0 can idle >7 days and report $false.
-                # Assert the flag's TYPE, not its date-dependent value.
-                Assert-Eq -Label "preview6 hasRecentActivity is a [bool] (value date-dependent)" `
-                          -Expected $true -Actual ($preview6.hasRecentActivity -is [bool])
-                # Pin the count->flag WIRING (hasRecentActivity = recentCommitCount > 0) for the
-                # preview construction path too — same-instant fields, so date-independent yet it
-                # still trips on an inverted/hardcoded mapping.
-                Assert-Eq -Label "preview6 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
-                          -Expected $true -Actual ($preview6.hasRecentActivity -eq ([int]$preview6.recentCommitCount -gt 0))
-                Assert-Eq -Label "preview6 regressionLabels carries previewN-1 + previewN" `
-                          -Expected 'regressed-in-11.0.0-preview5,regressed-in-11.0.0-preview6' `
-                          -Actual ($preview6.regressionLabels -join ',')
+                # Select by previewNumber rather than array index — the tracker order is an
+                # implementation detail and must not silently swap the two assertions.
+                $preview6 = $previewTrackers | Where-Object previewNumber -eq 6 | Select-Object -First 1
+                $preview7 = $previewTrackers | Where-Object previewNumber -eq 7 | Select-Object -First 1
+
+                # preview6 — IN-FLIGHT off its cut branch.
+                if ($preview6) {
+                    Assert-Eq -Label "preview6 canonicalKey"              -Expected 'net11-preview6'       -Actual $preview6.canonicalKey
+                    Assert-Eq -Label "preview6 mode = in-flight"          -Expected 'in-flight'           -Actual $preview6.mode
+                    Assert-Eq -Label "preview6 surveyRef = its cut branch" -Expected 'release/11.0.1xx-preview6' -Actual $preview6.surveyRef
+                    Assert-Eq -Label "preview6 expectedTagPrefix"         -Expected '11.0.0-preview.6.'   -Actual $preview6.expectedTagPrefix
+                    Assert-Eq -Label "preview6 previewNumber = 6"         -Expected 6                      -Actual $preview6.previewNumber
+                    Assert-Eq -Label "preview6 milestone name"            -Expected '.NET 11.0-preview6'  -Actual $preview6.milestoneName
+                    Assert-Eq -Label "preview6 issue title format"        `
+                              -Expected '[Release Readiness] .NET 11.0 preview6 — release/11.0.1xx-preview6' `
+                              -Actual $preview6.issueTitle
+                    Assert-Eq -Label "preview6 branchName = its cut branch" `
+                              -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
+                    Assert-Eq -Label "preview6 branchExists = true (branch cut)" `
+                              -Expected $true -Actual $preview6.branchExists
+                    # hasRecentActivity is a 7-day-window signal, not a marker of an
+                    # "active preview cycle" — the branch can idle >7 days and report $false.
+                    # Assert the flag's TYPE, not its date-dependent value.
+                    Assert-Eq -Label "preview6 hasRecentActivity is a [bool] (value date-dependent)" `
+                              -Expected $true -Actual ($preview6.hasRecentActivity -is [bool])
+                    Assert-Eq -Label "preview6 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
+                              -Expected $true -Actual ($preview6.hasRecentActivity -eq ([int]$preview6.recentCommitCount -gt 0))
+                    Assert-Eq -Label "preview6 regressionLabels carries previewN-1 + previewN" `
+                              -Expected 'regressed-in-11.0.0-preview5,regressed-in-11.0.0-preview6' `
+                              -Actual ($preview6.regressionLabels -join ',')
+                } else {
+                    Write-Host "  ❌ net11 preview6 tracker missing" -ForegroundColor Red; $script:failed++
+                }
+
+                # preview7 — CANDIDATE from net11.0 (no branch cut yet).
+                if ($preview7) {
+                    Assert-Eq -Label "preview7 canonicalKey"              -Expected 'net11-preview7'       -Actual $preview7.canonicalKey
+                    Assert-Eq -Label "preview7 mode = candidate"          -Expected 'candidate'           -Actual $preview7.mode
+                    Assert-Eq -Label "preview7 surveyRef = net11.0"       -Expected 'net11.0'             -Actual $preview7.surveyRef
+                    Assert-Eq -Label "preview7 expectedTagPrefix"         -Expected '11.0.0-preview.7.'   -Actual $preview7.expectedTagPrefix
+                    Assert-Eq -Label "preview7 previewNumber = 7"         -Expected 7                      -Actual $preview7.previewNumber
+                    Assert-Eq -Label "preview7 milestone name"            -Expected '.NET 11.0-preview7'  -Actual $preview7.milestoneName
+                    Assert-Eq -Label "preview7 issue title format"        `
+                              -Expected '[Release Readiness] .NET 11.0 preview7 — candidate from net11.0' `
+                              -Actual $preview7.issueTitle
+                    Assert-Eq -Label "preview7 branchName = canonical proposed slug" `
+                              -Expected 'release/11.0.1xx-preview7' -Actual $preview7.branchName
+                    Assert-Eq -Label "preview7 branchExists = false (no branch yet)" `
+                              -Expected $false -Actual $preview7.branchExists
+                    Assert-Eq -Label "preview7 hasRecentActivity is a [bool] (value date-dependent)" `
+                              -Expected $true -Actual ($preview7.hasRecentActivity -is [bool])
+                    Assert-Eq -Label "preview7 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
+                              -Expected $true -Actual ($preview7.hasRecentActivity -eq ([int]$preview7.recentCommitCount -gt 0))
+                    Assert-Eq -Label "preview7 regressionLabels carries previewN-1 + previewN" `
+                              -Expected 'regressed-in-11.0.0-preview6,regressed-in-11.0.0-preview7' `
+                              -Actual ($preview7.regressionLabels -join ',')
+                } else {
+                    Write-Host "  ❌ net11 preview7 tracker missing" -ForegroundColor Red; $script:failed++
+                }
             } else {
                 Write-Host "  ❌ majors[] missing net11 entry" -ForegroundColor Red; $script:failed++
             }
