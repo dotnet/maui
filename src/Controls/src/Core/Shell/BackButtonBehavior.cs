@@ -66,6 +66,8 @@ namespace Microsoft.Maui.Controls
 		bool _userDefinedIsEnabled = true;
 		// Tracks the enabled state derived from the command's CanExecute result.
 		bool _commandEnabled = true;
+		// Weakly subscribes to the command's CanExecuteChanged so the command cannot root this behavior.
+		WeakCommandSubscription _commandSubscription;
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the back button is enabled. This is a bindable property.
@@ -127,14 +129,12 @@ namespace Microsoft.Maui.Controls
 
 		void OnCommandChanged(ICommand oldCommand, ICommand newCommand)
 		{
-			if (oldCommand != null)
-			{
-				oldCommand.CanExecuteChanged -= CanExecuteChanged;
-			}
+			_commandSubscription?.Dispose();
+			_commandSubscription = null;
 
 			if (newCommand != null)
 			{
-				newCommand.CanExecuteChanged += CanExecuteChanged;
+				_commandSubscription = new WeakCommandSubscription(this, newCommand, CanExecuteChanged);
 				IsEnabledCore = Command.CanExecute(CommandParameter);
 			}
 			else
