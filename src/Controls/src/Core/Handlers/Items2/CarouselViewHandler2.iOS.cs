@@ -95,7 +95,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapIsBounceEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
-			handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
+			if (handler.Controller.CollectionView is MauiCollectionView mauiCV)
+			{
+				mauiCV.SetBounceEnabled(carouselView.IsBounceEnabled);
+			}
+			else
+			{
+				handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
+			}
 		}
 
 		// TODO: Change the modifier to public in .NET 10.
