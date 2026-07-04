@@ -103,8 +103,8 @@ safe-outputs:
       - "src/Core/src/**"
       - "src/Essentials/src/**"
       - "**/PublicAPI.Unshipped.txt"
-    labels: [agentic-workflows]
-    allowed-labels: [agentic-workflows]
+    labels: [agentic-workflows, "perf/memory-leak 💦"]
+    allowed-labels: [agentic-workflows, "perf/memory-leak 💦"]
   # Track C — respond to review feedback on this workflow's OWN open [leak-fix] PRs.
   # Scoped by required-title-prefix so it can only touch [leak-fix] PRs.
   push-to-pull-request-branch:

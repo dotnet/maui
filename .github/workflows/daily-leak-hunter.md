@@ -64,8 +64,8 @@ safe-outputs:
     # The agent writes the FULL title, starting with the tag "[leak-scan] ". Up to `max`
     # issues per run — one per DISTINCT empirically-confirmed leak (sweep all focus areas).
     # ONLY proven leaks — never a coverage-gap / "missing test" proposal.
-    labels: [agentic-workflows]
-    allowed-labels: [agentic-workflows]
+    labels: [agentic-workflows, "perf/memory-leak 💦"]
+    allowed-labels: [agentic-workflows, "perf/memory-leak 💦"]
     max: 8
   noop:
     report-as-issue: false
