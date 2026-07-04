@@ -116,8 +116,6 @@ namespace Microsoft.Maui
 
 			if (family != null && family != DefaultFont.FamilyName)
 			{
-				var wasRegistered = false;
-
 				try
 				{
 					UIFont? result = null;
@@ -152,7 +150,7 @@ namespace Microsoft.Maui
 							return ApplyScaling(font, result);
 					}
 
-					var cleansedFont = CleanseFontName(family, out wasRegistered);
+					var cleansedFont = CleanseFontName(family);
 					result = UIFont.FromName(cleansedFont, size);
 					if (result != null)
 						return ApplyScaling(font, result);
@@ -163,8 +161,7 @@ namespace Microsoft.Maui
 				}
 				catch (Exception ex)
 				{
-					if (wasRegistered)
-						_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable to load font '{Font}'.", family);
+					_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable to load font '{Font}'.", family);
 				}
 			}
 
@@ -186,26 +183,18 @@ namespace Microsoft.Maui
 			}
 		}
 
-		string? CleanseFontName(string fontName, out bool wasRegistered)
+		string? CleanseFontName(string fontName)
 		{
-			wasRegistered = false;
-
 			// First check Alias
 			if (_fontRegistrar.GetFont(fontName) is string fontPostScriptName)
-			{
-				wasRegistered = true;
 				return fontPostScriptName;
-			}
 
 			var fontFile = FontFile.FromString(fontName);
 
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
 			{
 				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension()) is string filePath)
-				{
-					wasRegistered = true;
 					return filePath ?? fontFile.PostScriptName;
-				}
 			}
 			else
 			{
@@ -213,10 +202,7 @@ namespace Microsoft.Maui
 				{
 					var formatted = fontFile.FileNameWithExtension(ext);
 					if (_fontRegistrar.GetFont(formatted) is string filePath)
-					{
-						wasRegistered = true;
 						return filePath;
-					}
 				}
 			}
 

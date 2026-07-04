@@ -45,7 +45,7 @@ public partial class FontManagerTests : TestBase
 			where TState : notnull =>
 			null;
 
-		public bool IsEnabled(LogLevel logLevel) => true;
+		public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Warning;
 
 		public void Log<TState>(
 			LogLevel logLevel,
@@ -54,6 +54,9 @@ public partial class FontManagerTests : TestBase
 			Exception? exception,
 			Func<TState, Exception?, string> formatter)
 		{
+			if (!IsEnabled(logLevel))
+				return;
+
 			Logs.Add(new FontManagerLogEntry(logLevel, formatter(state, exception), exception));
 		}
 
