@@ -3553,10 +3553,24 @@ $bareMention = New-RelevanceIssue -Title 'Broken since preview7' -Milestone $nul
 Assert-Eq -Label "bare 'preview7' (no major) still relevant for M11/P7" `
     -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $bareMention -Major 11 -Preview 7)
 
-# A build-number that contains the preview digits must not register as a major.
-$buildNumIssue = New-RelevanceIssue -Title 'fails on 11.0.0-preview.7.26324.11' -Milestone $null -Labels @()
-Assert-Eq -Label "build number does not poison foreign-major scan (M11/P7)" `
+# The previewN guard path must be exercised WITHOUT an own-major token — otherwise
+# Test-IssueReleaseRelevant returns early via the major regex ($Major\.0) and never
+# reaches the foreign-major check. A large build number present here must not be
+# mistaken for a .NET major: it isn't anchored to net/regressed-in, so it never
+# registers, and the previewN match therefore stands.
+$buildNumIssue = New-RelevanceIssue -Title 'crash since preview7 in build 26324113' -Milestone $null -Labels @('p/0')
+Assert-Eq -Label "large build number does not register as major on previewN path (M11/P7)" `
     -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $buildNumIssue -Major 11 -Preview 7)
+
+# Reviewer-flagged false-positive class: OS/tool versions must NOT be read as foreign
+# .NET majors, or a genuine still-untriaged p/0 preview7 regression (no .NET milestone
+# yet) gets silently dropped — exactly the population this scan exists to surface.
+$androidP0 = New-RelevanceIssue -Title 'App crashes on Android 15.0 since preview7' -Milestone $null -Labels @('p/0')
+Assert-Eq -Label "OS version 'Android 15.0' does not drop a preview7 p/0 (M11/P7)" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $androidP0 -Major 11 -Preview 7)
+$iosP0 = New-RelevanceIssue -Title 'iOS 18.0 layout broke in preview7' -Milestone $null -Labels @('p/0')
+Assert-Eq -Label "OS version 'iOS 18.0' does not drop a preview7 p/0 (M11/P7)" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $iosP0 -Major 11 -Preview 7)
 
 # Cross-major leak guard also holds for preview6.
 $net10Preview6 = New-RelevanceIssue -Title 'Z' -Milestone '.NET 10' -Labels @('regressed-in-10-preview6')
@@ -3572,8 +3586,23 @@ Assert-Eq -Label "foreign-major: same-major '11.0.0' is NOT foreign to major 11"
     -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'regressed-in-11.0.0-preview7' -Major 11)
 Assert-Eq -Label "foreign-major: build number 26324 is NOT a major" `
     -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'preview.7.26324.11 only' -Major 11)
+# OS/tool versions carry an X.0 token but no .NET anchor — must never read as foreign.
+Assert-Eq -Label "foreign-major: 'Android 15.0' is NOT a foreign major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'App crashes on Android 15.0 since preview7' -Major 11)
+Assert-Eq -Label "foreign-major: 'iOS 18.0' is NOT a foreign major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'iOS 18.0 layout broke in preview7' -Major 11)
+Assert-Eq -Label "foreign-major: 'VS 17.0' is NOT a foreign major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'Broken in VS 17.0 preview7' -Major 11)
+# A genuine anchored foreign major is still caught even amid OS noise.
+Assert-Eq -Label "foreign-major: anchored '.NET 8' caught despite OS noise" `
+    -Expected $true  -Actual (Test-IssueHasForeignMajor -Haystack 'Android 15.0 regression, .NET 8 only, preview7' -Major 11)
+# Digits behind an anchor are still bounded to 6..99 (stray build number can't sneak in).
+Assert-Eq -Label "foreign-major: anchored out-of-range 'net26324' is not a major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'net26324 build only' -Major 11)
 Assert-Eq -Label "foreign-major: empty haystack → false" `
     -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack '' -Major 11)
+Assert-Eq -Label "foreign-major: whitespace-only haystack → false" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack '   ' -Major 11)
 
 Write-Host "`n[Unit] Format-MarkdownCell collapses embedded newlines (table-row safety)" -ForegroundColor Cyan
 # A malformed upstream title with a literal CR/LF (observed live: ci-scan issue

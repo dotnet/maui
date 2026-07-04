@@ -585,18 +585,26 @@ function Test-IssueHasForeignMajor {
         is a .NET 10 label), so without this guard a .NET 10 preview7 issue
         leaks onto the .NET 11 preview7 tracker. This detector lets the
         relevance check reject a previewN match when a *different* major is
-        explicitly named. Majors are bounded to a sane 6..99 range so build
-        numbers and other large integers can never register as a major.
+        explicitly named.
+
+        A foreign major is only recognized when the digits are anchored to an
+        explicit .NET token — `net`, `.net`, or `regressed-in-` — so unrelated
+        OS/tool versions that pepper MAUI issue titles (`Android 15.0`,
+        `iOS 18.0`, `macOS 14.0`, `VS 17.0`) are NOT mistaken for .NET majors
+        and cannot silently drop a genuine, still-untriaged p/0 report. The
+        6..99 bound is defense-in-depth against a stray build number sneaking
+        in behind an anchor.
     #>
     param(
         [string]$Haystack,
         [int]$Major
     )
 
-    foreach ($m in [regex]::Matches($Haystack, "(?i)(?:net\s*|regressed-in-)(\d+)|(\d+)\.0(?:\.|\b)")) {
-        $raw = if ($m.Groups[1].Success) { $m.Groups[1].Value } else { $m.Groups[2].Value }
+    if ([string]::IsNullOrWhiteSpace($Haystack)) { return $false }
+
+    foreach ($m in [regex]::Matches($Haystack, "(?i)(?:net\s*|\.net\s*|regressed-in-)(\d+)")) {
         $val = 0
-        if ([int]::TryParse($raw, [ref]$val) -and $val -ge 6 -and $val -le 99 -and $val -ne $Major) {
+        if ([int]::TryParse($m.Groups[1].Value, [ref]$val) -and $val -ge 6 -and $val -le 99 -and $val -ne $Major) {
             return $true
         }
     }
