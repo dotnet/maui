@@ -130,16 +130,25 @@ The only de-dup that matters is not posting a second OPEN copy of a leak THIS wo
 filed. You do **not** care about AdamEssenmacher's repro branches or anyone else's issues —
 duplicating those is explicitly fine.
 
-Fetch this scanner's own open `[leak-scan]` issues on the repo the workflow runs in:
+Fetch this scanner's own open `[leak-scan]` issues (they are filed with the `agentic-workflows`
+label) and extract the **rooting API** each one already covers:
 
 ```
 gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
-  --state open --label memory-leak --limit 100 --json number,title,body \
+  --state open --label agentic-workflows --limit 200 --json number,title,body \
   > /tmp/gh-aw/agent/my-open-leakscan.json
+# The rooting API is the "Type.Member" the title names (titles lead with it — see Step 6).
+jq -r '.[].title' /tmp/gh-aw/agent/my-open-leakscan.json \
+  | sed -E 's/^\[leak-scan\] *//; s/[ :].*$//' | sort -u \
+  > /tmp/gh-aw/agent/already-filed-apis.txt
+echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 ```
 
-- A candidate is OUT only if an open `[leak-scan]` issue already covers the same rooting API /
-  retention path.
+- A candidate is **OUT** if its rooting `Type.Member` (e.g. `SwipeItemView.Command`,
+  `Picker.ItemsSource`) is already in `already-filed-apis.txt`, OR an open `[leak-scan]` issue
+  otherwise covers the same rooting API / retention path. **Check this for EVERY candidate
+  before you write its test** — re-filing a leak this scanner already has open (even with
+  different title wording) is the #1 failure mode, so be strict about matching the `Type.Member`.
 
 A candidate whose only prior issue from this scanner is CLOSED may be re-filed.
 
@@ -263,8 +272,11 @@ no MAUI source build, no emulator.
 
 For **every** leak Step 5 confirmed, emit a `create-issue` safe-output (up to the 8 cap) — one
 issue per distinct leak. De-dup each against open `[leak-scan]` issues AND against the other
-issues you're filing this run (no two issues for the same rooting API). Each title MUST start
-with the literal tag **`[leak-scan] `** followed by a precise one-liner naming the rooting API.
+issues you're filing this run (no two issues for the same rooting API). Each title MUST be of the
+form **`[leak-scan] <Type>.<Member> — <short mechanism>`** — it MUST **lead with the canonical
+rooting `Type.Member`** immediately after the tag (e.g. `[leak-scan] SwipeItemView.Command — non-weak
+ICommand.CanExecuteChanged retains the control`). De-dup (Step 2) matches on that leading
+`Type.Member`, so keep it stable and canonical — do not reword it run-to-run.
 Body (markdown):
 
 - A clear **AI-generated** banner naming this workflow.
