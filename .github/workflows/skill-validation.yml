@@ -4,7 +4,9 @@
 #   1. Static checks  — run automatically on every PR that touches skills.
 #   2. LLM evaluation — runs automatically for contributor PRs, or can be
 #      triggered by a repo contributor posting "/evaluate-skills" on any PR.
-#      Requires COPILOT_GITHUB_TOKEN secret (Copilot API access).
+#      Requires the COPILOT_PAT_* secret pool in the `copilot-pat-pool`
+#      environment (Copilot API access). Jobs that need model auth declare
+#      `environment: copilot-pat-pool` and randomly pick one populated PAT.
 #
 # Trigger model:
 #   - pull_request_target: runs in the base repo context with full permissions
@@ -446,6 +448,7 @@ jobs:
       needs.discover-eval.result == 'success' &&
       needs.discover-eval.outputs.has_entries == 'true'
     runs-on: ubuntu-latest
+    environment: copilot-pat-pool
     permissions:
       contents: read
     timeout-minutes: 120
@@ -494,31 +497,34 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # ── Select Copilot token ──────────────────────────────────────
+      # ── Select Copilot token (from the copilot-pat-pool PAT pool) ──
       - name: Select Copilot token
         id: select-token
         env:
-          TOKEN_1: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          TOKEN_2: ${{ secrets.COPILOT_GITHUB_TOKEN_2 }}
-          TOKEN_3: ${{ secrets.COPILOT_GITHUB_TOKEN_3 }}
+          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
+          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
+          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
+          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
+          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
+          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
+          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
+          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
+          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
+          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
         run: |
           TOKENS=()
           NAMES=()
-          for i in 1 2 3; do
+          for i in 0 1 2 3 4 5 6 7 8 9; do
             var="TOKEN_$i"
             val="${!var}"
             if [ -n "$val" ]; then
               TOKENS+=("$val")
-              if [ "$i" -eq 1 ]; then
-                NAMES+=("COPILOT_GITHUB_TOKEN")
-              else
-                NAMES+=("COPILOT_GITHUB_TOKEN_$i")
-              fi
+              NAMES+=("COPILOT_PAT_$i")
             fi
           done
 
           if [ ${#TOKENS[@]} -eq 0 ]; then
-            echo "::error::No COPILOT_GITHUB_TOKEN secrets are configured"
+            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
             exit 1
           fi
 
@@ -531,7 +537,7 @@ jobs:
           else
             IDX=$((RANDOM % ${#TOKENS[@]}))
           fi
-          echo "Selected ${NAMES[$IDX]} (1 of ${#TOKENS[@]} available tokens, job-index=${JOB_INDEX:-random})"
+          echo "Selected ${NAMES[$IDX]} (1 of ${#TOKENS[@]} available PATs, job-index=${JOB_INDEX:-random})"
 
           echo "::add-mask::${TOKENS[$IDX]}"
           echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
@@ -655,6 +661,7 @@ jobs:
       needs.discover-eval.result == 'success' &&
       needs.discover-eval.outputs.has_entries == 'true'
     runs-on: ubuntu-latest
+    environment: copilot-pat-pool
     permissions:
       contents: read
     timeout-minutes: 30
@@ -677,18 +684,25 @@ jobs:
       - name: Select Copilot token
         id: select-token
         env:
-          TOKEN_1: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          TOKEN_2: ${{ secrets.COPILOT_GITHUB_TOKEN_2 }}
-          TOKEN_3: ${{ secrets.COPILOT_GITHUB_TOKEN_3 }}
+          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
+          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
+          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
+          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
+          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
+          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
+          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
+          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
+          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
+          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
         run: |
           TOKENS=()
-          for i in 1 2 3; do
+          for i in 0 1 2 3 4 5 6 7 8 9; do
             var="TOKEN_$i"
             val="${!var}"
             [ -n "$val" ] && TOKENS+=("$val")
           done
           if [ ${#TOKENS[@]} -eq 0 ]; then
-            echo "::error::No COPILOT_GITHUB_TOKEN secrets are configured"
+            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
             exit 1
           fi
           IDX=$((RANDOM % ${#TOKENS[@]}))
