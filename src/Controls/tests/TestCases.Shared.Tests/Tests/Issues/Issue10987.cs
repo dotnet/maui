@@ -25,6 +25,7 @@ public class Issue10987 : _IssuesUITest
 	public void EditorRuntimeTextAlignmentChanged()
 	{
 		//To make sure editor is focused in mac platform
+		App.WaitForElement(LTREditor);
 		App.Tap(LTREditor);
 		App.EnterText(LTREditor, "Editor Text");
 		App.WaitForElement(RTLEditor);
