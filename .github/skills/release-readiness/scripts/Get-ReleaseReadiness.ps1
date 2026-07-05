@@ -1125,6 +1125,89 @@ function Get-MilestoneHygieneChecks {
     return $checks
 }
 
+function Get-CandidatePrResolution {
+    <#
+    .SYNOPSIS
+        Discovers the open "Candidate" PR(s) on main — the PR(s) that promote a
+        specific main commit as the basis for cutting the next SR — and returns a
+        structured resolution consumed by BOTH the ship-readiness check
+        (Get-CandidatePrChecks) AND the prominent "Candidate PR" report section.
+        Runs the gh query + maintainer spoof-gate exactly ONCE per report so the
+        two consumers don't each pay for the network round-trips.
+    .DESCRIPTION
+        Convention: the Candidate PR has "Candidate" in the title (word boundary,
+        case-insensitive) AND is opened by a maintainer (OWNER/MEMBER/COLLABORATOR).
+        `gh pr list --json` does NOT expose authorAssociation, so the maintainer
+        spoof-gate fetches author_association per title-matched candidate via the
+        REST API. Fail closed: an unreadable association excludes the PR (tracked
+        separately as `unverifiable`, distinct from a confirmed non-maintainer
+        `spoofer`, so a transient blip during a real cut isn't mislabeled).
+
+        The `gh pr list` projection requests the richer fields (createdAt, isDraft,
+        mergeable, reviewDecision, state) the prominent section renders — all are
+        valid `gh pr list --json` fields. Consumers must treat every field as
+        possibly-absent (older stubs / partial data) and degrade gracefully.
+    .OUTPUTS
+        Hashtable:
+          mode         — 'skip' (not candidate mode) | 'query-failed' | 'resolved'
+          candidates   — @() of accepted (maintainer-gated) enriched PR objects
+          spoofers     — [int] confirmed non-maintainer 'Candidate'-titled PRs excluded
+          unverifiable — [int] 'Candidate'-titled PRs whose author-assoc lookup failed
+          nextSr       — 'SR9' | $null
+          versionBase  — '10.0.90' | $null  (Major.Minor.(targetSr*10))
+    #>
+    param($Ctx)
+
+    $res = [ordered]@{
+        mode = 'skip'; candidates = @(); spoofers = 0; unverifiable = 0
+        nextSr = $null; versionBase = $null
+    }
+    if ($Ctx.mode -ne 'candidate') { return $res }
+
+    # Next-SR label + version base from priorSrBranch (release/MAJOR.MINOR.1xx-srN).
+    # Full parse gives the version base (e.g. SR9 → 10.0.90) for the section header;
+    # fall back to the loose 'srN$' match (nextSr only) if the branch is oddly shaped.
+    if ($Ctx.priorSrBranch -and $Ctx.priorSrBranch -match '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$') {
+        $mj = [int]$Matches[1]; $mn = [int]$Matches[2]; $target = [int]$Matches[3] + 1
+        $res.nextSr = "SR$target"
+        $res.versionBase = "$mj.$mn.$($target * 10)"
+    } elseif ($Ctx.priorSrBranch -and $Ctx.priorSrBranch -match 'sr(\d+)$') {
+        $res.nextSr = "SR$([int]$Matches[1] + 1)"
+    }
+
+    # One gh call: up to 100 open PRs on main. The Candidate PR is opened on main
+    # (not the SR branch, which may not exist yet in candidate mode).
+    $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
+                       '--base', $Ctx.mainBranch, '--limit', '100',
+                       '--json', 'number,title,author,createdAt,updatedAt,isDraft,mergeable,reviewDecision,state,url')
+    if ($null -eq $raw) { $res.mode = 'query-failed'; return $res }
+
+    $mainPrs = @()
+    $parsed = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+    if ($parsed) { $mainPrs = @($parsed) }
+
+    # Word-boundary match so "CandidateView" doesn't spoof.
+    $titleMatches = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
+
+    # Author gating (see .DESCRIPTION). -Quiet so a transient lookup miss doesn't
+    # embed a raw `gh ... exited` warning in the tracker body.
+    $maintainerAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
+    foreach ($pr in $titleMatches) {
+        $assocRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($pr.number)",
+                                '--jq', '.author_association') -Quiet
+        $assoc = if ($assocRaw) { "$assocRaw".Trim() } else { $null }
+        if (-not $assoc) {
+            $res.unverifiable++
+        } elseif ($maintainerAssociations -contains $assoc) {
+            $res.candidates += $pr
+        } else {
+            $res.spoofers++
+        }
+    }
+    $res.mode = 'resolved'
+    return $res
+}
+
 function Get-CandidatePrChecks {
     <#
     .SYNOPSIS
@@ -1153,79 +1236,38 @@ function Get-CandidatePrChecks {
     .OUTPUTS
         Array of New-ReadinessCheck records (merged into shipChecks downstream).
     #>
-    param($Ctx, [switch]$SkipChecks)
+    param($Ctx, $Resolution, [switch]$SkipChecks)
 
     if ($SkipChecks) { return ,@() }
     if ($Ctx.mode -ne 'candidate') { return ,@() }
 
+    # Discover the candidate PR(s) once. Callers that also render the prominent
+    # "Candidate PR" report section pass the shared -Resolution so the gh query
+    # + maintainer spoof-gate runs a SINGLE time per report; direct callers
+    # (e.g. unit tests) omit it and this recomputes on demand.
+    if (-not $Resolution) { $Resolution = Get-CandidatePrResolution -Ctx $Ctx }
+
     $repoUrl = "https://github.com/$($Ctx.repo)"
 
-    # Compute next SR label from priorSrBranch (set by Resolve-Context in
-    # candidate mode). priorSrBranch = e.g. 'release/10.0.1xx-sr8' → next is SR9.
-    $nextSr = $null
-    if ($Ctx.priorSrBranch -and $Ctx.priorSrBranch -match 'sr(\d+)$') {
-        $nextSr = "SR$([int]$Matches[1] + 1)"
-    }
-
+    $nextSr = $Resolution.nextSr
     $area = if ($nextSr) {
         "Candidate PR for next SR cut ($nextSr)"
     } else {
         "Candidate PR for next SR cut"
     }
 
-    # Scan open PRs targeting main (the Candidate PR is opened on main, not
-    # on the SR branch, since the SR branch may not exist yet in candidate
-    # mode). Cheap: one gh call returning up to 100 open PRs on main.
-    # `gh pr list --json` does NOT expose authorAssociation (it's not a valid
-    # list projection field). The maintainer spoof-gate below fetches
-    # author_association per title-matched candidate via the REST API instead.
-    # Keep this projection limited to valid `gh pr list` fields.
-    $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
-                       '--base', $Ctx.mainBranch, '--limit', '100',
-                       '--json', 'number,title,author,updatedAt,url')
-    if ($null -eq $raw) {
-        # gh failed — distinguish from "no Candidate PR found" so the
-        # verdict doesn't silently READY on tool failure.
+    # gh query failed → surface as WATCH (a missing signal, not a silent READY).
+    if ($Resolution.mode -eq 'query-failed') {
         return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
             -Details "Could not query open PRs on ``$($Ctx.mainBranch)`` (``gh pr list`` exited non-zero). Cut readiness cannot be evaluated until the query succeeds." `
             -NextAction "Verify ``gh auth status`` and rerun. If gh is unavailable in this environment, check the Candidate PR manually.")
     }
-    $mainPrs = @()
-    $parsed = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    if ($parsed) { $mainPrs = @($parsed) }
 
-    # Word-boundary match so "CandidateView" doesn't spoof.
-    $titleMatches = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
-
-    # Author gating: only PRs from a maintainer count. Outside contributors
-    # never open SR-cut PRs by convention. `gh pr list` can't return the
-    # association, so fetch it per title-matched candidate from the REST API
-    # (cheap: titleMatches is almost always 0-1, usually 0 in candidate mode).
-    # The REST field is 'author_association' (snake_case) — enum
-    # OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR|... Fail closed: an unreadable
-    # association excludes the PR, so a missing signal can't let a
-    # 'Candidate'-titled PR slip through the spoof gate. Distinguish a
-    # *confirmed* non-maintainer (a real spoofer) from an *unverifiable* one
-    # (transient gh/REST failure) so a legitimate maintainer Candidate PR isn't
-    # mislabeled as a spoofer during an actual cut. Use -Quiet so a transient
-    # lookup miss doesn't embed a raw `gh ... exited` warning in the tracker
-    # body — the structured WATCH note below carries that signal instead.
-    $maintainerAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
-    $candidates = @()
-    $spoofers = 0
-    $unverifiable = 0
-    foreach ($pr in $titleMatches) {
-        $assocRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($pr.number)",
-                                '--jq', '.author_association') -Quiet
-        $assoc = if ($assocRaw) { "$assocRaw".Trim() } else { $null }
-        if (-not $assoc) {
-            $unverifiable++
-        } elseif ($maintainerAssociations -contains $assoc) {
-            $candidates += $pr
-        } else {
-            $spoofers++
-        }
-    }
+    # Accepted (maintainer-gated) candidates + exclusion counts, from the shared
+    # resolution computed by Get-CandidatePrResolution (query + spoof-gate).
+    $candidates = @($Resolution.candidates)
+    $spoofers = $Resolution.spoofers
+    $unverifiable = $Resolution.unverifiable
 
     if ($candidates.Count -eq 0) {
         $excludeNotes = @()
@@ -3225,6 +3267,103 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine()
     }
 
+    # === CANDIDATE PR — SR cut point (hoisted directly under the Blocking summary) ===
+    # In candidate mode the single most important PR in the cycle is the one that
+    # promotes a specific `main` commit as the SR cut point: the SR branch cannot
+    # be cut until it merges. Surface it prominently — with live status and age —
+    # right under the blocking summary instead of leaving it buried as a lone WATCH
+    # row in the ship-readiness table at the bottom.
+    if ($mode -eq 'candidate' -and $Data.ContainsKey('candidatePr') -and $Data['candidatePr']) {
+        $cpr = $Data['candidatePr']
+        $srLabel = if ($cpr.nextSr) { $cpr.nextSr } else { 'next SR' }
+        $verLabel = if ($cpr.versionBase) { " ($($cpr.versionBase))" } else { '' }
+        # Report generation instant — used as the "now" reference for PR age so the
+        # rendered "N days" is deterministic (driven by the report, not wall-clock).
+        $nowRef = ConvertTo-Utc -Value $ctx.fetchedAt
+
+        [void]$sb.AppendLine("## 🚩 Candidate PR — $srLabel cut point$verLabel")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine("_The Candidate PR promotes a specific ``$($ctx.mainBranch)`` commit as the base for cutting **$srLabel$verLabel**. The SR branch can't be cut until it merges, so its status gates the whole cycle._")
+        [void]$sb.AppendLine()
+
+        if ($cpr.mode -eq 'query-failed') {
+            [void]$sb.AppendLine("> ⚠️ Could not query open PRs on ``$($ctx.mainBranch)`` (``gh pr list`` failed). Candidate-PR status is unavailable — verify ``gh auth status`` and rerun.")
+            [void]$sb.AppendLine()
+        }
+        elseif (@($cpr.candidates).Count -eq 0) {
+            $exNotes = @()
+            if ($cpr.spoofers -gt 0)     { $exNotes += "$($cpr.spoofers) non-maintainer ``*Candidate*``-titled PR(s) were excluded as not real cut PRs" }
+            if ($cpr.unverifiable -gt 0) { $exNotes += "$($cpr.unverifiable) ``*Candidate*``-titled PR(s) could not be author-verified and were excluded fail-closed — rerun to re-check" }
+            $exSuffix = if ($exNotes.Count -gt 0) { ' ' + ($exNotes -join '; ') + '.' } else { '' }
+            [void]$sb.AppendLine("**No open Candidate PR yet.** When ready to cut $srLabel, open a PR titled ``*Candidate*`` against ``$($ctx.mainBranch)`` selecting the target commit — the SR is cut from its merge commit.$exSuffix")
+            [void]$sb.AppendLine()
+        }
+        else {
+            [void]$sb.AppendLine('| PR | Status | Opened | Last update | Review |')
+            [void]$sb.AppendLine('|---|---|---|---|---|')
+            foreach ($cp in @($cpr.candidates)) {
+                $cpLink = ConvertTo-LinkedPr -PrNumber $cp.number -RepoUrl $RepoUrl
+                $cpTitleRaw = if ($cp.title.Length -gt 60) { $cp.title.Substring(0, 60) + '...' } else { $cp.title }
+                $cpTitle = Format-MarkdownTableCell $cpTitleRaw
+                $author = if ($cp.author -and $cp.author.login) { Format-GitHubHandle $cp.author.login } else { 'unknown' }
+
+                # Status: OPEN + draft/ready + mergeable (all fields optional).
+                $draftBit = if ($cp.PSObject.Properties['isDraft'] -and $cp.isDraft) { '📝 Draft' } else { '✅ Ready' }
+                $mergeBit = switch ("$($cp.mergeable)".ToUpperInvariant()) {
+                    'MERGEABLE'   { ' · mergeable' }
+                    'CONFLICTING' { ' · ⚠️ conflicts' }
+                    default       { '' }
+                }
+                $statusCell = "🟢 Open · $draftBit$mergeBit"
+
+                # Age of the PR (created) and last activity (updated), relative to $nowRef.
+                $openedCell = '—'
+                $createdUtc = ConvertTo-Utc -Value $cp.createdAt
+                if ($createdUtc) {
+                    if ($nowRef) {
+                        $a = [int][Math]::Floor(($nowRef - $createdUtc).TotalDays)
+                        $openedCell = "$($createdUtc.ToString('yyyy-MM-dd')) ($a day$(if ($a -eq 1){''}else{'s'}) ago)"
+                    } else {
+                        $openedCell = $createdUtc.ToString('yyyy-MM-dd')
+                    }
+                }
+                $updatedCell = '—'
+                $updatedUtc = ConvertTo-Utc -Value $cp.updatedAt
+                if ($updatedUtc) {
+                    if ($nowRef) {
+                        $u = [int][Math]::Floor(($nowRef - $updatedUtc).TotalDays)
+                        $updatedCell = "$u day$(if ($u -eq 1){''}else{'s'}) ago"
+                    } else {
+                        $updatedCell = $updatedUtc.ToString('yyyy-MM-dd')
+                    }
+                }
+                $reviewCell = if ($cp.reviewDecision) { $cp.reviewDecision } else { '—' }
+
+                [void]$sb.AppendLine("| $cpLink — $cpTitle (by $author) | $statusCell | $openedCell | $updatedCell | $reviewCell |")
+            }
+            [void]$sb.AppendLine()
+
+            # Relevance / staleness callout for the primary candidate, tied to the SR
+            # version base and the ship window. A cut PR that has sat open a long time
+            # likely points at a now-stale `main` commit and should be re-confirmed.
+            $primary = @($cpr.candidates)[0]
+            $pCreated = ConvertTo-Utc -Value $primary.createdAt
+            $pAge = if ($pCreated -and $nowRef) { [int][Math]::Floor(($nowRef - $pCreated).TotalDays) } else { $null }
+            $shipBit = if ($shipDate -and $shipDate.FormattedLong) {
+                if ($shipDate.DaysFromNow -ge 0) { " Ship target: **$($shipDate.FormattedLong)** (in $($shipDate.DaysFromNow) day(s))." }
+                else { " Ship target **$($shipDate.FormattedLong)** has passed." }
+            } else { '' }
+            if ($null -ne $pAge -and $pAge -ge 14) {
+                [void]$sb.AppendLine("> ⚠️ **Stale ($pAge days old).** ``$($ctx.mainBranch)`` has advanced since this PR was opened — confirm the target cut commit is still the intended $srLabel base, or refresh/re-point the PR before cutting.$shipBit")
+            } else {
+                [void]$sb.AppendLine("> Merge this PR to lock the $srLabel$verLabel cut point, then cut the SR branch from its merge commit.$shipBit")
+            }
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_Other open PRs on ``$($ctx.mainBranch)`` are omitted here to reduce noise; see [the full PR list]($RepoUrl/pulls?q=is%3Apr+is%3Aopen+base%3A$($ctx.mainBranch))._")
+            [void]$sb.AppendLine()
+        }
+    }
+
     # === CLEANUP FOLLOW-UPS (hoisted under the blocking summary) ===
     # CLEANUP-status ship checks are real follow-ups (stale milestones, missing
     # bug-template entries) that should get done but don't prevent shipping.
@@ -3463,33 +3602,13 @@ function Format-MarkdownReport {
     #     exists (e.g. "June 8th, Candidate" — the PR that promotes a specific
     #     main commit as the basis for cutting the next SR).
     if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs'] -and $Data['openSrPrs'].Count -gt 0) {
-        if ($mode -eq 'candidate') {
-            # Find a PR whose title looks like a candidate-promotion PR.
-            # Be conservative — require a word boundary so "CandidateView" doesn't match.
-            $candidatePrs = @($Data['openSrPrs'] | Where-Object {
-                $_.title -match '(?i)\bcandidate\b'
-            })
-            [void]$sb.AppendLine("## Candidate PR for next SR cut")
-            [void]$sb.AppendLine()
-            if ($candidatePrs.Count -eq 0) {
-                [void]$sb.AppendLine("_No open PR titled `*Candidate*` found targeting ``$srBranch``. Open one when ready to promote a main commit as the SR cut point._")
-            } else {
-                foreach ($cp in $candidatePrs) {
-                    $cpLink = ConvertTo-LinkedPr -PrNumber $cp.number -RepoUrl $RepoUrl
-                    $cpTitle = if ($cp.title.Length -gt 80) { $cp.title.Substring(0, 80) + '...' } else { $cp.title }
-                    # Collapse newlines (and escape pipes) even though this is a list, not a
-                    # table: an upstream title with an embedded newline could otherwise push
-                    # injected content (e.g. a forged `<!-- release-readiness:human-notes -->`
-                    # marker) onto its own physical line. Markdown renders `\|` as `|` in a
-                    # list, so escaping is harmless here.
-                    $cpTitle = Format-MarkdownTableCell $cpTitle
-                    [void]$sb.AppendLine("- $cpLink — $cpTitle (by $(Format-GitHubHandle $cp.author.login), updated $($cp.updatedAt))")
-                }
-                [void]$sb.AppendLine()
-                [void]$sb.AppendLine("_Full list of $($Data['openSrPrs'].Count) open PRs targeting ``$srBranch`` omitted to reduce noise; see [the PR list]($RepoUrl/pulls?q=is%3Apr+is%3Aopen+base%3A$srBranch)._")
-            }
-            [void]$sb.AppendLine()
-        } else {
+        # Candidate mode (srBranch == main) would dump 100+ open main PRs here —
+        # far too noisy for a tracker issue. The single relevant PR (the SR cut
+        # "Candidate" PR) is surfaced, maintainer-gated and with live status/age, in
+        # the hoisted "🚩 Candidate PR" section near the top. So this full table is
+        # emitted only in live-SR mode, where openSrPrs is the small, useful set of
+        # backport PRs targeting the SR branch.
+        if ($mode -ne 'candidate') {
             [void]$sb.AppendLine("## Open PRs Targeting $srBranch — $($Data['openSrPrs'].Count)")
             [void]$sb.AppendLine()
             [void]$sb.AppendLine('| PR | Title | Author | Draft? | Review | Updated |')
@@ -3845,10 +3964,13 @@ function Invoke-Main {
 
     # Candidate-PR check (candidate mode only) — surface the open PR that
     # promotes a specific main commit as the SR cut point. Most important
-    # PR in the cycle: SR can't be cut until it merges. Renders as a WATCH
-    # check in the ship-readiness table.
+    # PR in the cycle: SR can't be cut until it merges. Resolved ONCE here so
+    # both the WATCH ship-check AND the prominent "🚩 Candidate PR" section
+    # (hoisted under the Blocking summary) share a single gh query + spoof-gate.
     if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
-        $candidateChecks = Get-CandidatePrChecks -Ctx $ctx
+        $candidateResolution = Get-CandidatePrResolution -Ctx $ctx
+        $data['candidatePr'] = $candidateResolution
+        $candidateChecks = Get-CandidatePrChecks -Ctx $ctx -Resolution $candidateResolution
         if ($candidateChecks -and $candidateChecks.Count -gt 0) {
             if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
                 $data['shipChecks'] = @()

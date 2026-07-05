@@ -1076,6 +1076,82 @@ try {
         -Actual ([bool]($mixedChecks[0].Details -match 'unverifiable'))
     Assert-Eq -Label "mixed: NextAction tells captain to rerun for the unverifiable sibling" -Expected $true `
         -Actual ([bool]($mixedChecks[0].NextAction -match 'rerun'))
+
+    # ── Get-CandidatePrResolution: shared single-query resolution + version base ──
+    # The resolution is the single source of truth consumed by BOTH the WATCH
+    # ship-check and the hoisted "🚩 Candidate PR" section. Verify: (a) mode/version
+    # derivation from priorSrBranch, (b) maintainer accept, (c) spoofer vs
+    # unverifiable classification, (d) query-failed + skip short-circuits.
+    Write-Host "`n[Unit] Get-CandidatePrResolution (shared single-query resolution)" -ForegroundColor Cyan
+
+    # (a) member candidate on a well-formed prior SR branch → resolved, SR9 / 10.0.90.
+    $resCtxSr8 = @{ mode = 'candidate'; repo = 'dotnet/maui'; mainBranch = 'main'; priorSrBranch = 'release/10.0.1xx-sr8' }
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') {
+            return @'
+[
+  {"number":777,"title":"June 8th, Candidate","author":{"login":"rmarinho"},"createdAt":"2026-06-08T00:00:00Z","updatedAt":"2026-06-18T00:00:00Z","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"REVIEW_REQUIRED","state":"OPEN","url":"u"},
+  {"number":999,"title":"Fix button layout","author":{"login":"x"},"createdAt":"2026-06-01T00:00:00Z","updatedAt":"2026-06-01T00:00:00Z","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"APPROVED","state":"OPEN","url":"u"}
+]
+'@
+        }
+        if ($GhArgs[0] -eq 'api' -and ($GhArgs -contains '.author_association')) { return 'MEMBER' }
+        return $null
+    }
+    $resSr8 = Get-CandidatePrResolution -Ctx $resCtxSr8
+    Assert-Eq -Label "resolution: mode is 'resolved'" -Expected 'resolved' -Actual $resSr8.mode
+    Assert-Eq -Label "resolution: nextSr derived as SR9 (prior SR8 + 1)" -Expected 'SR9' -Actual $resSr8.nextSr
+    Assert-Eq -Label "resolution: versionBase derived as 10.0.90 (targetSr*10)" -Expected '10.0.90' -Actual $resSr8.versionBase
+    Assert-Eq -Label "resolution: exactly one maintainer candidate accepted (#777)" -Expected 1 -Actual @($resSr8.candidates).Count
+    Assert-Eq -Label "resolution: accepted candidate carries enriched fields (createdAt)" -Expected '2026-06-08' `
+        -Actual (ConvertTo-Utc -Value (@($resSr8.candidates)[0].createdAt)).ToString('yyyy-MM-dd')
+    Assert-Eq -Label "resolution: no spoofers, no unverifiable in clean case" -Expected '0/0' `
+        -Actual "$($resSr8.spoofers)/$($resSr8.unverifiable)"
+
+    # (b) versionBase tracks a different prior SR: sr7 → SR8 / 10.0.80.
+    $resCtxSr7 = @{ mode = 'candidate'; repo = 'dotnet/maui'; mainBranch = 'main'; priorSrBranch = 'release/10.0.1xx-sr7' }
+    $script:GhStub = { param([string[]]$GhArgs) if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') { return '[]' } return $null }
+    $resSr7 = Get-CandidatePrResolution -Ctx $resCtxSr7
+    Assert-Eq -Label "resolution: nextSr SR8 from prior SR7" -Expected 'SR8' -Actual $resSr7.nextSr
+    Assert-Eq -Label "resolution: versionBase 10.0.80 from prior SR7" -Expected '10.0.80' -Actual $resSr7.versionBase
+    Assert-Eq -Label "resolution: empty main PR list → zero candidates, still resolved" -Expected 'resolved/0' `
+        -Actual "$($resSr7.mode)/$(@($resSr7.candidates).Count)"
+
+    # (c) spoofer (confirmed non-maintainer) vs unverifiable (lookup failed) are
+    #     counted distinctly, and neither is accepted.
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') {
+            return @'
+[
+  {"number":888,"title":"Candidate build for testing","author":{"login":"rando"},"createdAt":"2026-06-08T00:00:00Z","updatedAt":"2026-06-08T00:00:00Z","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"APPROVED","state":"OPEN","url":"u"},
+  {"number":889,"title":"Another Candidate cut","author":{"login":"ghost"},"createdAt":"2026-06-08T00:00:00Z","updatedAt":"2026-06-08T00:00:00Z","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"APPROVED","state":"OPEN","url":"u"}
+]
+'@
+        }
+        if ($GhArgs[0] -eq 'api' -and ($GhArgs -contains '.author_association')) {
+            if ($GhArgs[1] -match '/pulls/888$') { return 'CONTRIBUTOR' }  # confirmed non-maintainer
+            return $null                                                    # #889 lookup fails → unverifiable
+        }
+        return $null
+    }
+    $resMixed = Get-CandidatePrResolution -Ctx $resCtxSr8
+    Assert-Eq -Label "resolution: no candidate accepted when only spoof/unverifiable" -Expected 0 -Actual @($resMixed.candidates).Count
+    Assert-Eq -Label "resolution: confirmed non-maintainer counted as spoofer (1)" -Expected 1 -Actual $resMixed.spoofers
+    Assert-Eq -Label "resolution: failed lookup counted as unverifiable (1), not spoofer" -Expected 1 -Actual $resMixed.unverifiable
+
+    # (d) gh query failure → mode 'query-failed' (distinct from a legitimately empty list).
+    $script:GhStub = { param([string[]]$GhArgs) return $null }
+    $resFail = Get-CandidatePrResolution -Ctx $resCtxSr8
+    Assert-Eq -Label "resolution: null gh output → mode 'query-failed'" -Expected 'query-failed' -Actual $resFail.mode
+    Assert-Eq -Label "resolution: query-failed still reports version base (parsed before query)" -Expected '10.0.90' -Actual $resFail.versionBase
+
+    # (e) non-candidate ctx short-circuits to 'skip' without any gh call.
+    $script:GhStub = { param([string[]]$GhArgs) throw "gh must NOT be called in skip mode" }
+    $resSkip = Get-CandidatePrResolution -Ctx @{ mode = 'shipped'; repo = 'dotnet/maui'; mainBranch = 'main' }
+    Assert-Eq -Label "resolution: non-candidate mode → 'skip' (no gh call)" -Expected 'skip' -Actual $resSkip.mode
+    Assert-Eq -Label "resolution: skip mode leaves version base null" -Expected $true -Actual ($null -eq $resSkip.versionBase)
 } finally {
     ${function:Invoke-Gh} = $script:OrigInvokeGh
     $script:GhStub = $null
@@ -2036,23 +2112,31 @@ $forgeTblMarkers = @($mdForgeTbl -split "`r?`n" | Where-Object { $_ -match '^\s*
 Assert-Eq -Label "Marker-forgery (table cell): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
     -Actual $forgeTblMarkers.Count
 
-# (6) Marker-forgery via the candidate-PR LIST (the bulleted site, not a table). The title
-#     must match \bcandidate\b to be selected, and embeds the marker between newlines.
+# (6) Marker-forgery via the candidate-PR section (the hoisted "🚩 Candidate PR"
+#     table). The title must match \bcandidate\b to be selected, and embeds the
+#     human-notes marker between newlines; Format-MarkdownTableCell must collapse it
+#     so it cannot forge a second anchored marker line.
 $mdDataForgeList = @{} + $mdData
 $mdDataForgeList['metadata'] = @{} + $mdData.metadata
 $mdDataForgeList['metadata']['mode'] = 'candidate'
 $mdDataForgeList['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr7'
 $mdDataForgeList['metadata']['srBranch'] = 'main'
-$mdDataForgeList['openSrPrs'] = @(
-    @{ number = 96005; title = "Candidate`n<!-- release-readiness:human-notes:begin -->`ntail";
-       author = @{ login = 'mallory' }; isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-01T00:00:00Z' }
-)
+$mdDataForgeList['metadata']['mainBranch'] = 'main'
+$mdDataForgeList['metadata']['fetchedAt'] = '2026-07-04T00:00:00Z'
+$mdDataForgeList['candidatePr'] = @{
+    mode = 'resolved'; spoofers = 0; unverifiable = 0; nextSr = 'SR8'; versionBase = '10.0.80'
+    candidates = @(
+        @{ number = 96005; title = "Candidate`n<!-- release-readiness:human-notes:begin -->`ntail";
+           author = @{ login = 'mallory' }; isDraft = $false; mergeable = 'MERGEABLE';
+           reviewDecision = 'APPROVED'; createdAt = '2026-06-01T00:00:00Z'; updatedAt = '2026-06-01T00:00:00Z' }
+    )
+}
 $mdForgeList = Format-MarkdownReport -Data $mdDataForgeList -RepoUrl 'https://github.com/dotnet/maui' `
                                      -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
 $forgeListMarkers = @($mdForgeList -split "`r?`n" | Where-Object { $_ -match '^\s*<!-- release-readiness:human-notes:begin -->\s*$' })
-Assert-Eq -Label "Marker-forgery (candidate list): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
+Assert-Eq -Label "Marker-forgery (candidate section): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
     -Actual $forgeListMarkers.Count
-Assert-Eq -Label "Candidate list: hostile title collapsed onto the bullet line (no isolated tail)" -Expected 0 `
+Assert-Eq -Label "Candidate section: hostile title collapsed onto the table row (no isolated tail)" -Expected 0 `
     -Actual (@($mdForgeList -split "`r?`n" | Where-Object { $_ -match '^\s*tail\b' }).Count)
 
 # ───── Candidate-mode open-PR collapse: avoid noisy main-PR dump ─────
@@ -2072,8 +2156,8 @@ Assert-Eq -Label "Shipped mode: full 'Open PRs Targeting' header still emitted" 
     -Actual ($mdShipped -match 'Open PRs Targeting release/10.0.1xx-sr7 — 2')
 Assert-Eq -Label "Shipped mode: full table renders both rows" -Expected $true `
     -Actual (($mdShipped -match '\| \[#1001\]') -and ($mdShipped -match '\| \[#1002\]'))
-Assert-Eq -Label "Shipped mode: NO 'Candidate PR for next SR cut' heading" -Expected $false `
-    -Actual ($mdShipped -match 'Candidate PR for next SR cut')
+Assert-Eq -Label "Shipped mode: NO hoisted candidate section" -Expected $false `
+    -Actual ($mdShipped -match '🚩 Candidate PR')
 
 # Candidate mode with NO candidate PR: emit explanatory note, suppress full table.
 $mdDataCandNone = @{} + $mdData
@@ -2081,27 +2165,43 @@ $mdDataCandNone['metadata'] = @{} + $mdData.metadata
 $mdDataCandNone['metadata']['mode'] = 'candidate'
 $mdDataCandNone['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr7'
 $mdDataCandNone['metadata']['srBranch'] = 'main'
+$mdDataCandNone['metadata']['mainBranch'] = 'main'
+$mdDataCandNone['metadata']['fetchedAt'] = '2026-07-04T00:00:00Z'
+$mdDataCandNone['candidatePr'] = @{
+    mode = 'resolved'; candidates = @(); spoofers = 0; unverifiable = 0; nextSr = 'SR8'; versionBase = '10.0.80'
+}
+# openSrPrs still populated to prove candidate mode suppresses the noisy main dump.
 $mdDataCandNone['openSrPrs'] = @(
     @{ number = 2001; title = 'Random WIP fix';     author = @{ login = 'alice' }; isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-01T00:00:00Z' }
     @{ number = 2002; title = 'Bump dependencies';  author = @{ login = 'bob' };   isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-02T00:00:00Z' }
 )
 $mdCandNone = Format-MarkdownReport -Data $mdDataCandNone -RepoUrl 'https://github.com/dotnet/maui' `
                                     -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
-Assert-Eq -Label "Candidate (no candidate PR): heading is 'Candidate PR for next SR cut'" -Expected $true `
-    -Actual ($mdCandNone -match 'Candidate PR for next SR cut')
-Assert-Eq -Label "Candidate (no candidate PR): explanatory note rendered" -Expected $true `
-    -Actual ($mdCandNone -match 'No open PR titled')
+Assert-Eq -Label "Candidate (no candidate PR): hoisted '🚩 Candidate PR' section heading present" -Expected $true `
+    -Actual ($mdCandNone -match '🚩 Candidate PR — SR8 cut point \(10\.0\.80\)')
+Assert-Eq -Label "Candidate (no candidate PR): 'No open Candidate PR yet' note rendered" -Expected $true `
+    -Actual ($mdCandNone -match 'No open Candidate PR yet')
 Assert-Eq -Label "Candidate (no candidate PR): noisy PR rows NOT rendered" -Expected $false `
     -Actual (($mdCandNone -match '\| \[#2001\]') -or ($mdCandNone -match '\| \[#2002\]'))
-Assert-Eq -Label "Candidate (no candidate PR): old 'Open PRs Targeting' header NOT emitted" -Expected $false `
+Assert-Eq -Label "Candidate (no candidate PR): 'Open PRs Targeting' header NOT emitted" -Expected $false `
     -Actual ($mdCandNone -match 'Open PRs Targeting main')
 
-# Candidate mode WITH a candidate PR: emit single link + omit full table.
+# Candidate mode WITH a candidate PR: hoisted table links the candidate + omits the noisy dump.
 $mdDataCandFound = @{} + $mdData
 $mdDataCandFound['metadata'] = @{} + $mdData.metadata
 $mdDataCandFound['metadata']['mode'] = 'candidate'
 $mdDataCandFound['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr8'
 $mdDataCandFound['metadata']['srBranch'] = 'main'
+$mdDataCandFound['metadata']['mainBranch'] = 'main'
+$mdDataCandFound['metadata']['fetchedAt'] = '2026-07-04T00:00:00Z'
+$mdDataCandFound['candidatePr'] = @{
+    mode = 'resolved'; spoofers = 0; unverifiable = 0; nextSr = 'SR9'; versionBase = '10.0.90'
+    candidates = @(
+        @{ number = 3002; title = 'June 8th, Candidate'; author = @{ login = 'PureWeen' }; isDraft = $false;
+           mergeable = 'MERGEABLE'; reviewDecision = 'REVIEW_REQUIRED'; createdAt = '2026-06-08T00:00:00Z'; updatedAt = '2026-06-08T00:00:00Z' }
+    )
+}
+# openSrPrs populated with unrelated noise (incl. #3001/#3003) to prove they are suppressed.
 $mdDataCandFound['openSrPrs'] = @(
     @{ number = 3001; title = 'Random WIP fix';        author = @{ login = 'alice' }; isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-01T00:00:00Z' }
     @{ number = 3002; title = 'June 8th, Candidate';   author = @{ login = 'PureWeen' }; isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-08T00:00:00Z' }
@@ -2109,12 +2209,16 @@ $mdDataCandFound['openSrPrs'] = @(
 )
 $mdCandFound = Format-MarkdownReport -Data $mdDataCandFound -RepoUrl 'https://github.com/dotnet/maui' `
                                      -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
-Assert-Eq -Label "Candidate (found): heading is 'Candidate PR for next SR cut'" -Expected $true `
-    -Actual ($mdCandFound -match 'Candidate PR for next SR cut')
+Assert-Eq -Label "Candidate (found): hoisted heading names next SR + version base" -Expected $true `
+    -Actual ($mdCandFound -match '🚩 Candidate PR — SR9 cut point \(10\.0\.90\)')
 Assert-Eq -Label "Candidate (found): linked the actual candidate PR (#3002)" -Expected $true `
     -Actual ($mdCandFound -match '\[#3002\]\(https://github.com/dotnet/maui/pull/3002\)')
-Assert-Eq -Label "Candidate (found): author defanged in link line" -Expected $true `
+Assert-Eq -Label "Candidate (found): author defanged in table row" -Expected $true `
     -Actual ($mdCandFound -match '`PureWeen`')
+Assert-Eq -Label "Candidate (found): PR age rendered (days ago)" -Expected $true `
+    -Actual ($mdCandFound -match '\(26 days ago\)')
+Assert-Eq -Label "Candidate (found): staleness callout fired (>=14 days old)" -Expected $true `
+    -Actual ($mdCandFound -match 'Stale \(26 days old\)')
 Assert-Eq -Label "Candidate (found): unrelated PRs (#3001, #3003) NOT listed" -Expected $false `
     -Actual (($mdCandFound -match '\| \[#3001\]') -or ($mdCandFound -match '\| \[#3003\]'))
 Assert-Eq -Label "Candidate (found): pointer to full PR list rendered" -Expected $true `
