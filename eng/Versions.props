@@ -3,14 +3,12 @@
     <!-- The .NET product branding version -->
     <MajorVersion>10</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>80</PatchVersion>
+    <PatchVersion>90</PatchVersion>
     <SdkBandVersion>10.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
-    <!-- Essentials.AI preview versioning — bump this for new AI previews -->
-    <EssentialsAIPreviewVersionIteration>1</EssentialsAIPreviewVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <!-- Enable to remove prerelease label and produce stable package versions. -->
@@ -42,8 +40,6 @@
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
     <!-- Microsoft/Extensions -->
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
-    <MicrosoftExtensionsAIVersion>10.3.0</MicrosoftExtensionsAIVersion>
-    <MicrosoftExtensionsAIAbstractionsVersion>10.3.0</MicrosoftExtensionsAIAbstractionsVersion>
     <MicrosoftExtensionsConfigurationVersion>10.0.0</MicrosoftExtensionsConfigurationVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0</MicrosoftExtensionsConfigurationAbstractionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>10.0.0</MicrosoftExtensionsConfigurationJsonVersion>
@@ -57,11 +53,6 @@
     <MicrosoftExtensionsPrimitivesVersion>10.0.0</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0</MicrosoftExtensionsHostingAbstractionsVersion>
     <MicrosoftExtensionsHttpVersion>10.0.0</MicrosoftExtensionsHttpVersion>
-    <!-- Microsoft Agent Framework -->
-    <MicrosoftAgentsAIVersion>1.0.0-rc2</MicrosoftAgentsAIVersion>
-    <MicrosoftAgentsAIWorkflowsVersion>1.0.0-rc2</MicrosoftAgentsAIWorkflowsVersion>
-    <MicrosoftAgentsAIWorkflowsGeneratorsVersion>1.0.0-rc2</MicrosoftAgentsAIWorkflowsGeneratorsVersion>
-    <MicrosoftAgentsAIHostingVersion>1.0.0-preview.260225.1</MicrosoftAgentsAIHostingVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>36.1.2</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.105</MicrosoftNETSdkAndroidManifest90100PackageVersion>
@@ -167,10 +158,10 @@
     <!-- Additional packages for cgmanifest.json -->
     <SyncfusionMauiToolkitPackageVersion>1.0.4</SyncfusionMauiToolkitPackageVersion>
     <MicrosoftDataSqliteCorePackageVersion>8.0.8</MicrosoftDataSqliteCorePackageVersion>
-    <SQLitePCLRawBundleGreenPackageVersion>2.1.10</SQLitePCLRawBundleGreenPackageVersion>
+    <SQLitePCLRawBundleESqlite3PackageVersion>3.0.3</SQLitePCLRawBundleESqlite3PackageVersion>
     <CommunityToolkitMauiPackageVersion>11.1.1</CommunityToolkitMauiPackageVersion>
     <CommunityToolkitMauiPreviousPackageVersion>9.1.0</CommunityToolkitMauiPreviousPackageVersion>
-    <CommunityToolkitMvvmPackageVersion>8.3.2</CommunityToolkitMvvmPackageVersion>
+    <CommunityToolkitMvvmPackageVersion>8.4.2</CommunityToolkitMvvmPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Appium -->

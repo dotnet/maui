@@ -139,8 +139,8 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 	{
 		public IEnumerator<object?[]> GetEnumerator()
 		{
-			const string ComplexResult = "{\\\"result\\\":123,\\\"operationName\\\":\\\"Test\\\"}";
-			const string DictionaryResult = "{\\\"first\\\":111,\\\"second\\\":222,\\\"third\\\":333}";
+			const string ComplexResult = "{\"result\":123,\"operationName\":\"Test\"}";
+			const string DictionaryResult = "{\"first\":111,\"second\":222,\"third\":333}";
 			const int ValueTypeResult = 2;
 
 			// Test variations of:
