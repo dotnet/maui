@@ -283,6 +283,38 @@ function Test-IsBranchInFlight {
     return -not $ShippedPatches.Contains($BranchPatch)
 }
 
+function Test-IsStaleSrBranch {
+    <#
+    .SYNOPSIS
+        True when a tag-absent SR branch should be treated as a stale/abandoned
+        hotfix leftover rather than a live in-flight SR.
+    .DESCRIPTION
+        Secondary disambiguator applied ONLY after Test-IsBranchInFlight has
+        already returned true (the branch's stable `<major>.0.<patch>` tag does
+        not exist). Tag-existence stays the PRIMARY in-flight signal; this guard
+        narrows the false-positive where an old hotfix branch sits below the
+        shipped watermark with its tag never published.
+
+        A branch is stale when BOTH:
+          - its patch is strictly below the highest shipped patch
+            (e.g. SR2 patch 21 / SR3 patch 33 long after SR7 patch 71 shipped), and
+          - it has had no commits within the activity window (idle).
+
+        The idle requirement preserves the out-of-order / hotfix scenario that
+        tag-existence protects: a real security-hotfix branch that resets
+        PatchVersion below the watermark has recent commits
+        (RecentActivityCount > 0) and is therefore NOT considered stale. A
+        freshly-cut live SR sits at-or-above the watermark, so it is never
+        stale regardless of activity.
+    #>
+    param(
+        [Parameter(Mandatory)][int]$BranchPatch,
+        [Parameter(Mandatory)][int]$HighestShippedPatch,
+        [Parameter(Mandatory)][int]$RecentActivityCount
+    )
+    return ($RecentActivityCount -le 0 -and $BranchPatch -lt $HighestShippedPatch)
+}
+
 function Test-IsPreviewBranchInFlight {
     <#
     .SYNOPSIS
@@ -674,6 +706,19 @@ function Invoke-DetectionForMajor {
 
         if (Test-IsBranchInFlight -BranchPatch $branchPatch -ShippedPatches $shippedPatches) {
             $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
+
+            # Staleness guard: a tag-absent branch below the shipped watermark
+            # with no recent activity is a stale/abandoned hotfix leftover
+            # (e.g. SR2 patch 21 / SR3 patch 33 long after SR7 patch 71 shipped),
+            # not a live in-flight SR. Dropping it here keeps it out of the
+            # workflow matrix entirely (no no-op per-tracker job). Tag-existence
+            # stays the primary signal; the idle requirement preserves the
+            # out-of-order/hotfix case (a real reset branch has recent commits).
+            if (Test-IsStaleSrBranch -BranchPatch $branchPatch -HighestShippedPatch $highestShippedPatch -RecentActivityCount $recent) {
+                Write-Host "  -> skipping stale SR$sr branch '$branch' (patch=$branchPatch < highest shipped $highestShippedPatch, no tag $expectedTag, no commits in ${ActivityWindowDays}d)" -ForegroundColor DarkGray
+                continue
+            }
+
             $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode 'in-flight' `
                 -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
                 -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
