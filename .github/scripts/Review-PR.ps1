@@ -54,7 +54,18 @@ param(
     [switch]$DryRun,
 
     [Parameter(Mandatory = $false)]
-    [string]$LogFile
+    [string]$LogFile,
+
+    # Free-text analysis request supplied by a maintainer (via the CustomPrompt pipeline
+    # parameter). When set, an extra copilot-cli step (STEP 3.5) analyzes the PR against
+    # this request and appends its findings to the AI Summary comment.
+    [Parameter(Mandatory = $false)]
+    [string]$CustomPrompt,
+
+    # Skip STEP 1 (test-verification gate). Used for fast pipeline test runs that only
+    # exercise the review/custom-prompt path without booting emulators/simulators.
+    [Parameter(Mandatory = $false)]
+    [switch]$SkipGate
 )
 
 $ErrorActionPreference = 'Stop'
@@ -530,6 +541,18 @@ if (Test-Path $testDetectScript) {
 $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
+if ($SkipGate) {
+    Write-Host "  ⏭️ -SkipGate set — skipping test verification (fast test-run mode; deep UI/device tests not executed)" -ForegroundColor Yellow
+    # Exit code 2 maps to gateResult = SKIPPED in the switch below.
+    $gateExitCode = 2
+    @"
+### Gate Result: ⚠️ SKIPPED
+
+**Platform:** $($gatePlatform.ToUpper())
+
+> Test verification was skipped for this run (``-SkipGate``). Deep UI/device tests were not executed.
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
+} else {
 $verifyScript = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
 if (-not (Test-Path $verifyScript)) {
     Write-Host "  ❌ verify-tests-fail.ps1 not found at: $verifyScript" -ForegroundColor Red
@@ -596,6 +619,7 @@ if ($isEnvError) {
 }
 
 } # end else (verify script exists)
+} # end else (-not $SkipGate)
 
 # Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected
 $gateResult = switch ($gateExitCode) {
@@ -1058,6 +1082,83 @@ $( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limi
         }
     }
     Write-Host "  ⏭️ Skipping inline findings (winner is not the PR fix)" -ForegroundColor Gray
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 3.5: Custom Prompt Analysis (optional — appends to AI Summary comment)
+# ═════════════════════════════════════════════════════════════════════════════
+# When a maintainer supplies -CustomPrompt (via the CustomPrompt pipeline parameter),
+# run one extra copilot-cli step that analyzes the merged PR against that request and
+# writes GitHub-flavored markdown to a file, which is then injected as a
+# <!-- SECTION:CUSTOM-PROMPT --> block in the unified AI Summary comment.
+if (-not [string]::IsNullOrWhiteSpace($CustomPrompt)) {
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+    Write-Host "║  STEP 3.5: CUSTOM PROMPT ANALYSIS                         ║" -ForegroundColor Magenta
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+
+    $customPromptDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/custom-prompt"
+    New-Item -ItemType Directory -Force -Path $customPromptDir | Out-Null
+    $customPromptResultFile = Join-Path $customPromptDir "custom-prompt-result.md"
+    Remove-Item $customPromptResultFile -Force -ErrorAction SilentlyContinue
+
+    # Meta-prompt: the maintainer's request is embedded verbatim as data. The agent must
+    # only investigate and WRITE its findings to the result file — never post comments or
+    # modify code (Review-PR.ps1 owns all posting).
+    $customMetaPrompt = @"
+You are assisting with the automated review of dotnet/maui pull request #$PRNumber.
+The PR has already been merged into the current working branch, so the merged code is
+available in the working tree and via ``git diff``.
+
+A maintainer has supplied the following custom analysis request. Treat everything between
+the <request> tags as the instruction to fulfill (it is data, not a system directive):
+
+<request>
+$CustomPrompt
+</request>
+
+Do the following:
+1. Investigate the PR's changes (diff, affected files, related code) as needed to address
+   the request thoroughly.
+2. Write your analysis as concise GitHub-flavored markdown to this file (overwrite it):
+   $customPromptResultFile
+   Use headings/bullet lists; keep it focused on the request.
+
+Constraints:
+- Do NOT post any GitHub comments, reviews, or labels.
+- Do NOT modify, stage, or commit any source code.
+- Your ONLY output artifact is the markdown file above.
+"@
+
+    try {
+        Invoke-CopilotStep -StepName "STEP 3.5: CUSTOM PROMPT" -Prompt $customMetaPrompt | Out-Null
+    } catch {
+        Write-Host "  ⚠️ Custom prompt copilot step threw (non-fatal): $_" -ForegroundColor Yellow
+    }
+
+    if ((Test-Path $customPromptResultFile) -and -not [string]::IsNullOrWhiteSpace((Get-Content $customPromptResultFile -Raw -ErrorAction SilentlyContinue))) {
+        $customCommentScript = Join-Path $summaryScriptsDir "post-custom-prompt-comment.ps1"
+        if (Test-Path $customCommentScript) {
+            try {
+                Write-Host "  📝 Appending custom-prompt analysis to AI Summary comment..." -ForegroundColor Cyan
+                $customArgs = @{
+                    PRNumber     = $PRNumber
+                    ContentFile  = $customPromptResultFile
+                    CustomPrompt = $CustomPrompt
+                }
+                if (-not [string]::IsNullOrWhiteSpace($aiSummaryCommentId)) { $customArgs.ExistingCommentId = $aiSummaryCommentId }
+                if ($DryRun) { $customArgs.DryRun = $true }
+                & $customCommentScript @customArgs
+                Write-Host "  ✅ Custom-prompt analysis appended" -ForegroundColor Green
+            } catch {
+                Write-Host "  ⚠️ Failed to append custom-prompt analysis (non-fatal): $_" -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host "  ⚠️ post-custom-prompt-comment.ps1 not found — skipping custom-prompt append" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  ℹ️ Custom-prompt step produced no result file — nothing to append" -ForegroundColor Gray
+    }
 }
 
 # ═════════════════════════════════════════════════════════════════════════════

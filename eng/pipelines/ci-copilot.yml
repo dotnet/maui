@@ -25,6 +25,22 @@ parameters:
       - catalyst
       - windows
 
+  # Free-text custom prompt. When non-empty, an extra copilot-cli step analyzes the PR
+  # against this request and appends the result to the AI Summary comment. Leave empty for
+  # a normal review run.
+  - name: CustomPrompt
+    displayName: 'Custom Prompt (optional)'
+    type: string
+    default: ''
+
+  # TEMPORARY (testing): skip the deep UI/device tests (the verification gate + emulator/
+  # simulator/Appium provisioning) so custom-prompt runs are fast. Set to false (or remove
+  # this parameter and the associated step guards) to restore full test verification.
+  - name: SkipUITests
+    displayName: 'Skip deep UI tests (temporary — testing)'
+    type: boolean
+    default: true
+
   - name: androidPool
     type: object
     default:
@@ -107,7 +123,7 @@ stages:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
-          - ${{ if eq(parameters.Platform, 'android') }}:
+          - ${{ if and(eq(parameters.Platform, 'android'), not(parameters.SkipUITests)) }}:
             - template: common/enable-kvm.yml
 
           # Provision SDKs (same parameters as ui-tests-steps.yml)
@@ -156,7 +172,7 @@ stages:
               displayName: 'Set screen resolution'
 
           # Create AVD and boot Android Emulator
-          - ${{ if eq(parameters.Platform, 'android') }}:
+          - ${{ if and(eq(parameters.Platform, 'android'), not(parameters.SkipUITests)) }}:
             # Free disk space on hosted agents (emulator needs ~7GB for userdata partition)
             - script: |
                 echo "=== Disk space before cleanup ==="
@@ -331,14 +347,16 @@ stages:
               version: "24.x"
             displayName: 'Install Node.js'
 
-          - pwsh: |
-              $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
-              dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
-            displayName: 'Install Appium'
-            retryCountOnTaskFailure: 2
-            timeoutInMinutes: 10
-            env:
-              APPIUM_HOME: $(APPIUM_HOME)
+          # Appium is only needed for the deep UI tests / device interaction.
+          - ${{ if not(parameters.SkipUITests) }}:
+            - pwsh: |
+                $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
+                dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
+              displayName: 'Install Appium'
+              retryCountOnTaskFailure: 2
+              timeoutInMinutes: 10
+              env:
+                APPIUM_HOME: $(APPIUM_HOME)
 
           - bash: |
               echo "Installing GitHub CLI..."
@@ -475,7 +493,7 @@ stages:
               echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
               echo "iOS Simulator UDID: $UDID"
             displayName: 'Boot iOS Simulator'
-            condition: eq('${{ parameters.Platform }}', 'ios')
+            condition: and(eq('${{ parameters.Platform }}', 'ios'), eq('${{ parameters.SkipUITests }}', 'False'))
             timeoutInMinutes: 5
 
           # Warm up the emulator right before the agent runs.
@@ -538,7 +556,7 @@ stages:
 
               echo "✅ Emulator warmed up and responsive"
             displayName: 'Warm Up Android Emulator'
-            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'), eq('${{ parameters.SkipUITests }}', 'False'))
             timeoutInMinutes: 3
 
           - bash: |
@@ -599,8 +617,19 @@ stages:
               # -PostSummaryComment and -RunFinalize handle posting comments
               echo "Review platform: ${{ parameters.Platform }}"
               
+              # Build args safely: CustomPrompt is free-text (passed via env var, never
+              # inline-expanded) and may contain spaces/quotes; -SkipGate is added only when
+              # the SkipUITests parameter is true (temporary fast test-run mode).
+              REVIEW_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              if [ -n "${PARAM_CUSTOM_PROMPT}" ]; then
+                REVIEW_ARGS+=(-CustomPrompt "${PARAM_CUSTOM_PROMPT}")
+              fi
+              if [ "${PARAM_SKIP_UITESTS}" = "True" ]; then
+                REVIEW_ARGS+=(-SkipGate)
+              fi
+
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh -NoProfile .github/scripts/Review-PR.ps1 "${REVIEW_ARGS[@]}"
               COPILOT_EXIT_CODE=$?
               set -e
               
@@ -663,6 +692,8 @@ stages:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_CUSTOM_PROMPT: ${{ parameters.CustomPrompt }}
+              PARAM_SKIP_UITESTS: ${{ parameters.SkipUITests }}
               COMMENTS_VIA_FILE: "true"
 
           # Publish Copilot logs and session artifacts
