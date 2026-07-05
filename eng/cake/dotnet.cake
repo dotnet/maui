@@ -279,14 +279,13 @@ Task("dotnet-test")
             "**/Essentials.AI.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
-            "**/Compatibility.Core.UnitTests.csproj",
         };
 
         var success = true;
 
         foreach (var test in tests)
         {
-            if (!IsRunningOnWindows() && (test.Contains("Compatibility.Core.UnitTests") || test.Contains("Controls.Core.Design.UnitTests")))
+            if (!IsRunningOnWindows() && test.Contains("Controls.Core.Design.UnitTests"))
             {
                 continue;
             }
