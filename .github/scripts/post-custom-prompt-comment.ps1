@@ -1,26 +1,31 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Posts a custom-prompt analysis into the unified AI Summary comment on a GitHub PR.
+    Appends a custom-prompt analysis into the unified AI Summary PR review on a GitHub PR.
 
 .DESCRIPTION
-    Reads the custom-prompt result markdown file and injects its content into the
-    <!-- SECTION:CUSTOM-PROMPT --> block of the unified AI Summary comment.
+    Reads the custom-prompt result markdown file and injects its content as a
+    <!-- SECTION:CUSTOM-PROMPT --> block inside the AI Summary review body.
+
+    The AI Summary is posted by post-ai-summary-comment.ps1 as a fresh PR *review*
+    each run (identified by the <!-- AI Summary --> marker), so this script updates
+    the review body via `PUT .../pulls/{pr}/reviews/{review_id}` rather than editing
+    an issue comment.
 
     The custom prompt is a free-text request supplied by a maintainer (via the
     CustomPrompt pipeline parameter) — e.g. "consider ui tests when you do the review".
     A copilot-cli step analyzes the PR against that request and writes its findings to a
-    markdown file; this script surfaces those findings in the AI Summary comment.
+    markdown file; this script surfaces those findings inside the AI Summary review.
 
-    Compatible with session-based AI Summary comments: the custom-prompt section is
-    placed after all session blocks. Replace-or-append semantics mean re-running the
-    pipeline refreshes the section rather than duplicating it.
+    Replace-or-append semantics: re-running refreshes the section rather than
+    duplicating it. If the AI Summary review cannot be found/updated, the analysis is
+    posted as a standalone AI-generated issue comment so it is never lost.
 
     Auto-discovers the content file from:
       CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/custom-prompt/custom-prompt-result.md
 
 .PARAMETER PRNumber
-    The PR number to post the comment on (required unless inferable from -ContentFile).
+    The PR number (required unless inferable from -ContentFile).
 
 .PARAMETER ContentFile
     Path to the custom-prompt result markdown. Auto-discovered from PRNumber if not provided.
@@ -28,47 +33,49 @@
 .PARAMETER CustomPrompt
     The maintainer's original custom-prompt text, echoed in the section header for context.
 
-.PARAMETER ExistingCommentId
-    The AI Summary comment id (avoids a GitHub API eventual-consistency search race).
+.PARAMETER ReviewId
+    The AI Summary PR review id (from post-ai-summary-comment.ps1). Avoids a search race.
 
 .PARAMETER DryRun
-    Print/preview the comment instead of posting.
+    Print/preview the section instead of posting.
 
 .PARAMETER PreviewFile
     Custom path for dry-run preview output.
 
 .EXAMPLE
-    ./post-custom-prompt-comment.ps1 -PRNumber 34427 -CustomPrompt "consider ui tests"
+    ./post-custom-prompt-comment.ps1 -PRNumber 34427 -CustomPrompt "consider ui tests" -ReviewId 123456
 
 .EXAMPLE
     ./post-custom-prompt-comment.ps1 -PRNumber 34427 -DryRun
 #>
 
 param(
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [int]$PRNumber,
 
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string]$ContentFile,
 
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string]$CustomPrompt,
 
-    [Parameter(Mandatory=$false)]
-    [string]$ExistingCommentId,
+    [Parameter(Mandatory = $false)]
+    [string]$ReviewId,
 
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [switch]$DryRun,
 
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string]$PreviewFile
 )
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  Custom Prompt Comment (Post/Update)                      ║" -ForegroundColor Cyan
+Write-Host "║  Custom Prompt Analysis (append to AI Summary review)     ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+$REPO = "dotnet/maui"
 
 # ============================================================================
 # AUTO-DISCOVERY
@@ -77,9 +84,7 @@ Write-Host "╚═════════════════════�
 $repoRoot = git rev-parse --show-toplevel 2>$null
 
 if ($PRNumber -gt 0 -and [string]::IsNullOrWhiteSpace($ContentFile)) {
-    $candidates = @(
-        "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/custom-prompt/custom-prompt-result.md"
-    )
+    $candidates = @("CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/custom-prompt/custom-prompt-result.md")
     if ($repoRoot) {
         $candidates += Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/custom-prompt/custom-prompt-result.md"
     }
@@ -92,7 +97,6 @@ if ($PRNumber -gt 0 -and [string]::IsNullOrWhiteSpace($ContentFile)) {
     }
 }
 
-# Extract PRNumber from path if not provided
 if ($PRNumber -eq 0 -and -not [string]::IsNullOrWhiteSpace($ContentFile) -and $ContentFile -match '[/\\](\d+)[/\\]') {
     $PRNumber = [int]$Matches[1]
     Write-Host "ℹ️  Auto-detected PRNumber: $PRNumber from path" -ForegroundColor Cyan
@@ -137,153 +141,132 @@ if (-not [string]::IsNullOrWhiteSpace($CustomPrompt)) {
 
 $customSection = @"
 $SECTION_START
-<details>
-<summary>🧩 <strong>Expand Custom Prompt Analysis</strong></summary>
 
-$promptEcho$resultContent
+### 🧩 Custom Prompt Analysis
+
+> ● _AI-generated — supplementary analysis from a maintainer-supplied custom prompt (GitHub Copilot CLI)._
+
+$promptEcho<details>
+<summary><strong>Expand analysis</strong></summary>
+
+$resultContent
 
 </details>
 $SECTION_END
 "@
 
-# ============================================================================
-# FETCH PR AUTHOR FOR PING
-# ============================================================================
-
-try {
-    $prAuthor = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '.user.login' 2>$null
-} catch { $prAuthor = $null }
-# Guard against a failed lookup (e.g. 404) leaking a JSON error body into the ping.
-if ($prAuthor -and ($prAuthor -notmatch '^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')) { $prAuthor = $null }
-
-# ============================================================================
-# POST / UPDATE
-# ============================================================================
-
-Write-Host "`nInjecting into AI Summary comment on #$PRNumber..." -ForegroundColor Yellow
-
-# Find existing unified comment
-$existingUnifiedComment = $null
-
-# If caller passed the comment ID (avoids GitHub API eventual-consistency race), fetch it directly
-if (-not [string]::IsNullOrWhiteSpace($ExistingCommentId)) {
-    try {
-        $commentJson = gh api "repos/dotnet/maui/issues/comments/$ExistingCommentId" 2>$null
-        $directComment = $commentJson | ConvertFrom-Json
-        if ($directComment.body -match [regex]::Escape($MAIN_MARKER)) {
-            $existingUnifiedComment = $directComment
-            Write-Host "✓ Found unified AI Summary comment via passed ID (ID: $($directComment.id))" -ForegroundColor Green
-        } else {
-            Write-Host "⚠️ Passed comment ID $ExistingCommentId does not contain AI Summary marker — falling back to search" -ForegroundColor Yellow
-        }
-    } catch {
-        Write-Host "⚠️ Could not fetch comment by ID $ExistingCommentId — falling back to search" -ForegroundColor Yellow
-    }
-}
-
-# Fallback: search through all PR comments
-if (-not $existingUnifiedComment) {
-    try {
-        $commentsJson = gh api "repos/dotnet/maui/issues/$PRNumber/comments?per_page=100" 2>$null
-        $comments = $commentsJson | ConvertFrom-Json
-        foreach ($comment in $comments) {
-            if ($comment.body -match [regex]::Escape($MAIN_MARKER)) {
-                $existingUnifiedComment = $comment
-                Write-Host "✓ Found unified AI Summary comment (ID: $($comment.id))" -ForegroundColor Green
-                break
-            }
-        }
-        if (-not $existingUnifiedComment) {
-            Write-Host "✓ No existing AI Summary comment found — will create new" -ForegroundColor Yellow
-        }
-    } catch {
-        Write-Host "⚠️ Could not fetch comments: $_" -ForegroundColor Yellow
-    }
-}
-
-# Build the final comment body
-if ($existingUnifiedComment) {
-    $body = $existingUnifiedComment.body
-    if ($body -match [regex]::Escape($SECTION_START)) {
+# Inject or replace the section into a body.
+function Merge-Section {
+    param([string]$Body, [string]$Section)
+    if ($Body -match [regex]::Escape($SECTION_START)) {
         $pattern = [regex]::Escape($SECTION_START) + "[\s\S]*?" + [regex]::Escape($SECTION_END)
-        $finalComment = $body -replace $pattern, $customSection
+        $merged = [regex]::Replace($Body, $pattern, [System.Text.RegularExpressions.MatchEvaluator] { param($m) $Section })
     } else {
-        $finalComment = $body.TrimEnd() + "`n`n" + $customSection
+        $merged = $Body.TrimEnd() + "`n`n" + $Section
     }
-
-    $finalComment = $finalComment -replace "`n{4,}", "`n`n`n"
-} else {
-    $authorPing = ""
-    if ($prAuthor) {
-        $authorPing = "> 👋 @$prAuthor — a custom-prompt analysis is ready. Please review below.`n"
-    }
-    $finalComment = @"
-$MAIN_MARKER
-
-## 🤖 AI Summary
-
-$authorPing
-$customSection
-"@
+    return ($merged -replace "`n{4,}", "`n`n`n")
 }
 
-# DryRun: preview to file
+# ============================================================================
+# DRY RUN PREVIEW
+# ============================================================================
+
 if ($DryRun) {
     if ([string]::IsNullOrWhiteSpace($PreviewFile)) {
-        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/ai-summary-comment-preview.md"
+        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/custom-prompt-preview.md"
     }
     $previewDir = Split-Path $PreviewFile -Parent
     if ($previewDir -and -not (Test-Path $previewDir)) {
         New-Item -ItemType Directory -Path $previewDir -Force | Out-Null
     }
-    Set-Content -Path $PreviewFile -Value "$($finalComment.TrimEnd())`n" -Encoding UTF8 -NoNewline
-    Write-Host "`n=== COMMENT PREVIEW ===" -ForegroundColor Yellow
-    Write-Host $finalComment
+    Set-Content -Path $PreviewFile -Value "$($customSection.TrimEnd())`n" -Encoding UTF8 -NoNewline
+    Write-Host "`n=== CUSTOM PROMPT SECTION PREVIEW ===" -ForegroundColor Yellow
+    Write-Host $customSection
     Write-Host "`n=== END PREVIEW ===" -ForegroundColor Yellow
     Write-Host "`n✅ Preview saved to: $PreviewFile" -ForegroundColor Green
     exit 0
 }
 
-# Post to GitHub
-$tempFile = [System.IO.Path]::GetTempFileName()
-@{ body = $finalComment } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
+# ============================================================================
+# LOCATE THE AI SUMMARY REVIEW
+# ============================================================================
 
-try {
-    if ($existingUnifiedComment) {
-        Write-Host "Updating unified comment ID $($existingUnifiedComment.id)..." -ForegroundColor Yellow
-        $patchResult = $null
-        try {
-            $patchResult = gh api --method PATCH "repos/dotnet/maui/issues/comments/$($existingUnifiedComment.id)" --input $tempFile --jq '.html_url' 2>&1
-            if ($LASTEXITCODE -ne 0) { throw "PATCH failed (exit code $LASTEXITCODE): $patchResult" }
-            Write-Host "✅ Custom-prompt section updated: $patchResult" -ForegroundColor Green
-        } catch {
-            Write-Host "⚠️ Could not update comment (no edit permission?) — creating new comment instead: $_" -ForegroundColor Yellow
-            $authorPing = ""
-            if ($prAuthor) {
-                $authorPing = "> 👋 @$prAuthor — a custom-prompt analysis is ready. Please review below.`n"
-            }
-            $standaloneBody = @"
-$MAIN_MARKER
+$targetReview = $null
 
-## 🤖 AI Summary
+# Direct fetch by id (fast path — avoids GitHub API eventual-consistency race).
+if (-not [string]::IsNullOrWhiteSpace($ReviewId) -and $ReviewId -match '^\d+$') {
+    try {
+        $rv = gh api "repos/$REPO/pulls/$PRNumber/reviews/$ReviewId" 2>$null | ConvertFrom-Json
+        if ($rv.body -match [regex]::Escape($MAIN_MARKER)) {
+            $targetReview = $rv
+            Write-Host "✓ Found AI Summary review via passed ID (ID: $($rv.id))" -ForegroundColor Green
+        } else {
+            Write-Host "⚠️ Passed review ID $ReviewId has no AI Summary marker — falling back to search" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "⚠️ Could not fetch review by ID $ReviewId — falling back to search" -ForegroundColor Yellow
+    }
+}
 
-$authorPing
-$customSection
-"@
-            $standaloneTempFile = [System.IO.Path]::GetTempFileName()
-            try {
-                @{ body = $standaloneBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $standaloneTempFile -Encoding UTF8
-                $result = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $standaloneTempFile --jq '.html_url'
-                Write-Host "✅ Unified comment posted (new): $result" -ForegroundColor Green
-            } finally {
-                Remove-Item $standaloneTempFile -ErrorAction SilentlyContinue
+# Fallback: search PR reviews for the marker (last match wins — freshest review).
+if (-not $targetReview) {
+    try {
+        $reviews = gh api "repos/$REPO/pulls/$PRNumber/reviews?per_page=100" --paginate 2>$null | ConvertFrom-Json
+        foreach ($rv in $reviews) {
+            if ($rv.body -match [regex]::Escape($MAIN_MARKER)) {
+                $targetReview = $rv
             }
         }
-    } else {
-        Write-Host "Creating new unified comment on PR #$PRNumber..." -ForegroundColor Yellow
-        $result = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile --jq '.html_url'
-        Write-Host "✅ Unified comment posted: $result" -ForegroundColor Green
+        if ($targetReview) {
+            Write-Host "✓ Found AI Summary review via search (ID: $($targetReview.id))" -ForegroundColor Green
+        } else {
+            Write-Host "⚠️ No AI Summary review found — will post a standalone comment" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "⚠️ Could not list PR reviews: $_" -ForegroundColor Yellow
     }
-} finally {
-    Remove-Item $tempFile -ErrorAction SilentlyContinue
+}
+
+# ============================================================================
+# UPDATE REVIEW BODY (or fall back to a standalone comment)
+# ============================================================================
+
+function Post-StandaloneComment {
+    param([string]$Section)
+    # Author ping, guarded against a 404 error body leaking into the ping.
+    $prAuthor = $null
+    try { $prAuthor = gh api "repos/$REPO/pulls/$PRNumber" --jq '.user.login' 2>$null } catch { $prAuthor = $null }
+    if ($prAuthor -and ($prAuthor -notmatch '^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')) { $prAuthor = $null }
+    $ping = if ($prAuthor) { "> 👋 @$prAuthor — a custom-prompt analysis is ready below.`n`n" } else { "" }
+
+    $body = @"
+$MAIN_MARKER
+$ping$Section
+"@
+    $tmp = [System.IO.Path]::GetTempFileName()
+    try {
+        @{ body = $body } | ConvertTo-Json -Depth 10 | Set-Content -Path $tmp -Encoding UTF8
+        $url = gh api --method POST "repos/$REPO/issues/$PRNumber/comments" --input $tmp --jq '.html_url'
+        Write-Host "✅ Custom prompt analysis posted as standalone comment: $url" -ForegroundColor Green
+    } finally {
+        Remove-Item $tmp -ErrorAction SilentlyContinue
+    }
+}
+
+if ($targetReview) {
+    $newBody = Merge-Section -Body $targetReview.body -Section $customSection
+    $tmp = [System.IO.Path]::GetTempFileName()
+    try {
+        @{ body = $newBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tmp -Encoding UTF8
+        $putResult = gh api --method PUT "repos/$REPO/pulls/$PRNumber/reviews/$($targetReview.id)" --input $tmp --jq '.html_url' 2>&1
+        if ($LASTEXITCODE -ne 0) { throw "PUT failed (exit code $LASTEXITCODE): $putResult" }
+        Write-Host "✅ Custom prompt section appended to AI Summary review: $putResult" -ForegroundColor Green
+    } catch {
+        Write-Host "⚠️ Could not update review body ($_) — posting standalone comment instead" -ForegroundColor Yellow
+        Post-StandaloneComment -Section $customSection
+    } finally {
+        Remove-Item $tmp -ErrorAction SilentlyContinue
+    }
+} else {
+    Post-StandaloneComment -Section $customSection
 }

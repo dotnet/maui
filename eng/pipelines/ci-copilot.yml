@@ -24,6 +24,22 @@ parameters:
       - catalyst
       - windows
 
+  # Free-text review request. When non-empty, the Post phase runs an extra copilot
+  # analysis against this prompt and appends the result to the AI Summary review.
+  # Empty (default) leaves normal /review runs unaffected.
+  - name: CustomPrompt
+    displayName: 'Custom review prompt (optional)'
+    type: string
+    default: ''
+
+  # TEMP testing toggle: skip the deep UI/device tests (Gate) so the custom-prompt
+  # feature can be validated quickly. Default true for now; flip to false / remove
+  # to restore full gate behavior.
+  - name: SkipUITests
+    displayName: 'Skip UI/device tests (fast test mode)'
+    type: boolean
+    default: true
+
   - name: androidPool
     type: object
     default:
@@ -295,6 +311,7 @@ stages:
                 echo "=== Disk space after cleanup ==="
                 df -h /home
               displayName: 'Free Disk Space for Emulator'
+              condition: and(succeeded(), eq('${{ parameters.SkipUITests }}', 'False'))
 
             - script: |
                 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
@@ -486,6 +503,7 @@ stages:
               displayName: 'Create AVD and Boot Android Emulator'
               retryCountOnTaskFailure: 3
               timeoutInMinutes: 15
+              condition: and(succeeded(), eq('${{ parameters.SkipUITests }}', 'False'))
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
           - task: UseNode@1
@@ -497,6 +515,7 @@ stages:
               $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
               dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
             displayName: 'Install Appium'
+            condition: and(succeeded(), eq('${{ parameters.SkipUITests }}', 'False'))
             retryCountOnTaskFailure: 2
             timeoutInMinutes: 10
             env:
@@ -631,7 +650,7 @@ stages:
               echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
               echo "iOS Simulator UDID: $UDID"
             displayName: 'Boot iOS Simulator'
-            condition: eq('${{ parameters.Platform }}', 'ios')
+            condition: and(eq('${{ parameters.Platform }}', 'ios'), eq('${{ parameters.SkipUITests }}', 'False'))
             timeoutInMinutes: 5
 
           # Warm up the emulator right before the agent runs.
@@ -700,7 +719,7 @@ stages:
 
               echo "✅ Emulator warmed up and responsive"
             displayName: 'Warm Up Android Emulator'
-            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'), eq('${{ parameters.SkipUITests }}', 'False'))
             timeoutInMinutes: 6
             retryCountOnTaskFailure: 2
 
@@ -791,14 +810,15 @@ stages:
               echo "═══ TASK 2: GATE ═══"
               TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
 
+              # When SkipUITests is true (fast test mode), pass -SkipGate so the Gate phase
+              # reports SKIPPED without running device/UI tests (no emulator/simulator needed).
+              GATE_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase Gate -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              if [ "${PARAM_SKIP_UITESTS}" = "True" ]; then
+                GATE_ARGS+=(-SkipGate)
+              fi
+
               set +e
-              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
-                -PRNumber "${PARAM_PR_NUMBER}" \
-                -Platform "${{ parameters.Platform }}" \
-                -Phase Gate \
-                -TrustedScriptsDir "$TRUSTED" \
-                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
-                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${GATE_ARGS[@]}"
               GATE_EXIT=$?
               set -e
 
@@ -832,6 +852,7 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_SKIP_UITESTS: ${{ parameters.SkipUITests }}
 
           # ─────────────────────────────────────────────────────────
           #  Task 3 — COPILOT REVIEW: expert review + try-fix.
@@ -844,14 +865,15 @@ stages:
 
               echo "Review platform: ${{ parameters.Platform }}"
 
+              # CustomPrompt is free-text (env var, never inline-expanded) — the copilot
+              # analysis for it runs here in Task 3 (only task with the copilot token).
+              REVIEW_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase CopilotReview -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              if [ -n "${PARAM_CUSTOM_PROMPT}" ]; then
+                REVIEW_ARGS+=(-CustomPrompt "${PARAM_CUSTOM_PROMPT}")
+              fi
+
               set +e
-              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
-                -PRNumber "${PARAM_PR_NUMBER}" \
-                -Platform "${{ parameters.Platform }}" \
-                -Phase CopilotReview \
-                -TrustedScriptsDir "$TRUSTED" \
-                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
-                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${REVIEW_ARGS[@]}"
               REVIEW_EXIT=$?
               set -e
 
@@ -865,6 +887,7 @@ stages:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_CUSTOM_PROMPT: ${{ parameters.CustomPrompt }}
               COMMENTS_VIA_FILE: "true"
 
           # ─────────────────────────────────────────────────────────
@@ -876,14 +899,11 @@ stages:
               TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
 
               set +e
-              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
-                -PRNumber "${PARAM_PR_NUMBER}" \
-                -Platform "${{ parameters.Platform }}" \
-                -Phase Post \
-                -TrustedScriptsDir "$TRUSTED" \
-                -TrustedGateResult "$(RunGate.gateResult)" \
-                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
-                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              POST_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase Post -TrustedScriptsDir "$TRUSTED" -TrustedGateResult "$(RunGate.gateResult)" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              if [ -n "${PARAM_CUSTOM_PROMPT}" ]; then
+                POST_ARGS+=(-CustomPrompt "${PARAM_CUSTOM_PROMPT}")
+              fi
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${POST_ARGS[@]}"
               POST_EXIT=$?
               set -e
 
@@ -898,6 +918,7 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_CUSTOM_PROMPT: ${{ parameters.CustomPrompt }}
               DEFER_COMMENT_TO_STAGE3: "true"
 
           # Copy review artifacts into the CopilotLogs staging dir.
