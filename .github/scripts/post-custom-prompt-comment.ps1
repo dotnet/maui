@@ -142,7 +142,7 @@ if (-not [string]::IsNullOrWhiteSpace($CustomPrompt)) {
 $customSection = @"
 $SECTION_START
 
-### 🧩 Custom Prompt Analysis
+### 🔍 Custom Prompt Analysis
 
 > ● _AI-generated — supplementary analysis from a maintainer-supplied custom prompt (GitHub Copilot CLI)._
 
@@ -237,7 +237,7 @@ function Post-StandaloneComment {
     $prAuthor = $null
     try { $prAuthor = gh api "repos/$REPO/pulls/$PRNumber" --jq '.user.login' 2>$null } catch { $prAuthor = $null }
     if ($prAuthor -and ($prAuthor -notmatch '^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')) { $prAuthor = $null }
-    $ping = if ($prAuthor) { "> 👋 @$prAuthor — a custom-prompt analysis is ready below.`n`n" } else { "" }
+    $ping = if ($prAuthor) { "> ℹ @$prAuthor — a custom-prompt analysis is ready below.`n`n" } else { "" }
 
     $body = @"
 $MAIN_MARKER
