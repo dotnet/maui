@@ -165,7 +165,7 @@ public class ResizetizerTests : BaseBuildTest
 		// fully builds on macOS, so this is gated accordingly. The Android first-build path is
 		// additionally covered on Windows by FontsAreCopiedToAndroidAssetsOnFirstBuild.
 		if (!TestEnvironment.IsMacOS)
-			return;
+			return; // Skip: building the Apple TFMs (iOS/MacCatalyst) is only supported on macOS.
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -211,18 +211,24 @@ public class ResizetizerTests : BaseBuildTest
 	}
 
 	static bool WasTargetSkipped(string binlogPath, string targetName)
-		// "Skipped" here means the target did no work because its outputs were up-to-date. We count
-		// only OutputsUpToDate skips (see GetTargetStatus) so a genuine re-run is never masked.
-		=> GetTargetStatus(binlogPath, targetName).upToDateSkips > 0;
+	{
+		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+		// Each project instance that reaches the target emits exactly one TargetStarted, followed by
+		// either an OutputsUpToDate skip (up-to-date) or real task execution (no OutputsUpToDate skip).
+		// PreviouslyBuiltSuccessfully skips from extra request edges add no TargetStarted, so the
+		// target is "skipped" only when it ran at least once and *every* started instance was
+		// up-to-date. Requiring started == upToDateSkips (rather than upToDateSkips > 0) avoids a false
+		// positive if some instance actually executed while another was up-to-date.
+		return started > 0 && started == upToDateSkips;
+	}
 
 	static bool WasTargetExecuted(string binlogPath, string targetName)
 	{
 		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
-		// The target actually ran its tasks: it started at least once and was never skipped as
-		// up-to-date. An always-run target (no Inputs/Outputs) that is requested via several edges
-		// still emits PreviouslyBuiltSuccessfully skips for the extra edges — those must NOT be
-		// treated as "not executed", which is why we key off up-to-date skips only.
-		return started > 0 && upToDateSkips == 0;
+		// Executions = started instances that did NOT end in an OutputsUpToDate skip. An always-run
+		// target (no Inputs/Outputs) requested via several edges still only adds
+		// PreviouslyBuiltSuccessfully skips (no OutputsUpToDate), so it correctly counts as executed.
+		return started - upToDateSkips > 0;
 	}
 
 	// Returns the number of TargetStarted events and the number of *up-to-date* skips
