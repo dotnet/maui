@@ -211,27 +211,31 @@ public class ResizetizerTests : BaseBuildTest
 	}
 
 	static bool WasTargetSkipped(string binlogPath, string targetName)
-	{
-		var (started, skipped) = GetTargetStatus(binlogPath, targetName);
-		// A skipped (up-to-date) invocation emits BOTH a TargetStarted and a TargetSkipped event,
-		// while an executed invocation emits only TargetStarted. In multi-RID / outer+inner builds a
-		// target can be invoked several times, so the target counts as "skipped" only when every
-		// invocation was skipped: at least one skip and no net executions (started == skipped).
-		return skipped > 0 && started == skipped;
-	}
+		// "Skipped" here means the target did no work because its outputs were up-to-date. We count
+		// only OutputsUpToDate skips (see GetTargetStatus) so a genuine re-run is never masked.
+		=> GetTargetStatus(binlogPath, targetName).upToDateSkips > 0;
 
 	static bool WasTargetExecuted(string binlogPath, string targetName)
 	{
-		var (started, skipped) = GetTargetStatus(binlogPath, targetName);
-		// Each skipped invocation consumes one TargetStarted, so the number of real executions is
-		// (started - skipped). The target executed if at least one invocation actually ran.
-		return started > skipped;
+		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+		// The target actually ran its tasks: it started at least once and was never skipped as
+		// up-to-date. An always-run target (no Inputs/Outputs) that is requested via several edges
+		// still emits PreviouslyBuiltSuccessfully skips for the extra edges — those must NOT be
+		// treated as "not executed", which is why we key off up-to-date skips only.
+		return started > 0 && upToDateSkips == 0;
 	}
 
-	static (int started, int skipped) GetTargetStatus(string binlogPath, string targetName)
+	// Returns the number of TargetStarted events and the number of *up-to-date* skips
+	// (TargetSkipReason.OutputsUpToDate) for the target. Counting only OutputsUpToDate — rather than
+	// every TargetSkipped — is essential: when a target is requested through multiple edges (its own
+	// AfterTargets plus other targets' DependsOnTargets, e.g. ProcessMauiFonts pulled in by
+	// _CollectMauiFontItems and _ComputeAndroidResourcePaths), MSBuild emits a single OutputsUpToDate
+	// skip plus one PreviouslyBuiltSuccessfully skip per extra edge. A naive "any skip" or
+	// "started == skipped" check therefore misclassifies real multi-target builds.
+	static (int started, int upToDateSkips) GetTargetStatus(string binlogPath, string targetName)
 	{
 		int started = 0;
-		int skipped = 0;
+		int upToDateSkips = 0;
 		if (File.Exists(binlogPath))
 		{
 			foreach (var record in new BinLogReader().ReadRecords(binlogPath))
@@ -241,13 +245,14 @@ public class ResizetizerTests : BaseBuildTest
 					case TargetStartedEventArgs s when string.Equals(s.TargetName, targetName, StringComparison.Ordinal):
 						started++;
 						break;
-					case TargetSkippedEventArgs sk when string.Equals(sk.TargetName, targetName, StringComparison.Ordinal):
-						skipped++;
+					case TargetSkippedEventArgs sk when string.Equals(sk.TargetName, targetName, StringComparison.Ordinal)
+						&& sk.SkipReason == TargetSkipReason.OutputsUpToDate:
+						upToDateSkips++;
 						break;
 				}
 			}
 		}
-		return (started, skipped);
+		return (started, upToDateSkips);
 	}
 
 	static IReadOnlyList<string> GetResizetizerOutputRoots(string projectDir, string config)
@@ -315,12 +320,12 @@ public class ResizetizerTests : BaseBuildTest
 	{
 		Assert.True(File.Exists(binlogPath), $"Binlog not found: {binlogPath}");
 
-		// Count TargetSkippedEventArgs directly instead of matching localized/implementation-specific
-		// log message text ("Skipping target ... because all output files are up-to-date"), which is
-		// brittle across MSBuild versions and non-English locales.
-		var (_, skipped) = GetTargetStatus(binlogPath, targetName);
+		// Count only up-to-date (OutputsUpToDate) skips — one per platform/project instance on a no-op
+		// build — via TargetSkippedEventArgs.SkipReason, instead of matching localized log text or
+		// counting the PreviouslyBuiltSuccessfully skips emitted for extra request edges.
+		var (_, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
 
-		Assert.True(skipped >= minimumSkipCount,
-			$"Expected target '{targetName}' to be skipped at least {minimumSkipCount} times, but found {skipped}. See binlog: {binlogPath}");
+		Assert.True(upToDateSkips >= minimumSkipCount,
+			$"Expected target '{targetName}' to be skipped as up-to-date at least {minimumSkipCount} times, but found {upToDateSkips}. See binlog: {binlogPath}");
 	}
 }
