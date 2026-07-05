@@ -1149,6 +1149,8 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         return @{
             Tag               = $ReleaseTag
             ExpectedMilestone = $expectedMs
+            ResolvedMilestone = $null
+            ResolvedMsNumber  = $null
             TotalPrs          = 1
             PrsChecked        = 0
             IssuesChecked     = 0
