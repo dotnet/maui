@@ -1,0 +1,412 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# evaluate-pr-tests capability suite — Vally migration
+#
+# Port of the legacy eval.yaml (10 scenarios) for the evaluate-pr-tests
+# skill, which produces a structured "PR Test Evaluation Report" judging
+# whether a PR's tests cover the fix, use appropriate test types, have
+# meaningful assertions, and follow conventions.
+#
+# ── Hermeticity ──
+# 8 of the 10 legacy scenarios already embed the test code inline, so they
+# are hermetic as written. The 2 that referenced a live PR (#34324, the
+# happy-path and near-miss-recall scenarios) are converted to FROZEN
+# WORKTREES pinned to that PR's squash-merge commit
+# (747d375e6d57ee55cfc6edf9a7c431589b4ff479) — the agent reads the added
+# test + fix files via `git diff HEAD^ HEAD` in the checkout, with no PR
+# fetch and no GitHub token. This is the same mechanism the code-review
+# regression corpus uses, and it is the right-sized fixture here because
+# evaluate-pr-tests' task is to READ THE TEST CODE (so it needs the code,
+# unlike the labeler which only needs file paths). The negative-trigger
+# scenario, which legacy phrased against "the latest commit on this
+# branch", is rewritten to be self-contained (an inline diff) so it does
+# not depend on ambient repo state.
+#
+# ── Brittleness reduction ──
+# The skill's section headings ("Fix Coverage", "Test Type
+# Appropriateness", "Recommendations", "Assertion Quality", "Fix-Test
+# Alignment") are crisp STRUCTURAL markers, not phrasing guesses, so they
+# are kept as floors on the scenarios whose capability IS producing the
+# structured report (happy-path, near-miss recall) and on the criterion-
+# specific scenarios. The legacy `output_matches` ALTERNATION regexes —
+# e.g. `(meaningless|proves nothing|Assert\.That\(true\)|vague|...)`,
+# `(retryTimeout|WaitForElement)`, `(wrong control|Label|doesn't exercise
+# |...)` — try to anticipate the wording of a semantic judgment and are
+# brittle (a correct finding phrased differently fails). Those move into
+# the LLM-judge rubric. Each scenario keeps at most 1–2 structural / crisp-
+# negative floors so the judge stays decisive (recall vally 0.6.0 scores a
+# trial as the UNWEIGHTED MEAN of its graders). The two purely-semantic
+# detection scenarios (weak assertions, edge-case gaps) are judge-only — a
+# single prompt grader means the trial score IS the judge's normalized
+# rubric score.
+#
+# Scoring: scoring.weights is ignored by 0.6.0; only scoring.threshold is
+# active (0.6).
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: evaluate-pr-tests-capabilities
+description: >-
+  Capability suite for the evaluate-pr-tests skill — verifies it produces
+  the structured PR Test Evaluation Report, flags anti-patterns
+  (Thread.Sleep, obsolete APIs, meaningless assertions), recommends lighter
+  test types when a UI test is overkill, detects untested edge cases and
+  fix-test misalignment, flags missing tests, and does NOT false-positive
+  on valid fluent wait chains or trigger on a general code-review request.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 5m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # 1 — Happy path: structured report from a real PR  (frozen worktree #34324)
+  # ───────────────────────────────────────────────────────────────────────
+  - name: happy-path-structured-report
+    tags: { source_pr: "34324", kind: structured-report }
+    prompt: >-
+      The repository is checked out as a worktree pinned to a single
+      squash-merge commit that adds a fix and its tests. Evaluate the tests
+      ADDED in this commit — check their quality, coverage, and whether the
+      test type is appropriate.
+
+      Do not fetch any pull request or issue from the network. Use ONLY the
+      local worktree and `git diff HEAD^ HEAD` to see the added test + fix
+      files, then produce the skill's structured evaluation report.
+    environment:
+      git:
+        type: worktree
+        ref: 747d375e6d57ee55cfc6edf9a7c431589b4ff479
+        source: .
+    graders:
+      - type: output-contains
+        config: { substring: "PR Test Evaluation Report" }
+      - type: output-contains
+        config: { substring: "Recommendations" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent gathers the changed test + fix files (e.g. via git diff HEAD^ HEAD in the worktree) before evaluating.
+      - The report covers the major criteria — Fix Coverage, Edge Cases, Test Type, Convention Compliance, Flakiness Risk.
+      - Each criterion has a verdict (pass/concern/fail) with a specific explanation tied to the actual diff, not generic text.
+      - An Overall Verdict summarizes the most important finding in 1–2 sentences.
+    constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 2 — Negative trigger: general code review must NOT produce the report
+  # (rewritten self-contained — no dependence on ambient branch state)
+  # ───────────────────────────────────────────────────────────────────────
+  - name: negative-trigger-general-code-review
+    tags: { kind: negative }
+    prompt: |
+      Do a general code review of this diff. Look for code-quality issues, style, and
+      potential bugs — I'm not asking about test quality, just review the change:
+
+      ```diff
+      -    public int Add(int a, int b) => a + b;
+      +    public int Add(int a, int b)
+      +    {
+      +        var result = a + b;
+      +        return result;
+      +    }
+      ```
+    graders:
+      - type: output-not-contains
+        config: { substring: "PR Test Evaluation Report" }
+      - type: output-not-contains
+        config: { substring: "Gather-TestContext.ps1" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent performs a general code review without invoking the evaluate-pr-tests structured workflow.
+      - The agent does NOT emit the multi-criteria PR Test Evaluation Report structure.
+    constraints: { max_duration: 5m, reject_skills: [evaluate-pr-tests] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 3 — Anti-pattern detection: Thread.Sleep + obsolete API
+  # ───────────────────────────────────────────────────────────────────────
+  - name: anti-pattern-thread-sleep
+    tags: { kind: anti-pattern }
+    prompt: |
+      Evaluate the tests in this PR. The added test file contains the following code:
+
+      ```csharp
+      [Test]
+      [Category(UITestCategories.Layout)]
+      public void VerifyLabelPadding()
+      {
+          App.WaitForElement("MyLabel");
+          App.Tap("TriggerButton");
+          Thread.Sleep(2000);
+          VerifyScreenshot();
+      }
+      ```
+
+      The HostApp page uses `Application.MainPage` to navigate and the test class doesn't
+      call `WaitForElement` before every `App.Tap`. Evaluate whether these tests are adequate.
+    graders:
+      - type: output-contains
+        config: { substring: "Thread.Sleep" }
+      - type: output-not-contains
+        config: { substring: "Thread.Sleep is fine" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent explicitly flags Thread.Sleep as an anti-pattern and recommends the retryTimeout parameter on VerifyScreenshot (or WaitForElement) instead.
+      - The agent flags Application.MainPage as an obsolete API and recommends the modern equivalent.
+      - The flakiness-risk section marks this test as medium or high risk with specific reasons.
+    constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 4 — Test-type downgrade: UI test for pure property logic
+  # ───────────────────────────────────────────────────────────────────────
+  - name: test-type-downgrade-recommendation
+    tags: { kind: test-type }
+    prompt: |
+      Evaluate the tests for this PR. The fix changes a property setter in `Entry.cs`
+      (cross-platform code) so that setting `IsReadOnly = true` also disables text input
+      programmatically. The only test added is a full UI test:
+
+      ```csharp
+      public class Issue99999 : _IssuesUITest
+      {
+          public override string Issue => "IsReadOnly disables input";
+          public Issue99999(TestDevice device) : base(device) { }
+
+          [Test]
+          [Category(UITestCategories.Entry)]
+          public void IsReadOnlyDisablesInput()
+          {
+              App.WaitForElement("TestEntry");
+              App.Tap("SetReadOnlyButton");
+              var text = App.FindElement("TestEntry").GetText();
+              Assert.That(text, Is.EqualTo(""));
+          }
+      }
+      ```
+
+      Is this the right test type?
+    graders:
+      - type: output-contains
+        config: { substring: "Test Type Appropriateness" }
+      - type: output-not-contains
+        config: { substring: "UI test is appropriate here" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent identifies that a unit test (or lighter device test) would be sufficient for a property setter, rather than a full Appium UI test.
+      - The agent explains WHY the lighter test type suffices (property logic doesn't require Appium / visual UI).
+      - The recommendation is actionable (names the project/approach), not just "consider a unit test".
+    constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 5 — Weak-assertion detection (purely semantic -> judge-only)
+  # ───────────────────────────────────────────────────────────────────────
+  - name: weak-assertion-detection
+    tags: { kind: assertion-quality }
+    prompt: |
+      The PR adds these tests. Are the assertions adequate to catch regressions?
+
+      ```csharp
+      [Test]
+      [Category(UITestCategories.CollectionView)]
+      public void SelectionClearsOnNull()
+      {
+          App.WaitForElement("MyCollectionView");
+          App.Tap("ClearSelectionButton");
+          App.WaitForElement("MyCollectionView");
+          Assert.That(true);  // just checking no crash
+      }
+      ```
+
+      And in a second test:
+
+      ```csharp
+      [Test]
+      public void CollectionViewLoads()
+      {
+          App.WaitForElement("MyCollectionView");
+          var elem = App.FindElement("StatusLabel");
+          Assert.That(elem, Is.Not.Null);
+      }
+      ```
+    graders:
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent identifies Assert.That(true) as a meaningless assertion that proves nothing about the fix.
+      - The agent identifies that Is.Not.Null on a UI element is too vague to catch real regressions.
+      - The agent gives concrete examples of what the assertions SHOULD check to catch the regression.
+      - The overall verdict reflects that the assertions are insufficient, not merely a minor concern.
+    constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 6 — Edge-case gap analysis (purely semantic -> judge-only)
+  # ───────────────────────────────────────────────────────────────────────
+  - name: edge-case-gap-analysis
+    tags: { kind: edge-cases }
+    prompt: |
+      The PR fixes a bug in CollectionView where SelectedItems returns null instead of an
+      empty list when no items are selected. The fix adds a null-coalescing initializer:
+
+      ```csharp
+      public IList<object> SelectedItems
+      {
+          get => _selectedItems ?? (_selectedItems = new List<object>());
+      }
+      ```
+
+      The only test added verifies that after tapping an item and then clearing selection,
+      the label shows "Count: 0". Evaluate whether this test covers the fix adequately.
+    graders:
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent identifies the missing edge case — SelectedItems when no item was EVER selected (initial state), not just after clearing.
+      - The agent traces the test's actions through the fix code and notes it only covers one branch of the null-coalescing path.
+      - The gap analysis is derived from reading the fix code, not generic advice.
+    constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 7 — Near-miss recall: informal phrasing still triggers the report
+  # (frozen worktree #34324)
+  # ───────────────────────────────────────────────────────────────────────
+  - name: near-miss-recall-informal-phrasing
+    tags: { source_pr: "34324", kind: structured-report }
+    prompt: >-
+      The repository is checked out as a worktree pinned to a single
+      squash-merge commit that adds a fix and its tests. Look at the test
+      files added in this commit (use `git diff HEAD^ HEAD`) and tell me if
+      they seem reasonable. Do not fetch anything from the network.
+    environment:
+      git:
+        type: worktree
+        ref: 747d375e6d57ee55cfc6edf9a7c431589b4ff479
+        source: .
+    graders:
+      - type: output-contains
+        config: { substring: "PR Test Evaluation Report" }
+      - type: output-contains
+        config: { substring: "Fix Coverage" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent invokes the evaluate-pr-tests structured workflow even though the request is informally phrased.
+      - The agent produces the structured multi-criteria report, not just a casual opinion.
+    constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 8 — No tests added: Fix Coverage failure
+  # ───────────────────────────────────────────────────────────────────────
+  - name: no-tests-added
+    tags: { kind: missing-tests }
+    prompt: |
+      Evaluate the tests in this PR. The only files changed are:
+        - src/Controls/src/Core/CollectionView.cs
+        - src/Controls/src/Core/Handlers/CollectionViewHandler.cs
+      No test files were added.
+    graders:
+      - type: output-contains
+        config: { substring: "Fix Coverage" }
+      - type: output-not-contains
+        config: { substring: "Tests are adequate" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent flags the absence of tests as a Fix Coverage failure.
+      - The overall verdict reflects that no tests were added (not a pass).
+    constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 9 — Fix-test alignment: test exercises the wrong control
+  # ───────────────────────────────────────────────────────────────────────
+  - name: fix-test-alignment-wrong-control
+    tags: { kind: fix-test-alignment }
+    prompt: |
+      The PR fixes a crash in Shell navigation when popping to the root. The fix changes:
+        - src/Controls/src/Core/Shell/Shell.cs
+        - src/Controls/src/Core/Shell/ShellNavigationManager.cs
+
+      The only test added is a ContentPage with a Label:
+
+      ```csharp
+      [Issue(IssueTracker.Github, 99998, "Shell navigation crash on PopToRoot", PlatformAffected.All)]
+      public class Issue99998 : ContentPage
+      {
+          public Issue99998()
+          {
+              Content = new VerticalStackLayout
+              {
+                  Children = { new Label { Text = "Hello", AutomationId = "WelcomeLabel" } }
+              };
+          }
+      }
+      ```
+
+      And the NUnit test just does:
+
+      ```csharp
+      [Test]
+      [Category(UITestCategories.Shell)]
+      public void ShellPageLoads()
+      {
+          App.WaitForElement("WelcomeLabel");
+          Assert.That(App.FindElement("WelcomeLabel").GetText(), Is.EqualTo("Hello"));
+      }
+      ```
+
+      Evaluate the test quality.
+    graders:
+      - type: output-contains
+        config: { substring: "Fix-Test Alignment" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent identifies that the test only exercises a Label on a ContentPage, not Shell navigation or PopToRoot.
+      - The Fix-Test Alignment criterion flags that the test does not trace back to the changed Shell code paths.
+      - The agent recommends a test that actually triggers Shell navigation (pushing and popping pages).
+    constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 10 — No false positive on a valid fluent wait chain
+  # ───────────────────────────────────────────────────────────────────────
+  - name: fluent-wait-chain-no-false-positive
+    tags: { kind: convention-compliance }
+    prompt: |
+      Evaluate this test code for convention compliance. Does it correctly use
+      WaitForElement before interactions?
+
+      ```csharp
+      [Test]
+      [Category(UITestCategories.Button)]
+      public void ButtonUpdatesLabel()
+      {
+          App.WaitForElement("TestButton").Tap();
+          App.WaitForElement("ResultLabel");
+          var text = App.FindElement("ResultLabel").GetText();
+          Assert.That(text, Is.EqualTo("Clicked"));
+      }
+      ```
+    graders:
+      - type: output-not-contains
+        config: { substring: "missing WaitForElement" }
+      - type: output-not-contains
+        config: { substring: "App.Tap without prior WaitForElement" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent does NOT flag the fluent App.WaitForElement("TestButton").Tap() chain as a missing-wait violation.
+      - The convention-compliance check passes (or raises no wait-related warning) for this code.
+    constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
+
+scoring:
+  # @microsoft/vally@0.6.0 ignores scoring.weights; only scoring.threshold is
+  # active. Trial score = unweighted mean of grader [0,1] scores; skill passes
+  # when the mean across runs >= threshold. Structural section-heading floors
+  # are kept only where producing the report format IS the capability; the
+  # semantic detection criteria live in the judge rubric so a correct finding
+  # phrased differently is not penalized.
+  threshold: 0.6

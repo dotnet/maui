@@ -6,6 +6,8 @@ description: |
   type, severity, partner, regression, or any other label families — those
   remain the responsibility of human triagers.
 
+environment: gh-aw-agents
+
 on:
   issues:
     types: [opened]

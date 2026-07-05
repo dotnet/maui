@@ -1,0 +1,390 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# try-fix capability suite — Vally migration
+#
+# Direct port of the legacy try-fix eval.yaml (8 scenarios). The try-fix
+# skill proposes ONE alternative fix approach, tests it, records the
+# result with failure analysis, then reverts.
+#
+# These are LIVE behaviorial-protocol tests, not regression-detection — no
+# frozen git fixtures. They probe how the agent BEHAVES (does it repeat a
+# failed approach? does it claim PASS without a device? does it use the
+# prescribed restore script?), which has no documented answer to recite.
+#
+# Brittleness reduction vs the legacy spec:
+#   Legacy banned exact phrasings via output_not_contains — e.g.
+#   "I will modify the OnMeasure", "I will use OnPageSelected",
+#   "fallback to parent". Banning one phrasing of a behavior lets the same
+#   bad behavior through under a synonym AND can false-fail a good answer
+#   that happens to share words. Those move into the LLM-judge rubric,
+#   which scores the behavior semantically and accepts equivalent
+#   phrasings. Only crisp, unambiguous failure-mode strings stay as
+#   structural floors (e.g. "claims PASS when no device was available").
+#
+# Scoring (see scoring block): @microsoft/vally@0.6.0 ignores
+# scoring.weights; trial score is the unweighted mean of grader [0,1]
+# scores; skill passes when the mean >= scoring.threshold (0.6). Several
+# scenarios are judge-only — a single prompt grader means the trial score
+# IS the judge's normalized rubric score, which is the cleanest possible
+# de-brittled signal.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: try-fix-capabilities
+description: >-
+  Capability suite for the try-fix skill — verifies it proposes a
+  genuinely distinct alternative fix, never claims success without
+  running the test, avoids repeating prior failed approaches, uses the
+  prescribed restore script, and stops with a documented Fail at the
+  iteration limit.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 10m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 1 — propose an alternative fix with a genuinely different
+  # approach (not a restatement of the existing failed fix).
+  # ───────────────────────────────────────────────────────────────────────
+  - name: happy-path-distinct-alternative-fix
+    tags:
+      kind: workflow
+    prompt: |
+      The pr-review agent needs an alternative fix attempt for issue #54321.
+
+      The bug: CollectionView throws ObjectDisposedException on Android when the user navigates back
+      from a page that contains a CollectionView. The current PR already tried adding a null check on
+      the adapter inside OnMeasure() — that didn't fix it reliably.
+
+      Please try a different approach focused on lifecycle/disposal timing.
+
+      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue54321"
+      Files to look at: src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+    graders:
+      # Judge-only: "distinct from the prior approach" is purely semantic.
+      # A regex floor here would either ban one phrasing (brittle) or add
+      # noise. The single judge grader IS the trial score.
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent proposes a fix approach clearly distinct from the
+        existing failed approach (a null check on the adapter inside
+        OnMeasure). It does not restate the same fix in different words.
+      - >-
+        The agent documents WHY its chosen approach differs from the
+        existing fix — naming the mechanism (lifecycle/disposal timing),
+        not just asserting "this is different".
+      - >-
+        The agent saves output artifacts (approach, result, diff,
+        analysis) to a structured output directory per the skill
+        protocol.
+      - >-
+        The agent restores the working directory to a clean state after
+        testing, using the prescribed restore script rather than ad-hoc
+        git commands.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - try-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 2 — negative trigger: a documentation question must NOT
+  # launch the fix workflow.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: negative-trigger-documentation-question
+    tags:
+      kind: negative
+    prompt: |
+      Can you explain how handler architecture works in .NET MAUI? Specifically, what is the
+      difference between ConnectHandler and DisconnectHandler, and when should each be used?
+      I'm trying to understand the lifecycle so I can write my own custom handler.
+    graders:
+      # Structural floor: the try-fix workflow's artifact vocabulary
+      # (attempt-N dirs, OUTPUT_DIR, fix.diff, result.txt) must be ABSENT.
+      # Their presence is a crisp signal the agent wrongly ran the fix
+      # workflow on a docs question.
+      - type: output-not-matches
+        config:
+          pattern: '(attempt-\d|OUTPUT_DIR|fix\.diff|result\.txt)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent answers the handler-lifecycle question directly as a
+        normal explanation, without launching any fix workflow.
+      - >-
+        The agent does not create output directories, diff files, or
+        other try-fix artifacts, and does not propose or test a code fix.
+    constraints:
+      max_duration: 5m
+      reject_skills:
+        - try-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 3 — must NOT claim success when no device is available to
+  # run the test. Substituting "code compiles" / "logic looks correct"
+  # for an actual test run is the failure mode under test.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: regression-no-success-without-running-test
+    tags:
+      kind: verdict-integrity
+    prompt: |
+      IMPORTANT: Before taking any other action, note that no iOS simulator or device is available for testing.
+
+      try-fix invocation for Issue #99001:
+      - Bug: Button inside a ScrollView doesn't fire its Clicked event on iOS
+      - The existing fix adds a gesture recognizer passthrough in ScrollViewHandler
+      - Please try a different approach
+      - Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue99001"
+      - Target: src/Controls/src/Core/Handlers/Compatibility/ScrollViewRenderer.iOS.cs
+      - Platform: ios
+    graders:
+      # Crisp failure-mode floor: claiming PASS when the test never ran.
+      - type: output-not-matches
+        config:
+          pattern: '(✅\s*PASS|Result:\s*Pass\b)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent does NOT report the fix as passing — no device was
+        available to run the test, so a pass verdict is unsupported.
+      - >-
+        The agent reports the result as Blocked / unverified and
+        explains that it could not run the test because no simulator is
+        available.
+      - >-
+        The agent does NOT substitute code review, "code compiles", or
+        "logic looks correct" for actual test execution.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - try-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 4 — second attempt must avoid repeating the prior failed
+  # approach (page-selection callback modification).
+  # ───────────────────────────────────────────────────────────────────────
+  - name: edge-case-second-attempt-avoids-prior-approach
+    tags:
+      kind: workflow
+    prompt: |
+      Attempt #2 for Issue #77123. Attempt #1 already failed — do not repeat it.
+
+      Bug: NullReferenceException in ShellItemHandler on Android when popping to root.
+
+      Attempt #1 result: FAIL
+      What was tried: Modified OnPageSelected to reset cached navigation state after navigation completed.
+      Why it failed: OnPageSelected fires after layout measurement has already consumed the cached value,
+      so resetting it there has no effect on the crash.
+
+      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue77123"
+      Files: src/Controls/src/Core/Handlers/Shell/ShellItemHandler.Android.cs
+      Hint: The fix needs to happen before layout measurement, not after navigation completes.
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent explicitly states it is avoiding the prior failed
+        approach (the page-selection callback modification) and explains
+        why that approach failed.
+      - >-
+        The agent proposes a fix that intercepts at an earlier lifecycle
+        point — before layout measurement — consistent with the failure
+        analysis, not after navigation completes.
+      - >-
+        The agent's approach documentation explains why this attempt is
+        different from attempt #1 at the mechanism level.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - try-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 5 — must use the prescribed baseline/restore script, not raw
+  # git commands, to reset file state.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: regression-uses-restore-script-not-raw-git
+    tags:
+      kind: protocol
+    prompt: |
+      Please run a try-fix attempt on this Android issue:
+
+      The bug is that Entry text is lost when the user rotates the device on Android. We already
+      tried saving/restoring text in an OnSaveInstanceState override — didn't work because the
+      override wasn't being called by the platform at the right time.
+
+      Try a completely different mechanism for persisting the text across orientation changes.
+
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue88200"
+      Target file: src/Core/src/Platform/Android/EntryHandler.Android.cs
+    graders:
+      # Crisp floor: the most destructive raw-git revert must not be the
+      # agent's reset mechanism. `git reset --hard` is unambiguous —
+      # softer mentions of git are left to the judge to avoid false fails.
+      - type: output-not-matches
+        config:
+          pattern: 'git reset --hard'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent uses the prescribed baseline/restore script to reset
+        file state, not raw git commands (git checkout / git restore /
+        git reset / git stash) as the revert mechanism.
+      - >-
+        The agent calls the restore step after testing completes, whether
+        the fix passed or failed.
+      - >-
+        The agent documents a fix approach that differs from the
+        OnSaveInstanceState mechanism that already failed.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - try-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 6 — exhausting the iteration limit must produce a documented
+  # Fail, not silence and not a false Pass.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: edge-case-exhausted-iterations-documented-fail
+    tags:
+      kind: verdict-integrity
+    prompt: |
+      try-fix for CollectionView item overlap on Android (Issue #CollectionViewOverlap).
+
+      The test assertion is: rect1.Bottom <= rect2.Top (items must not visually overlap).
+      Every approach has been failing because the root cause appears to be in the Android
+      RecyclerView layout manager, not in MAUI wrapper code. After trying up to 3 approaches
+      you should stop and report the result.
+
+      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CollectionViewOverlap"
+      Target: src/Controls/src/Core/Handlers/Items/Android/ItemsViewRenderer.cs
+    graders:
+      - type: output-not-matches
+        config:
+          pattern: '(✅\s*PASS|Result:\s*Pass\b)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent stops after exhausting its attempts and reports Fail,
+        rather than claiming success or going silent.
+      - >-
+        The agent produces a written analysis explaining why the
+        attempted approaches did not resolve the issue (e.g. root cause
+        is in the Android RecyclerView layout manager, outside MAUI
+        wrapper code).
+      - >-
+        The agent does not continue proposing fixes indefinitely — it
+        stops at the iteration limit.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - try-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 7 — must not repeat the same ROOT CAUSE disguised as a
+  # different approach (shared parent-measurement-fallback flaw).
+  # ───────────────────────────────────────────────────────────────────────
+  - name: regression-no-repeated-root-cause-disguised
+    tags:
+      kind: workflow
+    prompt: |
+      This is attempt #3 at fixing a bug. The pr-review agent needs another alternative.
+
+      Prior attempts and their failures:
+      - Attempt 1 (FAIL): Returned 0 from GetHeight() when infinity detected, hoping parent fallback handles it. Failed because parent.MeasuredHeight returns 0 during initial layout.
+      - Attempt 2 (FAIL): Skipped setting RecyclerViewHeight when measurement was infinite, hoping parent fallback handles it. Failed for the same reason -- parent.MeasuredHeight returns 0 during initial layout.
+
+      Both attempts failed because they relied on PARENT MEASUREMENT FALLBACK which doesn't work during initial layout. Your approach must NOT depend on parent dimensions as a fallback.
+
+      Problem: Android RecyclerView inside ScrollView reports infinite height, causing items to overlap.
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~RecyclerViewHeightInScrollView"
+      Target files: src/Controls/src/Core/Handlers/Items/Android/RecyclerViewAdapter.cs
+      Platform: Android
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent identifies that relying on parent dimensions as a
+        fallback was the SHARED root-cause flaw in both prior attempts,
+        not just two unrelated failures.
+      - >-
+        The agent's proposed approach does NOT rely on parent dimensions
+        or parent measurement as a fallback mechanism.
+      - >-
+        The agent explains WHY the new approach avoids the root cause,
+        not merely that it is different code.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - try-fix
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 8 — must verify which platform-specific code path is actually
+  # used before implementing (iOS NavigationPage uses Legacy, not
+  # MauiNavigationImpl).
+  # ───────────────────────────────────────────────────────────────────────
+  - name: regression-verify-correct-platform-code-path
+    tags:
+      kind: workflow
+    prompt: |
+      The pr-review agent needs an alternative fix attempt for a NavigationPage handler disconnection bug on iOS.
+
+      Problem: On iOS, pushing and popping pages rapidly causes the NavigationPage handler to disconnect while an animation is still running, resulting in a NullReferenceException.
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~NavigationPageHandlerDisconnect"
+      Target files: src/Controls/src/Core/Handlers/NavigationPage/
+      Platform: iOS
+
+      IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
+    graders:
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent verifies or explicitly acknowledges which code path iOS
+        actually uses before proposing a fix.
+      - >-
+        The agent targets the Legacy navigation implementation
+        (NavigationPage.Legacy.cs or NavigationRenderer), NOT
+        MauiNavigationImpl.
+      - >-
+        The agent's fix addresses the disconnection-during-animation
+        scenario specifically, not a generic null guard.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - try-fix
+
+scoring:
+  # @microsoft/vally@0.6.0 ignores scoring.weights — only scoring.threshold
+  # is active (verified in dist/scoring/scorer.js). Trial score = unweighted
+  # mean of grader [0,1] scores; skill passes when the mean across runs >=
+  # threshold. Judge-only scenarios reduce to "judge normalized score >=
+  # 0.6" (raw >= 3.4/5); two-grader scenarios average a crisp floor with
+  # the judge. Threshold DEFAULTS to 1.0 when omitted, so it is set here.
+  threshold: 0.6

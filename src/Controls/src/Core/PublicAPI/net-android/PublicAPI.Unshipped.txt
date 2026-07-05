@@ -1,4 +1,10 @@
 #nullable enable
+~Microsoft.Maui.Controls.Binding.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Binding.ConverterCulture.set -> void
+~Microsoft.Maui.Controls.MultiBinding.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.MultiBinding.ConverterCulture.set -> void
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.set -> void
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
@@ -126,6 +132,9 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.Shell.BackgroundProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.SetColors(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker, Microsoft.Maui.Graphics.Color foreground, Microsoft.Maui.Controls.Brush background, Microsoft.Maui.Graphics.Color title) -> void
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
+static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
 Microsoft.Maui.Controls.Handlers.ShellHandler
 Microsoft.Maui.Controls.Handlers.ShellHandler.ShellHandler() -> void
