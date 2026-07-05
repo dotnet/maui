@@ -442,7 +442,7 @@ External or caller-supplied values reaching file, path, process, parser, or navi
 **Every finding in this dimension MUST show a source → sink trace:** where the value originates (archive entry, URI, deep/app link, HybridWebView message, picked-file name, environment variable), the operation it reaches (file write, process argument, deserialization, navigation), and the specific missing guard. No trace → no finding. **Exception:** the committed-credentials CHECK below is a value-at-rest concern with no runtime sink — it is exempt from the trace requirement; cite the file and line of the committed value instead.
 
 Report all findings at `[major]`. This dimension does not escalate to `[critical]`; leave any judgment about how serious or what category an issue is to the human reviewer.
-When Wave 3 trims to the top findings by severity, do not drop a committed-credential finding from this dimension solely because other dimensions contributed `[critical]` items — keep at least one representative committed-credential finding in the posted set.
+When Wave 3 trims to the top findings by severity, do not drop this dimension's highest-impact findings — a committed-credential finding or an archive/path-escape finding — solely because other dimensions contributed `[critical]` items; the Wave 3 rules enforce keeping at least one representative of each in the posted set.
 
 - CHECK: Archive/asset extraction validates each entry and verifies the resolved path stays under the destination root; bulk extraction APIs are used only for archives produced locally by the same build/test step
 - CHECK: Paths built from external or caller-supplied values are normalized and prefix-checked against the intended root, accounting for directory-boundary false matches (`/root` vs `/rootother`)
@@ -534,7 +534,7 @@ Map each changed file against this table to determine which dimensions to activa
 | `src/Controls/src/Build.Tasks/**` | Input and Path Correctness | all |
 | `eng/cake/**`, `eng/scripts/**` | Input and Path Correctness | all |
 | `src/Controls/src/Core/HybridWebView/**`, `src/Core/src/Handlers/HybridWebView/**` | Input and Path Correctness, Cross-Platform Consistency | all |
-| `src/Core/src/Handlers/WebView/**` | Input and Path Correctness, Logic and Correctness | all |
+| `src/Core/src/Handlers/WebView/**`, `src/Controls/src/Core/WebView/**` | Input and Path Correctness, Logic and Correctness | all |
 | `src/Essentials/src/FilePicker/**`, `src/Essentials/src/MediaPicker/**`, `src/Essentials/src/FileSystem/**` | Input and Path Correctness | all |
 | `src/Essentials/src/AppActions/**`, `src/Essentials/src/Launcher/**`, `src/Essentials/src/WebAuthenticator/**`, `src/Controls/src/Core/AppLinkEntry.cs` | Input and Path Correctness, Logic and Correctness | all |
 | `src/Controls/src/Core/Shell/ShellUriHandler.cs`, `src/Controls/src/Core/Shell/ShellNavigationManager.cs` | Input and Path Correctness, Logic and Correctness | all |
@@ -603,6 +603,7 @@ For each potential finding from Wave 1:
 - `major` — incorrect behavior visible to users, memory leak, performance regression on hot path
 - `moderate` — suboptimal pattern, missing edge case, API design concern
 - `minor` — style, simplification opportunity, documentation gap
+- When a dimension defines an explicit severity cap (e.g. Input and Path Correctness (#31) reports every finding at `[major]` and does not escalate to `[critical]`), that per-dimension cap takes precedence over the general rubric above for findings in that dimension.
 
 ### Wave 3 — Record and Post Findings
 
@@ -630,6 +631,7 @@ Each entry has exactly 3 fields matching the GitHub Pull Request Review API:
 Rules:
 - Group related findings on adjacent lines into a single entry
 - Limit to ≤15 findings — prioritize by severity
+- Exception to the ≤15 cap: from Input and Path Correctness (#31), always retain at least one representative committed-credential finding and one archive/path-escape finding, even when higher-severity findings from other dimensions would otherwise fill the limit
 - Exclude findings already present in existing PR comments (checked in Wave 0 step 5)
 
 **After writing, validate the JSON.** Read back the file, verify it parses as a JSON array, and check every entry has `path` (string), `line` (integer ≥ 1), and `body` (string). If validation fails, fix the file and re-validate.
