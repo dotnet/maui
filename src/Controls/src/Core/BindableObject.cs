@@ -173,6 +173,51 @@ namespace Microsoft.Maui.Controls
 			return context == null ? property.DefaultValue : context.Values.GetValue();
 		}
 
+		// Used by Visual Studio Live Property Explorer via reflection; do not remove without coordinating with VS.
+		internal LocalValueEnumerator GetLocalValueEnumerator() => new LocalValueEnumerator(this);
+
+		internal sealed class LocalValueEnumerator : IEnumerator<LocalValueEntry>
+		{
+			Dictionary<int, BindablePropertyContext>.ValueCollection.Enumerator _propertiesEnumerator;
+			internal LocalValueEnumerator(BindableObject bindableObject) => _propertiesEnumerator = bindableObject._properties.Values.GetEnumerator();
+
+			object IEnumerator.Current => Current;
+			public LocalValueEntry Current { get; private set; }
+
+			public bool MoveNext()
+			{
+				if (_propertiesEnumerator.MoveNext())
+				{
+					var context = _propertiesEnumerator.Current;
+					Current = new LocalValueEntry(context.Property, context.Values.GetValue(), context.Attributes);
+					return true;
+				}
+				return false;
+			}
+
+			public void Dispose() => _propertiesEnumerator.Dispose();
+
+			void IEnumerator.Reset()
+			{
+				((IEnumerator)_propertiesEnumerator).Reset();
+				Current = null;
+			}
+		}
+
+		internal sealed class LocalValueEntry
+		{
+			internal LocalValueEntry(BindableProperty property, object value, BindableContextAttributes attributes)
+			{
+				Property = property;
+				Value = value;
+				Attributes = attributes;
+			}
+
+			public BindableProperty Property { get; }
+			public object Value { get; }
+			public BindableContextAttributes Attributes { get; }
+		}
+
 		internal (bool IsSet, T Value)[] GetValues<T>(BindableProperty[] propArray)
 		{
 			var properties = _properties;
