@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Maps
 		/// could be resolved into <paramref name="pins"/>.</param>
 		/// <param name="location">The location (centroid) of the cluster.</param>
 		/// <returns>The image to use for the cluster marker, or <see langword="null"/> to use the default marker.</returns>
-		IImageSource? GetClusterImage(IReadOnlyList<IMapPin> pins, int count, Location location) => null;
+		IImageSource? GetClusterImage(IReadOnlyList<IMapPin> pins, int count, Location location);
 
 		/// <summary>
 		/// Method called by the handler when user long-presses on the Map.
