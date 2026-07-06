@@ -1299,6 +1299,21 @@ Assert-Eq -Label "Reverted-PR from quoted title containing internal quotes" `
 # Case-insensitive: a hand-typed lowercase 'revert "..."' subject must resolve.
 Assert-Eq -Label "Reverted-PR from lowercase 'revert' subject" `
     -Expected 4321 -Actual (Get-RevertedPrFromSubject -Subject 'revert "fix thing (#4321)" (#8765)')
+# Manual/hand-authored revert form (no GitHub quotes, no "This reverts commit"
+# body): `Revert - <title> #<reverted> (#<revertPR>)`. Real maui case: #36152
+# reverted #35372. Without recovering 35372, revertedPrSet holds only the revert
+# PR (36152), the reverted fix's original commit still satisfies the on-branch
+# gate, and a "fixed by #35372" comment on a CLOSED issue is falsely de-noised.
+Assert-Eq -Label "Reverted-PR from manual 'Revert - <title> #N (#M)' form (real #36152/#35372)" `
+    -Expected 35372 -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Fix Android stale ContainerView root leak #35372 (#36152)')
+Assert-Eq -Label "Manual revert form with branch prefix" `
+    -Expected 40100 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr9] Revert - Fix flaky test #40100 (#40200)')
+# Safety: a manual-form pattern must NOT fire on a non-revert subject that merely
+# ends with `#N (#M)`, nor return the trailing (#M) when no reverted # is present.
+Assert-Eq -Label "Non-revert subject ending in '#N (#M)' still yields null" `
+    -Expected $null -Actual (Get-RevertedPrFromSubject -Subject 'Fix layout regression #40300 (#40400)')
+Assert-Eq -Label "Revert subject with only the trailing (#M) yields null (no false reverted-PR)" `
+    -Expected $null -Actual (Get-RevertedPrFromSubject -Subject 'Revert - some cleanup (#40500)')
 
 # ───── Test-PrIsToolingOnly (false-positive guard #1) ─────
 Write-Host "`n[Unit] Test-PrIsToolingOnly (FP guard)" -ForegroundColor Cyan
@@ -1549,7 +1564,9 @@ $script:mockCrossRepoJson = @'
   { "body": "actually resolved by dotnet/maui#42000 on the SR" },
   { "body": "fixed by #43000" },
   { "body": "landed in https://github.com/dotnet/maui/pull/44000" },
-  { "body": "closed by PR#45000" }
+  { "body": "closed by PR#45000" },
+  { "body": "see dotnet/runtime/pull/46000 for the upstream fix" },
+  { "body": "resolved by dotnet/maui/pull/47000" }
 ]
 '@
 function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCrossRepoJson }
@@ -1569,6 +1586,10 @@ try {
         -Expected $true -Actual ($nums -contains 44000)
     Assert-Eq -Label "unqualified 'PR#45000' IS extracted (recall preserved)" `
         -Expected $true -Actual ($nums -contains 45000)
+    Assert-Eq -Label "scheme-less cross-repo 'dotnet/runtime/pull/46000' is NOT extracted" `
+        -Expected $false -Actual ($nums -contains 46000)
+    Assert-Eq -Label "scheme-less same-repo 'dotnet/maui/pull/47000' IS extracted" `
+        -Expected $true -Actual ($nums -contains 47000)
 
     $byNum2 = @{}; foreach ($s in $scored2) { $byNum2[[int]$s.number] = $s.evidence }
     Assert-Eq -Label "same-repo 'resolved by dotnet/maui#42000' -> fix-phrase" `

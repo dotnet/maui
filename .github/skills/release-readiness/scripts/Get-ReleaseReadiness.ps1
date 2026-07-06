@@ -1467,6 +1467,21 @@ function Get-RevertedPrFromSubject {
     # Case-insensitive to also match hand-typed lowercase 'revert "..."' subjects.
     $m = [regex]::Match($Subject, '(?i)Revert\s+".*\(#(\d+)\)"')
     if ($m.Success) { return [int]$m.Groups[1].Value }
+    # Manual/hand-authored revert form (no GitHub quotes, and the body carries no
+    # "This reverts commit <sha>" line, so the SHA-override in the caller can't
+    # recover it either): "Revert - <original title> #<reverted> (#<revertPR>)".
+    # Real example: `Revert - Fix Android stale ContainerView root leak #35372 (#36152)`
+    # → 35372 is the reverted fix, (#36152) is the revert's OWN squash PR. Without
+    # this, revertedPrSet records only 36152, the reverted fix's original commit
+    # still satisfies Test-PrNumberOnBranch, and a "fixed by #35372" comment on a
+    # CLOSED issue is falsely de-noised to closed-fix-unlinked ("No ship risk").
+    # Anchored to a Revert subject AND to the bare `#N` immediately before the
+    # trailing `(#M)` so (a) non-revert subjects never match, (b) the trailing
+    # (#M) is never returned, and (c) incidental #refs earlier in the title are
+    # ignored. A rare misfire only ever marks a PR as reverted (safe direction —
+    # never a false "shipped").
+    $m = [regex]::Match($Subject, '(?i)^(?:\[[^\]]+\]\s+)?Revert\b.*#(\d+)\s+\(#\d+\)\s*$')
+    if ($m.Success) { return [int]$m.Groups[1].Value }
     return $null
 }
 
@@ -1893,17 +1908,20 @@ function Get-IssueCommentPrs {
         if (-not $body) { continue }
         # Extract PR references, rejecting CROSS-REPO ones. A maui regression is
         # only de-noised by a fix that lives in THIS repo, so a cross-repo
-        # shorthand (`dotnet/runtime#123`) or a github.com/<other>/<repo>/pull/123
-        # URL must NOT be mistaken for maui#123. Same-repo shorthand
-        # (`dotnet/maui#123`), same-repo pull URLs, bare `#123` and `PR#123` are
-        # all accepted. The `qual`/`urlrepo` groups capture any owner/repo
-        # qualifier so a foreign one can be skipped.
-        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(\d+)')
+        # shorthand (`dotnet/runtime#123`), a github.com/<other>/<repo>/pull/123
+        # URL, or a scheme-less <other>/<repo>/pull/123 path must NOT be mistaken
+        # for maui#123. Same-repo shorthand (`dotnet/maui#123`), same-repo pull
+        # URLs/paths, bare `#123` and `PR#123` are all accepted. The
+        # `qual`/`urlrepo`/`pathrepo` groups capture any owner/repo qualifier so a
+        # foreign one can be skipped.
+        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|(?<pathrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(\d+)')
         foreach ($m in $refs) {
-            $qual    = $m.Groups['qual'].Value
-            $urlRepo = $m.Groups['urlrepo'].Value
-            if ($qual    -and $qual    -ne $Repo) { continue }   # cross-repo owner/repo#N shorthand
-            if ($urlRepo -and $urlRepo -ne $Repo) { continue }   # cross-repo github.com/.../pull/N URL
+            $qual     = $m.Groups['qual'].Value
+            $urlRepo  = $m.Groups['urlrepo'].Value
+            $pathRepo = $m.Groups['pathrepo'].Value
+            if ($qual     -and $qual     -ne $Repo) { continue }   # cross-repo owner/repo#N shorthand
+            if ($urlRepo  -and $urlRepo  -ne $Repo) { continue }   # cross-repo github.com/.../pull/N URL
+            if ($pathRepo -and $pathRepo -ne $Repo) { continue }   # cross-repo scheme-less owner/repo/pull/N
             $num = [int]$m.Groups[1].Value
             # Does THIS comment pair the reference with fix/resolve/close language
             # within a short window (tolerates the long ".../pull/" URL prefix)?
