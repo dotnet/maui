@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			handler.PlatformView.CachedChildren.Clear();
-			
+
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
 				var platformView = view.ToPlatform(handler.MauiContext);
