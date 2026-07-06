@@ -7,6 +7,19 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Controls.Internals
 {
 	/// <summary>Arguments for an action sheet dialog.</summary>
+	/// <remarks>
+	/// Third-party platform backends may supply a custom action sheet implementation by registering
+	/// a keyed <see cref="System.Func{T1, T2, TResult}"/> of
+	/// <c>Func&lt;Microsoft.Maui.Controls.Page, ActionSheetArguments, System.Threading.Tasks.Task&lt;string&gt;&gt;</c>
+	/// in the application's <see cref="System.IServiceProvider"/> with the service key
+	/// <c>Microsoft.Maui.Controls.DisplayActionSheet</c>. The delegate should return the selected
+	/// button text, or <see langword="null"/> when the action sheet is canceled or dismissed. Unkeyed
+	/// delegates are not considered by this convention.
+	/// <para>
+	/// Note: the keyed registration is reserved for MAUI action sheet handling. Do not reuse this
+	/// service key for unrelated services in the same service collection.
+	/// </para>
+	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ActionSheetArguments
 	{

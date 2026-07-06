@@ -90,6 +90,14 @@ internal static class LayoutFactory2
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
+		// For grouped collections, add inter-section spacing to create the gap between the
+		// trailing/bottom edge of each section and the leading/top edge (header) of the next section.
+		// This mirrors CV1's GetInsetForSection right-inset (horizontal) / bottom-inset (vertical) approach.
+		if (groupingInfo.IsGrouped && itemSpacing > 0)
+		{
+			layoutConfiguration.InterSectionSpacing = new NFloat(itemSpacing);
+		}
+
 		//create global header and footer
 		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
@@ -133,6 +141,35 @@ internal static class LayoutFactory2
 			// On iOS 26.1+, the default (.automatic → .safeArea) actively insets cells at section level.
 			if (OperatingSystem.IsIOSVersionAtLeast(26))
 				section.ContentInsetsReference = UIContentInsetsReference.None;
+
+			// For grouped sections with a group header/footer, add content insets to create
+			// the gap between the header/footer supplementary item and the first/last item.
+			// InterSectionSpacing (set on layoutConfiguration above) handles the gap between sections.
+			if (groupingInfo.IsGrouped && itemSpacing > 0)
+			{
+				if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					var leadingInset = groupingInfo.HasHeader ? new NFloat(itemSpacing) : new NFloat(0);
+					var trailingInset = groupingInfo.HasFooter ? new NFloat(itemSpacing) : new NFloat(0);
+
+					if (leadingInset > 0 || trailingInset > 0)
+					{
+						section.ContentInsets = new NSDirectionalEdgeInsets(0, leadingInset, 0, trailingInset);
+					}
+				}
+				else
+				{
+					// Vertical: top inset creates gap between header and first item,
+					// bottom inset creates gap between last item and footer.
+					var topInset = groupingInfo.HasHeader ? new NFloat(itemSpacing) : new NFloat(0);
+					var bottomInset = groupingInfo.HasFooter ? new NFloat(itemSpacing) : new NFloat(0);
+
+					if (topInset > 0 || bottomInset > 0)
+					{
+						section.ContentInsets = new NSDirectionalEdgeInsets(topInset, 0, bottomInset, 0);
+					}
+				}
+			}
 
 			// Create header and footer for group
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(

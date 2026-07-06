@@ -221,14 +221,12 @@ namespace Microsoft.Maui.Controls
 				_shell.PropertyChanged += WaitForWindowToSet;
 				var shellContent = _shell?.CurrentItem?.CurrentItem?.CurrentItem;
 
-				if (shellContent != null)
-					shellContent.ChildAdded += WaitForWindowToSet;
+				shellContent?.ChildAdded += WaitForWindowToSet;
 
 				_waitingForWindow = new ActionDisposable(() =>
 				{
 					_shell.PropertyChanged -= WaitForWindowToSet;
-					if (shellContent != null)
-						shellContent.ChildAdded -= WaitForWindowToSet;
+					shellContent?.ChildAdded -= WaitForWindowToSet;
 				});
 
 				void WaitForWindowToSet(object sender, EventArgs e)
@@ -307,13 +305,20 @@ namespace Microsoft.Maui.Controls
 			//filter the query to only apply the keys with matching prefix
 			var filteredQuery = new ShellRouteParameters(query, prefix);
 
+			// For non-destination items (isLastItem=false), skip entirely when there are no
+			// matching prefix params. This prevents stale QueryAttributesProperty stored from
+			// a prior cycle from propagating to pages that are not the navigation target.
+			if (!isLastItem && filteredQuery.Count == 0)
+			{
+				return;
+			}
 
 			if (baseShellItem is ShellContent)
 			{
 				var mergedData = MergeData(element, filteredQuery, isPopping);
 
 				//if we are pop or navigating back, we need to apply the query attributes to the ShellContent
-				if (isPopping && mergedData.Count > 0 )
+				if (isPopping && mergedData.Count > 0)
 				{
 					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
 				}
@@ -329,6 +334,21 @@ namespace Microsoft.Maui.Controls
 			{
 				var mergedData = MergeData(element, query, isPopping);
 				// Skip setting query attributes if the merged data is empty and we're popping back
+				if (mergedData.Count > 0 || !isPopping)
+				{
+					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
+				}
+			}
+			else if (element is Page)
+			{
+				// Intermediate page (not the last item, not wrapped in ShellContent).
+				// Apply prefix-filtered query parameters directly via the attached property,
+				// which triggers OnQueryAttributesPropertyChanged to handle IQueryAttributable,
+				// BindingContext propagation, and [QueryProperty] attributes.
+				if (filteredQuery.Count == 0 && !element.IsSet(ShellContent.QueryAttributesProperty))
+					return;
+
+				var mergedData = MergeData(element, filteredQuery, isPopping);
 				if (mergedData.Count > 0 || !isPopping)
 				{
 					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);

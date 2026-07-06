@@ -510,5 +510,22 @@ namespace Microsoft.Maui.Platform
 				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 		}
+
+		/// <summary>
+		/// Ensures <see cref="ImeFlags.NoFullscreen"/> is set on the EditText's ImeOptions,
+		/// preventing the IME from entering full-screen extract mode in landscape orientation.
+		/// </summary>
+		/// <remarks>
+		/// Call this helper after any assignment to <c>editText.ImeOptions</c> inside the
+		/// SearchBar platform code (MauiSearchView and SearchViewExtensions), or the
+		/// NoFullscreen flag will be lost and the landscape IME regression (#14708) will
+		/// silently re-appear. ImeOptions is typed as <see cref="ImeAction"/> in the Android
+		/// binding, but it holds combined ImeAction + ImeFlags bits; NoFullscreen is an
+		/// ImeFlags value (0x02000000).
+		/// </remarks>
+		internal static void EnsureNoFullscreenFlag(this EditText editText)
+		{
+			editText.ImeOptions = (ImeAction)((int)editText.ImeOptions | (int)ImeFlags.NoFullscreen);
+		}
 	}
 }
