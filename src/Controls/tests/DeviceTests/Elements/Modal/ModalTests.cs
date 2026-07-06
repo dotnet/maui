@@ -417,6 +417,48 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(navigatedToFired);
 		}
+
+		[Fact]
+		public async Task Handler_PushModalFromAppearing_DoesNotCrash()
+		{
+			SetupBuilder(includeNavigationViewHandler: true);
+
+			var modalPage = new ContentPage()
+			{
+				Content = new Label() { Text = "Modal from Appearing" }
+			};
+
+			var windowPage = new ContentPage()
+			{
+				Content = new Label() { Text = "Root Page" }
+			};
+
+			bool appearingFired = false;
+			windowPage.Appearing += (_, _) =>
+			{
+				if (appearingFired)
+					return;
+
+				appearingFired = true;
+
+				// Fire-and-forget — under the handler, Appearing fires early.
+				// This verifies PushModalAsync from Appearing doesn't crash the app.
+				_ = windowPage.Navigation.PushModalAsync(modalPage);
+			};
+
+			Window window = new Window(new NavigationPage(windowPage));
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					await OnLoadedAsync(modalPage);
+
+					// If we got here, the modal was pushed successfully — no crash.
+					await window.Navigation.PopModalAsync();
+				});
+
+			Assert.True(appearingFired, "Appearing should have fired");
+		}
 #endif
 
 		[Theory]

@@ -12,6 +12,21 @@ namespace Microsoft.Maui.Controls
 		NavigationType? _deferredNavigationType;
 
 		/// <summary>
+		/// Cleans up iOS-specific subscriptions and resources when the handler disconnects.
+		/// Matches the renderer's Dispose cleanup pattern.
+		/// </summary>
+		partial void OnHandlerDisconnected()
+		{
+			if (_currentBarBackgroundBrush is GradientBrush gb)
+			{
+				gb.InvalidateGradientBrushRequested -= OnBarBackgroundBrushInvalidated;
+				gb.Parent = null;
+			}
+
+			_currentBarBackgroundBrush = null;
+		}
+
+		/// <summary>
 		/// On iOS, the handler connects before the Window parents the page,
 		/// so NavigationProxy.Inner is null during OnHandlerChangedCore.
 		/// If Inner is null, defer SendNavigated (NavigatedTo) to ViewDidAppear

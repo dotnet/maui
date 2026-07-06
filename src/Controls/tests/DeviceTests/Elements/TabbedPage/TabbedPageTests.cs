@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(bool includeNavigationViewHandler = true, Action<MauiAppBuilder> additionalCreationActions = null)
+		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null, bool includeNavigationViewHandler = true)
 		{
 			EnsureHandlerCreated(builder =>
 			{

@@ -264,6 +264,17 @@ namespace Microsoft.Maui.Platform
 
             _disposed = true;
 
+            // Clear native delegates to prevent late callbacks (DidShowViewController,
+            // WillShowViewController) from firing after the handler disconnects.
+            // Without this, an in-flight UIKit transition can call back into the
+            // disposed manager and dereference stale handler references.
+            _navigationController.Delegate = null!;
+
+            if (_navigationController.InteractivePopGestureRecognizer is not null)
+            {
+                _navigationController.InteractivePopGestureRecognizer.Delegate = null!;
+            }
+
             // Cancel all pending completion tasks
             foreach (var kvp in _completionTasks)
             {
@@ -300,7 +311,7 @@ namespace Microsoft.Maui.Platform
                 [Transient] UIViewController viewController,
                 bool animated)
             {
-                if (!_managerRef.TryGetTarget(out var manager))
+                if (!_managerRef.TryGetTarget(out var manager) || manager._disposed)
                 {
                     return;
                 }
@@ -333,7 +344,7 @@ namespace Microsoft.Maui.Platform
                 [Transient] UIViewController viewController,
                 bool animated)
             {
-                if (!_managerRef.TryGetTarget(out var manager))
+                if (!_managerRef.TryGetTarget(out var manager) || manager._disposed)
                 {
                     return;
                 }
@@ -362,6 +373,11 @@ namespace Microsoft.Maui.Platform
 
         void OnInteractionChanged(IUIViewControllerTransitionCoordinatorContext context)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (!context.IsCancelled)
             {
                 _popCompletionTask = new TaskCompletionSource<bool>();

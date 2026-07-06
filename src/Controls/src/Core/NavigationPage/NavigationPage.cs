@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Controls
 		// because Inner is already set before the handler connects.
 		partial void ShouldDeferNavigatedTo(ref bool defer);
 		partial void FireDeferredNavigatedTo();
+		partial void OnHandlerDisconnected();
 
 		const bool UseMauiHandler = true;
 
@@ -777,9 +778,14 @@ namespace Microsoft.Maui.Controls
 
 			// If the handler is disconnected and we're still waiting for updates from the handler
 			// Just complete any waits
-			if (Handler == null && _waitingCount > 0)
+			if (Handler is null && _waitingCount > 0)
 			{
 				((IStackNavigation)this).NavigationFinished(this.NavigationStack);
+			}
+
+			if (Handler is null)
+			{
+				OnHandlerDisconnected();
 			}
 		}
 
