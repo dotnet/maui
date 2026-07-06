@@ -1771,6 +1771,99 @@ $clsRevertTitle = Classify-RegressionCandidate `
 Assert-Eq -Label "Comment-cited 'Revert ...' PR is a rollback, not a fix → stays no-fix-yet" `
     -Expected 'no-fix-yet' -Actual $clsRevertTitle.classification
 
+# ───── Classify-RegressionCandidate (CLOSED issue never open-on-main) ─────
+# Real-world case: SR9 tracker #35876 flagged CLOSED issue #35615 as `open-on-main`
+# (an ACTIVE Tier-2 regression) because a giant still-OPEN 'Candidate' changelog PR
+# (#35716) `Fixes`-listed dozens of issues. That is contradictory — an unmerged PR
+# cannot have closed a completed issue. The guard reroutes open-on-main + CLOSED to
+# a Tier-3 class: `closed-fix-unlinked` when a merged fix is verifiably on the SR, or
+# the honest `no-fix-yet` fallback otherwise. It must NOT change behavior for
+# genuinely-OPEN issues.
+Write-Host "`n[Unit] Classify-RegressionCandidate (CLOSED issue never open-on-main)" -ForegroundColor Cyan
+
+# A single OPEN 'Candidate' changelog PR on main that survives the evidence filter
+# (body `Fixes #35615` → closing-keyword; base=main; a real product file so it is
+# NOT tooling-only; not a Revert title) → the strong-PR walk verdict is open-on-main.
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+function Test-CommitOnBranch  { param([string]$Sha, [string]$BranchRef) return $false }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    if ([int]$PrNumber -eq 35716) {
+        return [pscustomobject]@{
+            number      = 35716
+            title       = '[Candidate] SR9 changelog'
+            state       = 'OPEN'
+            baseRefName = 'main'
+            mergedAt    = $null
+            closedAt    = $null
+            body        = 'Fixes #35615'
+            mergeCommit = $null
+            files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/Something.cs'; additions = 1; deletions = 0 })
+        }
+    }
+    # The comment-cited fix PR (used only in the recovery test below): MERGED into
+    # inflight/candidate, present on SR9 via the (#num) subject token.
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix the actual regression'
+        state       = 'MERGED'
+        baseRefName = 'inflight/candidate'
+        mergedAt    = '2026-06-01T00:00:00Z'
+        closedAt    = '2026-06-01T00:00:00Z'
+        body        = 'Fixes #35104'
+        mergeCommit = [pscustomobject]@{ oid = 'c1d6d72768c0ffee' }
+        files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/CollectionView.cs'; additions = 4; deletions = 0 })
+    }
+}
+
+# Test 1 — CLOSED issue + OPEN candidate on main + NO comment-cited fix →
+# reroute to `no-fix-yet` (NOT `open-on-main`).
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+$clsClosedNoFix = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35615; state = 'CLOSED' }) `
+    -CandidatePrs @(35716) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "CLOSED issue + OPEN candidate PR → no-fix-yet, never open-on-main" `
+    -Expected 'no-fix-yet' -Actual $clsClosedNoFix.classification
+# `no-fix-yet` is raw Tier 1 via Get-VerdictTier, but Get-OverallVerdict downgrades a
+# CLOSED no-fix-yet to non-blocking (🟢). That downgrade is the whole point: it turns
+# the false blocking Tier-2 `open-on-main` into a Tier-3 (non-blocking) outcome.
+$vClosedNoFix = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @(@{ classification = $clsClosedNoFix.classification; state = 'CLOSED' })
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "CLOSED no-fix-yet is non-blocking (Tier 3 effective → 🟢)" `
+    -Expected '🟢' -Actual $vClosedNoFix.symbol
+
+# Test 2 — CLOSED issue + same OPEN candidate on main, BUT a comment cites a MERGED
+# fix that is on the SR branch → the recovery wins → `closed-fix-unlinked`.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 35028; evidence = 'fix-phrase' }) }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return ($PrNumber -eq 35028 -and $BranchRef -eq 'origin/release/10.0.1xx-sr9') }
+$clsClosedRecovered = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35615; state = 'CLOSED' }) `
+    -CandidatePrs @(35716) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "CLOSED issue + OPEN candidate + comment-cited merged fix on SR → closed-fix-unlinked (recovery wins)" `
+    -Expected 'closed-fix-unlinked' -Actual $clsClosedRecovered.classification
+Assert-Eq -Label "closed-fix-unlinked recovery is Tier 3 (non-blocking)" `
+    -Expected 3 -Actual (Get-VerdictTier -Classification $clsClosedRecovered.classification)
+
+# Test 3 — REGRESSION GUARD: OPEN issue + OPEN candidate on main → the guard is
+# gated on CLOSED, so a genuinely-open regression STAYS `open-on-main`.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+$clsOpenIssue = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35615; state = 'OPEN' }) `
+    -CandidatePrs @(35716) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "OPEN issue + OPEN candidate PR → stays open-on-main (guard is CLOSED-only)" `
+    -Expected 'open-on-main' -Actual $clsOpenIssue.classification
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 
