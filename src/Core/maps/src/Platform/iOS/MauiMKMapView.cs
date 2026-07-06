@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Maps.Platform
 		object? _lastTouchedView;
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
 		bool _isClusteringEnabled;
+		IMKAnnotation? _suppressClickForAnnotation;
 
 		UILongPressGestureRecognizer? _mapLongClickedGestureRecognizer;
 		List<IMapElement>? _trackedMapElements;
@@ -248,17 +249,42 @@ namespace Microsoft.Maui.Maps.Platform
 			SetVisibleMapRect(paddedRect, true);
 		}
 
-		// Refreshes a pin already on the map after its ImageSource changed at runtime, updating the
-		// live annotation view in place. Pins with no individual view (off-screen or collapsed into a
-		// cluster) are skipped; GetViewForAnnotation applies the current ImageSource when they appear.
+		// Refreshes a pin already on the map after its ImageSource changed at runtime. Pins with no
+		// individual view (off-screen or collapsed into a cluster) are skipped; GetViewForAnnotation
+		// applies the current ImageSource when they appear.
 		internal void UpdatePinImage(IMapPin pin)
 		{
 			if (pin.MarkerId is not IMKAnnotation annotation || ViewForAnnotation(annotation) is not MKAnnotationView view)
 				return;
 
-			view.Image = null;
-			if (pin.ImageSource is not null)
-				ApplyCustomImageAsync(view, pin).FireAndForget();
+			bool hasCustomImage = pin.ImageSource is not null;
+			bool viewShowsCustomImage = view is not MKMarkerAnnotationView && view is not MKPinAnnotationView;
+
+			if (hasCustomImage == viewShowsCustomImage)
+			{
+				// The current view type still matches; refresh the image in place.
+				view.Image = null;
+				if (hasCustomImage)
+					ApplyCustomImageAsync(view, pin).FireAndForget();
+				return;
+			}
+
+			// ImageSource crossed the null/non-null boundary: custom-image pins and default pins use
+			// different annotation view types, so re-add the annotation to let GetViewForAnnotation
+			// recreate the view through the standard path. Restore selection without raising a
+			// synthetic PinClicked.
+			bool wasSelected = SelectedAnnotations?.Any(a => ReferenceEquals(a, annotation) || a.Handle == annotation.Handle) == true;
+			RemoveAnnotation(annotation);
+			AddAnnotation(annotation);
+
+			if (wasSelected)
+			{
+				// DidSelectAnnotationView may fire after the view is (re)created rather than inside
+				// SelectAnnotation, so suppression is annotation-matched and one-shot instead of a
+				// flag scoped to this call.
+				_suppressClickForAnnotation = annotation;
+				SelectAnnotation(annotation, false);
+			}
 		}
 
 		async System.Threading.Tasks.Task ApplyCustomImageAsync(MKAnnotationView annotationView, IMapPin pin)
@@ -440,6 +466,17 @@ namespace Microsoft.Maui.Maps.Platform
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
 		{
 			var annotation = e.View.Annotation;
+
+			// One-shot: cleared on the first selection no matter which annotation it is, so a
+			// restore that never fires can swallow at most one event for that same annotation.
+			var suppressFor = _suppressClickForAnnotation;
+			_suppressClickForAnnotation = null;
+			if (annotation is not null && suppressFor is not null &&
+				(ReferenceEquals(annotation, suppressFor) || annotation.Handle == suppressFor.Handle))
+			{
+				// Selection was restored programmatically by UpdatePinImage; the user did not tap the pin.
+				return;
+			}
 			
 			// Handle cluster annotation selection
 			if (annotation is MKClusterAnnotation clusterAnnotation)

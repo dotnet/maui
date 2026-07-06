@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 {
 	public partial class CustomPinIconGallery : ContentPage
 	{
-		bool _altIcon;
+		int _iconState;
 		int _moveCount;
 
 		public CustomPinIconGallery()
@@ -58,15 +58,21 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 		}
 
 		// Swaps ImageSource on every existing pin at runtime, to test whether the marker icon
-		// refreshes live. Toggles between two distinct bundled images so the change is obvious.
+		// refreshes live. Cycles custom A -> custom B -> null (platform default) so both the
+		// custom-to-custom swap and the null/non-null boundary transitions are exercised.
 		void OnToggleIconClicked(object? sender, EventArgs e)
 		{
-			_altIcon = !_altIcon;
-			var file = _altIcon ? "coffee.png" : "dotnet_bot.png";
+			_iconState = (_iconState + 1) % 3;
+			ImageSource? source = _iconState switch
+			{
+				0 => ImageSource.FromFile("dotnet_bot.png"),
+				1 => ImageSource.FromFile("coffee.png"),
+				_ => null,
+			};
 
 			foreach (var pin in CustomPinMap.Pins)
 			{
-				pin.ImageSource = ImageSource.FromFile(file);
+				pin.ImageSource = source;
 			}
 		}
 
