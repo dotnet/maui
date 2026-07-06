@@ -5,36 +5,39 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	internal class MauiDoneAccessoryView : UIToolbar
+	internal class MauiDoneAccessoryView : UIView
 	{
-		const double DoneButtonHitTestWidth = 120;
+		const double DoneToolbarWidth = 120;
 		readonly BarButtonItemProxy _proxy;
 
 		public MauiDoneAccessoryView() : base(new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, 44))
 		{
 			_proxy = new BarButtonItemProxy();
-			BarStyle = UIBarStyle.Default;
-			Translucent = true;
+			var toolbar = CreateToolbar();
 			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, _proxy.OnDataClicked);
 
-			SetItems(new[] { spacer, doneButton }, false);
+			toolbar.SetItems(new[] { spacer, doneButton }, false);
+			AddToolbar(toolbar);
 		}
 
-		internal void SetDoneClicked(Action<object>? value) => _proxy.SetDoneClicked(value);
+		internal UIBarButtonItem[]? Items => Toolbar?.Items;
 
+		UIToolbar? Toolbar => Subviews.Length > 0 ? Subviews[0] as UIToolbar : null;
+
+		internal void SetDoneClicked(Action<object>? value) => _proxy.SetDoneClicked(value);
 
 		internal void SetDataContext(object? dataContext) => _proxy.SetDataContext(dataContext);
 
 		public MauiDoneAccessoryView(Action doneClicked) : base(new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, 44))
 		{
 			_proxy = new BarButtonItemProxy(doneClicked);
-			BarStyle = UIBarStyle.Default;
-			Translucent = true;
+			var toolbar = CreateToolbar();
 
 			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, _proxy.OnClicked);
-			SetItems(new[] { spacer, doneButton }, false);
+			toolbar.SetItems(new[] { spacer, doneButton }, false);
+			AddToolbar(toolbar);
 		}
 
 		public override UIView? HitTest(CGPoint point, UIEvent? uievent)
@@ -44,17 +47,30 @@ namespace Microsoft.Maui.Platform
 			if (hitView is null || Equals(hitView))
 				return null;
 
-			return IsPointInDoneButtonHitTestArea(point) ? hitView : null;
+			return hitView;
 		}
 
-		bool IsPointInDoneButtonHitTestArea(CGPoint point)
+		static UIToolbar CreateToolbar()
 		{
-			var width = Bounds.Width < DoneButtonHitTestWidth ? Bounds.Width : DoneButtonHitTestWidth;
-			var x = EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
-				? Bounds.GetMinX()
-				: Bounds.GetMaxX() - width;
+			return new UIToolbar
+			{
+				BarStyle = UIBarStyle.Default,
+				Translucent = true,
+				TranslatesAutoresizingMaskIntoConstraints = false,
+			};
+		}
 
-			return new CGRect(x, Bounds.GetMinY(), width, Bounds.Height).Contains(point);
+		void AddToolbar(UIToolbar toolbar)
+		{
+			AddSubview(toolbar);
+
+			NSLayoutConstraint.ActivateConstraints(new[]
+			{
+				toolbar.TopAnchor.ConstraintEqualTo(TopAnchor),
+				toolbar.BottomAnchor.ConstraintEqualTo(BottomAnchor),
+				toolbar.TrailingAnchor.ConstraintEqualTo(TrailingAnchor),
+				toolbar.WidthAnchor.ConstraintEqualTo((nfloat)DoneToolbarWidth),
+			});
 		}
 
 		class BarButtonItemProxy

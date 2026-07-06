@@ -11,28 +11,38 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Entry)]
 	public class MauiDoneAccessoryViewTests : TestBase
 	{
-		[Fact]
-		public async Task HitTestOutsideDoneButtonReturnsNull()
+		[Theory]
+		[InlineData(UISemanticContentAttribute.ForceLeftToRight, false)]
+		[InlineData(UISemanticContentAttribute.ForceRightToLeft, true)]
+		public async Task HitTestOutsideDoneButtonReturnsNull(UISemanticContentAttribute semanticContentAttribute, bool doneToolbarIsLeading)
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
-				using var accessoryView = CreateLaidOutAccessoryView();
+				using var accessoryView = CreateLaidOutAccessoryView(semanticContentAttribute: semanticContentAttribute);
+				var transparentHitX = doneToolbarIsLeading
+					? accessoryView.Bounds.GetMaxX() - 1
+					: accessoryView.Bounds.GetMinX() + 1;
 
-				var hitView = accessoryView.HitTest(new CGPoint(1, accessoryView.Bounds.GetMidY()), null);
+				var hitView = accessoryView.HitTest(new CGPoint(transparentHitX, accessoryView.Bounds.GetMidY()), null);
 
 				Assert.Null(hitView);
 			});
 		}
 
-		[Fact]
-		public async Task DoneButtonActionStillRuns()
+		[Theory]
+		[InlineData(UISemanticContentAttribute.ForceLeftToRight, false)]
+		[InlineData(UISemanticContentAttribute.ForceRightToLeft, true)]
+		public async Task DoneButtonActionStillRuns(UISemanticContentAttribute semanticContentAttribute, bool doneToolbarIsLeading)
 		{
 			var wasClicked = false;
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-				using var accessoryView = CreateLaidOutAccessoryView(() => wasClicked = true);
-				var doneButtonHitPoint = new CGPoint(accessoryView.Bounds.GetMaxX() - 22, accessoryView.Bounds.GetMidY());
+				using var accessoryView = CreateLaidOutAccessoryView(() => wasClicked = true, semanticContentAttribute);
+				var doneButtonHitX = doneToolbarIsLeading
+					? accessoryView.Bounds.GetMinX() + 22
+					: accessoryView.Bounds.GetMaxX() - 22;
+				var doneButtonHitPoint = new CGPoint(doneButtonHitX, accessoryView.Bounds.GetMidY());
 				Assert.NotNull(accessoryView.HitTest(doneButtonHitPoint, null));
 
 				var doneButton = Assert.IsType<UIBarButtonItem>(accessoryView.Items[1]);
@@ -43,13 +53,16 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(wasClicked);
 		}
 
-		static MauiDoneAccessoryView CreateLaidOutAccessoryView(Action doneClicked = null)
+		static MauiDoneAccessoryView CreateLaidOutAccessoryView(
+			Action doneClicked = null,
+			UISemanticContentAttribute semanticContentAttribute = UISemanticContentAttribute.Unspecified)
 		{
 			var accessoryView = doneClicked is null
 				? new MauiDoneAccessoryView()
 				: new MauiDoneAccessoryView(doneClicked);
 
 			accessoryView.Frame = new CGRect(0, 0, 400, 44);
+			accessoryView.SemanticContentAttribute = semanticContentAttribute;
 
 			accessoryView.SetNeedsLayout();
 			accessoryView.LayoutIfNeeded();
