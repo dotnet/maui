@@ -1,7 +1,8 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI App",
-  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen",
+  "_name.comment": "{Locked='.NET MAUI'}",
+  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI",
   "postActions/openInEditor/description": "Opens MainPage.xaml in the editor.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
@@ -9,6 +10,12 @@
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Include sample content",
-  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create."
+  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns in the XAML experience.",
+  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
+  "postActions/openInEditorSampleXaml/description": "Opens Pages/MainPage.xaml in the editor.",
+  "postActions/openInEditorCSharp/description": "Opens MainPage.cs in the editor.",
+  "symbols/UI/displayName": "_UI",
+  "symbols/UI/description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage in code using CommunityToolkit.Maui.Markup.",
+  "symbols/UI/choices/xaml/description": "Create the app UI with XAML.",
+  "symbols/UI/choices/csharp/description": "Create the app UI with fluent C# Markup."
 }

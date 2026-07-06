@@ -56,6 +56,55 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
+	[InlineData(DotNetCurrent, "Debug", "")]
+	[InlineData(DotNetCurrent, "Release", "TrimMode=partial")]
+	public void BuildMauiCSharpUI(string framework, string config, string additionalDotNetBuildParams)
+	{
+		SetTestIdentifier(framework, config, additionalDotNetBuildParams);
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, framework, "--ui csharp --no-restore", output: _output),
+			"Unable to create template maui with --ui csharp. Check test output for errors.");
+
+		var mainPageFile = Path.Combine(projectDir, "MainPage.cs");
+		var mainPageContent = File.ReadAllText(mainPageFile);
+		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		Assert.True(File.Exists(Path.Combine(projectDir, "App.cs")));
+		Assert.True(File.Exists(Path.Combine(projectDir, "AppShell.cs")));
+		Assert.True(File.Exists(mainPageFile));
+		Assert.False(File.Exists(Path.Combine(projectDir, "App.xaml")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "App.xaml.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml.cs")));
+
+		AssertContains("using CommunityToolkit.Maui.Markup;", mainPageContent);
+		Assert.True(mainPageContent.Contains(".CenterHorizontal()", StringComparison.Ordinal),
+			"Expected generated markup UI to use CommunityToolkit layout extensions.");
+		Assert.True(mainPageContent.Contains(".TextCenter()", StringComparison.Ordinal) || mainPageContent.Contains(".TextCenterHorizontal()", StringComparison.Ordinal),
+			"Expected generated markup UI to use CommunityToolkit text-centering extensions.");
+		Assert.True(mainPageContent.Contains(".Fill()", StringComparison.Ordinal) || mainPageContent.Contains(".FillHorizontal()", StringComparison.Ordinal),
+			"Expected generated markup UI to use CommunityToolkit fill extensions.");
+		AssertContains(".UseMauiCommunityToolkitMarkup()", mauiProgramContent);
+
+		var projectDoc = XDocument.Load(projectFile);
+		Assert.Contains(projectDoc.Descendants("PackageReference"),
+			packageReference => packageReference.Attribute("Include")?.Value == "CommunityToolkit.Maui.Markup");
+
+		var buildProps = BuildProps;
+
+		if (additionalDotNetBuildParams is not "" and not null)
+		{
+			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
+		}
+
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Theory]
 	[InlineData("maui", DotNetPrevious, "Debug")]
 	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
 	{
@@ -144,7 +193,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		// set <MauiVersion> in the csproj as that is the reccommended place
 		var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
-		if (mv is not null or "")
+		if (!string.IsNullOrEmpty(mv))
 		{
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
