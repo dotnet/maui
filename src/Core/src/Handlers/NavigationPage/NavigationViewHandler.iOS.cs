@@ -116,7 +116,24 @@ namespace Microsoft.Maui.Handlers
 				if (newStack.Count > 1)
 				{
 					var midStack = newStack.Take(newStack.Count - 1).ToList();
-					SyncMiddleOfStack(midStack);
+					if (SyncMiddleOfStack(midStack))
+					{
+						// Clean up VCs for pages removed from mid-stack during the push.
+						// OnNavigationComplete only cleans up pops (pendingStack < NavigationStack),
+						// so mid-stack removals during a push would leak without this.
+						var midSet = new HashSet<IView>(midStack);
+						foreach (var view in oldStack)
+						{
+							if (view != newStack[newStack.Count - 1] && !midSet.Contains(view))
+							{
+								if (_viewControllerMap.TryGetValue(view, out var staleVc))
+								{
+									(staleVc as IDisposable)?.Dispose();
+								}
+								_viewControllerMap.Remove(view);
+							}
+						}
+					}
 				}
 
 				// Push the new top page.

@@ -38,7 +38,12 @@ namespace Microsoft.Maui.Controls
 				{
 					if (navigationView is NavigationPage navPage && poppedPage is Page page)
 					{
+						// Match renderer's RemoveAsyncInner — fire lifecycle events
+						// that NavigationFinished (stack sync) does not handle.
+						navPage.FireDisappearing(page);
+						navPage.FireAppearing(navPage.CurrentPage);
 						navPage.SendNavigatedFromHandler(page, NavigationType.Pop);
+						navPage.Popped?.Invoke(navPage, new NavigationEventArgs(page));
 					}
 				},
 				OnControllerAppeared = (navigationView) =>

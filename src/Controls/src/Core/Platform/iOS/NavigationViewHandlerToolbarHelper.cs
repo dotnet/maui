@@ -28,6 +28,9 @@ namespace Microsoft.Maui.Controls
         bool _toolbarUpdatePending;
         bool _disposed;
 
+        static string? _defaultAccessibilityLabel;
+        static string? _defaultAccessibilityHint;
+
         public NavigationHandlerParentingViewController()
         {
         }
@@ -338,19 +341,26 @@ namespace Microsoft.Maui.Controls
         static string? GetNavigationPageTitle(Page? page)
         {
             if (page?.Parent is NavigationPage navPage)
+            {
                 return navPage.Title;
+            }
+
             return null;
         }
 
         void UpdateLeftBarButtonItem()
         {
             if (Child is not Page child)
+            {
                 return;
+            }
 
             var parentFlyoutPage = FindParentFlyoutPage(child);
 
             if (parentFlyoutPage is null)
+            {
                 return;
+            }
 
             // Use the MAUI NavigationStack to determine if this is the root page,
             // not UIKit's ViewControllers — UIKit may not have committed a pending
@@ -408,13 +418,18 @@ namespace Microsoft.Maui.Controls
                     }
                 }
 
-                if (icon == null || NavigationItem.LeftBarButtonItem == null)
+                if (icon is null || NavigationItem.LeftBarButtonItem is null)
                 {
                     NavigationItem.LeftBarButtonItem = new UIBarButtonItem(flyoutPage.Flyout.Title, UIBarButtonItemStyle.Plain, OnItemTapped);
                 }
 
                 if (!string.IsNullOrEmpty(flyoutPage.AutomationId))
+                {
                     NavigationItem.LeftBarButtonItem!.AccessibilityIdentifier = $"btn_{flyoutPage.AutomationId}";
+                }
+
+                SetAccessibilityHint(NavigationItem.LeftBarButtonItem, flyoutPage);
+                SetAccessibilityLabel(NavigationItem.LeftBarButtonItem, flyoutPage);
             });
 
             void OnItemTapped(object? sender, EventArgs e)
@@ -422,6 +437,30 @@ namespace Microsoft.Maui.Controls
                 flyoutPage.IsPresented = !flyoutPage.IsPresented;
             }
         }
+
+#pragma warning disable CS0618 // AutomationProperties is obsolete
+        static void SetAccessibilityHint(UIBarButtonItem? uiBarButtonItem, Element? element)
+        {
+            if (uiBarButtonItem is null || element is null)
+            {
+                return;
+            }
+
+            _defaultAccessibilityHint ??= uiBarButtonItem.AccessibilityHint;
+            uiBarButtonItem.AccessibilityHint = (string?)element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
+        }
+
+        static void SetAccessibilityLabel(UIBarButtonItem? uiBarButtonItem, Element? element)
+        {
+            if (uiBarButtonItem is null || element is null)
+            {
+                return;
+            }
+
+            _defaultAccessibilityLabel ??= uiBarButtonItem.AccessibilityLabel;
+            uiBarButtonItem.AccessibilityLabel = (string?)element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
+        }
+#pragma warning restore CS0618
 
         static FlyoutPage? FindParentFlyoutPage(Page page)
         {
@@ -433,15 +472,21 @@ namespace Microsoft.Maui.Controls
                 // Verify this NavigationPage is the Detail of the FlyoutPage
                 var navPage = page.Parent as NavigationPage;
                 if (navPage is not null && flyoutDetail.Detail == navPage)
+                {
                     return flyoutDetail;
+                }
 
                 // Also check if the NavigationPage is wrapped inside the Detail
                 if (navPage is not null && flyoutDetail.Detail is NavigationPage detailNav && detailNav == navPage)
+                {
                     return flyoutDetail;
+                }
 
                 // Direct check: is the page (or its NavigationPage parent) the Detail?
                 if (parentPages.Append(page).Contains(flyoutDetail.Detail))
+                {
                     return flyoutDetail;
+                }
             }
 
             return null;
