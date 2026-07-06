@@ -8,6 +8,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
 using Android.Provider;
+using AndroidX.Activity;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using Microsoft.Maui.ApplicationModel;
@@ -25,17 +26,79 @@ namespace Microsoft.Maui.Media
 
 		static async Task RotateImageInPlace(string filePath, MediaPickerOptions options)
 		{
-			using var inputStream = File.OpenRead(filePath);
+			await using var inputStream = File.OpenRead(filePath);
 			var fileName = System.IO.Path.GetFileName(filePath);
-			using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
+			await using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 			rotatedStream.Position = 0;
 			inputStream.Dispose(); // explicit close before delete
 			try
 			{ File.Delete(filePath); }
 			catch { }
-			using var outputStream = File.Create(filePath);
+			await using var outputStream = File.Create(filePath);
 			await rotatedStream.CopyToAsync(outputStream);
 		}
+
+		internal static async Task<string> ProcessPhotoAsync(string imagePath, MediaPickerOptions options)
+		{
+			// Apply rotation if needed for photos
+			if (imagePath is not null && ImageProcessor.IsRotationNeeded(options))
+			{
+				await RotateImageInPlace(imagePath, options);
+			}
+
+			// Apply compression/resizing if needed for photos
+			if (imagePath is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+			{
+				imagePath = await CompressImageIfNeeded(imagePath, options);
+			}
+
+			return imagePath;
+		}
+
+		internal static async Task<string> ProcessPhotoPreservingSourceAsync(string imagePath, PersistedPhotoProcessingOptions options)
+		{
+			if (imagePath is null)
+			{
+				return null;
+			}
+
+			var originalImagePath = imagePath;
+			string rotatedImagePath = null;
+
+			// Recovery-sensitive MediaPicker paths must leave the original file intact until the
+			// active recovery record has been cleared or promoted.
+			if (options.RotateImage)
+			{
+				var rotatedPath = await RotateImageToNewFileAsync(imagePath);
+				if (!string.Equals(rotatedPath, imagePath, StringComparison.Ordinal))
+				{
+					rotatedImagePath = rotatedPath;
+				}
+
+				imagePath = rotatedPath;
+			}
+
+			if (ImageProcessor.IsProcessingNeeded(options.MaximumWidth, options.MaximumHeight, options.CompressionQuality))
+			{
+				var compressedImagePath = await CompressImageIfNeeded(imagePath, options, preserveSource: true);
+				if (ShouldDeleteIntermediateFile(rotatedImagePath, originalImagePath, compressedImagePath))
+				{
+					TryDeleteFile(rotatedImagePath);
+				}
+
+				imagePath = compressedImagePath;
+			}
+
+			return imagePath;
+		}
+
+		internal static PersistedPhotoProcessingOptions GetPhotoProcessingOptions(MediaPickerOptions options)
+			=> new(
+				options?.MaximumWidth,
+				options?.MaximumHeight,
+				options?.CompressionQuality ?? 100,
+				options?.RotateImage ?? false,
+				options?.PreserveMetaData ?? true);
 
 		internal static bool IsPhotoPickerAvailable
 			=> PickVisualMedia.InvokeIsPhotoPickerAvailable(Platform.AppContext);
@@ -78,8 +141,8 @@ namespace Microsoft.Maui.Media
 			}
 
 			await Permissions.EnsureGrantedAsync<Permissions.Camera>();
-			// StorageWrite no longer exists starting from Android API 33
-			if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+			// Only request storage write permission when saving to gallery on older Android versions
+			if (options?.SaveToGallery == true && !OperatingSystem.IsAndroidVersionAtLeast(29))
 				await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
 
 			var captureIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
@@ -87,39 +150,101 @@ namespace Microsoft.Maui.Media
 			if (!PlatformUtils.IsIntentSupported(captureIntent))
 				throw new FeatureNotSupportedException($"Either there was no camera on the device or '{captureIntent.Action}' was not added to the <queries> element in the app's manifest file. See more: https://developer.android.com/about/versions/11/privacy/package-visibility");
 
-			captureIntent.AddFlags(ActivityFlags.GrantReadUriPermission);
-			captureIntent.AddFlags(ActivityFlags.GrantWriteUriPermission);
+			captureIntent.AddFlags(global::Android.Content.ActivityFlags.GrantReadUriPermission);
+			captureIntent.AddFlags(global::Android.Content.ActivityFlags.GrantWriteUriPermission);
 
 			try
 			{
 				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
 
-				string captureResult = null;
+				string capturePath = null;
+
+				var useActivityResultCapture = activity is ComponentActivity;
 
 				if (photo)
 				{
-					captureResult = await CapturePhotoAsync(captureIntent);
-					// Apply rotation if needed for photos
-					if (captureResult is not null && ImageProcessor.IsRotationNeeded(options))
-						await RotateImageInPlace(captureResult, options);
-
-					// Apply compression/resizing if needed for photos
-					if (captureResult is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-					{
-						captureResult = await CompressImageIfNeeded(captureResult, options);
-					}
+					capturePath = useActivityResultCapture
+						? await CapturePhotoWithActivityResultAsync(options)
+						: await ProcessPhotoAsync(await CapturePhotoAsync(captureIntent), options);
 				}
 				else
 				{
-					captureResult = await CaptureVideoAsync(captureIntent);
+					capturePath = useActivityResultCapture
+						? await CaptureVideoWithActivityResultAsync(options)
+						: await CaptureVideoAsync(captureIntent);
+				}
+
+				// Save to gallery if requested
+				if (capturePath is not null && options?.SaveToGallery == true)
+				{
+					await SaveToGalleryAsync(capturePath, photo);
 				}
 
 				// Return the file that we just captured
-				return captureResult is not null ? new FileResult(captureResult) : null;
+				return capturePath is not null ? new FileResult(capturePath) : null;
 			}
 			catch (OperationCanceledException)
 			{
 				return null;
+			}
+		}
+
+		static async Task<string> CapturePhotoWithActivityResultAsync(MediaPickerOptions options)
+		{
+			var fileName = Guid.NewGuid().ToString("N") + FileExtensions.Jpg;
+			var captureFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
+			var outputUri = FileProvider.GetUriForFile(captureFile);
+
+			var processingOptions = GetPhotoProcessingOptions(options);
+			var pendingOperation = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
+				RecoveredMediaPickerResultKind.CapturePhoto,
+				[captureFile.AbsolutePath],
+				processingOptions);
+
+			try
+			{
+				var result = await CapturePhotoForResult.Instance.Launch(outputUri);
+
+				if (result?.BooleanValue() != true || !MediaPickerRecoveryManager.IsFileAvailable(captureFile.AbsolutePath))
+				{
+					return null;
+				}
+
+				return await ProcessPhotoPreservingSourceAsync(captureFile.AbsolutePath, processingOptions);
+			}
+			finally
+			{
+				// The live task completed or failed, so prevent the same capture from being published as recovered later.
+				MediaPickerRecoveryManager.ClearActiveOperation(pendingOperation.Id);
+			}
+		}
+
+		async Task<string> CaptureVideoWithActivityResultAsync(MediaPickerOptions options)
+		{
+			var fileName = Guid.NewGuid().ToString("N") + FileExtensions.Mp4;
+			var captureFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
+			var outputUri = FileProvider.GetUriForFile(captureFile);
+
+			var pendingOperation = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
+				RecoveredMediaPickerResultKind.CaptureVideo,
+				[captureFile.AbsolutePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			try
+			{
+				var result = await CaptureVideoForResult.Instance.Launch(outputUri);
+
+				if (result?.BooleanValue() != true || !MediaPickerRecoveryManager.IsFileAvailable(captureFile.AbsolutePath))
+				{
+					return null;
+				}
+
+				return captureFile.AbsolutePath;
+			}
+			finally
+			{
+				// The live task completed or failed, so prevent the same capture from being published as recovered later.
+				MediaPickerRecoveryManager.ClearActiveOperation(pendingOperation.Id);
 			}
 		}
 
@@ -175,35 +300,45 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		async Task<FileResult> PickUsingPhotoPicker(MediaPickerOptions options, bool photo)
+		async Task<FileResult> PickUsingPhotoPicker(
+			MediaPickerOptions options,
+			bool photo,
+			RecoveredMediaPickerResultKind? operationKind = null)
 		{
 			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
 				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
 				.Build();
 
-			var androidUri = await PickVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
+			var processingOptions = GetPhotoProcessingOptions(options);
+			var pendingOperation = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
+				operationKind ?? (photo ? RecoveredMediaPickerResultKind.PickPhoto : RecoveredMediaPickerResultKind.PickVideo),
+				[],
+				processingOptions);
 
-			if (androidUri?.Equals(AndroidUri.Empty) ?? true)
+			try
 			{
-				return null;
-			}
+				var androidUri = await PickVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
 
-			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
-
-			if (photo)
-			{
-				// Apply rotation if needed
-				if (ImageProcessor.IsRotationNeeded(options))
-					await RotateImageInPlace(path, options);
-
-				// Apply compression/resizing if needed
-				if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
+				if (androidUri?.Equals(AndroidUri.Empty) ?? true)
 				{
-					path = await CompressImageIfNeeded(path, options);
+					return null;
 				}
-			}
 
-			return new FileResult(path);
+				var acceptedPaths = await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingOperation.Id, throwOnMaterializationFailure: true);
+				var path = acceptedPaths.FirstOrDefault() ?? await FileSystemUtils.EnsurePhysicalPathAsync(androidUri);
+
+				if (photo)
+				{
+					path = await ProcessPhotoPreservingSourceAsync(path, processingOptions);
+				}
+
+				return new FileResult(path);
+			}
+			finally
+			{
+				// The live task completed or failed, so prevent the same pick from being published as recovered later.
+				MediaPickerRecoveryManager.ClearActiveOperation(pendingOperation.Id);
+			}
 		}
 
 		async Task<List<FileResult>> PickMultipleUsingPhotoPicker(MediaPickerOptions options, bool photo)
@@ -214,7 +349,10 @@ namespace Microsoft.Maui.Media
 			int selectionLimit = options?.SelectionLimit ?? 1;
 			if (selectionLimit == 1)
 			{
-				var singleResult = await PickUsingPhotoPicker(options, photo);
+				var singleResult = await PickUsingPhotoPicker(
+					options,
+					photo,
+					photo ? RecoveredMediaPickerResultKind.PickPhotos : RecoveredMediaPickerResultKind.PickVideos);
 				return singleResult is not null ? [singleResult] : [];
 			}
 
@@ -228,49 +366,48 @@ namespace Microsoft.Maui.Media
 				pickVisualMediaRequestBuilder.SetMaxItems(selectionLimit);
 			}
 
-			var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
+			var processingOptions = GetPhotoProcessingOptions(options);
+			var pendingOperation = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
+				photo ? RecoveredMediaPickerResultKind.PickPhotos : RecoveredMediaPickerResultKind.PickVideos,
+				[],
+				processingOptions);
 
-			var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
-
-			if (androidUris?.IsEmpty ?? true)
+			try
 			{
-				return [];
-			}
+				var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
+				var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
 
-			var resultList = new List<FileResult>();
+				if (androidUris?.IsEmpty ?? true)
+					return [];
 
-			for (var i = 0; i < androidUris.Size(); i++)
-			{
-				var uri = androidUris.Get(i) as AndroidUri;
-				if (!uri?.Equals(AndroidUri.Empty) ?? false)
+				var acceptedPaths = await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingOperation.Id, throwOnMaterializationFailure: true);
+
+				var resultList = new List<FileResult>();
+
+				foreach (var acceptedPath in acceptedPaths)
 				{
-					var path = FileSystemUtils.EnsurePhysicalPath(uri);
+					var path = acceptedPath;
 
 					if (photo)
-					{
-						// Apply rotation if needed
-						if (ImageProcessor.IsRotationNeeded(options))
-							await RotateImageInPlace(path, options);
-
-						// Apply compression/resizing if needed
-						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-						{
-							path = await CompressImageIfNeeded(path, options);
-						}
-					}
+						path = await ProcessPhotoPreservingSourceAsync(path, processingOptions);
 
 					resultList.Add(new FileResult(path));
 				}
-			}
 
-			return resultList;
+				return resultList;
+			}
+			finally
+			{
+				// The live task completed or failed, so prevent the same pick from being published as recovered later.
+				MediaPickerRecoveryManager.ClearActiveOperation(pendingOperation.Id);
+			}
 		}
 
 		async Task<string> CapturePhotoAsync(Intent captureIntent)
 		{
 			// Create the temporary file
 			var fileName = Guid.NewGuid().ToString("N") + FileExtensions.Jpg;
-			var tmpFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
+			var captureFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
 
 			// Set up the content:// uri
 			AndroidUri outputUri = null;
@@ -280,19 +417,64 @@ namespace Microsoft.Maui.Media
 				// Android requires that using a file provider to get a content:// uri for a file to be called
 				// from within the context of the actual activity which may share that uri with another intent
 				// it launches.
-				outputUri ??= FileProvider.GetUriForFile(tmpFile);
+				outputUri ??= FileProvider.GetUriForFile(captureFile);
 
 				intent.PutExtra(MediaStore.ExtraOutput, outputUri);
 			}
 
 			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
 
-			return tmpFile.AbsolutePath;
+			return captureFile.AbsolutePath;
 		}
 
-		static async Task<string> CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
+		static async Task<string> RotateImageToNewFileAsync(string imagePath)
 		{
-			if (!ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100) || string.IsNullOrEmpty(imagePath))
+			if (string.IsNullOrEmpty(imagePath))
+			{
+				return imagePath;
+			}
+
+			if (!File.Exists(imagePath))
+			{
+				return imagePath;
+			}
+
+			await using var inputStream = File.OpenRead(imagePath);
+			var inputFileName = System.IO.Path.GetFileName(imagePath);
+			await using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, inputFileName);
+			rotatedStream.Position = 0;
+
+			var outputExtension = System.IO.Path.GetExtension(imagePath);
+			if (string.IsNullOrEmpty(outputExtension))
+			{
+				outputExtension = FileExtensions.Jpg;
+			}
+
+			var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, Guid.NewGuid().ToString("N") + outputExtension);
+			await using var outputStream = File.Create(outputFile.AbsolutePath);
+			await rotatedStream.CopyToAsync(outputStream);
+
+			return outputFile.AbsolutePath;
+		}
+
+		static bool ShouldDeleteIntermediateFile(string intermediatePath, string originalPath, string finalPath)
+			=> !string.IsNullOrEmpty(intermediatePath) &&
+				!string.Equals(intermediatePath, originalPath, StringComparison.Ordinal) &&
+				!string.Equals(intermediatePath, finalPath, StringComparison.Ordinal);
+
+		static void TryDeleteFile(string filePath)
+		{
+			try
+			{ File.Delete(filePath); }
+			catch { }
+		}
+
+		static Task<string> CompressImageIfNeeded(string imagePath, MediaPickerOptions options, bool preserveSource = false)
+			=> CompressImageIfNeeded(imagePath, GetPhotoProcessingOptions(options), preserveSource);
+
+		static async Task<string> CompressImageIfNeeded(string imagePath, PersistedPhotoProcessingOptions options, bool preserveSource = false)
+		{
+			if (!ImageProcessor.IsProcessingNeeded(options.MaximumWidth, options.MaximumHeight, options.CompressionQuality) || string.IsNullOrEmpty(imagePath))
 				return imagePath;
 
 			try
@@ -308,18 +490,18 @@ namespace Microsoft.Maui.Media
 				var inputFileName = System.IO.Path.GetFileName(imagePath);
 				using var processedStream = await ImageProcessor.ProcessImageAsync(
 					inputStream,
-					options?.MaximumWidth,
-					options?.MaximumHeight,
-					options?.CompressionQuality ?? 100,
+					options.MaximumWidth,
+					options.MaximumHeight,
+					options.CompressionQuality,
 					inputFileName,
-					options?.RotateImage ?? false,
-					options?.PreserveMetaData ?? true);
+					options.RotateImage,
+					options.PreserveMetaData);
 
 				if (processedStream != null)
 				{
 					// Determine the correct output extension based on the processed format
 					processedStream.Position = 0;
-					var outputExtension = ImageProcessor.DetermineOutputExtension(processedStream, options?.CompressionQuality ?? 100, inputFileName);
+					var outputExtension = ImageProcessor.DetermineOutputExtension(processedStream, options.CompressionQuality, inputFileName);
 					var originalExtension = System.IO.Path.GetExtension(imagePath);
 
 					// If format changed (e.g., PNG -> JPEG), use new extension
@@ -329,10 +511,18 @@ namespace Microsoft.Maui.Media
 						outputPath = System.IO.Path.ChangeExtension(imagePath, outputExtension);
 					}
 
-					// Delete original file first
-					try
-					{ originalFile.Delete(); }
-					catch { }
+					if (preserveSource)
+					{
+						var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, Guid.NewGuid().ToString("N") + outputExtension);
+						outputPath = outputFile.AbsolutePath;
+					}
+					else
+					{
+						// Delete original file first
+						try
+						{ originalFile.Delete(); }
+						catch { }
+					}
 
 					// Write processed image to output path with correct extension
 					using var outputStream = File.Create(outputPath);
@@ -370,6 +560,116 @@ namespace Microsoft.Maui.Media
 			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, onResult: OnResult);
 
 			return path;
+		}
+
+		/// <summary>
+		/// Saves the captured media file to the device's gallery.
+		/// On API 29+, uses MediaStore with scoped storage and IsPending flag. On older versions, copies to public external storage and scans the copied file.
+		/// </summary>
+		static async Task SaveToGalleryAsync(string filePath, bool isPhoto)
+		{
+			var context = Application.Context ?? throw new InvalidOperationException("An Android application context is required to save media to the gallery.");
+			var fileName = System.IO.Path.GetFileName(filePath);
+			var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+			var mimeType = GetMimeType(extension, isPhoto);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+			{
+				await SaveToMediaStoreAsync(context, filePath, fileName, mimeType, isPhoto);
+				return;
+			}
+
+			SaveToExternalStorageAndScan(context, filePath, fileName, mimeType, isPhoto);
+		}
+
+		static async Task SaveToMediaStoreAsync(Context context, string filePath, string fileName, string mimeType, bool isPhoto)
+		{
+			var contentResolver = context.ContentResolver ?? throw new InvalidOperationException("An Android content resolver is required to save media to the gallery.");
+			var contentValues = new ContentValues();
+			contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
+			contentValues.Put(MediaStore.IMediaColumns.MimeType, mimeType);
+			contentValues.Put(MediaStore.IMediaColumns.RelativePath,
+				isPhoto ? global::Android.OS.Environment.DirectoryPictures : global::Android.OS.Environment.DirectoryMovies);
+			contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
+
+			var collection = isPhoto
+				? MediaStore.Images.Media.ExternalContentUri
+				: MediaStore.Video.Media.ExternalContentUri;
+
+			var insertUri = contentResolver.Insert(collection, contentValues)
+				?? throw new IOException("Unable to create a MediaStore entry for the captured media.");
+
+			try
+			{
+				using (var outputStream = contentResolver.OpenOutputStream(insertUri) ?? throw new IOException("Unable to open the MediaStore entry for writing."))
+				using (var inputStream = File.OpenRead(filePath))
+				{
+					await inputStream.CopyToAsync(outputStream);
+				}
+
+				contentValues.Clear();
+				contentValues.Put(MediaStore.IMediaColumns.IsPending, 0);
+
+				if (contentResolver.Update(insertUri, contentValues, null, null) == 0)
+				{
+					throw new IOException("Unable to publish the captured media to the gallery.");
+				}
+			}
+			catch (Exception saveException)
+			{
+				try
+				{
+					contentResolver.Delete(insertUri, null, null);
+				}
+				catch (Exception cleanupException)
+				{
+					throw new System.AggregateException("Failed to save media to the gallery and clean up the pending MediaStore entry.", saveException, cleanupException);
+				}
+
+				throw;
+			}
+		}
+
+		static void SaveToExternalStorageAndScan(Context context, string filePath, string fileName, string mimeType, bool isPhoto)
+		{
+			var directory = global::Android.OS.Environment.GetExternalStoragePublicDirectory(
+				isPhoto ? global::Android.OS.Environment.DirectoryPictures : global::Android.OS.Environment.DirectoryMovies);
+
+			if (directory?.AbsolutePath is not string directoryPath || string.IsNullOrEmpty(directoryPath))
+			{
+				throw new IOException("Unable to find the public gallery directory for the captured media.");
+			}
+
+			Directory.CreateDirectory(directoryPath);
+
+			var destinationPath = System.IO.Path.Combine(directoryPath, fileName);
+			if (!string.Equals(filePath, destinationPath, StringComparison.Ordinal))
+			{
+				File.Copy(filePath, destinationPath, overwrite: true);
+			}
+
+			global::Android.Media.MediaScannerConnection.ScanFile(
+				context,
+				new[] { destinationPath },
+				new[] { mimeType },
+				null);
+		}
+
+		static string GetMimeType(string extension, bool isPhoto)
+		{
+			return extension switch
+			{
+				".jpg" or ".jpeg" => "image/jpeg",
+				".png" => "image/png",
+				".heic" or ".heif" => "image/heif",
+				".webp" => "image/webp",
+				".gif" => "image/gif",
+				".mp4" => "video/mp4",
+				".3gp" => "video/3gpp",
+				".mkv" => "video/x-matroska",
+				".webm" => "video/webm",
+				_ => isPhoto ? "image/jpeg" : "video/mp4",
+			};
 		}
 
 		async Task<List<FileResult>> PickMultipleUsingIntermediateActivity(MediaPickerOptions options, bool photo)

@@ -161,6 +161,9 @@ namespace Microsoft.Maui.Controls
 		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2) =>
 			MapBackButtonTitle((IToolbarHandler)arg1, arg2);
 
+		public static void MapBackButtonAccessibilityLabel(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonAccessibilityLabel((IToolbarHandler)arg1, arg2);
+
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2) =>
 			MapToolbarItems((IToolbarHandler)arg1, arg2);
 
@@ -196,6 +199,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static void MapBackButtonTitle(IToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.PlatformView.UpdateBackButton(arg2);
+		}
+
+		public static void MapBackButtonAccessibilityLabel(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBackButton(arg2);
 		}

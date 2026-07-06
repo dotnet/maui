@@ -18,8 +18,8 @@ Labeling rules for the [dotnet/maui](https://github.com/dotnet/maui) repository.
 
 The labeler applies **only two label families**, and nothing else:
 
-1. **`area-*`** — derived from the subject matter (control name, area like layout / navigation / xaml / infrastructure / etc.).
-2. **`platform/*`** — derived from changed-file platform conventions on PRs, or from explicit platform mentions on issues.
+1. **Exactly one `area-*`** — derived from the subject matter (control name, area like layout / navigation / xaml / infrastructure / etc.). Choose the single most specific match for the dominant subsystem; see the tie-breaking rules below.
+2. **One or more `platform/*`** — derived from changed-file platform conventions on PRs, or from explicit platform mentions on issues. Apply all that fit.
 
 **The labeler must NOT apply any other label, ever.** Specifically, **do not** apply:
 
@@ -45,9 +45,9 @@ If neither an `area-*` nor a `platform/*` label clearly applies, **noop**.
 
 ## Labeling rules
 
-### `area-*` labels (issues and PRs)
+### `area-*` label (issues and PRs) — exactly one
 
-Pick one or more `area-*` labels based on the subject matter:
+**Apply exactly one `area-*` label.** Pick the single most specific match for the dominant subsystem:
 
 - Specific control mentioned → matching `area-controls-<name>` (e.g., `CollectionView` → `area-controls-collectionview`, `Entry` → `area-controls-entry`, `Map` / `Maps` → `area-controls-map`, `Window` → `area-controls-window`, `WebView` → `area-controls-webview`, `HybridWebView` → `area-controls-hybridwebview`). **Always** use the `area-controls-<name>` prefix — never invent shorter aliases (e.g., the Maps area is `area-controls-map`, **not** `area-maps`).
 - Layout, measure/arrange, sizing issues → `area-layout`.
@@ -65,9 +65,16 @@ Pick one or more `area-*` labels based on the subject matter:
 - **CI, build pipelines, Maestro / dependency flow, branch mirroring, GitHub workflows, agentic-workflow / skill files (when these are the primary subject of the PR; see Mixed PRs below)** → `area-infrastructure`. This covers:
   - `[dnceng-bot]` codeflow/branch-mirroring issues (the standard "Branch `…` can't be mirrored to Azdo" issues) → `area-infrastructure` (do **not** noop these — they have a clear area).
   - PRs touching only `.github/workflows/`, `.github/skills/`, `.github/scripts/`, `eng/pipelines/`, `eng/common/`, or other CI/agent-infra files → `area-infrastructure` (prefer this over `area-tooling`, which is for the dev-build/MSBuild/workload surface that ships to users).
-  - **Mixed PRs (infra-primary + small product edits):** if the PR is dominated by CI/agent-infra changes but also has incidental edits to product code, still apply `area-infrastructure` (alongside any relevant `area-*` for the product area). If the product-code change is the focus and the infra change is incidental (e.g., a small workflow tweak that supports a feature), prefer the product `area-*` label and omit `area-infrastructure`.
+  - **Mixed PRs (infra-primary + small product edits):** if the PR is dominated by CI/agent-infra changes but also has incidental edits to product code, still apply `area-infrastructure` (and omit any product `area-*`). If the product-code change is the focus and the infra change is incidental (e.g., a small workflow tweak that supports a feature), prefer the product `area-*` label and omit `area-infrastructure`.
 
-Prefer the most specific label. It is fine to apply both a generic and a specific area label (e.g., `area-layout` + `area-controls-collectionview`) when both clearly apply.
+**Tie-breaking when multiple areas could apply** — pick the single most specific:
+
+- **Specific control beats generic area.** `area-controls-tabbedpage` over `area-navigation`; `area-controls-collectionview` over `area-layout`; `area-controls-shell` over `area-navigation`.
+- **Sub-area beats parent area.** `area-safearea` over `area-layout`; `area-core-dispatching` over `area-core-lifecycle`.
+- **Subject-matter focus beats incidental touch.** If a PR fixes a CollectionView bug by adjusting layout code, the area is the control (`area-controls-collectionview`), not the layout system.
+- **When genuinely tied**, prefer the area that names the user-visible feature over the implementation-detail area.
+
+If after applying these heuristics there is still no single best fit, **noop** rather than apply two area labels.
 
 ### `platform/*` labels
 

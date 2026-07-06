@@ -1,7 +1,7 @@
-# Skill & agent validation for PRs touching .github/skills/ or .github/agents/.
+# Skill validation for PRs touching .github/skills/.
 #
 # Two modes:
-#   1. Static checks  — run automatically on every PR that touches skills/agents.
+#   1. Static checks  — run automatically on every PR that touches skills.
 #   2. LLM evaluation — runs automatically for contributor PRs, or can be
 #      triggered by a repo contributor posting "/evaluate-skills" on any PR.
 #      Requires COPILOT_GITHUB_TOKEN secret (Copilot API access).
@@ -15,10 +15,14 @@
 #
 # Security model:
 #   - Workflow YAML: always from the default branch (enforced by both triggers)
-#   - Validator binary: downloaded from dotnet/skills releases (trusted)
-#   - Skill/test content: checked out from the PR via sparse-checkout
-#     (only .github/skills and .github/agents — markdown/YAML data files)
+#   - Evaluator: @microsoft/vally-cli, pinned + run via npx from npm (trusted)
+#   - Skill/test content: checked out from the PR (markdown/YAML data files;
+#     the evaluate job needs full history for frozen-worktree fixtures)
 #   - No PR code is compiled or executed
+#   - LLM evaluation is HERMETIC: the agent-under-test gets model-auth only
+#     (COPILOT_GITHUB_TOKEN, a name `gh` does not read) and NO GITHUB_TOKEN /
+#     GH_TOKEN, so it cannot recite documented fixes via the live GitHub API.
+#     A dedicated hermeticity-gate job asserts this with a positive control.
 #   - LLM evaluation: only runs for PRs from contributors with write+ access,
 #     or when explicitly triggered via /evaluate-skills by a contributor
 
@@ -29,7 +33,6 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - '.github/skills/**'
-      - '.github/agents/**'
       - '.github/plugin.json'
       - '.github/workflows/skill-validation.yml'
 
@@ -37,6 +40,15 @@ on:
     types: [created]
 
   workflow_dispatch:
+    inputs:
+      skills:
+        description: "Comma-separated skill names to evaluate (blank = all skills that have eval*.vally.yaml)"
+        required: false
+        default: ""
+      runs:
+        description: "Trials per stimulus (blank = 3)"
+        required: false
+        default: ""
 
 concurrency:
   group: >-
@@ -60,7 +72,11 @@ permissions:
   checks: write
 
 env:
-  VALIDATOR_CACHE_PREFIX: skill-validator-linux-x64
+  # Vally CLI is run via npx from npm. Pinned for reproducibility.
+  # @github/copilot-sdk (vally's executor) requires Node ^20.19 || >=22.12,
+  # so we pin Node 22 on the runners.
+  VALLY_VERSION: "0.6.0"
+  NODE_VERSION: "22"
 
 jobs:
   # ==========================================================================
@@ -81,8 +97,6 @@ jobs:
       is_contributor: ${{ steps.perms.outputs.is_contributor }}
       is_fork: ${{ steps.info.outputs.is_fork }}
       changed_skills: ${{ steps.discover.outputs.changed_skills }}
-      has_skill_changes: ${{ steps.discover.outputs.has_skill_changes }}
-      has_agent_changes: ${{ steps.discover.outputs.has_agent_changes }}
     steps:
       - name: Determine fork status
         id: info
@@ -121,10 +135,6 @@ jobs:
 
           SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
             sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
-          AGENT_FILES=$(echo "$CHANGED" | grep '^\.github/agents/' || true)
-
-          echo "has_skill_changes=$( [ -n "$SKILL_DIRS" ] && echo true || echo false )" >> $GITHUB_OUTPUT
-          echo "has_agent_changes=$( [ -n "$AGENT_FILES" ] && echo true || echo false )" >> $GITHUB_OUTPUT
 
           DELIM="EOF_$(openssl rand -hex 8)"
           echo "changed_skills<<$DELIM" >> $GITHUB_OUTPUT
@@ -132,7 +142,6 @@ jobs:
           echo "$DELIM" >> $GITHUB_OUTPUT
 
           echo "Changed skills: $SKILL_DIRS"
-          echo "Changed agents: $AGENT_FILES"
 
   # ==========================================================================
   # SLASH COMMAND GATE (/evaluate-skills)
@@ -218,118 +227,65 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || '' }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
           sparse-checkout: |
             .github/skills
             .github/agents
             .github/plugin.json
           persist-credentials: false
 
-      # ── Download & cache skill-validator ──────────────────────────
-      - name: Get cache key date
-        id: cache-date
-        run: echo "date=$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
-
-      - name: Restore skill-validator from cache
-        id: cache-sv
-        uses: actions/cache/restore@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          path: skill-validator-bin
-          key: ${{ env.VALIDATOR_CACHE_PREFIX }}-${{ steps.cache-date.outputs.date }}
-          restore-keys: |
-            ${{ env.VALIDATOR_CACHE_PREFIX }}-
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Download skill-validator
-        if: steps.cache-sv.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p skill-validator-bin
-          curl -fsSL --retry 3 --retry-all-errors -o skill-validator.tar.gz \
-            https://github.com/dotnet/skills/releases/download/skill-validator-nightly/skill-validator-linux-x64.tar.gz
-          tar -xzf skill-validator.tar.gz -C skill-validator-bin
-          if [ ! -f skill-validator-bin/skill-validator ]; then
-            echo "::error::skill-validator binary not found after extraction"
-            exit 1
-          fi
-          chmod +x skill-validator-bin/skill-validator
-
-      - name: Save skill-validator to cache
-        if: steps.cache-sv.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: skill-validator-bin
-          key: ${{ env.VALIDATOR_CACHE_PREFIX }}-${{ steps.cache-date.outputs.date }}
-
-      # ── Run skill-validator check ─────────────────────────────────
-      - name: Run skill-validator check
+      # ── Lint eval specs with Vally ────────────────────────────────
+      # Lint ONLY the *.vally.yaml eval specs. `vally lint --eval-spec <file>`
+      # validates the spec and SKIPS SKILL.md structural linting. We do NOT
+      # lint SKILL.md / *.agent.md here on purpose: vally's skill linter flags
+      # two PRE-EXISTING repo issues unrelated to this migration (try-fix
+      # SKILL.md exceeds the 500-line limit; find-regression-risk is missing
+      # name/description frontmatter) that would false-red this gate. Those are
+      # tracked as follow-ups in the PR description.
+      - name: Lint eval specs
         id: check
         shell: bash
-        env:
-          CHANGED_SKILLS: ${{ needs.pr-gate.outputs.changed_skills }}
         run: |
+          mkdir -p sv-results
+          : > sv-output.txt
           rc=0
-
-          if [ -d .github/skills ]; then
-            echo "::group::Validate skills"
-
-            # For PR path: validate only changed skills for efficiency
-            # For slash-command or workflow_dispatch: validate all
-            PR_GATE="${{ needs.pr-gate.result }}"
-            if [[ "$PR_GATE" == "success" ]]; then
-              SKILLS_ARG=""
-              while IFS= read -r skill; do
-                [ -z "$skill" ] && continue
-                SKILL_DIR=".github/skills/$skill"
-                if [ -d "$SKILL_DIR" ]; then
-                  SKILLS_ARG="$SKILLS_ARG --skills $SKILL_DIR"
-                fi
-              done <<< "$CHANGED_SKILLS"
-              # Fallback to all if no specific skills found
-              [ -z "$SKILLS_ARG" ] && SKILLS_ARG="--skills .github/skills"
-            else
-              SKILLS_ARG="--skills .github/skills"
-            fi
-
-            set +e
-            skill-validator-bin/skill-validator check $SKILLS_ARG --allow-repo-traversal --verbose 2>&1 | tee skill-check-skills.txt
-            skills_rc=${PIPESTATUS[0]}
-            set -e
-            echo "::endgroup::"
-            if [ "$skills_rc" -ne 0 ]; then rc=1; fi
+          spec_count=0
+          mapfile -t SPECS < <(find .github/skills -name '*.vally.yaml' | sort)
+          if [ ${#SPECS[@]} -eq 0 ]; then
+            echo "No *.vally.yaml eval specs found." | tee -a sv-output.txt
           fi
-
-          if [ -d .github/agents ]; then
-            echo "::group::Validate agents"
-            set +e
-            skill-validator-bin/skill-validator check --agents .github/agents --verbose 2>&1 | tee skill-check-agents.txt
-            agents_rc=${PIPESTATUS[0]}
-            set -e
+          for f in "${SPECS[@]}"; do
+            spec_count=$((spec_count + 1))
+            echo "::group::lint $f"
+            echo "── $f" >> sv-output.txt
+            npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint --eval-spec "$f" --strict 2>&1 | tee -a sv-output.txt
+            lint_rc=${PIPESTATUS[0]}
             echo "::endgroup::"
-            if [ "$agents_rc" -ne 0 ]; then rc=1; fi
-          fi
+            if [ "$lint_rc" -ne 0 ]; then rc=1; fi
+          done
 
-          cat skill-check-skills.txt skill-check-agents.txt > sv-output.txt 2>/dev/null || true
+          # Strip ANSI so the comment job can parse findings stably.
+          sed -i 's/\x1b\[[0-9;]*m//g' sv-output.txt || true
+
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          echo "spec_count=$spec_count" >> "$GITHUB_OUTPUT"
 
-          # Step summary
           {
-            echo "## skill-validator check"
+            echo "## vally lint (eval specs)"
             echo ""
-            skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
-            agent_count=$(find .github/agents -name '*.agent.md' 2>/dev/null | wc -l)
             if [ "$rc" -eq 0 ]; then
-              echo "All checks passed."
-              echo ""
-              echo "Validated **${skill_count}** skill(s) and **${agent_count}** agent(s)."
+              echo "All **${spec_count}** eval spec(s) are valid."
             else
-              for f in skill-check-skills.txt skill-check-agents.txt; do
-                if [ -f "$f" ]; then
-                  echo "### ${f}"
-                  echo '```'
-                  head -n 200 "$f"
-                  echo '```'
-                  echo ""
-                fi
-              done
+              echo "One or more eval specs failed strict lint."
+              echo ""
+              echo '```text'
+              tail -n 200 sv-output.txt
+              echo '```'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -338,10 +294,11 @@ jobs:
         if: always()
         run: |
           mkdir -p sv-results
-          skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
-          agent_count=$(find .github/agents -name '*.agent.md' 2>/dev/null | wc -l)
+          skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
           echo "$skill_count" > sv-results/skill-count.txt
+          agent_count=$(find .github/agents -mindepth 1 -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
           echo "$agent_count" > sv-results/agent-count.txt
+          echo "${{ steps.check.outputs.spec_count }}" > sv-results/spec-count.txt
           echo "${{ steps.check.outputs.exit_code }}" > sv-results/exit-code.txt
           if [ -f sv-output.txt ]; then
             cp sv-output.txt sv-results/sv-output.txt
@@ -369,7 +326,8 @@ jobs:
     if: >-
       always() && !cancelled() && (
         (needs.pr-gate.result == 'success' && needs.pr-gate.outputs.is_contributor == 'true') ||
-        needs.slash-gate.result == 'success'
+        needs.slash-gate.result == 'success' ||
+        github.event_name == 'workflow_dispatch'
       )
     runs-on: ubuntu-latest
     permissions:
@@ -381,8 +339,8 @@ jobs:
       - name: Checkout PR content
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
           sparse-checkout: |
             .github/skills
             .github/plugin.json
@@ -393,26 +351,36 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.pr-gate.outputs.pr_number || needs.slash-gate.outputs.pr_number }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_SKILLS: ${{ github.event.inputs.skills }}
         run: |
-          CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
-            --paginate --jq '.[].filename')
-
-          SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
-            sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
-
-          # Check for workflow changes (evaluate all skills with tests)
-          WORKFLOW_CHANGES=$(echo "$CHANGED" | grep '^\.github/workflows/skill-validation' || true)
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            # Manual run: evaluate the requested skills, or every skill that
+            # ships an eval*.vally.yaml when none are named. No PR diff exists.
+            # INPUT_SKILLS comes via env (never interpolated into the script).
+            if [ -n "$INPUT_SKILLS" ]; then
+              SKILL_DIRS=$(printf '%s' "$INPUT_SKILLS" | tr ',' '\n' \
+                | sed 's/[[:space:]]//g' | grep -v '^$' | sort -u)
+              EVAL_ALL=false
+            else
+              SKILL_DIRS=""
+              EVAL_ALL=true
+            fi
+          else
+            CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
+              --paginate --jq '.[].filename')
+            SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
+              sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
+            # Workflow change ⇒ evaluate all skills with specs.
+            WORKFLOW_CHANGES=$(echo "$CHANGED" | grep '^\.github/workflows/skill-validation' || true)
+            if [ -n "$WORKFLOW_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
+          fi
 
           DELIM="EOF_$(openssl rand -hex 8)"
           echo "skill_dirs<<$DELIM" >> $GITHUB_OUTPUT
           echo "$SKILL_DIRS" >> $GITHUB_OUTPUT
           echo "$DELIM" >> $GITHUB_OUTPUT
-
-          if [ -n "$WORKFLOW_CHANGES" ]; then
-            echo "eval_all=true" >> $GITHUB_OUTPUT
-          else
-            echo "eval_all=false" >> $GITHUB_OUTPUT
-          fi
+          echo "eval_all=$EVAL_ALL" >> $GITHUB_OUTPUT
 
       - name: Find skills with eval tests
         id: find
@@ -436,16 +404,22 @@ jobs:
           }
 
           foreach ($skill in $skills) {
-            $evalFile = ".github/skills/$skill/tests/eval.yaml"
-            if (Test-Path $evalFile) {
-              Write-Host "  -> $skill has eval tests"
+            $testsDir = ".github/skills/$skill/tests"
+            $specs = @()
+            if (Test-Path $testsDir) {
+              # Capability suites only: eval*.vally.yaml. This deliberately
+              # EXCLUDES hermeticity.vally.yaml (the hermeticity gate),
+              # which is run by the dedicated hermeticity-gate job.
+              $specs = @(Get-ChildItem -Path $testsDir -Filter "eval*.vally.yaml" -File -ErrorAction SilentlyContinue)
+            }
+            if ($specs.Count -gt 0) {
+              Write-Host "  -> $skill has $($specs.Count) eval spec(s)"
               $entries += @{
                 name = $skill
-                skills_path = ".github/skills/$skill"
-                tests_path = ".github/skills/$skill/tests"
+                tests_path = $testsDir
               }
             } else {
-              Write-Host "  -> $skill has NO eval tests (static-only)"
+              Write-Host "  -> $skill has NO eval*.vally.yaml (static-only)"
             }
           }
 
@@ -462,7 +436,7 @@ jobs:
 
   # ==========================================================================
   # LLM EVALUATION (matrix)
-  # Runs skill-validator evaluate for each changed skill with eval tests.
+  # Runs `vally eval` for each changed skill's capability specs (eval*.vally.yaml).
   # ==========================================================================
   evaluate:
     name: evaluate (${{ matrix.entry.name }})
@@ -483,64 +457,42 @@ jobs:
       - name: Checkout PR content
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
-          sparse-checkout: |
-            .github/skills
-            .github/plugin.json
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
+          # Full history (NOT sparse): capability suites pin frozen worktrees
+          # at historical merge commits via `environment.git.ref`, and
+          # `git worktree add <SHA>` must be able to resolve them.
+          fetch-depth: 0
           persist-credentials: false
 
-      # ── Prepare test directory layout ─────────────────────────────
-      # skill-validator evaluate expects tests at <tests-dir>/<skill>/eval.yaml
-      # but maui keeps them co-located at .github/skills/<skill>/tests/eval.yaml.
-      # Create a flat tests directory by copying files to match the expected layout.
-      - name: Prepare test directory
+      - name: Ensure fixture history is available
         run: |
-          mkdir -p eval-tests
-          for dir in .github/skills/*/tests; do
-            [ -d "$dir" ] || continue
-            [ -f "$dir/eval.yaml" ] || continue
-            skill=$(basename $(dirname "$dir"))
-            mkdir -p "eval-tests/$skill"
-            # Copy eval.yaml and any fixture files
-            cp -r "$dir"/* "eval-tests/$skill/"
+          # Capability suites freeze fixtures at historical dotnet/maui merge
+          # commits (the `ref:` values in *.vally.yaml). On a same-repo PR with
+          # fetch-depth:0 these are already present; for FORK PRs the head repo
+          # may not contain them, so fetch each referenced SHA from the base
+          # repo's network. SHAs are discovered dynamically so this never
+          # drifts from the specs.
+          BASE_REPO="${{ github.repository }}"
+          git remote add upstream "https://github.com/${BASE_REPO}.git" 2>/dev/null || true
+          REFS=$(grep -rhoE 'ref:[[:space:]]*[0-9a-f]{40}' .github/skills/*/tests/*.vally.yaml 2>/dev/null \
+            | grep -oE '[0-9a-f]{40}' | sort -u || true)
+          for sha in $REFS; do
+            if git cat-file -e "${sha}^{commit}" 2>/dev/null; then
+              echo "fixture ${sha} present"
+            else
+              echo "Fetching fixture commit ${sha} from upstream..."
+              # depth=2: fetch the commit AND its first parent so that
+              # `git diff HEAD^ HEAD` works inside worktrees pinned to it.
+              git fetch --no-tags --depth=2 upstream "$sha" 2>/dev/null \
+                || echo "::warning::Could not fetch fixture commit ${sha}; worktree stimuli pinned to it may error."
+            fi
           done
-          echo "Prepared test directories:"
-          find eval-tests -name 'eval.yaml' | sort
 
-      # ── Download & cache skill-validator ──────────────────────────
-      - name: Get cache key date
-        id: cache-date
-        run: echo "date=$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
-
-      - name: Restore skill-validator from cache
-        id: cache-sv
-        uses: actions/cache/restore@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          path: skill-validator-bin
-          key: ${{ env.VALIDATOR_CACHE_PREFIX }}-${{ steps.cache-date.outputs.date }}
-          restore-keys: |
-            ${{ env.VALIDATOR_CACHE_PREFIX }}-
-
-      - name: Download skill-validator
-        if: steps.cache-sv.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p skill-validator-bin
-          curl -fsSL --retry 3 --retry-all-errors -o skill-validator.tar.gz \
-            https://github.com/dotnet/skills/releases/download/skill-validator-nightly/skill-validator-linux-x64.tar.gz
-          tar -xzf skill-validator.tar.gz -C skill-validator-bin
-          if [ ! -f skill-validator-bin/skill-validator ]; then
-            echo "::error::skill-validator binary not found after extraction"
-            exit 1
-          fi
-          chmod +x skill-validator-bin/skill-validator
-
-      - name: Save skill-validator to cache
-        if: steps.cache-sv.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: skill-validator-bin
-          key: ${{ env.VALIDATOR_CACHE_PREFIX }}-${{ steps.cache-date.outputs.date }}
+          node-version: ${{ env.NODE_VERSION }}
 
       # ── Select Copilot token ──────────────────────────────────────
       - name: Select Copilot token
@@ -584,42 +536,97 @@ jobs:
           echo "::add-mask::${TOKENS[$IDX]}"
           echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
 
-      # ── Run LLM evaluation ───────────────────────────────────────
-      - name: Run skill-validator evaluate
+      # ── Run LLM evaluation (Vally) ───────────────────────────────
+      - name: Run Vally evaluation
         id: eval-run
         env:
-          COPILOT_TOKEN: ${{ steps.select-token.outputs.token }}
+          # MODEL AUTH ONLY. COPILOT_GITHUB_TOKEN is what the bundled Copilot
+          # CLI reads to authenticate model calls; `gh` and most HTTP tooling
+          # do NOT read this name, so the agent-under-test cannot reuse it to
+          # recite documented fixes via the live GitHub API. There is
+          # deliberately NO GITHUB_TOKEN / GH_TOKEN here — that env-level
+          # open-book leak was the legacy harness's hermeticity defect.
+          COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
           RESULTS_PATH: eval-results/${{ matrix.entry.name }}
-          SKILLS_PATH: ${{ matrix.entry.skills_path }}
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+          RUNS: ${{ github.event.inputs.runs }}
         run: |
-          # skill-validator reads GITHUB_TOKEN for API access
-          export GITHUB_TOKEN="$COPILOT_TOKEN"
+          # Collect this skill's capability specs. The eval*.vally.yaml glob
+          # EXCLUDES hermeticity.vally.yaml (run by its own gate job).
+          SPECS=()
+          for f in "$TESTS_PATH"/eval*.vally.yaml; do
+            [ -e "$f" ] || continue
+            SPECS+=("-e" "$f")
+          done
+          if [ ${#SPECS[@]} -eq 0 ]; then
+            echo "No eval*.vally.yaml specs found under $TESTS_PATH"
+            echo "eval_passed=true" >> "$GITHUB_OUTPUT"
+            echo "eval_exit_code=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-          ARGS="--verdict-warn-only --verbose"
-          ARGS="$ARGS --results-dir $RESULTS_PATH --reporter console --reporter json --reporter markdown"
-          ARGS="$ARGS --model claude-opus-4.6"
-          ARGS="$ARGS --judge-model claude-opus-4.6"
-          ARGS="$ARGS --runs 3"
-          ARGS="$ARGS --parallel-skills 2"
-          ARGS="$ARGS --parallel-scenarios 3"
-          ARGS="$ARGS --parallel-runs 3"
+          echo "Evaluating specs: ${SPECS[*]}"
 
+          # Trials per stimulus: use each spec's defaults.runs unless the
+          # workflow_dispatch caller provided an explicit override.
+          RUNS_ARGS=()
+          if [ -n "${RUNS:-}" ]; then
+            RUNS_N=$(printf '%s' "$RUNS" | tr -cd '0-9')
+            if [ -n "$RUNS_N" ]; then
+              RUNS_ARGS=(--runs "$RUNS_N")
+              echo "runs per stimulus: $RUNS_N (workflow override)"
+            fi
+          fi
+          [ ${#RUNS_ARGS[@]} -eq 0 ] && echo "runs per stimulus: (spec default)"
+
+          # Advisory exit: vally sets exit 1 on threshold miss / execution
+          # error. We capture it but DON'T propagate, deriving the real verdict
+          # from the JUnit report (preserves the legacy warn-only behavior).
           set +e
-          skill-validator-bin/skill-validator evaluate $ARGS \
-            --tests-dir eval-tests \
-            "$SKILLS_PATH"
+          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+            "${SPECS[@]}" \
+            --skill-dir .github/skills \
+            --output-dir "$RESULTS_PATH" \
+            --junit \
+            --model claude-opus-4.6 \
+            --judge-model claude-opus-4.6 \
+            "${RUNS_ARGS[@]}" \
+            --workers 4 \
+            --verbose
           EVAL_RC=$?
           set -e
+          echo "vally exit code: $EVAL_RC (advisory)"
+          echo "eval_exit_code=$EVAL_RC" >> "$GITHUB_OUTPUT"
 
-          echo "eval_exit_code=$EVAL_RC" >> $GITHUB_OUTPUT
-
-          # Determine actual pass/fail from results.json (the source of truth)
-          RESULTS_JSON=$(find "$RESULTS_PATH" -name 'results.json' -type f | head -1)
-          if [ -n "$RESULTS_JSON" ]; then
-            ALL_PASSED=$(jq 'if .verdicts | length == 0 then false else all(.verdicts[]; .passed) end' "$RESULTS_JSON")
-            echo "eval_passed=$ALL_PASSED" >> $GITHUB_OUTPUT
+          # Verdict from JUnit (source of truth). The root <testsuites> element
+          # carries aggregate failures/errors across every suite produced for
+          # this matrix entry.
+          JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
+          if [ -n "$JUNIT" ]; then
+            ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
+            if [ -z "$ROOT" ]; then
+              echo "::warning::JUnit file exists but contains no <testsuites> element — treating as failure"
+              echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+            else
+              FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
+              ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
+              echo "JUnit aggregate: failures=$FAILS errors=$ERRS"
+              if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
+                # Guard: if Vally exited non-zero but JUnit shows no failures,
+                # an execution error may have been swallowed (partial output).
+                if [ "$EVAL_RC" -ne 0 ]; then
+                  echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as failure (possible partial output)"
+                  echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+                else
+                  echo "eval_passed=true" >> "$GITHUB_OUTPUT"
+                fi
+              else
+                echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+              fi
+            fi
           else
-            echo "eval_passed=false" >> $GITHUB_OUTPUT
+            echo "::warning::No JUnit report under $RESULTS_PATH"
+            echo "eval_passed=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Upload results
@@ -632,13 +639,152 @@ jobs:
           retention-days: 14
 
   # ==========================================================================
+  # HERMETICITY GATE (positive assertion)
+  # Runs hermeticity.vally.yaml — a single stimulus that passes only when
+  # the agent reports the anonymous rate limit (CORE_LIMIT:60). A pass
+  # means hermetic; a fail means a token may have leaked or the probe
+  # errored (both warrant investigation).
+  # NON-BLOCKING for now (never fails the job); surfaced in the PR comment so
+  # the env + exit-code wiring can be promoted to blocking after first green.
+  # ==========================================================================
+  hermeticity-gate:
+    name: Harness hermeticity gate
+    needs: [pr-gate, slash-gate, discover-eval]
+    if: >-
+      always() && !cancelled() &&
+      needs.discover-eval.result == 'success' &&
+      needs.discover-eval.outputs.has_entries == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout PR content
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
+          sparse-checkout: |
+            .github/skills
+            .github/plugin.json
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Select Copilot token
+        id: select-token
+        env:
+          TOKEN_1: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          TOKEN_2: ${{ secrets.COPILOT_GITHUB_TOKEN_2 }}
+          TOKEN_3: ${{ secrets.COPILOT_GITHUB_TOKEN_3 }}
+        run: |
+          TOKENS=()
+          for i in 1 2 3; do
+            var="TOKEN_$i"
+            val="${!var}"
+            [ -n "$val" ] && TOKENS+=("$val")
+          done
+          if [ ${#TOKENS[@]} -eq 0 ]; then
+            echo "::error::No COPILOT_GITHUB_TOKEN secrets are configured"
+            exit 1
+          fi
+          IDX=$((RANDOM % ${#TOKENS[@]}))
+          echo "::add-mask::${TOKENS[$IDX]}"
+          echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
+
+      - name: Run hermeticity control
+        id: herm
+        env:
+          # Same model-auth-only env the evaluate job uses. If correct, the
+          # positive assertion PASSES (agent reports CORE_LIMIT:60 — anonymous).
+          # If a GitHub-shaped token leaks in, the rate limit is elevated and
+          # the assertion FAILS → hermeticity not verified.
+          COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+        run: |
+          SPEC=.github/skills/code-review/tests/hermeticity.vally.yaml
+          mkdir -p hermeticity-results
+          if [ ! -f "$SPEC" ]; then
+            echo "::warning::hermeticity spec not found at $SPEC"
+            echo "inconclusive" > hermeticity-results/verdict.txt
+            exit 0
+          fi
+
+          set +e
+          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval -e "$SPEC" \
+            --skill-dir .github/skills \
+            --output-dir hermeticity-results/out \
+            --junit \
+            --model claude-opus-4.6 \
+            --judge-model claude-opus-4.6 \
+            --runs 1 \
+            --workers 1 \
+            --verbose
+          EVAL_RC=$?
+          set -e
+          echo "vally exit code: $EVAL_RC (advisory)"
+
+          JUNIT=$(find hermeticity-results/out -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
+          if [ -z "$JUNIT" ]; then
+            echo "::warning::no JUnit produced by hermeticity run"
+            echo "inconclusive" > hermeticity-results/verdict.txt
+            exit 0
+          fi
+
+          ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
+          if [ -z "$ROOT" ]; then
+            echo "::warning::Hermeticity JUnit contains no <testsuites> element"
+            echo "inconclusive" > hermeticity-results/verdict.txt
+            exit 0
+          fi
+          FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
+          ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
+          echo "hermeticity-control: failures=$FAILS errors=$ERRS"
+
+          # Positive assertion: the stimulus passes ONLY when the agent
+          # reports the anonymous rate limit (CORE_LIMIT:60).
+          #   both 0      → stimulus passed → agent is anonymous  → HERMETIC (good)
+          #   errors>=1   → run errored                            → INCONCLUSIVE
+          #   failures>=1 → agent NOT anonymous, or probe errored  → BROKEN
+          if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
+            # Guard: if Vally exited non-zero but JUnit shows no failures,
+            # an execution error may have been swallowed (partial output).
+            if [ "$EVAL_RC" -ne 0 ]; then
+              echo "inconclusive" > hermeticity-results/verdict.txt
+              echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as inconclusive (possible partial output)"
+            else
+              echo "hermetic" > hermeticity-results/verdict.txt
+              echo "✅ Hermetic: agent reported anonymous rate limit (CORE_LIMIT:60); no GitHub token leaked."
+            fi
+          elif [ "$ERRS" -ge 1 ]; then
+            echo "inconclusive" > hermeticity-results/verdict.txt
+            echo "::warning::Hermeticity inconclusive (execution error in hermeticity control)."
+          else
+            echo "broken" > hermeticity-results/verdict.txt
+            echo "::warning::Hermeticity BROKEN: agent did not report anonymous rate limit. A GitHub token may have leaked into the eval env. Non-blocking for now."
+          fi
+          # Non-blocking: never fail this job.
+          exit 0
+
+      - name: Upload hermeticity results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermeticity-results
+          path: hermeticity-results/
+          include-hidden-files: true
+          retention-days: 14
+
+  # ==========================================================================
   # POST PR COMMENT
   # Consolidated results (static + eval) posted directly to the PR.
   # pull_request_target has write permissions, so no separate workflow needed.
   # ==========================================================================
   comment:
     name: Post results comment
-    needs: [pr-gate, slash-gate, static-check, discover-eval, evaluate]
+    needs: [pr-gate, slash-gate, static-check, discover-eval, evaluate, hermeticity-gate]
     if: >-
       always() && !cancelled() && (
         needs.pr-gate.result == 'success' ||
@@ -667,6 +813,14 @@ jobs:
           merge-multiple: false
         continue-on-error: true
 
+      - name: Download hermeticity results
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          name: hermeticity-results
+          path: hermeticity-results/
+        continue-on-error: true
+
       - name: Post comment
         id: post-comment
         uses: actions/github-script@v7
@@ -677,6 +831,7 @@ jobs:
           HAS_ENTRIES: ${{ needs.discover-eval.outputs.has_entries }}
           DISCOVER_RESULT: ${{ needs.discover-eval.result }}
           IS_CONTRIBUTOR: ${{ needs.pr-gate.outputs.is_contributor || 'true' }}
+          HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
         with:
           script: |
             const fs = require('fs');
@@ -685,6 +840,39 @@ jobs:
             const prNumber = parseInt(process.env.PR_NUMBER, 10);
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const marker = '<!-- skill-validation-results -->';
+            // Metadata fetch is decorative; never let a transient failure (rate-limit/5xx) sink the whole results comment.
+            let prData = {};
+            try {
+              const r = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+              prData = r.data;
+            } catch (e) {
+              console.log('pulls.get failed, using fallbacks:', e.message);
+            }
+            // Use the gated SHA the validation actually ran against — the live PR head may have moved during a slow /evaluate-skills run.
+            const headSha = process.env.HEAD_SHA || prData.head?.sha || '';
+            const headSha7 = headSha ? headSha.substring(0, 7) : 'unknown';
+            const commitUrl = headSha ? `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/commit/${headSha}` : runUrl;
+            const prTitle = (prData.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const prAuthor = prData.user?.login || '';
+            const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+            function badge(label, message, color) {
+              const safeLabel = encodeURIComponent(label).replace(/-/g, '--');
+              const safeMessage = encodeURIComponent(message).replace(/-/g, '--');
+              const safeAlt = `${label} ${message}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              return `  <img alt="${safeAlt}" src="https://img.shields.io/badge/${safeLabel}-${safeMessage}-${color}?labelColor=30363d&style=flat-square">`;
+            }
+
+            function colorFor(status) {
+              if (status === 'Passed') return '1a7f37';
+              if (status === 'Failed') return 'd1242f';
+              if (status === 'Skipped') return '6e7781';
+              return 'bf8700';
+            }
 
             const staticResult = process.env.STATIC_RESULT;
             const evalResult = process.env.EVAL_RESULT;
@@ -693,7 +881,7 @@ jobs:
             const isContributor = process.env.IS_CONTRIBUTOR === 'true';
             const evalRan = discoverResult === 'success';
 
-            const lines = [marker, '## 🔍 Skill Validation Results', ''];
+            const lines = [];
 
             // ── Static check section ──────────────────────────────
             let staticOutput = '';
@@ -704,16 +892,16 @@ jobs:
               }
             } catch (e) { /* ignore */ }
 
-            const exitCode = (() => {
-              try { return fs.readFileSync('static-results/exit-code.txt', 'utf8').trim(); }
-              catch { return '?'; }
-            })();
             const skillCount = (() => {
               try { return fs.readFileSync('static-results/skill-count.txt', 'utf8').trim(); }
               catch { return '?'; }
             })();
             const agentCount = (() => {
               try { return fs.readFileSync('static-results/agent-count.txt', 'utf8').trim(); }
+              catch { return '?'; }
+            })();
+            const specCount = (() => {
+              try { return fs.readFileSync('static-results/spec-count.txt', 'utf8').trim(); }
               catch { return '?'; }
             })();
 
@@ -724,30 +912,29 @@ jobs:
             } else {
               lines.push(`### ⚠️ Static Checks: ${staticResult}`);
             }
-            lines.push(`Skills checked: ${skillCount} | Agents checked: ${agentCount}`);
+            lines.push(`Skills: ${skillCount} | Eval specs linted: ${specCount}`);
             lines.push('');
 
             if (staticOutput) {
+              // vally lint prints "✔ ... is valid" for passing specs and error
+              // lines (often containing ✖/✗/"error"/"invalid") for failures.
               const findings = staticOutput.split('\n')
                 .map(l => l.trim())
-                .filter(l => /^[❌⚠ℹ]/.test(l))
+                .filter(l => /(✖|✗|❌|error|invalid)/i.test(l))
                 .slice(0, 10);
 
               if (findings.length > 0) {
-                lines.push('| Level | Finding |');
-                lines.push('|---|---|');
+                lines.push('| Finding |');
+                lines.push('|---|');
                 for (const line of findings) {
-                  const level = line.startsWith('❌') ? '❌'
-                    : line.startsWith('⚠') ? '⚠️'
-                    : 'ℹ️';
-                  const text = line.replace(/^[❌⚠ℹ️\s]+/, '').replace(/\|/g, '\\|');
-                  lines.push(`| ${level} | ${text} |`);
+                  const text = line.replace(/^[✖✗❌⚠ℹ️\s]+/, '').replace(/\|/g, '\\|');
+                  lines.push(`| ${text} |`);
                 }
                 lines.push('');
               }
 
               lines.push('<details>');
-              lines.push('<summary>Full validator output</summary>');
+              lines.push('<summary>Full lint output</summary>');
               lines.push('');
               lines.push('```text');
               lines.push(staticOutput.replace(/```/g, '` ` `'));
@@ -757,52 +944,77 @@ jobs:
               lines.push('');
             }
 
-            // ── Parse eval results from JSON ──────────────────────
-            // Read results.json files from downloaded artifacts to determine
-            // actual pass/fail (the source of truth, not the job exit code
-            // which uses --verdict-warn-only).
-            let allVerdicts = [];
+            // ── Parse eval results from JUnit XML ─────────────────
+            // Vally writes <output-dir>/<timestamp>/eval-results.junit.xml.
+            // Each <testsuite> is one eval spec (its passed/overallScore/
+            // threshold come from suite <property> tags); each <testcase> is a
+            // stimulus trial (a <failure>/<error> child marks it failed). The
+            // suite `passed` property is the authoritative per-spec verdict.
+            function findFilesByName(root, name) {
+              const out = [];
+              const stack = [root];
+              while (stack.length) {
+                const d = stack.pop();
+                let ents = [];
+                try { ents = fs.readdirSync(d, { withFileTypes: true }); } catch { continue; }
+                for (const e of ents) {
+                  const fp = path.join(d, e.name);
+                  if (e.isDirectory()) stack.push(fp);
+                  else if (e.name === name) out.push(fp);
+                }
+              }
+              return out;
+            }
+            function xmlDecode(s) {
+              return (s || '')
+                .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+                .replace(/&amp;/g, '&');
+            }
+            function suiteProp(block, key) {
+              const m = block.match(new RegExp('<property name="' + key + '" value="([^"]*)"'));
+              return m ? xmlDecode(m[1]) : null;
+            }
+            function tagAttr(tag, key) {
+              const m = (tag || '').match(new RegExp(key + '="([^"]*)"'));
+              return m ? xmlDecode(m[1]) : null;
+            }
+
+            const suites = [];
             let evalPassed = true;
             let hasResults = false;
-            const footnotes = [];
-
             if (fs.existsSync('eval-results')) {
-              try {
-                const resultDirs = fs.readdirSync('eval-results').filter(d =>
-                  fs.statSync(path.join('eval-results', d)).isDirectory()
-                );
-
-                for (const dir of resultDirs) {
-                  const dirPath = path.join('eval-results', dir);
-                  // Recursively find results.json
-                  const allFiles = [];
-                  function walkDir(d) {
-                    for (const f of fs.readdirSync(d)) {
-                      const fp = path.join(d, f);
-                      if (fs.statSync(fp).isDirectory()) walkDir(fp);
-                      else allFiles.push(path.relative(dirPath, fp));
+              const junitFiles = findFilesByName('eval-results', 'eval-results.junit.xml');
+              for (const jf of junitFiles) {
+                let xml = '';
+                try { xml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
+                const blocks = xml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
+                for (const block of blocks) {
+                  hasResults = true;
+                  const openTag = (block.match(/<testsuite\b[^>]*>/) || [''])[0];
+                  const label = suiteProp(block, 'evalName') || tagAttr(openTag, 'name') || '(unnamed)';
+                  const score = suiteProp(block, 'overallScore');
+                  const threshold = suiteProp(block, 'threshold');
+                  const passed = suiteProp(block, 'passed') === 'true';
+                  if (!passed) evalPassed = false;
+                  // Failing/erroring stimuli, deduped by testcase name (runs>1
+                  // flattens each stimulus into one testcase per trial).
+                  const failures = new Map();
+                  const tcs = block.match(/<testcase\b[\s\S]*?(?:\/>|<\/testcase>)/g) || [];
+                  for (const tc of tcs) {
+                    const tcOpen = (tc.match(/<testcase\b[^>]*?(?:>|\/>)/) || [''])[0];
+                    const tcName = tagAttr(tcOpen, 'name') || '(stimulus)';
+                    const fm = tc.match(/<failure\b[^>]*message="([^"]*)"/);
+                    const em = tc.match(/<error\b[^>]*message="([^"]*)"/);
+                    if (fm || em) {
+                      const kind = em ? 'error' : 'fail';
+                      const msg = xmlDecode((em && em[1]) || (fm && fm[1]) || '')
+                        .split('\n')[0].slice(0, 240);
+                      if (!failures.has(tcName)) failures.set(tcName, { kind, msg });
                     }
                   }
-                  walkDir(dirPath);
-
-                  const jsonFile = allFiles.find(f => f.endsWith('results.json'));
-                  if (jsonFile) {
-                    hasResults = true;
-                    const data = JSON.parse(
-                      fs.readFileSync(path.join(dirPath, jsonFile), 'utf8')
-                    );
-                    if (data.verdicts && data.verdicts.length > 0) {
-                      allVerdicts.push(...data.verdicts);
-                      for (const v of data.verdicts) {
-                        if (!v.passed) evalPassed = false;
-                      }
-                    } else {
-                      evalPassed = false; // no verdicts = not passed
-                    }
-                  }
+                  suites.push({ label, score, threshold, passed, failures: [...failures.entries()] });
                 }
-              } catch (e) {
-                console.log('Error reading eval results JSON:', e.message);
               }
             }
 
@@ -815,97 +1027,45 @@ jobs:
               lines.push('');
             } else if (!hasEntries) {
               lines.push('### ⏭️ LLM Evaluation: Skipped');
-              lines.push('_No changed skills with eval tests found._');
+              lines.push('_No changed skills with eval specs found._');
               lines.push('');
             } else if (hasResults) {
-              // Use actual results from JSON to determine status
               if (evalPassed) {
                 lines.push('### ✅ LLM Evaluation Passed');
               } else {
                 lines.push('### ❌ LLM Evaluation Failed');
               }
-              const passedCount = allVerdicts.filter(v => v.passed).length;
-              lines.push(`${passedCount}/${allVerdicts.length} skill(s) passed validation`);
+              const passedCount = suites.filter(s => s.passed).length;
+              lines.push(`${passedCount}/${suites.length} eval suite(s) met threshold`);
               lines.push('');
 
-              // ── Build results table ─────────────────────────────
-              if (allVerdicts.length > 0) {
-                lines.push('| Skill | Scenario | Baseline | Skilled | Verdict |');
-                lines.push('|-------|----------|----------|---------|---------|');
+              // ── Per-suite results table ─────────────────────────
+              lines.push('| Suite | Score | Threshold | Verdict |');
+              lines.push('|-------|-------|-----------|---------|');
+              for (const s of suites) {
+                const sc = s.score != null && s.score !== '' ? Number(s.score).toFixed(2) : '—';
+                const th = s.threshold != null && s.threshold !== '' ? Number(s.threshold).toFixed(2) : '—';
+                const v = s.passed ? '✅' : '❌';
+                const label = (s.label || '').replace(/\|/g, '\\|');
+                lines.push(`| ${label} | ${sc} | ${th} | ${v} |`);
+              }
+              lines.push('');
 
-                let fnIndex = 0;
-                for (const verdict of allVerdicts) {
-                  const scenarios = verdict.scenarios || [];
-                  for (const sc of scenarios) {
-                    const baseScore = sc.baseline?.judgeResult?.overallScore;
-                    const isolatedScore = sc.skilledIsolated?.judgeResult?.overallScore;
-                    const pluginScore = sc.skilledPlugin?.judgeResult?.overallScore;
-
-                    // Format scores
-                    const baseStr = baseScore != null ? `${baseScore.toFixed(1)}/5` : '—';
-
-                    // Pick the best skilled score (isolated or plugin)
-                    let skilledStr;
-                    if (isolatedScore != null && pluginScore != null) {
-                      skilledStr = `${isolatedScore.toFixed(1)}/5 (iso) · ${pluginScore.toFixed(1)}/5 (plug)`;
-                    } else if (isolatedScore != null) {
-                      skilledStr = `${isolatedScore.toFixed(1)}/5`;
-                    } else if (pluginScore != null) {
-                      skilledStr = `${pluginScore.toFixed(1)}/5`;
-                    } else {
-                      skilledStr = '—';
-                    }
-
-                    // Timeout indicator
-                    const timeoutFlag = sc.timedOut ? ' ⏳' : '';
-
-                    // Verdict icon — per-scenario: improvement >= 0 means not regressed
-                    const improvement = sc.improvementScore || 0;
-                    const scenarioIcon = improvement >= 0 ? '✅' : '⚠️';
-
-                    // Footnote for high variance or timeout
-                    let footRef = '';
-                    if (sc.highVariance || sc.timedOut) {
-                      fnIndex++;
-                      const parts = [];
-                      if (sc.highVariance) parts.push(`High run-to-run variance (CV=${(sc.varianceCV || 0).toFixed(2)})`);
-                      if (sc.timedOut) parts.push(`Timeout at ${sc.timeoutSeconds || '?'}s`);
-                      footRef = ` <a href="#user-content-fn-${fnIndex}" id="ref-${fnIndex}">[${fnIndex}]</a>`;
-                      footnotes.push(`<a href="#user-content-ref-${fnIndex}" id="fn-${fnIndex}"><strong>[${fnIndex}]</strong></a> ${parts.join('. ')}`);
-                    }
-
-                    const safeSkillName = (verdict.skillName || '').replace(/\|/g, '\\|');
-                    const safeScenarioName = (sc.scenarioName || '').replace(/\|/g, '\\|');
-                    lines.push(`| ${safeSkillName} | ${safeScenarioName} | ${baseStr}${timeoutFlag} | ${skilledStr}${timeoutFlag} | ${scenarioIcon}${footRef} |`);
-                  }
+              // ── Failing stimuli detail ──────────────────────────
+              for (const s of suites.filter(x => x.failures.length > 0)) {
+                const label = (s.label || '').replace(/\|/g, '\\|');
+                lines.push('<details>');
+                lines.push(`<summary>❌ ${label} — ${s.failures.length} failing stimulus(es)</summary>`);
+                lines.push('');
+                for (const [name, info] of s.failures) {
+                  const tag = info.kind === 'error' ? '🛑 error' : '❌ fail';
+                  const safeName = String(name).replace(/\|/g, '\\|');
+                  const safeMsg = (info.msg || '').replace(/\|/g, '\\|');
+                  lines.push(`- **${safeName}** (${tag}): ${safeMsg}`);
                 }
                 lines.push('');
-
-                // Overall verdict line per skill
-                for (const verdict of allVerdicts) {
-                  const icon = verdict.passed ? '✅' : '❌';
-                  const reason = (verdict.reason || '').replace(/\|/g, '\\|');
-                  const safeSkillNameSummary = (verdict.skillName || '').replace(/\|/g, '\\|');
-                  lines.push(`${icon} **${safeSkillNameSummary}**: ${reason}`);
-                  lines.push('');
-                }
-
-                // Footnotes
-                if (footnotes.length > 0) {
-                  for (const fn of footnotes) {
-                    lines.push(fn);
-                  }
-                  lines.push('');
-                }
-
-                // Timeout warning
-                const hasTimeout = allVerdicts.some(v =>
-                  (v.scenarios || []).some(s => s.timedOut)
-                );
-                if (hasTimeout) {
-                  lines.push('> ⏳ **timeout** — run(s) hit the scenario timeout limit; scoring may be impacted');
-                  lines.push('');
-                }
+                lines.push('</details>');
+                lines.push('');
               }
             } else if (evalResult === 'success') {
               lines.push('### ✅ LLM Evaluation Passed');
@@ -921,55 +1081,43 @@ jobs:
               lines.push('');
             }
 
-            // Detailed judge reports in collapsible sections
+            // ── Harness hermeticity (negative control) ────────────
+            let hermVerdict = '';
+            try { hermVerdict = fs.readFileSync('hermeticity-results/verdict.txt', 'utf8').trim(); }
+            catch { /* gate may not have run */ }
+            if (hermVerdict) {
+              lines.push('### Harness hermeticity (negative control)');
+              if (hermVerdict === 'hermetic') {
+                lines.push('✅ Hermetic — the negative-control stimulus correctly came back **unauthenticated** (anonymous core rate limit; no GitHub token leaked into the agent env).');
+              } else if (hermVerdict === 'broken') {
+                lines.push('❌ **NOT hermetic** — the negative-control stimulus was **authenticated** against the GitHub API (elevated rate limit). A GitHub token leaked into the eval env and regression suites may be open-book. _(non-blocking for now)_');
+              } else {
+                lines.push('⚠️ Inconclusive — the negative-control run errored before it could prove hermeticity. _(non-blocking)_');
+              }
+              lines.push('');
+            }
+
+            // ── Detailed eval reports (vally eval-results.md) ─────
             if (fs.existsSync('eval-results')) {
-              try {
-                const resultDirs = fs.readdirSync('eval-results').filter(d =>
-                  fs.statSync(path.join('eval-results', d)).isDirectory()
-                );
-
-                for (const dir of resultDirs) {
-                  const skillName = dir.replace('skill-eval-results-', '');
-                  const dirPath = path.join('eval-results', dir);
-                  const allFiles = [];
-                  function walkDir2(d) {
-                    for (const f of fs.readdirSync(d)) {
-                      const fp = path.join(d, f);
-                      if (fs.statSync(fp).isDirectory()) walkDir2(fp);
-                      else allFiles.push(path.relative(dirPath, fp));
-                    }
-                  }
-                  walkDir2(dirPath);
-
-                  // Include per-scenario judge reports (not summary.md which duplicates the table)
-                  const mdFiles = allFiles.filter(f =>
-                    f.endsWith('.md') && !f.endsWith('summary.md')
-                  );
-                  for (const mdFile of mdFiles) {
-                    const mdContent = fs.readFileSync(
-                      path.join(dirPath, mdFile), 'utf8'
-                    ).trim();
-                    if (mdContent.length > 0) {
-                      const scenarioName = path.basename(mdFile, '.md');
-                      lines.push(`<details>`);
-                      lines.push(`<summary>📊 ${skillName} / ${scenarioName}</summary>`);
-                      lines.push('');
-                      lines.push(mdContent.replace(/```/g, '` ` `').replace(/<\/details>/gi, '&lt;/details&gt;'));
-                      lines.push('');
-                      lines.push('</details>');
-                      lines.push('');
-                    }
-                  }
-                }
-              } catch (e) {
-                console.log('Error reading eval result details:', e.message);
+              const mdFiles = findFilesByName('eval-results', 'eval-results.md');
+              for (const mf of mdFiles) {
+                let md = '';
+                try { md = fs.readFileSync(mf, 'utf8').trim(); } catch { continue; }
+                if (!md) continue;
+                const rel = path.relative('eval-results', mf);
+                const skillName = rel.split(path.sep)[0].replace('skill-eval-results-', '');
+                if (md.length > 12000) md = md.slice(0, 12000) + '\n…(truncated — see artifacts)…';
+                lines.push('<details>');
+                lines.push(`<summary>📊 ${skillName} — eval report</summary>`);
+                lines.push('');
+                lines.push(md.replace(/```/g, '` ` `').replace(/<\/details>/gi, '&lt;/details&gt;'));
+                lines.push('');
+                lines.push('</details>');
+                lines.push('');
               }
             }
 
             // ── Investigation prompt for failures ─────────────────
-            // When any evaluated skill failed, build a copy-paste prompt
-            // that tells the user how to download artifacts and investigate
-            // with their AI coding agent (same pattern as dotnet/skills).
             let investigatePrompt = '';
             if (hasResults && !evalPassed) {
               const runId = context.runId;
@@ -979,17 +1127,103 @@ jobs:
                 '> **To investigate failures**, paste this to your AI coding agent:',
                 '>',
                 `> _For PR #${prNumber} in ${repo}, download eval artifacts with ` +
-                `\`gh run download ${runId} --repo ${repo} --pattern "skill-eval-results-*" --dir ./eval-results\`, ` +
-                `then fetch https://raw.githubusercontent.com/dotnet/skills/main/eng/skill-validator/src/docs/InvestigatingResults.md ` +
-                `and follow it to analyze the results.json files. Diagnose each failure, suggest fixes to the eval.yaml ` +
-                `and skill content, and tell me what to fix first._`,
+                `\`gh run download ${runId} --repo ${repo} --pattern "skill-eval-results-*" --dir ./eval-results\`. ` +
+                `Each suite has \`eval-results.md\` (human summary), \`eval-results.junit.xml\` (per-stimulus pass/fail with judge evidence), ` +
+                `and per-trial session logs under \`executor-session-logs/\`. Read the failing \`<testcase>\` entries and their \`<failure>\` evidence, diagnose each, ` +
+                `and propose fixes to the skill content or the eval*.vally.yaml rubric. Tell me what to fix first._`,
               ].join('\n');
             }
 
-            // ── Pipeline link (styled like dotnet/skills) ─────────
+            // ── Pipeline link ─────────────────────────────────────
             lines.push(`[🔍 Full results and investigation steps](${runUrl})`);
 
-            const body = lines.join('\n');
+            const staticStatus = staticResult === 'success'
+              ? 'Passed'
+              : staticResult === 'failure'
+                ? 'Failed'
+                : (staticResult || 'Unknown');
+            let evalStatus;
+            if (!evalRan && !isContributor) {
+              evalStatus = 'Skipped';
+            } else if (discoverResult !== 'success') {
+              evalStatus = 'Needs attention';  // discovery job failed → can't tell if eval was needed; don't mask as Skipped/Passed
+            } else if (!hasEntries) {
+              evalStatus = 'Skipped';
+            } else if (hasResults) {
+              evalStatus = evalPassed ? 'Passed' : 'Failed';
+            } else if (evalResult === 'success') {
+              evalStatus = 'Passed';
+            } else if (evalResult === 'failure') {
+              evalStatus = 'Failed';
+            } else if (evalResult === 'skipped') {
+              evalStatus = 'Skipped';
+            } else {
+              evalStatus = evalResult || 'Unknown';
+            }
+            const overallStatus = staticStatus === 'Failed' || evalStatus === 'Failed'
+              ? 'Failed'
+              : (staticStatus === 'Passed' && (evalStatus === 'Passed' || evalStatus === 'Skipped'))
+                ? 'Passed'
+                : 'Needs attention';
+            const overallIcon = overallStatus === 'Passed' ? '✅' : overallStatus === 'Failed' ? '❌' : '⚠️';
+            // Wrap badge + body construction so a future undefined variable or formatting
+            // error can never sink the whole job: on failure we log loudly and fall back to a
+            // minimal plain-text body so the results comment ALWAYS posts.
+            let body;
+            try {
+              const badges = [
+                badge('Overall', overallStatus, colorFor(overallStatus)),
+                badge('Static', staticStatus, colorFor(staticStatus)),
+                badge('LLM', evalStatus, colorFor(evalStatus)),
+                badge('Skills', String(skillCount), '8250df'),
+                badge('Agents', String(agentCount), '0969da'),
+              ].join('\n');
+              const authorLine = prAuthor
+                ? `> @${prAuthor} — new skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`
+                : `> New skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`;
+              const content = lines.join('\n');
+              body = [
+                marker,
+                '',
+                '## Skill Validation Results',
+                '',
+                authorLine,
+                '> To request a fresh validation after new comments or commits, comment `/evaluate-skills`.',
+                '',
+                '<p align="left">',
+                badges,
+                '</p>',
+                '',
+                `<!-- SESSION:${headSha7} START -->`,
+                '<details>',
+                `<summary>${overallIcon} <strong>Skill Validation Results</strong> — <a href="${commitUrl}"><code>${headSha7}</code></a> · <strong>${prTitle}</strong> · <em>${timestamp}</em></summary>`,
+                '<br/>',
+                '',
+                content,
+                '',
+                '</details>',
+                `<!-- SESSION:${headSha7} END -->`,
+              ].join('\n').replace(/<details\s+open>/g, '<details>');
+            } catch (err) {
+              const detail = err && err.stack ? err.stack : String(err);
+              console.error(`Failed to build formatted Skill Validation comment body: ${detail}`);
+              core.warning(`Skill Validation comment formatting failed; posting plain-text fallback instead: ${err && err.message ? err.message : detail}`);
+              // Keep the marker so the upsert logic still finds/updates this comment, and use
+              // only the already-computed status values (no badge formatting that could rethrow).
+              body = [
+                marker,
+                '',
+                '## Skill Validation Results',
+                '',
+                `Overall: ${overallStatus} · Static: ${staticStatus} · LLM: ${evalStatus}`,
+                '',
+                `Commit: \`${headSha7}\``,
+                '',
+                `[🔍 Full results and investigation steps](${runUrl})`,
+                '',
+                '> _Result badges could not be rendered due to an internal formatting error; see the workflow run logs for details._',
+              ].join('\n');
+            }
 
             // ── Write step summary with investigation prompt ──────
             const summaryPath = process.env.GITHUB_STEP_SUMMARY;

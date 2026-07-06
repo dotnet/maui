@@ -148,13 +148,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// from the user.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="request"/> contains a negative minimum time or distance.</exception>
 		/// <exception cref="FeatureNotSupportedException">Thrown if listening is not supported on this platform.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if already listening and <see cref="IsListeningForeground"/> returns <see langword="true"/>.</exception>
 		/// <param name="request">The listening request parameters to use.</param>
 		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		public async Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request)
 		{
-			ArgumentNullException.ThrowIfNull(request);
+			ValidateListeningRequest(request);
 
 			if (LocationManager is null)
 				throw new FeatureNotSupportedException("Android LocationManager is not available");
@@ -200,7 +201,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			var minTimeMilliseconds = (long)request.MinimumTime.TotalMilliseconds;
 
 			foreach (var provider in listeningProviders)
-				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, providerInfo.Accuracy, continuousListener, looper);
+				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, (float)request.MinimumDistance, continuousListener, looper);
 
 			return true;
 

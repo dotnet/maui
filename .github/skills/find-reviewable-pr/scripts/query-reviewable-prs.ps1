@@ -1219,14 +1219,18 @@ function Format-Markdown-Output {
             $title = $rawTitle.Replace('|', '\|')
             $link = "[#$($pr.Number)]($($pr.URL))"
             $turnCol = "$($pr.TurnIcon) $($pr.TurnDetail)"
+            # Wrap author handles in backticks so GitHub renders them as inline code
+            # rather than as @mentions — this issue is for MAUI team triage tracking,
+            # not a notification firehose to every PR author each day.
+            $author = "``@$($pr.Author)``"
             if ($showMilestone -and $showTurn) {
-                [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $($pr.Milestone) | $turnCol | $($pr.Platform) | $($pr.Age)d |")
+                [void]$md.AppendLine("| $link | $title | $author | $($pr.Milestone) | $turnCol | $($pr.Platform) | $($pr.Age)d |")
             } elseif ($showMilestone) {
-                [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $($pr.Milestone) | $($pr.Platform) | $($pr.Age)d | $($pr.Updated)d ago |")
+                [void]$md.AppendLine("| $link | $title | $author | $($pr.Milestone) | $($pr.Platform) | $($pr.Age)d | $($pr.Updated)d ago |")
             } elseif ($showTurn) {
-                [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $turnCol | $($pr.Platform) | $($pr.Age)d |")
+                [void]$md.AppendLine("| $link | $title | $author | $turnCol | $($pr.Platform) | $($pr.Age)d |")
             } else {
-                [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $($pr.Platform) | $($pr.Age)d | $($pr.Updated)d ago |")
+                [void]$md.AppendLine("| $link | $title | $author | $($pr.Platform) | $($pr.Age)d | $($pr.Updated)d ago |")
             }
         }
         [void]$md.AppendLine("")

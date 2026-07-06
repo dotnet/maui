@@ -1099,8 +1099,8 @@ public class BindingRepresentationGenTests
 					ContainingType: new TypeDescription("global::Foo"),
 					MemberType: new TypeDescription("int", IsValueType: true),
 					Kind: AccessorKind.Field,
-					IsGetterInaccessible: true,
-					IsSetterInaccessible: true
+					IsGetterAccessible: false,
+					IsSetterAccessible: false
 				)
 			]),
 			SetterOptions: new(IsWritable: true),
@@ -1143,8 +1143,8 @@ public class BindingRepresentationGenTests
 					ContainingType: new TypeDescription("global::Foo"),
 					MemberType: new TypeDescription("int", IsValueType: true),
 					Kind: AccessorKind.Property,
-					IsGetterInaccessible: true,
-					IsSetterInaccessible: true
+					IsGetterAccessible: false,
+					IsSetterAccessible: false
 				)
 			]),
 			SetterOptions: new(IsWritable: true),

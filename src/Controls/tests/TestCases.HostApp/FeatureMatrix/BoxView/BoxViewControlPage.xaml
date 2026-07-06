@@ -16,6 +16,7 @@
                 <BoxView Grid.Row="0"
                          AutomationId="BoxViewControl"
                          Color="{Binding Color}"
+                         Fill="{Binding Fill}"
                          WidthRequest="{Binding Width}"
                          Opacity="{Binding Opacity}"
                          HeightRequest="{Binding Height}"
@@ -40,7 +41,6 @@
                         <!-- Left Column - Entry Controls -->
                         <StackLayout Grid.Column="0"
                                      Grid.Row="0"
-                                     Padding="20"
                                      Spacing="10">
                                 <Label FontAttributes="Bold"
                                        AutomationId="CornerRadiusLabel"
@@ -88,29 +88,54 @@
                         <!-- Right Column - Controls -->
                         <StackLayout Grid.Column="1"
                                      Grid.Row="0"
-                                     Padding="20"
                                      Spacing="1">
-                                <Label FontAttributes="Bold"
-                                       Text="Box Color"/>
-                                <VerticalStackLayout>
-                                        <RadioButton Content="Red"
-                                                     Value="Red"
-                                                     GroupName="Colors"
-                                                     AutomationId="RedRadioButton"
-                                                     IsChecked="{Binding IsRedChecked, Mode=TwoWay}"/>
+                                <HorizontalStackLayout>
+                                        <!-- Color -->
+                                        <VerticalStackLayout>
+                                                <Label FontAttributes="Bold"
+                                                       Text="Box Color"/>
+                                                <RadioButton Content="Red"
+                                                             Value="Red"
+                                                             GroupName="Colors"
+                                                             AutomationId="RedRadioButton"
+                                                             IsChecked="{Binding IsRedChecked, Mode=TwoWay}"/>
 
-                                        <RadioButton Content="Blue"
-                                                     Value="Blue"
-                                                     GroupName="Colors"
-                                                     AutomationId="BlueRadioButton"
-                                                     IsChecked="{Binding IsBlueChecked, Mode=TwoWay}"/>
+                                                <RadioButton Content="Blue"
+                                                             Value="Blue"
+                                                             GroupName="Colors"
+                                                             AutomationId="BlueRadioButton"
+                                                             IsChecked="{Binding IsBlueChecked, Mode=TwoWay}"/>
 
-                                        <RadioButton Content="Green"
-                                                     Value="Green"
-                                                     GroupName="Colors"
-                                                     AutomationId="GreenRadioButton"
-                                                     IsChecked="{Binding IsGreenChecked, Mode=TwoWay}"/>
-                                </VerticalStackLayout>
+                                                <RadioButton Content="Green"
+                                                             Value="Green"
+                                                             GroupName="Colors"
+                                                             AutomationId="GreenRadioButton"
+                                                             IsChecked="{Binding IsGreenChecked, Mode=TwoWay}"/>
+                                        </VerticalStackLayout>
+
+                                        <!-- Fill -->
+                                        <VerticalStackLayout>
+                                                <Label FontAttributes="Bold"
+                                                       HorizontalOptions="Center"
+                                                       Text="Fill"/>
+                                                <RadioButton Content="Solid"
+                                                             Value="Solid"
+                                                             GroupName="Fill"
+                                                             AutomationId="SolidRadioButton"
+                                                             IsChecked="{Binding IsSolidChecked, Mode=TwoWay}"/>
+
+                                                <RadioButton Content="Linear"
+                                                             Value="Linear"
+                                                             GroupName="Fill"
+                                                             AutomationId="LinearRadioButton"
+                                                             IsChecked="{Binding IsLinearChecked, Mode=TwoWay}"/>
+                                                <RadioButton Content="Radial"
+                                                             Value="Radial"
+                                                             GroupName="Fill"
+                                                             AutomationId="RadialRadioButton"
+                                                             IsChecked="{Binding IsRadialChecked, Mode=TwoWay}"/>
+                                        </VerticalStackLayout>
+                                </HorizontalStackLayout>
 
                                 <VerticalStackLayout Spacing="5">
                                         <HorizontalStackLayout
@@ -129,10 +154,10 @@
                                         </HorizontalStackLayout>
 
                                         <Label Text="Flow Direction:"
-                                                FontAttributes="Bold"
-                                                        FontSize="15"/>
+                                               FontAttributes="Bold"
+                                               FontSize="15"/>
                                         <StackLayout Orientation="Horizontal"
-                                                        Spacing="10">
+                                                     Spacing="10">
 
                                                 <CheckBox x:Name="FlowDirectionRTLCheckBox"
                                                           AutomationId="FlowDirectionRTLCheckBox"

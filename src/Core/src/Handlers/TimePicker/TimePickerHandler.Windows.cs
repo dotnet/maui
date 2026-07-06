@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers

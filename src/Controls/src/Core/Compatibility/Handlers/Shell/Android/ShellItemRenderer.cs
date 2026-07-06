@@ -183,7 +183,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// handle the more tab
 			var items = ((IShellItemController)ShellItem).GetItems();
-			for (int i = _bottomView.MaxItemCount - 1; i < items.Count; i++)
+			var maxItems = Math.Min(_bottomView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
+			for (int i = maxItems - 1; i < items.Count; i++)
 			{
 				var closure_i = i;
 				var shellContent = items[i];
@@ -191,7 +192,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				using (var innerLayout = new LinearLayout(Context))
 				{
 					innerLayout.SetClipToOutline(true);
-					innerLayout.SetBackground(CreateItemBackgroundDrawable());
+					innerLayout.SetBackground(
+						RuntimeFeature.IsMaterial3Enabled
+							? BottomNavigationViewUtils.CreateItemBackgroundDrawable(Context)
+							: CreateItemBackgroundDrawable());
 					innerLayout.SetPadding(0, (int)Context.ToPixels(6), 0, (int)Context.ToPixels(6));
 					innerLayout.Orientation = Orientation.Horizontal;
 					using (var param = new LP(LP.MatchParent, LP.WrapContent))
@@ -231,7 +235,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							image.SetImageDrawable(result?.Value);
 							if (result?.Value is not null)
 							{
-								var color = Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
+								var color = RuntimeFeature.IsMaterial3Enabled
+									? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
+									: Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
 								result.Value.SetTint(color);
 							}
 						});
@@ -243,7 +249,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						text.Typeface = services.GetRequiredService<IFontManager>()
 							.GetTypeface(Font.OfSize("sans-serif-medium", 0.0));
 
-						text.SetTextColor(AColor.Black);
+						text.SetTextColor(
+							RuntimeFeature.IsMaterial3Enabled
+								? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
+								: AColor.Black);
 						text.Text = shellContent.Title;
 						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
 						{
@@ -287,11 +296,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnDisplayedPageChanged(newPage, oldPage);
 
-			if (oldPage is not null)
-				oldPage.PropertyChanged -= OnDisplayedElementPropertyChanged;
+			oldPage?.PropertyChanged -= OnDisplayedElementPropertyChanged;
 
-			if (newPage is not null)
-				newPage.PropertyChanged += OnDisplayedElementPropertyChanged;
+			newPage?.PropertyChanged += OnDisplayedElementPropertyChanged;
 
 			if (newPage is not null && !_menuSetup)
 			{
@@ -383,7 +390,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
 
 				var itemCount = ((IShellItemController)ShellItem).GetItems().Count;
-				var maxItems = _bottomView.MaxItemCount;
+				var maxItems = Math.Min(_bottomView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
 				IMenuItem menuItem = null;
 
 				if (!(itemCount > maxItems && index > maxItems - 2))
@@ -423,6 +430,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						_updateMenuItemTitle = null;
 						_updateMenuItemSource = null;
 					}
+				}
+			}
+			else if (e.IsOneOf(BaseShellItem.BadgeTextProperty, BaseShellItem.BadgeColorProperty, BaseShellItem.BadgeTextColorProperty))
+			{
+				var shellSection = (ShellSection)sender;
+				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
+
+				if (index < 0)
+					return;
+
+				var itemCount = ((IShellItemController)ShellItem).GetItems().Count;
+				var maxItems = _bottomView.MaxItemCount;
+
+				if (!(itemCount > maxItems && index > maxItems - 2))
+				{
+					UpdateShellSectionBadge(shellSection, index);
 				}
 			}
 		}
@@ -479,6 +502,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					currentIndex,
 					_bottomView,
 					MauiContext);
+
+				UpdateAllBadges();
 			}
 
 			UpdateTabBarVisibility();
@@ -501,6 +526,79 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bool tabEnabled = shellSection.IsEnabled;
 			if (menuItem.IsEnabled != tabEnabled)
 				menuItem.SetEnabled(tabEnabled);
+		}
+
+		/// <summary>
+		/// Updates the badge on a bottom navigation tab for the given shell section.
+		/// </summary>
+		protected virtual void UpdateShellSectionBadge(ShellSection shellSection, int index)
+		{
+			if (_bottomView is null || !_bottomView.IsAlive())
+				return;
+
+			var badgeText = shellSection.BadgeText;
+			var menuItemId = index;
+
+			if (badgeText is null)
+			{
+				_bottomView.RemoveBadge(menuItemId);
+			}
+			else
+			{
+				var badgeColor = shellSection.BadgeColor;
+
+				// Remove and recreate badge when clearing color to reset to platform default
+				if (badgeColor is null)
+				{
+					_bottomView.RemoveBadge(menuItemId);
+				}
+
+				var badge = _bottomView.GetOrCreateBadge(menuItemId);
+				if (badgeText.Length > 0)
+					badge.Text = badgeText;
+				else
+					badge.ClearNumber(); // Empty string shows as dot indicator
+
+				if (badgeColor is not null)
+				{
+					badge.BackgroundColor = badgeColor.ToPlatform();
+				}
+
+				var badgeTextColor = shellSection.BadgeTextColor;
+				if (badgeTextColor is not null)
+				{
+					badge.BadgeTextColor = badgeTextColor.ToPlatform();
+				}
+			}
+		}
+
+		void UpdateAllBadges()
+		{
+			if (_bottomView is null || !_bottomView.IsAlive())
+				return;
+
+			var items = ((IShellItemController)ShellItem).GetItems();
+			var maxItems = _bottomView.MaxItemCount;
+
+			if (items.Count == 0 || maxItems <= 0)
+				return;
+
+			var hasOverflow = items.Count > maxItems;
+
+			// When overflow exists, index maxItems - 1 is the "More" tab.
+			// Only update badges for actual sections shown as tabs.
+			var lastIndexToUpdate = hasOverflow ? maxItems - 2 : Math.Min(items.Count, maxItems) - 1;
+
+			for (int i = 0; i <= lastIndexToUpdate; i++)
+			{
+				UpdateShellSectionBadge(items[i], i);
+			}
+
+			// Ensure the "More" tab itself does not display a badge
+			if (hasOverflow)
+			{
+				_bottomView.RemoveBadge(maxItems - 1);
+			}
 		}
 
 		void OnDisplayedElementPropertyChanged(object sender, PropertyChangedEventArgs e)

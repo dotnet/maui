@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using Xunit;
 using Xunit.Sdk;
 
@@ -460,5 +461,223 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			rd0.Add("foo", "Foo");
 			Assert.Equal("Foo", label.Text);
 		}
+
+		#region Lazy ResourceDictionary (AddFactory) Tests
+
+		[Fact]
+		public void AddFactory_SharedTrue_InvokesFactoryOnce()
+		{
+			var rd = new ResourceDictionary();
+			var invokeCount = 0;
+
+			rd.AddFactory("test", () =>
+			{
+				invokeCount++;
+				return "TestValue";
+			}, shared: true);
+
+			// First access
+			var value1 = rd["test"];
+			Assert.Equal("TestValue", value1);
+			Assert.Equal(1, invokeCount);
+
+			// Second access - should use cached value
+			var value2 = rd["test"];
+			Assert.Equal("TestValue", value2);
+			Assert.Equal(1, invokeCount); // Still 1, factory not invoked again
+		}
+
+		[Fact]
+		public void AddFactory_SharedFalse_InvokesFactoryEachTime()
+		{
+			var rd = new ResourceDictionary();
+			var invokeCount = 0;
+
+			rd.AddFactory("test", () =>
+			{
+				invokeCount++;
+				return $"Value{invokeCount}";
+			}, shared: false);
+
+			// First access
+			var value1 = rd["test"];
+			Assert.Equal("Value1", value1);
+			Assert.Equal(1, invokeCount);
+
+			// Second access - should invoke factory again
+			var value2 = rd["test"];
+			Assert.Equal("Value2", value2);
+			Assert.Equal(2, invokeCount);
+
+			// Third access
+			var value3 = rd["test"];
+			Assert.Equal("Value3", value3);
+			Assert.Equal(3, invokeCount);
+		}
+
+		[Fact]
+		public void AddFactory_TryGetValue_ResolvesFactory()
+		{
+			var rd = new ResourceDictionary();
+			rd.AddFactory("test", () => "FactoryValue", shared: true);
+
+			Assert.True(rd.TryGetValue("test", out var value));
+			Assert.Equal("FactoryValue", value);
+		}
+
+		[Fact]
+		public void AddFactory_ContainsKey_ReturnsTrue()
+		{
+			var rd = new ResourceDictionary();
+			rd.AddFactory("test", () => "Value", shared: true);
+
+			Assert.True(rd.ContainsKey("test"));
+		}
+
+		[Fact]
+		public void AddFactory_DuplicateKey_Throws()
+		{
+			var rd = new ResourceDictionary();
+			rd.AddFactory("test", () => "Value1", shared: true);
+
+			var ex = Assert.Throws<ArgumentException>(() =>
+				rd.AddFactory("test", () => "Value2", shared: true));
+			Assert.Contains("test", ex.Message, StringComparison.InvariantCulture);
+		}
+
+		[Fact]
+		public void AddFactory_ImplicitStyle_UsesTargetTypeAsKey()
+		{
+			var rd = new ResourceDictionary();
+			rd.AddFactory(typeof(Label), () => new Style(typeof(Label))
+			{
+				Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Red } }
+			}, shared: true);
+
+			// Should be accessible via type's full name
+			Assert.True(rd.TryGetValue(typeof(Label).FullName, out var value));
+			Assert.IsType<Style>(value);
+			var style = (Style)value;
+			Assert.Equal(typeof(Label), style.TargetType);
+		}
+
+		[Fact]
+		public void AddFactory_Values_ResolvesLazyResources()
+		{
+			var rd = new ResourceDictionary();
+			rd.AddFactory("lazy", () => "LazyValue", shared: true);
+			rd.Add("regular", "RegularValue");
+
+			var values = rd.Values.ToList();
+			Assert.Contains("LazyValue", values);
+			Assert.Contains("RegularValue", values);
+		}
+
+		[Fact]
+		public void AddFactory_Enumerate_ResolvesLazyResources()
+		{
+			var rd = new ResourceDictionary();
+			rd.AddFactory("lazy", () => "LazyValue", shared: true);
+			rd.Add("regular", "RegularValue");
+
+			var dict = rd.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+			Assert.Equal("LazyValue", dict["lazy"]);
+			Assert.Equal("RegularValue", dict["regular"]);
+		}
+
+		[Fact]
+		public void AddFactory_DoesNotInvokeUntilAccessed()
+		{
+			var rd = new ResourceDictionary();
+			var invoked = false;
+
+			rd.AddFactory("test", () =>
+			{
+				invoked = true;
+				return "Value";
+			}, shared: true);
+
+			// Factory should not be invoked yet
+			Assert.False(invoked);
+
+			// Now access it
+			_ = rd["test"];
+			Assert.True(invoked);
+		}
+
+		[Fact]
+		public void AddFactory_SharedFalse_CreatesNewInstances()
+		{
+			var rd = new ResourceDictionary();
+			rd.AddFactory("shape", () => new BoxView(), shared: false);
+
+			var shape1 = rd["shape"];
+			var shape2 = rd["shape"];
+
+			Assert.NotSame(shape1, shape2);
+		}
+
+		[Fact]
+		public void AddFactory_SharedTrue_ReturnsSameInstance()
+		{
+			var rd = new ResourceDictionary();
+			rd.AddFactory("shape", () => new BoxView(), shared: true);
+
+			var shape1 = rd["shape"];
+			var shape2 = rd["shape"];
+
+			Assert.Same(shape1, shape2);
+		}
+
+		[Fact]
+		public void AddFactory_ValuesChanged_ResolvesLazyResource()
+		{
+			// AddFactory fires ValuesChanged and when the value is accessed via
+			// the resolver function, it returns the resolved value (not the LazyResource wrapper).
+
+			var rd = new ResourceDictionary();
+			object eventValue = null;
+
+			((IResourceDictionary)rd).ValuesChanged += (sender, e) =>
+			{
+				eventValue = e.Values.First().Value;
+			};
+
+			rd.AddFactory("myColor", () => Colors.Red, shared: true);
+
+			// The event value should be properly resolved
+			Assert.NotNull(eventValue);
+			
+			// The value should be the resolved color
+			Assert.Equal(Colors.Red, eventValue);
+			
+			// The value IS correct when accessed directly
+			Assert.Equal(Colors.Red, rd["myColor"]);
+		}
+
+		[Fact]
+		public void AddFactory_DynamicResource_ResolvesCorrectly()
+		{
+			// When a DynamicResource binding exists and a lazy resource is added later,
+			// the element receives the resolved value (not the LazyResource wrapper).
+
+			var rd = new ResourceDictionary();
+			var label = new Label();
+			
+			// Set up the page hierarchy so DynamicResource can find resources
+			var page = new ContentPage { Content = label };
+			page.Resources = rd;
+
+			// Set up DynamicResource binding BEFORE the resource exists
+			label.SetDynamicResource(Label.TextColorProperty, "myColor");
+
+			// Add the resource via factory - this fires ValuesChanged
+			rd.AddFactory("myColor", () => Colors.Blue, shared: true);
+
+			// The label's TextColor should be set to Colors.Blue
+			Assert.Equal(Colors.Blue, label.TextColor);
+		}
+
+		#endregion
 	}
 }

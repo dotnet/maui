@@ -316,7 +316,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	public Task InvokeJavaScriptMethodThatThrowsNumber(string type) =>
 		RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 1, ex =>
 		{
-			Assert.Equal("InvokeJavaScript threw an exception: 777.777", ex.Message);
+			Assert.Equal("InvokeJavaScriptAsync threw an exception: 777.777", ex.Message);
 			Assert.Equal("777.777", ex.InnerException?.Message);
 			Assert.Null(ex.InnerException?.Data["JavaScriptErrorName"]);
 			Assert.NotNull(ex.InnerException?.StackTrace);
@@ -328,7 +328,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	public Task InvokeJavaScriptMethodThatThrowsString(string type) =>
 		RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 2, ex =>
 		{
-			Assert.Equal("InvokeJavaScript threw an exception: String: 777.777", ex.Message);
+			Assert.Equal("InvokeJavaScriptAsync threw an exception: String: 777.777", ex.Message);
 			Assert.Equal("String: 777.777", ex.InnerException?.Message);
 			Assert.Null(ex.InnerException?.Data["JavaScriptErrorName"]);
 			Assert.NotNull(ex.InnerException?.StackTrace);
@@ -340,7 +340,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	public Task InvokeJavaScriptMethodThatThrowsError(string type) =>
 		RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 3, ex =>
 		{
-			Assert.Equal("InvokeJavaScript threw an exception: Generic Error: 777.777", ex.Message);
+			Assert.Equal("InvokeJavaScriptAsync threw an exception: Generic Error: 777.777", ex.Message);
 			Assert.Equal("Generic Error: 777.777", ex.InnerException?.Message);
 			Assert.Equal("Error", ex.InnerException?.Data["JavaScriptErrorName"]);
 			Assert.NotNull(ex.InnerException?.StackTrace);
