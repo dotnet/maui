@@ -1,4 +1,4 @@
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

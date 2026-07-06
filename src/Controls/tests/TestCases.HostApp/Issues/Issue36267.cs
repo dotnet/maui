@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 36267, "[iOS] IsSwipeEnabled Not Working on CarouselView (CV2) when set to false at load time", PlatformAffected.iOS | PlatformAffected.macOS)]
+	[Issue(IssueTracker.Github, 36267, "[iOS] IsSwipeEnabled Not Working on CarouselView (CV2) when set to false at load time", PlatformAffected.iOS | PlatformAffected.macOS | PlatformAffected.Android)]
 	public class Issue36267 : TestContentPage
 	{
 		CarouselView _carouselView;

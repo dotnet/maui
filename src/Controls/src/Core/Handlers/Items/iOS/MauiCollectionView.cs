@@ -76,13 +76,21 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 
 	// Caches the CarouselView's IsBounceEnabled value so the swipe-enabled path can restore the
 	// user's intended bounce state instead of forcing it on. A disabled swipe always keeps bounce
-	// off regardless of this value.
+	// off regardless of this value, so nothing needs reapplying until swipe is (re)enabled.
 	internal void SetBounceEnabled(bool enabled)
 	{
 		_isBounceEnabled = enabled;
 
-		if (_isSwipeEnabled != false)
+		if (_isSwipeEnabled == true)
 		{
+			// Reapply to the outer view and any already-existing embedded orthogonal scrollers so
+			// toggling IsBounceEnabled at runtime takes effect on the view users actually touch.
+			ApplySwipeEnabledToEmbeddedScrollViews(true);
+		}
+		else if (_isSwipeEnabled is null)
+		{
+			// Swipe hasn't been configured yet (mapper order isn't guaranteed); set the outer
+			// bounce now. Embedded scrollers are handled once SetSwipeEnabled runs.
 			Bounces = enabled;
 		}
 	}
@@ -118,10 +126,12 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	// ScrollEnabled alone does not stop rubber-band bouncing; Bounces controls that independently.
 	// AlwaysBounce* are always left at their UIKit default (false) - forcing them true would make
 	// the scroller rubber-band on axes/sizes where it otherwise would not.
-	static void ApplyState(UIScrollView scrollView, bool enabled)
+	// This is an instance method (not static) so it can read the cached _isBounceEnabled value,
+	// mirroring the same logic used in ApplyOuterBounceState for the outer UICollectionView.
+	void ApplyState(UIScrollView scrollView, bool enabled)
 	{
 		scrollView.ScrollEnabled = enabled;
-		scrollView.Bounces = enabled;
+		scrollView.Bounces = enabled ? (_isBounceEnabled ?? true) : false;
 		scrollView.AlwaysBounceHorizontal = false;
 		scrollView.AlwaysBounceVertical = false;
 	}
