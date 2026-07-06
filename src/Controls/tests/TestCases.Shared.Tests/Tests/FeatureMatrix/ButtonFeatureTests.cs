@@ -894,4 +894,138 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("Options");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+
+	[Test, Order(56)]
+	public void VerifyButton_TextTransformLowercase()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextEntry");
+		App.ClearText("TextEntry");
+		App.EnterText("TextEntry", "Button TextTransform");
+		App.WaitForElement("TextTransformLowercaseButton");
+		App.Tap("TextTransformLowercaseButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("button texttransform"));
+	}
+
+	[Test, Order(57)]
+	public void VerifyButton_TextTransformDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextEntry");
+		App.ClearText("TextEntry");
+		App.EnterText("TextEntry", "Button TextTransform");
+		App.WaitForElement("TextTransformUppercaseButton");
+		App.Tap("TextTransformUppercaseButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("BUTTON TEXTTRANSFORM"));
+
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextTransformDefaultButton");
+		App.Tap("TextTransformDefaultButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("Button"));
+	}
+
+	[Test, Order(58)]
+	public void VerifyButton_BackgroundColorResetToNone()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorRed");
+		App.Tap("BackgroundColorRed");
+		App.WaitForElement("TextEntry");
+		App.ClearText("TextEntry");
+		App.EnterText("TextEntry", "Button Background Reset");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorNone");
+		App.Tap("BackgroundColorNone");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(59)]
+	public void VerifyButton_FontAttributesFontFamilyFontSize()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontFamilyMontserratBoldButton");
+		App.Tap("FontFamilyMontserratBoldButton");
+		App.WaitForElement("FontSizeEntry");
+		App.ClearText("FontSizeEntry");
+		App.EnterText("FontSizeEntry", "22");
+		App.WaitForElement("TextEntry");
+		App.ClearText("TextEntry");
+		App.EnterText("TextEntry", "Button Font Combo");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(60)]
+	public void VerifyButton_BorderColorBorderWidthCornerRadius()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BorderColorGreenButton");
+		App.Tap("BorderColorGreenButton");
+		App.WaitForElement("BorderWidthEntry");
+		App.ClearText("BorderWidthEntry");
+		App.EnterText("BorderWidthEntry", "4");
+		App.WaitForElement("CornerRadiusEntry");
+		App.ClearText("CornerRadiusEntry");
+		App.EnterText("CornerRadiusEntry", "16");
+		App.WaitForElement("TextEntry");
+		App.ClearText("TextEntry");
+		App.EnterText("TextEntry", "Button Border Combo");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(61)]
+	public void VerifyButton_HorizontalOptionsEnd()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HorizontalOptionsEndButton");
+		App.Tap("HorizontalOptionsEndButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(62)]
+	public void VerifyButton_VerticalOptionsEnd()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("VerticalOptionsEndButton");
+		App.Tap("VerticalOptionsEndButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
 }

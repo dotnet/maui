@@ -10,11 +10,6 @@ public partial class ButtonOptionsPage : ContentPage
 		_viewModel = viewModel;
 	}
 
-	protected override void OnAppearing()
-	{
-		base.OnAppearing();
-	}
-
 	private async void ApplyButton_Clicked(object sender, EventArgs e)
 	{
 		await Navigation.PopAsync();
@@ -84,15 +79,6 @@ public partial class ButtonOptionsPage : ContentPage
 		_viewModel.FontAttributes = attrs;
 	}
 
-	private void OnBorderColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
-		{
-			_viewModel.BorderColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
-		}
-	}
-
 	private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
@@ -101,15 +87,6 @@ public partial class ButtonOptionsPage : ContentPage
 			_viewModel.FlowDirection = radioButton.Content.ToString() == "LTR" || radioButton.Content.ToString() == "Left to Right"
 				? FlowDirection.LeftToRight
 				: FlowDirection.RightToLeft;
-		}
-	}
-
-	private void OnFontAttributesRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
-		{
-			_viewModel.FontAttributes = radioButton.Content.ToString() == "Italic" ? FontAttributes.Italic : radioButton.Content.ToString() == "Bold" ? FontAttributes.Bold : FontAttributes.None;
 		}
 	}
 
@@ -140,35 +117,6 @@ public partial class ButtonOptionsPage : ContentPage
 		}
 	}
 
-	private void OnLineBreakModeRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
-		{
-			switch (radioButton.Content.ToString())
-			{
-				case "CharacterWrap":
-					_viewModel.LineBreakMode = LineBreakMode.CharacterWrap;
-					break;
-				case "HeadTruncation":
-					_viewModel.LineBreakMode = LineBreakMode.HeadTruncation;
-					break;
-				case "MiddleTruncation":
-					_viewModel.LineBreakMode = LineBreakMode.MiddleTruncation;
-					break;
-				case "TailTruncation":
-					_viewModel.LineBreakMode = LineBreakMode.TailTruncation;
-					break;
-				case "WordWrap":
-					_viewModel.LineBreakMode = LineBreakMode.WordWrap;
-					break;
-				default:
-					_viewModel.LineBreakMode = LineBreakMode.NoWrap;
-					break;
-			}
-		}
-	}
-
 	private void OnShadowRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
@@ -178,23 +126,17 @@ public partial class ButtonOptionsPage : ContentPage
 		}
 	}
 
-	private void OnTextColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
-		{
-			_viewModel.TextColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
-		}
-	}
-
 	private void OnTextTransformRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
 		if (radioButton.IsChecked)
 		{
-			_viewModel.TextTransform = radioButton.Content.ToString() == "Lowercase"
-				? TextTransform.Lowercase
-				: TextTransform.Uppercase;
+			_viewModel.TextTransform = radioButton.Content.ToString() switch
+			{
+				"Lowercase" => TextTransform.Lowercase,
+				"Uppercase" => TextTransform.Uppercase,
+				_ => TextTransform.Default,
+			};
 		}
 	}
 
@@ -219,6 +161,32 @@ public partial class ButtonOptionsPage : ContentPage
 			"ContentLayoutRightButton" => Button.ButtonContentLayout.ImagePosition.Right,
 			"ContentLayoutBottomButton" => Button.ButtonContentLayout.ImagePosition.Bottom,
 			_ => Button.ButtonContentLayout.ImagePosition.Left,
+		};
+	}
+
+	private void HorizontalOptionsButton_Clicked(object sender, EventArgs e)
+	{
+		if (sender is not Button button)
+			return;
+		_viewModel.HorizontalOptions = button.Text switch
+		{
+			"Start" => LayoutOptions.Start,
+			"End" => LayoutOptions.End,
+			"Fill" => LayoutOptions.Fill,
+			_ => LayoutOptions.Center,
+		};
+	}
+
+	private void VerticalOptionsButton_Clicked(object sender, EventArgs e)
+	{
+		if (sender is not Button button)
+			return;
+		_viewModel.VerticalOptions = button.Text switch
+		{
+			"Start" => LayoutOptions.Start,
+			"End" => LayoutOptions.End,
+			"Fill" => LayoutOptions.Fill,
+			_ => LayoutOptions.Center,
 		};
 	}
 }

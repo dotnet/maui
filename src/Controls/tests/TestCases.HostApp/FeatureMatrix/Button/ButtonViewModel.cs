@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample;
 public class ButtonViewModel : INotifyPropertyChanged
 {
 	private Color _borderColor = null;
-	private double _borderWidth = 0d;
+	private double _borderWidth = -1d;
 	private double _characterSpacing = 0.0d;
 	private ICommand _command = null;
 	private int _cornerRadius = 0;
@@ -429,7 +429,7 @@ public class ButtonViewModel : INotifyPropertyChanged
 
 	public void Reset()
 	{
-		BorderColor = Colors.White;
+		BorderColor = null;
 		BorderWidth = 0d;
 		CharacterSpacing = 0.0d;
 		Command = CreateCommand();

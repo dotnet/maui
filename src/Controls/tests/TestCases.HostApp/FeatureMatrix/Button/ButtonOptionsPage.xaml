@@ -209,6 +209,35 @@
                                    HeightRequest="30"
                                    WidthRequest="80"/>
                      </HorizontalStackLayout>
+                     <!-- HorizontalOptions -->
+                     <Label Text="HorizontalOptions:"
+                            FontSize="11"/>
+                     <HorizontalStackLayout Spacing="1">
+                            <Button Text="Start"
+                                    FontSize="11"
+                                    Padding="6"
+                                    HeightRequest="28"
+                                    AutomationId="HorizontalOptionsStartButton"
+                                    Clicked="HorizontalOptionsButton_Clicked"/>
+                            <Button Text="Center"
+                                    FontSize="11"
+                                    Padding="6"
+                                    HeightRequest="28"
+                                    AutomationId="HorizontalOptionsCenterButton"
+                                    Clicked="HorizontalOptionsButton_Clicked"/>
+                            <Button Text="End"
+                                    FontSize="11"
+                                    Padding="6"
+                                    HeightRequest="28"
+                                    AutomationId="HorizontalOptionsEndButton"
+                                    Clicked="HorizontalOptionsButton_Clicked"/>
+                            <Button Text="Fill"
+                                    FontSize="11"
+                                    Padding="6"
+                                    HeightRequest="28"
+                                    AutomationId="HorizontalOptionsFillButton"
+                                    Clicked="HorizontalOptionsButton_Clicked"/>
+                     </HorizontalStackLayout>
               </VerticalStackLayout>
               <!-- Right Column -->
               <VerticalStackLayout Grid.Column="1"
@@ -314,18 +343,27 @@
                      <Label Text="TextXform:"
                             FontSize="11"
                             VerticalTextAlignment="Center"/>
-                     <HorizontalStackLayout Spacing="1">
-                            <RadioButton GroupName="TextTransform"
-                                         AutomationId="TextTransformLowercaseButton"
-                                         Content="Lowercase"
-                                         FontSize="11"
-                                         CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
-                            <RadioButton GroupName="TextTransform"
-                                         AutomationId="TextTransformUppercaseButton"
-                                         Content="Uppercase"
-                                         FontSize="11"
-                                         CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
-                     </HorizontalStackLayout>
+                     <VerticalStackLayout Spacing="1">
+                            <HorizontalStackLayout Spacing="1">
+                                   <RadioButton GroupName="TextTransform"
+                                                AutomationId="TextTransformDefaultButton"
+                                                Content="Default"
+                                                FontSize="11"
+                                                CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
+                                   <RadioButton GroupName="TextTransform"
+                                                AutomationId="TextTransformLowercaseButton"
+                                                Content="Lowercase"
+                                                FontSize="11"
+                                                CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="1">
+                                   <RadioButton GroupName="TextTransform"
+                                                AutomationId="TextTransformUppercaseButton"
+                                                Content="Uppercase"
+                                                FontSize="11"
+                                                CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
+                            </HorizontalStackLayout>
+                     </VerticalStackLayout>
                      <!-- HeightRequest -->
                      <HorizontalStackLayout Spacing="1">
                             <Label Text="HeightRequest:"
@@ -404,6 +442,35 @@
                                    Text="{Binding ContentLayoutSpacing}"
                                    HeightRequest="30"
                                    WidthRequest="80"/>
+                     </HorizontalStackLayout>
+                     <!-- VerticalOptions -->
+                     <Label Text="VerticalOptions:"
+                            FontSize="11"/>
+                     <HorizontalStackLayout Spacing="1">
+                            <Button Text="Start"
+                                    FontSize="11"
+                                    Padding="6"
+                                    HeightRequest="28"
+                                    AutomationId="VerticalOptionsStartButton"
+                                    Clicked="VerticalOptionsButton_Clicked"/>
+                            <Button Text="Center"
+                                    FontSize="11"
+                                    Padding="6"
+                                    HeightRequest="28"
+                                    AutomationId="VerticalOptionsCenterButton"
+                                    Clicked="VerticalOptionsButton_Clicked"/>
+                            <Button Text="End"
+                                    FontSize="11"
+                                    Padding="6"
+                                    HeightRequest="28"
+                                    AutomationId="VerticalOptionsEndButton"
+                                    Clicked="VerticalOptionsButton_Clicked"/>
+                            <Button Text="Fill"
+                                    FontSize="11"
+                                    Padding="6"
+                                    HeightRequest="28"
+                                    AutomationId="VerticalOptionsFillButton"
+                                    Clicked="VerticalOptionsButton_Clicked"/>
                      </HorizontalStackLayout>
               </VerticalStackLayout>
        </Grid>
