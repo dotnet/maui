@@ -1,4 +1,4 @@
-﻿#if IOS && !MACCATALYST
+#if IOS && !MACCATALYST
 using System.Threading.Tasks;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
