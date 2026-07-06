@@ -53,6 +53,23 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(wasClicked);
 		}
 
+		[Fact]
+		public async Task ItemsFindsToolbarWhenOtherSubviewPrecedesIt()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var accessoryView = CreateLaidOutAccessoryView();
+				using var placeholder = new UIView();
+				accessoryView.InsertSubview(placeholder, 0);
+
+				var items = accessoryView.Items;
+
+				Assert.NotNull(items);
+				Assert.Equal(2, items.Length);
+				Assert.IsType<UIBarButtonItem>(items[1]);
+			});
+		}
+
 		static MauiDoneAccessoryView CreateLaidOutAccessoryView(
 			Action doneClicked = null,
 			UISemanticContentAttribute semanticContentAttribute = UISemanticContentAttribute.Unspecified)

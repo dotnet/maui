@@ -23,7 +23,19 @@ namespace Microsoft.Maui.Platform
 
 		internal UIBarButtonItem[]? Items => Toolbar?.Items;
 
-		UIToolbar? Toolbar => Subviews.Length > 0 ? Subviews[0] as UIToolbar : null;
+		UIToolbar? Toolbar
+		{
+			get
+			{
+				foreach (var subview in Subviews)
+				{
+					if (subview is UIToolbar toolbar)
+						return toolbar;
+				}
+
+				return null;
+			}
+		}
 
 		internal void SetDoneClicked(Action<object>? value) => _proxy.SetDoneClicked(value);
 
