@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Maps.Platform
 
 		UILongPressGestureRecognizer? _mapLongClickedGestureRecognizer;
 		List<IMapElement>? _trackedMapElements;
-		Dictionary<IImageSource, UIImage>? _clusterIconCache;
+		Dictionary<string, UIImage>? _clusterIconCache;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
@@ -220,14 +220,16 @@ namespace Microsoft.Maui.Maps.Platform
 				customView.CanShowCallout = false;
 				customView.Annotation = clusterAnnotation;
 
-				if (_clusterIconCache != null && _clusterIconCache.TryGetValue(clusterImage, out var cachedImage))
+				var clusterCount = clusterAnnotation.MemberAnnotations?.Length ?? 0;
+				var cacheKey = MapHandler.GetClusterIconCacheKey(clusterImage);
+				if (cacheKey != null && _clusterIconCache != null && _clusterIconCache.TryGetValue(cacheKey, out var cachedImage))
 				{
 					customView.Image = cachedImage;
 				}
 				else
 				{
 					customView.Image = null;
-					ApplyCustomClusterImageAsync(customView, clusterImage).FireAndForget();
+					ApplyCustomClusterImageAsync(customView, clusterImage, clusterCount).FireAndForget();
 				}
 				return customView;
 			}
@@ -339,7 +341,7 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 		}
 
-		async System.Threading.Tasks.Task ApplyCustomClusterImageAsync(MKAnnotationView annotationView, IImageSource imageSource)
+		async System.Threading.Tasks.Task ApplyCustomClusterImageAsync(MKAnnotationView annotationView, IImageSource imageSource, int count)
 		{
 			_handlerRef.TryGetTarget(out IMapHandler? handler);
 			if (handler?.MauiContext == null)
@@ -347,21 +349,11 @@ namespace Microsoft.Maui.Maps.Platform
 
 			var targetAnnotation = annotationView.Annotation;
 
+			UIImage? loaded = null;
 			try
 			{
 				var result = await imageSource.GetPlatformImageAsync(handler.MauiContext);
-
-				// Verify the annotation view hasn't been reused for a different cluster.
-				if (annotationView.Annotation != targetAnnotation)
-					return;
-
-				if (result?.Value is UIImage image)
-				{
-					var scaledImage = ScaleImage(image, new CoreGraphics.CGSize(32, 32));
-					annotationView.Image = scaledImage;
-					_clusterIconCache ??= new Dictionary<IImageSource, UIImage>(ReferenceEqualityComparer.Instance);
-					_clusterIconCache[imageSource] = scaledImage;
-				}
+				loaded = result?.Value as UIImage;
 			}
 			catch (Exception ex)
 			{
@@ -370,6 +362,67 @@ namespace Microsoft.Maui.Maps.Platform
 					var logger = currentHandler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
 					logger?.LogWarning(ex, "Failed to load custom cluster icon");
 				}
+			}
+
+			// Verify the annotation view hasn't been reused for a different cluster.
+			if (annotationView.Annotation != targetAnnotation)
+				return;
+
+			if (loaded != null)
+			{
+				var scaledImage = ScaleImage(loaded, new CoreGraphics.CGSize(32, 32));
+				annotationView.Image = scaledImage;
+
+				var cacheKey = MapHandler.GetClusterIconCacheKey(imageSource);
+				if (cacheKey != null)
+				{
+					_clusterIconCache ??= new Dictionary<string, UIImage>();
+					_clusterIconCache[cacheKey] = scaledImage;
+				}
+			}
+			else
+			{
+				// Custom image failed to load (missing/failed source or decode error). Fall back to a
+				// default cluster bubble so the cluster stays visible, mirroring Android's CreateClusterIcon.
+				annotationView.Image = CreateClusterFallbackImage(count);
+			}
+		}
+
+		// Draws the default cluster bubble (blue circle + count) used when a requested custom cluster
+		// image can't be loaded, so the cluster never renders as an invisible marker.
+		static UIImage? CreateClusterFallbackImage(int count)
+		{
+			const float size = 40f;
+			var canvasSize = new CoreGraphics.CGSize(size, size);
+
+			UIGraphics.BeginImageContextWithOptions(canvasSize, false, 0);
+			try
+			{
+				var circle = UIBezierPath.FromOval(new CoreGraphics.CGRect(2, 2, size - 4, size - 4));
+				UIColor.FromRGB(66, 133, 244).SetFill(); // Google blue, matching Android
+				circle.Fill();
+
+				UIColor.White.SetStroke();
+				circle.LineWidth = 2;
+				circle.Stroke();
+
+				var text = count > 99 ? "99+" : count.ToString();
+				var attributes = new UIStringAttributes
+				{
+					Font = UIFont.BoldSystemFontOfSize(count > 99 ? 12 : 15),
+					ForegroundColor = UIColor.White,
+				};
+
+				using var nsText = new Foundation.NSString(text);
+				var textSize = nsText.GetSizeUsingAttributes(attributes);
+				var origin = new CoreGraphics.CGPoint((size - textSize.Width) / 2, (size - textSize.Height) / 2);
+				nsText.DrawString(origin, attributes);
+
+				return UIGraphics.GetImageFromCurrentImageContext();
+			}
+			finally
+			{
+				UIGraphics.EndImageContext();
 			}
 		}
 

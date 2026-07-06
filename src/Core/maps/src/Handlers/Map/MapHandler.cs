@@ -99,5 +99,19 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (arg is IMapPin pin && handler is MapHandler mapHandler)
 				mapHandler.HideInfoWindow(pin);
 		}
+
+		// Builds a stable cache key for a cluster icon so logically identical images (same file, URI,
+		// or font glyph) share one decoded/rasterized bitmap even when the provider hands back a fresh
+		// ImageSource instance on every recluster. Returns null for sources that can't be keyed stably
+		// (e.g. streams), so those are simply loaded fresh instead of being cached forever.
+		internal static string? GetClusterIconCacheKey(IImageSource? source) =>
+			source switch
+			{
+				IFileImageSource file when !string.IsNullOrEmpty(file.File) => $"file:{file.File}",
+				IUriImageSource uri when uri.Uri is not null => $"uri:{uri.Uri}",
+				IFontImageSource font when !string.IsNullOrEmpty(font.Glyph) =>
+					$"font:{font.Glyph}|{font.Font.Family}|{font.Font.Size}|{font.Color?.ToArgbHex()}",
+				_ => null,
+			};
 	}
 }

@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
-		Dictionary<IImageSource, BitmapDescriptor>? _clusterIconCache;
+		Dictionary<string, BitmapDescriptor>? _clusterIconCache;
 
 		CancellationTokenSource? _addPinsCts;
 
@@ -921,14 +921,20 @@ namespace Microsoft.Maui.Maps.Handlers
 			BitmapDescriptor? icon = null;
 			if (image != null)
 			{
-				_clusterIconCache ??= new Dictionary<IImageSource, BitmapDescriptor>(ReferenceEqualityComparer.Instance);
-				if (!_clusterIconCache.TryGetValue(image, out icon))
+				// Cache by a stable key (file/URI/glyph) so a provider that returns a fresh ImageSource
+				// per recluster still reuses the decoded bitmap instead of re-decoding and leaking one
+				// entry per call. Unkeyable sources (key == null) are loaded fresh, never cached.
+				var cacheKey = GetClusterIconCacheKey(image);
+				if (cacheKey == null || !(_clusterIconCache?.TryGetValue(cacheKey, out icon) ?? false))
 				{
 					icon = await LoadPinIconAsync(image, MauiContext, ct);
 					if (ct.IsCancellationRequested || MauiContext == null)
 						return;
-					if (icon != null)
-						_clusterIconCache[image] = icon;
+					if (icon != null && cacheKey != null)
+					{
+						_clusterIconCache ??= new Dictionary<string, BitmapDescriptor>();
+						_clusterIconCache[cacheKey] = icon;
+					}
 				}
 			}
 
