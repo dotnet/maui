@@ -276,6 +276,8 @@ Key functions (all PURE except the one network call, which is **fail-open** — 
 
 Determinism / idempotency: the engine captures **one** `UtcNow` per run (`$Data['nightlyFeedNow']`) and reuses it for both the rendered banner and the semantic-hash tier, so a quiet SR tracker still refreshes when the feed crosses a tier boundary, but a same-tier day-count tick does **not** churn the issue. The freshness band is folded into `Get-ReportSemanticHash` (tier|version only — the raw timestamp is never hashed).
 
+**When the banner is ❌ (feed STALE):** the dogfood bits have stopped flowing because the nightly **official signed build** is failing — pipeline `dotnet-maui` (definition **1095**, org `dnceng` / project `internal`), defined by [`eng/pipelines/ci-official.yml`](../../../eng/pipelines/ci-official.yml) and scheduled daily on `inflight/current`. See the [`azdo-build-investigator`](../azdo-build-investigator/SKILL.md) skill's **Nightly / Official Signed Build (inflight dogfood feed)** section for the investigation recipe and the recurring `vs-workload.props` (`MSB4019`) failure in the `Pack Windows` → "Build Workloads, Sign & Publish" step.
+
 ## Integration
 
 - **Custom agent**: `.github/agents/release-readiness-agent.agent.md` wraps this skill — handles regression-label confirmation, runs the script, then uses WorkIQ to add context for `rejected-from-sr` PRs.
