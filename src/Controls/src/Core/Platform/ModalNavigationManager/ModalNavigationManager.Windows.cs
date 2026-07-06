@@ -27,6 +27,20 @@ namespace Microsoft.Maui.Controls.Platform
 				UnsubscribeFromPresenterChanges();
 			};
 			_window.Activated += OnWindowActivated;
+			_window.HandlerChanging += OnPlatformWindowHandlerChanging;
+		}
+
+		void OnPlatformWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
+		{
+			// When the WinUI window handler is recreated (e.g., activity recreation on Windows),
+			// the AppWindow instance may change. Clear the subscription to the old AppWindow so
+			// that SubscribeToPresenterChanges() can attach to the new one when the modal stack
+			// is resynced after the handler is reconnected.
+			if (e.OldHandler is not null)
+			{
+				_firstActivated = false;
+				UnsubscribeFromPresenterChanges();
+			}
 		}
 
 		void OnWindowActivated(object? sender, EventArgs e)

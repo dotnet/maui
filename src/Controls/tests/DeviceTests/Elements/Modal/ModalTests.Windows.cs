@@ -323,6 +323,71 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
+		// Verifies that the AppWindow.Changed subscription fires and updates the modal's
+		// title bar reservation when the presenter changes while a modal is already visible.
+		[Fact]
+		public async Task ModalTitleBarUpdatesWhenPresenterChangesWhileModalIsVisible()
+		{
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					var platformWindow = handler.PlatformView;
+					var appWindow = platformWindow.GetAppWindow();
+
+					// Push a modal while the window is in windowed mode.
+					var modalPage = new ContentPage { BackgroundColor = Colors.Red };
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var modalWindowRootView = modalPage
+						.FindMauiContext()
+						.GetNavigationRootManager()
+						.RootView as WindowRootView;
+
+					Assert.NotNull(modalWindowRootView);
+
+					// In windowed mode the modal must reserve space for the title bar.
+					Assert.True(
+						modalWindowRootView.WindowTitleBarContentControlMinHeight > 0,
+						"Modal should reserve title bar space in windowed mode");
+
+					try
+					{
+						// Switch to full-screen while the modal is already visible.
+						// This exercises the AppWindow.Changed subscription path added by the fix.
+						appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+
+						// Allow the AppWindow.Changed event to propagate.
+						await Task.Delay(100);
+
+						// The presenter change must clear the title bar reservation on the modal.
+						Assert.Equal(0d, modalWindowRootView.WindowTitleBarContentControlMinHeight);
+
+						// Restore windowed mode while the modal is still open.
+						appWindow.SetPresenter(AppWindowPresenterKind.Default);
+
+						// Allow the AppWindow.Changed event to propagate.
+						await Task.Delay(100);
+
+						// The reservation must be restored when returning to windowed mode.
+						Assert.True(
+							modalWindowRootView.WindowTitleBarContentControlMinHeight > 0,
+							"Modal should restore title bar space when returning to windowed mode");
+					}
+					finally
+					{
+						appWindow.SetPresenter(AppWindowPresenterKind.Default);
+						await navPage.CurrentPage.Navigation.PopModalAsync();
+						await OnUnloadedAsync(modalPage);
+					}
+				});
+		}
+
 		[Fact]
 		public async Task NestedModalPagesMaintainHitTestVisibilityAndFocusTrap()
 		{
