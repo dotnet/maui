@@ -1,3 +1,4 @@
+using System;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -6,34 +7,26 @@ namespace Microsoft.Maui.Benchmarks
 {
 	/// <summary>
 	/// Benchmarks that measure the time and allocations caused by property-change
-	/// propagation on the three most commonly used text-based controls: Label, Button
-	/// and Entry.  Only properties that exist on all three controls are exercised so
-	/// the numbers are directly comparable.
+	/// propagation on the three most commonly used controls: Label, Button and Entry.
+	/// All benchmarks attach a PropertyChanged subscriber to simulate real-world scenarios
+	/// where the UI or bindings listen to property changes.
 	///
-	/// Common properties tested:
-	///   - Text          (string)
-	///   - TextColor     (Color)
-	///   - FontSize      (double – triggers InvalidateMeasure internally)
-	///   - FontAttributes (enum)
-	///   - IsEnabled     (bool – coerced through the visual tree)
+	/// Properties tested:
+	///   - HeightRequest (double)
+	///   - Background    (Brush – exercises color-to-brush conversion and caching)
+	///   - IsEnabled     (bool – coerced through the visual tree, uses boxed value caching)
 	///   - Opacity       (double – coerced to [0,1])
+	///   - FontSize      (double – Button only)
 	///
-	/// Each benchmark group is run both without and with a PropertyChanged subscriber
-	/// so you can isolate the cost of the notification-dispatch leg.
+	/// The Background property is particularly interesting as it exercises implicit Color-to-Brush
+	/// conversion, which can benefit from brush instance caching. IsEnabled tests boxed bool reuse.
 	/// </summary>
 	[MemoryDiagnoser]
 	public class PropertyChangePropagationBenchmarker
 	{
-
-		// Pre-allocate controls outside the benchmark methods so construction cost
-		// is excluded and only the property-change propagation is measured.
 		Label _label;
 		Button _button;
 		Entry _entry;
-
-		Label _labelWithSubscriber;
-		Button _buttonWithSubscriber;
-		Entry _entryWithSubscriber;
 
 		// Two alternating values per property type keep the BindableObject from
 		// short-circuiting the change via its value-equality check.
@@ -47,213 +40,121 @@ namespace Microsoft.Maui.Benchmarks
 			_button = new Button();
 			_entry = new Entry();
 
-			_labelWithSubscriber = new Label();
-			_buttonWithSubscriber = new Button();
-			_entryWithSubscriber = new Entry();
-
-			_labelWithSubscriber.PropertyChanged += OnPropertyChanged;
-			_buttonWithSubscriber.PropertyChanged += OnPropertyChanged;
-			_entryWithSubscriber.PropertyChanged += OnPropertyChanged;
-
 			// Attach a lightweight subscriber to simulate real-world usage where
 			// the UI (or a binding) listens to property changes.
 			static void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-			{ }
-		}
-
-		// -------------------------------------------------------------------------
-		// Text property (string)
-		// -------------------------------------------------------------------------
-
-		[Benchmark]
-		public void Label_SetText()
-		{
-			_label.Text = "Hello World A";
-			_label.Text = "Hello World B";
-		}
-
-		[Benchmark]
-		public void Button_SetText()
-		{
-			_button.Text = "Hello World A";
-			_button.Text = "Hello World B";
-		}
-
-		[Benchmark]
-		public void Entry_SetText()
-		{
-			_entry.Text = "Hello World A";
-			_entry.Text = "Hello World B";
-		}
-
-		// -------------------------------------------------------------------------
-		// TextColor property (Color)
-		// -------------------------------------------------------------------------
-
-		[Benchmark]
-		public void Label_SetTextColor()
-		{
-			// for (int i = 0; i < Iterations; i++)
 			{
-				_label.TextColor = _colorA;
-				_label.TextColor = _colorB;
+
 			}
-		}
 
-		[Benchmark]
-		public void Button_SetTextColor()
-		{
-			_button.TextColor = _colorA;
-			_button.TextColor = _colorB;
-		}
-
-		[Benchmark]
-		public void Entry_SetTextColor()
-		{
-			_entry.TextColor = _colorA;
-			_entry.TextColor = _colorB;
+			_label.PropertyChanged += OnPropertyChanged;
+			_button.PropertyChanged += OnPropertyChanged;
+			_entry.PropertyChanged += OnPropertyChanged;
 		}
 
 		// -------------------------------------------------------------------------
-		// FontSize property (double – triggers InvalidateMeasure on Button/Label)
+		// HeightRequest property (double)
 		// -------------------------------------------------------------------------
 
 		[Benchmark]
-		public void Label_SetFontSize()
+		public void Label_HeightRequest()
 		{
-			_label.FontSize = 16;
-			_label.FontSize = 18;
+			_label.HeightRequest = 444;
+			_label.HeightRequest = 445;
 		}
 
 		[Benchmark]
-		public void Button_SetFontSize()
+		public void Button_HeightRequest()
 		{
-			_button.FontSize = 16;
-			_button.FontSize = 18;
+			_button.HeightRequest = 444;
+			_button.HeightRequest = 445;
 		}
 
 		[Benchmark]
-		public void Entry_SetFontSize()
+		public void Entry_HeightRequest()
 		{
-			_entry.FontSize = 16;
-			_entry.FontSize = 18;
+			_entry.HeightRequest = 444;
+			_entry.HeightRequest = 445;
 		}
 
 		// -------------------------------------------------------------------------
-		// Multiple common properties in one pass (composite benchmark)
+		// Background property (Color)
 		// -------------------------------------------------------------------------
 
 		[Benchmark]
-		public void Label_SetCommonProperties()
+		public void Label_SetBackground()
 		{
-			_label.Text = "A";
-			_label.TextColor = _colorA;
-			_label.FontSize = 14;
-			_label.FontAttributes = FontAttributes.Bold;
+			_label.Background = _colorA;
+			_label.Background = _colorB;
+		}
+
+		[Benchmark]
+		public void Button_SetBackground()
+		{
+			_button.Background = _colorA;
+			_button.Background = _colorB;
+		}
+
+		[Benchmark]
+		public void Entry_SetBackground()
+		{
+			_entry.Background = _colorA;
+			_entry.Background = _colorB;
+		}
+
+		[Benchmark]
+		public void Label_SetCommonProperties_WithSubscriber()
+		{
+			_label.HeightRequest = 444;
+			_label.Background = _colorA;
 			_label.IsEnabled = false;
 			_label.Opacity = 0.5;
 
-			_label.Text = "B";
-			_label.TextColor = _colorB;
-			_label.FontSize = 16;
-			_label.FontAttributes = FontAttributes.None;
+			_label.HeightRequest = 445;
+			_label.Background = _colorB;
 			_label.IsEnabled = true;
 			_label.Opacity = 1.0;
 		}
 
 		[Benchmark]
-		public void Button_SetCommonProperties()
+		public void Button_SetCommonProperties_WithSubscriber()
 		{
-			_button.Text = "A";
-			_button.TextColor = _colorA;
+			_button.HeightRequest = 444;
+			_button.Background = _colorA;
 			_button.FontSize = 14;
-			_button.FontAttributes = FontAttributes.Bold;
-			_button.IsEnabled = false;
 			_button.Opacity = 0.5;
 
-			_button.Text = "B";
-			_button.TextColor = _colorB;
-			_button.FontSize = 16;
-			_button.FontAttributes = FontAttributes.None;
+			_button.HeightRequest = 445;
+			_button.Background = _colorB;
 			_button.IsEnabled = true;
 			_button.Opacity = 1.0;
 		}
 
 		[Benchmark]
-		public void Entry_SetCommonProperties()
+		public void Entry_SetCommonProperties_WithSubscriber()
 		{
-			_entry.Text = "A";
-			_entry.TextColor = _colorA;
-			_entry.FontSize = 14;
-			_entry.FontAttributes = FontAttributes.Bold;
+			_entry.HeightRequest = 444;
+			_entry.Background = _colorA;
 			_entry.IsEnabled = false;
 			_entry.Opacity = 0.5;
 
-			_entry.Text = "B";
-			_entry.TextColor = _colorB;
-			_entry.FontSize = 16;
-			_entry.FontAttributes = FontAttributes.None;
+			_entry.HeightRequest = 445;
+			_entry.Background = _colorB;
 			_entry.IsEnabled = true;
 			_entry.Opacity = 1.0;
 		}
 
-		// -------------------------------------------------------------------------
-		// Same composite benchmark – with a PropertyChanged subscriber attached.
-		// Compares the propagation overhead vs. the no-subscriber variants above.
-		// -------------------------------------------------------------------------
-
 		[Benchmark]
-		public void Label_SetCommonProperties_WithSubscriber()
+		public void SetSameValueOnDifferentControls()
 		{
-			_labelWithSubscriber.Text = "A";
-			_labelWithSubscriber.TextColor = _colorA;
-			_labelWithSubscriber.FontSize = 14;
-			_labelWithSubscriber.FontAttributes = FontAttributes.Bold;
-			_labelWithSubscriber.IsEnabled = false;
-			_labelWithSubscriber.Opacity = 0.5;
+			_entry.Background = _colorA;
+			_button.Background = _colorA;
+			_label.Background = _colorA;
 
-			_labelWithSubscriber.Text = "B";
-			_labelWithSubscriber.TextColor = _colorB;
-			_labelWithSubscriber.FontSize = 16;
-			_labelWithSubscriber.FontAttributes = FontAttributes.None;
-			_labelWithSubscriber.IsEnabled = true;
-			_labelWithSubscriber.Opacity = 1.0;
-		}
 
-		[Benchmark]
-		public void Button_SetCommonProperties_WithSubscriber()
-		{
-			_buttonWithSubscriber.Text = "A";
-			_buttonWithSubscriber.TextColor = _colorA;
-			_buttonWithSubscriber.FontSize = 14;
-			_buttonWithSubscriber.FontAttributes = FontAttributes.Bold;
-			_buttonWithSubscriber.IsEnabled = false;
-			_buttonWithSubscriber.Opacity = 0.5;
-
-			_buttonWithSubscriber.Text = "B";
-			_buttonWithSubscriber.TextColor = _colorB;
-			_buttonWithSubscriber.FontSize = 16;
-			_buttonWithSubscriber.FontAttributes = FontAttributes.None;
-			_buttonWithSubscriber.IsEnabled = true;
-			_buttonWithSubscriber.Opacity = 1.0;
-		}
-
-		[Benchmark]
-		public void Entry_SetCommonProperties_WithSubscriber()
-		{
-			_entryWithSubscriber.Text = "A";
-			_entryWithSubscriber.TextColor = _colorA;
-			_entryWithSubscriber.FontSize = 14;
-			_entryWithSubscriber.FontAttributes = FontAttributes.Bold;
-			_entryWithSubscriber.IsEnabled = false;
-			_entryWithSubscriber.Opacity = 0.5;
-
-			_entryWithSubscriber.Text = "B";
-			_entryWithSubscriber.TextColor = _colorB;
-			_entryWithSubscriber.FontSize = 16;
-			_entryWithSubscriber.FontAttributes = FontAttributes.None;
-			_entryWithSubscriber.IsEnabled = true;
-			_entryWithSubscriber.Opacity = 1.0;
+			_entry.Background = null;
+			_button.Background = null;
+			_label.Background = null;
 		}
 	}
 }
