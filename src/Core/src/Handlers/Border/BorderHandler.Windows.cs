@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				handler.PlatformView.CachedChildren.Clear();
+				handler.PlatformView.Content = null;
 			}
 				
 		}
