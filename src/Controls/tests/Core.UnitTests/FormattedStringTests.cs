@@ -117,13 +117,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var formattedString = new FormattedString();
 			formattedString.Spans.Add(new Span { Text = "Hello" });
 
-			WeakReference CreateReference()
+			static WeakReference CreateReference(FormattedString fs)
 			{
-				var label = new Label { FormattedText = formattedString };
+				var label = new Label { FormattedText = fs };
 				return new(label);
 			}
 
-			WeakReference reference = CreateReference();
+			WeakReference reference = CreateReference(formattedString);
 
 			await TestHelpers.Collect();
 
@@ -146,13 +146,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			span.GestureRecognizers.Add(new TapGestureRecognizer());
 			formattedString.Spans.Add(span);
 
-			WeakReference CreateReference()
+			static WeakReference CreateReference(FormattedString fs)
 			{
-				var label = new Label { FormattedText = formattedString };
+				var label = new Label { FormattedText = fs };
 				return new(label);
 			}
 
-			WeakReference reference = CreateReference();
+			WeakReference reference = CreateReference(formattedString);
 
 			await TestHelpers.Collect();
 
