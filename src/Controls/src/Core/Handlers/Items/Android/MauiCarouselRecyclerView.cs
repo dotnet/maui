@@ -65,6 +65,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
+			if (!IsSwipeEnabled)
+			{
+				return false;
+			}
+
 			if (Carousel.Loop)
 				_carouselViewLoopManager.CenterIfNeeded(this, IsHorizontal);
 
