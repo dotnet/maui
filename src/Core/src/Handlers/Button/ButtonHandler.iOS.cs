@@ -144,10 +144,13 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFont(button, fontManager);
 		}
 
+		// NOTE: This method routes through UpdateValue() rather than calling platform methods
+		// directly. This means any AppendToMapping/ModifyMapping customizations on CharacterSpacing
+		// will also fire here. This is intentional for extensibility and mirrors the EntryHandler pattern.
 		public static void MapFormatting(IButtonHandler handler, IText button)
 		{
 			// Update all of the attributed text formatting properties
-			handler.PlatformView?.UpdateCharacterSpacing(button);
+			handler.UpdateValue(nameof(ITextStyle.CharacterSpacing));
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IImage image) =>

@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IEditor, IEditorHandler> Mapper = new PropertyMapper<IEditor, IEditorHandler>(ViewHandler.ViewMapper)
 		{
+			// Ensure Text is mapped before CharacterSpacing/MaxLength/HorizontalTextAlignment
+			// because formatting is applied to the native attributed text created by MapText.
+			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.Background)] = MapBackground,
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEditor.Font)] = MapFont,
@@ -26,7 +29,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.MaxLength)] = MapMaxLength,
 			[nameof(IEditor.Placeholder)] = MapPlaceholder,
 			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor,
-			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.TextColor)] = MapTextColor,
 			[nameof(IEditor.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(IEditor.VerticalTextAlignment)] = MapVerticalTextAlignment,

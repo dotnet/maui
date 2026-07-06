@@ -103,17 +103,21 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
 		}
 
+		// NOTE: This method routes through UpdateValue() rather than calling platform methods
+		// directly. This means any AppendToMapping/ModifyMapping customizations on CharacterSpacing,
+		// HorizontalTextAlignment, and MaxLength will also fire here. This is intentional for
+		// extensibility and mirrors the EntryHandler pattern.
 		public static void MapFormatting(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			// Update all of the attributed text formatting properties
-			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
+			handler.UpdateValue(nameof(ISearchBar.CharacterSpacing));
 
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
-			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
+			handler.UpdateValue(nameof(ISearchBar.HorizontalTextAlignment));
 
 			// We also update MaxLength which depends on the text
-			handler.PlatformView?.UpdateMaxLength(searchBar);
+			handler.UpdateValue(nameof(ISearchBar.MaxLength));
 		}
 
 		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
