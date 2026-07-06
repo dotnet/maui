@@ -657,6 +657,20 @@ if (-not (Test-Path $detectScriptPath)) {
 
 # ─────────── E2E: Run detection against this repo and validate trackers ───────────
 
+# highestShippedTag advances every time an SR ships (10.0.71 -> 10.0.80 -> ...), so
+# freezing it as a literal guarantees this E2E block rots on the next release. Derive
+# the expected value from the SAME local tags the detector reads (via the repo path it
+# reports in its JSON), mirroring the detector's own rule: the highest STABLE `N.0.M`
+# tag for the major (pre-release tags like `-preview`/`-rc` excluded). This still catches
+# a real detector bug (wrong tag / bad sort) without pinning a value that goes stale.
+function Get-ExpectedHighestShippedTag {
+    param([string]$RepoPath, [int]$Major)
+    $stable = & git -C $RepoPath tag --list "$Major.0.*" |
+        Where-Object { $_ -match "^$Major\.0\.\d+$" }
+    if (-not $stable) { return $null }
+    return ($stable | Sort-Object { [version]$_ } | Select-Object -Last 1)
+}
+
 if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection against live repo" -ForegroundColor Cyan
     Write-Host "  Under the tag-existence rule + Lane 1 staleness guard we expect TWO trackers:" -ForegroundColor DarkGray
@@ -679,7 +693,9 @@ if (-not $SkipE2E) {
 
             Assert-Eq -Label "majorVersion is 10"             -Expected 10 -Actual $detected.majorVersion
             Assert-Eq -Label "mainBranch is 'main'"            -Expected 'main' -Actual $detected.mainBranch
-            Assert-Eq -Label "highestShippedTag is '10.0.80'"  -Expected '10.0.80' -Actual $detected.highestShippedTag
+            $expectedHighestShipped = Get-ExpectedHighestShippedTag -RepoPath $detected.repo -Major ([int]$detected.majorVersion)
+            Assert-Eq -Label "highestShippedTag matches highest stable N.0.M tag (derived, drift-proof)" `
+                      -Expected $expectedHighestShipped -Actual $detected.highestShippedTag
             Assert-Eq -Label "highestShippedPreviewTag carries net10's last preview" `
                       -Expected '10.0.0-preview.7.25406.3' -Actual $detected.highestShippedPreviewTag
             Assert-Eq -Label "tracker count is 2 (SR8 shipped+refresh, SR9 candidate; SR7 retired; SR2/SR3 stale-dropped)" `
@@ -696,15 +712,15 @@ if (-not $SkipE2E) {
 
             # SR2 (tag-absent but STALE — Lane 1 staleness guard drops it so the
             # workflow matrix never spins up a no-op job for it).
-            Assert-Eq -Label "SR2 tracker absent (stale: patch 21 < 71, no recent activity)" `
+            Assert-Eq -Label "SR2 tracker absent (stale: patch 21 < 80, no recent activity)" `
                       -Expected $false -Actual ($bySr.ContainsKey(2))
 
             # SR3 (tag-absent but STALE — dropped by the staleness guard)
-            Assert-Eq -Label "SR3 tracker absent (stale: patch 33 < 71, no recent activity)" `
+            Assert-Eq -Label "SR3 tracker absent (stale: patch 33 < 80, no recent activity)" `
                       -Expected $false -Actual ($bySr.ContainsKey(3))
 
             # SR7 (shipped 2026-06-05 as 10.0.71 — Lane 1 should NOT emit a tracker)
-            Assert-Eq -Label "SR7 tracker absent (shipped)" `
+            Assert-Eq -Label "SR7 tracker absent (shipped as 10.0.71)" `
                       -Expected $false -Actual ($bySr.ContainsKey(7))
 
             # SR8 (SHIPPED — highest shipped SR (tag 10.0.80) -> emits a
@@ -826,7 +842,9 @@ if (-not $SkipE2E) {
             if ($byMajor.ContainsKey(10)) {
                 $net10 = $byMajor[10]
                 Assert-Eq -Label "net10 mainBranch is 'main'"               -Expected 'main' -Actual $net10.mainBranch
-                Assert-Eq -Label "net10 highestShippedTag is '10.0.80'"      -Expected '10.0.80' -Actual $net10.highestShippedTag
+                $expectedNet10Highest = Get-ExpectedHighestShippedTag -RepoPath $multi.repo -Major 10
+                Assert-Eq -Label "net10 highestShippedTag matches highest stable 10.0.M tag (derived)" `
+                          -Expected $expectedNet10Highest -Actual $net10.highestShippedTag
                 Assert-Eq -Label "net10 tracker count is 2 (no preview lane; SR8 shipped+refresh, SR9 candidate; SR7 retired, SR2/SR3 stale-dropped)" -Expected 2 -Actual $net10.trackers.Count
                 $srCount = @($net10.trackers | Where-Object branchType -eq 'sr').Count
                 $previewCount = @($net10.trackers | Where-Object branchType -eq 'preview').Count
@@ -836,7 +854,10 @@ if (-not $SkipE2E) {
                 Write-Host "  ❌ majors[] missing net10 entry" -ForegroundColor Red; $script:failed++
             }
 
-            # net11 — pre-GA: no SR trackers; expects preview6 candidate from net11.0.
+            # net11 — pre-GA: no SR trackers; two preview trackers now that preview6 has
+            # been cut. preview6 is IN-FLIGHT (branch release/11.0.1xx-preview6 exists) and
+            # preview7 is the CANDIDATE from net11.0 (exactly the role preview6 held before
+            # its branch was cut).
             if ($byMajor.ContainsKey(11)) {
                 $net11 = $byMajor[11]
                 Assert-Eq -Label "net11 mainBranch is 'net11.0'"          -Expected 'net11.0' -Actual $net11.mainBranch
@@ -1143,6 +1164,82 @@ try {
         -Actual ([bool]($mixedChecks[0].Details -match 'unverifiable'))
     Assert-Eq -Label "mixed: NextAction tells captain to rerun for the unverifiable sibling" -Expected $true `
         -Actual ([bool]($mixedChecks[0].NextAction -match 'rerun'))
+
+    # ── Get-CandidatePrResolution: shared single-query resolution + version base ──
+    # The resolution is the single source of truth consumed by BOTH the WATCH
+    # ship-check and the hoisted "🚩 Candidate PR" section. Verify: (a) mode/version
+    # derivation from priorSrBranch, (b) maintainer accept, (c) spoofer vs
+    # unverifiable classification, (d) query-failed + skip short-circuits.
+    Write-Host "`n[Unit] Get-CandidatePrResolution (shared single-query resolution)" -ForegroundColor Cyan
+
+    # (a) member candidate on a well-formed prior SR branch → resolved, SR9 / 10.0.90.
+    $resCtxSr8 = @{ mode = 'candidate'; repo = 'dotnet/maui'; mainBranch = 'main'; priorSrBranch = 'release/10.0.1xx-sr8' }
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') {
+            return @'
+[
+  {"number":777,"title":"June 8th, Candidate","author":{"login":"rmarinho"},"createdAt":"2026-06-08T00:00:00Z","updatedAt":"2026-06-18T00:00:00Z","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"REVIEW_REQUIRED","state":"OPEN","url":"u"},
+  {"number":999,"title":"Fix button layout","author":{"login":"x"},"createdAt":"2026-06-01T00:00:00Z","updatedAt":"2026-06-01T00:00:00Z","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"APPROVED","state":"OPEN","url":"u"}
+]
+'@
+        }
+        if ($GhArgs[0] -eq 'api' -and ($GhArgs -contains '.author_association')) { return 'MEMBER' }
+        return $null
+    }
+    $resSr8 = Get-CandidatePrResolution -Ctx $resCtxSr8
+    Assert-Eq -Label "resolution: mode is 'resolved'" -Expected 'resolved' -Actual $resSr8.mode
+    Assert-Eq -Label "resolution: nextSr derived as SR9 (prior SR8 + 1)" -Expected 'SR9' -Actual $resSr8.nextSr
+    Assert-Eq -Label "resolution: versionBase derived as 10.0.90 (targetSr*10)" -Expected '10.0.90' -Actual $resSr8.versionBase
+    Assert-Eq -Label "resolution: exactly one maintainer candidate accepted (#777)" -Expected 1 -Actual @($resSr8.candidates).Count
+    Assert-Eq -Label "resolution: accepted candidate carries enriched fields (createdAt)" -Expected '2026-06-08' `
+        -Actual (ConvertTo-Utc -Value (@($resSr8.candidates)[0].createdAt)).ToString('yyyy-MM-dd')
+    Assert-Eq -Label "resolution: no spoofers, no unverifiable in clean case" -Expected '0/0' `
+        -Actual "$($resSr8.spoofers)/$($resSr8.unverifiable)"
+
+    # (b) versionBase tracks a different prior SR: sr7 → SR8 / 10.0.80.
+    $resCtxSr7 = @{ mode = 'candidate'; repo = 'dotnet/maui'; mainBranch = 'main'; priorSrBranch = 'release/10.0.1xx-sr7' }
+    $script:GhStub = { param([string[]]$GhArgs) if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') { return '[]' } return $null }
+    $resSr7 = Get-CandidatePrResolution -Ctx $resCtxSr7
+    Assert-Eq -Label "resolution: nextSr SR8 from prior SR7" -Expected 'SR8' -Actual $resSr7.nextSr
+    Assert-Eq -Label "resolution: versionBase 10.0.80 from prior SR7" -Expected '10.0.80' -Actual $resSr7.versionBase
+    Assert-Eq -Label "resolution: empty main PR list → zero candidates, still resolved" -Expected 'resolved/0' `
+        -Actual "$($resSr7.mode)/$(@($resSr7.candidates).Count)"
+
+    # (c) spoofer (confirmed non-maintainer) vs unverifiable (lookup failed) are
+    #     counted distinctly, and neither is accepted.
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') {
+            return @'
+[
+  {"number":888,"title":"Candidate build for testing","author":{"login":"rando"},"createdAt":"2026-06-08T00:00:00Z","updatedAt":"2026-06-08T00:00:00Z","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"APPROVED","state":"OPEN","url":"u"},
+  {"number":889,"title":"Another Candidate cut","author":{"login":"ghost"},"createdAt":"2026-06-08T00:00:00Z","updatedAt":"2026-06-08T00:00:00Z","isDraft":false,"mergeable":"MERGEABLE","reviewDecision":"APPROVED","state":"OPEN","url":"u"}
+]
+'@
+        }
+        if ($GhArgs[0] -eq 'api' -and ($GhArgs -contains '.author_association')) {
+            if ($GhArgs[1] -match '/pulls/888$') { return 'CONTRIBUTOR' }  # confirmed non-maintainer
+            return $null                                                    # #889 lookup fails → unverifiable
+        }
+        return $null
+    }
+    $resMixed = Get-CandidatePrResolution -Ctx $resCtxSr8
+    Assert-Eq -Label "resolution: no candidate accepted when only spoof/unverifiable" -Expected 0 -Actual @($resMixed.candidates).Count
+    Assert-Eq -Label "resolution: confirmed non-maintainer counted as spoofer (1)" -Expected 1 -Actual $resMixed.spoofers
+    Assert-Eq -Label "resolution: failed lookup counted as unverifiable (1), not spoofer" -Expected 1 -Actual $resMixed.unverifiable
+
+    # (d) gh query failure → mode 'query-failed' (distinct from a legitimately empty list).
+    $script:GhStub = { param([string[]]$GhArgs) return $null }
+    $resFail = Get-CandidatePrResolution -Ctx $resCtxSr8
+    Assert-Eq -Label "resolution: null gh output → mode 'query-failed'" -Expected 'query-failed' -Actual $resFail.mode
+    Assert-Eq -Label "resolution: query-failed still reports version base (parsed before query)" -Expected '10.0.90' -Actual $resFail.versionBase
+
+    # (e) non-candidate ctx short-circuits to 'skip' without any gh call.
+    $script:GhStub = { param([string[]]$GhArgs) throw "gh must NOT be called in skip mode" }
+    $resSkip = Get-CandidatePrResolution -Ctx @{ mode = 'shipped'; repo = 'dotnet/maui'; mainBranch = 'main' }
+    Assert-Eq -Label "resolution: non-candidate mode → 'skip' (no gh call)" -Expected 'skip' -Actual $resSkip.mode
+    Assert-Eq -Label "resolution: skip mode leaves version base null" -Expected $true -Actual ($null -eq $resSkip.versionBase)
 } finally {
     ${function:Invoke-Gh} = $script:OrigInvokeGh
     $script:GhStub = $null
@@ -2362,23 +2459,31 @@ $forgeTblMarkers = @($mdForgeTbl -split "`r?`n" | Where-Object { $_ -match '^\s*
 Assert-Eq -Label "Marker-forgery (table cell): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
     -Actual $forgeTblMarkers.Count
 
-# (6) Marker-forgery via the candidate-PR LIST (the bulleted site, not a table). The title
-#     must match \bcandidate\b to be selected, and embeds the marker between newlines.
+# (6) Marker-forgery via the candidate-PR section (the hoisted "🚩 Candidate PR"
+#     table). The title must match \bcandidate\b to be selected, and embeds the
+#     human-notes marker between newlines; Format-MarkdownTableCell must collapse it
+#     so it cannot forge a second anchored marker line.
 $mdDataForgeList = @{} + $mdData
 $mdDataForgeList['metadata'] = @{} + $mdData.metadata
 $mdDataForgeList['metadata']['mode'] = 'candidate'
 $mdDataForgeList['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr7'
 $mdDataForgeList['metadata']['srBranch'] = 'main'
-$mdDataForgeList['openSrPrs'] = @(
-    @{ number = 96005; title = "Candidate`n<!-- release-readiness:human-notes:begin -->`ntail";
-       author = @{ login = 'mallory' }; isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-01T00:00:00Z' }
-)
+$mdDataForgeList['metadata']['mainBranch'] = 'main'
+$mdDataForgeList['metadata']['fetchedAt'] = '2026-07-04T00:00:00Z'
+$mdDataForgeList['candidatePr'] = @{
+    mode = 'resolved'; spoofers = 0; unverifiable = 0; nextSr = 'SR8'; versionBase = '10.0.80'
+    candidates = @(
+        @{ number = 96005; title = "Candidate`n<!-- release-readiness:human-notes:begin -->`ntail";
+           author = @{ login = 'mallory' }; isDraft = $false; mergeable = 'MERGEABLE';
+           reviewDecision = 'APPROVED'; createdAt = '2026-06-01T00:00:00Z'; updatedAt = '2026-06-01T00:00:00Z' }
+    )
+}
 $mdForgeList = Format-MarkdownReport -Data $mdDataForgeList -RepoUrl 'https://github.com/dotnet/maui' `
                                      -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
 $forgeListMarkers = @($mdForgeList -split "`r?`n" | Where-Object { $_ -match '^\s*<!-- release-readiness:human-notes:begin -->\s*$' })
-Assert-Eq -Label "Marker-forgery (candidate list): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
+Assert-Eq -Label "Marker-forgery (candidate section): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
     -Actual $forgeListMarkers.Count
-Assert-Eq -Label "Candidate list: hostile title collapsed onto the bullet line (no isolated tail)" -Expected 0 `
+Assert-Eq -Label "Candidate section: hostile title collapsed onto the table row (no isolated tail)" -Expected 0 `
     -Actual (@($mdForgeList -split "`r?`n" | Where-Object { $_ -match '^\s*tail\b' }).Count)
 
 # ───── Candidate-mode open-PR collapse: avoid noisy main-PR dump ─────
@@ -2398,8 +2503,8 @@ Assert-Eq -Label "Shipped mode: full 'Open PRs Targeting' header still emitted" 
     -Actual ($mdShipped -match 'Open PRs Targeting release/10.0.1xx-sr7 — 2')
 Assert-Eq -Label "Shipped mode: full table renders both rows" -Expected $true `
     -Actual (($mdShipped -match '\| \[#1001\]') -and ($mdShipped -match '\| \[#1002\]'))
-Assert-Eq -Label "Shipped mode: NO 'Candidate PR for next SR cut' heading" -Expected $false `
-    -Actual ($mdShipped -match 'Candidate PR for next SR cut')
+Assert-Eq -Label "Shipped mode: NO hoisted candidate section" -Expected $false `
+    -Actual ($mdShipped -match '🚩 Candidate PR')
 
 # Candidate mode with NO candidate PR: emit explanatory note, suppress full table.
 $mdDataCandNone = @{} + $mdData
@@ -2407,27 +2512,43 @@ $mdDataCandNone['metadata'] = @{} + $mdData.metadata
 $mdDataCandNone['metadata']['mode'] = 'candidate'
 $mdDataCandNone['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr7'
 $mdDataCandNone['metadata']['srBranch'] = 'main'
+$mdDataCandNone['metadata']['mainBranch'] = 'main'
+$mdDataCandNone['metadata']['fetchedAt'] = '2026-07-04T00:00:00Z'
+$mdDataCandNone['candidatePr'] = @{
+    mode = 'resolved'; candidates = @(); spoofers = 0; unverifiable = 0; nextSr = 'SR8'; versionBase = '10.0.80'
+}
+# openSrPrs still populated to prove candidate mode suppresses the noisy main dump.
 $mdDataCandNone['openSrPrs'] = @(
     @{ number = 2001; title = 'Random WIP fix';     author = @{ login = 'alice' }; isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-01T00:00:00Z' }
     @{ number = 2002; title = 'Bump dependencies';  author = @{ login = 'bob' };   isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-02T00:00:00Z' }
 )
 $mdCandNone = Format-MarkdownReport -Data $mdDataCandNone -RepoUrl 'https://github.com/dotnet/maui' `
                                     -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
-Assert-Eq -Label "Candidate (no candidate PR): heading is 'Candidate PR for next SR cut'" -Expected $true `
-    -Actual ($mdCandNone -match 'Candidate PR for next SR cut')
-Assert-Eq -Label "Candidate (no candidate PR): explanatory note rendered" -Expected $true `
-    -Actual ($mdCandNone -match 'No open PR titled')
+Assert-Eq -Label "Candidate (no candidate PR): hoisted '🚩 Candidate PR' section heading present" -Expected $true `
+    -Actual ($mdCandNone -match '🚩 Candidate PR — SR8 cut point \(10\.0\.80\)')
+Assert-Eq -Label "Candidate (no candidate PR): 'No open Candidate PR yet' note rendered" -Expected $true `
+    -Actual ($mdCandNone -match 'No open Candidate PR yet')
 Assert-Eq -Label "Candidate (no candidate PR): noisy PR rows NOT rendered" -Expected $false `
     -Actual (($mdCandNone -match '\| \[#2001\]') -or ($mdCandNone -match '\| \[#2002\]'))
-Assert-Eq -Label "Candidate (no candidate PR): old 'Open PRs Targeting' header NOT emitted" -Expected $false `
+Assert-Eq -Label "Candidate (no candidate PR): 'Open PRs Targeting' header NOT emitted" -Expected $false `
     -Actual ($mdCandNone -match 'Open PRs Targeting main')
 
-# Candidate mode WITH a candidate PR: emit single link + omit full table.
+# Candidate mode WITH a candidate PR: hoisted table links the candidate + omits the noisy dump.
 $mdDataCandFound = @{} + $mdData
 $mdDataCandFound['metadata'] = @{} + $mdData.metadata
 $mdDataCandFound['metadata']['mode'] = 'candidate'
 $mdDataCandFound['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr8'
 $mdDataCandFound['metadata']['srBranch'] = 'main'
+$mdDataCandFound['metadata']['mainBranch'] = 'main'
+$mdDataCandFound['metadata']['fetchedAt'] = '2026-07-04T00:00:00Z'
+$mdDataCandFound['candidatePr'] = @{
+    mode = 'resolved'; spoofers = 0; unverifiable = 0; nextSr = 'SR9'; versionBase = '10.0.90'
+    candidates = @(
+        @{ number = 3002; title = 'June 8th, Candidate'; author = @{ login = 'PureWeen' }; isDraft = $false;
+           mergeable = 'MERGEABLE'; reviewDecision = 'REVIEW_REQUIRED'; createdAt = '2026-06-08T00:00:00Z'; updatedAt = '2026-06-08T00:00:00Z' }
+    )
+}
+# openSrPrs populated with unrelated noise (incl. #3001/#3003) to prove they are suppressed.
 $mdDataCandFound['openSrPrs'] = @(
     @{ number = 3001; title = 'Random WIP fix';        author = @{ login = 'alice' }; isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-01T00:00:00Z' }
     @{ number = 3002; title = 'June 8th, Candidate';   author = @{ login = 'PureWeen' }; isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-08T00:00:00Z' }
@@ -2435,12 +2556,16 @@ $mdDataCandFound['openSrPrs'] = @(
 )
 $mdCandFound = Format-MarkdownReport -Data $mdDataCandFound -RepoUrl 'https://github.com/dotnet/maui' `
                                      -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
-Assert-Eq -Label "Candidate (found): heading is 'Candidate PR for next SR cut'" -Expected $true `
-    -Actual ($mdCandFound -match 'Candidate PR for next SR cut')
+Assert-Eq -Label "Candidate (found): hoisted heading names next SR + version base" -Expected $true `
+    -Actual ($mdCandFound -match '🚩 Candidate PR — SR9 cut point \(10\.0\.90\)')
 Assert-Eq -Label "Candidate (found): linked the actual candidate PR (#3002)" -Expected $true `
     -Actual ($mdCandFound -match '\[#3002\]\(https://github.com/dotnet/maui/pull/3002\)')
-Assert-Eq -Label "Candidate (found): author defanged in link line" -Expected $true `
+Assert-Eq -Label "Candidate (found): author defanged in table row" -Expected $true `
     -Actual ($mdCandFound -match '`PureWeen`')
+Assert-Eq -Label "Candidate (found): PR age rendered (days ago)" -Expected $true `
+    -Actual ($mdCandFound -match '\(26 days ago\)')
+Assert-Eq -Label "Candidate (found): staleness callout fired (>=14 days old)" -Expected $true `
+    -Actual ($mdCandFound -match 'Stale \(26 days old\)')
 Assert-Eq -Label "Candidate (found): unrelated PRs (#3001, #3003) NOT listed" -Expected $false `
     -Actual (($mdCandFound -match '\| \[#3001\]') -or ($mdCandFound -match '\| \[#3003\]'))
 Assert-Eq -Label "Candidate (found): pointer to full PR list rendered" -Expected $true `
@@ -3902,6 +4027,132 @@ $explicitNullThrew = $false
 try { $null = Get-CategorizedPullRequests -TargetPRs $null -InflightPRs @($null, $maestroPrMock) }
 catch { $explicitNullThrew = $true }
 Assert-Eq -Label "explicit null target + @(null, maestro) inflight → no throw" -Expected $false -Actual $explicitNullThrew
+
+# ───── Test-IssueReleaseRelevant: cross-major preview-number leak guard ─────
+Write-Host "`n[Unit] Test-IssueReleaseRelevant — cross-major preview-number leak" -ForegroundColor Cyan
+# Regression: the bare "previewN" phrase matches every major's previewN. A
+# `.NET 10` p/0 issue labelled `regressed-in-10-preview7` (e.g. #31960) was
+# leaking onto the .NET 11 preview7 tracker because "preview7" matched without
+# any major anchoring. The fix rejects a previewN match when the issue carries a
+# contradicting foreign-major signal (see Test-IssueHasForeignMajor), while
+# preserving the wide net for genuinely major-less "previewN" mentions.
+function New-RelevanceIssue {
+    param([string]$Title, [string]$Milestone, [string[]]$Labels)
+    [PSCustomObject]@{
+        title     = $Title
+        milestone = if ($Milestone) { [PSCustomObject]@{ title = $Milestone } } else { $null }
+        labels    = @($Labels | ForEach-Object { [PSCustomObject]@{ name = $_ } })
+    }
+}
+
+# The exact #31960 shape: .NET 10 p/0 regression with a preview7 label.
+$issue31960 = New-RelevanceIssue -Title 'Crash on startup' -Milestone '.NET 10 SR12' -Labels @('p/0', 'regressed-in-10-preview7')
+Assert-Eq -Label "#31960 (regressed-in-10-preview7) NOT relevant for M11/P7" `
+    -Expected $false -Actual (Test-IssueReleaseRelevant -Issue $issue31960 -Major 11 -Preview 7)
+Assert-Eq -Label "#31960 IS relevant for its own major M10/P7" `
+    -Expected $true  -Actual (Test-IssueReleaseRelevant -Issue $issue31960 -Major 10 -Preview 7)
+
+# Genuine .NET 11 preview7 issues stay relevant (caught by the major signal first).
+$net11Label = New-RelevanceIssue -Title 'Layout bug' -Milestone '.NET 11.0' -Labels @('regressed-in-11.0.0-preview7')
+Assert-Eq -Label "regressed-in-11.0.0-preview7 relevant for M11/P7" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $net11Label -Major 11 -Preview 7)
+$net11Milestone = New-RelevanceIssue -Title 'Nav glitch' -Milestone '.NET 11.0-preview7' -Labels @('p/1')
+Assert-Eq -Label ".NET 11.0-preview7 milestone relevant for M11/P7" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $net11Milestone -Major 11 -Preview 7)
+
+# Wide net preserved: a bare "preview7" mention with NO major signal stays relevant.
+$bareMention = New-RelevanceIssue -Title 'Broken since preview7' -Milestone $null -Labels @('p/1')
+Assert-Eq -Label "bare 'preview7' (no major) still relevant for M11/P7" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $bareMention -Major 11 -Preview 7)
+
+# The previewN guard path must be exercised WITHOUT an own-major token — otherwise
+# Test-IssueReleaseRelevant returns early via the major regex ($Major\.0) and never
+# reaches the foreign-major check. A large build number present here must not be
+# mistaken for a .NET major: it isn't anchored to net/regressed-in, so it never
+# registers, and the previewN match therefore stands.
+$buildNumIssue = New-RelevanceIssue -Title 'crash since preview7 in build 26324113' -Milestone $null -Labels @('p/0')
+Assert-Eq -Label "large build number does not register as major on previewN path (M11/P7)" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $buildNumIssue -Major 11 -Preview 7)
+
+# Reviewer-flagged false-positive class: OS/tool versions must NOT be read as foreign
+# .NET majors, or a genuine still-untriaged p/0 preview7 regression (no .NET milestone
+# yet) gets silently dropped — exactly the population this scan exists to surface.
+$androidP0 = New-RelevanceIssue -Title 'App crashes on Android 15.0 since preview7' -Milestone $null -Labels @('p/0')
+Assert-Eq -Label "OS version 'Android 15.0' does not drop a preview7 p/0 (M11/P7)" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $androidP0 -Major 11 -Preview 7)
+$iosP0 = New-RelevanceIssue -Title 'iOS 18.0 layout broke in preview7' -Milestone $null -Labels @('p/0')
+Assert-Eq -Label "OS version 'iOS 18.0' does not drop a preview7 p/0 (M11/P7)" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $iosP0 -Major 11 -Preview 7)
+
+# Cross-major leak guard also holds for preview6.
+$net10Preview6 = New-RelevanceIssue -Title 'Z' -Milestone '.NET 10' -Labels @('regressed-in-10-preview6')
+Assert-Eq -Label "regressed-in-10-preview6 NOT relevant for M11/P6" `
+    -Expected $false -Actual (Test-IssueReleaseRelevant -Issue $net10Preview6 -Major 11 -Preview 6)
+
+# Direct unit coverage of the foreign-major detector.
+Assert-Eq -Label "foreign-major: 'regressed-in-10-*' is foreign to major 11" `
+    -Expected $true  -Actual (Test-IssueHasForeignMajor -Haystack 'regressed-in-10-preview7 p/0' -Major 11)
+Assert-Eq -Label "foreign-major: '.NET 10 SR12' is foreign to major 11" `
+    -Expected $true  -Actual (Test-IssueHasForeignMajor -Haystack 'Crash .NET 10 SR12' -Major 11)
+Assert-Eq -Label "foreign-major: same-major '11.0.0' is NOT foreign to major 11" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'regressed-in-11.0.0-preview7' -Major 11)
+Assert-Eq -Label "foreign-major: build number 26324 is NOT a major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'preview.7.26324.11 only' -Major 11)
+# OS/tool versions carry an X.0 token but no .NET anchor — must never read as foreign.
+Assert-Eq -Label "foreign-major: 'Android 15.0' is NOT a foreign major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'App crashes on Android 15.0 since preview7' -Major 11)
+Assert-Eq -Label "foreign-major: 'iOS 18.0' is NOT a foreign major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'iOS 18.0 layout broke in preview7' -Major 11)
+Assert-Eq -Label "foreign-major: 'VS 17.0' is NOT a foreign major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'Broken in VS 17.0 preview7' -Major 11)
+# A genuine anchored foreign major is still caught even amid OS noise.
+Assert-Eq -Label "foreign-major: anchored '.NET 8' caught despite OS noise" `
+    -Expected $true  -Actual (Test-IssueHasForeignMajor -Haystack 'Android 15.0 regression, .NET 8 only, preview7' -Major 11)
+# Digits behind an anchor are still bounded to 6..99 (stray build number can't sneak in).
+Assert-Eq -Label "foreign-major: anchored out-of-range 'net26324' is not a major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'net26324 build only' -Major 11)
+Assert-Eq -Label "foreign-major: empty haystack → false" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack '' -Major 11)
+Assert-Eq -Label "foreign-major: whitespace-only haystack → false" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack '   ' -Major 11)
+
+# --- Preview milestone coupling: tracker exists ⇒ milestone must exist ---
+# Policy check for Test-PreviewMilestoneExists. Deterministic: Get-AllMilestones
+# is stubbed in this dot-sourced scope (later definition wins, so the function
+# under test resolves the stub at call time) — no gh/network is touched. A
+# missing own-preview milestone is a BLOCKED ship-readiness gap, not a
+# wait-til-cut cleanup.
+Write-Host "`n[Unit] Test-PreviewMilestoneExists — preview milestone coupling" -ForegroundColor Cyan
+
+function Get-AllMilestones { [PSCustomObject]@{ Success = $true; Data = @(
+    [PSCustomObject]@{ title = '.NET 11.0-preview6' },
+    [PSCustomObject]@{ title = '.NET 10 SR9' }
+) } }
+$msPresent = Test-PreviewMilestoneExists -Major 11 -Preview 6
+Assert-Eq -Label "milestone present (.NET 11.0-preview6) → Exists"        -Expected $true  -Actual $msPresent.Exists
+Assert-Eq -Label "milestone present → not QueryFailed"                    -Expected $false -Actual $msPresent.QueryFailed
+Assert-Eq -Label "milestone present → MatchedTitle echoed"               -Expected '.NET 11.0-preview6' -Actual $msPresent.MatchedTitle
+
+# preview7 milestone absent from the same list → not Exists, and the expected
+# title is computed so the caller can render a create-it next-action.
+$msMissing = Test-PreviewMilestoneExists -Major 11 -Preview 7
+Assert-Eq -Label "milestone missing (preview7) → not Exists"              -Expected $false -Actual $msMissing.Exists
+Assert-Eq -Label "milestone missing → not QueryFailed"                    -Expected $false -Actual $msMissing.QueryFailed
+Assert-Eq -Label "milestone missing → ExpectedTitle computed"            -Expected '.NET 11.0-preview7' -Actual $msMissing.ExpectedTitle
+
+# Legacy title form (no '.NET ' prefix) still counts as present — don't false-BLOCK.
+function Get-AllMilestones { [PSCustomObject]@{ Success = $true; Data = @([PSCustomObject]@{ title = '11.0-preview7' }) } }
+Assert-Eq -Label "legacy '11.0-preview7' milestone counts as present"     -Expected $true  -Actual (Test-PreviewMilestoneExists -Major 11 -Preview 7).Exists
+
+# Case-insensitive match.
+function Get-AllMilestones { [PSCustomObject]@{ Success = $true; Data = @([PSCustomObject]@{ title = '.NET 11.0-PREVIEW7' }) } }
+Assert-Eq -Label "case-insensitive milestone match"                       -Expected $true  -Actual (Test-PreviewMilestoneExists -Major 11 -Preview 7).Exists
+
+# gh outage must surface as QueryFailed (caller emits UNKNOWN), never a false BLOCK.
+function Get-AllMilestones { [PSCustomObject]@{ Success = $false; Data = @() } }
+$msFail = Test-PreviewMilestoneExists -Major 11 -Preview 7
+Assert-Eq -Label "query failure → QueryFailed (not a false BLOCK)"        -Expected $true  -Actual $msFail.QueryFailed
+Assert-Eq -Label "query failure → Exists false"                          -Expected $false -Actual $msFail.Exists
 
 Write-Host "`n[Unit] Format-MarkdownCell collapses embedded newlines (table-row safety)" -ForegroundColor Cyan
 # A malformed upstream title with a literal CR/LF (observed live: ci-scan issue

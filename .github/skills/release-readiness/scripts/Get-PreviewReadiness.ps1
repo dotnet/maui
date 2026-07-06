@@ -486,6 +486,84 @@ function Get-IssuesByLabel {
     return ConvertFrom-JsonOrEmptyArray $json
 }
 
+function Get-AllMilestones {
+    <#
+    .SYNOPSIS
+        Fetches all milestones (open + closed) for the repo via `gh api`.
+        Returns a Success/Data envelope so callers can distinguish
+        "API call failed" from "no milestones exist".
+    .NOTES
+        Query parameters MUST be embedded in the URL — passing them via `-f`
+        switches `gh api` to POST mode (form body), which the milestones
+        endpoint rejects with HTTP 422. A successful milestones query always
+        returns at least `[]`; empty/failed output is surfaced as
+        Success=$false rather than masked as "zero milestones" (which would
+        let the milestone-existence check silently pass on a gh outage).
+        Kept in sync with the identically-named helper in Get-ReleaseReadiness.ps1.
+    #>
+    try {
+        $raw = Invoke-GitHubWithRetry -Arguments @(
+            'api', "repos/$Repository/milestones?state=all&per_page=100", '--paginate'
+        ) -Description "list milestones for $Repository"
+        if ([string]::IsNullOrWhiteSpace($raw)) {
+            return [PSCustomObject]@{ Success = $false; Data = @() }
+        }
+        $parsed = $raw | ConvertFrom-Json
+        return [PSCustomObject]@{ Success = $true; Data = @($parsed) }
+    } catch {
+        return [PSCustomObject]@{ Success = $false; Data = @() }
+    }
+}
+
+function Test-PreviewMilestoneExists {
+    <#
+    .SYNOPSIS
+        Checks whether the GitHub milestone for THIS preview
+        (e.g. ".NET 11.0-preview7") exists in the repo.
+    .DESCRIPTION
+        A preview release-readiness tracker and its milestone are coupled: if
+        a tracker exists, the milestone must exist right away — not deferred to
+        cut time — so fixed issues have a milestone to land on and the
+        release-notes generator has something to query. A missing milestone is
+        therefore a real ship-readiness gap (BLOCKED), mirroring the SR lane's
+        current-cycle rule in Get-ReleaseReadiness.ps1 (which likewise treats a
+        candidate tracker's OWN milestone as blocking).
+
+        Accepts the modern ".NET <major>.0-preview<N>" title and the legacy
+        "<major>.0-preview<N>" form (case-insensitive), so a valid milestone
+        under older naming isn't mis-flagged as missing.
+
+        Returns @{ QueryFailed=[bool]; Exists=[bool]; ExpectedTitle=[string];
+                   MatchedTitle=[string] }. QueryFailed=$true (gh outage) must
+        be surfaced as UNKNOWN by the caller, never as a false BLOCK.
+    #>
+    param(
+        [int]$Major,
+        [int]$Preview
+    )
+
+    $expected = ".NET $Major.0-preview$Preview"
+    $ms = Get-AllMilestones
+    if (-not $ms.Success) {
+        return @{ QueryFailed = $true; Exists = $false; ExpectedTitle = $expected; MatchedTitle = $null }
+    }
+
+    $acceptable = @(
+        ".net $Major.0-preview$Preview",
+        "$Major.0-preview$Preview"
+    )
+    $match = $null
+    foreach ($m in $ms.Data) {
+        $t = "$($m.title)".Trim().ToLowerInvariant()
+        if ($acceptable -contains $t) { $match = $m; break }
+    }
+
+    if ($match) {
+        return @{ QueryFailed = $false; Exists = $true; ExpectedTitle = $expected; MatchedTitle = $match.title }
+    }
+    return @{ QueryFailed = $false; Exists = $false; ExpectedTitle = $expected; MatchedTitle = $null }
+}
+
 function Get-CiScanLabelForBranch {
     <#
     .SYNOPSIS
@@ -581,6 +659,45 @@ function Get-CiScanIssues {
     }
 }
 
+function Test-IssueHasForeignMajor {
+    <#
+    .SYNOPSIS
+        Returns $true if the text explicitly names a .NET major version that
+        differs from $Major (e.g. a `regressed-in-10-*` label or a `.NET 10`
+        milestone when surveying major 11).
+    .NOTES
+        The bare "previewN" phrase is major-ambiguous — every major has a
+        previewN. Regression labels encode the major (`regressed-in-10-preview7`
+        is a .NET 10 label), so without this guard a .NET 10 preview7 issue
+        leaks onto the .NET 11 preview7 tracker. This detector lets the
+        relevance check reject a previewN match when a *different* major is
+        explicitly named.
+
+        A foreign major is only recognized when the digits are anchored to an
+        explicit .NET token — `net`, `.net`, or `regressed-in-` — so unrelated
+        OS/tool versions that pepper MAUI issue titles (`Android 15.0`,
+        `iOS 18.0`, `macOS 14.0`, `VS 17.0`) are NOT mistaken for .NET majors
+        and cannot silently drop a genuine, still-untriaged p/0 report. The
+        6..99 bound is defense-in-depth against a stray build number sneaking
+        in behind an anchor.
+    #>
+    param(
+        [string]$Haystack,
+        [int]$Major
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Haystack)) { return $false }
+
+    foreach ($m in [regex]::Matches($Haystack, "(?i)(?:net\s*|\.net\s*|regressed-in-)(\d+)")) {
+        $val = 0
+        if ([int]::TryParse($m.Groups[1].Value, [ref]$val) -and $val -ge 6 -and $val -le 99 -and $val -ne $Major) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Test-IssueReleaseRelevant {
     <#
     .SYNOPSIS
@@ -589,7 +706,10 @@ function Test-IssueReleaseRelevant {
         labels.
     .NOTES
         Uses a wide net on purpose — false negatives are worse than false
-        positives for release-readiness triage.
+        positives for release-readiness triage. The one exception is a
+        *cross-major* collision: the bare "previewN" phrase matches every
+        major's previewN, so it is only honored when the issue carries no
+        contradicting foreign-major signal (see Test-IssueHasForeignMajor).
     #>
     param(
         $Issue,
@@ -607,7 +727,12 @@ function Test-IssueReleaseRelevant {
     }
 
     if ($haystack -match "(?i)preview\s*$Preview|preview$Preview") {
-        return $true
+        # "previewN" alone is major-ambiguous; reject it when the issue
+        # explicitly names a different major (e.g. regressed-in-10-preview7
+        # surveyed against major 11).
+        if (-not (Test-IssueHasForeignMajor -Haystack $haystack -Major $Major)) {
+            return $true
+        }
     }
 
     return $false
@@ -1110,6 +1235,37 @@ if ($surveyExists) {
     } catch {
         $checks += New-Check -Area "Bug template versions" -Status "UNKNOWN" -Details "Failed to evaluate bug template: $($_.Exception.Message)" -NextAction "Inspect .github/ISSUE_TEMPLATE/bug-report.yml manually."
     }
+}
+
+# --- Preview milestone existence check ---
+# Policy: a preview release-readiness tracker and its GitHub milestone are
+# coupled. If this tracker exists, the ".NET <major>.0-preview<N>" milestone
+# must exist RIGHT AWAY — not deferred to cut time — otherwise fixed issues have
+# no milestone to land on and the release-notes generator has nothing to query.
+# Missing => BLOCKED (a real ship-readiness gap), mirroring the SR lane's
+# current-cycle rule in Get-ReleaseReadiness.ps1, which likewise treats a
+# candidate tracker's OWN milestone as blocking. Repo-global, so it runs
+# independent of branch/survey state (candidate and in-flight alike).
+try {
+    $msCheck = Test-PreviewMilestoneExists -Major $majorVersion -Preview $previewNumber
+    $msArea = "Milestone for preview$previewNumber ($($msCheck.ExpectedTitle))"
+    if ($msCheck.QueryFailed) {
+        $checks += New-Check -Area $msArea -Status "UNKNOWN" `
+            -Details "Could not query milestones from the GitHub API for ``$Repository`` (gh exited non-zero after retries). Treating as unknown so a gh outage does not silently pass — or falsely block — the milestone check." `
+            -NextAction "Verify ``gh auth status`` and rerun, or check manually: ``gh api repos/$Repository/milestones``."
+    } elseif ($msCheck.Exists) {
+        $checks += New-Check -Area $msArea -Status "READY" `
+            -Details "Milestone ``$($msCheck.MatchedTitle)`` exists — fixed preview$previewNumber issues have a milestone to land on." `
+            -NextAction "No action needed."
+    } else {
+        $checks += New-Check -Area $msArea -Status "BLOCKED" `
+            -Details "No milestone matching ``$($msCheck.ExpectedTitle)`` exists in ``$Repository``. A preview$previewNumber release-readiness tracker exists, so its milestone must exist right away — without it, fixed issues have nowhere to land and the release-notes generator has nothing to query." `
+            -NextAction "Create it now: ``gh api repos/$Repository/milestones -f title=""$($msCheck.ExpectedTitle)"" -f state=open``"
+    }
+} catch {
+    $checks += New-Check -Area "Milestone for preview$previewNumber" -Status "UNKNOWN" `
+        -Details "Failed to evaluate the preview milestone: $($_.Exception.Message)" `
+        -NextAction "Check milestones manually: ``gh api repos/$Repository/milestones``."
 }
 
 # --- Inflight branch (net<major>.0) bump check ---
