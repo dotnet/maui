@@ -486,6 +486,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				_currentSearchHandler.ShowsResults
 					? CreateSearchHandlerItemsSource()
 					: null;
+		}
+
 		void OnShellItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (_mainLevelTabs == null || sender is not BaseShellItem shellItem)

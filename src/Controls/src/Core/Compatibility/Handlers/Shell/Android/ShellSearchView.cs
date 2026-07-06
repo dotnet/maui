@@ -195,6 +195,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_textBlock.SetSingleLine(true);
 			_textBlock.Threshold = 1;
 			_textBlock.Adapter = new ShellSearchViewAdapter(SearchHandler, _shellContext);
+			UpdateShowsResults();
 			_textBlock.ItemClick += OnTextBlockItemClicked;
 			_textBlock.SetDropDownBackgroundDrawable(new ClipDrawableWrapper(_textBlock.DropDownBackground));
 
