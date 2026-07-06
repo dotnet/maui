@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 	public abstract partial class Brush : Element
 	{
-		static readonly ICache<Color, ImmutableBrush> _cache = new CacheWithSwitch(50);
+		static readonly ICache<Color, ImmutableBrush> _cache = new CacheWithSwitch(51);
 
 		public static implicit operator Brush(Paint paint)
 		{
