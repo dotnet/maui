@@ -43,9 +43,18 @@ on:
 permissions:
   contents: read
 
+# Run-level concurrency. Keyed by event + PR/branch so redundant runs of the SAME
+# kind collapse. cancel-in-progress is TRUE only for pull_request (a new push
+# supersedes a stale validation — saves CI) and FALSE otherwise: a scheduled /
+# dispatched run must never be cancelled mid-flight, because its per-tracker job
+# may be part-way through a `gh issue edit` that splices human-authored Release
+# Captain Notes. Serialize-don't-cancel keeps that write atomic. NOTE: this only
+# serializes runs of the SAME event kind (e.g. two schedules). The real cross-run
+# guard against two DIFFERENT event kinds racing the same tracker's issue edit is
+# the per-tracker concurrency group on the per-tracker-report job below.
 concurrency:
   group: release-readiness-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.branch || 'all' }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # ────────────────────────────────────────────────────────────────────
@@ -139,6 +148,20 @@ jobs:
     needs: detect-trackers
     if: needs.detect-trackers.outputs.has-trackers == 'true'
     runs-on: ubuntu-latest
+    # Per-tracker writer serialization. This is the load-bearing guard against the
+    # Release Captain Notes clobber race: the "Update or create tracker issue" step
+    # re-reads the live issue body and awk-splices the human-notes block back into the
+    # fresh report just before `gh issue edit`. Two runs writing the SAME tracker
+    # concurrently (e.g. a scheduled run and an event-triggered run — added in a later
+    # commit) could interleave read/splice/edit and silently drop notes. Keying this
+    # group on matrix.canonicalKey forces same-tracker writers to run one-at-a-time
+    # ACROSS runs, regardless of event kind (the run-level group only serializes runs
+    # of the same event kind). Different trackers stay parallel (distinct keys).
+    # cancel-in-progress is FALSE on purpose: serialize, don't cancel, so an in-flight
+    # `gh issue edit` always completes rather than being killed part-way.
+    concurrency:
+      group: release-readiness-tracker-${{ matrix.canonicalKey }}
+      cancel-in-progress: false
     permissions:
       contents: read
       issues: write
@@ -308,6 +331,15 @@ jobs:
             # churning the issue when nothing material changed. Both engines emit
             # <!-- release-readiness:human-notes:begin/end --> markers; the SR engine
             # additionally embeds <!-- release-readiness-hash: sha=... -->.
+            #
+            # Concurrency note: the per-tracker `concurrency` group on this job
+            # (release-readiness-tracker-<canonicalKey>, cancel-in-progress:false) is
+            # the PRIMARY guard against two runs racing this splice+edit for the same
+            # tracker — it serializes same-tracker writers across every event kind. The
+            # read-modify-write below (re-read live body → splice notes → edit) is the
+            # defense-in-depth second layer: even if serialization were ever bypassed,
+            # the fetch is taken IMMEDIATELY before the edit and every ambiguous state
+            # skips the edit (see the guards below) rather than risk clobbering notes.
             CUR_BODY_FILE="$(mktemp)"
             # Capture the live issue body. A transient fetch failure must NOT lead
             # to an overwrite: an empty CUR_BODY_FILE would skip the notes splice

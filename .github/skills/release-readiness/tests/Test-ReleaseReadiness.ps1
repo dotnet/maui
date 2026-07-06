@@ -2223,6 +2223,25 @@ $banIdx = $mdBan.IndexOf('Nightly dogfood feed is STALE')
 Assert-Eq -Label "Banner appears after the **Generated** line" -Expected $true `
     -Actual ($genIdx -ge 0 -and $banIdx -gt $genIdx)
 
+# Report freshness banner (🕐/⏳) renders below **Generated** and is DERIVED-AT-RENDER,
+# so it must NOT perturb the semantic hash. Render the report TWICE with DIFFERENT
+# metadata.fetchedAt values: this changes both the **Generated** line AND the freshness
+# banner text, yet the sha= marker MUST stay identical (fetchedAt is excluded from the
+# hash). If the render-time banner ever leaked into Get-ReportSemanticHash, the two
+# hashes would diverge and the workflow's idempotent no-op would churn every run.
+$mdFreshOld = $mdData.Clone(); $mdFreshOld.metadata = $mdData.metadata.Clone(); $mdFreshOld.metadata.fetchedAt = '2025-01-01T00:00:00Z'
+$mdFreshNew = $mdData.Clone(); $mdFreshNew.metadata = $mdData.metadata.Clone(); $mdFreshNew.metadata.fetchedAt = '2026-07-06T12:00:00Z'
+$mdRenderOld = Format-MarkdownReport -Data $mdFreshOld -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$mdRenderNew = Format-MarkdownReport -Data $mdFreshNew -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$shaRenderOld = ([regex]::Match($mdRenderOld, 'release-readiness-hash: sha=([0-9a-f]{64})')).Groups[1].Value
+$shaRenderNew = ([regex]::Match($mdRenderNew, 'release-readiness-hash: sha=([0-9a-f]{64})')).Groups[1].Value
+$banRenderOld = (($mdRenderOld -split "`n") | Where-Object { $_ -match 'Report generated' }) -join ''
+$banRenderNew = (($mdRenderNew -split "`n") | Where-Object { $_ -match 'Report generated' }) -join ''
+Assert-Eq -Label "Freshness banner text differs when fetchedAt differs" -Expected $true `
+    -Actual ($banRenderOld -ne '' -and $banRenderNew -ne '' -and $banRenderOld -ne $banRenderNew)
+Assert-Eq -Label "Semantic hash is STABLE despite freshness-banner/fetchedAt change (no-op intact)" `
+    -Expected $shaRenderOld -Actual $shaRenderNew
+
 # Without TrackerKey: no tracker marker, no visible Tracker line
 $mdNoTracker = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
                                      -MaxBodyBytes 60000
@@ -4341,6 +4360,45 @@ Assert-Eq -Label "banner: future publish → clamped to 'today'" -Expected $true
 # Caller-tunable thresholds: a 4-day-old build is ⚠️ by default but ✅ under a wider window.
 $bWide = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,18,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow -AgingDays 10 -StaleDays 20
 Assert-Eq -Label "banner: custom AgingDays=10 → 4d build is ✅ fresh" -Expected $true -Actual ($bWide -match '✅')
+
+# ───── Format-ReportFreshnessBanner: report's own DERIVED-AT-RENDER freshness note ─────
+# PURE (caller passes -Now), so the fresh AND the ⏳-stale paths are both tested offline by
+# injecting a past -GeneratedAt. This banner MUST NOT feed Get-ReportSemanticHash — the
+# render-twice-with-different-fetchedAt hash test below enforces that at the report level.
+Write-Host "`n[Unit] Format-ReportFreshnessBanner (report freshness — pure renderer)" -ForegroundColor Cyan
+$rfGen = [datetime]::new(2026, 6, 22, 12, 0, 0, [System.DateTimeKind]::Utc)
+
+# Fresh (< threshold) → 🕐, no ⏳.
+$rfFresh = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddMinutes(2)
+Assert-Eq -Label "freshness: 2m → 🕐, no ⏳"        -Expected $true  -Actual ($rfFresh -match '🕐' -and $rfFresh -notmatch '⏳' -and $rfFresh -match '2 minutes ago')
+# Zero age clamps to 'moments ago' (no negative / no throw).
+$rfNow = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen
+Assert-Eq -Label "freshness: 0 → 'moments ago'"     -Expected $true  -Actual ($rfNow -match 'moments ago' -and $rfNow -notmatch '⏳')
+# Just under threshold (3h < 4h default) → still fresh.
+$rf3h = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(3)
+Assert-Eq -Label "freshness: 3h → 🕐 (under 4h), no ⏳" -Expected $true -Actual ($rf3h -match '3 hours ago' -and $rf3h -notmatch '⏳')
+# At/over threshold → ⏳ stale flag.
+$rf5h = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(5)
+Assert-Eq -Label "freshness: 5h → ⏳ may be stale"   -Expected $true  -Actual ($rf5h -match '⏳' -and $rf5h -match '5 hours ago' -and $rf5h -match 'older than 4h')
+$rf2d = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddDays(2)
+Assert-Eq -Label "freshness: 2d → ⏳ may be stale"   -Expected $true  -Actual ($rf2d -match '⏳' -and $rf2d -match '2 days ago')
+# Singular/plural correctness.
+$rf1m = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddMinutes(1)
+Assert-Eq -Label "freshness: 1m → singular 'minute'" -Expected $true -Actual ($rf1m -match '1 minute ago' -and $rf1m -notmatch 'minutes')
+$rf1h = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(1)
+Assert-Eq -Label "freshness: 1h → singular 'hour'"   -Expected $true -Actual ($rf1h -match '1 hour ago' -and $rf1h -notmatch 'hours')
+# Custom threshold is honored.
+$rfCustom = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(3) -StaleHours 2
+Assert-Eq -Label "freshness: custom StaleHours=2 → 3h is ⏳" -Expected $true -Actual ($rfCustom -match '⏳' -and $rfCustom -match 'older than 2h')
+# ISO-8601 string input (the shape both engines actually store) parses.
+$rfIso = Format-ReportFreshnessBanner -GeneratedAt '2026-06-22T12:00:00Z' -Now $rfGen.AddHours(5)
+Assert-Eq -Label "freshness: ISO-8601 string → ⏳ stale"  -Expected $true -Actual ($rfIso -match '⏳' -and $rfIso -match '5 hours ago')
+# Fail-open: null / unparseable → '' (renderer appends nothing).
+Assert-Eq -Label "freshness: null → empty string"        -Expected '' -Actual (Format-ReportFreshnessBanner -GeneratedAt $null -Now $rfGen)
+Assert-Eq -Label "freshness: unparseable → empty string"  -Expected '' -Actual (Format-ReportFreshnessBanner -GeneratedAt 'not-a-date' -Now $rfGen)
+# Future generation (clock skew) clamps to 'moments ago', never negative / never ⏳.
+$rfFuture = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddMinutes(-30)
+Assert-Eq -Label "freshness: future gen → clamped 'moments ago', no ⏳" -Expected $true -Actual ($rfFuture -match 'moments ago' -and $rfFuture -notmatch '⏳')
 
 Write-Host "`n[Unit] Nightly-feed freshness query (Get-NightlyFeedFreshness — mocked fetcher)" -ForegroundColor Cyan
 # Self-contained fetcher: emulates the Azure Artifacts service index + a SemVer2
