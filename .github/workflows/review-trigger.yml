@@ -168,6 +168,7 @@ jobs:
     needs: match
     if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'review'
     runs-on: ubuntu-latest
+    environment: copilot-pat-pool
     concurrency:
       group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}
       cancel-in-progress: false
