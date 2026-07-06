@@ -415,7 +415,7 @@ internal partial class MauiItemsView
 			// null data row — ItemFactory returns a plain ItemContainer for null items.
 			// In both cases the drag should proceed; only containers with no Tag at all
 			// (never prepared, or cleared by ElementClearing) must cancel the drag.
-		bool hasBinding = itemContainer.Child is ElementWrapper _ew && _ew.VirtualView is View;
+		bool hasBinding = itemContainer.Child is ElementWrapper { VirtualView: View };
 
 			// Blank null-data container: ItemFactory creates an ElementWrapper-less
 			// ItemContainer for null data items. The Tag is set by ApplyDragAffordance
@@ -851,38 +851,44 @@ internal partial class MauiItemsView
 		bool hasHeaders = groupableView.GroupHeaderTemplate is not null;
 		bool hasFooters = groupableView.GroupFooterTemplate is not null;
 
-		// Find which group the dragged item belongs to.
-		// Groups may be IEnumerable-only (e.g., IGrouping<K,V>), so enumerate rather
-		// than requiring IList for the search. IList is still required for mutation.
+		// Find which group and item within that group the dragged item belongs to,
+		// using the flat repeater index (_draggedSourceIndex) rather than value equality.
+		// Value equality cannot distinguish multiple null items across groups — the flat
+		// index is the only per-slot discriminator for null-item drags.
 		int sourceGroupIndex = -1;
 		int sourceItemIndex = -1;
 		IList? sourceGroup = null;
+		int flatSrcPos = 0;
 
 		for (int g = 0; g < groupsList.Count; g++)
 		{
-			if (groupsList[g] is not IEnumerable groupItems)
+			if (groupsList[g] is not IEnumerable groupSrcItems)
 			{
 				continue;
 			}
 
+			if (hasHeaders)
+				flatSrcPos++; // skip header
+
 			int i = 0;
-			foreach (var groupItem in groupItems)
+			foreach (var _ in groupSrcItems)
 			{
-				if (ReferenceEquals(groupItem, _draggedItem) || Equals(groupItem, _draggedItem))
+				if (flatSrcPos == _draggedSourceIndex)
 				{
 					sourceGroupIndex = g;
 					sourceItemIndex = i;
 					sourceGroup = groupsList[g] as IList;
 					break;
 				}
-
+				flatSrcPos++;
 				i++;
 			}
 
 			if (sourceGroupIndex >= 0)
-			{
 				break;
-			}
+
+			if (hasFooters)
+				flatSrcPos++; // skip footer
 		}
 
 		// sourceGroup being null means the group is not mutable — reorder not possible.
@@ -1218,6 +1224,25 @@ internal partial class MauiItemsView
 	{
 		var sourceList = GetSourceList();
 		var containerItem = GetContainerItem(container);
+
+		// For null-item containers (no ElementWrapper child), GetContainerItem returns null.
+		// Equals(null, null) == true, so the Tag validation below cannot detect a stale
+		// Tag — any index that also holds null would be accepted. Use GetElementIndex
+		// for the authoritative repeater position instead.
+		if (containerItem is null)
+		{
+			var repeater = ItemsRepeaterControl;
+			if (repeater is not null)
+			{
+				int repeaterIndex = repeater.GetElementIndex(container);
+				if (repeaterIndex >= 0)
+					return repeaterIndex;
+			}
+			// GetElementIndex failed (container not realized); fall back to raw Tag.
+			if (container.Tag is int fallbackIndex)
+				return fallbackIndex;
+			return -1;
+		}
 
 		// Prefer the Tag set during ElementPrepared — it is the authoritative flat
 		// index and avoids the ambiguity where group headers and footers share the
