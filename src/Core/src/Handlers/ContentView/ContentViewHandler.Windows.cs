@@ -22,8 +22,6 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			handler.PlatformView.CachedChildren.Clear();
-
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
 				var platformView = view.ToPlatform(handler.MauiContext);
@@ -35,7 +33,11 @@ namespace Microsoft.Maui.Handlers
 					existingParent.CachedChildren.Remove(fwElement);
 				}
 
-				handler.PlatformView.CachedChildren.Add(platformView);
+				handler.PlatformView.Content = platformView;
+			}
+			else
+			{
+				handler.PlatformView.CachedChildren.Clear();
 			}
 		}
 
