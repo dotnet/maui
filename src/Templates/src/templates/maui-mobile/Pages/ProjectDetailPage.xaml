@@ -67,7 +67,6 @@
                                         <VisualState x:Name="Selected">
                                             <VisualState.Setters>
                                                 <Setter Property="Background" Value="Transparent"/>
-                                                <Setter Property="Background" Value="Transparent"/>
                                                 <Setter TargetName="SelectedIndicator" Property="BoxView.IsVisible" Value="True"/>
                                             </VisualState.Setters>
                                         </VisualState>
