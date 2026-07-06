@@ -14,12 +14,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(UISemanticContentAttribute.ForceLeftToRight, false)]
 		[InlineData(UISemanticContentAttribute.ForceRightToLeft, true)]
-		public async Task HitTestOutsideDoneButtonReturnsNull(UISemanticContentAttribute semanticContentAttribute, bool doneToolbarIsLeading)
+		public async Task HitTestOutsideDoneButtonReturnsNull(UISemanticContentAttribute semanticContentAttribute, bool doneButtonIsLeading)
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
 				using var accessoryView = CreateLaidOutAccessoryView(semanticContentAttribute: semanticContentAttribute);
-				var transparentHitX = doneToolbarIsLeading
+				var transparentHitX = doneButtonIsLeading
 					? accessoryView.Bounds.GetMaxX() - 1
 					: accessoryView.Bounds.GetMinX() + 1;
 
@@ -32,42 +32,37 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(UISemanticContentAttribute.ForceLeftToRight, false)]
 		[InlineData(UISemanticContentAttribute.ForceRightToLeft, true)]
-		public async Task DoneButtonActionStillRuns(UISemanticContentAttribute semanticContentAttribute, bool doneToolbarIsLeading)
+		public async Task DoneButtonActionStillRuns(UISemanticContentAttribute semanticContentAttribute, bool doneButtonIsLeading)
 		{
 			var wasClicked = false;
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				using var accessoryView = CreateLaidOutAccessoryView(() => wasClicked = true, semanticContentAttribute);
-				var doneButtonHitX = doneToolbarIsLeading
-					? accessoryView.Bounds.GetMinX() + 22
-					: accessoryView.Bounds.GetMaxX() - 22;
-				var doneButtonHitPoint = new CGPoint(doneButtonHitX, accessoryView.Bounds.GetMidY());
+				var doneButtonHitPoint = FindDoneButtonHitPoint(accessoryView, doneButtonIsLeading);
 				Assert.NotNull(accessoryView.HitTest(doneButtonHitPoint, null));
 
-				var doneButton = Assert.IsType<UIBarButtonItem>(accessoryView.Items[1]);
-
-				UIApplication.SharedApplication.SendAction(doneButton.Action, doneButton.Target, null, null);
+				accessoryView.SendDoneClicked();
 			});
 
 			Assert.True(wasClicked);
 		}
 
 		[Fact]
-		public async Task ItemsFindsToolbarWhenOtherSubviewPrecedesIt()
+		public async Task DoneButtonActionStillRunsWhenOtherSubviewPrecedesButton()
 		{
+			var wasClicked = false;
+
 			await InvokeOnMainThreadAsync(() =>
 			{
-				using var accessoryView = CreateLaidOutAccessoryView();
+				using var accessoryView = CreateLaidOutAccessoryView(() => wasClicked = true);
 				using var placeholder = new UIView();
 				accessoryView.InsertSubview(placeholder, 0);
 
-				var items = accessoryView.Items;
-
-				Assert.NotNull(items);
-				Assert.Equal(2, items.Length);
-				Assert.IsType<UIBarButtonItem>(items[1]);
+				accessoryView.SendDoneClicked();
 			});
+
+			Assert.True(wasClicked);
 		}
 
 		static MauiDoneAccessoryView CreateLaidOutAccessoryView(
@@ -78,13 +73,41 @@ namespace Microsoft.Maui.DeviceTests
 				? new MauiDoneAccessoryView()
 				: new MauiDoneAccessoryView(doneClicked);
 
-			accessoryView.Frame = new CGRect(0, 0, 400, 44);
+			accessoryView.Frame = new CGRect(0, 0, 400, accessoryView.Frame.Height);
 			accessoryView.SemanticContentAttribute = semanticContentAttribute;
 
 			accessoryView.SetNeedsLayout();
 			accessoryView.LayoutIfNeeded();
 
 			return accessoryView;
+		}
+
+		static CGPoint FindDoneButtonHitPoint(MauiDoneAccessoryView accessoryView, bool doneButtonIsLeading)
+		{
+			var y = accessoryView.Bounds.GetMidY();
+			var minX = (int)accessoryView.Bounds.GetMinX();
+			var maxX = (int)accessoryView.Bounds.GetMaxX();
+
+			if (doneButtonIsLeading)
+			{
+				for (var x = minX; x <= maxX; x++)
+				{
+					var point = new CGPoint(x, y);
+					if (accessoryView.HitTest(point, null) is not null)
+						return point;
+				}
+			}
+			else
+			{
+				for (var x = maxX; x >= minX; x--)
+				{
+					var point = new CGPoint(x, y);
+					if (accessoryView.HitTest(point, null) is not null)
+						return point;
+				}
+			}
+
+			throw new InvalidOperationException("Could not find a hittable Done button point.");
 		}
 	}
 }

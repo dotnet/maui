@@ -7,49 +7,38 @@ namespace Microsoft.Maui.Platform
 {
 	internal class MauiDoneAccessoryView : UIView
 	{
-		const double DoneToolbarWidth = 120;
+		const double AccessoryHeight = 64;
+		const double ButtonSize = 52;
+		const double ButtonPadding = 8;
+
 		readonly BarButtonItemProxy _proxy;
 
-		public MauiDoneAccessoryView() : base(new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, 44))
+		public MauiDoneAccessoryView() : base(new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, AccessoryHeight))
 		{
 			_proxy = new BarButtonItemProxy();
-			var toolbar = CreateToolbar();
-			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, _proxy.OnDataClicked);
+			ClipsToBounds = false;
 
-			toolbar.SetItems(new[] { spacer, doneButton }, false);
-			AddToolbar(toolbar);
+			AddDoneButton(CreateDoneButton(_proxy.OnDataClicked));
 		}
 
-		internal UIBarButtonItem[]? Items => Toolbar?.Items;
-
-		UIToolbar? Toolbar
-		{
-			get
-			{
-				foreach (var subview in Subviews)
-				{
-					if (subview is UIToolbar toolbar)
-						return toolbar;
-				}
-
-				return null;
-			}
-		}
+		UIButton? DoneButton => FindDoneButton(this);
 
 		internal void SetDoneClicked(Action<object>? value) => _proxy.SetDoneClicked(value);
 
 		internal void SetDataContext(object? dataContext) => _proxy.SetDataContext(dataContext);
 
-		public MauiDoneAccessoryView(Action doneClicked) : base(new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, 44))
+		internal void SendDoneClicked()
+		{
+			var doneButton = DoneButton ?? throw new InvalidOperationException("The Done button was not found.");
+			doneButton.SendActionForControlEvents(UIControlEvent.TouchUpInside);
+		}
+
+		public MauiDoneAccessoryView(Action doneClicked) : base(new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, AccessoryHeight))
 		{
 			_proxy = new BarButtonItemProxy(doneClicked);
-			var toolbar = CreateToolbar();
+			ClipsToBounds = false;
 
-			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, _proxy.OnClicked);
-			toolbar.SetItems(new[] { spacer, doneButton }, false);
-			AddToolbar(toolbar);
+			AddDoneButton(CreateDoneButton(_proxy.OnClicked));
 		}
 
 		public override UIView? HitTest(CGPoint point, UIEvent? uievent)
@@ -59,30 +48,69 @@ namespace Microsoft.Maui.Platform
 			if (hitView is null || Equals(hitView))
 				return null;
 
-			return hitView;
+			var doneButton = DoneButton;
+			if (doneButton is null)
+				return null;
+
+			return doneButton.Equals(hitView) || hitView.IsDescendantOfView(doneButton) ? hitView : null;
 		}
 
-		static UIToolbar CreateToolbar()
+		static UIButton CreateDoneButton(EventHandler action)
 		{
-			return new UIToolbar
+			var button = UIButton.FromType(UIButtonType.System);
+			button.ClipsToBounds = false;
+			button.TranslatesAutoresizingMaskIntoConstraints = false;
+			button.AccessibilityLabel = "Done";
+			button.TouchUpInside += action;
+
+			var image = UIImage.GetSystemImage("xmark");
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
 			{
-				BarStyle = UIBarStyle.Default,
-				Translucent = true,
-				TranslatesAutoresizingMaskIntoConstraints = false,
-			};
+				var configuration = OperatingSystem.IsIOSVersionAtLeast(26)
+					? UIButtonConfiguration.GlassButtonConfiguration
+					: UIButtonConfiguration.GrayButtonConfiguration;
+				configuration.Image = image;
+				configuration.CornerStyle = UIButtonConfigurationCornerStyle.Capsule;
+				configuration.ButtonSize = UIButtonConfigurationSize.Large;
+				configuration.BaseForegroundColor = UIColor.Label;
+				button.Configuration = configuration;
+			}
+			else
+			{
+				button.SetImage(image, UIControlState.Normal);
+				button.TintColor = UIColor.Label;
+				button.BackgroundColor = UIColor.SecondarySystemBackground.ColorWithAlpha(0.9f);
+				button.Layer.CornerRadius = (nfloat)(ButtonSize / 2);
+			}
+
+			return button;
 		}
 
-		void AddToolbar(UIToolbar toolbar)
+		void AddDoneButton(UIButton button)
 		{
-			AddSubview(toolbar);
+			AddSubview(button);
 
 			NSLayoutConstraint.ActivateConstraints(new[]
 			{
-				toolbar.TopAnchor.ConstraintEqualTo(TopAnchor),
-				toolbar.BottomAnchor.ConstraintEqualTo(BottomAnchor),
-				toolbar.TrailingAnchor.ConstraintEqualTo(TrailingAnchor),
-				toolbar.WidthAnchor.ConstraintEqualTo((nfloat)DoneToolbarWidth),
+				button.CenterYAnchor.ConstraintEqualTo(CenterYAnchor),
+				button.WidthAnchor.ConstraintEqualTo((nfloat)ButtonSize),
+				button.HeightAnchor.ConstraintEqualTo((nfloat)ButtonSize),
+				button.TrailingAnchor.ConstraintEqualTo(TrailingAnchor, -(nfloat)ButtonPadding),
 			});
+		}
+
+		static UIButton? FindDoneButton(UIView view)
+		{
+			foreach (var subview in view.Subviews)
+			{
+				if (subview is UIButton button)
+					return button;
+
+				if (FindDoneButton(subview) is UIButton descendant)
+					return descendant;
+			}
+
+			return null;
 		}
 
 		class BarButtonItemProxy
