@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	internal class MauiDoneAccessoryView : UIToolbar
 	{
+		const double DoneButtonHitTestWidth = 120;
 		readonly BarButtonItemProxy _proxy;
 
 		public MauiDoneAccessoryView() : base(new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, 44))
@@ -40,7 +41,20 @@ namespace Microsoft.Maui.Platform
 		{
 			var hitView = base.HitTest(point, uievent);
 
-			return ReferenceEquals(hitView, this) ? null : hitView;
+			if (hitView is null || Equals(hitView))
+				return null;
+
+			return IsPointInDoneButtonHitTestArea(point) ? hitView : null;
+		}
+
+		bool IsPointInDoneButtonHitTestArea(CGPoint point)
+		{
+			var width = Bounds.Width < DoneButtonHitTestWidth ? Bounds.Width : DoneButtonHitTestWidth;
+			var x = EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+				? Bounds.GetMinX()
+				: Bounds.GetMaxX() - width;
+
+			return new CGRect(x, Bounds.GetMinY(), width, Bounds.Height).Contains(point);
 		}
 
 		class BarButtonItemProxy
