@@ -1738,6 +1738,17 @@ if ($ciScanIssues.Count -eq 0) {
 
 [void]$md.AppendLine("Generated at $generatedAt for ``$Repository``.")
 [void]$md.AppendLine("")
+# Report freshness banner — DERIVED-AT-RENDER note of how long ago this report was generated,
+# with a ⏳ "may be stale" flag past the threshold. Pure presentation only. (The preview engine
+# emits no semantic hash and refreshes every run, so there is no no-op to protect here; the
+# banner still gives a viewer an at-a-glance staleness cue.) Fail-open if the helper is absent.
+if ($generatedAt -and (Get-Command Format-ReportFreshnessBanner -ErrorAction SilentlyContinue)) {
+    $previewFreshnessBanner = Format-ReportFreshnessBanner -GeneratedAt $generatedAt -Now ([DateTime]::UtcNow)
+    if ($previewFreshnessBanner) {
+        [void]$md.AppendLine($previewFreshnessBanner)
+        [void]$md.AppendLine("")
+    }
+}
 [void]$md.AppendLine("**Tracker:** ``$TrackerKey`` · mode=``$Mode`` · branch=``$Branch`` · survey=``$SurveyRef``")
 [void]$md.AppendLine("")
 if ($Mode -eq 'candidate') {

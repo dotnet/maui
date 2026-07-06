@@ -16,7 +16,12 @@ name: Release Readiness
 
 on:
   schedule:
-    - cron: "30 8 * * 1-5"  # Weekdays at 08:30 UTC
+    # Every 3h from 08:30 to 20:30 UTC, all 7 days. Runs more often (vs the old
+    # weekdays-only 08:30) so a material change (CI flip, new source PR, milestone
+    # gate) is picked up within ~3h instead of a day — WITHOUT spamming watchers:
+    # the SR engine's semantic-hash no-op skips `gh issue edit` when nothing
+    # material changed, and issue-body edits are notification-silent regardless.
+    - cron: "30 8-20/3 * * *"
   workflow_dispatch:
     inputs:
       branch:
