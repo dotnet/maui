@@ -364,6 +364,16 @@ namespace Microsoft.Maui.Controls
 			{
 				UpdateFlowDirectionState();
 			}
+			else
+			{
+#pragma warning disable CS0618 
+				if (e.PropertyName == BackgroundColorProperty.PropertyName)
+				{
+					base.OnPropertyChanged(nameof(BackgroundColorBridge));
+				}
+#pragma warning restore CS0618
+			}
+			
 		}
 
 		void UpdateFlowDirectionState()
