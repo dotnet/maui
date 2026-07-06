@@ -121,11 +121,13 @@ namespace Microsoft.Maui.Benchmarks
 		{
 			_button.HeightRequest = 444;
 			_button.Background = _colorA;
+			_button.IsEnabled = false;
 			_button.FontSize = 14;
 			_button.Opacity = 0.5;
 
 			_button.HeightRequest = 445;
 			_button.Background = _colorB;
+			_button.FontSize = 15;
 			_button.IsEnabled = true;
 			_button.Opacity = 1.0;
 		}
