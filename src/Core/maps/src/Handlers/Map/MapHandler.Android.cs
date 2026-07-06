@@ -48,6 +48,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
 		Dictionary<string, BitmapDescriptor>? _clusterIconCache;
+		// Bounds icon memory when a provider derives a distinct image per cluster (e.g. count-based glyphs); simple clear-when-full.
+		const int MaxClusterIconCacheSize = 64;
 
 		CancellationTokenSource? _addPinsCts;
 
@@ -333,6 +335,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (handler is MapHandler mapHandler)
 			{
 				mapHandler.DisconnectPins();
+				// A pins rebuild is also how ClusterImageSource/ClusterImageProvider changes reach the
+				// handler, so icons keyed to the previous source must not survive.
+				mapHandler._clusterIconCache?.Clear();
 
 				if (mapHandler._markers != null)
 				{
@@ -933,6 +938,8 @@ namespace Microsoft.Maui.Maps.Handlers
 					if (icon != null && cacheKey != null)
 					{
 						_clusterIconCache ??= new Dictionary<string, BitmapDescriptor>();
+						if (_clusterIconCache.Count >= MaxClusterIconCacheSize)
+							_clusterIconCache.Clear();
 						_clusterIconCache[cacheKey] = icon;
 					}
 				}

@@ -104,13 +104,16 @@ namespace Microsoft.Maui.Maps.Handlers
 		// or font glyph) share one decoded/rasterized bitmap even when the provider hands back a fresh
 		// ImageSource instance on every recluster. Returns null for sources that can't be keyed stably
 		// (e.g. streams), so those are simply loaded fresh instead of being cached forever.
+		// A URI source with CachingEnabled == false has explicitly opted out of caching, so it must not
+		// be frozen by this handler-level cache either.
 		internal static string? GetClusterIconCacheKey(IImageSource? source) =>
 			source switch
 			{
 				IFileImageSource file when !string.IsNullOrEmpty(file.File) => $"file:{file.File}",
-				IUriImageSource uri when uri.Uri is not null => $"uri:{uri.Uri}",
+				// A source that opted out of caching must not be frozen by the handler-level cache either.
+				IUriImageSource uri when uri.Uri is not null && uri.CachingEnabled => $"uri:{uri.Uri}",
 				IFontImageSource font when !string.IsNullOrEmpty(font.Glyph) =>
-					$"font:{font.Glyph}|{font.Font.Family}|{font.Font.Size}|{font.Color?.ToArgbHex()}",
+					$"font:{font.Glyph}|{font.Font.Family}|{font.Font.Size}|{font.Font.Weight}|{font.Font.Slant}|{font.Color?.ToArgbHex()}",
 				_ => null,
 			};
 	}

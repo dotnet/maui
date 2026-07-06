@@ -150,8 +150,9 @@ namespace Microsoft.Maui.Controls.Maps
 		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// The image is shown as-is; no pin count is drawn over it. Changing this value rebuilds
-		/// existing cluster markers immediately.
+		/// No pin count is drawn over the image. Each platform scales it to a marker-sized icon
+		/// (Android fits within 64 pixels, iOS within 32 points), matching <see cref="Pin.ImageSource"/>.
+		/// Changing this value rebuilds existing cluster markers immediately.
 		/// </remarks>
 		public ImageSource? ClusterImageSource
 		{
@@ -175,6 +176,11 @@ namespace Microsoft.Maui.Controls.Maps
 			get => _clusterImageProvider;
 			set
 			{
+				// Delegate.Equals compares target+method, so re-assigning the same method group
+				// (e.g. from OnAppearing on every navigation) short-circuits instead of rebuilding
+				// every cluster marker.
+				if (Equals(_clusterImageProvider, value))
+					return;
 				_clusterImageProvider = value;
 				OnClusterImageChanged();
 			}
@@ -377,7 +383,16 @@ namespace Microsoft.Maui.Controls.Maps
 
 		// Rebuild pins/clusters so a changed ClusterImageSource/ClusterImageProvider is reflected
 		// immediately, instead of waiting for the next unrelated recluster (e.g. a zoom).
-		void OnClusterImageChanged() => Handler?.UpdateValue(nameof(IMap.Pins));
+		void OnClusterImageChanged()
+		{
+			// Cluster images are only consumed while clustering is on; enabling clustering later
+			// re-runs the pins mapper anyway (MapIsClusteringEnabled calls MapPins on both
+			// platforms), so nothing is lost by skipping the rebuild here.
+			if (!IsClusteringEnabled)
+				return;
+
+			Handler?.UpdateValue(nameof(IMap.Pins));
+		}
 
 		void PinsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{

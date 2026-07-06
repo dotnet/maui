@@ -8,7 +8,9 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
+using Microsoft.Maui.Maps.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -1290,7 +1292,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SettingClusterImageSourceRebuildsPins()
 		{
-			var map = new Map();
+			var map = new Map { IsClusteringEnabled = true };
 			var handler = new UpdateValueTrackingHandlerStub();
 			map.Handler = handler;
 			handler.UpdatedProperties.Clear();
@@ -1303,7 +1305,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SettingClusterImageProviderRebuildsPins()
 		{
-			var map = new Map();
+			var map = new Map { IsClusteringEnabled = true };
 			var handler = new UpdateValueTrackingHandlerStub();
 			map.Handler = handler;
 			handler.UpdatedProperties.Clear();
@@ -1311,6 +1313,183 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ClusterImageProvider = _ => null;
 
 			Assert.Contains(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void SettingClusterImageSourceDoesNotRebuildPinsWhenClusteringDisabled()
+		{
+			// Cluster images are only consumed while clustering is on, so there is nothing to
+			// rebuild - enabling clustering later re-runs the pins mapper anyway.
+			var map = new Map();
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ClusterImageSource = ImageSource.FromFile("cluster.png");
+
+			Assert.DoesNotContain(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void SettingSameClusterImageProviderMethodGroupDoesNotRebuildPins()
+		{
+			// Delegate.Equals compares target+method, so re-assigning the same method group
+			// (e.g. from OnAppearing on every navigation) must short-circuit.
+			var map = new Map { IsClusteringEnabled = true };
+			map.ClusterImageProvider = StaticProvider;
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ClusterImageProvider = StaticProvider;
+
+			Assert.DoesNotContain(nameof(IMap.Pins), handler.UpdatedProperties);
+
+			static ImageSource StaticProvider(ClusterInfo info) => null;
+		}
+
+		[Fact]
+		public void GetClusterImageFallsBackToStaticWhenProviderThrows()
+		{
+			var map = new Map();
+			var staticImage = ImageSource.FromFile("static.png");
+			map.ClusterImageSource = staticImage;
+			map.ClusterImageProvider = _ => throw new InvalidOperationException("boom");
+
+			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
+
+			var exception = Record.Exception(() => ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+
+			Assert.Null(exception);
+			var result = ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
+			Assert.Same(staticImage, result);
+		}
+
+		[Fact]
+		public void GetClusterImageReturnsNullWhenProviderThrowsAndNoStatic()
+		{
+			var map = new Map();
+			map.ClusterImageProvider = _ => throw new InvalidOperationException("boom");
+
+			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
+
+			IImageSource result = null;
+			var exception = Record.Exception(() => result = ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+
+			Assert.Null(exception);
+			Assert.Null(result);
+		}
+
+		[Fact]
+		public void GetClusterImagePassesDefaultIdentifierWhenPinIdentifierIsNull()
+		{
+			var map = new Map();
+#nullable enable
+			ClusterInfo? captured = null;
+			map.ClusterImageProvider = info => { captured = info; return null; };
+#nullable restore
+
+			var pin = new Pin { Label = "A" };
+			pin.ClusteringIdentifier = null;
+
+			var pins = new List<IMapPin> { pin };
+			((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
+
+			Assert.NotNull(captured);
+			Assert.Equal(Pin.DefaultClusteringIdentifier, captured!.ClusteringIdentifier);
+		}
+
+		[Fact]
+		public void ClusterInfoConstructorThrowsOnNullArguments()
+		{
+			var pins = new List<Pin> { new Pin { Label = "A" } };
+			var location = new Location(1, 2);
+
+			Assert.Throws<ArgumentNullException>(() => new ClusterInfo(1, null, pins, location));
+			Assert.Throws<ArgumentNullException>(() => new ClusterInfo(1, "cafes", null, location));
+			Assert.Throws<ArgumentNullException>(() => new ClusterInfo(1, "cafes", pins, null));
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForFileImageSourceIsStableAcrossInstances()
+		{
+			var first = new FileImageSource { File = "icon.png" };
+			var second = new FileImageSource { File = "icon.png" };
+
+			var firstKey = MapHandler.GetClusterIconCacheKey(first);
+			var secondKey = MapHandler.GetClusterIconCacheKey(second);
+
+			Assert.NotNull(firstKey);
+			Assert.StartsWith("file:", firstKey, StringComparison.Ordinal);
+			Assert.Equal(firstKey, secondKey);
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForUriImageSourceDependsOnCachingEnabled()
+		{
+			var uri = new Uri("https://example.com/icon.png");
+
+			var cachingEnabled = new UriImageSource { Uri = uri, CachingEnabled = true };
+			var cachingDisabled = new UriImageSource { Uri = uri, CachingEnabled = false };
+
+			var enabledKey = MapHandler.GetClusterIconCacheKey(cachingEnabled);
+			var disabledKey = MapHandler.GetClusterIconCacheKey(cachingDisabled);
+
+			Assert.NotNull(enabledKey);
+			Assert.StartsWith("uri:", enabledKey, StringComparison.Ordinal);
+			Assert.Null(disabledKey);
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForFontImageSourceContainsGlyph()
+		{
+			var font = new FontImageSource { Glyph = "A", FontFamily = "F", Size = 24, Color = Colors.White };
+
+			var key = MapHandler.GetClusterIconCacheKey(font);
+
+			Assert.NotNull(key);
+			Assert.Contains("A", key, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForFontImageSourceDistinguishesWeight()
+		{
+			var regular = new FakeFontImageSource
+			{
+				Glyph = "A",
+				Color = Colors.White,
+				Font = Font.OfSize("F", 24).WithWeight(FontWeight.Regular)
+			};
+			var bold = new FakeFontImageSource
+			{
+				Glyph = "A",
+				Color = Colors.White,
+				Font = Font.OfSize("F", 24).WithWeight(FontWeight.Bold)
+			};
+
+			var regularKey = MapHandler.GetClusterIconCacheKey(regular);
+			var boldKey = MapHandler.GetClusterIconCacheKey(bold);
+
+			Assert.NotNull(regularKey);
+			Assert.NotNull(boldKey);
+			Assert.NotEqual(regularKey, boldKey);
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyIsNullForStreamOrMissingSource()
+		{
+			var stream = new StreamImageSource();
+
+			Assert.Null(MapHandler.GetClusterIconCacheKey(stream));
+			Assert.Null(MapHandler.GetClusterIconCacheKey(null));
+		}
+
+		class FakeFontImageSource : IFontImageSource
+		{
+			public Color Color { get; set; }
+			public Font Font { get; set; }
+			public string Glyph { get; set; }
+			public bool IsEmpty => string.IsNullOrEmpty(Glyph);
 		}
 	}
 

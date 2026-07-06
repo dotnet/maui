@@ -23,6 +23,11 @@ namespace Microsoft.Maui.Maps.Platform
 		UILongPressGestureRecognizer? _mapLongClickedGestureRecognizer;
 		List<IMapElement>? _trackedMapElements;
 		Dictionary<string, UIImage>? _clusterIconCache;
+		int _clusterIconCacheGeneration;
+		// Bounds icon memory when a provider derives a distinct image per cluster (e.g. count-based
+		// glyphs) on a map that stays in a window for the app lifetime. Simple clear-when-full; an
+		// LRU is overkill here.
+		const int MaxClusterIconCacheSize = 64;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
@@ -107,11 +112,20 @@ namespace Microsoft.Maui.Maps.Platform
 			// is this specific ambiguous wrapper - Runtime.GetNSObject<T> throws InvalidCastException
 			// (rather than returning null) for a handle whose real class doesn't match T, so calling
 			// it on every regular pin (typically MKPointAnnotation) would crash instead of falling
-			// through to normal pin handling.
+			// through to normal pin handling. A non-cluster wrapper is also expected here - native
+			// annotations added via platform interop surface as MKAnnotationWrapper too - so the cast
+			// failure is caught and treated the same as "not a cluster".
 			var clusterAnnotation = annotation as MKClusterAnnotation;
 			if (clusterAnnotation == null && annotation.GetType().FullName == "MapKit.MKAnnotationWrapper")
 			{
-				clusterAnnotation = Runtime.GetNSObject<MKClusterAnnotation>(annotation.Handle);
+				try
+				{
+					clusterAnnotation = Runtime.GetNSObject<MKClusterAnnotation>(annotation.Handle);
+				}
+				catch (InvalidCastException)
+				{
+					// Not a cluster - fall through to normal pin handling.
+				}
 			}
 			if (clusterAnnotation != null)
 			{
@@ -188,28 +202,23 @@ namespace Microsoft.Maui.Maps.Platform
 
 		MKAnnotationView GetViewForClusterAnnotation(MKMapView mapView, MKClusterAnnotation clusterAnnotation)
 		{
+			// Read the member annotations once - each read marshals a fresh array over the ObjC bridge.
+			var members = clusterAnnotation.MemberAnnotations;
+			int clusterCount = members?.Length ?? 0;
+
 			// Resolve a custom cluster image from the virtual view (provider -> static).
 			IImageSource? clusterImage = null;
 			if (_handlerRef.TryGetTarget(out var handler) && handler?.VirtualView != null)
 			{
-				var members = clusterAnnotation.MemberAnnotations;
-				// Each cluster member carries its pin's MarkerId, so GetPinForAnnotation usually
-				// resolves all of them; count is taken from MemberAnnotations directly (not the
-				// resolved pins list) so it stays accurate even on an occasional lookup miss.
-				var pins = new List<IMapPin>();
-				if (members != null)
-				{
-					foreach (var member in members)
-					{
-						var pin = GetPinForAnnotation(member);
-						if (pin != null)
-							pins.Add(pin);
-					}
-				}
+				// Count comes from MemberAnnotations directly (not the resolved pins list) so it
+				// stays accurate even on an occasional lookup miss. Pin resolution itself is deferred
+				// to LazyMapPinList below - it only runs if GetClusterImage's ClusterImageProvider
+				// actually enumerates the pins.
+				var pins = new LazyMapPinList(() => ResolveMemberPins(members));
 
 				var coordinate = clusterAnnotation.Coordinate;
 				var location = new Devices.Sensors.Location(coordinate.Latitude, coordinate.Longitude);
-				clusterImage = handler.VirtualView.GetClusterImage(pins, members?.Length ?? 0, location);
+				clusterImage = handler.VirtualView.GetClusterImage(pins, clusterCount, location);
 			}
 
 			if (clusterImage != null)
@@ -220,7 +229,6 @@ namespace Microsoft.Maui.Maps.Platform
 				customView.CanShowCallout = false;
 				customView.Annotation = clusterAnnotation;
 
-				var clusterCount = clusterAnnotation.MemberAnnotations?.Length ?? 0;
 				var cacheKey = MapHandler.GetClusterIconCacheKey(clusterImage);
 				if (cacheKey != null && _clusterIconCache != null && _clusterIconCache.TryGetValue(cacheKey, out var cachedImage))
 				{
@@ -229,7 +237,7 @@ namespace Microsoft.Maui.Maps.Platform
 				else
 				{
 					customView.Image = null;
-					ApplyCustomClusterImageAsync(customView, clusterImage, clusterCount).FireAndForget();
+					ApplyCustomClusterImageAsync(customView, clusterImage, clusterCount, cacheKey).FireAndForget();
 				}
 				return customView;
 			}
@@ -246,10 +254,33 @@ namespace Microsoft.Maui.Maps.Platform
 			clusterView.Annotation = clusterAnnotation;
 
 			// Display the count of pins in the cluster
-			var count = clusterAnnotation.MemberAnnotations?.Length ?? 0;
-			clusterView.GlyphText = count.ToString();
+			clusterView.GlyphText = clusterCount.ToString();
 
 			return clusterView;
+		}
+
+		// Resolves member pins with one snapshot of the map pins - IMap.Pins allocates a fresh
+		// copied list on every property access, so re-reading it per member would be quadratic.
+		List<IMapPin> ResolveMemberPins(IMKAnnotation[]? members)
+		{
+			var resolved = new List<IMapPin>(members?.Length ?? 0);
+			if (members == null || !_handlerRef.TryGetTarget(out var handler) || handler?.VirtualView == null)
+				return resolved;
+
+			var mapPins = handler.VirtualView.Pins; // snapshot once - the property copies on every access
+			foreach (var member in members)
+			{
+				for (int i = 0; i < mapPins.Count; i++)
+				{
+					var pin = mapPins[i];
+					if ((pin?.MarkerId as IMKAnnotation) == member)
+					{
+						resolved.Add(pin);
+						break;
+					}
+				}
+			}
+			return resolved;
 		}
 
 		void OnClusterClicked(MKClusterAnnotation clusterAnnotation)
@@ -341,19 +372,42 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 		}
 
-		async System.Threading.Tasks.Task ApplyCustomClusterImageAsync(MKAnnotationView annotationView, IImageSource imageSource, int count)
+		async System.Threading.Tasks.Task ApplyCustomClusterImageAsync(MKAnnotationView annotationView, IImageSource imageSource, int count, string? cacheKey)
 		{
 			_handlerRef.TryGetTarget(out IMapHandler? handler);
 			if (handler?.MauiContext == null)
 				return;
 
 			var targetAnnotation = annotationView.Annotation;
-
-			UIImage? loaded = null;
+			var generation = _clusterIconCacheGeneration;
 			try
 			{
 				var result = await imageSource.GetPlatformImageAsync(handler.MauiContext);
-				loaded = result?.Value as UIImage;
+
+				// Verify the annotation view hasn't been reused for a different cluster.
+				if (annotationView.Annotation != targetAnnotation)
+					return;
+
+				if (result?.Value is UIImage image)
+				{
+					var scaledImage = ScaleImage(image, new CoreGraphics.CGSize(32, 32), 0);
+					annotationView.Image = scaledImage;
+
+					// Skip the cache write if the cache was invalidated while the load was in flight
+					// (view left the window or pins were rebuilt) - a stale write would root the image
+					// in the pooled view for the app lifetime.
+					if (cacheKey != null && generation == _clusterIconCacheGeneration && Window != null)
+					{
+						_clusterIconCache ??= new Dictionary<string, UIImage>();
+						if (_clusterIconCache.Count >= MaxClusterIconCacheSize)
+							_clusterIconCache.Clear();
+						_clusterIconCache[cacheKey] = scaledImage;
+					}
+					return;
+				}
+
+				// Load produced no image: fall back to the default bubble so the cluster stays visible.
+				annotationView.Image = CreateClusterFallbackImage(count);
 			}
 			catch (Exception ex)
 			{
@@ -362,41 +416,23 @@ namespace Microsoft.Maui.Maps.Platform
 					var logger = currentHandler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
 					logger?.LogWarning(ex, "Failed to load custom cluster icon");
 				}
-			}
-
-			// Verify the annotation view hasn't been reused for a different cluster.
-			if (annotationView.Annotation != targetAnnotation)
-				return;
-
-			if (loaded != null)
-			{
-				var scaledImage = ScaleImage(loaded, new CoreGraphics.CGSize(32, 32));
-				annotationView.Image = scaledImage;
-
-				var cacheKey = MapHandler.GetClusterIconCacheKey(imageSource);
-				if (cacheKey != null)
+				// Best-effort fallback; the view may already be disposed (that can be what threw).
+				try
 				{
-					_clusterIconCache ??= new Dictionary<string, UIImage>();
-					_clusterIconCache[cacheKey] = scaledImage;
+					if (annotationView.Annotation == targetAnnotation)
+						annotationView.Image = CreateClusterFallbackImage(count);
 				}
-			}
-			else
-			{
-				// Custom image failed to load (missing/failed source or decode error). Fall back to a
-				// default cluster bubble so the cluster stays visible, mirroring Android's CreateClusterIcon.
-				annotationView.Image = CreateClusterFallbackImage(count);
+				catch (ObjectDisposedException) { }
 			}
 		}
 
 		// Draws the default cluster bubble (blue circle + count) used when a requested custom cluster
 		// image can't be loaded, so the cluster never renders as an invisible marker.
-		static UIImage? CreateClusterFallbackImage(int count)
+		static UIImage CreateClusterFallbackImage(int count)
 		{
 			const float size = 40f;
-			var canvasSize = new CoreGraphics.CGSize(size, size);
-
-			UIGraphics.BeginImageContextWithOptions(canvasSize, false, 0);
-			try
+			var renderer = new UIGraphicsImageRenderer(new CoreGraphics.CGSize(size, size));
+			return renderer.CreateImage(_ =>
 			{
 				var circle = UIBezierPath.FromOval(new CoreGraphics.CGRect(2, 2, size - 4, size - 4));
 				UIColor.FromRGB(66, 133, 244).SetFill(); // Google blue, matching Android
@@ -417,16 +453,10 @@ namespace Microsoft.Maui.Maps.Platform
 				var textSize = nsText.GetSizeUsingAttributes(attributes);
 				var origin = new CoreGraphics.CGPoint((size - textSize.Width) / 2, (size - textSize.Height) / 2);
 				nsText.DrawString(origin, attributes);
-
-				return UIGraphics.GetImageFromCurrentImageContext();
-			}
-			finally
-			{
-				UIGraphics.EndImageContext();
-			}
+			});
 		}
 
-		static UIImage ScaleImage(UIImage image, CoreGraphics.CGSize targetSize)
+		static UIImage ScaleImage(UIImage image, CoreGraphics.CGSize targetSize, nfloat? scale = null)
 		{
 			var size = image.Size;
 			var widthRatio = targetSize.Width / size.Width;
@@ -435,7 +465,10 @@ namespace Microsoft.Maui.Maps.Platform
 
 			var newSize = new CoreGraphics.CGSize(size.Width * ratio, size.Height * ratio);
 
-			UIGraphics.BeginImageContextWithOptions(newSize, false, image.CurrentScale);
+			// 0 = device screen scale; URI-downloaded images decode at scale 1.0 and would render
+			// blurry on Retina if we honored CurrentScale - the rendered icon is also cached, which
+			// would freeze the blur.
+			UIGraphics.BeginImageContextWithOptions(newSize, false, scale ?? image.CurrentScale);
 			image.Draw(new CoreGraphics.CGRect(0, 0, newSize.Width, newSize.Height));
 			var scaledImage = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
@@ -448,6 +481,10 @@ namespace Microsoft.Maui.Maps.Platform
 			_handlerRef.TryGetTarget(out IMapHandler? handler);
 			if (handler?.MauiContext == null)
 				return;
+
+			// A pins rebuild is also how ClusterImageSource/Provider changes reach the platform, so
+			// cache entries keyed to the previous source must not survive it.
+			InvalidateClusterIconCache();
 
 			if (Annotations?.Length > 0)
 				RemoveAnnotations(Annotations);
@@ -564,7 +601,15 @@ namespace Microsoft.Maui.Maps.Platform
 			RegionChanged -= MkMapViewOnRegionChanged;
 			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
 			DidUpdateUserLocation -= MkMapViewOnUserLocationUpdated;
+			InvalidateClusterIconCache();
+		}
+
+		// Clears cached cluster icons and bumps the generation so any in-flight
+		// ApplyCustomClusterImageAsync load skips writing a stale entry back into the cache.
+		void InvalidateClusterIconCache()
+		{
 			_clusterIconCache?.Clear();
+			unchecked { _clusterIconCacheGeneration++; }
 		}
 
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
@@ -619,9 +664,10 @@ namespace Microsoft.Maui.Maps.Platform
 			_handlerRef.TryGetTarget(out IMapHandler? handler);
 			IMap map = handler?.VirtualView!;
 
-			for (int i = 0; i < map.Pins.Count; i++)
+			var pins = map.Pins; // snapshot once - the property copies on every access
+			for (int i = 0; i < pins.Count; i++)
 			{
-				var pin = map.Pins[i];
+				var pin = pins[i];
 				if ((pin?.MarkerId as IMKAnnotation) == annotation)
 				{
 					targetPin = pin;
@@ -797,6 +843,34 @@ namespace Microsoft.Maui.Maps.Platform
 
 			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
 				handler?.VirtualView.LongClicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+		}
+
+		// Materializes only when a ClusterImageProvider actually enumerates the pins, so the
+		// default/static-icon paths never pay the per-member lookup.
+		sealed class LazyMapPinList : IReadOnlyList<IMapPin>
+		{
+			Func<List<IMapPin>>? _factory;
+			List<IMapPin>? _pins;
+
+			public LazyMapPinList(Func<List<IMapPin>> factory) => _factory = factory;
+
+			List<IMapPin> Pins
+			{
+				get
+				{
+					if (_pins is null)
+					{
+						_pins = _factory!();
+						_factory = null;
+					}
+					return _pins;
+				}
+			}
+
+			public IMapPin this[int index] => Pins[index];
+			public int Count => Pins.Count;
+			public IEnumerator<IMapPin> GetEnumerator() => Pins.GetEnumerator();
+			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 		}
 	}
 }
