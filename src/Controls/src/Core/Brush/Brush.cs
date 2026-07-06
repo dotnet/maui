@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			if (paint is SolidPaint solidPaint)
 			{
 				var color = solidPaint.Color;
-				return color is null ? defaultBrush : _cache.Get(solidPaint.Color);
+				return color is null ? Default : _cache.Get(solidPaint.Color);
 			}
 
 
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static Brush Default => defaultBrush ??= new(null);
 
-		public static implicit operator Brush(Color color) => color is null ? defaultBrush : _cache.Get(color);
+		public static implicit operator Brush(Color color) => color is null ? Default : _cache.Get(color);
 
 		/// <summary>
 		/// When overridden in a derived class, indicates whether the given brush represents the empty brush.
