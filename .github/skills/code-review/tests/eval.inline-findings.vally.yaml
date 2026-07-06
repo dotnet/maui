@@ -6,7 +6,7 @@
 # CustomAgentLogsTmp/PRState/<PR>/PRAgent/inline-findings.json — it
 # over-generalized a host "don't write output files" guardrail, declared the
 # write "prohibited", and dumped the raw JSON into chat instead. The pipeline
-# only reads that file FROM DISK (Review-PR.ps1 ~line 1789 `Test-Path`); when
+# only reads that file FROM DISK (post-inline-review.ps1 `Test-Path`); when
 # it is missing, every inline review comment is SILENTLY dropped. PR #36002
 # fixes this by making the write an explicit REQUIRED, authorized deliverable
 # in Review-PR.ps1 (STEP 5b) and .github/agents/maui-expert-reviewer.md.
@@ -18,16 +18,23 @@
 # the inline-findings.json path and prove it landed on disk.
 #
 # Falsifiability (the property this file exists to guarantee):
-#   - structured floor `FILE_OK:\s*\[` — refutation-proof: the agent is told to
-#     write the file and then READ IT BACK and echo its first line prefixed
-#     `FILE_OK:`. Only an agent that actually wrote a JSON-array file can
-#     produce `FILE_OK:[...`. A regressed agent that refuses / chat-dumps has
-#     no file to read back, so the floor scores 0.
-#   - LLM judge — scores whether the persisted findings are real, grounded in
-#     the diff, and that the agent did NOT refuse or substitute a chat dump.
+#   - structured floor `FILE_OK:\s*\[` — the agent is told to write the file,
+#     READ IT BACK, and echo its first line prefixed `FILE_OK:`. This is a
+#     NECESSARY structural signal, not sufficient proof of a disk write: a
+#     determined regressed agent could echo `FILE_OK:[...` from the JSON it
+#     still holds in memory without ever writing the file. The floor cheaply
+#     rejects the COMMON failure (a refuse/chat-dump agent emits no readback
+#     line at all -> floor 0). vally has no filesystem grader, so proof-of-write
+#     lives in the judge below.
+#   - LLM judge — scores whether the persisted findings are real and grounded
+#     in the diff and — reading the transcript's TOOL CALLS — that the agent
+#     ACTUALLY wrote+read the file (a real write/read tool invocation, not just
+#     a printed FILE_OK line) and did NOT refuse or substitute a chat dump.
 #   With threshold 0.6 and a scale_1_5 judge (normalized = (raw-1)/4):
-#     correct:   (floor 1.0 + judge ~0.8) / 2 = ~0.90  -> PASS
-#     regressed: (floor 0.0 + judge ~0.15) / 2 = ~0.08 -> FAIL
+#     correct:             (floor 1.0 + judge ~0.8) / 2 = ~0.90 -> PASS
+#     regressed, no file:  (floor 0.0 + judge ~0.15)/ 2 = ~0.08 -> FAIL
+#     regressed, spoofed FILE_OK: floor 1.0, but the judge scores the absent
+#       write tool-call the lowest (raw 1 -> 0.0) -> mean ~0.50 -> FAIL
 #
 # Trigger: this file lives under .github/skills/code-review/, so adding/editing
 # it flags the code-review skill as changed and skill-validation.yml evaluates
@@ -49,7 +56,7 @@ version: "1.0.0"
 type: capability
 
 defaults:
-  runs: 3
+  runs: 5
   timeout: 10m
   model: claude-opus-4.6
   judge_model: claude-opus-4.6
@@ -100,12 +107,15 @@ stimuli:
         ref: 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd
         source: .
     graders:
-      # ── Structured floor (refutation-proof) ──────────────────────────────
-      # `FILE_OK:[` can only appear if the agent actually wrote a JSON-array
-      # file and read it back. A regressed agent that refuses / chat-dumps has
-      # no file to echo, so this scores 0. Keying on the readback (not on the
-      # mere presence of the word "inline-findings.json", which is in the
-      # prompt) is what makes the floor a real signal.
+      # ── Structured floor (necessary, not sufficient) ─────────────────────
+      # `FILE_OK:[` requires a JSON-array readback line — it cheaply rejects an
+      # agent that produces no readback at all (the common refuse/chat-dump
+      # failure). It does NOT by itself prove a disk write: a determined
+      # regressed agent could echo `FILE_OK:[...` from the in-memory JSON.
+      # vally has no filesystem grader, so the judge below carries proof-of-
+      # write by inspecting the transcript's tool calls. Keying on the readback
+      # (not on the mere presence of the word "inline-findings.json", which is
+      # in the prompt) is what makes the floor a real signal.
       - type: output-matches
         config:
           pattern: 'FILE_OK:\s*\['
@@ -120,6 +130,13 @@ stimuli:
         The agent WROTE the findings to the inline-findings.json path on disk
         (it created the file and read it back), rather than only printing the
         JSON in its chat response. The FILE_OK readback reflects a real file.
+      - >-
+        Proof-of-write from the transcript: the agent actually invoked a
+        file-write tool (and a read-back) to create inline-findings.json on
+        disk. A fabricated `FILE_OK:` line with NO corresponding write tool
+        call in the transcript is the spoof this eval must catch — the
+        structured floor alone cannot detect it, so score such a run the lowest
+        (1/5).
       - >-
         The persisted JSON is a valid array containing at least one finding
         with a concrete repo-relative `file` path and an integer `line`,
@@ -140,6 +157,7 @@ scoring:
   # @microsoft/vally@0.6.0 ignores scoring.weights — only scoring.threshold is
   # active. Trial score = unweighted mean of the two graders' [0,1] scores;
   # the stimulus passes when the mean across runs >= threshold. Two graders
-  # (one refutation-proof structural floor + one LLM judge) keep the judge at
-  # ~50% of every score, matching the house convention.
+  # (one structural readback floor + one LLM judge that verifies the write from
+  # the transcript's tool calls) keep the judge at ~50% of every score,
+  # matching the house convention.
   threshold: 0.6

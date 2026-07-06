@@ -32,9 +32,10 @@ git log --oneline -20
 # PR + issue text and comments via the PUBLIC, unauthenticated REST API (dotnet/maui is public):
 curl -s https://api.github.com/repos/dotnet/maui/pulls/XXXXX
 curl -s https://api.github.com/repos/dotnet/maui/issues/ISSUE_NUMBER
-curl -s https://api.github.com/repos/dotnet/maui/issues/ISSUE_NUMBER/comments
+# Comment listings default to 30/page — ask for 100 (follow `Link: rel="next"` for longer threads) so you don't miss later feedback:
+curl -s "https://api.github.com/repos/dotnet/maui/issues/ISSUE_NUMBER/comments?per_page=100"
 # Inline review comments (CRITICAL — often contains key technical feedback):
-curl -s https://api.github.com/repos/dotnet/maui/pulls/XXXXX/comments
+curl -s "https://api.github.com/repos/dotnet/maui/pulls/XXXXX/comments?per_page=100"
 
 # ── gh equivalents (LOCAL runs only — these FAIL in CI where the token is stripped) ──
 # Fetch PR metadata

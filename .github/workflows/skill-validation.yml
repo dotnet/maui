@@ -7,6 +7,10 @@
 #      Requires the COPILOT_PAT_* secret pool in the `copilot-pat-pool`
 #      environment (Copilot API access). Jobs that need model auth declare
 #      `environment: copilot-pat-pool` and randomly pick one populated PAT.
+#      NOTE: keep `copilot-pat-pool` free of required-reviewer / wait-timer
+#      protection rules. These jobs run on `pull_request_target`, so such a
+#      rule would pause every auto-eval pending manual approval and hang the
+#      whole workflow (the `comment` / `report-status` jobs `needs:` them).
 #
 # Trigger model:
 #   - pull_request_target: runs in the base repo context with full permissions
