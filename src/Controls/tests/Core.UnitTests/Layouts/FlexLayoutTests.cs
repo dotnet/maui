@@ -399,5 +399,73 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(125, frame1.Width);
 			Assert.Equal(175, frame2.Width);
 		}
+
+		// Records the constraints passed to MeasureOverride so tests can compare them
+		// with the size the view is ultimately arranged at.
+		class ConstraintRecordingView : View
+		{
+			public double MeasuredWidthConstraint { get; private set; } = double.NaN;
+			public double MeasuredHeightConstraint { get; private set; } = double.NaN;
+
+			protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+			{
+				MeasuredWidthConstraint = widthConstraint;
+				MeasuredHeightConstraint = heightConstraint;
+				return new Size(Math.Min(100, widthConstraint), Math.Min(50, heightConstraint));
+			}
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/27520
+		// A stretched item with a margin must be measured at the width it will be arranged at
+		// (the container width minus its margins), not at the full container width. Otherwise
+		// wrapping content (e.g. Label text) wraps against a width the item never receives,
+		// and the overflow is cut off at arrange time.
+		[Fact]
+		public void StretchedItemWithMarginIsMeasuredAtArrangedWidth_Issue27520()
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = FlexDirection.Column };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+			var view = new ConstraintRecordingView { Margin = new Thickness(10) };
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(400, 600);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 400, 600));
+
+			// The bounds the child is arranged at (its flex frame) must be the same width
+			// the child was measured with; otherwise wrapping content gets cut off.
+			// Before the fix the child was measured at the full container width (400),
+			// ignoring its own margins, but arranged 20 narrower.
+			var flexFrame = flexLayout.GetFlexFrame(view as IView);
+			Assert.Equal(380, view.MeasuredWidthConstraint);
+			Assert.Equal(flexFrame.Width, view.MeasuredWidthConstraint);
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/27520 (Row direction:
+		// the cross axis is vertical, so the height constraint is the one at risk).
+		[Fact]
+		public void StretchedItemWithMarginIsMeasuredAtArrangedHeight_Issue27520()
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = FlexDirection.Row };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+			var view = new ConstraintRecordingView { Margin = new Thickness(10) };
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(600, 400);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 600, 400));
+
+			// The bounds the child is arranged at (its flex frame) must be the same height
+			// the child was measured with; otherwise wrapping content gets cut off.
+			// Before the fix the child was measured at the full container height (400),
+			// ignoring its own margins, but arranged 20 shorter.
+			var flexFrame = flexLayout.GetFlexFrame(view as IView);
+			Assert.Equal(380, view.MeasuredHeightConstraint);
+			Assert.Equal(flexFrame.Height, view.MeasuredHeightConstraint);
+		}
 	}
 }
