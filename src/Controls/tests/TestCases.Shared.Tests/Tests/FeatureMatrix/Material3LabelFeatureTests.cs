@@ -1163,198 +1163,193 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
-#endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/20372
-	[Test, Order(64)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Label_VerifyLabelWithTextTypeAndTextTransform()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "<b>Label</b>");
-		App.WaitForElement("TextTransformUpper");
-		App.Tap("TextTransformUpper");
-		App.WaitForElement("TextTypeHtml");
-		App.Tap("TextTypeHtml");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(68)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentStart()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "<b>Label</b>");
-		App.WaitForElement("TextTypeHtml");
-		App.Tap("TextTypeHtml");
-		App.WaitForElement("HorizontalTextStart");
-		App.Tap("HorizontalTextStart");
-		App.WaitForElement("VerticalTextStart");
-		App.Tap("VerticalTextStart");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-
-	[Test, Order(69)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentCenter()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "<b>Label</b>");
-		App.WaitForElement("TextTypeHtml");
-		App.Tap("TextTypeHtml");
-		App.WaitForElement("HorizontalTextCenter");
-		App.Tap("HorizontalTextCenter");
-		App.WaitForElement("VerticalTextCenter");
-		App.Tap("VerticalTextCenter");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-
-	[Test, Order(70)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentEnd()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "<b>Label</b>");
-		App.WaitForElement("TextTypeHtml");
-		App.Tap("TextTypeHtml");
-		App.WaitForElement("HorizontalTextEnd");
-		App.Tap("HorizontalTextEnd");
-		App.WaitForElement("VerticalTextEnd");
-		App.Tap("VerticalTextEnd");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-#endif
-
-	[Test, Order(71)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWhenIsVisibleFalse()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "This is a Label");
-		App.WaitForElement("IsVisibleFalse");
-		App.Tap("IsVisibleFalse");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForNoElement("MainLabel");
-	}
-
-	[Test, Order(72)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithShadow()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "This is a Label");
-		App.WaitForElement("ShadowTrue");
-		App.Tap("ShadowTrue");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("MainLabel");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(73)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWhenIsEnabledFalse()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "This is a Label");
-		App.WaitForElement("IsEnabledFalse");
-		App.Tap("IsEnabledFalse");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("MainLabel");
-		App.Tap("MainLabel");
-		App.WaitForNoElement("TapResultLabel");
-	}
-
-	[Test, Order(74)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWhenIsEnabledTrue()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "This is a Label");
-		App.WaitForElement("IsEnabledFalse");
-		App.Tap("IsEnabledFalse");
-		App.WaitForElement("IsEnabledTrue");
-		App.Tap("IsEnabledTrue");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("MainLabel");
-		App.Tap("MainLabel");
-		App.WaitForElement("TapResultLabel");
-		App.Tap("MainLabel");
-		var tapResult = App.FindElement("TapResultLabel").GetText();
-		Assert.That(tapResult, Is.EqualTo("Tapped"));
-	}
-
-	[Test, Order(75)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithFlowDirectionRTL()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "This is a Label");
-		App.WaitForElement("HorizontalTextStart");
-		App.Tap("HorizontalTextStart");
-		App.WaitForElement("FlowDirectionRTL");
-		App.Tap("FlowDirectionRTL");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("MainLabel");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(76)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithBackgroundColorLightBlue()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "This is a Label");
-		App.WaitForElement("BackgroundColorLightBlue");
-		App.Tap("BackgroundColorLightBlue");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("MainLabel");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
+[Test, Order(64)]
+[Category(UITestCategories.Material3)]
+public void Material3Label_VerifyLabelWithTextTypeAndTextTransform()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "<b>Label</b>");
+	App.WaitForElement("TextTransformUpper");
+	App.Tap("TextTransformUpper");
+	App.WaitForElement("TextTypeHtml");
+	App.Tap("TextTypeHtml");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 }
 
+[Test, Order(68)]
+[Category(UITestCategories.Label)]
+public void Material3Label_VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentStart()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "<b>Label</b>");
+	App.WaitForElement("TextTypeHtml");
+	App.Tap("TextTypeHtml");
+	App.WaitForElement("HorizontalTextStart");
+	App.Tap("HorizontalTextStart");
+	App.WaitForElement("VerticalTextStart");
+	App.Tap("VerticalTextStart");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+}
+
+[Test, Order(69)]
+[Category(UITestCategories.Label)]
+public void Material3Label_VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentCenter()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "<b>Label</b>");
+	App.WaitForElement("TextTypeHtml");
+	App.Tap("TextTypeHtml");
+	App.WaitForElement("HorizontalTextCenter");
+	App.Tap("HorizontalTextCenter");
+	App.WaitForElement("VerticalTextCenter");
+	App.Tap("VerticalTextCenter");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+}
+
+[Test, Order(70)]
+[Category(UITestCategories.Label)]
+public void Material3Label_VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentEnd()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "<b>Label</b>");
+	App.WaitForElement("TextTypeHtml");
+	App.Tap("TextTypeHtml");
+	App.WaitForElement("HorizontalTextEnd");
+	App.Tap("HorizontalTextEnd");
+	App.WaitForElement("VerticalTextEnd");
+	App.Tap("VerticalTextEnd");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+}
+
+[Test, Order(71)]
+[Category(UITestCategories.Label)]
+public void Material3Label_VerifyLabelWhenIsVisibleFalse()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "This is a Label");
+	App.WaitForElement("IsVisibleFalse");
+	App.Tap("IsVisibleFalse");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	App.WaitForNoElement("MainLabel");
+}
+
+[Test, Order(72)]
+[Category(UITestCategories.Label)]
+public void Material3Label_VerifyLabelWithShadow()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "This is a Label");
+	App.WaitForElement("ShadowTrue");
+	App.Tap("ShadowTrue");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	App.WaitForElement("MainLabel");
+	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+}
+
+[Test, Order(73)]
+[Category(UITestCategories.Label)]
+public void Material3Label_VerifyLabelWhenIsEnabledFalse()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "This is a Label");
+	App.WaitForElement("IsEnabledFalse");
+	App.Tap("IsEnabledFalse");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	App.WaitForElement("MainLabel");
+	App.Tap("MainLabel");
+	App.WaitForNoElement("TapResultLabel");
+}
+
+[Test, Order(74)]
+[Category(UITestCategories.Label)]
+public void Material3Label_VerifyLabelWhenIsEnabledTrue()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "This is a Label");
+	App.WaitForElement("IsEnabledFalse");
+	App.Tap("IsEnabledFalse");
+	App.WaitForElement("IsEnabledTrue");
+	App.Tap("IsEnabledTrue");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	App.WaitForElement("MainLabel");
+	App.Tap("MainLabel");
+	App.WaitForElement("TapResultLabel");
+	App.Tap("MainLabel");
+	var tapResult = App.FindElement("TapResultLabel").GetText();
+	Assert.That(tapResult, Is.EqualTo("Tapped"));
+}
+
+[Test, Order(75)]
+[Category(UITestCategories.Label)]
+public void Material3Label_VerifyLabelWithFlowDirectionRTL()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "This is a Label");
+	App.WaitForElement("HorizontalTextStart");
+	App.Tap("HorizontalTextStart");
+	App.WaitForElement("FlowDirectionRTL");
+	App.Tap("FlowDirectionRTL");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	App.WaitForElement("MainLabel");
+	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+}
+
+[Test, Order(76)]
+[Category(UITestCategories.Label)]
+public void Material3Label_VerifyLabelWithBackgroundColorLightBlue()
+{
+	App.WaitForElement("Options");
+	App.Tap("Options");
+	App.WaitForElement("TextEntry");
+	App.ClearText("TextEntry");
+	App.EnterText("TextEntry", "This is a Label");
+	App.WaitForElement("BackgroundColorLightBlue");
+	App.Tap("BackgroundColorLightBlue");
+	App.WaitForElement("Apply");
+	App.Tap("Apply");
+	App.WaitForElement("MainLabel");
+	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+}
+}
+#endif
