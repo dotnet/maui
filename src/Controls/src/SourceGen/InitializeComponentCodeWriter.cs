@@ -115,7 +115,7 @@ static class InitializeComponentCodeWriter
 				{
 					var asmName = compilation.AssemblyName ?? string.Empty;
 					var tfm = xamlItem.ProjectItem.TargetFramework ?? string.Empty;
-					var relPath = xamlItem.ProjectItem.RelativePath ?? string.Empty;
+					var relPath = xamlItem.ProjectItem.HotReloadStateKey;
 					var cachedRoot = XamlHotReloadState.GetParsedRoot(asmName, tfm, relPath);
 					var cachedIds = XamlHotReloadState.GetNodeIds(asmName, tfm, relPath);
 					if (cachedRoot != null && cachedIds != null)
@@ -219,7 +219,7 @@ $$"""
 						// Set __version to the latest version from state (so fresh instances skip all UC patches)
 						var assemblyName = compilation.AssemblyName ?? string.Empty;
 						var tfm = xamlItem.ProjectItem.TargetFramework ?? string.Empty;
-						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, tfm, xamlItem.ProjectItem.RelativePath ?? string.Empty);
+						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, tfm, xamlItem.ProjectItem.HotReloadStateKey);
 						codeWriter.WriteLine($"__version = {latestVersion};");
 						codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.Track(this);");
 					}
