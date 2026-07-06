@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -25,9 +26,16 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
-				// Detach the old handler if it exists (prevents WinUI COM exception on reuse)
-				view.Handler?.DisconnectHandler(); 
-				handler.PlatformView.Content = view.ToPlatform(handler.MauiContext);
+				var platformView = view.ToPlatform(handler.MauiContext);
+
+				// Detach from existing parent — mirrors Android RemoveFromParent / iOS RemoveFromSuperview
+				if (platformView is FrameworkElement fwElement &&
+					fwElement.Parent is MauiPanel existingParent)
+				{
+					existingParent.CachedChildren.Remove(fwElement);
+				}
+
+				handler.PlatformView.Content = platformView;
 			}
 				
 		}
