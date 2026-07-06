@@ -14,13 +14,13 @@ sealed class LRUBrushCache : ICache<Color, ImmutableBrush>
 	/// <summary>
 	/// Creates a new instance of <see cref="LRUBrushCache"/>
 	/// </summary>
-	/// /// <remarks>
+	/// <remarks>
 	/// This cache helps reduce allocations by reusing <see cref="ImmutableBrush"/> instances for frequently used colors.
 	/// When the cache exceeds <paramref name="capacity"/>, the least-recently accessed entry is evicted.
 	/// This type is not thread-safe.
 	/// </remarks>
 	/// <param name="capacity">The maximum number of cached brushes to keep.</param>
-	/// <exception cref="ArgumentOutOfRangeException">throws if argument <paramref name="capacity"/> is zero or negative.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="capacity"/> is zero or negative.</exception>
 	public LRUBrushCache(int capacity)
 	{
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
