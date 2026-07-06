@@ -40,18 +40,48 @@ on:
       - '.github/skills/release-readiness/**'
       - '.github/scripts/shared/MauiReleaseVersioning.psm1'
 
+  # ── Scoped base-repo event triggers (refresh ONLY the affected tracker) ──
+  # These keep trackers fresh between the 3-hourly schedule when a MATERIAL
+  # signal changes, without a full fan-out. The "Detect release trackers" step
+  # maps each event to a BRANCH_FILTER / MAJOR_FILTER so only the relevant
+  # tracker(s) recompute (see that step). All are BASE-REPO events — no fork
+  # code is ever checked out or executed — and every attacker-influencable
+  # field (issue/milestone title, label name) is read via env:, never inlined
+  # into a run: block. pull_request_target is deliberately NOT used (fork
+  # secret-exfil vector).
+  issues:
+    # A regressed-in-* / high-priority label added or an issue closed changes
+    # the regression + high-priority sections of the affected major's tracker.
+    types: [labeled, closed]
+  milestone:
+    # Creating/closing a milestone flips ship-check gates (e.g. the preview
+    # milestone existence check).
+    types: [created, closed]
+  push:
+    # A push advances HEAD on a tracked line, which is exactly what flips CI
+    # freshness to stale. No path filter: any commit on these branches matters.
+    branches:
+      - main
+      - net11.0
+      - 'release/**'
+
 permissions:
   contents: read
 
 # Run-level concurrency. Keyed by event + PR/branch so redundant runs of the SAME
 # kind collapse. cancel-in-progress is TRUE only for pull_request (a new push
-# supersedes a stale validation — saves CI) and FALSE otherwise: a scheduled /
-# dispatched run must never be cancelled mid-flight, because its per-tracker job
-# may be part-way through a `gh issue edit` that splices human-authored Release
-# Captain Notes. Serialize-don't-cancel keeps that write atomic. NOTE: this only
-# serializes runs of the SAME event kind (e.g. two schedules). The real cross-run
-# guard against two DIFFERENT event kinds racing the same tracker's issue edit is
-# the per-tracker concurrency group on the per-tracker-report job below.
+# supersedes a stale validation — saves CI) and FALSE for every writer event
+# (schedule / workflow_dispatch / push / issues / milestone): such a run must
+# never be cancelled mid-flight, because its per-tracker job may be part-way
+# through a `gh issue edit` that splices human-authored Release Captain Notes.
+# cancel-in-progress:false does NOT let bursts pile up — GitHub keeps at most one
+# in-progress run plus one pending run per group and cancels any older PENDING
+# run, so a flurry of pushes/labels collapses to (running + latest-pending)
+# without ever killing the in-flight writer. That bounds the request budget while
+# keeping the issue edit atomic. NOTE: this run-level group only serializes runs
+# of the SAME event kind. The real cross-run guard against two DIFFERENT event
+# kinds racing the same tracker's issue edit is the per-tracker concurrency group
+# on the per-tracker-report job below.
 concurrency:
   group: release-readiness-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.branch || 'all' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -63,7 +93,10 @@ jobs:
   detect-trackers:
     name: Detect release trackers
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    # Skip PR validation runs (handled by the validate job) and never run on a
+    # fork — the writer path manages issues on github.repository, so restrict the
+    # whole pipeline to the canonical repo (mirrors the org gate in rebase.yml).
+    if: github.event_name != 'pull_request' && github.repository == 'dotnet/maui'
     outputs:
       matrix: ${{ steps.detect.outputs.matrix }}
       has-trackers: ${{ steps.detect.outputs.has-trackers }}
@@ -78,10 +111,70 @@ jobs:
         id: detect
         env:
           GH_TOKEN: ${{ github.token }}
-          BRANCH_FILTER: ${{ inputs.branch || '' }}
+          # Raw event context. SECURITY: every attacker-influencable field
+          # (issue label names, milestone title) is passed as an env var here and
+          # parsed with jq/grep in the script below — NONE is interpolated into
+          # the run: block via ${{ }}, so untrusted text can never reach the shell
+          # as code. github.ref_name / inputs.branch are likewise env-passed.
+          EVENT_NAME:      ${{ github.event_name }}
+          DISPATCH_BRANCH: ${{ inputs.branch }}
+          PUSH_REF_NAME:   ${{ github.ref_name }}
+          LABELS_JSON:     ${{ toJson(github.event.issue.labels) }}
+          MILESTONE_TITLE: ${{ github.event.milestone.title }}
         shell: bash
         run: |
           set -euo pipefail
+
+          # ── Resolve the triggering event → scope filters ────────────────────
+          # BRANCH_FILTER matches a tracker's branchName/surveyRef exactly;
+          # MAJOR_FILTER is a comma-list of .NET majors matched against
+          # .majorVersion. Both empty ⇒ full refresh (the scheduled fan-out).
+          # This reuses the existing single-tracker plumbing (workflow_dispatch
+          # already fed BRANCH_FILTER) so events only recompute the tracker(s)
+          # they actually affect.
+          BRANCH_FILTER=""
+          MAJOR_FILTER=""
+          case "$EVENT_NAME" in
+            workflow_dispatch)
+              # Manual single-branch refresh (unchanged behavior).
+              BRANCH_FILTER="${DISPATCH_BRANCH:-}"
+              ;;
+            push)
+              # A push advances HEAD on exactly one branch → refresh the tracker
+              # that surveys it (SR branchName, or a preview surveyRef like net11.0).
+              # A branch with no tracker (e.g. main during an SR-only phase) yields
+              # an empty matrix and the pipeline short-circuits.
+              BRANCH_FILTER="${PUSH_REF_NAME:-}"
+              ;;
+            issues)
+              # Union of the .NET majors named by this issue's regressed-in-<major>*
+              # labels (covers both `labeled` — the new label is already in the set
+              # — and `closed`). Reduced to digits so nothing but a version number
+              # reaches jq; an issue with no regressed-in label yields an empty
+              # MAJOR_FILTER and (with BRANCH_FILTER empty) a full refresh, which is
+              # safe and self-limiting via concurrency.
+              MAJOR_FILTER="$(
+                printf '%s' "${LABELS_JSON:-[]}" \
+                  | jq -r '.[]?.name // empty' 2>/dev/null \
+                  | grep -oiE 'regressed-in-[0-9]+' \
+                  | grep -oE '[0-9]+' | sort -u | paste -sd, - || true
+              )"
+              ;;
+            milestone)
+              # First version-looking number in the milestone title (".NET 11" →
+              # 11, "10.0.1xx-sr8" → 10). Digits only; empty ⇒ full refresh.
+              MAJOR_FILTER="$(
+                printf '%s' "${MILESTONE_TITLE:-}" \
+                  | grep -oE '[0-9]+' | head -1 || true
+              )"
+              ;;
+            *)
+              # schedule (and any future event) → both filters empty → all trackers.
+              :
+              ;;
+          esac
+          echo "Event='$EVENT_NAME'  BranchFilter='${BRANCH_FILTER}'  MajorFilter='${MAJOR_FILTER}'"
+
           pwsh -NoProfile -File .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 \
             -AllActiveMajors \
             -OutputJson trackers.json
@@ -91,11 +184,16 @@ jobs:
             exit 1
           fi
 
-          # Flatten majors[].trackers[] into a single matrix array. If BRANCH_FILTER
-          # is set, narrow to trackers whose branchName OR surveyRef matches.
-          jq --arg filter "$BRANCH_FILTER" '
+          # Flatten majors[].trackers[] into a single matrix array. Narrow by
+          # BRANCH_FILTER (exact branchName/surveyRef) OR MAJOR_FILTER (any major
+          # in the comma-list vs .majorVersion). Both empty ⇒ keep all trackers.
+          jq --arg filter "$BRANCH_FILTER" --arg major "$MAJOR_FILTER" '
             [ .majors[].trackers[]
-              | select($filter == "" or .branchName == $filter or .surveyRef == $filter)
+              | select(
+                  ($filter == "" and $major == "")
+                  or ($filter != "" and (.branchName == $filter or .surveyRef == $filter))
+                  or ($major  != "" and ((.majorVersion | tostring) as $mv | ($major | split(",")) | index($mv) != null))
+                )
               | {
                   canonicalKey: .canonicalKey,
                   branchType:   .branchType,
@@ -268,7 +366,11 @@ jobs:
           retention-days: 30
 
       - name: Update or create tracker issue
-        if: github.event_name == 'schedule' || inputs.create_issue
+        # Write for every trigger that reaches this job EXCEPT a workflow_dispatch
+        # that explicitly opted out via create_issue=false. schedule/push/issues/
+        # milestone always write; pull_request never reaches here (separate
+        # validate job, gated by the detect-trackers if:).
+        if: github.event_name != 'workflow_dispatch' || inputs.create_issue
         env:
           GH_TOKEN: ${{ github.token }}
           TRACKER_KEY:        ${{ matrix.canonicalKey }}
