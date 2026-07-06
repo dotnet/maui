@@ -778,5 +778,251 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(content2.IsSet(ShellContent.QueryAttributesProperty),
 				"QueryAttributesProperty should be set when changing ShellSection");
 		}
+
+		[Fact]
+		public async Task IntermediatePageReceivesPrefixedQueryParamsViaIQueryAttributable()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			await shell.GoToAsync("product/review?product.sku=seed-tomato&stars=5");
+
+			// Intermediate page should have received the prefixed param "sku"
+			Assert.Single(intermediatePage.AppliedQueryAttributes);
+			Assert.True(intermediatePage.AppliedQueryAttributes[0].ContainsKey("sku"));
+			Assert.Equal("seed-tomato", intermediatePage.AppliedQueryAttributes[0]["sku"]);
+
+			// Last page should have received "stars"
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.NotEqual(intermediatePage, lastPage);
+			Assert.Single(lastPage.AppliedQueryAttributes);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("stars"));
+			Assert.Equal("5", lastPage.AppliedQueryAttributes[0]["stars"]);
+		}
+
+		[Fact]
+		public async Task IntermediatePageReceivesQueryPropertyAttributes()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			await shell.GoToAsync($"product/review?product.{nameof(ShellTestPage.SomeQueryParameter)}=hello");
+
+			Assert.Equal("hello", intermediatePage.SomeQueryParameter);
+		}
+
+		[Fact]
+		public async Task LastPageStillReceivesUnprefixedParamsWithIntermediatePages()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			Routing.RegisterRoute("product", typeof(ShellTestPage));
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			await shell.GoToAsync($"product/review?{nameof(ShellTestPage.SomeQueryParameter)}=world&stars=5");
+
+			// Last page (review) should get the unprefixed params
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey(nameof(ShellTestPage.SomeQueryParameter)));
+			Assert.Equal("world", lastPage.AppliedQueryAttributes[0][nameof(ShellTestPage.SomeQueryParameter)]);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("stars"));
+		}
+
+		[Fact]
+		public async Task MultipleIntermediatePagesEachReceiveOwnPrefixedParams()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var categoryPage = new ShellTestPage();
+			var productPage = new ShellTestPage();
+			shell.RegisterPage("category", categoryPage);
+			shell.RegisterPage("product", productPage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			await shell.GoToAsync("category/product/review?category.name=seeds&product.sku=tomato&stars=5");
+
+			// First intermediate page gets category-prefixed params
+			Assert.Single(categoryPage.AppliedQueryAttributes);
+			Assert.True(categoryPage.AppliedQueryAttributes[0].ContainsKey("name"));
+			Assert.Equal("seeds", categoryPage.AppliedQueryAttributes[0]["name"]);
+
+			// Second intermediate page gets product-prefixed params
+			Assert.Single(productPage.AppliedQueryAttributes);
+			Assert.True(productPage.AppliedQueryAttributes[0].ContainsKey("sku"));
+			Assert.Equal("tomato", productPage.AppliedQueryAttributes[0]["sku"]);
+
+			// Last page gets unprefixed params
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("stars"));
+			Assert.Equal("5", lastPage.AppliedQueryAttributes[0]["stars"]);
+		}
+
+		[Fact]
+		public async Task OverlappingParamNamesDeliverCorrectValueToEachPage()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			// Both pages have "name" as key, but intermediate gets it via prefix
+			await shell.GoToAsync("product/review?product.name=IntermediateValue&name=DetailValue");
+
+			// Intermediate page should get "name=IntermediateValue"
+			Assert.Single(intermediatePage.AppliedQueryAttributes);
+			Assert.True(intermediatePage.AppliedQueryAttributes[0].ContainsKey("name"));
+			Assert.Equal("IntermediateValue", intermediatePage.AppliedQueryAttributes[0]["name"]);
+
+			// Last page should get "name=DetailValue", NOT "IntermediateValue"
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.NotEqual(intermediatePage, lastPage);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("name"));
+			Assert.Equal("DetailValue", lastPage.AppliedQueryAttributes[0]["name"]);
+		}
+
+		[Fact]
+		public async Task IntermediatePageDoesNotReceiveUnprefixedParams()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			// "stars" is unprefixed — should only go to the last page
+			// "product.sku" is prefixed — should only go to intermediate
+			await shell.GoToAsync("product/review?product.sku=seed-tomato&stars=5&name=Alice");
+
+			// Intermediate page should only get "sku" (from "product.sku")
+			Assert.Single(intermediatePage.AppliedQueryAttributes);
+			Assert.True(intermediatePage.AppliedQueryAttributes[0].ContainsKey("sku"));
+			Assert.Equal("seed-tomato", intermediatePage.AppliedQueryAttributes[0]["sku"]);
+			// Should NOT contain unprefixed params
+			Assert.False(intermediatePage.AppliedQueryAttributes[0].ContainsKey("stars"));
+			Assert.False(intermediatePage.AppliedQueryAttributes[0].ContainsKey("name"));
+
+			// Last page should get both unprefixed params
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("stars"));
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("name"));
+			Assert.Equal("Alice", lastPage.AppliedQueryAttributes[0]["name"]);
+		}
+
+		[Fact]
+		public async Task IntermediatePageWithNoPrefixedParamsDoesNotReceiveEmptyQuery()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			// No prefixed params for "product" — only unprefixed params for last page
+			await shell.GoToAsync("product/review?name=Alice");
+
+			// Intermediate page should NOT receive ApplyQueryAttributes at all
+			Assert.Empty(intermediatePage.AppliedQueryAttributes);
+
+			// Last page should still get the param
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.Single(lastPage.AppliedQueryAttributes);
+			Assert.Equal("Alice", lastPage.AppliedQueryAttributes[0]["name"]);
+		}
+
+		[Fact]
+		public async Task IntermediatePageReceivesParamsOnReNavigation()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			// First navigation: push product + review
+			await shell.GoToAsync("product/review?product.sku=tomato&stars=5");
+			Assert.Single(intermediatePage.AppliedQueryAttributes);
+			Assert.Equal("tomato", intermediatePage.AppliedQueryAttributes[0]["sku"]);
+
+			// Navigate back to root
+			await shell.GoToAsync("//section/content");
+
+			// Second navigation with different params
+			await shell.GoToAsync("product/review?product.sku=pepper&stars=3");
+			Assert.Equal(2, intermediatePage.AppliedQueryAttributes.Count);
+			Assert.Equal("pepper", intermediatePage.AppliedQueryAttributes[1]["sku"]);
+		}
+
+		// ApplyQueryAttributes should NOT be called on an inactive (non-target) page's ViewModel
+		// when navigating back with query params on the second cycle through the same pages.
+		[Fact]
+		public async Task ApplyQueryAttributesNotCalledOnInactivePageDuringBackNavigation()
+		{
+			Routing.RegisterRoute("secondPage", typeof(ShellTestPage));
+			Routing.RegisterRoute("thirdPage", typeof(ShellTestPage));
+
+			var mainPage = new ShellTestPage();
+			mainPage.BindingContext = mainPage;
+
+			var shellContent = new ShellContent
+			{
+				Route = "mainPage",
+				Content = mainPage
+			};
+			shellContent.SetValue(Shell.PresentationModeProperty, PresentationMode.NotAnimated);
+
+			var shell = new TestShell(shellContent);
+
+			// Cycle 1: main → second → third → back(third→second) → back(second→main)
+			await shell.GoToAsync("secondPage?fromMain=1");
+			await shell.GoToAsync("thirdPage?fromSecond=2");
+			await shell.GoToAsync("..?fromThird=3");  // Third → Second
+
+			int callsAfterCycle1Back = mainPage.AppliedQueryAttributes.Count;
+
+			await shell.GoToAsync("..?backToMain=1");  // Second → Main
+
+			// Cycle 2: navigate the same sequence again
+			await shell.GoToAsync("secondPage?fromMain=1");
+			await shell.GoToAsync("thirdPage?fromSecond=2");
+
+			int callsBeforeCycle2ThirdBack = mainPage.AppliedQueryAttributes.Count;
+
+			// This is where the bug triggered: main's ApplyQueryAttributes was incorrectly called
+			await shell.GoToAsync("..?fromThird=3");  // Third → Second
+
+			int callsAfterCycle2ThirdBack = mainPage.AppliedQueryAttributes.Count;
+
+			// Main's ApplyQueryAttributes should NOT have been called when Third navigated back to Second
+			Assert.Equal(callsBeforeCycle2ThirdBack, callsAfterCycle2ThirdBack);
+		}
 	}
 }
