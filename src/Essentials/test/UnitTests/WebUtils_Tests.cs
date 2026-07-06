@@ -115,5 +115,22 @@ namespace Tests
 			var result = Microsoft.Maui.WebUtils.RemovePossibleQueryString(input);
 			Assert.Equal(expected, result);
 		}
+
+		// ============================================================
+		// CanHandleCallback
+		// ============================================================
+
+		[Theory]
+		[InlineData("maui-auth://", "maui-auth://callback?code=123", true)]
+		[InlineData("MAUI-AUTH://", "maui-auth://callback?code=123", true)]
+		[InlineData("maui-auth://callback", "MAUI-AUTH://CALLBACK?code=123", true)]
+		[InlineData("maui-auth://callback", "maui-auth://other?code=123", false)]
+		[InlineData("maui-auth://callback", "other-auth://callback?code=123", false)]
+		public void CanHandleCallback_ReturnsExpected(string expectedUrl, string callbackUrl, bool expected)
+		{
+			var result = Microsoft.Maui.WebUtils.CanHandleCallback(new Uri(expectedUrl), new Uri(callbackUrl));
+
+			Assert.Equal(expected, result);
+		}
 	}
 }
