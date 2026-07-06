@@ -36,6 +36,13 @@ namespace Microsoft.Maui.Platform
 			SetItems(new[] { spacer, doneButton }, false);
 		}
 
+		public override UIView? HitTest(CGPoint point, UIEvent? uievent)
+		{
+			var hitView = base.HitTest(point, uievent);
+
+			return ReferenceEquals(hitView, this) ? null : hitView;
+		}
+
 		class BarButtonItemProxy
 		{
 			readonly Action? _doneClicked;
