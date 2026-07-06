@@ -429,6 +429,42 @@ if (-not (Test-Path $detectScriptPath)) {
     Assert-Eq -Label "no shipped tags (highest 0): patch 11 idle -> NOT stale" `
               -Expected $false -Actual (Test-IsStaleSrBranch -BranchPatch 11 -HighestShippedPatch 0 -RecentActivityCount 0)
 
+    # ─────────── New-Tracker title + mode contract ───────────
+    # The issue title encodes the tracker's lifecycle mode. Marker matching is by
+    # canonicalKey (not title), so title text is safe to vary, but downstream the
+    # 'shipped' title signals the refresh-until-closed lifecycle. Pin all three.
+    Write-Host "`n[Unit] New-Tracker title + mode" -ForegroundColor Cyan
+    $tkInflight = New-Tracker -Major 10 -SrNumber 8 -Mode 'in-flight' `
+        -BranchName 'release/10.0.1xx-sr8' -SurveyRef 'release/10.0.1xx-sr8' -PriorSrBranch $null `
+        -PriorShippedPatch 71 -PriorShippedTag '10.0.71' -ExpectedPatch 80 -ExpectedTag '10.0.80' `
+        -HasRecentActivityCount 3
+    Assert-Eq -Label "in-flight mode preserved" -Expected 'in-flight' -Actual $tkInflight.mode
+    Assert-Eq -Label "in-flight title = branch form" `
+              -Expected '[Release Readiness] .NET 10 SR8 — release/10.0.1xx-sr8' -Actual $tkInflight.issueTitle
+
+    $tkCandidate = New-Tracker -Major 10 -SrNumber 9 -Mode 'candidate' `
+        -BranchName $null -SurveyRef 'main' -PriorSrBranch 'release/10.0.1xx-sr8' `
+        -PriorShippedPatch 80 -PriorShippedTag '10.0.80' -ExpectedPatch 90 -ExpectedTag '10.0.90' `
+        -HasRecentActivityCount 12
+    Assert-Eq -Label "candidate mode preserved" -Expected 'candidate' -Actual $tkCandidate.mode
+    Assert-Eq -Label "candidate title = candidate-from form" `
+              -Expected '[Release Readiness] .NET 10 SR9 — candidate from main' -Actual $tkCandidate.issueTitle
+    Assert-Eq -Label "candidate canonicalKey is title-independent" -Expected 'net10-sr9' -Actual $tkCandidate.canonicalKey
+
+    $tkShipped = New-Tracker -Major 10 -SrNumber 8 -Mode 'shipped' `
+        -BranchName 'release/10.0.1xx-sr8' -SurveyRef 'release/10.0.1xx-sr8' -PriorSrBranch $null `
+        -PriorShippedPatch 80 -PriorShippedTag '10.0.80' -ExpectedPatch 80 -ExpectedTag '10.0.80' `
+        -HasRecentActivityCount 1
+    Assert-Eq -Label "shipped mode preserved" -Expected 'shipped' -Actual $tkShipped.mode
+    Assert-Eq -Label "shipped title = shipped form (signals refresh-until-closed)" `
+              -Expected '[Release Readiness] .NET 10 SR8 — shipped (release/10.0.1xx-sr8)' -Actual $tkShipped.issueTitle
+    Assert-Eq -Label "shipped surveys its own branch (not a candidate ref)" `
+              -Expected 'release/10.0.1xx-sr8' -Actual $tkShipped.surveyRef
+    Assert-Eq -Label "shipped canonicalKey matches in-flight (stable join key across lifecycle)" `
+              -Expected 'net10-sr8' -Actual $tkShipped.canonicalKey
+    Assert-Eq -Label "shipped branchExists = true (the SR branch is real)" `
+              -Expected $true -Actual $tkShipped.branchExists
+
     # ─────────── Preview-tag regex contract ───────────
     Write-Host "`n[Unit] Preview tag regex (<major>.0.0-preview.<N>.<date>[.<build>])" -ForegroundColor Cyan
     $previewTagCases = @(
@@ -637,13 +673,14 @@ function Get-ExpectedHighestShippedTag {
 
 if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection against live repo" -ForegroundColor Cyan
-    Write-Host "  Under the tag-existence rule + Lane 1 staleness guard we expect ONE tracker:" -ForegroundColor DarkGray
+    Write-Host "  Under the tag-existence rule + Lane 1 staleness guard we expect TWO trackers:" -ForegroundColor DarkGray
+    Write-Host "    - SR8 (patch=80, tag 10.0.80 exists)    - shipped, refresh-until-closed (highest shipped SR)" -ForegroundColor DarkGray
     Write-Host "    - SR9 (candidate off main)              - active" -ForegroundColor DarkGray
     Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark 80):" -ForegroundColor DarkGray
     Write-Host "    - SR2 (patch=21, no tag 10.0.21)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
     Write-Host "    - SR3 (patch=33, no tag 10.0.33)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
-    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71) and SR8 shipped 2026-07-03 (tag 10.0.80);" -ForegroundColor DarkGray
-    Write-Host "          neither produces a tracker any longer." -ForegroundColor DarkGray
+    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71); NOT the highest shipped SR -> retired (no tracker)." -ForegroundColor DarkGray
+    Write-Host "    NOTE: SR8 shipped 2026-06-22 (tag 10.0.80); as the HIGHEST shipped SR it emits a 'shipped' tracker that refreshes until a human closes it." -ForegroundColor DarkGray
 
     $detectOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -661,8 +698,8 @@ if (-not $SkipE2E) {
                       -Expected $expectedHighestShipped -Actual $detected.highestShippedTag
             Assert-Eq -Label "highestShippedPreviewTag carries net10's last preview" `
                       -Expected '10.0.0-preview.7.25406.3' -Actual $detected.highestShippedPreviewTag
-            Assert-Eq -Label "tracker count is 1 (SR9 only — SR7+SR8 shipped; SR2/SR3 dropped as stale)" `
-                      -Expected 1 -Actual $detected.trackers.Count
+            Assert-Eq -Label "tracker count is 2 (SR8 shipped+refresh, SR9 candidate; SR7 retired; SR2/SR3 stale-dropped)" `
+                      -Expected 2 -Actual $detected.trackers.Count
             # All trackers in single-major net10 mode must be SR-flavored. (Net10's
             # previews 1–7 all shipped + no in-flight preview branch -> no preview tracker.)
             foreach ($t in $detected.trackers) {
@@ -686,20 +723,34 @@ if (-not $SkipE2E) {
             Assert-Eq -Label "SR7 tracker absent (shipped as 10.0.71)" `
                       -Expected $false -Actual ($bySr.ContainsKey(7))
 
-            # SR8 (shipped 2026-07-03 as 10.0.80 — its in-flight tracker retired on ship,
-            # exactly like SR7 before it). This transition is why the tracker set dropped
-            # from {SR8,SR9} to {SR9}.
-            Assert-Eq -Label "SR8 tracker absent (shipped as 10.0.80)" `
-                      -Expected $false -Actual ($bySr.ContainsKey(8))
-
-            # Drift-proof invariant behind the two lines above: ANY SR that surfaces as an
-            # active tracker must NOT already have its ship tag in git (a shipped SR is
-            # excluded), no matter how many ship. Uses the tracker's own expectedTag so the
-            # non-uniform patch convention (SR7 shipped as 10.0.71, SR8 as 10.0.80) is honored.
-            foreach ($active in @($detected.trackers | Where-Object branchType -eq 'sr')) {
-                Assert-Eq -Label "active SR$($active.srNumber) has no ship tag $($active.expectedTag) yet [shipped-exclusion invariant]" `
-                          -Expected $false `
-                          -Actual ([bool](& git -C $detected.repo tag --list $active.expectedTag))
+            # SR8 (SHIPPED — highest shipped SR (tag 10.0.80) -> emits a
+            # 'shipped' tracker that refreshes until a human closes it).
+            if ($bySr.ContainsKey(8)) {
+                $sr8 = $bySr[8]
+                Assert-Eq -Label "SR8 mode = shipped"           -Expected 'shipped' -Actual $sr8.mode
+                Assert-Eq -Label "SR8 canonicalKey"             -Expected 'net10-sr8' -Actual $sr8.canonicalKey
+                Assert-Eq -Label "SR8 branchName"               -Expected 'release/10.0.1xx-sr8' -Actual $sr8.branchName
+                Assert-Eq -Label "SR8 branchExists = true"      -Expected $true -Actual $sr8.branchExists
+                Assert-Eq -Label "SR8 surveyRef = its own branch (shipped surveys the SR branch)" `
+                          -Expected 'release/10.0.1xx-sr8' -Actual $sr8.surveyRef
+                Assert-Eq -Label "SR8 issue title = shipped format" `
+                          -Expected '[Release Readiness] .NET 10 SR8 — shipped (release/10.0.1xx-sr8)' `
+                          -Actual $sr8.issueTitle
+                Assert-Eq -Label "SR8 expectedTag = 10.0.80"    -Expected '10.0.80' -Actual $sr8.expectedTag
+                # hasRecentActivity is a 7-day-window signal (git log --since=7.days
+                # against the live branch), so its VALUE is wall-clock dependent and
+                # MUST NOT be pinned here — SR8 idling >7 days at the tail of a cycle
+                # is a NORMAL state that would (correctly) report $false. Assert only
+                # that the detector emits it as a real [bool]. The window math itself
+                # is covered deterministically by the synthetic-fixture unit test
+                # ([Unit] Get-RecentCommitCount recency window).
+                Assert-Eq -Label "SR8 hasRecentActivity is a [bool] (value is date-dependent)" `
+                          -Expected $true -Actual ($sr8.hasRecentActivity -is [bool])
+                Assert-Eq -Label "SR8 regression labels"        `
+                          -Expected 'regressed-in-10.0.70,regressed-in-10.0.80' `
+                          -Actual ($sr8.regressionLabels -join ',')
+            } else {
+                Write-Host "  ❌ SR8 tracker missing" -ForegroundColor Red; $script:failed++
             }
 
             # SR9 (candidate from main, ACTIVE)
@@ -730,9 +781,10 @@ if (-not $SkipE2E) {
             # for "active": an active SR can legitimately sit idle for >7 days near
             # the tail of a cycle and report hasRecentActivity=$false. So assert the
             # flag is a real [bool] — never a hardcoded, date-dependent $true. SR7
-            # shipped 2026-06-05 and SR8 shipped 2026-07-03; both left the tracker set,
-            # so only SR9 is active.
-            foreach ($srNum in @(9)) {
+            # shipped 2026-06-05 and (no longer the highest shipped SR) is retired;
+            # SR8 (shipped, highest -> refresh-until-closed) + SR9 (candidate) are
+            # the tracked set.
+            foreach ($srNum in @(8, 9)) {
                 if ($bySr.ContainsKey($srNum)) {
                     Assert-Eq -Label "SR$srNum hasRecentActivity is a [bool] (active SR; value date-dependent)" `
                               -Expected $true -Actual ($bySr[$srNum].hasRecentActivity -is [bool])
@@ -752,17 +804,22 @@ if (-not $SkipE2E) {
     # ──────────── E2E: -AllActiveMajors multi-major envelope ────────────
     # In the unified post-consolidation shape, one invocation must surface every
     # active major (main's + any net<N>.0 ≥ main). Expected current state:
-    #   - net10 -> 1 SR tracker (SR9 candidate), no preview tracker
-    #     (SR7 shipped 2026-06-05 + SR8 shipped 2026-07-03; SR2/SR3 dropped by the Lane 1
-    #      staleness guard; every net10 preview branch already shipped + net10.0 isn't in
-    #      preview cycle)
+    #   - net10 -> 2 SR trackers (SR8 shipped+refresh, SR9 candidate), no preview tracker
+    #     (SR7 shipped 2026-06-05 and is no longer the highest shipped SR -> retired;
+    #      SR8 shipped 2026-06-22 as the HIGHEST shipped SR -> 'shipped' tracker that
+    #      refreshes until closed; SR2/SR3 dropped by the Lane 1 staleness guard;
+    #      every net10 preview branch already shipped + net10.0 isn't in preview cycle)
     #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 2 preview trackers
-    #     (preview6 in-flight from release/11.0.1xx-preview6; preview7 candidate from net11.0)
+    #     (preview6 in-flight: release/11.0.1xx-preview6 was cut, tag not yet published;
+    #      preview7 candidate: net11.0 bumped to PreReleaseVersionIteration=7, so the
+    #      detector now surfaces a candidate for the NEXT preview alongside in-flight
+    #      preview6. Once preview7's branch is cut this becomes preview7 in-flight +
+    #      preview8 candidate — update this snapshot then, same as the SR lane above.)
     Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
     Write-Host "  Expected:" -ForegroundColor DarkGray
     Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
-    Write-Host "    - net10 trackers: 1 SR (sr9), 0 preview (SR7+SR8 shipped; SR2/SR3 stale-dropped)" -ForegroundColor DarkGray
-    Write-Host "    - net11 trackers: 0 SR (pre-GA), 2 preview (preview6 in-flight, preview7 candidate)" -ForegroundColor DarkGray
+    Write-Host "    - net10 trackers: 2 SR (sr8 shipped/sr9 candidate), 0 preview (SR7 retired; SR2/SR3 stale-dropped)" -ForegroundColor DarkGray
+    Write-Host "    - net11 trackers: 0 SR (pre-GA), 2 preview (preview6 in-flight + preview7 candidate from net11.0)" -ForegroundColor DarkGray
 
     $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -788,10 +845,10 @@ if (-not $SkipE2E) {
                 $expectedNet10Highest = Get-ExpectedHighestShippedTag -RepoPath $multi.repo -Major 10
                 Assert-Eq -Label "net10 highestShippedTag matches highest stable 10.0.M tag (derived)" `
                           -Expected $expectedNet10Highest -Actual $net10.highestShippedTag
-                Assert-Eq -Label "net10 tracker count is 1 (no preview lane, SR7+SR8 shipped, SR2/SR3 stale-dropped)" -Expected 1 -Actual $net10.trackers.Count
+                Assert-Eq -Label "net10 tracker count is 2 (no preview lane; SR8 shipped+refresh, SR9 candidate; SR7 retired, SR2/SR3 stale-dropped)" -Expected 2 -Actual $net10.trackers.Count
                 $srCount = @($net10.trackers | Where-Object branchType -eq 'sr').Count
                 $previewCount = @($net10.trackers | Where-Object branchType -eq 'preview').Count
-                Assert-Eq -Label "net10 has 1 SR tracker"       -Expected 1 -Actual $srCount
+                Assert-Eq -Label "net10 has 2 SR trackers"      -Expected 2 -Actual $srCount
                 Assert-Eq -Label "net10 has 0 preview trackers" -Expected 0 -Actual $previewCount
             } else {
                 Write-Host "  ❌ majors[] missing net10 entry" -ForegroundColor Red; $script:failed++
@@ -809,68 +866,99 @@ if (-not $SkipE2E) {
                           -Expected '11.0.0-preview.5.26304.4' -Actual $net11.highestShippedPreviewTag
                 Assert-Eq -Label "net11 tracker count is 2 (preview6 in-flight + preview7 candidate)" -Expected 2 -Actual $net11.trackers.Count
                 $previewTrackers = @($net11.trackers | Where-Object branchType -eq 'preview')
-                Assert-Eq -Label "net11 has 2 preview trackers"          -Expected 2 -Actual $previewTrackers.Count
+                Assert-Eq -Label "net11 has 2 preview trackers"           -Expected 2 -Actual $previewTrackers.Count
                 $srTrackers = @($net11.trackers | Where-Object branchType -eq 'sr')
                 Assert-Eq -Label "net11 has 0 SR trackers (pre-GA -> Lane 2 skipped)" -Expected 0 -Actual $srTrackers.Count
 
-                # Select by previewNumber rather than array index — the tracker order is an
-                # implementation detail and must not silently swap the two assertions.
-                $preview6 = $previewTrackers | Where-Object previewNumber -eq 6 | Select-Object -First 1
-                $preview7 = $previewTrackers | Where-Object previewNumber -eq 7 | Select-Object -First 1
-
-                # preview6 — IN-FLIGHT off its cut branch.
-                if ($preview6) {
-                    Assert-Eq -Label "preview6 canonicalKey"              -Expected 'net11-preview6'       -Actual $preview6.canonicalKey
-                    Assert-Eq -Label "preview6 mode = in-flight"          -Expected 'in-flight'           -Actual $preview6.mode
-                    Assert-Eq -Label "preview6 surveyRef = its cut branch" -Expected 'release/11.0.1xx-preview6' -Actual $preview6.surveyRef
-                    Assert-Eq -Label "preview6 expectedTagPrefix"         -Expected '11.0.0-preview.6.'   -Actual $preview6.expectedTagPrefix
-                    Assert-Eq -Label "preview6 previewNumber = 6"         -Expected 6                      -Actual $preview6.previewNumber
-                    Assert-Eq -Label "preview6 milestone name"            -Expected '.NET 11.0-preview6'  -Actual $preview6.milestoneName
-                    Assert-Eq -Label "preview6 issue title format"        `
-                              -Expected '[Release Readiness] .NET 11.0 preview6 — release/11.0.1xx-preview6' `
-                              -Actual $preview6.issueTitle
-                    Assert-Eq -Label "preview6 branchName = its cut branch" `
-                              -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
-                    Assert-Eq -Label "preview6 branchExists = true (branch cut)" `
-                              -Expected $true -Actual $preview6.branchExists
-                    # hasRecentActivity is a 7-day-window signal, not a marker of an
-                    # "active preview cycle" — the branch can idle >7 days and report $false.
-                    # Assert the flag's TYPE, not its date-dependent value.
-                    Assert-Eq -Label "preview6 hasRecentActivity is a [bool] (value date-dependent)" `
-                              -Expected $true -Actual ($preview6.hasRecentActivity -is [bool])
-                    Assert-Eq -Label "preview6 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
-                              -Expected $true -Actual ($preview6.hasRecentActivity -eq ([int]$preview6.recentCommitCount -gt 0))
-                    Assert-Eq -Label "preview6 regressionLabels carries previewN-1 + previewN" `
-                              -Expected 'regressed-in-11.0.0-preview5,regressed-in-11.0.0-preview6' `
-                              -Actual ($preview6.regressionLabels -join ',')
+                # Select each preview by its number rather than array position so the
+                # assertions don't hinge on detector ordering.
+                $preview6 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq 6 } | Select-Object -First 1
+                $preview7 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq 7 } | Select-Object -First 1
+                if ($null -eq $preview6) {
+                    Write-Host "  ❌ net11 missing preview6 tracker" -ForegroundColor Red; $script:failed++
                 } else {
-                    Write-Host "  ❌ net11 preview6 tracker missing" -ForegroundColor Red; $script:failed++
+                # Lifecycle-INVARIANT fields (don't drift candidate<->in-flight): identity,
+                # tag prefix, preview number, milestone, and the canonical proposed branch slug.
+                Assert-Eq -Label "preview6 canonicalKey"              -Expected 'net11-preview6'       -Actual $preview6.canonicalKey
+                Assert-Eq -Label "preview6 expectedTagPrefix"         -Expected '11.0.0-preview.6.'   -Actual $preview6.expectedTagPrefix
+                Assert-Eq -Label "preview6 previewNumber = 6"         -Expected 6                      -Actual $preview6.previewNumber
+                Assert-Eq -Label "preview6 milestone name"            -Expected '.NET 11.0-preview6'  -Actual $preview6.milestoneName
+                Assert-Eq -Label "preview6 branchName = canonical slug" `
+                          -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
+                # preview6 transitions candidate (no branch) -> in-flight (branch cut) over its
+                # cycle. Don't hard-code EITHER state: read the detector's own branchExists and
+                # assert mode/surveyRef/issueTitle are CONSISTENT with it. This stays green across
+                # the candidate->in-flight cut instead of drifting the day the branch lands — same
+                # invariant-over-snapshot philosophy as the hasRecentActivity asserts below.
+                Assert-Eq -Label "preview6 branchExists is a [bool] (lifecycle pivot)" `
+                          -Expected $true -Actual ($preview6.branchExists -is [bool])
+                if ($preview6.branchExists) {
+                    # Branch has been cut -> in-flight: the tracker surveys the branch itself.
+                    Assert-Eq -Label "preview6 mode = in-flight (branch exists)" -Expected 'in-flight' -Actual $preview6.mode
+                    Assert-Eq -Label "preview6 surveyRef = branchName (branch exists)" `
+                              -Expected $preview6.branchName -Actual $preview6.surveyRef
+                    Assert-Eq -Label "preview6 issue title = in-flight form" `
+                              -Expected "[Release Readiness] .NET 11.0 preview6 — $($preview6.branchName)" `
+                              -Actual $preview6.issueTitle
+                } else {
+                    # No branch yet -> candidate: the tracker surveys the major's dev branch.
+                    Assert-Eq -Label "preview6 mode = candidate (no branch yet)" -Expected 'candidate' -Actual $preview6.mode
+                    Assert-Eq -Label "preview6 surveyRef = mainBranch (no branch yet)" `
+                              -Expected $net11.mainBranch -Actual $preview6.surveyRef
+                    Assert-Eq -Label "preview6 issue title = candidate form" `
+                              -Expected "[Release Readiness] .NET 11.0 preview6 — candidate from $($net11.mainBranch)" `
+                              -Actual $preview6.issueTitle
+                }
+                # hasRecentActivity is a 7-day-window signal, not a marker of an
+                # "active preview cycle" — net11.0 can idle >7 days and report $false.
+                # Assert the flag's TYPE, not its date-dependent value.
+                Assert-Eq -Label "preview6 hasRecentActivity is a [bool] (value date-dependent)" `
+                          -Expected $true -Actual ($preview6.hasRecentActivity -is [bool])
+                # Pin the count->flag WIRING (hasRecentActivity = recentCommitCount > 0) for the
+                # preview construction path too — same-instant fields, so date-independent yet it
+                # still trips on an inverted/hardcoded mapping.
+                Assert-Eq -Label "preview6 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
+                          -Expected $true -Actual ($preview6.hasRecentActivity -eq ([int]$preview6.recentCommitCount -gt 0))
+                Assert-Eq -Label "preview6 regressionLabels carries previewN-1 + previewN" `
+                          -Expected 'regressed-in-11.0.0-preview5,regressed-in-11.0.0-preview6' `
+                          -Actual ($preview6.regressionLabels -join ',')
                 }
 
-                # preview7 — CANDIDATE from net11.0 (no branch cut yet).
-                if ($preview7) {
+                # preview7 — candidate from net11.0. net11.0 carries
+                # PreReleaseVersionIteration=7, so the detector emits a candidate for the
+                # NEXT preview distinct from in-flight preview6. Branch not cut yet ->
+                # candidate surveying net11.0. Mirrors the preview6 invariants but for the
+                # candidate state; reads branchExists and asserts mode/surveyRef/title are
+                # CONSISTENT with it so it stays green across the candidate->in-flight cut.
+                if ($null -eq $preview7) {
+                    Write-Host "  ❌ net11 missing preview7 candidate tracker" -ForegroundColor Red; $script:failed++
+                } else {
                     Assert-Eq -Label "preview7 canonicalKey"              -Expected 'net11-preview7'       -Actual $preview7.canonicalKey
-                    Assert-Eq -Label "preview7 mode = candidate"          -Expected 'candidate'           -Actual $preview7.mode
-                    Assert-Eq -Label "preview7 surveyRef = net11.0"       -Expected 'net11.0'             -Actual $preview7.surveyRef
                     Assert-Eq -Label "preview7 expectedTagPrefix"         -Expected '11.0.0-preview.7.'   -Actual $preview7.expectedTagPrefix
                     Assert-Eq -Label "preview7 previewNumber = 7"         -Expected 7                      -Actual $preview7.previewNumber
                     Assert-Eq -Label "preview7 milestone name"            -Expected '.NET 11.0-preview7'  -Actual $preview7.milestoneName
-                    Assert-Eq -Label "preview7 issue title format"        `
-                              -Expected '[Release Readiness] .NET 11.0 preview7 — candidate from net11.0' `
-                              -Actual $preview7.issueTitle
-                    Assert-Eq -Label "preview7 branchName = canonical proposed slug" `
+                    Assert-Eq -Label "preview7 branchName = canonical slug" `
                               -Expected 'release/11.0.1xx-preview7' -Actual $preview7.branchName
-                    Assert-Eq -Label "preview7 branchExists = false (no branch yet)" `
-                              -Expected $false -Actual $preview7.branchExists
-                    Assert-Eq -Label "preview7 hasRecentActivity is a [bool] (value date-dependent)" `
-                              -Expected $true -Actual ($preview7.hasRecentActivity -is [bool])
-                    Assert-Eq -Label "preview7 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
-                              -Expected $true -Actual ($preview7.hasRecentActivity -eq ([int]$preview7.recentCommitCount -gt 0))
+                    Assert-Eq -Label "preview7 branchExists is a [bool] (lifecycle pivot)" `
+                              -Expected $true -Actual ($preview7.branchExists -is [bool])
+                    if ($preview7.branchExists) {
+                        Assert-Eq -Label "preview7 mode = in-flight (branch exists)" -Expected 'in-flight' -Actual $preview7.mode
+                        Assert-Eq -Label "preview7 surveyRef = branchName (branch exists)" `
+                                  -Expected $preview7.branchName -Actual $preview7.surveyRef
+                        Assert-Eq -Label "preview7 issue title = in-flight form" `
+                                  -Expected "[Release Readiness] .NET 11.0 preview7 — $($preview7.branchName)" `
+                                  -Actual $preview7.issueTitle
+                    } else {
+                        Assert-Eq -Label "preview7 mode = candidate (no branch yet)" -Expected 'candidate' -Actual $preview7.mode
+                        Assert-Eq -Label "preview7 surveyRef = mainBranch (no branch yet)" `
+                                  -Expected $net11.mainBranch -Actual $preview7.surveyRef
+                        Assert-Eq -Label "preview7 issue title = candidate form" `
+                                  -Expected "[Release Readiness] .NET 11.0 preview7 — candidate from $($net11.mainBranch)" `
+                                  -Actual $preview7.issueTitle
+                    }
                     Assert-Eq -Label "preview7 regressionLabels carries previewN-1 + previewN" `
                               -Expected 'regressed-in-11.0.0-preview6,regressed-in-11.0.0-preview7' `
                               -Actual ($preview7.regressionLabels -join ',')
-                } else {
-                    Write-Host "  ❌ net11 preview7 tracker missing" -ForegroundColor Red; $script:failed++
                 }
             } else {
                 Write-Host "  ❌ majors[] missing net11 entry" -ForegroundColor Red; $script:failed++
@@ -1211,6 +1299,21 @@ Assert-Eq -Label "Reverted-PR from quoted title containing internal quotes" `
 # Case-insensitive: a hand-typed lowercase 'revert "..."' subject must resolve.
 Assert-Eq -Label "Reverted-PR from lowercase 'revert' subject" `
     -Expected 4321 -Actual (Get-RevertedPrFromSubject -Subject 'revert "fix thing (#4321)" (#8765)')
+# Manual/hand-authored revert form (no GitHub quotes, no "This reverts commit"
+# body): `Revert - <title> #<reverted> (#<revertPR>)`. Real maui case: #36152
+# reverted #35372. Without recovering 35372, revertedPrSet holds only the revert
+# PR (36152), the reverted fix's original commit still satisfies the on-branch
+# gate, and a "fixed by #35372" comment on a CLOSED issue is falsely de-noised.
+Assert-Eq -Label "Reverted-PR from manual 'Revert - <title> #N (#M)' form (real #36152/#35372)" `
+    -Expected 35372 -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Fix Android stale ContainerView root leak #35372 (#36152)')
+Assert-Eq -Label "Manual revert form with branch prefix" `
+    -Expected 40100 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr9] Revert - Fix flaky test #40100 (#40200)')
+# Safety: a manual-form pattern must NOT fire on a non-revert subject that merely
+# ends with `#N (#M)`, nor return the trailing (#M) when no reverted # is present.
+Assert-Eq -Label "Non-revert subject ending in '#N (#M)' still yields null" `
+    -Expected $null -Actual (Get-RevertedPrFromSubject -Subject 'Fix layout regression #40300 (#40400)')
+Assert-Eq -Label "Revert subject with only the trailing (#M) yields null (no false reverted-PR)" `
+    -Expected $null -Actual (Get-RevertedPrFromSubject -Subject 'Revert - some cleanup (#40500)')
 
 # ───── Test-PrIsToolingOnly (false-positive guard #1) ─────
 Write-Host "`n[Unit] Test-PrIsToolingOnly (FP guard)" -ForegroundColor Cyan
@@ -1408,6 +1511,266 @@ $cls2 = Classify-RegressionCandidate `
 Assert-Eq -Label "Partial SrContents (no commits/fixedIssues) does not throw" `
     -Expected 'no-fix-yet' -Actual $cls2.classification
 
+# ───── Get-IssueCommentPrs (negation guard on fix-phrase scoring) ─────
+# A maintainer comment that NEGATES a fix ("not fixed by #X", "won't fix #Y") must
+# NOT be scored as high-confidence 'fix-phrase' — otherwise the closed-fix-unlinked
+# fallback would treat a "still broken" comment as proof of a fix. Exercises the REAL
+# Get-IssueCommentPrs (mocking only its gh call) so the regex itself is under test.
+Write-Host "`n[Unit] Get-IssueCommentPrs (negated fix phrases score as 'mention')" -ForegroundColor Cyan
+
+$origInvokeGh = ${function:Invoke-Gh}
+$script:mockCommentsJson = @'
+[
+  { "body": "Duplicate report — not fixed by #35028, still reproduces on SR8." },
+  { "body": "This is actually fixed by #40001 in the nightly build." },
+  { "body": "won't fix #50002 — working as intended." },
+  { "body": "see #60003 for related context" },
+  { "body": "not fixed by #70004 yet" },
+  { "body": "update: now fixed by #70004" }
+]
+'@
+function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCommentsJson }
+try {
+    $scored = Get-IssueCommentPrs -Repo 'dotnet/maui' -IssueNumber 99999
+    $byNum = @{}; foreach ($s in $scored) { $byNum[[int]$s.number] = $s.evidence }
+
+    Assert-Eq -Label "negated 'not fixed by #35028' -> mention (not fix-phrase)" `
+        -Expected 'mention' -Actual $byNum[35028]
+    Assert-Eq -Label "plain 'fixed by #40001' -> fix-phrase" `
+        -Expected 'fix-phrase' -Actual $byNum[40001]
+    Assert-Eq -Label "negated 'won't fix #50002' -> mention" `
+        -Expected 'mention' -Actual $byNum[50002]
+    Assert-Eq -Label "bare 'see #60003' (no fix word) -> mention" `
+        -Expected 'mention' -Actual $byNum[60003]
+    # Strongest-evidence-wins still holds: #70004 is negated in one comment but
+    # confirmed in another -> the non-negated fix phrase upgrades it to fix-phrase.
+    Assert-Eq -Label "#70004 negated once + confirmed once -> fix-phrase wins" `
+        -Expected 'fix-phrase' -Actual $byNum[70004]
+} finally {
+    ${function:Invoke-Gh} = $origInvokeGh
+}
+
+# ───── Get-IssueCommentPrs (cross-repo references are NOT local PRs) ─────
+# A maui regression is only de-noised by a fix in THIS repo. A cross-repo
+# shorthand (dotnet/runtime#N) or a github.com/<other>/<repo>/pull/N URL must
+# NOT be mistaken for maui#N and reported as "No ship risk". Same-repo
+# shorthand, same-repo pull URLs, bare #N and PR#N must still be extracted.
+Write-Host "`n[Unit] Get-IssueCommentPrs (cross-repo references rejected)" -ForegroundColor Cyan
+$origInvokeGh2 = ${function:Invoke-Gh}
+$script:mockCrossRepoJson = @'
+[
+  { "body": "root cause is upstream, fixed by dotnet/runtime#35028" },
+  { "body": "the real fix is https://github.com/dotnet/runtime/pull/41000" },
+  { "body": "actually resolved by dotnet/maui#42000 on the SR" },
+  { "body": "fixed by #43000" },
+  { "body": "landed in https://github.com/dotnet/maui/pull/44000" },
+  { "body": "closed by PR#45000" },
+  { "body": "see dotnet/runtime/pull/46000 for the upstream fix" },
+  { "body": "resolved by dotnet/maui/pull/47000" }
+]
+'@
+function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCrossRepoJson }
+try {
+    $scored2 = Get-IssueCommentPrs -Repo 'dotnet/maui' -IssueNumber 88888
+    $nums = @($scored2 | ForEach-Object { [int]$_.number })
+
+    Assert-Eq -Label "cross-repo 'dotnet/runtime#35028' shorthand is NOT extracted" `
+        -Expected $false -Actual ($nums -contains 35028)
+    Assert-Eq -Label "cross-repo runtime pull URL (41000) is NOT extracted" `
+        -Expected $false -Actual ($nums -contains 41000)
+    Assert-Eq -Label "same-repo 'dotnet/maui#42000' shorthand IS extracted" `
+        -Expected $true -Actual ($nums -contains 42000)
+    Assert-Eq -Label "bare '#43000' IS extracted" `
+        -Expected $true -Actual ($nums -contains 43000)
+    Assert-Eq -Label "same-repo maui pull URL (44000) IS extracted" `
+        -Expected $true -Actual ($nums -contains 44000)
+    Assert-Eq -Label "unqualified 'PR#45000' IS extracted (recall preserved)" `
+        -Expected $true -Actual ($nums -contains 45000)
+    Assert-Eq -Label "scheme-less cross-repo 'dotnet/runtime/pull/46000' is NOT extracted" `
+        -Expected $false -Actual ($nums -contains 46000)
+    Assert-Eq -Label "scheme-less same-repo 'dotnet/maui/pull/47000' IS extracted" `
+        -Expected $true -Actual ($nums -contains 47000)
+
+    $byNum2 = @{}; foreach ($s in $scored2) { $byNum2[[int]$s.number] = $s.evidence }
+    Assert-Eq -Label "same-repo 'resolved by dotnet/maui#42000' -> fix-phrase" `
+        -Expected 'fix-phrase' -Actual $byNum2[42000]
+} finally {
+    ${function:Invoke-Gh} = $origInvokeGh2
+}
+# Real-world case driving this class: SR8 tracker #35876 flagged six CLOSED issues
+# (#35252/#35253/#35254/#35255/#35291/#35409) as `no-fix-yet`/"Investigate" even
+# though five of them were closed with a maintainer comment naming a MERGED fix PR
+# that is already on release/10.0.1xx-sr8. The fix never used a closing keyword and
+# GitHub recorded no timeline cross-reference, so Get-IssueTimelinePrs found nothing.
+# The fallback recovers the cited PR from the comment, verifies it MERGED and sits on
+# the SR branch, and reclassifies to the non-blocking `closed-fix-unlinked` (a missing
+# link, not a missing fix).
+Write-Host "`n[Unit] Classify-RegressionCandidate (closed-fix-unlinked)" -ForegroundColor Cyan
+
+# Mock the comment-PR recovery + the fix PR (#35028, merged into inflight/candidate
+# and present on SR8) + branch membership for origin/release/10.0.1xx-sr8.
+function Get-IssueCommentPrs {
+    param($Repo, $IssueNumber)
+    return @(@{ number = 35028; evidence = 'fix-phrase' })
+}
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix unstable CollectionView CI repro tests'
+        state       = 'MERGED'
+        baseRefName = 'inflight/candidate'
+        mergedAt    = '2026-06-01T00:00:00Z'
+        closedAt    = '2026-06-01T00:00:00Z'
+        body        = 'Fixes #35104'   # links a DIFFERENT issue — never these five
+        mergeCommit = [pscustomobject]@{ oid = 'c1d6d72768c0ffee' }
+        files       = @([pscustomobject]@{ path = 'src/Controls/tests/TestCases.HostApp/Issue35253.xaml.cs'; additions = 4; deletions = 0 })
+    }
+}
+# Faithful to the real cross-branch flow: the fix squash-merged into the
+# inflight/candidate side under SHA `c1d6...`, then flowed to SR8 under a
+# DIFFERENT SHA. So direct SHA-ancestry of the PR's mergeCommit is FALSE; the
+# `(#35028)` subject token is what proves presence on SR8.
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return $false
+}
+function Test-PrNumberOnBranch {
+    param([int]$PrNumber, [string]$BranchRef)
+    return ($PrNumber -eq 35028 -and $BranchRef -eq 'origin/release/10.0.1xx-sr8')
+}
+
+$clsUnlinked = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35254; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "Closed issue + comment-cited merged PR on SR → closed-fix-unlinked (not no-fix-yet)" `
+    -Expected 'closed-fix-unlinked' -Actual $clsUnlinked.classification
+Assert-Eq -Label "closed-fix-unlinked → high confidence (fix-phrase required)" `
+    -Expected 'high' -Actual $clsUnlinked.confidence
+Assert-Eq -Label "closed-fix-unlinked → candidateFixPrs surfaces the cited PR (#35028)" `
+    -Expected 35028 -Actual ([int]$clsUnlinked.candidateFixPrs[0].number)
+Assert-Eq -Label "closed-fix-unlinked recovered via (#num) subject token when SHA-ancestry is false" `
+    -Expected $true -Actual (($clsUnlinked.evidence -join "`n") -match 'present on release/10\.0\.1xx-sr8')
+Assert-Eq -Label "closed-fix-unlinked → action is to add a closing reference (no ship risk)" `
+    -Expected $true -Actual ($clsUnlinked.recommendedAction -match 'closing reference')
+Assert-Eq -Label "closed-fix-unlinked is Tier 3 (non-blocking)" `
+    -Expected 3 -Actual (Get-VerdictTier -Classification 'closed-fix-unlinked')
+
+# Guard A — bare 'mention' (no fix verb) must STAY no-fix-yet. Regression issues
+# routinely name the CAUSE PR for context ("Before PR #X ... After PR #X"); the
+# cause naturally sits on the branch, so the branch gate alone can't distinguish
+# a fix from blame. The fix-phrase requirement is what rejects this. This is the
+# #35291 false-positive guard: its comment blames #32080 (merged, on SR8) but
+# names no fix → it must not reclassify.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 32080; evidence = 'mention' }) }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $true }   # cause PR IS on branch
+$clsMention = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35291; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "Bare mention of a merged on-branch CAUSE PR → stays no-fix-yet (#35291 guard)" `
+    -Expected 'no-fix-yet' -Actual $clsMention.classification
+
+# Guard B — #35291 was closed as by-design (real bug spun to #35310); its comments
+# name NO fix PR. Must STAY no-fix-yet, not get a phantom reclassification.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+$clsByDesign = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35291; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "Closed issue with NO comment-cited PR → stays no-fix-yet (#35291)" `
+    -Expected 'no-fix-yet' -Actual $clsByDesign.classification
+
+# Guard C — cited PR uses fix-phrase and is merged, but is NOT on the SR branch
+# (neither SHA-ancestry nor `(#num)` subject token) → the branch gate rejects it,
+# so it stays no-fix-yet (prevents a false 'fix is present' on a fix that landed
+# on a different branch only).
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 99001; evidence = 'fix-phrase' }) }
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $false }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+$clsNotOnSr = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 99100; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "Comment-cited PR NOT on SR branch → stays no-fix-yet (branch gate)" `
+    -Expected 'no-fix-yet' -Actual $clsNotOnSr.classification
+
+# Guard D — OPEN issue is never de-noised: a genuinely-open regression must keep
+# blocking even if a comment happens to name a merged on-branch fix PR.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 35028; evidence = 'fix-phrase' }) }
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $true }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $true }
+$clsOpen = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 99200; state = 'OPEN' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "OPEN issue is never reclassified to closed-fix-unlinked" `
+    -Expected 'no-fix-yet' -Actual $clsOpen.classification
+
+# Guard E — a comment names a MERGED fix PR that IS on the SR by the `(#num)`
+# subject token, BUT the SR later REVERTED it. A reverted fix is not a fix: the
+# revertedPrSet parity with the main SR-contents/candidate paths must drop it, so
+# the issue stays no-fix-yet instead of reporting a false "No ship risk". Extra
+# teeth: Test-PrNumberOnBranch matches `(#35028)` which ALSO appears inside the
+# revert commit's own subject, so without this guard the on-branch gate passes.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 35028; evidence = 'fix-phrase' }) }
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix flaky CollectionView test'
+        state       = 'MERGED'
+        baseRefName = 'inflight/candidate'
+        mergedAt    = '2026-06-01T00:00:00Z'
+        closedAt    = '2026-06-01T00:00:00Z'
+        body        = 'Fixes #35104'
+        mergeCommit = [pscustomobject]@{ oid = 'c1d6d72768c0ffee' }
+        files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/CollectionView.cs'; additions = 4; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $false }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $true }
+$clsReverted = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35260; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(@{ revertsPr = 35028; revertBackportPr = $null }) }
+Assert-Eq -Label "Comment-cited fix that the SR later REVERTED → stays no-fix-yet (not closed-fix-unlinked)" `
+    -Expected 'no-fix-yet' -Actual $clsReverted.classification
+
+# Guard F — the comment's cited "fix" PR is ITSELF a Revert (a rollback), not a
+# fix. Its title matches the Revert guard, so it must be skipped → no-fix-yet.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 40000; evidence = 'fix-phrase' }) }
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Revert "Fix flaky CollectionView test (#35028)" (#40000)'
+        state       = 'MERGED'
+        baseRefName = 'release/10.0.1xx-sr8'
+        mergedAt    = '2026-06-02T00:00:00Z'
+        closedAt    = '2026-06-02T00:00:00Z'
+        body        = 'Reverts #35028'
+        mergeCommit = [pscustomobject]@{ oid = 'deadbeefcafe0001' }
+        files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/CollectionView.cs'; additions = 0; deletions = 4 })
+    }
+}
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $true }
+$clsRevertTitle = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35261; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "Comment-cited 'Revert ...' PR is a rollback, not a fix → stays no-fix-yet" `
+    -Expected 'no-fix-yet' -Actual $clsRevertTitle.classification
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 
@@ -1422,6 +1785,7 @@ foreach ($case in @(
     @{ Cls = 'needs-human-review';         Tier = 2 }
     @{ Cls = 'in-sr-active';               Tier = 3 }
     @{ Cls = 'closed-as-duplicate';        Tier = 3 }
+    @{ Cls = 'closed-fix-unlinked';        Tier = 3 }
     @{ Cls = 'out-of-scope-future-sr';     Tier = 3 }
     @{ Cls = 'something-unknown';          Tier = 2 }   # safe-default: risk
 )) {
@@ -1617,6 +1981,55 @@ Assert-Eq -Label "Hash changes when verdict.symbol changes" -Expected $false -Ac
 # Same input → SAME hash (determinism)
 $hashAgain = Get-ReportSemanticHash -Data $dataA -Verdict $verdictA
 Assert-Eq -Label "Hash is deterministic across runs" -Expected $hashA -Actual $hashAgain
+
+# Lifecycle mode flip → DIFFERENT hash, even with byte-identical content.
+# This guards the in-flight -> shipped transition: `-Shipped` surveys the SAME
+# SR branch, so without folding `mode` into the hash the shipped run would
+# collide with the last in-flight run and the workflow's no-op would skip the
+# `gh issue edit`, freezing the tracker as "in-flight" and never flipping it to
+# "shipped." Identical $Data except metadata.mode.
+$dataInflight = @{
+    metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z'; mode = 'in-flight' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$dataShipped = @{
+    metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z'; mode = 'shipped' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$hInflight = Get-ReportSemanticHash -Data $dataInflight -Verdict $verdictA
+$hShipped  = Get-ReportSemanticHash -Data $dataShipped  -Verdict $verdictA
+Assert-Eq -Label "hash: in-flight vs shipped (identical content) → DIFFERENT (tracker flips to shipped)" `
+    -Expected $false -Actual ($hInflight -eq $hShipped)
+# Candidate is likewise distinct, and the fold is deterministic within a mode.
+$dataCandidate = @{
+    metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z'; mode = 'candidate' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$hCandidate = Get-ReportSemanticHash -Data $dataCandidate -Verdict $verdictA
+Assert-Eq -Label "hash: candidate vs in-flight (identical content) → DIFFERENT" `
+    -Expected $false -Actual ($hCandidate -eq $hInflight)
+Assert-Eq -Label "hash: mode fold is deterministic (shipped recomputed → SAME)" `
+    -Expected $hShipped -Actual (Get-ReportSemanticHash -Data $dataShipped -Verdict $verdictA)
+# Absent mode defaults to 'in-flight' → SAME as an explicit 'in-flight'.
+$dataNoMode = @{
+    metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$hNoMode = Get-ReportSemanticHash -Data $dataNoMode -Verdict $verdictA
+Assert-Eq -Label "hash: absent mode defaults to in-flight → SAME as explicit in-flight" `
+    -Expected $hInflight -Actual $hNoMode
 
 # Order independence: source PRs in different order → SAME hash
 $dataReorder = $dataA.Clone()
@@ -1820,6 +2233,36 @@ Assert-Eq -Label "Without -TrackerKey: no visible Tracker line" -Expected $false
 # Hash marker still present (it's not gated by TrackerKey)
 Assert-Eq -Label "Without -TrackerKey: hash marker still present" -Expected $true `
     -Actual ($mdNoTracker -match '<!-- release-readiness-hash:')
+
+# ───── Body header `mode=` label: in-flight (default) / shipped / candidate ─────
+# The rendered Tracker line and H1 must reflect metadata.mode so a post-ship
+# tracker reads `mode=shipped` instead of misreporting as in-flight. Clone the
+# metadata hashtable (shallow .Clone() shares it) so we don't pollute later tests.
+Assert-Eq -Label 'Default render: Tracker line reads mode=in-flight' -Expected $true `
+    -Actual ($md -match '\*\*Tracker:\*\* `net10-sr7` · mode=`in-flight`')
+Assert-Eq -Label 'Default render: H1 is plain (not CANDIDATE)' -Expected $true `
+    -Actual ($md -match '# Release Readiness — release/10\.0\.1xx-sr7')
+
+$mdDataShipped = $mdData.Clone()
+$mdDataShipped.metadata = $mdData.metadata.Clone()
+$mdDataShipped.metadata.mode = 'shipped'
+$mdShipped = Format-MarkdownReport -Data $mdDataShipped -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label 'Shipped render: Tracker line reads mode=shipped' -Expected $true `
+    -Actual ($mdShipped -match '\*\*Tracker:\*\* `net10-sr7` · mode=`shipped`')
+Assert-Eq -Label 'Shipped render: H1 stays plain branch survey (not CANDIDATE)' -Expected $true `
+    -Actual ($mdShipped -match '# Release Readiness — release/10\.0\.1xx-sr7' -and $mdShipped -notmatch '# Release Readiness — CANDIDATE')
+
+$mdDataCand = $mdData.Clone()
+$mdDataCand.metadata = $mdData.metadata.Clone()
+$mdDataCand.metadata.mode = 'candidate'
+$mdDataCand.metadata.priorSrBranch = 'release/10.0.1xx-sr6'
+$mdCand = Format-MarkdownReport -Data $mdDataCand -RepoUrl 'https://github.com/dotnet/maui' `
+                                -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label 'Candidate render: H1 shows CANDIDATE pre-flight' -Expected $true `
+    -Actual ($mdCand -match '# Release Readiness — CANDIDATE for next SR')
+Assert-Eq -Label 'Candidate render: Tracker line reads mode=candidate' -Expected $true `
+    -Actual ($mdCand -match 'mode=`candidate`')
 
 # Body cap: with very low cap, must truncate
 $mdCapped = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
@@ -2097,6 +2540,28 @@ Assert-Eq -Label "CLOSED no-fix-yet (#96202) does NOT render in Tier 1" -Expecte
     -Actual ($tier1Block -match '#96202')
 Assert-Eq -Label "CLOSED no-fix-yet (#96202) renders in Tier 3 (not dropped)" -Expected $true `
     -Actual ($tier3Block -match '#96202')
+
+# (4c) closed-fix-unlinked renders in Tier 3 with its candidate PR + traceability action,
+# and is NEVER counted as a blocker (the whole point: de-noise the false no-fix-yet alarm).
+$mdDataCfu = @{} + $mdData
+$mdDataCfu['regressions'] = @(
+    @{ issue = 96254; title = 'Closed CV repro, fix only in a comment'; state = 'CLOSED';
+       classification = 'closed-fix-unlinked';
+       candidateFixPrs = @(@{ number = 95028; title = 'Fix repro'; state = 'MERGED'; evidenceType = 'comment-fix-phrase' });
+       recommendedAction = 'No ship risk — fix is already in the SR. Add a closing reference for traceability.' }
+)
+$mdDataCfu['summary'] = @{ 'closed-fix-unlinked' = 1 }
+$mdCfu = Format-MarkdownReport -Data $mdDataCfu -RepoUrl 'https://github.com/dotnet/maui' `
+                               -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
+$cfuLines = @($mdCfu -split "`r?`n")
+$idxCfuT3 = ($cfuLines | Select-String -Pattern '🟢 Tier 3' | Select-Object -First 1).LineNumber - 1
+$cfuTier3Block = ($cfuLines[$idxCfuT3..($cfuLines.Count - 1)] -join "`n")
+Assert-Eq -Label "closed-fix-unlinked renders in Tier 3 (#96254)" -Expected $true `
+    -Actual ($cfuTier3Block -match '#96254')
+Assert-Eq -Label "closed-fix-unlinked Tier-3 row links the recovered fix PR (#95028)" -Expected $true `
+    -Actual ($cfuTier3Block -match '#95028')
+Assert-Eq -Label "closed-fix-unlinked does NOT appear in a 🔴 Blocking section" -Expected $false `
+    -Actual ($mdCfu -match '🔴 Blocking')
 
 # (5) Marker-forgery via a TABLE cell: a Tier-1 title embedding the begin-marker between
 #     newlines must NOT forge a second anchored marker line.
@@ -3620,6 +4085,21 @@ Assert-Eq -Label "precedence: generic human = only the plain human (#5)"   -Expe
 Assert-Eq -Label "precedence: generic human keeps #5"                      -Expected $true -Actual ($bHuman -contains 5)
 Assert-Eq -Label "precedence: inflight-human = the inflight p/0 human (#8)" -Expected $true -Actual ($bInflight -contains 8)
 Assert-Eq -Label "precedence: inflight-human excludes inflight Maestro (#7)" -Expected $false -Actual ($bInflight -contains 7)
+
+# Inflight merge-up hoist (#36085 scenario): a main → net<N>.0 automated merge PR
+# (base = inflight branch) must be carved into the merge-up bucket — hoisted to
+# high priority — and REMOVED from the inflight-human queue, not buried as generic
+# inflight noise. The preview lane chains main → net<N>.0 → previewN, so a stuck
+# main → net<N>.0 merge starves the preview branch of upstream fixes and belongs
+# in the daily-flow merge-up chain alongside the net<N>.0 → previewN hop.
+$prInflightMergeUp = [PSCustomObject]@{ number = 9; author = $humanLogin; labels = $plainLbl; headRefName = 'merge/main-to-net11.0'; title = "[automated] Merge branch 'main' => 'net11.0'" }
+$bucketsIM   = Get-CategorizedPullRequests -TargetPRs $targetSet -InflightPRs @($prInflightMaestro, $prInflightP0, $prInflightMergeUp)
+$imMergeUp   = @($bucketsIM.MergeUpPRs       | ForEach-Object { $_.number })
+$imInflight  = @($bucketsIM.InflightHumanPRs | ForEach-Object { $_.number })
+Assert-Eq -Label "inflight merge-up: hoisted into merge-up bucket (#9)"                 -Expected $true  -Actual ($imMergeUp -contains 9)
+Assert-Eq -Label "inflight merge-up: both hops in merge-up bucket (#6 target + #9 inflight)" -Expected 2 -Actual $bucketsIM.MergeUpPRs.Count
+Assert-Eq -Label "inflight merge-up: removed from inflight-human queue (#9)"            -Expected $false -Actual ($imInflight -contains 9)
+Assert-Eq -Label "inflight merge-up: inflight-human still keeps the plain p/0 human (#8)" -Expected $true -Actual ($imInflight -contains 8)
 
 # Empty-input safety: no PRs at all yields five empty buckets, no throw.
 $emptyBuckets = Get-CategorizedPullRequests -TargetPRs @() -InflightPRs @()

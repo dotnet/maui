@@ -133,6 +133,14 @@ param(
     # from main today. Requires -SrBranch to be the prior SR (used as the
     # exclude baseline). Treats origin/main as the "SR-to-be".
     [switch]$Candidate,
+    # Display-only: mark the survey as a SHIPPED SR (its stable tag already
+    # exists). Behaves exactly like in-flight for all survey/verdict logic
+    # (surveys the SR branch directly) — it ONLY relabels the rendered report
+    # header `mode=shipped` so a post-ship tracker doesn't misreport as
+    # in-flight. Set by the workflow for the most-recently-shipped SR, whose
+    # tracker keeps refreshing until a human closes it. Mutually exclusive with
+    # -Candidate.
+    [switch]$Shipped,
     # When set in -Candidate mode, model the dotnet/maui workflow where, after
     # cutting SRn+1 from main, the prior SR (-SrBranch) is merged in. The
     # candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits.
@@ -1322,10 +1330,14 @@ function Get-CandidatePrChecks {
 function Resolve-Context {
     param([string]$SrBranch, [string]$Repo, [string]$MainBranch,
           [string[]]$ExcludeBranches, [switch]$NoFetch, [switch]$Candidate,
-          [switch]$InheritFromPriorSr)
+          [switch]$InheritFromPriorSr, [switch]$Shipped)
 
     if ($InheritFromPriorSr -and -not $Candidate) {
         throw "-InheritFromPriorSr is only valid with -Candidate (it models the SR cut-then-merge workflow)."
+    }
+
+    if ($Shipped -and $Candidate) {
+        throw "-Shipped and -Candidate are mutually exclusive: -Shipped surveys an existing (already-tagged) SR branch; -Candidate pre-flights main as the next SR."
     }
 
     # HARD VALIDATION — refuse inflight/staging refs as SR sources.
@@ -1374,6 +1386,13 @@ function Resolve-Context {
         # Exclude prior SR from main, so we see only "new since last SR" commits
         $effectiveExcludes = @($priorSrRef)
         Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
+    }
+    elseif ($Shipped) {
+        # Display-only relabel. The survey is identical to in-flight (the SR
+        # branch surveyed directly); only the rendered header reads 'shipped'
+        # so the post-ship tracker doesn't misreport as in-flight.
+        $mode = 'shipped'
+        Write-Host "Shipped mode: surveying already-tagged SR branch $effectiveSrRef (display-only relabel)" -ForegroundColor Cyan
     }
 
     if ($Candidate -and $InheritFromPriorSr) {
@@ -1447,6 +1466,21 @@ function Get-RevertedPrFromSubject {
     # because the trailing revert PR is NOT followed by a quote, never reaches it.
     # Case-insensitive to also match hand-typed lowercase 'revert "..."' subjects.
     $m = [regex]::Match($Subject, '(?i)Revert\s+".*\(#(\d+)\)"')
+    if ($m.Success) { return [int]$m.Groups[1].Value }
+    # Manual/hand-authored revert form (no GitHub quotes, and the body carries no
+    # "This reverts commit <sha>" line, so the SHA-override in the caller can't
+    # recover it either): "Revert - <original title> #<reverted> (#<revertPR>)".
+    # Real example: `Revert - Fix Android stale ContainerView root leak #35372 (#36152)`
+    # → 35372 is the reverted fix, (#36152) is the revert's OWN squash PR. Without
+    # this, revertedPrSet records only 36152, the reverted fix's original commit
+    # still satisfies Test-PrNumberOnBranch, and a "fixed by #35372" comment on a
+    # CLOSED issue is falsely de-noised to closed-fix-unlinked ("No ship risk").
+    # Anchored to a Revert subject AND to the bare `#N` immediately before the
+    # trailing `(#M)` so (a) non-revert subjects never match, (b) the trailing
+    # (#M) is never returned, and (c) incidental #refs earlier in the title are
+    # ignored. A rare misfire only ever marks a PR as reverted (safe direction —
+    # never a false "shipped").
+    $m = [regex]::Match($Subject, '(?i)^(?:\[[^\]]+\]\s+)?Revert\b.*#(\d+)\s+\(#\d+\)\s*$')
     if ($m.Success) { return [int]$m.Groups[1].Value }
     return $null
 }
@@ -1836,6 +1870,76 @@ function Get-IssueTimelinePrs {
     return @($prs | Sort-Object -Unique)
 }
 
+function Get-IssueCommentPrs {
+    <#
+    .SYNOPSIS
+        Extract PR numbers referenced in an issue's COMMENT BODIES (as opposed
+        to the structured timeline). Recovers fix linkage that lives ONLY in
+        human prose.
+
+    .DESCRIPTION
+        Common QA close pattern in this repo: a maintainer closes a regression
+        with a comment like "This issue was fixed by PR #35028" but the fix PR
+        never used a closing keyword (`Fixes #NNNNN`) and GitHub therefore
+        recorded NO `cross-referenced` event on the ISSUE timeline. `Get-IssueTimelinePrs`
+        sees nothing, the classifier finds zero candidates, and the issue is
+        mislabelled `no-fix-yet` even though the fix shipped. This helper reads
+        the comment bodies so that linkage can be recovered.
+
+        Returns @( @{ number = <int>; evidence = 'fix-phrase' | 'mention' } ).
+        `evidence` is 'fix-phrase' when the comment pairs the PR reference with
+        fix/resolve/close language (higher confidence), else 'mention'.
+
+        IMPORTANT: this only surfaces CANDIDATES. Callers MUST still verify each
+        PR actually MERGED and that its commit is on the target branch
+        (`Test-CommitOnBranch`) before trusting it as a real fix — a bare prose
+        mention ("duplicate of #X", "see #Y") is not proof of anything.
+    #>
+    param($Repo, $IssueNumber)
+    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/comments", '--paginate')
+    if (-not $raw) { return @() }
+    $comments = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+    if (-not $comments) { return @() }
+
+    # strongest evidence seen per PR number ('fix-phrase' beats 'mention')
+    $byNum = @{}
+    foreach ($c in $comments) {
+        $body = Get-AzdoProp $c 'body'
+        if (-not $body) { continue }
+        # Extract PR references, rejecting CROSS-REPO ones. A maui regression is
+        # only de-noised by a fix that lives in THIS repo, so a cross-repo
+        # shorthand (`dotnet/runtime#123`), a github.com/<other>/<repo>/pull/123
+        # URL, or a scheme-less <other>/<repo>/pull/123 path must NOT be mistaken
+        # for maui#123. Same-repo shorthand (`dotnet/maui#123`), same-repo pull
+        # URLs/paths, bare `#123` and `PR#123` are all accepted. The
+        # `qual`/`urlrepo`/`pathrepo` groups capture any owner/repo qualifier so a
+        # foreign one can be skipped.
+        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|(?<pathrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(\d+)')
+        foreach ($m in $refs) {
+            $qual     = $m.Groups['qual'].Value
+            $urlRepo  = $m.Groups['urlrepo'].Value
+            $pathRepo = $m.Groups['pathrepo'].Value
+            if ($qual     -and $qual     -ne $Repo) { continue }   # cross-repo owner/repo#N shorthand
+            if ($urlRepo  -and $urlRepo  -ne $Repo) { continue }   # cross-repo github.com/.../pull/N URL
+            if ($pathRepo -and $pathRepo -ne $Repo) { continue }   # cross-repo scheme-less owner/repo/pull/N
+            $num = [int]$m.Groups[1].Value
+            # Does THIS comment pair the reference with fix/resolve/close language
+            # within a short window (tolerates the long ".../pull/" URL prefix)?
+            # The negative lookbehind drops ADJACENTLY-negated fix phrases ("not
+            # fixed by #X", "won't fix #Y", "isn't resolved by #Z") so they score as
+            # a bare 'mention', not high-confidence 'fix-phrase'. Because -match
+            # backtracks, a separate non-negated fix phrase for the same PR still
+            # matches; only a SOLELY-(adjacently-)negated reference is demoted. A
+            # non-adjacent negation ("won't be fixed by #X") is not caught here, but
+            # the caller's merged-AND-on-branch gates still bound the blast radius.
+            $isFix = $body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b"
+            $ev = if ($isFix) { 'fix-phrase' } else { 'mention' }
+            if (-not $byNum.ContainsKey($num) -or $ev -eq 'fix-phrase') { $byNum[$num] = $ev }
+        }
+    }
+    return @($byNum.GetEnumerator() | ForEach-Object { @{ number = [int]$_.Key; evidence = $_.Value } })
+}
+
 function Get-PrEvidenceType {
     param($PrBody, $IssueNumber)
     if (-not $PrBody) { return 'none' }
@@ -1893,6 +1997,29 @@ function Test-CommitOnBranch {
     if (-not $Sha) { return $false }
     Invoke-Git "merge-base --is-ancestor $Sha $BranchRef" | Out-Null
     return ($LASTEXITCODE -eq 0)
+}
+
+function Test-PrNumberOnBranch {
+    <#
+    .SYNOPSIS
+        Returns $true when $BranchRef has a commit whose message contains the
+        literal `(#<PrNumber>)` token GitHub stamps onto squash/merge subjects.
+
+    .DESCRIPTION
+        Robust companion to Test-CommitOnBranch for the cross-branch flow.
+        A PR's own `mergeCommit.oid` is the SHA on the branch it merged INTO
+        (e.g. inflight/candidate). When that change later reaches the SR branch
+        via a branch-merge or cherry-pick it gets a DIFFERENT SHA, so a bare
+        `merge-base --is-ancestor <prMergeSha> <srBranch>` returns false even
+        though the fix IS present. The `(#<num>)` subject token survives all
+        three flows (squash, branch-merge, cherry-pick -x), so matching on it
+        recovers presence that SHA-ancestry misses. `--fixed-strings` keeps the
+        closing paren literal, preventing `(#3502)` from matching `(#35028)`.
+    #>
+    param([int]$PrNumber, [string]$BranchRef)
+    if (-not $PrNumber) { return $false }
+    $hit = Invoke-Git "log $BranchRef --fixed-strings --grep=(#$PrNumber) --format=%H -1"
+    return [bool]$hit
 }
 
 function Get-BackportPrsForSr {
@@ -2041,6 +2168,78 @@ function Classify-RegressionCandidate {
                 recommendedAction = "Inspect the revert chain manually: original fix → revert → (possible) revert-of-revert. Look for the actual fix PR in `gh pr list --search 'fixes #$($Issue.number)'` excluding revert titles."
             }
         }
+
+        # ── FALLBACK: closed issue whose fix lives ONLY in comment prose ──
+        # No timeline-cross-referenced candidate survived the evidence filter,
+        # but the issue is CLOSED. Maintainers routinely close a regression with
+        # a plain-text comment ("fixed by PR #35028") that GitHub never turns
+        # into a structured link. Recover the cited PR and — ONLY when it
+        # actually MERGED and its commit is verifiably on THIS SR branch —
+        # classify 'closed-fix-unlinked': the fix is present (no ship risk), but
+        # the issue<->PR link is missing and should be added for traceability.
+        #
+        # Two gates make prose evidence safe, and BOTH are required:
+        #   1. fix-phrase ONLY — the comment must pair the PR with fix/resolve/
+        #      close language ("was fixed by PR #X"). A BARE mention is rejected
+        #      because regression issues routinely name the CAUSE PR for context
+        #      ("Before PR #32080 ... After PR #32080 the behavior changed"), and
+        #      the cause naturally lives on the branch — it is not a fix.
+        #   2. merged AND on the SR branch — a cited PR that never merged, or
+        #      merged elsewhere, is not proof the fix shipped here.
+        $issueState = Get-AzdoProp $Issue 'state'
+        if ($issueState -eq 'CLOSED') {
+            $commentPrs = Get-IssueCommentPrs -Repo $Ctx.repo -IssueNumber $Issue.number
+            $verifiedFixes = @()
+            foreach ($cp in $commentPrs) {
+                # Gate 1: require explicit fix language. Bare mentions (the cause-PR
+                # blame pattern) are NOT fixes and must not reclassify the issue.
+                if ($cp.evidence -ne 'fix-phrase') { continue }
+                if ($cp.number -eq $Issue.number) { continue }   # self-reference
+                $info = Get-PrInfo -Repo $Ctx.repo -PrNumber $cp.number
+                if (-not $info) { continue }
+                if ($info.state -ne 'MERGED') { continue }
+                # A reverted fix is NOT a fix. Mirror the main SR-contents/candidate
+                # paths (see $revertedPrSet at the top of this function and the
+                # Revert-title skip in the candidate walk): drop PRs the SR later
+                # reverted, and drop PRs that are themselves rollbacks ("Revert ..."
+                # titles). Without this, the `(#<num>)` on-branch token checked below
+                # matches the reverted fix's number inside the revert commit's own
+                # subject `Revert "... (#num)" (#N)`, so a rolled-back fix would pass
+                # the on-branch gate and be reported as "No ship risk".
+                if ($revertedPrSet.ContainsKey([int]$info.number)) { continue }
+                if (($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')) { continue }
+                # Skip agent/skill/workflow PRs that only mention the issue for context.
+                if (Test-PrIsToolingOnly -Files $info.files) { continue }
+                $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
+                # Gate 2: presence on the SR branch via EITHER signal — direct SHA
+                # ancestry (fix merged straight to SR) OR the `(#<num>)` subject
+                # token (fix flowed in from inflight/main under a different SHA —
+                # the common case).
+                $onSr = (Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.srBranch)") `
+                        -or (Test-PrNumberOnBranch -PrNumber ([int]$info.number) -BranchRef "origin/$($Ctx.srBranch)")
+                if (-not $onSr) { continue }
+                $verifiedFixes += @{
+                    number = [int]$info.number
+                    title = $info.title
+                    state = $info.state
+                    mergeSha = $mergeSha
+                    evidenceType = "comment-$($cp.evidence)"
+                }
+            }
+            if ($verifiedFixes.Count -gt 0) {
+                $prList = (@($verifiedFixes | ForEach-Object { "#$($_.number)" }) | Sort-Object -Unique) -join ', '
+                return @{
+                    classification = 'closed-fix-unlinked'
+                    confidence = 'high'
+                    evidence = @("Issue is CLOSED and fix PR $prList is MERGED and present on $($Ctx.srBranch), but was never linked to the issue (no closing keyword, no timeline cross-reference). Linkage recovered from a closing comment that explicitly names the fix.")
+                    candidateFixPrs = @($verifiedFixes | ForEach-Object {
+                        @{ number = $_.number; title = $_.title; state = $_.state; evidenceType = $_.evidenceType }
+                    })
+                    recommendedAction = "No ship risk — fix is already in the SR. Add a closing reference for traceability (e.g. ``Fixes #$($Issue.number)`` in $prList, or link via the issue's Development panel) so future runs classify it automatically."
+                }
+            }
+        }
+
         return @{
             classification = 'no-fix-yet'
             confidence = 'high'
@@ -2704,6 +2903,7 @@ function Get-VerdictTier {
         'needs-human-review'          { 2; break }
         'in-sr-active'                { 3; break }
         'closed-as-duplicate'         { 3; break }
+        'closed-fix-unlinked'         { 3; break }
         'out-of-scope-future-sr'      { 3; break }
         default                       { 2 }   # unknown → treat as risk
     }
@@ -3035,6 +3235,19 @@ function Get-ReportSemanticHash {
     # process against one computed now). Insertion order keeps the hash stable.
     $semantic = [ordered]@{
         verdict = $Verdict.symbol
+        # Tracker lifecycle mode (candidate / in-flight / shipped). Folded in so a
+        # lifecycle TRANSITION always flips the hash and refreshes the tracker —
+        # even when every other hashed field is byte-for-byte identical across the
+        # flip. This matters most at in-flight -> shipped: `-Shipped` is a pure
+        # display relabel that surveys the SAME SR branch as in-flight, so srHead,
+        # ci, srPrs, regressions, shipChecks and nightlyFeed can all be unchanged
+        # at the moment the stable tag publishes. Without `mode` here, hash(shipped)
+        # == hash(in-flight), the workflow's idempotent no-op skips `gh issue edit`,
+        # and the tracker never visually flips to "shipped" (the whole point of the
+        # shipped lifecycle). `mode` is constant within a mode, so it adds NO daily
+        # churn — only the one-time transition refreshes. Default 'in-flight' when
+        # absent, matching Format-MarkdownReport's $mode default.
+        mode = if ($Data.metadata -and $Data.metadata.ContainsKey('mode') -and $Data.metadata['mode']) { $Data.metadata['mode'] } else { 'in-flight' }
         srHead = $Data.metadata.srHeadSha
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
         srPrs = if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
@@ -3648,7 +3861,7 @@ function Format-MarkdownReport {
         $tier1Classes = @('in-sr-reverted', 'no-fix-yet') | Sort-Object
         $tier2Classes = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
                           'merged-non-main-only', 'open-on-main', 'needs-human-review') | Sort-Object
-        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
+        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'closed-fix-unlinked', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
 
         $emitTier = {
             param([string]$Header, [string[]]$Classes, [string]$EmptyLine, [string]$NoFixYetState)
@@ -3844,7 +4057,7 @@ function Invoke-Main {
     $excludes = $ExcludeBranches -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     $ctx = Resolve-Context -SrBranch $SrBranch -Repo $Repo -MainBranch $MainBranch `
                            -ExcludeBranches $excludes -NoFetch:$NoFetch -Candidate:$Candidate `
-                           -InheritFromPriorSr:$InheritFromPriorSr
+                           -InheritFromPriorSr:$InheritFromPriorSr -Shipped:$Shipped
 
     # Resolve regression labels
     $labelMode = 'explicit'
