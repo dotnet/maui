@@ -1811,7 +1811,7 @@ function Get-PrInfo {
         baseRefName = 'inflight/candidate'
         mergedAt    = '2026-06-01T00:00:00Z'
         closedAt    = '2026-06-01T00:00:00Z'
-        body        = 'Fixes #35104'
+        body        = 'Fixes #35104'   # deliberately a DIFFERENT issue: recovery fires on the COMMENT citation, not this PR body
         mergeCommit = [pscustomobject]@{ oid = 'c1d6d72768c0ffee' }
         files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/CollectionView.cs'; additions = 4; deletions = 0 })
     }

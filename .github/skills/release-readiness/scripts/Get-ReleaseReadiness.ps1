@@ -2381,7 +2381,7 @@ function Classify-RegressionCandidate {
         return @{
             classification = 'no-fix-yet'
             confidence = 'medium'
-            evidence = @("Issue is CLOSED but the only candidate fix PR (#$($best.pr.number)) is OPEN/unmerged on $($best.pr.baseRef) — an unmerged PR cannot have closed this issue; the real fix likely shipped elsewhere or the candidate is stale. Not an active SR regression.")
+            evidence = @("Issue is CLOSED but the candidate fix PR (#$($best.pr.number)) is OPEN/unmerged on $($best.pr.baseRef) — an unmerged PR cannot have closed this issue; the real fix likely shipped elsewhere or the candidate is stale. Not an active SR regression.")
             candidateFixPrs = @($strongPrs | ForEach-Object { @{
                 number = $_.number; title = $_.title; state = $_.state
                 baseRef = $_.baseRef; evidenceType = $_.evidenceType
