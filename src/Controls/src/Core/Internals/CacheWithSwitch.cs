@@ -18,7 +18,7 @@ sealed class CacheWithSwitch : ICache<Color, ImmutableBrush>
 
     private class SimpleCache(int capacity) : ICache<Color, ImmutableBrush>
     {
-        readonly Dictionary<Color, ImmutableBrush> _dict = [];
+        readonly Dictionary<Color, ImmutableBrush> _dict = new (capacity);
         public bool IsAtCapacity => _dict.Count == capacity;
 
         public ImmutableBrush Get(Color key)
