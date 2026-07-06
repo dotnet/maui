@@ -1891,16 +1891,29 @@ function Get-IssueCommentPrs {
     foreach ($c in $comments) {
         $body = Get-AzdoProp $c 'body'
         if (-not $body) { continue }
-        $refs = [regex]::Matches($body, '(?:pull/|#)(\d+)')
+        # Extract PR references, rejecting CROSS-REPO ones. A maui regression is
+        # only de-noised by a fix that lives in THIS repo, so a cross-repo
+        # shorthand (`dotnet/runtime#123`) or a github.com/<other>/<repo>/pull/123
+        # URL must NOT be mistaken for maui#123. Same-repo shorthand
+        # (`dotnet/maui#123`), same-repo pull URLs, bare `#123` and `PR#123` are
+        # all accepted. The `qual`/`urlrepo` groups capture any owner/repo
+        # qualifier so a foreign one can be skipped.
+        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(\d+)')
         foreach ($m in $refs) {
+            $qual    = $m.Groups['qual'].Value
+            $urlRepo = $m.Groups['urlrepo'].Value
+            if ($qual    -and $qual    -ne $Repo) { continue }   # cross-repo owner/repo#N shorthand
+            if ($urlRepo -and $urlRepo -ne $Repo) { continue }   # cross-repo github.com/.../pull/N URL
             $num = [int]$m.Groups[1].Value
             # Does THIS comment pair the reference with fix/resolve/close language
             # within a short window (tolerates the long ".../pull/" URL prefix)?
-            # The negative lookbehind drops NEGATED fix phrases ("not fixed by #X",
-            # "won't fix #Y", "isn't resolved by #Z") so they score as a bare
-            # 'mention', not high-confidence 'fix-phrase'. Because -match backtracks,
-            # a separate non-negated fix phrase for the same PR still matches; only a
-            # SOLELY-negated reference is demoted.
+            # The negative lookbehind drops ADJACENTLY-negated fix phrases ("not
+            # fixed by #X", "won't fix #Y", "isn't resolved by #Z") so they score as
+            # a bare 'mention', not high-confidence 'fix-phrase'. Because -match
+            # backtracks, a separate non-negated fix phrase for the same PR still
+            # matches; only a SOLELY-(adjacently-)negated reference is demoted. A
+            # non-adjacent negation ("won't be fixed by #X") is not caught here, but
+            # the caller's merged-AND-on-branch gates still bound the blast radius.
             $isFix = $body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b"
             $ev = if ($isFix) { 'fix-phrase' } else { 'mention' }
             if (-not $byNum.ContainsKey($num) -or $ev -eq 'fix-phrase') { $byNum[$num] = $ev }
@@ -2167,6 +2180,16 @@ function Classify-RegressionCandidate {
                 $info = Get-PrInfo -Repo $Ctx.repo -PrNumber $cp.number
                 if (-not $info) { continue }
                 if ($info.state -ne 'MERGED') { continue }
+                # A reverted fix is NOT a fix. Mirror the main SR-contents/candidate
+                # paths (see $revertedPrSet at the top of this function and the
+                # Revert-title skip in the candidate walk): drop PRs the SR later
+                # reverted, and drop PRs that are themselves rollbacks ("Revert ..."
+                # titles). Without this, the `(#<num>)` on-branch token checked below
+                # matches the reverted fix's number inside the revert commit's own
+                # subject `Revert "... (#num)" (#N)`, so a rolled-back fix would pass
+                # the on-branch gate and be reported as "No ship risk".
+                if ($revertedPrSet.ContainsKey([int]$info.number)) { continue }
+                if (($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')) { continue }
                 # Skip agent/skill/workflow PRs that only mention the issue for context.
                 if (Test-PrIsToolingOnly -Files $info.files) { continue }
                 $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }

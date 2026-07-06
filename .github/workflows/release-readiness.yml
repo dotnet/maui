@@ -543,6 +543,12 @@ jobs:
               if [ "$MODE" = "candidate" ]; then
                 SR_ARG="$PRIOR_SR"
                 CANDIDATE_ARG=(-Candidate)
+              elif [ "$MODE" = "shipped" ]; then
+                # Mirror the production job: survey the branch directly but pass
+                # -Shipped so the smoke-run exercises the shipped code path (header
+                # relabel + semantic-hash mode fold) instead of running as in-flight.
+                SR_ARG="$BRANCH_NAME"
+                CANDIDATE_ARG=(-Shipped)
               else
                 SR_ARG="$BRANCH_NAME"
               fi

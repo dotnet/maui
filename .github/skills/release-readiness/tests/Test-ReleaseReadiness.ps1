@@ -1535,7 +1535,47 @@ try {
     ${function:Invoke-Gh} = $origInvokeGh
 }
 
-# ───── Classify-RegressionCandidate (closed-fix-unlinked: fix cited only in a comment) ─────
+# ───── Get-IssueCommentPrs (cross-repo references are NOT local PRs) ─────
+# A maui regression is only de-noised by a fix in THIS repo. A cross-repo
+# shorthand (dotnet/runtime#N) or a github.com/<other>/<repo>/pull/N URL must
+# NOT be mistaken for maui#N and reported as "No ship risk". Same-repo
+# shorthand, same-repo pull URLs, bare #N and PR#N must still be extracted.
+Write-Host "`n[Unit] Get-IssueCommentPrs (cross-repo references rejected)" -ForegroundColor Cyan
+$origInvokeGh2 = ${function:Invoke-Gh}
+$script:mockCrossRepoJson = @'
+[
+  { "body": "root cause is upstream, fixed by dotnet/runtime#35028" },
+  { "body": "the real fix is https://github.com/dotnet/runtime/pull/41000" },
+  { "body": "actually resolved by dotnet/maui#42000 on the SR" },
+  { "body": "fixed by #43000" },
+  { "body": "landed in https://github.com/dotnet/maui/pull/44000" },
+  { "body": "closed by PR#45000" }
+]
+'@
+function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCrossRepoJson }
+try {
+    $scored2 = Get-IssueCommentPrs -Repo 'dotnet/maui' -IssueNumber 88888
+    $nums = @($scored2 | ForEach-Object { [int]$_.number })
+
+    Assert-Eq -Label "cross-repo 'dotnet/runtime#35028' shorthand is NOT extracted" `
+        -Expected $false -Actual ($nums -contains 35028)
+    Assert-Eq -Label "cross-repo runtime pull URL (41000) is NOT extracted" `
+        -Expected $false -Actual ($nums -contains 41000)
+    Assert-Eq -Label "same-repo 'dotnet/maui#42000' shorthand IS extracted" `
+        -Expected $true -Actual ($nums -contains 42000)
+    Assert-Eq -Label "bare '#43000' IS extracted" `
+        -Expected $true -Actual ($nums -contains 43000)
+    Assert-Eq -Label "same-repo maui pull URL (44000) IS extracted" `
+        -Expected $true -Actual ($nums -contains 44000)
+    Assert-Eq -Label "unqualified 'PR#45000' IS extracted (recall preserved)" `
+        -Expected $true -Actual ($nums -contains 45000)
+
+    $byNum2 = @{}; foreach ($s in $scored2) { $byNum2[[int]$s.number] = $s.evidence }
+    Assert-Eq -Label "same-repo 'resolved by dotnet/maui#42000' -> fix-phrase" `
+        -Expected 'fix-phrase' -Actual $byNum2[42000]
+} finally {
+    ${function:Invoke-Gh} = $origInvokeGh2
+}
 # Real-world case driving this class: SR8 tracker #35876 flagged six CLOSED issues
 # (#35252/#35253/#35254/#35255/#35291/#35409) as `no-fix-yet`/"Investigate" even
 # though five of them were closed with a maintainer comment naming a MERGED fix PR
@@ -1652,6 +1692,63 @@ $clsOpen = Classify-RegressionCandidate `
     -SrContents @{ sourcePrs = @(); reverts = @() }
 Assert-Eq -Label "OPEN issue is never reclassified to closed-fix-unlinked" `
     -Expected 'no-fix-yet' -Actual $clsOpen.classification
+
+# Guard E — a comment names a MERGED fix PR that IS on the SR by the `(#num)`
+# subject token, BUT the SR later REVERTED it. A reverted fix is not a fix: the
+# revertedPrSet parity with the main SR-contents/candidate paths must drop it, so
+# the issue stays no-fix-yet instead of reporting a false "No ship risk". Extra
+# teeth: Test-PrNumberOnBranch matches `(#35028)` which ALSO appears inside the
+# revert commit's own subject, so without this guard the on-branch gate passes.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 35028; evidence = 'fix-phrase' }) }
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix flaky CollectionView test'
+        state       = 'MERGED'
+        baseRefName = 'inflight/candidate'
+        mergedAt    = '2026-06-01T00:00:00Z'
+        closedAt    = '2026-06-01T00:00:00Z'
+        body        = 'Fixes #35104'
+        mergeCommit = [pscustomobject]@{ oid = 'c1d6d72768c0ffee' }
+        files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/CollectionView.cs'; additions = 4; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $false }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $true }
+$clsReverted = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35260; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(@{ revertsPr = 35028; revertBackportPr = $null }) }
+Assert-Eq -Label "Comment-cited fix that the SR later REVERTED → stays no-fix-yet (not closed-fix-unlinked)" `
+    -Expected 'no-fix-yet' -Actual $clsReverted.classification
+
+# Guard F — the comment's cited "fix" PR is ITSELF a Revert (a rollback), not a
+# fix. Its title matches the Revert guard, so it must be skipped → no-fix-yet.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 40000; evidence = 'fix-phrase' }) }
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Revert "Fix flaky CollectionView test (#35028)" (#40000)'
+        state       = 'MERGED'
+        baseRefName = 'release/10.0.1xx-sr8'
+        mergedAt    = '2026-06-02T00:00:00Z'
+        closedAt    = '2026-06-02T00:00:00Z'
+        body        = 'Reverts #35028'
+        mergeCommit = [pscustomobject]@{ oid = 'deadbeefcafe0001' }
+        files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/CollectionView.cs'; additions = 0; deletions = 4 })
+    }
+}
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $true }
+$clsRevertTitle = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35261; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "Comment-cited 'Revert ...' PR is a rollback, not a fix → stays no-fix-yet" `
+    -Expected 'no-fix-yet' -Actual $clsRevertTitle.classification
 
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
