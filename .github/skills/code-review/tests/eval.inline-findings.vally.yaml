@@ -30,11 +30,16 @@
 #     in the diff and — reading the transcript's TOOL CALLS — that the agent
 #     ACTUALLY wrote+read the file (a real write/read tool invocation, not just
 #     a printed FILE_OK line) and did NOT refuse or substitute a chat dump.
-#   With threshold 0.6 and a scale_1_5 judge (normalized = (raw-1)/4):
-#     correct:             (floor 1.0 + judge ~0.8) / 2 = ~0.90 -> PASS
-#     regressed, no file:  (floor 0.0 + judge ~0.15)/ 2 = ~0.08 -> FAIL
+#   Aggregate = unweighted mean(floor, judge_norm); scale_1_5 judge normalized
+#   = (raw-1)/4. Threshold is 0.7 (above the house 0.6): the floor can be
+#   satisfied by a spoofer that echoes FILE_OK from memory, so at 0.6 a
+#   fundamentally-failed run (floor 1.0 + judge 0.25 = 0.625) would score as a
+#   PASS. At 0.7 the judge must reach >=3/5, so the write-verifying judge — not
+#   the floor — decides. Verified with a live good-path run (score 1.00):
+#     correct:              (floor 1.0 + judge ~1.0) / 2 = ~1.00 -> PASS
+#     regressed, no file:   (floor 0.0 + judge ~0.15)/ 2 = ~0.08 -> FAIL
 #     regressed, spoofed FILE_OK: floor 1.0, but the judge scores the absent
-#       write tool-call the lowest (raw 1 -> 0.0) -> mean ~0.50 -> FAIL
+#       write tool-call the lowest -> mean <=0.625 -> FAIL (< 0.7)
 #
 # Trigger: this file lives under .github/skills/code-review/, so adding/editing
 # it flags the code-review skill as changed and skill-validation.yml evaluates
@@ -156,8 +161,11 @@ stimuli:
 scoring:
   # @microsoft/vally@0.6.0 ignores scoring.weights — only scoring.threshold is
   # active. Trial score = unweighted mean of the two graders' [0,1] scores;
-  # the stimulus passes when the mean across runs >= threshold. Two graders
-  # (one structural readback floor + one LLM judge that verifies the write from
-  # the transcript's tool calls) keep the judge at ~50% of every score,
-  # matching the house convention.
-  threshold: 0.6
+  # the stimulus passes when the mean across runs >= threshold, and the CI
+  # check keys off that mean-vs-threshold `passed` property. Two graders (one
+  # structural readback floor + one LLM judge that verifies the write from the
+  # transcript's tool calls) put the judge at ~50% of every score. Threshold is
+  # 0.7 (above the house 0.6) so the write-verifying judge — not the spoofable
+  # floor — is load-bearing: a floor-1.0-but-judge-fails run scores 0.625, which
+  # 0.6 would pass but 0.7 fails. Good path verified at 1.00 in a live run.
+  threshold: 0.7

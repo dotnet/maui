@@ -18,15 +18,26 @@
 # `curl` against api.github.com are anonymous here. No mocking required.
 #
 # Falsifiability (the property this file exists to guarantee):
-#   - structured floor `GH_AUTH_BLOCKER:\s*no` — refutation-proof: a regressed
-#     agent that classifies the missing auth as a blocker emits `yes` and the
-#     floor scores 0. (Unlike banning the substring "blocker", which a correct
-#     answer like "this is not a blocker" would trip.)
+#   - structured floor `GH_AUTH_BLOCKER:\s*no` — a NECESSARY signal, not
+#     sufficient. It cleanly catches the HARD regression: an agent that
+#     classifies missing auth as a blocker emits `yes` -> floor 0. Keying on
+#     the explicit yes/no token (not prose) makes it immune to the "mentions
+#     the word blocker" false-fail. BUT the prompt hands the agent the exact
+#     `no` token to emit, so on its own the floor is a giveaway — an agent can
+#     answer `no` and still fail the task with an auth-dependent, non-local-
+#     first plan. That PARTIAL regression is the judge's job to catch.
 #   - LLM judge — scores whether the agent pivots to the documented local-first
-#     path and keeps its confidence calibrated, not artificially lowered.
-#   With threshold 0.6 and a scale_1_5 judge (normalized = (raw-1)/4):
-#     correct:   (floor 1.0 + judge ~0.8) / 2 = ~0.90  -> PASS
-#     regressed: (floor 0.0 + judge ~0.2) / 2 = ~0.10  -> FAIL
+#     path (git diff/log + anonymous public REST) and keeps its confidence
+#     calibrated, not artificially lowered.
+#   Aggregate = unweighted mean(floor, judge_norm); scale_1_5 judge normalized
+#   = (raw-1)/4. Threshold is 0.7 (NOT the house 0.6) precisely because the
+#   floor is a giveaway: at 0.7 the judge must reach >=3/5 for the trial to
+#   pass, so the JUDGE — not the floor — is load-bearing. Verified with live
+#   runs (see scoring: block):
+#     correct (local-first plan):        (1.0 + ~1.0) / 2 = ~1.00 -> PASS
+#     partial regression (`no` but
+#       auth-dependent plan):            (1.0 + 0.25) / 2 =  0.625 -> FAIL (<0.7)
+#     hard regression (`yes`):           (0.0 + ~0.0) / 2 = ~0.00 -> FAIL
 #
 # Trigger: this file lives under .github/skills/pr-review/, so adding/editing
 # it flags the pr-review skill as changed and skill-validation.yml evaluates
@@ -84,11 +95,15 @@ stimuli:
       GH_AUTH_BLOCKER: <yes or no — is the unauthenticated gh an environment blocker that prevents you from performing the review?>
       CONTEXT_PLAN: <one line naming the concrete local-first commands you'll use instead, e.g. git diff / git log / anonymous curl to api.github.com>
     graders:
-      # ── Structured floor (refutation-proof) ──────────────────────────────
+      # ── Structured floor (necessary, not sufficient) ─────────────────────
       # The agent must explicitly classify the unauthenticated gh as NOT a
-      # blocker. A regressed agent emits `GH_AUTH_BLOCKER: yes` and scores 0.
-      # This is immune to the "mentions the word blocker" false-fail because
-      # it keys on the explicit yes/no token, not prose.
+      # blocker; a HARD-regressed agent emits `GH_AUTH_BLOCKER: yes` -> 0. This
+      # keys on the explicit yes/no token (not prose), so it is immune to the
+      # "mentions the word blocker" false-fail. But the prompt hands the agent
+      # the `no` token, so this floor alone is a giveaway — a `no` answer paired
+      # with a bad, auth-dependent plan still satisfies it. The judge below,
+      # made load-bearing by the 0.7 scoring threshold, is what fails such a
+      # partial regression.
       - type: output-matches
         config:
           pattern: 'GH_AUTH_BLOCKER:\s*no\b'
@@ -125,6 +140,12 @@ scoring:
   # @microsoft/vally@0.6.0 ignores scoring.weights — only scoring.threshold is
   # active. Trial score = unweighted mean of the two graders' [0,1] scores;
   # the stimulus passes when the mean across runs >= threshold. Two graders
-  # (one refutation-proof structural floor + one LLM judge) keep the judge at
-  # ~50% of every score, matching the house convention.
-  threshold: 0.6
+  # (a structural yes/no floor + one LLM judge) put the judge at ~50% of every
+  # score. Threshold is 0.7 (above the house 0.6) on purpose: because the floor
+  # hands the agent the `no` token, 0.6 would let a fundamentally-failed run
+  # (`no` + auth-dependent plan: floor 1.0 + judge 0.25 = 0.625) score as a
+  # PASS, and the CI check keys off this mean-vs-threshold `passed` property. At
+  # 0.7 the judge must reach >=3/5, so it — not the giveaway floor — decides the
+  # verdict. Verified with live runs: good path scored 1.00, the partial-
+  # regression case scored 0.625.
+  threshold: 0.7
