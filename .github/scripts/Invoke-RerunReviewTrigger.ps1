@@ -1,24 +1,104 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Applies AI rerun scanner decisions: react, remove queue label, and trigger AzDO.
+    Validates AI rerun-scanner decisions and emits a deterministic action list.
+
+.DESCRIPTION
+    This script does NOT talk to GitHub or Azure DevOps. It parses the agent's
+    batched `decisions`, validates every decision against the deterministic
+    candidate set (`candidates.json`), and writes a normalized actions array to
+    the path in $env:RERUN_ACTIONS_PATH.
+
+    A downstream `actions/github-script` step consumes that file and performs the
+    side effects via the GitHub REST API (octokit):
+
+      * trigger -> dispatch the `review-trigger.yml` workflow (the exact same
+        workflow a maintainer `/review` comment runs), then react `rocket` (🚀)
+        to the rerun comment to acknowledge the dispatch was queued.
+        `review-trigger.yml` owns PR validation, the
+        `s/agent-review-in-progress` lock, platform inference, OIDC, and the AzDO
+        pipeline trigger.
+      * skip    -> react `-1` to the rerun comment and remove the queue label.
+
+    Splitting validation (here) from I/O (github-script) keeps this logic unit
+    testable and routes every GitHub write through octokit, which works reliably
+    in the gh-aw safe-output job context (the `gh` CLI does not — it returns a
+    spurious HTTP 404 for `repos/.../pulls/N` there).
 #>
 
 param(
-    [string]$Owner = 'dotnet',
-    [string]$Repo = 'maui',
-    [string]$DefaultPipelineRef = 'main',
-    [switch]$DryRun
+    [string]$DefaultPipelineRef = 'main'
 )
 
 $ErrorActionPreference = 'Stop'
-$ReadyForRerunLabel = 's/agent-ready-for-rerun'
-$ReviewInProgressLabel = 's/agent-review-in-progress'
-$ReviewTriggerCooldownMinutes = 60
-$ReviewTriggerWindowHours = 24
-$MaxReviewTriggersPerWindow = 3
 
-. "$PSScriptRoot/shared/Update-AgentLabels.ps1"
+function ConvertTo-TrimmedString {
+    param([AllowNull()][object]$Value)
+
+    if ($null -eq $Value) {
+        return ''
+    }
+
+    return ([string]$Value).Trim()
+}
+
+function ConvertTo-SafeLogValue {
+    param(
+        [string]$Value,
+        [int]$MaxLength = 180
+    )
+
+    $safe = ([string]$Value) -replace '[\r\n]+', ' '
+    $safe = $safe -replace '::', ': :'
+    $safe = $safe.Trim()
+    if ($safe.Length -gt $MaxLength) {
+        $safe = $safe.Substring(0, $MaxLength - 3) + '...'
+    }
+
+    return $safe
+}
+
+function Expand-RerunDecisionItems {
+    param([object[]]$Items)
+
+    # A custom safe-output job is capped at one invocation per run, so the agent
+    # batches every candidate's decision into a single item's `decisions` field
+    # (a JSON array, or array of objects). Expand that into one object per
+    # decision. Items that already carry scalar decision fields (legacy shape or
+    # a single decision) are passed through unchanged for back-compatibility.
+    $expanded = [System.Collections.Generic.List[object]]::new()
+    foreach ($item in $Items) {
+        $rawDecisions = $item.PSObject.Properties['decisions']
+        if (-not $rawDecisions -or $null -eq $rawDecisions.Value) {
+            if ($item.PSObject.Properties['pr_number']) {
+                $expanded.Add($item)
+            }
+            continue
+        }
+
+        $value = $rawDecisions.Value
+        $parsed = $null
+        if ($value -is [string]) {
+            if ([string]::IsNullOrWhiteSpace($value)) { continue }
+            try {
+                $parsed = $value | ConvertFrom-Json
+            } catch {
+                Write-Host "::warning::Skipping unparseable decisions payload: $($_.Exception.Message)"
+                continue
+            }
+        } else {
+            $parsed = $value
+        }
+
+        foreach ($decision in @($parsed)) {
+            if ($null -ne $decision) {
+                $expanded.Add($decision)
+            }
+        }
+    }
+
+    return $expanded.ToArray()
+}
 
 function Get-AgentItems {
     if (-not $env:GH_AW_AGENT_OUTPUT -or -not (Test-Path $env:GH_AW_AGENT_OUTPUT)) {
@@ -26,7 +106,8 @@ function Get-AgentItems {
     }
 
     $payload = Get-Content -Raw -LiteralPath $env:GH_AW_AGENT_OUTPUT | ConvertFrom-Json
-    return @($payload.items | Where-Object { $_.type -eq 'trigger_rerun_review' })
+    $triggerItems = @($payload.items | Where-Object { $_.type -eq 'trigger_rerun_review' })
+    return Expand-RerunDecisionItems -Items $triggerItems
 }
 
 function Get-CandidateItems {
@@ -50,50 +131,6 @@ function Get-MatchingCandidate {
     )
 
     return @($Candidates | Where-Object { [int]$_.prNumber -eq $PRNumber } | Select-Object -First 1)
-}
-
-function ConvertTo-SafeLogValue {
-    param(
-        [string]$Value,
-        [int]$MaxLength = 180
-    )
-
-    $safe = ([string]$Value) -replace '[\r\n]+', ' '
-    $safe = $safe -replace '::', ': :'
-    $safe = $safe.Trim()
-    if ($safe.Length -gt $MaxLength) {
-        $safe = $safe.Substring(0, $MaxLength - 3) + '...'
-    }
-
-    return $safe
-}
-
-function Add-CommentReaction {
-    param(
-        [Parameter(Mandatory = $true)][Int64]$CommentId,
-        [Parameter(Mandatory = $true)][ValidateSet('+1', '-1')][string]$Content
-    )
-
-    if ($DryRun) {
-        Write-Host "[dry-run] Would react '$Content' to comment $CommentId"
-        return
-    }
-
-    $tmp = New-TemporaryFile
-    try {
-        @{ content = $Content } | ConvertTo-Json -Compress | Set-Content -LiteralPath $tmp -Encoding utf8 -NoNewline
-        & gh api "repos/$Owner/$Repo/issues/comments/$CommentId/reactions" `
-            --method POST `
-            -H "Accept: application/vnd.github+json" `
-            --input $tmp 1>$null 2>$null
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "  ⚠️ Reaction '$Content' may already exist on comment $CommentId" -ForegroundColor Yellow
-        } else {
-            Write-Host "  ✅ Reacted '$Content' to comment $CommentId" -ForegroundColor Green
-        }
-    } finally {
-        Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
-    }
 }
 
 function Get-PlatformFromLabels {
@@ -127,278 +164,102 @@ function Normalize-PipelineRef {
     return $pipelineRef
 }
 
-function ConvertTo-DateTimeOffset {
-    param([Parameter(Mandatory = $true)]$Value)
-
-    if ($Value -is [datetimeoffset]) {
-        return $Value
-    }
-    if ($Value -is [datetime]) {
-        return [datetimeoffset]$Value
-    }
-
-    return [datetimeoffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
-}
-
-function Get-ReviewTriggerRateLimitStatus {
+function Get-RerunActions {
     param(
-        [datetimeoffset[]]$TriggeredAt = @(),
-        [datetimeoffset]$Now = [datetimeoffset]::UtcNow,
-        [int]$CooldownMinutes = $script:ReviewTriggerCooldownMinutes,
-        [int]$WindowHours = $script:ReviewTriggerWindowHours,
-        [int]$MaxTriggersPerWindow = $script:MaxReviewTriggersPerWindow
+        [object[]]$Items,
+        [object[]]$Candidates,
+        [string]$DefaultPipelineRef = 'main'
     )
 
-    $sorted = @($TriggeredAt | Sort-Object -Descending)
-    $latest = @($sorted | Select-Object -First 1)
-    if ($latest.Count -gt 0) {
-        $cooldownAge = $Now - $latest[0]
-        if ($cooldownAge -lt [timespan]::FromMinutes($CooldownMinutes)) {
-            return [pscustomobject]@{
-                Allowed         = $false
-                Reason          = "cooldown-active"
-                LatestTriggered = $latest[0]
-                RecentCount     = @($sorted | Where-Object { ($Now - $_) -lt [timespan]::FromHours($WindowHours) }).Count
+    # Returns @{ Actions = <object[]>; HadFailure = <bool> }. Each action is a
+    # normalized, validated decision ready for the github-script I/O step.
+    $actions = [System.Collections.Generic.List[object]]::new()
+    $hadFailure = $false
+
+    foreach ($item in $Items) {
+        $prNumber = 0
+        try {
+            $prNumberRaw = (ConvertTo-TrimmedString $item.pr_number)
+            if ($prNumberRaw -notmatch '^[1-9]\d*$') {
+                throw "Invalid pr_number; expected positive integer string."
             }
-        }
-    }
+            $prNumber = [int]$prNumberRaw
+            $decision = (ConvertTo-TrimmedString $item.decision).ToLowerInvariant()
+            $expectedHeadSha = ConvertTo-TrimmedString $item.expected_head_sha
 
-    $recent = @($sorted | Where-Object { ($Now - $_) -lt [timespan]::FromHours($WindowHours) })
-    if ($recent.Count -ge $MaxTriggersPerWindow) {
-        return [pscustomobject]@{
-            Allowed         = $false
-            Reason          = "rerun-quota-exhausted"
-            LatestTriggered = if ($latest.Count -gt 0) { $latest[0] } else { $null }
-            RecentCount     = $recent.Count
-        }
-    }
-
-    return [pscustomobject]@{
-        Allowed         = $true
-        Reason          = "allowed"
-        LatestTriggered = if ($latest.Count -gt 0) { $latest[0] } else { $null }
-        RecentCount     = $recent.Count
-    }
-}
-
-function Get-ReviewTriggerLabelTimes {
-    param([Parameter(Mandatory = $true)][int]$PRNumber)
-
-    $createdAtValues = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/events?per_page=100" --paginate --jq ".[] | select(.event == `"labeled`" and .label.name == `"$ReviewInProgressLabel`") | .created_at" 2>$null)
-    if ($LASTEXITCODE -ne 0) {
-        throw "Could not inspect $ReviewInProgressLabel history for PR #$PRNumber."
-    }
-
-    return @($createdAtValues | ForEach-Object { ConvertTo-DateTimeOffset $_ })
-}
-
-function Test-ReviewTriggerRateLimit {
-    param([Parameter(Mandatory = $true)][int]$PRNumber)
-
-    $triggeredAt = @(Get-ReviewTriggerLabelTimes -PRNumber $PRNumber)
-    return Get-ReviewTriggerRateLimitStatus -TriggeredAt $triggeredAt
-}
-
-function Invoke-AzDOReviewPipeline {
-    param(
-        [Parameter(Mandatory = $true)][int]$PRNumber,
-        [Parameter(Mandatory = $true)][string]$Platform,
-        [string]$PipelineRef = 'main'
-    )
-
-    if ($DryRun) {
-        Write-Host "[dry-run] Would trigger maui-copilot for PR #$PRNumber (platform: $Platform, ref: $PipelineRef)"
-        return
-    }
-
-    if (-not $env:AZDO_TRIGGER_TENANT_ID -or -not $env:AZDO_TRIGGER_CLIENT_ID) {
-        throw "AZDO_TRIGGER_TENANT_ID and AZDO_TRIGGER_CLIENT_ID secrets are required to trigger AzDO."
-    }
-
-    $oidcResponse = Invoke-RestMethod `
-        -Headers @{ Authorization = "bearer $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN" } `
-        -Uri "$($env:ACTIONS_ID_TOKEN_REQUEST_URL)&audience=api://AzureADTokenExchange"
-    $oidcToken = $oidcResponse.value
-    if (-not $oidcToken) {
-        throw "Failed to get GitHub OIDC token."
-    }
-    "::add-mask::$oidcToken" | Write-Host
-
-    $aadResponse = Invoke-RestMethod `
-        -Method Post `
-        -Uri "https://login.microsoftonline.com/$($env:AZDO_TRIGGER_TENANT_ID)/oauth2/v2.0/token" `
-        -Body @{
-            grant_type             = 'client_credentials'
-            client_id              = $env:AZDO_TRIGGER_CLIENT_ID
-            client_assertion_type  = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
-            client_assertion       = $oidcToken
-            scope                  = '499b84ac-1321-427f-aa17-267ca6975798/.default'
-        }
-
-    $azdoToken = $aadResponse.access_token
-    if (-not $azdoToken) {
-        throw "Failed to get Azure DevOps token."
-    }
-    "::add-mask::$azdoToken" | Write-Host
-
-    $payload = @{
-        templateParameters = @{
-            PRNumber = [string]$PRNumber
-            Platform = $Platform
-        }
-        resources = @{
-            repositories = @{
-                self = @{
-                    refName = "refs/heads/$PipelineRef"
-                }
+            if ($decision -notin @('trigger', 'skip')) {
+                throw "Invalid decision; expected 'trigger' or 'skip'."
             }
+            if ([string]::IsNullOrWhiteSpace($expectedHeadSha)) {
+                throw "Missing expected head SHA for $decision decision on PR #$prNumber."
+            }
+
+            $candidate = Get-MatchingCandidate -Candidates $Candidates -PRNumber $prNumber
+            if (-not $candidate) {
+                throw "PR #$prNumber was not in the deterministic rerun candidate set."
+            }
+            if ([string]::IsNullOrWhiteSpace([string]$candidate.headSha)) {
+                throw "Candidate for PR #$prNumber has no recorded head SHA."
+            }
+            if ([string]$candidate.headSha -ne $expectedHeadSha) {
+                throw "PR #$prNumber decision head SHA does not match candidate head SHA."
+            }
+
+            # Operational values come from the deterministic candidate set, not the
+            # agent's emission (its platform / pipeline_ref / rerun_comment_id are advisory).
+            $rerunCommentId = if ($candidate.rerunCommentId) { [Int64]$candidate.rerunCommentId } else { [Int64]0 }
+            $platform = Get-PlatformFromLabels -Labels @() -Fallback ([string]$candidate.platform)
+            $pipelineRef = Normalize-PipelineRef -Value ([string]$candidate.pipelineRef) -Fallback $DefaultPipelineRef
+
+            if ($decision -eq 'trigger' -and $rerunCommentId -le 0) {
+                throw "Candidate for PR #$prNumber has no rerun comment id; cannot trigger."
+            }
+
+            $actions.Add([pscustomobject]@{
+                prNumber       = $prNumber
+                decision       = $decision
+                platform       = $platform
+                pipelineRef    = $pipelineRef
+                rerunCommentId = $rerunCommentId
+                headSha        = [string]$candidate.headSha
+            })
+            Write-Host "Validated PR #$prNumber decision=$decision platform=$platform pipelineRef=$pipelineRef rerunCommentId=$rerunCommentId"
+        } catch {
+            $target = if ($prNumber -gt 0) { "PR #$prNumber" } else { "agent decision" }
+            Write-Host "::error::Failed to validate $target`: $(ConvertTo-SafeLogValue ([string]$_))"
+            $hadFailure = $true
         }
-    } | ConvertTo-Json -Depth 10
+    }
 
-    $response = Invoke-RestMethod `
-        -Method Post `
-        -Uri "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" `
-        -Headers @{ Authorization = "Bearer $azdoToken"; 'Content-Type' = 'application/json' } `
-        -Body $payload
+    return @{
+        Actions    = $actions.ToArray()
+        HadFailure = $hadFailure
+    }
+}
 
-    Write-Host "  ✅ Triggered maui-copilot run $($response.id) for PR #$PRNumber"
+# Allow dot-sourcing for tests without executing the body.
+if ($MyInvocation.InvocationName -eq '.') {
+    return
 }
 
 $items = Get-AgentItems
-if ($items.Count -eq 0) {
-    Write-Host "No trigger_rerun_review decisions found."
-    exit 0
-}
 $candidates = @(Get-CandidateItems -Path $env:RERUN_CANDIDATES_PATH)
 
-foreach ($item in $items) {
-    $prNumber = 0
-    try {
-        $prNumberRaw = ([string]$item.pr_number).Trim()
-        if ($prNumberRaw -notmatch '^[1-9]\d*$') {
-            throw "Invalid pr_number; expected positive integer string."
-        }
-        $prNumber = [int]$prNumberRaw
-        $decision = ([string]$item.decision).Trim().ToLowerInvariant()
-        $reason = [string]$item.reason
-        $expectedHeadSha = ([string]$item.expected_head_sha).Trim()
+$result = Get-RerunActions -Items $items -Candidates $candidates -DefaultPipelineRef $DefaultPipelineRef
+$actions = @($result.Actions)
 
-        if ($decision -notin @('trigger', 'skip')) {
-            throw "Invalid decision; expected 'trigger' or 'skip'."
-        }
-        if ([string]::IsNullOrWhiteSpace($expectedHeadSha)) {
-            throw "Missing expected head SHA for $decision decision on PR #$prNumber."
-        }
-        $candidate = Get-MatchingCandidate -Candidates $candidates -PRNumber $prNumber
-        if (-not $candidate) {
-            throw "PR #$prNumber was not in the deterministic rerun candidate set."
-        }
-        if ([string]::IsNullOrWhiteSpace([string]$candidate.headSha)) {
-            throw "Candidate for PR #$prNumber has no recorded head SHA."
-        }
-        if ([string]$candidate.headSha -ne $expectedHeadSha) {
-            throw "PR #$prNumber decision head SHA does not match candidate head SHA."
-        }
-
-        # Source operational values from the deterministic candidate set, not from the agent's emission.
-        # The agent's pipeline_ref / platform / rerun_comment_id fields are advisory only.
-        $rerunCommentId = if ($candidate.rerunCommentId) { [Int64]$candidate.rerunCommentId } else { [Int64]0 }
-        $candidatePlatformFallback = [string]$candidate.platform
-        $candidatePipelineRef = Normalize-PipelineRef -Value ([string]$candidate.pipelineRef) -Fallback $DefaultPipelineRef
-
-        if ($decision -eq 'trigger' -and $rerunCommentId -le 0) {
-            throw "Candidate for PR #$prNumber has no rerun comment id; cannot trigger."
-        }
-
-        Write-Host "Processing PR #$prNumber decision=$decision reason=$(ConvertTo-SafeLogValue $reason)"
-        $pr = gh api "repos/$Owner/$Repo/pulls/$prNumber" | ConvertFrom-Json
-        if ($pr.state -ne 'open') {
-            Write-Host "  ⏭️ PR #$prNumber is not open ($($pr.state)); skipping"
-            continue
-        }
-        if ($expectedHeadSha -and $pr.head.sha -ne $expectedHeadSha) {
-            Write-Host "  ⏭️ PR #$prNumber head changed from $expectedHeadSha to $($pr.head.sha); skipping stale decision"
-            continue
-        }
-
-        $labels = @(gh api "repos/$Owner/$Repo/issues/$prNumber/labels" --jq '.[].name' 2>$null)
-        if ($labels -notcontains $ReadyForRerunLabel) {
-            Write-Host "  ⏭️ PR #$prNumber no longer has $ReadyForRerunLabel; skipping"
-            continue
-        }
-        if ($labels -contains $ReviewInProgressLabel) {
-            if (Test-AgentReviewInProgressIsStale -PRNumber $prNumber -Owner $Owner -Repo $Repo) {
-                if ($DryRun) {
-                    Write-Host "[dry-run] Would remove stale $ReviewInProgressLabel from PR #$prNumber"
-                } else {
-                    Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
-                }
-                $labels = @($labels | Where-Object { $_ -ne $ReviewInProgressLabel })
-            } else {
-                Write-Host "  ⏭️ PR #$prNumber already has $ReviewInProgressLabel; skipping duplicate review trigger"
-                continue
-            }
-        }
-
-        $preserveReadyLabel = $false
-        if ($decision -eq 'trigger') {
-            $rateLimit = Test-ReviewTriggerRateLimit -PRNumber $prNumber
-            if (-not $rateLimit.Allowed) {
-                $latestText = if ($rateLimit.LatestTriggered) { $rateLimit.LatestTriggered.ToString('u') } else { 'never' }
-                Write-Host "  ⏭️ PR #$prNumber rerun trigger blocked by deterministic rate limit ($($rateLimit.Reason); recent=$($rateLimit.RecentCount); latest=$latestText); leaving $ReadyForRerunLabel in place for a future scan"
-                $preserveReadyLabel = $true
-            } else {
-                $lockApplied = $false
-                try {
-                    if ($DryRun) {
-                        Write-Host "[dry-run] Would apply $ReviewInProgressLabel to PR #$prNumber"
-                    } else {
-                        $lockApplied = Set-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo
-                        if (-not $lockApplied) {
-                            throw "Failed to apply $ReviewInProgressLabel to PR #$prNumber; refusing to trigger duplicate-prone review."
-                        }
-                    }
-
-                    $platform = Get-PlatformFromLabels -Labels $labels -Fallback $candidatePlatformFallback
-                    Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $candidatePipelineRef
-                    if ($rerunCommentId -gt 0) {
-                        try {
-                            Add-CommentReaction -CommentId $rerunCommentId -Content '+1'
-                        } catch {
-                            Write-Host "::warning::Triggered PR #$prNumber but failed to react '+1' to comment $rerunCommentId`: $(ConvertTo-SafeLogValue ([string]$_))"
-                        }
-                    }
-                } catch {
-                    if ($lockApplied) {
-                        Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
-                    }
-                    throw
-                }
-            }
-        } else {
-            if ($rerunCommentId -gt 0) {
-                try {
-                    Add-CommentReaction -CommentId $rerunCommentId -Content '-1'
-                } catch {
-                    Write-Host "::warning::Skipped PR #$prNumber but failed to react '-1' to comment $rerunCommentId`: $(ConvertTo-SafeLogValue ([string]$_))"
-                }
-            } else {
-                Write-Host "  ⏭️ No rerun comment id was provided; skipping '-1' reaction"
-            }
-            Write-Host "  ⏭️ AI scanner decided not to trigger PR #$prNumber"
-        }
-
-        if ($preserveReadyLabel) {
-            Write-Host "  ℹ️ Leaving $ReadyForRerunLabel on PR #$prNumber for a future scan"
-        } elseif ($DryRun) {
-            Write-Host "[dry-run] Would remove $ReadyForRerunLabel from PR #$prNumber"
-        } else {
-            Remove-Label -PRNumber $prNumber -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo | Out-Null
-            Write-Host "  ✅ Removed $ReadyForRerunLabel from PR #$prNumber"
-        }
-    } catch {
-        $target = if ($prNumber -gt 0) { "PR #$prNumber" } else { "agent decision" }
-        Write-Host "::error::Failed to process $target`: $(ConvertTo-SafeLogValue ([string]$_))"
-        continue
-    }
+if (-not $env:RERUN_ACTIONS_PATH) {
+    throw "RERUN_ACTIONS_PATH is required."
 }
+
+# Emit a JSON array (always an array, even for a single action) for the
+# github-script I/O step to consume.
+$json = ConvertTo-Json -InputObject @($actions) -Depth 10
+Set-Content -LiteralPath $env:RERUN_ACTIONS_PATH -Value $json -Encoding utf8
+Write-Host "Wrote $($actions.Count) action(s) to $env:RERUN_ACTIONS_PATH"
+
+if ($result.HadFailure) {
+    exit 1
+}
+
+exit 0
