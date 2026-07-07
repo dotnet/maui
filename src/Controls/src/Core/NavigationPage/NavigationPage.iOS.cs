@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 	{
 		GradientBrush _currentBarBackgroundBrush;
 		NavigationType? _deferredNavigationType;
+		Page _deferredCurrentPage;
 
 		/// <summary>
 		/// Cleans up iOS-specific subscriptions and resources when the handler disconnects.
@@ -24,6 +25,8 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_currentBarBackgroundBrush = null;
+			_deferredNavigationType = null;
+			_deferredCurrentPage = null;
 		}
 
 		/// <summary>
@@ -39,6 +42,7 @@ namespace Microsoft.Maui.Controls
 			{
 				defer = true;
 				_deferredNavigationType = DetermineNavigationType();
+				_deferredCurrentPage = CurrentPage;
 			}
 		}
 
@@ -50,8 +54,16 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_deferredNavigationType is NavigationType navType)
 			{
+				var page = _deferredCurrentPage;
 				_deferredNavigationType = null;
-				SendNavigated(null, navType);
+				_deferredCurrentPage = null;
+
+				// Use the captured page, not CurrentPage — CurrentPage may have
+				// changed if navigation happened before ViewDidAppear fired.
+				if (page is not null)
+				{
+					page.SendNavigatedTo(new NavigatedToEventArgs(null, navType));
+				}
 			}
 		}
 

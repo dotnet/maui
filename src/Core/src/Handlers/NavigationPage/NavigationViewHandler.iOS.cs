@@ -501,14 +501,14 @@ namespace Microsoft.Maui.Handlers
 					}
 
 					// Find and clean up pages that were popped
-					IView? poppedPage = null;
+					var poppedPages = new List<IView>();
 					var newSet = new HashSet<IView>(newStack);
 
 					foreach (var view in oldStack)
 					{
 						if (!newSet.Contains(view))
 						{
-							poppedPage = view;
+							poppedPages.Add(view);
 							if (handler._viewControllerMap.TryGetValue(view, out var vc))
 							{
 								(vc as IDisposable)?.Dispose();
@@ -521,12 +521,14 @@ namespace Microsoft.Maui.Handlers
 					handler.NavigationView.NavigationFinished(newStack);
 
 					// After NavigationFinished has updated CurrentPage, fire lifecycle events
-					// for the popped page. This is the iOS-specific equivalent of the renderer's
-					// ParentingViewController.DidMoveToParentViewController → UpdateFormsInnerNavigation
-					// → SendNavigatedFromHandler.
-					if (poppedPage is not null && ControlsConfiguration?.OnNativePopCompleted is { } onPopCompleted)
+					// for each popped page. Handles multi-page native pops (e.g., long-press
+					// back button menu selecting an intermediate page).
+					if (poppedPages.Count > 0 && ControlsConfiguration?.OnNativePopCompleted is { } onPopCompleted)
 					{
-						onPopCompleted(handler.NavigationView, poppedPage);
+						foreach (var poppedPage in poppedPages)
+						{
+							onPopCompleted(handler.NavigationView, poppedPage);
+						}
 					}
 				}
 			}

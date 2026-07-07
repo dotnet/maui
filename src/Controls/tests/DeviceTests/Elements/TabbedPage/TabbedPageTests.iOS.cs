@@ -12,6 +12,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -112,7 +113,7 @@ namespace Microsoft.Maui.DeviceTests
 				page2Appeared = false;
 				tabbedPage.CurrentPage = navPage2;
 				await OnNavigatedToAsync(page2Content);
-				await Task.Delay(200); // Allow ViewDidAppear/ViewDidDisappear to fire
+				await AssertEventually(() => page1Disappeared && page2Appeared);
 
 				Assert.True(page1Disappeared, "Tab1 content should have disappeared after switching to Tab2");
 				Assert.True(page2Appeared, "Tab2 content should have appeared after switching to Tab2");
@@ -122,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 				page2Disappeared = false;
 				tabbedPage.CurrentPage = navPage1;
 				await OnNavigatedToAsync(page1Content);
-				await Task.Delay(200);
+				await AssertEventually(() => page2Disappeared && page1Appeared);
 
 				Assert.True(page2Disappeared, "Tab2 content should have disappeared after switching back to Tab1");
 				Assert.True(page1Appeared, "Tab1 content should have appeared after switching back to Tab1");

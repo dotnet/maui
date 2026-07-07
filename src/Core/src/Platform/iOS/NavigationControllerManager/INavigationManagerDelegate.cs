@@ -16,9 +16,10 @@ namespace Microsoft.Maui.Platform
     internal interface INavigationManagerDelegate
     {
         /// <summary>
-        /// Called when the navigation bar should be shown/hidden for a view controller.
-        /// The consumer determines visibility based on its own rules
-        /// (Shell: Shell.GetNavBarIsVisible, NavigationPage: HasNavigationBar).
+        /// Returns nav bar visibility for a view controller.
+        /// NavigationControllerManager does not call this directly — nav bar visibility
+        /// is handled by the per-page wrapper VC. This method is part of the interface
+        /// so future consumers (e.g., Shell handler) can implement their own visibility rules.
         /// Returns (isHidden, animate).
         /// </summary>
         (bool isHidden, bool animate) GetNavigationBarVisibility(UIViewController viewController);
