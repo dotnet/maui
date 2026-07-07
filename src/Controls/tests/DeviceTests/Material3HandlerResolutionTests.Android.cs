@@ -4,8 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -72,12 +74,19 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				AppContext.SetSwitch(IsMaterial3EnabledSwitch, true);
 
-				var handler = await CreateHandlerAsync(createView());
-				var platformView = Assert.IsAssignableFrom<IPlatformViewHandler>(handler).PlatformView;
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var mauiApp = MauiApp.CreateBuilder()
+						.UseMauiApp<Application>()
+						.Build();
+					var mauiContext = new ContextStub(mauiApp.Services);
+					var handler = createView().ToHandler(mauiContext);
+					var platformView = Assert.IsAssignableFrom<IPlatformViewHandler>(handler).PlatformView;
 
-				Assert.Equal(material3HandlerTypeName, handler.GetType().FullName);
-				Assert.NotNull(platformView);
-				Assert.Equal(material3PlatformViewTypeName, platformView.GetType().FullName);
+					Assert.Equal(material3HandlerTypeName, handler.GetType().FullName);
+					Assert.NotNull(platformView);
+					Assert.Equal(material3PlatformViewTypeName, platformView.GetType().FullName);
+				});
 			}
 			finally
 			{

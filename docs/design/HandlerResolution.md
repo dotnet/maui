@@ -67,10 +67,11 @@ How a handler instance is created depends on how it was resolved:
 > **Note:** Handlers resolved via `[ElementHandler]` are instantiated with `Activator.CreateInstance()`
 > (not through the DI container), so a public parameterless constructor is expected on the common path.
 > `ElementExtensions.ToHandler()` provides a safety net: if `Activator.CreateInstance()` throws a
-> `MissingMethodException` (for example, the handler requires constructor parameters), it retries through
-> `ActivatorUtilities.CreateInstance()`, which supplies constructor arguments from the DI container.
-> This fallback applies to any handler resolved through `ToHandler()` — including `[ElementHandler]`-resolved
-> handlers, not only DI-registered ones — but callers that use `GetHandler()` directly do not get it.
+> `MissingMethodException` (or `IMauiHandlersFactory.GetHandler()` wraps that exception in an actionable
+> `HandlerNotFoundException`), it retries through `ActivatorUtilities.CreateInstance()`, which supplies
+> constructor arguments from the DI container. This fallback applies to any handler resolved through
+> `ToHandler()` — including `[ElementHandler]`-resolved handlers, not only DI-registered ones — but callers
+> that use `GetHandler()` directly do not get it.
 > Declaring handlers with a parameterless constructor (and using DI registration when constructor
 > injection is required) remains the recommended approach.
 
