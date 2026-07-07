@@ -78,16 +78,32 @@ function Get-IssueLabels {
 function Get-ActivityForPR {
     param([int]$Number)
 
-    $issueComments = @(gh api "repos/$Owner/$Repo/issues/$Number/comments?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'issue-comment' })
-    $reviews = @(gh api "repos/$Owner/$Repo/pulls/$Number/reviews?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review' })
-    $reviewComments = @(gh api "repos/$Owner/$Repo/pulls/$Number/comments?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review-comment' })
+    # Fail loud on API errors — same contract as Get-IssueLabels. A transient/auth/rate-limit
+    # failure must NOT be treated as "no activity", which would silently mark a PR ineligible
+    # and drop a real rerun candidate. Capture raw output first so $LASTEXITCODE reflects
+    # `gh api` (not the trailing ForEach-Object in a pipeline). The per-PR try/catch records
+    # the throw as an 'error' decision and continues.
+    $issueCommentsRaw = gh api "repos/$Owner/$Repo/issues/$Number/comments?per_page=100" --paginate --jq '.[]'
+    if ($LASTEXITCODE -ne 0) { throw "Failed to fetch issue comments for #$Number (gh api exited $LASTEXITCODE)." }
+    $reviewsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/reviews?per_page=100" --paginate --jq '.[]'
+    if ($LASTEXITCODE -ne 0) { throw "Failed to fetch reviews for #$Number (gh api exited $LASTEXITCODE)." }
+    $reviewCommentsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/comments?per_page=100" --paginate --jq '.[]'
+    if ($LASTEXITCODE -ne 0) { throw "Failed to fetch review comments for #$Number (gh api exited $LASTEXITCODE)." }
+
+    $issueComments = @($issueCommentsRaw | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'issue-comment' })
+    $reviews = @($reviewsRaw | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review' })
+    $reviewComments = @($reviewCommentsRaw | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review-comment' })
     return @($issueComments + $reviews + $reviewComments)
 }
 
 function Get-CommitsForPR {
     param([int]$Number)
 
-    return @(gh api "repos/$Owner/$Repo/pulls/$Number/commits?per_page=100" --paginate --jq '.[]' | ForEach-Object { $_ | ConvertFrom-Json })
+    # Fail loud (see Get-ActivityForPR) — a dropped commit list would mislead the
+    # new-head-commit eligibility check.
+    $commitsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/commits?per_page=100" --paginate --jq '.[]'
+    if ($LASTEXITCODE -ne 0) { throw "Failed to fetch commits for #$Number (gh api exited $LASTEXITCODE)." }
+    return @($commitsRaw | ForEach-Object { $_ | ConvertFrom-Json })
 }
 
 $searchJson = gh pr list `
