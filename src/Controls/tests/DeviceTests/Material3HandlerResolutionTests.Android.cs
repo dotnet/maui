@@ -12,7 +12,13 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[CollectionDefinition(nameof(Material3HandlerResolutionTests), DisableParallelization = true)]
+	public sealed class Material3HandlerResolutionTestsCollection
+	{
+	}
+
 	[Category(TestCategory.Mapper)]
+	[Collection(nameof(Material3HandlerResolutionTests))]
 	public class Material3HandlerResolutionTests : ControlsHandlerTestBase
 	{
 		const string IsMaterial3EnabledSwitch = "Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled";
