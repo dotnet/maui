@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using UIKit;
 
@@ -23,7 +24,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			handler.ToPlatform().UpdateBackground(image);
+			var platformView = handler.ToPlatform();
+
+			if (image.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+			}
+			else
+			{
+				platformView.UpdateBackground(image);
+			}
 		}
 
 		public static void MapAspect(IImageHandler handler, IImage image) =>
