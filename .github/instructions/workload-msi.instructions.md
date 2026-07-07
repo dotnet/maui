@@ -1,6 +1,6 @@
 ---
 description: "Guidelines for working with workload MSI generation (WiX 6) in src/Workload/"
-globs:
+applyTo:
   - "src/Workload/**"
   - "eng/NuGetVersions.targets"
   - "eng/Versions.props"
