@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
     /// <summary>
     /// Manages a UINavigationController for NavigationPage's handler architecture on iOS.
     /// Owns a UINavigationController and provides push/pop/insert/remove operations,
-    /// completion tracking, interactive pop gesture handling, and nav bar visibility.
+    /// completion tracking, and interactive pop gesture handling.
     ///
     /// Currently used by <see cref="Microsoft.Maui.Handlers.NavigationViewHandler"/>.
     /// </summary>
@@ -98,6 +98,14 @@ namespace Microsoft.Maui.Platform
             var completionSource = new TaskCompletionSource<bool>();
             _completionTasks[rootViewController] = completionSource;
             _navigationController.PopToRootViewController(animated);
+
+            // If not animated, DidShowViewController won't fire — complete immediately.
+            if (!animated)
+            {
+                completionSource.TrySetResult(true);
+                _completionTasks.Remove(rootViewController);
+            }
+
             return completionSource.Task;
         }
 

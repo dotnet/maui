@@ -500,6 +500,10 @@ namespace Microsoft.Maui.Controls
             }
 
             NavigationItem.HidesBackButton = !NavigationPage.GetHasBackButton(child);
+
+            // Refresh the left bar button (flyout icon vs back button) —
+            // matches the renderer which also called UpdateTitleArea here.
+            UpdateLeftBarButtonItem();
         }
 
         void UpdateBackButtonTitle()
@@ -512,8 +516,10 @@ namespace Microsoft.Maui.Controls
             var backButtonTitle = NavigationPage.GetBackButtonTitle(child);
             var backButtonAccessibilityLabel = NavigationPage.GetBackButtonAccessibilityLabel(child);
 
-            if (backButtonTitle is not null || !string.IsNullOrEmpty(backButtonAccessibilityLabel))
+            if (backButtonTitle is not null)
             {
+                // Only create a custom BackBarButtonItem when BackButtonTitle is explicitly set.
+                // Setting Title = null would suppress UIKit's default back-button text.
                 var barButtonItem = new UIBarButtonItem { Title = backButtonTitle, Style = UIBarButtonItemStyle.Plain };
 
                 if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
@@ -522,6 +528,15 @@ namespace Microsoft.Maui.Controls
                 }
 
                 NavigationItem.BackBarButtonItem = barButtonItem;
+            }
+            else if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
+            {
+                // Accessibility label only — preserve UIKit's default back-button text
+                // by setting the label on the existing BackBarButtonItem (or creating one
+                // with the previous page's title).
+                var existing = NavigationItem.BackBarButtonItem ?? new UIBarButtonItem();
+                existing.AccessibilityLabel = backButtonAccessibilityLabel;
+                NavigationItem.BackBarButtonItem = existing;
             }
             else
             {
@@ -836,6 +851,11 @@ namespace Microsoft.Maui.Controls
             get => _icon;
             set
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 _icon?.RemoveFromSuperview();
                 _icon?.Dispose();
                 _icon = value;

@@ -32,12 +32,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					renderer.PlatformView?.RemoveFromSuperview();
 
-					// Disconnect the root modal page's handler so that non-IDisposable handlers
-					// (e.g., NavigationViewHandler) also run OnDisconnectHandler cleanup.
-					visualElement.Handler?.DisconnectHandler();
+					// Capture handler before DisconnectHandler() — it nulls VirtualView.Handler.
+					var handler = visualElement.Handler;
+					handler?.DisconnectHandler();
 
-					if (view.Handler is IDisposable disposable)
+					if (handler is IDisposable disposable)
+					{
 						disposable.Dispose();
+					}
 				}
 			}
 		}

@@ -15,6 +15,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 #if IOS
 using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
 #endif
@@ -444,7 +445,7 @@ namespace Microsoft.Maui.DeviceTests
 					tabbedPage.CurrentPage = navigationPage;
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
-					await Task.Delay(200);
+					await AssertEventually(() => navigationPage.Navigation.NavigationStack.Count > 1);
 					await navigationPage.PopAsync();
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
@@ -522,7 +523,7 @@ namespace Microsoft.Maui.DeviceTests
 					tabbedPage.CurrentPage = navigationPage;
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
-					await Task.Delay(200);
+					await AssertEventually(() => navigationPage.Navigation.NavigationStack.Count > 1);
 					await navigationPage.PopAsync();
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
