@@ -99,21 +99,22 @@ namespace Microsoft.Maui.Platform
 		{
 			if (html != null)
 			{
-				if (!string.IsNullOrEmpty(baseUrl))
-				{
-					LoadHtmlString(html, new NSUrl(baseUrl, true));
-				}
-				else
-				{
-					// Create a unique data URL to ensure proper navigation history
-					// LoadHtmlString doesn't create entries in the back/forward list
-					// Using LoadRequest with a data URL ensures the HTML content appears in navigation history
-					var base64Html = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(html));
-					var dataUrl = $"data:text/html;charset=utf-8;base64,{base64Html}";
+				// Use the provided baseUrl, or fall back to the app bundle path so that
+				// relative resources (images, CSS, JS) bundled with the app continue to resolve.
+				var resolvedBaseUrl = !string.IsNullOrEmpty(baseUrl)
+					? new NSUrl(baseUrl, true)
+					: new NSUrl(NSBundle.MainBundle.BundlePath, true);
 
-					// Use LoadRequest with data URL for proper navigation history
-					LoadRequest(new NSUrlRequest(new NSUrl(dataUrl)));
-				}
+				// LoadSimulatedRequest (iOS 15+) is used instead of LoadHtmlString or a data: URL because:
+				//   1. History  — creates a back/forward history entry for both the null and non-null
+				//                 BaseUrl cases, so GoBack/GoForward work correctly for HtmlWebViewSource.
+				//   2. Privacy  — the HTML document is passed as a parameter; WKWebView.Url only reflects
+				//                 the base URL, so the page contents are never exposed in URLs, logs, or
+				//                 navigation-event arguments.
+				//   3. Compat   — preserves the resolved base URL as the origin, keeping cookies,
+				//                 JavaScript evaluation, and relative-resource resolution working exactly
+				//                 as they did with the previous LoadHtmlString approach.
+				LoadSimulatedRequest(new NSUrlRequest(resolvedBaseUrl), html);
 			}
 		}
 
