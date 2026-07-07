@@ -320,7 +320,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 		public static DiagnosticDescriptor LambdaMethodGroupReference = new DiagnosticDescriptor(
 			id: "MAUIX2017",
 			title: "Lambda body is a method group reference",
-			messageFormat: "Lambda body '{0}' is a method group reference, not a method invocation. Did you mean '{0}({1})'?",
+			messageFormat: "Lambda body '{0}' is a method group reference, not a method invocation.{1}",
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
@@ -409,4 +409,3 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 	}
 }
-
