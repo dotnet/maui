@@ -957,8 +957,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				_markers ??= new List<Marker>();
 				_markers.Add(marker);
-				if (_clusterMarkers != null)
-					_clusterMarkers[marker.Id] = cluster;
+				_clusterMarkers?[marker.Id] = cluster;
 			}
 		}
 
