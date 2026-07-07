@@ -109,7 +109,7 @@ safe-outputs:
   # Scoped by required-title-prefix so it can only touch [leak-fix] PRs.
   push-to-pull-request-branch:
     target: "*"                     # agent supplies pull_request_number (its own leak PR)
-    required-title-prefix: "[leak-fix" # only [leak-fix] PRs
+    required-title-prefix: "[leak-fix]" # only [leak-fix] PRs (closing bracket keeps it exact)
     max: 1
     if-no-changes: "ignore"
     # Same managed allowlist as create-pull-request (a review fix touches the same surface).
@@ -122,7 +122,7 @@ safe-outputs:
       - "**/PublicAPI.Unshipped.txt"
   add-comment:
     target: "*"                     # agent supplies the leak PR number
-    required-title-prefix: "[leak-"
+    required-title-prefix: "[leak-fix]"  # Track C only comments on this workflow's own [leak-fix] PRs
     max: 1
   # Most 12h runs are idle (every open leak already has a [leak-fix] PR). Without this,
   # gh-aw's auto-injected default (noop: report-as-issue: true) files a "no action taken"

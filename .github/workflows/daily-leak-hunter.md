@@ -135,9 +135,15 @@ label) and extract the **rooting API** each one already covers:
 gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
   --state open --label agentic-workflows --limit 200 --json number,title,body \
   > /tmp/gh-aw/agent/my-open-leakscan.json
-# The rooting API is the "Type.Member" the title names (titles lead with it — see Step 6).
+# The rooting API is the "Type.Member" the title names. Titles SHOULD lead with it (Step 6),
+# but real runs have produced off-contract titles like "Shell BackButtonBehavior.Command …"
+# (#36345) vs "BackButtonBehavior.Command: …" (#36354). A prefix-only cut keys those on
+# "Shell" vs "BackButtonBehavior.Command" and re-files a duplicate. Extract the FIRST
+# dotted Type.Member token anywhere in the title so both normalize to the same key.
 jq -r '.[].title' /tmp/gh-aw/agent/my-open-leakscan.json \
-  | sed -E 's/^\[leak-scan\] *//; s/[ :].*$//' | sort -u \
+  | sed -E 's/^\[leak-scan\] *//' \
+  | awk 'match($0, /[A-Z][A-Za-z0-9]*\.[A-Za-z][A-Za-z0-9]*/){print substr($0,RSTART,RLENGTH); next} {print}' \
+  | sort -u \
   > /tmp/gh-aw/agent/already-filed-apis.txt
 echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 ```
