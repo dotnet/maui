@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -73,6 +74,7 @@ internal static class MemberResolver
 	private const string ThisPrefix = "this.";
 	private const string BindingContextPrefix = "BindingContext.";
 	private const string DotPrefix = ".";
+	private static readonly ConditionalWeakTable<Compilation, HashSet<string>> GlobalUsingNamespaces = new();
 
 	/// <summary>
 	/// Resolves a member expression to determine its location.
@@ -120,9 +122,15 @@ internal static class MemberResolver
 		var onThis = thisType != null && HasMember(thisType, rootIdentifier);
 		var onDataType = dataType != null && HasMember(dataType, rootIdentifier);
 		
-		var resolvesToStaticType = compilation != null &&
-			StartsWithTypeReference(compilation, trimmed, GetContainingNamespace(thisType));
-		var conflictsWithStatic = (onThis || onDataType) && resolvesToStaticType;
+		var resolvesToStaticType = false;
+		var conflictsWithStatic = false;
+		if (compilation != null)
+		{
+			if (onThis || onDataType)
+				conflictsWithStatic = ResolvesToType(compilation, rootIdentifier, GetContainingNamespace(thisType));
+			else
+				resolvesToStaticType = StartsWithTypeReference(compilation, trimmed, GetContainingNamespace(thisType));
+		}
 
 		MemberLocation location;
 		if (onThis && onDataType)
@@ -166,39 +174,40 @@ internal static class MemberResolver
 			return true;
 		}
 
-		// Collect all global using namespaces from the compilation's syntax trees
-		var globalNamespaces = new HashSet<string>();
-		
+		foreach (var ns in GetGlobalUsingNamespaces(compilation))
+		{
+			var fullName = $"{ns}.{normalizedTypeName}";
+			if (compilation.GetTypeByMetadataName(fullName) != null)
+				return true;
+		}
+
+		return false;
+	}
+
+	private static HashSet<string> GetGlobalUsingNamespaces(Compilation compilation)
+	{
+		return GlobalUsingNamespaces.GetValue(compilation, CreateGlobalUsingNamespaces);
+	}
+
+	private static HashSet<string> CreateGlobalUsingNamespaces(Compilation compilation)
+	{
+		var globalNamespaces = new HashSet<string>(StringComparer.Ordinal);
 		foreach (var tree in compilation.SyntaxTrees)
 		{
 			var root = tree.GetRoot();
 			foreach (var usingDirective in root.DescendantNodes().OfType<UsingDirectiveSyntax>())
 			{
-				// Check for global usings (global using System;)
-				if (usingDirective.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword))
-				{
-					var namespaceName = usingDirective.Name?.ToString();
-					if (!string.IsNullOrEmpty(namespaceName))
-						globalNamespaces.Add(namespaceName!);
-				}
+				if (!usingDirective.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword) ||
+					usingDirective.StaticKeyword.IsKind(SyntaxKind.StaticKeyword))
+					continue;
+
+				var namespaceName = NormalizeTypeName(usingDirective.Name?.ToString() ?? string.Empty);
+				if (!string.IsNullOrEmpty(namespaceName))
+					globalNamespaces.Add(namespaceName);
 			}
 		}
-		
-		// Check if the identifier resolves to a type in any of the global namespaces
-		foreach (var ns in globalNamespaces)
-		{
-			var fullName = $"{ns}.{normalizedTypeName}";
-			var type = compilation.GetTypeByMetadataName(fullName);
-			if (type != null)
-				return true;
-		}
-		
-		// Also check in the global namespace itself
-		var globalType = compilation.GetTypeByMetadataName(normalizedTypeName);
-		if (globalType != null)
-			return true;
-		
-		return false;
+
+		return globalNamespaces;
 	}
 
 	public static string? GetContainingNamespace(ITypeSymbol? typeSymbol)
