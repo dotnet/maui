@@ -172,7 +172,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				// validate footer position
 				#if IOS
-				AssertionExtensions.CloseEnough(footerFrame.Y + GetSafeArea(handler.ToPlatform()).Bottom, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top); 
+				// With safeAreaBottom subtracted from content height (PR #33335), the footer's Y position
+				// equals exactly the sum of what's above it (safeAreaTop + headerHeight + contentHeight).
+				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top); 
 				#else
 				// On android the we pad the top of the header frame by the safe area because how layout works
 				// so that is already included in the headerFrame Height
@@ -254,11 +256,14 @@ namespace Microsoft.Maui.DeviceTests
                                 // validate footer position
                                 var expectedFooterY = expectedContentY + contentMargin.Bottom + contentFrame.Height;
                                 AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-                                AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y + GetSafeArea(handler.ToPlatform()).Bottom, epsilon: 0.6, message: "Footer Y");
+                                // With safeAreaBottom subtracted from content height (PR #33335), footerFrame.Y equals
+                                // expectedFooterY directly — no safeAreaBottom adjustment needed here.
+                                AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.6, message: "Footer Y");
                                 AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
                                 //All three views should measure to the height of the flyout
-                                AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
+                                // The flyout height = content area + footer height + safeAreaBottom below the footer.
+                                AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height + GetSafeArea(handler.ToPlatform()).Bottom, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
                         });
                 }
 		// Regression test for https://github.com/dotnet/maui/issues/34925
