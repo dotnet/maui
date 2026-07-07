@@ -12,7 +12,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public abstract partial class HandlerTestBase<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler, TStub>
+	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
 		[Fact]
 		public virtual async Task DisconnectHandlerDoesntCrash()
