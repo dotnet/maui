@@ -134,9 +134,16 @@ namespace Microsoft.Maui.Hosting.Internal
 		{
 			var handlerType = elementHandlerAttribute.GetHandlerType();
 
+			if (!typeof(IElementHandler).IsAssignableFrom(handlerType))
+			{
+				throw new HandlerNotFoundException(
+					$"Unable to create the {nameof(IElementHandler)} {handlerType} declared by {nameof(ElementHandlerAttribute)} for {viewType}. " +
+					$"The declared handler type must implement {nameof(IElementHandler)}.");
+			}
+
 			try
 			{
-				return (IElementHandler?)Activator.CreateInstance(handlerType);
+				return (IElementHandler)Activator.CreateInstance(handlerType);
 			}
 			catch (MissingMethodException ex)
 			{
