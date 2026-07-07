@@ -3368,6 +3368,19 @@ function Format-MarkdownReport {
     $shaLinked = ConvertTo-LinkedSha -Sha $ctx.srHeadSha -RepoUrl $RepoUrl
     [void]$sb.AppendLine("**HEAD**: $shaLinked — $($ctx.srHeadSubject)")
     [void]$sb.AppendLine("**Generated**: $($ctx.fetchedAt)")
+    # Report freshness banner — a DERIVED-AT-RENDER note of how long ago this report was
+    # generated, with a ⏳ "may be stale" flag past the threshold. Computed here from the
+    # generation timestamp against a render-time clock; it is a pure presentation concern and
+    # is DELIBERATELY NOT folded into Get-ReportSemanticHash (hashing a render-time age would
+    # differ every run and break the idempotent no-op). Fail-open: skip if the helper isn't
+    # loaded or the timestamp is unreadable.
+    if ($ctx.fetchedAt -and (Get-Command Format-ReportFreshnessBanner -ErrorAction SilentlyContinue)) {
+        $freshnessBanner = Format-ReportFreshnessBanner -GeneratedAt $ctx.fetchedAt -Now ([DateTime]::UtcNow)
+        if ($freshnessBanner) {
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine($freshnessBanner)
+        }
+    }
     # Nightly dogfood feed freshness — surfaces when the feed testers point at has gone
     # stale (no new build), so a captain sees at a glance whether dogfood feedback is being
     # collected against current bits. The banner string is rendered upstream in Invoke-Main
