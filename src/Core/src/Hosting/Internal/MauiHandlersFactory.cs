@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			while (type is not null)
 			{
-				var elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>();
+				var elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>(inherit: false);
 				if (elementHandlerAttribute is not null)
 				{
 					return elementHandlerAttribute;
