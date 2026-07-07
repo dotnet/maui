@@ -83,7 +83,6 @@ namespace Microsoft.Maui.Controls
 			Shell shell = bindable as Shell
 				?? (bindable as BaseShellItem)?.FindParentOfType<Shell>()
 				?? (bindable as Page)?.FindParentOfType<Shell>();
-
 			shell?.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 		}
 
