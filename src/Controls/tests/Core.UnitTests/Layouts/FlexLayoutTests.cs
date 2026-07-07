@@ -467,5 +467,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(380, view.MeasuredHeightConstraint);
 			Assert.Equal(flexFrame.Height, view.MeasuredHeightConstraint);
 		}
+
+		// Companion to the #27520 fix: the main-axis value passed to the measure callback
+		// is the pre-flex basis (explicit size or 0), and grow/shrink can still change it
+		// before the item is arranged. It must NOT be used to clamp the measure constraint;
+		// a growing item would otherwise be measured at its basis (100) even though it is
+		// arranged at the grown size (300).
+		[Fact]
+		public void GrowingItemMainAxisMeasureConstraintIsNotClampedToBasis_Issue27520()
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = FlexDirection.Row };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+			var view = new ConstraintRecordingView { WidthRequest = 100 };
+
+			FlexLayout.SetGrow(view, 1);
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(300, 200);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 300, 200));
+
+			// The item grows to fill the 300px main axis...
+			var flexFrame = flexLayout.GetFlexFrame(view as IView);
+			Assert.Equal(300, flexFrame.Width);
+
+			// ...so its measure constraint must not have been clamped to the 100px basis.
+			Assert.Equal(300, view.MeasuredWidthConstraint);
+		}
 	}
 }

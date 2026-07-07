@@ -528,19 +528,24 @@ namespace Microsoft.Maui.Controls
 						sizeConstraints.Width = (inMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
 						sizeConstraints.Height = (inMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
 
-						// Fix for #27520: when the engine already knows the size the item will be
-						// arranged at on an axis (the incoming w/h, e.g. the cross-axis size of a
-						// stretched item, which is the container size minus the item's margins),
-						// measure with that size. GetConstraints() returns the whole container
-						// size, which can be wider than the frame the item will actually receive;
-						// text measured against the wider constraint wraps at a width it will
-						// never have at arrange time, and the last line ends up cut off.
-						if (!float.IsNaN(w) && w > 0 && w < sizeConstraints.Width)
+						// Fix for #27520: when the engine already knows the cross-axis size the
+						// item will be arranged at (the incoming w/h, e.g. the size of a stretched
+						// item, which is the container size minus the item's margins), measure
+						// with that size. GetConstraints() returns the whole container size, which
+						// can be wider than the frame the item will actually receive; text
+						// measured against the wider constraint wraps at a width it will never
+						// have at arrange time, and the last line ends up cut off.
+						// Only the cross axis is safe to clamp here: the main-axis value at this
+						// point is the pre-flex basis (explicit size or 0), and grow/shrink can
+						// still change it before the item is arranged.
+						bool mainAxisIsHorizontal = Direction == FlexDirection.Row || Direction == FlexDirection.RowReverse;
+
+						if (!mainAxisIsHorizontal && !float.IsNaN(w) && w > 0 && w < sizeConstraints.Width)
 						{
 							sizeConstraints.Width = w;
 						}
 
-						if (!float.IsNaN(h) && h > 0 && h < sizeConstraints.Height)
+						if (mainAxisIsHorizontal && !float.IsNaN(h) && h > 0 && h < sizeConstraints.Height)
 						{
 							sizeConstraints.Height = h;
 						}
