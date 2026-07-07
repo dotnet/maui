@@ -21,15 +21,39 @@ namespace Microsoft.Maui.Platform
 		private Button? _navigationViewBackButton;
 		private Button? _togglePaneButton;
 		private Graphics.Color? _iconColor;
+		private FrameworkElement? _moreButton;
+		private FrameworkElement? _primaryItemsControl;
 
 		public MauiToolbar()
 		{
 			InitializeComponent();
-			this.SizeChanged += (s, e) =>
-			{
-				if (contentGrid.Width != this.ActualWidth)
-					contentGrid.Width = this.ActualWidth;
-			};
+			SizeChanged += OnToolbarSizeChanged;
+		}
+
+		void OnToolbarSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			if (e.NewSize.Width <= 0)
+				return;
+
+			UpdateContentGridWidth();
+		}
+
+		void UpdateContentGridWidth()
+		{
+			_moreButton ??= commandBar.GetDescendantByName<FrameworkElement>("MoreButton");
+			_primaryItemsControl ??= commandBar.GetDescendantByName<FrameworkElement>("PrimaryItemsControl");
+
+			double commandsWidth = 0;
+
+			if (_moreButton is not null && _moreButton.Visibility == UI.Xaml.Visibility.Visible)
+				commandsWidth += _moreButton.ActualWidth;
+
+			if (_primaryItemsControl is not null)
+				commandsWidth += _primaryItemsControl.ActualWidth;
+
+			var availableWidth = commandBar.ActualWidth - commandsWidth - contentGrid.Margin.Left - contentGrid.Margin.Right;
+			if (availableWidth > 0)
+				contentGrid.Width = availableWidth;
 		}
 
 		internal string? Title
