@@ -706,6 +706,14 @@ static class SetPropertyHelpers
 			return true; // Handled (with error)
 		}
 
+		if (resolution.Location == MemberLocation.Neither &&
+			resolution.ResolvesToStaticType &&
+			MemberResolver.IsSimpleIdentifier(expression.Code))
+		{
+			// Pure static member access should be emitted as a SetValue expression, not a binding.
+			return false;
+		}
+
 		// If we have binding handlers, this needs a TypedBinding
 		// This covers complex expressions like (Price * TaxRate) where MemberResolver returns Neither
 		if (analysis.HasBindingProperties)
