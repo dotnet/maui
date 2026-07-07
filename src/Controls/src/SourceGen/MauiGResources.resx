@@ -233,4 +233,11 @@
     <value>An element with the name "{0}" already exists in this NameScope.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="MissingEventHandlerTitle" xml:space="preserve">
+    <value>Event handler not found</value>
+  </data>
+  <data name="MissingEventHandler" xml:space="preserve">
+    <value>Event handler '{0}' with correct signature not found in type '{1}'.</value>
+    <comment>0 is handler name, 1 is type name</comment>
+  </data>
 </root>

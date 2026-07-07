@@ -55,12 +55,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
-			if (_dialog != null)
-			{
-				_dialog.DismissEvent -= OnDialogDismiss;
-				_dialog.Dismiss();
-				_dialog = null;
-			}
+			DestroyDialog();
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
@@ -106,13 +101,47 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
+			{
+				// Force dialog recreation when MinimumDate is provided.
+				// Android's DatePickerDialog caches min/max dates internally,
+				// making it unreliable to update them after the dialog is created.
+				if (datePicker.MinimumDate is not null)
+				{
+					platformHandler.DestroyDialog();
+				}
+				else
+				{
+					handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
+				}
+			}
 		}
 
 		public static partial void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
+			{
+				// Force dialog recreation when MaximumDate is provided.
+				// Android's DatePickerDialog caches min/max dates internally,
+				// making it unreliable to update them after the dialog is created.
+				if (datePicker.MaximumDate is not null)
+				{
+					platformHandler.DestroyDialog();
+				}
+				else
+				{
+					handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
+				}
+			}
+		}
+
+		void DestroyDialog()
+		{
+			if (_dialog is not null)
+			{
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Dismiss();
+				_dialog = null;
+			}
 		}
 
 		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
@@ -170,13 +199,19 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog is null)
 			{
 				_dialog = CreateDatePickerDialog(year, month, day);
+
+				// Apply min/max constraints to newly created dialog
+				if (VirtualView is not null)
+				{
+					PlatformView?.UpdateMinimumDate(VirtualView, _dialog);
+					PlatformView?.UpdateMaximumDate(VirtualView, _dialog);
+				}
 			}
 			else
 			{
 				EventHandler? setDateLater = null;
 				setDateLater = (sender, e) => { _dialog!.UpdateDate(year, month, day); _dialog.ShowEvent -= setDateLater; };
 				_dialog.ShowEvent += setDateLater;
-				_dialog.DismissEvent += OnDialogDismiss;
 			}
 
 			_dialog.Show();
@@ -186,7 +221,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{
-				_dialog.DismissEvent -= OnDialogDismiss;
 				_dialog.Hide();
 			}
 
@@ -200,13 +234,11 @@ namespace Microsoft.Maui.Handlers
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
 		{
-			DatePickerDialog? currentDialog = _dialog;
-
-			if (currentDialog is not null && currentDialog.IsShowing)
+			if (_dialog is not null && _dialog.IsShowing)
 			{
-				currentDialog.Dismiss();
-
-				ShowPickerDialog(currentDialog.DatePicker.DateTime);
+				var currentDate = _dialog.DatePicker.DateTime;
+				DestroyDialog();
+				ShowPickerDialog(currentDate);
 			}
 		}
 	}

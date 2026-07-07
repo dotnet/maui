@@ -44,7 +44,10 @@ param(
     [int]$PrNumber,
 
     [Parameter(Mandatory = $false)]
-    [string]$ProjectPath = ""
+    [string]$ProjectPath = "",
+    
+    [Parameter(Mandatory = $false)]
+    [switch]$Yes
 )
 
 $ErrorActionPreference = "Stop"
@@ -52,9 +55,20 @@ $ProgressPreference = "SilentlyContinue"
 
 # Configuration - Allow override via environment variable
 $GitHubRepo = if ($env:MAUI_REPO) { $env:MAUI_REPO } else { "dotnet/maui" }
-$AzureDevOpsOrg = "xamarin"
+$AzureDevOpsOrg = "dnceng-public"
 $AzureDevOpsProject = "public"
 $PackageName = "Microsoft.Maui.Controls"
+
+# Build GitHub auth headers (GITHUB_TOKEN env var or gh CLI)
+$GitHubHeaders = @{ "User-Agent" = "MAUI-PR-Script" }
+if ($env:GITHUB_TOKEN) {
+    $GitHubHeaders["Authorization"] = "token $($env:GITHUB_TOKEN)"
+} elseif (Get-Command gh -ErrorAction SilentlyContinue) {
+    try {
+        $ghToken = gh auth token 2>$null
+        if ($ghToken) { $GitHubHeaders["Authorization"] = "token $ghToken" }
+    } catch { }
+}
 
 # Color output functions
 function Write-Info {
@@ -67,12 +81,12 @@ function Write-Success {
     Write-Host "✅ $Message" -ForegroundColor Green
 }
 
-function Write-Warning {
+function Write-Warn {
     param([string]$Message)
     Write-Host "⚠️  $Message" -ForegroundColor Yellow
 }
 
-function Write-Error {
+function Write-Err {
     param([string]$Message)
     Write-Host "❌ $Message" -ForegroundColor Red
 }
@@ -117,13 +131,14 @@ function Get-PullRequestInfo {
     
     try {
         $prUrl = "https://api.github.com/repos/$GitHubRepo/pulls/$PrNumber"
-        $pr = Invoke-RestMethod -Uri $prUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" }
+        $pr = Invoke-RestMethod -Uri $prUrl -Headers $GitHubHeaders -TimeoutSec 30
         
         return @{
             Number = $pr.number
             Title = $pr.title
             State = $pr.state
             SHA = $pr.head.sha
+            MergeSHA = $pr.merge_commit_sha
             Ref = $pr.head.ref
         }
     }
@@ -132,47 +147,178 @@ function Get-PullRequestInfo {
     }
 }
 
-# Get build information from GitHub Checks API
+# Check if a build is currently in progress for this PR via Azure DevOps API
+function Test-BuildInProgress {
+    param([int]$PrNumber)
+
+    try {
+        $buildsUrl = "https://dev.azure.com/$AzureDevOpsOrg/$AzureDevOpsProject/_apis/build/builds?api-version=7.1&branchName=refs/pull/$PrNumber/merge&`$top=10"
+        $response = Invoke-RestMethod -Uri $buildsUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" } -TimeoutSec 30
+        
+        foreach ($build in $response.value) {
+            if ($build.definition.name -eq "maui-pr" -and $build.status -in @("inProgress", "notStarted", "postponed")) {
+                return $true
+            }
+        }
+        return $false
+    }
+    catch {
+        return $false
+    }
+}
+
+function Test-BuildMatchesPullRequestCommit {
+    param(
+        [Parameter(Mandatory = $true)]
+        $Build,
+
+        [Parameter(Mandatory = $true)]
+        [string]$HeadSha,
+
+        [string]$MergeSha
+    )
+
+    $sourceSha = if ($Build.triggerInfo) { $Build.triggerInfo.'pr.sourceSha' } else { $null }
+
+    return $sourceSha -eq $HeadSha -or
+        $Build.sourceVersion -eq $HeadSha -or
+        ((-not [string]::IsNullOrEmpty($MergeSha)) -and $Build.sourceVersion -eq $MergeSha)
+}
+
+# Get build information from GitHub Checks API, with AzDO fallback
 function Get-BuildInfo {
-    param([string]$SHA)
+    param([string]$SHA, [string]$MergeSHA, [int]$PrNumber)
 
     Write-Info "Looking for build artifacts for commit $($SHA.Substring(0, 7))..."
     
+    # Strategy 1: Try GitHub Checks API
     try {
         $checksUrl = "https://api.github.com/repos/$GitHubRepo/commits/$SHA/check-runs"
-        $response = Invoke-RestMethod -Uri $checksUrl -Headers @{ 
-            "User-Agent" = "MAUI-PR-Script"
+        $response = Invoke-RestMethod -Uri $checksUrl -Headers ($GitHubHeaders + @{
             "Accept" = "application/vnd.github.v3+json"
-        }
+        }) -TimeoutSec 30
         
-        # Look for the main MAUI build check
+        # Look for the aggregate MAUI PR build check. Job-level checks share the
+        # maui-pr prefix and can point at the same build with a different result.
         $buildCheck = $response.check_runs | Where-Object { 
-            $_.name -eq "MAUI-public" -and $_.status -eq "completed"
+            $_.name -eq "maui-pr" -and $_.status -eq "completed" -and $_.details_url -match 'buildId='
         } | Select-Object -First 1
         
-        if (-not $buildCheck) {
-            throw "No completed build found for this PR. The build may still be in progress or may have failed."
+        if ($buildCheck) {
+            if ($buildCheck.conclusion -ne "success") {
+                Write-Warn "The aggregate maui-pr build completed with status: $($buildCheck.conclusion)"
+                Write-Warn "Continuing because PackageArtifacts may still be available when unrelated CI legs fail."
+            }
+            
+            # Extract build ID from details URL
+            if ($buildCheck.details_url -match 'buildId=(\d+)') {
+                Write-Success "Found build ID: $($Matches[1]) (via GitHub Checks)"
+                return @{
+                    BuildId = $Matches[1]
+                    Status = $buildCheck.conclusion
+                    Url = $buildCheck.details_url
+                }
+            }
         }
+    }
+    catch {
+        Write-Info "GitHub Checks API lookup failed, trying Azure DevOps directly..."
+    }
+    
+    # Strategy 2: Query Azure DevOps directly (handles merge commits not reported to GitHub)
+    Write-Info "Searching Azure DevOps directly for PR #$PrNumber builds..."
+    try {
+        $buildsUrl = "https://dev.azure.com/$AzureDevOpsOrg/$AzureDevOpsProject/_apis/build/builds?api-version=7.1&branchName=refs/pull/$PrNumber/merge&`$top=25"
+        $response = Invoke-RestMethod -Uri $buildsUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" } -TimeoutSec 30
         
-        if ($buildCheck.conclusion -ne "success") {
-            Write-Warning "Build completed with status: $($buildCheck.conclusion)"
-            $continue = Read-Host "Do you want to continue anyway? (y/N)"
-            if ($continue -ne "y" -and $continue -ne "Y") {
-                throw "Build was not successful. Aborting."
+        $completedBuild = $response.value | Where-Object {
+            $_.definition.name -eq "maui-pr" -and
+            $_.status -eq "completed" -and
+            (Test-BuildMatchesPullRequestCommit -Build $_ -HeadSha $SHA -MergeSha $MergeSHA)
+        } | Select-Object -First 1
+
+        if (-not $completedBuild) {
+            $olderCompletedBuild = $response.value | Where-Object {
+                $_.definition.name -eq "maui-pr" -and $_.status -eq "completed"
+            } | Select-Object -First 1
+            if ($olderCompletedBuild) {
+                Write-Warn "Found completed maui-pr builds for PR #$PrNumber, but none match the current head/merge commit."
             }
         }
         
-        # Extract build ID from details URL
-        if ($buildCheck.details_url -match 'buildId=(\d+)') {
-            $buildId = $Matches[1]
-            Write-Success "Found build ID: $buildId"
-            return $buildId
+        if ($completedBuild) {
+            # Validate build ID is numeric
+            if ("$($completedBuild.id)" -notmatch '^\d+$') {
+                throw "Invalid build ID received from Azure DevOps API"
+            }
+            
+            # Check if a newer build is in progress (user may have pushed a new commit)
+            $inProgressBuild = $response.value | Where-Object {
+                $_.definition.name -eq "maui-pr" -and $_.status -in @("inProgress", "notStarted", "postponed")
+            } | Select-Object -First 1
+            if ($inProgressBuild) {
+                Write-Warn "A newer build is currently in progress. The available artifacts may be from a previous commit."
+                Write-Warn "If you just pushed changes, wait for the new build to complete."
+            }
+            
+            if ($completedBuild.result -ne "succeeded") {
+                Write-Warn "The aggregate maui-pr build completed with result: $($completedBuild.result)"
+                Write-Warn "Continuing because PackageArtifacts may still be available when unrelated CI legs fail."
+            }
+            
+            $buildUrl = "https://dev.azure.com/$AzureDevOpsOrg/$AzureDevOpsProject/_build/results?buildId=$($completedBuild.id)"
+            Write-Success "Found build ID: $($completedBuild.id) (via Azure DevOps)"
+            return @{
+                BuildId = "$($completedBuild.id)"
+                Status = $completedBuild.result
+                Url = $buildUrl
+            }
         }
-        
-        throw "Could not extract build ID from check run details."
     }
     catch {
-        throw "Failed to get build information: $_"
+        Write-Info "Azure DevOps direct lookup also failed."
+    }
+    
+    # No build found - check if one is in progress
+    $buildInProgress = Test-BuildInProgress -PrNumber $PrNumber
+    if ($buildInProgress) {
+        throw "No completed build found, but a build is currently in progress for PR #$PrNumber. Please wait for it to complete and try again. Check status: https://github.com/dotnet/maui/pull/$PrNumber"
+    }
+    
+    throw "No completed build found for PR #$PrNumber. The PR may not have triggered CI builds yet (draft PRs don't auto-trigger builds), or the build may have failed. Check: https://github.com/dotnet/maui/pull/$PrNumber"
+}
+
+function Write-PackJobStatus {
+    param([string]$BuildId)
+
+    try {
+        $timelineUrl = "https://dev.azure.com/$AzureDevOpsOrg/$AzureDevOpsProject/_apis/build/builds/$BuildId/timeline?api-version=7.1"
+        $response = Invoke-RestMethod -Uri $timelineUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" } -TimeoutSec 30
+
+        $packRecords = $response.records | Where-Object {
+            ($_.type -eq "Job" -or $_.type -eq "Phase") -and
+            ($_.name -eq "Pack macOS" -or $_.name -eq "Pack Windows")
+        }
+
+        if (-not $packRecords) {
+            Write-Warn "Could not verify pack job status from the Azure DevOps timeline."
+            return
+        }
+
+        $nonSucceededPackRecords = $packRecords | Where-Object { $_.result -ne "succeeded" }
+        if ($nonSucceededPackRecords) {
+            Write-Warn "PackageArtifacts exists, but one or more pack/package-producing jobs did not report success:"
+            foreach ($record in $nonSucceededPackRecords) {
+                $result = if ($record.result) { $record.result } elseif ($record.state) { $record.state } else { "unknown" }
+                Write-Warn "  $($record.name) ($($record.type)): $result"
+            }
+        }
+        else {
+            Write-Info "Verified pack/package-producing jobs succeeded."
+        }
+    }
+    catch {
+        Write-Warn "Could not verify pack job status: $_"
     }
 }
 
@@ -184,14 +330,16 @@ function Get-BuildArtifacts {
     
     try {
         $artifactsUrl = "https://dev.azure.com/$AzureDevOpsOrg/$AzureDevOpsProject/_apis/build/builds/$BuildId/artifacts?api-version=7.1"
-        $response = Invoke-RestMethod -Uri $artifactsUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" }
+        $response = Invoke-RestMethod -Uri $artifactsUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" } -TimeoutSec 30
         
-        # Look for nuget artifact
-        $artifact = $response.value | Where-Object { $_.name -eq "nuget" } | Select-Object -First 1
+        # Look for PackageArtifacts artifact
+        $artifact = $response.value | Where-Object { $_.name -eq "PackageArtifacts" } | Select-Object -First 1
         
         if (-not $artifact) {
-            throw "No 'nuget' artifact found in build $BuildId"
+            throw "No 'PackageArtifacts' artifact found in build $BuildId"
         }
+
+        Write-PackJobStatus -BuildId $BuildId
         
         return $artifact.resource.downloadUrl
     }
@@ -225,7 +373,19 @@ function Get-Artifacts {
     
     Write-Info "Downloading artifacts (this may take a moment)..."
     try {
-        Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipFile -UseBasicParsing
+        # Use curl on non-Windows (Invoke-WebRequest is extremely slow for large files on macOS/Linux)
+        if ((-not $IsWindows) -and $env:OS -ne "Windows_NT" -and (Get-Command curl -ErrorAction SilentlyContinue)) {
+            $curlExit = 0
+            & curl -sL -o $zipFile $DownloadUrl
+            $curlExit = $LASTEXITCODE
+            if ($curlExit -ne 0) {
+                throw "curl download failed with exit code $curlExit"
+            }
+        } else {
+            $ProgressPreference = 'SilentlyContinue'
+            Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipFile -UseBasicParsing
+            $ProgressPreference = 'Continue'
+        }
         Write-Success "Downloaded artifacts"
         
         Write-Info "Extracting artifacts..."
@@ -240,6 +400,9 @@ function Get-Artifacts {
             throw "Could not find NuGet packages in the extracted artifacts"
         }
         
+        # Clean up zip file to save disk space
+        Remove-Item $zipFile -Force -ErrorAction SilentlyContinue
+        
         return $nupkgDir.FullName
     }
     catch {
@@ -252,14 +415,14 @@ function Get-PackageVersion {
     param([string]$PackagesDir)
 
     $package = Get-ChildItem -Path $PackagesDir -Filter "$PackageName.*.nupkg" -File |
-        Where-Object { $_.Name -notmatch '\.symbols\.nupkg$' } |
+        Where-Object { $_.Name -notmatch '\.symbols\.nupkg$' -and $_.Name -match "$([regex]::Escape($PackageName))\.\d" } |
         Select-Object -First 1
     
     if (-not $package) {
         throw "Could not find $PackageName package in artifacts"
     }
     
-    if ($package.Name -match "$PackageName\.(.+)\.nupkg") {
+    if ($package.Name -match "$([regex]::Escape($PackageName))\.(.+)\.nupkg") {
         return $Matches[1]
     }
     
@@ -273,7 +436,7 @@ function Get-TargetFrameworkVersion {
     $content = Get-Content $ProjectPath -Raw
     
     # Look for TargetFramework or TargetFrameworks
-    if ($content -match '<TargetFrameworks?>([^<]+)</TargetFrameworks?>') {
+    if ($content -match '<TargetFrameworks?>(.*?)</TargetFrameworks?>') {
         $tfms = $Matches[1]
         
         # Extract .NET version (e.g., net9.0, net10.0)
@@ -326,7 +489,7 @@ function Update-TargetFrameworks {
     
     Set-Content -Path $ProjectPath -Value $content -NoNewline
     Write-Success "Updated target frameworks to .NET $NewNetVersion.0"
-    Write-Warning "You may need to update other package dependencies to match .NET $NewNetVersion.0"
+    Write-Warn "You may need to update other package dependencies to match .NET $NewNetVersion.0"
 }
 
 # Create or update NuGet.config
@@ -334,7 +497,7 @@ function Update-NuGetConfig {
     param([string]$ProjectDir, [string]$PackagesDir)
 
     $nugetConfigPath = Join-Path $ProjectDir "NuGet.config"
-    $sourceName = "maui-pr-build"
+    $sourceName = "maui-pr-$PrNumber"
     
     if (Test-Path $nugetConfigPath) {
         Write-Info "Updating existing NuGet.config..."
@@ -428,7 +591,7 @@ try {
     Write-Info "State: $($prInfo.State)"
     
     if ($prInfo.State -ne "open" -and $prInfo.State -ne "closed") {
-        Write-Warning "PR state is '$($prInfo.State)'. Continuing anyway..."
+        Write-Warn "PR state is '$($prInfo.State)'. Continuing anyway..."
     }
     
     Write-Step "Detecting target framework"
@@ -436,11 +599,11 @@ try {
     Write-Info "Current target framework: .NET $targetNetVersion.0"
     
     Write-Step "Finding build artifacts"
-    $buildId = Get-BuildInfo -SHA $prInfo.SHA
+    $buildInfo = Get-BuildInfo -SHA $prInfo.SHA -MergeSHA $prInfo.MergeSHA -PrNumber $PrNumber
     
     Write-Step "Downloading artifacts"
-    $downloadUrl = Get-BuildArtifacts -BuildId $buildId
-    $packagesDir = Get-Artifacts -DownloadUrl $downloadUrl -BuildId $buildId
+    $downloadUrl = Get-BuildArtifacts -BuildId $buildInfo.BuildId
+    $packagesDir = Get-Artifacts -DownloadUrl $downloadUrl -BuildId $buildInfo.BuildId
     
     Write-Step "Extracting package information"
     $version = Get-PackageVersion -PackagesDir $packagesDir
@@ -453,17 +616,22 @@ try {
     $compatible = Test-VersionCompatibility -Version $version -TargetNetVersion $targetNetVersion -PackageNetVersion $packageNetVersion
     $willUpdateTfm = $false
     if (-not $compatible) {
-        Write-Warning "This PR build may target a newer .NET version than your project"
+        Write-Warn "This PR build may target a newer .NET version than your project"
         Write-Info "Your project targets: .NET $targetNetVersion.0"
         Write-Info "This PR build targets: .NET $packageNetVersion.0"
         
-        $response = Read-Host "`nDo you want to update your project to .NET $packageNetVersion.0? (y/N)"
-        if ($response -eq "y" -or $response -eq "Y") {
+        if ($Yes) {
             $willUpdateTfm = $true
-            Write-Warning "Note: You may need to manually update other package dependencies to versions compatible with .NET $packageNetVersion.0"
+        } else {
+            $response = Read-Host "`nDo you want to update your project to .NET $packageNetVersion.0? (y/N)"
+            $willUpdateTfm = ($response -eq "y" -or $response -eq "Y")
+        }
+        
+        if ($willUpdateTfm) {
+            Write-Warn "Note: You may need to manually update other package dependencies to versions compatible with .NET $packageNetVersion.0"
         }
         else {
-            Write-Warning "Continuing without updating target framework. The package may not be compatible."
+            Write-Warn "Continuing without updating target framework. The package may not be compatible."
         }
     }
     
@@ -475,7 +643,7 @@ try {
     Write-Host ""
     Write-Host "By continuing, you will apply the PR artifacts to your project." -ForegroundColor Cyan
     Write-Host ""
-    Write-Warning "This should NOT be used in production and is for testing purposes only."
+    Write-Warn "This should NOT be used in production and is for testing purposes only."
     Write-Host ""
     Write-Host "TIP: Create a separate Git branch for testing!" -ForegroundColor Cyan
     Write-Host "     git checkout -b test-pr-$PrNumber" -ForegroundColor Gray
@@ -487,28 +655,25 @@ try {
     Write-Host "Changes to be applied:" -ForegroundColor White
     Write-Host "  • Project: $projectName" -ForegroundColor Gray
     Write-Host "  • Package version: $version" -ForegroundColor Gray
-    
-    # Extract .NET version from package version (e.g., 10.0.20-ci.main.25607.5 -> 10)
-    $packageDotNetVersion = $null
-    if ($version -match '^(\d+)\.') {
-        $packageDotNetVersion = $Matches[1]
-    }
-    
     if ($willUpdateTfm) {
-        $targetVersionForDisplay = if ($packageDotNetVersion) { "$packageDotNetVersion.0" } else { "$packageNetVersion.0" }
+        $targetVersionForDisplay = if ($packageNetVersion) { "$packageNetVersion.0" } else { "10.0" }
         Write-Host "  • Target framework: Will be updated to .NET $targetVersionForDisplay" -ForegroundColor Gray
     }
     Write-Host ""
     
-    $response = Read-Host "Do you want to continue? (y/N)"
-    if ($response -ne "y" -and $response -ne "Y") {
-        Write-Warning "Operation cancelled by user"
-        exit 0
+    if ($Yes) {
+        Write-Info "Auto-accepting confirmation (-Yes flag)"
+    } else {
+        $response = Read-Host "Do you want to continue? (y/N)"
+        if ($response -ne "y" -and $response -ne "Y") {
+            Write-Warn "Operation cancelled by user"
+            return
+        }
     }
     Write-Host ""
     
     if ($willUpdateTfm) {
-        $targetNetVersionToApply = if ($packageDotNetVersion) { [int]$packageDotNetVersion } else { 10 }
+        $targetNetVersionToApply = if ($packageNetVersion) { [int]$packageNetVersion } else { 10 }
         Update-TargetFrameworks -ProjectPath $projectPath -NewNetVersion $targetNetVersionToApply
         $targetNetVersion = $targetNetVersionToApply
     }
@@ -519,16 +684,6 @@ try {
     Write-Step "Updating package reference"
     Update-PackageReference -ProjectPath $projectPath -Version $version
     
-    # Get latest stable version for revert instructions
-    try {
-        $nugetResponse = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/microsoft.maui.controls/index.json" -UseBasicParsing
-        $stableVersions = $nugetResponse.versions | Where-Object { $_ -notmatch '-' } | Sort-Object -Descending
-        $latestStable = $stableVersions[0]
-    }
-    catch {
-        $latestStable = "X.Y.Z"
-    }
-
     Write-Host @"
 
 ╔═══════════════════════════════════════════════════════════╗
@@ -548,16 +703,30 @@ try {
     Write-Info "Local package source: $packagesDir"
     Write-Host ""
     
+    # Get latest stable version for revert instructions
+    $stableVersion = "X.Y.Z"
+    try {
+        $nugetResponse = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/$($PackageName.ToLower())/index.json" -TimeoutSec 30
+        if ($nugetResponse -and $nugetResponse.versions) {
+            $stableVersions = $nugetResponse.versions | Where-Object { $_ -notmatch '-' }
+            if ($stableVersions) {
+                $stableVersion = $stableVersions | Sort-Object { [Version]$_ } -Descending | Select-Object -First 1
+            }
+        }
+    } catch {
+        # If we can't fetch, just use placeholder
+    }
+    
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
     Write-Host "  TO REVERT TO PRODUCTION VERSION" -ForegroundColor Yellow
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "1. Edit $projectName and change the version:" -ForegroundColor White
     Write-Host "   From: Version=`"$version`"" -ForegroundColor Gray
-    Write-Host "   To:   Version=`"X.Y.Z`"" -ForegroundColor Gray
+    Write-Host "   To:   Version=`"$stableVersion`"" -ForegroundColor Gray
     Write-Host "   (Check https://www.nuget.org/packages/$PackageName for latest)" -ForegroundColor DarkGray
     Write-Host ""
-    Write-Host "2. In NuGet.config, remove or comment out the 'maui-pr-build' source" -ForegroundColor White
+    Write-Host "2. In NuGet.config, remove or comment out the 'maui-pr-$PrNumber' source" -ForegroundColor White
     Write-Host ""
     Write-Host "3. Run: dotnet restore --force" -ForegroundColor White
     Write-Host ""
@@ -567,14 +736,13 @@ try {
     
 }
 catch {
-    Write-Error "Failed to apply PR build: $_"
+    Write-Err "Failed to apply PR build: $_"
     Write-Host ""
     Write-Info "Troubleshooting tips:"
     Write-Host "  • Make sure you're in a directory containing a .NET MAUI project" -ForegroundColor Gray
     Write-Host "  • Verify that PR #$PrNumber exists: https://github.com/dotnet/maui/pull/$PrNumber" -ForegroundColor Gray
-    Write-Host "  • Check if there's a completed build for this PR (look for green checkmarks)" -ForegroundColor Gray
+    Write-Host "  • Check if there's a completed maui-pr build with PackageArtifacts for this PR" -ForegroundColor Gray
     Write-Host "  • Check your internet connection" -ForegroundColor Gray
     Write-Host "  • Visit: https://github.com/dotnet/maui/wiki/Testing-PR-Builds" -ForegroundColor Gray
-    
     exit 1
 }

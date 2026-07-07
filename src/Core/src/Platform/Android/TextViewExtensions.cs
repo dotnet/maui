@@ -1,5 +1,7 @@
 using System;
 using System.Net;
+using System.Runtime.CompilerServices;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
 using Android.Views;
@@ -12,6 +14,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TextViewExtensions
 	{
+		static readonly ConditionalWeakTable<TextView, StrongBox<int>> s_htmlGenerations = new();
+		static readonly ConditionalWeakTable<TextView, ColorStateList> defaultTextColors = new();
+
 		public static void UpdateTextPlainText(this TextView textView, IText label)
 		{
 			textView.Text = label.Text;
@@ -27,20 +32,48 @@ namespace Microsoft.Maui.Platform
 		{
 			var htmlText = WebUtility.HtmlDecode(text);
 
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
-			else
+			// Track generation to prevent stale image-load callbacks from overwriting newer text
+			var generation = s_htmlGenerations.GetOrCreateValue(textView);
+			int currentGen = ++generation.Value;
+
+			ImageGetter? imageGetter = null;
+
+			void SetTextHtml()
+			{
+				if (generation.Value != currentGen)
+					return;
+
+				imageGetter ??= new ImageGetter(textView.Resources!, SetTextHtml);
+
+				if (OperatingSystem.IsAndroidVersionAtLeast(24))
+					textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact, imageGetter, null), BufferType.Spannable);
+				else
 #pragma warning disable CS0618 // Type or member is obsolete
-				textView.SetText(Html.FromHtml(htmlText), BufferType.Spannable);
+					textView.SetText(Html.FromHtml(htmlText, imageGetter, null), BufferType.Spannable);
 #pragma warning restore CS0618 // Type or member is obsolete
+			}
+
+			SetTextHtml();
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle)
 		{
 			var textColor = textStyle.TextColor;
 
-			if (textColor != null)
-				textView.SetTextColor(textColor.ToPlatform());
+			// Cache the original themed TextColors the first time this control is updated.
+			if (textView.TextColors is ColorStateList currentColors)
+			{
+				defaultTextColors.GetValue(textView, _ => currentColors);
+			}
+
+			if (textColor is null)
+			{
+				var defaultColors = defaultTextColors.TryGetValue(textView, out var cached) ? cached : null;
+				textView.SetTextColor(defaultColors);
+				return;
+			}
+
+			textView.SetTextColor(textColor.ToPlatform());
 		}
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)
@@ -87,7 +120,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
 		{
-			textView.SetPadding(
+			textView.SetPaddingRelative(
 				(int)textView.ToPixels(label.Padding.Left),
 				(int)textView.ToPixels(label.Padding.Top),
 				(int)textView.ToPixels(label.Padding.Right),

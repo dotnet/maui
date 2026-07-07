@@ -43,12 +43,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
-		// We only have these packs for Android
-		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
-		{
-			OnlyAndroid(projectFile);
-		}
-
 		var buildProps = BuildProps;
 
 		if (additionalDotNetBuildParams is not "" and not null)
@@ -59,6 +53,21 @@ public class SimpleTemplateTest : BaseTemplateTests
 		string target = shouldPack ? "Pack" : "";
 		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Theory]
+	[InlineData("maui")]
+	[InlineData("maui-blazor")]
+	[InlineData("mauilib")]
+	public void NewProjectIncludesGitIgnore(string id)
+	{
+		SetTestIdentifier(id);
+		var projectDir = TestDirectory;
+
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		AssertIncludesRootGitIgnore(projectDir);
 	}
 
 	[Theory]

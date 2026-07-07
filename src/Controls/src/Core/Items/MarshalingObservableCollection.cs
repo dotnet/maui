@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly IList _internalCollection;
 		readonly IDispatcher _dispatcher;
+		readonly WeakNotifyCollectionChangedProxy _proxy;
+		readonly NotifyCollectionChangedEventHandler _internalCollectionChanged;
 
 		/// <param name="list">The list parameter.</param>
 		public MarshalingObservableCollection(IList list)
@@ -32,8 +34,8 @@ namespace Microsoft.Maui.Controls
 
 			_internalCollection = list;
 			_dispatcher = Dispatcher.GetForCurrentThread();
-
-			incc.CollectionChanged += InternalCollectionChanged;
+			_internalCollectionChanged = InternalCollectionChanged;
+			_proxy = new WeakNotifyCollectionChangedProxy(incc, _internalCollectionChanged);
 
 			foreach (var item in _internalCollection)
 			{
@@ -156,6 +158,11 @@ namespace Microsoft.Maui.Controls
 			}
 
 			OnCollectionChanged(args);
+		}
+
+		internal void Dispose()
+		{
+			_proxy.Unsubscribe();
 		}
 	}
 }

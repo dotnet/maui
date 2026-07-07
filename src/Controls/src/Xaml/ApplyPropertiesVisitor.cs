@@ -281,6 +281,21 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 			catch (Exception e)
 			{
+				if (markupExtension is StaticResourceExtension)
+				{
+					if (Context.ExceptionHandler != null)
+					{
+						// During Hot Reload (handler present), report the exception and skip the
+						// property rather than re-throwing.
+						// Re-throwing here propagates through iOS UIKit lifecycle callbacks during
+						// Shell item setup, corrupting Shell state and crashing the app (#35018).
+						Context.ExceptionHandler(e);
+						value = null;
+						return;
+					}
+					throw;
+				}
+
 				if (Context.ExceptionHandler != null)
 					Context.ExceptionHandler(e);
 				else

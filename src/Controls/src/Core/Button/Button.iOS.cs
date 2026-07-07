@@ -176,6 +176,11 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>TitleEdgeInsets and ImageEdgeInsets are deprecated in iOS 15. The layout process will change with UIButton.Configuration API in the future.</remarks>
 		void LayoutButton(UIButton platformButton, Button button, Rect size)
 		{
+			if (platformButton is null)
+			{
+				return;
+			}
+
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
 			var borderWidth = button.BorderWidth < 0 ? 0 : button.BorderWidth;
@@ -409,7 +414,10 @@ namespace Microsoft.Maui.Controls
 					return false;
 				}
 
-				image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+				// Preserve AlwaysTemplate if explicitly set (e.g., by a tint behavior),
+				// otherwise use AlwaysOriginal to prevent unwanted default tinting
+				if (image?.RenderingMode != UIImageRenderingMode.AlwaysTemplate)
+					image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				platformButton.SetImage(image, UIControlState.Normal);
 

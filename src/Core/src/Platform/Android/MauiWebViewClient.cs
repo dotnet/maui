@@ -22,8 +22,12 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnPageStarted(WebView? view, string? url, Bitmap? favicon)
 		{
+			RefreshViewWebViewScrollCapture.Reset(view);
+
 			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null)
+			{
 				return;
+			}
 
 			if (!string.IsNullOrWhiteSpace(url))
 			{
@@ -57,12 +61,22 @@ namespace Microsoft.Maui.Platform
 			bool navigate = _navigationResult != WebNavigationResult.Failure || !GetValidUrl(url).Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase);
 			_lastUrlNavigatedCancel = _navigationResult == WebNavigationResult.Cancel ? url : null;
 
-			if (navigate)
+			// Skip Navigated event for about:blank to prevent unwanted events when Source is null
+			if (navigate && !IsBlankNavigation(url))
+			{
 				handler.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
+			}
 
 			handler.SyncPlatformCookiesToVirtualView(url);
 
 			handler?.PlatformView.UpdateCanGoBackForward(handler.VirtualView);
+
+			// Only inject the scroll-capture observer when the WebView is hosted inside
+			// a RefreshView – avoids unnecessary JS overhead for standalone WebViews.
+			if (RefreshViewWebViewScrollCapture.IsAttached(view))
+			{
+				RefreshViewWebViewScrollCapture.InjectObserver(view);
+			}
 
 			base.OnPageFinished(view, url);
 		}
@@ -75,7 +89,9 @@ namespace Microsoft.Maui.Platform
 				_navigationResult = WebNavigationResult.Failure;
 
 				if (error?.ErrorCode == ClientError.Timeout)
+				{
 					_navigationResult = WebNavigationResult.Timeout;
+				}
 			}
 
 			base.OnReceivedError(view, request, error);
@@ -96,10 +112,25 @@ namespace Microsoft.Maui.Platform
 		bool NavigatingCanceled(string? url) =>
 			!_handler.TryGetTarget(out var handler) || handler.NavigatingCanceled(url);
 
+		static bool IsBlankNavigation(string? url)
+		{
+			// Null/empty URLs are handled by the early return in OnPageFinished,
+			// so we only need to check for the explicit "about:blank" URL
+			if (string.IsNullOrWhiteSpace(url))
+			{
+				return false;
+			}
+
+			// Check if URL is about:blank (case insensitive)
+			return string.Equals(url.Trim(), "about:blank", StringComparison.OrdinalIgnoreCase);
+		}
+
 		static string GetValidUrl(string? url)
 		{
 			if (string.IsNullOrEmpty(url))
+			{
 				return string.Empty;
+			}
 
 			return url;
 		}
@@ -107,7 +138,9 @@ namespace Microsoft.Maui.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				Disconnect();
+			}
 
 			base.Dispose(disposing);
 		}

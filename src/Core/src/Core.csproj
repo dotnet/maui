@@ -66,11 +66,11 @@
     <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
-    <NativeReference Include="../AppleNative/PlatformInterop/MauiPlatformInterop.xcframework.zip">
-      <Kind>Static</Kind>
-    </NativeReference>
-    <ObjcBindingApiDefinition Include="../AppleNative/ApiDefinition.cs" />
-    <ObjcBindingCoreSource Include="../AppleNative/StructsAndEnums.cs" />
+    <XcodeProject Include="..\AppleNative\PlatformInterop\MauiPlatformInterop.xcodeproj">
+      <SchemeName>MauiPlatformInterop</SchemeName>
+    </XcodeProject>
+    <ObjcBindingApiDefinition Include="..\AppleNative\ApiDefinition.cs" />
+    <ObjcBindingCoreSource Include="..\AppleNative\StructsAndEnums.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Tizen.UIExtensions.NUI" />
@@ -112,6 +112,8 @@
   </Target>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
+  <Import Project="$(MauiSrcDirectory)AppleBindings.targets" />
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 

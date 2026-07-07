@@ -286,6 +286,11 @@ namespace Microsoft.Maui.Controls
 				_lastAppTheme = newTheme;
 
 				OnPropertyChanged(nameof(UserAppTheme));
+#if WINDOWS
+				// Notify platform so it can apply the correct UI theme
+				OnRequestedThemeChangedPlatform(newTheme);
+#endif
+
 				OnParentResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, newTheme)]);
 				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
 			}
@@ -294,6 +299,10 @@ namespace Microsoft.Maui.Controls
 				_themeChangedFiring = false;
 			}
 		}
+
+#if WINDOWS
+		partial void OnRequestedThemeChangedPlatform(AppTheme newTheme);
+#endif
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
 
@@ -524,6 +533,10 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_windows.Remove(window);
+
+#if WINDOWS
+			OnPlatformWindowRemoved(window);
+#endif
 		}
 
 		public virtual void OpenWindow(Window window)
@@ -597,6 +610,16 @@ namespace Microsoft.Maui.Controls
 			// up to the window before triggering any down stream life cycle
 			// events.
 			window.FinishedAddingWindowToApplication(this);
+
+#if WINDOWS
+			OnPlatformWindowAdded(window);
+#endif
 		}
+
+#if WINDOWS
+		// Windows-specific hook implemented in Application.Windows.cs
+		partial void OnPlatformWindowAdded(Window window);
+		partial void OnPlatformWindowRemoved(Window window);
+#endif
 	}
 }

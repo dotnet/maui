@@ -83,7 +83,6 @@ namespace Microsoft.Maui.Controls
 			Shell shell = bindable as Shell
 				?? (bindable as BaseShellItem)?.FindParentOfType<Shell>()
 				?? (bindable as Page)?.FindParentOfType<Shell>();
-
 			shell?.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 		}
 
@@ -201,6 +200,34 @@ namespace Microsoft.Maui.Controls
 		/// <param name="obj">The object from which to get the back button behavior.</param>
 		/// <returns>The back button behavior for the object.</returns>
 		public static BackButtonBehavior GetBackButtonBehavior(BindableObject obj) => (BackButtonBehavior)obj.GetValue(BackButtonBehaviorProperty);
+
+		/// <summary>
+		/// Gets the BackButtonBehavior for the given page, with fallback to Shell if not set on the page.
+		/// </summary>
+		internal static BackButtonBehavior GetEffectiveBackButtonBehavior(BindableObject page)
+		{
+			if (page == null)
+				return null;
+
+			// First check if the page has its own BackButtonBehavior
+			var behavior = GetBackButtonBehavior(page);
+			if (behavior != null)
+				return behavior;
+
+			// Fallback: check if the Shell itself has a BackButtonBehavior
+			if (page is Element element)
+			{
+				var shell = element.FindParentOfType<Shell>();
+				if (shell != null)
+				{
+					behavior = GetBackButtonBehavior(shell);
+					if (behavior != null)
+						return behavior;
+				}
+			}
+
+			return null;
+		}
 
 		/// <summary>
 		/// Sets the back button behavior when the given <paramref name="obj"/> is presented.
@@ -744,9 +771,15 @@ namespace Microsoft.Maui.Controls
 		}
 
 #if ANDROID
-		static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
-		static readonly Color DefaultForegroundColor = Colors.White;
-		static readonly Color DefaultTitleColor = Colors.White;
+		static Color DefaultBackgroundColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
+		static Color DefaultForegroundColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
+		static Color DefaultTitleColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 
 		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
 
@@ -966,6 +999,40 @@ namespace Microsoft.Maui.Controls
 			if (result?.Location != oldState?.Location)
 			{
 				SetValueFromRenderer(CurrentStatePropertyKey, result);
+
+				// Fire NavigatingFrom after state is updated so CurrentPage is the destination.
+				// _previousPage was captured in SendNavigating before navigation started.
+				if (_previousPage is not null)
+				{
+					NavigationType navigationType = NavigationType.Replace;
+
+					switch (source)
+					{
+						case ShellNavigationSource.Pop:
+							navigationType = NavigationType.Pop;
+							break;
+						case ShellNavigationSource.Push:
+							navigationType = NavigationType.Push;
+							break;
+						case ShellNavigationSource.PopToRoot:
+							navigationType = NavigationType.PopToRoot;
+							break;
+						case ShellNavigationSource.Insert:
+							navigationType = NavigationType.Insert;
+							break;
+						case ShellNavigationSource.Remove:
+							navigationType = NavigationType.Remove;
+							break;
+						case ShellNavigationSource.ShellItemChanged:
+						case ShellNavigationSource.ShellSectionChanged:
+						case ShellNavigationSource.ShellContentChanged:
+							navigationType = NavigationType.Replace;
+							break;
+					}
+
+					_previousPage.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
+				}
+
 				_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 			}
 		}
@@ -1192,6 +1259,9 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
+		NavigationType _navigationType;
+		Page _pendingPreviousPage;
+		NavigationType _pendingNavigationType;
 
 		/// <summary>Initializes a new instance of the <see cref="Shell"/> class.</summary>
 		public Shell()
@@ -1207,10 +1277,29 @@ namespace Microsoft.Maui.Controls
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 
-			if (Application.Current != null)
+			if (Application.Current is not null)
 			{
+				Color light;
+				Color dark;
+
+				if (DeviceInfo.Platform == DevicePlatform.Android && RuntimeFeature.IsMaterial3Enabled)
+				{
+					light = Color.FromArgb("#FEF7FF");
+					dark = Color.FromArgb("#141218");
+				}
+				else
+				{
+					light = Colors.White;
+					dark = Colors.Black;
+				}
+
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
-					new AppThemeBinding { Light = Colors.White, Dark = Colors.Black, Mode = BindingMode.OneWay });
+					new AppThemeBinding
+					{
+						Light = light,
+						Dark = dark,
+						Mode = BindingMode.OneWay
+					});
 			}
 
 			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
@@ -1556,7 +1645,7 @@ namespace Microsoft.Maui.Controls
 		protected override bool OnBackButtonPressed()
 		{
 #if WINDOWS || !PLATFORM
-			var backButtonBehavior = GetBackButtonBehavior(GetVisiblePage());
+			var backButtonBehavior = GetEffectiveBackButtonBehavior(GetVisiblePage());
 			if (backButtonBehavior != null)
 			{
 				var command = backButtonBehavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
@@ -1607,41 +1696,82 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			NavigationType navigationType = NavigationType.Replace;
+			_navigationType = NavigationType.Replace;
 
 			switch (args.Source)
 			{
 				case ShellNavigationSource.Pop:
-					navigationType = NavigationType.Pop;
+					_navigationType = NavigationType.Pop;
 					break;
 				case ShellNavigationSource.ShellItemChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellSectionChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellContentChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.Push:
-					navigationType = NavigationType.Push;
+					_navigationType = NavigationType.Push;
 					break;
 				case ShellNavigationSource.PopToRoot:
-					navigationType = NavigationType.PopToRoot;
+					_navigationType = NavigationType.PopToRoot;
 					break;
 				case ShellNavigationSource.Insert:
-					navigationType = NavigationType.Insert;
+					_navigationType = NavigationType.Insert;
 					break;
 			}
 
-			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, navigationType));
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, _navigationType));
+			PropagateSendNavigatedTo();
 			_previousPage = null;
 
 			if (CurrentPage != null)
 				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+			(this.Window as Window)?.NotifyNavigationStateChanged();
+		}
+
+		void OnCurrentPageLoaded(object sender, EventArgs e)
+		{
+			if (sender is Page page)
+			{
+				page.Loaded -= OnCurrentPageLoaded;
+				page.SendNavigatedTo(new NavigatedToEventArgs(_pendingPreviousPage, _pendingNavigationType));
+				_pendingPreviousPage = null;
+				_pendingNavigationType = default;
+#if ANDROID
+				// Restore flyout behavior observers after deferred NavigatedTo timing
+				// Android requires this call to maintain flyout functionality
+				CurrentContent?.EvaluateDisconnect();
+#endif
+			}
+		}
+
+		void PropagateSendNavigatedTo()
+		{
+			if (CurrentPage is null)
+			{
+				return;
+			}
+
+			// Check if the Loaded event has actually been fired (not just IsLoaded which checks platform attachment).
+			// On iOS 26.1+, IsLoaded (view attached) can be true before the Loaded event is dispatched.
+			// On Windows, the Loaded event fires synchronously so IsLoadedFired is already true here.
+			if (CurrentPage.IsLoadedFired)
+			{
+				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
+			}
+			else
+			{
+				// Capture before _previousPage is nulled in SendNavigated() so OnCurrentPageLoaded
+				// receives the correct PreviousPage in NavigatedToEventArgs when it fires asynchronously.
+				_pendingPreviousPage = _previousPage;
+				_pendingNavigationType = _navigationType;
+				CurrentPage.Loaded += OnCurrentPageLoaded;
+			}
 		}
 
 		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
@@ -1661,35 +1791,16 @@ namespace Microsoft.Maui.Controls
 
 			if (!args.Cancelled)
 			{
-				NavigationType navigationType = NavigationType.Replace;
-
-				switch (args.Source)
-				{
-					case ShellNavigationSource.Pop:
-						navigationType = NavigationType.Pop;
-						break;
-					case ShellNavigationSource.ShellItemChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.ShellSectionChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.ShellContentChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.Push:
-						navigationType = NavigationType.Push;
-						break;
-					case ShellNavigationSource.PopToRoot:
-						navigationType = NavigationType.PopToRoot;
-						break;
-					case ShellNavigationSource.Insert:
-						navigationType = NavigationType.Insert;
-						break;
-				}
-
+				// Capture the current page now; SendNavigatingFrom will be called in
+				// UpdateCurrentState after the shell state is updated, ensuring CurrentPage
+				// correctly reflects the destination page at that point.
 				_previousPage = CurrentPage;
-				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
+			}
+      
+      // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
+			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
+			{
+				CurrentPage.Loaded -= OnCurrentPageLoaded;
 			}
 		}
 
@@ -2077,7 +2188,11 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
+				// Refresh Enabled on the predictive back callback; flyout state affects whether back is consumed here.
+				(this.Window as Window)?.NotifyNavigationStateChanged();
+			}
 		}
 
 		#region Shell Flyout Content

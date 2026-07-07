@@ -9,9 +9,11 @@ namespace Microsoft.Maui.Platform
 	public class MauiPageControl : UIPageControl, IUIViewLifeCycleEvents
 	{
 		const int DefaultIndicatorSize = 6;
+		const double IndicatorSizeTolerance = 0.001;
 
 		WeakReference<IIndicatorView>? _indicatorView;
 		bool _updatingPosition;
+		double _lastAppliedIndicatorSize = DefaultIndicatorSize;
 
 		public MauiPageControl()
 		{
@@ -63,13 +65,20 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIndicatorSize()
 		{
-			if (IndicatorSize == 0 || IndicatorSize == DefaultIndicatorSize)
+			if (IndicatorSize == 0 || IndicatorSize == _lastAppliedIndicatorSize)
+				return;
+
+			if (Math.Abs(IndicatorSize - _lastAppliedIndicatorSize) < IndicatorSizeTolerance)
 				return;
 
 			float scale = (float)IndicatorSize / DefaultIndicatorSize;
 			var newTransform = CGAffineTransform.MakeScale(scale, scale);
+			foreach (var view in Subviews)
+			{
+				view.Transform = newTransform;
+			}
 
-			Transform = newTransform;
+			_lastAppliedIndicatorSize = IndicatorSize;
 		}
 
 		public void UpdatePosition()

@@ -8,6 +8,8 @@ parameters:
   default: []
 - name: pool
   type: object
+- name: macPool
+  type: object
 - name: enableSourceBuild
   type: boolean
   default: false
@@ -26,13 +28,74 @@ parameters:
 - name: runAsPublic
   type: boolean
   default: true
+- name: is1ESPipeline
+  type: boolean
+  default: false
 
 stages:
 - stage: Pack
   displayName: Pack .NET MAUI
   dependsOn: []
   jobs:
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+  # macOS job
+  - template: ${{ iif(eq(parameters.is1ESPipeline, 'true'), '/eng/common/templates-official/jobs/jobs.yml@self', '/eng/common/templates/jobs/jobs.yml') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.macPool }}
+      enableMicrobuild: false
+      enablePublishUsingPipelines: false
+      enablePublishBuildAssets: false
+      enableTelemetry: true
+      enableSourceBuild: false
+      enableSourceIndex: false
+      publishAssetsImmediately: false
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+
+      workspace:
+        clean: all
+
+      jobs:
+      - job: pack_net_macOS
+        displayName: Pack macOS
+        timeoutInMinutes: 240
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        steps:
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        - script: $(_buildScriptMacOS) -restore -pack -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack-mac.binlog $(_OfficialBuildIdArgs)
+          displayName: Pack
+
+        - task: CopyFiles@2
+          displayName: Copy Native Binaries
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)/artifacts/bin'
+            Contents: |
+              */$(_BuildConfig)/*/*.resources.zip
+            TargetFolder: '$(Agent.TempDirectory)/native-binaries'
+
+        # Publish Mac Native Artifacts using arcade step template
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: ${{ parameters.is1ESPipeline }}
+            args:
+              targetPath: $(Agent.TempDirectory)/native-binaries
+              artifactName: MacNativeArtifacts
+              displayName: Publish Mac Native Artifacts
+              condition: always()
+
+        - ${{ each step in parameters.postSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+  # Windows job
+  - template: ${{ iif(eq(parameters.is1ESPipeline, 'true'), '/eng/common/templates-official/jobs/jobs.yml@self', '/eng/common/templates/jobs/jobs.yml') }}
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.pool }}
@@ -46,14 +109,6 @@ stages:
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
-      templateContext:
-        outputs:
-        - output: pipelineArtifact
-          artifact: APIScanFiles
-          path: $(Agent.TempDirectory)/APIScanFiles
-        - output: pipelineArtifact
-          artifact: Metadata
-          path: $(Agent.TempDirectory)/metadata
 
       workspace:
         clean: all
@@ -61,6 +116,8 @@ stages:
       jobs:
       - job: pack_net_Windows
         displayName: Pack Windows
+        dependsOn:
+        - pack_net_macOS
         timeoutInMinutes: 240
         preSteps:
         - checkout: self
@@ -71,6 +128,13 @@ stages:
         - ${{ each step in parameters.prepareSteps }}:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
+
+        # Download Mac native binaries built on macOS
+        - task: DownloadPipelineArtifact@2
+          displayName: Download Mac Native Binaries
+          inputs:
+            artifact: MacNativeArtifacts
+            path: '$(Build.SourcesDirectory)/artifacts/bin'
 
         # Run on public pipeline
         - ${{ if not(parameters.enableMicrobuild) }}:
@@ -102,6 +166,24 @@ stages:
             Contents: |
               **/*.json
             TargetFolder: '$(Agent.TempDirectory)\metadata'
+
+        # Publish APIScanFiles using arcade step template
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: ${{ parameters.is1ESPipeline }}
+            args:
+              targetPath: $(Agent.TempDirectory)/APIScanFiles
+              artifactName: APIScanFiles
+              displayName: Publish APIScanFiles
+
+        # Publish Metadata using arcade step template
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: ${{ parameters.is1ESPipeline }}
+            args:
+              targetPath: $(Agent.TempDirectory)/metadata
+              artifactName: Metadata
+              displayName: Publish Metadata
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:

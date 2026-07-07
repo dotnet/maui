@@ -17,11 +17,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 #if TIZEN || ANDROID
 			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 #endif
+#if IOS || MACCATALYST
+			[Controls.VisualElement.IsEnabledProperty.PropertyName] = MapIsEnabled,
+#endif
 			[Controls.CarouselView.IsSwipeEnabledProperty.PropertyName] = MapIsSwipeEnabled,
 			[Controls.CarouselView.PeekAreaInsetsProperty.PropertyName] = MapPeekAreaInsets,
 			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
-			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
+			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem,
+#if !WINDOWS  //More info : https://github.com/dotnet/maui/issues/29412
+			[Controls.CarouselView.LoopProperty.PropertyName] = MapLoop
+#endif
 		};
 	}
 }

@@ -1,0 +1,32 @@
+# Merge main → net11.0
+# Uses the shared dotnet/arcade merge flow infrastructure.
+# Configuration: /github-merge-flow-net11.jsonc
+#
+# Key features (from arcade):
+#   - Event-driven: triggers on push, with daily cron safety net
+#   - ResetToTargetPaths: auto-resets version files to target branch versions
+#   - QuietComments: reduces GitHub notification noise
+#   - Skips PRs when only Maestro bot commits exist
+#   - Updates existing open PR instead of creating new ones
+
+name: Merge main to net11.0
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+  # Daily safety net in case a push event is missed
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  Merge:
+    uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@main
+    with:
+      configuration_file_path: 'github-merge-flow-net11.jsonc'

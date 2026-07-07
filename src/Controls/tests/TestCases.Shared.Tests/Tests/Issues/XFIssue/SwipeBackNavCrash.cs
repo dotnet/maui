@@ -33,6 +33,10 @@ public class SwipeBackNavCrash : _IssuesUITest
 	{
 		App.WaitForElement("Swipe lightly left and right to crash this page");
 		App.SwipeLeftToRight();
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			App.SwipeRightToLeft();
+		}
 		App.WaitForElement("Swipe lightly left and right to crash this page");
 	}
 #endif

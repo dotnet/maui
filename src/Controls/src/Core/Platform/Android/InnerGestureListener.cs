@@ -235,8 +235,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void SetStartingPosition(MotionEvent e1)
 		{
-			_lastX = e1.GetX();
-			_lastY = e1.GetY();
+			_lastX = e1.RawX;
+			_lastY = e1.RawY;
 		}
 
 		bool StartScrolling(MotionEvent e2)
@@ -249,8 +249,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_isScrolling = true;
 
-			float totalX = e2.GetX() - _lastX;
-			float totalY = e2.GetY() - _lastY;
+			float totalX = e2.RawX - _lastX;
+			float totalY = e2.RawY - _lastY;
 
 			return _scrollDelegate(totalX, totalY, e2.PointerCount) || _swipeDelegate(totalX, totalY);
 		}

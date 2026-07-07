@@ -15,6 +15,10 @@ public class FlyoutPageViewModel : INotifyPropertyChanged
 	private bool _isEnabled = true;
 	private bool _isVisible = true;
 	private ImageSource _iconImageSource = "coffee.png";
+	private string _isPresentedChangedText = "Not Raised";
+	private string _backButtonPressedText = "Not Raised";
+	string _backButtonHandled = "False";
+
 
 	public string Title
 	{
@@ -131,6 +135,47 @@ public class FlyoutPageViewModel : INotifyPropertyChanged
 				_isVisible = value;
 				OnPropertyChanged();
 			}
+		}
+	}
+
+	public string IsPresentedChangedText
+	{
+		get => _isPresentedChangedText;
+		set
+		{
+			_isPresentedChangedText = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public string BackButtonPressedText
+	{
+		get => _backButtonPressedText;
+		set
+		{
+			_backButtonPressedText = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public string BackButtonHandled
+	{
+		get => _backButtonHandled;
+		set
+		{
+			_backButtonHandled = value;
+			OnPropertyChanged(nameof(BackButtonHandled));
+		}
+	}
+
+	bool _shouldHandleBack = false;
+	public bool ShouldHandleBackButton
+	{
+		get => _shouldHandleBack;
+		set
+		{
+			_shouldHandleBack = value;
+			OnPropertyChanged(nameof(ShouldHandleBackButton));
 		}
 	}
 

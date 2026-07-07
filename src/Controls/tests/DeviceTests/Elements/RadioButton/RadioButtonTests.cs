@@ -57,6 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+#if TESTS_FAILS_ON_WINDOWS // For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact]
 		[Category(TestCategory.RadioButton)]
 		public async Task RadioButtonHandlerShouldNotLeak()
@@ -101,5 +102,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(radioButtonHandlerRef, layoutHandlerRef, layoutPlatformRef, radioButtonPlatformRef);
 		}
+#endif
 	}
 }

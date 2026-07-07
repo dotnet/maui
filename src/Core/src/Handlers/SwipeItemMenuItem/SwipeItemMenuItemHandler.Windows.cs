@@ -1,7 +1,12 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 
 namespace Microsoft.Maui.Handlers
@@ -45,6 +50,38 @@ namespace Microsoft.Maui.Handlers
 		void OnSwipeItemInvoked(WSwipeItem sender, Microsoft.UI.Xaml.Controls.SwipeItemInvokedEventArgs args)
 		{
 			VirtualView.OnInvoked();
+		}
+
+		internal static async Task LoadFileIconAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem item)
+		{
+			if (handler.PlatformView is not WSwipeItem swipeItem || handler.MauiContext is null)
+			{
+				return;
+			}
+
+			if (item.Source is null)
+			{
+				swipeItem.IconSource = null;
+				return;
+			}
+
+			var imageSourceServiceProvider = handler.MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var scale = handler.MauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
+			var source = item.Source;
+			try
+			{
+				var service = imageSourceServiceProvider.GetRequiredImageSourceService(source);
+				// Do not use ConfigureAwait(false): WinUI DependencyProperty writes require the UI thread.
+				var result = await service.GetImageSourceAsync(source, scale);
+				if (item.Source == source)
+				{
+					swipeItem.IconSource = result?.Value is WImageSource platformImage ? new ImageIconSource { ImageSource = platformImage } : null;
+				}
+			}
+			catch (System.Exception ex)
+			{
+				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.Log(LogLevel.Warning, new EventId(), "Cannot load SwipeItem Icon", ex, static (state, _) => state);
+			}
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter

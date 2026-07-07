@@ -33,6 +33,9 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           buildConfig: ${{ parameters.buildConfig }}
           repoLogPath: ${{ parameters.repoLogPath }}
+          # Skip Xcode provisioning for Android-only tests (RunOnAndroid category)
+          # All other tests may build or run iOS/macOS targets and need Xcode
+          skipXcode: ${{ eq(job.testCategory, 'RunOnAndroid') }}
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
