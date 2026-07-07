@@ -31,21 +31,7 @@ public class SwipeViewControlMainPage : ContentPage
 			Text = "Options",
 			Command = new Command(async () =>
 			{
-				_viewModel.IsEnabled = true;
-				_viewModel.IsVisible = true;
-				_viewModel.BackgroundColor = Color.FromArgb("#F0F0F0");
-				_viewModel.SwipeItemsBackgroundColor = Color.FromArgb("#6A5ACD");
-				_viewModel.FlowDirection = FlowDirection.LeftToRight;
-				_viewModel.Threshold = 100;
-				_viewModel.HasShadow = false;
-				_viewModel.SwipeMode = SwipeMode.Reveal;
-				_viewModel.SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.Auto;
-				_viewModel.EventInvokedText = "Event not invoked yet";
-				_viewModel.SwipeStartedText = "Swipe Started: ";
-				_viewModel.SwipeChangingText = "Swipe Changing: ";
-				_viewModel.SwipeEndedText = "Swipe Ended: ";
-				_viewModel.SelectedSwipeItemType = "Label";
-				_viewModel.SelectedContentType = "Label";
+				_viewModel.Reset();
 				var optionsPage = new SwipeViewOptionsPage(viewModel, this);
 				optionsPage.SwipeViewOptionsApplied += (content, swipeItem) =>
 				{
@@ -94,7 +80,16 @@ public class SwipeViewControlMainPage : ContentPage
 				.ApplyBinding(Label.TextProperty, nameof(_viewModel.SwipeChangingText)),
 
 			new Label { FontSize = 11, TextColor = Colors.Red, AutomationId = "SwipeEndedLabel" }
-				.ApplyBinding(Label.TextProperty, nameof(_viewModel.SwipeEndedText))
+				.ApplyBinding(Label.TextProperty, nameof(_viewModel.SwipeEndedText)),
+
+			new Label { FontSize = 11, TextColor = Colors.Red, AutomationId = "OpenRequestedLabel" }
+				.ApplyBinding(Label.TextProperty, nameof(_viewModel.OpenRequestedText)),
+
+			new Label { FontSize = 11, TextColor = Colors.Red, AutomationId = "CloseRequestedLabel" }
+				.ApplyBinding(Label.TextProperty, nameof(_viewModel.CloseRequestedText)),
+
+			new Label { FontSize = 11, TextColor = Colors.Red, AutomationId = "SwipeChangingCountLabel" }
+				.ApplyBinding(Label.TextProperty, nameof(_viewModel.SwipeChangingCount))
 		}
 		};
 
@@ -140,8 +135,8 @@ public class SwipeViewControlMainPage : ContentPage
 						var itemLabel = new Label { FontSize = 18, HeightRequest = 30 };
 						itemLabel.SetBinding(Label.TextProperty, nameof(SwipeViewViewModel.ItemModel.Title));
 
-						var leftSwipeItems = CreateSwipeItems(swipeItemType);
-						var rightSwipeItems = CreateSwipeItems(swipeItemType);
+						var leftSwipeItems = CreateSwipeItems(swipeItemType, allowMultiple: true);
+						var rightSwipeItems = CreateSwipeItems(swipeItemType, allowMultiple: true);
 						var topSwipeItems = CreateSwipeItems(swipeItemType);
 						var bottomSwipeItems = CreateSwipeItems(swipeItemType);
 						var swipeView = new SwipeView
@@ -180,7 +175,7 @@ public class SwipeViewControlMainPage : ContentPage
 		return finalContent;
 	}
 
-	private SwipeItems CreateSwipeItems(string type)
+	private SwipeItems CreateSwipeItems(string type, bool allowMultiple = false)
 	{
 		var swipeItems = new SwipeItems
 		{
@@ -195,10 +190,40 @@ public class SwipeViewControlMainPage : ContentPage
 				{
 					Text = "Label",
 					AutomationId = "SwipeLabelItem",
-					BackgroundColor = _viewModel.SwipeItemsBackgroundColor
+					BackgroundColor = _viewModel.SwipeItemsBackgroundColor,
+					IsEnabled = !_viewModel.DisableSwipeItem
 				};
-				labelItem.Invoked += (s, e) => _viewModel.EventInvokedText = "Label Invoked";
+				if (_viewModel.UseCommandBinding)
+				{
+					labelItem.Command = _viewModel.SwipeItemCommand;
+					labelItem.CommandParameter = "Label";
+				}
+				else
+				{
+					labelItem.Invoked += (s, e) => _viewModel.EventInvokedText = "Label Invoked";
+				}
 				swipeItems.Add(labelItem);
+
+				if (_viewModel.UseMultipleSwipeItems && allowMultiple)
+				{
+					var labelItem2 = new SwipeItem
+					{
+						Text = "Label2",
+						AutomationId = "SwipeLabelItem2",
+						BackgroundColor = Colors.Orange,
+						IsEnabled = !_viewModel.DisableSwipeItem
+					};
+					if (_viewModel.UseCommandBinding)
+					{
+						labelItem2.Command = _viewModel.SwipeItemCommand;
+						labelItem2.CommandParameter = "Label2";
+					}
+					else
+					{
+						labelItem2.Invoked += (s, e) => _viewModel.EventInvokedText = "Label2 Invoked";
+					}
+					swipeItems.Add(labelItem2);
+				}
 				break;
 
 			case "IconImageSource":
@@ -207,10 +232,41 @@ public class SwipeViewControlMainPage : ContentPage
 					Text = "Icon",
 					AutomationId = "SwipeIconItem",
 					IconImageSource = "groceries.png",
-					BackgroundColor = _viewModel.SwipeItemsBackgroundColor
+					BackgroundColor = _viewModel.SwipeItemsBackgroundColor,
+					IsEnabled = !_viewModel.DisableSwipeItem
 				};
-				iconItem.Invoked += (s, e) => _viewModel.EventInvokedText = "Icon Invoked";
+				if (_viewModel.UseCommandBinding)
+				{
+					iconItem.Command = _viewModel.SwipeItemCommand;
+					iconItem.CommandParameter = "Icon";
+				}
+				else
+				{
+					iconItem.Invoked += (s, e) => _viewModel.EventInvokedText = "Icon Invoked";
+				}
 				swipeItems.Add(iconItem);
+
+				if (_viewModel.UseMultipleSwipeItems && allowMultiple)
+				{
+					var iconItem2 = new SwipeItem
+					{
+						Text = "Icon2",
+						AutomationId = "SwipeIconItem2",
+						IconImageSource = "groceries.png",
+						BackgroundColor = Colors.Orange,
+						IsEnabled = !_viewModel.DisableSwipeItem
+					};
+					if (_viewModel.UseCommandBinding)
+					{
+						iconItem2.Command = _viewModel.SwipeItemCommand;
+						iconItem2.CommandParameter = "Icon2";
+					}
+					else
+					{
+						iconItem2.Invoked += (s, e) => _viewModel.EventInvokedText = "Icon2 Invoked";
+					}
+					swipeItems.Add(iconItem2);
+				}
 				break;
 
 			case "Button":
@@ -233,8 +289,8 @@ public class SwipeViewControlMainPage : ContentPage
 
 	private SwipeView CreateSwipeView(View contentView, string swipeItemType)
 	{
-		var leftItems = CreateSwipeItems(swipeItemType);
-		var rightItems = CreateSwipeItems(swipeItemType);
+		var leftItems = CreateSwipeItems(swipeItemType, allowMultiple: true);
+		var rightItems = CreateSwipeItems(swipeItemType, allowMultiple: true);
 		var topItems = CreateSwipeItems(swipeItemType);
 		var bottomItems = CreateSwipeItems(swipeItemType);
 		var swipeView = new SwipeView
@@ -265,10 +321,19 @@ public class SwipeViewControlMainPage : ContentPage
 			_viewModel.SwipeStartedText = $"Swipe Started: {e.SwipeDirection}";
 
 		swipeView.SwipeChanging += (s, e) =>
+		{
+			_viewModel.SwipeChangingCount++;
 			_viewModel.SwipeChangingText = $"Swipe Changing: {e.SwipeDirection}";
+		};
 
 		swipeView.SwipeEnded += (s, e) =>
 			_viewModel.SwipeEndedText = $"Swipe Ended: {e.SwipeDirection}, IsOpen: {(e.IsOpen ? "Open" : "Closed")}";
+
+		swipeView.OpenRequested += (s, e) =>
+			_viewModel.OpenRequestedText = $"Open Requested: {e.OpenSwipeItem}";
+
+		swipeView.CloseRequested += (s, e) =>
+			_viewModel.CloseRequestedText = $"Close Requested: Animated={e.Animated}";
 	}
 
 	private View CreateProgrammaticActionButtons()

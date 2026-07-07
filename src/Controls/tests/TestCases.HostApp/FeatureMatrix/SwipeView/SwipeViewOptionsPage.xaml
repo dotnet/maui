@@ -80,5 +80,20 @@
             <CheckBox IsChecked="{Binding HasShadow}" AutomationId="ShadowCheckBox"/>
             <Label Text="Has Shadow" VerticalOptions="Center"/>
          </HorizontalStackLayout>
+        <!-- Multiple SwipeItems per side -->
+        <HorizontalStackLayout Spacing="10">
+            <CheckBox IsChecked="{Binding UseMultipleSwipeItems}" AutomationId="UseMultipleSwipeItemsCheckBox"/>
+            <Label Text="Multiple SwipeItems Per Side" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+        <!-- Disabled SwipeItem -->
+        <HorizontalStackLayout Spacing="10">
+            <CheckBox IsChecked="{Binding DisableSwipeItem}" AutomationId="DisableSwipeItemCheckBox"/>
+            <Label Text="Disabled SwipeItem" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+        <!-- Command binding on SwipeItem -->
+        <HorizontalStackLayout Spacing="10">
+            <CheckBox IsChecked="{Binding UseCommandBinding}" AutomationId="UseCommandBindingCheckBox"/>
+            <Label Text="Use Command Binding" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
     </VerticalStackLayout>
 </ContentPage>

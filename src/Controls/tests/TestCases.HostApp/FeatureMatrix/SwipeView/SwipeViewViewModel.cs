@@ -21,8 +21,14 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 	private string _swipeStartedText = "Swipe Started: ";
 	private string _swipeChangingText = "Swipe Changing: ";
 	private string _swipeEndedText = "Swipe Ended: ";
+	private string _openRequestedText = "Open Requested: ";
+	private string _closeRequestedText = "Close Requested: ";
+	private int _swipeChangingCount = 0;
 	private string _selectedSwipeItemType = "Label";
 	private string _selectedContentType = "Label";
+	private bool _useMultipleSwipeItems = false;
+	private bool _disableSwipeItem = false;
+	private bool _useCommandBinding = false;
 
 	public event PropertyChangedEventHandler PropertyChanged;
 	public event Action<OpenSwipeItem> RequestOpen;
@@ -35,6 +41,8 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 		OpenTopCommand = new Command(() => RequestOpen?.Invoke(OpenSwipeItem.TopItems));
 		OpenBottomCommand = new Command(() => RequestOpen?.Invoke(OpenSwipeItem.BottomItems));
 		CloseCommand = new Command(() => RequestClose?.Invoke());
+		SwipeItemCommand = new Command<string>(parameter =>
+			EventInvokedText = $"Command Invoked: {parameter}");
 	}
 
 	public bool IsEnabled
@@ -143,6 +151,24 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 		set { _swipeEndedText = value; OnPropertyChanged(nameof(SwipeEndedText)); }
 	}
 
+	public string OpenRequestedText
+	{
+		get => _openRequestedText;
+		set { _openRequestedText = value; OnPropertyChanged(nameof(OpenRequestedText)); }
+	}
+
+	public string CloseRequestedText
+	{
+		get => _closeRequestedText;
+		set { _closeRequestedText = value; OnPropertyChanged(nameof(CloseRequestedText)); }
+	}
+
+	public int SwipeChangingCount
+	{
+		get => _swipeChangingCount;
+		set { _swipeChangingCount = value; OnPropertyChanged(nameof(SwipeChangingCount)); }
+	}
+
 	public string SelectedContentType
 	{
 		get => _selectedContentType;
@@ -169,12 +195,52 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public bool UseMultipleSwipeItems
+	{
+		get => _useMultipleSwipeItems;
+		set
+		{
+			if (_useMultipleSwipeItems != value)
+			{
+				_useMultipleSwipeItems = value;
+				OnPropertyChanged(nameof(UseMultipleSwipeItems));
+			}
+		}
+	}
+
+	public bool DisableSwipeItem
+	{
+		get => _disableSwipeItem;
+		set
+		{
+			if (_disableSwipeItem != value)
+			{
+				_disableSwipeItem = value;
+				OnPropertyChanged(nameof(DisableSwipeItem));
+			}
+		}
+	}
+
+	public bool UseCommandBinding
+	{
+		get => _useCommandBinding;
+		set
+		{
+			if (_useCommandBinding != value)
+			{
+				_useCommandBinding = value;
+				OnPropertyChanged(nameof(UseCommandBinding));
+			}
+		}
+	}
+
 
 	public ICommand OpenLeftCommand { get; }
 	public ICommand OpenRightCommand { get; }
 	public ICommand OpenTopCommand { get; }
 	public ICommand OpenBottomCommand { get; }
 	public ICommand CloseCommand { get; }
+	public ICommand SwipeItemCommand { get; }
 
 	public ObservableCollection<ItemModel> Items { get; set; } = new()
 	{
@@ -185,6 +251,31 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 		new ItemModel { Title = "Item 5" },
 		new ItemModel { Title = "Item 6" }
 	};
+
+	public void Reset()
+	{
+		IsEnabled = true;
+		IsVisible = true;
+		BackgroundColor = Color.FromArgb("#F0F0F0");
+		SwipeItemsBackgroundColor = Color.FromArgb("#6A5ACD");
+		FlowDirection = FlowDirection.LeftToRight;
+		Threshold = 100;
+		HasShadow = false;
+		SwipeMode = SwipeMode.Reveal;
+		SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.Auto;
+		EventInvokedText = "Event not invoked yet";
+		SwipeStartedText = "Swipe Started: ";
+		SwipeChangingText = "Swipe Changing: ";
+		SwipeEndedText = "Swipe Ended: ";
+		OpenRequestedText = "Open Requested: ";
+		CloseRequestedText = "Close Requested: ";
+		SwipeChangingCount = 0;
+		SelectedSwipeItemType = "Label";
+		SelectedContentType = "Label";
+		UseMultipleSwipeItems = false;
+		DisableSwipeItem = false;
+		UseCommandBinding = false;
+	}
 
 	void OnPropertyChanged(string name) =>
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

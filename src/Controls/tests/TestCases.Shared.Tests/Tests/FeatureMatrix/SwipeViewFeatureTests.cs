@@ -138,7 +138,39 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(7)]
+	public void VerifySwipeViewOpenRequestedEventFiresOnProgrammaticOpen()
+	{
+		App.WaitForElement("Options");
+		Assert.That(App.WaitForElement("OpenRequestedLabel").GetText(), Is.EqualTo("Open Requested: "));
+		App.WaitForElement("OpenLeft");
+		App.Tap("OpenLeft");
+		// OpenRequested fires synchronously in SwipeView.Open() before platform dispatch,
+		// so this assertion works on every platform even when the platform can't visually open.
+		Assert.That(App.WaitForElement("OpenRequestedLabel").GetText(), Is.EqualTo("Open Requested: LeftItems"));
+		App.WaitForElement("OpenRight");
+		App.Tap("OpenRight");
+		Assert.That(App.WaitForElement("OpenRequestedLabel").GetText(), Is.EqualTo("Open Requested: RightItems"));
+		App.WaitForElement("OpenTop");
+		App.Tap("OpenTop");
+		Assert.That(App.WaitForElement("OpenRequestedLabel").GetText(), Is.EqualTo("Open Requested: TopItems"));
+		App.WaitForElement("OpenBottom");
+		App.Tap("OpenBottom");
+		Assert.That(App.WaitForElement("OpenRequestedLabel").GetText(), Is.EqualTo("Open Requested: BottomItems"));
+	}
+
+	[Test, Order(8)]
+	public void VerifySwipeViewCloseRequestedEventFiresOnProgrammaticClose()
+	{
+		App.WaitForElement("Options");
+		Assert.That(App.WaitForElement("CloseRequestedLabel").GetText(), Is.EqualTo("Close Requested: "));
+		App.WaitForElement("CloseSwipeViewButton");
+		App.Tap("CloseSwipeViewButton");
+		// CloseRequested fires synchronously in SwipeView.Close() before platform dispatch.
+		Assert.That(App.WaitForElement("CloseRequestedLabel").GetText(), Is.EqualTo("Close Requested: Animated=True"));
+	}
+
+	[Test, Order(9)]
 	public void VerifySwipeViewWithImageContentChanged()
 	{
 		App.WaitForElement("Options");
@@ -151,7 +183,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(10)]
 	public void VerifySwipeViewWithCollectionViewContentChanged()
 	{
 		App.WaitForElement("Options");
@@ -165,7 +197,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
-	[Test]
+	[Test, Order(11)]
 	public void VerifySwipeViewWithLabelContentAndThreshold()
 	{
 		App.WaitForElement("Options");
@@ -180,7 +212,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(12)]
 	public void VerifySwipeViewWithImageContentAndThreshold()
 	{
 		App.WaitForElement("Options");
@@ -197,7 +229,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(13)]
 	public void VerifySwipeViewWithCollectionViewContentAndThreshold()
 	{
 		App.WaitForElement("Options");
@@ -215,7 +247,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(14)]
 	public void VerifySwipeViewWithLabelContentAndBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -228,7 +260,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(15)]
 	public void VerifySwipeViewWithImageContentAndBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -243,7 +275,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(16)]
 	public void VerifySwipeViewWithCollectionViewContentAndBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -258,7 +290,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(17)]
 	public void VerifySwipeViewWithLabelContentAndFlowDirection()
 	{
 		App.WaitForElement("Options");
@@ -271,7 +303,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(18)]
 	public void VerifySwipeViewWithImageContentAndFlowDirection()
 	{
 		App.WaitForElement("Options");
@@ -286,7 +318,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(19)]
 	public void VerifySwipeViewWithCollectionViewContentAndFlowDirection()
 	{
 		App.WaitForElement("Options");
@@ -302,7 +334,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29812
-	[Test]
+	[Test, Order(20)]
 	public void VerifySwipeViewWithLabelContentAndShadow()
 	{
 		App.WaitForElement("Options");
@@ -315,7 +347,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(21)]
 	public void VerifySwipeViewWithImageContentAndShadow()
 	{
 		App.WaitForElement("Options");
@@ -332,7 +364,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
-	[Test]
+	[Test, Order(22)]
 	public void VerifySwipeViewWithLabelContentAndIsEnabledFalse()
 	{
 		App.WaitForElement("Options");
@@ -346,7 +378,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Label");
 	}
 
-	[Test]
+	[Test, Order(23)]
 	public void VerifySwipeViewWithImageContentAndIsEnabledFalse()
 	{
 		App.WaitForElement("Options");
@@ -362,7 +394,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Label");
 	}
 
-	[Test]
+	[Test, Order(24)]
 	public void VerifySwipeViewWithCollectionViewContentAndIsEnabledFalse()
 	{
 		App.WaitForElement("Options");
@@ -379,7 +411,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(25)]
 	public void VerifySwipeViewWithLabelContentAndIsVisibleFalse()
 	{
 		App.WaitForElement("Options");
@@ -391,7 +423,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForNoElement("SwipeViewControl");
 	}
 
-	[Test]
+	[Test, Order(26)]
 	public void VerifySwipeViewWithImageContentAndIsVisibleFalse()
 	{
 		App.WaitForElement("Options");
@@ -405,7 +437,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForNoElement("SwipeViewImage");
 	}
 
-	[Test]
+	[Test, Order(27)]
 	public void VerifySwipeViewWithCollectionViewContentAndIsVisibleFalse()
 	{
 		App.WaitForElement("Options");
@@ -420,7 +452,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30947
-	[Test]
+	[Test, Order(28)]
 	public void VerifySwipeViewWithLabelContentSwipeMode()
 	{
 		App.WaitForElement("Options");
@@ -434,7 +466,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("EventInvokedLabel").GetText(), Is.EqualTo("Label Invoked"));
 	}
 
-	[Test]
+	[Test, Order(29)]
 	public void VerifySwipeViewWithImageContentSwipeMode()
 	{
 		App.WaitForElement("Options");
@@ -450,7 +482,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("EventInvokedLabel").GetText(), Is.EqualTo("Label Invoked"));
 	}
 
-	[Test]
+	[Test, Order(30)]
 	public void VerifySwipeViewWithCollectionViewContentSwipeMode()
 	{
 		App.WaitForElement("Options");
@@ -466,7 +498,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("EventInvokedLabel").GetText(), Is.EqualTo("Label Invoked"));
 	}
 
-	[Test]
+	[Test, Order(31)]
 	public void VerifyLabelWithSwipeRevealAndSwipeBehaviorOnInvokedAuto()
 	{
 		App.WaitForElement("Options");
@@ -480,7 +512,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Label");
 	}
 
-	[Test]
+	[Test, Order(32)]
 	public void VerifyImageWithSwipeRevealAndSwipeBehaviorOnInvokedAuto()
 	{
 		App.WaitForElement("Options");
@@ -493,7 +525,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewImage");
 		App.SwipeLeftToRight("SwipeViewImage");
-		bool iconDismissed = true;
+		bool iconDismissed = false;
 		for (int i = 0; i < 3 && !iconDismissed; i++)
 		{
 			try
@@ -501,21 +533,20 @@ public class SwipeViewFeatureTests : _GalleryUITest
 				App.WaitForElement("Icon");
 				App.Tap("Icon");
 				App.WaitForNoElement("Icon");
-				iconDismissed = false;
+				iconDismissed = true;
 				break;
 			}
 			catch (Exception)
 			{
 				// retry
 			}
-
-			Assert.That(iconDismissed, Is.True, "Icon did not disappear after 3 attempts.");
 		}
 
+		Assert.That(iconDismissed, Is.True, "Icon did not disappear after 3 attempts.");
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
-	[Test]
+	[Test, Order(33)]
 	public void VerifyCollectionViewWithSwipeRevealAndSwipeBehaviorOnInvokedAuto()
 	{
 		App.WaitForElement("Options");
@@ -534,7 +565,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(34)]
 	public void VerifySwipeModeRevealWithSwipeBehaviorOnInvokedRemainOpen()
 	{
 		App.WaitForElement("Options");
@@ -550,7 +581,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Label");
 	}
 
-	[Test]
+	[Test, Order(35)]
 	public void VerifySwipeModeRevealWithSwipeBehaviorOnInvokedCloseSwipeViewButton()
 	{
 		App.WaitForElement("Options");
@@ -566,7 +597,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Label");
 	}
 
-	[Test]
+	[Test, Order(36)]
 	public void VerifySwipeModeExecuteWithSwipeBehaviorOnInvokedAuto()
 	{
 		App.WaitForElement("Options");
@@ -581,7 +612,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(37)]
 	public void VerifySwipeModeExecuteWithSwipeBehaviorOnInvokedRemainOpen()
 	{
 		App.WaitForElement("Options");
@@ -599,7 +630,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Label");
 	}
 
-	[Test]
+	[Test, Order(38)]
 	public void VerifySwipeModeExecuteWithSwipeBehaviorOnInvokedCloseSwipeViewButton()
 	{
 		App.WaitForElement("Options");
@@ -616,7 +647,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(39)]
 	public void VerifySwipeViewWithLabelSwipeItemsBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -630,7 +661,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(40)]
 	public void VerifySwipeViewWithIconImageSwipeItemsBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -647,7 +678,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
-	[Test]
+	[Test, Order(41)]
 	public void VerifySwipeViewWithButtonSwipeItemsBackgroundColor()
 	{
 		App.WaitForElement("Options");
@@ -664,7 +695,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(42)]
 	public void VerifySwipeViewWithIconImageSwipeItemChanged()
 	{
 		App.WaitForElement("Options");
@@ -679,7 +710,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
-	[Test]
+	[Test, Order(43)]
 	public void VerifySwipeViewWithButtonSwipeItemChanged()
 	{
 		App.WaitForElement("Options");
@@ -694,7 +725,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(44)]
 	public void VerifyCollectionViewContentWithLabelSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -712,7 +743,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifySwipeViewScreenshot();
 	}
 
-	[Test]
+	[Test, Order(45)]
 	public void VerifyCollectionViewContentWithIconImageSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -731,7 +762,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
-	[Test]
+	[Test, Order(46)]
 	public void VerifyCollectionViewContentWithButtonSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -750,7 +781,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(47)]
 	public void VerifyImageContentWithLabelSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -766,7 +797,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Label");
 	}
 
-	[Test]
+	[Test, Order(48)]
 	public void VerifyImageContentWithIconImageSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -783,7 +814,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
-	[Test]
+	[Test, Order(49)]
 	public void VerifyImageContentWithButtonSwipeItem()
 	{
 		App.WaitForElement("Options");
@@ -800,7 +831,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(50)]
 	public void VerifyThresholdWithSwipeMode()
 	{
 		App.WaitForElement("Options");
@@ -815,6 +846,93 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("SwipeViewControl");
 		App.SwipeLeftToRight("SwipeViewControl");
 		Assert.That(App.WaitForElement("SwipeStartedLabel").GetText(), Is.EqualTo("Swipe Started: Right"));
+	}
+
+	[Test, Order(51)]
+	public void VerifySwipeViewWithMultipleSwipeItemsPerSide()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("UseMultipleSwipeItemsCheckBox");
+		App.Tap("UseMultipleSwipeItemsCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwipeViewControl");
+		App.SwipeLeftToRight("SwipeViewControl");
+		App.WaitForElement("Label");
+		App.WaitForElement("Label2");
+		App.Tap("Label2");
+		Assert.That(App.WaitForElement("EventInvokedLabel").GetText(), Is.EqualTo("Label2 Invoked"));
+	}
+
+	[Test, Order(52)]
+	public void VerifySwipeViewWithDisabledSwipeItem()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("DisableSwipeItemCheckBox");
+		App.Tap("DisableSwipeItemCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwipeViewControl");
+		App.SwipeLeftToRight("SwipeViewControl");
+		// A disabled SwipeItem should still render after swipe (IsEnabled=false must not crash or hide the item).
+		App.WaitForElement("Label");
+		VerifySwipeViewScreenshot();
+	}
+
+	[Test, Order(53)]
+	public void VerifySwipeViewWithSwipeItemCommandBinding()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("UseCommandBindingCheckBox");
+		App.Tap("UseCommandBindingCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwipeViewControl");
+		App.SwipeLeftToRight("SwipeViewControl");
+		App.WaitForElement("Label");
+		App.Tap("Label");
+		// SwipeItem.Command should fire with the bound CommandParameter.
+		Assert.That(App.WaitForElement("EventInvokedLabel").GetText(), Is.EqualTo("Command Invoked: Label"));
+	}
+
+	[Test, Order(54)]
+	public void VerifySwipeViewWithCombinedThresholdSwipeModeAndBackground()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ThresholdEntry");
+		App.ClearText("ThresholdEntry");
+		App.EnterText("ThresholdEntry", "30");
+		App.WaitForElement("ExecuteSwipeMode");
+		App.Tap("ExecuteSwipeMode");
+		App.WaitForElement("SkyBlueBackground");
+		App.Tap("SkyBlueBackground");
+		App.WaitForElement("YellowSwipeItemBackground");
+		App.Tap("YellowSwipeItemBackground");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwipeViewControl");
+		App.SwipeLeftToRight("SwipeViewControl");
+		// Combined properties should all take effect: Execute mode fires the invoke on swipe.
+		Assert.That(App.WaitForElement("EventInvokedLabel").GetText(), Is.EqualTo("Label Invoked"));
+		VerifySwipeViewScreenshot();
+	}
+
+	[Test, Order(55)]
+	public void VerifySwipeChangingEventFiresMultipleTimesDuringGesture()
+	{
+		App.WaitForElement("SwipeViewControl");
+		Assert.That(App.WaitForElement("SwipeChangingCountLabel").GetText(), Is.EqualTo("0"));
+		App.SwipeLeftToRight("SwipeViewControl");
+		// SwipeChanging should fire multiple times mid-gesture, not just once.
+		var countText = App.WaitForElement("SwipeChangingCountLabel").GetText();
+		Assert.That(int.TryParse(countText, out var count), Is.True,
+			$"SwipeChangingCountLabel should contain an integer, was: '{countText}'");
+		Assert.That(count, Is.GreaterThan(1),
+			$"SwipeChanging should fire multiple times during a swipe gesture, but fired {count} times.");
 	}
 #endif
 
