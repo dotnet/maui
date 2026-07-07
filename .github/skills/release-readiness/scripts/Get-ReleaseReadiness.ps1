@@ -2033,6 +2033,93 @@ function Get-BackportPrsForSr {
     return @($list)
 }
 
+function Resolve-ClosedFixUnlinked {
+    <#
+    .SYNOPSIS
+        Recover 'closed-fix-unlinked' for a CLOSED regression issue whose fix
+        lives ONLY in comment prose (no closing keyword, no timeline link).
+
+    .DESCRIPTION
+        Maintainers routinely close a regression with a plain-text comment
+        ("fixed by PR #35028") that GitHub never turns into a structured link.
+        Recover the cited PR and — ONLY when it actually MERGED and its commit
+        is verifiably on THIS SR branch — classify 'closed-fix-unlinked': the
+        fix is present (no ship risk), but the issue<->PR link is missing and
+        should be added for traceability.
+
+        Two gates make prose evidence safe, and BOTH are required:
+          1. fix-phrase ONLY — the comment must pair the PR with fix/resolve/
+             close language ("was fixed by PR #X"). A BARE mention is rejected
+             because regression issues routinely name the CAUSE PR for context
+             ("Before PR #32080 ... After PR #32080 the behavior changed"), and
+             the cause naturally lives on the branch — it is not a fix.
+          2. merged AND on the SR branch — a cited PR that never merged, or
+             merged elsewhere, is not proof the fix shipped here.
+
+        Reverted fixes are dropped (a rolled-back fix is not a fix), mirroring
+        the $revertedPrSet / Revert-title handling on the SR-contents and
+        candidate paths.
+
+        Returns the 'closed-fix-unlinked' result hashtable, or $null when the
+        issue is not CLOSED or no cited PR survives both gates (caller falls
+        back to its own no-fix-yet handling).
+    #>
+    param($Ctx, $Issue, $RevertedPrSet)
+
+    $issueState = Get-AzdoProp $Issue 'state'
+    if ($issueState -ne 'CLOSED') { return $null }
+
+    $commentPrs = Get-IssueCommentPrs -Repo $Ctx.repo -IssueNumber $Issue.number
+    $verifiedFixes = @()
+    foreach ($cp in $commentPrs) {
+        # Gate 1: require explicit fix language. Bare mentions (the cause-PR
+        # blame pattern) are NOT fixes and must not reclassify the issue.
+        if ($cp.evidence -ne 'fix-phrase') { continue }
+        if ($cp.number -eq $Issue.number) { continue }   # self-reference
+        $info = Get-PrInfo -Repo $Ctx.repo -PrNumber $cp.number
+        if (-not $info) { continue }
+        if ($info.state -ne 'MERGED') { continue }
+        # A reverted fix is NOT a fix. Mirror the main SR-contents/candidate
+        # paths: drop PRs the SR later reverted, and drop PRs that are themselves
+        # rollbacks ("Revert ..." titles). Without this, the `(#<num>)` on-branch
+        # token checked below matches the reverted fix's number inside the revert
+        # commit's own subject `Revert "... (#num)" (#N)`, so a rolled-back fix
+        # would pass the on-branch gate and be reported as "No ship risk".
+        if ($RevertedPrSet.ContainsKey([int]$info.number)) { continue }
+        if (($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')) { continue }
+        # Skip agent/skill/workflow PRs that only mention the issue for context.
+        if (Test-PrIsToolingOnly -Files $info.files) { continue }
+        $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
+        # Gate 2: presence on the SR branch via EITHER signal — direct SHA
+        # ancestry (fix merged straight to SR) OR the `(#<num>)` subject token
+        # (fix flowed in from inflight/main under a different SHA — the common
+        # case).
+        $onSr = (Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.srBranch)") `
+                -or (Test-PrNumberOnBranch -PrNumber ([int]$info.number) -BranchRef "origin/$($Ctx.srBranch)")
+        if (-not $onSr) { continue }
+        $verifiedFixes += @{
+            number = [int]$info.number
+            title = $info.title
+            state = $info.state
+            mergeSha = $mergeSha
+            evidenceType = "comment-$($cp.evidence)"
+        }
+    }
+    if ($verifiedFixes.Count -gt 0) {
+        $prList = (@($verifiedFixes | ForEach-Object { "#$($_.number)" }) | Sort-Object -Unique) -join ', '
+        return @{
+            classification = 'closed-fix-unlinked'
+            confidence = 'high'
+            evidence = @("Issue is CLOSED and fix PR $prList is MERGED and present on $($Ctx.srBranch), but was never linked to the issue (no closing keyword, no timeline cross-reference). Linkage recovered from a closing comment that explicitly names the fix.")
+            candidateFixPrs = @($verifiedFixes | ForEach-Object {
+                @{ number = $_.number; title = $_.title; state = $_.state; evidenceType = $_.evidenceType }
+            })
+            recommendedAction = "No ship risk — fix is already in the SR. Add a closing reference for traceability (e.g. ``Fixes #$($Issue.number)`` in $prList, or link via the issue's Development panel) so future runs classify it automatically."
+        }
+    }
+    return $null
+}
+
 function Classify-RegressionCandidate {
     param($Issue, $CandidatePrs, $Ctx, $SrContents)
 
@@ -2171,74 +2258,10 @@ function Classify-RegressionCandidate {
 
         # ── FALLBACK: closed issue whose fix lives ONLY in comment prose ──
         # No timeline-cross-referenced candidate survived the evidence filter,
-        # but the issue is CLOSED. Maintainers routinely close a regression with
-        # a plain-text comment ("fixed by PR #35028") that GitHub never turns
-        # into a structured link. Recover the cited PR and — ONLY when it
-        # actually MERGED and its commit is verifiably on THIS SR branch —
-        # classify 'closed-fix-unlinked': the fix is present (no ship risk), but
-        # the issue<->PR link is missing and should be added for traceability.
-        #
-        # Two gates make prose evidence safe, and BOTH are required:
-        #   1. fix-phrase ONLY — the comment must pair the PR with fix/resolve/
-        #      close language ("was fixed by PR #X"). A BARE mention is rejected
-        #      because regression issues routinely name the CAUSE PR for context
-        #      ("Before PR #32080 ... After PR #32080 the behavior changed"), and
-        #      the cause naturally lives on the branch — it is not a fix.
-        #   2. merged AND on the SR branch — a cited PR that never merged, or
-        #      merged elsewhere, is not proof the fix shipped here.
-        $issueState = Get-AzdoProp $Issue 'state'
-        if ($issueState -eq 'CLOSED') {
-            $commentPrs = Get-IssueCommentPrs -Repo $Ctx.repo -IssueNumber $Issue.number
-            $verifiedFixes = @()
-            foreach ($cp in $commentPrs) {
-                # Gate 1: require explicit fix language. Bare mentions (the cause-PR
-                # blame pattern) are NOT fixes and must not reclassify the issue.
-                if ($cp.evidence -ne 'fix-phrase') { continue }
-                if ($cp.number -eq $Issue.number) { continue }   # self-reference
-                $info = Get-PrInfo -Repo $Ctx.repo -PrNumber $cp.number
-                if (-not $info) { continue }
-                if ($info.state -ne 'MERGED') { continue }
-                # A reverted fix is NOT a fix. Mirror the main SR-contents/candidate
-                # paths (see $revertedPrSet at the top of this function and the
-                # Revert-title skip in the candidate walk): drop PRs the SR later
-                # reverted, and drop PRs that are themselves rollbacks ("Revert ..."
-                # titles). Without this, the `(#<num>)` on-branch token checked below
-                # matches the reverted fix's number inside the revert commit's own
-                # subject `Revert "... (#num)" (#N)`, so a rolled-back fix would pass
-                # the on-branch gate and be reported as "No ship risk".
-                if ($revertedPrSet.ContainsKey([int]$info.number)) { continue }
-                if (($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')) { continue }
-                # Skip agent/skill/workflow PRs that only mention the issue for context.
-                if (Test-PrIsToolingOnly -Files $info.files) { continue }
-                $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
-                # Gate 2: presence on the SR branch via EITHER signal — direct SHA
-                # ancestry (fix merged straight to SR) OR the `(#<num>)` subject
-                # token (fix flowed in from inflight/main under a different SHA —
-                # the common case).
-                $onSr = (Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.srBranch)") `
-                        -or (Test-PrNumberOnBranch -PrNumber ([int]$info.number) -BranchRef "origin/$($Ctx.srBranch)")
-                if (-not $onSr) { continue }
-                $verifiedFixes += @{
-                    number = [int]$info.number
-                    title = $info.title
-                    state = $info.state
-                    mergeSha = $mergeSha
-                    evidenceType = "comment-$($cp.evidence)"
-                }
-            }
-            if ($verifiedFixes.Count -gt 0) {
-                $prList = (@($verifiedFixes | ForEach-Object { "#$($_.number)" }) | Sort-Object -Unique) -join ', '
-                return @{
-                    classification = 'closed-fix-unlinked'
-                    confidence = 'high'
-                    evidence = @("Issue is CLOSED and fix PR $prList is MERGED and present on $($Ctx.srBranch), but was never linked to the issue (no closing keyword, no timeline cross-reference). Linkage recovered from a closing comment that explicitly names the fix.")
-                    candidateFixPrs = @($verifiedFixes | ForEach-Object {
-                        @{ number = $_.number; title = $_.title; state = $_.state; evidenceType = $_.evidenceType }
-                    })
-                    recommendedAction = "No ship risk — fix is already in the SR. Add a closing reference for traceability (e.g. ``Fixes #$($Issue.number)`` in $prList, or link via the issue's Development panel) so future runs classify it automatically."
-                }
-            }
-        }
+        # but the issue is CLOSED. Recover a fix cited only in a closing comment
+        # (see Resolve-ClosedFixUnlinked for the fix-phrase + merged-on-SR gates).
+        $rec = Resolve-ClosedFixUnlinked -Ctx $Ctx -Issue $Issue -RevertedPrSet $revertedPrSet
+        if ($rec) { return $rec }
 
         return @{
             classification = 'no-fix-yet'
@@ -2334,6 +2357,39 @@ function Classify-RegressionCandidate {
         'no-fix-yet' = 9
     }
     $best = $perPrVerdicts | Sort-Object { $priority[$_.verdict] } | Select-Object -First 1
+
+    # ── CLOSED-issue guard against a contradictory 'open-on-main' ──
+    # 'open-on-main' means "the fix PR is still OPEN on main; wait for it to
+    # merge, then backport" — an ACTIVE (Tier-2) regression. That is impossible
+    # for a CLOSED issue: an unmerged PR cannot have closed it. This happens
+    # when a giant still-open 'Candidate' changelog PR `Fixes`-lists dozens of
+    # issues, so its OPEN state gets attributed to an already-completed issue
+    # (real-world: #35615 shown as open-on-main under SR9 while candidate #35716
+    # was still open). Never emit open-on-main for a CLOSED issue:
+    #   a. First try the same comment-prose recovery path 1 uses — a merged fix
+    #      verifiably on the SR wins → 'closed-fix-unlinked' (Tier 3).
+    #   b. Otherwise fall to the honest 'no-fix-yet' (Tier 3 for a CLOSED issue):
+    #      the automation can't pin a verified fix on this SR and the open
+    #      candidate hasn't merged. NOT an active SR regression.
+    # Scope is strict: ONLY open-on-main + CLOSED is contradictory. Every other
+    # verdict (merged-*, backport-in-progress, rejected-from-sr, in-sr-*,
+    # needs-human-review) stays as-is even for CLOSED issues — those are still
+    # actionable (the SR may still need the backport).
+    if ($best.verdict -eq 'open-on-main' -and (Get-AzdoProp $Issue 'state') -eq 'CLOSED') {
+        $rec = Resolve-ClosedFixUnlinked -Ctx $Ctx -Issue $Issue -RevertedPrSet $revertedPrSet
+        if ($rec) { return $rec }
+        return @{
+            classification = 'no-fix-yet'
+            confidence = 'medium'
+            evidence = @("Issue is CLOSED but the candidate fix PR (#$($best.pr.number)) is OPEN/unmerged on $($best.pr.baseRef) — an unmerged PR cannot have closed this issue; the real fix likely shipped elsewhere or the candidate is stale. Not an active SR regression.")
+            candidateFixPrs = @($strongPrs | ForEach-Object { @{
+                number = $_.number; title = $_.title; state = $_.state
+                baseRef = $_.baseRef; evidenceType = $_.evidenceType
+                onMain = $_.onMain; backports = $_.backports
+            } })
+            recommendedAction = 'Verify the fix is present on this SR (or add a closing reference); the open candidate PR has not merged.'
+        }
+    }
 
     $recAction = switch ($best.verdict) {
         'in-sr-active' { 'No action — fix is shipping' }
