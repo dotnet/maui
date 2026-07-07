@@ -228,13 +228,23 @@ function Get-CiFixMarkers {
     $attempt = $null
 
     if ($Body -match 'Refs:\s*dotnet/maui#(\d+)') {
-        $refsIssue = [int]$Matches[1]
+        # [long], NOT [int]: consistent with the review-id parse below. A malformed
+        # body with an oversized issue number (> Int32.MaxValue) would otherwise throw
+        # a terminating OverflowException under $ErrorActionPreference='Stop' and abort
+        # the entire prefetch (candidates.json never written → the watch loop stalls).
+        $refsIssue = [long]$Matches[1]
     }
 
     # Parse ONLY the numerator (attempts made). The denominator is deliberately
     # ignored: the ceiling is the fixed $AttemptMax constant, never the mutable body.
     if ($Body -match 'ci-fix-attempts:\s*(\d+)\s*/\s*\d+') {
-        $attempt = [int]$Matches[1]
+        # [long], NOT [int]: the attempt marker lives in the PR body, which the LLM can
+        # rewrite (update_pull_request) and any triager can edit. A crafted marker such
+        # as `ci-fix-attempts: 99999999999/10` (> Int32.MaxValue) would overflow an [int]
+        # cast, throw under $ErrorActionPreference='Stop', and — with no try/catch on this
+        # path — abort the whole prefetch, stalling EVERY watched PR (not just this one).
+        # Mirrors the [long] review-id hardening in Get-CiFixEngagement.
+        $attempt = [long]$Matches[1]
     }
 
     return [pscustomobject]@{

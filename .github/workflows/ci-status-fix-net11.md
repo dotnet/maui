@@ -803,9 +803,10 @@ N=<pr-number>
 cat /dev/null > /tmp/gh-aw/agent/tcreviews_${N}.jsonl
 tcpage=1
 while [ "$tcpage" -le 20 ]; do
-  curl -s "https://api.github.com/repos/dotnet/maui/pulls/$N/reviews?per_page=100&page=$tcpage" \
-    -o /tmp/gh-aw/agent/tcpage_${N}.json
-  tccnt=$(jq 'if type=="array" then length else 0 end' /tmp/gh-aw/agent/tcpage_${N}.json)
+  # Pre-bind the URL and pipe through `| tee` (never inline `?`/`&` or `-o` of a fetched
+  # body — both are physically rejected by the sandbox; see Environment constraints).
+  url="https://api.github.com/repos/dotnet/maui/pulls/$N/reviews?per_page=100&page=$tcpage"
+  tccnt=$(curl -s "$url" | tee /tmp/gh-aw/agent/tcpage_${N}.json | jq 'if type=="array" then length else 0 end')
   jq -c 'if type=="array" then .[] else empty end' /tmp/gh-aw/agent/tcpage_${N}.json \
     >> /tmp/gh-aw/agent/tcreviews_${N}.jsonl
   [ "$tccnt" -lt 100 ] && break
@@ -827,8 +828,8 @@ jq -s '[ .[] | select((.state | IN("CHANGES_REQUESTED","APPROVED","DISMISSED"))
   /tmp/gh-aw/agent/tcreviews_${N}.jsonl \
   > /tmp/gh-aw/agent/tcreview_${N}.json
 RID=$(jq -r '.id // empty' /tmp/gh-aw/agent/tcreview_${N}.json)
-curl -s "https://api.github.com/repos/dotnet/maui/pulls/$N/commits?per_page=100" \
-  | tee /tmp/gh-aw/agent/tccommits_${N}.json \
+url="https://api.github.com/repos/dotnet/maui/pulls/$N/commits?per_page=100"
+curl -s "$url" | tee /tmp/gh-aw/agent/tccommits_${N}.json \
   | jq -r '.[-1].commit.committer.date // empty' \
   > /tmp/gh-aw/agent/tclastcommit_${N}.txt
 # Per-review idempotency (authoritative Track C dedup) comes from the PREFETCH, not a
@@ -872,9 +873,10 @@ RID=$(jq -r '.id // empty' /tmp/gh-aw/agent/tcreview_${N}.json)
 cat /dev/null > /tmp/gh-aw/agent/tcinline_${N}.jsonl
 tcipage=1
 while [ "$tcipage" -le 20 ]; do
-  curl -s "https://api.github.com/repos/dotnet/maui/pulls/$N/comments?per_page=100&page=$tcipage" \
-    -o /tmp/gh-aw/agent/tcipage_${N}.json
-  tcicnt=$(jq 'if type=="array" then length else 0 end' /tmp/gh-aw/agent/tcipage_${N}.json)
+  # Pre-bind + `| tee` (never inline `?`/`&` or `-o` of a fetched body — see Environment
+  # constraints; the sandbox physically rejects both).
+  url="https://api.github.com/repos/dotnet/maui/pulls/$N/comments?per_page=100&page=$tcipage"
+  tcicnt=$(curl -s "$url" | tee /tmp/gh-aw/agent/tcipage_${N}.json | jq 'if type=="array" then length else 0 end')
   jq -c 'if type=="array" then .[] else empty end' /tmp/gh-aw/agent/tcipage_${N}.json \
     >> /tmp/gh-aw/agent/tcinline_${N}.jsonl
   [ "$tcicnt" -lt 100 ] && break
