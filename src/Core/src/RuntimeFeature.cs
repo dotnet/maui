@@ -164,6 +164,5 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}", out bool isEnabled)
 				? isEnabled
 				: IsCssEnabledByDefault;
-
 	}
 }
