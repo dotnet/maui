@@ -586,7 +586,7 @@ Describe 'Resolve-AutonomousRerunEligibility' {
         $result.Reason | Should -Be 'new-head-commit'
     }
 
-    It 'skips when the ready-for-rerun label is already present' {
+    It 'reports eligible with reason label-already-present when the ready-for-rerun label is already applied' {
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 2 -Body 'I pushed the requested update.' -CreatedAt '2026-05-31T09:45:00Z'

@@ -49,8 +49,6 @@ $ErrorActionPreference = 'Stop'
 
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
 $ReviewInProgressLabel = 's/agent-review-in-progress'
-$ReadyForRerunLabelDescription = 'AI review has a new PR-author comment or commit and is ready for rerun'
-$ReadyForRerunLabelColor = '5319E7'
 
 # Pass -Owner/-Repo through: Resolve-RerunEligibility.ps1 has its own $Owner/$Repo params
 # defaulting to dotnet/maui, so dot-sourcing it without arguments would reset THIS script's
@@ -58,10 +56,23 @@ $ReadyForRerunLabelColor = '5319E7'
 . "$PSScriptRoot/Resolve-RerunEligibility.ps1" -Owner $Owner -Repo $Repo
 . "$PSScriptRoot/shared/Update-AgentLabels.ps1"
 
+# Derive the label description/color from the shared canonical definition so this script
+# and Update-AgentLabels.ps1 can't drift and repeatedly re-PATCH each other's metadata.
+$rerunLabelDef = $AllLabelDefs[$ReadyForRerunLabel]
+$ReadyForRerunLabelDescription = $rerunLabelDef.Description
+$ReadyForRerunLabelColor = $rerunLabelDef.Color
+
 function Get-IssueLabels {
     param([int]$Number)
 
-    return @(gh api "repos/$Owner/$Repo/issues/$Number/labels" --jq '.[].name' 2>$null)
+    # Don't silently treat an API failure as "no labels" — that would drop a real
+    # s/agent-ready-for-rerun / in-progress label and cause a spurious re-label or
+    # skip. Surface the failure so the per-PR try/catch records it as an error.
+    $names = gh api "repos/$Owner/$Repo/issues/$Number/labels" --jq '.[].name' 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to fetch labels for #$Number (gh api exited $LASTEXITCODE)."
+    }
+    return @($names)
 }
 
 function Get-ActivityForPR {
