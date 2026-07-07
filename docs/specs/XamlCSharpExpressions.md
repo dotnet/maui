@@ -347,7 +347,7 @@ Because attached properties are set on `BindableObject`s (views), the primary us
 <Label Text="{this.(ios:Page.UseSafeArea)}" />
 ```
 
-**From BindingContext** — **not yet implemented**. The targetless `(Type.Property)` form is reserved for possible future BindingContext attached-property binding support and is currently rejected by the source generator:
+**From BindingContext** — **not yet implemented**. The standalone `(Type.Property)` form is reserved for possible future BindingContext attached-property binding support and is currently rejected by the source generator:
 
 ```xml
 <!-- Not yet implemented -->
@@ -411,7 +411,7 @@ There are no dedicated ABP-specific diagnostics yet. Invalid ABP expressions cur
 - **RelativeSource bindings** — `{RelativeSource Self.Width}`
 - **Explicit two-way** — `{= Name, Mode=TwoWay}` or `{Name, set: value => Name = value}`
 - **Attached bindable property setters and change notification** — two-way ABP binding and ABP-specific `PropertyChanged` tracking
-- **BindingContext attached properties** — targetless `{(Type.Property)}` support when the BindingContext is a `BindableObject`
+- **BindingContext attached properties** — standalone `{(Type.Property)}` support when the BindingContext is a `BindableObject`
 
 ## Syntax Cheat Sheet
 
