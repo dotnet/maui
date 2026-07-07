@@ -89,7 +89,15 @@ internal class CarouselViewOnScrollListener2 : Items.RecyclerViewScrollListener<
                 continue;
             }
 
+            // GetPosition returns NoPosition (-1) for transient/removed views during layout
+            // animations. Skip those; otherwise a single such child would drag `first` down to
+            // -1 and make the whole method report no visible items even when valid children exist.
             int pos = layoutManager.GetPosition(child);
+            if (pos == RecyclerView.NoPosition)
+            {
+                continue;
+            }
+
             if (pos < first)
             {
                 first = pos;

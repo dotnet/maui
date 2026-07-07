@@ -113,6 +113,14 @@ public class MauiCarouselRecyclerView2 :
             return;
         }
 
+        // Honor SnapPointsType.None: when the user disables snapping, leave the carousel
+        // free-scrolling instead of forcing Material's page snap. This mirrors the legacy
+        // SnapManager behavior (see Items/Android/SnapHelpers/SnapManager.cs).
+        if (ItemsLayout is Microsoft.Maui.Controls.ItemsLayout { SnapPointsType: SnapPointsType.None })
+        {
+            return;
+        }
+
         // CarouselLayoutManager ships its own snap helper; attach it directly.
         // Deliberately do NOT call base.UpdateSnapBehavior() so MAUI's SnapManager
         // does not attach a conflicting snap helper.
