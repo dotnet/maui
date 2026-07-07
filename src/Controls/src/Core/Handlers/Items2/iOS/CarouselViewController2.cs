@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
 		CancellationTokenSource _scrollDebounce;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The orientation observer token is removed from NSNotificationCenter in TearDown and Dispose, so it does not root this controller.")]
 		NSObject _orientationObserver;
 
 		// We need to keep track of the old views to update the visual states

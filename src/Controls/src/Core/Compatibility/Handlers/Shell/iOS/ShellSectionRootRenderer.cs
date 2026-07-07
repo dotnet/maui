@@ -589,6 +589,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellContent.PropertyChanged subscriptions are removed in Disconnect and when items change before the shell section is released.")]
 		void OnShellContentPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (_isDisposed)
