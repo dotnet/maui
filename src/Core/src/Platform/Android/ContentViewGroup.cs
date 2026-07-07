@@ -159,6 +159,20 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
+		{
+			base.OnSizeChanged(w, h, oldw, oldh);
+
+			// #36269: overlap-based safe-area padding isn't recomputed on a plain resize — only on an
+			// inset dispatch or SafeAreaEdges change. When the view grows back to full height (e.g. a
+			// Shell page after a TabBar Visible->Gone transition), padding computed for the old size
+			// persists. Re-request insets on resize so it's recomputed against the new bounds.
+			if (_isInsetListenerSet)
+			{
+				ViewCompat.RequestApplyInsets(this);
+			}
+		}
+
 		protected override void OnConfigurationChanged(Configuration? newConfig)
 		{
 			base.OnConfigurationChanged(newConfig);
