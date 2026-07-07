@@ -40,7 +40,7 @@
 param(
     [string]$Owner = 'dotnet',
     [string]$Repo = 'maui',
-    [int]$Limit = 100,
+    [int]$Limit = 300,
     [switch]$DryRun,
     [string]$OutputPath
 )
@@ -52,7 +52,10 @@ $ReviewInProgressLabel = 's/agent-review-in-progress'
 $ReadyForRerunLabelDescription = 'AI review has a new PR-author comment or commit and is ready for rerun'
 $ReadyForRerunLabelColor = '5319E7'
 
-. "$PSScriptRoot/Resolve-RerunEligibility.ps1"
+# Pass -Owner/-Repo through: Resolve-RerunEligibility.ps1 has its own $Owner/$Repo params
+# defaulting to dotnet/maui, so dot-sourcing it without arguments would reset THIS script's
+# $Owner/$Repo to the defaults (mirrors the correct pattern in Query-RerunReadyPRs.ps1).
+. "$PSScriptRoot/Resolve-RerunEligibility.ps1" -Owner $Owner -Repo $Repo
 . "$PSScriptRoot/shared/Update-AgentLabels.ps1"
 
 function Get-IssueLabels {
@@ -86,6 +89,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 $openPRs = @($searchJson | ConvertFrom-Json)
 
+# Warn if we hit the fetch cap — the scan would silently miss eligible PRs beyond it.
+if ($openPRs.Count -ge $Limit) {
+    Write-Host "  ⚠️  Fetched $($openPRs.Count) open PR(s), which meets the -Limit cap of $Limit; some open PRs may be excluded. Raise -Limit." -ForegroundColor Yellow
+}
+
 Write-Host "Inspecting $($openPRs.Count) open PR(s) for autonomous rerun eligibility..."
 
 $labelEnsured = $false
@@ -101,6 +109,11 @@ foreach ($pr in $openPRs) {
         continue
     }
 
+    # Per-PR error isolation: a single malformed PR (e.g. a null/absent comment
+    # created_at that throws in the eligibility date comparison, or a transient API
+    # error) must not abort the whole daily scan. Record it as an error decision and
+    # continue with the remaining PRs.
+    try {
     $labels = @(Get-IssueLabels -Number $number)
 
     # Treat a stale in-progress label as absent so a wedged review can still be
@@ -161,6 +174,18 @@ foreach ($pr in $openPRs) {
         reason         = [string]$result.Reason
         alreadyPresent = $alreadyPresent
         applied        = $applied
+    }
+    } catch {
+        Write-Host "  ⚠️  Skipping #$number — evaluation error: $($_.Exception.Message)" -ForegroundColor Yellow
+        $decisions += [pscustomobject]@{
+            prNumber       = $number
+            title          = $title
+            eligible       = $false
+            reason         = "error: $($_.Exception.Message)"
+            alreadyPresent = $false
+            applied        = $false
+        }
+        continue
     }
 }
 
