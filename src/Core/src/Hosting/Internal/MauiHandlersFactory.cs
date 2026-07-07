@@ -142,8 +142,8 @@ namespace Microsoft.Maui.Hosting.Internal
 			{
 				throw new HandlerNotFoundException(
 					$"Unable to create the {nameof(IElementHandler)} {handlerType} declared by {nameof(ElementHandlerAttribute)} for {viewType}. " +
-					$"Handlers declared with {nameof(ElementHandlerAttribute)} must have a public parameterless constructor. " +
-					$"Use `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` to register handlers that require constructor arguments.",
+					$"Handlers declared with {nameof(ElementHandlerAttribute)} must have a public parameterless constructor when resolved directly through {nameof(IMauiHandlersFactory.GetHandler)}. " +
+					$"Use `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` to register handlers that require constructor arguments, or resolve through `ToHandler()` so constructor arguments can come from the DI container.",
 					ex);
 			}
 		}

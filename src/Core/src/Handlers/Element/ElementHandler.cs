@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 		internal readonly CommandMapper? _commandMapper;
 		internal IPropertyMapper _mapper;
 		ElementHandlerState _handlerState;
+		static readonly Lock s_controlsMapperRemapLock = new();
 
 		ElementHandlerState IElementHandlerStateExhibitor.State => _handlerState;
 
@@ -55,7 +57,10 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is IControlsMapperRemappable remappable)
 			{
-				remappable.RemapForControls();
+				lock (s_controlsMapperRemapLock)
+				{
+					remappable.RemapForControls();
+				}
 			}
 
 			if (PlatformView is null)

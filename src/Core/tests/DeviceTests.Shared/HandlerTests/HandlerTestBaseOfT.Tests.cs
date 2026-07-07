@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public abstract partial class HandlerTestBase<THandler, TStub>
+	public abstract partial class HandlerTestBase<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler, TStub>
 	{
 		[Fact]
 		public virtual async Task DisconnectHandlerDoesntCrash()
@@ -392,7 +393,7 @@ namespace Microsoft.Maui.DeviceTests
 		public void HandlersHaveAllExpectedContructors()
 		{
 			bool hasBothMappers = false;
-			var handlerType = typeof(THandler);
+			var handlerType = GetHandlerType();
 			var constructors = handlerType.GetConstructors();
 
 			var diagnostics = new System.Text.StringBuilder();
@@ -415,5 +416,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(hasBothMappers, $"Missing constructor with IPropertyMapper and ICommandMapper\n{diagnostics}");
 		}
+
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		static Type GetHandlerType() => typeof(THandler);
 	}
 }
