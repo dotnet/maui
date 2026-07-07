@@ -1,0 +1,572 @@
+#!/usr/bin/env pwsh
+<#
+.SYNOPSIS
+    Builds bounded context for open ci-fix PRs watched by the ci-status-fix gh-aw workflow.
+#>
+
+param(
+    [int]$MaxPRs = 20,
+    [string]$Owner = 'dotnet',
+    [string]$Repo = 'maui',
+    [string]$OutputPath = "CustomAgentLogsTmp/CiFixScanner/candidates.json",
+    [string]$TitlePrefix = '[ci-fix]'
+)
+
+$ErrorActionPreference = 'Stop'
+# Pin native-command error handling OFF so `& gh ... 2>&1` in Invoke-GhCommand never
+# throws at invocation on a non-zero exit (404 on an orphaned SHA, transient rate-limit).
+# The whole prefetch's graceful degradation depends on the -AllowFailure path returning
+# $null on expected failures rather than terminating; a future runner image or profile
+# that flips this preference to $true would bypass -AllowFailure and crash the loop.
+$PSNativeCommandUseErrorActionPreference = $false
+
+$BotLogins = @(
+    'github-actions[bot]',
+    'github-actions',
+    'web-flow',
+    'app/github-actions',
+    'dotnet-maestro[bot]',
+    'azure-pipelines[bot]',
+    'dotnet-policy-service[bot]',
+    # dotnet-bot, MauiBot and maui-bot are MAUI/dotnet automation accounts whose logins
+    # do NOT carry the '[bot]' suffix, so the Test-IsHumanLogin suffix rule would otherwise
+    # count their comments/commits as human engagement and prematurely hand the PR off.
+    # The repo posts CI/review automation as 'maui-bot' / 'MauiBot' (see
+    # .github/scripts/shared/Remove-StaleMauiBotComments.ps1 and the ci-copilot pipeline);
+    # 'mauibot' covers 'MauiBot' case-insensitively, but the hyphenated 'maui-bot' login is
+    # a distinct string and must be listed explicitly. Compared case-insensitively
+    # (Test-IsHumanLogin lowercases the login first).
+    'dotnet-bot',
+    'mauibot',
+    'maui-bot',
+    'maui-bot[bot]'
+)
+# NOTE: 'action_required' is deliberately EXCLUDED. That conclusion means a human
+# must act (an Actions approval gate, or an integration awaiting a manual run) —
+# it reports status=completed, so treating it as a failure would let a settled head
+# fall into the red -> classify/advance path (Step 3.5 gate 4) and push a fix on top
+# of CI that was never actually exercised. For this workflow — whose whole round-1
+# premise is "CI waits for a maintainer /azp run" — action_required belongs with the
+# WAIT states. Get-HeadCheckState routes it to 'neutral' (Step 3.5 gate 2) EVEN WHEN
+# other legs are green, so a build-green / uitests-not-yet-run head is never surfaced
+# as a validated green (which would invite merging a fix whose gated legs never ran).
+#
+# 'startup_failure' and 'stale' are GraphQL CheckConclusionState values, NOT part of
+# the REST check-runs 'conclusion' enum this script actually reads via
+# /commits/{sha}/check-runs (success/failure/neutral/cancelled/skipped/timed_out/
+# action_required/null). They are listed here DEFENSIVELY: they are a zero-cost no-op
+# while this endpoint never emits them, but if GitHub ever surfaces them through the
+# REST check-runs API (or the fetch is switched to GraphQL), both are aborts that
+# produced no genuine pass and must be kept OUT of the 'success' bucket — treated as
+# failures alongside 'cancelled'/'timed_out'. Gate 4 + Step 4.7 bucket (a) then
+# classify such a leg as an infra flake (annotate, no attempt burned) — never a
+# caused-by-fix advance. Mirrors dotnet/maui's review-test-failures skill, which
+# groups cancelled/timed_out/startup_failure/stale as aborted-failing checks.
+$FailureCheckConclusions = @('failure', 'timed_out', 'cancelled', 'startup_failure', 'stale')
+$FailureStatusStates = @('failure', 'error')
+
+# The attempt ceiling is a FIXED workflow contract — it is NEVER read from the
+# mutable 'ci-fix-attempts: N/M' PR-body marker denominator. Trusting M from the
+# body would let a corrupted/injected denominator (e.g. 1/9999) raise the cap, or a
+# stale marker slip past it. Get-CiFixMarkers pins attemptMax to this constant, and
+# the actionable gate counts attempts as max(marker numerator, bot-commit count) so
+# the safety bound never depends solely on an LLM-authored body marker.
+$AttemptMax = 10
+
+function Invoke-GhCommand {
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [Parameter(Mandatory = $true)][string]$Description,
+        [switch]$AllowFailure
+    )
+
+    $output = & gh @Arguments 2>&1
+    $exitCode = $LASTEXITCODE
+
+    # `2>&1` folds gh's stderr into the pipeline as ErrorRecord objects while real
+    # stdout stays as strings. Separate the two by type so a success-path caller
+    # never receives a stderr line (gh progress/deprecation/rate-limit notices)
+    # concatenated into the JSON it is about to parse. On failure, both streams are
+    # surfaced in the exception/warning message for diagnosability.
+    $stdoutText = (@($output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) |
+        ForEach-Object { $_.ToString() }) -join "`n"
+    $stderrText = (@($output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) |
+        ForEach-Object { $_.ToString() }) -join "`n"
+
+    if ($exitCode -ne 0) {
+        $message = "gh $Description failed with exit code $exitCode."
+        $detail = (@($stderrText, $stdoutText) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ' '
+        if (-not [string]::IsNullOrWhiteSpace($detail)) {
+            $message = "$message Output: $detail"
+        }
+
+        if ($AllowFailure) {
+            Write-Warning $message
+            return $null
+        }
+
+        throw $message
+    }
+
+    return $stdoutText
+}
+
+function ConvertFrom-JsonLines {
+    param([AllowNull()][string]$JsonLines)
+
+    if ([string]::IsNullOrWhiteSpace($JsonLines)) {
+        return @()
+    }
+
+    $items = @()
+    foreach ($line in ($JsonLines -split "`n")) {
+        if ([string]::IsNullOrWhiteSpace($line)) {
+            continue
+        }
+
+        $items += ($line | ConvertFrom-Json)
+    }
+
+    return @($items)
+}
+
+function Test-IsHumanLogin {
+    param([AllowNull()][string]$Login)
+
+    if ([string]::IsNullOrWhiteSpace($Login)) {
+        return $false
+    }
+
+    $normalized = $Login.Trim().ToLowerInvariant()
+    if ($BotLogins -contains $normalized) {
+        return $false
+    }
+
+    if ($normalized.EndsWith('[bot]', [StringComparison]::OrdinalIgnoreCase)) {
+        return $false
+    }
+
+    return $true
+}
+
+function Test-IsCiControlComment {
+    param([AllowNull()][string]$Body)
+
+    # Round 1 REQUIRES a maintainer to post a bare CI-trigger comment (e.g. `/azp run maui-pr`)
+    # because GITHUB_TOKEN pushes fire no Actions/AzDO events. Such a comment is a CI kick,
+    # NOT a human taking over the PR, so it must not trip humanEngaged and stall the loop.
+    # Only a single-line comment whose ENTIRE body is exactly one such slash-command (an
+    # optional single pipeline argument for `/azp run`) is excluded; any trailing prose
+    # (e.g. `/azp run maui-pr still looks broken`) or multi-line body still counts as
+    # engagement, so a maintainer's substantive feedback attached to a re-run is honored.
+    if ([string]::IsNullOrWhiteSpace($Body)) {
+        return $false
+    }
+
+    $trimmed = $Body.Trim()
+    if ($trimmed -match '[\r\n]') {
+        return $false
+    }
+
+    return ($trimmed -match '^/azp\s+run(\s+[A-Za-z0-9._\-/]+)?\s*$') -or
+           ($trimmed -match '^/azp\s+(list|where|help)\s*$') -or
+           ($trimmed -match '^/rebase(-help)?\s*$')
+}
+
+function Test-AnyHumanActor {
+    param([object[]]$Items)
+
+    foreach ($item in @($Items)) {
+        $login = if ($item.user -and $item.user.login) { [string]$item.user.login } else { $null }
+        if (Test-IsHumanLogin -Login $login) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-AnyHumanCommitActor {
+    param([object[]]$Commits)
+
+    foreach ($commit in @($Commits)) {
+        $authorLogin = if ($commit.author -and $commit.author.login) { [string]$commit.author.login } else { $null }
+        $committerLogin = if ($commit.committer -and $commit.committer.login) { [string]$commit.committer.login } else { $null }
+
+        if ((Test-IsHumanLogin -Login $authorLogin) -or (Test-IsHumanLogin -Login $committerLogin)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Get-PullRequestBody {
+    param([int]$Number)
+
+    $bodyJson = Invoke-GhCommand `
+        -Arguments @('pr', 'view', "$Number", '--repo', "$Owner/$Repo", '--json', 'body') `
+        -Description "read PR #$Number body" `
+        -AllowFailure
+
+    if ($null -eq $bodyJson) {
+        return [pscustomobject]@{ Succeeded = $false; Body = '' }
+    }
+
+    $body = ($bodyJson | ConvertFrom-Json).body
+    if ($null -eq $body) {
+        $body = ''
+    }
+
+    return [pscustomobject]@{ Succeeded = $true; Body = [string]$body }
+}
+
+function Get-CiFixMarkers {
+    param([AllowNull()][string]$Body)
+
+    $refsIssue = $null
+    $attempt = $null
+
+    if ($Body -match 'Refs:\s*dotnet/maui#(\d+)') {
+        $refsIssue = [int]$Matches[1]
+    }
+
+    # Parse ONLY the numerator (attempts made). The denominator is deliberately
+    # ignored: the ceiling is the fixed $AttemptMax constant, never the mutable body.
+    if ($Body -match 'ci-fix-attempts:\s*(\d+)\s*/\s*\d+') {
+        $attempt = [int]$Matches[1]
+    }
+
+    return [pscustomobject]@{
+        refsIssue  = $refsIssue
+        attempt    = $attempt
+        attemptMax = $AttemptMax
+    }
+}
+
+function Get-HeadCheckState {
+    param([string]$HeadSha)
+
+    $checkRunsKnown = $true
+    $statusesKnown = $true
+
+    $checkRunLines = Invoke-GhCommand `
+        -Arguments @('api', "repos/$Owner/$Repo/commits/$HeadSha/check-runs?per_page=100", '--paginate', '--jq', '.check_runs[]') `
+        -Description "read check-runs for $HeadSha" `
+        -AllowFailure
+    if ($null -eq $checkRunLines) {
+        $checkRunsKnown = $false
+        $checkRuns = @()
+    }
+    else {
+        $checkRuns = @(ConvertFrom-JsonLines -JsonLines $checkRunLines)
+    }
+
+    # The combined-status endpoint returns its .statuses[] array paginated at 30 by
+    # default; request per_page=100 so a repo with many legacy commit-status contexts
+    # is still read in full. (A single object is returned, so no --paginate/JSON-lines
+    # handling is needed the way check-runs above require.)
+    $statusJson = Invoke-GhCommand `
+        -Arguments @('api', "repos/$Owner/$Repo/commits/$HeadSha/status?per_page=100") `
+        -Description "read commit statuses for $HeadSha" `
+        -AllowFailure
+    if ($null -eq $statusJson) {
+        $statusesKnown = $false
+        $statuses = @()
+        $combinedState = ''
+    }
+    else {
+        $statusResult = $statusJson | ConvertFrom-Json
+        $statuses = @($statusResult.statuses)
+        # GitHub computes the combined-status top-level .state over EVERY context (all
+        # pages), so it is 'failure' iff at least one legacy commit-status actually
+        # failed. Fold ONLY the 'failure' value into failure detection as a
+        # pagination-proof backstop: if a repo ever exceeds the 100-context page size
+        # and the failing context lands beyond page 1 of .statuses[], this still catches
+        # the red. It is a strict true-positive — .state is never 'failure' unless a
+        # context failed. Deliberately do NOT treat .state -eq 'pending' as unsettled:
+        # the combined-status API returns 'pending' whenever there are ZERO legacy
+        # statuses, which is the norm for check-run-only heads (every MAUI commit), so
+        # keying settledness off it would wedge the loop permanently.
+        $combinedState = ([string]$statusResult.state).ToLowerInvariant()
+    }
+
+    $failedCheckRuns = @(
+        $checkRuns |
+            Where-Object { $_.conclusion -and ($FailureCheckConclusions -contains ([string]$_.conclusion).ToLowerInvariant()) } |
+            ForEach-Object {
+                [pscustomobject]@{
+                    name       = [string]$_.name
+                    conclusion = [string]$_.conclusion
+                }
+            }
+    )
+
+    if (-not $checkRunsKnown -or -not $statusesKnown) {
+        return [pscustomobject]@{
+            Succeeded         = $false
+            checksSettled     = $false
+            overallConclusion = 'unknown'
+            failedLegs        = @($failedCheckRuns)
+        }
+    }
+
+    $unsettledCheckRuns = @($checkRuns | Where-Object { ([string]$_.status).ToLowerInvariant() -ne 'completed' })
+    $pendingStatuses = @($statuses | Where-Object { ([string]$_.state).ToLowerInvariant() -eq 'pending' })
+    $failedStatuses = @($statuses | Where-Object { $FailureStatusStates -contains ([string]$_.state).ToLowerInvariant() })
+    # Failing commit statuses (common for AzDO/third-party integrations that report
+    # via the combined-status API rather than check-runs) are folded into failedLegs
+    # alongside failed check-runs, so downstream "which leg failed?" classification
+    # (Step 3.5 gate 4) sees every failing signal — not just the check-run ones.
+    $failedStatusLegs = @(
+        $failedStatuses |
+            ForEach-Object {
+                [pscustomobject]@{
+                    name       = [string]$_.context
+                    conclusion = [string]$_.state
+                }
+            }
+    )
+    $successfulCheckRuns = @($checkRuns | Where-Object { $_.conclusion -and ([string]$_.conclusion).ToLowerInvariant() -eq 'success' })
+    $successfulStatuses = @($statuses | Where-Object { ([string]$_.state).ToLowerInvariant() -eq 'success' })
+    # A head can report status=completed yet still be waiting on a human: an
+    # 'action_required' check-run (a manual-approval gate, or MAUI's /azp-gated
+    # uitests/devicetests legs that stay action_required until a maintainer triggers
+    # them) means CI was never fully exercised. It is deliberately absent from
+    # $FailureCheckConclusions, so it must be detected explicitly here to keep such a
+    # head OUT of the 'success' bucket below.
+    $actionRequiredCheckRuns = @($checkRuns | Where-Object { $_.conclusion -and ([string]$_.conclusion).ToLowerInvariant() -eq 'action_required' })
+
+    $checksSettled = ($unsettledCheckRuns.Count -eq 0) -and ($pendingStatuses.Count -eq 0)
+    $overallConclusion = 'neutral'
+    if ($failedCheckRuns.Count -gt 0 -or $failedStatuses.Count -gt 0 -or $combinedState -eq 'failure') {
+        $overallConclusion = 'failure'
+    }
+    elseif (-not $checksSettled) {
+        $overallConclusion = 'pending'
+    }
+    elseif ($actionRequiredCheckRuns.Count -gt 0) {
+        # Settled-but-waiting-on-human: route to WAIT (Step 3.5 gate 2) EVEN WHEN other
+        # legs are green, so a build-green / uitests-not-yet-run head is never
+        # mis-surfaced as a validated green. 'neutral' (not 'pending') preserves the
+        # invariant that 'pending' means checksSettled == false.
+        $overallConclusion = 'neutral'
+    }
+    elseif ($successfulCheckRuns.Count -gt 0 -or $successfulStatuses.Count -gt 0) {
+        $overallConclusion = 'success'
+    }
+
+    return [pscustomobject]@{
+        Succeeded         = $true
+        checksSettled     = [bool]$checksSettled
+        overallConclusion = $overallConclusion
+        failedLegs        = @($failedCheckRuns + $failedStatusLegs)
+    }
+}
+
+function Get-HumanEngagementState {
+    param([int]$Number)
+
+    $allSucceeded = $true
+
+    $issueCommentLines = Invoke-GhCommand `
+        -Arguments @('api', "repos/$Owner/$Repo/issues/$Number/comments?per_page=100", '--paginate', '--jq', '.[]') `
+        -Description "read issue comments for PR #$Number" `
+        -AllowFailure
+    if ($null -eq $issueCommentLines) {
+        $allSucceeded = $false
+        $issueComments = @()
+    }
+    else {
+        $issueComments = @(ConvertFrom-JsonLines -JsonLines $issueCommentLines)
+    }
+
+    $reviewLines = Invoke-GhCommand `
+        -Arguments @('api', "repos/$Owner/$Repo/pulls/$Number/reviews?per_page=100", '--paginate', '--jq', '.[]') `
+        -Description "read reviews for PR #$Number" `
+        -AllowFailure
+    if ($null -eq $reviewLines) {
+        $allSucceeded = $false
+        $reviews = @()
+    }
+    else {
+        $reviews = @(ConvertFrom-JsonLines -JsonLines $reviewLines)
+    }
+
+    $reviewCommentLines = Invoke-GhCommand `
+        -Arguments @('api', "repos/$Owner/$Repo/pulls/$Number/comments?per_page=100", '--paginate', '--jq', '.[]') `
+        -Description "read review comments for PR #$Number" `
+        -AllowFailure
+    if ($null -eq $reviewCommentLines) {
+        $allSucceeded = $false
+        $reviewComments = @()
+    }
+    else {
+        $reviewComments = @(ConvertFrom-JsonLines -JsonLines $reviewCommentLines)
+    }
+
+    $commitLines = Invoke-GhCommand `
+        -Arguments @('api', "repos/$Owner/$Repo/pulls/$Number/commits?per_page=100", '--paginate', '--jq', '.[]') `
+        -Description "read commits for PR #$Number" `
+        -AllowFailure
+    if ($null -eq $commitLines) {
+        $allSucceeded = $false
+        $commits = @()
+    }
+    else {
+        $commits = @(ConvertFrom-JsonLines -JsonLines $commitLines)
+    }
+
+    # Pagination-proof Track C dedup set. Every Track C response comment (APPLY and
+    # PUSH-BACK alike) embeds `<!-- ci-fix-track-c-responded: <review-id> -->`.
+    # Collecting the answered review-ids HERE — from the fully `--paginate`d
+    # $issueComments above — gives the agent a durable "already answered" set so a
+    # pure-decline (which advances no commit and bumps no marker) is never re-declined
+    # every scheduled run. The agent previously re-fetched page 1 of comments itself,
+    # which silently missed markers beyond the first 100 on a busy PR (issue comments
+    # are returned oldest-first, so a recent marker lands on the LAST page).
+    $respondedTrackCReviewIds = @(
+        $issueComments |
+            # Login coupling (correct TODAY): no safe-outputs.github-app is configured, so
+            # the Track C add-comment posts as 'github-actions[bot]'. If a PAT/App token is
+            # ever wired up for safe-outputs (e.g. so pushes fire CI), response comments would
+            # post under a different [bot] login and this set would silently go empty,
+            # resurrecting the pure-decline re-comment loop — keep this login in sync.
+            Where-Object { $_.user -and ([string]$_.user.login) -eq 'github-actions[bot]' -and $_.body } |
+            ForEach-Object {
+                # [long], NOT [int]: GitHub review ids already exceed Int32.MaxValue
+                # (~2.1B; live dotnet/maui review ids are ~4.6B). An [int] cast here throws
+                # a terminating OverflowException under $ErrorActionPreference='Stop', which
+                # — with no try/catch on this path — aborts the entire prefetch on the SECOND
+                # cycle after any Track C response (the marker this loop itself writes), so
+                # candidates.json is never emitted and the whole watch loop dies permanently.
+                if ([string]$_.body -match 'ci-fix-track-c-responded:\s*(\d+)') { [long]$Matches[1] }
+            } |
+            Sort-Object -Unique
+    )
+
+    $engagementComments = @($issueComments | Where-Object { -not (Test-IsCiControlComment -Body $_.body) })
+
+    $humanEngaged =
+        (Test-AnyHumanActor -Items $engagementComments) -or
+        (Test-AnyHumanActor -Items $reviews) -or
+        (Test-AnyHumanActor -Items $reviewComments) -or
+        (Test-AnyHumanCommitActor -Commits $commits)
+
+    # Append-only floor for the attempt counter: every push the workflow makes is a
+    # bot-authored commit on the PR branch. Counting them gives an authoritative lower
+    # bound that CANNOT be rewound, so a stale/dropped body-marker bump can never let
+    # the loop push past $AttemptMax. Author-based (not committer-based) to avoid
+    # counting maintainer "Update branch" merge commits (committed by web-flow) as
+    # attempts.
+    $botCommitCount = @(
+        $commits | Where-Object {
+            $authorLogin = if ($_.author -and $_.author.login) { [string]$_.author.login } else { '' }
+            ($authorLogin -ne '') -and -not (Test-IsHumanLogin -Login $authorLogin)
+        }
+    ).Count
+
+    return [pscustomobject]@{
+        Succeeded                = $allSucceeded
+        humanEngaged             = [bool]$humanEngaged
+        botCommitCount           = [int]$botCommitCount
+        respondedTrackCReviewIds = @($respondedTrackCReviewIds)
+    }
+}
+
+$searchJson = Invoke-GhCommand `
+    -Arguments @(
+        'pr', 'list',
+        '--repo', "$Owner/$Repo",
+        '--state', 'open',
+        '--search', "`"$TitlePrefix`" in:title",
+        '--limit', "$MaxPRs",
+        '--json', 'number,title,url,headRefName,headRefOid,isDraft,labels'
+    ) `
+    -Description 'list open ci-fix PRs'
+$searchResult = if ([string]::IsNullOrWhiteSpace($searchJson)) { @() } else { @($searchJson | ConvertFrom-Json) }
+
+$candidates = @()
+foreach ($pr in @($searchResult)) {
+    $number = [int]$pr.number
+    $title = [string]$pr.title
+    $headRefName = [string]$pr.headRefName
+    $labels = @($pr.labels | ForEach-Object { [string]$_.name })
+
+    if ($title.IndexOf("${TitlePrefix}[needs-human]", [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+        continue
+    }
+
+    if (-not $title.StartsWith("$TitlePrefix ", [StringComparison]::OrdinalIgnoreCase)) {
+        continue
+    }
+
+    if ($headRefName -notlike 'ci-fix/*') {
+        continue
+    }
+
+    if ($labels -notcontains 'agentic-workflows') {
+        continue
+    }
+
+    $bodyResult = Get-PullRequestBody -Number $number
+    $markers = Get-CiFixMarkers -Body $bodyResult.Body
+    $checkState = Get-HeadCheckState -HeadSha ([string]$pr.headRefOid)
+    $engagementState = Get-HumanEngagementState -Number $number
+
+    $dataComplete = $bodyResult.Succeeded -and $checkState.Succeeded -and $engagementState.Succeeded
+    # Authoritative attempt counter: the higher of the (possibly stale) body-marker
+    # numerator and the append-only bot-commit floor, gated by the fixed $AttemptMax
+    # constant. A null marker contributes 0, so the bot-commit floor governs on its own.
+    $markerAttempt = if ($null -eq $markers.attempt) { 0 } else { [int]$markers.attempt }
+    $effectiveAttempt = [Math]::Max($markerAttempt, [int]$engagementState.botCommitCount)
+    $actionable = $dataComplete -and
+        $checkState.checksSettled -and
+        ($checkState.overallConclusion -eq 'failure') -and
+        (-not $engagementState.humanEngaged) -and
+        ($effectiveAttempt -lt [int]$markers.attemptMax)
+
+    $candidates += [pscustomobject]@{
+        prNumber          = $number
+        title             = $title
+        url               = [string]$pr.url
+        headRefName       = $headRefName
+        headSha           = [string]$pr.headRefOid
+        isDraft           = [bool]$pr.isDraft
+        refsIssue         = $markers.refsIssue
+        attempt           = $markers.attempt
+        attemptMax        = [int]$markers.attemptMax
+        botCommitCount    = [int]$engagementState.botCommitCount
+        effectiveAttempt  = [int]$effectiveAttempt
+        respondedTrackCReviewIds = @($engagementState.respondedTrackCReviewIds)
+        checksSettled     = [bool]$checkState.checksSettled
+        overallConclusion = [string]$checkState.overallConclusion
+        failedLegs        = @($checkState.failedLegs)
+        humanEngaged      = [bool]$engagementState.humanEngaged
+        # dataComplete is false when ANY prefetch source (PR body, head check-state,
+        # or human-engagement) hit an API error. The agent MUST treat an incomplete
+        # candidate as "wait" (Step 3.5 gate 2): humanEngaged/attempt/overallConclusion
+        # may be understated on a partial read, so advancing on them would risk pushing
+        # onto a PR a human just touched, or mis-counting the attempt. `actionable`
+        # already requires dataComplete; surfacing it lets the gates be conservative too.
+        dataComplete      = [bool]$dataComplete
+        actionable        = [bool]$actionable
+    }
+}
+
+$anyActionable = @($candidates | Where-Object { $_.actionable }).Count -gt 0
+
+$outputDir = Split-Path -Parent $OutputPath
+if ($outputDir) {
+    New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
+}
+
+$json = [ordered]@{
+    generatedAt   = (Get-Date).ToUniversalTime().ToString('o')
+    anyActionable = [bool]$anyActionable
+    candidates    = @($candidates)
+} | ConvertTo-Json -Depth 20
+$json | Set-Content -LiteralPath $OutputPath -Encoding UTF8
+
+Write-Host "Wrote $($candidates.Count) ci-fix candidate(s) (anyActionable=$anyActionable) to $OutputPath"
+Write-Output $json
