@@ -349,9 +349,15 @@ key. But the same underlying leak can be filed under MULTIPLE issue numbers (dup
 ```bash
 N=<issue-number>
 # The rooting Type.Member this issue is about (titles lead with it: "[leak-scan] Type.Member — ...").
+# Use the same extraction as daily-leak-hunter.md (last Type.Member pair of the first identifier
+# chain) so off-contract / fully-qualified titles key identically on both sides of the pipeline.
 API=$(gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title -q '.title' \
-  | sed -E 's/^\[leak-scan\] *//; s/[ :—].*$//')
+  | sed -E 's/^\[leak-scan\] *//' \
+  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } else print }')
 echo "target rooting API: $API"
+# Escape regex metacharacters (notably the '.' in Type.Member) so the jq test() calls below match
+# a LITERAL "Type.Member" — otherwise "BackButtonBehavior.Command" would also match "BackButtonBehaviorXCommand".
+API_RE=$(printf '%s' "$API" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 # (a) Open [leak-fix] PR already addressing THIS issue number?
 gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title' \
   --json number,title,body \
@@ -362,7 +368,7 @@ jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 #     [leak-fix] PR titles are "Fix <Type>.<Member> memory leak".
 gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title' \
   --json number,title \
-  | jq --arg api "$API" '[.[] | select(.title | test("Fix +"+$api+"([. ]|$)"))]' \
+  | jq --arg api "$API_RE" '[.[] | select(.title | test("Fix +"+$api+"([. ]|$)"))]' \
   > /tmp/gh-aw/agent/same-api-prs.json
 jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/same-api-prs.json
 # (c) Closed-unmerged attempts for this issue (attempt cap = 3).
