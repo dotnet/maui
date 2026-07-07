@@ -94,7 +94,7 @@ stimuli:
 
       Create the parent directories as needed (e.g. `mkdir -p`). Each array
       element must be an object:
-          { "file": "<repo-relative path>", "line": <int>, "body": "<the finding>" }
+          { "path": "<repo-relative path>", "line": <int>, "body": "<the finding>" }
       Include at least one element grounded in STEP 1.
 
       Writing this file is a REQUIRED deliverable. You ARE authorized to create
@@ -144,7 +144,7 @@ stimuli:
         (1/5).
       - >-
         The persisted JSON is a valid array containing at least one finding
-        with a concrete repo-relative `file` path and an integer `line`,
+        with a concrete repo-relative `path` and an integer `line`,
         grounded in the actual diff (e.g. the hardcoded-alpha GetGradientData
         call sites in src/Core/src/Graphics/MauiDrawable.Android.cs). It is
         not an empty array or a placeholder.

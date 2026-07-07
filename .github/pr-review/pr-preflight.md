@@ -15,7 +15,7 @@
 
 ## Part A: Context Gathering (Steps 1–6)
 
-1. **Read the issue** — full body + ALL comments via GitHub MCP tools
+1. **Read the issue** — full body + ALL comments (CI: unauthenticated `curl` recipe below; local runs: GitHub MCP / `gh`)
 2. **Find the PR** — read description, diff summary, review comments, inline feedback
 3. **Fetch PR discussion** — detect prior agent reviews, import findings if found
 4. **Classify files** — separate fix files from test files, identify test type (UI / Device / Unit)
