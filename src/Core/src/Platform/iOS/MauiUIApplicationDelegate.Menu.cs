@@ -95,6 +95,32 @@ namespace Microsoft.Maui
 		}
 
 		[SupportedOSPlatform("ios13.0")]
+		public override void ValidateCommand(UICommand command)
+		{
+			if (command.PropertyList is NSString nsString &&
+				int.TryParse(nsString.ToString(), out int index) &&
+				MenuFlyoutItemHandler.menus.TryGetValue(index, out var menuElement))
+			{
+				bool isEnabled = menuElement.IsEnabled;
+
+				// Check if the parent MenuBarItem is disabled
+				if (isEnabled && menuElement is IElement element)
+				{
+					var parent = element.Parent;
+					if (parent is IMenuBarItem menuBarItem && !menuBarItem.IsEnabled)
+						isEnabled = false;
+				}
+
+				command.Attributes = isEnabled
+					? (UIMenuElementAttributes)0
+					: UIMenuElementAttributes.Disabled;
+				return;
+			}
+
+			base.ValidateCommand(command);
+		}
+
+		[SupportedOSPlatform("ios13.0")]
 		[Export(KeyboardAcceleratorExtensions.MenuItemSelectedSelector)]
 #pragma warning disable CA1822 // Selectors can't be static, or else it won't be found
 		internal void MenuItemSelected(UICommand uiCommand)

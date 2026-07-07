@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				virtualView.BindingContext = bindingContext;
 				itemsView.AddLogicalChild(virtualView);
-				
+
 				if (this.Selected)
 				{
 					UpdateVisualStates();
@@ -372,9 +372,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (PlatformHandler?.VirtualView is VisualElement element)
 			{
-				VisualStateManager.GoToState(element, Selected
-					? VisualStateManager.CommonStates.Selected
-					: VisualStateManager.CommonStates.Normal);
+				element.IsItemSelected = Selected;
 			}
 		}
 

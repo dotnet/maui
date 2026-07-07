@@ -239,6 +239,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemsSource = ItemsSourceFactory.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
 			_carouselViewLoopManager?.SetItemsSource(itemsSource);
 			SubscribeCollectionItemsSourceChanged(itemsSource);
+			UpdateScrollBarVisibility();
 			return itemsSource;
 		}
 
@@ -466,6 +467,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateLoop()
 		{
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -478,9 +484,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				LoopItemsSource.Loop = carousel.Loop;
 			}
 
+			UpdateScrollBarVisibility();
 			CollectionView.ReloadData();
+			ScrollToOriginalPosition(carouselPosition, false);
+		}
 
-			ScrollToPosition(carouselPosition, carouselPosition, false, true);
+		void UpdateScrollBarVisibility()
+		{
+			if (ItemsView is CarouselView carousel)
+			{
+				// When Loop is enabled, hide scrollbars for cross-platform parity with Windows.
+				// When Loop is disabled, restore the user-specified ScrollBarVisibility values
+				// instead of forcing them to Always.
+				var horizontalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.HorizontalScrollBarVisibility;
+				var verticalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.VerticalScrollBarVisibility;
+				CollectionView.UpdateHorizontalScrollBarVisibility(horizontalVisibility);
+				CollectionView.UpdateVerticalScrollBarVisibility(verticalVisibility);
+			}
+		}
+
+		void ScrollToOriginalPosition(int position, bool animate)
+		{
+			if (ItemsView is not CarouselView carousel)
+        		return;
+
+			if (position < 0 || position >= ItemsSource.ItemCount)
+				return;
+
+			var targetIndexPath = GetScrollToIndexPath(position);
+			var scrollPosition = IsHorizontal
+				? UICollectionViewScrollPosition.CenteredHorizontally
+				: UICollectionViewScrollPosition.CenteredVertically;
+			CollectionView.ScrollToItem(targetIndexPath, scrollPosition, animate);
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)

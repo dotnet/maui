@@ -14,10 +14,26 @@ namespace Microsoft.Maui.Handlers
 		NSObject? _windowCloseObserver;
 		bool _isDatePickerOpen;
 
+		static DatePickerHandler()
+		{
+			// IDatePicker does not implement IPicker, so Focus/Unfocus overrides must
+			// run through an IView mapper instead of DatePickerHandler.CommandMapper entries.
+			var macCatalystOverrides = new CommandMapper<IView, IViewHandler>(CommandMapper.Chained ?? ViewCommandMapper)
+			{
+				[nameof(IView.Focus)] = MapMacCatalystFocus,
+				[nameof(IView.Unfocus)] = MapMacCatalystUnfocus,
+			};
+
+			CommandMapper.Chained = macCatalystOverrides;
+		}
+
 		protected override UIDatePicker CreatePlatformView()
 		{
 			return new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
 		}
+
+		bool _syncingOpenState;
+		bool _nativeOpenState;
 
 		internal bool UpdateImmediately { get; set; } = true;
 
@@ -109,10 +125,7 @@ namespace Microsoft.Maui.Handlers
 			// unrelated window closes while the picker is not open.
 			_windowCloseObserver = NSNotificationCenter.DefaultCenter.AddObserver(WindowDidCloseNotification, OnWindowClosed);
 
-			if (VirtualView is IDatePicker virtualView)
-			{
-				virtualView.IsFocused = virtualView.IsOpen = true;
-			}
+			SetVirtualOpenStateFromNative(true);
 		}
 
 		void OnWindowClosed(NSNotification notification)
@@ -126,10 +139,7 @@ namespace Microsoft.Maui.Handlers
 
 			_isDatePickerOpen = false;
 
-			if (VirtualView is IDatePicker virtualView)
-			{
-				virtualView.IsFocused = virtualView.IsOpen = false;
-			}
+			SetVirtualOpenStateFromNative(false);
 
 			// On MacCatalyst the internal UITextFields stay as first responder
 			// (visually highlighted) even after the popover window closes.
@@ -195,7 +205,103 @@ namespace Microsoft.Maui.Handlers
 
 		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
+			if (handler is DatePickerHandler datePickerHandler)
+				datePickerHandler.SyncOpenState(datePicker.IsOpen, refreshIfAlreadyFirstResponder: datePicker.IsOpen);
+		}
 
+		static void MapMacCatalystFocus(IViewHandler handler, IView view, object? args)
+		{
+			if (args is not FocusRequest request)
+				return;
+
+			if (handler is not DatePickerHandler datePickerHandler ||
+				datePickerHandler.VirtualView is not IDatePicker datePicker)
+			{
+				request.TrySetResult(false);
+				return;
+			}
+
+			var didOpen = datePickerHandler.SyncOpenState(shouldBeOpen: true, refreshIfAlreadyFirstResponder: !datePicker.IsOpen);
+			request.TrySetResult(didOpen);
+		}
+
+		static void MapMacCatalystUnfocus(IViewHandler handler, IView view, object? args)
+		{
+			if (handler is not DatePickerHandler datePickerHandler)
+				return;
+
+			datePickerHandler.SyncOpenState(shouldBeOpen: false, refreshIfAlreadyFirstResponder: false);
+		}
+
+		bool SyncOpenState(bool shouldBeOpen, bool refreshIfAlreadyFirstResponder)
+		{
+			if (_syncingOpenState)
+				return _nativeOpenState || PlatformView.IsFirstResponder;
+
+			_syncingOpenState = true;
+			try
+			{
+				var platformView = PlatformView;
+				bool actualOpen;
+				if (shouldBeOpen)
+				{
+					if (platformView.IsFirstResponder && refreshIfAlreadyFirstResponder)
+						platformView.ResignFirstResponder();
+
+					var didBecomeFirstResponder = platformView.IsFirstResponder;
+					if (!platformView.IsFirstResponder)
+						didBecomeFirstResponder = platformView.BecomeFirstResponder();
+
+					// Stock UIDatePicker on MacCatalyst does not reliably report first-responder
+					// state from a programmatic open request; custom platform views use native results.
+					var canAssumeStockPickerOpened = platformView.GetType() == typeof(UIDatePicker) &&
+						platformView.Enabled &&
+						platformView.UserInteractionEnabled;
+
+					actualOpen = platformView.IsFirstResponder || didBecomeFirstResponder || canAssumeStockPickerOpened;
+				}
+				else
+				{
+					if (platformView.IsFirstResponder || _nativeOpenState)
+						platformView.ResignFirstResponder();
+
+					actualOpen = platformView.IsFirstResponder;
+				}
+
+				SetVirtualOpenState(actualOpen);
+				return actualOpen;
+			}
+			finally
+			{
+				_syncingOpenState = false;
+			}
+		}
+
+		void SetVirtualOpenStateFromNative(bool isOpen)
+		{
+			if (_syncingOpenState)
+				return;
+
+			_syncingOpenState = true;
+			try
+			{
+				SetVirtualOpenState(isOpen);
+			}
+			finally
+			{
+				_syncingOpenState = false;
+			}
+		}
+
+		void SetVirtualOpenState(bool isOpen)
+		{
+			_nativeOpenState = isOpen;
+
+			if (VirtualView is IDatePicker virtualView)
+			{
+				virtualView.IsOpen = isOpen;
+				virtualView.IsFocused = isOpen;
+			}
 		}
 
 		void SetVirtualViewDate()
@@ -211,14 +317,10 @@ namespace Microsoft.Maui.Handlers
 		class UIDatePickerProxy
 		{
 			WeakReference<DatePickerHandler>? _handler;
-			WeakReference<IDatePicker>? _virtualView;
-
-			IDatePicker? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
 			public void Connect(DatePickerHandler handler, IDatePicker virtualView, UIDatePicker platformView)
 			{
 				_handler = new(handler);
-				_virtualView = new(virtualView);
 
 				platformView.ValueChanged += OnValueChanged;
 			}
@@ -230,11 +332,13 @@ namespace Microsoft.Maui.Handlers
 
 			void OnValueChanged(object? sender, EventArgs? e)
 			{
-				if (_handler is not null && _handler.TryGetTarget(out var handler) && handler.UpdateImmediately)
-					handler.SetVirtualViewDate();
+				if (_handler is not null && _handler.TryGetTarget(out var handler))
+				{
+					if (handler.UpdateImmediately)
+						handler.SetVirtualViewDate();
 
-				if (VirtualView is IDatePicker virtualView)
-					virtualView.IsFocused = true;
+					handler.SetVirtualOpenStateFromNative(true);
+				}
 			}
 		}
 	}
