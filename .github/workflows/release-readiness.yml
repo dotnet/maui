@@ -83,7 +83,13 @@ permissions:
 # kinds racing the same tracker's issue edit is the per-tracker concurrency group
 # on the per-tracker-report job below.
 concurrency:
-  group: release-readiness-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.branch || 'all' }}
+  # The pushed branch (github.ref_name) is folded into the key so a burst of pushes to
+  # DIFFERENT tracked branches (main / net11.0 / release/**) does NOT collapse into one
+  # 'push-all' group and drop a needed per-branch refresh when pending-run supersede
+  # cancels the older PENDING run. For non-push events ref_name resolves to the default
+  # branch, so their keys are unchanged (pull_request → PR number; workflow_dispatch →
+  # inputs.branch; schedule/issues/milestone → default branch, i.e. one group each).
+  group: release-readiness-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.branch || github.ref_name || 'all' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -128,16 +134,25 @@ jobs:
           # ── Resolve the triggering event → scope filters ────────────────────
           # BRANCH_FILTER matches a tracker's branchName/surveyRef exactly;
           # MAJOR_FILTER is a comma-list of .NET majors matched against
-          # .majorVersion. Both empty ⇒ full refresh (the scheduled fan-out).
-          # This reuses the existing single-tracker plumbing (workflow_dispatch
-          # already fed BRANCH_FILTER) so events only recompute the tracker(s)
-          # they actually affect.
+          # .majorVersion. FANOUT=1 marks the ONLY events for which an empty filter
+          # means "refresh ALL trackers": schedule and workflow_dispatch. For every
+          # scoped EVENT trigger (push / issues / milestone) FANOUT stays 0, so an
+          # empty filter yields an EMPTY matrix and the pipeline short-circuits
+          # (has-trackers=false) instead of fanning out to every tracker. An
+          # unrelated issue close, a non-`regressed-in` label, or a non-versioned
+          # milestone must NOT recompute the world — the 3-hourly schedule backstops
+          # full coverage. This reuses the existing single-tracker plumbing
+          # (workflow_dispatch already fed BRANCH_FILTER) so events only recompute
+          # the tracker(s) they actually affect.
           BRANCH_FILTER=""
           MAJOR_FILTER=""
+          FANOUT="0"
           case "$EVENT_NAME" in
             workflow_dispatch)
-              # Manual single-branch refresh (unchanged behavior).
+              # Manual refresh. Empty branch ⇒ intentional full fan-out (FANOUT=1);
+              # a specific branch narrows via BRANCH_FILTER below.
               BRANCH_FILTER="${DISPATCH_BRANCH:-}"
+              FANOUT="1"
               ;;
             push)
               # A push advances HEAD on exactly one branch → refresh the tracker
@@ -150,9 +165,10 @@ jobs:
               # Union of the .NET majors named by this issue's regressed-in-<major>*
               # labels (covers both `labeled` — the new label is already in the set
               # — and `closed`). Reduced to digits so nothing but a version number
-              # reaches jq; an issue with no regressed-in label yields an empty
-              # MAJOR_FILTER and (with BRANCH_FILTER empty) a full refresh, which is
-              # safe and self-limiting via concurrency.
+              # reaches jq. An issue that names no tracked major yields an empty
+              # MAJOR_FILTER and (FANOUT=0) an EMPTY matrix → the run short-circuits
+              # rather than recomputing every tracker for an unrelated close/label.
+              # The next scheduled run still covers it.
               MAJOR_FILTER="$(
                 printf '%s' "${LABELS_JSON:-[]}" \
                   | jq -r '.[]?.name // empty' 2>/dev/null \
@@ -162,18 +178,27 @@ jobs:
               ;;
             milestone)
               # First version-looking number in the milestone title (".NET 11" →
-              # 11, "10.0.1xx-sr8" → 10). Digits only; empty ⇒ full refresh.
+              # 11, "10.0.1xx-sr8" → 10). Digits only; a non-versioned title
+              # (e.g. "Backlog") yields an empty MAJOR_FILTER and (FANOUT=0) an
+              # empty matrix → skip, not a full fan-out.
               MAJOR_FILTER="$(
                 printf '%s' "${MILESTONE_TITLE:-}" \
                   | grep -oE '[0-9]+' | head -1 || true
               )"
               ;;
+            schedule)
+              # The recurring cron: the ONE event that intentionally recomputes
+              # every tracker. Empty filters + FANOUT=1 ⇒ full fan-out.
+              FANOUT="1"
+              ;;
             *)
-              # schedule (and any future event) → both filters empty → all trackers.
+              # Any future/unrecognized event: leave FANOUT=0 so an empty filter
+              # skips rather than surprising us with an unscoped full fan-out. A new
+              # trigger that WANTS fan-out must opt in with its own case arm above.
               :
               ;;
           esac
-          echo "Event='$EVENT_NAME'  BranchFilter='${BRANCH_FILTER}'  MajorFilter='${MAJOR_FILTER}'"
+          echo "Event='$EVENT_NAME'  BranchFilter='${BRANCH_FILTER}'  MajorFilter='${MAJOR_FILTER}'  Fanout='${FANOUT}'"
 
           pwsh -NoProfile -File .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 \
             -AllActiveMajors \
@@ -186,11 +211,14 @@ jobs:
 
           # Flatten majors[].trackers[] into a single matrix array. Narrow by
           # BRANCH_FILTER (exact branchName/surveyRef) OR MAJOR_FILTER (any major
-          # in the comma-list vs .majorVersion). Both empty ⇒ keep all trackers.
-          jq --arg filter "$BRANCH_FILTER" --arg major "$MAJOR_FILTER" '
+          # in the comma-list vs .majorVersion). Empty filters keep ALL trackers
+          # ONLY when FANOUT=1 (schedule / workflow_dispatch); for a scoped event
+          # trigger with no computed filter the select matches nothing → empty
+          # matrix → has-trackers=false → the report job is skipped.
+          jq --arg filter "$BRANCH_FILTER" --arg major "$MAJOR_FILTER" --arg fanout "$FANOUT" '
             [ .majors[].trackers[]
               | select(
-                  ($filter == "" and $major == "")
+                  ($fanout == "1" and $filter == "" and $major == "")
                   or ($filter != "" and (.branchName == $filter or .surveyRef == $filter))
                   or ($major  != "" and ((.majorVersion | tostring) as $mv | ($major | split(",")) | index($mv) != null))
                 )
