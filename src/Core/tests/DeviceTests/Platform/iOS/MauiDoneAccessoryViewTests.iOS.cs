@@ -65,6 +65,32 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(wasClicked);
 		}
 
+		[Fact]
+		public async Task AccessorySizesToNaturalButtonHeight()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var accessoryView = new MauiDoneAccessoryView();
+
+				// The height should be driven by the button's natural size plus margins, not a zero/clipped frame.
+				Assert.True(accessoryView.Frame.Height > 40, $"Unexpected accessory height: {accessoryView.Frame.Height}");
+			});
+		}
+
+		[Fact]
+		public async Task DoneButtonUsesLocalizedAccessibilityLabel()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var accessoryView = CreateLaidOutAccessoryView();
+
+				var expected = Foundation.NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Done");
+
+				Assert.False(string.IsNullOrEmpty(accessoryView.DoneButton?.AccessibilityLabel));
+				Assert.Equal(expected, accessoryView.DoneButton?.AccessibilityLabel);
+			});
+		}
+
 		static MauiDoneAccessoryView CreateLaidOutAccessoryView(
 			Action doneClicked = null,
 			UISemanticContentAttribute semanticContentAttribute = UISemanticContentAttribute.Unspecified)
