@@ -125,5 +125,46 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/36322 (and its underlying
+		// cause, https://github.com/dotnet/maui/pull/35597): a TitleView must remain stretched to
+		// the space WinUI's CommandBar template actually reserves for Content, not to the whole
+		// CommandBar's width, which would overlap the PrimaryCommands (toolbar items) area.
+		[Fact(DisplayName = "Toolbar Content Grid Width Excludes Space Reserved For ToolbarItems")]
+		public async Task ToolbarContentGridWidthExcludesToolbarItemsWidth()
+		{
+			SetupBuilder();
+
+			var item1 = new ToolbarItem() { Text = "Item 1" };
+			var item2 = new ToolbarItem() { Text = "Item 2" };
+
+			var page = new ContentPage { Title = "Test Page" };
+			page.ToolbarItems.Add(item1);
+			page.ToolbarItems.Add(item2);
+			NavigationPage.SetTitleView(page, new Microsoft.Maui.Controls.Image());
+
+			var navPage = new NavigationPage(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var toolbar = (Toolbar)(navPage.Window as IToolbarElement).Toolbar;
+				var platformCommandBar = ((MauiToolbar)toolbar.Handler.PlatformView).CommandBar;
+
+				// Allow layout to settle so ActualWidth values are populated.
+				await Task.Delay(100);
+
+				var contentGrid = Assert.IsType<Microsoft.UI.Xaml.Controls.Grid>(platformCommandBar.Content);
+				var contentHost = Assert.IsAssignableFrom<Microsoft.UI.Xaml.FrameworkElement>(
+					Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(contentGrid));
+
+				// contentGrid must track the width WinUI actually reserves for Content...
+				Assert.Equal(contentHost.ActualWidth, contentGrid.Width, precision: 1);
+
+				// ...which must be smaller than the full CommandBar width once PrimaryCommands
+				// (the toolbar items added above) are claiming their own horizontal space.
+				Assert.True(contentGrid.Width < platformCommandBar.ActualWidth,
+					"contentGrid should not be sized to the full CommandBar width when PrimaryCommands are present.");
+			});
+		}
 	}
 }

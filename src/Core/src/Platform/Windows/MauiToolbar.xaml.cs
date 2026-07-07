@@ -1,5 +1,7 @@
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
@@ -22,14 +24,49 @@ namespace Microsoft.Maui.Platform
 		private Button? _togglePaneButton;
 		private Graphics.Color? _iconColor;
 
+		// The FrameworkElement that WinUI's CommandBar template actually reserves for Content.
+		// Its ActualWidth already excludes space consumed by PrimaryCommands/SecondaryCommands/
+		// the overflow button, unlike the CommandBar's own ActualWidth.
+		FrameworkElement? _contentHost;
+
 		public MauiToolbar()
 		{
 			InitializeComponent();
-			this.SizeChanged += (s, e) =>
-			{
-				if (contentGrid.Width != this.ActualWidth)
-					contentGrid.Width = this.ActualWidth;
-			};
+
+			// Workaround: giving LayoutPanel an AutomationPeer (see #35597) made WinUI treat it
+			// as a discrete control element, so the CommandBar template now measures contentGrid
+			// to its desired size instead of stretching it. Re-assert the stretch behavior by
+			// tracking the actual content-hosting element's size (not the whole CommandBar's,
+			// which would incorrectly include the PrimaryCommands/SecondaryCommands/overflow area).
+			contentGrid.Loaded += OnContentGridLoaded;
+		}
+
+		void OnContentGridLoaded(object sender, RoutedEventArgs e)
+		{
+			if (_contentHost is not null)
+				return;
+
+			if (VisualTreeHelper.GetParent(contentGrid) is not FrameworkElement contentHost)
+				return;
+
+			_contentHost = contentHost;
+			_contentHost.SizeChanged += OnContentHostSizeChanged;
+			UpdateContentGridWidth();
+		}
+
+		void OnContentHostSizeChanged(object sender, SizeChangedEventArgs e) =>
+			UpdateContentGridWidth();
+
+		void UpdateContentGridWidth()
+		{
+			if (_contentHost is null)
+				return;
+
+			var margin = contentGrid.Margin;
+			var targetWidth = Math.Max(0, _contentHost.ActualWidth - margin.Left - margin.Right);
+
+			if (contentGrid.Width != targetWidth)
+				contentGrid.Width = targetWidth;
 		}
 
 		internal string? Title
@@ -115,7 +152,11 @@ namespace Microsoft.Maui.Platform
 		internal UI.Xaml.Thickness ContentGridMargin
 		{
 			get => contentGrid.Margin;
-			set => contentGrid.Margin = value;
+			set
+			{
+				contentGrid.Margin = value;
+				UpdateContentGridWidth();
+			}
 		}
 
 		internal VerticalAlignment TextBlockBorderVerticalAlignment
