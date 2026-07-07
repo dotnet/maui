@@ -1,5 +1,9 @@
 ﻿using System;
+#if NET9_0_OR_GREATER
 using System.Threading;
+#else
+using Lock = System.Object;
+#endif
 
 namespace Microsoft.Maui.Handlers
 {
