@@ -144,6 +144,10 @@ namespace Microsoft.Maui.Platform
 		// Null means not yet determined. Invalidated when view hierarchy changes.
 		bool? _parentHandlesSafeArea;
 
+		// Indicates whether the measure invalidation has already been propagated
+		// to ancestors during this main loop.
+		bool _measureInvalidatedPropagated;
+
 		// Tracks whether this MauiView changed IsFocused, so we only clear focus we own.
 		// We intentionally do not rely on PreviouslyFocusedView here because composite
 		// controls can mirror a focused child Entry to the parent IsFocused state while
@@ -308,6 +312,18 @@ namespace Microsoft.Maui.Platform
 				UIKeyboard.WillHideNotification,
 				OnKeyboardWillHide);
 			_keyboardWillHideObserver = new WeakReference<NSObject>(hideObserver);
+
+			// When switching to SoftInput while keyboard is already open, iOS may not
+			// emit a new WillShow. Rehydrate from global keyboard tracking.
+			if (!_isKeyboardShowing
+				&& KeyboardAutoManagerScroll.IsKeyboardShowing
+				&& !KeyboardAutoManagerScroll.KeyboardFrame.IsEmpty)
+			{
+				_keyboardFrame = KeyboardAutoManagerScroll.KeyboardFrame;
+				_isKeyboardShowing = true;
+				_safeAreaInvalidated = true;
+				SetNeedsLayout();
+			}
 		}
 
 		void UnsubscribeFromKeyboardNotifications()
@@ -322,6 +338,13 @@ namespace Microsoft.Maui.Platform
 			{
 				NSNotificationCenter.DefaultCenter.RemoveObserver(hideObserver);
 				_keyboardWillHideObserver = null;
+			}
+
+			// Clear stale keyboard state so that re-subscribing later doesn't
+			// pick up a phantom keyboard frame from a previous session (#34846).
+			if (_isKeyboardShowing)
+			{
+				ClearKeyboardState();
 			}
 		}
 
@@ -353,7 +376,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void OnKeyboardWillHide(NSNotification notification)
+		void OnKeyboardWillHide(NSNotification notification) => ClearKeyboardState();
+
+		void ClearKeyboardState()
 		{
 			_safeAreaInvalidated = true;
 			_keyboardFrame = CGRect.Empty;
@@ -627,6 +652,10 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The size that fits within the constraints</returns>
 		public override CGSize SizeThatFits(CGSize size)
 		{
+			// Invalidations shouldn't happen during measure pass,
+			// but we need to support that in case it happens.
+			_measureInvalidatedPropagated = false;
+
 			if (_crossPlatformLayoutReference == null)
 			{
 				return base.SizeThatFits(size);
@@ -658,6 +687,9 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+
+			// Allow measure invalidations during layout pass
+			_measureInvalidatedPropagated = false;
 
 			if (_crossPlatformLayoutReference == null)
 			{
@@ -805,6 +837,12 @@ namespace Microsoft.Maui.Platform
 
 			// If we're not propagating, then this view is the one triggering the invalidation
 			// and one possible cause is that constraints have changed, so we have to propagate the invalidation.
+			if (_measureInvalidatedPropagated)
+			{
+				return false;
+			}
+
+			_measureInvalidatedPropagated = true;
 			return true;
 		}
 

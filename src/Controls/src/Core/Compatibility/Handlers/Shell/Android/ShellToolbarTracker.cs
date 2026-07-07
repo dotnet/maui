@@ -31,6 +31,7 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 using R = Android.Resource;
 
+#pragma warning disable IDE0031 // Use null propagation
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellToolbarTracker : Java.Lang.Object, AView.IOnClickListener, IShellToolbarTracker, IFlyoutBehaviorObserver
@@ -102,7 +103,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			get
 			{
-				if (_page?.Navigation?.NavigationStack?.Count > 1)
+				var navStackCount = _page?.Navigation?.NavigationStack?.Count ?? 0;
+				var canNavFromStack = navStackCount > 1;
+
+				if (canNavFromStack)
 					return true;
 
 				return _canNavigateBack;
@@ -233,9 +237,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			try
 			{
-				// Call OnBackButtonPressed to allow the page to intercept navigation
-				if (Page?.SendBackButtonPressed() == true)
+				// Route through Shell.OnBackButtonPressed so that Shell subclass overrides
+				// are invoked consistently for both the navigation bar back button and the
+				// hardware/system back button (fixes dotnet/maui#9095).
+				if (_shell?.SendBackButtonPressed() == true)
+				{
 					return;
+				}
 
 				await Page.Navigation.PopAsync();
 			}
@@ -426,8 +434,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var command = backButtonHandler.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 			var backButtonVisibleFromBehavior = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.IsVisibleProperty, true);
 			bool isEnabled = _shell.Toolbar.BackButtonEnabled;
-			//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
-			var image = _flyoutBehavior == FlyoutBehavior.Flyout ? GetFlyoutIcon(backButtonHandler, page) : null;
+			var image = _flyoutBehavior == FlyoutBehavior.Flyout ? GetFlyoutIcon(backButtonHandler, page) : backButtonHandler.GetPropertyIfSet<ImageSource>(BackButtonBehavior.IconOverrideProperty, null);
 			var backButtonVisible = _toolbar.BackButtonVisible;
 
 			DrawerArrowDrawable icon = null;
@@ -488,7 +495,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				defaultDrawerArrowDrawable = true;
 			}
 
-			icon?.Progress = (CanNavigateBack && backButtonVisible) ? 1 : 0;
+			var canNav = CanNavigateBack && backButtonVisible;
+			var progress = canNav ? 1 : 0;
+			icon?.Progress = progress;
 
 			if (command != null || (CanNavigateBack && backButtonVisible))
 			{
@@ -518,6 +527,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_drawerToggle.SyncState();
 
+			// Re-apply icon Progress AFTER SyncState since SyncState resets it to 0
+			if (icon is not null)
+			{
+				icon.Progress = progress;
+			}
 
 			//this needs to be set after SyncState
 			UpdateToolbarIconAccessibilityText(toolbar, _shell);
@@ -681,6 +695,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (SearchHandler is not null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 			{
 				var context = ShellContext.AndroidContext;
+
+				// If the SearchHandler changed (e.g., navigating between pages with different SearchHandlers),
+				// dispose the old search view so it gets recreated with the new handler's icons/settings.
+				if (_searchView is not null && _searchView.SearchHandler != SearchHandler)
+				{
+					_searchView.View.RemoveFromParent();
+					_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
+					_searchView.SearchConfirmed -= OnSearchConfirmed;
+					_searchView.Dispose();
+					_searchView = null;
+				}
+
 				if (_searchView is null)
 				{
 					_searchView = GetSearchView(context);
@@ -691,6 +717,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					_searchView.View.LayoutParameters = new LP(LP.MatchParent, LP.MatchParent);
 					_searchView.SearchConfirmed += OnSearchConfirmed;
+				}
+				// If the existing _searchView is present but its SearchHandler doesn't match the current page SearchHandler,
+				// first collapse and reset the active search UI state, then apply the existing handler swap + reload
+				// so Shell tab navigation does not carry the previous page's interaction state into the next page.
+				else if (_searchView.SearchHandler != SearchHandler)
+				{
+					menu.FindItem(_placeholderMenuItemId)?.CollapseActionView();
+					ClearSearchViewState(_searchView.View);
+					_searchView.SearchHandler = SearchHandler;
+					_searchView.LoadView();
 				}
 
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
@@ -731,6 +767,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
+
+				// BUG FIX: Remove the collapsible search menu item when navigating to a page without SearchHandler
+				// Previously, only _searchView was cleaned up, but the menu item remained visible
+				if (menu.FindItem(_placeholderMenuItemId) is not null)
+				{
+					menu.RemoveItem(_placeholderMenuItemId);
+				}
+
 				if (_searchView is not null)
 				{
 					_searchView.View.RemoveFromParent();
@@ -742,6 +786,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			menu.Dispose();
+		}
+
+		static void ClearSearchViewState(AView view)
+		{
+			view.ClearFocus();
+
+			if (view is AppCompatAutoCompleteTextView autoCompleteTextView)
+			{
+				autoCompleteTextView.DismissDropDown();
+				autoCompleteTextView.ClearComposingText();
+
+				var text = autoCompleteTextView.Text;
+				if (!string.IsNullOrEmpty(text))
+					autoCompleteTextView.SetSelection(text.Length);
+			}
+
+			if (view is ViewGroup viewGroup)
+			{
+				for (int i = 0; i < viewGroup.ChildCount; i++)
+					ClearSearchViewState(viewGroup.GetChildAt(i));
+			}
 		}
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)

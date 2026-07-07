@@ -1,5 +1,8 @@
 ---
 description: Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
+
+environment: gh-aw-agents
+
 on:
   # pull_request_target is intentionally disabled — we don't want auto-runs on PR create/update.
   # pull_request_target:
@@ -14,13 +17,14 @@ on:
     inputs:
       pr_number:
         description: 'PR number to evaluate'
-        required: true
+        required: false
         type: number
       suppress_output:
         description: 'Dry-run — evaluate but do not post output on the PR'
         required: false
         type: boolean
         default: false
+  roles: [admin, maintain, write]
   bots:
     - "copilot-swe-agent[bot]"
 
@@ -62,7 +66,7 @@ network: defaults
 
 concurrency:
   group: "evaluate-pr-tests-${{ github.event.issue.number || inputs.pr_number || github.run_id }}"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 timeout-minutes: 20
 
@@ -104,23 +108,6 @@ steps:
       fi
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
-
-  # For slash_command triggers, the gh-aw platform's checkout_pr_branch.cjs runs
-  # AFTER all user steps and overlays the PR branch onto the workspace. This means
-  # fork PRs can supply their own .github/skills/ and .github/instructions/.
-  # We cannot restore trusted infra here because the platform checkout runs later.
-  # Mitigation: agent is sandboxed (no credentials), max 1 comment via safe-outputs,
-  # and the agent prompt includes a pre-flight check that catches missing SKILL.md.
-  # See: .github/instructions/gh-aw-workflows.instructions.md "The issue_comment + Fork Problem"
-
-  # For workflow_dispatch, the platform skips checkout entirely — this step is the
-  # only thing that gets the PR code onto disk and restores trusted infra from main.
-  - name: Checkout PR and restore agent infrastructure
-    if: github.event_name == 'workflow_dispatch'
-    env:
-      GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ inputs.pr_number }}
-    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 ---
 
 # Evaluate PR Tests
@@ -132,7 +119,7 @@ Invoke the **evaluate-pr-tests** skill: read and follow `.github/skills/evaluate
 - **Repository**: ${{ github.repository }}
 - **PR Number**: ${{ github.event.issue.number || inputs.pr_number }}
 
-The PR branch has been checked out for you. All files from the PR are available locally.
+The PR is available via MCP tools. Use `gh pr view` and `gh pr diff` to access PR data.
 
 ## Pre-flight check
 

@@ -101,6 +101,30 @@ When referencing or triggering CI pipelines, use these current pipeline names:
 
 **⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
 
+### Investigating CI Failures
+
+**🚨 ALWAYS use the `azdo-build-investigator` skill when investigating CI failures or assessing merge readiness.** Its instructions direct you to invoke the `ci-analysis` skill first for the core investigation workflow, then apply MAUI-specific corrections (correct pipeline names, XHarness quirks, binlog guidance).
+
+Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
+
+**When to use it:**
+- "How does CI look?" / "Is CI green?" / "Can we merge?"
+- "What's failing?" / "Are these known failures?"
+- "Is this PR safe to merge?" / "Any CI concerns?"
+- After any PR push to verify the build
+
+**Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", query the **actual AzDO test results** — do NOT infer whether a test ran by inspecting code attributes. Class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
+
+**Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines. The skills handle Helix work item details, known issue cross-referencing, and test result aggregation that manual approaches miss.
+
+### Gradle / Maven Dependency Failures (CFSClean)
+
+The official CI build uses CFSClean network isolation which blocks `repo.maven.apache.org`. All Gradle/Maven dependencies resolve through the `dotnet-public-maven` Azure Artifacts feed.
+
+**If CI fails with Gradle 401 errors** like `"No local versions of package"` or `"Please provide authentication to save package from upstream"`, it means a Maven package hasn't been ingested into the feed yet. **Fix:** run `./eng/ingest-maven-deps.sh` locally to pre-populate the feed. See `src/Core/AndroidNative/settings.gradle` for details.
+
+**Do NOT upgrade Gradle past 8.x** — the Android SDK's `net.android.init.gradle.kts` is incompatible with Gradle 9.x (`dotnet/android#10738`).
+
 ### Code Formatting
 
 Always format code before committing:
@@ -238,6 +262,13 @@ The repository includes specialized custom agents and reusable skills for specif
    - **Output**: Applied changes to instruction files, skills, architecture docs, code comments
    - **Do NOT use for**: Analysis only without applying changes → Use `/learn-from-pr` skill instead
 
+5. **release-readiness-agent** - Assesses ship-readiness for a .NET MAUI release branch — both **SR** (`release/*-srN`) and **Preview** (`release/*-previewN`)
+   - **Use when**: A release (SR or Preview) is approaching ship date and you need a synthesized verdict with WorkIQ/MCP enrichment on top of the deterministic report — **or** for a portfolio question across all active releases ("status on releases", "what needs attention across releases") where the user may not know which releases exist
+   - **Capabilities**: Resolves the branch (SR or Preview) from natural language, picks the right script (`Get-ReleaseReadiness.ps1` for SR, `Get-PreviewReadiness.ps1` for Preview), enriches `rejected-from-sr` candidates with WorkIQ context (SR lane), patches `UNKNOWN` ship-check rows via MCP (`maestro_default_channels`, `maestro_builds`), presents an overall verdict
+   - **Trigger phrases**: "is SR7 ready to ship", "release readiness for release/10.0.1xx-sr7", "survey the SR8 branch", "how does net11 preview6 look", "is preview6 ready to cut", "release readiness for release/11.0.1xx-preview6" — **plus portfolio / cross-release questions with no specific release named**: "give me a status on releases", "release status overview", "what's the status across all releases", "what needs attention across releases", "what's next for MAUI releases"
+   - **Output**: Verdict (Ready / Conditionally Ready / Not Ready) + per-candidate classification (SR) or per-section table (Preview) + actionable next steps
+   - **Do NOT use for**: Programmatic / scripted consumers that just need the raw JSON — use the `release-readiness` skill directly. Reviewing a single PR (use **pr**). Running tests manually (use **sandbox-agent**).
+
 ### Reusable Skills
 
 Skills are modular capabilities that can be invoked directly or used by agents. Located in `.github/skills/`:
@@ -301,20 +332,28 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-9. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
-   - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
-   - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
-   - **Used by**: When investigating CI failures
-
 10. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
    - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
    - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
 
+11. **dependency-flow** (`.github/skills/dependency-flow/SKILL.md`)
+    - **Purpose**: MAUI-specific dependency flow rules, channel conventions, and feed lookup workflows
+    - **Trigger phrases**: "feeds for .NET MAUI X.Y.Z", "where is MAUI build", "promote build to public feed", "what channels is MAUI on", "subscription health for MAUI"
+    - **Wraps**: `maestro-cli` skill (from `dotnet-dnceng@dotnet-arcade-skills` plugin) and maestro MCP tools
+    - **Note**: Provides MAUI-specific guardrails on top of core Maestro/darc operations — channel naming, safety deny-list, input validation, and prompt injection defense
+
+12. **release-readiness** (`.github/skills/release-readiness/SKILL.md`)
+    - **Purpose**: Deterministic ship-readiness engine for .NET MAUI release branches — both **SR** (`release/*-srN`) and **Preview** (`release/*-previewN`). Surveys CI, computes what's actually shipping, classifies open regressions, identifies port candidates and rejected backports
+    - **Trigger phrases**: "release readiness for SRN", "is SR7 ready to ship", "survey the SR branch", "release readiness for preview6", "how does preview6 look (deterministic)", "status across all releases" (reads the live `[Release Readiness]` tracker issues by body marker — no survey re-run needed)
+    - **Scripts**: `Get-ReleaseReadiness.ps1` (SR lane), `Get-PreviewReadiness.ps1` (Preview lane), `Find-ReleaseReadinessTrackers.ps1` (tracker discovery)
+    - **Output**: JSON + Markdown report, list of source PRs, classification of regression issues (in-sr-active, rejected-from-sr, no-fix-yet, etc.)
+    - **Note**: Deterministic and reproducible — no MCP, no LLM judgment. Use **this skill directly** when you need raw output for a script, dashboard, cron job, or programmatic consumer. For natural-language verdict synthesis with WorkIQ enrichment, use the **`release-readiness-agent`** instead.
+
 #### Internal Skills (Used by Agents)
 
-11. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+13. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
@@ -329,6 +368,10 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
 - User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
 - User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
+- User: "Is SR7 ready to ship?" → Immediately invoke **release-readiness-agent**
+- User: "How does net11 preview6 look?" → Immediately invoke **release-readiness-agent**
+- User: "Give me a status on releases / what needs attention across releases?" → Immediately invoke **release-readiness-agent** (portfolio mode — it enumerates active releases by reading the `[Release Readiness]` tracker issues; don't ask "which release?")
+- User: "Give me the raw release-readiness JSON for SR8" → Use the **release-readiness** skill directly (no enrichment needed)
 
 **When NOT to delegate**:
 - User asks "What does PR #12345 do?" → Informational query, handle yourself

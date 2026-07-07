@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -371,6 +372,19 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == BorderColorProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeColor));
+			}
+			else if (propertyName == BorderWidthProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeThickness));
+			}
+		}
+
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(BorderElement.CornerRadiusProperty);
 		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
@@ -512,6 +526,8 @@ namespace Microsoft.Maui.Controls
 			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent);
 			border.SetBinding(Border.StrokeShapeProperty, static (RadioButton rb) => rb.CornerRadius, source: RelativeBindingSource.TemplatedParent, converter: new CornerRadiusToShape());
 			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.BackgroundColorProperty, static (RadioButton rb) => rb.BackgroundColor, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.BackgroundProperty, static (RadioButton rb) => rb.Background, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
 
 			var grid = new Grid
 			{
@@ -611,7 +627,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			contentPresenter.SetBinding(MarginProperty, static (RadioButton radio) => radio.Padding, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
-			contentPresenter.SetBinding(BackgroundColorProperty, static (RadioButton radio) => radio.BackgroundColor, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
 
 			grid.Add(normalEllipse);
 			grid.Add(checkMark);
@@ -714,7 +729,7 @@ namespace Microsoft.Maui.Controls
 		Font ITextStyle.Font => this.ToFont();
 
 #if ANDROID
-		object IContentView.Content 
+		object IContentView.Content
 		{
 			get
 			{
@@ -752,7 +767,7 @@ namespace Microsoft.Maui.Controls
 
 			if (ControlTemplate != null)
 			{
-				string contentAsString = ContentAsString();
+				string contentAsString = GetSemanticDescriptionFromContent();
 
 				if (!string.IsNullOrWhiteSpace(contentAsString) && string.IsNullOrWhiteSpace(semantics?.Description))
 				{
@@ -762,6 +777,71 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return semantics;
+		}
+
+		string GetSemanticDescriptionFromContent()
+		{
+			if (Content is string contentText)
+			{
+				return contentText;
+			}
+
+			if (Content is IView contentView)
+			{
+				// Don't fall back to ContentAsString() for view-based content — it calls ToString()
+				// on the view and returns a type name rather than meaningful text.
+				TryGetSemanticDescription(contentView, out var semanticDescription);
+				return semanticDescription;
+			}
+
+			if (Value is string valueText && !string.IsNullOrWhiteSpace(valueText))
+			{
+				return valueText;
+			}
+
+			return ContentAsString();
+		}
+
+		static bool TryGetSemanticDescription(IView view, out string semanticDescription)
+		{
+			semanticDescription = null;
+
+			if (view is null)
+			{
+				return false;
+			}
+
+			if (!string.IsNullOrWhiteSpace(view.Semantics?.Description))
+			{
+				semanticDescription = view.Semantics.Description;
+				return true;
+			}
+
+			if (view is IText text && !string.IsNullOrWhiteSpace(text.Text))
+			{
+				semanticDescription = text.Text;
+				return true;
+			}
+
+			if (view is IContentView contentView && contentView.PresentedContent is IView presentedContent && TryGetSemanticDescription(presentedContent, out semanticDescription))
+			{
+				return true;
+			}
+
+			if (view is Microsoft.Maui.ILayout layout)
+			{
+				for (int index = 0; index < layout.Count; index++)
+				{
+					var child = layout[index];
+
+					if (TryGetSemanticDescription(child, out semanticDescription))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
 		}
 
 		class CornerRadiusToShape : IValueConverter

@@ -1,71 +1,68 @@
 ---
 name: azdo-build-investigator
-description: "Investigate CI failures for dotnet/maui PRs — build errors, Helix test logs, and binlog analysis. Use when asked about failing checks, CI status, test failures, 'why is CI red', 'build failed', 'what's failing on PR', Helix failures, or device test failures."
+description: "Investigate CI failures for dotnet/maui PRs — build errors, Helix test logs, and binlog analysis. Use when asked about failing checks, CI status, test failures, 'why is CI red', 'build failed', 'what's failing on PR', 'is this PR ready to merge', Helix failures, or device test failures."
 metadata:
   author: dotnet-maui
-  version: "2.0"
+  version: "3.0"
 ---
 
 # dotnet/maui CI Investigation Context
 
-This skill provides MAUI-specific context for CI investigation. Use it together with the `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` plugin via `.github/copilot/settings.json`).
+This skill provides MAUI-specific context for **interactive** CI investigation —
+answering "why is CI red?" and "is this PR ready to merge?". Use it together with the
+`ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` plugin via
+`.github/copilot/settings.json`).
 
-> **First**: invoke the `ci-analysis` skill — it handles the core investigation workflow using `Get-CIStatus.ps1` and `gh` CLI (with MCP tools as optional enhancements if available). This skill provides MAUI-specific corrections and context on top of that.
+> **First**: invoke the `ci-analysis` skill — it handles the core investigation workflow
+> using `Get-CIStatus.ps1` and `gh` CLI (with MCP tools as optional enhancements if
+> available). This skill provides MAUI-specific corrections and context on top of that.
 
-## Script Location
+For the **automated** path (a maintainer comments `/review tests` on a PR), the
+`review-test-failures` skill does the same classification deterministically and posts a
+merge-readiness comment. Both skills reason from the same shared facts below.
 
-The `ci-analysis` skill and its `Get-CIStatus.ps1` script are loaded automatically from the `dotnet/arcade-skills` plugin (configured in `.github/copilot/settings.json` via `enabledPlugins`). The CLI caches scripts to `~/.copilot/installed-plugins/dotnet-arcade-skills/`. No manual download is needed.
+## MAUI CI facts (canonical)
 
-## MAUI CI Pipelines
+All MAUI-specific facts live in **`.github/docs/maui-ci-facts.md`** — read it. It covers:
 
-> ⚠️ The `ci-analysis` skill's reference doc lists `maui-public` as the MAUI pipeline — **this is outdated**. The correct pipeline names are below.
+- **Pipeline names + definition IDs** (`maui-pr` 302, `maui-pr-devicetests` 314,
+  `maui-pr-uitests` 313), org/project, and investigation priority order.
+- **AzDO data sources** (anonymous public build/timeline/log REST APIs; `_apis/test` is
+  optional enrichment).
+- **XHarness exit-0 blind spot** and the Helix `aggregated` endpoint for hidden
+  device-test failures.
+- **Container artifact binlogs** (Bearer token + File Container API; `mcp-binlog-tool`).
+- **Test count deduplication** (group by test name + OS platform).
+- **Baseline comparison** (is the failure already red on the base branch?).
+- **Visual baseline** and **platform mismatch** guidance.
+- **Gradle / Maven / CFSClean** signatures and the `./eng/ingest-maven-deps.sh` fix.
+- **Common failure patterns** table.
+- **Merge-readiness criteria** — the shared definition of `Ready to merge` / `Not ready`
+  / `Needs human investigation` / `Insufficient data` / `No failures found`.
 
-| Pipeline Name | Definition ID | Purpose |
-|---------------|---------------|---------|
-| `maui-pr` | **302** | Main build — check this first |
-| `maui-pr-devicetests` | **314** | Helix device tests (iOS, Android, Windows, MacCatalyst) |
-| `maui-pr-uitests` | **313** | Appium-based UI tests |
+Do not restate those facts from memory; change them in the canonical doc only.
 
-**Organization**: `dnceng-public` / project `public`
+## Script location
 
-**Investigation priority order**: `maui-pr` → `maui-pr-devicetests` → `maui-pr-uitests`
+The `ci-analysis` skill and its `Get-CIStatus.ps1` script are loaded automatically from
+the `dotnet/arcade-skills` plugin (configured in `.github/copilot/settings.json` via
+`enabledPlugins`). The CLI caches scripts to
+`~/.copilot/installed-plugins/dotnet-arcade-skills/`. No manual download is needed.
 
-Most failures are in `maui-pr`. Device test failures appear in `maui-pr-devicetests`. Focus on the first failing pipeline before checking others.
+> ⚠️ The `ci-analysis` skill's reference doc lists `maui-public` as the MAUI pipeline —
+> **this is outdated**. Use the pipeline names in `.github/docs/maui-ci-facts.md`.
 
-## MAUI-Specific Quirks
+## Using this skill
 
-### XHarness Exit-0 Blind Spot
+1. Invoke `ci-analysis` to gather build/test status for the PR.
+2. Apply the MAUI corrections from `.github/docs/maui-ci-facts.md` — especially the
+   correct pipeline names, the XHarness exit-0 cross-check on `maui-pr-devicetests`, and
+   test-count deduplication.
+3. When asked whether a PR is ready to merge, compare failures against the base branch
+   and apply the merge-readiness criteria from the canonical doc.
+4. **Escalation:** for deep Helix log analysis (recurring failures, machine-specific
+   issues, comparing passing vs. failing runs), escalate to the `helix-investigation`
+   skill.
 
-XHarness (used for iOS/Android device tests in `maui-pr-devicetests`) **exits with code 0 even when tests fail**. This means:
-- The ADO job shows ✅ "Succeeded"
-- `ci-analysis` may report no failures
-- But actual test failures are hidden inside the Helix work items
-
-**How to detect hidden test failures**: Query the `ResultSummaryByBuild` Helix API endpoint:
-```
-GET https://helix.dot.net/api/2019-06-17/jobs/{correlationId}/aggregated
-```
-Look for `Failed` > 0 in the response even when the ADO build job shows green.
-
-When `ci-analysis` reports a `maui-pr-devicetests` build as passing but the PR has a `s/agent-gate-failed` label or the user suspects device test failures, always cross-check Helix `ResultSummaryByBuild`.
-
-### Container Artifact Binlogs
-
-MAUI build artifacts are **Container type**, not `PipelineArtifact`. This means:
-- `az pipelines runs artifact download` does **not** work for binlogs
-- Artifact names are like `Windows_NT_Build Windows (Debug)_Attempt1` (not `binlog`)
-- Download requires a Bearer token from `az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798`
-- Use the ADO File Container API: `/_apis/resources/Containers/{id}?api-version=5.0-preview&$format=OctetStream`
-
-If available, use the `mcp-binlog-tool` MCP server to analyze downloaded `.binlog` files. This is optional — the core investigation workflow works without it via `gh` CLI and REST APIs.
-
-## Common MAUI Failure Patterns
-
-| Pattern | Where | Notes |
-|---------|-------|-------|
-| `error CS####` | `maui-pr` | C# compiler error — check file/line |
-| `error XA####` | `maui-pr` | Android build error |
-| `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
-| `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
-| `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
-| UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
+**When CI hasn't run:** community PRs require a maintainer to trigger builds — see the
+canonical doc.

@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning disable CA1416 // Validate platform compatibility
 				UIBarButtonItemBadge badge;
 				if (badgeText.Length == 0)
-					badge = UIBarButtonItemBadge.Create(0); // Empty string shows as dot indicator
+					badge = UIBarButtonItemBadge.CreateIndicatorBadge();
 				else if (int.TryParse(badgeText, out var count) && count >= 0)
 					badge = UIBarButtonItemBadge.Create((nuint)count);
 				else

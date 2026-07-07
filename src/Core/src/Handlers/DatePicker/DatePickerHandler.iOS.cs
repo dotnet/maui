@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
-		public static partial void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFlowDirection(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFlowDirection(datePicker);
 			handler.PlatformView?.UpdateTextAlignment(datePicker);

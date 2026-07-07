@@ -355,11 +355,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var renderer = RendererForShellContent(shellSection);
 				if (renderer is not null)
 				{
-					var index = ViewControllers.ToList().IndexOf(renderer.ViewController);
-					if (index >= 0 && TabBar?.Items is not null && index < TabBar.Items.Length)
-					{
-						UpdateTabBarItemBadge(TabBar.Items[index], shellSection);
-					}
+					UpdateTabBarItemBadge(renderer.ViewController?.TabBarItem, shellSection);
 				}
 			}
 		}
@@ -406,8 +402,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection)
+		internal static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection)
 		{
+			if (tabBarItem is null)
+				return;
+
 			var badgeText = shellSection.BadgeText;
 			tabBarItem.BadgeValue = badgeText is null ? null : (badgeText.Length > 0 ? badgeText : "");
 
@@ -427,10 +426,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var attrs = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
 				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Focused);
 			}
 			else
 			{
 				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Focused);
 			}
 		}
 

@@ -39,6 +39,30 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			UpdateStatus();
 		}
 
+		void OnAddCustomPinsClicked(object? sender, EventArgs e)
+		{
+			// Spread these pins far apart so they stay un-clustered (cluster of 1)
+			// even with clustering enabled. Their custom ImageSource must still be
+			// applied - this is the case the Android handler previously dropped.
+			for (int i = 0; i < 5; i++)
+			{
+				double latOffset = (i - 2) * 0.12;
+				double lonOffset = (i - 2) * 0.12;
+
+				var pin = new Pin
+				{
+					Label = $"Custom Pin {i + 1}",
+					Address = "Custom icon pin",
+					Location = new Position(_center.Latitude + latOffset, _center.Longitude + lonOffset),
+					Type = PinType.Place,
+					ClusteringIdentifier = "custom",
+					ImageSource = ImageSource.FromFile("dotnet_bot.png")
+				};
+				clusterMap.Pins.Add(pin);
+			}
+			UpdateStatus();
+		}
+
 		void OnClearPinsClicked(object? sender, EventArgs e)
 		{
 			clusterMap.Pins.Clear();

@@ -415,6 +415,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SwipeItemViewCommandCanExecuteUpdatesIsEnabled()
+		{
+			var expectedParameter = new object();
+			var canExecute = false;
+			var command = new Command(
+				_ => { },
+				parameter => canExecute && ReferenceEquals(parameter, expectedParameter));
+			var swipeItemView = new SwipeItemView
+			{
+				CommandParameter = expectedParameter,
+				Command = command
+			};
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			canExecute = true;
+			command.ChangeCanExecute();
+
+			Assert.True(swipeItemView.IsEnabled);
+
+			swipeItemView.CommandParameter = new object();
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			swipeItemView.CommandParameter = expectedParameter;
+
+			Assert.True(swipeItemView.IsEnabled);
+
+			swipeItemView.IsEnabled = false;
+			command.ChangeCanExecute();
+
+			Assert.False(swipeItemView.IsEnabled);
+		}
+
+		[Fact]
 		public void SwipeItemsRemainInLogicalTreeWhenContentIsSet()
 		{
 			var swipeView = new SwipeView();
