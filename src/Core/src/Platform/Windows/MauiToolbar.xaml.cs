@@ -28,6 +28,9 @@ namespace Microsoft.Maui.Platform
 		{
 			InitializeComponent();
 			SizeChanged += OnToolbarSizeChanged;
+
+			// Unsubscribe when the toolbar unloads (e.g. handler disconnect/navigation) so the
+			// handler doesn't keep firing against a detached element.
 			this.OnUnloaded(() => SizeChanged -= OnToolbarSizeChanged);
 		}
 
@@ -39,6 +42,14 @@ namespace Microsoft.Maui.Platform
 			UpdateContentGridWidth();
 		}
 
+		// contentGrid (which hosts the title/icon/TitleView) previously was stretched to the
+		// CommandBar's full ActualWidth. That's wrong: it ignores the space WinUI reserves for
+		// PrimaryCommands (toolbar items) and the overflow "MoreButton", so contentGrid/TitleView
+		// would render on top of the toolbar items (https://github.com/dotnet/maui/issues/36322).
+		// To fix this without regressing the stretch behavior (see #35597), we look up the
+		// "MoreButton" and "PrimaryItemsControl" named parts from CommandBar's default template
+		// and subtract their widths (plus contentGrid's own margins) from the CommandBar's
+		// ActualWidth, giving contentGrid only the width actually available to it.
 		void UpdateContentGridWidth()
 		{
 			_moreButton ??= commandBar.GetDescendantByName<FrameworkElement>("MoreButton");
@@ -46,6 +57,8 @@ namespace Microsoft.Maui.Platform
 
 			double commandsWidth = 0;
 
+			// MoreButton is collapsed when there's nothing in the overflow menu, so only count
+			// its width when it's actually visible and taking up space.
 			if (_moreButton is not null && _moreButton.Visibility == UI.Xaml.Visibility.Visible)
 				commandsWidth += _moreButton.ActualWidth;
 
