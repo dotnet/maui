@@ -891,6 +891,36 @@ stages:
               COMMENTS_VIA_FILE: "true"
 
           # ─────────────────────────────────────────────────────────
+          #  Task 3.5 — POST CUSTOM PROMPT (standalone FALLBACK).
+          #  On success the analysis is folded into the AI Review Summary
+          #  as a section by Stage 3 (post-ai-summary-comment.ps1), so this
+          #  step is SKIPPED. It runs only when Task 3 failed (CopilotFailed)
+          #  — no summary will post then — so the maintainer's prompt is never
+          #  lost. Guarded to CustomPrompt != '' to stay zero-impact otherwise.
+          #  env: GH_TOKEN (for posting).
+          # ─────────────────────────────────────────────────────────
+          - bash: |
+              echo "═══ TASK 3.5: POST CUSTOM PROMPT (fallback) ═══"
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+
+              set +e
+              PCP_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase PostCustomPrompt -TrustedScriptsDir "$TRUSTED" -CustomPrompt "${PARAM_CUSTOM_PROMPT}" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${PCP_ARGS[@]}"
+              PCP_EXIT=$?
+              set -e
+
+              if [ $PCP_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=warning]PostCustomPrompt phase exited $PCP_EXIT (non-fatal)"
+              fi
+            name: RunPostCustomPrompt
+            displayName: 'Task 3.5: Post Custom Prompt (fallback)'
+            condition: and(succeededOrFailed(), ne('${{ parameters.CustomPrompt }}', ''), eq(variables['CopilotFailed'], 'true'))
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_CUSTOM_PROMPT: ${{ parameters.CustomPrompt }}
+
+          # ─────────────────────────────────────────────────────────
           #  Task 4 — POST: gate comment, AI summary, labels.
           #  env: GH_TOKEN (for posting comments).
           # ─────────────────────────────────────────────────────────
@@ -900,9 +930,6 @@ stages:
 
               set +e
               POST_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase Post -TrustedScriptsDir "$TRUSTED" -TrustedGateResult "$(RunGate.gateResult)" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
-              if [ -n "${PARAM_CUSTOM_PROMPT}" ]; then
-                POST_ARGS+=(-CustomPrompt "${PARAM_CUSTOM_PROMPT}")
-              fi
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${POST_ARGS[@]}"
               POST_EXIT=$?
               set -e
@@ -918,7 +945,6 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
-              PARAM_CUSTOM_PROMPT: ${{ parameters.CustomPrompt }}
               DEFER_COMMENT_TO_STAGE3: "true"
 
           # Copy review artifacts into the CopilotLogs staging dir.
