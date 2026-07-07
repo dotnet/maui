@@ -331,10 +331,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
-					UpdateShowsResults();
 					_currentSearchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
 					_currentSearchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					UpdateShowsResults();
 					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.UpdateTextOnSelect = false;
 					autoSuggestBox.UpdateSearchHandlerText(_currentSearchHandler);
