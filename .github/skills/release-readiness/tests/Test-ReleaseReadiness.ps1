@@ -2235,6 +2235,11 @@ $mdRenderOld = Format-MarkdownReport -Data $mdFreshOld -RepoUrl 'https://github.
 $mdRenderNew = Format-MarkdownReport -Data $mdFreshNew -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
 $shaRenderOld = ([regex]::Match($mdRenderOld, 'release-readiness-hash: sha=([0-9a-f]{64})')).Groups[1].Value
 $shaRenderNew = ([regex]::Match($mdRenderNew, 'release-readiness-hash: sha=([0-9a-f]{64})')).Groups[1].Value
+# Guard against a vacuous pass: if the sha marker were ever renamed/reformatted, BOTH
+# extractions would yield '' and the equality assertion below would pass on ''=='' while
+# silently masking a real regression. Require a genuine 64-hex digest on each render first.
+Assert-Eq -Label "Hash-stability: old render emits a 64-hex sha" -Expected $true -Actual ($shaRenderOld -match '^[0-9a-f]{64}$')
+Assert-Eq -Label "Hash-stability: new render emits a 64-hex sha" -Expected $true -Actual ($shaRenderNew -match '^[0-9a-f]{64}$')
 $banRenderOld = (($mdRenderOld -split "`n") | Where-Object { $_ -match 'Report generated' }) -join ''
 $banRenderNew = (($mdRenderNew -split "`n") | Where-Object { $_ -match 'Report generated' }) -join ''
 Assert-Eq -Label "Freshness banner text differs when fetchedAt differs" -Expected $true `

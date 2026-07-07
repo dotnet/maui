@@ -412,8 +412,12 @@ function Format-ReportFreshnessBanner {
 
         In normal operation generation ≈ render, so the age is ~0 and the ⏳ note does not fire;
         the absolute "**Generated**:" timestamp above this banner remains the durable staleness
-        signal for a body frozen by the no-op. The ⏳ threshold is a safety valve (and is covered
-        by unit tests that inject a far-past -GeneratedAt).
+        signal for a body frozen by the no-op. On the hash-gated SR engine the ⏳ path is
+        therefore effectively test-only: a body the semantic-hash no-op declines to re-render
+        keeps whatever banner text it last wrote, so ⏳ can never NEWLY surface through a frozen
+        body — rely on the absolute "**Generated**:" line there. The ⏳ path IS live on the
+        preview engine, which re-renders every run. Unit tests inject a far-past -GeneratedAt to
+        exercise ⏳ directly.
 
     .PARAMETER GeneratedAt
         When the report data was generated (the same instant rendered on the "**Generated**:"
@@ -470,7 +474,10 @@ function Format-ReportFreshnessBanner {
     }
 
     if ($span.TotalHours -ge $StaleHours) {
-        $staleH = [int][Math]::Floor($StaleHours)
+        # Render the ACTUAL threshold (culture-invariant) so a fractional -StaleHours (e.g.
+        # 2.5) reads "older than 2.5h" rather than a floored, misleading "2h". Whole-number
+        # thresholds (the default 4) still render as "4h".
+        $staleH = ([double]$StaleHours).ToString([System.Globalization.CultureInfo]::InvariantCulture)
         return "> ⏳ _Report generated **$agePhrase** — data may be stale (older than ${staleH}h). A fresh run is scheduled every few hours._"
     }
     return "> 🕐 _Report generated $agePhrase._"
