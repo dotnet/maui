@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// Provides a XAML markup extension that returns different values depending on the platform the app is running on.
 	/// </summary>
 	/// <remarks>
-	/// The value is resolved by matching <see cref="Microsoft.Maui.Devices.DeviceInfo.Platform"/> (a string)
+	/// The value is resolved by matching the <see cref="Microsoft.Maui.Devices.DeviceInfo.Platform"/> identifier
+	/// (the <see cref="Microsoft.Maui.Devices.DevicePlatform"/> struct's <c>ToString()</c> value)
 	/// against the per-platform values, so a custom backend whose platform string matches one of the named
 	/// properties below (for example <c>GTK</c>) resolves correctly at both runtime and compile time.
 	/// <para>
