@@ -37,6 +37,7 @@ static class CSharpExpressionHelpers
 			@"|\s*\.[A-Za-z_]" +             // Dot prefix for binding: {.Name
 			@"|\s*this\." +                  // this. prefix for local: {this.Foo
 			@"|\s*BindingContext\." +        // BindingContext. prefix for binding: {BindingContext.Foo
+			@"|\s*[A-Za-z_]\w*\.\(" +        // Attached BP target syntax: {target.(Grid.Row)
 		@")",
 		RegexOptions.Compiled);
 
@@ -895,7 +896,7 @@ static class CSharpExpressionHelpers
 	/// </summary>
 	public static string ResolveXmlnsPrefixes(string code, IXmlNamespaceResolver nsResolver, SourceGenContext context)
 	{
-		return XmlnsPrefixPattern.Replace(code, match =>
+		return ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, match =>
 		{
 			var prefix = match.Groups[1].Value;
 			var typeName = match.Groups[2].Value;
@@ -912,7 +913,7 @@ static class CSharpExpressionHelpers
 			var xmlType = new XmlType(namespaceUri, typeName, null);
 			if (xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
 			{
-				return $"global::{typeSymbol!.ContainingNamespace}.{typeName}";
+				return typeSymbol!.ToFQDisplayString();
 			}
 
 			return match.Value;
@@ -921,8 +922,24 @@ static class CSharpExpressionHelpers
 
 	// Pattern to match attached bindable property syntax: target.(Type.Property) or standalone (Type.Property)
 	static readonly Regex AttachedPropertyPattern = new Regex(
-		@"(?:(\w+)\.)?\(([A-Z]\w*)\.(\w+)\)",
+		@"(?:(?<target>[A-Za-z_]\w*)\.)?\((?<member>(?:global::)?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+)\)",
 		RegexOptions.Compiled);
+
+	public static bool TryGetStandaloneAttachedProperty(string code, Compilation compilation, out string attachedProperty)
+	{
+		foreach (Match match in MatchesOutsideLiteralSegments(code, AttachedPropertyPattern))
+		{
+			if (!match.Groups["target"].Success
+				&& IsAttachedProperty(match.Groups["member"].Value, compilation))
+			{
+				attachedProperty = match.Value;
+				return true;
+			}
+		}
+
+		attachedProperty = string.Empty;
+		return false;
+	}
 
 	/// <summary>
 	/// Transforms attached bindable property syntax to static Get method calls.
@@ -931,19 +948,238 @@ static class CSharpExpressionHelpers
 	/// </summary>
 	public static string TransformAttachedProperties(string code)
 	{
-		return AttachedPropertyPattern.Replace(code, match =>
+		return ReplaceOutsideLiteralSegments(code, AttachedPropertyPattern, match =>
 		{
-			var target = match.Groups[1].Value; // "gridChild", "this", or empty
-			var typeName = match.Groups[2].Value; // "Grid"
-			var propertyName = match.Groups[3].Value; // "Row"
+			var target = match.Groups["target"].Value; // "gridChild", "this", or empty
+			var member = match.Groups["member"].Value; // "Grid.Row" or "global::Namespace.Grid.Row"
 
 			if (string.IsNullOrEmpty(target))
-			{
-				// Standalone (Type.Prop) — source will be determined by expression analyzer
-				return $"{typeName}.Get{propertyName}(__source)";
-			}
+				return match.Value;
+
+			if (!TrySplitAttachedProperty(member, out var typeName, out var propertyName))
+				return match.Value;
 
 			return $"{typeName}.Get{propertyName}({target})";
 		});
+	}
+
+	static bool TrySplitAttachedProperty(string member, out string typeName, out string propertyName)
+	{
+		typeName = string.Empty;
+		propertyName = string.Empty;
+
+		var lastDot = member.LastIndexOf('.');
+		if (lastDot <= 0 || lastDot == member.Length - 1)
+			return false;
+
+		typeName = member.Substring(0, lastDot);
+		propertyName = member.Substring(lastDot + 1);
+
+		if (!IsIdentifier(propertyName) || !LooksLikeTypeName(typeName))
+			return false;
+
+		return true;
+	}
+
+	static bool IsAttachedProperty(string member, Compilation compilation)
+	{
+		if (!TrySplitAttachedProperty(member, out var typeName, out var propertyName))
+			return false;
+
+		foreach (var type in ResolveTypeSymbols(typeName, compilation))
+		{
+			if (HasAttachedProperty(type, propertyName, compilation))
+				return true;
+		}
+
+		return false;
+	}
+
+	static IEnumerable<INamedTypeSymbol> ResolveTypeSymbols(string typeName, Compilation compilation)
+	{
+		var metadataName = typeName.StartsWith("global::", StringComparison.Ordinal)
+			? typeName.Substring("global::".Length)
+			: typeName;
+		var seen = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+		var foundDirectMatch = false;
+
+		foreach (var type in compilation.GetTypesByMetadataName(metadataName).OfType<INamedTypeSymbol>())
+		{
+			foundDirectMatch = true;
+			if (seen.Add(type))
+				yield return type;
+		}
+
+		if (foundDirectMatch)
+			yield break;
+
+		foreach (var type in FindTypes(compilation.GlobalNamespace, metadataName))
+		{
+			if (seen.Add(type))
+				yield return type;
+		}
+	}
+
+	static IEnumerable<INamedTypeSymbol> FindTypes(INamespaceSymbol namespaceSymbol, string metadataName)
+	{
+		foreach (var nestedNamespace in namespaceSymbol.GetNamespaceMembers())
+		{
+			foreach (var type in FindTypes(nestedNamespace, metadataName))
+				yield return type;
+		}
+
+		foreach (var type in namespaceSymbol.GetTypeMembers())
+		{
+			foreach (var candidate in FindTypes(type, metadataName))
+				yield return candidate;
+		}
+	}
+
+	static IEnumerable<INamedTypeSymbol> FindTypes(INamedTypeSymbol typeSymbol, string metadataName)
+	{
+		if (typeSymbol.Name == metadataName
+			|| typeSymbol.ToFQDisplayString() == $"global::{metadataName}")
+		{
+			yield return typeSymbol;
+		}
+
+		foreach (var nestedType in typeSymbol.GetTypeMembers())
+		{
+			foreach (var candidate in FindTypes(nestedType, metadataName))
+				yield return candidate;
+		}
+	}
+
+	static bool HasAttachedProperty(INamedTypeSymbol type, string propertyName, Compilation compilation)
+	{
+		var bindablePropertyType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableProperty");
+		var bindablePropertyName = $"{propertyName}Property";
+
+		foreach (var member in type.GetMembers(bindablePropertyName))
+		{
+			if (member is IFieldSymbol field
+				&& field.IsStatic
+				&& (bindablePropertyType is null || SymbolEqualityComparer.Default.Equals(field.Type, bindablePropertyType)))
+			{
+				return true;
+			}
+		}
+
+		var getterName = $"Get{propertyName}";
+		foreach (var member in type.GetMembers(getterName))
+		{
+			if (member is IMethodSymbol method
+				&& method.IsStatic
+				&& method.Parameters.Length == 1
+				&& method.ReturnsVoid == false)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	static bool LooksLikeTypeName(string typeName)
+	{
+		var candidate = typeName.StartsWith("global::", StringComparison.Ordinal)
+			? typeName.Substring("global::".Length)
+			: typeName;
+
+		var lastDot = candidate.LastIndexOf('.');
+		var typeSegment = lastDot >= 0 ? candidate.Substring(lastDot + 1) : candidate;
+
+		return typeSegment.Length > 0 && char.IsUpper(typeSegment[0]);
+	}
+
+	static bool IsIdentifier(string value)
+	{
+		if (string.IsNullOrEmpty(value) || !(char.IsLetter(value[0]) || value[0] == '_'))
+			return false;
+
+		for (var i = 1; i < value.Length; i++)
+		{
+			if (!(char.IsLetterOrDigit(value[i]) || value[i] == '_'))
+				return false;
+		}
+
+		return true;
+	}
+
+	static string ReplaceOutsideLiteralSegments(string code, Regex pattern, MatchEvaluator evaluator)
+	{
+		var matches = pattern.Matches(code).Cast<Match>().ToArray();
+		if (matches.Length == 0)
+			return code;
+
+		var literalSpans = GetLiteralSegmentSpans(code);
+		var result = new StringBuilder(code.Length);
+		var currentIndex = 0;
+
+		foreach (var match in matches)
+		{
+			if (OverlapsLiteralSegment(match.Index, match.Length, literalSpans))
+				continue;
+
+			result.Append(code, currentIndex, match.Index - currentIndex);
+			result.Append(evaluator(match));
+			currentIndex = match.Index + match.Length;
+		}
+
+		result.Append(code, currentIndex, code.Length - currentIndex);
+		return result.ToString();
+	}
+
+	static IEnumerable<Match> MatchesOutsideLiteralSegments(string code, Regex pattern)
+	{
+		var matches = pattern.Matches(code).Cast<Match>().ToArray();
+		if (matches.Length == 0)
+			yield break;
+
+		var literalSpans = GetLiteralSegmentSpans(code);
+
+		foreach (var match in matches)
+		{
+			if (!OverlapsLiteralSegment(match.Index, match.Length, literalSpans))
+				yield return match;
+		}
+	}
+
+	static List<(int Start, int End)> GetLiteralSegmentSpans(string code)
+	{
+		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+		var spans = new List<(int Start, int End)>();
+
+		foreach (var token in root.DescendantTokens(descendIntoTrivia: true))
+		{
+			if (!IsLiteralSegmentToken(token))
+				continue;
+
+			spans.Add((token.SpanStart, token.Span.End));
+		}
+
+		return spans;
+	}
+
+	static bool IsLiteralSegmentToken(SyntaxToken token)
+	{
+		var kind = token.Kind().ToString();
+		return kind.Contains("StringLiteralToken", StringComparison.Ordinal)
+			|| kind.Contains("CharacterLiteralToken", StringComparison.Ordinal)
+			|| kind.Equals("InterpolatedStringTextToken", StringComparison.Ordinal)
+			|| kind.Equals("InterpolatedRawStringTextToken", StringComparison.Ordinal);
+	}
+
+	static bool OverlapsLiteralSegment(int start, int length, List<(int Start, int End)> literalSpans)
+	{
+		var end = start + length;
+		foreach (var span in literalSpans)
+		{
+			if (start < span.End && end > span.Start)
+				return true;
+		}
+
+		return false;
 	}
 }

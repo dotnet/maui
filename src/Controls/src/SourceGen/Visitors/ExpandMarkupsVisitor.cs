@@ -74,9 +74,11 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 			// Extract expression code - single quotes are always transformed to double quotes
 			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(trimmed);
-			// Resolve xmlns prefixes (e.g., local:Helper → fully qualified) and ABP syntax (e.g., target.(Grid.Row) → Grid.GetRow(target))
-			expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
+			// Resolve xmlns prefixes (e.g., local:Helper → fully qualified) before ABP syntax (e.g., target.(Grid.Row) → Grid.GetRow(target)).
 			expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, node.NamespaceResolver, Context);
+			if (ReportStandaloneAttachedProperty(node, expressionCode))
+				return;
+			expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
 			node.Value = new Expression(expressionCode);
 		}
 	}
@@ -143,9 +145,11 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			{
 				// Extract expression code - single quotes are always transformed to double quotes
 				var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
-				// Resolve xmlns prefixes and ABP syntax
-				expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
+				// Resolve xmlns prefixes before ABP syntax so prefixed ABPs become fully qualified type names.
 				expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, markupnode.NamespaceResolver, Context);
+				if (ReportStandaloneAttachedProperty(markupnode, expressionCode))
+					return;
+				expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
 				node = new ValueNode(new Expression(expressionCode), markupnode.NamespaceResolver, markupnode.LineNumber, markupnode.LinePosition);
 			}
 		}
@@ -208,6 +212,19 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			else
 				return current;
 		}
+	}
+
+	bool ReportStandaloneAttachedProperty(IXmlLineInfo lineInfo, string expressionCode)
+	{
+		if (!CSharpExpressionHelpers.TryGetStandaloneAttachedProperty(expressionCode, Context.Compilation, out var attachedProperty))
+			return false;
+
+		var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, attachedProperty);
+		Context.ReportDiagnostic(Diagnostic.Create(
+			Descriptors.MemberResolution,
+			location,
+			$"Standalone attached property expression '{attachedProperty}' is not supported. Use a target such as 'this.{attachedProperty}' or 'element.{attachedProperty}'."));
+		return true;
 	}
 
 	bool TryResolveMarkupExtensionType(string name, IXmlNamespaceResolver nsResolver)

@@ -311,15 +311,15 @@ Complex expressions (operators, method calls) cannot generate a setter and are o
 
 ## Attached Bindable Properties
 
-Attached bindable properties (ABPs) can be accessed in expressions using the `(Type.Property)` parenthesized syntax, following the convention established by [x:Bind](https://learn.microsoft.com/en-us/windows/apps/develop/platform/xaml/x-bind-markup-extension#attached-properties).
+Attached bindable properties (ABPs) can be accessed in expressions using target-qualified `target.(Type.Property)` parenthesized syntax, following the convention established by [x:Bind](https://learn.microsoft.com/en-us/windows/apps/develop/platform/xaml/x-bind-markup-extension#attached-properties).
 
 ### Syntax
 
 ```
-(Type.Property)
+target.(Type.Property)
 ```
 
-The parentheses distinguish an attached property access from a regular `Type.Property` static member access. `Type` is resolved via C# usings or XAML xmlns prefixes (see [Type References](#type-references)).
+The parentheses distinguish an attached property access from a regular `Type.Property` static member access. `target` must currently be a named element or `this`. `Type` is resolved via C# usings or XAML xmlns prefixes (see [Type References](#type-references)).
 
 ### Reading Attached Properties
 
@@ -347,10 +347,10 @@ Because attached properties are set on `BindableObject`s (views), the primary us
 <Label Text="{this.(ios:Page.UseSafeArea)}" />
 ```
 
-**From BindingContext (rare)** — only valid when the BindingContext itself is a `BindableObject` (e.g., a view-to-view binding scenario):
+**From BindingContext** — **not yet implemented**. The targetless `(Type.Property)` form is reserved for possible future BindingContext attached-property binding support and is currently rejected by the source generator:
 
 ```xml
-<!-- BindingContext is a View — unusual but valid -->
+<!-- Not yet implemented -->
 <Label Text="{(Grid.Row)}" />
 ```
 
@@ -374,23 +374,21 @@ ABP access can appear anywhere a value is expected:
 
 ### Two-Way Binding
 
-Simple ABP paths support two-way binding:
+**Not yet implemented for attached bindable properties.** Target-qualified ABP expressions are lowered to static getter calls and are one-way initialization/binding inputs only. Supporting generated setters for ABPs needs a separate design decision.
 
 | Expression | Two-Way? |
 |------------|----------|
-| `{myBtn.(Grid.Row)}` | ✅ |
-| `{this.(Grid.Row)}` | ✅ |
+| `{myBtn.(Grid.Row)}` | ❌ |
+| `{this.(Grid.Row)}` | ❌ |
 | `{myBtn.(Grid.Row) * 2}` | ❌ (compound) |
 
 ### Change Notification
 
-For `this.` and named-element paths, the target is a `BindableObject`, so the generator subscribes to `BindableObject.PropertyChanged` and filters on the `BindableProperty.PropertyName` (e.g., `"Row"`).
-
-For the rare BindingContext case (`{(Grid.Row)}`), the source must be a `BindableObject` for the expression to be valid. The generator emits a compile-time check and subscribes to `PropertyChanged` accordingly. If the BindingContext type (from `x:DataType`) is not a `BindableObject`, diagnostic MAUIX2020 is emitted.
+**Not yet implemented for attached bindable properties.** The current rewrite does not add `PropertyChanged` subscriptions for ABP changes. Expressions are evaluated through the same expression pipeline as other generated values, but ABP-specific change tracking is future work.
 
 ### Classification
 
-The `(Type.Property)` pattern is already classified as a C# expression by `UnambiguousCSharpPattern` (matches `{\s*\(`). When the expression appears as a sub-expression (e.g., `{this.(Grid.Row)}`), the analyzer detects the parenthesized form during member resolution.
+The `target.(Type.Property)` pattern is classified as a C# expression when it appears in an expression context (for example `{this.(Grid.Row)}` or `{myButton.(Grid.Row)}`). The source generator rewrites it to the corresponding static getter call (`Type.GetProperty(target)`) before generated C# is emitted.
 
 **Disambiguation from casts and grouping:**
 
@@ -398,28 +396,22 @@ The `(Type.Property)` pattern is already classified as a C# expression by `Unamb
 |------------|---------------|
 | `{(int)Value}` | Cast — `int` is a keyword, not `Identifier.Identifier` |
 | `{(Value)}` | Grouping — single identifier, no dot |
-| `{(Grid.Row)}` | ABP — matches `(Identifier.Identifier)` and `Identifier` resolves to a type with an attached `IdentifierProperty` |
+| `{(Grid.Row)}` | Reserved for future BindingContext ABP support — not yet implemented |
 | `{(a + b)}` | Grouping — contains operator, not `Identifier.Identifier` |
 
-The detection rule: `(X.Y)` is an ABP access when:
-1. `X` resolves to a type (via xmlns or using directives), AND
-2. That type has a static `BindableProperty` field named `YProperty` (or static `GetY`/`SetY` methods)
-
-If either condition fails, the expression falls through to normal C# parsing (cast, grouping, etc.).
+The current rewrite is textual and target-qualified: `target.(X.Y)` becomes `X.GetY(target)`. XAML xmlns prefixes are resolved before this rewrite, so `this.(ios:Page.UseSafeArea)` becomes a fully qualified static getter call.
 
 ### Diagnostics
 
-| Code | Severity | Description |
-|------|----------|-------------|
-| MAUIX2018 | Error | `(Type.Property)`: Type could not be resolved via XAML namespaces |
-| MAUIX2019 | Error | `(Type.Property)`: No attached BindableProperty `PropertyProperty` found on Type |
-| MAUIX2020 | Error | `{(Type.Property)}` on BindingContext requires `x:DataType` to be a `BindableObject` |
+There are no dedicated ABP-specific diagnostics yet. Invalid ABP expressions currently surface through existing source-generator diagnostics or generated C# compilation errors.
 
 ## Future Considerations
 
 - **Parameterless event handlers** — `{() => ...}` and `{args => ...}`
 - **RelativeSource bindings** — `{RelativeSource Self.Width}`
 - **Explicit two-way** — `{= Name, Mode=TwoWay}` or `{Name, set: value => Name = value}`
+- **Attached bindable property setters and change notification** — two-way ABP binding and ABP-specific `PropertyChanged` tracking
+- **BindingContext attached properties** — targetless `{(Type.Property)}` support when the BindingContext is a `BindableObject`
 
 ## Syntax Cheat Sheet
 
@@ -439,6 +431,6 @@ If either condition fails, the expression falls through to normal C# parsing (ca
 | Force expression | `{= Foo}` |
 | Force page member | `{this.Foo}` |
 | Force BindingContext | `{.Foo}` |
-| Read attached property | `{(Grid.Row)}` |
 | Read attached from self | `{this.(Grid.Row)}` |
 | Read attached from element | `{myBtn.(Grid.Row)}` |
+| Read prefixed attached property | `{this.(ios:Page.UseSafeArea)}` |
