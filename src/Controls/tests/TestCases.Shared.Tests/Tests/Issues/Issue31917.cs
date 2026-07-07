@@ -1,4 +1,4 @@
-﻿#if ANDROID || IOS || MACCATALYST
+﻿#if ANDROID || IOS || MACCATALYST // For windows, the test fails because SwipeView automation doesn't work on Windows (#14777). On iOS/Catalyst the underlying platform bug hasn't been fixed.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,8 +16,9 @@ public class Issue31917 : _IssuesUITest
 	public void SwipeItemBackgroundShouldUpdateOnAppThemeChange()
 	{
 		Exception? exception = null;
-		
+
 		App.WaitForElement("changeThemeButton");
+		App.WaitForElement("TestSwipeView");
 
 		// Reveal the swipe items by swiping left on the SwipeView
 		App.SwipeLeftToRight("TestSwipeView");
@@ -33,7 +34,7 @@ public class Issue31917 : _IssuesUITest
 
 		// Take screenshot after theme change to verify background colors updated
 		VerifyScreenshotOrSetException(ref exception, "Issue31917AfterThemeChange");
-		
+
 		if (exception != null)
 		{
 			throw exception;
