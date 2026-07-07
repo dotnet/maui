@@ -60,7 +60,15 @@ public class CarouselViewAdapter2
             // text path returns a plain TextView, so wrap it in a MaskableFrameLayout here
             // too; otherwise a CarouselView bound to raw string items (no ItemTemplate)
             // would crash.
-            var maskableText = CreateMaskableFrameLayout(context, horizontal);
+            //
+            // Unlike the templated path, the text path has no SizedItemContentView to push
+            // the viewport pixel size up through measurement. A WRAP_CONTENT carousel axis
+            // would therefore collapse to the TextView's intrinsic (text) size, and
+            // CarouselLayoutManager would build its KeylineState from that text-sized first
+            // child — producing incorrect keylines/masking. Force MATCH_PARENT on both axes
+            // so the keyline state is based on the viewport size, consistent with
+            // FullScreenCarouselStrategy.
+            var maskableText = CreateMaskableFrameLayout(context, horizontal, fillViewport: true);
             var textView = new TextView(context)
             {
                 LayoutParameters = new ViewGroup.LayoutParams(
@@ -103,14 +111,19 @@ public class CarouselViewAdapter2
     /// This is fine because the handler is locked to FullScreenCarouselStrategy: items fill the
     /// viewport on both axes, so WRAP_CONTENT and MATCH_PARENT measure identically. Revisit holder
     /// recreation if a non-full-screen strategy is ever wired up via CreateCarouselStrategy.
+    ///
+    /// <paramref name="fillViewport"/> forces MATCH_PARENT on both axes. The non-templated
+    /// (text) path uses this because it has no SizedItemContentView to push the viewport size
+    /// up through measurement, so a WRAP_CONTENT carousel axis would otherwise collapse to the
+    /// TextView's intrinsic size and corrupt the KeylineState.
     /// </remarks>
-    static MaskableFrameLayout CreateMaskableFrameLayout(Context context, bool horizontal)
+    static MaskableFrameLayout CreateMaskableFrameLayout(Context context, bool horizontal, bool fillViewport = false)
     {
         var maskable = new MaskableFrameLayout(context)
         {
             LayoutParameters = new RecyclerView.LayoutParams(
-                horizontal ? ViewGroup.LayoutParams.WrapContent : ViewGroup.LayoutParams.MatchParent,
-                horizontal ? ViewGroup.LayoutParams.MatchParent : ViewGroup.LayoutParams.WrapContent),
+                fillViewport || !horizontal ? ViewGroup.LayoutParams.MatchParent : ViewGroup.LayoutParams.WrapContent,
+                fillViewport || horizontal ? ViewGroup.LayoutParams.MatchParent : ViewGroup.LayoutParams.WrapContent),
         };
 
         using (var value = new global::Android.Util.TypedValue())
