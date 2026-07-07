@@ -6,6 +6,20 @@ description: |
   type, severity, partner, regression, or any other label families — those
   remain the responsibility of human triagers.
 
+# ###############################################################
+# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Run agentic jobs in an isolated `copilot-pat-pool` environment.
+#
+# When org-level billing is available, this will be removed.
+# See `shared/pat_pool.README.md` for more information.
+# ###############################################################
+imports:
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
+
+environment: copilot-pat-pool
+
 on:
   issues:
     types: [opened]
@@ -17,7 +31,11 @@ on:
         description: 'Issue or PR number to label'
         required: true
         type: number
+  steps:
+    - name: Prepare PAT pool activation
+      run: echo "PAT pool pre-activation"
   reaction: eyes
+  permissions: {}
   # Allow this workflow to run for any actor (including first-time community
   # contributors). It is labeling-only — the agent runs with read-only tokens,
   # and label writes happen through the sandboxed safe-output job capped at
@@ -39,6 +57,24 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+
+engine:
+  id: copilot
+  env:
+    COPILOT_GITHUB_TOKEN: |
+      ${{ case(
+        needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
+        needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1,
+        needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2,
+        needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3,
+        needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4,
+        needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5,
+        needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6,
+        needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
+        needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
+        needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
+        'NO COPILOT PAT AVAILABLE')
+      }}
 
 network: defaults
 

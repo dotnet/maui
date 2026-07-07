@@ -17,6 +17,7 @@ import android.graphics.Shader;
 
 
 import android.view.View;
+import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 
@@ -48,6 +49,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     private Shader shadowShader;
     private boolean shadowInvalidated = true;
     private boolean hasClip = false;
+    private boolean hasShadow = false;
 
     private float offsetX = 0;
     private float offsetY = 0;
@@ -97,7 +99,8 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     }
 
     private void onShadowStyleChanged() {
-        if (this.shadowStyle.getPaintType() == PlatformPaintType.NONE) {
+        this.hasShadow = (this.shadowStyle.getPaintType() != PlatformPaintType.NONE);
+        if (!this.hasShadow) {
             this.shadowPaint = null;
             this.shadowCanvas = null;
             if (this.shadowBitmap != null) {
@@ -146,6 +149,40 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     public void invalidate() {
         super.invalidate();
         this.shadowInvalidated = true;
+    }
+
+    @Override
+    public void onDescendantInvalidated(@NonNull View child, @NonNull View target) {
+        // API 26+: On modern Android, when a hardware-accelerated child view calls invalidate()
+        // (e.g., SwitchCompat animating its thumb), the framework calls onDescendantInvalidated()
+        // on the parent instead of invalidateChildInParent().
+        //
+        // CRITICAL: In hardware-accelerated mode, each view has its own RenderNode display list.
+        // When a child invalidates, only the CHILD's RenderNode is re-recorded — the parent's
+        // display list is replayed from cache (including the stale shadow draw call baked in).
+        //
+        // Without invalidate(): SwitchCompat redraws (thumb moves) but PlatformWrapperView's
+        // display list is replayed unchanged → shadow stays at its original OFF/ON position.
+        // With invalidate(): PlatformWrapperView's display list is marked dirty → dispatchDraw()
+        // is re-invoked next frame → shadow is redrawn at the correct current thumb position.
+        //
+        // Guard: only force re-invalidation when this wrapper has an active shadow — avoids
+        // unnecessary redraws for clip/border-only wrappers.
+        super.onDescendantInvalidated(child, target);
+        if (this.hasShadow) {
+            invalidate();
+        }
+    }
+
+    // API 25 and below: invalidateChildInParent() is the legacy path called when a
+    // descendant calls invalidate() in software or pre-26 hardware-accelerated mode.
+    // Same shadow-stale problem applies — force wrapper redraw when shadow is active.
+    @Override
+    public ViewParent invalidateChildInParent(int[] location, Rect dirty) {
+        if (this.hasShadow) {
+            invalidate();
+        }
+        return super.invalidateChildInParent(location, dirty);
     }
 
     @Override

@@ -3,6 +3,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.Application;
 
 	/// <summary>Provides Tizen-specific platform configuration for application-level features.</summary>
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <param name="value"><see langword="true"/> to enable bezel interaction; otherwise, <see langword="false"/>.</param>
 		public static void SetUseBezelInteraction(BindableObject element, bool value)
 		{
-			element.SetValue(UseBezelInteractionProperty, value);
+			element.SetValue(UseBezelInteractionProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets the value that indicates whether bezel interaction is enabled.</summary>

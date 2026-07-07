@@ -30,6 +30,7 @@ function Get-AggregatedTrxFromDirectory {
                 SetupFailureMessage        = ''
                 SetupFailureStack          = ''
                 SetupFailureSignatureCount = 0
+                SetupFailureIsAppCrash     = $false
             }
         }
         $cur = $byCategory[$category]
@@ -54,7 +55,8 @@ function Get-AggregatedTrxFromDirectory {
             $stackText = [string]($_.stack)
             $errorText -match '^\s*OneTimeSetUp:' -or
                 $errorText -match 'Timed out waiting for Go To Test button to appear' -or
-                $stackText -match '(_GalleryUITest\.FixtureSetup|\bFixtureSetup\b|UITestBase\.(OneTimeSetup|TestSetup))'
+                $errorText -match 'The app was expected to be running still, investigate as possible crash' -or
+                $stackText -match '(_GalleryUITest\.FixtureSetup|\bFixtureSetup\b|UITestBase\.(OneTimeSetup|TestSetup|UITestBaseTearDown))'
         })
 
         if ($setupFailures.Count -ne $failedResults.Count) {
@@ -68,12 +70,32 @@ function Get-AggregatedTrxFromDirectory {
             $signatures["$errorText|$stackText"] = $true
         }
 
-        $sample = $setupFailures | Select-Object -First 1
+        # An app-crash signature ("...investigate as possible crash" raised in
+        # UITestBaseTearDown) means the HostApp died mid-run; every subsequent
+        # OneTimeSetUp then times out waiting for "Go To Test button". Unlike a
+        # pure navigation/fixture setup failure (an emulator-side infra flake),
+        # a crash can also be a regression introduced by the PR — so flag it
+        # distinctly and let the renderer surface it cautiously.
+        $appCrash = @($setupFailures | Where-Object {
+            ([string]($_.error)) -match 'investigate as possible crash' -or
+                ([string]($_.stack)) -match 'UITestBase\.UITestBaseTearDown'
+        }).Count -gt 0
+
+        # Prefer an app-crash entry as the representative sample so the rendered
+        # message reflects the crash itself, not an incidental Go-To-Test
+        # timeout from the cascade that followed it.
+        $sample = $setupFailures | Where-Object {
+            ([string]($_.error)) -match 'investigate as possible crash' -or
+                ([string]($_.stack)) -match 'UITestBase\.UITestBaseTearDown'
+        } | Select-Object -First 1
+        if (-not $sample) { $sample = $setupFailures | Select-Object -First 1 }
+
         $cur.SetupFailure = $true
         $cur.SetupFailureCount = $setupFailures.Count
         $cur.SetupFailureMessage = ([string]($sample.error)).Trim()
         $cur.SetupFailureStack = ([string]($sample.stack)).Trim()
         $cur.SetupFailureSignatureCount = $signatures.Count
+        $cur.SetupFailureIsAppCrash = $appCrash
         $byCategory[$category] = $cur
     }
 

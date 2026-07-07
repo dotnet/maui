@@ -173,6 +173,51 @@ namespace Microsoft.Maui.Controls
 			return context == null ? property.DefaultValue : context.Values.GetValue();
 		}
 
+		// Used by Visual Studio Live Property Explorer via reflection; do not remove without coordinating with VS.
+		internal LocalValueEnumerator GetLocalValueEnumerator() => new LocalValueEnumerator(this);
+
+		internal sealed class LocalValueEnumerator : IEnumerator<LocalValueEntry>
+		{
+			Dictionary<int, BindablePropertyContext>.ValueCollection.Enumerator _propertiesEnumerator;
+			internal LocalValueEnumerator(BindableObject bindableObject) => _propertiesEnumerator = bindableObject._properties.Values.GetEnumerator();
+
+			object IEnumerator.Current => Current;
+			public LocalValueEntry Current { get; private set; }
+
+			public bool MoveNext()
+			{
+				if (_propertiesEnumerator.MoveNext())
+				{
+					var context = _propertiesEnumerator.Current;
+					Current = new LocalValueEntry(context.Property, context.Values.GetValue(), context.Attributes);
+					return true;
+				}
+				return false;
+			}
+
+			public void Dispose() => _propertiesEnumerator.Dispose();
+
+			void IEnumerator.Reset()
+			{
+				((IEnumerator)_propertiesEnumerator).Reset();
+				Current = null;
+			}
+		}
+
+		internal sealed class LocalValueEntry
+		{
+			internal LocalValueEntry(BindableProperty property, object value, BindableContextAttributes attributes)
+			{
+				Property = property;
+				Value = value;
+				Attributes = attributes;
+			}
+
+			public BindableProperty Property { get; }
+			public object Value { get; }
+			public BindableContextAttributes Attributes { get; }
+		}
+
 		internal (bool IsSet, T Value)[] GetValues<T>(BindableProperty[] propArray)
 		{
 			var properties = _properties;
@@ -206,6 +251,19 @@ namespace Microsoft.Maui.Controls
 			if ((bpcontext.Attributes & BindableContextAttributes.IsDefaultValueCreated) == BindableContextAttributes.IsDefaultValueCreated)
 				return true;
 			return bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
+		}
+
+		/// <summary>
+		/// Determines whether a bindable property has been set by a local value, style, binding, or other non-default specificity.
+		/// Unlike IsSet, default-value creation does not count as explicit.
+		/// </summary>
+		/// <param name="targetProperty">The bindable property to check if a value is explicitly set.</param>
+		/// <returns><see langword="true"/> if the target property exists and has been explicitly set. Otherwise <see langword="false"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="targetProperty"/> is <see langword="null"/>.</exception>
+		internal bool IsSetExplicitly(BindableProperty targetProperty)
+		{
+			var bpcontext = GetContext(targetProperty ?? throw new ArgumentNullException(nameof(targetProperty)));
+			return bpcontext is not null && bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
 		}
 
 
