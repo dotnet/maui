@@ -9,38 +9,67 @@
         AutomationId="Options"/>
   </ContentPage.ToolbarItems>
 
-    <VerticalStackLayout>
-      <Label
-        HeightRequest="{Binding LabelHeightRequest}"
-        Text="{Binding Text , Mode=TwoWay}"
-        CharacterSpacing="{Binding CharacterSpacing}"
-        FontAttributes="{Binding FontAttributes}"
-        FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
-        FontFamily="{Binding FontFamily}"
-        FontSize="{Binding FontSize}"
-        FormattedText="{Binding FormattedText}"
-        HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
-        LineBreakMode="{Binding LineBreakMode}"
-        LineHeight="{Binding LineHeight}"
-        MaxLines="{Binding MaxLines}"
-        Padding="{Binding Padding}"
-        TextColor="{Binding TextColor}"
-        TextDecorations="{Binding TextDecorations}"
-        TextTransform="{Binding TextTransform}"
-        TextType="{Binding TextType}"
-        VerticalTextAlignment="{Binding VerticalTextAlignment}"
-        IsEnabled="{Binding IsEnabled}"
-        IsVisible="{Binding IsVisible}"
-        FlowDirection="{Binding FlowDirection}"
-        Shadow="{Binding LabelShadow}"
-        BackgroundColor="{Binding LabelBackgroundColor}"
-        AutomationId="MainLabel">
-        <Label.GestureRecognizers>
-          <TapGestureRecognizer Command="{Binding TapCommand}" />
-        </Label.GestureRecognizers>
-      </Label>
-      <Label Text="{Binding TapResult}"
-             IsVisible="{Binding IsTapResultVisible}"
-             AutomationId="TapResultLabel" />
-    </VerticalStackLayout>
+    <Grid RowDefinitions="*, Auto">
+      <VerticalStackLayout Grid.Row="0">
+        <Label
+          HeightRequest="{Binding LabelHeightRequest}"
+          Text="{Binding Text , Mode=TwoWay}"
+          CharacterSpacing="{Binding CharacterSpacing}"
+          FontAttributes="{Binding FontAttributes}"
+          FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
+          FontFamily="{Binding FontFamily}"
+          FontSize="{Binding FontSize}"
+          FormattedText="{Binding FormattedText}"
+          HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+          LineBreakMode="{Binding LineBreakMode}"
+          LineHeight="{Binding LineHeight}"
+          MaxLines="{Binding MaxLines}"
+          Padding="{Binding Padding}"
+          TextColor="{Binding TextColor}"
+          TextDecorations="{Binding TextDecorations}"
+          TextTransform="{Binding TextTransform}"
+          TextType="{Binding TextType}"
+          VerticalTextAlignment="{Binding VerticalTextAlignment}"
+          IsEnabled="{Binding IsEnabled}"
+          IsVisible="{Binding IsVisible}"
+          FlowDirection="{Binding FlowDirection}"
+          Shadow="{Binding LabelShadow}"
+          BackgroundColor="{Binding LabelBackgroundColor}"
+          AutomationId="MainLabel">
+          <Label.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding TapCommand}" />
+          </Label.GestureRecognizers>
+        </Label>
+        <Label Text="{Binding TapResult}"
+               IsVisible="{Binding IsTapResultVisible}"
+               AutomationId="TapResultLabel" />
+      </VerticalStackLayout>
+      <Grid Grid.Row="1" IsVisible="{Binding AreSpanButtonsVisible}"
+            Padding="4" RowSpacing="4" ColumnSpacing="4"
+            RowDefinitions="Auto, Auto, Auto"
+            ColumnDefinitions="*, *, *, *">
+        <Button Grid.Row="0" Grid.Column="0" Text="Text" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanTextCommand}" AutomationId="ChangeSpanText" />
+        <Button Grid.Row="0" Grid.Column="1" Text="Color" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanTextColorCommand}" AutomationId="ChangeSpanTextColor" />
+        <Button Grid.Row="0" Grid.Column="2" Text="Size" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanFontSizeCommand}" AutomationId="ChangeSpanFontSize" />
+        <Button Grid.Row="0" Grid.Column="3" Text="Bold/Italic" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanFontAttributesCommand}" AutomationId="ChangeSpanFontAttributes" />
+        <Button Grid.Row="1" Grid.Column="0" Text="Deco" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanTextDecorationsCommand}" AutomationId="ChangeSpanTextDecorations" />
+        <Button Grid.Row="1" Grid.Column="1" Text="BgColor" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanBackgroundColorCommand}" AutomationId="ChangeSpanBackgroundColor" />
+        <Button Grid.Row="1" Grid.Column="2" Text="Spacing" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanCharacterSpacingCommand}" AutomationId="ChangeSpanCharacterSpacing" />
+        <Button Grid.Row="1" Grid.Column="3" Text="Transform" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanTextTransformCommand}" AutomationId="ChangeSpanTextTransform" />
+        <Button Grid.Row="2" Grid.Column="0" Text="Font" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanFontFamilyCommand}" AutomationId="ChangeSpanFontFamily" />
+        <Button Grid.Row="2" Grid.Column="1" Text="LineHt" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeSpanLineHeightCommand}" AutomationId="ChangeSpanLineHeight" />
+        <Button Grid.Row="2" Grid.Column="2" Text="Toggle All" FontSize="9" HeightRequest="30" Padding="4,0"
+                Command="{Binding ChangeAllSpanPropertiesCommand}" AutomationId="ChangeAllSpanProperties" />
+      </Grid>
+    </Grid>
 </ContentPage>

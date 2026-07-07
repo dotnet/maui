@@ -8,11 +8,12 @@
                      Clicked="ApplyButton_Clicked"
                      AutomationId="Apply"/>
     </ContentPage.ToolbarItems>
+    <ScrollView>
     <VerticalStackLayout>
         <Grid Padding="1"
               RowSpacing="-6"
               ColumnSpacing="2"
-              RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+              RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
               ColumnDefinitions="*,*">
 
             <VerticalStackLayout Grid.Row="0"
@@ -408,6 +409,15 @@
                                  AutomationId="BackgroundColorLightBlue"/>
                 </HorizontalStackLayout>
             </VerticalStackLayout>
+
+            <HorizontalStackLayout Grid.Row="13"
+                                   Grid.ColumnSpan="2">
+                <Label Text="Span"
+                       VerticalOptions="Center"/>
+                <CheckBox CheckedChanged="OnSpanChanged"
+                          AutomationId="SpanCheckBox"/>
+            </HorizontalStackLayout>
         </Grid>
     </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

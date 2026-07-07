@@ -227,6 +227,18 @@ public partial class LabelOptionsPage : ContentPage
 		}
 	}
 
+	private void OnSpanChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value)
+		{
+			_viewModel.EnableDynamicSpan();
+		}
+		else
+		{
+			_viewModel.DisableDynamicSpan();
+		}
+	}
+
 	private void OnIsEnabledChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (sender is RadioButton rb && rb.IsChecked && rb.Value != null)

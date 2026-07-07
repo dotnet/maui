@@ -233,6 +233,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("MainLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(14)]
 	[Category(UITestCategories.Material3)]
@@ -240,8 +241,6 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("FormattedText");
-		App.Tap("FormattedText");
 		App.WaitForElement("FontAttributesBold");
 		App.Tap("FontAttributesBold");
 		App.WaitForElement("Apply");
@@ -256,8 +255,6 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("FormattedText");
-		App.Tap("FormattedText");
 		App.WaitForElement("FontAttributesItalic");
 		App.Tap("FontAttributesItalic");
 		App.WaitForElement("Apply");
@@ -297,7 +294,6 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("MainLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
 	[Test, Order(18)]
 	[Category(UITestCategories.Material3)]
@@ -333,7 +329,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(41)]
+	[Test, Order(51)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndLineBreakModeCharacterWrap()
 	{
@@ -366,7 +362,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(40)]
+	[Test, Order(50)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndLineBreakModeTailTruncation()
 	{
@@ -448,6 +444,117 @@ public class Material3LabelFeatureTests : _GalleryUITest
 
 	[Test, Order(25)]
 	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanText()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanText");
+		App.Tap("ChangeSpanText");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(26)]
+	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanTextColor()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanTextColor");
+		App.Tap("ChangeSpanTextColor");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(27)]
+	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanFontSize()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanFontSize");
+		App.Tap("ChangeSpanFontSize");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(28)]
+	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanFontAttributes()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanFontAttributes");
+		App.Tap("ChangeSpanFontAttributes");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(29)]
+	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanTextDecorations()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanTextDecorations");
+		App.Tap("ChangeSpanTextDecorations");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(30)]
+	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanBackgroundColor()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanBackgroundColor");
+		App.Tap("ChangeSpanBackgroundColor");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(31)]
+	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanCharacterSpacing()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanCharacterSpacing");
+		App.Tap("ChangeSpanCharacterSpacing");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(32)]
+	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanTextTransform()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanTextTransform");
+		App.Tap("ChangeSpanTextTransform");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(33)]
+	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanFontFamily()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanFontFamily");
+		App.Tap("ChangeSpanFontFamily");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(34)]
+	[Category(UITestCategories.Material3)]
+	public void Material3Label_VerifyDynamicSpanLineHeight()
+	{
+		NavigateToSpanMode();
+		App.WaitForElement("ChangeSpanLineHeight");
+		App.Tap("ChangeSpanLineHeight");
+		App.WaitForElement("MainLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+
+	[Test, Order(35)]
+	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndFontSize()
 	{
 		App.WaitForElement("Options");
@@ -465,7 +572,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(26)]
+	[Test, Order(36)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndFontColor()
 	{
@@ -481,7 +588,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(27)]
+	[Test, Order(37)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndTextTransform()
 	{
@@ -497,7 +604,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(28)]
+	[Test, Order(38)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndCharacterSpacing()
 	{
@@ -516,7 +623,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(29)]
+	[Test, Order(39)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndTextDecorations()
 	{
@@ -532,7 +639,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(30)]
+	[Test, Order(40)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndFontFamily()
 	{
@@ -548,7 +655,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(31)]
+	[Test, Order(41)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndFontAttributes()
 	{
@@ -564,7 +671,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(32)]
+	[Test, Order(42)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextWhenVerticalAndHorizontalAlignmentStart()
 	{
@@ -582,7 +689,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(33)]
+	[Test, Order(43)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextWhenVerticalAndHorizontalAlignmentCenter()
 	{
@@ -600,7 +707,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(34)]
+	[Test, Order(44)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextWhenVerticalAndHorizontalAlignmentEnd()
 	{
@@ -618,7 +725,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(35)]
+	[Test, Order(45)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextWhenPaddingApplied()
 	{
@@ -639,7 +746,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(36)]
+	[Test, Order(46)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndMaxlines()
 	{
@@ -658,7 +765,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(58)]
+	[Test, Order(68)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextWhenLineHeight()
 	{
@@ -677,7 +784,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(37)]
+	[Test, Order(47)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndLineBreakModeNoWrap()
 	{
@@ -693,7 +800,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(38)]
+	[Test, Order(48)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndLineBreakModeHeadTruncation()
 	{
@@ -709,7 +816,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(39)]
+	[Test, Order(49)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndLineBreakModeMiddleTruncation()
 	{
@@ -725,7 +832,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(44)]
+	[Test, Order(54)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontAttributesAndFontFamily()
 	{
@@ -743,7 +850,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(45)]
+	[Test, Order(55)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontAttributesAndFontSize()
 	{
@@ -762,7 +869,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(46)]
+	[Test, Order(56)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontAttributesAndTextColor()
 	{
@@ -780,7 +887,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(47)]
+	[Test, Order(57)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontAttributesAndTextTransform()
 	{
@@ -798,7 +905,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(48)]
+	[Test, Order(58)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontAttributesAndTextDecorations()
 	{
@@ -816,7 +923,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(43)]
+	[Test, Order(53)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextAndTextType()
 	{
@@ -832,7 +939,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(49)]
+	[Test, Order(59)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontAttributesAndTextType()
 	{
@@ -850,7 +957,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(55)]
+	[Test, Order(65)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndTextColor()
 	{
@@ -868,7 +975,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(56)]
+	[Test, Order(66)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndFontSize()
 	{
@@ -887,7 +994,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(57)]
+	[Test, Order(67)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndLineBreakModeNoWrap()
 	{
@@ -905,7 +1012,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(42)]
+	[Test, Order(52)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndLineBreakModeWordWrap()
 	{
@@ -923,7 +1030,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(59)]
+	[Test, Order(69)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontFamilyAndTextType()
 	{
@@ -942,7 +1049,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29672, https://github.com/dotnet/maui/issues/29668, https://github.com/dotnet/maui/issues/22594
-	[Test, Order(66)]
+	[Test, Order(76)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndLineHeight()
 	{
@@ -961,7 +1068,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(67)]
+	[Test, Order(77)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndCharacterSpacing()
 	{
@@ -980,7 +1087,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(65)]
+	[Test, Order(75)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndLineBreakModeCharacterWrap()
 	{
@@ -999,7 +1106,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(50)]
+	[Test, Order(60)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontFamilyAndFontColor()
 	{
@@ -1017,7 +1124,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(51)]
+	[Test, Order(61)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontFamilyAndFontSize()
 	{
@@ -1036,7 +1143,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(52)]
+	[Test, Order(62)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontFamilyAndTextDecorations()
 	{
@@ -1054,7 +1161,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(53)]
+	[Test, Order(63)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFontFamilyAndTextTransform()
 	{
@@ -1072,7 +1179,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(54)]
+	[Test, Order(64)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextDecorationsAndTextTransform()
 	{
@@ -1091,7 +1198,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/24298, https://github.com/dotnet/maui/issues/29674
-	[Test, Order(60)]
+	[Test, Order(70)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndLineBreakModeTailTruncation()
 	{
@@ -1109,7 +1216,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(61)]
+	[Test, Order(71)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndTextDecorations()
 	{
@@ -1127,7 +1234,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(62)]
+	[Test, Order(72)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndLineBreakModeHeadTruncation()
 	{
@@ -1145,7 +1252,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(63)]
+	[Test, Order(73)]
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithTextTypeAndLineBreakModeMiddleTruncation()
 	{
@@ -1164,7 +1271,7 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	}
 #endif
 
-[Test, Order(64)]
+[Test, Order(74)]
 [Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWithTextTypeAndTextTransform()
 {
@@ -1182,8 +1289,8 @@ public void Material3Label_VerifyLabelWithTextTypeAndTextTransform()
 	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 }
 
-[Test, Order(68)]
-[Category(UITestCategories.Label)]
+[Test, Order(78)]
+[Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentStart()
 {
 	App.WaitForElement("Options");
@@ -1202,8 +1309,8 @@ public void Material3Label_VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlign
 	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 }
 
-[Test, Order(69)]
-[Category(UITestCategories.Label)]
+[Test, Order(79)]
+[Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentCenter()
 {
 	App.WaitForElement("Options");
@@ -1222,8 +1329,8 @@ public void Material3Label_VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlign
 	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 }
 
-[Test, Order(70)]
-[Category(UITestCategories.Label)]
+[Test, Order(80)]
+[Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentEnd()
 {
 	App.WaitForElement("Options");
@@ -1242,8 +1349,8 @@ public void Material3Label_VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlign
 	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 }
 
-[Test, Order(71)]
-[Category(UITestCategories.Label)]
+[Test, Order(81)]
+[Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWhenIsVisibleFalse()
 {
 	App.WaitForElement("Options");
@@ -1258,8 +1365,8 @@ public void Material3Label_VerifyLabelWhenIsVisibleFalse()
 	App.WaitForNoElement("MainLabel");
 }
 
-[Test, Order(72)]
-[Category(UITestCategories.Label)]
+[Test, Order(82)]
+[Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWithShadow()
 {
 	App.WaitForElement("Options");
@@ -1275,8 +1382,8 @@ public void Material3Label_VerifyLabelWithShadow()
 	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 }
 
-[Test, Order(73)]
-[Category(UITestCategories.Label)]
+[Test, Order(83)]
+[Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWhenIsEnabledFalse()
 {
 	App.WaitForElement("Options");
@@ -1293,8 +1400,8 @@ public void Material3Label_VerifyLabelWhenIsEnabledFalse()
 	App.WaitForNoElement("TapResultLabel");
 }
 
-[Test, Order(74)]
-[Category(UITestCategories.Label)]
+[Test, Order(84)]
+[Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWhenIsEnabledTrue()
 {
 	App.WaitForElement("Options");
@@ -1316,8 +1423,8 @@ public void Material3Label_VerifyLabelWhenIsEnabledTrue()
 	Assert.That(tapResult, Is.EqualTo("Tapped"));
 }
 
-[Test, Order(75)]
-[Category(UITestCategories.Label)]
+[Test, Order(85)]
+[Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWithFlowDirectionRTL()
 {
 	App.WaitForElement("Options");
@@ -1335,8 +1442,8 @@ public void Material3Label_VerifyLabelWithFlowDirectionRTL()
 	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 }
 
-[Test, Order(76)]
-[Category(UITestCategories.Label)]
+[Test, Order(86)]
+[Category(UITestCategories.Material3)]
 public void Material3Label_VerifyLabelWithBackgroundColorLightBlue()
 {
 	App.WaitForElement("Options");
@@ -1351,5 +1458,15 @@ public void Material3Label_VerifyLabelWithBackgroundColorLightBlue()
 	App.WaitForElement("MainLabel");
 	VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 }
+
+    void NavigateToSpanMode()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("SpanCheckBox");
+		App.Tap("SpanCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+	}
 }
 #endif
