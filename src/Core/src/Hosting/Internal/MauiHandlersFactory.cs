@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			try
 			{
-				return (IElementHandler)Activator.CreateInstance(handlerType);
+				return (IElementHandler)Activator.CreateInstance(handlerType)!;
 			}
 			catch (MissingMethodException ex)
 			{
