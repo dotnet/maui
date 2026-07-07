@@ -294,7 +294,7 @@ stages:
             DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
             PRIVATE_BUILD: $(PrivateBuild)
 
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=true /p:_DisableCheckForUnsupportedMonoMobileRuntime=true "/p:MauiDeviceTestsPlatforms=${{ parameters.TargetFrameworkVersion }}-android;${{ parameters.TargetFrameworkVersion }}-ios" /bl:BuildDeviceTests.binlog
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=true /p:_DisableCheckForUnsupportedMonoMobileRuntime=true /p:MauiDeviceTestsPlatforms=${{ parameters.TargetFrameworkVersion }}-android%3B${{ parameters.TargetFrameworkVersion }}-ios /bl:BuildDeviceTests.binlog
           displayName: Build DeviceTests (Mono)
 
         - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
