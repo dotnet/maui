@@ -21,53 +21,57 @@ namespace Microsoft.Maui.Platform
 		private Button? _navigationViewBackButton;
 		private Button? _togglePaneButton;
 		private Graphics.Color? _iconColor;
-		private FrameworkElement? _moreButton;
-		private FrameworkElement? _primaryItemsControl;
+
+		// CommandBar template parts — used to compute the content grid's available width.
+		ItemsControl? _commandBarPrimaryItemsControl;
+		Button? _commandBarMoreButton;
 
 		public MauiToolbar()
 		{
 			InitializeComponent();
-			SizeChanged += OnToolbarSizeChanged;
-
-			// Unsubscribe when the toolbar unloads (e.g. handler disconnect/navigation) so the
-			// handler doesn't keep firing against a detached element.
-			this.OnUnloaded(() => SizeChanged -= OnToolbarSizeChanged);
 		}
 
-		void OnToolbarSizeChanged(object sender, SizeChangedEventArgs e)
+		protected override void OnApplyTemplate()
 		{
-			if (e.NewSize.Width <= 0)
-				return;
+			base.OnApplyTemplate();
 
-			UpdateContentGridWidth();
+			// Clean up subscriptions from any previous template application.
+			SizeChanged -= OnToolbarSizeChanged;
+			if (_commandBarPrimaryItemsControl != null)
+				_commandBarPrimaryItemsControl.SizeChanged -= OnCommandAreaSizeChanged;
+			if (_commandBarMoreButton != null)
+				_commandBarMoreButton.SizeChanged -= OnCommandAreaSizeChanged;
+
+			_commandBarPrimaryItemsControl = GetTemplateChild("PrimaryItemsControl") as ItemsControl;
+			_commandBarMoreButton = GetTemplateChild("MoreButton") as Button;
+
+			SizeChanged += OnToolbarSizeChanged;
+			if (_commandBarPrimaryItemsControl != null)
+				_commandBarPrimaryItemsControl.SizeChanged += OnCommandAreaSizeChanged;
+			if (_commandBarMoreButton != null)
+				_commandBarMoreButton.SizeChanged += OnCommandAreaSizeChanged;
 		}
 
-		// contentGrid (which hosts the title/icon/TitleView) previously was stretched to the
-		// CommandBar's full ActualWidth. That's wrong: it ignores the space WinUI reserves for
-		// PrimaryCommands (toolbar items) and the overflow "MoreButton", so contentGrid/TitleView
-		// would render on top of the toolbar items (https://github.com/dotnet/maui/issues/36322).
-		// To fix this without regressing the stretch behavior (see #35597), we look up the
-		// "MoreButton" and "PrimaryItemsControl" named parts from CommandBar's default template
-		// and subtract their widths (plus contentGrid's own margins) from the CommandBar's
-		// ActualWidth, giving contentGrid only the width actually available to it.
+		void OnToolbarSizeChanged(object sender, SizeChangedEventArgs e) => UpdateContentGridWidth();
+		void OnCommandAreaSizeChanged(object sender, SizeChangedEventArgs e) => UpdateContentGridWidth();
+
+		// WinUI no longer implicitly stretches CommandBar.Content to the available width after
+		// LayoutPanel gained MauiLayoutAutomationPeer (IsControlElementCore = true). The CommandBar
+		// template now measures the content panel to its own desired size instead of the space left
+		// over after PrimaryCommands and the MoreButton. This method restores the intended stretch
+		// behaviour by explicitly computing and setting contentGrid.Width.
 		void UpdateContentGridWidth()
 		{
-			_moreButton ??= commandBar.GetDescendantByName<FrameworkElement>("MoreButton");
-			_primaryItemsControl ??= commandBar.GetDescendantByName<FrameworkElement>("PrimaryItemsControl");
+			if (ActualWidth == 0)
+				return;
 
-			double commandsWidth = 0;
+			var primaryWidth = _commandBarPrimaryItemsControl?.ActualWidth ?? 0;
+			var moreWidth = _commandBarMoreButton?.ActualWidth ?? 0;
+			var available = System.Math.Max(0d,
+			 ActualWidth - primaryWidth - moreWidth
+			 - contentGrid.Margin.Left - contentGrid.Margin.Right);
 
-			// MoreButton is collapsed when there's nothing in the overflow menu, so only count
-			// its width when it's actually visible and taking up space.
-			if (_moreButton is not null && _moreButton.Visibility == UI.Xaml.Visibility.Visible)
-				commandsWidth += _moreButton.ActualWidth;
-
-			if (_primaryItemsControl is not null)
-				commandsWidth += _primaryItemsControl.ActualWidth;
-
-			var availableWidth = commandBar.ActualWidth - commandsWidth - contentGrid.Margin.Left - contentGrid.Margin.Right;
-			if (availableWidth > 0)
-				contentGrid.Width = availableWidth;
+			contentGrid.Width = available;
 		}
 
 		internal string? Title
@@ -153,7 +157,12 @@ namespace Microsoft.Maui.Platform
 		internal UI.Xaml.Thickness ContentGridMargin
 		{
 			get => contentGrid.Margin;
-			set => contentGrid.Margin = value;
+			set
+			{
+				contentGrid.Margin = value;
+				// Re-apply the explicit width since the margin contributes to the used space.
+				UpdateContentGridWidth();
+			}
 		}
 
 		internal VerticalAlignment TextBlockBorderVerticalAlignment
