@@ -499,7 +499,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	// ── DashArray + StrokeLineCap tests disabled for Windows (Order 19–24) ──
 
-#if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/29741
 	[Test]
 	[Order(26)]
 	public void Border_StrokeDashArrayWithStrokeLineCap_Flat()
@@ -628,7 +627,6 @@ public class BorderFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
 	// ── DashArray+Offset (Order 25) — runs on all platforms; issue #29661 (DashArray on iOS/Catalyst) is closed/fixed ──
 
