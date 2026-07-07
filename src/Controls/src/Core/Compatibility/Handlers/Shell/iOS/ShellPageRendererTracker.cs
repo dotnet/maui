@@ -1183,9 +1183,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (result != null)
 				{
 					var newResult = result.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Normal);
-					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Highlighted);
-					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Selected);
+					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Normal);
+					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Highlighted);
+					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Selected);
 				}
 			});
 		}
