@@ -832,7 +832,7 @@ public partial class CSharpExpressions : ContentPage
 		}
 
 		[Fact]
-		public void StructSubProperty_ThicknessTop_OneWayBinding()
+		public void StructSubProperty_ThicknessTop_OneWayTargetUpdatesFromSource()
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			try
@@ -841,12 +841,37 @@ public partial class CSharpExpressions : ContentPage
 				var vm = new SimpleViewModel { Margin = new Thickness(10, 47, 10, 34) };
 				page.BindingContext = vm;
 
-				// {Margin.Top} creates a one-way binding (no setter, since Thickness is a struct)
+				// HeightRequest defaults to one-way, but the struct sub-property getter still updates.
 				Assert.Equal(47, page.thicknessSubGrid.HeightRequest);
 
 				// Replacing the entire Thickness fires INPC, which re-evaluates the getter
 				vm.Margin = new Thickness(10, 20, 10, 34);
 				Assert.Equal(20, page.thicknessSubGrid.HeightRequest);
+			}
+			finally
+			{
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
+		[Fact]
+		public void StructSubProperty_ThicknessTop_TwoWayBindingWritesBackAndPreservesEdges()
+		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			try
+			{
+				var page = new CSharpExpressions(XamlInflator.SourceGen);
+				var vm = new SimpleViewModel { Margin = new Thickness(10, 47, 20, 34) };
+				page.BindingContext = vm;
+
+				Assert.Equal(47d, page.marginTopSlider.Value);
+
+				page.marginTopSlider.SetValueFromRenderer(Slider.ValueProperty, 25d);
+
+				Assert.Equal(10d, vm.Margin.Left);
+				Assert.Equal(25d, vm.Margin.Top);
+				Assert.Equal(20d, vm.Margin.Right);
+				Assert.Equal(34d, vm.Margin.Bottom);
 			}
 			finally
 			{

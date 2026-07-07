@@ -928,7 +928,6 @@ static class SetPropertyHelpers
 	}
 
 	/// <summary>
-	/// <summary>
 	/// Describes how a C# expression can be used as a binding setter.
 	/// </summary>
 	enum ExpressionWriteKind
