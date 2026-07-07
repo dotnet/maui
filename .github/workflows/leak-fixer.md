@@ -124,6 +124,11 @@ safe-outputs:
     target: "*"                     # agent supplies the leak PR number
     required-title-prefix: "[leak-"
     max: 1
+  # Most 12h runs are idle (every open leak already has a [leak-fix] PR). Without this,
+  # gh-aw's auto-injected default (noop: report-as-issue: true) files a "no action taken"
+  # issue every idle run. Mirror the hunter, which already opts out.
+  noop:
+    report-as-issue: false
 ---
 
 # Memory Leak Fixer — dotnet/maui
@@ -235,14 +240,22 @@ most recent comment THIS workflow already posted on that PR**:
 
 ```bash
 N=<pr-number>
+# SECURITY: only ACTION reviews/comments from an author with write access. On a public
+# repo anyone can submit a "Request changes" review, and this raw `gh api` path is NOT
+# behind the MCP `min-integrity: approved` gateway (that only filters MCP tool calls),
+# so untrusted review text could otherwise reach Step R and influence a code push.
+# Gate on author_association ∈ {OWNER, MEMBER, COLLABORATOR} before anything is actioned.
 gh api "repos/$GITHUB_REPOSITORY/pulls/$N/reviews" \
-  --jq 'map(select(.state=="CHANGES_REQUESTED")) | sort_by(.submitted_at) | last' \
-  > /tmp/gh-aw/agent/review_${N}.json          # newest changes-requested review (or null)
+  --jq 'map(select(.state=="CHANGES_REQUESTED"
+             and (.author_association | IN("OWNER","MEMBER","COLLABORATOR"))))
+        | sort_by(.submitted_at) | last' \
+  > /tmp/gh-aw/agent/review_${N}.json          # newest write-access changes-requested review (or null)
 gh pr view "$N" --repo "$GITHUB_REPOSITORY" --json commits \
   --jq '.commits | last | .committedDate' > /tmp/gh-aw/agent/lastcommit_${N}.txt
-# Inline review comments (may carry specific line-level requests):
+# Inline review comments (may carry specific line-level requests) — same write-access filter:
 gh api "repos/$GITHUB_REPOSITORY/pulls/$N/comments" \
-  --jq 'map({path,line,body,user:.user.login,created_at})' > /tmp/gh-aw/agent/inline_${N}.json
+  --jq 'map(select(.author_association | IN("OWNER","MEMBER","COLLABORATOR")))
+        | map({path,line,body,user:.user.login,created_at})' > /tmp/gh-aw/agent/inline_${N}.json
 # Have you (this workflow) already replied AFTER the review? Look for your marker.
 gh api "repos/$GITHUB_REPOSITORY/issues/$N/comments" \
   --jq 'map(select(.body|test("gh-aw-workflow-id: [^\n]*leak-fixer"))) | sort_by(.created_at) | last | .created_at' \
