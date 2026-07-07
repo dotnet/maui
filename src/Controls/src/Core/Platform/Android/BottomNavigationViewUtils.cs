@@ -125,6 +125,13 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						SetMenuItemTitle(menuItem, item.title);
 						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext));
+						// Reapply enabled/selected state since this IMenuItem is being reused, not recreated.
+						UpdateEnabled(item.tabEnabled, menuItem);
+						if (i == currentIndex)
+						{
+							menuItem.SetChecked(true);
+							bottomView.SelectedItemId = i;
+						}
 					}
 				}
 

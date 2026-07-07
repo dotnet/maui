@@ -733,7 +733,9 @@ internal class TabbedViewManager
             var tab = Element.Tabs[i];
             // ITab.Icon is IImageSource; convert to ImageSource if possible for BottomNavigationViewUtils
             var icon = tab.Icon as ImageSource;
-            items.Add((tab.Title, icon, tab.IsEnabled));
+            // Fallback for null/whitespace Title to avoid a blank bottom tab label.
+            var title = !string.IsNullOrWhiteSpace(tab.Title) ? tab.Title : $"Tab {i + 1}";
+            items.Add((title, icon, tab.IsEnabled));
         }
 
         return items;
@@ -775,7 +777,9 @@ internal class TabbedViewManager
         for (int i = 0; i < tabs.Count; i++)
         {
             var tab = tabs[i];
-            items.Add((tab.Title, tab.Icon as ImageSource, tab.IsEnabled));
+            // Fallback for null/whitespace Title to avoid a blank bottom tab label.
+            var title = !string.IsNullOrWhiteSpace(tab.Title) ? tab.Title : $"Tab {i + 1}";
+            items.Add((title, tab.Icon as ImageSource, tab.IsEnabled));
         }
 
         var currentIndex = Element.CurrentTabIndex;
