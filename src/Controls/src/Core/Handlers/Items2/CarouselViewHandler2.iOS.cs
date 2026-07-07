@@ -87,10 +87,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				mauiCV.SetSwipeEnabled(carouselView.IsSwipeEnabled);
 			}
-			else
-			{
-				handler.Controller.CollectionView.ScrollEnabled = carouselView.IsSwipeEnabled;
-			}
 		}
 
 		public static void MapIsBounceEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
@@ -98,10 +94,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (handler.Controller.CollectionView is MauiCollectionView mauiCV)
 			{
 				mauiCV.SetBounceEnabled(carouselView.IsBounceEnabled);
-			}
-			else
-			{
-				handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
 			}
 		}
 
