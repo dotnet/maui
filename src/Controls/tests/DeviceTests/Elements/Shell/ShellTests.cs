@@ -958,6 +958,52 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC(pageReference);
 		}
 
+#if IOS || MACCATALYST
+		// Verifies that the iOS ShellSectionRenderer (a UINavigationController) and the Shell
+		// renderer tree are collected after teardown. ShellSectionRenderer installs UIKit delegates
+		// (GestureDelegate on the interactive pop gesture recognizer and NavDelegate on itself) that
+		// used to hold a strong back-reference to the renderer, creating a self-retain cycle that
+		// rooted the entire Shell renderer tree (the delegate held the renderer, which held its
+		// IShellContext -> Shell). Those back-references are now WeakReference<ShellSectionRenderer>,
+		// so pushing/popping a page (which exercises both delegates) must not keep the Shell alive.
+		[Fact(DisplayName = "Shell Renderer Does Not Leak After Navigation")]
+		public async Task ShellRendererDoesNotLeakAfterNavigation()
+		{
+			SetupBuilder();
+
+			WeakReference shellReference = null;
+			WeakReference handlerReference = null;
+			WeakReference platformViewReference = null;
+
+			{
+				var shell = await CreateShellAsync(shell =>
+				{
+					shell.CurrentItem = new ContentPage() { Title = "Page 1" };
+				});
+
+				await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+				{
+					await OnLoadedAsync(shell.CurrentPage);
+
+					// Push and pop a page to install and exercise the ShellSectionRenderer's
+					// GestureDelegate and NavDelegate (the source of the former retain cycle).
+					var page = new ContentPage { Title = "Page 2", Content = new Label() };
+					await shell.Navigation.PushAsync(page);
+					await OnLoadedAsync(page);
+					await shell.Navigation.PopAsync();
+
+					shellReference = new WeakReference(shell);
+					handlerReference = new WeakReference(handler);
+					platformViewReference = new WeakReference(((IElementHandler)handler).PlatformView);
+				});
+
+				shell = null;
+			}
+
+			await AssertionExtensions.WaitForGC(shellReference, handlerReference, platformViewReference);
+		}
+#endif
+
 		class LeakyShellPage : ContentPage
 		{
 			public LeakyShellPage()
