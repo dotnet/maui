@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -399,7 +400,23 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Assert.IsType<MissingMethodException>(exception.InnerException);
 			Assert.Contains("public parameterless constructor", exception.Message, StringComparison.Ordinal);
-			Assert.Contains(nameof(MauiHandlersCollectionExtensions.AddHandler), exception.Message, StringComparison.Ordinal);
+			Assert.Contains(nameof(IMauiHandlersFactory.GetHandler), exception.Message, StringComparison.Ordinal);
+			Assert.Contains("ToHandler()", exception.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void ToHandlerUsesActivatorUtilitiesForElementHandlerAttributeWithoutDefaultConstructor()
+		{
+			var dependency = new ConstructorDependency();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton(dependency);
+			var mauiApp = builder.Build();
+			var mauiContext = new MauiContext(mauiApp.Services);
+
+			var handler = Assert.IsType<AttributedViewHandlerWithoutDefaultConstructorStub>(
+				new AttributedViewHandlerWithoutDefaultConstructorViewStub().ToHandler(mauiContext));
+
+			Assert.Same(dependency, handler.Dependency);
 		}
 
 		[Fact]
@@ -491,10 +508,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		class AttributedViewHandlerWithoutDefaultConstructorViewStub : ViewStub { }
 		class AttributedViewHandlerWithoutDefaultConstructorStub : ViewHandlerStub
 		{
-			public AttributedViewHandlerWithoutDefaultConstructorStub(string value)
+			public AttributedViewHandlerWithoutDefaultConstructorStub(ConstructorDependency dependency)
 			{
+				Dependency = dependency;
 			}
+
+			public ConstructorDependency Dependency { get; }
 		}
+
+		class ConstructorDependency { }
 
 		[OverrideElementHandler]
 		class OverrideAttributedViewStub : ViewStub { }
