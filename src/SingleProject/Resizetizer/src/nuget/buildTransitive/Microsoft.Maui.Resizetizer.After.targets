@@ -513,8 +513,12 @@
 
         <!-- Track the generated splash outputs in an obj-scoped manifest so the incremental
              check re-runs this target if any generated file disappears (see _ReadMauiSplashOutputs
-             and the @(_MauiSplashOutputs) entries in this target's Outputs). Replaces the previous
-             stamp file, whose timestamp could stay newer than deleted outputs. -->
+             and the @(_MauiSplashOutputs) entries in this target's Outputs). The manifest is
+             touched (AlwaysCreate) so it acts as the single up-to-date stamp — mirroring the
+             ResizetizeImages target, which touches only $(_ResizetizerStampFile) and never the
+             generated files themselves. We deliberately do NOT touch @(_MauiSplashAssets): on
+             Android those are $(_MauiIntermediateSplashScreen)**\* and feed LibraryResourceDirectories,
+             so bumping their timestamps would needlessly re-trigger aapt2 on unchanged resources. -->
         <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
         <WriteLinesToFile
             File="$(_MauiSplashOutputsFile)"
@@ -523,7 +527,6 @@
             WriteOnlyWhenDifferent="true"
         />
         <Touch Files="$(_MauiSplashOutputsFile)" AlwaysCreate="True" />
-        <Touch Files="@(_MauiSplashAssets)" Condition="'@(_MauiSplashAssets)' != ''" />
 
         <ItemGroup>
             <FileWrites Include="@(_MauiSplashAssets)" />
@@ -586,7 +589,10 @@
         <!-- Track the generated font outputs (copied fonts + any iOS partial plist) in an obj-scoped
              manifest so the incremental check re-runs this target if any generated file disappears
              (see _ReadMauiFontOutputs and the @(_MauiFontOutputs) entries in this target's Outputs).
-             Replaces the previous stamp file, whose timestamp could stay newer than deleted outputs. -->
+             The manifest is touched (AlwaysCreate) so it acts as the single up-to-date stamp, mirroring
+             ResizetizeImages. We deliberately do NOT touch @(_MauiFontOutputUnique): touching the
+             generated files would needlessly invalidate downstream consumers (e.g. Android aapt2 /
+             iOS asset processing) even when the font content is unchanged. -->
         <ItemGroup>
             <_MauiFontOutputUnique Include="$(_MauiIntermediateFonts)MauiInfo.plist"
                 Condition="'$(_ResizetizerIsiOSApp)' == 'True' And Exists('$(_MauiIntermediateFonts)MauiInfo.plist')" />
@@ -600,7 +606,6 @@
             WriteOnlyWhenDifferent="true"
         />
         <Touch Files="$(_MauiFontOutputsFile)" AlwaysCreate="True" />
-        <Touch Files="@(_MauiFontOutputUnique)" Condition="'@(_MauiFontOutputUnique)' != ''" />
 
         <!-- Include our fonts and output manifest as filewrites so they don't get rm'd -->
         <ItemGroup>
