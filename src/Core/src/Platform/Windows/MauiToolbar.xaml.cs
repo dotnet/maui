@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Platform
 		{
 			InitializeComponent();
 			SizeChanged += OnToolbarSizeChanged;
+			this.OnUnloaded(() => SizeChanged -= OnToolbarSizeChanged);
 		}
 
 		void OnToolbarSizeChanged(object sender, SizeChangedEventArgs e)
