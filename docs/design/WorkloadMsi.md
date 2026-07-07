@@ -130,11 +130,11 @@ WiX package versions are pinned in `eng/NuGetVersions.targets` using the `Micros
 <MicrosoftWixVersion>6.0.3-dotnet.4</MicrosoftWixVersion>
 
 <!-- eng/NuGetVersions.targets -->
-<PackageVersion Include="Microsoft.Wix" Version="$(MicrosoftWixVersion)" />
-<PackageVersion Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixVersion)" />
-<PackageVersion Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixVersion)" />
-<PackageVersion Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixVersion)" />
-<PackageVersion Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixVersion)" />
+<PackageReference Update="Microsoft.Wix" Version="$(MicrosoftWixVersion)" />
+<PackageReference Update="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixVersion)" />
+<PackageReference Update="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixVersion)" />
+<PackageReference Update="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixVersion)" />
+<PackageReference Update="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixVersion)" />
 ```
 
 ## Testing Pipeline
