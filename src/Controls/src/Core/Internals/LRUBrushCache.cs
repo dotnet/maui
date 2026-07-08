@@ -23,15 +23,23 @@ sealed class LRUBrushCache : ICache<Color, ImmutableBrush>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="capacity"/> is zero or negative.</exception>
 	public LRUBrushCache(int capacity)
 	{
-		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
+		if (capacity <= 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(capacity));
+		}
 
 		_capacity = capacity;
 	}
 
 	public LRUBrushCache(int capacity, Dictionary<Color, ImmutableBrush> brushes)
 	{
-		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
+		if (capacity <= 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(capacity));
+		}
+		
 		ArgumentNullException.ThrowIfNull(brushes);
+
 
 		if (brushes.Count > capacity)
 		{
