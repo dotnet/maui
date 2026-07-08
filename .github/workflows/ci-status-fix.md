@@ -707,7 +707,7 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    WITHOUT re-commenting (re-surfacing the same green every tick is noise and burns
    the per-run comment budget other PRs need). Otherwise resolve the attempt number from
    `C.effectiveAttempt` (the authoritative max(marker, bot-commit) counter; omit the
-   number only if it is somehow indeterminate). `add_comment` on PR #<P>: `✅ Attempt <attempt>/10 validated
+   number only if it is somehow indeterminate). **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit any comment — instead print the intended `✅` validated-green body to the run log, tally `dry-run: would-surface-green PR #<P>`, and stop. Otherwise `add_comment` on PR #<P>: `✅ Attempt <attempt>/10 validated
    — the fix's CI is green on <C.headSha>. Ready for human review.`
    Name any `/azp`-gated legs (uitests def 313 / devicetests def 314) that have not
    run and still need a maintainer `/azp run`. Do NOT advance. Record
@@ -727,7 +727,7 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
      burns the per-run comment budget other PRs need). Otherwise resolve the attempt
      number from `C.effectiveAttempt` (the authoritative max(marker, bot-commit)
      counter), omitting the `Attempt <attempt>/10:` prefix only if it is somehow
-     indeterminate. `add_comment` on PR #<P>: `♻️ Attempt <attempt>/10: red is
+     indeterminate. **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit any comment — instead print the intended `♻️` unrelated-flake body to the run log, tally `dry-run: would-annotate-flake PR #<P>`, and stop. Otherwise `add_comment` on PR #<P>: `♻️ Attempt <attempt>/10: red is
      unrelated flake on leg(s) <X> (<evidence>) on <C.headSha>; the fix itself is not
      implicated. A maintainer re-run (/azp run <pipeline>) should clear it.` Record
      `annotated-flake PR #<P> (head <C.headSha>)` and stop. *(Round 1: human re-runs;
@@ -839,7 +839,10 @@ curl -s "$url" | tee /tmp/gh-aw/agent/tccommits_${N}.json \
 echo "$RID" > /tmp/gh-aw/agent/tcrid_${N}.txt
 ```
 
-The review is **actionable** only if ALL hold: `tcreview` is non-null; `RID` is NOT an
+The review is **actionable** only if ALL hold: `C.dataComplete == true` (a partial prefetch
+read empties `C.respondedTrackCReviewIds`, so the dedup set below is authoritative ONLY on a
+complete read — otherwise defer, exactly as gate 2 does, so an incomplete prefetch can never
+re-ping a maintainer with a duplicate decline); `tcreview` is non-null; `RID` is NOT an
 element of `C.respondedTrackCReviewIds` (the prefetch's pagination-proof set of review
 ids we have already answered — the authoritative dedup); its `submitted_at` is *after*
 `tclastcommit` (secondary guard for the APPLY path, so a review we already superseded
@@ -847,7 +850,7 @@ with a commit is not re-applied even if its response comment failed to post); an
 `C.effectiveAttempt < 10` (a Track C commit counts toward the same ≤ 10
 bot-commits-per-PR ceiling as an ADVANCE). Then:
 
-- Not actionable (no such review, already answered for this RID, or older than our
+- Not actionable (incomplete prefetch, no such review, already answered for this RID, or older than our
   last commit) → **fall through to Step 3.5 gate 1** (defer). Do NOT comment.
 - Actionable but `C.effectiveAttempt >= 10` → record `skipped: attempt cap
   reached; maintainer change-request on PR #<P> deferred to human` and stop.
