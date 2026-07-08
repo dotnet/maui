@@ -58,7 +58,7 @@
 		Note: PublishReadyToRun and PublishReadyToRunComposite are already set by the Android workload.
 	-->
 	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
-		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPublishReadyToRunPartial)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPublishReadyToRunPartial)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs);--partial</PublishReadyToRunCrossgen2ExtraArgs>
 		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
 	</PropertyGroup>
 
@@ -238,7 +238,7 @@
 		AfterTargets="AfterCompile"
 		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
 		Outputs="$(IntermediateOutputPath)XamlC.stamp"
-		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != ''">
+		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' AND ('@(_MauiXaml_XC)' != '' OR '@(_MauiXaml_RT)' != '') ">
 		<PropertyGroup>
 			<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
 			<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>

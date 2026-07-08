@@ -1,0 +1,548 @@
+name: Release Readiness
+
+# Unified release-readiness workflow. Each day:
+#  1. detect-trackers: invoke Find-ReleaseReadinessTrackers -AllActiveMajors to enumerate every
+#     active in-flight/candidate branch across all active majors (SR + preview).
+#  2. matrix expansion: emit one matrix job per tracker (≤ a handful per day).
+#  3. per-tracker readiness: dispatch the right report script based on branchType
+#     ('sr' -> Get-ReleaseReadiness.ps1; 'preview' -> Get-PreviewReadiness.ps1)
+#     and write a daily "[Release Readiness]" issue idempotently:
+#       - reuse open tracker issue by canonicalKey marker if it already exists
+#       - otherwise close any older daily issues for the same tracker and create a new one
+#       - skip new-issue creation when the tracker has zero recent commits AND no open tracker issue
+#  4. validate: PR-trigger path runs the same scripts but only validates output — no issue creation.
+#
+# Permissions: the cron/dispatch path requires `issues: write`; PR validation runs with the minimum.
+
+on:
+  schedule:
+    - cron: "30 8 * * 1-5"  # Weekdays at 08:30 UTC
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Restrict to a single branch (e.g. release/10.0.1xx-sr8 or release/11.0.1xx-preview6). Empty = all detected trackers."
+        required: false
+        default: ""
+      create_issue:
+        description: "Create/update the daily public Release Readiness issue(s)"
+        type: boolean
+        required: false
+        default: true
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - '.github/workflows/release-readiness.yml'
+      - '.github/skills/release-readiness/**'
+      - '.github/scripts/shared/MauiReleaseVersioning.psm1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-readiness-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.branch || 'all' }}
+  cancel-in-progress: true
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────
+  # Job 1 — detect trackers and emit a JSON matrix
+  # ────────────────────────────────────────────────────────────────────
+  detect-trackers:
+    name: Detect release trackers
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+      has-trackers: ${{ steps.detect.outputs.has-trackers }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Find-Trackers needs full history + tags for tag-existence detection
+
+      - name: Detect release-readiness trackers
+        id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH_FILTER: ${{ inputs.branch || '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pwsh -NoProfile -File .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 \
+            -AllActiveMajors \
+            -OutputJson trackers.json
+
+          if [ ! -s trackers.json ]; then
+            echo "::error::Find-ReleaseReadinessTrackers produced no JSON"
+            exit 1
+          fi
+
+          # Flatten majors[].trackers[] into a single matrix array. If BRANCH_FILTER
+          # is set, narrow to trackers whose branchName OR surveyRef matches.
+          jq --arg filter "$BRANCH_FILTER" '
+            [ .majors[].trackers[]
+              | select($filter == "" or .branchName == $filter or .surveyRef == $filter)
+              | {
+                  canonicalKey: .canonicalKey,
+                  branchType:   .branchType,
+                  branchName:   .branchName,
+                  branchExists: .branchExists,
+                  surveyRef:    .surveyRef,
+                  mode:         .mode,
+                  majorVersion: .majorVersion,
+                  issueTitle:   .issueTitle,
+                  milestoneName: .milestoneName,
+                  recentCommitCount: .recentCommitCount,
+                  hasRecentActivity: .hasRecentActivity,
+                  # SR-only fields (null for preview trackers)
+                  priorSrBranch:    (.priorSrBranch // ""),
+                  regressionLabels: (.regressionLabels // []),
+                  # Preview-only fields (null for SR trackers)
+                  previewNumber: (.previewNumber // null)
+                }
+            ]
+          ' trackers.json > matrix.json
+
+          MATRIX_LEN=$(jq 'length' matrix.json)
+          echo "Detected $MATRIX_LEN tracker(s)"
+          jq -c '.' matrix.json
+
+          # Encode matrix for GitHub Actions matrix expansion.
+          MATRIX_JSON=$(jq -c '{include: .}' matrix.json)
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+          if [ "$MATRIX_LEN" -gt 0 ]; then
+            echo "has-trackers=true"  >> "$GITHUB_OUTPUT"
+          else
+            echo "has-trackers=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload trackers.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-readiness-trackers
+          path: |
+            trackers.json
+            matrix.json
+          retention-days: 30
+
+  # ────────────────────────────────────────────────────────────────────
+  # Job 2 — per-tracker readiness report (one matrix job per tracker)
+  # ────────────────────────────────────────────────────────────────────
+  per-tracker-report:
+    name: ${{ matrix.canonicalKey }} (${{ matrix.branchType }})
+    needs: detect-trackers
+    if: needs.detect-trackers.outputs.has-trackers == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-trackers.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate readiness report
+        id: report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH_TYPE:   ${{ matrix.branchType }}
+          BRANCH_NAME:   ${{ matrix.branchName }}
+          BRANCH_EXISTS: ${{ matrix.branchExists }}
+          SURVEY_REF:    ${{ matrix.surveyRef }}
+          MODE:          ${{ matrix.mode }}
+          TRACKER_KEY:   ${{ matrix.canonicalKey }}
+          PRIOR_SR:      ${{ matrix.priorSrBranch }}
+          REG_LABELS:    ${{ join(matrix.regressionLabels, ',') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p readiness-out
+
+          if [ "$BRANCH_TYPE" = "sr" ]; then
+            # SR readiness:
+            #   in-flight  → -SrBranch <branchName>           (no Candidate flag)
+            #   candidate  → -SrBranch <priorSrBranch> -Candidate
+            # Find-ReleaseReadinessTrackers's New-RegressionLabelList always
+            # returns at least one label for every SR, so REG_LABELS is never
+            # empty here — wire the labels through directly without the
+            # legacy -InferRegressionLabels fallback.
+            if [ -z "$REG_LABELS" ]; then
+              echo "::error::SR tracker $TRACKER_KEY missing regressionLabels (Find-Trackers should always emit ≥1)"
+              exit 1
+            fi
+            REG_LABEL_ARG=(-RegressionLabels "$REG_LABELS")
+
+            CANDIDATE_ARG=()
+            if [ "$MODE" = "candidate" ]; then
+              if [ -z "$PRIOR_SR" ]; then
+                echo "::error::SR candidate tracker $TRACKER_KEY missing priorSrBranch"
+                exit 1
+              fi
+              SR_ARG="$PRIOR_SR"
+              CANDIDATE_ARG=(-Candidate)
+            else
+              SR_ARG="$BRANCH_NAME"
+            fi
+
+            pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
+              -SrBranch "$SR_ARG" \
+              "${CANDIDATE_ARG[@]}" \
+              "${REG_LABEL_ARG[@]}" \
+              -TrackerKey "$TRACKER_KEY" \
+              -OutputDir readiness-out
+            BODY_FILE="readiness-out/release-readiness.md"
+
+          elif [ "$BRANCH_TYPE" = "preview" ]; then
+            # Preview readiness — Get-PreviewReadiness.ps1 always takes the
+            # canonical preview branch name (whether it exists yet or not);
+            # candidate mode flips -SurveyRef to net<major>.0.
+            pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
+              -Branch "$BRANCH_NAME" \
+              -Mode "$MODE" \
+              -SurveyRef "$SURVEY_REF" \
+              -TrackerKey "$TRACKER_KEY" \
+              -OutputDir readiness-out \
+              -OutputFormat markdown
+            BODY_FILE="readiness-out/preview-readiness.md"
+          else
+            echo "::error::Unknown branchType '$BRANCH_TYPE'"
+            exit 1
+          fi
+
+          if [ ! -s "$BODY_FILE" ]; then
+            echo "::error::Readiness body file is empty: $BODY_FILE"
+            exit 1
+          fi
+
+          echo "body-file=$BODY_FILE" >> "$GITHUB_OUTPUT"
+          {
+            echo "## ${TRACKER_KEY} (${BRANCH_TYPE})"
+            echo ""
+            cat "$BODY_FILE"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload readiness artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-${{ matrix.canonicalKey }}
+          path: readiness-out/
+          retention-days: 30
+
+      - name: Update or create tracker issue
+        if: github.event_name == 'schedule' || inputs.create_issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRACKER_KEY:        ${{ matrix.canonicalKey }}
+          ISSUE_TITLE:        ${{ matrix.issueTitle }}
+          MILESTONE_NAME:     ${{ matrix.milestoneName }}
+          BODY_FILE:          ${{ steps.report.outputs.body-file }}
+          RECENT_COMMIT_COUNT: ${{ matrix.recentCommitCount }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Find any open issue whose body carries the canonical marker for this tracker.
+          # This is the idempotent join key — Get-ReleaseReadiness / Get-PreviewReadiness
+          # both embed `<!-- release-readiness-tracker: $TRACKER_KEY -->`.
+          MARKER="<!-- release-readiness-tracker: ${TRACKER_KEY} -->"
+          EXISTING=$(gh issue list \
+            --repo "${{ github.repository }}" \
+            --state open \
+            --search "in:body \"${MARKER}\"" \
+            --json number,title,createdAt \
+            --limit 50 \
+            --jq '. // [] | sort_by(.createdAt) | .[].number')
+
+          # Activity gate: when there is no recent activity AND no open tracker issue,
+          # skip new-issue creation. (If an existing issue is open, we still refresh it.)
+          if [ "$RECENT_COMMIT_COUNT" -eq 0 ] && [ -z "$EXISTING" ]; then
+            echo "Skipping ${TRACKER_KEY}: no recent commits and no open tracker issue."
+            exit 0
+          fi
+
+          if [ -n "$EXISTING" ]; then
+            # Reuse the OLDEST open tracker issue (first in chronological order).
+            # Close any duplicates created by past misfires before refreshing the canonical one.
+            CANONICAL=$(echo "$EXISTING" | head -n 1)
+            DUPLICATES=$(echo "$EXISTING" | tail -n +2 || true)
+
+            for dup in $DUPLICATES; do
+              echo "Closing duplicate tracker issue #$dup"
+              gh issue close "$dup" \
+                --repo "${{ github.repository }}" \
+                --reason "not planned" \
+                --comment "Closing as duplicate of #${CANONICAL} — there should be exactly one open tracker per release branch." || true
+            done
+
+            echo "Refreshing tracker issue #${CANONICAL} for ${TRACKER_KEY}"
+
+            # Preserve the human-editable "Release Captain Notes" block and avoid
+            # churning the issue when nothing material changed. Both engines emit
+            # <!-- release-readiness:human-notes:begin/end --> markers; the SR engine
+            # additionally embeds <!-- release-readiness-hash: sha=... -->.
+            CUR_BODY_FILE="$(mktemp)"
+            # Capture the live issue body. A transient fetch failure must NOT lead
+            # to an overwrite: an empty CUR_BODY_FILE would skip the notes splice
+            # AND zero out OLD_HASH, falling through to `gh issue edit` and wiping
+            # the human-authored Release Captain Notes. Guard the exit status and
+            # skip the whole refresh instead (a missing refresh self-heals next run;
+            # lost notes do not).
+            CUR_FETCH_OK=1
+            gh issue view "$CANONICAL" \
+              --repo "${{ github.repository }}" \
+              --json body --jq '.body // ""' > "$CUR_BODY_FILE" || CUR_FETCH_OK=0
+
+            if [ "$CUR_FETCH_OK" -ne 1 ]; then
+              echo "::warning::Could not read live body of issue #${CANONICAL}; skipping refresh to protect Release Captain Notes."
+            else
+              # Detect the human-notes block using the SAME anchored full-line
+              # markers the awk splice relies on. A substring (unanchored) guard
+              # desyncs from the awk and silently wipes the Release Captain Notes:
+              #   * a note that merely MENTIONS the end token makes the count 2, the
+              #     -eq 1 guard fails, the splice is skipped, and the edit overwrites
+              #     the notes; and
+              #   * a marker line carrying trailing text passes a substring guard but
+              #     the anchored awk matches nothing, splicing in an EMPTY block.
+              # The anchors tolerate the CRLF bodies GitHub returns (\r is ASCII
+              # whitespace in every locale). LC_ALL=C is MANDATORY on every grep and
+              # awk here: GNU grep in the runner's UTF-8 locale treats Unicode spaces
+              # (e.g. U+00A0 NO-BREAK SPACE, easily pasted from a web editor) as
+              # [[:space:]], but mawk (the runner default) does not — so a UTF-8
+              # grep guard could PASS while the awk extracts nothing, splicing an
+              # EMPTY block over real notes. Forcing C locale makes grep and awk
+              # agree on ASCII-only [[:space:]], so a weird space fails the guard and
+              # freezes the issue (safe) instead of destroying the notes.
+              NOTES_BEGIN_RE='^[[:space:]]*<!-- release-readiness:human-notes:begin -->[[:space:]]*$'
+              NOTES_END_RE='^[[:space:]]*<!-- release-readiness:human-notes:end -->[[:space:]]*$'
+              CUR_HAS_CLEAN_NOTES=0
+              if [ "$(LC_ALL=C grep -cE "$NOTES_BEGIN_RE" "$CUR_BODY_FILE")" -eq 1 ] \
+                 && [ "$(LC_ALL=C grep -cE "$NOTES_END_RE" "$CUR_BODY_FILE")" -eq 1 ]; then
+                CUR_HAS_CLEAN_NOTES=1
+              fi
+              # Does the FRESH body carry exactly one clean begin+end pair? If a
+              # truncated/markerless fresh body would be used to overwrite an issue
+              # that HAS real notes, those notes are lost — so we require this too.
+              BODY_HAS_CLEAN_NOTES=0
+              if [ "$(LC_ALL=C grep -cE "$NOTES_BEGIN_RE" "$BODY_FILE")" -eq 1 ] \
+                 && [ "$(LC_ALL=C grep -cE "$NOTES_END_RE" "$BODY_FILE")" -eq 1 ]; then
+                BODY_HAS_CLEAN_NOTES=1
+              fi
+
+              SKIP_EDIT=0
+              # 1) Splice any human-authored notes from the live issue into the fresh
+              #    body, replacing the freshly generated placeholder block. Require a
+              #    COMPLETE, single begin+end marker pair in BOTH bodies — an
+              #    unterminated or duplicated block would otherwise capture the entire
+              #    stale report to EOF and re-inject it, growing the body every run.
+              if [ "$CUR_HAS_CLEAN_NOTES" -eq 1 ] && [ "$BODY_HAS_CLEAN_NOTES" -eq 1 ]; then
+                MERGED_BODY_FILE="$(mktemp)"
+                # Markers are matched as ANCHORED FULL LINES so a note that merely
+                # mentions the marker text cannot prematurely terminate capture.
+                # LC_ALL=C keeps awk's [[:space:]] ASCII-only, matching the grep guard.
+                LC_ALL=C awk '
+                  /^[[:space:]]*<!-- release-readiness:human-notes:begin -->[[:space:]]*$/ {
+                    if (FNR==NR) { cap=1; next } else { print; printf "%s", notes; skip=1; next }
+                  }
+                  /^[[:space:]]*<!-- release-readiness:human-notes:end -->[[:space:]]*$/ {
+                    if (FNR==NR) { cap=0; next } else { print; skip=0; next }
+                  }
+                  FNR==NR { if (cap) { notes = notes $0 "\n" } ; next }
+                  { if (!skip) print }
+                ' "$CUR_BODY_FILE" "$BODY_FILE" > "$MERGED_BODY_FILE"
+                mv "$MERGED_BODY_FILE" "$BODY_FILE"
+                echo "Preserved existing Release Captain Notes block."
+              elif [ "$CUR_HAS_CLEAN_NOTES" -eq 1 ] && [ "$BODY_HAS_CLEAN_NOTES" -ne 1 ]; then
+                # The live issue HAS clean notes but the freshly generated body does
+                # NOT carry a clean begin+end pair (e.g. truncated below the cap, or
+                # markers otherwise missing). Splicing is impossible and overwriting
+                # would wipe the live notes, so skip the edit entirely. Self-heals on
+                # the next run once the fresh body regains its markers.
+                echo "::warning::Fresh report for #${CANONICAL} lacks clean notes markers (truncated?); skipping edit to protect existing Release Captain Notes."
+                SKIP_EDIT=1
+              elif [ "$CUR_HAS_CLEAN_NOTES" -ne 1 ] \
+                   && LC_ALL=C grep -q 'release-readiness:human-notes:' "$CUR_BODY_FILE"; then
+                # The live body carries notes markers that don't resolve to a single
+                # clean begin+end pair (corrupted, duplicated, or text on the marker
+                # line). We can't splice safely and overwriting would wipe the notes,
+                # so skip the edit entirely — self-heals once the markers are a clean
+                # pair again (a stale refresh recovers; destroyed captain notes do not).
+                echo "::warning::Issue #${CANONICAL} has malformed Release Captain Notes markers; skipping edit to protect them."
+                SKIP_EDIT=1
+              fi
+
+              # 1b) Final body-size guard. The awk splice above injects the LIVE
+              #     notes block (which a captain may have grown to many KB) into the
+              #     freshly capped body. The engines cap the FRESH body, reserving
+              #     room only for the small notes PLACEHOLDER — they never see the
+              #     live-notes size — so a busy report plus large notes can push the
+              #     merged body past GitHub's 65,536-byte issue-body limit, which
+              #     makes `gh issue edit` 422 and fail the run under set -e. Skip the
+              #     edit instead (notes stay safe; the report just stays stale this
+              #     run) and self-heal once the report or the notes shrink. `wc -c`
+              #     counts bytes — matching the engines' byte-based cap — and is
+              #     conservative against GitHub's character limit.
+              if [ "$SKIP_EDIT" -ne 1 ]; then
+                MERGED_SIZE=$(wc -c < "$BODY_FILE")
+                if [ "$MERGED_SIZE" -gt 65536 ]; then
+                  echo "::warning::Body for #${CANONICAL} is ${MERGED_SIZE} bytes (> GitHub's 65536-byte limit) after splicing live notes; skipping edit to avoid a failed gh issue edit. Self-heals once the report or notes shrink."
+                  SKIP_EDIT=1
+                fi
+              fi
+
+              # 2) Idempotent no-op: if the semantic hash is unchanged, skip the edit
+              #    so scheduled re-runs don't spam watchers. The engine emits its hash
+              #    at the very TOP of the body, ABOVE the human-notes block, so scope
+              #    extraction to the pre-notes region with `sed '/begin/q'`. Anchoring
+              #    the grep to the full HTML-comment form is not enough on its own: the
+              #    `<!-- release-readiness-hash: sha=... -->` line is exactly what a
+              #    captain copies from a prior raw-markdown run and may paste INTO their
+              #    notes; the splice then carries it into the fresh body. On Preview
+              #    trackers (which emit NO hash and must refresh every run) that pasted
+              #    line would make OLD_HASH==NEW_HASH and FREEZE the issue. Scoping to
+              #    above the notes block makes any hash inside the notes invisible to the
+              #    compare, regardless of paste form. The anchored grep keeps the match
+              #    precise and drops a trailing CRLF \r from the captured hash.
+              if [ "$SKIP_EDIT" -ne 1 ]; then
+                OLD_HASH=$(sed '/<!-- release-readiness:human-notes:begin -->/q' "$CUR_BODY_FILE" | grep -oE '<!-- release-readiness-hash: sha=[0-9a-f]+ -->' | head -n1 | sed 's/.*sha=//; s/ -->//') || true
+                NEW_HASH=$(sed '/<!-- release-readiness:human-notes:begin -->/q' "$BODY_FILE"     | grep -oE '<!-- release-readiness-hash: sha=[0-9a-f]+ -->' | head -n1 | sed 's/.*sha=//; s/ -->//') || true
+                if [ -n "$NEW_HASH" ] && [ "$OLD_HASH" = "$NEW_HASH" ]; then
+                  echo "Semantic hash unchanged (${NEW_HASH}) — skipping issue edit (no-op)."
+                else
+                  gh issue edit "$CANONICAL" \
+                    --repo "${{ github.repository }}" \
+                    --title "$ISSUE_TITLE" \
+                    --body-file "$BODY_FILE"
+                fi
+              fi
+            fi
+          else
+            echo "Creating new tracker issue for ${TRACKER_KEY}"
+            CREATE_ARGS=(
+              --repo "${{ github.repository }}"
+              --title "$ISSUE_TITLE"
+              --body-file "$BODY_FILE"
+              --label "report"
+              --label "s/triaged"
+              --label "area-release-readiness"
+            )
+            # Best-effort milestone attach — never fail the job for a missing milestone.
+            if [ -n "$MILESTONE_NAME" ]; then
+              if gh api "repos/${{ github.repository }}/milestones?state=open&per_page=100" \
+                  --jq ".[] | select(.title == \"$MILESTONE_NAME\") | .number" \
+                  | grep -q .; then
+                CREATE_ARGS+=(--milestone "$MILESTONE_NAME")
+              else
+                echo "::warning::Milestone '$MILESTONE_NAME' not found; creating issue without milestone."
+              fi
+            fi
+            gh issue create "${CREATE_ARGS[@]}"
+          fi
+
+  # ────────────────────────────────────────────────────────────────────
+  # PR validation — run scripts without touching issues
+  # ────────────────────────────────────────────────────────────────────
+  validate:
+    name: Validate (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run unit tests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1
+
+      - name: Run Find-Trackers (no issue side-effects)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pwsh -NoProfile -File .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 \
+            -AllActiveMajors \
+            -OutputJson trackers.json
+          if [ ! -s trackers.json ]; then
+            echo "::error::Find-ReleaseReadinessTrackers produced no JSON"
+            exit 1
+          fi
+          echo "Detection JSON sample (first 200 lines):"
+          head -200 trackers.json
+
+      - name: Smoke-run report scripts for each detected tracker
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p validate-out
+
+          # For each tracker, just smoke-test the report-generation path (~30s/tracker).
+          jq -c '.majors[].trackers[]' trackers.json | while IFS= read -r tracker; do
+            CANONICAL=$(echo "$tracker"  | jq -r '.canonicalKey')
+            BRANCH_TYPE=$(echo "$tracker" | jq -r '.branchType')
+            BRANCH_NAME=$(echo "$tracker" | jq -r '.branchName')
+            SURVEY_REF=$(echo "$tracker"  | jq -r '.surveyRef')
+            MODE=$(echo "$tracker"        | jq -r '.mode')
+            PRIOR_SR=$(echo "$tracker"    | jq -r '.priorSrBranch // ""')
+            REG_LABELS=$(echo "$tracker"  | jq -r '.regressionLabels // [] | join(",")')
+
+            OUT_DIR="validate-out/${CANONICAL}"
+            mkdir -p "$OUT_DIR"
+
+            echo "::group::Validate ${CANONICAL} (${BRANCH_TYPE})"
+            if [ "$BRANCH_TYPE" = "sr" ]; then
+              # New-RegressionLabelList always emits ≥1 label, so the
+              # -InferRegressionLabels fallback is unreachable. Wire labels
+              # through directly and fail loudly if upstream regressed.
+              if [ -z "$REG_LABELS" ]; then
+                echo "::error::SR tracker $CANONICAL missing regressionLabels"
+                exit 1
+              fi
+              REG_LABEL_ARG=(-RegressionLabels "$REG_LABELS")
+              CANDIDATE_ARG=()
+              if [ "$MODE" = "candidate" ]; then
+                SR_ARG="$PRIOR_SR"
+                CANDIDATE_ARG=(-Candidate)
+              else
+                SR_ARG="$BRANCH_NAME"
+              fi
+              pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
+                -SrBranch "$SR_ARG" \
+                "${CANDIDATE_ARG[@]}" \
+                "${REG_LABEL_ARG[@]}" \
+                -TrackerKey "$CANONICAL" \
+                -OutputDir "$OUT_DIR"
+            elif [ "$BRANCH_TYPE" = "preview" ]; then
+              pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
+                -Branch "$BRANCH_NAME" \
+                -Mode "$MODE" \
+                -SurveyRef "$SURVEY_REF" \
+                -TrackerKey "$CANONICAL" \
+                -OutputDir "$OUT_DIR" \
+                -OutputFormat markdown
+            fi
+            echo "::endgroup::"
+          done
+
+      - name: Upload validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-readiness-validate
+          path: |
+            trackers.json
+            validate-out/
+          retention-days: 7

@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 
 using static System.String;
@@ -404,10 +405,15 @@ internal class KnownMarkups
 			}
 			else
 			{
-				value = expression +
-					$"{{ UpdateSourceEventName = {extVariable.ValueAccessor}.UpdateSourceEventName, " +
-					$"FallbackValue = {extVariable.ValueAccessor}.FallbackValue, " +
-					$"TargetNullValue = {extVariable.ValueAccessor}.TargetNullValue }}";
+				var objectInitializer = new StringBuilder()
+					.Append($"{{ UpdateSourceEventName = {extVariable.ValueAccessor}.UpdateSourceEventName, ");
+				if (markupNode.HasProperty("ConverterCulture"))
+					objectInitializer.Append($"ConverterCulture = {extVariable.ValueAccessor}.ConverterCulture, ");
+				objectInitializer
+					.Append($"FallbackValue = {extVariable.ValueAccessor}.FallbackValue, ")
+					.Append($"TargetNullValue = {extVariable.ValueAccessor}.TargetNullValue }}");
+
+				value = expression + objectInitializer;
 				return true;
 			}
 		}
@@ -441,6 +447,17 @@ internal class KnownMarkups
 				expression += ") {";
 				if (markupNode.Properties.TryGetValue(new XmlName(null, "UpdateSourceEventName"), out var updateSourceEventNameNode))
 					expression += $"UpdateSourceEventName = {getNodeValue(updateSourceEventNameNode, context.Compilation.GetTypeByMetadataName("System.String")!).ValueAccessor}, ";
+				if (markupNode.Properties.TryGetValue(new XmlName(null, "ConverterCulture"), out var converterCultureNode))
+				{
+					if (converterCultureNode is ValueNode { Value: string converterCulture })
+					{
+						expression += $"ConverterCulture = global::System.Globalization.CultureInfo.GetCultureInfo({SymbolDisplay.FormatLiteral(converterCulture, true)}), ";
+					}
+					else
+					{
+						expression += $"ConverterCulture = {getNodeValue(converterCultureNode, context.Compilation.GetTypeByMetadataName("System.Globalization.CultureInfo")!).ValueAccessor}, ";
+					}
+				}
 				if (markupNode.Properties.TryGetValue(new XmlName(null, "FallbackValue"), out var fallbackValueNode))
 					expression += $"FallbackValue = {getNodeValue(fallbackValueNode, context.Compilation.GetTypeByMetadataName("System.Object")!).ValueAccessor}, ";
 				if (markupNode.Properties.TryGetValue(new XmlName(null, "TargetNullValue"), out var targetNullValueNode))
@@ -796,6 +813,15 @@ internal class KnownMarkups
 	/// </summary>
 	internal static bool ProvideValueForAppThemeBindingExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
+		// AppThemeBinding is internal on netstandard; let the generic markup-extension path call
+		// AppThemeBindingExtension.ProvideValue instead of generating an inaccessible constructor call.
+		if (context.ProjectItem.TargetFramework?.StartsWith("netstandard", StringComparison.OrdinalIgnoreCase) == true)
+		{
+			returnType = null;
+			value = string.Empty;
+			return false;
+		}
+
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.AppThemeBinding")!;
 
 		if (getNodeValue is null)

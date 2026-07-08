@@ -8,7 +8,7 @@ using Window = Tizen.NUI.Window;
 namespace Microsoft.Maui.Media
 {
 	// TODO: Need to impl
-	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot, IViewScreenshot
 	{
 		public bool IsCaptureSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
@@ -21,6 +21,11 @@ namespace Microsoft.Maui.Media
 
 		public Task<IScreenshotResult> CaptureAsync(NView view) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+#nullable enable annotations
+		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
+			platformView is NView view ? CaptureAsync(view)! : Task.FromResult<IScreenshotResult?>(null);
+#nullable restore
 	}
 
 	partial class ScreenshotResult

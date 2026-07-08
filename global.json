@@ -1,6 +1,10 @@
 {
   "tools": {
+<<<<<<< HEAD
     "dotnet": "11.0.100-preview.7.26357.109"
+=======
+    "dotnet": "11.0.100-preview.6.26325.125"
+>>>>>>> origin/net11.0
   },
   "sdk": {
     "paths": [
@@ -11,7 +15,12 @@
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.7.0",
+<<<<<<< HEAD
     "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26357.109",
     "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26357.109"
+=======
+    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26330.112",
+    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26330.112"
+>>>>>>> origin/net11.0
   }
 }
