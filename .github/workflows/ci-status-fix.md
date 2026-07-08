@@ -674,8 +674,8 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    request from an eligible human reviewer (Hard-Rule 10 author-gate) — the ONE
    case where a person touching the PR means "act on my instruction", not "back
    off". Run **Step 3.5.R**: if it finds an actionable `CHANGES_REQUESTED` review
-   (eligible human author, newer than both the last bot commit and the last bot
-   comment) AND `C.effectiveAttempt < 10`, respond to it (mode
+   (eligible human author, un-answered per `C.respondedTrackCReviewIds`, newer
+   than the last bot commit) AND `C.effectiveAttempt < 10`, respond to it (mode
    **REVIEW-RESPONSE**) and stop this cycle. If Step 3.5.R finds nothing
    actionable, fall through to gate 1.
 
