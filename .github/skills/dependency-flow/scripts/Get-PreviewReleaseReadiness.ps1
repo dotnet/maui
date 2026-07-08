@@ -156,6 +156,26 @@ function Test-MarketplaceAccess {
     return [pscustomobject]@{ Access = $false; Reason = "no-read-access-to-$Repo"; InactiveAccount = $null }
 }
 
+function Remove-JsoncComments {
+    <#
+    .SYNOPSIS
+        Strip // line and /* */ block comments from JSONC text, STRING-AWARE.
+    .DESCRIPTION
+        `/*`, `*/` and `//` all occur legitimately inside JSON string values (path
+        globs, URLs). A naive comment strip is content-blind and can DELETE a real
+        setting that sits between two such values. This alternates a full
+        double-quoted string (honoring \ escapes) against the two comment forms and
+        keeps only the strings — comments are dropped, string contents (including
+        any stray `/*` / `//`) are preserved verbatim. Pure/side-effect-free.
+    #>
+    param([string]$Text)
+    if ([string]::IsNullOrEmpty($Text)) { return $Text }
+    return [regex]::Replace(
+        $Text,
+        '"(?:\\.|[^"\\])*"|/\*[\s\S]*?\*/|//[^\r\n]*',
+        { param($m) if ($m.Value.StartsWith('"')) { $m.Value } else { '' } })
+}
+
 function Test-PluginEnabled {
     param([string]$Plugin)
 
@@ -174,8 +194,8 @@ function Test-PluginEnabled {
     # Match an enabled entry, tolerant of a marketplace suffix being present or
     # absent. Anchored to the start of a line (after optional whitespace) so a
     # commented-out entry such as `// "dotnet-release-tracker@x": true` is ignored.
-    # Block comments (/* ... */) are stripped separately below before matching, so
-    # a block-commented entry is likewise not read as enabled.
+    # A string-aware JSONC comment scrub below also removes block-commented and
+    # inline-commented entries before matching, so neither is read as enabled.
     # Examples that match: "dotnet-release-tracker": true
     #                      "dotnet-release-tracker@dotnet-release": true
     $pattern = '(?m)^\s*"' + [regex]::Escape($Plugin) + '(@[^"]+)?"\s*:\s*true'
@@ -184,12 +204,11 @@ function Test-PluginEnabled {
             try {
                 $text = Get-Content -LiteralPath $path -Raw -ErrorAction Stop
             } catch { continue }
-            # Strip /* ... */ block comments before matching so an entry that has
-            # been block-commented out isn't misread as enabled. The (?m)^-anchor
-            # already excludes // line comments, but a block comment can wrap a
-            # line that still starts with the quoted key. JSON string values never
-            # contain the '/*' sequence, so this cannot eat a real setting.
-            $scrubbed = [regex]::Replace($text, '/\*[\s\S]*?\*/', '')
+            # Strip JSONC comments before matching so a commented-out entry (either
+            # `// ...` or `/* ... */`) isn't misread as enabled. Remove-JsoncComments
+            # is string-aware, so a stray `/*`/`//` inside a real string value can't
+            # cause a genuinely-enabled entry to be deleted.
+            $scrubbed = Remove-JsoncComments $text
             if ($scrubbed -match $pattern) {
                 return [pscustomobject]@{ Enabled = $true; Source = $path }
             }
@@ -197,6 +216,11 @@ function Test-PluginEnabled {
     }
     return [pscustomobject]@{ Enabled = $false; Source = $null }
 }
+
+# Guard: skip the access-gate body (and the trailing `exit 0`) when dot-sourced so
+# tests can load the helper functions without running the gate. Mirrors the guard in
+# Get-PreviewReadiness.ps1.
+if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') { return }
 
 try {
     $access = Test-MarketplaceAccess -Repo $ReleaseRepo

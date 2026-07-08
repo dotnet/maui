@@ -4294,6 +4294,23 @@ $sigDict = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @($fDictFr
 Assert-Eq -Label "flow: IDictionary-shaped PR → fresh"                     -Expected 'fresh'  -Actual $sigDict.Status
 Assert-Eq -Label "flow: IDictionary-shaped PR number"                      -Expected 110      -Actual $sigDict.Number
 
+# --- Format-FlowSignalCell: render a flow-signal result to a table cell ---
+# The 'missing' status must render differently when merged-PR history could NOT be
+# fetched (transient gh failure) — an honest "couldn't check" instead of a false
+# "none seen — sub may be missing" absence claim.
+$cellOpen  = Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='open';  Number=1; Url='u'; AgeDays=$null })
+$cellFresh = Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='fresh'; Number=2; Url='u'; AgeDays=1 })
+$cellStale = Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='stale'; Number=3; Url='u'; AgeDays=40 })
+$cellMiss  = Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='missing'; Number=$null; Url=$null; AgeDays=$null })
+$cellMissHU= Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='missing'; Number=$null; Url=$null; AgeDays=$null }) -HistoryUnavailable
+Assert-Eq -Label "flowcell: open → flowing"                 -Expected $true -Actual ([bool]($cellOpen  -match '🔄' -and $cellOpen  -match 'flowing'))
+Assert-Eq -Label "flowcell: fresh → merged 1 day ago"       -Expected $true -Actual ([bool]($cellFresh -match '✅' -and $cellFresh -match '1 day ago'))
+Assert-Eq -Label "flowcell: stale → stale + 40 days ago"    -Expected $true -Actual ([bool]($cellStale -match '⚠️' -and $cellStale -match '40 days ago'))
+Assert-Eq -Label "flowcell: missing (history ok) → none seen absence claim" -Expected $true -Actual ([bool]($cellMiss -match 'none seen'))
+# The crux: on a merged-history-fetch failure the cell must NOT assert absence.
+Assert-Eq -Label "flowcell: missing + HistoryUnavailable → no false 'none seen'" -Expected $true -Actual ([bool]($cellMissHU -notmatch 'none seen'))
+Assert-Eq -Label "flowcell: missing + HistoryUnavailable → honest 'unavailable'" -Expected $true -Actual ([bool]($cellMissHU -match 'unavailable'))
+
 # --- Get-UpstreamDriftSignal: has the component's same-named branch advanced past our pin? ---
 # Complementary to the Flow signal: a hard git fact (public compare API), not an inference.
 # Tested via the injectable -Fetcher seam (same idiom as Get-NightlyFeedFreshness) so no
@@ -4350,6 +4367,14 @@ $drNoBehind = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchN
 Assert-Eq -Label "drift: compare missing behind_by → unknown (no throw)" -Expected 'unknown' -Actual $drNoBehind.Status
 Assert-Eq -Label "drift: missing-behind reason"                         -Expected 'compare returned no counts' -Actual $drNoBehind.Reason
 
+# (c4) present-but-null counts — a compare payload where ahead_by/behind_by exist
+# but are null must ALSO degrade to unknown (not misclassify as 'current', which
+# would be falsely reassuring). Guards against [int]$null → 0 → current.
+$fNullCounts = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = $null; behind_by = $null })
+$drNull = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNullCounts
+Assert-Eq -Label "drift: null counts → unknown (not falsely 'current')" -Expected 'unknown' -Actual $drNull.Status
+Assert-Eq -Label "drift: null-counts reason"                           -Expected 'compare returned no counts' -Actual $drNull.Reason
+
 # (d) unknown — no pin SHA (soft-fail, never calls the fetcher).
 $drNoSha = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha '' -BranchName $drBranch -Fetcher $fCurrent
 Assert-Eq -Label "drift: empty SHA → unknown"                -Expected 'unknown'  -Actual $drNoSha.Status
@@ -4383,6 +4408,42 @@ $fNoCounts = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscusto
 $drNC = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNoCounts
 Assert-Eq -Label "drift: compare missing ahead_by → unknown"     -Expected 'unknown' -Actual $drNC.Status
 Assert-Eq -Label "drift: no-counts reason"                       -Expected 'compare returned no counts' -Actual $drNC.Reason
+
+# --- Remove-JsoncComments (dependency-flow access gate): STRING-AWARE JSONC comment
+#     strip. Must remove real // and /* */ comments but must NOT delete a genuinely-
+#     enabled plugin entry whose neighbouring string VALUES contain stray /* */ // .
+$gateScript = Join-Path $PSScriptRoot '..' '..' 'dependency-flow' 'scripts' 'Get-PreviewReleaseReadiness.ps1'
+Write-Host "`n[Unit] Remove-JsoncComments (string-aware JSONC scrub)" -ForegroundColor Cyan
+if (-not (Test-Path -LiteralPath $gateScript)) {
+    Assert-Eq -Label "jsonc: access-gate script exists" -Expected $true -Actual $false
+} else {
+    . $gateScript   # dot-source guard skips the gate body + exit; only loads helpers
+    $pluginPat = '(?m)^\s*"dotnet-release-tracker(@[^"]+)?"\s*:\s*true'
+
+    # 1. Regression case: live entry straddled by /* and */ inside string VALUES.
+    $jLive = "{`n  `"before`": `"https://ex.com/api/*`",`n  `"dotnet-release-tracker`": true,`n  `"after`": `"glob*/tail`"`n}"
+    $sLive = Remove-JsoncComments $jLive
+    Assert-Eq -Label "jsonc: straddling /* */ in string values keeps live entry" -Expected $true -Actual ([bool]($sLive -match $pluginPat))
+
+    # 2. Genuinely block-commented entry → stripped → not enabled.
+    $jBlock = "{`n  /* `"dotnet-release-tracker`": true */`n  `"other`": 1`n}"
+    Assert-Eq -Label "jsonc: block-commented entry stripped → not enabled" -Expected $false -Actual ([bool]((Remove-JsoncComments $jBlock) -match $pluginPat))
+
+    # 3. // line-commented entry → stripped → not enabled.
+    $jLine = "{`n  // `"dotnet-release-tracker`": true`n  `"other`": 1`n}"
+    Assert-Eq -Label "jsonc: // line-commented entry stripped → not enabled" -Expected $false -Actual ([bool]((Remove-JsoncComments $jLine) -match $pluginPat))
+
+    # 4. Real entry with a trailing inline // comment → still enabled.
+    $jInline = "{`n  `"dotnet-release-tracker`": true // opted in`n}"
+    Assert-Eq -Label "jsonc: inline // after real entry keeps it enabled" -Expected $true -Actual ([bool]((Remove-JsoncComments $jInline) -match $pluginPat))
+
+    # 5. // inside a URL string value must NOT be treated as a comment.
+    $jUrl = "{`n  `"docs`": `"https://example.com/a`",`n  `"dotnet-release-tracker`": true`n}"
+    Assert-Eq -Label "jsonc: // inside a URL string value preserved (entry enabled)" -Expected $true -Actual ([bool]((Remove-JsoncComments $jUrl) -match $pluginPat))
+
+    # 6. Empty/null input is returned as-is (no throw).
+    Assert-Eq -Label "jsonc: empty input returned unchanged" -Expected '' -Actual (Remove-JsoncComments '')
+}
 
 # --- Get-BranchComponentPins: git-pin fallback for the Action-owned best-effort
 #     component-build section. Parses eng/Version.Details.xml (public git, always

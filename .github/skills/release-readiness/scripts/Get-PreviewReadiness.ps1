@@ -1166,6 +1166,38 @@ function Get-ComponentFlowSignal {
     }
 }
 
+function Format-FlowSignalCell {
+    <#
+    .SYNOPSIS
+        Render the Flow-signal table cell for one component from a
+        Get-ComponentFlowSignal result. Pure/string-only so it is unit-testable.
+    .DESCRIPTION
+        The 'missing' status normally renders as "❌ none seen — sub may be
+        missing" (we looked at the public PR trail and found nothing → the sub may
+        never have been wired). But when the merged-PR history could NOT be fetched
+        (transient gh failure caught upstream), 'missing' is NOT a trustworthy
+        "none seen" — we simply couldn't look. In that case -HistoryUnavailable
+        renders an honest "couldn't check" cell instead of a false absence claim.
+    #>
+    param(
+        [Parameter(Mandatory)] $Flow,
+        [switch]$HistoryUnavailable
+    )
+    $ageTxt = ''
+    if ($null -ne $Flow.AgeDays) {
+        $ageTxt = if ($Flow.AgeDays -le 0) { 'today' } elseif ($Flow.AgeDays -eq 1) { '1 day ago' } else { "$($Flow.AgeDays) days ago" }
+    }
+    switch ($Flow.Status) {
+        'open'  { "🔄 [#$($Flow.Number)]($($Flow.Url)) open — flowing" }
+        'fresh' { "✅ [#$($Flow.Number)]($($Flow.Url)) merged $ageTxt" }
+        'stale' { "⚠️ stale — newest [#$($Flow.Number)]($($Flow.Url)) merged $ageTxt" }
+        default {
+            if ($HistoryUnavailable) { "— _merged-PR history unavailable (transient); re-run to confirm sub health_" }
+            else { "❌ none seen — sub may be missing" }
+        }
+    }
+}
+
 function Get-UpstreamDriftSignal {
     <#
     .SYNOPSIS
@@ -1265,7 +1297,9 @@ function Get-UpstreamDriftSignal {
         return $result
     }
 
-    if ($null -eq $cmp -or -not $cmp.PSObject.Properties['ahead_by'] -or -not $cmp.PSObject.Properties['behind_by']) {
+    if ($null -eq $cmp -or
+        -not $cmp.PSObject.Properties['ahead_by'] -or $null -eq $cmp.ahead_by -or
+        -not $cmp.PSObject.Properties['behind_by'] -or $null -eq $cmp.behind_by) {
         $result.Reason = 'compare returned no counts'
         return $result
     }
@@ -2176,9 +2210,11 @@ if ($componentPins) {
     # signal to open-PR-only inference, NEVER abort the whole readiness report
     # (every other data section in this driver degrades rather than throws).
     $mergedPRsForFlow = @()
+    $mergedHistoryUnavailable = $false
     try {
         $mergedPRsForFlow = @(Get-MergedPullRequests -BaseBranch $SurveyRef)
     } catch {
+        $mergedHistoryUnavailable = $true
         Write-Warning "Flow-signal merged-PR fetch failed (non-fatal): $($_.Exception.Message)" -WarningAction Continue
     }
     $allPRsForFlow   = @($targetPRs) + @($mergedPRsForFlow)
@@ -2205,16 +2241,7 @@ if ($componentPins) {
     )
     foreach ($r in $pinRows) {
         $flow = Get-ComponentFlowSignal -Repo $r.Repo -DepFlowPRs $depFlowPRs -Now $flowNow -StaleDays $flowStaleDays
-        $ageTxt = ''
-        if ($null -ne $flow.AgeDays) {
-            $ageTxt = if ($flow.AgeDays -le 0) { 'today' } elseif ($flow.AgeDays -eq 1) { '1 day ago' } else { "$($flow.AgeDays) days ago" }
-        }
-        $flowCell = switch ($flow.Status) {
-            'open'  { "🔄 [#$($flow.Number)]($($flow.Url)) open — flowing" }
-            'fresh' { "✅ [#$($flow.Number)]($($flow.Url)) merged $ageTxt" }
-            'stale' { "⚠️ stale — newest [#$($flow.Number)]($($flow.Url)) merged $ageTxt" }
-            default { "❌ none seen — sub may be missing" }
-        }
+        $flowCell = Format-FlowSignalCell -Flow $flow -HistoryUnavailable:$mergedHistoryUnavailable
         $pin = $r.Pin
         if (-not $pin) {
             [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — | $flowCell | — |")
