@@ -28,7 +28,6 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 			var skipConditionalAccess = skipNextConditionalAccess;
 			skipNextConditionalAccess = false;
 			bool isLastPart = i == parts.Count - 1;
-			var nextPart = isLastPart ? null : parts[i + 1];
 
 			if (part is Cast { TargetType: var targetType })
 			{
@@ -53,7 +52,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 				// into a local first. If the next part is itself a conditional access, it introduces its
 				// own local, so no extra capture is needed. Fields are variables (lvalues) and never need this.
 				if (!isLastPart
-					&& nextPart is not ConditionalAccess
+					&& parts[i + 1] is not ConditionalAccess
 					&& innerPart is MemberAccess { IsValueType: true, Kind: not AccessorKind.Field })
 				{
 					AddPatternMatchingExpression("{}");
@@ -77,7 +76,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
 		return new Setter(
 			patternMatchingExpressions.ToArray(),
-			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, assignedValueExpression));
+			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, parts.Count > 0 ? parts[parts.Count - 1] : null, assignedValueExpression));
 	}
 
 	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>
