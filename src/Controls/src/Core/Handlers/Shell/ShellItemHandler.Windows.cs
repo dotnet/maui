@@ -204,8 +204,28 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (currentItem?.Title != shellContent.Title && currentItem != shellContent.Parent)
 				{
 					(parentShell.CurrentItem as IShellItemController)?.ProposeSection(shellContent);
+					parentShell.CurrentItem = shellContent;
 				}
-				parentShell.CurrentItem = shellContent;
+				else if (shellContent.Parent is ShellSection existingSection && existingSection.CurrentItem != shellContent)
+				{
+					// Fire OnNavigatingFrom before switching CurrentItem, so it correctly captures
+					// the outgoing page. SetValueFromRenderer marks this as handler-driven, so
+					// ShellSection.OnCurrentItemChanged skips its own (mistimed) navigation call.
+					parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
+						ShellNavigationSource.ShellContentChanged,
+						parentShell.CurrentItem,
+						existingSection,
+						shellContent,
+						existingSection.Stack,
+						canCancel: false,
+						isAnimated: true);
+
+					existingSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);
+				}
+				else
+				{
+					parentShell.CurrentItem = shellContent;
+				}
 			}
 		}
 
