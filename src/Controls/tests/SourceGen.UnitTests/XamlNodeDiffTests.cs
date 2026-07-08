@@ -1718,7 +1718,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		Assert.Single(diff.NodeChanges);
 		var prop = diff.NodeChanges[0].PropertyChanges[0];
-		Assert.Equal("_Content", prop.PropertyName.LocalName);
+		Assert.Equal("__MAUI_Content__", prop.PropertyName.LocalName);
 		Assert.Equal("World", prop.NewValue);
 	}
 
@@ -1758,7 +1758,7 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		var debug = diff.ToDebugString();
-		Assert.Contains("_Content = \"World\"", debug, StringComparison.Ordinal);
+		Assert.Contains("__MAUI_Content__ = \"World\"", debug, StringComparison.Ordinal);
 	}
 
 	[Fact]

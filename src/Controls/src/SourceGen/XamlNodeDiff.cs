@@ -507,7 +507,7 @@ static class XamlNodeDiff
 				// Text content changed — record as a content diff on the parent node
 				if (!StringEquals(oldVal.Value?.ToString(), newVal.Value?.ToString()))
 				{
-					var contentName = new XmlName("", "_Content");
+					var contentName = new XmlName("", "__MAUI_Content__");
 					var contentDiff = new PropertyDiff(contentName, PropertyDiffKind.Set, newVal.Value?.ToString());
 					nodeChanges.Add(new NodeDiff(parentNodeId, new[] { contentDiff }, newNode.XmlType));
 				}

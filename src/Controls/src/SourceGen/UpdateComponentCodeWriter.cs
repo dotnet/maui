@@ -808,9 +808,10 @@ static class UpdateComponentCodeWriter
 				if (result != null && result != "default" && result != string.Empty)
 					return result;
 			}
-			catch
+			catch (Exception)
 			{
-				// Converter threw — fall through
+				// Converter threw — fall through. A type converter running at generator time must
+				// never crash the build; degrade to the runtime fallback instead. Broad by design.
 			}
 
 			// Fallback: TypeDescriptor
@@ -841,8 +842,8 @@ static class UpdateComponentCodeWriter
 	{
 		var propName = propDiff.PropertyName.LocalName;
 
-		// "_Content" is synthetic — resolve via the root type's [ContentProperty]. See note in EmitPropertyChange.
-		if (propName == "_Content")
+		// "__MAUI_Content__" is synthetic — resolve via the root type's [ContentProperty]. See note in EmitPropertyChange.
+		if (propName == "__MAUI_Content__")
 		{
 			var contentPropName = rootType.GetContentPropertyName(context: null);
 			if (string.IsNullOrEmpty(contentPropName))
@@ -924,11 +925,11 @@ static class UpdateComponentCodeWriter
 	{
 		var propName = propDiff.PropertyName.LocalName;
 
-		// "_Content" is a synthetic property name produced by the diff when the parent's
+		// "__MAUI_Content__" is a synthetic property name produced by the diff when the parent's
 		// direct text content (e.g. <Label>Hello</Label>) changes. Resolve it to the type's
 		// [ContentProperty] target before any other handling — otherwise we'd emit an assignment
-		// to a non-existent member.
-		if (propName == "_Content" && nodeType != null)
+		// to a non-existent member. The name is deliberately unlikely to collide with a real property.
+		if (propName == "__MAUI_Content__" && nodeType != null)
 		{
 			var contentPropName = nodeType.GetContentPropertyName(context: null);
 			if (string.IsNullOrEmpty(contentPropName))
@@ -1190,9 +1191,10 @@ static class UpdateComponentCodeWriter
 			if (result != null && result != "default" && result != string.Empty)
 				return result;
 		}
-		catch
+		catch (Exception)
 		{
-			// fall through
+			// fall through. A type converter running at generator time must never crash the
+			// build; degrade to the runtime fallback instead. Broad by design.
 		}
 
 		// Last resort: TypeDescriptor
@@ -1325,8 +1327,10 @@ static class UpdateComponentCodeWriter
 			var parser = new ExpandMarkupsVisitor.MarkupExpansionParser();
 			return parser.Parse(match!, ref remaining, serviceProvider);
 		}
-		catch
+		catch (Exception)
 		{
+			// Markup parse failed at generator time — return null so the caller degrades to the
+			// runtime fallback rather than crashing the build. Broad by design.
 			return null;
 		}
 	}
@@ -1412,9 +1416,10 @@ static class UpdateComponentCodeWriter
 			// Step 4: SetPropertyValue — emits the assignment to the parent
 			SetPropertyHelpers.SetPropertyValue(captureWriter, ctx.Variables[syntheticParent], propertyXmlName, elementNode, ctx);
 		}
-		catch
+		catch (Exception)
 		{
-			// If the IC pipeline fails (e.g., missing type info), fall through
+			// If the IC pipeline fails (e.g., missing type info), fall through. Running the full
+			// inflation pipeline at generator time must never crash the build. Broad by design.
 			codeWriter.WriteLine($"// Markup extension '{elementNode.XmlType.Name}' failed IC pipeline — skipped");
 			return false;
 		}
@@ -1585,9 +1590,10 @@ static class UpdateComponentCodeWriter
 			if (result != null && result != "default" && result != string.Empty)
 				return result;
 		}
-		catch
+		catch (Exception)
 		{
-			// Converter threw — fall through to runtime fallback
+			// Converter threw — fall through to runtime fallback. A type converter running at
+			// generator time must never crash the build. Broad by design.
 		}
 
 		// Last resort: runtime TypeDescriptor (handles types not covered by SG converters)
