@@ -41,12 +41,19 @@ on:
   permissions: {}
 
 # Runs on dotnet/maui only, and never on a scheduled/background run inside a fork
-# that inherited this file. workflow_dispatch stays as the explicit maintainer
-# escape hatch. (Wrapped in ${{ }} so the leading `!` is not parsed as a YAML tag.)
+# that inherited this file. The repository check already excludes every fork (a
+# fork's `github.repository` is never `dotnet/maui`), so no separate fork/dispatch
+# escape hatch is needed. (Wrapped in ${{ }} so the leading `!` is not parsed as a
+# YAML tag.)
 if: |
-  ${{ github.repository == 'dotnet/maui' && (github.event_name == 'workflow_dispatch' || !github.event.repository.fork) }}
+  ${{ github.repository == 'dotnet/maui' && !github.event.repository.fork }}
 
-permissions: read-all
+# Least privilege for the agent job: read the repo (git) and its own dedupe issues
+# (gh issue list). Writes happen only via safe-outputs (issues: write), which gh-aw
+# grants to the separate safe_outputs job.
+permissions:
+  contents: read
+  issues: read
 
 # Lets maintainers find every issue this workflow files.
 tracker-id: aw-version-update
@@ -54,7 +61,6 @@ tracker-id: aw-version-update
 network:
   allowed:
     - defaults
-    - go
     - github
 
 checkout:
@@ -134,10 +140,10 @@ Run these steps in order:
 4. **Capture state for the issue body (only used if changes are detected):**
    - `NEW_VERSION` ← `gh aw --version`
    - `DIFF_STAT` ← `git diff --stat`
-   - `CHANGED_FILES` ← `git diff --name-only`
+   - `CHANGED_FILES` ← `git status --porcelain` (captures untracked generated files too, so a brand-new lock/workflow file produced by the upgrade is not missed)
 5. **Reset working tree.** Run `git reset --hard && git clean -fd` so no local changes leak out of this detection run.
 6. **Dedupe check.** Search for an already-open follow-up issue:
-   - `gh issue list --search "[Auto Update] Agentic workflows in:title" --state open`
+   - `gh issue list --search "[Auto Update] Agentic workflows in:title" --state open --author "app/github-actions"` — scoped to this workflow's own bot-created issues (safe-outputs creates them as `app/github-actions`) so an unrelated user-opened issue with a colliding title cannot suppress detection, and the agent only reads trusted bot titles.
    - If one exists, emit `noop` and stop — a previous run's upgrade issue is still open and unresolved.
 7. **Decide and emit exactly one safe output:**
    - `CHANGED_FILES` is empty → emit a single `noop`. **This is the normal/expected outcome on most runs — do not treat it as a failure and do not create an issue.**
@@ -205,7 +211,7 @@ so this cannot be automated without a Copilot-licensed / `workflow`-scoped token
   ```
   <DIFF_STAT>
   ```
-- `git diff --name-only`:
+- `git status --porcelain`:
   ```
   <CHANGED_FILES>
   ```
@@ -213,7 +219,7 @@ so this cannot be automated without a Copilot-licensed / `workflow`-scoped token
 
 ## Rules (for this detection workflow)
 
-- Only commands you may run: `gh extension install github/gh-aw`, `gh extension upgrade gh-aw`, `gh aw --version`, `gh aw upgrade`, `gh aw compile`, `git diff`, `git reset`, `git clean`, `gh issue list`.
+- Only commands you may run: `gh extension install github/gh-aw`, `gh extension upgrade gh-aw`, `gh aw --version`, `gh aw upgrade`, `gh aw compile`, `git status`, `git diff`, `git reset`, `git clean`, `gh issue list`.
 - Never run `go`, `npm`, or any package manager / build tool.
 - Never commit, push, comment, open PRs, or create agent sessions. Your only safe outputs are `noop` and `create-issue`.
 - Emit exactly one safe output per run.
