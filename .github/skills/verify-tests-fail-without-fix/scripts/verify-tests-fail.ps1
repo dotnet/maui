@@ -1406,12 +1406,27 @@ function Write-MarkdownReport {
             if ($woStates[$i] -eq "FAIL" -and $wStates[$i] -eq "PASS") { $hasFixedTest = $true }
         }
 
-        if ($wBuildError.Count -gt 0) {
+        if ($woBuildError.Count -gt 0) {
+            # Baseline (without-fix / merge-base) does not build. The gate cannot establish a
+            # working "before" state, so it can NEVER attribute the failure to the PR's fix —
+            # even when the with-fix build ALSO errors (which is the common case: the SAME
+            # pre-existing/toolchain failure hits both states, e.g. an ILLink IL1012 trimmer
+            # crash). This branch MUST be evaluated before the with-fix branch so a
+            # both-states build error is reported as a pre-existing/inconclusive failure, not
+            # mislabeled "Fix does not compile" (which blames the PR for a baseline breakage).
+            $woExcerpt = ($woBuildError | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
+            $woExcerptLine = if ($woExcerpt) { "`n> ``$woExcerpt``" } else { "" }
+            if ($wBuildError.Count -gt 0) {
+                $failureClassification = "🩺 **Pre-existing build failure (not the fix)** — both the without-fix baseline AND the with-fix build fail with a build error, so the PR's fix is NOT the cause. This is a broken ``main``/merge-base or a toolchain/environment failure (e.g. an ILLink IL1012 trimmer crash). The gate cannot verify anything; investigate the build environment rather than the PR.$woExcerptLine"
+            } else {
+                $failureClassification = "🩺 **Base branch does not compile** — the without-fix build failed. The gate's ""does the test fail without the fix"" check is unreliable here; this usually means ``main`` is broken or a merge-base file went missing. Investigate before trusting this gate.$woExcerptLine"
+            }
+        } elseif ($wBuildError.Count -gt 0) {
+            # Reached only when the baseline builds cleanly but the PR's fix does NOT — a
+            # genuine, PR-caused compile failure (FAILED, not inconclusive).
             $excerpt = ($wBuildError | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
             $excerptLine = if ($excerpt) { "`n> ``$excerpt``" } else { "" }
-            $failureClassification = "🩺 **Fix does not compile** — applying the PR's fix produces a build error before tests can run. The earlier-than-test failure is the root cause; the per-test ❌ FAIL marks are downstream effects, not real test failures.$excerptLine"
-        } elseif ($woBuildError.Count -gt 0) {
-            $failureClassification = "🩺 **Base branch does not compile** — the without-fix build failed. The gate's ""does the test fail without the fix"" check is unreliable here; this usually means ``main`` is broken or a merge-base file went missing. Investigate before trusting this gate."
+            $failureClassification = "🩺 **Fix does not compile** — applying the PR's fix produces a build error before tests can run (the baseline builds fine). The earlier-than-test failure is the root cause; the per-test ❌ FAIL marks are downstream effects, not real test failures.$excerptLine"
         } elseif ($wFilterMiss.Count -gt 0 -or $woFilterMiss.Count -gt 0) {
             $missing = ($wFilterMiss + $woFilterMiss | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
             $hint = if ($missing) { " — filter ``$missing`` matched 0 tests" } else { "" }
