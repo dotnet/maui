@@ -531,5 +531,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(380, flexFrame.Width);
 			Assert.Equal(flexFrame.Width, view.MeasuredWidthConstraint);
 		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/27520, exercising the
+		// real production measure path: a plain View with a (mocked) handler goes through
+		// VisualElement.MeasureOverride -> LayoutExtensions.ComputeDesiredSize, which
+		// subtracts the margin from the constraint before the handler measures — and
+		// ComputeFrame subtracts the margin from the arrange bounds symmetrically. The
+		// width the platform (handler) measures at must equal the width of the frame the
+		// view ends up arranged into, or wrapping platform content gets cut off.
+		[Theory]
+		[InlineData(FlexDirection.Column)] // width is the cross axis (stretch path)
+		[InlineData(FlexDirection.Row)] // width is the main axis (margin/shrink path)
+		public void HandlerBackedItemWithMarginIsMeasuredAtArrangedWidth_Issue27520(FlexDirection direction)
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = direction };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+
+			double handlerMeasuredWidth = double.NaN;
+			var handler = Substitute.For<IViewHandler>();
+			handler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>())
+				.Returns(args =>
+				{
+					// Greedy, like wrapping text: consume whatever width is offered
+					handlerMeasuredWidth = args.ArgAt<double>(0);
+					return new Size(handlerMeasuredWidth, 50);
+				});
+
+			var view = new View { Margin = new Thickness(10), Handler = handler };
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(400, 600);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 400, 600));
+
+			// The width the platform control is measured at must equal the width of the
+			// content frame it is arranged into. Both subtractions happen on both paths:
+			// measure = 400 - flex item margin (20) - ComputeDesiredSize margin (20) = 360;
+			// arrange = engine frame (380) - ComputeFrame margin (20) = 360.
+			Assert.Equal(view.Frame.Width, handlerMeasuredWidth);
+			Assert.Equal(360, handlerMeasuredWidth);
+		}
 	}
 }

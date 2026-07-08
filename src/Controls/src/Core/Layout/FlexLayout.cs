@@ -535,6 +535,11 @@ namespace Microsoft.Maui.Controls
 						// text) wrap against a width it will never receive at arrange time, and
 						// the overflowing line ends up cut off. Tighten each axis by the item's
 						// margins first...
+						// (Note: IView.Measure subtracts the margin from this constraint once more
+						// before the platform measures. That mirrors the arrange path, where the
+						// engine frame is already reduced by the margin and ComputeFrame subtracts
+						// it again from the bounds. What matters for wrapping content is that the
+						// two paths agree on the final size.)
 						if (!double.IsPositiveInfinity(sizeConstraints.Width))
 						{
 							sizeConstraints.Width = Math.Max(0, sizeConstraints.Width - (it.MarginLeft + it.MarginRight));
