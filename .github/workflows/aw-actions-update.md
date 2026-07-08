@@ -37,6 +37,9 @@ permissions:
   issues: read
   pull-requests: read
 
+# Lets maintainers find every asset this workflow creates (PRs, comments).
+tracker-id: aw-actions-update
+
 engine:
   id: copilot
   env:
@@ -68,7 +71,9 @@ network:
 
 tools:
   github:
-    toolsets: [default, pull_requests, repos]
+    # Dedup uses bash `gh pr list` and the PR is a safe-output, so the agent
+    # needs only the default toolset (matches the upstream reference workflow).
+    toolsets: [default]
   bash: ["gh", "git", "grep", "sed", "awk", "sort", "uniq", "jq", "cat", "echo", "date", "test", "true", "false", "bash", "sh"]
 
 safe-outputs:
@@ -113,10 +118,13 @@ creating another PR. Mention the existing PR in the run output only.
 ## Step 1 — Ensure the gh-aw CLI is available
 
 The `gh aw` command comes from the `github/gh-aw` gh extension, which may not be preinstalled on
-the runner. Install it if `gh aw --version` does not already succeed:
+the runner. Always land on the **latest** release so pins are resolved by current gh-aw: install it
+if missing, otherwise upgrade it in place.
 
 ```bash
-if ! gh aw --version >/dev/null 2>&1; then
+if gh aw --version >/dev/null 2>&1; then
+  gh extension upgrade gh-aw || true   # already installed — force latest
+else
   gh extension install github/gh-aw || { echo "Failed to install gh-aw; not creating a PR."; exit 0; }
 fi
 gh aw --version

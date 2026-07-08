@@ -9,8 +9,9 @@ description: |
   Rationale: `gh aw compile` writes to `.github/workflows/*.lock.yml`, but the
   default `GITHUB_TOKEN` cannot push under `.github/workflows/` (GitHub platform
   rule). This workflow therefore delegates the write work to a Copilot Coding
-  Agent session, which runs under its own identity (`COPILOT_GITHUB_TOKEN`) and
-  can write workflow files.
+  Agent session, which runs under its own identity (a token gh-aw resolves from
+  `GH_AW_AGENT_TOKEN` → `GH_AW_GITHUB_TOKEN` → `GITHUB_TOKEN`) and can write
+  workflow files.
 
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
@@ -43,6 +44,9 @@ if: |
   ${{ github.repository == 'dotnet/maui' && (github.event_name == 'workflow_dispatch' || !github.event.repository.fork) }}
 
 permissions: read-all
+
+# Lets maintainers find every asset this workflow triggers (agent sessions).
+tracker-id: aw-version-update
 
 network:
   allowed:
@@ -121,13 +125,13 @@ You detect whether the gh-aw infrastructure has pending updates and, if so, dele
   - `.github/workflows/shared/**` — shared gh-aw imports, including the PAT-pool import
   - `.github/aw/**` — gh-aw project metadata, including `actions-lock.json`
   - `.github/agents/**` — MAUI agent definitions
-- The `create-agent-session` safe output invokes `gh agent-task create` using `COPILOT_GITHUB_TOKEN`, which spawns a Copilot Coding Agent run that has the permissions required to write `.github/workflows/`.
+- The `create-agent-session` safe output invokes `gh agent-task create` using the session token gh-aw resolves from `secrets.GH_AW_AGENT_TOKEN` → `GH_AW_GITHUB_TOKEN` → `GITHUB_TOKEN` — **not** `COPILOT_GITHUB_TOKEN` (that is only the engine's inference token). That spawns a Copilot Coding Agent run with the permissions required to write `.github/workflows/`. A maintainer must configure `GH_AW_AGENT_TOKEN` (or `GH_AW_GITHUB_TOKEN`) with that scope before the non-staged delegation can create a session.
 
 ## Task
 
 Run these steps in order:
 
-1. **Install `gh-aw`.** Run `gh extension install github/gh-aw` (skip if `gh aw --version` already succeeds). If install fails, emit `noop` and stop.
+1. **Install/upgrade `gh-aw` to the latest release.** This detector must run the newest gh-aw — otherwise a stale pre-installed extension makes `gh aw upgrade && gh aw compile` a no-op and real upgrades are missed. If `gh aw --version` succeeds, run `gh extension upgrade gh-aw` to force the latest; otherwise run `gh extension install github/gh-aw`. If both fail, emit `noop` and stop.
 2. **Upgrade.** Run `gh aw upgrade`. If it fails, emit `noop` and stop — do **not** try to fix the failure.
 3. **Compile.** Run `gh aw compile`. If it reports errors, emit `noop` and stop.
 4. **Capture state for the delegation payload (only used if changes are detected):**
@@ -208,7 +212,7 @@ Please apply that diff and open a PR.
 
 ## Rules (for this detection workflow)
 
-- Only commands you may run: `gh extension install github/gh-aw`, `gh aw --version`, `gh aw upgrade`, `gh aw compile`, `git diff`, `git reset`, `git clean`, `gh pr list`, `gh issue list`.
+- Only commands you may run: `gh extension install github/gh-aw`, `gh extension upgrade gh-aw`, `gh aw --version`, `gh aw upgrade`, `gh aw compile`, `git diff`, `git reset`, `git clean`, `gh pr list`, `gh issue list`.
 - Never run `go`, `npm`, or any package manager / build tool.
 - Never commit, push, comment, create issues directly, or open PRs. Your only safe outputs are `noop` and `create-agent-session`.
 - Emit exactly one safe output per run.
