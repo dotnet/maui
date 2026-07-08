@@ -79,7 +79,7 @@ tools:
 safe-outputs:
   create-pull-request:
     title-prefix: "[actions] "
-    labels: [dependencies, automation]
+    labels: [dependencies, agentic-workflows]
     draft: false
     # The only write target, `.github/aw/actions-lock.json`, lives under the
     # protected `.github/` dot-folder. `allowed` intentionally permits writing it;
