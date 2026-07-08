@@ -33,9 +33,17 @@ $BotLogins = @(
     # a maintainer who updates the branch via the web UI SHOULD trip the hand-off boundary
     # (Test-AnyHumanCommitActor inspects the committer, which is web-flow on those merges);
     # (2) attempt accounting — botCommitCount is author-based, so a web-flow-*authored*
-    # commit must NOT inflate the count toward the 10-cap. The workflow's own pushes are
-    # authored AND committed by github-actions[bot], never web-flow, so treating web-flow
-    # as human never masks a genuine bot attempt.
+    # commit must NOT inflate the count toward the 10-cap.
+    #
+    # CAVEAT (see Test-AnyHumanCommitActor + $LoopBotCommitAuthors): this workflow's OWN
+    # create_pull_request commit is authored by github-actions[bot] but COMMITTED by
+    # web-flow, because gh-aw builds the PR's initial commit through the GitHub API and
+    # GitHub stamps API-created commits with a web-flow committer. So a web-flow committer
+    # does NOT by itself prove human engagement — Test-AnyHumanCommitActor only lets a
+    # web-flow (or any human) committer trip the hand-off when the commit AUTHOR is not one
+    # of this workflow's own bot identities. push-to-pull-request-branch commits, by
+    # contrast, are authored AND committed by github-actions[bot] (a real git push), so the
+    # author check alone already excludes them.
     'app/github-actions',
     'dotnet-maestro[bot]',
     'azure-pipelines[bot]',
@@ -52,6 +60,19 @@ $BotLogins = @(
     'mauibot',
     'maui-bot',
     'maui-bot[bot]'
+)
+
+# Commit-author logins that identify THIS workflow's own pushes. A commit authored by one
+# of these is either the create_pull_request commit or a push-to-pull-request-branch commit
+# — never a human action — even when GitHub stamps its COMMITTER as 'web-flow' (which it
+# does for the API-created initial PR commit). Test-AnyHumanCommitActor uses this list to
+# stop that self-authored commit's web-flow committer from being read as human engagement,
+# which would otherwise make every freshly opened [ci-fix] PR look 'human owned' from its
+# first commit and be skipped by the watch loop forever. Compared lowercased.
+$LoopBotCommitAuthors = @(
+    'github-actions[bot]',
+    'github-actions',
+    'app/github-actions'
 )
 # NOTE: 'action_required' is deliberately EXCLUDED. That conclusion means a human
 # must act (an Actions approval gate, or an integration awaiting a manual run) —
@@ -205,7 +226,20 @@ function Test-AnyHumanCommitActor {
         $authorLogin = if ($commit.author -and $commit.author.login) { [string]$commit.author.login } else { $null }
         $committerLogin = if ($commit.committer -and $commit.committer.login) { [string]$commit.committer.login } else { $null }
 
-        if ((Test-IsHumanLogin -Login $authorLogin) -or (Test-IsHumanLogin -Login $committerLogin)) {
+        # A human AUTHOR always counts (a maintainer's direct commit; a web-flow-authored
+        # 'Update branch' merge lands here too because web-flow is treated as human).
+        if (Test-IsHumanLogin -Login $authorLogin) {
+            return $true
+        }
+
+        # A human COMMITTER (e.g. 'web-flow' on a web-UI 'Update branch' merge) counts as
+        # human engagement ONLY when the author is not one of THIS workflow's own bot
+        # identities. gh-aw's create_pull_request builds the PR's initial commit through the
+        # GitHub API, which stamps author=github-actions[bot] but committer=web-flow; without
+        # this carve-out that self-authored commit reads as 'human engaged' and every fresh
+        # [ci-fix] PR is skipped by the watch loop from its very first commit.
+        $authorKey = if ($null -ne $authorLogin) { $authorLogin.Trim().ToLowerInvariant() } else { '' }
+        if ((Test-IsHumanLogin -Login $committerLogin) -and ($LoopBotCommitAuthors -notcontains $authorKey)) {
             return $true
         }
     }
