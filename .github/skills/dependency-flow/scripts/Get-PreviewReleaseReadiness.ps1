@@ -219,8 +219,13 @@ function Test-PluginEnabled {
 
 # Guard: skip the access-gate body (and the trailing `exit 0`) when dot-sourced so
 # tests can load the helper functions without running the gate. Mirrors the guard in
-# Get-PreviewReadiness.ps1.
-if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') { return }
+# Get-PreviewReadiness.ps1. `InvocationName -eq '.'` is the canonical dot-source
+# discriminator and holds for every dot-source form (literal, $var, parenthesized,
+# absolute path); we deliberately do NOT also match `$MyInvocation.Line` against a
+# leading dot, because that whole-command-line text can begin with an earlier
+# dot-source statement and would then wrongly skip a later `&`/`-File` invocation
+# on the same command line.
+if ($MyInvocation.InvocationName -eq '.') { return }
 
 try {
     $access = Test-MarketplaceAccess -Repo $ReleaseRepo

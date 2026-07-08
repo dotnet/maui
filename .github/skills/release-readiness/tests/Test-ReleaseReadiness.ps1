@@ -4445,6 +4445,27 @@ if (-not (Test-Path -LiteralPath $gateScript)) {
     Assert-Eq -Label "jsonc: empty input returned unchanged" -Expected '' -Actual (Remove-JsoncComments '')
 }
 
+# --- Access-gate dot-source guard: must skip the gate body (no RELEASE_TRACKER_STATUS,
+#     no exit) ONLY when dot-sourced, and must NOT wrongly skip a real `&` invocation
+#     that follows a dot-source on the same command line. Regression guard for the
+#     fragile `$MyInvocation.Line -match '^\.\s'` fallback (would suppress the second
+#     call because the whole command-line text starts with the earlier dot-source).
+Write-Host "`n[Unit] Access-gate dot-source guard (line-match false-skip regression)" -ForegroundColor Cyan
+if (-not (Test-Path -LiteralPath $gateScript)) {
+    Assert-Eq -Label "guard: access-gate script exists" -Expected $true -Actual $false
+} else {
+    # Pure dot-source: the gate body must NOT run (no status line emitted).
+    $dotOnly = & pwsh -NoProfile -Command ". '$gateScript'; 'DOT-DONE'" 2>$null
+    Assert-Eq -Label "guard: pure dot-source does not run the gate (no status line)" `
+        -Expected $false -Actual ([bool](($dotOnly -join "`n") -match 'RELEASE_TRACKER_STATUS='))
+
+    # Dot-source THEN a real `&` invocation on the SAME command line: the `&` call
+    # MUST run the gate and emit a status line. The old fallback wrongly skipped it.
+    $dotThenCall = & pwsh -NoProfile -Command ". '$gateScript'; & '$gateScript'" 2>$null
+    Assert-Eq -Label "guard: `& call after dot-source still runs the gate (emits status)" `
+        -Expected $true -Actual ([bool](($dotThenCall -join "`n") -match 'RELEASE_TRACKER_STATUS='))
+}
+
 # --- Get-BranchComponentPins: git-pin fallback for the Action-owned best-effort
 #     component-build section. Parses eng/Version.Details.xml (public git, always
 #     readable in CI) to report the dotnet/dotnet, dotnet/android and dotnet/macios

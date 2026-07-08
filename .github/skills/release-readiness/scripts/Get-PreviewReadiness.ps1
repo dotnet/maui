@@ -1640,7 +1640,10 @@ function Add-CiScanTable {
 # Guard: skip the main driver when dot-sourced so tests can load the helper
 # functions (e.g. Test-IsP0Pr) without invoking the full report flow, which
 # requires git + gh + network. Mirrors Find-ReleaseReadinessTrackers.ps1.
-if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') { return }
+# `InvocationName -eq '.'` alone reliably detects dot-sourcing; matching
+# `$MyInvocation.Line` against a leading dot is avoided because that text can be
+# the whole command line and would wrongly skip a later `&`/`-File` call.
+if ($MyInvocation.InvocationName -eq '.') { return }
 
 $checks = @()
 
