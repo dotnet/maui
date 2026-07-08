@@ -28,6 +28,7 @@ public class SliderHandler2 : ViewHandler<ISlider, Slider>
         return new Slider(MauiMaterialContextThemeWrapper.Create(Context))
         {
             DuplicateParentStateEnabled = false,
+            LabelBehavior = LabelFormatter.LabelGone,
         };
     }
 
