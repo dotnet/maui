@@ -338,10 +338,8 @@ namespace Microsoft.Maui.Controls
 				UnsubscribeFromItemsSourceCollection();
 			}
 
-			if (Handler is not null)
-			{
-				SubscribeToItemsSourceCollection(newValue as INotifyCollectionChanged);
-			}
+			// Always subscribe — OnHandlerChanged will unsubscribe when Handler is detached
+			SubscribeToItemsSourceCollection(newValue as INotifyCollectionChanged);
 
 			if (newValue != null)
 			{
