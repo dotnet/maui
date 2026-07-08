@@ -38,7 +38,7 @@ sealed class LRUBrushCache : ICache<Color, ImmutableBrush>
 			throw new ArgumentOutOfRangeException(nameof(capacity));
 		}
 		
-		ArgumentNullException.ThrowIfNull(brushes);
+		_ = brushes ?? throw new ArgumentNullException(nameof(brushes));
 
 
 		if (brushes.Count > capacity)
