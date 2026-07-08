@@ -524,7 +524,11 @@ function Invoke-TestRunWithRetry {
 
         $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $TestEntry.Filter
 
-        if (-not $result.EnvError) {
+        # A missing snapshot baseline is deterministic (the baseline PNG simply isn't in the
+        # repo yet) — retrying re-runs the whole test for the same guaranteed result. Return
+        # immediately so it flows straight to the INCONCLUSIVE classification without burning
+        # retry attempts (and device reboots).
+        if (-not $result.EnvError -or $result.SnapshotBaselineMissing) {
             return $result
         }
 
@@ -719,6 +723,25 @@ function Get-TestResultFromOutput {
     foreach ($envErr in $envErrorPatterns) {
         if ($content -match $envErr.Pattern) {
             return @{ Passed = $false; EnvError = $true; Error = $envErr.Message; FailCount = 0; Failed = 0; Total = 0; Skipped = 0 }
+        }
+    }
+
+    # ── New snapshot/visual UI test with no committed baseline ──
+    # A brand-new VerifyScreenshot test has no baseline PNG in the repo yet — maintainers
+    # add the baseline in a follow-up commit after visually confirming it — so VisualTestUtils
+    # throws "Baseline snapshot not yet created". This is NOT a fix failure: the gate simply
+    # cannot validate a snapshot that has nothing to compare against, so a PR that ADDS new
+    # snapshot tests would otherwise be falsely blocked with "Fix does not pass the tests"
+    # (e.g. PR #36442's Border_StrokeDashArrayWithStrokeLineCap_* tests). Treat a missing
+    # baseline as INCONCLUSIVE (env-class, non-blocking).
+    # IMPORTANT: this matches a MISSING baseline only. A real pixel DIFF against an EXISTING
+    # baseline (VisualTestFailedException without "not yet created") is a genuine failure and
+    # must still be counted — it can be a real visual regression.
+    if ($content -match '(?i)Baseline snapshot not yet created') {
+        return @{
+            Passed = $false; EnvError = $true; SnapshotBaselineMissing = $true
+            Error = "New snapshot test — baseline image not yet created; the gate cannot validate a brand-new VerifyScreenshot test (the baseline PNG is added separately by a maintainer)"
+            FailCount = 0; Failed = 0; Total = 0; Skipped = 0
         }
     }
 
@@ -1369,6 +1392,15 @@ function Write-MarkdownReport {
     $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($hasEnvError -or $baselineBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
+    # A brand-new snapshot test with no committed baseline drives the INCONCLUSIVE above via
+    # its EnvError flag. Give it a dedicated, actionable headline instead of the generic
+    # "environment error" framing so the reader knows the fix is fine — only the baseline is
+    # missing.
+    $snapshotBaselineMissing = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.SnapshotBaselineMissing }).Count -gt 0
+    $snapshotNote = if ($snapshotBaselineMissing) {
+        "📷 **New snapshot test — no baseline yet** — the test calls ``VerifyScreenshot`` but its baseline image is not committed (brand-new snapshot tests get their baseline added separately). The gate cannot validate a snapshot with nothing to compare against, so this is **inconclusive, not a fix failure**. Download the ``snapshots-diff`` artifact, confirm the rendering, and commit the baseline PNG."
+    } else { $null }
+
     # ─── Improvement #2: classify the failure mode so the headline matches the cause ───
     # Without this, every non-PASSED gate just says "tests did not behave as expected".
     # Map the without/with-fix outcomes per test into a concrete diagnosis the
@@ -1448,6 +1480,10 @@ function Write-MarkdownReport {
     $lines += ""
     $platformDisplay = if ($ReportPlatform) { $ReportPlatform.ToUpper() } else { "N/A" }
     $lines += "**Platform:** $platformDisplay · **Base:** $ReportBaseBranch · **Merge base:** ``$mergeBaseShort``"
+    if ($snapshotNote) {
+        $lines += ""
+        $lines += $snapshotNote
+    }
     if ($failureClassification) {
         $lines += ""
         $lines += $failureClassification
@@ -1464,7 +1500,9 @@ function Write-MarkdownReport {
 
         # Without fix cell
         $woDur = if ($woResult.Duration) { "$([math]::Round($woResult.Duration.TotalSeconds))s" } else { "" }
-        if ($woResult.EnvError) {
+        if ($woResult.SnapshotBaselineMissing) {
+            $woCell = "📷 NEW SNAPSHOT (no baseline)"
+        } elseif ($woResult.EnvError) {
             $woCell = "⚠️ ENV ERROR"
         } elseif ($woResult.BuildError) {
             $woCell = "🛠️ BUILD ERROR"
@@ -1478,7 +1516,9 @@ function Write-MarkdownReport {
 
         # With fix cell
         $wDur = if ($wResult.Duration) { "$([math]::Round($wResult.Duration.TotalSeconds))s" } else { "" }
-        if ($wResult.EnvError) {
+        if ($wResult.SnapshotBaselineMissing) {
+            $wCell = "📷 NEW SNAPSHOT (no baseline)"
+        } elseif ($wResult.EnvError) {
             $wCell = "⚠️ ENV ERROR"
         } elseif ($wResult.BuildError) {
             $wCell = "🛠️ BUILD ERROR"
