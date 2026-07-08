@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Resizetizer
 
 		/// <summary>
 		/// Fastest processing with nearest-neighbor interpolation.
-		/// May appear pixelated when scaling. Ideal for pixel art
-		/// or when build speed matters more than visual fidelity.
+		/// May appear pixelated when scaling, but is ideal for pixel art.
+		/// Use it when build speed matters more than visual fidelity.
 		/// </summary>
 		Fastest = 2,
 	}

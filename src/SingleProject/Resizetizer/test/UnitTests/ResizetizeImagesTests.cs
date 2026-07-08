@@ -121,6 +121,10 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void GenerationSkippedOnIncrementalBuild()
 			{
+				var inputsFile = Path.Combine(DestinationDirectory, "mauiimage.inputs");
+				Directory.CreateDirectory(DestinationDirectory);
+				File.WriteAllText(inputsFile, "ResizeQuality=Auto");
+
 				var items = new[]
 				{
 					new TaskItem("images/dotnet_logo.svg", new Dictionary<string, string>
@@ -133,12 +137,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 				var task = GetNewTask(items);
+				task.InputsFile = inputsFile;
 				var success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+				File.SetLastWriteTimeUtc(inputsFile, DateTime.UtcNow.AddMinutes(-1));
 
 				LogErrorEvents.Clear();
 				LogMessageEvents.Clear();
 				task = GetNewTask(items);
+				task.InputsFile = inputsFile;
 				success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 

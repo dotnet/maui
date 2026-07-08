@@ -79,21 +79,21 @@ namespace Microsoft.Maui.Resizetizer
 
 		internal static bool IsUpToDate(string inputFile, string outputFile, string inputsFile, ILogger logger)
 		{
-			var fileInputs = string.IsNullOrEmpty(inputsFile) ? null : new FileInfo(inputsFile);
-			if (fileInputs?.Exists != true)
-				return false;
-
 			return IsUpToDate(new[] { inputFile }, outputFile, inputsFile, logger, inputFile);
 		}
 
 		internal static bool IsUpToDate(IEnumerable<string> inputFiles, string outputFile, string inputsFile, ILogger logger, string inputDescription = null)
 		{
+			var fileInputs = string.IsNullOrEmpty(inputsFile) ? null : new FileInfo(inputsFile);
+			if (fileInputs?.Exists != true)
+				return false;
+
 			var fileOut = new FileInfo(outputFile);
 			if (!fileOut.Exists)
 				return false;
 
-			var newestInput = DateTime.MinValue;
-			var hasInput = false;
+			var newestInput = fileInputs.LastWriteTimeUtc;
+			var hasInput = true;
 
 			foreach (var inputFile in inputFiles)
 			{
@@ -107,14 +107,6 @@ namespace Microsoft.Maui.Resizetizer
 				hasInput = true;
 				if (fileIn.LastWriteTimeUtc > newestInput)
 					newestInput = fileIn.LastWriteTimeUtc;
-			}
-
-			var fileInputs = string.IsNullOrEmpty(inputsFile) ? null : new FileInfo(inputsFile);
-			if (fileInputs?.Exists == true)
-			{
-				hasInput = true;
-				if (fileInputs.LastWriteTimeUtc > newestInput)
-					newestInput = fileInputs.LastWriteTimeUtc;
 			}
 
 			if (!hasInput || newestInput > fileOut.LastWriteTimeUtc)
