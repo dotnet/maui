@@ -17,6 +17,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 #elif WINDOWS
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Handlers.Items2;
 #elif IOS || MACCATALYST
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -66,6 +67,16 @@ public static partial class AppHostBuilderExtensions
 #if IOS || MACCATALYST
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler2>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler2>();
+#elif WINDOWS
+		if (RuntimeFeature.IsWindowsCollectionView2HandlerEnabled)
+		{
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+		}
+		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #else
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
@@ -116,22 +127,19 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-        handlersCollection.AddHandler<Entry, EntryHandler>();
+		handlersCollection.AddHandler<Entry, EntryHandler>();
 #endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
+		handlersCollection.AddHandler<CheckBox, CheckBoxHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
-		if (RuntimeFeature.IsHybridWebViewSupported)
-		{
-			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
-			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
-		}
+		handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
@@ -204,13 +212,17 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
 
-#if ANDROID || IOS || MACCATALYST
+#if IOS || MACCATALYST
 		handlersCollection.AddHandler<Shell, ShellRenderer>();
 #elif WINDOWS
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
+#elif ANDROID
+		handlersCollection.AddHandler<Shell, ShellHandler>();
+		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
+		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #elif TIZEN
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
@@ -247,11 +259,7 @@ public static partial class AppHostBuilderExtensions
 			handlers.AddControlsHandlers();
 		});
 
-		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
-		if (RuntimeFeature.IsHybridWebViewSupported)
-		{
-			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
-		}
+		builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
 
 		builder.ConfigureMauiControlsDiagnostics();
 

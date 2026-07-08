@@ -1,7 +1,6 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Class Library",
-  "_name.comment": "{Locked='.NET MAUI Class'}",
   "description": "A project for creating a .NET MAUI class library",
   "postActions/openInEditor/description": "Opens Class1.cs in the editor.",
   "symbols/Framework/description": "The target framework for the project.",

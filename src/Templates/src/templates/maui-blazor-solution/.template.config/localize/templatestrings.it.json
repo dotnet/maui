@@ -24,7 +24,7 @@
   "symbols/InteractivityPlatform/choices/Auto/description": "Usa Server durante il download degli asset WebAssembly, quindi usa WebAssembly",
   "symbols/IncludeSampleContent/displayName": "_Includi pagine di esempio",
   "symbols/IncludeSampleContent/description": "Consente di configurare se aggiungere pagine di esempio e stile per mostrare modelli di utilizzo di base.",
-  "symbols/Empty/description": "Consente di configurare se omettere pagine di esempio e stile che mostrano modelli di utilizzo di base.",
+  "symbols/empty/description": "Consente di configurare se omettere pagine di esempio e stile che mostrano modelli di utilizzo di base.",
   "symbols/AllInteractive/displayName": "_Abilita rendering interattivo a livello globale in tutto il sito",
   "symbols/AllInteractive/description": "Configura se rendere interattiva ogni pagina applicando una modalità di rendering interattiva al livello superiore. Se false, le pagine useranno il rendering statico del server per impostazione predefinita e possono essere contrassegnate come interattive per pagina o per componente.",
   "symbols/NoHttps/description": "Indica se disattivare HTTPS. Questa opzione si applica solo se l'opzione Individual non viene usata per --auth.",

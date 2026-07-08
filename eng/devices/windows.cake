@@ -678,6 +678,14 @@ Task("uitest")
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows_{name}.log");
 
+	// Set TEST_CONFIGURATION_ARGS for handler selection and snapshot folder determination
+	var TEST_CONFIGURATION_ARGS = Argument("TEST_CONFIGURATION_ARGS", EnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "");
+	if (!string.IsNullOrEmpty(TEST_CONFIGURATION_ARGS))
+	{
+		Information("TEST_CONFIGURATION_ARGS: {0}", TEST_CONFIGURATION_ARGS);
+		SetEnvironmentVariable("TEST_CONFIGURATION_ARGS", TEST_CONFIGURATION_ARGS);
+	}
+
 	Information("Run UITests project {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, localToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");
 });

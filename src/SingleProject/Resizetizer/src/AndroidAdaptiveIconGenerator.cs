@@ -31,6 +31,16 @@ namespace Microsoft.Maui.Resizetizer
 	<monochrome android:drawable=""@mipmap/{name}_foreground"" />
 </adaptive-icon>";
 
+		const string AdaptiveIconDrawableWithMonochromeXml =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<adaptive-icon xmlns:android=""http://schemas.android.com/apk/res/android"">
+	<background android:drawable=""@mipmap/{name}_background""/>
+	<foreground android:drawable=""@mipmap/{name}_foreground""/>
+	<monochrome android:drawable=""@mipmap/{name}_monochrome"" />
+</adaptive-icon>";
+
+		bool HasMonochromeFile => !string.IsNullOrEmpty(Info.MonochromeFilename);
+
 		public IEnumerable<ResizedImageInfo> Generate()
 		{
 			var sw = new Stopwatch();
@@ -42,6 +52,8 @@ namespace Microsoft.Maui.Resizetizer
 
 			ProcessBackground(results, fullIntermediateOutputPath);
 			ProcessForeground(results, fullIntermediateOutputPath);
+			if (HasMonochromeFile)
+				ProcessMonochrome(results, fullIntermediateOutputPath);
 			ProcessAdaptiveIcon(results, fullIntermediateOutputPath);
 
 			sw.Stop();
@@ -138,6 +150,48 @@ namespace Microsoft.Maui.Resizetizer
 			}
 		}
 
+		void ProcessMonochrome(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
+		{
+			var monochromeFile = Info.MonochromeFilename;
+			var (monochromeExists, monochromeModified) = Utils.FileExists(monochromeFile);
+			var monochromeDestFilename = AppIconName + "_monochrome.png";
+
+			if (monochromeExists)
+				Logger.Log("Converting Monochrome SVG to PNG: " + monochromeFile);
+			else
+				Logger.Log("Monochrome was not found (will manufacture): " + monochromeFile);
+
+			foreach (var dpi in DpiPath.Android.AppIconParts)
+			{
+				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
+				var destination = Path.Combine(dir, monochromeDestFilename);
+				var (destinationExists, destinationModified) = Utils.FileExists(destination);
+				Directory.CreateDirectory(dir);
+
+				if (destinationModified > monochromeModified)
+				{
+					Logger.Log($"Skipping `{monochromeFile}` => `{destination}` file is up to date.");
+					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
+					continue;
+				}
+
+				Logger.Log($"App Icon Monochrome Part: " + destination);
+
+				if (monochromeExists)
+				{
+					var tools = SkiaSharpTools.Create(Info.MonochromeIsVector, Info.MonochromeFilename, dpi.Size, null, null, Logger);
+					tools.Resize(dpi, destination, dpiSizeIsAbsolute: true);
+				}
+				else
+				{
+					var tools = SkiaSharpTools.CreateImaginary(null, Logger);
+					tools.Resize(dpi, destination);
+				}
+
+				results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
+			}
+		}
+
 		void ProcessAdaptiveIcon(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var dir = Path.Combine(fullIntermediateOutputPath.FullName, "mipmap-anydpi-v26");
@@ -145,22 +199,22 @@ namespace Microsoft.Maui.Resizetizer
 			var adaptiveIconRoundDestination = Path.Combine(dir, AppIconName + "_round.xml");
 			Directory.CreateDirectory(dir);
 
-			if (File.Exists(adaptiveIconDestination) && File.Exists(adaptiveIconRoundDestination))
-			{
-				results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1), Filename = adaptiveIconDestination });
-				results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1, "_round"), Filename = adaptiveIconRoundDestination });
-				return;
-			}
-
-			var adaptiveIconXmlStr = AdaptiveIconDrawableXml
+			var adaptiveIconXmlStr = (HasMonochromeFile ? AdaptiveIconDrawableWithMonochromeXml : AdaptiveIconDrawableXml)
 				.Replace("{name}", AppIconName);
 
-			// Write out the adaptive icon xml drawables
-			File.WriteAllText(adaptiveIconDestination, adaptiveIconXmlStr);
-			File.WriteAllText(adaptiveIconRoundDestination, adaptiveIconXmlStr);
+			// Only write when content changed to avoid unnecessary timestamp updates
+			WriteFileIfChanged(adaptiveIconDestination, adaptiveIconXmlStr);
+			WriteFileIfChanged(adaptiveIconRoundDestination, adaptiveIconXmlStr);
 
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1), Filename = adaptiveIconDestination });
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1, "_round"), Filename = adaptiveIconRoundDestination });
+		}
+
+		static void WriteFileIfChanged(string path, string content)
+		{
+			if (File.Exists(path) && File.ReadAllText(path) == content)
+				return;
+			File.WriteAllText(path, content);
 		}
 	}
 }

@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <remarks>On Android, the operating system may destroy the app process while the system camera is foregrounded. Apps that need to recover MediaPicker results after process recreation should persist their own workflow state before starting capture and use the Android MediaPicker recovery APIs after startup or resume.</remarks>
 		Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
@@ -70,13 +71,14 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <remarks>On Android, the operating system may destroy the app process while the system camera is foregrounded. Apps that need to recover MediaPicker results after process recreation should persist their own workflow state before starting capture and use the Android MediaPicker recovery APIs after startup or resume.</remarks>
 		Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null);
 	}
 
 	/// <summary>
 	/// The MediaPicker API lets a user pick or take a photo or video on the device.
 	/// </summary>
-	public static class MediaPicker
+	public static partial class MediaPicker
 	{
 		/// <summary>
 		/// Gets a value indicating whether capturing media is supported on this device.
@@ -103,6 +105,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <remarks>On Android, the operating system may destroy the app process while the system camera is foregrounded. Apps that need to recover MediaPicker results after process recreation should persist their own workflow state before starting capture and use the Android MediaPicker recovery APIs after startup or resume.</remarks>
 		public static Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null) =>
 			Default.CapturePhotoAsync(options);
 
@@ -125,6 +128,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <remarks>On Android, the operating system may destroy the app process while the system camera is foregrounded. Apps that need to recover MediaPicker results after process recreation should persist their own workflow state before starting capture and use the Android MediaPicker recovery APIs after startup or resume.</remarks>
 		public static Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null) =>
 			Default.CaptureVideoAsync(options);
 

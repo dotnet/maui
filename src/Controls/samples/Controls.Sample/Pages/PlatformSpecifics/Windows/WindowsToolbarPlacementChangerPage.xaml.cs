@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnPickerSelectedIndexChanged(object sender, EventArgs e)
+		void OnPickerSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetToolbarPlacement((ToolbarPlacement)Enum.Parse(typeof(ToolbarPlacement), picker.Items[picker.SelectedIndex]));
 		}

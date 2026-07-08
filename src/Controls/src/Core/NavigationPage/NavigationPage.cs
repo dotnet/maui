@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for attached property <c>BackButtonTitle</c>.</summary>
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
+		/// <summary>Bindable property for attached property <c>BackButtonAccessibilityLabel</c>.</summary>
+		public static readonly BindableProperty BackButtonAccessibilityLabelProperty = BindableProperty.CreateAttached("BackButtonAccessibilityLabel", typeof(string), typeof(Page), null);
+
 		/// <summary>Bindable property for attached property <c>HasNavigationBar</c>.</summary>
 		public static readonly BindableProperty HasNavigationBarProperty =
 			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
@@ -176,6 +179,14 @@ namespace Microsoft.Maui.Controls
 			return (string)page.GetValue(BackButtonTitleProperty);
 		}
 
+		/// <summary>Gets the accessibility label for the back button of the specified <paramref name="page"/>.</summary>
+		/// <param name="page">The <see cref="Microsoft.Maui.Controls.Page"/> whose back-button's accessibility label is being requested.</param>
+		/// <returns>The accessibility label read by screen readers for the back button, or <see langword="null"/> if not set.</returns>
+		public static string GetBackButtonAccessibilityLabel(BindableObject page)
+		{
+			return (string)page.GetValue(BackButtonAccessibilityLabelProperty);
+		}
+
 		/// <summary>Returns a value that indicates whether <paramref name="page"/> has a back button.</summary>
 		/// <param name="page">The page parameter.</param>
 		public static bool GetHasBackButton(Page page)
@@ -255,7 +266,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception e)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning(e, null);
+				MauiLogger<NavigationPage>.Log(LogLevel.Warning, e, "");
 				CurrentNavigationTask = null;
 				tcs.SetCanceled();
 
@@ -353,6 +364,14 @@ namespace Microsoft.Maui.Controls
 		public static void SetBackButtonTitle(BindableObject page, string value)
 		{
 			page.SetValue(BackButtonTitleProperty, value);
+		}
+
+		/// <summary>Sets the accessibility label for the back button of <paramref name="page"/>, allowing the text read by screen readers to differ from the visible back button title.</summary>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The accessibility label value to set.</param>
+		public static void SetBackButtonAccessibilityLabel(BindableObject page, string value)
+		{
+			page.SetValue(BackButtonAccessibilityLabelProperty, value);
 		}
 
 		/// <summary>Adds or removes a back button to <paramref name="page"/>, with optional animation.</summary>
@@ -930,7 +949,7 @@ namespace Microsoft.Maui.Controls
 
 				if (page == Owner.CurrentPage)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+					MauiLogger<NavigationPage>.Log(LogLevel.Warning, "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 					PopAsync();
 					return;
 				}

@@ -43,6 +43,31 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		ModuleDefinition Module { get; } = context.Body.Method.Module;
 
+		// Track properties that have been set to detect duplicates
+		readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
+
+		void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
+		{
+			if (!setProperties.TryGetValue(parentNode, out var props))
+			{
+				props = new HashSet<XmlName>();
+				setProperties[parentNode] = props;
+			}
+
+			if (!props.Add(propertyName))
+			{
+				// Property is being set multiple times
+				Context.LoggingHelper.LogWarningOrError(
+					DuplicatePropertyAssignment,
+					Context.XamlFilePath,
+					lineInfo.LineNumber,
+					lineInfo.LinePosition,
+					0,
+					0,
+					$"{parentNode.XmlType.Name}.{propertyName.LocalName}");
+			}
+		}
+
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			//TODO support Label text as element
@@ -61,12 +86,20 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (TrySetRuntimeName(propertyName, Context.Variables[(ElementNode)parentNode], node))
 				return;
+			if (propertyName == XmlName.xShared)
+				throw new BuildException(BuildExceptionCode.XSharedNotSupported, node as IXmlLineInfo, null);
 			if (skips.Contains(propertyName))
 				return;
 			if (parentNode is ElementNode && ((ElementNode)parentNode).SkipProperties.Contains(propertyName))
 				return;
 			if (propertyName.Equals(XmlName.mcIgnorable))
 				return;
+
+			// TODO: Add duplicate implicit content property checking here to match SourceGen behavior
+			// (SourceGen Visit(ValueNode) emits MAUIX2015 when a ValueNode assigns the same implicit
+			// content property that was already assigned by an ElementNode or another ValueNode).
+			// Without this check, <Border>text<Label/></Border> produces MAUIX2015 under SourceGen
+			// but no warning under XamlC.
 			Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 		}
 
@@ -138,8 +171,32 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var name = new XmlName(node.NamespaceURI, contentProperty);
 					if (skips.Contains(name))
 						return;
-					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(propertyName))
+					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(name))
 						return;
+
+					// Resolve the content property type to determine if it is a collection.
+					// Use CanGet (CLR property resolution) rather than GetBindablePropertyReference+GetValue/Get
+					// to avoid side effects: GetBindablePropertyReference can emit ObsoleteProperty diagnostics
+					// and GetValue/Get generate IL instructions; both would be duplicated by SetPropertyValue.
+					// CanGet covers all content properties because every BP-backed property has a CLR wrapper.
+					var propLocalName = name.LocalName;
+					bool canResolveProperty = CanGet(parentVar, propLocalName, Context, out TypeReference contentPropType);
+
+					// Skip duplicate check when the property cannot be resolved, is System.Object (unresolved
+					// generics would produce false positives), or is a collection type. Matches SourceGen behavior.
+					if (canResolveProperty && contentPropType != null)
+					{
+						bool isObject = contentPropType.FullName == "System.Object";
+						bool isCollection = !isObject
+							&& contentPropType.ImplementsInterface(Context.Cache, Module.ImportReference(Context.Cache, ("mscorlib", "System.Collections", "IEnumerable")))
+							&& contentPropType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any();
+
+						// Use parent namespace for duplicate tracking to match how explicit property assignments are keyed
+						var contentPropertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
+						if (!isCollection && !isObject)
+							CheckForDuplicateProperty((ElementNode)parentNode, contentPropertyName, node);
+					}
+
 					Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], name, node, Context, node));
 				}
 				// Collection element, implicit content, or implicit collection element.
@@ -537,7 +594,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				// continue compilation
 			}
 
-			if (   dataTypeNode is ElementNode enode
+			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Xaml.NullExtension))
 			{
@@ -670,7 +727,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var lbIndex = p.IndexOf('[');
 				if (lbIndex != -1)
 				{
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 					var rbIndex = p.LastIndexOf(']');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 					if (rbIndex == -1)
 						throw new BuildException(BindingIndexerNotClosed, lineInfo, null);
 
@@ -1258,9 +1317,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var bpRef = module.ImportReference(bpDef.ResolveGenericParameters(declaringTypeReference));
 			bpRef.FieldType = module.ImportReference(bpRef.FieldType);
 
-			var isObsolete = bpDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
-			if (isObsolete)
-				context.LoggingHelper.LogWarningOrError(ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
+			LogObsoleteWarningOrError(context, iXmlLineInfo, localName, bpDef.CustomAttributes);
 
 			return bpRef;
 		}
@@ -1640,14 +1697,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			var module = context.Body.Method.Module;
 			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out TypeReference declaringTypeReference);
-			var propertyIsObsolete = property.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
-			if (propertyIsObsolete)
-				context.LoggingHelper.LogWarningOrError(ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
+			// Check the property itself for [Obsolete], then check the setter separately.
+			// In the rare case both carry [Obsolete], two diagnostics are emitted — matching
+			// C# compiler behavior, which also checks property declarations and accessors independently.
+			LogObsoleteWarningOrError(context, iXmlLineInfo, localName, property.CustomAttributes);
 
 			var propertySetter = property.SetMethod;
-			var propertySetterIsObsolete = propertySetter.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
-			if (propertySetterIsObsolete)
-				context.LoggingHelper.LogWarningOrError(ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
+			if (propertySetter != null)
+				LogObsoleteWarningOrError(context, iXmlLineInfo, localName, propertySetter.CustomAttributes);
 
 			//			IL_0007:  ldloc.0
 			//			IL_0008:  ldstr "foo"
@@ -1991,6 +2048,64 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			Context.IL.Append(SetPropertyValue(variableDefinition, new XmlName("", runTimeName), node, Context, node));
 			return true;
+		}
+
+		/// <summary>
+		/// Gets the ObsoleteAttribute information from a custom attribute provider (field, property, method, or type).
+		/// </summary>
+		/// <param name="customAttributes">The custom attributes collection to search.</param>
+		/// <param name="message">The obsolete message from the attribute, or a default message if not specified.</param>
+		/// <param name="isError">True if the obsolete attribute specifies error=true.</param>
+		/// <returns>True if the ObsoleteAttribute is present, false otherwise.</returns>
+		internal static bool TryGetObsoleteAttribute(IEnumerable<CustomAttribute> customAttributes, out string message, out bool isError)
+		{
+			message = null;
+			isError = false;
+
+			var obsoleteAttr = customAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
+			if (obsoleteAttr == null)
+				return false;
+
+			// ObsoleteAttribute has the following constructors:
+			// ObsoleteAttribute()
+			// ObsoleteAttribute(string message)
+			// ObsoleteAttribute(string message, bool error)
+			if (obsoleteAttr.ConstructorArguments.Count >= 1 && obsoleteAttr.ConstructorArguments[0].Value is string msg)
+				message = msg;
+
+			if (obsoleteAttr.ConstructorArguments.Count >= 2 && obsoleteAttr.ConstructorArguments[1].Value is bool err)
+				isError = err;
+
+			// Use a default message if none was provided
+			message ??= "This member is obsolete.";
+
+			return true;
+		}
+
+		/// <summary>
+		/// Logs an obsolete warning or error based on the ObsoleteAttribute's error parameter.
+		/// </summary>
+		internal static void LogObsoleteWarningOrError(ILContext context, IXmlLineInfo lineInfo, string memberName, IEnumerable<CustomAttribute> customAttributes)
+		{
+			if (TryGetObsoleteAttribute(customAttributes, out string message, out bool isError))
+			{
+				if (isError)
+				{
+					// [Obsolete("msg", error: true)] must ALWAYS be an error,
+					// regardless of TreatWarningsAsErrors setting.
+					// XC0619 intentionally bypasses NoWarn, matching C# CS0619 behavior.
+					// Obsolete-as-error cannot be suppressed; users must remove the usage.
+					var code = ObsoletePropertyError;
+					var xamlFilePath = context.LoggingHelper.GetXamlFilePath(context.XamlFilePath);
+					context.LoggingHelper.LogError("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), memberName, message);
+					LoggingHelperExtensions.LoggedErrors ??= new();
+					LoggingHelperExtensions.LoggedErrors.Add(new BuildException(code, new XmlLineInfo(lineInfo.LineNumber, lineInfo.LinePosition), innerException: null, memberName, message));
+				}
+				else
+				{
+					context.LoggingHelper.LogWarningOrError(ObsoleteProperty, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, memberName, message);
+				}
+			}
 		}
 	}
 

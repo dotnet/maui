@@ -1,8 +1,5 @@
 ---
 description: Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
-
-environment: gh-aw-agents
-
 on:
   # pull_request_target is intentionally disabled — we don't want auto-runs on PR create/update.
   # pull_request_target:
@@ -17,7 +14,7 @@ on:
     inputs:
       pr_number:
         description: 'PR number to evaluate'
-        required: false
+        required: true
         type: number
       suppress_output:
         description: 'Dry-run — evaluate but do not post output on the PR'

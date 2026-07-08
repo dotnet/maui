@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls
 		Brush _barBackground;
 		ImageSource _titleIcon;
 		string _backButtonTitle;
+		string _backButtonAccessibilityLabel;
 		double? _barHeight;
 		IEnumerable<ToolbarItem> _toolbarItems;
 		bool _dynamicOverflowEnabled;
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Controls
 		public IEnumerable<ToolbarItem> ToolbarItems { get => _toolbarItems; set => SetProperty(ref _toolbarItems, value); }
 		public double? BarHeight { get => _barHeight; set => SetProperty(ref _barHeight, value); }
 		public string BackButtonTitle { get => _backButtonTitle; set => SetProperty(ref _backButtonTitle, value); }
+		public string BackButtonAccessibilityLabel { get => _backButtonAccessibilityLabel; set => SetProperty(ref _backButtonAccessibilityLabel, value); }
 		public ImageSource TitleIcon { get => _titleIcon; set => SetProperty(ref _titleIcon, value); }
 		public Brush BarBackground { get => _barBackground; set => SetProperty(ref _barBackground, value); }
 		public virtual Color BarTextColor { get => _barTextColor; set => SetProperty(ref _barTextColor, value); }
