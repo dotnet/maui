@@ -42,6 +42,14 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 				}
 
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
+
+				// A value-type member accessed mid-path (through a possibly-null receiver) must be
+				// captured into a local, otherwise the following member cannot be assigned - you
+				// cannot modify a struct returned by a property (CS1612).
+				if (innerPart is MemberAccess { IsValueType: true } && !isLastPart)
+				{
+					AddPatternMatchingExpression("{}");
+				}
 			}
 			else if (part is MemberAccess { IsValueType: true } && !isLastPart)
 			{
