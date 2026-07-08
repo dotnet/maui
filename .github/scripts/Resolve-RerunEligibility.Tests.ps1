@@ -69,6 +69,12 @@ BeforeAll {
 }
 
 Describe 'Resolve-RerunEligibility' {
+    It 'normalizes app-style GitHub bot author logins' {
+        Normalize-GitHubActorLogin 'app/dependabot' | Should -Be 'dependabot[bot]'
+        Normalize-GitHubActorLogin ' dependabot[bot] ' | Should -Be 'dependabot[bot]'
+        Normalize-GitHubActorLogin '' | Should -Be ''
+    }
+
     It 'parses review command branch and platform options for reruns' {
         $parsed = ConvertFrom-ReviewCommand '/review -b feature/regression-check -p ios'
 
@@ -90,84 +96,155 @@ Describe 'Resolve-RerunEligibility' {
             Should -Be 'feature/regression-check'
     }
 
-    It 'finds latest normal review command while ignoring rerun and tests commands' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review -b old/ref -p android' -CreatedAt '2026-05-31T09:00:00Z'
-            New-TestComment -Id 2 -Body '/review tests' -CreatedAt '2026-05-31T09:05:00Z'
-            New-TestComment -Id 3 -Body '/review --platform ios --branch feature/regression-check' -CreatedAt '2026-05-31T09:10:00Z'
-            New-TestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-05-31T09:15:00Z'
-        )
-
-        $options = Get-LatestReviewCommandOptions -Comments $comments
-
-        $options.Found | Should -BeTrue
-        $options.Platform | Should -Be 'ios'
-        $options.PipelineRef | Should -Be 'feature/regression-check'
-        $options.CommentId | Should -Be 3
+    It 'normalizes app-style GitHub actor logins to bot logins' {
+        Normalize-GitHubActorLogin 'app/dependabot' | Should -Be 'dependabot[bot]'
+        Normalize-GitHubActorLogin 'dev-user' | Should -Be 'dev-user'
     }
 
-    It 'ignores review command options from commenters without write access' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -AuthorAssociation 'NONE'
-            New-TestComment -Id 2 -Body '/review -b feature/trusted -p ios' -CreatedAt '2026-05-31T09:05:00Z' -AuthorAssociation 'MEMBER'
-        )
+    Context 'review command option resolution (collaborator-permission trust)' {
+        BeforeEach {
+            # Trust is decided by CURRENT collaborator permission per login — the
+            # same signal /review uses — not the comment's author_association.
+            Mock Test-ReviewOptionLoginTrusted {
+                param([string]$Login, [string]$Owner, [string]$Repo)
+                return ($Login -in @('dev-user', 'trusted-user', 'maintainer'))
+            }
+        }
 
-        $options = Get-LatestReviewCommandOptions -Comments $comments
+        It 'finds latest normal review command while ignoring rerun and tests commands' {
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review -b old/ref -p android' -CreatedAt '2026-05-31T09:00:00Z'
+                New-TestComment -Id 2 -Body '/review tests' -CreatedAt '2026-05-31T09:05:00Z'
+                New-TestComment -Id 3 -Body '/review --platform ios --branch feature/regression-check' -CreatedAt '2026-05-31T09:10:00Z'
+                New-TestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-05-31T09:15:00Z'
+            )
 
-        $options.Found | Should -BeTrue
-        $options.Platform | Should -Be 'ios'
-        $options.PipelineRef | Should -Be 'feature/trusted'
-        $options.CommentId | Should -Be 2
+            $options = Get-LatestReviewCommandOptions -Comments $comments
+
+            $options.Found | Should -BeTrue
+            $options.Platform | Should -Be 'ios'
+            $options.PipelineRef | Should -Be 'feature/regression-check'
+            $options.CommentId | Should -Be 3
+        }
+
+        It 'ignores review command options from commenters without write access' {
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -Login 'untrusted-user'
+                New-TestComment -Id 2 -Body '/review -b feature/trusted -p ios' -CreatedAt '2026-05-31T09:05:00Z' -Login 'maintainer'
+            )
+
+            $options = Get-LatestReviewCommandOptions -Comments $comments
+
+            $options.Found | Should -BeTrue
+            $options.Platform | Should -Be 'ios'
+            $options.PipelineRef | Should -Be 'feature/trusted'
+            $options.CommentId | Should -Be 2
+        }
+
+        It 'does not use review command options when only untrusted comments exist' {
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -Login 'untrusted-user'
+            )
+
+            $options = Get-LatestReviewCommandOptions -Comments $comments
+
+            $options.Found | Should -BeFalse
+            $options.PipelineRef | Should -Be 'main'
+        }
+
+        It 'uses the latest command from a currently-trusted maintainer' {
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review -b feature/old -p ios' -CreatedAt '2026-05-31T09:00:00Z' -Login 'maintainer'
+                New-TestComment -Id 2 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T09:10:00Z' -Login 'maintainer'
+            )
+
+            $options = Get-LatestReviewCommandOptions -Comments $comments
+
+            $options.Found | Should -BeTrue
+            $options.Platform | Should -Be 'windows'
+            $options.PipelineRef | Should -Be 'feature/new'
+            $options.CommentId | Should -Be 2
+            $options.AuthorLogin | Should -Be 'maintainer'
+        }
+
+        It 'ignores all commands from a login that currently lacks write access' {
+            $comments = @(
+                New-TestComment -Id 5 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T10:00:00Z' -Login 'former-collaborator'
+            )
+
+            $options = Get-LatestReviewCommandOptions -Comments $comments
+
+            $options.Found | Should -BeFalse
+            $options.PipelineRef | Should -Be 'main'
+        }
+
+        It 'honors a command by collaborator permission even when author_association is NONE' {
+            # The exact production failure: a maintainer's /review -b read as
+            # author_association=CONTRIBUTOR under the bot token. Permission wins.
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review -b feature/enhanced-reviewer -p android' -CreatedAt '2026-05-31T09:00:00Z' -Login 'maintainer' -AuthorAssociation 'NONE'
+            )
+
+            $options = Get-LatestReviewCommandOptions -Comments $comments
+
+            $options.Found | Should -BeTrue
+            $options.Platform | Should -Be 'android'
+            $options.PipelineRef | Should -Be 'feature/enhanced-reviewer'
+        }
     }
 
-    It 'does not use review command options when only untrusted comments exist' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -AuthorAssociation 'NONE'
-        )
+    Context 'Test-ReviewOptionLoginTrusted (collaborator-permission lookup)' {
+        BeforeEach {
+            Clear-ReviewOptionPermissionCache
+            Mock Start-Sleep {}
+        }
 
-        $options = Get-LatestReviewCommandOptions -Comments $comments
+        It 'trusts write/maintain/admin permission' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 0; Permission = 'write'; StdErr = '' } }
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' | Should -BeTrue
+        }
 
-        $options.Found | Should -BeFalse
-        $options.PipelineRef | Should -Be 'main'
-    }
+        It 'does not trust read or none permission' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 0; Permission = 'read'; StdErr = '' } }
+            Test-ReviewOptionLoginTrusted -Login 'reader' | Should -BeFalse
+        }
 
-    It 'can restrict review command options to explicit write-permission authors' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review -b untrusted -p windows' -CreatedAt '2026-05-31T09:00:00Z' -Login 'untrusted-user' -AuthorAssociation 'COLLABORATOR'
-            New-TestComment -Id 2 -Body '/review -b trusted -p ios' -CreatedAt '2026-05-31T09:05:00Z' -Login 'trusted-user' -AuthorAssociation 'COLLABORATOR'
-        )
+        It 'rejects an invalid (non-user) login without calling the API' {
+            Mock Get-CollaboratorPermissionResult { throw 'API should not be called for an invalid login' }
+            Test-ReviewOptionLoginTrusted -Login 'dotnet-maestro[bot]' | Should -BeFalse
+            Test-ReviewOptionLoginTrusted -Login '' | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 0
+        }
 
-        $options = Get-LatestReviewCommandOptions -Comments $comments -AllowedAuthorLogins @('trusted-user')
+        It 'treats a definitive HTTP 404 as untrusted and caches it (one API call)' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 1; Permission = ''; StdErr = 'gh: Not Found (HTTP 404)' } }
+            Test-ReviewOptionLoginTrusted -Login 'outsider' | Should -BeFalse
+            Test-ReviewOptionLoginTrusted -Login 'outsider' | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 1
+        }
 
-        $options.Found | Should -BeTrue
-        $options.Platform | Should -Be 'ios'
-        $options.PipelineRef | Should -Be 'trusted'
-        $options.AuthorLogin | Should -Be 'trusted-user'
-    }
+        It 'retries a transient error and does not cache the undecided result' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 1; Permission = ''; StdErr = 'gh: Server Error (HTTP 503)' } }
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' -MaxAttempts 3 | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 3
+            # Not cached: a later lookup tries again rather than staying downgraded.
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' -MaxAttempts 3 | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 6
+        }
 
-    It 'still requires per-comment author_association even for previously-allowed logins' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review -b feature/old -p ios' -CreatedAt '2026-05-31T09:00:00Z' -Login 'former-collaborator' -AuthorAssociation 'COLLABORATOR'
-            New-TestComment -Id 2 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T09:10:00Z' -Login 'former-collaborator' -AuthorAssociation 'NONE'
-        )
-
-        $options = Get-LatestReviewCommandOptions -Comments $comments -AllowedAuthorLogins @('former-collaborator')
-
-        $options.Found | Should -BeTrue
-        $options.Platform | Should -Be 'ios'
-        $options.PipelineRef | Should -Be 'feature/old'
-        $options.CommentId | Should -Be 1
-    }
-
-    It 'rejects every comment when previously-allowed login has lost access on all later comments' {
-        $comments = @(
-            New-TestComment -Id 5 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T10:00:00Z' -Login 'former-collaborator' -AuthorAssociation 'NONE'
-        )
-
-        $options = Get-LatestReviewCommandOptions -Comments $comments -AllowedAuthorLogins @('former-collaborator')
-
-        $options.Found | Should -BeFalse
-        $options.PipelineRef | Should -Be 'main'
+        It 'recovers when a transient error clears on a later attempt' {
+            $script:permAttempt = 0
+            Mock Get-CollaboratorPermissionResult {
+                $script:permAttempt++
+                if ($script:permAttempt -eq 1) {
+                    [pscustomobject]@{ ExitCode = 1; Permission = ''; StdErr = 'gh: Server Error (HTTP 503)' }
+                } else {
+                    [pscustomobject]@{ ExitCode = 0; Permission = 'admin'; StdErr = '' }
+                }
+            }
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' -MaxAttempts 3 | Should -BeTrue
+            Should -Invoke Get-CollaboratorPermissionResult -Times 2
+        }
     }
 
     It 'rejects commands when no AI Summary exists' {
@@ -193,17 +270,30 @@ Describe 'Resolve-RerunEligibility' {
         $result.Reason | Should -Be 'no-new-comments-or-commits'
     }
 
-    It 'accepts a non-command comment after the latest AI Summary' {
+    It 'accepts a non-command PR author comment after the latest AI Summary' {
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 2 -Body 'I pushed the requested update.' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
+    }
+
+    It 'rejects a non-author maintainer comment after the latest AI Summary' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body 'Could you please check the AI suggestions?' -CreatedAt '2026-05-31T09:45:00Z' -Login 'kubaflo' -Kind 'review'
+            New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z' -Login 'kubaflo'
+        )
+
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
+
+        $result.Eligible | Should -BeFalse
+        $result.Reason | Should -Be 'no-new-comments-or-commits'
     }
 
     It 'uses AI Summary creation time as the activity checkpoint when the summary was edited later' {
@@ -213,10 +303,10 @@ Describe 'Resolve-RerunEligibility' {
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
     }
 
     It 'selects the newest AI Summary by creation time instead of edit time' {
@@ -227,10 +317,10 @@ Describe 'Resolve-RerunEligibility' {
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:30:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha '2222222abcdef'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha '2222222abcdef' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
     }
 
     It 'ignores forged AI Summary comments from non-bots' {
@@ -277,10 +367,10 @@ Describe 'Resolve-RerunEligibility' {
             New-TestComment -Id 4659999999 -Body '/review rerun' -CreatedAt '2026-06-09T09:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 4659999999 -CurrentHeadSha '6e9af5bc8b5d0023400d653500951fb46df44170'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 4659999999 -CurrentHeadSha '6e9af5bc8b5d0023400d653500951fb46df44170' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
     }
 
     It 'uses the first session marker from an AI Summary' {
@@ -308,7 +398,7 @@ new
         $result.Reason | Should -Be 'no-new-comments-or-commits'
     }
 
-    It 'accepts a non-command comment after the previous rerun command' {
+    It 'accepts a non-command PR author comment after the previous rerun command' {
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 8 -Body '/review rerun' -CreatedAt '2026-05-31T09:45:00Z'
@@ -316,10 +406,10 @@ new
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-previous-rerun'
+        $result.Reason | Should -Be 'new-author-comment-after-previous-rerun'
     }
 
     It 'does not reuse old activity from before a previous rerun command' {
@@ -343,10 +433,10 @@ new
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
     }
 
     It 'accepts a current head SHA that differs from the latest reviewed session' {
@@ -418,21 +508,35 @@ new
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 2 -Body 'New author context.' -CreatedAt '2026-05-31T09:45:00Z'
+            New-TestComment -Id 11 -Body 'Reviewer reminder.' -CreatedAt '2026-05-31T09:46:00Z' -Login 'reviewer'
             New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T09:50:00Z'
         )
         $commits = @(
             New-TestCommit -Sha 'fedcba9876543210' -Date '2026-05-31T09:48:00Z'
         )
 
-        $context = New-RerunContextMarkdown -Comments $comments -Commits $commits -CurrentHeadSha 'fedcba9876543210' -CurrentLabels @('s/agent-review-in-progress')
+        $context = New-RerunContextMarkdown -Comments $comments -Commits $commits -CurrentHeadSha 'fedcba9876543210' -PRAuthorLogin 'dev-user' -CurrentLabels @('s/agent-review-in-progress')
 
         $context | Should -Match '# Rerun Context'
-        $context | Should -Match 'New non-command comments: 1'
+        $context | Should -Match 'New non-command author comments: 1'
         $context | Should -Match 'New commits: 1'
         $context | Should -Match '`s/agent-ready-for-rerun` present: false'
         $context | Should -Match '`s/agent-review-in-progress` present: true'
         $context | Should -Match 'New author context'
+        $context | Should -Not -Match 'Reviewer reminder'
         $context | Should -Match 'fedcba9'
         $context | Should -Not -Match '\| .*\/review rerun'
+    }
+
+    It 'renders normalized app-style bot authors in rerun context' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T09:50:00Z'
+        )
+
+        $context = New-RerunContextMarkdown -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'app/dependabot'
+
+        $context | Should -Match 'PR author: dependabot\[bot\]'
+        $context | Should -Match 'New non-command author comments: 0'
     }
 }
