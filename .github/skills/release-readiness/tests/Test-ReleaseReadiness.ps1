@@ -1647,6 +1647,46 @@ Assert-Eq -Label "Truncated body retains exactly one notes:end marker"   -Expect
 Assert-Eq -Label "Truncated body retains the semantic-hash marker" -Expected $true `
     -Actual ($mdCapped -match '<!-- release-readiness-hash: sha=[0-9a-f]{64} -->')
 
+# ───── Regression header count = candidate count, not hashtable key count ─────
+# Get-RegressionCandidates returns its $results accumulator; when exactly ONE candidate
+# matches, PowerShell unwraps the single-element array on return, so $Data['regressions']
+# arrives as a LONE hashtable (not a 1-element array). The header rendered
+#   $regs = $Data['regressions']; "... $($regs.Count) issues scanned"
+# and .Count on a scalar hashtable returns its KEY count — the exact live symptom on
+# tracker #35867: "Regression Candidates — 13 issues scanned" with a single candidate.
+# This test is DISCRIMINATING: it assigns the regression result as a SCALAR hashtable to
+# reproduce that unwrap (NOT '@(...)', which would mask the bug); pre-fix the header prints
+# the key count, post-fix it prints 1.
+Write-Host "`n[Unit] Regression header count = candidate count, not hashtable keys" -ForegroundColor Cyan
+
+# Production-shaped regression hashtable (13 keys, mirroring Get-RegressionCandidates output).
+$singleReg = @{
+    issue = 96100; title = 'Lone regression'; state = 'OPEN'; classification = 'no-fix-yet'
+    candidateFixPrs = @(); recommendedAction = 'Investigate'; createdAt = '2026-06-01T00:00:00Z'
+    confidence = 'high'; milestone = '10.0-sr9'; closedAt = $null; evidence = @()
+    labels = @(); stateReason = $null
+}
+$mdDataOneReg = @{} + $mdData
+$mdDataOneReg['regressions'] = $singleReg          # scalar hashtable → mimics the N=1 return-unwrap
+$mdDataOneReg['summary'] = @{ 'no-fix-yet' = 1 }
+# Lock the reproduction precondition: the value must be a scalar hashtable, NOT a list —
+# otherwise the bug can't manifest and a future edit could silently neuter this test.
+Assert-Eq -Label "Repro precondition: regressions arrives as a scalar hashtable with >1 key" -Expected $true `
+    -Actual ($mdDataOneReg['regressions'] -is [hashtable] `
+             -and -not ($mdDataOneReg['regressions'] -is [System.Collections.IList]) `
+             -and $mdDataOneReg['regressions'].Keys.Count -gt 1)
+$mdOneReg = Format-MarkdownReport -Data $mdDataOneReg -RepoUrl 'https://github.com/dotnet/maui' `
+                                  -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+$oneRegHeader = @($mdOneReg -split "`r?`n" | Where-Object { $_ -match 'Regression Candidates —' })
+Assert-Eq -Label "Single-candidate header reports '1 issues scanned' (not the hashtable key count)" -Expected $true `
+    -Actual ($oneRegHeader.Count -eq 1 -and $oneRegHeader[0] -match 'Regression Candidates — 1 issues scanned')
+
+# Guard the N≥2 path stays correct (array preserved → .Count = element count).
+$mdTwoReg = Format-MarkdownReport -Data (@{} + $mdData) -RepoUrl 'https://github.com/dotnet/maui' `
+                                  -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "Two-candidate header reports '2 issues scanned'" -Expected $true `
+    -Actual ($mdTwoReg -match 'Regression Candidates — 2 issues scanned')
+
 # ───── UTF-8 boundary repair: truncation must never split a multibyte char ─────
 # Regression for the boundary-repair fix. A naive "trim trailing continuation
 # bytes" cut leaves an orphan multibyte LEAD byte (and even strips a COMPLETE

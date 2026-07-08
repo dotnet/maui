@@ -3451,7 +3451,10 @@ function Format-MarkdownReport {
 
     # === Regressions section — organized into tiers ===
     if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
-        $regs = $Data['regressions']
+        # Force array context: regression results are hashtables, and when exactly one
+        # candidate exists PowerShell unwraps the single-element array to that lone hashtable,
+        # so $regs.Count would otherwise return the hashtable's key count instead of 1.
+        $regs = @($Data['regressions'])
         $summary = if ($Data.ContainsKey('summary')) { $Data['summary'] } else { @{} }
 
         [void]$sb.AppendLine("## Regression Candidates — $($regs.Count) issues scanned")
