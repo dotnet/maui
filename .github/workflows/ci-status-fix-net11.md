@@ -716,14 +716,29 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
 1. **Human engaged.** If `C.humanEngaged` → `skipped: human engaged on PR #<P>;
    deferring` and stop. Never fight a human reviewer — the intentional hand-off
    boundary still holds the moment a person touches the PR.
-2. **CI not settled / unknown / incomplete prefetch.** If `C.checksSettled == false`
-   OR `C.overallConclusion` is `pending`, `neutral`, or `unknown`, OR
-   `C.dataComplete == false` → the fix's CI has not finished on the current head SHA
-   (`C.headSha`), or the prefetch could not fully read this PR (a partial read can
-   understate `humanEngaged` / `attempt`). `skipped: PR #<P> CI pending / prefetch
-   incomplete on <C.headSha>; waiting` and stop. *(Round 1: this is where a
-   maintainer `/azp run` is awaited — the `/azp`-gated uitests/devicetests legs will
-   not have run until a human kicks them.)*
+2. **CI not settled — but validate the target test first (target-focused readiness).**
+   If `C.checksSettled == false` OR `C.overallConclusion` is `pending`, `neutral`, or
+   `unknown`, OR `C.dataComplete == false` → the *overall* build has not finished on the
+   current head SHA (`C.headSha`), or the prefetch could not fully read this PR (a partial
+   read can understate `humanEngaged` / `attempt`). Unrelated legs still draining must NOT
+   keep an already-proven fix parked as a draft, so before waiting, try the target-focused
+   fast-path:
+   - **2a — Target-green fast-path (draft `[ci-fix-net11]` PRs only).** If `C.dataComplete
+     == true` AND the Step 3.6 preconditions hold (draft PR, `[ci-fix-net11] ` title prefix
+     AND the `agentic-workflows` label), run Step 3.6 **T1–T2** against `C.headSha` now:
+     identify the target test(s) and drill the PR's OWN AzDO test-results. If EVERY target
+     test is **VALIDATED-GREEN** (`Passed` on ≥1 leg, `Failed` on NO leg) AND every leg in
+     `C.failedLegs` that has ALREADY concluded classifies as **unrelated flake** (Step 4 /
+     Step 4.7 method — the fix is implicated in NO completed red), then the fix is proven
+     regardless of unrelated *pending* legs → run **Step 3.6 T3** (mark ready + 🎯 comment)
+     and stop. This early-out NEVER advances an attempt and NEVER acts on a red that could
+     be the fix's fault.
+   - **2b — Otherwise WAIT.** If the target test has not yet executed (pending/absent on
+     its leg), or a completed red is (or may be) caused by the fix, or `C.dataComplete ==
+     false`, or this PR has no identifiable target test → `skipped: PR #<P> CI pending /
+     target not yet validated on <C.headSha>; waiting` and stop. *(Round 1: this is where a
+     maintainer `/azp run` is awaited — the `/azp`-gated uitests/devicetests legs will not
+     have run until a human kicks them.)*
 3. **Green → surface for review.** If `C.overallConclusion == "success"`: the
    checks that RAN are green. **Primary-gate check first:** the deterministic
    `success` verdict only certifies "at least one green check, nothing failing or
@@ -787,8 +802,9 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
 
 #### Step 3.6 — Target-test verification & mark-ready gate
 
-Reached from the Step 3 **green-surface** branch and the Step 4 **unrelated-flake**
-branch, AFTER that branch has posted its comment. Purpose: confirm the SPECIFIC
+Reached from the Step 3 **green-surface** branch, the Step 4 **unrelated-flake** branch
+(AFTER that branch has posted its comment), and the Step 3.5 **gate-2 target-focused
+fast-path** (2a — while unrelated legs are still pending). Purpose: confirm the SPECIFIC
 test(s) this PR was opened to fix now PASS in the PR's own CI, and — only when they do
 — transition the draft `[ci-fix-net11]` PR to **ready for review** so a maintainer sees
 a validated fix instead of a draft. This is the ONLY place the loop flips draft→ready;
@@ -802,9 +818,10 @@ not the base branch's flakiness.
 - The PR is unmistakably THIS workflow's own: `[ci-fix-net11] ` title prefix AND the
   `agentic-workflows` label (mirrors the safe-output lock; the compensating scope
   control if the v0.80.9 compiler drops the declarative required-*).
-- You reached this gate from Step 3 (green) or Step 4 (**unrelated-flake**) — i.e. the
-  fix is NOT implicated in any red. If Step 4 classified the red as **caused by the
-  fix** (ADVANCE), do NOT run this gate — advance the attempt instead.
+- You reached this gate from Step 3 (green), Step 4 (**unrelated-flake**), or the Step 3.5
+  gate-2 **target-focused fast-path** (2a) — i.e. the fix is NOT implicated in any red that
+  has concluded. If Step 4 classified a red as **caused by the fix** (ADVANCE), do NOT run
+  this gate — advance the attempt instead.
 
 **T1 — Identify the target test(s).** From the `[ci-scan-net11]` issue signature the fix
 addresses (and the PR's own diff), extract the fully-qualified test method name(s) the
