@@ -276,6 +276,13 @@ static Microsoft.Maui.Platform.SearchViewExtensions.UpdateBackground(this Google
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateCancelButtonColor(this Google.Android.Material.TextField.TextInputLayout! textInputLayout, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateReturnType(this Android.Widget.EditText! editText, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateText(this Android.Widget.EditText! editText, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.SliderExtensions.UpdateMaximum(this Google.Android.Material.Slider.Slider! mSlider, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Platform.SliderExtensions.UpdateMaximumTrackColor(this Google.Android.Material.Slider.Slider! mSlider, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimum(this Google.Android.Material.Slider.Slider! mSlider, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimumTrackColor(this Google.Android.Material.Slider.Slider! mSlider, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbColor(this Google.Android.Material.Slider.Slider! mSlider, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbImageSourceAsync(this Google.Android.Material.Slider.Slider! mSlider, Microsoft.Maui.ISlider! slider, Microsoft.Maui.IImageSourceServiceProvider! provider) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Platform.SliderExtensions.UpdateValue(this Google.Android.Material.Slider.Slider! mSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SwitchExtensions.UpdateThumbColor(this Google.Android.Material.MaterialSwitch.MaterialSwitch! materialSwitch, Microsoft.Maui.ISwitch! view) -> void
 static Microsoft.Maui.Platform.SwitchExtensions.UpdateTrackColor(this Google.Android.Material.MaterialSwitch.MaterialSwitch! materialSwitch, Microsoft.Maui.ISwitch! view) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateFormat(this Microsoft.Maui.Platform.MauiMaterialTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
