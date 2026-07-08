@@ -831,7 +831,14 @@ not the base branch's flakiness.
 
 **Preconditions** (ALL must hold; otherwise record `skipped: readiness N/A PR #<P>
 (<reason>)` and stop this gate):
-- `C.isDraft == true` — if the PR is already ready, record `already-ready PR #<P>` and stop.
+- `C.isDraft == true` — if the PR is already ready-for-review, the draft→ready
+  transition is already done; do NOT re-mark. But still reconcile the priority label so
+  every validated loop PR carries it: if this PR is unmistakably THIS workflow's own
+  (`[ci-fix] ` title prefix AND the `agentic-workflows` label) and is MISSING `p/0`, emit
+  a single `add_labels` `["p/0"]` for PR #<P> (subject to the Step 0 dry-run gate — under
+  `dry_run == "true"` tally `dry-run: would-label p/0 PR #<P>` and emit nothing) and record
+  `reconciled-label p/0 PR #<P> (already-ready)`; otherwise record `already-ready PR #<P>`.
+  Either way, stop this gate.
 - The PR is unmistakably THIS workflow's own: `[ci-fix] ` title prefix AND the
   `agentic-workflows` label (mirrors the safe-output lock; the compensating scope
   control if the v0.80.9 compiler drops the declarative required-*).
@@ -893,15 +900,10 @@ this gate WITHOUT marking ready. Do NOT overclaim — a green *sibling* leg in t
 is not the target test, and a pass on one platform is not a pass on the others.
 
 **T3 — Mark ready + report.** If EVERY target test is VALIDATED-GREEN:
-- **Idempotency + label reconcile:** the draft→ready transition is one-shot — if a prior
-  bot `🎯 … target test … validated … on <C.headSha>` comment for THIS head SHA already
-  exists, OR `C.isDraft` is already false, do NOT re-comment and do NOT re-mark ready. But
-  still reconcile the priority label so a validated fix always lands in the p/0 queue: read
-  the PR's current labels; if it is MISSING `p/0`, emit a single `add_labels` `["p/0"]` for
-  PR #<P> (subject to the same Step 0 dry-run gate — under `dry_run == "true"` tally
-  `dry-run: would-label p/0 PR #<P>` and emit nothing) and record `reconciled-label p/0 PR
-  #<P> (already-ready)`; if it already carries `p/0`, record `already-marked-ready PR #<P>
-  (head <C.headSha>)`. Then stop.
+- **Idempotency:** if a prior bot `🎯 … target test … validated … on <C.headSha>`
+  comment for THIS head SHA already exists, the mark-ready already ran for this head —
+  record `already-marked-ready PR #<P> (head <C.headSha>)` and stop (the already-ready
+  precondition above handles p/0 label reconciliation for PRs already flipped to ready).
 - **Dry-run gate (Step 0):** if `dry_run == "true"`, emit NOTHING — print the intended
   readiness comment and "would mark ready + add p/0" to the run log, tally `dry-run:
   would-mark-ready PR #<P>`, and stop.
