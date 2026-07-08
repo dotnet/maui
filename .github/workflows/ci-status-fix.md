@@ -408,9 +408,13 @@ through `safe-outputs`.
    edit, un-draft, or label any PR that lacks both.
 7. **Per-run safe-output caps (per RUN, not per PR).** Each output type is capped
    per run: `create_pull_request` 3, `push_to_pull_request_branch` 3,
-   `add_comment` 3, `update_pull_request` 3. Note an ADVANCE spends one push **and**
-   one update **and** one comment, so ≤ 3 advances/run; surfacing a green or
-   annotating a flake spends one comment. When a bucket is exhausted, do NOT keep
+   `add_comment` 3, `update_pull_request` 3, `mark_pull_request_as_ready_for_review`
+   3, `add_labels` 3 (counts LABELS, not calls). Note an ADVANCE spends one push
+   **and** one update **and** one comment, so ≤ 3 advances/run; surfacing a green or
+   annotating a flake spends one comment; a **mark-ready (Step 3.6 T3)** spends one
+   comment **and** one mark-ready **and** one label as an ALL-OR-NOTHING set (T3
+   pre-checks those buckets and defers the whole PR if any is exhausted — never mark
+   a PR ready without its 🎯 audit comment). When a bucket is exhausted, do NOT keep
    emitting (extras are silently dropped) — record `skipped: per-run <output> cap
    reached; deferring PR #<P> to next cycle` for each remaining PR so the drop is a
    deliberate, logged decision. The continuous loop picks the deferred PRs up next
@@ -741,10 +745,13 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    - **2a — Target-green fast-path (draft `[ci-fix]` PRs only).** If `C.dataComplete ==
      true` AND the Step 3.6 preconditions hold (draft PR, `[ci-fix] ` title prefix AND the
      `agentic-workflows` label), run Step 3.6 **T1–T2** against `C.headSha` now: identify
-     the target test(s) and drill the PR's OWN AzDO test-results. If EVERY target test is
-     **VALIDATED-GREEN** (per T2's all-platform definition below — the target test PASSES
-     on every platform leg that ran it, `Failed` on none, and no *target* platform leg is
-     still pending) AND every leg in
+     the target test(s) and read the PR's OWN build **timeline / per-leg status** (anonymous
+     `_apis/build` — never `_apis/test`, per Hard-Rule 8). If EVERY target test is
+     **VALIDATED-GREEN** (per T2's all-platform definition below — the target's category leg
+     is `succeeded` on every platform that runs it, failed on none, and NO target platform
+     family the pipeline covers is still pending/unconcluded, per T2's "no platform left
+     unverified" rule; a platform that simply has no leg for the target's category — the test
+     doesn't run there — is fine, not a gap) AND every leg in
      `C.failedLegs` that has ALREADY concluded classifies as **unrelated flake** (Step 4 /
      Step 4.7 method — the fix is implicated in NO completed red), then the fix is proven
      regardless of unrelated *pending* legs → run **Step 3.6 T3** (mark ready + 🎯 comment)
@@ -767,19 +774,27 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    #<P> primary CI gate (maui-pr) not green on <C.headSha>; waiting` and stop — do NOT
    surface. (The `/azp`-gated `maui-pr-uitests` (def 313) / `maui-pr-devicetests`
    (def 314) legs MAY still be un-run — that is expected and is named below, not a
-   reason to withhold the surface.) **Idempotency:** scan the PR's existing comments
-   for a prior bot `✅ … validated … on <C.headSha>` note for THIS head SHA — if one
-   already exists, record `already-surfaced PR #<P> (head <C.headSha>)` and stop
-   WITHOUT re-commenting (re-surfacing the same green every tick is noise and burns
-   the per-run comment budget other PRs need). Otherwise resolve the attempt number from
-   `C.effectiveAttempt` (the authoritative max(marker, bot-commit) counter; omit the
-   number only if it is somehow indeterminate). **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit any comment — instead print the intended `✅` validated-green body to the run log, tally `dry-run: would-surface-green PR #<P>`, and stop. Otherwise `add_comment` on PR #<P>: `✅ Attempt <attempt>/10 validated
-   — the fix's CI is green on <C.headSha>. Ready for human review.`
-   Name any `/azp`-gated legs (uitests def 313 / devicetests def 314) that have not
-   run and still need a maintainer `/azp run`. Do NOT advance. Record
-   `surfaced-green PR #<P> (attempt <attempt>/10)`, then run **Step 3.6**
-   (target-test readiness gate) for this PR before stopping. *(This directly
-   attacks the real bottleneck — no reviews — so it is the highest-value outcome.)*
+   reason to withhold the surface.) **Comment idempotency + dry-run suppress the ✅
+   comment ONLY — neither skips Step 3.6.** Scan the PR's existing comments for a prior
+   bot `✅ … validated … on <C.headSha>` note for THIS head SHA; if one exists, set
+   `SKIP_SURFACE_COMMENT = true`. Resolve the attempt number from `C.effectiveAttempt`
+   (the authoritative max(marker, bot-commit) counter; omit the number only if it is
+   somehow indeterminate). Then post the surface comment UNLESS suppressed:
+   - if `dry_run == "true"`: do NOT emit — print the intended `✅` validated-green body to
+     the run log and tally `dry-run: would-surface-green PR #<P>`;
+   - else if `SKIP_SURFACE_COMMENT`: do NOT re-post — record `already-surfaced PR #<P>
+     (head <C.headSha>)` (re-surfacing the same green every tick is noise and burns the
+     per-run comment budget other PRs need);
+   - else `add_comment` on PR #<P>: `✅ Attempt <attempt>/10 validated — the fix's CI is
+     green on <C.headSha>. Ready for human review.` naming any `/azp`-gated legs (uitests
+     def 313 / devicetests def 314) that have not run and still need a maintainer `/azp
+     run`; record `surfaced-green PR #<P> (attempt <attempt>/10)`.
+   Do NOT advance. Then — in ALL of the above cases — run **Step 3.6** (target-test
+   readiness gate) for this PR before stopping: its `/azp`-gated target legs may conclude
+   green on this SAME head SHA on a LATER sweep (an `/azp run` adds no commit), and Step
+   3.6 is the ONLY place the draft→ready flip happens, so it MUST re-evaluate every sweep —
+   never `stop` here before it. *(This directly attacks the real bottleneck — no reviews —
+   so it is the highest-value outcome.)*
 4. **Red → classify caused-by-fix vs unrelated-flake.** If `C.overallConclusion ==
    "failure"`, analyze the PR's OWN failing build (NOT `main`): find the AzDO
    `maui-pr` build for this PR (filter builds by `branchName=refs/pull/<P>/merge`,
@@ -787,19 +802,26 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    method and Step 4.7 flake buckets to `C.failedLegs`.
    - **Unrelated flake only** (every failed leg is known-flaky / infra / a
      pre-existing baseline red NOT introduced by the fix): do NOT burn an attempt.
-     **Idempotency first:** scan the PR's existing comments for a prior bot
-     `♻️ … unrelated flake … on <C.headSha>` note for THIS head SHA — if one already
-     exists, record `already-annotated-flake PR #<P> (head <C.headSha>)` and stop
-     WITHOUT re-commenting (re-annotating the same flake every 12h sweep is noise and
-     burns the per-run comment budget other PRs need). Otherwise resolve the attempt
-     number from `C.effectiveAttempt` (the authoritative max(marker, bot-commit)
-     counter), omitting the `Attempt <attempt>/10:` prefix only if it is somehow
-     indeterminate. **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit any comment — instead print the intended `♻️` unrelated-flake body to the run log, tally `dry-run: would-annotate-flake PR #<P>`, and stop. Otherwise `add_comment` on PR #<P>: `♻️ Attempt <attempt>/10: red is
-     unrelated flake on leg(s) <X> (<evidence>) on <C.headSha>; the fix itself is not
-     implicated. A maintainer re-run (/azp run <pipeline>) should clear it.` Record
-     `annotated-flake PR #<P> (head <C.headSha>)`, then run **Step 3.6**
-     (target-test readiness gate) for this PR before stopping. *(Round 1: human re-runs;
-     Round 2: auto re-trigger.)*
+     **Comment idempotency + dry-run suppress the ♻️ comment ONLY — neither skips Step
+     3.6.** Scan the PR's existing comments for a prior bot `♻️ … unrelated flake … on
+     <C.headSha>` note for THIS head SHA; if one exists, set `SKIP_FLAKE_COMMENT = true`.
+     Resolve the attempt number from `C.effectiveAttempt` (the authoritative max(marker,
+     bot-commit) counter), omitting the `Attempt <attempt>/10:` prefix only if it is
+     somehow indeterminate. Then post the flake note UNLESS suppressed:
+     - if `dry_run == "true"`: do NOT emit — print the intended `♻️` unrelated-flake body
+       to the run log and tally `dry-run: would-annotate-flake PR #<P>`;
+     - else if `SKIP_FLAKE_COMMENT`: do NOT re-post — record `already-annotated-flake PR
+       #<P> (head <C.headSha>)` (re-annotating the same flake every 12h sweep is noise and
+       burns the per-run comment budget other PRs need);
+     - else `add_comment` on PR #<P>: `♻️ Attempt <attempt>/10: red is unrelated flake on
+       leg(s) <X> (<evidence>) on <C.headSha>; the fix itself is not implicated. A
+       maintainer re-run (/azp run <pipeline>) should clear it.` record `annotated-flake
+       PR #<P> (head <C.headSha>)`.
+     Then — in ALL of the above cases — run **Step 3.6** (target-test readiness gate) for
+     this PR before stopping: its `/azp`-gated target legs may conclude green on this SAME
+     head SHA on a LATER sweep, and Step 3.6 is the ONLY place the draft→ready flip
+     happens, so it MUST re-evaluate every sweep — never `stop` here before it. *(Round 1:
+     human re-runs; Round 2: auto re-trigger.)*
    - **Caused by the fix** (a failed leg still matches the original target
      signature, or the fix introduced a NEW failure): advance an attempt.
      - **Attempt count.** `attempt = C.effectiveAttempt` — the authoritative
@@ -838,7 +860,10 @@ not the base branch's flakiness.
   a single `add_labels` `["p/0"]` for PR #<P> (subject to the Step 0 dry-run gate — under
   `dry_run == "true"` tally `dry-run: would-label p/0 PR #<P>` and emit nothing) and record
   `reconciled-label p/0 PR #<P> (already-ready)`; otherwise record `already-ready PR #<P>`.
-  Either way, stop this gate.
+  This reconcile shares the per-run `add_labels` budget (Hard-Rule 7) with T3 mark-ready
+  transitions, which take priority — if the label bucket is already exhausted, do NOT emit;
+  record `skipped: p/0 reconcile deferred PR #<P> (add_labels cap)` (it self-heals next
+  sweep). Either way, stop this gate.
 - The PR is unmistakably THIS workflow's own: `[ci-fix] ` title prefix AND the
   `agentic-workflows` label (mirrors the safe-output lock; the compensating scope
   control if the v0.80.9 compiler drops the declarative required-*).
@@ -855,64 +880,96 @@ test can be identified (e.g. a product build-break rather than a test failure), 
 `skipped: readiness N/A PR #<P> (no target test)` and stop this gate — a build-only fix
 is validated by overall-green alone, which the Step 3 branch already handles.
 
-**T2 — Drill into the PR's own build test-results.** Using the SAME build-discovery as
-Step 4 (filter AzDO builds by `branchName=refs/pull/<P>/merge` or `sourceVersion ==
-C.headSha`), find the build(s) on `C.headSha` for the pipeline(s) that actually RUN the
-target test — `maui-pr` (def 302) for unit/integration tests, `maui-pr-uitests` (def
-313) for Appium UI tests, `maui-pr-devicetests` (def 314) for device tests — then query
-the AzDO test-results REST API on `dev.azure.com` for each target test's outcome on that
-build:
+**T2 — Verify the target test's platform legs are green (anonymous, leg-level).** Per-test
+outcomes come from the AzDO **test-results** API (`_apis/test/...`), which is **NOT reachable
+anonymously — Hard-Rule 8**: those endpoints 302-redirect to a sign-in page on this runner, so
+a `curl` returns an HTML redirect (not JSON) and every target test would look "not executed".
+Validate instead at **leg granularity** using ONLY the anonymous `_apis/build/...` timeline
+(Hard-Rule 8) — which is a STRONGER bar anyway: a `succeeded` category leg means every test in
+that category, including the target, passed on that platform (a de-flaked / target test is
+never skipped, so a green category leg cannot hide a target-test failure).
+
+Map the target test to the CI leg(s) that run it. A leg name encodes platform + test category
+(e.g. `Android UITests SafeAreaEdges,Shadow`, `iOS UITests SafeAreaEdges,Shadow`, `macOS
+UITests SafeAreaEdges,Shadow`, `Windows UITests SafeAreaEdges,Shadow`). Determine the target
+test's UI-test category — its `[Category(UITestCategories.X)]` in the test/HostApp source,
+visible in the PR diff or the test file — to know which leg-name substring identifies its legs;
+for a device test, the per-platform device-test legs.
+
+Using the SAME build-discovery as Step 4 (filter AzDO builds by `branchName=refs/pull/<P>/merge`
+or `sourceVersion == C.headSha`), read each build's **timeline** on `C.headSha` for the
+pipeline(s) that RUN the target test — `maui-pr` (def 302) for unit/integration tests,
+`maui-pr-uitests` (def 313) for Appium UI tests, `maui-pr-devicetests` (def 314) for device
+tests:
 
 ```bash
-ORG=dnceng-public; PROJ=public; P=<pr-number>; BUILD=<buildId on C.headSha>
-# test runs for the build:
-curl -s "https://dev.azure.com/$ORG/$PROJ/_apis/test/runs?buildUri=vstfs:///Build/Build/$BUILD&api-version=7.1" \
-  | tee /tmp/gh-aw/agent/testruns_${P}.json | jq -r '.value[] | "\(.id)\t\(.name)"'
-# per run id, look for each target test's outcome (repeat per target test).
-# IMPORTANT: aggregate outcomes across EVERY platform leg's run (Android/iOS/Windows/
-# macOS) — the test must PASS on all platforms it runs on, not just the one that was red:
-curl -s "https://dev.azure.com/$ORG/$PROJ/_apis/test/Runs/<runId>/results?api-version=7.1&\$top=1000" \
-  | jq -r '.value[] | select(.testCaseTitle=="<TargetTest>") | "\(.outcome)\t\(.automatedTestName)"'
+ORG=dnceng-public; PROJ=public; BUILD=<buildId on C.headSha>
+# Anonymous + Hard-Rule-8-compliant. NEVER call _apis/test/... (it 302-redirects to sign-in).
+# Each type=="Job" record is one platform leg: result (succeeded/failed/canceled/null),
+# state (completed/inProgress/pending), name (encodes "<Platform> UITests <Category>"):
+curl -s "https://dev.azure.com/$ORG/$PROJ/_apis/build/builds/$BUILD/timeline?api-version=7.1" \
+  | tee /tmp/gh-aw/agent/timeline_${BUILD}.json \
+  | jq -r '.records[] | select(.type=="Job") | "\(.result)\t\(.state)\t\(.name)"'
 ```
 
-Treat a target test as **VALIDATED-GREEN** only if, on `C.headSha`, it PASSES on **every
-platform it runs on** — a fix that repairs one platform must not silently regress the same
-test on another, so a pass on the originally-red leg alone is NOT enough. Across the target
-pipeline's platform legs (for a UI test: the Android, iOS, Windows, and macOS/MacCatalyst
-legs of `maui-pr-uitests`; for a device test: each device-test platform), require ALL of:
-- the target test appears with `outcome == "Passed"` on **every** platform leg whose
-  results contain it, AND
-- it appears with `outcome == "Failed"` (or aborted/errored) on **NO** leg, AND
-- **no platform is left unverified.** For each platform family the target pipeline covers,
-  that platform's leg must have CONCLUDED on `C.headSha`. If a platform leg concluded and
-  its results simply do not contain the test, the test does not run on that platform — that
-  is fine, not a gap. But if a platform leg that *would* run the test has **not concluded**
-  (pending, or an `/azp`-gated `maui-pr-uitests`/`maui-pr-devicetests` leg that has not been
-  kicked), the test's status on that platform is UNKNOWN → the fix is NOT yet validated
-  across platforms: record `skipped: target test <T> green on <platforms-so-far> but not yet
-  verified on <pending-platforms> (leg(s) <legs> pending / need /azp run) on PR #<P>` and
-  stop this gate WITHOUT marking ready.
+(The prefetch already exposes per-leg status in `C.failedLegs` / the checks context, and
+`gh pr checks <P>` lists the same per-leg rows with platform+category in the name — use
+whichever is handy; the build timeline is the authoritative cross-check on the exact build.)
 
-A target test that never appears on ANY concluded leg (**not executed** anywhere — e.g. its
-`/azp`-gated pipeline has not been kicked) is likewise NOT validated: record `skipped:
+Treat a target test as **VALIDATED-GREEN** only if, on `C.headSha`, the leg that runs its
+category is green on **every platform it runs on** — a fix that repairs one platform must not
+silently regress the same test's leg on another, so a green leg on the originally-red platform
+alone is NOT enough. Across the target pipeline's platform legs (for a UI test: the Android,
+iOS, Windows, and macOS/MacCatalyst legs running the target's category; for a device test: each
+device-test platform), require ALL of:
+- the target's category leg is `result == "succeeded"` **and** `state == "completed"` on
+  **every** platform that runs it, AND
+- that leg is `failed` / `canceled` / aborted on **NO** platform, AND
+- **no platform is left unverified.** For each platform family the target pipeline covers, that
+  platform's category leg must have CONCLUDED (`state == "completed"`) on `C.headSha`. If a
+  platform simply has no leg for the target's category, the test does not run there — that is
+  fine, not a gap. But if a platform's category leg has **not concluded** (`state` is
+  `inProgress` / pending, or an `/azp`-gated `maui-pr-uitests` / `maui-pr-devicetests` leg that
+  has not been kicked), the test's status on that platform is UNKNOWN → the fix is NOT yet
+  validated across platforms: record `skipped: target test <T> green on <platforms-so-far> but
+  not yet verified on <pending-platforms> (leg(s) <legs> pending / need /azp run) on PR #<P>`
+  and stop this gate WITHOUT marking ready.
+
+A target test whose category leg never concluded on ANY platform (**not executed** anywhere —
+e.g. its `/azp`-gated pipeline has not been kicked) is likewise NOT validated: record `skipped:
 target test <T> not yet executed on PR #<P> (<pipeline> not run — needs /azp run)` and stop
-this gate WITHOUT marking ready. Do NOT overclaim — a green *sibling* leg in the same group
-is not the target test, and a pass on one platform is not a pass on the others.
+this gate WITHOUT marking ready. Do NOT overclaim — a green *sibling* leg (a different category
+on the same platform) is not the target's leg, and a green leg on one platform is not a pass on
+the others.
 
-**T3 — Mark ready + report.** If EVERY target test is VALIDATED-GREEN:
-- **Idempotency:** if a prior bot `🎯 … target test … validated … on <C.headSha>`
-  comment for THIS head SHA already exists, the mark-ready already ran for this head —
-  record `already-marked-ready PR #<P> (head <C.headSha>)` and stop (the already-ready
-  precondition above handles p/0 label reconciliation for PRs already flipped to ready).
+**T3 — Mark ready + report.** If EVERY target test is VALIDATED-GREEN. The 🎯 comment,
+the mark-ready, and the `p/0` label are THREE SEPARATE safe-outputs — the comment
+existing does NOT prove the mark-ready took effect, so they are tracked independently:
+
+- **Comment idempotency (dup-suppress only — never gates the mark-ready).** We only reach
+  T3 while `C.isDraft == true` (the precondition stops an already-ready PR before here). So
+  if a prior bot `🎯 … target test … validated … on <C.headSha>` comment for THIS head
+  already exists, the comment landed on an earlier sweep but the **mark-ready did NOT take
+  effect** (the PR is still a draft) — set `SUPPRESS_COMMENT = true` (do not re-post the
+  duplicate 🎯 comment) but STILL complete the mark-ready + label below. Never treat the
+  comment's existence as "already marked ready" while the PR is still a draft. Record this
+  case as `re-marking PR #<P> (🎯 present; mark-ready did not take on a prior sweep)`.
+- **Atomicity budget pre-check (Hard-Rule 7).** Determine the outputs this gate will emit:
+  `mark_pull_request_as_ready_for_review` + `add_labels` always, plus `add_comment` unless
+  `SUPPRESS_COMMENT`. Verify a free per-run slot remains in EACH bucket you are about to
+  use. If ANY required bucket is exhausted, emit NONE of them — record `skipped: per-run
+  cap reached; deferring mark-ready PR #<P> to next cycle` and stop this gate. Never mark a
+  PR ready (or label it) without also posting its 🎯 audit comment in the same sweep — the
+  set either all lands or all defers.
 - **Dry-run gate (Step 0):** if `dry_run == "true"`, emit NOTHING — print the intended
   readiness comment and "would mark ready + add p/0" to the run log, tally `dry-run:
   would-mark-ready PR #<P>`, and stop.
-- Otherwise emit THREE safe-outputs for THIS PR number `<P>`:
-  1. `add_comment`: `🎯 Target test validated green on <C.headSha> — <TestList>
-     passed on ALL platforms it runs on (<platforms/legs>, buildId <B>). <if any red:
-     "The remaining red is unrelated flake on leg(s) <Y> — not caused by this fix.">
-     Transitioning this PR from draft to ready for review and adding `p/0`; a maintainer
-     still reviews and merges.`
+- Otherwise emit for THIS PR number `<P>`:
+  1. `add_comment` (ONLY if not `SUPPRESS_COMMENT`): `🎯 Target test validated green on
+     <C.headSha> — <TestList> passed on ALL platforms it runs on (<platforms/legs>,
+     buildId <B>). <if any red: "The remaining red is unrelated flake on leg(s) <Y> — not
+     caused by this fix.">  Transitioning this PR from draft to ready for review and adding
+     `p/0`; a maintainer still reviews and merges.`
   2. `mark_pull_request_as_ready_for_review` with `reason:` a one-line justification
      naming the validated test(s) and `<C.headSha>`.
   3. `add_labels` with `labels: ["p/0"]` for PR #<P> — put the now-review-ready fix into

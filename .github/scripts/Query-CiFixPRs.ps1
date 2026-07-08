@@ -74,6 +74,11 @@ $LoopBotCommitAuthors = @(
     'github-actions',
     'app/github-actions'
 )
+# MAINTENANCE: if this workflow's bot identity ever changes (new GitHub App, renamed
+# bot), update BOTH lists — $BotLogins (comment/review-author filtering, ~line 27) AND
+# $LoopBotCommitAuthors (commit-author carve-out, above). They are intentionally
+# separate ($LoopBotCommitAuthors is the narrower "our own commit authors" set), so a
+# new identity added to one but not the other silently drifts the human-engagement gate.
 # NOTE: 'action_required' is deliberately EXCLUDED. That conclusion means a human
 # must act (an Actions approval gate, or an integration awaiting a manual run) —
 # it reports status=completed, so treating it as a failure would let a settled head
