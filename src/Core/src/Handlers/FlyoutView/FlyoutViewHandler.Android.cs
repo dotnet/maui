@@ -51,11 +51,18 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		bool _releasing;
 		IDisposable? _pendingFragment;
-		void UpdateDetailsFragmentView()
+
+		void CancelPendingFragment()
 		{
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
+		}
+
+		void UpdateDetailsFragmentView()
+		{
+			CancelPendingFragment();
 
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
@@ -311,6 +318,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
+			CancelPendingFragment();
+
 			MauiWindowInsetListener.UnregisterView(platformView);
 			if (_navigationRoot is CoordinatorLayout cl)
 			{
@@ -330,6 +339,56 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		// Called from Window.OnPageChanging before page replacement so the DrawerLayout
+		// releases its system back callback synchronously, preventing it from shadowing
+		// the new page's callbacks on Android 16 (API 36+).
+		//
+		// Why >= 36: On API 33–35 predictive back is opt-in; DrawerLayout still routes
+		// through OnBackPressedDispatcher, which MAUI already intercepts. API 36 made
+		// predictive back mandatory — DrawerLayout now registers directly with
+		// OnBackInvokedDispatcher and the system bypasses OnBackPressedDispatcher entirely,
+		// so the explicit release here is required.
+		//
+		// NOTE: This method must only be called immediately before page replacement, which
+		// always triggers DisconnectHandler. The LockModeLockedClosed set below is transient
+		// and is reset by LayoutViews() if this handler is ever reconnected.
+		//
+		// TODO: Once CI moves to API 36 emulators, add a device test for this path
+		// (tracked by https://github.com/dotnet/maui/issues/33508).
+		internal void ReleaseDrawerCallbackBeforePageChange()
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(36))
+			{
+				return;
+			}
+
+			CancelPendingFragment();
+
+			// PlatformView may be null when the handler has not yet been connected;
+			// the is-pattern serves as a null guard here.
+			if (PlatformView is DrawerLayout dl)
+			{
+				if (_flyoutView is not null && _flyoutView.Parent == dl)
+				{
+					// Guard OnDrawerStateChanged so that this purely-internal close does not
+					// propagate back to VirtualView.IsPresented on the outgoing page.
+					_releasing = true;
+					try
+					{
+						dl.CloseDrawer(_flyoutView, false);
+					}
+					finally
+					{
+						_releasing = false;
+					}
+				}
+				// else: SetDrawerLockMode below is sufficient to release the back callback
+				// synchronously when _flyoutView is not a direct child of the DrawerLayout.
+
+				dl.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
+			}
+		}
+
 		void DrawerLayoutAttached(object? sender, View.ViewAttachedToWindowEventArgs e)
 		{
 			UpdateDetailsFragmentView();
@@ -337,8 +396,15 @@ namespace Microsoft.Maui.Handlers
 
 		void OnDrawerStateChanged(object? sender, DrawerLayout.DrawerStateChangedEventArgs e)
 		{
+			if (_releasing)
+			{
+				return;
+			}
+
 			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && _flyoutView != null)
+			{
 				VirtualView.IsPresented = DrawerLayout.IsDrawerVisible(_flyoutView);
+			}
 		}
 
 		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)

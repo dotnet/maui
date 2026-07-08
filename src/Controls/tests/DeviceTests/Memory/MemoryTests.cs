@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
@@ -11,6 +12,7 @@ using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 #if IOS || MACCATALYST
 using Microsoft.Maui.Controls.Handlers.Items2;
 #endif
@@ -18,6 +20,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 using System.Diagnostics.CodeAnalysis;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests.Memory;
 
@@ -150,7 +153,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
-	#if ANDROID
+#if ANDROID
 	[Fact("FlyoutPage Detail Navigation Does Not Leak")]
 	public async Task FlyoutPageDetailNavigationDoesNotLeak()
 	{
@@ -213,7 +216,9 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning restore CS0618 // Type or member is obsolete
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Grid))]
+#if TESTS_FAILS_ON_WINDOWS //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(HybridWebView))]
+#endif
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
@@ -234,9 +239,13 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SearchBar))]
 	[InlineData(typeof(Slider))]
+#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Stepper))]
+#endif
 	[InlineData(typeof(SwipeView))]
+#if TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Switch))]
+#endif
 	[InlineData(typeof(TimePicker))]
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TableView))]
@@ -255,7 +264,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		// NOTE: skip certain controls on older Android devices
 #pragma warning disable CS0618 // Type or member is obsolete
 		if ((type == typeof(DatePicker) || type == typeof(ListView)) && !OperatingSystem.IsAndroidVersionAtLeast(30))
-				return;
+			return;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		if (type == typeof(HybridWebView) && !OperatingSystem.IsAndroidVersionAtLeast(24))
@@ -343,6 +352,108 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
+
+	[Theory("Polygon and Polyline Points Replacement Does Not Leak Handler")]
+	[InlineData(typeof(Polygon))]
+	[InlineData(typeof(Polyline))]
+	public async Task ShapeHandlerDoesNotLeakWhenPointsReplaced(Type type)
+	{
+		SetupBuilder();
+
+		var result = await InvokeOnMainThreadAsync(() => CreateAndDisconnectShapeWithReplacedPoints(type));
+		var rootedOriginalPoints = result.RootedOriginalPoints;
+
+		// Keep the original collection rooted and fire its event; the broken implementation
+		// still has the disconnected handler subscribed to this old collection.
+		await InvokeOnMainThreadAsync(() => rootedOriginalPoints.Add(new Point(50, 50)));
+		await AssertionExtensions.WaitForGC(result.ShapeReference, result.HandlerReference, result.PlatformViewReference);
+		GC.KeepAlive(rootedOriginalPoints);
+	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	ShapePointsLeakProbeResult CreateAndDisconnectShapeWithReplacedPoints(Type type)
+	{
+		var originalPoints = CreatePointCollection(0);
+		var shape = CreateShapeWithPoints(type, originalPoints);
+		var layout = new Grid();
+
+		layout.Add(shape);
+		CreateHandler<LayoutHandler>(layout);
+
+		var handler = shape.Handler ?? throw new InvalidOperationException($"{type.Name} did not get a handler.");
+		var platformView = handler.PlatformView ?? throw new InvalidOperationException($"{type.Name} handler did not get a platform view.");
+
+		SetShapePoints(shape, CreatePointCollection(20));
+
+		var result = new ShapePointsLeakProbeResult(
+			new WeakReference(shape),
+			new WeakReference(handler),
+			new WeakReference(platformView),
+			originalPoints);
+
+		layout.Remove(shape);
+		handler.DisconnectHandler();
+		shape.Handler = null;
+
+		return result;
+	}
+
+	static Shape CreateShapeWithPoints(Type type, PointCollection points)
+	{
+		if (type == typeof(Polygon))
+		{
+			return new Polygon
+			{
+				Points = points,
+				WidthRequest = 120,
+				HeightRequest = 90
+			};
+		}
+
+		if (type == typeof(Polyline))
+		{
+			return new Polyline
+			{
+				Points = points,
+				WidthRequest = 120,
+				HeightRequest = 90
+			};
+		}
+
+		throw new ArgumentException($"Unsupported shape type: {type}", nameof(type));
+	}
+
+	static void SetShapePoints(Shape shape, PointCollection points)
+	{
+		switch (shape)
+		{
+			case Polygon polygon:
+				polygon.Points = points;
+				break;
+			case Polyline polyline:
+				polyline.Points = points;
+				break;
+			default:
+				throw new ArgumentException($"Unsupported shape: {shape.GetType().Name}", nameof(shape));
+		}
+	}
+
+	static PointCollection CreatePointCollection(double offset)
+	{
+		return
+		[
+			new Point(10 + offset, 10),
+			new Point(100 + offset, 20),
+			new Point(75 + offset, 80),
+			new Point(15 + offset, 70)
+		];
+	}
+
+	sealed record ShapePointsLeakProbeResult(
+		WeakReference ShapeReference,
+		WeakReference HandlerReference,
+		WeakReference PlatformViewReference,
+		PointCollection RootedOriginalPoints);
 
 	[Theory("CollectionView Header/Footer Doesn't Leak")]
 	[InlineData(typeof(CollectionView))]
@@ -462,6 +573,69 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
 	}
 
+	// https://github.com/dotnet/maui/issues/35472
+	// CarouselViewController2 leaked because the block-based NSNotificationCenter observer token was
+	// discarded and the subsequent RemoveObserver(this,...) call targeted the wrong observer type.
+#if IOS || MACCATALYST
+	[Fact("CarouselViewController2 Controller Does Not Leak After Navigation Pop (Issue 35472)")]
+	public async Task CarouselViewController2ControllerDoesNotLeakAfterNavigationPop()
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+		WeakReference controllerReference = null;
+
+		var navPage = new NavigationPage(new ContentPage { Title = "Root" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			var carousel = new CarouselView2
+			{
+				ItemsSource = Enumerable.Range(1, 5).Select(static i => $"Item {i}").ToList(),
+				ItemTemplate = new DataTemplate(static () => new Label
+				{
+					HorizontalTextAlignment = TextAlignment.Center,
+					VerticalTextAlignment = TextAlignment.Center
+				})
+			};
+
+			var page = new ContentPage { Content = carousel };
+			await navPage.Navigation.PushAsync(page);
+
+			// Allow the handler + controller to be fully created before capturing references.
+			await Task.Delay(500);
+
+			var handler = carousel.Handler as CarouselViewHandler2;
+			Assert.NotNull(handler);
+
+			viewReference = new WeakReference(carousel);
+			handlerReference = new WeakReference(handler);
+			controllerReference = new WeakReference(handler.Controller);
+
+			// Null locals so they don't keep objects alive across the scope boundary.
+			// page.Content still references carousel, so null page too.
+			handler = null;
+			carousel = null;
+			page = null;
+
+			await navPage.Navigation.PopAsync();
+		});
+
+		// Post the orientation notification to exercise the observer-removal path that was broken.
+		Foundation.NSNotificationCenter.DefaultCenter.PostNotificationName(
+			UIKit.UIDevice.OrientationDidChangeNotification,
+			UIKit.UIDevice.CurrentDevice);
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference, controllerReference);
+
+		Assert.False(viewReference.IsAlive, "CarouselView should have been garbage collected");
+		Assert.False(handlerReference.IsAlive, "CarouselViewHandler2 should have been garbage collected");
+		Assert.False(controllerReference.IsAlive, "CarouselViewController2 should have been garbage collected (orientation observer was not properly removed before fix)");
+	}
+#endif
+
+#if TESTS_FAILS_ON_WINDOWS //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[Theory("Cells Do Not Leak")]
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TextCell))]
@@ -531,6 +705,7 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
+#endif
 
 	[Fact("BindableLayout Does Not Leak")]
 	public async Task BindableLayoutDoesNotLeak()
@@ -593,7 +768,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		Assert.Equal(4, references.Count);
 		await AssertionExtensions.WaitForGC(references[2], references[3]);
 	}
-
+#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[Fact("Window Does Not Leak")]
 	public async Task WindowDoesNotLeak()
 	{
@@ -622,6 +797,7 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC([.. references]);
 	}
+#endif
 
 	[Fact("VisualDiagnosticsOverlay Does Not Leak"
 #if IOS || MACCATALYST
@@ -698,6 +874,28 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		Assert.True(AnimationExtensions.TweenersCounter <= 2);
 	}
+
+	[Fact]
+	public async Task ShouldThrowTrueException()
+	{
+		var page = new ContentPage { Title = "Page 1" };
+
+		await CreateHandlerAndAddToWindow(new Window(page), async () =>
+		{
+			await OnLoadedAsync(page);
+
+		});
+
+		await Assert.ThrowsAsync<TrueException>(async () => await AssertionExtensions.WaitForGC(new WeakReference(page)));
+
+		GC.KeepAlive(page);
+	}
+
+	[Fact]
+	public async Task ShouldPassAlways()
+	{
+		await AssertionExtensions.WaitForGC(new WeakReference(new object()));
+	}
 }
 
 sealed class AnimationPage : ContentPage
@@ -740,4 +938,3 @@ sealed class AnimationPage : ContentPage
 
 	}
 }
-

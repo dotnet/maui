@@ -35,11 +35,6 @@ namespace Microsoft.Maui.Resizetizer
 
 		public override void DrawUnscaled(SKCanvas canvas, float scale)
 		{
-			var size = GetOriginalSize();
-			if (size.IsEmpty)
-			{
-				throw new InvalidOperationException($"Cannot draw SVG file '{Filename}'. The SVG has no size. Ensure the SVG includes a viewBox attribute or both width and height attributes with valid dimensions.");
-			}
 			if (scale >= 1)
 			{
 				// draw using default scaling
@@ -47,6 +42,12 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			else
 			{
+				var size = GetOriginalSize();
+				if (size.IsEmpty)
+				{
+					throw new InvalidOperationException($"Cannot draw SVG file '{Filename}'. The SVG has no size. Ensure the SVG includes a viewBox attribute or both width and height attributes with valid dimensions.");
+				}
+
 				// vector scaling has rounding issues, so first draw as intended
 				var info = new SKImageInfo((int)size.Width, (int)size.Height);
 				using var surface = SKSurface.Create(info);
