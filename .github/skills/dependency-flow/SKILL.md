@@ -391,3 +391,79 @@ When standing up a new preview, **confirm the new preview's subs are in place be
 | Mid-cycle | Verify a sub exists | `darc get-subscriptions --ids "<guid>"` or MCP `maestro_subscription(subscriptionId=...)` |
 | Mid-cycle | Trigger a single sub | `darc trigger-subscriptions --id "<guid>"` (config PR must be merged first) |
 | Preview-ship | Cleanup prior preview | One PR removing per-preview subscription file, per-preview default-channel file, and the 24 lines for that preview in `dotnet-maui.yml`. Reference [PR 61033](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/61033). |
+
+## Preview release readiness
+
+When a contributor asks a "is this preview ready to ship?" style question about a
+`release/X.0.Yxx-previewN` branch, the best available answer depends on whether
+that contributor has access to an authoritative, sometimes-embargoed release
+source. This section defines a tiered workflow that lets contributors **with
+access** benefit automatically while contributors **without access** fall back
+safely to public BAR/Maestro data — and never learn that a private source exists.
+
+### Privacy & security guardrails (read first)
+
+- **Never echo private coordinates.** Do not print or repeat private endpoints,
+  hostnames, AAD/tenant/identity GUIDs, or secrets. None appear in this skill and
+  none should be introduced.
+- **The private source is invisible to no-access users.** In the `NO_ACCESS`
+  tier you must NOT mention that any private plugin or embargoed data source
+  exists. Answer purely from public data.
+- **No fetch-and-exec.** The gate below runs only a local `gh api` read probe and
+  prints a status token. It never downloads or executes remote code.
+- **Comment-only on GitHub.** As everywhere in this skill, never approve, merge,
+  or request changes on PRs.
+
+### Step 1 — run the access gate
+
+Run the deterministic gate script. It performs a cheap local GitHub read probe
+and prints **exactly one** status line — and **no private data** — to stdout:
+
+```bash
+pwsh .github/skills/dependency-flow/scripts/Get-PreviewReleaseReadiness.ps1
+```
+
+It always exits `0` (it can never fail its caller) and emits one of:
+
+| Token | Meaning |
+|-------|---------|
+| `RELEASE_TRACKER_STATUS=NO_ACCESS` | The local `gh` CLI is missing, unauthenticated, or cannot read the private release repo. |
+| `RELEASE_TRACKER_STATUS=AVAILABLE_ENABLED` | The user can read the private release repo AND the authoritative plugin is already enabled in their personal `~/.copilot/settings.json`. |
+| `RELEASE_TRACKER_STATUS=AVAILABLE_NOT_ENABLED` | The user can read the private release repo but has not enabled the authoritative plugin. |
+
+### Step 2 — branch on the token (A/B/C tiers)
+
+**Tier A — `AVAILABLE_ENABLED`:** Use the `dotnet-release-tracker` skill/plugin as
+the **authoritative source** for preview-release-readiness (including which staged
+build is blessed as the official preview). Prefer it over BAR/Maestro when they
+disagree, and present its answer directly.
+
+**Tier B — `AVAILABLE_NOT_ENABLED`:** The user appears to have access but hasn't
+enabled the authoritative plugin. Tell them so and offer an **opt-in** snippet for
+their **personal** `~/.copilot/settings.json`. Do **not** commit plugin enablement
+to the repo, and do not enable it on their behalf:
+
+```jsonc
+// ~/.copilot/settings.json
+"extraKnownMarketplaces": { "dotnet-release": { "source": { "source": "github", "repo": "dotnet/release" } } },
+"enabledPlugins": { "dotnet-release-tracker@dotnet-release": true }
+```
+
+After they enable it and restart, re-running the gate should report
+`AVAILABLE_ENABLED`. Until then, answer from public data (Tier C workflow) but you
+may note that a more authoritative source is available to them.
+
+**Tier C — `NO_ACCESS`:** Silently fall back to the public workflow already
+documented in this skill. Use BAR/Maestro (MCP tools or `mstro`/`darc`) plus
+public `dotnet/core` release metadata to report what public data can show —
+build/channel state, subscription health, and coherency. **Do not** reference any
+private plugin or embargoed source in this tier.
+
+### Honest limitation of the public fallback
+
+Public data (BAR/Maestro + `dotnet/core` release metadata) can surface a lot:
+which builds exist, what channels they're on, subscription health, and coherency
+state. But it **cannot identify which staged build is "blessed"** as the official
+preview — that determination lives in the authoritative source. In the `NO_ACCESS`
+and un-enabled Tier-B cases, be explicit that you can describe build/channel
+readiness but cannot confirm the official/blessed build.
