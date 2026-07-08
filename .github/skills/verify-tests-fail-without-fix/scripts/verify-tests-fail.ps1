@@ -1048,6 +1048,55 @@ if ($DetectedFixFiles.Count -eq 0) {
     New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 
     $ValidationLog = Join-Path $OutputPath "verification-log.txt"
+    # Failure-only mode must ALSO write verification-report.md. Without it the caller
+    # (Review-PR.ps1) sees exit 0 and labels the gate "PASSED" while simultaneously
+    # warning "verify-tests-fail.ps1 exited before writing a verification report" — a
+    # confusing false-positive for test-only PRs. Define the path here and emit a report
+    # on every exit path below.
+    $FailureOnlyReport = Join-Path $OutputPath "verification-report.md"
+
+    function Write-FailureOnlyReport {
+        param(
+            [string]$ReportStatus,   # "✅ PASSED" | "❌ FAILED" | "⚠️ INCONCLUSIVE"
+            [array]$Results
+        )
+        $mergeBaseShort = if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { "$MergeBase" }
+        $lines = @()
+        $lines += "## Gate: Test Verification (Failure-Only Mode)"
+        $lines += ""
+        $lines += "**Result:** $ReportStatus"
+        $lines += ""
+        $lines += "This is a **test-only** change (no fix files detected in the diff), so the gate only verifies that the new/changed tests **fail** against the merge base — proving they reproduce the bug they target."
+        $lines += ""
+        $lines += "**Platform:** $($Platform.ToUpper())  "
+        $lines += "**Merge base:** ``$mergeBaseShort``"
+        $lines += ""
+        $lines += "| Test | Type | Outcome |"
+        $lines += "|------|------|---------|"
+        foreach ($r in $Results) {
+            $outcome = if ($r.EnvError) { "⚠️ ENV ERROR" }
+                elseif ($r.BuildError) { "🛠️ BUILD ERROR" }
+                elseif ($r.FilterMismatch) { "🔍 NO MATCH" }
+                elseif (-not $r.Passed) { "FAIL ✅ (expected)" }
+                else { "PASS ❌ (should fail)" }
+            $lines += "| ``$($r.TestName)`` | $($r.TestType) | $outcome |"
+        }
+        $problem = @($Results | Where-Object { $_.Error })
+        if ($problem.Count -gt 0) {
+            $lines += ""
+            $lines += "<details>"
+            $lines += "<summary>Diagnostics</summary>"
+            $lines += ""
+            foreach ($r in $problem) {
+                $lines += "- **$($r.TestName)**: ``$($r.Error)``"
+            }
+            $lines += ""
+            $lines += "</details>"
+        }
+        ($lines -join "`n") | Set-Content -Path $FailureOnlyReport -Encoding UTF8
+        Write-Host ""
+        Write-Host "📄 Markdown report saved to: $FailureOnlyReport" -ForegroundColor Cyan
+    }
 
     # Initialize log
     "" | Set-Content $ValidationLog
@@ -1090,28 +1139,41 @@ if ($DetectedFixFiles.Count -eq 0) {
     Write-Host ""
 
     $allFailed = ($allResults | Where-Object { $_.Passed }).Count -eq 0
-    $hasErrors = ($allResults | Where-Object { $_.Error }).Count -gt 0
-
-    if ($hasErrors) {
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-        Write-Host "║              ERROR PARSING TEST RESULTS                   ║" -ForegroundColor Red
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-        foreach ($r in ($allResults | Where-Object { $_.Error })) {
-            Write-Host "  [$($r.TestType)] $($r.TestName): $($r.Error)" -ForegroundColor Red
-        }
-        exit 1
-    }
+    # Env/build/parse errors mean the gate could NOT verify the test's behaviour. Those
+    # must surface as INCONCLUSIVE (exit 3), not FAILED, so infra/build flakes don't
+    # masquerade as a broken test — mirroring the full-verification mode's classification.
+    $hasEnvError   = @($allResults | Where-Object { $_.EnvError }).Count -gt 0
+    $hasBuildError = @($allResults | Where-Object { $_.BuildError }).Count -gt 0
+    $hasOtherError = @($allResults | Where-Object { $_.Error -and -not $_.EnvError -and -not $_.BuildError }).Count -gt 0
 
     # Show per-test results
     foreach ($r in $allResults) {
         $icon = switch ($r.TestType) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
-        if (-not $r.Passed) {
+        if ($r.EnvError) {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ENV ERROR — $($r.Error)" -ForegroundColor Yellow
+        } elseif ($r.BuildError) {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): 🛠️ BUILD ERROR — $($r.Error)" -ForegroundColor Yellow
+        } elseif ($r.Error) {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ERROR — $($r.Error)" -ForegroundColor Yellow
+        } elseif (-not $r.Passed) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ✅ (expected)" -ForegroundColor Green
         } else {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ❌ (should fail!)" -ForegroundColor Red
         }
     }
     Write-Host ""
+
+    if ($hasEnvError -or $hasBuildError -or $hasOtherError) {
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+        Write-Host "║              VERIFICATION INCONCLUSIVE ⚠️                  ║" -ForegroundColor Yellow
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+        Write-Host "║  Could not verify the test(s) — env/build/parse error.    ║" -ForegroundColor Yellow
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+        Write-FailureOnlyReport -ReportStatus "⚠️ INCONCLUSIVE" -Results $allResults
+        # Exit 3 = inconclusive (build/env error). The report keeps the literal "ENV ERROR"
+        # marker so the caller's retry loop can distinguish transient infra flakes.
+        exit 3
+    }
 
     if ($allFailed) {
         Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
@@ -1120,6 +1182,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "║  All $($allResults.Count) test(s) FAILED as expected!                      ║" -ForegroundColor Green
         Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        Write-FailureOnlyReport -ReportStatus "✅ PASSED" -Results $allResults
         exit 0
     } else {
         $passedCount = ($allResults | Where-Object { $_.Passed }).Count
@@ -1129,6 +1192,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED but should FAIL!                   ║" -ForegroundColor Red
         Write-Host "║  Those tests don't reproduce the bug. Revise them!        ║" -ForegroundColor Red
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        Write-FailureOnlyReport -ReportStatus "❌ FAILED" -Results $allResults
         exit 1
     }
 }
