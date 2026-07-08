@@ -25,6 +25,12 @@ namespace Microsoft.Maui.Platform
 		public MauiToolbar()
 		{
 			InitializeComponent();
+			this.SizeChanged += (s, e) =>
+			{
+				if (contentGrid.Width != this.ActualWidth)
+					contentGrid.Width = this.ActualWidth;
+			};
+
 		}
 
 		internal string? Title
