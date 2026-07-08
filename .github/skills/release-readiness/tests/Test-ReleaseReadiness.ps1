@@ -1771,6 +1771,99 @@ $clsRevertTitle = Classify-RegressionCandidate `
 Assert-Eq -Label "Comment-cited 'Revert ...' PR is a rollback, not a fix → stays no-fix-yet" `
     -Expected 'no-fix-yet' -Actual $clsRevertTitle.classification
 
+# ───── Classify-RegressionCandidate (CLOSED issue never open-on-main) ─────
+# Real-world case: SR9 tracker #35876 flagged CLOSED issue #35615 as `open-on-main`
+# (an ACTIVE Tier-2 regression) because a giant still-OPEN 'Candidate' changelog PR
+# (#35716) `Fixes`-listed dozens of issues. That is contradictory — an unmerged PR
+# cannot have closed a completed issue. The guard reroutes open-on-main + CLOSED to
+# a Tier-3 class: `closed-fix-unlinked` when a merged fix is verifiably on the SR, or
+# the honest `no-fix-yet` fallback otherwise. It must NOT change behavior for
+# genuinely-OPEN issues.
+Write-Host "`n[Unit] Classify-RegressionCandidate (CLOSED issue never open-on-main)" -ForegroundColor Cyan
+
+# A single OPEN 'Candidate' changelog PR on main that survives the evidence filter
+# (body `Fixes #35615` → closing-keyword; base=main; a real product file so it is
+# NOT tooling-only; not a Revert title) → the strong-PR walk verdict is open-on-main.
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+function Test-CommitOnBranch  { param([string]$Sha, [string]$BranchRef) return $false }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    if ([int]$PrNumber -eq 35716) {
+        return [pscustomobject]@{
+            number      = 35716
+            title       = '[Candidate] SR9 changelog'
+            state       = 'OPEN'
+            baseRefName = 'main'
+            mergedAt    = $null
+            closedAt    = $null
+            body        = 'Fixes #35615'
+            mergeCommit = $null
+            files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/Something.cs'; additions = 1; deletions = 0 })
+        }
+    }
+    # The comment-cited fix PR (used only in the recovery test below): MERGED into
+    # inflight/candidate, present on SR9 via the (#num) subject token.
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix the actual regression'
+        state       = 'MERGED'
+        baseRefName = 'inflight/candidate'
+        mergedAt    = '2026-06-01T00:00:00Z'
+        closedAt    = '2026-06-01T00:00:00Z'
+        body        = 'Fixes #35104'   # deliberately a DIFFERENT issue: recovery fires on the COMMENT citation, not this PR body
+        mergeCommit = [pscustomobject]@{ oid = 'c1d6d72768c0ffee' }
+        files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/CollectionView.cs'; additions = 4; deletions = 0 })
+    }
+}
+
+# Test 1 — CLOSED issue + OPEN candidate on main + NO comment-cited fix →
+# reroute to `no-fix-yet` (NOT `open-on-main`).
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+$clsClosedNoFix = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35615; state = 'CLOSED' }) `
+    -CandidatePrs @(35716) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "CLOSED issue + OPEN candidate PR → no-fix-yet, never open-on-main" `
+    -Expected 'no-fix-yet' -Actual $clsClosedNoFix.classification
+# `no-fix-yet` is raw Tier 1 via Get-VerdictTier, but Get-OverallVerdict downgrades a
+# CLOSED no-fix-yet to non-blocking (🟢). That downgrade is the whole point: it turns
+# the false blocking Tier-2 `open-on-main` into a Tier-3 (non-blocking) outcome.
+$vClosedNoFix = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @(@{ classification = $clsClosedNoFix.classification; state = 'CLOSED' })
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "CLOSED no-fix-yet is non-blocking (Tier 3 effective → 🟢)" `
+    -Expected '🟢' -Actual $vClosedNoFix.symbol
+
+# Test 2 — CLOSED issue + same OPEN candidate on main, BUT a comment cites a MERGED
+# fix that is on the SR branch → the recovery wins → `closed-fix-unlinked`.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 35028; evidence = 'fix-phrase' }) }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return ($PrNumber -eq 35028 -and $BranchRef -eq 'origin/release/10.0.1xx-sr9') }
+$clsClosedRecovered = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35615; state = 'CLOSED' }) `
+    -CandidatePrs @(35716) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "CLOSED issue + OPEN candidate + comment-cited merged fix on SR → closed-fix-unlinked (recovery wins)" `
+    -Expected 'closed-fix-unlinked' -Actual $clsClosedRecovered.classification
+Assert-Eq -Label "closed-fix-unlinked recovery is Tier 3 (non-blocking)" `
+    -Expected 3 -Actual (Get-VerdictTier -Classification $clsClosedRecovered.classification)
+
+# Test 3 — REGRESSION GUARD: OPEN issue + OPEN candidate on main → the guard is
+# gated on CLOSED, so a genuinely-open regression STAYS `open-on-main`.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+$clsOpenIssue = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35615; state = 'OPEN' }) `
+    -CandidatePrs @(35716) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "OPEN issue + OPEN candidate PR → stays open-on-main (guard is CLOSED-only)" `
+    -Expected 'open-on-main' -Actual $clsOpenIssue.classification
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 
@@ -2222,6 +2315,30 @@ $genIdx = $mdBan.IndexOf('**Generated**')
 $banIdx = $mdBan.IndexOf('Nightly dogfood feed is STALE')
 Assert-Eq -Label "Banner appears after the **Generated** line" -Expected $true `
     -Actual ($genIdx -ge 0 -and $banIdx -gt $genIdx)
+
+# Report freshness banner (🕐/⏳) renders below **Generated** and is DERIVED-AT-RENDER,
+# so it must NOT perturb the semantic hash. Render the report TWICE with DIFFERENT
+# metadata.fetchedAt values: this changes both the **Generated** line AND the freshness
+# banner text, yet the sha= marker MUST stay identical (fetchedAt is excluded from the
+# hash). If the render-time banner ever leaked into Get-ReportSemanticHash, the two
+# hashes would diverge and the workflow's idempotent no-op would churn every run.
+$mdFreshOld = $mdData.Clone(); $mdFreshOld.metadata = $mdData.metadata.Clone(); $mdFreshOld.metadata.fetchedAt = '2025-01-01T00:00:00Z'
+$mdFreshNew = $mdData.Clone(); $mdFreshNew.metadata = $mdData.metadata.Clone(); $mdFreshNew.metadata.fetchedAt = '2026-07-06T12:00:00Z'
+$mdRenderOld = Format-MarkdownReport -Data $mdFreshOld -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$mdRenderNew = Format-MarkdownReport -Data $mdFreshNew -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$shaRenderOld = ([regex]::Match($mdRenderOld, 'release-readiness-hash: sha=([0-9a-f]{64})')).Groups[1].Value
+$shaRenderNew = ([regex]::Match($mdRenderNew, 'release-readiness-hash: sha=([0-9a-f]{64})')).Groups[1].Value
+# Guard against a vacuous pass: if the sha marker were ever renamed/reformatted, BOTH
+# extractions would yield '' and the equality assertion below would pass on ''=='' while
+# silently masking a real regression. Require a genuine 64-hex digest on each render first.
+Assert-Eq -Label "Hash-stability: old render emits a 64-hex sha" -Expected $true -Actual ($shaRenderOld -match '^[0-9a-f]{64}$')
+Assert-Eq -Label "Hash-stability: new render emits a 64-hex sha" -Expected $true -Actual ($shaRenderNew -match '^[0-9a-f]{64}$')
+$banRenderOld = (($mdRenderOld -split "`n") | Where-Object { $_ -match 'Report generated' }) -join ''
+$banRenderNew = (($mdRenderNew -split "`n") | Where-Object { $_ -match 'Report generated' }) -join ''
+Assert-Eq -Label "Freshness banner text differs when fetchedAt differs" -Expected $true `
+    -Actual ($banRenderOld -ne '' -and $banRenderNew -ne '' -and $banRenderOld -ne $banRenderNew)
+Assert-Eq -Label "Semantic hash is STABLE despite freshness-banner/fetchedAt change (no-op intact)" `
+    -Expected $shaRenderOld -Actual $shaRenderNew
 
 # Without TrackerKey: no tracker marker, no visible Tracker line
 $mdNoTracker = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
@@ -4341,6 +4458,45 @@ Assert-Eq -Label "banner: future publish → clamped to 'today'" -Expected $true
 # Caller-tunable thresholds: a 4-day-old build is ⚠️ by default but ✅ under a wider window.
 $bWide = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,18,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow -AgingDays 10 -StaleDays 20
 Assert-Eq -Label "banner: custom AgingDays=10 → 4d build is ✅ fresh" -Expected $true -Actual ($bWide -match '✅')
+
+# ───── Format-ReportFreshnessBanner: report's own DERIVED-AT-RENDER freshness note ─────
+# PURE (caller passes -Now), so the fresh AND the ⏳-stale paths are both tested offline by
+# injecting a past -GeneratedAt. This banner MUST NOT feed Get-ReportSemanticHash — the
+# render-twice-with-different-fetchedAt hash test below enforces that at the report level.
+Write-Host "`n[Unit] Format-ReportFreshnessBanner (report freshness — pure renderer)" -ForegroundColor Cyan
+$rfGen = [datetime]::new(2026, 6, 22, 12, 0, 0, [System.DateTimeKind]::Utc)
+
+# Fresh (< threshold) → 🕐, no ⏳.
+$rfFresh = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddMinutes(2)
+Assert-Eq -Label "freshness: 2m → 🕐, no ⏳"        -Expected $true  -Actual ($rfFresh -match '🕐' -and $rfFresh -notmatch '⏳' -and $rfFresh -match '2 minutes ago')
+# Zero age clamps to 'moments ago' (no negative / no throw).
+$rfNow = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen
+Assert-Eq -Label "freshness: 0 → 'moments ago'"     -Expected $true  -Actual ($rfNow -match 'moments ago' -and $rfNow -notmatch '⏳')
+# Just under threshold (3h < 4h default) → still fresh.
+$rf3h = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(3)
+Assert-Eq -Label "freshness: 3h → 🕐 (under 4h), no ⏳" -Expected $true -Actual ($rf3h -match '3 hours ago' -and $rf3h -notmatch '⏳')
+# At/over threshold → ⏳ stale flag.
+$rf5h = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(5)
+Assert-Eq -Label "freshness: 5h → ⏳ may be stale"   -Expected $true  -Actual ($rf5h -match '⏳' -and $rf5h -match '5 hours ago' -and $rf5h -match 'older than 4h')
+$rf2d = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddDays(2)
+Assert-Eq -Label "freshness: 2d → ⏳ may be stale"   -Expected $true  -Actual ($rf2d -match '⏳' -and $rf2d -match '2 days ago')
+# Singular/plural correctness.
+$rf1m = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddMinutes(1)
+Assert-Eq -Label "freshness: 1m → singular 'minute'" -Expected $true -Actual ($rf1m -match '1 minute ago' -and $rf1m -notmatch 'minutes')
+$rf1h = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(1)
+Assert-Eq -Label "freshness: 1h → singular 'hour'"   -Expected $true -Actual ($rf1h -match '1 hour ago' -and $rf1h -notmatch 'hours')
+# Custom threshold is honored.
+$rfCustom = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(3) -StaleHours 2
+Assert-Eq -Label "freshness: custom StaleHours=2 → 3h is ⏳" -Expected $true -Actual ($rfCustom -match '⏳' -and $rfCustom -match 'older than 2h')
+# ISO-8601 string input (the shape both engines actually store) parses.
+$rfIso = Format-ReportFreshnessBanner -GeneratedAt '2026-06-22T12:00:00Z' -Now $rfGen.AddHours(5)
+Assert-Eq -Label "freshness: ISO-8601 string → ⏳ stale"  -Expected $true -Actual ($rfIso -match '⏳' -and $rfIso -match '5 hours ago')
+# Fail-open: null / unparseable → '' (renderer appends nothing).
+Assert-Eq -Label "freshness: null → empty string"        -Expected '' -Actual (Format-ReportFreshnessBanner -GeneratedAt $null -Now $rfGen)
+Assert-Eq -Label "freshness: unparseable → empty string"  -Expected '' -Actual (Format-ReportFreshnessBanner -GeneratedAt 'not-a-date' -Now $rfGen)
+# Future generation (clock skew) clamps to 'moments ago', never negative / never ⏳.
+$rfFuture = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddMinutes(-30)
+Assert-Eq -Label "freshness: future gen → clamped 'moments ago', no ⏳" -Expected $true -Actual ($rfFuture -match 'moments ago' -and $rfFuture -notmatch '⏳')
 
 Write-Host "`n[Unit] Nightly-feed freshness query (Get-NightlyFeedFreshness — mocked fetcher)" -ForegroundColor Cyan
 # Self-contained fetcher: emulates the Azure Artifacts service index + a SemVer2
