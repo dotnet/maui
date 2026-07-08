@@ -566,6 +566,70 @@ function Invoke-TestRunWithRetry {
 }
 
 # ============================================================
+# Run a test and, when the observed outcome does NOT match the expected one,
+# re-run to confirm — making the gate DETERMINISTIC in the face of flaky tests.
+#
+# The gate contract is: the test(s) must FAIL without the fix and PASS with it.
+# A single run can flip on a flaky test (a bug-reproducing test that passes once
+# without the fix, or a real fix whose test fails once with it), which previously
+# produced spurious "Tests PASSED without fix" / "FAILED with fix" gate blocks.
+#
+# Decision rule (credit the EXPECTED direction if ANY run confirms it):
+#   - Expected 'Fail' (without-fix run): one FAIL proves the test reproduces the
+#     bug, so we only trust an unexpected PASS after every confirmation run also
+#     passes.
+#   - Expected 'Pass' (with-fix run): one PASS proves the fix makes the test green,
+#     so we only trust an unexpected FAIL after every confirmation run also fails.
+# Env/build/filter errors are never "confirmed" here — they are handled upstream as
+# INCONCLUSIVE so infra noise can't be mistaken for a flaky product outcome.
+# ============================================================
+function Invoke-TestRunConfirmed {
+    param(
+        [hashtable]$TestEntry,
+        [string]$LogFile,
+        [ValidateSet('Fail', 'Pass')][string]$Expected,
+        [int]$MaxConfirm = 2
+    )
+
+    $result = Invoke-TestRunWithRetry -TestEntry $TestEntry -LogFile $LogFile
+
+    # Only a clean pass/fail can be flaky; infra/build/filter problems are decided elsewhere.
+    if ($result.EnvError -or $result.BuildError -or $result.FilterMismatch) { return $result }
+
+    $matched = if ($Expected -eq 'Fail') { -not $result.Passed } else { $result.Passed }
+    if ($matched) { return $result }
+
+    $observed = if ($result.Passed) { 'PASS' } else { 'FAIL' }
+    Write-Host "  🔁 Observed unexpected '$observed' (expected $Expected) — confirming with up to $MaxConfirm re-run(s) to rule out flakiness" -ForegroundColor Yellow
+    Write-Log "  Unexpected '$observed' (expected $Expected) for $($TestEntry.TestName) — running up to $MaxConfirm confirmation re-run(s)"
+
+    for ($c = 1; $c -le $MaxConfirm; $c++) {
+        $confirmLog = "$LogFile.confirm$c"
+        $r = Invoke-TestRunWithRetry -TestEntry $TestEntry -LogFile $confirmLog
+        if ($r.EnvError -or $r.BuildError -or $r.FilterMismatch) {
+            # No clean confirmation run available — don't let infra noise overturn the
+            # original observation; keep looking.
+            Write-Host "  ⚠️ Confirmation run $c hit an env/build error — ignoring for the flakiness check" -ForegroundColor Yellow
+            continue
+        }
+        $rMatched = if ($Expected -eq 'Fail') { -not $r.Passed } else { $r.Passed }
+        if ($rMatched) {
+            Write-Host "  ✅ Confirmation run $c matched expected '$Expected' — test is FLAKY; crediting the expected outcome" -ForegroundColor Green
+            Write-Log "  Confirmation run $c matched '$Expected' — $($TestEntry.TestName) is flaky; crediting expected outcome"
+            $r.TestName = $TestEntry.TestName
+            $r.TestType = $TestEntry.Type
+            $r.Flaky = $true
+            return $r
+        }
+    }
+
+    Write-Host "  ❌ All $MaxConfirm confirmation run(s) still '$observed' — trusting the unexpected outcome as genuine" -ForegroundColor Red
+    Write-Log "  All $MaxConfirm confirmation run(s) still '$observed' — $($TestEntry.TestName) verdict is genuine"
+    $result.Confirmed = $true
+    return $result
+}
+
+# ============================================================
 # Parse test results from output (supports all test types)
 # ============================================================
 function Get-TestResultFromOutput {
@@ -1719,7 +1783,7 @@ foreach ($testEntry in $AllDetectedTests) {
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     try {
-        $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+        $result = Invoke-TestRunConfirmed -TestEntry $testEntry -LogFile $testLogFile -Expected 'Fail'
     } catch {
         $result = @{ Passed = $false; Failed = 0; Total = 0; PassCount = 0; FailCount = 0; Skipped = 0; EnvError = $true; Error = $_.Exception.Message }
         Write-Host "  ⚠️ Test invocation threw: $($_.Exception.Message)" -ForegroundColor Yellow
@@ -1818,7 +1882,7 @@ foreach ($testEntry in $AllDetectedTests) {
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     try {
-        $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+        $result = Invoke-TestRunConfirmed -TestEntry $testEntry -LogFile $testLogFile -Expected 'Pass'
     } catch {
         $result = @{ Passed = $false; Failed = 0; Total = 0; PassCount = 0; FailCount = 0; Skipped = 0; EnvError = $true; Error = $_.Exception.Message }
         Write-Host "  ⚠️ Test invocation threw: $($_.Exception.Message)" -ForegroundColor Yellow

@@ -1787,7 +1787,14 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
 
     # Check if this was an ENV ERROR (emulator timeout, ADB failure, etc.)
     $isEnvError = $false
-    if ($gateExitCode -ne 0) {
+    if ($gateExitCode -eq 2) {
+        # Exit 2 = deterministic "no runnable tests detected in the PR diff". This is a
+        # SKIPPED verdict, NOT an infra failure — the script writes no report by design.
+        # Do NOT treat the missing report as an env error and do NOT retry (retrying just
+        # re-runs detection 3× and, worse, the persistent-missing-report path below then
+        # forces INCONCLUSIVE for what is really a clean SKIPPED). Break immediately.
+        Write-Host "  ⏭️ Gate detected no runnable tests (exit 2) — SKIPPED, not retrying" -ForegroundColor Yellow
+    } elseif ($gateExitCode -ne 0) {
         if (Test-Path $gateContentFile) {
             $gateContent = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
             if ($gateContent -match 'ENV ERROR') {
