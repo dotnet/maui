@@ -97,6 +97,7 @@ on:
           -Repo $env:REPO_NAME `
           -MaxPRs 20 `
           -TitlePrefix '[ci-fix-net11]' `
+          -BaseBranch 'net11.0' `
           -OutputPath $output | Out-Null
         $json = Get-Content -Raw -LiteralPath $output
         $delimiter = "EOF_$([Guid]::NewGuid().ToString('N'))"
@@ -571,8 +572,10 @@ this issue.
 #### Step 3.0 — Prefetched watch context (read this first)
 
 A deterministic pre-agent step (`.github/scripts/Query-CiFixPRs.ps1`) has already
-enumerated every open `[ci-fix-net11]` PR and, for each, matched its **current head
-SHA** to that SHA's CI state so you never act on a stale prior-commit result.
+enumerated every open `[ci-fix-net11]` PR **based on `net11.0`** (the base-branch
+scope that keeps this twin from adopting the main twin's PRs) and, for each, matched
+its **current head SHA** to that SHA's CI state so you never act on a stale
+prior-commit result.
 Consume this JSON verbatim — do NOT blind-re-query for what it already gives you:
 
 ```json

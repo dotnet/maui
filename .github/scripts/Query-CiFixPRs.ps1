@@ -9,7 +9,11 @@ param(
     [string]$Owner = 'dotnet',
     [string]$Repo = 'maui',
     [string]$OutputPath = "CustomAgentLogsTmp/CiFixScanner/candidates.json",
-    [string]$TitlePrefix = '[ci-fix]'
+    [string]$TitlePrefix = '[ci-fix]',
+    # The base branch this workflow instance owns. Each ci-status-fix twin watches ONLY
+    # PRs targeting its own base (main -> 'main', net11 -> 'net11.0'). See the baseRefName
+    # guard in the candidate loop for why this is load-bearing, not cosmetic.
+    [string]$BaseBranch = 'main'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -503,7 +507,7 @@ $searchJson = Invoke-GhCommand `
         '--state', 'open',
         '--search', "`"$TitlePrefix`" in:title",
         '--limit', "$MaxPRs",
-        '--json', 'number,title,url,headRefName,headRefOid,isDraft,labels'
+        '--json', 'number,title,url,baseRefName,headRefName,headRefOid,isDraft,labels'
     ) `
     -Description 'list open ci-fix PRs'
 $searchResult = if ([string]::IsNullOrWhiteSpace($searchJson)) { @() } else { @($searchJson | ConvertFrom-Json) }
@@ -512,6 +516,7 @@ $candidates = @()
 foreach ($pr in @($searchResult)) {
     $number = [int]$pr.number
     $title = [string]$pr.title
+    $baseRefName = [string]$pr.baseRefName
     $headRefName = [string]$pr.headRefName
     $labels = @($pr.labels | ForEach-Object { [string]$_.name })
 
@@ -524,6 +529,20 @@ foreach ($pr in @($searchResult)) {
     }
 
     if ($headRefName -notlike 'ci-fix/*') {
+        continue
+    }
+
+    # Base-branch partition (load-bearing): each ci-status-fix twin watches ONLY PRs that
+    # target its own base branch. The main twin searches "[ci-fix]" and the net11 twin
+    # searches "[ci-fix-net11]", but title-prefix alone is NOT a safe partition across the
+    # SHARED `ci-fix/**` branch namespace: net11 historically opened its PRs under the plain
+    # "[ci-fix]" prefix (renamed to "[ci-fix-net11]" in this change), so open legacy net11
+    # PRs still carry "[ci-fix]" + base net11.0. Without this guard the main twin's
+    # "[ci-fix]" search would ADOPT those net11.0-based PRs and push main-based fix commits
+    # onto them. Scoping to $BaseBranch mirrors the create-PR `base-branch` /
+    # `allowed-base-branches` pin onto the watch/advance path so the two twins never
+    # cross-drive each other's PRs. An empty/unexpected base fails closed (skipped).
+    if (-not $baseRefName.Equals($BaseBranch, [StringComparison]::OrdinalIgnoreCase)) {
         continue
     }
 
