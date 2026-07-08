@@ -4445,25 +4445,47 @@ if (-not (Test-Path -LiteralPath $gateScript)) {
     Assert-Eq -Label "jsonc: empty input returned unchanged" -Expected '' -Actual (Remove-JsoncComments '')
 }
 
-# --- Access-gate dot-source guard: must skip the gate body (no RELEASE_TRACKER_STATUS,
-#     no exit) ONLY when dot-sourced, and must NOT wrongly skip a real `&` invocation
-#     that follows a dot-source on the same command line. Regression guard for the
-#     fragile `$MyInvocation.Line -match '^\.\s'` fallback (would suppress the second
-#     call because the whole command-line text starts with the earlier dot-source).
+# --- Access-gate dot-source guard: must skip the driver body (return before any
+#     side effect / exit) ONLY when dot-sourced, and must NOT wrongly skip a real
+#     `&`/`-File` invocation that follows a dot-source on the same command line.
+#     Regression guard for the fragile `$MyInvocation.Line -match '^\.\s'` fallback
+#     (would suppress the second call because the whole command-line text starts
+#     with the earlier dot-source).
+#     Hermetic: builds a throwaway fixture from the REAL guard line (read out of the
+#     gate script, so this test cannot drift from it) plus a sentinel, then exercises
+#     the exact guard semantics with NO `gh`/network dependency. The fixture path is
+#     passed through an env var (not string-interpolated) so paths with spaces or
+#     apostrophes are safe.
 Write-Host "`n[Unit] Access-gate dot-source guard (line-match false-skip regression)" -ForegroundColor Cyan
 if (-not (Test-Path -LiteralPath $gateScript)) {
     Assert-Eq -Label "guard: access-gate script exists" -Expected $true -Actual $false
 } else {
-    # Pure dot-source: the gate body must NOT run (no status line emitted).
-    $dotOnly = & pwsh -NoProfile -Command ". '$gateScript'; 'DOT-DONE'" 2>$null
-    Assert-Eq -Label "guard: pure dot-source does not run the gate (no status line)" `
-        -Expected $false -Actual ([bool](($dotOnly -join "`n") -match 'RELEASE_TRACKER_STATUS='))
+    $guardLine = @(Get-Content -LiteralPath $gateScript |
+        Where-Object { $_ -match "^\s*if \(\`$MyInvocation\.InvocationName -eq '\.'" }) |
+        Select-Object -First 1
+    if (-not $guardLine) {
+        Assert-Eq -Label "guard: real dot-source guard line located in gate script" -Expected $true -Actual $false
+    } else {
+        $guardFixture = Join-Path ([System.IO.Path]::GetTempPath()) ('rr_guard_{0}.ps1' -f [guid]::NewGuid().ToString('N'))
+        Set-Content -LiteralPath $guardFixture -Value ($guardLine + "`n'GUARD_SENTINEL_RAN'")
+        $env:RR_GUARD_FIXTURE = $guardFixture
+        try {
+            # (a) Pure dot-source: the guard returns before the sentinel → sentinel absent.
+            $dotOnly = & pwsh -NoProfile -Command '. $env:RR_GUARD_FIXTURE; "DONE"' 2>$null
+            Assert-Eq -Label "guard: pure dot-source skips the body (no sentinel)" `
+                -Expected $false -Actual ([bool](($dotOnly -join "`n") -match 'GUARD_SENTINEL_RAN'))
 
-    # Dot-source THEN a real `&` invocation on the SAME command line: the `&` call
-    # MUST run the gate and emit a status line. The old fallback wrongly skipped it.
-    $dotThenCall = & pwsh -NoProfile -Command ". '$gateScript'; & '$gateScript'" 2>$null
-    Assert-Eq -Label "guard: `& call after dot-source still runs the gate (emits status)" `
-        -Expected $true -Actual ([bool](($dotThenCall -join "`n") -match 'RELEASE_TRACKER_STATUS='))
+            # (b) Dot-source THEN a real `&` call on the SAME command line: the `&` call
+            #     must run the body → sentinel present. The old fallback wrongly skipped it
+            #     (verified: restoring the `-or ... -match '^\.\s'` form flips this to absent).
+            $dotThenCall = & pwsh -NoProfile -Command '. $env:RR_GUARD_FIXTURE; & $env:RR_GUARD_FIXTURE' 2>$null
+            Assert-Eq -Label "guard: `& call after dot-source still runs the body (sentinel present)" `
+                -Expected $true -Actual ([bool](($dotThenCall -join "`n") -match 'GUARD_SENTINEL_RAN'))
+        } finally {
+            Remove-Item -LiteralPath $guardFixture -Force -ErrorAction SilentlyContinue
+            Remove-Item Env:\RR_GUARD_FIXTURE -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 # --- Get-BranchComponentPins: git-pin fallback for the Action-owned best-effort
