@@ -14,6 +14,7 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Google.Android.Material.AppBar;
 using Google.Android.Material.Badge;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
