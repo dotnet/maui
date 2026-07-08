@@ -12,7 +12,9 @@
     HorizontalAlignment="Stretch"
     x:Name="commandBar">
   <CommandBar.Content>
-    <Grid x:Name="contentGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+    <Grid x:Name="contentGrid" VerticalAlignment="Stretch" 
+        HorizontalAlignment="Center"
+          Width="{Binding ActualWidth, ElementName=commandBar}">
 
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"/>
