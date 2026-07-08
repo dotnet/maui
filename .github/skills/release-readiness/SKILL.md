@@ -127,10 +127,19 @@ The full tier table, the user-scope opt-in snippet, and the privacy guardrails l
 
 > **Blessed ≠ green.** The release tracker names the *official* build; it does **not** substitute for the ship-readiness judgment. A build can be blessed while this skill still reports open `regressed-in-*` blockers — surface both.
 
+**Don't maintain a standing "🏷️ Official (blessed) preview build" table in the tracker.** The deterministic CI body already owns the public blessed-build handling: its **"🏷️ Preview N component build — branch pins + inferred sub health"** section states the pins are explicitly *not* the blessed build, carries the drift-proof "verify locally" prompt, and infers subscription health from the public PR trail. Because the blessed build number is embargoed (withheld from the public issue), a standing public table just renders "🔒 withheld" and duplicates that callout. So a local run with tracker access should **report the blessed SDK/runtime build in its conversational answer**, and only add a line to _Release Captain Notes_ when there's a **decision or exception worth persisting** — e.g. the blessed build differs from the branch pin, a promoted build was rejected, or a subscription is confirmed broken. Don't re-create the section the CI body already renders.
+
 ### Preview: is the branch actually plumbed? (subscription wiring + feed drift)
 
 A preview can pass CI and even have a blessed build yet still not be *ship-wired* —
 the branch is cut but nothing flows into it, or its promoted feed lags the branch.
+The deterministic CI body already gives a **best-effort inferred** read of the
+wiring from the public PR trail — the **Flow signal** column in its
+**"🏷️ Preview N component build — branch pins + inferred sub health"** section
+(🔄 open dep-flow PR / ✅ fresh merge ≤14d / ⚠️ stale >14d / ❌ none seen). The
+checks below are the **authoritative** confirmation a local run adds on top of that
+inference (`darc`/BAR can see the subscription itself; CI can only see its PR
+exhaust). Run them when the inferred signal is ⚠️/❌, or to confirm a ✅ before ship.
 A complete *"is preview N ready?"* answer runs three more **public** (BAR/Maestro + git)
 checks alongside the survey and the blessed-build lookup:
 
@@ -144,7 +153,11 @@ remediation (combined-PR pattern), and live worked examples — live in dependen
 ([`../dependency-flow/SKILL.md`](../dependency-flow/SKILL.md)); run them from there and
 fold the results into the preview report (missing subs ⇒ an FYI note; stale feed ⇒ a
 flagged concern; component pins ⇒ coherent ✅ or a flagged divergence) rather than
-duplicating the mechanics here.
+duplicating the mechanics here. Persist a line in _Release Captain Notes_ **only when
+the authoritative check diverges from or refines the CI-inferred Flow signal** — e.g.
+inferred ✅ but the sub points at the wrong channel, or inferred ⚠️/❌ confirmed as a
+real gap with the missing source repos named. When the local check simply agrees with
+the inferred signal, report it conversationally and leave the tracker to the CI body.
 
 ## Parameters
 
