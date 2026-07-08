@@ -60,8 +60,7 @@ namespace Microsoft.Maui.Controls
 					var label = ((Label)bindable);
 
 					formattedString.SpansCollectionChanged -= label.Span_CollectionChanged;
-					formattedString.PropertyChanged -= label.OnFormattedTextChanged;
-					formattedString.PropertyChanging -= label.OnFormattedTextChanging;
+					label.UnsubscribeFormattedStringPropertyEvents(formattedString);
 					formattedString.Parent = null;
 					label.RemoveSpans(formattedString.Spans);
 				}
@@ -74,8 +73,7 @@ namespace Microsoft.Maui.Controls
 				{
 					var formattedString = (FormattedString)newvalue;
 					formattedString.Parent = label;
-					formattedString.PropertyChanging += label.OnFormattedTextChanging;
-					formattedString.PropertyChanged += label.OnFormattedTextChanged;
+					label.SubscribeFormattedStringPropertyEvents(formattedString);
 					formattedString.SpansCollectionChanged += label.Span_CollectionChanged;
 					label.SetupSpans(formattedString.Spans);
 				}
@@ -118,6 +116,39 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureIfLabelSizeable());
 
 		readonly Lazy<PlatformConfigurationRegistry<Label>> _platformConfigurationRegistry;
+
+		// Proxy-based weak subscriptions for FormattedString PropertyChanging/PropertyChanged.
+		// Proxies hold WeakReferences to the handler delegates (which are stored as fields below),
+		// so when the Label is GC'd the handler fields become unreachable and the proxies
+		// auto-unsubscribe on the next event — preventing zombie delegate accumulation.
+		PropertyChangingEventHandler _onFormattedTextChanging;
+		PropertyChangedEventHandler _onFormattedTextChanged;
+		WeakNotifyPropertyChangingProxy _formattedStringPropertyChangingProxy;
+		WeakNotifyPropertyChangedProxy _formattedStringPropertyChangedProxy;
+
+		~Label()
+		{
+			_formattedStringPropertyChangingProxy?.Unsubscribe();
+			_formattedStringPropertyChangedProxy?.Unsubscribe();
+		}
+
+		void SubscribeFormattedStringPropertyEvents(FormattedString formattedString)
+		{
+			_onFormattedTextChanging ??= OnFormattedTextChanging;
+			_onFormattedTextChanged ??= OnFormattedTextChanged;
+
+			_formattedStringPropertyChangingProxy ??= new();
+			_formattedStringPropertyChangingProxy.Subscribe(formattedString, _onFormattedTextChanging);
+
+			_formattedStringPropertyChangedProxy ??= new();
+			_formattedStringPropertyChangedProxy.Subscribe(formattedString, _onFormattedTextChanged);
+		}
+
+		void UnsubscribeFormattedStringPropertyEvents(FormattedString formattedString)
+		{
+			_formattedStringPropertyChangingProxy?.Unsubscribe();
+			_formattedStringPropertyChangedProxy?.Unsubscribe();
+		}
 
 		/// <summary>Initializes a new instance of the Label class.</summary>
 		public Label()

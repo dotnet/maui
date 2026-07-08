@@ -621,6 +621,11 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var child in childs)
 			{
+				if (i >= items.Count)
+				{
+					break;
+				}
+
 				if (child.Visibility == ViewStates.Visible)
 				{
 					var item = items[i];
@@ -668,9 +673,10 @@ namespace Microsoft.Maui.Platform
 
 					child.Layout(l, t, r, b);
 
-					i++;
 					previousWidth += swipeItemWidth;
 				}
+
+				i++;
 			}
 		}
 
