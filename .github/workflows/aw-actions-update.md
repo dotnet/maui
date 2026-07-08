@@ -34,8 +34,17 @@ if: |
 
 permissions:
   contents: read
+  # Required by the github `default` toolset (includes the issues toolset). The
+  # agent's own work uses only bash `gh pr list` + git + the create-pull-request
+  # safe-output, but the declared toolset needs issues:read to compile clean.
   issues: read
   pull-requests: read
+
+# Pin dispatch/schedule runs to main so the refresh always operates on the
+# canonical actions-lock.json (a workflow_dispatch could otherwise select a
+# stale branch).
+checkout:
+  ref: main
 
 # Lets maintainers find every asset this workflow creates (PRs, comments).
 tracker-id: aw-actions-update
@@ -109,11 +118,13 @@ workflow refreshes; those belong to the separate gh-aw version-updater workflow.
 Before changing anything, check for an open action-pin PR:
 
 ```bash
-gh pr list --state open --search '"[actions]" in:title' --json number,title,url,headRefName --limit 20
+gh pr list --state open --search '"[actions]" in:title' --author "app/github-actions" --json number,title,url,headRefName --limit 20
 ```
 
 If there is already an open PR whose title starts with `[actions]`, exit gracefully without
-creating another PR. Mention the existing PR in the run output only.
+creating another PR. Mention the existing PR in the run output only. (The `--author` filter scopes
+the check to this workflow's own bot-created PRs — safe-outputs opens them as `app/github-actions` —
+so an unrelated user-opened PR with a colliding title cannot suppress the refresh.)
 
 ## Step 1 — Ensure the gh-aw CLI is available
 
@@ -179,7 +190,7 @@ echo "All action pins are already up to date; no PR needed."
 If `.github/aw/actions-lock.json` changed, first record any workflow drift for the PR body:
 
 ```bash
-git diff --name-only -- .github/workflows | grep -E '\.(md|lock\.yml)$' || true
+git status --porcelain -- .github/workflows | grep -E '\.(md|lock\.yml)$' || true
 ```
 
 Then discard generated lock files:
@@ -194,14 +205,23 @@ If sourced workflow `.md` files also changed, discard them too after recording t
 git checkout -- .github/workflows/*.md 2>/dev/null || true
 ```
 
-Verify the final diff contains only the action pin lockfile:
+`git checkout --` only restores **tracked** files. `gh aw update` can also create brand-new
+**untracked** files under `.github/workflows/` (for example, a lock for a newly sourced workflow).
+Remove those too so they cannot leak into the PR or hide from the verification below:
 
 ```bash
-git status
-git diff --name-only
+git clean -f -- .github/workflows/
 ```
 
-If anything other than `.github/aw/actions-lock.json` remains changed, do not create a PR.
+Verify the final change set contains only the action pin lockfile. Use `git status --porcelain`
+(not `git diff --name-only`) so **untracked** files are also caught:
+
+```bash
+git status --porcelain
+```
+
+If `git status --porcelain` reports anything other than a single `.github/aw/actions-lock.json`
+entry, do not create a PR.
 
 ## Step 5 — Create the PR only for `.github/aw/actions-lock.json`
 
