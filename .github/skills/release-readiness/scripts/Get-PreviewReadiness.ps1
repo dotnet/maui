@@ -542,6 +542,41 @@ function Get-OpenPullRequests {
     return ConvertFrom-JsonOrEmptyArray $json
 }
 
+function Get-MergedPullRequests {
+    <#
+    .SYNOPSIS
+        Fetches recently MERGED PRs into $BaseBranch (for dependency-flow /
+        subscription-health inference). Public data — readable in CI with the
+        repo-scoped GITHUB_TOKEN.
+    .NOTES
+        `mergedAt` is requested so callers can date each merge; an open PR (from
+        Get-OpenPullRequests) has no `mergedAt`, which is how Get-ComponentFlowSignal
+        tells "open (flowing now)" from "merged N days ago". Newest-first by default.
+    #>
+    param([string]$BaseBranch)
+
+    if (-not (Test-BranchExists -BranchName $BaseBranch)) {
+        return @()
+    }
+
+    $json = Invoke-GitHubWithRetry -Arguments @(
+        "pr",
+        "list",
+        "--repo",
+        $Repository,
+        "--state",
+        "merged",
+        "--base",
+        $BaseBranch,
+        "--limit",
+        "100",
+        "--json",
+        "number,title,author,url,createdAt,updatedAt,mergedAt,labels,headRefName,baseRefName"
+    ) -Description "list merged PRs for $BaseBranch"
+
+    return ConvertFrom-JsonOrEmptyArray $json
+}
+
 function Get-IssuesByLabel {
     param(
         [string]$Label,
@@ -1038,6 +1073,97 @@ function Test-IsSdkBumpPr {
     } else { $null }
 
     return [bool]($title -and $title -match '(?i)\bBump\b.*dotnet/(dotnet|sdk)\b')
+}
+
+function Get-ComponentFlowSignal {
+    <#
+    .SYNOPSIS
+        Best-effort inference of one component's dependency-flow (subscription)
+        health from PUBLIC PR history — no Maestro/darc access required.
+    .DESCRIPTION
+        The GitHub Action cannot read Maestro subscription config (that lives in
+        the AzDO-internal maestro-configuration repo). But every *working*
+        subscription leaves a public trail: dependency-flow PRs into the branch
+        — darc "Update dependencies from dotnet/<repo> …" or human "Bump
+        dotnet/<repo> …". This scans that trail (open + merged dep-flow PRs) for
+        a single source repo and classifies:
+          * open    — an unmerged dep-flow PR for this repo is open right now
+                      (flow is actively happening) → healthy
+          * fresh   — newest dep-flow PR merged within $StaleDays → healthy
+          * stale   — newest dep-flow PR merged, but older than $StaleDays. This
+                      is the silent-decay case: the subscription exists but has
+                      stopped producing PRs ("it's been a while… 🤨") → suspicious
+          * missing — NO dep-flow PR for this repo into this branch at all: the
+                      subscription may never have been wired (or the branch is
+                      brand new) → suspicious
+        This is an INFERENCE from public signal, NOT the subscription itself; the
+        authoritative wiring is confirmed locally (darc get-subscriptions).
+    .NOTES
+        Feed ONLY open + merged dep-flow PRs (never closed-unmerged): a fed PR
+        with no `mergedAt` is treated as open. Repo match uses a trailing
+        negative lookahead so 'dotnet/dotnet' does not collide with
+        'dotnet/dotnet-optimization'. StrictMode-safe, dual-shape.
+    #>
+    param(
+        [string]$Repo,
+        [array]$DepFlowPRs,
+        [datetime]$Now = ([DateTime]::UtcNow),
+        [int]$StaleDays = 14
+    )
+
+    $none = [PSCustomObject]@{ Repo = $Repo; Status = 'missing'; Number = $null; Url = $null; AgeDays = $null }
+
+    if (-not $DepFlowPRs -or $DepFlowPRs.Count -eq 0) { return $none }
+
+    # dual-shape field reader (StrictMode-safe)
+    $field = {
+        param($obj, $name)
+        if ($null -eq $obj) { return $null }
+        if ($obj -is [System.Collections.IDictionary]) {
+            if ($obj.Contains($name)) { return $obj[$name] } else { return $null }
+        } elseif ($obj.PSObject.Properties[$name]) { return $obj.$name } else { return $null }
+    }
+
+    $pattern = "(?i)$([regex]::Escape($Repo))(?![\w-])"
+
+    $hits = @()
+    foreach ($pr in $DepFlowPRs) {
+        if (-not $pr) { continue }
+        $title = & $field $pr 'title'
+        if ($title -and ($title -match $pattern)) { $hits += $pr }
+    }
+    if ($hits.Count -eq 0) { return $none }
+
+    # Prefer an OPEN dep-flow PR (flow is happening right now) — no mergedAt.
+    $openHits = @($hits | Where-Object { -not (& $field $_ 'mergedAt') })
+    if ($openHits.Count -gt 0) {
+        $pick = $openHits |
+            Sort-Object -Descending { ConvertTo-UtcDateTime (& $field $_ 'createdAt') } |
+            Select-Object -First 1
+        return [PSCustomObject]@{
+            Repo    = $Repo
+            Status  = 'open'
+            Number  = (& $field $pick 'number')
+            Url     = (& $field $pick 'url')
+            AgeDays = $null
+        }
+    }
+
+    # Otherwise the newest MERGED dep-flow PR decides fresh vs stale.
+    $pick = $hits |
+        Sort-Object -Descending { ConvertTo-UtcDateTime (& $field $_ 'mergedAt') } |
+        Select-Object -First 1
+    $mergedUtc = ConvertTo-UtcDateTime (& $field $pick 'mergedAt')
+    $ageDays = if ($mergedUtc) { [Math]::Round(($Now - $mergedUtc).TotalDays) } else { $null }
+    $status = if ($null -ne $ageDays -and $ageDays -gt $StaleDays) { 'stale' } else { 'fresh' }
+
+    return [PSCustomObject]@{
+        Repo    = $Repo
+        Status  = $status
+        Number  = (& $field $pick 'number')
+        Url     = (& $field $pick 'url')
+        AgeDays = $ageDays
+    }
 }
 
 function Get-CategorizedPullRequests {
@@ -1916,17 +2042,28 @@ $notesBlockText = $notesSb.ToString()
 # self-refreshes on every automated re-run.
 $componentPins = Get-BranchComponentPins -Ref $SurveyRef -Major $majorVersion
 if ($componentPins) {
-    [void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins (blessed build: verify locally)")
+    # --- Inferred subscription health (public PR trail) ---
+    # We can't read Maestro subscription config from CI, but a *working* sub
+    # leaves a public trail of dependency-flow PRs into the branch. Gather that
+    # trail (open $targetPRs + recently merged) so each component row can show
+    # whether flow is alive, silently stalled, or apparently never wired.
+    $flowStaleDays   = 14
+    $flowNow         = [DateTime]::UtcNow
+    $mergedPRsForFlow = Get-MergedPullRequests -BaseBranch $SurveyRef
+    $allPRsForFlow   = @($targetPRs) + @($mergedPRsForFlow)
+    $depFlowPRs      = @($allPRsForFlow | Where-Object { Test-IsDependencyFlowPr $_ })
+
+    [void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins + inferred sub health")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("> [!IMPORTANT]")
-    [void]$md.AppendLine("> The versions below are the component builds **currently bundled** on ``$SurveyRef`` (read from ``eng/Version.Details.xml`` — public git). **This is NOT the confirmed official/blessed build.** The blessed designation lives in the internal **.NET Release Tracker**, and the android/macios/dotnet preview **subscription** wiring lives in **Maestro** — this Action can reach *neither* (it runs with ``contents:read`` + ``GITHUB_TOKEN`` only). **A maintainer must confirm both locally** and paste the result into _Release Captain Notes_ above. Run the release-readiness skill locally with a prompt like:")
+    [void]$md.AppendLine("> **Branch pins** below are the component builds **currently bundled** on ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT the confirmed official/blessed build** — that designation lives in the internal **.NET Release Tracker**, which this Action can't reach (``contents:read`` + ``GITHUB_TOKEN`` only). The **Flow signal** column *infers* each component's subscription health from the **public dependency-flow PR trail** (the Action can't read Maestro subscription config directly). It surfaces both a **never-wired** sub (❌ none seen) and a **silently stalled** one (⚠️ stale — the `"we stopped getting Maestro PRs a month ago`" decay case). The blessed build AND the authoritative subscription wiring are both confirmed **locally** — run the release-readiness skill:")
     [void]$md.AppendLine(">")
     [void]$md.AppendLine("> ``````")
     [void]$md.AppendLine("> Run release readiness for ${Branch}: report the blessed/official preview build (SDK + runtime) from the .NET Release Tracker, and verify the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel.")
     [void]$md.AppendLine("> ``````")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit |")
-    [void]$md.AppendLine("|-----------|----------------------|--------|")
+    [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit | Flow signal (inferred sub health) |")
+    [void]$md.AppendLine("|-----------|----------------------|--------|-----------------------------------|")
 
     $pinRows = @(
         @{ Label = 'dotnet/dotnet (VMR / SDK)'; Repo = 'dotnet/dotnet'; Pin = $componentPins.Vmr }
@@ -1934,9 +2071,20 @@ if ($componentPins) {
         @{ Label = 'dotnet/macios';             Repo = 'dotnet/macios';  Pin = $componentPins.Macios }
     )
     foreach ($r in $pinRows) {
+        $flow = Get-ComponentFlowSignal -Repo $r.Repo -DepFlowPRs $depFlowPRs -Now $flowNow -StaleDays $flowStaleDays
+        $ageTxt = ''
+        if ($null -ne $flow.AgeDays) {
+            $ageTxt = if ($flow.AgeDays -le 0) { 'today' } elseif ($flow.AgeDays -eq 1) { '1 day ago' } else { "$($flow.AgeDays) days ago" }
+        }
+        $flowCell = switch ($flow.Status) {
+            'open'  { "🔄 [#$($flow.Number)]($($flow.Url)) open — flowing" }
+            'fresh' { "✅ [#$($flow.Number)]($($flow.Url)) merged $ageTxt" }
+            'stale' { "⚠️ stale — newest [#$($flow.Number)]($($flow.Url)) merged $ageTxt" }
+            default { "❌ none seen — sub may be missing" }
+        }
         $pin = $r.Pin
         if (-not $pin) {
-            [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — |")
+            [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — | $flowCell |")
             continue
         }
         $commitCell = '—'
@@ -1944,8 +2092,10 @@ if ($componentPins) {
             $shortSha = $pin.Sha.Substring(0, [Math]::Min(7, $pin.Sha.Length))
             $commitCell = "[``$shortSha``](https://github.com/$($r.Repo)/commit/$($pin.Sha))"
         }
-        [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell |")
+        [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell | $flowCell |")
     }
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("_Flow-signal legend: 🔄 open dep-flow PR (flowing now) · ✅ merged ≤ $flowStaleDays d · ⚠️ newest merge > $flowStaleDays d (sub may have stalled) · ❌ no dep-flow PR into ``$SurveyRef`` seen (sub may be missing — or the branch is brand new). Inferred from the **public** PR trail; confirm authoritative wiring locally with ``darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch $SurveyRef``. dotnet/dotnet (VMR) typically flows on manual trigger, so a quiet VMR is less alarming than a quiet android/macios._")
     [void]$md.AppendLine("")
 
     # If a manual/darc component-bump PR is open against the branch, it names the

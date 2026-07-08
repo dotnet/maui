@@ -4263,6 +4263,37 @@ Assert-Eq -Label "sdk-bump: merge-up PR → false"                   -Expected $
 Assert-Eq -Label "sdk-bump: plain human PR → false"                -Expected $false -Actual (Test-IsSdkBumpPr $dfPlain)
 Assert-Eq -Label "sdk-bump: null PR → false"                       -Expected $false -Actual (Test-IsSdkBumpPr $null)
 
+# --- Get-ComponentFlowSignal: infer subscription health from the public PR trail ---
+# A working sub leaves a public trail of dep-flow PRs; classify open/fresh/stale/missing.
+$flowNow = [datetime]::new(2026, 7, 8, 0, 0, 0, [System.DateTimeKind]::Utc)
+$fOpenAndroid  = [PSCustomObject]@{ number = 101; title = '[release/11.0.1xx-preview6] Update dependencies from dotnet/android'; url = 'u101'; createdAt = '2026-07-06T00:00:00Z'; mergedAt = $null }
+$fStaleAndroid = [PSCustomObject]@{ number = 100; title = 'Bump dotnet/android to old (BAR 0)'; url = 'u100'; createdAt = '2026-05-01T00:00:00Z'; mergedAt = '2026-05-01T00:00:00Z' }
+$fFreshMacios  = [PSCustomObject]@{ number = 102; title = 'Bump dotnet/macios to 26.5 (BAR 1)'; url = 'u102'; createdAt = '2026-07-05T00:00:00Z'; mergedAt = '2026-07-05T00:00:00Z' }
+$fStaleVmr     = [PSCustomObject]@{ number = 103; title = 'Bump dotnet/dotnet (VMR) to preview.6 (BAR 2)'; url = 'u103'; createdAt = '2026-06-01T00:00:00Z'; mergedAt = '2026-06-01T00:00:00Z' }
+$fVmrOptColl   = [PSCustomObject]@{ number = 104; title = 'Bump dotnet/dotnet-optimization to 1.2 (BAR 3)'; url = 'u104'; createdAt = '2026-07-07T00:00:00Z'; mergedAt = '2026-07-07T00:00:00Z' }
+$fBatched      = [PSCustomObject]@{ number = 105; title = 'Update dependencies from dotnet/android, dotnet/macios'; url = 'u105'; createdAt = '2026-07-04T00:00:00Z'; mergedAt = '2026-07-04T00:00:00Z' }
+$fDictFresh    = @{ number = 110; title = 'Bump dotnet/android (BAR 9)'; url = 'u110'; createdAt = '2026-07-06T00:00:00Z'; mergedAt = '2026-07-06T00:00:00Z' }  # IDictionary shape
+
+$sigOpen  = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @($fStaleAndroid, $fOpenAndroid, $fFreshMacios) -Now $flowNow
+Assert-Eq -Label "flow: open dep-flow PR preferred over stale merge → open" -Expected 'open'   -Actual $sigOpen.Status
+Assert-Eq -Label "flow: open picks the open PR number"                      -Expected 101      -Actual $sigOpen.Number
+$sigFresh = Get-ComponentFlowSignal -Repo 'dotnet/macios' -DepFlowPRs @($fFreshMacios) -Now $flowNow
+Assert-Eq -Label "flow: recent merge → fresh"                              -Expected 'fresh'  -Actual $sigFresh.Status
+Assert-Eq -Label "flow: fresh age computed (3 days)"                        -Expected 3        -Actual $sigFresh.AgeDays
+$sigStale = Get-ComponentFlowSignal -Repo 'dotnet/dotnet' -DepFlowPRs @($fStaleVmr) -Now $flowNow
+Assert-Eq -Label "flow: old-only merge → stale"                           -Expected 'stale'  -Actual $sigStale.Status
+$sigMissing = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @() -Now $flowNow
+Assert-Eq -Label "flow: no PRs → missing"                                 -Expected 'missing' -Actual $sigMissing.Status
+$sigColl = Get-ComponentFlowSignal -Repo 'dotnet/dotnet' -DepFlowPRs @($fVmrOptColl) -Now $flowNow
+Assert-Eq -Label "flow: dotnet/dotnet does NOT collide w/ dotnet-optimization → missing" -Expected 'missing' -Actual $sigColl.Status
+$sigBatchA = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @($fBatched) -Now $flowNow
+$sigBatchM = Get-ComponentFlowSignal -Repo 'dotnet/macios' -DepFlowPRs @($fBatched) -Now $flowNow
+Assert-Eq -Label "flow: batched PR counts for android"                     -Expected 'fresh'  -Actual $sigBatchA.Status
+Assert-Eq -Label "flow: batched PR counts for macios"                      -Expected 'fresh'  -Actual $sigBatchM.Status
+$sigDict = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @($fDictFresh) -Now $flowNow
+Assert-Eq -Label "flow: IDictionary-shaped PR → fresh"                     -Expected 'fresh'  -Actual $sigDict.Status
+Assert-Eq -Label "flow: IDictionary-shaped PR number"                      -Expected 110      -Actual $sigDict.Number
+
 # --- Get-BranchComponentPins: git-pin fallback for the Action-owned best-effort
 #     component-build section. Parses eng/Version.Details.xml (public git, always
 #     readable in CI) to report the dotnet/dotnet, dotnet/android and dotnet/macios
