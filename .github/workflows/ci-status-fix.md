@@ -15,7 +15,9 @@ description: |
   humans (the open tracking issue is the hand-off surface; a dedicated
   [ci-fix][needs-human] PR is planned but currently deferred — see Step 6). CI on
   the PR is kicked by a human `/azp run` for now; the loop watches, classifies,
-  and re-fixes autonomously between kicks.
+  and re-fixes autonomously between kicks. When the SPECIFIC test a PR fixed is
+  confirmed green in that PR's own CI, the loop marks the draft PR ready for review
+  (a state transition only — it never approves or merges).
   Never mutes tests, but
   de-flakes genuinely flaky ones (deterministic synchronization, no retries /
   timeout bumps). Always skips visual-regression / screenshot issues.
@@ -268,6 +270,24 @@ safe-outputs:
     # min-integrity:approved; the residual is body-marker edits only (no code, no
     # merge, no close), capped at max:3. Revisit required-* if a future gh-aw
     # compiler emits them for this output.
+  mark-pull-request-as-ready-for-review:
+    # Flip a validated draft [ci-fix] PR to ready-for-review once the SPECIFIC test
+    # this PR was opened to fix is confirmed green in the PR's OWN CI (Step 3.6) —
+    # even when unrelated legs are red. The workflow is schedule/dispatch-triggered
+    # (no triggering-PR context), so target "*" lets the agent name the PR number it
+    # validated. This is a state transition ONLY: it never approves and never merges —
+    # a human still reviews and merges.
+    # PER-RUN total (not per-PR): a sweep may validate several PRs' target tests green.
+    max: 3
+    target: "*"
+    # Hard constraint (defense-in-depth): only ever un-draft THIS workflow's own
+    # ci-fix PRs — [ci-fix] title prefix AND agentic-workflows label — so a confused
+    # or prompt-injected agent cannot mark an arbitrary PR ready. (If the v0.80.9
+    # compiler silently drops these — as documented for update-pull-request above —
+    # the Step 3.6 preconditions + min-integrity:approved are the compensating scope
+    # controls; verify against the lock after compiling.)
+    required-title-prefix: "[ci-fix] "
+    required-labels: [agentic-workflows]
 
 timeout-minutes: 90
 
@@ -409,8 +429,9 @@ For every open tracking issue in scope, converge on exactly one outcome:
 | Open first help-wanted draft `[ci-fix]` PR | No open PR yet; a plausible candidate exists but cannot be runner-validated (device/UI tests) (attempt 1) |
 | Open first de-flake draft `[ci-fix]` PR | No open PR yet; failure is intermittent (green-on-retry) from a genuine test-quality defect; a deterministic-synchronization fix is producible (attempt 1, Step 4.7 bucket b) |
 | Advance an existing PR (push attempt N+1) | Open PR's own CI settled red *because of the fix itself*, no human engaged, marker < 10 — push a NEW distinct fix onto the same branch (Step 3.5 → 5.6) |
-| Surface a validated-green PR | Open PR's own CI settled green — comment "validated, attempt N/10; ready for review" and do NOT advance (Step 3.5) |
-| Annotate an unrelated-flake red | Open PR is red only on baseline-flake / unrelated legs — comment which leg needs a re-run; do NOT burn an attempt (Step 3.5) |
+| Surface a validated-green PR | Open PR's own CI settled green — comment "validated, attempt N/10; ready for review" and do NOT advance (Step 3.5), then mark the draft PR ready for review once the fixed test is confirmed green (Step 3.6) |
+| Annotate an unrelated-flake red | Open PR is red only on baseline-flake / unrelated legs — comment which leg needs a re-run; do NOT burn an attempt (Step 3.5); if the SPECIFIC fixed test is confirmed green on that build, still mark the draft PR ready for review (Step 3.6) |
+| Mark a validated PR ready for review | The specific test this PR fixed is confirmed green in the PR's own CI (even if unrelated legs are red) — comment the target-test result and transition the draft PR to ready for review; never approve or merge (Step 3.6) |
 | Wait | Open PR's CI is pending / not yet settled on the current head SHA — do nothing this cycle (Step 3.5) |
 | Hand-off skip (attempt cap) | Marker == 10 and the signature still reproduces — stop and defer to humans; the dedicated `[ci-fix][needs-human]` PR is planned but currently deferred (Step 6) |
 | Recorded skip | Visual-regression, human engaged, already-handled, fixed-in-latest-build, infra-flake, out-of-bounds, only-mute-available, or no novel approach producible |
@@ -714,7 +735,8 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    — the fix's CI is green on <C.headSha>. Ready for human review.`
    Name any `/azp`-gated legs (uitests def 313 / devicetests def 314) that have not
    run and still need a maintainer `/azp run`. Do NOT advance. Record
-   `surfaced-green PR #<P> (attempt <attempt>/10)` and stop. *(This directly
+   `surfaced-green PR #<P> (attempt <attempt>/10)`, then run **Step 3.6**
+   (target-test readiness gate) for this PR before stopping. *(This directly
    attacks the real bottleneck — no reviews — so it is the highest-value outcome.)*
 4. **Red → classify caused-by-fix vs unrelated-flake.** If `C.overallConclusion ==
    "failure"`, analyze the PR's OWN failing build (NOT `main`): find the AzDO
@@ -733,7 +755,8 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
      indeterminate. **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit any comment — instead print the intended `♻️` unrelated-flake body to the run log, tally `dry-run: would-annotate-flake PR #<P>`, and stop. Otherwise `add_comment` on PR #<P>: `♻️ Attempt <attempt>/10: red is
      unrelated flake on leg(s) <X> (<evidence>) on <C.headSha>; the fix itself is not
      implicated. A maintainer re-run (/azp run <pipeline>) should clear it.` Record
-     `annotated-flake PR #<P> (head <C.headSha>)` and stop. *(Round 1: human re-runs;
+     `annotated-flake PR #<P> (head <C.headSha>)`, then run **Step 3.6**
+     (target-test readiness gate) for this PR before stopping. *(Round 1: human re-runs;
      Round 2: auto re-trigger.)*
    - **Caused by the fix** (a failed leg still matches the original target
      signature, or the fix introduced a NEW failure): advance an attempt.
@@ -751,6 +774,77 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
        (the PR build IS the reproduction) then Step 5 to build a NEW fix **distinct
        from every prior commit on this branch**, emitted via the Step 5.6 ADVANCE
        path (push onto the same PR).
+
+#### Step 3.6 — Target-test verification & mark-ready gate
+
+Reached from the Step 3 **green-surface** branch and the Step 4 **unrelated-flake**
+branch, AFTER that branch has posted its comment. Purpose: confirm the SPECIFIC
+test(s) this PR was opened to fix now PASS in the PR's own CI, and — only when they do
+— transition the draft `[ci-fix]` PR to **ready for review** so a maintainer sees a
+validated fix instead of a draft. This is the ONLY place the loop flips draft→ready; it
+is a state transition, **never** an approval or a merge (a human still reviews and
+merges). Overall red on *unrelated* legs must NOT gate readiness — we validate the fix,
+not the base branch's flakiness.
+
+**Preconditions** (ALL must hold; otherwise record `skipped: readiness N/A PR #<P>
+(<reason>)` and stop this gate):
+- `C.isDraft == true` — if the PR is already ready, record `already-ready PR #<P>` and stop.
+- The PR is unmistakably THIS workflow's own: `[ci-fix] ` title prefix AND the
+  `agentic-workflows` label (mirrors the safe-output lock; the compensating scope
+  control if the v0.80.9 compiler drops the declarative required-*).
+- You reached this gate from Step 3 (green) or Step 4 (**unrelated-flake**) — i.e. the
+  fix is NOT implicated in any red. If Step 4 classified the red as **caused by the
+  fix** (ADVANCE), do NOT run this gate — advance the attempt instead.
+
+**T1 — Identify the target test(s).** From the `[ci-scan]` issue signature the fix
+addresses (and the PR's own diff), extract the fully-qualified test method name(s) the
+fix targets — e.g. `SafeAreaShouldWorkOnAllShellTabs`. For a de-flake it is the
+de-flaked test; for a product fix it is the originally-failing test(s). If NO specific
+test can be identified (e.g. a product build-break rather than a test failure), record
+`skipped: readiness N/A PR #<P> (no target test)` and stop this gate — a build-only fix
+is validated by overall-green alone, which the Step 3 branch already handles.
+
+**T2 — Drill into the PR's own build test-results.** Using the SAME build-discovery as
+Step 4 (filter AzDO builds by `branchName=refs/pull/<P>/merge` or `sourceVersion ==
+C.headSha`), find the build(s) on `C.headSha` for the pipeline(s) that actually RUN the
+target test — `maui-pr` (def 302) for unit/integration tests, `maui-pr-uitests` (def
+313) for Appium UI tests, `maui-pr-devicetests` (def 314) for device tests — then query
+the AzDO test-results REST API on `dev.azure.com` for each target test's outcome on that
+build:
+
+```bash
+ORG=dnceng-public; PROJ=public; P=<pr-number>; BUILD=<buildId on C.headSha>
+# test runs for the build:
+curl -s "https://dev.azure.com/$ORG/$PROJ/_apis/test/runs?buildUri=vstfs:///Build/Build/$BUILD&api-version=7.1" \
+  | tee /tmp/gh-aw/agent/testruns_${P}.json | jq -r '.value[] | "\(.id)\t\(.name)"'
+# per run id, look for each target test's outcome (repeat per target test):
+curl -s "https://dev.azure.com/$ORG/$PROJ/_apis/test/Runs/<runId>/results?api-version=7.1&\$top=1000" \
+  | jq -r '.value[] | select(.testCaseTitle=="<TargetTest>") | "\(.outcome)\t\(.automatedTestName)"'
+```
+
+Treat a target test as **VALIDATED-GREEN** only if, on `C.headSha`, it appears with
+`outcome == "Passed"` on at least one platform leg AND appears with `outcome ==
+"Failed"` on NO leg. A target test that never appears at all (**not executed** — e.g. an
+`/azp`-gated `maui-pr-uitests`/`maui-pr-devicetests` leg that has not been kicked) is
+NOT validated: record `skipped: target test <T> not yet executed on PR #<P>
+(<pipeline> not run — needs /azp run)` and stop this gate WITHOUT marking ready. Do NOT
+overclaim — a green *sibling* leg in the same group is not the target test.
+
+**T3 — Mark ready + report.** If EVERY target test is VALIDATED-GREEN:
+- **Idempotency:** if a prior bot `🎯 … target test … validated … on <C.headSha>`
+  comment for THIS head SHA already exists (or `C.isDraft` is already false), record
+  `already-marked-ready PR #<P> (head <C.headSha>)` and stop.
+- **Dry-run gate (Step 0):** if `dry_run == "true"`, emit NOTHING — print the intended
+  readiness comment and "would mark ready" to the run log, tally `dry-run:
+  would-mark-ready PR #<P>`, and stop.
+- Otherwise emit BOTH safe-outputs for THIS PR number `<P>`:
+  1. `add_comment`: `🎯 Target test validated green on <C.headSha> — <TestList>
+     passed (<platforms/legs>, buildId <B>). <if any red: "The remaining red is
+     unrelated flake on leg(s) <Y> — not caused by this fix.">  Transitioning this PR
+     from draft to ready for review; a maintainer still reviews and merges.`
+  2. `mark_pull_request_as_ready_for_review` with `reason:` a one-line justification
+     naming the validated test(s) and `<C.headSha>`.
+- Record `marked-ready PR #<P> (target <TestList> green on <C.headSha>)` and stop.
 
 #### Step 3.5.R — Maintainer change-request response (Track C)
 
@@ -1394,8 +1488,10 @@ Per issue, append one outcome line to `/tmp/gh-aw/agent/coverage.txt`:
 `advance-PR #<P> attempt <K>/10` (ADVANCE mode — new commit pushed to the
 existing PR), `surfaced-green PR #<P>` (fix's own CI went green; commented for
 review, did not advance), `annotated-flake PR #<P>` (red was unrelated flake;
-commented, attempt NOT burned), `waiting PR #<P>` (CI not settled yet),
-`dry-run: would-<fix|help|deflake|advance>`, `skipped: <reason>`. (The
+commented, attempt NOT burned), `marked-ready PR #<P>` (the specific fixed test
+was confirmed green in the PR's own CI; draft flipped to ready for review),
+`waiting PR #<P>` (CI not settled yet),
+`dry-run: would-<fix|help|deflake|advance|mark-ready>`, `skipped: <reason>`. (The
 `needs-human-PR` outcome is reserved for the deferred hand-off — Step 6 currently
 records a skip instead, so it is not emitted.)
 
