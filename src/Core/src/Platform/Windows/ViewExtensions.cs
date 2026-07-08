@@ -291,22 +291,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
 		{
-			if (layoutPanel is null || layout is null)
-			{
-				return;
-			}
-
-			var background = layout.Background?.ToPlatform();
-			if (background is null)
-			{
-				// We can't have a null background, because that would allow input through
-				// So we'll make the background color transparent (visually the same as null, but consumes input)
-				layoutPanel.Background = new WSolidColorBrush(UI.Colors.Transparent);
-			}
-			else
-			{
-				layoutPanel.Background = background;
-			}
+			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
@@ -453,16 +438,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO : Make public in NET 10.
-		internal static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayout layout)
+		public static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
 		{
-			if (layoutPanel is null || layout is null)
-			{
-				return;
-			}
-
-			// Set hit test visibility based on input transparency
-			layoutPanel.IsHitTestVisible = !layout.InputTransparent;
+			// Nothing to do yet, but we might need to adjust the wrapper view
 		}
 	}
 }
