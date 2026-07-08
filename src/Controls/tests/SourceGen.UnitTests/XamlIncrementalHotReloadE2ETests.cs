@@ -204,14 +204,6 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		return (peStream.ToArray(), pdbStream.ToArray(), compilation);
 	}
 
-	static void AssertHotReloadSupported()
-	{
-		Assert.True(MetadataUpdater.IsSupported,
-			"MetadataUpdater.IsSupported is false. " +
-			"Ensure <MetadataUpdaterSupport>true</MetadataUpdaterSupport> is set in the project, " +
-			"and for Mono, set DOTNET_MODIFIABLE_ASSEMBLIES=debug.");
-	}
-
 	// -----------------------------------------------------------------------
 	// Stub class that the generated partial class extends
 	// -----------------------------------------------------------------------
@@ -242,10 +234,9 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 	// Tests
 	// -----------------------------------------------------------------------
 
-	[Fact]
+	[MetadataUpdateFact]
 	public void PropertyChange_AppliedViaHotReload()
 	{
-		AssertHotReloadSupported();
 		XamlHotReloadState.Reset();
 
 		// --- XAML V1: Label says "Hello" ---
@@ -376,10 +367,9 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		}
 	}
 
-	[Fact]
+	[MetadataUpdateFact]
 	public void MultiplePropertyChanges_ChainedPatches()
 	{
-		AssertHotReloadSupported();
 		XamlHotReloadState.Reset();
 
 		const string xamlV1 = """
@@ -595,10 +585,9 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		Assert.True(pe.Length > 0, "Compiled assembly should not be empty");
 	}
 
-	[Fact]
+	[MetadataUpdateFact]
 	public void ResourceAdded_AppliedViaHotReload()
 	{
-		AssertHotReloadSupported();
 		XamlHotReloadState.Reset();
 
 		const string xamlV1 = """
@@ -694,10 +683,9 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		}
 	}
 
-	[Fact]
+	[MetadataUpdateFact]
 	public void ResourceRemoved_AppliedViaHotReload()
 	{
-		AssertHotReloadSupported();
 		XamlHotReloadState.Reset();
 
 		const string xamlV1 = """
@@ -792,10 +780,9 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		}
 	}
 
-	[Fact]
+	[MetadataUpdateFact]
 	public void ResourceValueChanged_AppliedViaHotReload()
 	{
-		AssertHotReloadSupported();
 		XamlHotReloadState.Reset();
 
 		const string xamlV1 = """

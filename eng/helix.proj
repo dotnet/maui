@@ -20,15 +20,18 @@
 
   <!--
     XAML Incremental Hot Reload E2E tests (SourceGen.UnitTests) apply real metadata deltas via
-    MetadataUpdater.ApplyUpdate. On CoreCLR that requires modifiable assemblies to be enabled at
-    process launch, which only happens when DOTNET_MODIFIABLE_ASSEMBLIES=debug is set in the
-    environment (VS sets it automatically when debugging; Helix does not). Without it
-    MetadataUpdater.IsSupported is false and those tests fail. Export it before each Helix work
-    item, using the shell-appropriate syntax for the target queue.
+    MetadataUpdater.ApplyUpdate. On CoreCLR MetadataUpdater.IsSupported is only true when the
+    process is launched with DOTNET_MODIFIABLE_ASSEMBLIES=debug (VS sets it automatically when
+    debugging; Helix does not). Without it those tests are skipped (see MetadataUpdateFactAttribute).
+
+    This single Helix send targets both a Windows (cmd) and an osx (bash) queue, so a per-shell
+    condition on $(IsPosixShell) can only ever be right for one of them. Emit both forms
+    unconditionally instead — each is a harmless no-op in the other shell (an unrecognized command
+    on the non-native shell), and the correct one exports the variable for that queue's work item.
   -->
   <ItemGroup>
-    <HelixPreCommand Condition="'$(IsPosixShell)' == 'true'" Include="export DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
-    <HelixPreCommand Condition="'$(IsPosixShell)' != 'true'" Include="set DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
+    <HelixPreCommand Include="export DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
+    <HelixPreCommand Include="set DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
   </ItemGroup>
 
   <!-- Local build outside of Azure Pipeline -->
