@@ -895,7 +895,7 @@ public class ButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(56)]
+	[Test, Order(50)]
 	public void VerifyButton_TextTransformLowercase()
 	{
 		App.WaitForElement("Options");
@@ -911,7 +911,7 @@ public class ButtonFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("button texttransform"));
 	}
 
-	[Test, Order(57)]
+	[Test, Order(51)]
 	public void VerifyButton_TextTransformDefault()
 	{
 		App.WaitForElement("Options");
@@ -936,7 +936,7 @@ public class ButtonFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("Button"));
 	}
 
-	[Test, Order(58)]
+	[Test, Order(52)]
 	public void VerifyButton_BackgroundColorResetToNone()
 	{
 		App.WaitForElement("Options");
@@ -960,7 +960,7 @@ public class ButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(59)]
+	[Test, Order(53)]
 	public void VerifyButton_FontAttributesFontFamilyFontSize()
 	{
 		App.WaitForElement("Options");
@@ -981,7 +981,7 @@ public class ButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(60)]
+	[Test, Order(54)]
 	public void VerifyButton_BorderColorBorderWidthCornerRadius()
 	{
 		App.WaitForElement("Options");
@@ -1003,7 +1003,7 @@ public class ButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(61)]
+	[Test, Order(55)]
 	public void VerifyButton_HorizontalOptionsEnd()
 	{
 		App.WaitForElement("Options");
@@ -1016,7 +1016,7 @@ public class ButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(62)]
+	[Test, Order(56)]
 	public void VerifyButton_VerticalOptionsEnd()
 	{
 		App.WaitForElement("Options");
