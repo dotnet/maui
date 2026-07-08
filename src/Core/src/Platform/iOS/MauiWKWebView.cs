@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Platform
 					? new NSUrl(baseUrl, true)
 					: new NSUrl(NSBundle.MainBundle.BundlePath, true);
 
-				// LoadSimulatedRequest (iOS 15+) is used instead of LoadHtmlString or a data: URL because:
+				// LoadSimulatedRequest (iOS 15+ / macCatalyst 15+) is preferred over LoadHtmlString because:
 				//   1. History  — creates a back/forward history entry for both the null and non-null
 				//                 BaseUrl cases, so GoBack/GoForward work correctly for HtmlWebViewSource.
 				//   2. Privacy  — the HTML document is passed as a parameter; WKWebView.Url only reflects
@@ -114,7 +114,15 @@ namespace Microsoft.Maui.Platform
 				//   3. Compat   — preserves the resolved base URL as the origin, keeping cookies,
 				//                 JavaScript evaluation, and relative-resource resolution working exactly
 				//                 as they did with the previous LoadHtmlString approach.
-				LoadSimulatedRequest(new NSUrlRequest(resolvedBaseUrl), html);
+				// On iOS 13/14 and earlier macCatalyst, fall back to LoadHtmlString.
+				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				{
+					LoadSimulatedRequest(new NSUrlRequest(resolvedBaseUrl), html);
+				}
+				else
+				{
+					LoadHtmlString(html, resolvedBaseUrl);
+				}
 			}
 		}
 
