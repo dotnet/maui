@@ -80,11 +80,7 @@ case $cpuname in
     ;;
 esac
 
-if [[ -n "${DOTNET_GLOBAL_INSTALL_DIR:-}" ]]; then
-  dotnetRoot="$DOTNET_GLOBAL_INSTALL_DIR"
-else
-  dotnetRoot="${repo_root}.dotnet"
-fi
+dotnetRoot="${repo_root}.dotnet"
 if [[ $architecture != "" ]] && [[ $architecture != $buildarch ]]; then
   dotnetRoot="$dotnetRoot/$architecture"
 fi

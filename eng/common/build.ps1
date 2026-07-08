@@ -24,7 +24,6 @@ Param(
   [switch][Alias('pb')]$productBuild,
   [switch]$fromVMR,
   [switch][Alias('bl')]$binaryLog,
-  [string][Alias('bln')]$binaryLogName = '',
   [switch][Alias('nobl')]$excludeCIBinarylog,
   [switch] $ci,
   [switch] $prepareMachine,
@@ -47,7 +46,6 @@ function Print-Usage() {
   Write-Host "  -platform <value>       Platform configuration: 'x86', 'x64' or any valid Platform value to pass to msbuild"
   Write-Host "  -verbosity <value>      Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
   Write-Host "  -binaryLog              Output binary log (short: -bl)"
-  Write-Host "  -binaryLogName <value>  Binary log file name or path; implies -binaryLog (short: -bln)"
   Write-Host "  -help                   Print help and exit"
   Write-Host ""
 
@@ -104,19 +102,7 @@ function Build {
   $toolsetBuildProj = InitializeToolset
   InitializeCustomToolset
 
-  $bl = ''
-  if ($binaryLog) {
-    $binaryLogPath = if ([string]::IsNullOrEmpty($binaryLogName)) {
-      Join-Path $LogDir 'Build.binlog'
-    } elseif ([System.IO.Path]::IsPathRooted($binaryLogName)) {
-      $binaryLogName
-    } else {
-      Join-Path $LogDir $binaryLogName
-    }
-
-    Create-Directory (Split-Path -Parent $binaryLogPath)
-    $bl = '/bl:' + $binaryLogPath
-  }
+  $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
   $platformArg = if ($platform) { "/p:Platform=$platform" } else { '' }
   $check = if ($buildCheck) { '/check' } else { '' }
 
@@ -173,15 +159,7 @@ try {
     if (-not $excludeCIBinarylog) {
       $binaryLog = $true
     }
-    # Disable node reuse on CI unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
-    # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
-    if ($env:MSBUILD_NODEREUSE_ENABLED -ne "1") {
-      $nodeReuse = $false
-    }
-  }
-
-  if (-not [string]::IsNullOrEmpty($binaryLogName)) {
-    $binaryLog = $true
+    $nodeReuse = $false
   }
 
   if ($nativeToolsOnMachine) {

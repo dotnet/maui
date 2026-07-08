@@ -8,5 +8,4 @@ $dotnetRoot = InitializeDotNetCli -install:$true
 if ($args.count -gt 0) {
   $env:DOTNET_NOLOGO=1
   & "$dotnetRoot\dotnet.exe" $args
-  ExitWithExitCode $LASTEXITCODE
 }

@@ -32,7 +32,7 @@ function Write-PipelineTelemetryError {
     $PSBoundParameters.Remove('Category') | Out-Null
 
     if ($Force -Or ((Test-Path variable:ci) -And $ci)) {
-        $Message = "($Category) $Message"
+        $Message = "(NETCORE_ENGINEERING_TELEMETRY=$Category) $Message"
     }
     $PSBoundParameters.Remove('Message') | Out-Null
     $PSBoundParameters.Add('Message', $Message)
