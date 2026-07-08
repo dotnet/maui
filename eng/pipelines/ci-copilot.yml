@@ -1003,20 +1003,30 @@ stages:
               publishLocation: 'pipeline'
             condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
 
-          # Fail the pipeline if any phase failed
+          # Fail the pipeline if any phase failed.
+          # NOTE: CopilotFailed / GateFailed are output variables set only on the
+          # failing paths of earlier steps, so on a clean pass they are UNDEFINED.
+          # An undefined $(var) macro is left un-expanded, and bash then evaluates
+          # the literal "$(CopilotFailed)" as a command substitution → the spurious
+          # "CopilotFailed: command not found" seen in build logs. Route both through
+          # the env block so an undefined variable becomes an inert string instead of
+          # an executed command.
           - bash: |
               FAILED=0
-              if [ "$(CopilotFailed)" = "true" ]; then
+              if [ "$COPILOT_FAILED" = "true" ]; then
                 echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
                 FAILED=1
               fi
-              if [ "$(GateFailed)" = "true" ]; then
+              if [ "$GATE_FAILED" = "true" ]; then
                 echo "##vso[task.logissue type=warning]Gate phase failed — test verification did not pass."
                 FAILED=1
               fi
               exit $FAILED
             displayName: 'Check Review Result'
             condition: succeededOrFailed()
+            env:
+              COPILOT_FAILED: $(CopilotFailed)
+              GATE_FAILED: $(GateFailed)
 
   # ─────────────────────────────────────────────────────────────────────────────
   #  STAGE: RunDeepUITests
