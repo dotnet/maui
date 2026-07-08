@@ -300,7 +300,7 @@ namespace Microsoft.Maui.Maps.Platform
 
 			try
 			{
-				var result = await requestedSource.GetPlatformImageAsync(handler.MauiContext);
+				using var result = await requestedSource.GetPlatformImageAsync(handler.MauiContext);
 
 				// Drop this load if the view was reused or the pin's ImageSource changed since.
 				if (annotationView.Annotation != targetAnnotation || !ReferenceEquals(pin.ImageSource, requestedSource))
