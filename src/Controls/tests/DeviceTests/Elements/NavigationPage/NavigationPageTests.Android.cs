@@ -213,7 +213,6 @@ namespace Microsoft.Maui.DeviceTests
 
 						navPage.BarBackgroundColor = barBackgroundColor;
 
-						await Task.Delay(100);
 						Assert.Equal(originalAppBarBackgroundColor, GetAppBarBackgroundColor(appBar));
 						Assert.Equal(expectedSystemBarColor.ToPlatform().ToArgb(), platformWindow.StatusBarColor);
 					}
