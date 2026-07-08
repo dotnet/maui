@@ -142,17 +142,21 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(contentPage);
 				await OnNavigatedToAsync(contentPage);
 
-				var platformToolbar = GetPlatformToolbar(handler);
-				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
-				var rootCoordinator = appBar?.Parent.GetParentOfType<CoordinatorLayout>();
-				var capturingListener = AttachCapturingWindowInsetsListener(rootCoordinator, platformToolbar);
-
-				Assert.NotNull(appBar);
-				Assert.NotNull(rootCoordinator);
-
-				await AssertEventually(() => platformToolbar.LayoutParameters?.Height > 0,
+				MaterialToolbar platformToolbar = null;
+				await AssertEventually(() =>
+				{
+					platformToolbar = GetPlatformToolbar(handler);
+					return platformToolbar?.LayoutParameters?.Height > 0;
+				},
 					timeout: 2000,
 					message: "Toolbar did not render before Shell.NavBarIsVisible was toggled.");
+
+				Assert.NotNull(platformToolbar);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				var rootCoordinator = appBar?.Parent.GetParentOfType<CoordinatorLayout>();
+				Assert.NotNull(appBar);
+				Assert.NotNull(rootCoordinator);
+				var capturingListener = AttachCapturingWindowInsetsListener(rootCoordinator, platformToolbar);
 
 				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
 

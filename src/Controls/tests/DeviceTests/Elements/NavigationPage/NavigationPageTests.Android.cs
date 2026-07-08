@@ -142,18 +142,22 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(rootPage);
 				await OnNavigatedToAsync(rootPage);
 
-				var platformToolbar = GetPlatformToolbar(handler);
 				var rootCoordinator = handler.MauiContext?.GetNavigationRootManager()?.RootView as CoordinatorLayout;
-				var appBar = rootCoordinator?.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
-				var capturingListener = AttachCapturingWindowInsetsListener(rootCoordinator, platformToolbar);
-
-				Assert.NotNull(platformToolbar);
 				Assert.NotNull(rootCoordinator);
-				Assert.NotNull(appBar);
 
-				await AssertEventually(() => platformToolbar.LayoutParameters?.Height > 0,
+				MaterialToolbar platformToolbar = null;
+				await AssertEventually(() =>
+				{
+					platformToolbar = GetPlatformToolbar(handler);
+					return platformToolbar?.LayoutParameters?.Height > 0;
+				},
 					timeout: 2000,
 					message: "Toolbar did not render before navigating to the page with the navigation bar hidden.");
+
+				Assert.NotNull(platformToolbar);
+				var appBar = rootCoordinator.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
+				Assert.NotNull(appBar);
+				var capturingListener = AttachCapturingWindowInsetsListener(rootCoordinator, platformToolbar);
 
 				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
 
