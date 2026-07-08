@@ -1013,6 +1013,33 @@ function Test-IsDependencyFlowPr {
     return $false
 }
 
+function Test-IsSdkBumpPr {
+    <#
+    .SYNOPSIS
+        True when a PR bumps the .NET SDK/VMR (dotnet/dotnet or dotnet/sdk).
+    .DESCRIPTION
+        A narrow subset of Test-IsDependencyFlowPr: specifically the VMR/SDK bump,
+        whose landed pin advances the branch's SDK version. That new pin is only a
+        *candidate* until the blessed build is confirmed locally (the Action can't
+        reach the .NET Release Tracker), so callers add a "verify blessed locally"
+        emphasis for these. Matches on TITLE only ("Bump dotnet/dotnet …" /
+        "Bump dotnet/sdk …"); android / macios / runtime bumps are intentionally
+        NOT flagged as SDK bumps. StrictMode-safe, dual-shape (PSCustomObject /
+        IDictionary), mirroring Test-IsDependencyFlowPr.
+    #>
+    param($PR)
+
+    if (-not $PR) { return $false }
+
+    $title = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('title')) { $PR['title'] } else { $null }
+    } elseif ($PR.PSObject.Properties['title']) {
+        $PR.title
+    } else { $null }
+
+    return [bool]($title -and $title -match '(?i)\bBump\b.*dotnet/(dotnet|sdk)\b')
+}
+
 function Get-CategorizedPullRequests {
     <#
     .SYNOPSIS
@@ -1804,12 +1831,18 @@ foreach ($pr in $p0Prs) {
 }
 foreach ($pr in $maestroPRs) {
     $action = Get-PRAction -PR $pr
+    # A dependency-flow PR that bumps the VMR/SDK (dotnet/dotnet or dotnet/sdk)
+    # advances the branch's SDK pin — but the landed pin is only a *candidate*
+    # until the blessed build is confirmed locally (the Action can't reach the
+    # .NET Release Tracker). Flag it so the captain runs the local check.
+    $isSdkBump = Test-IsSdkBumpPr $pr
+    $paNote = if ($isSdkBump) { " ⚠️ bumps the SDK/VMR — confirm the blessed build locally (see 🏷️ component build) before treating the new pin as final." } else { "" }
     [void]$highPriorityRows.Add(@{
         kind = '📦 Dependency-flow PR'
         link = "[#$($pr.number)]($($pr.url))"
         title = $pr.title
         actor = "base ``$($pr.baseRefName)``, $($action.Age)d old"
-        nextAction = $action.Action
+        nextAction = "$($action.Action)$paNote"
     })
 }
 foreach ($pr in $mergeUpPRs) {
@@ -1869,24 +1902,31 @@ $notesBlockText = $notesSb.ToString()
 [void]$md.Append($notesBlockText)
 [void]$md.AppendLine("")
 
-# === Action-owned best-effort component build (git-pin sourced) ===
-# The authoritative "blessed" preview build comes from the internal .NET Release
-# Tracker (private dotnet/release), which the GitHub Action's repo-scoped
-# GITHUB_TOKEN CANNOT reach. So the Action always emits this best-effort fallback
-# from the branch's own eng/Version.Details.xml — a PUBLIC git source reachable
-# with GITHUB_TOKEN — reporting the components CURRENTLY BUNDLED on the branch.
-# This is explicitly NOT a confirmed blessed build; a maintainer running the
-# release-readiness skill locally fills the authoritative blessed set into the
-# Release Captain Notes block above (which has private tracker access). Rendered
-# OUTSIDE the human-notes markers so it self-refreshes on every automated re-run.
+# === Action-owned component build (git-pin sourced) — blessed & subs are LOCAL-only ===
+# The GitHub Action runs with only contents:read + GITHUB_TOKEN. It CANNOT reach:
+#   * the internal .NET Release Tracker (which names the authoritative "blessed"
+#     preview build), nor
+#   * Maestro/BAR or the AzDO-internal maestro-configuration repo (which hold the
+#     android/macios/dotnet preview *subscription* wiring).
+# So the Action reports only what PUBLIC git can prove: the component builds
+# CURRENTLY BUNDLED on the branch (eng/Version.Details.xml). These are branch pins,
+# NOT a confirmed blessed build. Confirming the blessed build AND verifying the
+# preview subscriptions are both LOCAL tasks — the callout below points the captain
+# at the exact local prompt to run. Rendered OUTSIDE the human-notes markers so it
+# self-refreshes on every automated re-run.
 $componentPins = Get-BranchComponentPins -Ref $SurveyRef -Major $majorVersion
 if ($componentPins) {
-    [void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins (best-effort)")
+    [void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins (blessed build: verify locally)")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_Source: ``eng/Version.Details.xml`` on ``$SurveyRef`` (public git, always readable in CI). These are the component builds **currently bundled on the branch** — **not** a confirmed *blessed* build. The authoritative blessed designation comes from the internal .NET Release Tracker (private ``dotnet/release``), which this GitHub Action cannot reach; a maintainer running the release-readiness skill locally fills the confirmed blessed build into **Release Captain Notes** above._")
+    [void]$md.AppendLine("> [!IMPORTANT]")
+    [void]$md.AppendLine("> The versions below are the component builds **currently bundled** on ``$SurveyRef`` (read from ``eng/Version.Details.xml`` — public git). **This is NOT the confirmed official/blessed build.** The blessed designation lives in the internal **.NET Release Tracker**, and the android/macios/dotnet preview **subscription** wiring lives in **Maestro** — this Action can reach *neither* (it runs with ``contents:read`` + ``GITHUB_TOKEN`` only). **A maintainer must confirm both locally** and paste the result into _Release Captain Notes_ above. Run the release-readiness skill locally with a prompt like:")
+    [void]$md.AppendLine(">")
+    [void]$md.AppendLine("> ``````")
+    [void]$md.AppendLine("> Run release readiness for ${Branch}: report the blessed/official preview build (SDK + runtime) from the .NET Release Tracker, and verify the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel.")
+    [void]$md.AppendLine("> ``````")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("| Component | Version | Commit | Source repo |")
-    [void]$md.AppendLine("|-----------|---------|--------|-------------|")
+    [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit |")
+    [void]$md.AppendLine("|-----------|----------------------|--------|")
 
     $pinRows = @(
         @{ Label = 'dotnet/dotnet (VMR / SDK)'; Repo = 'dotnet/dotnet'; Pin = $componentPins.Vmr }
@@ -1896,7 +1936,7 @@ if ($componentPins) {
     foreach ($r in $pinRows) {
         $pin = $r.Pin
         if (-not $pin) {
-            [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — | ``$($r.Repo)`` |")
+            [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — |")
             continue
         }
         $commitCell = '—'
@@ -1904,7 +1944,7 @@ if ($componentPins) {
             $shortSha = $pin.Sha.Substring(0, [Math]::Min(7, $pin.Sha.Length))
             $commitCell = "[``$shortSha``](https://github.com/$($r.Repo)/commit/$($pin.Sha))"
         }
-        [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell | ``$($r.Repo)`` |")
+        [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell |")
     }
     [void]$md.AppendLine("")
 
@@ -2022,6 +2062,15 @@ Add-CheckTable -Builder $md -Checks $checks
 
 [void]$md.AppendLine("## Maestro / dependency-flow PRs")
 [void]$md.AppendLine("")
+# Highlight any open SDK/VMR bump: its landed pin is only a candidate until the
+# blessed build is confirmed locally (the Action can't reach the .NET Release Tracker).
+$sdkBumpPrs = @($maestroPRs | Where-Object { Test-IsSdkBumpPr $_ })
+if ($sdkBumpPrs.Count -gt 0) {
+    $sdkBumpLinks = ($sdkBumpPrs | ForEach-Object { "[#$($_.number)]($($_.url))" }) -join ', '
+    [void]$md.AppendLine("> [!WARNING]")
+    [void]$md.AppendLine("> $($sdkBumpPrs.Count) open PR(s) bump the **SDK/VMR** ($sdkBumpLinks). The new SDK pin they land is only a **candidate** — the official/blessed build is designated in the internal .NET Release Tracker, which this Action can't reach. **Confirm the blessed SDK build locally** (see 🏷️ Preview $previewNumber component build above) before treating the bumped pin as final.")
+    [void]$md.AppendLine("")
+}
 Add-PRTable -Builder $md -PRs $maestroPRs
 
 [void]$md.AppendLine("## Release branch PRs")

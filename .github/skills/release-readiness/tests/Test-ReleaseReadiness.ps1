@@ -4248,6 +4248,21 @@ Assert-Eq -Label "dep-flow helper: plain human 'Fix Y' → false"              -
 Assert-Eq -Label "dep-flow helper: merge-up PR → false"                      -Expected $false -Actual (Test-IsDependencyFlowPr $dfMergeUp)
 Assert-Eq -Label "dep-flow helper: null PR → false"                          -Expected $false -Actual (Test-IsDependencyFlowPr $null)
 
+# --- Test-IsSdkBumpPr helper: the VMR/SDK-bump subset (dotnet/dotnet or dotnet/sdk) ---
+# Only VMR/SDK bumps earn the "confirm blessed locally" emphasis; android/macios/
+# runtime bumps do NOT (their pins aren't the SDK). Dual-shape + StrictMode-safe.
+$sbVmr  = [PSCustomObject]@{ title = 'Bump dotnet/dotnet from 11.0.0-preview.6.26325.125 to 11.0.0-preview.6.26356.105 (BAR 321614)' }
+$sbSdk  = [PSCustomObject]@{ title = 'Bump dotnet/sdk to 11.0.100-preview.6.26356.105' }
+$sbDict = @{ title = 'Bump dotnet/dotnet (BAR 322000)' }   # IDictionary shape (mock)
+Assert-Eq -Label "sdk-bump: dotnet/dotnet bump → true"             -Expected $true  -Actual (Test-IsSdkBumpPr $sbVmr)
+Assert-Eq -Label "sdk-bump: combined bump w/ dotnet/dotnet → true" -Expected $true  -Actual (Test-IsSdkBumpPr $dfHumanBump)
+Assert-Eq -Label "sdk-bump: dotnet/sdk bump → true"                -Expected $true  -Actual (Test-IsSdkBumpPr $sbSdk)
+Assert-Eq -Label "sdk-bump: IDictionary shape → true"              -Expected $true  -Actual (Test-IsSdkBumpPr $sbDict)
+Assert-Eq -Label "sdk-bump: dotnet/android bump → false (not SDK)"  -Expected $false -Actual (Test-IsSdkBumpPr $dfTitleOnly)
+Assert-Eq -Label "sdk-bump: merge-up PR → false"                   -Expected $false -Actual (Test-IsSdkBumpPr $dfMergeUp)
+Assert-Eq -Label "sdk-bump: plain human PR → false"                -Expected $false -Actual (Test-IsSdkBumpPr $dfPlain)
+Assert-Eq -Label "sdk-bump: null PR → false"                       -Expected $false -Actual (Test-IsSdkBumpPr $null)
+
 # --- Get-BranchComponentPins: git-pin fallback for the Action-owned best-effort
 #     component-build section. Parses eng/Version.Details.xml (public git, always
 #     readable in CI) to report the dotnet/dotnet, dotnet/android and dotnet/macios
