@@ -4294,6 +4294,82 @@ $sigDict = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @($fDictFr
 Assert-Eq -Label "flow: IDictionary-shaped PR → fresh"                     -Expected 'fresh'  -Actual $sigDict.Status
 Assert-Eq -Label "flow: IDictionary-shaped PR number"                      -Expected 110      -Actual $sigDict.Number
 
+# --- Get-UpstreamDriftSignal: has the component's same-named branch advanced past our pin? ---
+# Complementary to the Flow signal: a hard git fact (public compare API), not an inference.
+# Tested via the injectable -Fetcher seam (same idiom as Get-NightlyFeedFreshness) so no
+# live network. Mock distinguishes the matching-refs probe from the compare call by path.
+$drBranch = 'release/11.0.1xx-preview6'
+$drSha    = 'abc1234def5678'
+
+# Fetcher factory: branch-exists (exact ref) + a compare shape (ahead/behind counts).
+function New-DriftFetcher {
+    param([string]$RefName, [object]$Compare, [string]$ThrowOn)
+    return {
+        param($ApiPath)
+        if ($ThrowOn -eq 'refs'    -and $ApiPath -match '/git/matching-refs/heads/') { throw 'boom-refs' }
+        if ($ThrowOn -eq 'compare' -and $ApiPath -match '/compare/')                 { throw 'boom-compare' }
+        if ($ApiPath -match '/git/matching-refs/heads/') {
+            if ($null -eq $RefName) { return @() }
+            return @([pscustomobject]@{ ref = $RefName })
+        }
+        if ($ApiPath -match '/compare/') { return $Compare }
+        throw "unexpected api path $ApiPath"
+    }.GetNewClosure()
+}
+
+# (a) current — our pin IS the branch tip (ahead 0, behind 0).
+$fCurrent = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 0; behind_by = 0 })
+$drCur = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fCurrent
+Assert-Eq -Label "drift: pin == branch tip → current"        -Expected 'current' -Actual $drCur.Status
+Assert-Eq -Label "drift: current has ahead_by 0"             -Expected 0         -Actual $drCur.AheadBy
+Assert-Eq -Label "drift: url points at compare base...head"  -Expected "https://github.com/dotnet/macios/compare/$drSha...$drBranch" -Actual $drCur.Url
+
+# (b) ahead — branch has newer commits than our pin (ahead N, behind 0).
+$fAhead = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 3; behind_by = 0 })
+$drAhead = Get-UpstreamDriftSignal -Repo 'dotnet/android' -Sha $drSha -BranchName $drBranch -Fetcher $fAhead
+Assert-Eq -Label "drift: branch moved ahead → ahead"         -Expected 'ahead' -Actual $drAhead.Status
+Assert-Eq -Label "drift: ahead surfaces the count"           -Expected 3       -Actual $drAhead.AheadBy
+
+# (c) diverged — our pin isn't a clean ancestor of the branch tip (behind > 0).
+$fDiverged = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 5; behind_by = 2 })
+$drDiv = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fDiverged
+Assert-Eq -Label "drift: behind_by > 0 → diverged (not ahead)" -Expected 'diverged' -Actual $drDiv.Status
+Assert-Eq -Label "drift: diverged surfaces behind_by"          -Expected 2          -Actual $drDiv.BehindBy
+
+# (d) unknown — no pin SHA (soft-fail, never calls the fetcher).
+$drNoSha = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha '' -BranchName $drBranch -Fetcher $fCurrent
+Assert-Eq -Label "drift: empty SHA → unknown"                -Expected 'unknown'  -Actual $drNoSha.Status
+Assert-Eq -Label "drift: empty SHA reason"                   -Expected 'no pin SHA' -Actual $drNoSha.Reason
+
+# (e) unknown — component has no same-named branch (matching-refs empty).
+$fNoBranch = New-DriftFetcher -RefName $null -Compare $null
+$drNoBr = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNoBranch
+Assert-Eq -Label "drift: no upstream branch → unknown"       -Expected 'unknown' -Actual $drNoBr.Status
+Assert-Eq -Label "drift: no-branch reason"                   -Expected 'no same-named upstream branch' -Actual $drNoBr.Reason
+
+# (f) exact-ref discipline — a longer-named branch (preview60) must NOT satisfy preview6.
+$fPrefix = New-DriftFetcher -RefName "refs/heads/${drBranch}0" -Compare ([pscustomobject]@{ ahead_by = 9; behind_by = 0 })
+$drPfx = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fPrefix
+Assert-Eq -Label "drift: prefix-only ref (preview60) rejected → unknown" -Expected 'unknown' -Actual $drPfx.Status
+
+# (g) unknown — branch lookup throws (soft-fail, never bubbles).
+$fRefsThrow = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare $null -ThrowOn 'refs'
+$drRT = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fRefsThrow
+Assert-Eq -Label "drift: refs lookup throws → unknown (soft-fail)" -Expected 'unknown' -Actual $drRT.Status
+Assert-Eq -Label "drift: refs-throw reason"                        -Expected 'branch lookup failed' -Actual $drRT.Reason
+
+# (h) unknown — compare throws (soft-fail).
+$fCmpThrow = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare $null -ThrowOn 'compare'
+$drCT = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fCmpThrow
+Assert-Eq -Label "drift: compare throws → unknown (soft-fail)"    -Expected 'unknown' -Actual $drCT.Status
+Assert-Eq -Label "drift: compare-throw reason"                    -Expected 'compare failed' -Actual $drCT.Reason
+
+# (i) unknown — compare returns a shape with no counts.
+$fNoCounts = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ status = 'identical' })
+$drNC = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNoCounts
+Assert-Eq -Label "drift: compare missing ahead_by → unknown"     -Expected 'unknown' -Actual $drNC.Status
+Assert-Eq -Label "drift: no-counts reason"                       -Expected 'compare returned no counts' -Actual $drNC.Reason
+
 # --- Get-BranchComponentPins: git-pin fallback for the Action-owned best-effort
 #     component-build section. Parses eng/Version.Details.xml (public git, always
 #     readable in CI) to report the dotnet/dotnet, dotnet/android and dotnet/macios

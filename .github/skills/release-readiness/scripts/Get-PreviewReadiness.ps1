@@ -1166,6 +1166,127 @@ function Get-ComponentFlowSignal {
     }
 }
 
+function Get-UpstreamDriftSignal {
+    <#
+    .SYNOPSIS
+        Best-effort detection of whether an upstream component repo's same-named
+        branch has advanced past the commit maui currently pins — a public,
+        CI-reachable "the source moved, you may want to pull it in" FYI.
+    .DESCRIPTION
+        maui pins a specific SHA of each component (dotnet/dotnet, dotnet/android,
+        dotnet/macios) in eng/Version.Details.xml. Those repos are PUBLIC, so the
+        GitHub Action can — with only GITHUB_TOKEN — ask GitHub's *compare* API
+        whether that repo's branch has newer commits than our pin. This is a hard
+        git fact, complementary to Get-ComponentFlowSignal (which infers whether a
+        subscription is *producing PRs into maui*): a sub can be healthy and quiet
+        while upstream just landed a fix we haven't pulled — only THIS check sees it.
+
+        Branch is DERIVED, never hardcoded: we look up $BranchName (the survey ref,
+        e.g. release/11.0.1xx-preview6) on the component repo via git/matching-refs.
+        All three components mirror maui's branch naming today; if a future one
+        doesn't, we degrade to 'unknown' rather than false-alarm.
+
+        Compares base=our pin, head=branch tip. GitHub returns ahead_by (commits the
+        branch has beyond our pin) and behind_by (commits our pin has the branch
+        lacks). Classifies:
+          * current   — ahead_by 0 & behind_by 0: our pin IS the branch tip.
+          * ahead     — ahead_by N & behind_by 0: N newer upstream commits we don't
+                        bundle yet. FYI only — maui pins BLESSED builds deliberately,
+                        so these may be post-preview churn or not-yet-blessed work.
+          * diverged  — behind_by > 0: our pin isn't a clean ancestor of the branch
+                        tip (build tag / different line) — can't cleanly count "ahead".
+          * unknown   — no pin SHA, no same-named upstream branch, or an API error.
+    .NOTES
+        Soft-fail: any lookup/parse failure returns 'unknown' with a Reason and
+        never throws (must not break report generation). ~2 gh calls per component.
+        dotnet/dotnet (VMR) moves constantly and flows on manual trigger, so a large
+        ahead_by there is expected churn, rarely actionable — the caller labels it.
+    #>
+    param(
+        [string]$Repo,        # e.g. 'dotnet/macios'
+        [string]$Sha,         # our pinned SHA (base of the compare)
+        [string]$BranchName,  # survey ref, e.g. 'release/11.0.1xx-preview6'
+        [scriptblock]$Fetcher # optional seam: (ApiPath) -> parsed JSON. Defaults to live gh.
+    )
+
+    # Default fetcher hits the public GitHub REST API via the retrying gh wrapper
+    # and returns parsed JSON. Tests inject a mock that returns fixtures instead.
+    if (-not $Fetcher) {
+        $Fetcher = {
+            param($ApiPath)
+            $json = Invoke-GitHubWithRetry -Arguments @("api", $ApiPath) -Description "gh api $ApiPath" -MaxRetries 2
+            if ([string]::IsNullOrWhiteSpace($json)) { return $null }
+            return ($json | ConvertFrom-Json)
+        }
+    }
+
+    $result = [PSCustomObject]@{
+        Repo     = $Repo
+        Status   = 'unknown'
+        AheadBy  = $null
+        BehindBy = $null
+        Branch   = $BranchName
+        Url      = $null
+        Reason   = $null
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Sha)) {
+        $result.Reason = 'no pin SHA'
+        return $result
+    }
+    if ([string]::IsNullOrWhiteSpace($BranchName)) {
+        $result.Reason = 'no branch to compare'
+        return $result
+    }
+
+    # 1) Confirm the component repo actually has a branch of this name (derive,
+    #    don't assume). matching-refs is an exact-PREFIX match, so require an exact
+    #    full-ref hit — otherwise 'release/11.0.1xx-preview6' would also match a
+    #    hypothetical 'release/11.0.1xx-preview60'.
+    try {
+        $refs = & $Fetcher "repos/$Repo/git/matching-refs/heads/$BranchName"
+        $branchFound = @($refs | Where-Object { $_.ref -eq "refs/heads/$BranchName" }).Count -gt 0
+    } catch {
+        $result.Reason = 'branch lookup failed'
+        return $result
+    }
+    if (-not $branchFound) {
+        $result.Reason = 'no same-named upstream branch'
+        return $result
+    }
+
+    # 2) Compare our pin (base) against the branch tip (head). The '/' in the
+    #    branch name is passed through literally — GitHub's compare endpoint
+    #    accepts slashed branch names as the head ref.
+    try {
+        $cmp = & $Fetcher "repos/$Repo/compare/$Sha...$BranchName"
+    } catch {
+        $result.Reason = 'compare failed'
+        return $result
+    }
+
+    if ($null -eq $cmp -or -not $cmp.PSObject.Properties['ahead_by']) {
+        $result.Reason = 'compare returned no counts'
+        return $result
+    }
+
+    $aheadBy  = [int]$cmp.ahead_by
+    $behindBy = [int]$cmp.behind_by
+    $result.AheadBy  = $aheadBy
+    $result.BehindBy = $behindBy
+    $result.Url      = "https://github.com/$Repo/compare/$Sha...$BranchName"
+
+    if ($behindBy -gt 0) {
+        $result.Status = 'diverged'
+    } elseif ($aheadBy -gt 0) {
+        $result.Status = 'ahead'
+    } else {
+        $result.Status = 'current'
+    }
+    $result.Reason = $null
+    return $result
+}
+
 function Get-CategorizedPullRequests {
     <#
     .SYNOPSIS
@@ -2058,17 +2179,19 @@ if ($componentPins) {
     [void]$md.AppendLine("> [!IMPORTANT]")
     [void]$md.AppendLine("> **Branch pins** below are the component builds **currently bundled** on ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT the confirmed official/blessed build** — that designation lives in the internal **.NET Release Tracker**, which this Action can't reach (``contents:read`` + ``GITHUB_TOKEN`` only). The **Flow signal** column *infers* each component's subscription health from the **public dependency-flow PR trail** (the Action can't read Maestro subscription config directly). It surfaces both a **never-wired** sub (❌ none seen) and a **silently stalled** one (⚠️ stale — the `"we stopped getting Maestro PRs a month ago`" decay case). The blessed build AND the authoritative subscription wiring are both confirmed **locally** — run the release-readiness skill:")
     [void]$md.AppendLine(">")
+    [void]$md.AppendLine("> The **Upstream** column is a hard git fact (not an inference): it compares our pinned SHA against the tip of each component's same-named branch (``$SurveyRef`` — derived, never hardcoded) via the public compare API. ⬆️ *N ahead* means the source moved past what we bundle — an FYI you *may* want to pull in, **not** a required bump (maui pins blessed builds deliberately, so those commits may be post-preview churn or not yet blessed).")
+    [void]$md.AppendLine(">")
     [void]$md.AppendLine("> ``````")
     [void]$md.AppendLine("> Run release readiness for ${Branch}: report the blessed/official preview build (SDK + runtime) from the .NET Release Tracker, and verify the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel.")
     [void]$md.AppendLine("> ``````")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit | Flow signal (inferred sub health) |")
-    [void]$md.AppendLine("|-----------|----------------------|--------|-----------------------------------|")
+    [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit | Flow signal (inferred sub health) | Upstream (vs our pin) |")
+    [void]$md.AppendLine("|-----------|----------------------|--------|-----------------------------------|-----------------------|")
 
     $pinRows = @(
-        @{ Label = 'dotnet/dotnet (VMR / SDK)'; Repo = 'dotnet/dotnet'; Pin = $componentPins.Vmr }
-        @{ Label = 'dotnet/android';            Repo = 'dotnet/android'; Pin = $componentPins.Android }
-        @{ Label = 'dotnet/macios';             Repo = 'dotnet/macios';  Pin = $componentPins.Macios }
+        @{ Label = 'dotnet/dotnet (VMR / SDK)'; Repo = 'dotnet/dotnet'; Pin = $componentPins.Vmr;     Noisy = $true  }
+        @{ Label = 'dotnet/android';            Repo = 'dotnet/android'; Pin = $componentPins.Android; Noisy = $false }
+        @{ Label = 'dotnet/macios';             Repo = 'dotnet/macios';  Pin = $componentPins.Macios;  Noisy = $false }
     )
     foreach ($r in $pinRows) {
         $flow = Get-ComponentFlowSignal -Repo $r.Repo -DepFlowPRs $depFlowPRs -Now $flowNow -StaleDays $flowStaleDays
@@ -2084,19 +2207,39 @@ if ($componentPins) {
         }
         $pin = $r.Pin
         if (-not $pin) {
-            [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — | $flowCell |")
+            [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — | $flowCell | — |")
             continue
         }
+
+        # Upstream drift (public compare API) — has the component's same-named
+        # branch advanced past the SHA we pin? Needs the pin SHA; soft-fails to '—'.
+        $driftCell = '—'
+        if (-not [string]::IsNullOrWhiteSpace($pin.Sha)) {
+            $drift = Get-UpstreamDriftSignal -Repo $r.Repo -Sha $pin.Sha -BranchName $SurveyRef
+            $driftCell = switch ($drift.Status) {
+                'current'  { '✅ current' }
+                'ahead'    {
+                    $n = $drift.AheadBy
+                    $unit = if ($n -eq 1) { 'commit' } else { 'commits' }
+                    if ($r.Noisy) { "⬆️ [$n $unit ahead]($($drift.Url)) — VMR churn (expected)" }
+                    else          { "⬆️ [$n $unit ahead]($($drift.Url)) — FYI" }
+                }
+                'diverged' { "⚠️ [diverged]($($drift.Url)) — compare manually" }
+                default    { if ($drift.Reason) { "— _$($drift.Reason)_" } else { '—' } }
+            }
+        }
+
         $commitCell = '—'
         if (-not [string]::IsNullOrWhiteSpace($pin.Sha)) {
             $shortSha = $pin.Sha.Substring(0, [Math]::Min(7, $pin.Sha.Length))
             $commitCell = "[``$shortSha``](https://github.com/$($r.Repo)/commit/$($pin.Sha))"
         }
-        [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell | $flowCell |")
+        [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell | $flowCell | $driftCell |")
     }
     [void]$md.AppendLine("")
     [void]$md.AppendLine("_Flow-signal legend: 🔄 open dep-flow PR (flowing now) · ✅ merged ≤ $flowStaleDays d · ⚠️ newest merge > $flowStaleDays d (sub may have stalled) · ❌ no dep-flow PR into ``$SurveyRef`` seen (sub may be missing — or the branch is brand new). Inferred from the **public** PR trail; confirm authoritative wiring locally with ``darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch $SurveyRef``. dotnet/dotnet (VMR) typically flows on manual trigger, so a quiet VMR is less alarming than a quiet android/macios._")
     [void]$md.AppendLine("")
+    [void]$md.AppendLine("_Upstream legend: ✅ current = our pin **is** the tip of the component's ``$SurveyRef`` branch · ⬆️ N ahead = that branch has N newer commit(s) than we bundle (**FYI** — may be post-preview churn or not-yet-blessed work; not necessarily a bump you need) · ⚠️ diverged = our pin isn't a clean ancestor of the branch tip (build tag / different line) — compare manually · — = couldn't determine (no same-named upstream branch, or the compare API was unavailable). Branch is **derived** from the survey ref, never hardcoded. dotnet/dotnet (VMR) advances constantly on manual trigger, so 'N ahead' there is expected churn and rarely actionable._")
 
     # If a manual/darc component-bump PR is open against the branch, it names the
     # pending target BAR builds in its title — surface it so readers see the pins
