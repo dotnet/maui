@@ -773,7 +773,11 @@ N=<pr-number>
 # automation accounts — `.user.type == "User"` only excludes GitHub Apps, NOT
 # PAT-based bots such as `dotnet-bot` / `maui-bot` / `MauiBot` (all type=User and
 # typically org MEMBER/COLLABORATOR). The login denylist below MUST stay in sync with
-# $BotLogins in Query-CiFixPRs.ps1 (same set + the `[bot]` suffix rule).
+# $BotLogins in Query-CiFixPRs.ps1 (same set + the `[bot]` suffix rule). `web-flow` is
+# intentionally absent from BOTH lists: it is GitHub's web-UI git-operation account and
+# is treated as human so a maintainer's web action (e.g. "Update branch") trips the
+# hand-off boundary. It never submits reviews, so dropping it here is a functional no-op
+# that only preserves the sync contract with $BotLogins.
 #
 # GitHub keeps every review submission as its own immutable object, so a maintainer who
 # requests changes and LATER approves (without dismissing) leaves the old
@@ -807,7 +811,7 @@ jq -s '[ .[] | select((.state | IN("CHANGES_REQUESTED","APPROVED","DISMISSED"))
             and (.author_association | IN("OWNER","MEMBER","COLLABORATOR"))
             and (( .user.login | ascii_downcase ) as $l
                  | ( ($l | endswith("[bot]"))
-                     or ($l | IN("github-actions","web-flow","app/github-actions",
+                     or ($l | IN("github-actions","app/github-actions",
                                  "dotnet-maestro[bot]","azure-pipelines[bot]",
                                  "dotnet-policy-service[bot]","dotnet-bot","mauibot",
                                  "maui-bot","maui-bot[bot]")) )

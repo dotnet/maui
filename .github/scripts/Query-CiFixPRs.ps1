@@ -23,7 +23,15 @@ $PSNativeCommandUseErrorActionPreference = $false
 $BotLogins = @(
     'github-actions[bot]',
     'github-actions',
-    'web-flow',
+    # NOTE: 'web-flow' is deliberately NOT listed. It is GitHub's system account for
+    # web-UI git operations (notably a maintainer clicking "Update branch"). Treating it
+    # as human is correct on BOTH axes the watch loop cares about: (1) human engagement —
+    # a maintainer who updates the branch via the web UI SHOULD trip the hand-off boundary
+    # (Test-AnyHumanCommitActor inspects the committer, which is web-flow on those merges);
+    # (2) attempt accounting — botCommitCount is author-based, so a web-flow-*authored*
+    # commit must NOT inflate the count toward the 10-cap. The workflow's own pushes are
+    # authored AND committed by github-actions[bot], never web-flow, so treating web-flow
+    # as human never masks a genuine bot attempt.
     'app/github-actions',
     'dotnet-maestro[bot]',
     'azure-pipelines[bot]',
@@ -437,12 +445,16 @@ function Get-HumanEngagementState {
     # are returned oldest-first, so a recent marker lands on the LAST page).
     $respondedTrackCReviewIds = @(
         $issueComments |
-            # Login coupling (correct TODAY): no safe-outputs.github-app is configured, so
-            # the Track C add-comment posts as 'github-actions[bot]'. If a PAT/App token is
-            # ever wired up for safe-outputs (e.g. so pushes fire CI), response comments would
-            # post under a different [bot] login and this set would silently go empty,
-            # resurrecting the pure-decline re-comment loop — keep this login in sync.
-            Where-Object { $_.user -and ([string]$_.user.login) -eq 'github-actions[bot]' -and $_.body } |
+            # Match the Track C response marker from ANY non-human commenter, not a single
+            # hardcoded login. Today no safe-outputs.github-app is configured, so the Track C
+            # add-comment posts as 'github-actions[bot]'; but if a PAT/App token is ever wired
+            # up for safe-outputs (e.g. so pushes fire CI), the response comment would post
+            # under a different [bot] login and an '-eq github-actions[bot]' filter would
+            # silently go empty — resurrecting the pure-decline re-comment loop. Keying off
+            # Test-IsHumanLogin keeps this idempotency guard robust to that identity change.
+            # The marker is only ever written by this workflow's own Track C R4 emit, so
+            # widening to non-human commenters admits no spoofed markers from human reviewers.
+            Where-Object { $_.user -and $_.body -and -not (Test-IsHumanLogin -Login ([string]$_.user.login)) } |
             ForEach-Object {
                 # [long], NOT [int]: GitHub review ids already exceed Int32.MaxValue
                 # (~2.1B; live dotnet/maui review ids are ~4.6B). An [int] cast here throws
@@ -528,7 +540,17 @@ foreach ($pr in @($searchResult)) {
     # Authoritative attempt counter: the higher of the (possibly stale) body-marker
     # numerator and the append-only bot-commit floor, gated by the fixed $AttemptMax
     # constant. A null marker contributes 0, so the bot-commit floor governs on its own.
-    $markerAttempt = if ($null -eq $markers.attempt) { 0 } else { [int]$markers.attempt }
+    # Clamp the marker to $attemptMax with LONG math BEFORE narrowing to [int]:
+    # Get-CiFixMarkers returns $markers.attempt as a [long] because the PR body is
+    # attacker-editable, so a crafted `ci-fix-attempts: 99999999999/10` survives parsing.
+    # A direct [int] cast here would throw a terminating OverflowException under
+    # $ErrorActionPreference='Stop' and — with no try/catch on this path — abort the whole
+    # prefetch, stalling EVERY watched PR (candidates.json never written). Min() caps it at
+    # $attemptMax (10) first, which is also the correct semantic: a marker at/over the cap
+    # simply means "no attempts remain", so the actionable gate below treats the PR as done.
+    $markerAttempt = if ($null -eq $markers.attempt) { 0 } else {
+        [int][Math]::Min([long]$markers.attempt, [long]$markers.attemptMax)
+    }
     $effectiveAttempt = [Math]::Max($markerAttempt, [int]$engagementState.botCommitCount)
     $actionable = $dataComplete -and
         $checkState.checksSettled -and
