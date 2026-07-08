@@ -1659,6 +1659,114 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
+	public void AddedNamedElement_IsTrackedViaRegistry()
+	{
+		// jonathanpeppers review: adding a `<Button x:Name="Foo"/>` during hot reload does not (and
+		// cannot) assign the strongly-typed backing field `this.Foo` — EnC/MetadataUpdate cannot add
+		// an instance field to an already-loaded type. Instead the new element must be tracked in
+		// XamlComponentRegistry by node id (Register(this, "<id>", ...)), which is how subsequent
+		// patches locate it. This test asserts the UC registers the added named element and does NOT
+		// emit an assignment to a non-existent `this.Foo` field.
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			        <Button x:Name="Foo" Text="Click" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, additionalSource: null);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+
+		// The newly added element is created and registered by node id...
+		Assert.Contains("new global::Microsoft.Maui.Controls.Button()", uc!, StringComparison.Ordinal);
+		Assert.Contains("XamlComponentRegistry.Register(this,", uc!, StringComparison.Ordinal);
+		// ...but the UC must NOT assign a backing field that can't exist on the loaded type.
+		Assert.DoesNotContain("this.Foo =", uc!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ContentTransitions_StringToMarkupToElementAndBack_Compile()
+	{
+		// jonathanpeppers review: verify a content/property value transitioning through
+		// string -> markup extension -> element and back produces compilable UC at each step.
+		XamlHotReloadState.Reset();
+
+		string Page(string labelText) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <x:String x:Key="Greeting">FromResource</x:String>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label {{labelText}} />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		// V1: plain string; V2: markup extension; V3: back to a plain string.
+		var v1 = Page("Text=\"Literal\"");
+		var v2 = Page("Text=\"{StaticResource Greeting}\"");
+		var v3 = Page("Text=\"LiteralAgain\"");
+
+		var f1 = MakeFile(v1);
+		var f2 = MakeFile(v2);
+		var f3 = MakeFile(v3);
+
+		var comp = CreateCompilation();
+		string? lastUc = null;
+		var (r1, r2) = SourceGeneratorDriver.RunGeneratorWithChanges<XamlGenerator>(
+			comp,
+			applyChanges: (driver, c) =>
+				(driver.ReplaceAdditionalText(f1.Text, f2.Text)
+					.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([f2])), c),
+			f1);
+		lastUc = FindUCSource(r2, "uc.xsg");
+
+		// third edit: markup -> string
+		var (_, r3) = SourceGeneratorDriver.RunGeneratorWithChanges<XamlGenerator>(
+			comp,
+			applyChanges: (driver, c) =>
+				(driver.ReplaceAdditionalText(f2.Text, f3.Text)
+					.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([f3])), c),
+			f2);
+		var uc3 = FindUCSource(r3, "uc.xsg") ?? lastUc;
+		Assert.NotNull(uc3);
+
+		// The accumulated UC must compile (no errors in generated .xsg.cs) across the transitions.
+		var compilation = CreateCompilation();
+		foreach (var gen in r3.Results)
+			foreach (var src in gen.GeneratedSources)
+				compilation = compilation.AddSyntaxTrees(
+					CSharpSyntaxTree.ParseText(src.SourceText.ToString(), path: src.HintName));
+
+		var errors = compilation.GetDiagnostics()
+			.Where(d => d.Severity == DiagnosticSeverity.Error
+				&& d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+			.ToArray();
+		Assert.Empty(errors);
+	}
+
+	[Fact]
 	public void StyleChange_UCGeneratesPatch()
 	{
 		// Changing an inline Style's Setters should produce a UC patch.
