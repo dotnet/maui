@@ -11,10 +11,14 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Entry)]
 	public class MauiDoneAccessoryViewTests : TestBase
 	{
+		// iOS 26+ shows the floating, pass-through Liquid Glass close button; earlier versions keep the
+		// original opaque, blocking Done toolbar. The expected behavior differs by path.
+		static bool UsesGlassButton => OperatingSystem.IsIOSVersionAtLeast(26);
+
 		[Theory]
 		[InlineData(UISemanticContentAttribute.ForceLeftToRight, false)]
 		[InlineData(UISemanticContentAttribute.ForceRightToLeft, true)]
-		public async Task HitTestOutsideDoneButtonReturnsNull(UISemanticContentAttribute semanticContentAttribute, bool doneButtonIsLeading)
+		public async Task HitTestOutsideDoneButtonMatchesPlatformBehavior(UISemanticContentAttribute semanticContentAttribute, bool doneButtonIsLeading)
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -25,7 +29,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				var hitView = accessoryView.HitTest(new CGPoint(transparentHitX, accessoryView.Bounds.GetMidY()), null);
 
-				Assert.Null(hitView);
+				if (UsesGlassButton)
+					Assert.Null(hitView); // iOS 26+ floating button lets taps pass through to the field behind
+				else
+					Assert.NotNull(hitView); // classic toolbar is opaque and keeps blocking taps
 			});
 		}
 
@@ -72,22 +79,34 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				using var accessoryView = new MauiDoneAccessoryView();
 
-				// The height should be driven by the button's natural size plus margins, not a zero/clipped frame.
+				// The height should be driven by the button/toolbar's natural size plus margins, not a
+				// zero/clipped frame — on either the glass (26+) or toolbar (< 26) path.
 				Assert.True(accessoryView.Frame.Height > 40, $"Unexpected accessory height: {accessoryView.Frame.Height}");
 			});
 		}
 
 		[Fact]
-		public async Task DoneButtonUsesLocalizedAccessibilityLabel()
+		public async Task DoneAffordanceUsesLocalizedLabel()
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
 				using var accessoryView = CreateLaidOutAccessoryView();
 
-				var expected = Foundation.NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Done");
+				if (UsesGlassButton)
+				{
+					// iOS 26+: our floating close button supplies the localized "Done" label explicitly.
+					var expected = Foundation.NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Done");
 
-				Assert.False(string.IsNullOrEmpty(accessoryView.DoneButton?.AccessibilityLabel));
-				Assert.Equal(expected, accessoryView.DoneButton?.AccessibilityLabel);
+					Assert.False(string.IsNullOrEmpty(accessoryView.DoneButton?.AccessibilityLabel));
+					Assert.Equal(expected, accessoryView.DoneButton?.AccessibilityLabel);
+				}
+				else
+				{
+					// iOS < 26: the classic UIToolbar hosts a UIBarButtonSystemItem.Done, which UIKit
+					// localizes for us — so the accessory is a translucent toolbar and needs no manual label.
+					var toolbar = Assert.IsType<UIToolbar>(Assert.Single(accessoryView.Subviews));
+					Assert.True(toolbar.Translucent);
+				}
 			});
 		}
 
