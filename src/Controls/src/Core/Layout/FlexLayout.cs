@@ -528,16 +528,28 @@ namespace Microsoft.Maui.Controls
 						sizeConstraints.Width = (inMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
 						sizeConstraints.Height = (inMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
 
-						// Fix for #27520: when the engine already knows the cross-axis size the
-						// item will be arranged at (the incoming w/h, e.g. the size of a stretched
-						// item, which is the container size minus the item's margins), measure
-						// with that size. GetConstraints() returns the whole container size, which
-						// can be wider than the frame the item will actually receive; text
-						// measured against the wider constraint wraps at a width it will never
-						// have at arrange time, and the last line ends up cut off.
-						// Only the cross axis is safe to clamp here: the main-axis value at this
-						// point is the pre-flex basis (explicit size or 0), and grow/shrink can
-						// still change it before the item is arranged.
+						// Fix for #27520: GetConstraints() returns the whole container size, but an
+						// item can never be arranged larger than that container minus its own
+						// margins — grow/shrink only redistribute space within those bounds.
+						// Measuring with the wider constraint lets wrapping content (e.g. Label
+						// text) wrap against a width it will never receive at arrange time, and
+						// the overflowing line ends up cut off. Tighten each axis by the item's
+						// margins first...
+						if (!double.IsPositiveInfinity(sizeConstraints.Width))
+						{
+							sizeConstraints.Width = Math.Max(0, sizeConstraints.Width - (it.MarginLeft + it.MarginRight));
+						}
+
+						if (!double.IsPositiveInfinity(sizeConstraints.Height))
+						{
+							sizeConstraints.Height = Math.Max(0, sizeConstraints.Height - (it.MarginTop + it.MarginBottom));
+						}
+
+						// ...and when the engine has already fixed the final cross-axis size (the
+						// incoming w/h, e.g. a stretched item or an explicit size request), measure
+						// with exactly that. Only the cross axis is safe to clamp from w/h: the
+						// main-axis value at this point is the pre-flex basis (explicit size or 0),
+						// and grow/shrink can still change it before the item is arranged.
 						bool mainAxisIsHorizontal = Direction == FlexDirection.Row || Direction == FlexDirection.RowReverse;
 
 						if (!mainAxisIsHorizontal && !float.IsNaN(w) && w > 0 && w < sizeConstraints.Width)

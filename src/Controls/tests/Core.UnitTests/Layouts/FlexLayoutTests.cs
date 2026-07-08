@@ -496,5 +496,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			// ...so its measure constraint must not have been clamped to the 100px basis.
 			Assert.Equal(300, view.MeasuredWidthConstraint);
 		}
+
+		// Simulates content that greedily fills whatever width it is given (like wrapping text).
+		class GreedyWidthConstraintRecordingView : View
+		{
+			public double MeasuredWidthConstraint { get; private set; } = double.NaN;
+
+			protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+			{
+				MeasuredWidthConstraint = widthConstraint;
+				return new Size(double.IsPositiveInfinity(widthConstraint) ? 1000 : widthConstraint, Math.Min(50, heightConstraint));
+			}
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/27520 (Row main axis:
+		// an item with horizontal margins must not be measured at the full container width
+		// and then shrunk below it at arrange time; its margins bound the space it can get).
+		[Fact]
+		public void ShrunkRowItemWithMarginIsMeasuredAtArrangedWidth_Issue27520()
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = FlexDirection.Row };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+			var view = new GreedyWidthConstraintRecordingView { Margin = new Thickness(10, 0, 10, 0) };
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(400, 200);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 400, 200));
+
+			var flexFrame = flexLayout.GetFlexFrame(view as IView);
+
+			Assert.Equal(380, flexFrame.Width);
+			Assert.Equal(flexFrame.Width, view.MeasuredWidthConstraint);
+		}
 	}
 }
