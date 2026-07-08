@@ -586,7 +586,7 @@ namespace Microsoft.Maui.Controls
 
 		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			OnChildMeasureInvalidated(child, InvalidationEventArgs.GetCached(trigger));
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
 			var propagatedTrigger = GetPropagatedTrigger(trigger);
 			InvokeMeasureInvalidated(propagatedTrigger);
 		}

@@ -6,7 +6,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue34848 : _IssuesUITest
 {
-	string doneButton => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
 	public Issue34848(TestDevice testDevice) : base(testDevice) { }
 
 	public override string Issue => "DatePicker Opened and Closed events are not raised on MacCatalyst";
@@ -23,8 +22,8 @@ public class Issue34848 : _IssuesUITest
 		App.Tap("Issue34848TestDatePicker");
 
 #if IOS
-		// iOS DatePicker uses a wheel picker, so we can just tap the "Done" button (or "selected" on iOS 26+) to close it
-		App.Tap(doneButton);
+		// iOS DatePicker uses a wheel picker, so we can just tap the "Done" button to close it
+		App.Tap("Done");
 #elif WINDOWS
 		// On Windows, we can tap a date to close the DatePicker
 		App.Tap("16");

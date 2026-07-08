@@ -1,306 +1,235 @@
-﻿#nullable enable
+﻿#nullable disable
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
 	/// Stores values for a property with different specificities.
-	/// Optimized for the common case of 1-2 entries (e.g. DefaultValue + one setter).
-	/// Value type: embeds inline in the owning context with no separate heap allocation.
 	/// </summary>
-	internal struct SetterSpecificityList<T>
+	internal class SetterSpecificityList<T> where T : class
 	{
-		Entry _top;        // highest specificity entry
-		Entry _second;     // second highest (fallback when top is removed)
-		Entry[]? _rest;    // overflow for 3+ entries (< 1% of instances in practice)
+		const int CapacityDelta = 3;
+
+		SetterSpecificity[] _keys;
+		T[] _values;
 		int _count;
 
-		public readonly int Count => _count;
+		public int Count => _count;
 
-		/// <summary>Gets the highest specificity.</summary>
-		public readonly SetterSpecificity GetSpecificity()
-			=> _count >= 1 ? _top.Specificity : default;
-
-		/// <summary>Gets the value for the highest specificity.</summary>
-		public readonly T? GetValue()
-			=> _count >= 1 ? _top.Value : default;
-
-		/// <summary>Returns what the value would be if the current value was removed.</summary>
-		public readonly T? GetClearedValue()
-			=> _count >= 2 ? _second.Value : default;
-
-		/// <summary>Returns what the value would be if the given specificity was removed.</summary>
-		public readonly T? GetClearedValue(SetterSpecificity specificity)
+		public T this[SetterSpecificity key]
 		{
-			if (_count == 0)
-				return default;
-
-			if (_top.Specificity == specificity)
-				return _count >= 2 ? _second.Value : default;
-
-			return _top.Value;
+			set => SetValue(key, value);
+			get => GetValue(key);
 		}
 
-		/// <summary>Returns what the SetterSpecificity would be if the current value was removed.</summary>
-		public readonly SetterSpecificity GetClearedSpecificity()
-			=> _count >= 2 ? _second.Specificity : default;
-
-		/// <summary>Gets the highest specificity and value.</summary>
-		public readonly KeyValuePair<SetterSpecificity, T> GetSpecificityAndValue()
-			=> _count >= 1
-				? new KeyValuePair<SetterSpecificity, T>(_top.Specificity, _top.Value!)
-				: default;
-
-		public void SetValue(SetterSpecificity key, T value)
+		public SetterSpecificityList()
 		{
-			var newEntry = new Entry(value, key);
+			_keys = Array.Empty<SetterSpecificity>();
+			_values = Array.Empty<T>();
+		}
 
-			if (_count == 0)
+		public SetterSpecificityList(int initialCapacity)
+		{
+			if (initialCapacity == 0)
 			{
-				_top = newEntry;
-				_count = 1;
-				return;
+				_keys = Array.Empty<SetterSpecificity>();
+				_values = Array.Empty<T>();
 			}
-
-			if (_top.Specificity == key)
+			else
 			{
-				_top = newEntry;
-				return;
+				_keys = new SetterSpecificity[initialCapacity];
+				_values = new T[initialCapacity];
 			}
+		}
 
-			if (_count == 1)
+		/// <summary>
+		/// Gets the highest specificity
+		/// </summary>
+		/// <returns></returns>
+		public SetterSpecificity GetSpecificity()
+		{
+			var index = _count - 1;
+			return index < 0 ? default : _keys[index];
+		}
+
+		/// <summary>
+		/// Gets the value for the highest specificity
+		/// </summary>
+		/// <returns></returns>
+		public T GetValue()
+		{
+			var index = _count - 1;
+			return index < 0 ? default : _values[index];
+		}
+
+		/// <summary>
+		/// Returns what the value would be if the current value was removed
+		/// </summary>
+		public T GetClearedValue()
+		{
+			var index = _count - 2;
+			return index < 0 ? default : _values[index];
+		}
+
+		/// <summary>
+		/// Returns what the value would be if the specificity value was removed
+		/// </summary>
+		public T GetClearedValue(SetterSpecificity specificity)
+		{
+			var index = _count - 1;
+			if (index >= 0 && _keys[index] == specificity)
 			{
-				if (key > _top.Specificity)
+				--index;
+			}
+			return index < 0 ? default : _values[index];
+		}
+
+		/// <summary>
+		/// Returns what the SetterSpecificity would be if the current value was removed
+		/// </summary>
+		public SetterSpecificity GetClearedSpecificity()
+		{
+			var index = _count - 2;
+			return index < 0 ? default : _keys[index];
+		}
+
+		/// <summary>
+		/// Gets the highest specificity and value
+		/// </summary>
+		/// <returns></returns>
+		public KeyValuePair<SetterSpecificity, T> GetSpecificityAndValue()
+		{
+			var index = _count - 1;
+			return index < 0 ? default : new KeyValuePair<SetterSpecificity, T>(_keys[index], _values[index]);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		void SetValue(SetterSpecificity key, T value)
+		{
+			var count = _count;
+			var lo = 0;
+			var hi = count - 1;
+			while (lo <= hi)
+			{
+				var index = lo + ((hi - lo) >> 1);
+
+				var indexSpecificity = _keys[index];
+				if (indexSpecificity == key)
 				{
-					_second = _top;
-					_top = newEntry;
+					_values[index] = value;
+					return;
+				}
+
+				if (indexSpecificity < key)
+				{
+					lo = index + 1;
 				}
 				else
 				{
-					_second = newEntry;
+					hi = index - 1;
+				}
+			}
+
+			if (_keys.Length == count)
+			{
+				SetCapacity(count, count + CapacityDelta);
+			}
+
+			if (count > lo)
+			{
+				Array.Copy(_keys, lo, _keys, lo + 1, count - lo);
+				Array.Copy(_values, lo, _values, lo + 1, count - lo);
+			}
+
+			_keys[lo] = key;
+			_values[lo] = value;
+
+			++_count;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		T GetValue(SetterSpecificity key)
+		{
+			var count = _count;
+			var lo = 0;
+			var hi = count - 1;
+			while (lo <= hi)
+			{
+				var index = lo + ((hi - lo) >> 1);
+
+				var indexSpecificity = _keys[index];
+				if (indexSpecificity == key)
+				{
+					return _values[index];
 				}
 
-				_count = 2;
-				return;
-			}
-
-			if (_second.Specificity == key)
-			{
-				_second = newEntry;
-				return;
-			}
-
-			if (key > _top.Specificity)
-			{
-				RestInsert(_second);
-				_second = _top;
-				_top = newEntry;
-				_count++;
-				return;
-			}
-
-			if (key > _second.Specificity)
-			{
-				RestInsert(_second);
-				_second = newEntry;
-				_count++;
-				return;
-			}
-
-			if (RestSetOrInsert(newEntry))
-				_count++;
-		}
-
-		public void Remove(SetterSpecificity key)
-		{
-			if (_count >= 1 && _top.Specificity == key)
-			{
-				RemoveTop();
-			}
-			else if (_count >= 2 && _second.Specificity == key)
-			{
-				RemoveSecond();
-			}
-			else if (_count >= 3)
-			{
-				if (RestRemove(key))
-					_count--;
-			}
-		}
-
-		public readonly T? GetValue(SetterSpecificity key)
-		{
-			if (_count >= 1 && _top.Specificity == key)
-				return _top.Value;
-			if (_count >= 2 && _second.Specificity == key)
-				return _second.Value;
-
-			if (_count >= 3)
-			{
-				var rest = _rest!;
-				var restCount = _count - 2;
-				for (int i = 0; i < restCount; i++)
+				if (indexSpecificity < key)
 				{
-					if (rest[i].Specificity == key)
-						return rest[i].Value;
+					lo = index + 1;
+				}
+				else
+				{
+					hi = index - 1;
 				}
 			}
 
 			return default;
 		}
 
-		void RemoveTop()
+		public void Remove(SetterSpecificity key)
 		{
-			if (_count == 1)
+			var count = _count;
+			var lo = 0;
+			var hi = count - 1;
+			while (lo <= hi)
 			{
-				_top = default;
-				_count = 0;
-			}
-			else if (_count == 2)
-			{
-				_top = _second;
-				_second = default;
-				_count = 1;
-			}
-			else
-			{
-				_top = _second;
-				_second = RestPopLast();
-				_count--;
-			}
-		}
+				var index = lo + ((hi - lo) >> 1);
 
-		void RemoveSecond()
-		{
-			if (_count == 2)
-			{
-				_second = default;
-				_count = 1;
-			}
-			else
-			{
-				_second = RestPopLast();
-				_count--;
-			}
-		}
-
-		// --- Rest array helpers (overflow for entries beyond _top and _second) ---
-
-		int RestCount => _count - 2;
-
-		void RestInsert(Entry entry)
-		{
-			var restCount = RestCount;
-			RestEnsureCapacity(restCount + 1);
-			var rest = _rest!;
-
-			int insertAt = restCount;
-			for (int i = restCount - 1; i >= 0; i--)
-			{
-				if (rest[i].Specificity <= entry.Specificity)
+				var indexSpecificity = _keys[index];
+				if (indexSpecificity == key)
 				{
-					insertAt = i + 1;
-					break;
-				}
-
-				insertAt = i;
-			}
-
-			if (insertAt < restCount)
-				Array.Copy(rest, insertAt, rest, insertAt + 1, restCount - insertAt);
-
-			rest[insertAt] = entry;
-		}
-
-		bool RestSetOrInsert(Entry entry)
-		{
-			var restCount = RestCount;
-			var rest = _rest;
-
-			int insertAt = restCount;
-			if (rest is not null)
-			{
-				for (int i = restCount - 1; i >= 0; i--)
-				{
-					var specificity = rest[i].Specificity;
-					if (specificity == entry.Specificity)
+					var nextIndex = index + 1;
+					if (nextIndex < count)
 					{
-						rest[i] = entry;
-						return false;
+						Array.Copy(_keys, nextIndex, _keys, index, count - nextIndex);
+						Array.Copy(_values, nextIndex, _values, index, count - nextIndex);
+						_values[count - 1] = null;
+					}
+					else
+					{
+						_values[index] = null;
 					}
 
-					if (specificity < entry.Specificity)
-					{
-						insertAt = i + 1;
-						break;
-					}
-
-					insertAt = i;
+					--_count;
+					return;
 				}
-			}
 
-			RestEnsureCapacity(restCount + 1);
-			rest = _rest!;
-
-			if (insertAt < restCount)
-				Array.Copy(rest, insertAt, rest, insertAt + 1, restCount - insertAt);
-
-			rest[insertAt] = entry;
-			return true;
-		}
-
-		Entry RestPopLast()
-		{
-			var rest = _rest!;
-			var lastIndex = RestCount - 1;
-			var entry = rest[lastIndex];
-			rest[lastIndex] = default;
-			return entry;
-		}
-
-		bool RestRemove(SetterSpecificity key)
-		{
-			var rest = _rest;
-			if (rest is null)
-				return false;
-
-			var restCount = RestCount;
-			for (int i = restCount - 1; i >= 0; i--)
-			{
-				if (rest[i].Specificity == key)
+				if (indexSpecificity < key)
 				{
-					var trailingCount = restCount - i - 1;
-					if (trailingCount > 0)
-						Array.Copy(rest, i + 1, rest, i, trailingCount);
-
-					rest[restCount - 1] = default;
-					return true;
+					lo = index + 1;
+				}
+				else
+				{
+					hi = index - 1;
 				}
 			}
-
-			return false;
 		}
 
-		void RestEnsureCapacity(int requiredLength)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		void SetCapacity(int currentCapacity, int capacity)
 		{
-			if (_rest is null)
+			var newKeys = new SetterSpecificity[capacity];
+			var newValues = new T[capacity];
+			if (currentCapacity > 0)
 			{
-				_rest = new Entry[requiredLength];
+				Array.Copy(_keys, newKeys, currentCapacity);
+				Array.Copy(_values, newValues, currentCapacity);
 			}
-			else if (_rest.Length < requiredLength)
-			{
-				var newEntries = new Entry[requiredLength];
-				Array.Copy(_rest, 0, newEntries, 0, RestCount);
-				_rest = newEntries;
-			}
-		}
-
-		struct Entry(T? value, SetterSpecificity specificity)
-		{
-			public T? Value = value;
-			public readonly SetterSpecificity Specificity = specificity;
+			_keys = newKeys;
+			_values = newValues;
 		}
 	}
 }

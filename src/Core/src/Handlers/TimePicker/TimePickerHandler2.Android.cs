@@ -7,7 +7,8 @@ using Google.Android.Material.TimePicker;
 
 namespace Microsoft.Maui.Handlers;
 
-public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialTimePicker>
+// TODO: Material3: Make it public in .NET 11
+internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialTimePicker>
 {
     internal MaterialTimePicker? _dialog;
     internal bool _isUpdatingIsOpen;
@@ -237,7 +238,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
             && VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
 }
 
-public class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object, View.IOnClickListener
+internal class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object, View.IOnClickListener
 {
     readonly WeakReference<TimePickerHandler2> _handler;
 
@@ -261,7 +262,7 @@ public class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object, V
     }
 }
 
-public class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
+internal class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
 {
     readonly WeakReference<TimePickerHandler2> _handler;
 

@@ -264,8 +264,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || pickerView == null)
 				return;
 
-			if (pickerView.Model is not PickerSource source)
-				return;
+			var source = (PickerSource)pickerView.Model;
 			source.SelectedIndex = formsIndex;
 			pickerView.Select(Math.Max(formsIndex, 0), 0, true);
 		}
@@ -398,8 +397,8 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is not PickerHandler handler || handler._pickerView is not UIPickerView pickerView)
 					return;
 
-				var model = pickerView.Model as PickerSource;
-				if (model is not null && model.SelectedIndex != -1 && model.SelectedIndex != pickerView.SelectedRowInComponent(0))
+				PickerSource? model = (PickerSource)pickerView.Model;
+				if (model.SelectedIndex != -1 && model.SelectedIndex != pickerView.SelectedRowInComponent(0))
 				{
 					pickerView.Select(model.SelectedIndex, 0, false);
 				}

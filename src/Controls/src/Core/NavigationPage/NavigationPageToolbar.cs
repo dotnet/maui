@@ -56,8 +56,7 @@ namespace Microsoft.Maui.Controls
 				e.IsOneOf(
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty) ||
-				e.Is(FlyoutPage.FlyoutLayoutBehaviorProperty) ||
-				e.Is(NavigationPage.BackButtonAccessibilityLabelProperty))
+				e.Is(FlyoutPage.FlyoutLayoutBehaviorProperty))
 			{
 				ApplyChanges(_currentNavigationPage);
 			}
@@ -249,16 +248,10 @@ namespace Microsoft.Maui.Controls
 			else
 				BarHeight = null;
 
-			if (previousPage is not null)
-			{
+			if (previousPage != null)
 				BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
-				BackButtonAccessibilityLabel = NavigationPage.GetBackButtonAccessibilityLabel(previousPage);
-			}
 			else
-			{
 				BackButtonTitle = null;
-				BackButtonAccessibilityLabel = null;
-			}
 
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 

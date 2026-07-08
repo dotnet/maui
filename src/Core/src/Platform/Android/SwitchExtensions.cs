@@ -34,7 +34,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateTrackColor(this MSwitch materialSwitch, ISwitch view)
+		// TODO: material3 - make it public in .net 11
+		internal static void UpdateTrackColor(this MSwitch materialSwitch, ISwitch view)
 		{
 			// Cache the original theme tint before first modification 
 			// so it can be restored when TrackColor is cleared.
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateThumbColor(this MSwitch materialSwitch, ISwitch view)
+		internal static void UpdateThumbColor(this MSwitch materialSwitch, ISwitch view)
 		{
 			// Cache the original theme tint before first modification 
 			// so it can be restored when ThumbColor is cleared.

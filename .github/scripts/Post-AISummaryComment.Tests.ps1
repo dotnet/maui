@@ -60,30 +60,19 @@ Describe 'Test-PhaseContentIsNoOp' {
     It 'suppresses regression placeholders when there are no implementation files or risks' {
         Test-PhaseContentIsNoOp `
             -PhaseKey 'regression-check' `
-            -Content '● No implementation files modified — skipping regression cross-reference.' |
-            Should -BeTrue
-
-        Test-PhaseContentIsNoOp `
-            -PhaseKey 'regression-check' `
-            -Content "## 🔍 Regression Cross-Reference`n`n● No regression risks detected. No labeled bug-fix PRs in the last 6 months touched the modified files." |
-            Should -BeTrue
-
-        # Back-compat: the legacy 🟢 glyph is still recognized as a no-op.
-        Test-PhaseContentIsNoOp `
-            -PhaseKey 'regression-check' `
             -Content '🟢 No implementation files modified — skipping regression cross-reference.' |
+            Should -BeTrue
+
+        Test-PhaseContentIsNoOp `
+            -PhaseKey 'regression-check' `
+            -Content "## 🔍 Regression Cross-Reference`n`n🟢 No regression risks detected. No labeled bug-fix PRs in the last 6 months touched the modified files." |
             Should -BeTrue
     }
 
     It 'keeps actionable regression content' {
         Test-PhaseContentIsNoOp `
             -PhaseKey 'regression-check' `
-            -Content "## 🔍 Regression Cross-Reference`n`n⚠ **Overlaps with prior bug-fix PRs** — same files modified, but no exact line revert detected." |
-            Should -BeFalse
-
-        Test-PhaseContentIsNoOp `
-            -PhaseKey 'regression-check' `
-            -Content "## 🔍 Regression Cross-Reference`n`n✗ **Revert risks detected** — this PR removes 2 line(s) previously added by labeled bug-fix PRs." |
+            -Content "## 🔍 Regression Cross-Reference`n`n🟡 **Overlaps with prior bug-fix PRs** — same files modified, but no exact line revert detected." |
             Should -BeFalse
 
         Test-PhaseContentIsNoOp `

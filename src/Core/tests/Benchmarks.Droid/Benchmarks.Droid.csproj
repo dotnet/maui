@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)-android</TargetFramework>
-    <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
     <AssemblyName>Microsoft.Maui.Benchmarks.Droid</AssemblyName>
     <Nullable>enable</Nullable>
@@ -10,7 +10,6 @@
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <PublishTrimmed>false</PublishTrimmed>
-    <PublishReadyToRun>false</PublishReadyToRun>
     <RunAOTCompilation>false</RunAOTCompilation>
     <!-- Physical device is recommended -->
     <RuntimeIdentifier>android-arm64</RuntimeIdentifier>

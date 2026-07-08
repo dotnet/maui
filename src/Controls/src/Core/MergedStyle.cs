@@ -34,10 +34,8 @@ namespace Microsoft.Maui.Controls
 		{
 			Target = target;
 			TargetType = targetType;
-			// RegisterImplicitStyles handles the initial apply via OnImplicitStyleChanged -> SetStyle.
-			// An explicit Apply(Target) call here would double-attach event handlers when
-			// Application.Current.Resources already contains the implicit style (#24152).
 			RegisterImplicitStyles();
+			Apply(Target);
 		}
 
 		public IStyle Style
@@ -48,7 +46,7 @@ namespace Microsoft.Maui.Controls
 				if (_style == value)
 					return;
 				if (value != null && !value.TargetType.IsAssignableFrom(TargetType))
-					MauiLogger<Style>.Log(LogLevel.Warning, $"Style TargetType {value.TargetType.FullName} is not compatible with element target type {TargetType}");
+					Application.Current?.FindMauiContext()?.CreateLogger<Style>()?.LogWarning("Style TargetType {FullName} is not compatible with element target type {TargetType}", value.TargetType.FullName, TargetType);
 				SetStyle(ImplicitStyle, ClassStyles, value);
 			}
 		}
@@ -127,13 +125,6 @@ namespace Microsoft.Maui.Controls
 			ImplicitStyle?.UnApply(bindable);
 		}
 
-		/// <summary>Unconditionally unapplies and reapplies all style layers on the target.</summary>
-		internal void Reapply()
-		{
-			UnApply(Target);
-			Apply(Target);
-		}
-
 		void OnClassStyleChanged()
 		{
 			ClassStyles = _classStyleProperties.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(TargetType))).ToList();
@@ -188,8 +179,9 @@ namespace Microsoft.Maui.Controls
 			_implicitStyles.Add(implicitStyleProperty);
 			Target.SetDynamicResource(implicitStyleProperty, fallbackTypeName);
 
-			//and proceed as usual - RegisterImplicitStyles handles apply via OnImplicitStyleChanged
+			//and proceed as usual
 			RegisterImplicitStyles();
+			Apply(Target);
 		}
 
 		void SetStyle(IStyle implicitStyle, IList<Style> classStyles, IStyle style)

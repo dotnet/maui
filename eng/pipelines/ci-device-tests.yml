@@ -92,19 +92,19 @@ parameters:
   default:
     name: AcesShared
     demands:
-      - ImageOverride -equals $(AcesMacImageOverride)
+      - ImageOverride -equals ACES_VM_SharedPool_Tahoe
 
 - name: macOSPoolPublic
   type: object
   default:
     name: AcesShared
     demands:
-      - ImageOverride -equals $(AcesMacImageOverride)
+      - ImageOverride -equals ACES_VM_SharedPool_Tahoe
 
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net11.0
+  - tfm: net10.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -142,3 +142,4 @@ stages:
           skipProvisioning: true
           skipXcode: false
           skipSimulatorSetup: false
+

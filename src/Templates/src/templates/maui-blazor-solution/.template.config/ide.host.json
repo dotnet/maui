@@ -1,7 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/ide.host",
   "icon": "ide/icon.ico",
-  "supportsDocker": true,
   "disableHttpsSymbol": "NoHttps",
   "unsupportedHosts": [
     {

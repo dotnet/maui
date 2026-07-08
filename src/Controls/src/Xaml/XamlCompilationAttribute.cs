@@ -4,10 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-#if NET12_0_OR_GREATER
-	[Obsolete("XamlCompilationOptions is no longer used. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
-#else
-	[Obsolete("XamlCompilationOptions is deprecated. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />")]
+#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
+	[Obsolete("Specify xaml inflator and other options using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
 #endif
 	[Flags]
 	public enum XamlCompilationOptions
@@ -16,10 +14,8 @@ namespace Microsoft.Maui.Controls.Xaml
 		Compile = XamlInflator.XamlC,
 	}
 
-#if NET12_0_OR_GREATER
-	[Obsolete("XamlCompilationAttribute is no longer used. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
-#else
-	[Obsolete("XamlCompilationAttribute is deprecated. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />")]
+#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
+	[Obsolete("Specify xaml inflator and other options using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
 #endif
 	[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class, Inherited = false)]
 	public sealed class XamlCompilationAttribute : Attribute
@@ -32,8 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public XamlCompilationOptions XamlCompilationOptions { get; set; }
 	}
 
-#if !NET12_0_OR_GREATER
-#pragma warning disable CS0618 // Type or member is obsolete - internal backcompat code
+#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 	static class XamlCExtensions
 	{
 		public static bool IsCompiled(this Type type)
@@ -51,6 +46,5 @@ namespace Microsoft.Maui.Controls.Xaml
 			return false;
 		}
 	}
-#pragma warning restore CS0618
 #endif
 }

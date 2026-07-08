@@ -3,7 +3,8 @@ using Google.Android.Material.Slider;
 
 namespace Microsoft.Maui.Handlers;
 
-public class SliderHandler2 : ViewHandler<ISlider, Slider>
+// TODO: Material3: Make it public in .NET 11
+internal class SliderHandler2 : ViewHandler<ISlider, Slider>
 {
     public static PropertyMapper<ISlider, SliderHandler2> Mapper =
             new(ViewMapper)

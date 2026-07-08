@@ -28,9 +28,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMap.IsScrollEnabled)] = MapIsScrollEnabled,
 			[nameof(IMap.IsTrafficEnabled)] = MapIsTrafficEnabled,
 			[nameof(IMap.IsZoomEnabled)] = MapIsZoomEnabled,
-			[nameof(IMap.IsClusteringEnabled)] = MapIsClusteringEnabled,
-
-			[nameof(IMap.MapStyle)] = MapMapStyle,
 			[nameof(IMap.Pins)] = MapPins,
 			[nameof(IMap.Elements)] = MapElements,
 		};
@@ -41,8 +38,6 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static CommandMapper<IMap, IMapHandler> CommandMapper = new(ViewCommandMapper)
 		{
 			[nameof(IMap.MoveToRegion)] = MapMoveToRegion,
-			[nameof(IMap.ShowInfoWindow)] = MapShowInfoWindow,
-			[nameof(IMap.HideInfoWindow)] = MapHideInfoWindow,
 			[nameof(IMapHandler.UpdateMapElement)] = MapUpdateMapElement,
 		};
 
@@ -80,24 +75,6 @@ namespace Microsoft.Maui.Maps.Handlers
 				return;
 
 			handler.UpdateMapElement(args.MapElement);
-		}
-
-		/// <summary>
-		/// Maps the <see cref="IMap.ShowInfoWindow"/> command to the platform-specific implementation.
-		/// </summary>
-		public static void MapShowInfoWindow(IMapHandler handler, IMap map, object? arg)
-		{
-			if (arg is IMapPin pin && handler is MapHandler mapHandler)
-				mapHandler.ShowInfoWindow(pin);
-		}
-
-		/// <summary>
-		/// Maps the <see cref="IMap.HideInfoWindow"/> command to the platform-specific implementation.
-		/// </summary>
-		public static void MapHideInfoWindow(IMapHandler handler, IMap map, object? arg)
-		{
-			if (arg is IMapPin pin && handler is MapHandler mapHandler)
-				mapHandler.HideInfoWindow(pin);
 		}
 	}
 }

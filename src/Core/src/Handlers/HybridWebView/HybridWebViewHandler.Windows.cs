@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -280,6 +281,10 @@ namespace Microsoft.Maui.Handlers
 			return ras;
 		}
 
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		private sealed class HybridWebView2Proxy
 		{
 			private WeakReference<Window>? _window;

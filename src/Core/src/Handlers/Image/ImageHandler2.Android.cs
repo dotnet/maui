@@ -2,7 +2,8 @@ using Google.Android.Material.ImageView;
 
 namespace Microsoft.Maui.Handlers;
 
-public class ImageHandler2 : ImageHandler
+// TODO: make it public in .net 11
+internal class ImageHandler2 : ImageHandler
 {
     protected override ShapeableImageView CreatePlatformView()
     {

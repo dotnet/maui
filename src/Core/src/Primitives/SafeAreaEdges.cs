@@ -111,7 +111,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.Default"/>.
+		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.None"/>.
 		/// </summary>
 		public static SafeAreaEdges Default { get; } = new(SafeAreaRegions.Default);
 
@@ -126,9 +126,9 @@ namespace Microsoft.Maui
 		public static SafeAreaEdges All { get; } = new(SafeAreaRegions.All);
 
 		/// <summary>
-		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.Container"/>.
+		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.All"/>.
 		/// </summary>
-		public static SafeAreaEdges Container { get; } = new(SafeAreaRegions.Container);
+		internal static SafeAreaEdges Container { get; } = new(SafeAreaRegions.Container);
 
 		public static bool operator ==(SafeAreaEdges left, SafeAreaEdges right)
 		{

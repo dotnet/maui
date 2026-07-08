@@ -49,7 +49,7 @@ parameters:
   type: object
   default:
     name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+    vmImage: macOS-15
     os: macOS
 
 resources:
@@ -127,3 +127,6 @@ extends:
         - Pack
         publishDependsOn:
         - Validate
+        # This is to enable SDL runs part of Post-Build Validation Stage
+        SDLValidationParameters:
+          enable: false

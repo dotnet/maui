@@ -12,7 +12,6 @@ var testAppProjectPath = Argument("appproject", EnvironmentVariable("MAC_TEST_AP
 var testResultsPath = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? GetTestResultsDirectory().FullPath);
 var runtimeIdentifier = Argument("rid", EnvironmentVariable("MAC_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier());
 var deviceCleanupEnabled = Argument("cleanup", true);
-var useCoreClr = Argument("coreclr", false);
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg).FullPath;
@@ -26,13 +25,12 @@ Information($"Build Runtime Identifier: {runtimeIdentifier}");
 Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
-Information("Use CoreCLR: {0}", useCoreClr);
 
 Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
-		ExecuteBuild(projectPath, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath, useCoreClr);
+		ExecuteBuild(projectPath, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
 	});
 
 Task("testOnly")
@@ -67,11 +65,10 @@ Task("uitest")
 
 RunTarget(TARGET);
 
-void ExecuteBuild(string project, string binDir, string config, string rid, string tfm, string toolPath, bool useCoreClr)
+void ExecuteBuild(string project, string binDir, string config, string rid, string tfm, string toolPath)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	var monoRuntime = useCoreClr ? "coreclr" : "mono";
-	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-catalyst.binlog";
+	var binlog = $"{binDir}/{projectName}-{config}-catalyst.binlog";
 	DotNetBuild(project, new DotNetBuildSettings
 	{
 		Configuration = config,
@@ -81,19 +78,10 @@ void ExecuteBuild(string project, string binDir, string config, string rid, stri
 			MaxCpuCount = 0
 		},
 		ToolPath = toolPath,
-		ArgumentCustomization = args =>
-		{
-			args
-				.Append("/p:BuildIpa=true")
-				.Append($"/p:RuntimeIdentifier={rid}")
-				.Append($"/bl:{binlog}");
-
-			if (useCoreClr)
-			{
-				args.Append("/p:UseMonoRuntime=false");
-			}
-			return args;
-		}
+		ArgumentCustomization = args => args
+			.Append("/p:BuildIpa=true")
+			.Append($"/p:RuntimeIdentifier={rid}")
+			.Append($"/bl:{binlog}")
 	});
 }
 

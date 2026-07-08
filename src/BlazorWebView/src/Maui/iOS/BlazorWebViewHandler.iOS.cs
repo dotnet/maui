@@ -98,15 +98,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (DeveloperTools.Enabled)
 			{
 				// Legacy Developer Extras setting.
-				if (NSObject.FromObject(true) is NSObject trueValue)
-				{
-					config.Preferences.SetValueForKey(trueValue, new NSString("developerExtrasEnabled"));
+				config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));
 
-					if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 6))
-					{
-						// Enable Developer Extras for iOS builds for 16.4+ and Mac Catalyst builds for 16.6 (macOS 13.5)+
-						webview.SetValueForKey(trueValue, new NSString("inspectable"));
-					}
+				if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 6))
+				{
+					// Enable Developer Extras for iOS builds for 16.4+ and Mac Catalyst builds for 16.6 (macOS 13.5)+
+					webview.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
 				}
 			}
 

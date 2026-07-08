@@ -234,28 +234,31 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	INode? ParseExpression(ref string expression, IXmlNamespaceResolver nsResolver, IXmlLineInfo xmlLineInfo, INode node, INode parentNode)
 	{
-		// Capture the original expression so diagnostics point at the full markup, even after `expression` is consumed below.
-		var originalExpression = expression;
-
 		if (expression.StartsWith("{}", StringComparison.Ordinal))
 			return new ValueNode(expression.Substring(2), null, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1);
 
 		if (expression.Length == 0 || expression[expression.Length - 1] != '}')
 		{
-			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, CreateExpressionLocation(xmlLineInfo, originalExpression)));
+			//FIXME fix location
+			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
+			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, location));
 			return null;
 		}
 
 		if (!MarkupExpressionParser.MatchMarkup(out var match, expression, out var len))
 		{
-			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, CreateExpressionLocation(xmlLineInfo, originalExpression)));
+			//FIXME fix location
+			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
+			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location));
 			return null;
 		}
 
 		expression = expression.Substring(len).TrimStart();
 		if (expression.Length == 0)
 		{
-			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, CreateExpressionLocation(xmlLineInfo, originalExpression)));
+			//FIXME fix location
+			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
+			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, location));
 			return null;
 		}
 		var serviceProvider = new XamlServiceProvider(node, Context);
@@ -265,17 +268,6 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			serviceProvider.Add(typeof(IXmlLineInfoProvider), new XmlLineInfoProvider(xmlLineInfo));
 
 		return new MarkupExpansionParser().Parse(match!, ref expression, serviceProvider);
-	}
-
-	// Builds a diagnostic location pointing at the offending expression using its line info,
-	// instead of defaulting to the file root (1,1).
-	Location? CreateExpressionLocation(IXmlLineInfo? xmlLineInfo, string text)
-	{
-		if (Context.ProjectItem.RelativePath is not string relativePath)
-			return null;
-		if (xmlLineInfo is null || !xmlLineInfo.HasLineInfo())
-			return Location.Create(relativePath, new TextSpan(), new LinePositionSpan());
-		return LocationHelpers.LocationCreate(relativePath, xmlLineInfo, text);
 	}
 
 

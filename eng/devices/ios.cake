@@ -16,7 +16,6 @@ var testResultsPath = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS"
 var platform = testDevice.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
 var runtimeIdentifier = Argument("rid", EnvironmentVariable("IOS_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier(testDevice));
 var deviceCleanupEnabled = Argument("cleanup", true);
-var useCoreClr = Argument("coreclr", false);
 
 // Device details
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
@@ -39,7 +38,6 @@ Information($"Build Runtime Identifier: {runtimeIdentifier}");
 Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
-Information("Use CoreCLR: {0}", useCoreClr);
 Information("Runtime Variant: {0}", RUNTIME_VARIANT);
 
 var dotnetToolPath = GetDotnetToolPath();
@@ -87,7 +85,7 @@ Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
-		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath, useCoreClr);
+		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
 	});
 
 Task("testOnly")
@@ -132,11 +130,10 @@ Task("uitest")
 
 RunTarget(TARGET);
 
-void ExecuteBuild(string project, string device, string binDir, string config, string rid, string tfm, string toolPath, bool useCoreClr)
+void ExecuteBuild(string project, string device, string binDir, string config, string rid, string tfm, string toolPath)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	var monoRuntime = useCoreClr ? "coreclr" : "mono";
-	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-ios.binlog";
+	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -154,11 +151,6 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
-
-			if (useCoreClr)
-			{
-				args.Append("/p:UseMonoRuntime=false");
-			}
 
 			return args;
 		}

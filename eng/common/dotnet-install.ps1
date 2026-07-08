@@ -10,11 +10,7 @@ Param(
 
 . $PSScriptRoot\tools.ps1
 
-if (-not [string]::IsNullOrEmpty($env:DOTNET_GLOBAL_INSTALL_DIR)) {
-  $dotnetRoot = $env:DOTNET_GLOBAL_INSTALL_DIR
-} else {
-  $dotnetRoot = Join-Path $RepoRoot '.dotnet'
-}
+$dotnetRoot = Join-Path $RepoRoot '.dotnet'
 
 $installdir = $dotnetRoot
 try {

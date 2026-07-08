@@ -1,10 +1,8 @@
 using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Bumptech.Glide;
@@ -60,34 +58,29 @@ namespace Microsoft.Maui.DeviceTests
 
 			var service = new FileImageSourceService();
 
-			// Load + dispose inside a non-inlined helper so the result/drawable/bitmap
-			// locals leave the active stack frame before TryCollectFile runs its GC loop.
-			// Trim/AOT codegen can keep locals rooted longer than IL position implies, which
-			// would cause Glide's MemoryCache to retain the bitmap after Dispose() and make
-			// the TryCollectFile probe report the bitmap is still cached. See PR #34573.
-			Bitmap bitmap1 = await LoadAndDisposeBitmapAsync(service, imageSource);
+			// get an image
+			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			var drawable1 = result1.Value;
+			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(drawable1);
+			var bitmap1 = bitmapDrawable1.Bitmap;
 
-			// try collect it - dispose should have released Glide's strong refs
+			// release
+			result1.Dispose();
+
+			// try collect it
 			var collected = await TryCollectFile(bitmapFile);
 			Assert.True(collected);
 
-			Bitmap bitmap2 = await LoadAndDisposeBitmapAsync(service, imageSource);
+			// get the image again
+			var result2 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			var drawable2 = result2.Value;
+			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(drawable2);
+			var bitmap2 = bitmapDrawable2.Bitmap;
 
 			// make sure it WAS collected and we got a new image
 			Assert.NotEqual(bitmap1, bitmap2);
-		}
 
-		// The [MethodImpl(NoInlining)] hint together with isolating the result/drawable
-		// locals to a separate frame ensures the IImageSourceServiceResult goes out of
-		// scope before the caller's TryCollectFile probe runs its GC loop.
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		static async Task<Bitmap> LoadAndDisposeBitmapAsync(FileImageSourceService service, FileImageSourceStub imageSource)
-		{
-			var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
-			var bitmap = bitmapDrawable.Bitmap;
-			result.Dispose();
-			return bitmap;
+			result2.Dispose();
 		}
 
 		[Fact]

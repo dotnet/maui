@@ -158,7 +158,6 @@ if [[ "${TreatWarningsAsErrors:-}" == "false" ]]; then
 fi
 
 arguments="$arguments $extraargs"
-
 "$scriptroot/common/build.sh" $arguments
 
 

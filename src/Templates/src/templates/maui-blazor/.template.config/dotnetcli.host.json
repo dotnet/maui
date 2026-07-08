@@ -9,6 +9,9 @@
     },
     "IncludeSampleContent": {
       "isHidden": true
+    },
+    "Empty": {
+      "isHidden": true
     }
   },
   "usageExamples": [

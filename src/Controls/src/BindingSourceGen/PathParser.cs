@@ -75,8 +75,8 @@ internal class PathParser
 			ContainingType: containgType,
 			MemberType: memberType,
 			Kind: accessorKind,
-			IsGetterAccessible: isGetterAccessible,
-			IsSetterAccessible: isSetterAccessible);
+			IsGetterInaccessible: !isGetterAccessible,
+			IsSetterInaccessible: !isSetterAccessible);
 
 		result.Value.Add(part);
 		return Result<List<IPathPart>>.Success(result.Value);
@@ -99,8 +99,8 @@ internal class PathParser
 				ContainingType: containingType,
 				MemberType: memberType,
 				Kind: AccessorKind.Property,
-				IsGetterAccessible: true, // Assume generated property is accessible
-				IsSetterAccessible: false);  // Commands are typically read-only
+				IsGetterInaccessible: false, // Assume generated property is accessible
+				IsSetterInaccessible: true);  // Commands are typically read-only
 
 			return true;
 		}
@@ -118,8 +118,8 @@ internal class PathParser
 				ContainingType: containingType,
 				MemberType: memberType,
 				Kind: AccessorKind.Property,
-				IsGetterAccessible: true, // Assume generated property is accessible
-				IsSetterAccessible: true); // ObservableProperty properties have setters
+				IsGetterInaccessible: false, // Assume generated property is accessible
+				IsSetterInaccessible: false); // ObservableProperty properties have setters
 
 			return true;
 		}

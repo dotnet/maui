@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -20,7 +19,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 		RunTest("invokedotnettests.html", async (hybridWebView) =>
 		{
 			var invokeJavaScriptTarget = new TestDotNetMethods();
-			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, InvokeDotNetJsonContext.Default);
+			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
 
 			// Tell JavaScript to invoke the method
 			hybridWebView.SendRawMessage(methodName);
@@ -34,41 +33,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
 		});
 
-	[Fact]
-	public Task InvokerIsSet_WhenUsingJsonSerializerContext() =>
-		RunTest("invokedotnettests.html", async (hybridWebView) =>
-		{
-			var invokeJavaScriptTarget = new TestDotNetMethods();
-			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, InvokeDotNetJsonContext.Default);
-
-			// Verify the invoker was set (AOT-safe path)
-			var invoker = hybridWebView.Invoker;
-			Assert.NotNull(invoker);
-
-			// Verify the invoker actually works end-to-end
-			hybridWebView.SendRawMessage("Invoke_NoParam_ReturnTaskValueType");
-			await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
-			var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastScriptResult()");
-			Assert.Equal("2", result);
-		});
-
-	[Fact]
-	public Task InvokerIsSet_WhenUsingLegacyOverload() =>
-		RunTest("invokedotnettests.html", (hybridWebView) =>
-		{
-#pragma warning disable IL2026, IL3050 // Testing the legacy overload
-			hybridWebView.SetInvokeJavaScriptTarget(new TestDotNetMethods());
-#pragma warning restore IL2026, IL3050
-
-			// Verify the invoker was set (legacy reflection path)
-			var invoker = hybridWebView.Invoker;
-			Assert.NotNull(invoker);
-			Assert.IsType<ReflectionHybridWebViewInvoker>(invoker);
-
-			return Task.CompletedTask;
-		});
-
-	internal class TestDotNetMethods
+	private class TestDotNetMethods
 	{
 		private static ComputationResult NewComplexResult =>
 			new ComputationResult { result = 123, operationName = "Test" };
@@ -174,8 +139,8 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 	{
 		public IEnumerator<object?[]> GetEnumerator()
 		{
-			const string ComplexResult = "{\\\"result\\\":123,\\\"operationName\\\":\\\"Test\\\"}";
-			const string DictionaryResult = "{\\\"first\\\":111,\\\"second\\\":222,\\\"third\\\":333}";
+			const string ComplexResult = "{\"result\":123,\"operationName\":\"Test\"}";
+			const string DictionaryResult = "{\"first\":111,\"second\":222,\"third\":333}";
 			const int ValueTypeResult = 2;
 
 			// Test variations of:
@@ -200,20 +165,10 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 		}
 	}
 
-
+	
 	public class ComputationResult
 	{
 		public decimal result { get; set; }
 		public string? operationName { get; set; }
-	}
-
-	[JsonSerializable(typeof(ComputationResult))]
-	[JsonSerializable(typeof(Dictionary<string, int>))]
-	[JsonSerializable(typeof(int[]))]
-	[JsonSerializable(typeof(string))]
-	[JsonSerializable(typeof(int))]
-	[JsonSerializable(typeof(object))]
-	internal partial class InvokeDotNetJsonContext : JsonSerializerContext
-	{
 	}
 }

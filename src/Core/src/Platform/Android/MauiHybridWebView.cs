@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Graphics;
 using Android.Webkit;
@@ -7,6 +8,10 @@ using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
 {
+	[RequiresUnreferencedCode(HybridWebViewHandler.DynamicFeatures)]
+#if !NETSTANDARD
+	[RequiresDynamicCode(HybridWebViewHandler.DynamicFeatures)]
+#endif
 	public class MauiHybridWebView : AWebView, IHybridPlatformWebView
 	{
 		private readonly WeakReference<HybridWebViewHandler> _handler;

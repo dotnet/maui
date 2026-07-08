@@ -271,8 +271,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(typeof(SearchBar), false)]
 		[InlineData(typeof(SearchHandler), true)]
 		[InlineData(typeof(SearchHandler), false)]
-		[InlineData(typeof(SwipeItemView), true)]
-		[InlineData(typeof(SwipeItemView), false)]
 		public async Task CommandsSubscribedToCanExecuteCollect(Type controlType, bool useWeakEventHandler)
 		{
 			// Create a view model with a Command
@@ -311,9 +309,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					case SearchHandler sh:
 						sh.Command = command;
 						sh.ClearPlaceholderCommand = command;
-						break;
-					case SwipeItemView siv:
-						siv.Command = command;
 						break;
 				}
 

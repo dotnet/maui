@@ -294,7 +294,10 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					MauiLogger<Element>.Log(LogLevel.Warning, $"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					Application.Current?
+						.FindMauiContext()?
+						.CreateLogger<Element>()?
+						.LogWarning($"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 
 				return null;
@@ -348,7 +351,10 @@ namespace Microsoft.Maui.Controls
 				_realParent = null;
 				if (logWarningIfParentHasBeenCollected)
 				{
-					MauiLogger<Element>.Log(LogLevel.Warning, $"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					Application.Current?
+										.FindMauiContext()?
+										.CreateLogger<Element>()?
+										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 			}
 
@@ -409,14 +415,14 @@ namespace Microsoft.Maui.Controls
 
 				if (value != null && (element is Layout || element is IControlTemplated))
 				{
-					MauiLogger<Element>.Log(LogLevel.Warning, $"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
+					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
 				}
 			}
 
 			RealParent = value;
 			if (RealParent != null)
 			{
-				OnParentResourcesChangedKeys(RealParent.GetMergedResourceKeys());
+				OnParentResourcesChanged(RealParent.GetMergedResources());
 				((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
 			}
 
@@ -758,29 +764,12 @@ namespace Microsoft.Maui.Controls
 			if (e == ResourcesChangedEventArgs.StyleSheets)
 				ApplyStyleSheets();
 			else
-				OnParentResourcesChangedKeys(e.Keys, e.ResolveValue);
+				OnParentResourcesChanged(e.Values);
 		}
 
 		internal virtual void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{
 			OnResourcesChanged(values);
-		}
-
-		/// <summary>
-		/// Called when parent resources change, using keys only to avoid resolving lazy resources.
-		/// Values are looked up on-demand only for resources that are actually bound via DynamicResource.
-		/// </summary>
-		internal virtual void OnParentResourcesChangedKeys(IEnumerable<string> keys)
-		{
-			OnResourcesChangedKeys(keys);
-		}
-
-		/// <summary>
-		/// Called when parent resources change, using keys and a resolver to avoid resolving lazy resources.
-		/// </summary>
-		internal virtual void OnParentResourcesChangedKeys(IEnumerable<string> keys, Func<string, object> resolver)
-		{
-			OnResourcesChangedKeys(keys, resolver);
 		}
 
 		internal override void OnRemoveDynamicResource(BindableProperty property)
@@ -797,7 +786,7 @@ namespace Microsoft.Maui.Controls
 			if (e == ResourcesChangedEventArgs.StyleSheets)
 				ApplyStyleSheets();
 			else
-				OnResourcesChangedKeys(e.Keys, e.ResolveValue);
+				OnResourcesChanged(e.Values);
 		}
 
 		internal void OnResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -805,13 +794,8 @@ namespace Microsoft.Maui.Controls
 			if (values == null)
 				return;
 			if (_changeHandlers != null)
-			{
-#pragma warning disable CS0618 // Legacy code path for backward compatibility
-				var e = new ResourcesChangedEventArgs(values);
-#pragma warning restore CS0618
 				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
-					handler(this, e);
-			}
+					handler(this, new ResourcesChangedEventArgs(values));
 			if (_dynamicResources == null)
 				return;
 			if (_bindableResources == null)
@@ -836,77 +820,6 @@ namespace Microsoft.Maui.Controls
 					OnResourceChanged(changedResource.Item1, value.Value, changedResource.Item2);
 
 				var bindableObject = value.Value as BindableObject;
-				if (bindableObject != null && (bindableObject as Element)?.Parent == null)
-				{
-					if (!_bindableResources.Contains(bindableObject))
-						_bindableResources.Add(bindableObject);
-					SetInheritedBindingContext(bindableObject, BindingContext);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Called when resources change, using keys only to avoid resolving lazy resources.
-		/// Values are looked up on-demand only for resources that are actually bound via DynamicResource.
-		/// </summary>
-		internal void OnResourcesChangedKeys(IEnumerable<string> keys)
-		{
-			OnResourcesChangedKeys(keys, key =>
-			{
-				// Style class keys need to be merged across the entire parent chain,
-				// not just return the first match from TryGetResource.
-				if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
-					return this.GetMergedStyleClassResource(key);
-				return this.TryGetResource(key, out var v) ? v : null;
-			});
-		}
-
-		/// <summary>
-		/// Called when resources change, using keys and a resolver to avoid resolving lazy resources.
-		/// Values are looked up on-demand only for resources that are actually bound via DynamicResource.
-		/// </summary>
-		internal void OnResourcesChangedKeys(IEnumerable<string> keys, Func<string, object> resolver)
-		{
-			if (keys == null)
-				return;
-			
-			// Notify change handlers with keys + resolver (they can resolve on-demand)
-			if (_changeHandlers != null)
-			{
-				var e = new ResourcesChangedEventArgs(keys, resolver);
-				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
-					handler(this, e);
-			}
-			
-			if (_dynamicResources == null)
-				return;
-			if (_bindableResources == null)
-				_bindableResources = new List<BindableObject>();
-			foreach (string key in keys)
-			{
-				List<(BindableProperty, SetterSpecificity)> changedResources = null;
-				foreach (KeyValuePair<BindableProperty, (string, SetterSpecificity)> dynR in DynamicResources)
-				{
-					// when the DynamicResource bound to a BindableProperty is
-					// changing then the BindableProperty needs to be refreshed;
-					// The .Value.Item1 is the name of DynamicResource to which the BindableProperty is bound.
-					if (dynR.Value.Item1 != key)
-						continue;
-					changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
-					changedResources.Add((dynR.Key, dynR.Value.Item2));
-				}
-				if (changedResources == null)
-					continue;
-				
-				// Only now do we look up the value - on demand
-				object value = resolver(key);
-				if (value == null)
-					continue;
-					
-				foreach ((BindableProperty, SetterSpecificity) changedResource in changedResources)
-					OnResourceChanged(changedResource.Item1, value, changedResource.Item2);
-
-				var bindableObject = value as BindableObject;
 				if (bindableObject != null && (bindableObject as Element)?.Parent == null)
 				{
 					if (!_bindableResources.Contains(bindableObject))
@@ -1041,32 +954,14 @@ namespace Microsoft.Maui.Controls
 
 		void OnDescendantAdded(Element child)
 		{
-			OnDescendantAddedCore(child, null);
-		}
-
-		void OnDescendantAddedCore(Element child, ElementEventArgs args)
-		{
-			if (DescendantAdded is not null)
-			{
-				args ??= new ElementEventArgs(child);
-				DescendantAdded.Invoke(this, args);
-			}
-			RealParent?.OnDescendantAddedCore(child, args);
+			DescendantAdded?.Invoke(this, new ElementEventArgs(child));
+			RealParent?.OnDescendantAdded(child);
 		}
 
 		void OnDescendantRemoved(Element child)
 		{
-			OnDescendantRemovedCore(child, null);
-		}
-
-		void OnDescendantRemovedCore(Element child, ElementEventArgs args)
-		{
-			if (DescendantRemoved is not null)
-			{
-				args ??= new ElementEventArgs(child);
-				DescendantRemoved.Invoke(this, args);
-			}
-			RealParent?.OnDescendantRemovedCore(child, args);
+			DescendantRemoved?.Invoke(this, new ElementEventArgs(child));
+			RealParent?.OnDescendantRemoved(child);
 		}
 
 		void OnResourceChanged(BindableProperty property, object value, SetterSpecificity specificity)

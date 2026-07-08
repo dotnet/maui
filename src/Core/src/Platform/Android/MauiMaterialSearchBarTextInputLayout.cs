@@ -5,7 +5,8 @@ using Google.Android.Material.TextField;
 
 namespace Microsoft.Maui.Platform;
 
-public class MauiMaterialSearchBarTextInputLayout : TextInputLayout
+// TODO: material3 - make it public in .net 11
+internal class MauiMaterialSearchBarTextInputLayout : TextInputLayout
 {
     public MauiMaterialSearchBarTextInputLayout(Context context) : base(context)
     {
@@ -46,7 +47,8 @@ public class MauiMaterialSearchBarTextInputLayout : TextInputLayout
     }
 }
 
-public class MauiMaterialSearchBarTextInputEditText : TextInputEditText
+// TODO: material3 - make it public in .net 11
+internal class MauiMaterialSearchBarTextInputEditText : TextInputEditText
 {
     public event EventHandler? SelectionChanged;
     public MauiMaterialSearchBarTextInputEditText(Context context) : base(context)

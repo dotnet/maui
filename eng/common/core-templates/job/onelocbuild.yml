@@ -22,7 +22,6 @@ parameters:
   GitHubOrg: dotnet
   MirrorRepo: ''
   MirrorBranch: main
-  xLocCustomPowerShellScript: ''
   condition: ''
   JobNameSuffix: ''
   is1ESPipeline: ''
@@ -53,13 +52,13 @@ jobs:
       # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
       ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
         name: AzurePipelines-EO
-        image: 1ESPT-Windows2025
+        image: 1ESPT-Windows2022
         demands: Cmd
         os: windows
       # If it's not devdiv, it's dnceng
       ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
         name: $(DncEngInternalBuildPool)
-        image: windows.vs2026.amd64
+        image: 1es-windows-2022
         os: windows
 
   steps:
@@ -98,8 +97,6 @@ jobs:
           gitHubOrganization: ${{ parameters.GitHubOrg }}
           mirrorRepo: ${{ parameters.MirrorRepo }}
           mirrorBranch: ${{ parameters.MirrorBranch }}
-        ${{ if ne(parameters.xLocCustomPowerShellScript, '') }}:
-          xLocCustomPowerShellScript: ${{ parameters.xLocCustomPowerShellScript }}
       condition: ${{ parameters.condition }}
 
     # Copy the locProject.json to the root of the Loc directory, then publish a pipeline artifact

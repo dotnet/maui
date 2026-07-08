@@ -12,8 +12,10 @@ public enum TextType
 
 	/// <summary>
 	/// HTML-formatted text content that may include markup.
+	/// </summary>
+	/// <remarks>
 	/// The subset of supported HTML tags varies by platform. Each platform's native text rendering engine
 	/// determines which HTML tags and attributes are supported.
-	/// </summary>
+	/// </remarks>
 	Html
 }

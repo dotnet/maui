@@ -10,7 +10,6 @@ configuration:
       - main
       - release/*
       - internal/release/*
-      - net11.0
       - net10.0
       - net9.0
       - inflight/current

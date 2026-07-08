@@ -138,7 +138,7 @@ Write `content.md`:
 **Errors:** {count} | **Warnings:** {count} | **Suggestions:** {count}
 
 Key code review findings:
-- {✗/⚠/ℹ} {Brief finding with file:line reference}
+- {❌/⚠️/💡} {Brief finding with file:line reference}
 - ...
 *(If SKIPPED: "Code review sub-agent failed or timed out. Reason: {details}")*
 

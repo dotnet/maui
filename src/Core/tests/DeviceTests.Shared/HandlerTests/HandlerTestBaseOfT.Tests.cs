@@ -392,7 +392,9 @@ namespace Microsoft.Maui.DeviceTests
 		public void HandlersHaveAllExpectedContructors()
 		{
 			bool hasBothMappers = false;
+#pragma warning disable IL2090 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.
 			var constructors = typeof(THandler).GetConstructors();
+#pragma warning restore IL2090 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.
 
 			foreach (var ctor in constructors)
 			{

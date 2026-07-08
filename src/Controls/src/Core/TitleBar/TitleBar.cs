@@ -87,14 +87,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ForegroundColorProperty = BindableProperty.Create(nameof(ForegroundColor),
 			typeof(Color), typeof(TitleBar));
 
-		/// <summary>Bindable property for <see cref="TitleFontAttributes"/>.</summary>
-		public static readonly BindableProperty TitleFontAttributesProperty =
-			BindableProperty.Create(nameof(TitleFontAttributes), typeof(FontAttributes),
-				typeof(TitleBar), FontAttributes.None);
-
 		static void OnLeadingChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titleBar = (TitleBar)bindable;
+			var titlebar = (TitleBar)bindable;
 
 			if (oldValue is BindableObject oldLeadingContent)
 			{
@@ -108,58 +103,58 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is null)
 			{
-				titleBar.ApplyVisibleState(LeadingHiddenState);
+				titlebar.ApplyVisibleState(LeadingHiddenState);
 			}
 			else
 			{
-				titleBar.ApplyVisibleState(LeadingVisibleState);
+				titlebar.ApplyVisibleState(LeadingVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titleBar = (TitleBar)bindable;
+			var titlebar = (TitleBar)bindable;
 			var imageSource = newValue as ImageSource;
 			if (imageSource is null || imageSource.IsEmpty)
 			{
-				titleBar.ApplyVisibleState(IconHiddenState);
+				titlebar.ApplyVisibleState(IconHiddenState);
 			}
 			else
 			{
-				titleBar.ApplyVisibleState(IconVisibleState);
+				titlebar.ApplyVisibleState(IconVisibleState);
 			}
 		}
 
 		static void OnTitleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titleBar = (TitleBar)bindable;
+			var titlebar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				titleBar.ApplyVisibleState(TitleHiddenState);
+				titlebar.ApplyVisibleState(TitleHiddenState);
 			}
 			else
 			{
-				titleBar.ApplyVisibleState(TitleVisibleState);
+				titlebar.ApplyVisibleState(TitleVisibleState);
 			}
 		}
 
 		static void OnSubtitleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titleBar = (TitleBar)bindable;
+			var titlebar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				titleBar.ApplyVisibleState(SubtitleHiddenState);
+				titlebar.ApplyVisibleState(SubtitleHiddenState);
 			}
 			else
 			{
-				titleBar.ApplyVisibleState(SubtitleVisibleState);
+				titlebar.ApplyVisibleState(SubtitleVisibleState);
 			}
 		}
 
 		static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titleBar = (TitleBar)bindable;
+			var titlebar = (TitleBar)bindable;
 
 			if (oldValue is BindableObject oldContent)
 			{
@@ -173,18 +168,18 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is null)
 			{
-				titleBar.ApplyVisibleState(ContentHiddenState);
+				titlebar.ApplyVisibleState(ContentHiddenState);
 			}
 			else
 			{
-				titleBar.ApplyVisibleState(ContentVisibleState);
+				titlebar.ApplyVisibleState(ContentVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
 		static void OnTrailingContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titleBar = (TitleBar)bindable;
+			var titlebar = (TitleBar)bindable;
 
 			if (oldValue is BindableObject oldTrailingContent)
 			{
@@ -198,11 +193,11 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is null)
 			{
-				titleBar.ApplyVisibleState(TrailingHiddenState);
+				titlebar.ApplyVisibleState(TrailingHiddenState);
 			}
 			else
 			{
-				titleBar.ApplyVisibleState(TrailingVisibleState);
+				titlebar.ApplyVisibleState(TrailingVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
@@ -305,16 +300,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (Color)GetValue(ForegroundColorProperty); }
 			set { SetValue(ForegroundColorProperty, value); }
-		}
-
-		/// <summary>
-		/// Gets or sets the <see cref="FontAttributes"/> applied to the title text.
-		/// Defaults to <see cref="FontAttributes.None"/>.
-		/// </summary>
-		public FontAttributes TitleFontAttributes
-		{
-			get => (FontAttributes)GetValue(TitleFontAttributesProperty);
-			set => SetValue(TitleFontAttributesProperty, value);
 		}
 
 		/// <inheritdoc/>
@@ -541,11 +526,6 @@ namespace Microsoft.Maui.Controls
 			titleLabel.SetBinding(
 				Label.TextColorProperty,
 				static (TitleBar tb) => tb.ForegroundColor,
-				source: RelativeBindingSource.TemplatedParent);
-
-			titleLabel.SetBinding(
-				Label.FontAttributesProperty,
-				static (TitleBar tb) => tb.TitleFontAttributes,
 				source: RelativeBindingSource.TemplatedParent);
 
 			var activeVisualState = new VisualState() { Name = TitleBarActiveState };
