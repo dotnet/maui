@@ -9,6 +9,12 @@ sealed class CacheWithSwitch : ICache<Color, ImmutableBrush>
 {
     ICache<Color, ImmutableBrush> _cache;
 
+#if NETSTANDARD
+    readonly object _lock = new();
+#else
+    readonly System.Threading.Lock _lock = new();
+#endif
+
     public CacheWithSwitch(int capacity)
     {
 	    if (capacity <= 0)
@@ -44,11 +50,14 @@ sealed class CacheWithSwitch : ICache<Color, ImmutableBrush>
 
     public ImmutableBrush Get(Color key)
     {
-        if (_cache is SimpleCache { IsAtCapacity: true } simple)
+        lock (_lock)
         {
-            _cache = simple.Promote();
-        }
+            if (_cache is SimpleCache { IsAtCapacity: true } simple)
+            {
+                _cache = simple.Promote();
+            }
 
-        return _cache.Get(key);
+            return _cache.Get(key);
+        }
     }
 }
