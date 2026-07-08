@@ -800,7 +800,8 @@ internal class TabbedViewManager
             items,
             currentIndex,
             _bottomNavigationView,
-            _context);
+            _context,
+            onIconLoaded: menuItem => SetupBottomNavigationViewIconColor(menuItem.ItemId, menuItem));
 
         _bottomNavigationView.SetShiftMode(false, false);
 

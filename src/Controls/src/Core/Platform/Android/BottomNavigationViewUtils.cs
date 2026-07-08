@@ -68,12 +68,13 @@ namespace Microsoft.Maui.Controls.Platform
 			int currentIndex,
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext,
-			out IMenuItem menuItem)
+			out IMenuItem menuItem,
+			Action<IMenuItem> onIconLoaded = null)
 		{
 			Task returnValue;
 			using var title = new Java.Lang.String(item.title);
 			menuItem = menu.Add(0, index, 0, title);
-			returnValue = SetMenuItemIcon(menuItem, item.icon, mauiContext);
+			returnValue = SetMenuItemIcon(menuItem, item.icon, mauiContext, onIconLoaded);
 			UpdateEnabled(item.tabEnabled, menuItem);
 			if (index == currentIndex)
 			{
@@ -90,7 +91,8 @@ namespace Microsoft.Maui.Controls.Platform
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
 			int currentIndex,
 			BottomNavigationView bottomView,
-			IMauiContext mauiContext)
+			IMauiContext mauiContext,
+			Action<IMenuItem> onIconLoaded = null)
 		{
 			maxBottomItems = Math.Min(maxBottomItems, MaxBottomNavigationItems);
 			Context context = mauiContext.Context;
@@ -112,19 +114,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 				IMenuItem menuItem;
 				if (i >= menu.Size())
-					loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
+					loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem, onIconLoaded));
 				else
 				{
 					menuItem = menu.GetItem(i);
 					if (menuItem.ItemId != i)
 					{
 						menu.RemoveItem(menuItem.ItemId);
-						loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
+						loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem, onIconLoaded));
 					}
 					else
 					{
 						SetMenuItemTitle(menuItem, item.title);
-						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext));
+						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext, onIconLoaded));
 						// Reapply enabled/selected state since this IMenuItem is being reused, not recreated.
 						UpdateEnabled(item.tabEnabled, menuItem);
 						if (i == currentIndex)
@@ -164,7 +166,7 @@ namespace Microsoft.Maui.Controls.Platform
 			menuItem.SetTitle(jTitle);
 		}
 
-		internal static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context)
+		internal static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context, Action<IMenuItem> onIconLoaded = null)
 		{
 			if (!menuItem.IsAlive())
 				return;
@@ -172,17 +174,30 @@ namespace Microsoft.Maui.Controls.Platform
 			if (source is null)
 				return;
 
-			var services = context.Services;
-			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-			var imageSourceService = provider.GetRequiredImageSourceService(source);
-
-			var result = await imageSourceService.GetDrawableAsync(
-				source,
-				context.Context);
-
-			if (menuItem.IsAlive())
+			try
 			{
-				menuItem.SetIcon(result?.Value);
+				var services = context.Services;
+				var provider = services.GetRequiredService<IImageSourceServiceProvider>();
+				var imageSourceService = provider.GetRequiredImageSourceService(source);
+
+				var result = await imageSourceService.GetDrawableAsync(
+					source,
+					context.Context);
+
+				if (menuItem.IsAlive())
+				{
+					menuItem.SetIcon(result?.Value);
+					// Let the caller reapply per-item icon tint (e.g. to preserve a
+					// FontImageSource's own Color) now that the drawable is installed.
+					onIconLoaded?.Invoke(menuItem);
+				}
+			}
+			catch (Exception ex)
+			{
+				// Prevent an unhandled exception from an image-load failure escaping
+				// this async operation and crashing the app (matches the previous
+				// LoadBottomNavIconAsync try/catch behavior).
+				System.Diagnostics.Debug.WriteLine($"SetMenuItemIcon failed: {ex.Message}");
 			}
 		}
 
