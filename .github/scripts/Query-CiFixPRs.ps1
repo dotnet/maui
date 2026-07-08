@@ -240,23 +240,29 @@ function Get-CiFixMarkers {
     $attempt = $null
 
     if ($Body -match 'Refs:\s*dotnet/maui#(\d+)') {
-        # [long], NOT [int]: consistent with the review-id parse below. A malformed
-        # body with an oversized issue number (> Int32.MaxValue) would otherwise throw
-        # a terminating OverflowException under $ErrorActionPreference='Stop' and abort
-        # the entire prefetch (candidates.json never written → the watch loop stalls).
-        $refsIssue = [long]$Matches[1]
+        # [long]::TryParse, NOT a [long]/[int] cast: the regex '(\d+)' is unbounded, so a
+        # malformed body with an oversized issue number throws a terminating
+        # OverflowException on a direct cast under $ErrorActionPreference='Stop' — [int]
+        # above ~2.1B, [long] above ~9.2e18 — aborting the ENTIRE prefetch (candidates.json
+        # never written → the watch loop stalls for every PR). TryParse fails this one
+        # marker closed to $null (treated as "no Refs") instead of killing the whole run.
+        $parsedRefs = [long]0
+        if ([long]::TryParse($Matches[1], [ref]$parsedRefs)) { $refsIssue = $parsedRefs }
     }
 
     # Parse ONLY the numerator (attempts made). The denominator is deliberately
     # ignored: the ceiling is the fixed $AttemptMax constant, never the mutable body.
     if ($Body -match 'ci-fix-attempts:\s*(\d+)\s*/\s*\d+') {
-        # [long], NOT [int]: the attempt marker lives in the PR body, which the LLM can
-        # rewrite (update_pull_request) and any triager can edit. A crafted marker such
-        # as `ci-fix-attempts: 99999999999/10` (> Int32.MaxValue) would overflow an [int]
-        # cast, throw under $ErrorActionPreference='Stop', and — with no try/catch on this
-        # path — abort the whole prefetch, stalling EVERY watched PR (not just this one).
-        # Mirrors the [long] review-id hardening in Get-CiFixEngagement.
-        $attempt = [long]$Matches[1]
+        # [long]::TryParse, NOT a [long]/[int] cast: the attempt marker lives in the PR
+        # body, which the LLM can rewrite (update_pull_request) and any triager can edit,
+        # and the regex '(\d+)' is unbounded. A crafted marker such as
+        # `ci-fix-attempts: 999...(>Int64)/10` overflows a direct [long] cast, throws under
+        # $ErrorActionPreference='Stop', and — with no try/catch on this path — aborts the
+        # whole prefetch, stalling EVERY watched PR. TryParse fails closed to $null; a null
+        # marker contributes 0 downstream, so the trustworthy bot-commit floor governs.
+        # Mirrors the TryParse review-id hardening in Get-CiFixEngagement.
+        $parsedAttempt = [long]0
+        if ([long]::TryParse($Matches[1], [ref]$parsedAttempt)) { $attempt = $parsedAttempt }
     }
 
     return [pscustomobject]@{
@@ -460,13 +466,18 @@ function Get-HumanEngagementState {
             # widening to non-human commenters admits no spoofed markers from human reviewers.
             Where-Object { $_.user -and $_.body -and -not (Test-IsHumanLogin -Login ([string]$_.user.login)) } |
             ForEach-Object {
-                # [long], NOT [int]: GitHub review ids already exceed Int32.MaxValue
-                # (~2.1B; live dotnet/maui review ids are ~4.6B). An [int] cast here throws
-                # a terminating OverflowException under $ErrorActionPreference='Stop', which
-                # — with no try/catch on this path — aborts the entire prefetch on the SECOND
-                # cycle after any Track C response (the marker this loop itself writes), so
-                # candidates.json is never emitted and the whole watch loop dies permanently.
-                if ([string]$_.body -match 'ci-fix-track-c-responded:\s*(\d+)') { [long]$Matches[1] }
+                # [long]::TryParse, NOT a [long]/[int] cast: GitHub review ids already exceed
+                # Int32.MaxValue (~2.1B; live dotnet/maui review ids are ~4.6B), and the regex
+                # '(\d+)' is unbounded so a hand-edited marker can exceed Int64 too. A direct
+                # cast throws a terminating OverflowException under $ErrorActionPreference='Stop'
+                # ([int] above ~2.1B, [long] above ~9.2e18) which — with no try/catch on this
+                # path — aborts the entire prefetch on the SECOND cycle after any Track C
+                # response (the marker this loop itself writes), so candidates.json is never
+                # emitted and the whole watch loop dies permanently. TryParse fails a malformed
+                # id closed (emit nothing) so it is simply not counted as answered.
+                $parsedReviewId = [long]0
+                if (([string]$_.body -match 'ci-fix-track-c-responded:\s*(\d+)') -and
+                    [long]::TryParse($Matches[1], [ref]$parsedReviewId)) { $parsedReviewId }
             } |
             Sort-Object -Unique
     )
