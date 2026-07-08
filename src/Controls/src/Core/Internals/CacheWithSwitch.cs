@@ -11,7 +11,10 @@ sealed class CacheWithSwitch : ICache<Color, ImmutableBrush>
 
     public CacheWithSwitch(int capacity)
     {
-		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
+	    if (capacity <= 0)
+	    {
+		    throw new ArgumentOutOfRangeException(nameof(capacity));
+	    }
 
 		_cache = new SimpleCache(capacity);
     }
@@ -23,8 +26,16 @@ sealed class CacheWithSwitch : ICache<Color, ImmutableBrush>
 
         public ImmutableBrush Get(Color key)
         {
+#if NETSTANDARD
+			if (!_dict.TryGetValue(key, out var value))
+			{
+				value = new ImmutableBrush(key);
+				_dict[key] = value;
+			}
+#else
             ref var value = ref CollectionsMarshal.GetValueRefOrAddDefault(_dict, key, out _);
             value ??= new ImmutableBrush(key);
+#endif
             return value;
         }
 
@@ -33,7 +44,7 @@ sealed class CacheWithSwitch : ICache<Color, ImmutableBrush>
 
     public ImmutableBrush Get(Color key)
     {
-        if (_cache is SimpleCache { IsAtCapacity: true} simple)
+        if (_cache is SimpleCache { IsAtCapacity: true } simple)
         {
             _cache = simple.Promote();
         }
