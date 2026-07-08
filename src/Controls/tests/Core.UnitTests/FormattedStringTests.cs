@@ -63,6 +63,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void DuplicateSpanChangesUnsubscribes()
+		{
+			var span = new Span();
+			var fs = new FormattedString();
+			fs.Spans.Add(span);
+			fs.Spans.Add(span);
+			fs.Spans.Remove(span);
+			fs.Spans.Remove(span);
+
+			bool spansChanged = false;
+			fs.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == "Spans")
+					spansChanged = true;
+			};
+
+			span.Text = "New text";
+
+			Assert.False(spansChanged);
+		}
+
+		[Fact]
+		public void SpanChangingTriggersSpansPropertyChanging()
+		{
+			var span = new Span { Text = "Original text" };
+			var fs = new FormattedString();
+			fs.Spans.Add(span);
+
+			bool spansChanging = false;
+			fs.PropertyChanging += (s, e) =>
+			{
+				if (e.PropertyName == "Spans")
+					spansChanging = true;
+			};
+
+			span.Text = "New text";
+
+			Assert.True(spansChanging);
+		}
+
+		[Fact]
 		public void AddingSpanTriggersSpansPropertyChange()
 		{
 			var span = new Span();

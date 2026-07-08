@@ -15,5 +15,3 @@ override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? property
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
-override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.UpdateFlowDirection() -> void
-Microsoft.Maui.Controls.FormattedString.~FormattedString() -> void

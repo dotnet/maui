@@ -23,23 +23,16 @@ namespace Microsoft.Maui.Controls
 			remove => _weakEventManager.RemoveEventHandler(value, nameof(SpansCollectionChanged));
 		}
 
-		// Subscribe to each Span's PropertyChanging/PropertyChanged via weak proxies so that a
-		// shared or long-lived Span (e.g. one held by a view-model or App.Resources) does not keep
-		// this FormattedString alive through the event subscriptions.
-		readonly Dictionary<Span, (WeakNotifyPropertyChangedProxy Changed, WeakNotifyPropertyChangingProxy Changing)> _spanProxies = new();
-		PropertyChangedEventHandler _spanPropertyChanged;
-		PropertyChangingEventHandler _spanPropertyChanging;
+		// Subscribe to each Span's PropertyChanging/PropertyChanged via per-occurrence weak
+		// subscription tokens so that a shared or long-lived Span (e.g. one held by a view-model or
+		// App.Resources) does not keep this FormattedString alive through the event subscriptions.
+		readonly SpanSubscriptions _spanSubscriptions;
 
 		/// <summary>Initializes a new instance of the FormattedString class.</summary>
-		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
-
-		~FormattedString()
+		public FormattedString()
 		{
-			foreach (var proxies in _spanProxies.Values)
-			{
-				proxies.Changed?.Unsubscribe();
-				proxies.Changing?.Unsubscribe();
-			}
+			_spanSubscriptions = new SpanSubscriptions(this);
+			_spans.CollectionChanged += OnCollectionChanged;
 		}
 
 		protected override void OnBindingContextChanged()
@@ -69,12 +62,7 @@ namespace Microsoft.Maui.Controls
 					if (bo != null)
 					{
 						bo.Parent?.RemoveLogicalChild(bo);
-						if (_spanProxies.TryGetValue(bo, out var proxies))
-						{
-							proxies.Changed?.Unsubscribe();
-							proxies.Changing?.Unsubscribe();
-							_spanProxies.Remove(bo);
-						}
+						_spanSubscriptions.Remove(bo);
 					}
 
 				}
@@ -82,18 +70,13 @@ namespace Microsoft.Maui.Controls
 
 			if (e.NewItems != null)
 			{
-				_spanPropertyChanged ??= OnItemPropertyChanged;
-				_spanPropertyChanging ??= OnItemPropertyChanging;
-
 				foreach (object item in e.NewItems)
 				{
 					var bo = item as Span;
 					if (bo != null)
 					{
 						this.AddLogicalChild(bo);
-						_spanProxies[bo] = (
-							new WeakNotifyPropertyChangedProxy(bo, _spanPropertyChanged),
-							new WeakNotifyPropertyChangingProxy(bo, _spanPropertyChanging));
+						_spanSubscriptions.Add(bo);
 					}
 
 				}
@@ -106,6 +89,93 @@ namespace Microsoft.Maui.Controls
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e) => OnPropertyChanged(nameof(Spans));
 
 		void OnItemPropertyChanging(object sender, PropertyChangingEventArgs e) => OnPropertyChanging(nameof(Spans));
+
+		sealed class SpanSubscriptions
+		{
+			readonly WeakReference<FormattedString> _owner;
+			readonly List<SpanSubscription> _subscriptions = new();
+
+			public SpanSubscriptions(FormattedString owner) => _owner = new(owner);
+
+			~SpanSubscriptions() => Clear();
+
+			public void Add(Span span) => _subscriptions.Add(new SpanSubscription(_owner, span));
+
+			public void Remove(Span span)
+			{
+				for (int i = 0; i < _subscriptions.Count; i++)
+				{
+					if (_subscriptions[i].Span == span)
+					{
+						_subscriptions[i].Unsubscribe();
+						_subscriptions.RemoveAt(i);
+						return;
+					}
+				}
+			}
+
+			void Clear()
+			{
+				foreach (var subscription in _subscriptions)
+				{
+					subscription.Unsubscribe();
+				}
+
+				_subscriptions.Clear();
+			}
+		}
+
+		sealed class SpanSubscription
+		{
+			readonly WeakReference<FormattedString> _owner;
+			Span _span;
+
+			public SpanSubscription(WeakReference<FormattedString> owner, Span span)
+			{
+				_owner = owner;
+				_span = span;
+				_span.PropertyChanging += OnPropertyChanging;
+				_span.PropertyChanged += OnPropertyChanged;
+			}
+
+			public Span Span => _span;
+
+			public void Unsubscribe()
+			{
+				if (_span is null)
+				{
+					return;
+				}
+
+				_span.PropertyChanging -= OnPropertyChanging;
+				_span.PropertyChanged -= OnPropertyChanged;
+				_span = null;
+			}
+
+			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (_owner.TryGetTarget(out var owner))
+				{
+					owner.OnItemPropertyChanged(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			void OnPropertyChanging(object sender, PropertyChangingEventArgs e)
+			{
+				if (_owner.TryGetTarget(out var owner))
+				{
+					owner.OnItemPropertyChanging(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+		}
 
 		class SpanCollection : ObservableCollection<Span>
 		{
