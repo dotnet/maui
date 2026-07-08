@@ -497,7 +497,7 @@ public class BorderFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	// ── DashArray + StrokeLineCap tests disabled for Windows (Order 19–24) ──
+	// ── DashArray + StrokeLineCap tests (Order 26–31) ──
 
 	[Test]
 	[Order(26)]
@@ -628,7 +628,7 @@ public class BorderFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	// ── DashArray+Offset (Order 25) — runs on all platforms; issue #29661 (DashArray on iOS/Catalyst) is closed/fixed ──
+	// ── StrokeColor + DashArray + Offset (Order 32) — runs on all platforms; issue #29661 (DashArray on iOS/Catalyst) is closed/fixed ──
 
 	[Test]
 	[Order(32)]
