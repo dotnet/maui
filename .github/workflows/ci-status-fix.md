@@ -288,6 +288,26 @@ safe-outputs:
     # controls; verify against the lock after compiling.)
     required-title-prefix: "[ci-fix] "
     required-labels: [agentic-workflows]
+  add-labels:
+    # Apply the p/0 priority label to a [ci-fix] PR at the exact moment the loop flips it
+    # from draft to ready-for-review (Step 3.6 T3) — so a validated, review-ready fix lands
+    # in the team's p/0 triage queue instead of sitting unseen in the draft backlog. Paired
+    # 1:1 with mark-pull-request-as-ready-for-review; target "*" lets the agent name the PR
+    # it just validated.
+    # allowed = HARD allowlist: the agent may ONLY ever add p/0, nothing else. This caps the
+    # blast radius of a confused/prompt-injected agent to exactly one benign priority label —
+    # it can never apply a downstream-triggering or destructive label.
+    allowed: [p/0]
+    # PER-RUN total (not per-PR): a sweep may mark several PRs ready in one run; each adds
+    # one label, so this matches the mark-ready per-run cap (3).
+    max: 3
+    target: "*"
+    # Hard constraint (defense-in-depth): only ever label THIS workflow's own ci-fix PRs —
+    # [ci-fix] title prefix AND agentic-workflows label. (If the v0.80.9 compiler drops these
+    # — as documented for update-pull-request above — the Step 3.6 preconditions +
+    # min-integrity:approved + the allowed:[p/0] allowlist are the compensating controls.)
+    required-title-prefix: "[ci-fix] "
+    required-labels: [agentic-workflows]
 
 timeout-minutes: 90
 
@@ -366,21 +386,26 @@ through `safe-outputs`.
 6. **All writes via `safe-outputs`.** Allowed outputs: `create_pull_request`
    (first attempt only), `push_to_pull_request_branch` (advance an existing PR by
    one attempt), `update_pull_request` (bump the attempt marker / refresh the
-   prior-attempts table), and `add_comment` (progress notes on the `[ci-fix]` PR
-   ONLY). NEVER comment on the tracking issue (issues are locked by
+   prior-attempts table), `add_comment` (progress notes on the `[ci-fix]` PR
+   ONLY), `mark_pull_request_as_ready_for_review` (flip a target-validated draft
+   `[ci-fix]` PR from draft to ready — Step 3.6 T3 only), and `add_labels` (add
+   ONLY the `p/0` label, ONLY on that same draft→ready transition — Step 3.6 T3).
+   NEVER comment on the tracking issue (issues are locked by
    `.github/workflows/ci-scan-lock-issues.yml`) — `add_comment` targets the PR. No
    `gh pr create`, no manual `git push`. **Defense-in-depth:** `add_comment` and
    `update_pull_request` use `target: "*"` (the agent supplies the PR number).
-   `add_comment` is now config-locked to `required-title-prefix: "[ci-fix] "` +
+   `add_comment`, `mark_pull_request_as_ready_for_review`, and `add_labels` are
+   config-locked to `required-title-prefix: "[ci-fix] "` +
    `required-labels: [agentic-workflows]` (hard-enforced by the handler, same as
-   `push_to_pull_request_branch`), so a comment can only ever land on THIS
-   workflow's own PRs. `update_pull_request` CANNOT be config-locked to a
-   title/label in gh-aw v0.79.8 (the compiler silently drops `required-*` for that
-   output — verified against the lock), so it keeps `title: false` (no retitles;
-   body-marker edits only) plus this prompt-level guard. Before emitting either,
-   VERIFY the target PR carries BOTH the `[ci-fix]` title prefix AND the
-   `agentic-workflows` label; never comment on or edit the body of any PR that
-   lacks both.
+   `push_to_pull_request_branch`), and `add_labels` additionally has an
+   `allowed: [p/0]` allowlist so it can ONLY ever add `p/0` — so these can only
+   ever land on THIS workflow's own PRs. `update_pull_request` CANNOT be
+   config-locked to a title/label in gh-aw v0.79.8 (the compiler silently drops
+   `required-*` for that output — verified against the lock), so it keeps
+   `title: false` (no retitles; body-marker edits only) plus this prompt-level
+   guard. Before emitting ANY of these, VERIFY the target PR carries BOTH the
+   `[ci-fix]` title prefix AND the `agentic-workflows` label; never comment on,
+   edit, un-draft, or label any PR that lacks both.
 7. **Per-run safe-output caps (per RUN, not per PR).** Each output type is capped
    per run: `create_pull_request` 3, `push_to_pull_request_branch` 3,
    `add_comment` 3, `update_pull_request` 3. Note an ADVANCE spends one push **and**
@@ -717,7 +742,9 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
      true` AND the Step 3.6 preconditions hold (draft PR, `[ci-fix] ` title prefix AND the
      `agentic-workflows` label), run Step 3.6 **T1–T2** against `C.headSha` now: identify
      the target test(s) and drill the PR's OWN AzDO test-results. If EVERY target test is
-     **VALIDATED-GREEN** (`Passed` on ≥1 leg, `Failed` on NO leg) AND every leg in
+     **VALIDATED-GREEN** (per T2's all-platform definition below — the target test PASSES
+     on every platform leg that ran it, `Failed` on none, and no *target* platform leg is
+     still pending) AND every leg in
      `C.failedLegs` that has ALREADY concluded classifies as **unrelated flake** (Step 4 /
      Step 4.7 method — the fix is implicated in NO completed red), then the fix is proven
      regardless of unrelated *pending* legs → run **Step 3.6 T3** (mark ready + 🎯 comment)
@@ -834,34 +861,63 @@ ORG=dnceng-public; PROJ=public; P=<pr-number>; BUILD=<buildId on C.headSha>
 # test runs for the build:
 curl -s "https://dev.azure.com/$ORG/$PROJ/_apis/test/runs?buildUri=vstfs:///Build/Build/$BUILD&api-version=7.1" \
   | tee /tmp/gh-aw/agent/testruns_${P}.json | jq -r '.value[] | "\(.id)\t\(.name)"'
-# per run id, look for each target test's outcome (repeat per target test):
+# per run id, look for each target test's outcome (repeat per target test).
+# IMPORTANT: aggregate outcomes across EVERY platform leg's run (Android/iOS/Windows/
+# macOS) — the test must PASS on all platforms it runs on, not just the one that was red:
 curl -s "https://dev.azure.com/$ORG/$PROJ/_apis/test/Runs/<runId>/results?api-version=7.1&\$top=1000" \
   | jq -r '.value[] | select(.testCaseTitle=="<TargetTest>") | "\(.outcome)\t\(.automatedTestName)"'
 ```
 
-Treat a target test as **VALIDATED-GREEN** only if, on `C.headSha`, it appears with
-`outcome == "Passed"` on at least one platform leg AND appears with `outcome ==
-"Failed"` on NO leg. A target test that never appears at all (**not executed** — e.g. an
-`/azp`-gated `maui-pr-uitests`/`maui-pr-devicetests` leg that has not been kicked) is
-NOT validated: record `skipped: target test <T> not yet executed on PR #<P>
-(<pipeline> not run — needs /azp run)` and stop this gate WITHOUT marking ready. Do NOT
-overclaim — a green *sibling* leg in the same group is not the target test.
+Treat a target test as **VALIDATED-GREEN** only if, on `C.headSha`, it PASSES on **every
+platform it runs on** — a fix that repairs one platform must not silently regress the same
+test on another, so a pass on the originally-red leg alone is NOT enough. Across the target
+pipeline's platform legs (for a UI test: the Android, iOS, Windows, and macOS/MacCatalyst
+legs of `maui-pr-uitests`; for a device test: each device-test platform), require ALL of:
+- the target test appears with `outcome == "Passed"` on **every** platform leg whose
+  results contain it, AND
+- it appears with `outcome == "Failed"` (or aborted/errored) on **NO** leg, AND
+- **no platform is left unverified.** For each platform family the target pipeline covers,
+  that platform's leg must have CONCLUDED on `C.headSha`. If a platform leg concluded and
+  its results simply do not contain the test, the test does not run on that platform — that
+  is fine, not a gap. But if a platform leg that *would* run the test has **not concluded**
+  (pending, or an `/azp`-gated `maui-pr-uitests`/`maui-pr-devicetests` leg that has not been
+  kicked), the test's status on that platform is UNKNOWN → the fix is NOT yet validated
+  across platforms: record `skipped: target test <T> green on <platforms-so-far> but not yet
+  verified on <pending-platforms> (leg(s) <legs> pending / need /azp run) on PR #<P>` and
+  stop this gate WITHOUT marking ready.
+
+A target test that never appears on ANY concluded leg (**not executed** anywhere — e.g. its
+`/azp`-gated pipeline has not been kicked) is likewise NOT validated: record `skipped:
+target test <T> not yet executed on PR #<P> (<pipeline> not run — needs /azp run)` and stop
+this gate WITHOUT marking ready. Do NOT overclaim — a green *sibling* leg in the same group
+is not the target test, and a pass on one platform is not a pass on the others.
 
 **T3 — Mark ready + report.** If EVERY target test is VALIDATED-GREEN:
-- **Idempotency:** if a prior bot `🎯 … target test … validated … on <C.headSha>`
-  comment for THIS head SHA already exists (or `C.isDraft` is already false), record
-  `already-marked-ready PR #<P> (head <C.headSha>)` and stop.
+- **Idempotency + label reconcile:** the draft→ready transition is one-shot — if a prior
+  bot `🎯 … target test … validated … on <C.headSha>` comment for THIS head SHA already
+  exists, OR `C.isDraft` is already false, do NOT re-comment and do NOT re-mark ready. But
+  still reconcile the priority label so a validated fix always lands in the p/0 queue: read
+  the PR's current labels; if it is MISSING `p/0`, emit a single `add_labels` `["p/0"]` for
+  PR #<P> (subject to the same Step 0 dry-run gate — under `dry_run == "true"` tally
+  `dry-run: would-label p/0 PR #<P>` and emit nothing) and record `reconciled-label p/0 PR
+  #<P> (already-ready)`; if it already carries `p/0`, record `already-marked-ready PR #<P>
+  (head <C.headSha>)`. Then stop.
 - **Dry-run gate (Step 0):** if `dry_run == "true"`, emit NOTHING — print the intended
-  readiness comment and "would mark ready" to the run log, tally `dry-run:
+  readiness comment and "would mark ready + add p/0" to the run log, tally `dry-run:
   would-mark-ready PR #<P>`, and stop.
-- Otherwise emit BOTH safe-outputs for THIS PR number `<P>`:
+- Otherwise emit THREE safe-outputs for THIS PR number `<P>`:
   1. `add_comment`: `🎯 Target test validated green on <C.headSha> — <TestList>
-     passed (<platforms/legs>, buildId <B>). <if any red: "The remaining red is
-     unrelated flake on leg(s) <Y> — not caused by this fix.">  Transitioning this PR
-     from draft to ready for review; a maintainer still reviews and merges.`
+     passed on ALL platforms it runs on (<platforms/legs>, buildId <B>). <if any red:
+     "The remaining red is unrelated flake on leg(s) <Y> — not caused by this fix.">
+     Transitioning this PR from draft to ready for review and adding `p/0`; a maintainer
+     still reviews and merges.`
   2. `mark_pull_request_as_ready_for_review` with `reason:` a one-line justification
      naming the validated test(s) and `<C.headSha>`.
-- Record `marked-ready PR #<P> (target <TestList> green on <C.headSha>)` and stop.
+  3. `add_labels` with `labels: ["p/0"]` for PR #<P> — put the now-review-ready fix into
+     the team's p/0 priority queue so it is triaged, not lost in the draft backlog. (If
+     the PR somehow already carries `p/0`, this is a harmless no-op.)
+- Record `marked-ready PR #<P> (target <TestList> green on ALL platforms on <C.headSha>,
+  labeled p/0)` and stop.
 
 #### Step 3.5.R — Maintainer change-request response (Track C)
 
