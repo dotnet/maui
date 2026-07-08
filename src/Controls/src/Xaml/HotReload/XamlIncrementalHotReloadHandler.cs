@@ -67,15 +67,17 @@ public static class XamlIncrementalHotReloadHandler
 
 		var typesArray = (IReadOnlyList<Type>)updatedTypes;
 
-		HotReloadDiagnostics.OnUpdateRequested(typesArray);
-
 		// Start timing at the moment the request is received so Duration includes batch
 		// building and main-thread dispatch latency, not just the UI-thread invoke loop.
 		var sw = Stopwatch.StartNew();
 
 		// Batch dispatch — collect ALL (instance, method, type) tuples across every updated
 		// type, then issue a single MainThread.BeginInvokeOnMainThread that iterates them.
+		// handledTypes records every recognized incremental-XAML type (one carrying a generated
+		// UpdateComponent()), independent of whether it currently has live instances — this is the
+		// synchronous "what kind of update is this" signal surfaced on UpdateRequested/UpdateSkipped.
 		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type)>();
+		var handledTypes = new List<Type>();
 
 		foreach (var type in updatedTypes)
 		{
@@ -91,6 +93,8 @@ public static class XamlIncrementalHotReloadHandler
 			if (ucMethod is null)
 				continue;
 
+			handledTypes.Add(type);
+
 			var instances = XamlComponentRegistry.GetInstances(type);
 			if (instances.Count == 0)
 				continue;
@@ -99,8 +103,20 @@ public static class XamlIncrementalHotReloadHandler
 				dispatchBatch.Add((instance, ucMethod, type));
 		}
 
+		// XamlTools contract: raised SYNCHRONOUSLY, before any dispatch, carrying the recognized subset
+		// (HandledTypes) so tooling can classify the update type (XAML Incremental Hot Reload vs. non-XAML)
+		// inline, without awaiting the async apply. Keep this call synchronous and pre-dispatch.
+		HotReloadDiagnostics.OnUpdateRequested(typesArray, handledTypes);
+
 		if (dispatchBatch.Count == 0)
+		{
+			// XamlTools contract: terminal event when nothing is dispatched (no live instances) —
+			// UpdateApplied never fires on this path, so XamlTools uses UpdateSkipped as the definitive
+			// "no apply coming" signal and stops waiting. No version is allocated here, keeping the
+			// diagnostic version stream gap-free (every increment is paired with an UpdateApplied).
+			HotReloadDiagnostics.OnUpdateSkipped(typesArray, handledTypes);
 			return;
+		}
 
 		// Allocate the version range atomically once we know work will happen: toVersion is the
 		// new generation, fromVersion the one before it. Reserving the number only for non-empty
@@ -126,12 +142,16 @@ public static class XamlIncrementalHotReloadHandler
 					var inner = ex.InnerException ?? ex;
 					System.Diagnostics.Debug.WriteLine(
 						$"[XIHR] UpdateComponent failed for {capturedType.Name}: {inner.Message}");
-					HotReloadDiagnostics.OnUpdateFailed(capturedType, capturedInstance, inner);
+					HotReloadDiagnostics.OnUpdateFailed(capturedType, capturedInstance, inner, toVersion);
 				}
 #pragma warning restore CA1031
 			}
 
 			sw.Stop();
+			// XamlTools contract: UpdateApplied is the TERMINAL event of a dispatched batch and must
+			// ALWAYS be raised here, after every per-instance OnUpdateFailed above — even if all failed
+			// (instanceCount == 0). XamlTools blocks briefly awaiting it to fold the stats into its
+			// report; never returning it strands that wait until timeout.
 			HotReloadDiagnostics.OnUpdateApplied(typesArray, instanceCount, fromVersion, toVersion, sw.Elapsed);
 		});
 	}
