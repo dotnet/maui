@@ -25,8 +25,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.Text = view.Text;
 		}
 
-		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
+		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		{
 			handler.PlatformView.UpdateBackground(view.Background);
+			handler.UpdateValue(nameof(ITextStyle.TextColor));
+		}
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
