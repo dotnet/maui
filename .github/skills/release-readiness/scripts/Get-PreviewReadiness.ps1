@@ -421,9 +421,9 @@ function Get-BranchComponentPins {
         }
     }
 
-    $vmr     = & $selectPin 'github\.com/dotnet/dotnet'  @('^Microsoft\.NET\.Sdk$')
-    $android = & $selectPin 'github\.com/dotnet/android' @('^Microsoft\.Android\.Sdk\.Windows$', '^Microsoft\.Android\.Sdk')
-    $macios  = & $selectPin 'github\.com/dotnet/macios'  @("^Microsoft\.macOS\.Sdk\.net$Major\.0", '^Microsoft\.macOS\.Sdk', '^Microsoft\.iOS\.Sdk')
+    $vmr     = & $selectPin 'github\.com/dotnet/dotnet(?![\w-])'  @('^Microsoft\.NET\.Sdk$')
+    $android = & $selectPin 'github\.com/dotnet/android(?![\w-])' @('^Microsoft\.Android\.Sdk\.Windows$', '^Microsoft\.Android\.Sdk')
+    $macios  = & $selectPin 'github\.com/dotnet/macios(?![\w-])'  @("^Microsoft\.macOS\.Sdk\.net$Major\.0", '^Microsoft\.macOS\.Sdk', '^Microsoft\.iOS\.Sdk')
 
     if (-not ($vmr -or $android -or $macios)) { return $null }
 
@@ -1265,7 +1265,7 @@ function Get-UpstreamDriftSignal {
         return $result
     }
 
-    if ($null -eq $cmp -or -not $cmp.PSObject.Properties['ahead_by']) {
+    if ($null -eq $cmp -or -not $cmp.PSObject.Properties['ahead_by'] -or -not $cmp.PSObject.Properties['behind_by']) {
         $result.Reason = 'compare returned no counts'
         return $result
     }
@@ -2170,7 +2170,17 @@ if ($componentPins) {
     # whether flow is alive, silently stalled, or apparently never wired.
     $flowStaleDays   = 14
     $flowNow         = [DateTime]::UtcNow
-    $mergedPRsForFlow = Get-MergedPullRequests -BaseBranch $SurveyRef
+    # Best-effort: the flow signal is inferred from the public dep-flow PR trail.
+    # Get-MergedPullRequests re-throws non-retryable gh failures (e.g. a 403
+    # secondary-rate-limit or a 500), so a transient outage here must degrade the
+    # signal to open-PR-only inference, NEVER abort the whole readiness report
+    # (every other data section in this driver degrades rather than throws).
+    $mergedPRsForFlow = @()
+    try {
+        $mergedPRsForFlow = @(Get-MergedPullRequests -BaseBranch $SurveyRef)
+    } catch {
+        Write-Warning "Flow-signal merged-PR fetch failed (non-fatal): $($_.Exception.Message)" -WarningAction Continue
+    }
     $allPRsForFlow   = @($targetPRs) + @($mergedPRsForFlow)
     $depFlowPRs      = @($allPRsForFlow | Where-Object { Test-IsDependencyFlowPr $_ })
 

@@ -571,6 +571,8 @@ Interpretation:
 
 All three anchors are byte-identical to `net11.0` HEAD → **clean cut, component pins coherent** ✅. The android `-ci.main.51` moniker is **not** a preview6 anomaly — `net11.0` carries the same pin, so it's the net11 android train's current state, not a mis-wire. (For contrast, `main` is a different band entirely — android `36.1.2`, runtime `10.0.0`.)
 
+> **Anchor note:** the automated 🏷️ pins table in the generated tracker issue anchors the VMR on **`Microsoft.NET.Sdk`** (SDK band, e.g. `11.0.100-preview.6.*`), whereas this manual check reads **`Microsoft.NETCore.App.Ref`** (runtime band, e.g. `11.0.0-preview.6.*`). Same repo, same commit — different package, so the version *strings* differ by design. Compare coherence by **SHA**, not by the version string, when reconciling the two views.
+
 ## Quick reference: lifecycle commands by phase
 
 | Phase | Action | Command sketch |

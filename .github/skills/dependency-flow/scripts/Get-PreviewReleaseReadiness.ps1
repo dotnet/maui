@@ -174,6 +174,8 @@ function Test-PluginEnabled {
     # Match an enabled entry, tolerant of a marketplace suffix being present or
     # absent. Anchored to the start of a line (after optional whitespace) so a
     # commented-out entry such as `// "dotnet-release-tracker@x": true` is ignored.
+    # Block comments (/* ... */) are stripped separately below before matching, so
+    # a block-commented entry is likewise not read as enabled.
     # Examples that match: "dotnet-release-tracker": true
     #                      "dotnet-release-tracker@dotnet-release": true
     $pattern = '(?m)^\s*"' + [regex]::Escape($Plugin) + '(@[^"]+)?"\s*:\s*true'
@@ -182,7 +184,13 @@ function Test-PluginEnabled {
             try {
                 $text = Get-Content -LiteralPath $path -Raw -ErrorAction Stop
             } catch { continue }
-            if ($text -match $pattern) {
+            # Strip /* ... */ block comments before matching so an entry that has
+            # been block-commented out isn't misread as enabled. The (?m)^-anchor
+            # already excludes // line comments, but a block comment can wrap a
+            # line that still starts with the quoted key. JSON string values never
+            # contain the '/*' sequence, so this cannot eat a real setting.
+            $scrubbed = [regex]::Replace($text, '/\*[\s\S]*?\*/', '')
+            if ($scrubbed -match $pattern) {
                 return [pscustomobject]@{ Enabled = $true; Source = $path }
             }
         }
@@ -240,8 +248,22 @@ try {
 catch {
     # Unreachable in normal operation, but the always-exit-0 / always-emit-a-line
     # contract must hold even if an unexpected terminating error occurs. Fall back
-    # to the safe privacy default and never leak the error detail.
-    Write-Output 'RELEASE_TRACKER_STATUS=NO_ACCESS'
+    # to the safe privacy default and never leak the error detail. Honor -Json so a
+    # structured consumer still gets parseable output on this path.
+    if ($Json) {
+        [pscustomobject]@{
+            status          = 'NO_ACCESS'
+            access          = $false
+            enabled         = $false
+            reason          = 'unexpected-error'
+            repo            = $ReleaseRepo
+            plugin          = $PluginId
+            inactiveAccount = $null
+        } | ConvertTo-Json -Compress
+    } else {
+        Write-Output 'RELEASE_TRACKER_STATUS=NO_ACCESS'
+        Write-Output '# access=false enabled=false reason=unexpected-error'
+    }
 }
 
 exit 0

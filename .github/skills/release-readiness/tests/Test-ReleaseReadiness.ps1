@@ -4336,6 +4336,20 @@ $drDiv = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $
 Assert-Eq -Label "drift: behind_by > 0 → diverged (not ahead)" -Expected 'diverged' -Actual $drDiv.Status
 Assert-Eq -Label "drift: diverged surfaces behind_by"          -Expected 2          -Actual $drDiv.BehindBy
 
+# (c2) pure-behind — behind_by > 0 AND ahead_by == 0 must still classify diverged,
+# locking the classifier's check order (behind is tested before ahead).
+$fBehindOnly = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 0; behind_by = 4 })
+$drBehind = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fBehindOnly
+Assert-Eq -Label "drift: pure-behind (ahead 0, behind 4) → diverged" -Expected 'diverged' -Actual $drBehind.Status
+Assert-Eq -Label "drift: pure-behind surfaces behind_by"            -Expected 4          -Actual $drBehind.BehindBy
+
+# (c3) symmetric guard — a compare payload with ahead_by but MISSING behind_by must
+# degrade to unknown, never throw under StrictMode (guards the behind_by dereference).
+$fNoBehind = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 1 })
+$drNoBehind = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNoBehind
+Assert-Eq -Label "drift: compare missing behind_by → unknown (no throw)" -Expected 'unknown' -Actual $drNoBehind.Status
+Assert-Eq -Label "drift: missing-behind reason"                         -Expected 'compare returned no counts' -Actual $drNoBehind.Reason
+
 # (d) unknown — no pin SHA (soft-fail, never calls the fetcher).
 $drNoSha = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha '' -BranchName $drBranch -Fetcher $fCurrent
 Assert-Eq -Label "drift: empty SHA → unknown"                -Expected 'unknown'  -Actual $drNoSha.Status
