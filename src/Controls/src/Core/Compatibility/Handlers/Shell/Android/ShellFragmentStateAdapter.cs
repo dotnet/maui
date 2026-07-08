@@ -44,6 +44,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_createdShellContent.Remove(remove);
 		}
 
+		/// <summary>
+		/// Invalidates the cached item ID for the given <paramref name="shellContent"/>.
+		/// This causes the existing fragment for that item to be destroyed and a new fragment
+		/// to be created with the updated page content.
+		/// </summary>
+		internal void InvalidateShellContent(ShellContent shellContent)
+		{
+			long removeKey = -1;
+			foreach (var item in _createdShellContent)
+			{
+				if (item.Value == shellContent)
+				{
+					removeKey = item.Key;
+					break;
+				}
+			}
+
+			if (removeKey >= 0)
+				_createdShellContent.Remove(removeKey);
+		}
+
 		public int CountOverride { get; set; }
 
 		public override int ItemCount => _items.Count;

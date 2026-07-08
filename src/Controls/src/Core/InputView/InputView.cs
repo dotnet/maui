@@ -315,6 +315,29 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(TextProperty, value, SetterSpecificity.FromHandler);
 		}
 
+		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
+		{
+			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
+
+			// When the same CursorPosition or SelectionLength value is re-set, the bindable property
+			// system detects no change (changed=false) and does not fire PropertyChanged, so the
+			// handler mapper is never invoked. We force a handler update here so the native control
+			// always receives the selection state. This is required on WinUI where the native TextBox
+			// resets the caret position on each focus event.
+			if (!changed)
+			{
+				switch (property.PropertyName)
+				{
+					case nameof(CursorPosition):
+						Handler?.UpdateValue(nameof(CursorPosition));
+						break;
+					case nameof(SelectionLength):
+						Handler?.UpdateValue(nameof(SelectionLength));
+						break;
+				}
+			}
+		}
+
 		private protected override string GetDebuggerDisplay()
 		{
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Text), Text);

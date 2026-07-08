@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -108,7 +108,11 @@ namespace Microsoft.Maui.Controls.Handlers
 				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 
 			if (_currentSearchHandler != null)
+			{
 				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+				_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
+				_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
+			}
 
 			if (_shellItem?.Parent is IShellController controller)
 			{
@@ -304,6 +308,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (_currentSearchHandler is not null)
 				{
 					_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+					_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
+					_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
 				}
 
 				_currentSearchHandler = newSearchHandler;
@@ -323,6 +329,8 @@ namespace Microsoft.Maui.Controls.Handlers
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
+					_currentSearchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
+					_currentSearchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
 					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.UpdateTextOnSelect = false;
@@ -380,6 +388,29 @@ namespace Microsoft.Maui.Controls.Handlers
 		void OnSearchBoxLostFocus(object sender, RoutedEventArgs e)
 		{
 			_currentSearchHandler?.SetIsFocused(false);
+		}
+
+		void OnShowSoftInputRequested(object? sender, EventArgs e)
+		{
+			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is not { } autoSuggestBox)
+				return;
+
+			autoSuggestBox.Focus(FocusState.Programmatic);
+		}
+
+		void OnHideSoftInputRequested(object? sender, EventArgs e)
+		{
+			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is not { } autoSuggestBox)
+				return;
+
+			if (!autoSuggestBox.IsEnabled)
+				return;
+
+			var isTabStop = autoSuggestBox.IsTabStop;
+			autoSuggestBox.IsTabStop = false;
+			autoSuggestBox.IsEnabled = false;
+			autoSuggestBox.IsEnabled = true;
+			autoSuggestBox.IsTabStop = isTabStop;
 		}
 
 		void OnSearchBoxTextChanged(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)

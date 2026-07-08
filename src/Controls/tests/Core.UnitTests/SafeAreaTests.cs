@@ -8,6 +8,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class SafeAreaTests : BaseTestFixture
 	{
+		public static TheoryData<Type> SafeAreaView2Types =>
+			new()
+			{
+				typeof(Grid),
+				typeof(ContentView),
+				typeof(ContentPage),
+				typeof(Border),
+				typeof(ScrollView),
+			};
+
 		[Fact]
 		public void GetEdges_DefaultValue_ReturnsDefault()
 		{
@@ -238,6 +248,81 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var contentView = new ContentView();
 
 			Assert.IsAssignableFrom<ISafeAreaView2>(contentView);
+		}
+
+		[Theory]
+		[MemberData(nameof(SafeAreaView2Types))]
+		public void HasExplicitSafeAreaEdges_DefaultValueCreationDoesNotCountAsExplicit(Type safeAreaViewType)
+		{
+			var view = CreateSafeAreaBindable(safeAreaViewType);
+			var safeAreaView2 = (ISafeAreaView2)view;
+
+			Assert.False(safeAreaView2.HasExplicitSafeAreaEdges);
+
+			_ = ((ISafeAreaElement)view).SafeAreaEdges;
+
+			Assert.True(view.IsSet(SafeAreaElement.SafeAreaEdgesProperty));
+			Assert.False(safeAreaView2.HasExplicitSafeAreaEdges);
+		}
+
+		[Theory]
+		[MemberData(nameof(SafeAreaView2Types))]
+		public void HasExplicitSafeAreaEdges_ExplicitNoneCountsAsExplicit(Type safeAreaViewType)
+		{
+			var view = CreateSafeAreaBindable(safeAreaViewType);
+
+			view.SetValue(SafeAreaElement.SafeAreaEdgesProperty, SafeAreaEdges.None);
+
+			Assert.True(((ISafeAreaView2)view).HasExplicitSafeAreaEdges);
+		}
+
+		[Fact]
+		public void HasExplicitSafeAreaEdges_StyleValueCountsAsExplicit()
+		{
+			var layout = new Grid
+			{
+				Style = new Style(typeof(Grid))
+				{
+					Setters =
+					{
+						new Setter
+						{
+							Property = Layout.SafeAreaEdgesProperty,
+							Value = SafeAreaEdges.All
+						}
+					}
+				}
+			};
+
+			Assert.True(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+		}
+
+		[Fact]
+		public void HasExplicitSafeAreaEdges_BindingValueCountsAsExplicit()
+		{
+			var layout = new Grid();
+			layout.SetBinding(Layout.SafeAreaEdgesProperty, nameof(SafeAreaBindingContext.Edges));
+			layout.BindingContext = new SafeAreaBindingContext { Edges = SafeAreaEdges.All };
+
+			Assert.True(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+		}
+
+		[Fact]
+		public void HasExplicitSafeAreaEdges_BasePageDoesNotCountLegacySafeAreaAsExplicit()
+		{
+			var page = new Page();
+
+			Assert.False(((ISafeAreaView2)page).HasExplicitSafeAreaEdges);
+		}
+
+		class SafeAreaBindingContext
+		{
+			public SafeAreaEdges Edges { get; set; }
+		}
+
+		static BindableObject CreateSafeAreaBindable(Type safeAreaViewType)
+		{
+			return (BindableObject)Activator.CreateInstance(safeAreaViewType);
 		}
 
 		[Fact]

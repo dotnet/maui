@@ -11,15 +11,16 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override void ConnectHandler(W2DGraphicsView nativeView)
 		{
 			if (VirtualView is Polyline polyline)
-				polyline.Points.CollectionChanged += OnPointsCollectionChanged;
+			{
+				UpdatePointsSubscription(polyline.Points);
+			}
 
 			base.ConnectHandler(nativeView);
 		}
 
 		protected override void DisconnectHandler(W2DGraphicsView nativeView)
 		{
-			if (VirtualView is Polyline polyline)
-				polyline.Points.CollectionChanged -= OnPointsCollectionChanged;
+			ClearPointsSubscription();
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -31,6 +32,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapPoints(IShapeViewHandler handler, Polyline polyline)
 		{
+			if (handler is PolylineHandler polylineHandler)
+			{
+				polylineHandler.UpdatePointsSubscription(polyline.Points);
+			}
+
 			handler.PlatformView?.InvalidateShape(polyline);
 		}
 
@@ -47,9 +53,5 @@ namespace Microsoft.Maui.Controls.Handlers
 			handler.PlatformView?.InvalidateShape(polyline);
 		}
 
-		void OnPointsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-		{
-			PlatformView?.InvalidateShape(VirtualView);
-		}
 	}
 }

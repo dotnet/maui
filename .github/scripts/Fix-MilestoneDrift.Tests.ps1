@@ -1228,6 +1228,74 @@ Describe 'Invoke-AnalyzeSinglePr — validation context seeding' {
     }
 }
 
+Describe 'Invoke-AnalyzeSinglePr — milestone-not-found skip report shape' {
+    BeforeEach {
+        # Same start-to-finish scaffolding as the validation-context seeding tests, but here we
+        # force Find-MatchingMilestone to return $null so we exercise the graceful-skip path taken
+        # when the expected milestone (e.g. ".NET 11.0-preview7") has not been created in GitHub yet.
+        Mock Initialize-MilestoneValidationContext { }
+        Mock Get-PrInfo {
+            return @{
+                Number         = 42
+                Title          = 'Test PR'
+                Url            = 'u'
+                Milestone      = ''
+                BaseRef        = 'net11.0'
+                MergedAt       = '2025-01-01T00:00:00Z'
+                MergeCommitSha = 'abc123'
+                Body           = ''
+            }
+        }
+        Mock Get-AllTags { return @('10.0.60', '10.0.70', '11.0.0-preview.3') }
+        Mock Get-VersionFromGitRef { return @{ Tag = '11.0.0'; PreLabel = 'preview'; PreIter = 7 } }
+        Mock Find-ReleaseBranchForCommit { return @{ Branch = 'release/11.0.1xx-preview7'; Milestone = '.NET 11.0-preview7' } }
+        Mock ConvertBranchToMilestone { return '.NET 11.0-preview7' }
+        Mock Get-MainBranchForVersion { return 'net11.0' }
+        Mock Get-CurrentMajorVersion { return 11 }
+        # The milestone does not exist yet: Get-AllMilestones has no match and Find-MatchingMilestone
+        # returns $null, driving Invoke-AnalyzeSinglePr into the early-return skip report.
+        Mock Get-AllMilestones { return @(@{ Number = 99; Title = '.NET 11.0-preview6' }) }
+        Mock Find-MatchingMilestone { return $null }
+        Mock Test-PrBelongsToVersion { return $true }
+        Mock Get-LinkedIssues { return @() }
+        Mock Test-AndRecordCorrection { }
+    }
+
+    It 'includes ResolvedMilestone/ResolvedMsNumber keys (set to $null) so downstream writers do not crash under StrictMode' {
+        $report = Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.'
+
+        # The skip report MUST carry the same key shape as the success-path report. Write-Report
+        # (line ~1326) and Save-ReportJson (line ~1381) read $Report.ResolvedMilestone WITHOUT a
+        # ContainsKey guard; under StrictMode a missing key throws PropertyNotFound -> exit 1.
+        $report.ContainsKey('ResolvedMilestone') | Should -BeTrue
+        $report.ContainsKey('ResolvedMsNumber')  | Should -BeTrue
+        $report.ResolvedMilestone | Should -BeNullOrEmpty
+        $report.ResolvedMsNumber  | Should -BeNullOrEmpty
+        # And the report is genuinely a no-op skip: no corrections to apply.
+        $report.Corrections.Count | Should -Be 0
+    }
+
+    It 'does not crash Write-Report/Save-ReportJson under StrictMode Latest (faithful CI reproduction)' {
+        # StrictMode is intentionally NOT enabled when the script is dot-sourced for Pester (see the
+        # $MyInvocation.InvocationName -ne '.' guard in Fix-MilestoneDrift.ps1). So we must re-create
+        # the exact production condition here: the workflow runs with Set-StrictMode -Version Latest,
+        # under which reading a missing hashtable key throws. Without the fix, this test throws
+        # PropertyNotFound and fails; with the fix it passes.
+        $report = Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.'
+
+        $tempPath = Join-Path ([System.IO.Path]::GetTempPath()) "milestone-skip-report-$([guid]::NewGuid()).json"
+        try {
+            {
+                Set-StrictMode -Version Latest
+                Write-Report $report
+                Save-ReportJson $report $tempPath
+            } | Should -Not -Throw
+        } finally {
+            Remove-Item $tempPath -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 Describe 'Get-TagsForMilestone — cross-major filter' {
     BeforeEach {
         # Seed validation context as a live workflow run would: target major = 11.

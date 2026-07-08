@@ -18,7 +18,14 @@
         does NOT exist on origin, the branch is in-flight — the release
         notes for that exact patch haven't been published yet, so it hasn't
         shipped. If the tag exists, the branch has already shipped that
-        patch and is skipped.
+        patch. Shipped SRs are normally retired, EXCEPT the most-recently-
+        shipped one (highest shipped patch), which is emitted as
+        mode='shipped' so its tracker keeps refreshing through post-ship
+        follow-up (adding the new build to the GitHub issue version dropdown,
+        release notes, milestone close-out). The workflow treats 'shipped'
+        as REFRESH-ONLY: it updates the tracker issue while it stays open but
+        never re-creates it, so once a human closes it, it stays closed.
+        Older shipped SRs are skipped.
 
       Lane 2 — next SR off main
         Identifies the highest SR (across in-flight branches AND shipped tags)
@@ -538,7 +545,7 @@ function New-Tracker {
     param(
         [int]$Major,
         [int]$SrNumber,
-        [string]$Mode,                 # 'in-flight' or 'candidate'
+        [string]$Mode,                 # 'in-flight', 'candidate', or 'shipped'
         [string]$BranchName,            # nullable for candidate without branch
         [string]$SurveyRef,             # branch or development ref to survey
         [string]$PriorSrBranch,         # nullable; used as -SrBranch for -Candidate mode
@@ -560,6 +567,9 @@ function New-Tracker {
     $title = "[Release Readiness] .NET $Major SR$SrNumber — $branchDisplay"
     if ($Mode -eq 'candidate') {
         $title = "[Release Readiness] .NET $Major SR$SrNumber — candidate from $SurveyRef"
+    }
+    elseif ($Mode -eq 'shipped') {
+        $title = "[Release Readiness] .NET $Major SR$SrNumber — shipped ($branchDisplay)"
     }
     return [pscustomobject]@{
         branchType           = 'sr'
@@ -728,7 +738,28 @@ function Invoke-DetectionForMajor {
             $inflightBranchesBySr[$sr] = $branch
             Write-Host "  -> in-flight SR tracker: SR$sr (patch=$branchPatch, no tag $expectedTag yet, recent=$recent)" -ForegroundColor Green
         } else {
-            Write-Host "  -> SR$sr branch '$branch' patch=$branchPatch already shipped (tag $expectedTag exists)" -ForegroundColor DarkGray
+            # Already shipped (the stable tag exists). We normally retire the
+            # tracker here, BUT the most-recently-shipped SR still has post-ship
+            # follow-up the tracker should keep surfacing until a human signs off
+            # (e.g. adding the new build to the GitHub issue version dropdown,
+            # release notes, closing out the milestone). So keep emitting the
+            # HIGHEST shipped SR as mode='shipped'. The workflow consumes this as
+            # REFRESH-ONLY: it refreshes the tracker issue while it stays open and
+            # never re-creates it once a human closes it — implementing
+            # "update until closed manually" without resurrecting a closed tracker.
+            # Lower (older) shipped SRs stay retired.
+            if ($branchPatch -eq $highestShippedPatch) {
+                $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
+                $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode 'shipped' `
+                    -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
+                    -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
+                    -ExpectedPatch $branchPatch -ExpectedTag $expectedTag `
+                    -HasRecentActivityCount $recent
+                $trackers.Add($tracker)
+                Write-Host "  -> shipped SR tracker (refresh-until-closed): SR$sr (patch=$branchPatch, tag $expectedTag exists, recent=$recent)" -ForegroundColor Yellow
+            } else {
+                Write-Host "  -> SR$sr branch '$branch' patch=$branchPatch already shipped (tag $expectedTag exists)" -ForegroundColor DarkGray
+            }
         }
     }
 
