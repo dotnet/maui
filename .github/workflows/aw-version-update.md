@@ -1,17 +1,18 @@
 ---
 name: "Agentic Workflow Version Auto-Update"
 description: |
-  Detects whether the gh-aw infrastructure has pending updates. The detection
-  run itself has zero write surface: its only outputs are `noop` (nothing to do —
-  the normal steady state) or `create-agent-session` (delegate the actual
-  upgrade + recompile + PR to a Copilot Coding Agent session).
+  Detects whether the gh-aw infrastructure has a pending framework upgrade and,
+  if so, files a single tracking issue asking a maintainer to run `gh aw upgrade`
+  locally and open the PR. The detection run has zero write surface beyond that
+  issue: its only safe outputs are `noop` (nothing to do — the normal steady
+  state) or `create-issue`.
 
-  Rationale: `gh aw compile` writes to `.github/workflows/*.lock.yml`, but the
-  default `GITHUB_TOKEN` cannot push under `.github/workflows/` (GitHub platform
-  rule). This workflow therefore delegates the write work to a Copilot Coding
-  Agent session, which runs under its own identity (a token gh-aw resolves from
-  `GH_AW_AGENT_TOKEN` → `GH_AW_GITHUB_TOKEN` → `GITHUB_TOKEN`) and can write
-  workflow files.
+  Why an issue instead of an automated PR: `gh aw upgrade` / `gh aw compile`
+  regenerate `.github/workflows/*.lock.yml`, which the default `GITHUB_TOKEN`
+  cannot push (GitHub platform rule) and which would otherwise require a
+  Copilot-licensed / `workflow`-scoped agent token this repo intentionally does
+  not provision. Filing an issue keeps the workflow fully automatic and
+  credential-free; a maintainer performs the actual upgrade.
 
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
@@ -28,12 +29,11 @@ imports:
 environment: copilot-pat-pool
 
 on:
-  # Scheduled in STAGED/preview mode (see `staged: true` under safe-outputs):
-  # the detector runs weekly and PREVIEWS any create-agent-session delegation in
-  # the Actions run summary WITHOUT spawning a real Copilot Coding Agent session.
-  # The pool's COPILOT_PAT_* covers engine inference, so no extra token is needed
-  # for these preview runs. To go fully live, provision a `GH_AW_AGENT_TOKEN`
-  # secret and remove `staged: true` (see the safe-outputs note below).
+  # Weekly detector. Fully self-contained: the only write is a tracking issue via
+  # safe-outputs (needs just the default GITHUB_TOKEN / issues: write) — no
+  # Copilot-licensed or workflow-scoped agent token required, so this runs live on
+  # a schedule. Steady state is `noop` (no issue); an available upgrade files one
+  # `[Auto Update]` issue for a maintainer to action.
   schedule: weekly
   workflow_dispatch:
   # Forces a no-op pre_activation job, required by the pat_pool import.
@@ -48,7 +48,7 @@ if: |
 
 permissions: read-all
 
-# Lets maintainers find every asset this workflow triggers (agent sessions).
+# Lets maintainers find every issue this workflow files.
 tracker-id: aw-version-update
 
 network:
@@ -86,8 +86,8 @@ timeout-minutes: 15
 
 tools:
   github:
-    toolsets: [pull_requests, issues]
-    # The detector reads only its own bot-authored dedupe PRs/issues; `approved`
+    toolsets: [issues]
+    # The detector reads only its own bot-authored dedupe issues; `approved`
     # keeps community content out of the agent's view (defense-in-depth) without
     # breaking dedupe, since github-actions[bot] items are already `approved`.
     min-integrity: approved
@@ -95,44 +95,34 @@ tools:
 
 safe-outputs:
   # Wire the pat_pool job into the safe_outputs job's needs graph so the whole
-  # workflow shares one selected pool entry. NOTE: the delegated
-  # `create-agent-session` step does NOT read this pool — gh-aw resolves its
-  # `gh agent-task create` token from `secrets.GH_AW_AGENT_TOKEN` →
-  # `GH_AW_GITHUB_TOKEN` → `GITHUB_TOKEN`. For the real (non-staged) delegation
-  # to spawn a Copilot Coding Agent that can write `.github/workflows/`, a
-  # maintainer must configure `GH_AW_AGENT_TOKEN` (or `GH_AW_GITHUB_TOKEN`) with
-  # the scope `gh agent-task create` requires. See PR description / rollout notes.
+  # workflow shares one selected pool entry (the detector's engine inference is
+  # billed to the selected COPILOT_PAT_*). The tracking issue itself is created
+  # with the default GITHUB_TOKEN (issues: write) — no Copilot-licensed or
+  # workflow-scoped token is involved, so this workflow needs no extra secret to
+  # run live on a schedule.
   needs: [pat_pool]
-  # STAGED: weekly scheduled runs preview the create-agent-session request in the
-  # Actions run summary WITHOUT spawning a real Copilot Coding Agent session.
-  # To go LIVE: (1) provision a `GH_AW_AGENT_TOKEN` secret in the copilot-pat-pool
-  # environment holding a PAT with the scope `gh agent-task create` + writing
-  # `.github/workflows/` requires (it may reuse a pool PAT value only if that PAT
-  # carries that scope — the rotating pool cannot supply this token dynamically,
-  # gh-aw resolves it from the named `GH_AW_AGENT_TOKEN` secret); then (2) remove
-  # `staged: true` after confirming the previewed delegation payload is correct.
-  staged: true
   noop:
     report-as-issue: false
-  create-agent-session:
-    base: main
+  create-issue:
+    title-prefix: "[Auto Update] "
+    labels: [dependencies, agentic-workflows]
     max: 1
 ---
 
 # Agentic Workflow Version Auto-Update — Detection
 
-You detect whether the gh-aw infrastructure has pending updates and, if so, delegate the actual upgrade work to a Copilot Coding Agent session. **You never commit, push, comment, create issues directly, or open PRs.** Your only allowed safe outputs are `noop` (the normal/expected steady state) and `create-agent-session` (delegate to CCA).
+You detect whether the gh-aw infrastructure has a pending framework upgrade and, if so, file **one** tracking issue asking a maintainer to perform the upgrade locally. **You never commit, push, comment, open PRs, or create agent sessions.** Your only allowed safe outputs are `noop` (the normal/expected steady state) and `create-issue`.
 
 ## Background
 
 - This repo uses **GitHub Agentic Workflows (`gh aw`)** — source: <https://github.com/github/gh-aw>, docs: <https://github.github.com/gh-aw/>.
-- Files managed by `gh aw` in this repo (the only paths that should ever change as a result of this upgrade):
+- Files managed by `gh aw` in this repo (the only paths a maintainer should change when applying the upgrade):
   - `.github/workflows/*.md` — agentic workflow sources
   - `.github/workflows/*.lock.yml` — compiled lock files (generated by `gh aw compile`)
   - `.github/workflows/shared/**` — shared gh-aw imports, including the PAT-pool import
   - `.github/aw/**` — gh-aw project metadata, including `actions-lock.json`
   - `.github/agents/**` — MAUI agent definitions
-- The `create-agent-session` safe output invokes `gh agent-task create` using the session token gh-aw resolves from `secrets.GH_AW_AGENT_TOKEN` → `GH_AW_GITHUB_TOKEN` → `GITHUB_TOKEN` — **not** `COPILOT_GITHUB_TOKEN` (that is only the engine's inference token). That spawns a Copilot Coding Agent run with the permissions required to write `.github/workflows/`. A maintainer must configure `GH_AW_AGENT_TOKEN` (or `GH_AW_GITHUB_TOKEN`) with that scope before the non-staged delegation can create a session.
+- Applying the upgrade regenerates `.github/workflows/*.lock.yml`, which the default `GITHUB_TOKEN` cannot push (GitHub platform rule). Rather than provisioning a Copilot-licensed / `workflow`-scoped token, this workflow files an issue and a **maintainer** runs `gh aw upgrade` locally and opens the PR.
 
 ## Task
 
@@ -141,35 +131,35 @@ Run these steps in order:
 1. **Install/upgrade `gh-aw` to the latest release.** This detector must run the newest gh-aw — otherwise a stale pre-installed extension makes `gh aw upgrade && gh aw compile` a no-op and real upgrades are missed. If `gh aw --version` succeeds, run `gh extension upgrade gh-aw` to force the latest; otherwise run `gh extension install github/gh-aw`. If both fail, emit `noop` and stop.
 2. **Upgrade.** Run `gh aw upgrade`. If it fails, emit `noop` and stop — do **not** try to fix the failure.
 3. **Compile.** Run `gh aw compile`. If it reports errors, emit `noop` and stop.
-4. **Capture state for the delegation payload (only used if changes are detected):**
+4. **Capture state for the issue body (only used if changes are detected):**
    - `NEW_VERSION` ← `gh aw --version`
    - `DIFF_STAT` ← `git diff --stat`
    - `CHANGED_FILES` ← `git diff --name-only`
 5. **Reset working tree.** Run `git reset --hard && git clean -fd` so no local changes leak out of this detection run.
-6. **Dedupe check.** Search for an already-open follow-up:
-   - Open PRs titled `[Auto Update] Agentic workflows` (`gh pr list --search "[Auto Update] Agentic workflows in:title" --state open`).
-   - Open issues titled `[Auto Update] Agentic workflows` (`gh issue list --search "[Auto Update] Agentic workflows in:title" --state open`) — these are the Copilot agent-session issues from previous runs.
-   - If **either** exists, emit `noop` and stop. The previous run's PR/session is still pending.
+6. **Dedupe check.** Search for an already-open follow-up issue:
+   - `gh issue list --search "[Auto Update] Agentic workflows in:title" --state open`
+   - If one exists, emit `noop` and stop — a previous run's upgrade issue is still open and unresolved.
 7. **Decide and emit exactly one safe output:**
    - `CHANGED_FILES` is empty → emit a single `noop`. **This is the normal/expected outcome on most runs — do not treat it as a failure and do not create an issue.**
-   - Otherwise → emit a single `create-agent-session` whose `body` is the template in the next section, with `<NEW_VERSION>`, `<DIFF_STAT>`, and `<CHANGED_FILES>` substituted.
+   - Otherwise → emit a single `create-issue` with title `Agentic workflows → gh-aw <NEW_VERSION>` (the `[Auto Update] ` prefix is added automatically) and `body` set to the template in the next section, with `<NEW_VERSION>`, `<DIFF_STAT>`, and `<CHANGED_FILES>` substituted.
 
-## Agent session description (template)
+## Issue body (template)
 
-Use this exact body for the `create-agent-session` output. Title prefix `[Auto Update] Agentic workflows` is required (the dedupe check in step 6 looks for it).
+Use this exact body for the `create-issue` output.
 
 ````markdown
-# [Auto Update] Agentic workflows → gh-aw <NEW_VERSION>
+# Agentic workflows → gh-aw <NEW_VERSION>
 
-The `aw-version-update` detection run found that re-running
-`gh aw upgrade && gh aw compile` against `main` produces a non-empty diff.
-Please apply that diff and open a PR.
+The `aw-version-update` detector found that re-running `gh aw upgrade && gh aw compile`
+against `main` produces a non-empty diff. A maintainer should apply it and open a PR —
+the default `GITHUB_TOKEN` cannot push the regenerated `.github/workflows/*.lock.yml`,
+so this cannot be automated without a Copilot-licensed / `workflow`-scoped token.
 
-## Steps
+## Steps (run locally by a maintainer)
 
-1. Install the gh-aw CLI extension (skip if already installed):
+1. Install/refresh the gh-aw CLI extension:
    ```bash
-   gh extension install github/gh-aw
+   gh extension install github/gh-aw   # or: gh extension upgrade gh-aw
    ```
 2. Apply gh-aw codemods/version updates and refresh gh-aw metadata:
    ```bash
@@ -179,7 +169,9 @@ Please apply that diff and open a PR.
    ```bash
    gh aw compile
    ```
-4. Run the verification gate before opening a PR: check for gh-aw migration residue that was not auto-fixed and for security/XPIA regressions in the changed workflow sources and generated locks. Do not hand-edit generated lock files.
+4. Verify before committing: no leftover gh-aw migration residue that was not auto-fixed,
+   and no security/XPIA regressions in the changed workflow sources or generated locks.
+   Do **not** hand-edit generated lock files.
 5. Stage **only** files managed by `gh aw`:
    - `.github/workflows/*.md`
    - `.github/workflows/*.lock.yml`
@@ -187,7 +179,9 @@ Please apply that diff and open a PR.
    - `.github/aw/**`
    - `.github/agents/**`
 6. Commit with message: `Update agentic workflows via gh aw upgrade`
-7. Open a PR to `main` titled `[Auto Update] Agentic workflows`. Keep the body short — one line summarizing what changed (for example, "gh-aw v0.X → v0.Y, codemods applied"). The Files tab shows the diff; do not list files in the body.
+7. Open a PR to `main` titled `[Auto Update] Agentic workflows`. Keep the body short —
+   one line summarizing what changed (for example, "gh-aw v0.X → v0.Y, codemods applied").
+   The Files tab shows the diff; do not list files in the body. Then close this issue.
 
 ## Hard rules
 
@@ -195,7 +189,7 @@ Please apply that diff and open a PR.
 - Do **not** hand-edit `go.mod`, `go.sum`, `package.json`, or any dependency manifest.
 - Do **not** hand-edit generated `*.lock.yml` files — only `gh aw compile` writes those.
 - Do **not** stage or commit files outside the gh-aw-managed path list above.
-- If `gh aw upgrade` or `gh aw compile` fails, stop and report the error output. Do **not** try to fix it — open an issue for a human instead.
+- If `gh aw upgrade` or `gh aw compile` fails, note the error in the PR (or a comment here) and stop — do not try to fix it by hand.
 
 ## References
 
@@ -219,8 +213,8 @@ Please apply that diff and open a PR.
 
 ## Rules (for this detection workflow)
 
-- Only commands you may run: `gh extension install github/gh-aw`, `gh extension upgrade gh-aw`, `gh aw --version`, `gh aw upgrade`, `gh aw compile`, `git diff`, `git reset`, `git clean`, `gh pr list`, `gh issue list`.
+- Only commands you may run: `gh extension install github/gh-aw`, `gh extension upgrade gh-aw`, `gh aw --version`, `gh aw upgrade`, `gh aw compile`, `git diff`, `git reset`, `git clean`, `gh issue list`.
 - Never run `go`, `npm`, or any package manager / build tool.
-- Never commit, push, comment, create issues directly, or open PRs. Your only safe outputs are `noop` and `create-agent-session`.
+- Never commit, push, comment, open PRs, or create agent sessions. Your only safe outputs are `noop` and `create-issue`.
 - Emit exactly one safe output per run.
 - `noop` is the expected steady state — do not report it as a failure and do not create an issue for it.
