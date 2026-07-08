@@ -172,7 +172,12 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			if (source is null)
+			{
+				// Clear any stale icon left on this (possibly reused) menu item.
+				menuItem.SetIcon(null);
+				onIconLoaded?.Invoke(menuItem);
 				return;
+			}
 
 			try
 			{
@@ -197,7 +202,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// Prevent an unhandled exception from an image-load failure escaping
 				// this async operation and crashing the app (matches the previous
 				// LoadBottomNavIconAsync try/catch behavior).
-				System.Diagnostics.Debug.WriteLine($"SetMenuItemIcon failed: {ex.Message}");
+				System.Diagnostics.Debug.WriteLine($"SetMenuItemIcon failed: {ex}");
 			}
 		}
 
