@@ -106,6 +106,46 @@ pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6-candidate
 ```
 
+### Preview: authoritative blessed-build source (.NET Release Tracker)
+
+For **Previews**, this skill's public survey (CI health + regression classification on `net<major>.0` or the preview branch) tells you whether the code is *ready*, but it **cannot on its own name which staged build is the official, blessed preview** — that designation lives in the private **.NET Release Tracker** plugin. So when answering *"run release readiness … is net11 preview6 ready?"* / *"which build is the official preview6?"*, consult that authoritative source **in addition to** running `Get-PreviewReadiness.ps1`:
+
+1. **Classify access first (deterministic gate — fetches no release data, always exits 0):**
+
+   ```bash
+   pwsh ./.github/skills/dependency-flow/scripts/Get-PreviewReleaseReadiness.ps1
+   # -> RELEASE_TRACKER_STATUS=NO_ACCESS | ACCESS_ON_INACTIVE_ACCOUNT | AVAILABLE_NOT_ENABLED | AVAILABLE_ENABLED
+   ```
+
+2. **Branch on the token:**
+   - `AVAILABLE_ENABLED` → invoke the **`dotnet-release-tracker`** skill for the blessed SDK/runtime + BAR id + stage, and present it as the authoritative official preview build. It is a **skill/plugin, not an MCP tool** — don't look for a `release-tracker` entry in the tool list and give up; run the skill (reload/restart the session if it's enabled but hasn't loaded yet). Combine it with this skill's CI/regression verdict for the full picture.
+   - `AVAILABLE_NOT_ENABLED` → the caller has access but the plugin isn't enabled locally; offer the one-time user-scope opt-in, then re-run the gate.
+   - `ACCESS_ON_INACTIVE_ACCOUNT` → access exists, but only under a logged-in **inactive** `gh` account (named in the gate's `inactiveAccount`); the plugin loads under the active identity, so advise `gh auth switch --user <account>` and re-run the gate — do **not** invoke the plugin or claim availability under the current identity.
+   - `NO_ACCESS` → report from public data only. For the official-build line, fall back to the **latest build on the public `.NET 11.0.1xx SDK Preview N` channel** (public BAR/Maestro) and present it **labeled** as a public-feed candidate — "source: public preview feed; may not be the final official (blessed) build; the official build is designated at release time and may differ." Don't name or hint at the private tracker tool (see dependency-flow's privacy guardrail), but do be honest that this is the public feed and not a confirmed official build.
+
+The full tier table, the user-scope opt-in snippet, and the privacy guardrails live in dependency-flow's **"Preview release readiness (authoritative source + access tiers)"** section ([`../dependency-flow/SKILL.md`](../dependency-flow/SKILL.md)) — cross-reference it rather than duplicating it here.
+
+> **Blessed ≠ green.** The release tracker names the *official* build; it does **not** substitute for the ship-readiness judgment. A build can be blessed while this skill still reports open `regressed-in-*` blockers — surface both.
+
+### Preview: is the branch actually plumbed? (subscription wiring + feed drift)
+
+A preview can pass CI and even have a blessed build yet still not be *ship-wired* —
+the branch is cut but nothing flows into it, or its promoted feed lags the branch.
+A complete *"is preview N ready?"* answer runs three more **public** (BAR/Maestro + git)
+checks alongside the survey and the blessed-build lookup:
+
+- **Subscriptions wired?** Confirm the `release/11.0.1xx-previewN` branch has its default-channel mapping **and** the baseline three subscriptions (android + macios + dotnet on `.NET 11.0.1xx SDK Preview N`). Branch cut + default-channel present but **zero subs** = a start-of-preview flow gap → surface as an **FYI note** (not a ship blocker), naming the missing source repos.
+- **Feed matches the branch?** Compare the latest build promoted to the `.NET 11.0.1xx SDK Preview N` channel (`maestro_latest_build`) against `origin/release/11.0.1xx-previewN` HEAD. Branch ahead of the promoted build = stale feed → flag it.
+- **Component pins coherent?** Report which `dotnet/android`, `dotnet/macios`, and `dotnet/dotnet` (VMR) builds MAUI bundles (version + SHA from `eng/Version.Details.xml`) and confirm they **match the inflight `netN.0` branch the preview was cut from**. Match = clean cut ✅; divergence or an off-band pin (macios/dotnet missing the `-net11-pN`/`preview.N` stamp) → flag. The tracker has **no** per-component build, so there is no "blessed" android/macios to look up — this is git+BAR only, and "behind the latest component build" is *expected* for a cut branch (don't flag it). Android's `-ci.main.NN` scheme is normal for net11 — validate against `netN.0`, don't alarm on the moniker.
+
+All three checks — the exact MCP/`darc`/git commands, the interpretation tables, the
+remediation (combined-PR pattern), and live worked examples — live in dependency-flow's
+**"Wiring checks: is Preview N actually plumbed?"** subsection (Checks A/B/C)
+([`../dependency-flow/SKILL.md`](../dependency-flow/SKILL.md)); run them from there and
+fold the results into the preview report (missing subs ⇒ an FYI note; stale feed ⇒ a
+flagged concern; component pins ⇒ coherent ✅ or a flagged divergence) rather than
+duplicating the mechanics here.
+
 ## Parameters
 
 ### `Find-ReleaseReadinessTrackers.ps1`
@@ -285,6 +325,7 @@ Determinism / idempotency: the engine captures **one** `UtcNow` per run (`$Data[
 
 - **Custom agent**: `.github/agents/release-readiness-agent.agent.md` wraps this skill — handles regression-label confirmation, runs the script, then uses WorkIQ to add context for `rejected-from-sr` PRs.
 - **WorkIQ**: NOT called from the PowerShell scripts (PowerShell can't invoke MCP tools). The agent enriches the script's JSON output with WorkIQ context where needed.
+- **.NET Release Tracker (Preview blessed build)**: for Previews, the *authoritative* official build is designated in the private `dotnet-release-tracker` plugin, reached through dependency-flow's deterministic access gate (`Get-PreviewReleaseReadiness.ps1`). See [Preview: authoritative blessed-build source](#preview-authoritative-blessed-build-source-net-release-tracker) above; the tier table + opt-in live in `../dependency-flow/SKILL.md`.
 
 ## Anti-Patterns
 

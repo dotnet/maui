@@ -351,6 +351,89 @@ function Get-XcodeRequirements {
     }
 }
 
+function Get-BranchComponentPins {
+    <#
+    .SYNOPSIS
+        Reads the dotnet/dotnet (VMR), dotnet/android and dotnet/macios anchor
+        pins (version + commit SHA) from eng/Version.Details.xml at $Ref.
+    .DESCRIPTION
+        Public git source — reachable with the repo-scoped GITHUB_TOKEN the
+        GitHub Action runs under (no Maestro/BAR access required). These are the
+        components CURRENTLY BUNDLED on the branch, NOT a confirmed "blessed"
+        build. The authoritative blessed designation comes from the internal
+        .NET Release Tracker (private dotnet/release), which CI cannot reach.
+
+        Returns a PSCustomObject with Vmr/Android/Macios members (each with
+        Name/Version/Sha), or $null if the file can't be read or parsed.
+    .NOTES
+        eng/Version.Details.xml `<Dependency>` elements carry Name/Version as
+        XML *attributes* and Uri/Sha as child *elements*. On an XmlElement,
+        `$dep.Name` resolves to the element tag ("Dependency") — NOT the Name
+        attribute — so attributes are read with GetAttribute() and children via
+        the `$dep['Uri']` indexer.
+    #>
+    param(
+        [string]$Ref,
+        [int]$Major
+    )
+
+    $xmlText = $null
+    try {
+        $xmlText = Get-ContentFromRepo -Path "eng/Version.Details.xml" -Ref $Ref
+    } catch {
+        Write-Warning "Could not read eng/Version.Details.xml at ${Ref}: $($_.Exception.Message)"
+        return $null
+    }
+
+    $xml = $null
+    try {
+        $xml = [xml]$xmlText
+    } catch {
+        Write-Warning "Could not parse eng/Version.Details.xml at ${Ref}: $($_.Exception.Message)"
+        return $null
+    }
+
+    $deps = @($xml.SelectNodes("//Dependency"))
+    if ($deps.Count -eq 0) { return $null }
+
+    # Pick the anchor dependency for a repo: match by <Uri>, then prefer the
+    # most representative Name (falling back to the first dep for that repo).
+    $selectPin = {
+        param($UriMatch, $PreferredNamePatterns)
+        $cands = @($deps | Where-Object {
+            $u = ''
+            if ($_['Uri']) { $u = "$($_['Uri'].InnerText)".Trim().TrimEnd('/') }
+            $u -match $UriMatch
+        })
+        if ($cands.Count -eq 0) { return $null }
+        $pick = $null
+        foreach ($pat in $PreferredNamePatterns) {
+            $pick = $cands | Where-Object { "$($_.GetAttribute('Name'))" -match $pat } | Select-Object -First 1
+            if ($pick) { break }
+        }
+        if (-not $pick) { $pick = $cands[0] }
+        $sha = ''
+        if ($pick['Sha']) { $sha = "$($pick['Sha'].InnerText)".Trim() }
+        [PSCustomObject]@{
+            Name    = $pick.GetAttribute('Name')
+            Version = $pick.GetAttribute('Version')
+            Sha     = $sha
+        }
+    }
+
+    $vmr     = & $selectPin 'github\.com/dotnet/dotnet'  @('^Microsoft\.NET\.Sdk$')
+    $android = & $selectPin 'github\.com/dotnet/android' @('^Microsoft\.Android\.Sdk\.Windows$', '^Microsoft\.Android\.Sdk')
+    $macios  = & $selectPin 'github\.com/dotnet/macios'  @("^Microsoft\.macOS\.Sdk\.net$Major\.0", '^Microsoft\.macOS\.Sdk', '^Microsoft\.iOS\.Sdk')
+
+    if (-not ($vmr -or $android -or $macios)) { return $null }
+
+    return [PSCustomObject]@{
+        Vmr     = $vmr
+        Android = $android
+        Macios  = $macios
+    }
+}
+
 function Get-BugTemplateVersions {
     <#
     .SYNOPSIS
@@ -863,6 +946,73 @@ function Test-IsP0Pr {
     return (@($labels | ForEach-Object { $_.name }) -contains 'p/0')
 }
 
+function Test-IsDependencyFlowPr {
+    <#
+    .SYNOPSIS
+        True when a PR is a dependency-flow / component-bump PR — either an
+        automated darc PR (author dotnet-maestro) OR a human-authored component
+        bump that rolls upstream builds into a branch.
+    .DESCRIPTION
+        The dependency-flow bucket was originally author-only (`dotnet-maestro`).
+        But release owners also open MANUAL component-bump PRs — e.g.
+        "[release/11.0.1xx-preview6] Bump dotnet/dotnet (BAR 321614), dotnet/android
+        (BAR 321622) and dotnet/macios (BAR 321780)" (head `update-321614`, authored
+        by a human) — which land the blessed component set into the release branch
+        and are just as release-critical as a darc PR. Author-only detection buried
+        those in the generic "Release branch PRs" list instead of surfacing them in
+        the hoisted 🔴 High-priority items. Detect them by title / head-ref too.
+
+        Signals (ANY one is sufficient):
+          - author login matches `dotnet-maestro` (the automated darc flow);
+          - title has the word "Bump" plus a dotnet dependency repo
+            (dotnet/dotnet|android|macios|runtime|sdk|emsdk|wasm) or a "BAR <id>";
+          - head ref matches `update-<digits>` (the manual bump-PR branch scheme,
+            e.g. `update-321614`).
+
+        Deliberately NARROW so it doesn't swallow unrelated human PRs: a generic
+        "Fix Y" or a "[automated] Merge branch" merge-up PR matches none of the
+        signals. StrictMode-safe: tolerates a missing author/title/headRefName.
+        Accepts both PSCustomObject (the gh --json shape) and IDictionary
+        (the shape test mocks commonly use), mirroring Test-IsP0Pr.
+    #>
+    param($PR)
+
+    if (-not $PR) { return $false }
+
+    # --- author login (dual-shape, StrictMode-safe) ---
+    $author = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('author')) { $PR['author'] } else { $null }
+    } elseif ($PR.PSObject.Properties['author']) {
+        $PR.author
+    } else { $null }
+    if ($author) {
+        $login = if ($author -is [System.Collections.IDictionary]) {
+            if ($author.Contains('login')) { $author['login'] } else { $null }
+        } elseif ($author.PSObject.Properties['login']) {
+            $author.login
+        } else { $null }
+        if ($login -and $login -match 'dotnet-maestro') { return $true }
+    }
+
+    # --- title (component / BAR bump) ---
+    $title = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('title')) { $PR['title'] } else { $null }
+    } elseif ($PR.PSObject.Properties['title']) {
+        $PR.title
+    } else { $null }
+    if ($title -and $title -match '(?i)\bBump\b.*(dotnet/(dotnet|android|macios|runtime|sdk|emsdk|wasm)|\bBAR\s*\d+)') { return $true }
+
+    # --- head ref (manual bump-branch scheme `update-<barId>`) ---
+    $head = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('headRefName')) { $PR['headRefName'] } else { $null }
+    } elseif ($PR.PSObject.Properties['headRefName']) {
+        $PR.headRefName
+    } else { $null }
+    if ($head -and $head -match '(?i)^update-\d+$') { return $true }
+
+    return $false
+}
+
 function Get-CategorizedPullRequests {
     <#
     .SYNOPSIS
@@ -880,7 +1030,10 @@ function Get-CategorizedPullRequests {
                     the P/0 blocker category (trips its dedicated BLOCKED check +
                     renders once as a 🔥 P/0 PR row) and is never silently
                     downgraded to a 📦 Maestro / merge-up row.
-          2. Maestro  — non-P/0 PRs authored by dotnet-maestro (target OR inflight).
+          2. Maestro  — non-P/0 PRs authored by dotnet-maestro on the TARGET
+                    branch only (the survey ref). net<major>.0 (inflight) Maestro
+                    bumps are intentionally NOT reported by a branched preview
+                    tracker — they belong to the inflight branch's own readiness.
           3. Merge-up — non-P/0, non-Maestro target PRs that are automated
                     main → survey-ref merges (head `merge/<x>-to-<y>` or title
                     "[automated] Merge branch ...").
@@ -888,11 +1041,14 @@ function Get-CategorizedPullRequests {
           5. Inflight-human — non-Maestro PRs on the inflight (net<major>.0) branch.
 
         Buckets are mutually exclusive by PR number. Inflight PRs never escalate
-        to P/0 (only survey-ref PRs block), matching the engine's release scope:
-        $p0PrNumbers is computed from $TargetPRs only, and PR numbers are globally
-        unique, so excluding them from the target+inflight Maestro set cannot drop
-        an inflight PR. StrictMode-safe on two fronts: (1) inputs are normalized to
-        drop $null elements up front, so an AutomationNull list (what
+        to P/0 (only survey-ref PRs block), and Maestro is scoped to $TargetPRs
+        only — a branched preview reports dependency-flow bumps against its own
+        branch, so net<major>.0 (inflight) Maestro PRs are intentionally dropped
+        from this tracker (only non-Maestro inflight PRs surface, in the
+        Inflight-human bucket). $p0PrNumbers is computed from $TargetPRs only, and
+        PR numbers are globally unique. StrictMode-safe on two fronts: (1) inputs
+        are normalized to drop $null elements up front, so an AutomationNull list
+        (what
         Get-OpenPullRequests returns for a zero-PR branch) can't seed a `@($null)`
         whose null element would throw "property 'author' cannot be found"; and
         (2) for genuine PR objects every property accessed is guaranteed present by
@@ -921,18 +1077,29 @@ function Get-CategorizedPullRequests {
     $TargetPRs   = @($TargetPRs   | Where-Object { $null -ne $_ })
     $InflightPRs = @($InflightPRs | Where-Object { $null -ne $_ })
 
-    $allReleasePRs = @($TargetPRs) + @($InflightPRs)
-
     # 1. P/0 first (highest precedence), from survey-ref PRs only.
     $p0Prs = @($TargetPRs | Where-Object { Test-IsP0Pr $_ })
     $p0PrNumbers = @($p0Prs | ForEach-Object { $_.number })
 
-    # 2. Maestro (non-P/0), across target + inflight.
-    $maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" -and ($p0PrNumbers -notcontains $_.number) })
+    # 2. Dependency-flow (non-P/0), TARGET branch only. Once a preview is branched,
+    #    this tracker must only surface dependency-flow bumps against its OWN branch
+    #    (the survey ref). Detection is NOT author-only: it covers both automated
+    #    darc PRs (author dotnet-maestro) AND human-authored component-bump PRs
+    #    (e.g. a "[release/...] Bump dotnet/dotnet (BAR ...)" PR on head `update-<id>`
+    #    that lands the blessed component set) via Test-IsDependencyFlowPr. Bumps
+    #    targeting net<major>.0 (the inflight branch) belong to the inflight branch's
+    #    own readiness, not this preview tracker — so they are intentionally NOT
+    #    reported here. (In candidate mode the survey ref IS net<major>.0 and
+    #    $InflightPRs is empty, so target-only is correct there too.)
+    $maestroPRs = @($TargetPRs | Where-Object { (Test-IsDependencyFlowPr $_) -and ($p0PrNumbers -notcontains $_.number) })
 
-    # Non-P/0, non-Maestro humans, split by scope.
-    $targetHumanPRsRaw   = @($TargetPRs   | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") -and ($p0PrNumbers -notcontains $_.number) })
-    $inflightHumanPRsRaw = @($InflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
+    # Non-P/0, non-dependency-flow humans, split by scope. Both slots keep a
+    #    Raw stage so the two-hop merge-up filter below can strip hoisted merge-up
+    #    PRs from target AND inflight. Detection uses Test-IsDependencyFlowPr so
+    #    human-authored component bumps (not just author dotnet-maestro) are
+    #    excluded from the human buckets and routed to the dependency-flow bucket.
+    $targetHumanPRsRaw   = @($TargetPRs   | Where-Object { -not (Test-IsDependencyFlowPr $_) -and ($p0PrNumbers -notcontains $_.number) })
+    $inflightHumanPRsRaw = @($InflightPRs | Where-Object { -not (Test-IsDependencyFlowPr $_) })
 
     # 3. Merge-up: non-P/0, non-Maestro PRs from BOTH hops of the daily-flow chain
     #    that feeds the survey ref. The preview lane chains main → net<N>.0 →
@@ -1321,11 +1488,20 @@ $targetHumanPRs   = $prBuckets.TargetHumanPRs
 $inflightHumanPRs = $prBuckets.InflightHumanPRs
 
 if ($maestroPRs.Count -eq 0) {
-    $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details "No open Maestro PRs target ``$SurveyRef`` or ``$mainBranch``." -NextAction "Continue monitoring for new dependency-flow PRs."
+    # Maestro is scoped to the survey ref (target) only. When the preview is
+    # branched ($SurveyRef differs from the inflight $mainBranch), don't claim
+    # anything about net<major>.0 Maestro PRs — they exist but are intentionally
+    # tracked by the inflight branch's own readiness, not this preview tracker.
+    $maestroReadyDetails = if ($SurveyRef -ne $mainBranch) {
+        "No open Maestro PRs target ``$SurveyRef``. (Dependency-flow PRs targeting the inflight ``$mainBranch`` branch are tracked by ``$mainBranch``'s own readiness, not this branched preview.)"
+    } else {
+        "No open Maestro PRs target ``$SurveyRef``."
+    }
+    $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details $maestroReadyDetails -NextAction "Continue monitoring for new dependency-flow PRs."
 } elseif (@($maestroPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count -gt 0) {
-    $checks += New-Check -Area "Maestro PRs" -Status "BLOCKED" -Details "$($maestroPRs.Count) open Maestro PR(s), including blocked/conflicted PRs." -NextAction "Resolve blocked Maestro PRs before release."
+    $checks += New-Check -Area "Maestro PRs" -Status "BLOCKED" -Details "$($maestroPRs.Count) open dependency-flow PR(s) (darc + manual component bumps), including blocked/conflicted PRs." -NextAction "Resolve blocked dependency-flow PRs before release."
 } else {
-    $checks += New-Check -Area "Maestro PRs" -Status "WATCH" -Details "$($maestroPRs.Count) open Maestro PR(s) need review/merge triage." -NextAction "Review dependency PRs and merge expected updates."
+    $checks += New-Check -Area "Maestro PRs" -Status "WATCH" -Details "$($maestroPRs.Count) open dependency-flow PR(s) (darc + manual component bumps) need review/merge triage." -NextAction "Review dependency PRs and merge expected updates."
 }
 
 if ($targetHumanPRs.Count -eq 0) {
@@ -1629,7 +1805,7 @@ foreach ($pr in $p0Prs) {
 foreach ($pr in $maestroPRs) {
     $action = Get-PRAction -PR $pr
     [void]$highPriorityRows.Add(@{
-        kind = '📦 Maestro PR'
+        kind = '📦 Dependency-flow PR'
         link = "[#$($pr.number)]($($pr.url))"
         title = $pr.title
         actor = "base ``$($pr.baseRefName)``, $($action.Age)d old"
@@ -1661,7 +1837,7 @@ foreach ($pr in $mergeUpPRs) {
 if ($highPriorityRows.Count -gt 0) {
     [void]$md.AppendLine("## 🔴 High-priority items — $($highPriorityRows.Count) item(s)")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_P/0 issues, P/0 PRs, Maestro PRs, and merge-up PRs in the ``$mergeUpChainLabel`` daily-flow chain. Resolve these before treating the release as ready._")
+    [void]$md.AppendLine("_P/0 issues, P/0 PRs, dependency-flow PRs (darc + manual component bumps), and merge-up PRs in the ``$mergeUpChainLabel`` daily-flow chain. Resolve these before treating the release as ready._")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("| Kind | Item | Title | Context | Next action |")
     [void]$md.AppendLine("|------|------|-------|---------|-------------|")
@@ -1671,12 +1847,86 @@ if ($highPriorityRows.Count -gt 0) {
     [void]$md.AppendLine("")
 }
 
+# Human-editable section, preserved across re-runs by workflow body merge.
+# Positioned directly under the "🔴 High-priority items" section so the
+# agent-orchestrated, release-critical content that gets spliced in here (the
+# official/blessed build, subscription wiring, component-pin coherence) renders
+# near the TOP of the tracker — right below the blockers — while still living
+# inside the preserved human-notes markers so it survives automated re-runs.
+#
+# Built as a reusable block (like the SR engine) so the body-size cap below can
+# strip it, truncate the remaining content, then re-append it — guaranteeing the
+# begin/end markers always survive truncation regardless of section order. The
+# "🔴 High-priority items" section above is itemized and uncapped, so a naive
+# byte-prefix cut could otherwise drop these markers.
+$notesSb = [System.Text.StringBuilder]::new()
+[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:begin -->")
+[void]$notesSb.AppendLine("## Release Captain Notes")
+[void]$notesSb.AppendLine("")
+[void]$notesSb.AppendLine("_Add manual notes here. Anything between these begin/end markers is preserved across automated re-runs._")
+[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:end -->")
+$notesBlockText = $notesSb.ToString()
+[void]$md.Append($notesBlockText)
+[void]$md.AppendLine("")
+
+# === Action-owned best-effort component build (git-pin sourced) ===
+# The authoritative "blessed" preview build comes from the internal .NET Release
+# Tracker (private dotnet/release), which the GitHub Action's repo-scoped
+# GITHUB_TOKEN CANNOT reach. So the Action always emits this best-effort fallback
+# from the branch's own eng/Version.Details.xml — a PUBLIC git source reachable
+# with GITHUB_TOKEN — reporting the components CURRENTLY BUNDLED on the branch.
+# This is explicitly NOT a confirmed blessed build; a maintainer running the
+# release-readiness skill locally fills the authoritative blessed set into the
+# Release Captain Notes block above (which has private tracker access). Rendered
+# OUTSIDE the human-notes markers so it self-refreshes on every automated re-run.
+$componentPins = Get-BranchComponentPins -Ref $SurveyRef -Major $majorVersion
+if ($componentPins) {
+    [void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins (best-effort)")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("_Source: ``eng/Version.Details.xml`` on ``$SurveyRef`` (public git, always readable in CI). These are the component builds **currently bundled on the branch** — **not** a confirmed *blessed* build. The authoritative blessed designation comes from the internal .NET Release Tracker (private ``dotnet/release``), which this GitHub Action cannot reach; a maintainer running the release-readiness skill locally fills the confirmed blessed build into **Release Captain Notes** above._")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("| Component | Version | Commit | Source repo |")
+    [void]$md.AppendLine("|-----------|---------|--------|-------------|")
+
+    $pinRows = @(
+        @{ Label = 'dotnet/dotnet (VMR / SDK)'; Repo = 'dotnet/dotnet'; Pin = $componentPins.Vmr }
+        @{ Label = 'dotnet/android';            Repo = 'dotnet/android'; Pin = $componentPins.Android }
+        @{ Label = 'dotnet/macios';             Repo = 'dotnet/macios';  Pin = $componentPins.Macios }
+    )
+    foreach ($r in $pinRows) {
+        $pin = $r.Pin
+        if (-not $pin) {
+            [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — | ``$($r.Repo)`` |")
+            continue
+        }
+        $commitCell = '—'
+        if (-not [string]::IsNullOrWhiteSpace($pin.Sha)) {
+            $shortSha = $pin.Sha.Substring(0, [Math]::Min(7, $pin.Sha.Length))
+            $commitCell = "[``$shortSha``](https://github.com/$($r.Repo)/commit/$($pin.Sha))"
+        }
+        [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell | ``$($r.Repo)`` |")
+    }
+    [void]$md.AppendLine("")
+
+    # If a manual/darc component-bump PR is open against the branch, it names the
+    # pending target BAR builds in its title — surface it so readers see the pins
+    # above will advance once it merges. Reuses the already-computed dependency-flow set.
+    $bumpPr = @($maestroPRs | Where-Object { $_.title -match 'Bump\s+dotnet/dotnet' }) | Select-Object -First 1
+    if ($bumpPr) {
+        $bars = @([regex]::Matches($bumpPr.title, 'BAR\s+(\d+)') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
+        $barText = if ($bars.Count -gt 0) { " (target BAR $([string]::Join('/', $bars)))" } else { "" }
+        [void]$md.AppendLine("⏳ **Pending component bump:** [#$($bumpPr.number)]($($bumpPr.url))$barText will advance these branch pins — see 🔴 High-priority items above.")
+        [void]$md.AppendLine("")
+    }
+}
+
+
 # === BLOCKING SUMMARY (hoisted to top) ===
 # Surface aggregate BLOCKED checks (e.g. CI red, versions.props not bumped).
 # The high-priority categories above already enumerate individual items,
 # so exclude them here to avoid duplicate rows under two separate headings.
 # Every Area whose items are hoisted into 🔴 High-priority items must be listed
-# here (Maestro PRs are hoisted as '📦 Maestro PR' rows, so they belong too).
+# here (dependency-flow PRs are hoisted as '📦 Dependency-flow PR' rows, so they belong too).
 $highPriorityCheckAreas = @(
     'P/0 priority blockers',
     'P/0 release-branch PRs',
@@ -1764,22 +2014,6 @@ if ($Mode -eq 'candidate') {
 [void]$md.AppendLine("| Expected SDK channel | ``.NET $majorVersion.0.1xx SDK Preview $previewNumber`` |")
 [void]$md.AppendLine("| Workload release channel | ``.NET $majorVersion Workload Release`` |")
 [void]$md.AppendLine("| Expected PreReleaseVersionIteration | ``$previewNumber`` |")
-[void]$md.AppendLine("")
-
-# Human-editable section, preserved across re-runs by workflow body merge.
-# Built as a reusable block (like the SR engine) so the body-size cap below can
-# strip it, truncate the remaining content, then re-append it — guaranteeing the
-# begin/end markers always survive truncation regardless of section order. The
-# "🔴 High-priority items" table above this block is itemized and uncapped, so a
-# naive byte-prefix cut could otherwise drop these markers.
-$notesSb = [System.Text.StringBuilder]::new()
-[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:begin -->")
-[void]$notesSb.AppendLine("## Release Captain Notes")
-[void]$notesSb.AppendLine("")
-[void]$notesSb.AppendLine("_Add manual notes here. Anything between these begin/end markers is preserved across automated re-runs._")
-[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:end -->")
-$notesBlockText = $notesSb.ToString()
-[void]$md.Append($notesBlockText)
 [void]$md.AppendLine("")
 
 [void]$md.AppendLine("## Readiness checklist")
