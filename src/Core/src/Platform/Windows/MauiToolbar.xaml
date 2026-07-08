@@ -13,8 +13,7 @@
     x:Name="commandBar">
   <CommandBar.Content>
     <Grid x:Name="contentGrid" VerticalAlignment="Stretch" 
-        HorizontalAlignment="Center"
-          Width="{Binding ActualWidth, ElementName=commandBar}">
+        HorizontalAlignment="Stretch">
 
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"/>
@@ -23,7 +22,7 @@
         <ColumnDefinition Width="*"/>
       </Grid.ColumnDefinitions>
 
-      <Image x:Name="titleIcon" Visibility="Collapsed" Grid.Column="0" />
+      <Image x:Name="titleIcon" Visibility="Collapsed" Grid.Column="0"/>
 
       <ContentControl IsTabStop="False" x:Name="menuContent" Visibility="Collapsed" Grid.Column="1"></ContentControl>
 
