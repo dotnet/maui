@@ -28,10 +28,13 @@ imports:
 environment: copilot-pat-pool
 
 on:
-  # Start manual-only while maintainers validate the delegation payload and
-  # dedupe behavior. MAUI has the PAT pool needed to enable this later:
-  # uncomment `schedule: weekly` after a few clean workflow_dispatch runs.
-  # schedule: weekly
+  # Scheduled in STAGED/preview mode (see `staged: true` under safe-outputs):
+  # the detector runs weekly and PREVIEWS any create-agent-session delegation in
+  # the Actions run summary WITHOUT spawning a real Copilot Coding Agent session.
+  # The pool's COPILOT_PAT_* covers engine inference, so no extra token is needed
+  # for these preview runs. To go fully live, provision a `GH_AW_AGENT_TOKEN`
+  # secret and remove `staged: true` (see the safe-outputs note below).
+  schedule: weekly
   workflow_dispatch:
   # Forces a no-op pre_activation job, required by the pat_pool import.
   # See shared/pat_pool.README.md (Known Issues).
@@ -100,10 +103,14 @@ safe-outputs:
   # maintainer must configure `GH_AW_AGENT_TOKEN` (or `GH_AW_GITHUB_TOKEN`) with
   # the scope `gh agent-task create` requires. See PR description / rollout notes.
   needs: [pat_pool]
-  # STAGED: the first runs preview the create-agent-session request in the Actions
-  # run summary WITHOUT spawning a real Copilot Coding Agent session. Remove
-  # `staged: true` (and enable `schedule: weekly` above) only after maintainers
-  # confirm both the no-op path and the previewed delegation payload are correct.
+  # STAGED: weekly scheduled runs preview the create-agent-session request in the
+  # Actions run summary WITHOUT spawning a real Copilot Coding Agent session.
+  # To go LIVE: (1) provision a `GH_AW_AGENT_TOKEN` secret in the copilot-pat-pool
+  # environment holding a PAT with the scope `gh agent-task create` + writing
+  # `.github/workflows/` requires (it may reuse a pool PAT value only if that PAT
+  # carries that scope — the rotating pool cannot supply this token dynamically,
+  # gh-aw resolves it from the named `GH_AW_AGENT_TOKEN` secret); then (2) remove
+  # `staged: true` after confirming the previewed delegation payload is correct.
   staged: true
   noop:
     report-as-issue: false
