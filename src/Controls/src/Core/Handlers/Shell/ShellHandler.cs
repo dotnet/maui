@@ -14,6 +14,14 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<Shell, ShellHandler> Mapper =
 				new PropertyMapper<Shell, ShellHandler>(ElementMapper)
 				{
+#if WINDOWS || TIZEN
+					[nameof(IToolbarElement.Toolbar)] = (handler, view) => ViewHandler.MapToolbar(handler, view),
+					[nameof(IFlyoutView.Flyout)] = MapFlyout,
+					[nameof(Shell.Items)] = MapItems,
+					[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
+					[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
+#endif
+
 					[nameof(Shell.CurrentItem)] = MapCurrentItem,
 					[nameof(Shell.FlyoutBackground)] = MapFlyoutBackground,
 					[nameof(Shell.FlyoutBackgroundColor)] = MapFlyoutBackground,
@@ -32,14 +40,6 @@ namespace Microsoft.Maui.Controls.Handlers
 					[nameof(Shell.FlyoutBackgroundImage)] = MapFlyoutBackgroundImage,
 					[nameof(Shell.FlyoutBackgroundImageAspect)] = MapFlyoutBackgroundImage,
 					[nameof(Shell.FlyoutVerticalScrollMode)] = MapFlyoutVerticalScrollMode,
-
-#if WINDOWS || TIZEN
-					[nameof(IToolbarElement.Toolbar)] = (handler, view) => ViewHandler.MapToolbar(handler, view),
-					[nameof(IFlyoutView.Flyout)] = MapFlyout,
-					[nameof(Shell.Items)] = MapItems,
-					[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
-					[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
-#endif
 
 #if ANDROID
 					[nameof(Shell.FlyoutHeight)] = MapFlyoutHeight,
