@@ -37,11 +37,17 @@ namespace Microsoft.Maui.Controls.Maps
 				// app or silently drops the cluster marker - degrade to the static/default icon instead.
 				try
 				{
-					var controlPins = pins.OfType<Pin>().ToList();
-					var identifier = controlPins.Count > 0
-						? controlPins[0].ClusteringIdentifier ?? Pin.DefaultClusteringIdentifier
-						: Pin.DefaultClusteringIdentifier;
-					var image = provider(new ClusterInfo(count, identifier, controlPins, location));
+					// Pins/identifier are resolved lazily: a provider that only reads Count (like the
+					// sample) never triggers the platform's O(members × pins) resolution scan.
+					var image = provider(new ClusterInfo(count, location,
+						() => pins.OfType<Pin>().ToList(),
+						() =>
+						{
+							foreach (var pin in pins)
+								if (pin is Pin controlPin)
+									return controlPin.ClusteringIdentifier ?? Pin.DefaultClusteringIdentifier;
+							return Pin.DefaultClusteringIdentifier;
+						}));
 					if (image is not null)
 						return image;
 				}
