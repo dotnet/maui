@@ -1706,12 +1706,10 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("PathDataEntry");
 		App.Tap("PathDataEntry");
 		App.ClearText("PathDataEntry");
-		App.EnterText("PathDataEntry", "M 10,100 C 10,100 40,-20 100,50 C 160,-20 190,100 190,100 C 190,100 100,190 100,190 C 100,190 10,100 10,100 Z");
-
+		App.EnterText("PathDataEntry", "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
 		VerifyShapeScreenshot();
 	}
-
 }
