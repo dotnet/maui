@@ -63,7 +63,12 @@ namespace Microsoft.Maui.Platform
 		{
 			if (button.Background is ImageSourcePaint sourcePaint)
 			{
-				((AView)platformView).UpdateBackgroundImageSource(sourcePaint.ImageSource, button.Handler);
+				((AView)platformView).UpdateButtonBackgroundImageSource(
+					sourcePaint.ImageSource,
+					button.Handler,
+					button,
+					() => platformView.RippleColor,
+					() => { platformView.BackgroundTintList = null; });
 			}
 			else
 			{

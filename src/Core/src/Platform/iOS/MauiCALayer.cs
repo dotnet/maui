@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Platform
 
 		UIColor? _backgroundColor;
 		Paint? _background;
+		UIImage? _backgroundImage;
 
 		float _strokeThickness;
 		UIColor? _strokeColor;
@@ -151,6 +152,15 @@ namespace Microsoft.Maui.Platform
 		public void SetBackground(ImagePaint imagePaint)
 		{
 			throw new NotImplementedException();
+		}
+
+		internal void SetBackgroundImage(UIImage? image)
+		{
+			_backgroundImage = image;
+			_backgroundColor = null;
+			_background = null;
+
+			SetNeedsDisplay();
 		}
 
 		public void SetBackground(PatternPaint patternPaint)
@@ -324,7 +334,16 @@ namespace Microsoft.Maui.Platform
 
 		void DrawBackground(CGContext ctx)
 		{
-			if (_background != null)
+			if (_backgroundImage?.CGImage is not null)
+			{
+				// Draw image stretched to fill the bounds (matching Android behavior)
+				ctx.SaveState();
+				ctx.TranslateCTM(0, _bounds.Height);
+				ctx.ScaleCTM(1, -1);
+				ctx.DrawImage(new CGRect(0, 0, _bounds.Width, _bounds.Height), _backgroundImage.CGImage);
+				ctx.RestoreState();
+			}
+			else if (_background != null)
 				DrawGradientPaint(ctx, _background);
 			else if (_backgroundColor != null)
 			{
