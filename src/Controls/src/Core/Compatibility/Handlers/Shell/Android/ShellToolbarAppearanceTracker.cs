@@ -20,11 +20,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance)
 		{
-			if (appearance is null)
-			{
-				return;
-			}
-
 			var foreground = appearance.ForegroundColor;
 			var background = appearance.BackgroundColor;
 			var titleColor = appearance.TitleColor;
