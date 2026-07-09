@@ -47,9 +47,10 @@ namespace Microsoft.Maui.Handlers
 			SourceLoader.Reset();
 		}
 
-		public static void MapBackground(IImageButtonHandler handler, IImageButton imageButton)
+		//TODO : Make it public in NET 11.
+		internal static void MapBackground(IImageButtonHandler handler, IImageButton imageButton)
 		{
-			var platformView = handler.ToPlatform();
+			var platformView = handler.PlatformView;
 
 			if (imageButton.Background.IsNullOrEmpty())
 			{
