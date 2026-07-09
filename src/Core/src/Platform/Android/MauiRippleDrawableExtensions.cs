@@ -259,4 +259,46 @@ static class MauiRippleDrawableExtensions
 
 		return false;
 	}
+
+	internal static void UpdateMauiRippleDrawableImageBackground(this AView platformView,
+		Drawable imageDrawable,
+		IButtonStroke stroke,
+		Func<ColorStateList?>? getDefaultRippleColor = null,
+		Action? beforeSet = null)
+	{
+		var context = platformView.Context;
+		if (context is null)
+		{
+			return;
+		}
+
+		var (width, color, radius) = stroke.GetStrokeProperties(context, false);
+
+		// Create stroke layer
+		var strokeDrawable = new GradientDrawable();
+		strokeDrawable.SetCornerRadius(radius);
+		strokeDrawable.SetStroke(width, color);
+
+		// Create mask for ripple shape
+		var maskDrawable = new GradientDrawable();
+		maskDrawable.SetTint(AColor.White);
+		maskDrawable.SetCornerRadius(radius);
+
+		// Wrap image + stroke in LayerDrawable, then in RippleDrawable
+		var rippleColor = getDefaultRippleColor?.Invoke()
+			?? ColorStateList.ValueOf(Colors.White.WithAlpha(DefaultRippleAlpha).ToPlatform());
+
+		Drawable[] layers = [imageDrawable, strokeDrawable];
+		var layerDrawable = new LayerDrawable(layers);
+		layerDrawable.SetId(0, MauiBackgroundDrawableId);
+		layerDrawable.SetId(1, MauiStrokeDrawableId);
+
+		var rippleDrawable = new RippleDrawable(
+			rippleColor,
+			new InsetDrawable(layerDrawable, 0, 0, 0, 0),
+			maskDrawable);
+
+		beforeSet?.Invoke();
+		platformView.Background = rippleDrawable;
+	}
 }

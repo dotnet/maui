@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
+using WImageBrush = Microsoft.UI.Xaml.Media.ImageBrush;
 using WinPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.Platform
@@ -246,7 +247,17 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
 		{
 			if (border is IView view)
-				(platformView as ContentPanel)?.UpdateBackground(view.Background);
+			{
+				if (view.Background is ImageSourcePaint sourcePaint)
+				{
+					(platformView as ContentPanel)?.UpdateBackground((Paint?)null);
+					platformView.UpdateBorderBackgroundImageSource(sourcePaint.ImageSource, view.Handler);
+				}
+				else
+				{
+					(platformView as ContentPanel)?.UpdateBackground(view.Background);
+				}
+			}
 
 			if (platformView is Control control)
 				control.UpdateBackground((Paint?)null);
@@ -297,12 +308,12 @@ namespace Microsoft.Maui.Platform
 
 			var service = provider.GetRequiredImageSourceService(imageSource);
 			var nativeImageSource = await service.GetImageSourceAsync(imageSource);
-			var imageBrush = new ImageBrush { ImageSource = nativeImageSource?.Value };
+			var imageBrush = new WImageBrush { ImageSource = nativeImageSource?.Value };
 
 			if (platformView is Control control)
 			{
 				control.Resources.SetValueForAllKey(resourceKeys, imageBrush);
-				control.RefreshThemeResources();
+				control.Background = imageBrush;
 			}
 		}
 
@@ -316,6 +327,31 @@ namespace Microsoft.Maui.Platform
 		{
 			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
 			platformView.UpdateBackgroundImageSourceAsync(imageSource, provider).FireAndForget(handler);
+		}
+
+		internal static void UpdateBorderBackgroundImageSource(this FrameworkElement platformView, IImageSource? imageSource, IElementHandler? handler)
+		{
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			UpdateBorderBackgroundImageSourceAsync(platformView, imageSource, provider).FireAndForget(handler);
+		}
+
+		static async Task UpdateBorderBackgroundImageSourceAsync(FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			if (platformView is not ContentPanel contentPanel)
+			{
+				return;
+			}
+
+			if (provider is null || imageSource is null)
+			{
+				contentPanel.UpdateBackgroundImage(null);
+				return;
+			}
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var result = await service.GetImageSourceAsync(imageSource);
+
+			contentPanel.UpdateBackgroundImage(result?.Value);
 		}
 
 		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)

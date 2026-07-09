@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using Android.Graphics.Drawables;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateStrokeDashPattern(this AView platformView, IBorderStroke border) =>
-			UpdateStrokeDashPattern(platformView, border, platformView.Background as MauiDrawable);
+			UpdateStrokeDashPattern(platformView, border, platformView.GetMauiDrawable());
 
 		internal static void UpdateStrokeDashPattern(this AView platformView, IBorderStroke border, MauiDrawable? mauiDrawable)
 		{
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateStrokeDashOffset(this AView platformView, IBorderStroke border) =>
-			UpdateStrokeDashOffset(platformView, border, platformView.Background as MauiDrawable);
+			UpdateStrokeDashOffset(platformView, border, platformView.GetMauiDrawable());
 
 		internal static void UpdateStrokeDashOffset(this AView platformView, IBorderStroke border, MauiDrawable? mauiDrawable)
 		{
@@ -140,7 +141,8 @@ namespace Microsoft.Maui.Platform
 			if (!hasBorder)
 				return;
 
-			mauiDrawable ??= platformView.Background as MauiDrawable;
+			mauiDrawable ??= platformView.GetMauiDrawable();
+
 			if (mauiDrawable is null)
 			{
 				mauiDrawable = new MauiDrawable(platformView.Context);
@@ -149,7 +151,23 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (border is IView v)
-				mauiDrawable.SetBackground(v.Background);
+			{
+				if (v.Background is ImageSourcePaint sourcePaint)
+				{
+					mauiDrawable.SetBackground(new SolidPaint(Colors.Transparent));
+					platformView.UpdateBorderImageBackground(sourcePaint.ImageSource, v.Handler, mauiDrawable);
+				}
+				else
+				{
+					// Remove LayerDrawable wrapper if switching away from image
+					if (platformView.Background is LayerDrawable)
+					{
+						platformView.Background = mauiDrawable;
+					}
+
+					mauiDrawable.SetBackground(v.Background);
+				}
+			}
 			else
 				mauiDrawable.SetBackground(new SolidPaint(Colors.Transparent));
 
@@ -157,6 +175,37 @@ namespace Microsoft.Maui.Platform
 
 			if (platformView is ContentViewGroup contentViewGroup)
 				contentViewGroup.Clip = border;
+		}
+
+		static MauiDrawable? GetMauiDrawable(this AView platformView)
+		{
+			return platformView.GetDrawableFromBackground<MauiDrawable>();
+		}
+
+		internal static BorderDrawable? GetBorderDrawable(this AView platformView)
+		{
+			return platformView.GetDrawableFromBackground<BorderDrawable>();
+		}
+
+		static T? GetDrawableFromBackground<T>(this AView platformView) where T : Drawable
+		{
+			if (platformView.Background is T drawable)
+			{
+				return drawable;
+			}
+
+			if (platformView.Background is LayerDrawable layerDrawable)
+			{
+				for (int i = 0; i < layerDrawable.NumberOfLayers; i++)
+				{
+					if (layerDrawable.GetDrawable(i) is T innerDrawable)
+					{
+						return innerDrawable;
+					}
+				}
+			}
+
+			return null;
 		}
 	}
 }

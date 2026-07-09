@@ -505,6 +505,72 @@ namespace Microsoft.Maui.Platform
 			platformView.UpdateBackgroundImageSourceAsync(imageSource, provider).FireAndForget(handler);
 		}
 
+		internal static void UpdateBorderImageBackground(this AView platformView, IImageSource? imageSource, IElementHandler? handler, Drawable strokeDrawable)
+		{
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			UpdateBorderImageBackgroundAsync(platformView, imageSource, provider, strokeDrawable).FireAndForget(handler);
+		}
+
+		static async Task UpdateBorderImageBackgroundAsync(AView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider, Drawable strokeDrawable)
+		{
+			if (provider is null || imageSource is null)
+			{
+				return;
+			}
+
+			Context? context = platformView.Context;
+			if (context is null)
+			{
+				return;
+			}
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var result = await service.GetDrawableAsync(imageSource, context);
+			Drawable? backgroundImageDrawable = result?.Value;
+
+			if (backgroundImageDrawable is not null && platformView.IsAlive())
+			{
+				var layers = new Drawable[] { backgroundImageDrawable, strokeDrawable };
+				var layerDrawable = new LayerDrawable(layers);
+				platformView.Background = layerDrawable;
+			}
+		}
+
+		internal static void UpdateButtonBackgroundImageSource(this AView platformView, IImageSource? imageSource, IElementHandler? handler, IButtonStroke stroke,
+			Func<global::Android.Content.Res.ColorStateList?>? getDefaultRippleColor = null,
+			Action? beforeSet = null)
+		{
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateButtonBackgroundImageSourceAsync(imageSource, provider, stroke, getDefaultRippleColor, beforeSet).FireAndForget(handler);
+		}
+
+		internal static async Task UpdateButtonBackgroundImageSourceAsync(this AView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider, IButtonStroke stroke,
+			Func<global::Android.Content.Res.ColorStateList?>? getDefaultRippleColor = null,
+			Action? beforeSet = null)
+		{
+			if (provider is null || imageSource is null)
+			{
+				return;
+			}
+
+			Context? context = platformView.Context;
+			if (context is null)
+			{
+				return;
+			}
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var result = await service.GetDrawableAsync(imageSource, context);
+			var backgroundImageDrawable = result?.Value;
+
+			if (!platformView.IsAlive() || backgroundImageDrawable is null)
+			{
+				return;
+			}
+
+			platformView.UpdateMauiRippleDrawableImageBackground(backgroundImageDrawable, stroke, getDefaultRippleColor, beforeSet);
+		}
+
 		public static void UpdateToolTip(this AView view, ToolTip? tooltip)
 		{
 			string? text = tooltip?.Content?.ToString();

@@ -14,8 +14,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Hosting;
-using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
+using WImageBrush = Microsoft.UI.Xaml.Media.ImageBrush;
 
 namespace Microsoft.Maui.Platform
 {
@@ -187,6 +188,18 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_borderPath.UpdateBackground(background);
+		}
+
+		internal void UpdateBackgroundImage(Microsoft.UI.Xaml.Media.ImageSource? imageSource)
+		{
+			if (_borderPath is null)
+			{
+				return;
+			}
+
+			_borderPath.Fill = imageSource is not null
+				? new WImageBrush { ImageSource = imageSource, Stretch = Stretch.Fill }
+				: null;
 		}
 
 		[Obsolete("Use Microsoft.Maui.Platform.UpdateBorderStroke instead")]

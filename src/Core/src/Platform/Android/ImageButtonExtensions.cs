@@ -65,7 +65,25 @@ namespace Microsoft.Maui.Platform
 		{
 			if (button.Background is ImageSourcePaint sourcePaint)
 			{
-				((AView)platformView).UpdateBackgroundImageSource(sourcePaint.ImageSource, button.Handler);
+				((AView)platformView).UpdateButtonBackgroundImageSource(
+					sourcePaint.ImageSource,
+					button.Handler,
+					button,
+					beforeSet: () =>
+					{
+						// We have a background, so we need to remove the things that were set on the
+						// platform view as they are now in the drawable.
+
+						platformView.StrokeColor = null;
+
+						platformView.StrokeWidth = 0;
+
+						platformView.ShapeAppearanceModel =
+							platformView.ShapeAppearanceModel
+								.ToBuilder()
+								.SetAllCornerSizes(0)
+								.Build();
+					});
 			}
 			else
 			{
