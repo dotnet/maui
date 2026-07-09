@@ -546,6 +546,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					finally
 					{
 						_isInternalPositionUpdate = false;
+
+						// Replace doesn't change Position, so no PositionChanged-driven
+						// UpdateFromPosition call arrives to consume the flag. Reset it here
+						// so the next legitimate programmatic Position update isn't ignored.
+						_noNeedForScroll = false;
 					}
 				});
 
@@ -571,6 +576,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				finally
 				{
 					_isInternalPositionUpdate = false;
+
+					// Replace doesn't change Position, so no PositionChanged-driven
+					// UpdateFromPosition call arrives to consume the flag. Reset it here
+					// so the next legitimate programmatic Position update isn't ignored.
+					_noNeedForScroll = false;
 				}
 			});
 		}

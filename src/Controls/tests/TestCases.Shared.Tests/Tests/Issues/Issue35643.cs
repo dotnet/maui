@@ -23,6 +23,8 @@ public class Issue35643 : _IssuesUITest
 
 		App.Tap("UpdateButton");
 
+		App.WaitForTextToBePresentInElement("CurrentItemLabel", "2b");
+		App.WaitForTextToBePresentInElement("PositionLabel", "2");
 		Assert.That(App.FindElement("CurrentItemLabel").GetText(), Is.EqualTo("2b"),
 			"CurrentItem should be '2b' after replacing the item");
 		Assert.That(App.FindElement("PositionLabel").GetText(), Is.EqualTo("2"),
@@ -40,7 +42,8 @@ public class Issue35643 : _IssuesUITest
 		App.ScrollTo("LoopReplaceButton");
 		App.Tap("LoopReplaceButton");
 
-		App.WaitForElement("LoopCurrentItemLabel");
+		App.WaitForTextToBePresentInElement("LoopCurrentItemLabel", "C2");
+		App.WaitForTextToBePresentInElement("LoopPositionLabel", "2");
 		Assert.That(App.FindElement("LoopCurrentItemLabel").GetText(), Is.EqualTo("C2"),
 			"CurrentItem should be 'C2' after replacing the item in loop mode");
 		Assert.That(App.FindElement("LoopPositionLabel").GetText(), Is.EqualTo("2"),
