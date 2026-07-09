@@ -124,6 +124,7 @@ public class Issue17389 : TestContentPage
 
     void ToggleInputTransparent()
     {
+        tapCount = 0;
         tapCountLabel.Text = $"Tap count: {0}";
         redGrid.InputTransparent = !redGrid.InputTransparent;
         greenGrid.InputTransparent = !greenGrid.InputTransparent;
