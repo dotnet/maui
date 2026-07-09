@@ -105,28 +105,10 @@ namespace Microsoft.Maui.Maps.Platform
 			if (userLocationAnnotation != null)
 				return null!;
 
-			// Handle cluster annotations. The delegate parameter is sometimes handed to us as a
-			// generic wrapper around the native object rather than the concrete MKClusterAnnotation
-			// subclass (observed with the iOS 26.5/net11 preview.5 bindings), so a plain `is` check
-			// can miss a real cluster annotation. Only re-resolve via the native handle when the type
-			// is this specific ambiguous wrapper - Runtime.GetNSObject<T> throws InvalidCastException
-			// (rather than returning null) for a handle whose real class doesn't match T, so calling
-			// it on every regular pin (typically MKPointAnnotation) would crash instead of falling
-			// through to normal pin handling. A non-cluster wrapper is also expected here - native
-			// annotations added via platform interop surface as MKAnnotationWrapper too - so the cast
-			// failure is caught and treated the same as "not a cluster".
-			var clusterAnnotation = annotation as MKClusterAnnotation;
-			if (clusterAnnotation == null && annotation.GetType().FullName == "MapKit.MKAnnotationWrapper")
-			{
-				try
-				{
-					clusterAnnotation = Runtime.GetNSObject<MKClusterAnnotation>(annotation.Handle);
-				}
-				catch (InvalidCastException)
-				{
-					// Not a cluster - fall through to normal pin handling.
-				}
-			}
+			// Handle cluster annotations. Binding skew (observed with the iOS 26.5/net11 preview.5
+			// bindings) sometimes hands us a cluster as a generic managed wrapper rather than the
+			// concrete MKClusterAnnotation, so a plain `is` check can miss a real cluster.
+			var clusterAnnotation = TryGetClusterAnnotation(annotation);
 			if (clusterAnnotation != null)
 			{
 				return GetViewForClusterAnnotation(mapView, clusterAnnotation);
@@ -198,6 +180,24 @@ namespace Microsoft.Maui.Maps.Platform
 			AttachGestureToPin(mapPin, annotation);
 
 			return mapPin;
+		}
+
+		// Native class of MKClusterAnnotation, used to detect clusters by their real ObjC class
+		// rather than the managed peer type (which binding skew can report as a generic wrapper).
+		static readonly ObjCRuntime.Class s_clusterAnnotationClass = new(typeof(MKClusterAnnotation));
+
+		// Resolves a cluster annotation, isolating the binding-skew workaround in one place so a
+		// better native check can be swapped in later. Checking the native class (not the managed
+		// type name) also avoids using exceptions for the common non-cluster case.
+		static MKClusterAnnotation? TryGetClusterAnnotation(IMKAnnotation annotation)
+		{
+			if (annotation is MKClusterAnnotation clusterAnnotation)
+				return clusterAnnotation;
+
+			if (annotation is Foundation.NSObject nsObject && nsObject.IsKindOfClass(s_clusterAnnotationClass))
+				return Runtime.GetNSObject<MKClusterAnnotation>(annotation.Handle);
+
+			return null;
 		}
 
 		MKAnnotationView GetViewForClusterAnnotation(MKMapView mapView, MKClusterAnnotation clusterAnnotation)
