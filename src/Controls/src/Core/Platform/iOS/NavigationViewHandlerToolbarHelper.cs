@@ -391,7 +391,13 @@ namespace Microsoft.Maui.Controls
                 return;
             }
 
-            flyoutPage.Flyout.IconImageSource.LoadImage(flyoutPage.FindMauiContext()!, result =>
+            var mauiContext = flyoutPage.FindMauiContext(fallbackToAppMauiContext: true);
+            if (mauiContext is null)
+            {
+                return;
+            }
+
+            flyoutPage.Flyout.IconImageSource.LoadImage(mauiContext, result =>
             {
                 var icon = result?.Value;
                 var originalImageSize = icon?.Size ?? CGSize.Empty;
