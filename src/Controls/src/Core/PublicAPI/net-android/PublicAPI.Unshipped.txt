@@ -56,6 +56,7 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync(this Microsoft.Maui.C
 static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.VisualElement.MapBackground(Microsoft.Maui.IViewHandler handler, Microsoft.Maui.IView view) -> void
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovementProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
