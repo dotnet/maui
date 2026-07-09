@@ -1392,6 +1392,24 @@ function Write-MarkdownReport {
     $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($hasEnvError -or $baselineBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
+    # When the gate PASSED under the relaxed "at least one test reproduces the bug, none
+    # regress" rule but some tests pass in both states, note it so a PASS with an always-green
+    # row in the table doesn't look inconsistent.
+    $reproPairs = 0; $alwaysGreenPairs = 0
+    foreach ($t in $Tests) {
+        $woP = $WithoutFixResultsList | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+        $wP  = $WithFixResultsList    | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+        if (-not $woP -or -not $wP) { continue }
+        $woInc = $woP.EnvError -or $woP.BuildError -or $woP.FilterMismatch
+        $wInc  = $wP.EnvError  -or $wP.BuildError  -or $wP.FilterMismatch
+        if ($woInc -or $wInc) { continue }
+        if ((-not $woP.Passed) -and $wP.Passed) { $reproPairs++ }
+        if ($woP.Passed -and $wP.Passed) { $alwaysGreenPairs++ }
+    }
+    $mixedPassNote = if ($VerificationPassed -and $reproPairs -gt 0 -and $alwaysGreenPairs -gt 0) {
+        "✅ **Fix verified** — $reproPairs test(s) reproduce the bug (FAIL without the fix → PASS with it). $alwaysGreenPairs test(s) pass in both states and are not bug-reproducing; under the ""at least one test reproduces the bug and none regress"" rule they don't block the gate."
+    } else { $null }
+
     # A brand-new snapshot test with no committed baseline drives the INCONCLUSIVE above via
     # its EnvError flag. Give it a dedicated, actionable headline instead of the generic
     # "environment error" framing so the reader knows the fix is fine — only the baseline is
@@ -1480,6 +1498,10 @@ function Write-MarkdownReport {
     $lines += ""
     $platformDisplay = if ($ReportPlatform) { $ReportPlatform.ToUpper() } else { "N/A" }
     $lines += "**Platform:** $platformDisplay · **Base:** $ReportBaseBranch · **Merge base:** ``$mergeBaseShort``"
+    if ($mixedPassNote) {
+        $lines += ""
+        $lines += $mixedPassNote
+    }
     if ($snapshotNote) {
         $lines += ""
         $lines += $snapshotNote
@@ -1992,9 +2014,9 @@ Write-Log ""
 Write-Log "VERIFICATION RESULTS"
 
 $verificationPassed = $false
-# "Without fix" should FAIL → all tests should NOT pass
+# "Without fix" should FAIL and "with fix" should PASS. These two aggregates are kept for the
+# report/summary text, but the PASS/FAIL DECISION now uses the relaxed per-test rule below.
 $failedWithoutFix = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq 0
-# "With fix" should PASS → all tests should pass
 $passedWithFix = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
 
 # Print a clear comparison table
@@ -2027,6 +2049,33 @@ Write-Host "  Expected               │   FAIL      │   PASS     " -Foregroun
 Write-Host ""
 
 $verificationPassed = $failedWithoutFix -and $passedWithFix
+
+# ── Relaxed gate rule (user-selected) ──
+# PASS when AT LEAST ONE test genuinely REPRODUCES the bug (FAIL without the fix → PASS with
+# it) AND the fix leaves NO test failing (no genuine with-fix failure). A test that passes in
+# both states (PASS→PASS) neither proves nor blocks the fix, so it's ignored. This replaces the
+# old "ALL tests must fail without the fix" rule, which false-FAILED mixed PRs where a strong
+# regression test coexists with an always-green test (e.g. PR #27477: VisualStateManagerTests
+# FAIL→PASS but Issue19752 PASS→PASS). Env/build/filter results are inconclusive (handled
+# below) and are excluded from both counts.
+$reproducingCount = 0
+$withFixGenuineFailCount = 0
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w  = $withFixResults    | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+    $woInconclusive = $wo.EnvError -or $wo.BuildError -or $wo.FilterMismatch
+    $wInconclusive  = $w.EnvError  -or $w.BuildError  -or $w.FilterMismatch
+    # FAIL → PASS: reproduces the bug and the fix resolves it.
+    if ((-not $woInconclusive) -and (-not $wInconclusive) -and (-not $wo.Passed) -and $w.Passed) {
+        $reproducingCount++
+    }
+    # A genuine failure that remains WITH the fix (FAIL→FAIL or a PASS→FAIL regression).
+    if ((-not $wInconclusive) -and (-not $w.Passed)) {
+        $withFixGenuineFailCount++
+    }
+}
+$verificationPassed = ($reproducingCount -gt 0) -and ($withFixGenuineFailCount -eq 0)
 
 # A test that hit an ENVIRONMENT error, or a BASELINE (without-fix) BUILD error, never
 # established whether the bug reproduces, so the gate could not verify anything — treat that
