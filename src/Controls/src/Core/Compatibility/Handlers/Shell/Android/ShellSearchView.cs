@@ -256,6 +256,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.PropertyName == SearchHandler.ClearPlaceholderIconProperty.PropertyName)
 			{
 				ApplyImageSource(_clearPlaceholderButton, SearchHandler.ClearPlaceholderIcon, -1, SearchHandler.TextColor?.ToPlatform());
+			}
+			else if (e.PropertyName == SearchHandler.ClearPlaceholderEnabledProperty.PropertyName)
+			{
 				UpdateClearButtonState();
 			}
 		}
