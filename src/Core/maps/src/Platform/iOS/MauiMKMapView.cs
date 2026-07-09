@@ -136,11 +136,6 @@ namespace Microsoft.Maui.Maps.Platform
 
 		internal void ClearMapElements()
 		{
-			var elements = Overlays;
-
-			if (elements == null)
-				return;
-
 			// Clear MapElementId from tracked elements (not Handler.VirtualView.Elements,
 			// which returns an empty snapshot after ObservableCollection.Clear())
 			if (_trackedMapElements != null)
@@ -151,10 +146,24 @@ namespace Microsoft.Maui.Maps.Platform
 				_trackedMapElements = null;
 			}
 
+			var elements = Overlays;
+			if (elements == null)
+				return;
+
 			foreach (IMKOverlay overlay in elements)
 			{
 				RemoveOverlay(overlay);
 			}
+		}
+
+		internal void PrepareForReuse()
+		{
+			ClearMapElements();
+
+			if (Annotations?.Length > 0)
+				RemoveAnnotations(Annotations);
+
+			_lastTouchedView = null;
 		}
 
 		internal void AddElements(IList elements)

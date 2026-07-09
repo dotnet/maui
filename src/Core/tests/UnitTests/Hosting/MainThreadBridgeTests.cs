@@ -10,6 +10,12 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
+	// Builds MauiApp instances that resolve the static DispatcherProvider.Current via DI,
+	// and mutates MainThread/DispatcherProvider static state in its lifecycle. Serialize with
+	// DispatcherTests and the other MauiApp-building hosting tests via the shared
+	// MainThreadStaticState collection to avoid ObjectDisposedException races on the
+	// DispatcherProviderStub's internal ThreadLocal during MauiApp.Build().
+	[Collection("MainThreadStaticState")]
 	public class MainThreadBridgeTests : IDisposable
 	{
 		public MainThreadBridgeTests()

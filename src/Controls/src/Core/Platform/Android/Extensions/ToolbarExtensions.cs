@@ -13,6 +13,7 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using AGraphics = Android.Graphics;
@@ -38,12 +39,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool showNavBar = toolbar.IsVisible;
 			var lp = nativeToolbar.LayoutParameters;
+			var appBar = nativeToolbar.Parent?.GetParentOfType<AppBarLayout>();
 			if (lp == null)
 				return;
 
 			if (!showNavBar)
 			{
 				lp.Height = 0;
+				// Clear stale AppBarLayout padding so MeasuredHeight collapses to 0 and the
+				// inset listener stops consuming the top inset, preventing a blank gap (#34472, #35103).
+				appBar?.SetPadding(0, 0, 0, 0);
 			}
 			else
 			{
@@ -106,13 +111,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			var context =
+			if (toolbar.BackButtonVisible)
+			{
+				var context =
 					nativeToolbar.Context?.GetThemedContext() ??
 					nativeToolbar.Context ??
 					toolbar.Handler?.MauiContext?.Context;
 
-			if (toolbar.BackButtonVisible)
-			{
 				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
 				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
 					iconDrawable.Progress = 1;
@@ -138,9 +143,6 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					// Reinitialize navigation icon to display flyout (hamburger) menu
-    				// This ensures the icon is shown when back button is not visible
-					nativeToolbar.NavigationIcon = new DrawerArrowDrawable(context!);
 					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
 						iconDrawable.Progress = 0;
 

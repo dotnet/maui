@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -62,6 +63,112 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(xplatTitleColor, values.ViewValue);
 			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+    
+    [Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			const double xplatCharacterSpacing = 4;
+
+			var picker = new PickerStub
+			{
+				Items = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectedIndex = 1,
+				CharacterSpacing = xplatCharacterSpacing
+			};
+
+			var values = await GetValueAsync(picker, (handler) =>
+			{
+				return new
+				{
+					ViewValue = picker.CharacterSpacing,
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
+		}
+
+		[Fact(DisplayName = "CharacterSpacing Maintained After SelectedIndex Change")]
+		public async Task CharacterSpacingMaintainedAfterSelectedIndexChange()
+		{
+			const double xplatCharacterSpacing = 4;
+
+			var picker = new PickerStub
+			{
+				Items = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectedIndex = 0,
+				CharacterSpacing = xplatCharacterSpacing
+			};
+
+			await SetValueAsync(picker, 2, (handler, value) =>
+			{
+				handler.VirtualView.SelectedIndex = value;
+				handler.UpdateValue(nameof(IPicker.SelectedIndex));
+			});
+
+			var nativeCharacterSpacing = await GetValueAsync(picker, (handler) =>
+				GetNativeCharacterSpacing(handler));
+
+			Assert.Equal(xplatCharacterSpacing, nativeCharacterSpacing);
+		}
+
+		double GetNativeCharacterSpacing(PickerHandler pickerHandler)
+		{
+			var mauiPicker = GetNativePicker(pickerHandler);
+			return mauiPicker.AttributedText.GetCharacterSpacing();
+		}
+
+		[Fact(DisplayName = "RoundedRect Picker Focus Halo Uses RoundedRect Shape on MacCatalyst 26+")]
+		public async Task RoundedRectPickerFocusHaloUsesRoundedRectShapeOnMacCatalyst26()
+		{
+			if (!OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+
+			var picker = new PickerStub
+			{
+				Title = "Select an Item"
+			};
+
+			var values = await GetValueAsync(picker, handler =>
+			{
+				handler.PlatformArrange(new Rect(0, 0, 220, 44));
+				var nativePicker = GetNativePicker(handler);
+				nativePicker.LayoutSubviews();
+
+				var focusEffect = nativePicker.FocusEffect;
+				var expectedRounded = UIFocusHaloEffect.Create(UIBezierPath.FromRoundedRect(nativePicker.Bounds, 5f));
+				var expectedCapsule = UIFocusHaloEffect.Create(UIBezierPath.FromRoundedRect(nativePicker.Bounds, nativePicker.Bounds.Height / 2));
+
+				var matchesExpectedRoundedShape = focusEffect?.IsEqual(expectedRounded) ?? false;
+				var matchesCapsuleShape = focusEffect?.IsEqual(expectedCapsule) ?? false;
+
+				nativePicker.BorderStyle = UITextBorderStyle.None;
+				nativePicker.LayoutSubviews();
+				var clearsWhenNotRoundedRect = nativePicker.FocusEffect is null;
+
+				nativePicker.BorderStyle = UITextBorderStyle.RoundedRect;
+				nativePicker.LayoutSubviews();
+				var restoresWhenRoundedRect = nativePicker.FocusEffect is not null;
+
+				return new
+				{
+					BorderStyle = nativePicker.BorderStyle,
+					HasFocusEffect = focusEffect is not null,
+					MatchesExpectedRoundedShape = matchesExpectedRoundedShape,
+					MatchesCapsuleShape = matchesCapsuleShape,
+					ClearsWhenNotRoundedRect = clearsWhenNotRoundedRect,
+					RestoresWhenRoundedRect = restoresWhenRoundedRect
+				};
+			});
+
+			Assert.Equal(UITextBorderStyle.RoundedRect, values.BorderStyle);
+			Assert.True(values.HasFocusEffect);
+			Assert.True(values.ClearsWhenNotRoundedRect);
+			Assert.True(values.RestoresWhenRoundedRect);
+			Assert.True(values.MatchesExpectedRoundedShape);
+			Assert.False(values.MatchesCapsuleShape);
 		}
 
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>

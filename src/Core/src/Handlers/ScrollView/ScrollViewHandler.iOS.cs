@@ -48,8 +48,21 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(platformView);
 
-			PendingScrollToRequest = null;
+			if (PendingScrollToRequest is not null)
+			{
+				VirtualView?.ScrollFinished();
+				PendingScrollToRequest = null;
+			}
 			_eventProxy.Disconnect(platformView);
+		}
+
+		internal void ProcessPendingScrollRequest()
+		{
+			if (PendingScrollToRequest is { } pending)
+			{
+				MapRequestScrollTo(this, VirtualView, pending);
+				PendingScrollToRequest = null;
+			}
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -91,6 +104,12 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			platformView.UpdateIsEnabled(scrollView);
+			
+			// Notify MauiScrollView of orientation change to handle RTL layout
+			if (platformView is MauiScrollView mauiScrollView)
+			{
+				mauiScrollView.OnOrientationChanged();
+			}
 			platformView.InvalidateMeasure(scrollView);
 		}
 

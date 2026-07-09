@@ -273,6 +273,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(typeof(SearchHandler), false)]
 		[InlineData(typeof(BackButtonBehavior), true)]
 		[InlineData(typeof(BackButtonBehavior), false)]
+		[InlineData(typeof(SwipeItemView), true)]
+		[InlineData(typeof(SwipeItemView), false)]
 		public async Task CommandsSubscribedToCanExecuteCollect(Type controlType, bool useWeakEventHandler)
 		{
 			// Create a view model with a Command
@@ -314,6 +316,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						break;
 					case BackButtonBehavior bbb:
 						bbb.Command = command;
+            break;
+					case SwipeItemView sv:
+						sv.Command = command;
 						break;
 				}
 
