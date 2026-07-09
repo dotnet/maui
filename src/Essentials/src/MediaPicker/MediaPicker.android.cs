@@ -240,6 +240,9 @@ namespace Microsoft.Maui.Media
 			bool photo,
 			RecoveredMediaPickerResultKind? operationKind = null)
 		{
+			var launchingActivity = ActivityStateManager.Default.GetCurrentActivity(true) as ComponentActivity
+				?? throw new InvalidOperationException("The current activity must inherit from AndroidX.Activity.ComponentActivity.");
+
 			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
 				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
 				.Build();
@@ -252,7 +255,7 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
-				var androidUri = await PickVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
+				var androidUri = await PickVisualMediaForResult.Instance.Launch(launchingActivity, pickVisualMediaRequest);
 
 				if (androidUri?.Equals(AndroidUri.Empty) ?? true)
 				{
@@ -278,6 +281,9 @@ namespace Microsoft.Maui.Media
 
 		async Task<List<FileResult>> PickMultipleUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
+			var launchingActivity = ActivityStateManager.Default.GetCurrentActivity(true) as ComponentActivity
+				?? throw new InvalidOperationException("The current activity must inherit from AndroidX.Activity.ComponentActivity.");
+
 			// Android has a limitation that you need to use a different request for single and multiple picks.
 			// If the selection limit is 1, we can use the single pick method,
 			// otherwise we need to use the multiple pick method.
@@ -310,7 +316,7 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
-				var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
+				var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(launchingActivity, pickVisualMediaRequest);
 
 				if (androidUris?.IsEmpty ?? true)
 					return [];
