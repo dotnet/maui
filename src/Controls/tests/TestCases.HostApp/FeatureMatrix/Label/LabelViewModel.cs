@@ -109,20 +109,6 @@ public class LabelViewModel : INotifyPropertyChanged
 			DynamicSpan.LineHeight = _allSpanToggled ? 2.0 : 1.0;
 		});
 
-		ResetSpanCommand = new Command(() =>
-		{
-			_allSpanToggled = false;
-			DynamicSpan.Text = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco";
-			DynamicSpan.TextColor = Colors.Red;
-			DynamicSpan.FontSize = 20;
-			DynamicSpan.FontAttributes = FontAttributes.None;
-			DynamicSpan.TextDecorations = TextDecorations.None;
-			DynamicSpan.BackgroundColor = Colors.Transparent;
-			DynamicSpan.CharacterSpacing = 0;
-			DynamicSpan.TextTransform = TextTransform.None;
-			DynamicSpan.FontFamily = null;
-			DynamicSpan.LineHeight = 1.0;
-		});
 	}
 
 	bool _allSpanToggled;
@@ -174,7 +160,6 @@ public class LabelViewModel : INotifyPropertyChanged
 	public Command ChangeSpanFontFamilyCommand { get; }
 	public Command ChangeSpanLineHeightCommand { get; }
 	public Command ChangeAllSpanPropertiesCommand { get; }
-	public Command ResetSpanCommand { get; }
 	private string _text;
 	public string Text
 	{
