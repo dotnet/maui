@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -12,12 +13,14 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
-	public class HybridWebView : View, IHybridWebView
+	public class HybridWebView : View, IHybridWebView, IAllowedDomainsWebView
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
 		public static readonly BindableProperty DefaultFileProperty;
 		/// <summary>Bindable property for <see cref="HybridRoot"/>.</summary>
 		public static readonly BindableProperty HybridRootProperty;
+		/// <summary>Bindable property for <see cref="AllowedDomains"/>.</summary>
+		public static readonly BindableProperty AllowedDomainsProperty;
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
 		[UnconditionalSuppressMessage("Trimming", "IL3050:RequiresDynamicCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
@@ -25,6 +28,7 @@ namespace Microsoft.Maui.Controls
 		{
 			DefaultFileProperty = BindableProperty.Create(nameof(DefaultFile), typeof(string), typeof(HybridWebView), defaultValue: "index.html");
 			HybridRootProperty = BindableProperty.Create(nameof(HybridRoot), typeof(string), typeof(HybridWebView), defaultValue: "wwwroot");
+			AllowedDomainsProperty = BindableProperty.Create(nameof(AllowedDomains), typeof(IList<string>), typeof(HybridWebView), null);
 		}
 
 		/// <inheritdoc/>
@@ -39,6 +43,17 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(HybridRootProperty); }
 			set { SetValue(HybridRootProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the list of domains that this web view is allowed to navigate to.
+		/// When <see langword="null"/> or empty, all domains are allowed.
+		/// </summary>
+		/// <seealso cref="IAllowedDomainsWebView"/>
+		public IList<string>? AllowedDomains
+		{
+			get { return (IList<string>?)GetValue(AllowedDomainsProperty); }
+			set { SetValue(AllowedDomainsProperty, value); }
 		}
 
 		HybridWebViewInvoker? _invoker;

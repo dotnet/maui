@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private const string BlazorWebViewIdentifier = "BlazorWebView:";
 		private const string UserAgentHeaderKey = "User-Agent";
 		private const string AppOrigin = "http://0.0.0.0/";
+		private static readonly Uri AppOriginUri = new(AppOrigin);
 		private const string BlazorInitScript = @"
 			window.__receiveMessageCallbacks = [];
 			window.__dispatchMessageCallback = function(message) {
@@ -68,6 +69,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void ConnectHandler(NWebView platformView)
 		{
 			platformView.PageLoadFinished += OnLoadFinished;
+			platformView.NavigationPolicyDecided += OnNavigationPolicyDecided;
 			platformView.Context.RegisterHttpRequestInterceptedCallback(OnRequestInterceptStaticCallback);
 			platformView.AddJavaScriptMessageHandler("BlazorHandler", PostMessageFromJS);
 			platformView.UserAgent += $" {BlazorWebViewIdentifier}{GetHashCode()}";
@@ -78,8 +80,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void DisconnectHandler(NWebView platformView)
 		{
 			platformView.PageLoadFinished -= OnLoadFinished;
+			platformView.NavigationPolicyDecided -= OnNavigationPolicyDecided;
 			base.DisconnectHandler(platformView);
 			s_webviewHandlerTable.Remove(GetHashCode().ToString());
+		}
+
+		// Enforces AllowedDomains at the navigation level. The app's own origin is always allowed.
+		// When no allowlist is configured, IsUrlAllowed returns true and the navigation proceeds.
+		private void OnNavigationPolicyDecided(object? sender, WebViewPolicyDecidedEventArgs e)
+		{
+			var maker = e.ResponsePolicyDecisionMaker;
+			if (maker is null)
+				return;
+
+			if (Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(maker.Url, VirtualView, AppOriginUri))
+				maker.Use();
+			else
+				maker.Ignore();
 		}
 
 
@@ -119,6 +136,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private void OnRequestInterceptCallback(WebHttpRequestInterceptor interceptor)
 		{
 			var url = interceptor.Url;
+
+			// Block sub-resource requests (scripts, images, XHR/fetch, etc.) to disallowed domains.
+			if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(url, VirtualView, AppOriginUri))
+			{
+				interceptor.SetResponse("HTTP/1.0 403 Forbidden\r\n\r\n", Array.Empty<byte>());
+				return;
+			}
+
 			if (url.StartsWith(AppOrigin))
 			{
 				var allowFallbackOnHostPage = url.EndsWith("/");

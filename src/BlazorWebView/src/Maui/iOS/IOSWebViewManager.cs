@@ -273,6 +273,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 				var uri = new Uri(requestUrlString);
 
+				// Enforce AllowedDomains at the navigation level (in addition to the OS-level
+				// WKAppBoundDomains enforcement), so blocking works even when the app has not declared
+				// WKAppBoundDomains in its Info.plist. The app's own origin is always allowed.
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(requestUrlString, _webView.VirtualView, BlazorWebViewHandler.AppOriginUri))
+				{
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+					return;
+				}
+
 				UrlLoadingStrategy strategy;
 
 				// TargetFrame is null for navigation to a new window (`_blank`)

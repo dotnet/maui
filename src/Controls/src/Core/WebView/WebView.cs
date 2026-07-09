@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// The WebView supports navigation events and JavaScript evaluation.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView
+	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView, IAllowedDomainsWebView
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create(nameof(Source), typeof(WebViewSource), typeof(WebView), default(WebViewSource),
@@ -56,6 +56,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Cookies"/>.</summary>
 		public static readonly BindableProperty CookiesProperty = BindableProperty.Create(nameof(Cookies), typeof(CookieContainer), typeof(WebView), null);
+
+		/// <summary>Bindable property for <see cref="AllowedDomains"/>.</summary>
+#nullable enable
+		public static readonly BindableProperty AllowedDomainsProperty = BindableProperty.Create(nameof(AllowedDomains), typeof(IList<string>), typeof(WebView), null);
+#nullable disable
 
 		readonly Lazy<PlatformConfigurationRegistry<WebView>> _platformConfigurationRegistry;
 
@@ -121,6 +126,19 @@ namespace Microsoft.Maui.Controls
 			get { return (CookieContainer)GetValue(CookiesProperty); }
 			set { SetValue(CookiesProperty, value); }
 		}
+
+		/// <summary>
+		/// Gets or sets the list of domains that this web view is allowed to navigate to.
+		/// When <see langword="null"/> or empty, all domains are allowed.
+		/// </summary>
+		/// <seealso cref="IAllowedDomainsWebView"/>
+#nullable enable
+		public IList<string>? AllowedDomains
+		{
+			get { return (IList<string>?)GetValue(AllowedDomainsProperty); }
+			set { SetValue(AllowedDomainsProperty, value); }
+		}
+#nullable disable
 
 		/// <summary>
 		/// Gets or sets the <see cref="WebViewSource" /> object that represents the location that this <see cref="WebView" /> object displays.

@@ -25,6 +25,18 @@ namespace Microsoft.Maui.Platform
 
 		private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
 
+		public override bool ShouldOverrideUrlLoading(AWebView? view, IWebResourceRequest? request)
+		{
+			var url = request?.Url?.ToString();
+			if (string.IsNullOrEmpty(url))
+				return base.ShouldOverrideUrlLoading(view, request);
+
+			if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(url, Handler?.VirtualView, HybridWebViewHandler.AppOriginUri))
+				return true;
+
+			return base.ShouldOverrideUrlLoading(view, request);
+		}
+
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
 		{
 			var url = request?.Url?.ToString();
@@ -35,6 +47,12 @@ namespace Microsoft.Maui.Platform
 
 			if (view is not null && request is not null && !string.IsNullOrEmpty(url))
 			{
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(url, Handler?.VirtualView, HybridWebViewHandler.AppOriginUri))
+				{
+					logger?.LogDebug("Request for {Url} blocked by AllowedDomains.", url);
+					return new WebResourceResponse("text/plain", "UTF-8", 403, "Forbidden", GetHeaders("text/plain"), new MemoryStream());
+				}
+
 				// 1. Check if the app wants to modify or override the request
 				var response = WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, view, request, url, logger);
 				if (response is not null)

@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Graphics;
 using Android.Webkit;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Platform
 {
@@ -19,6 +20,26 @@ namespace Microsoft.Maui.Platform
 		}
 		public override bool ShouldOverrideUrlLoading(WebView? view, IWebResourceRequest? request)
 			=> NavigatingCanceled(request?.Url?.ToString());
+
+		public override WebResourceResponse? ShouldInterceptRequest(WebView? view, IWebResourceRequest? request)
+		{
+			// Block sub-resource requests (iframes, images, scripts) to disallowed domains. Check the
+			// allowlist first (a cheap managed lookup) before reading request.Url, which crosses the JNI
+			// bridge, so WebViews that never set AllowedDomains keep the default fast path.
+			if (_handler.TryGetTarget(out var handler) &&
+				(handler?.VirtualView as Microsoft.Maui.IAllowedDomainsWebView)?.AllowedDomains is { Count: > 0 } allowedDomains &&
+				request?.Url is global::Android.Net.Uri url)
+			{
+				var urlString = url.ToString();
+				if (!string.IsNullOrEmpty(urlString) && !WebViewDomainAllowlist.IsUrlAllowed(urlString, allowedDomains))
+				{
+					// Return a 403 with an empty stream to reliably block the request across WebView implementations
+					return new WebResourceResponse("text/plain", "UTF-8", 403, "Forbidden", null, new System.IO.MemoryStream());
+				}
+			}
+
+			return base.ShouldInterceptRequest(view, request);
+		}
 
 		public override void OnPageStarted(WebView? view, string? url, Bitmap? favicon)
 		{

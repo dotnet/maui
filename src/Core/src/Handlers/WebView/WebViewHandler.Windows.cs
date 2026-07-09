@@ -67,6 +67,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
 			{
+				// Check AllowedDomains before raising the Navigating event
+				if (!WebViewDomainAllowlist.IsUrlAllowed(uri.AbsoluteUri, VirtualView))
+				{
+					args.Cancel = true;
+					_eventState = WebNavigationEvent.NewPage;
+					_navigationResult = WebNavigationResult.Cancel;
+					return;
+				}
+
 				bool cancel = VirtualView.Navigating(CurrentNavigationEvent, uri.AbsoluteUri);
 
 				args.Cancel = cancel;
@@ -82,6 +91,41 @@ namespace Microsoft.Maui.Handlers
 					_navigationResult = WebNavigationResult.Success;
 				}
 			}
+		}
+
+		void OnFrameNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+		{
+			// Block iframe navigations to disallowed domains
+			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
+			{
+				if (!WebViewDomainAllowlist.IsUrlAllowed(uri.AbsoluteUri, VirtualView))
+				{
+					args.Cancel = true;
+				}
+			}
+		}
+
+		// Blocks sub-resource requests (scripts, images, XHR/fetch, etc.) to domains that are not in
+		// the AllowedDomains allowlist. Navigation-level blocking only covers top-level/iframe loads,
+		// so this closes the sub-resource bypass.
+		void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
+		{
+			if (VirtualView is null)
+				return;
+
+			if (!WebViewDomainAllowlist.IsUrlAllowed(args.Request.Uri, VirtualView))
+			{
+				args.Response = sender.Environment!.CreateWebResourceResponse(
+					Content: null, StatusCode: 403, ReasonPhrase: "Forbidden", Headers: "");
+			}
+		}
+
+		// Adds or removes sub-resource filtering as the allowlist changes, so default web views
+		// (no AllowedDomains) keep their fast path with no WebResourceRequested interception.
+		internal static void MapAllowedDomains(IWebViewHandler handler, IWebView webView)
+		{
+			if (handler is WebViewHandler platformHandler)
+				platformHandler._proxy.UpdateWebResourceRequestedForAllowedDomains();
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)
@@ -336,6 +380,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			WeakReference<Window>? _window;
 			WeakReference<WebViewHandler>? _handler;
+			bool _webResourceRequestedSubscribed;
 
 			Window? Window => _window is not null && _window.TryGetTarget(out var w) ? w : null;
 			WebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
@@ -360,8 +405,15 @@ namespace Microsoft.Maui.Handlers
 				{
 					webView2.HistoryChanged -= OnHistoryChanged;
 					webView2.NavigationStarting -= OnNavigationStarting;
+					webView2.FrameNavigationStarting -= OnFrameNavigationStarting;
 					webView2.NavigationCompleted -= OnNavigationCompleted;
 					webView2.ProcessFailed -= OnProcessFailed;
+					if (_webResourceRequestedSubscribed)
+					{
+						webView2.WebResourceRequested -= OnWebResourceRequested;
+						webView2.RemoveWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+						_webResourceRequestedSubscribed = false;
+					}
 					webView2.Stop();
 				}
 
@@ -386,6 +438,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 				sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
+				sender.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
 				sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
 				sender.CoreWebView2.ProcessFailed += OnProcessFailed;
 
@@ -393,10 +446,49 @@ namespace Microsoft.Maui.Handlers
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
 					sender.UpdateBackground(handler.VirtualView);
+					UpdateWebResourceRequestedForAllowedDomains();
 					if (sender.Source is not null)
 					{
 						handler.SyncPlatformCookies(sender.Source.ToString()).FireAndForget();
 					}
+				}
+			}
+
+			// Keeps the WebResourceRequested subscription (with a wildcard filter) in sync with the
+			// allowlist: it is added only while a non-empty allowlist is active — so the cost of
+			// intercepting every sub-resource is paid only by web views that actually restrict domains
+			// — and removed again when the allowlist is cleared or emptied, restoring the fast path.
+			// Safe to call multiple times.
+			internal void UpdateWebResourceRequestedForAllowedDomains()
+			{
+				if (Handler is not WebViewHandler handler)
+					return;
+
+				if (handler.PlatformView?.CoreWebView2 is not CoreWebView2 core)
+					return;
+
+				var allowedDomains = (handler.VirtualView as IAllowedDomainsWebView)?.AllowedDomains;
+				var wantsFiltering = allowedDomains is not null && allowedDomains.Count > 0;
+
+				if (wantsFiltering && !_webResourceRequestedSubscribed)
+				{
+					core.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+					core.WebResourceRequested += OnWebResourceRequested;
+					_webResourceRequestedSubscribed = true;
+				}
+				else if (!wantsFiltering && _webResourceRequestedSubscribed)
+				{
+					core.WebResourceRequested -= OnWebResourceRequested;
+					core.RemoveWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+					_webResourceRequestedSubscribed = false;
+				}
+			}
+
+			void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.OnWebResourceRequested(sender, args);
 				}
 			}
 
@@ -424,6 +516,14 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is WebViewHandler handler)
 				{
 					handler.OnNavigationStarting(sender, args);
+				}
+			}
+
+			void OnFrameNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.OnFrameNavigationStarting(sender, args);
 				}
 			}
 

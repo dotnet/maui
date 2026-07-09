@@ -303,6 +303,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			};
 
 			_webview.CoreWebView2.NavigationStarting += CoreWebView2_NavigationStarting;
+			_webview.CoreWebView2.FrameNavigationStarting += CoreWebView2_FrameNavigationStarting;
 			_webview.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 
 			// The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
@@ -380,6 +381,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
+#if WEBVIEW2_MAUI
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _blazorWebViewHandler.VirtualView, AppOriginUri))
+				{
+					args.Cancel = true;
+					return;
+				}
+#endif
 				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri);
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
@@ -404,9 +412,33 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// The ExternalLinkCallback is not invoked.
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
+#if WEBVIEW2_MAUI
+				// If an AllowedDomains allowlist is active, don't open a new window / external browser
+				// for a target outside it. NewWindowRequested bypasses NavigationStarting, so without
+				// this check an allowed page could still launch a disallowed URL externally.
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _blazorWebViewHandler.VirtualView, AppOriginUri))
+				{
+					args.Handled = true;
+					return;
+				}
+#endif
 				LaunchUriInExternalBrowser(uri);
 				args.Handled = true;
 			}
+		}
+
+		private void CoreWebView2_FrameNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs args)
+		{
+#if WEBVIEW2_MAUI
+			// Block iframe navigations to disallowed domains
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
+			{
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _blazorWebViewHandler.VirtualView, AppOriginUri))
+				{
+					args.Cancel = true;
+				}
+			}
+#endif
 		}
 
 		private void LaunchUriInExternalBrowser(Uri uri)

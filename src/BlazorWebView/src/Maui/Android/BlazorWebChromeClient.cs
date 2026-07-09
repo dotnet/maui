@@ -14,6 +14,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	class BlazorWebChromeClient : WebChromeClient
 	{
+		private static readonly System.Uri AppOriginUri = new($"https://{BlazorWebView.AppHostAddress}/");
+
+		private readonly BlazorWebViewHandler? _webViewHandler;
+
+		public BlazorWebChromeClient(BlazorWebViewHandler webViewHandler)
+		{
+			_webViewHandler = webViewHandler;
+		}
+
 		public override bool OnCreateWindow(global::Android.Webkit.WebView? view, bool isDialog, bool isUserGesture, Message? resultMsg)
 		{
 			if (view?.Context is not null)
@@ -21,6 +30,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// Intercept _blank target <a> tags to always open in device browser
 				// regardless of UrlLoadingStrategy.OpenInWebview
 				var requestUrl = view.GetHitTestResult().Extra;
+
+				// If an AllowedDomains allowlist is active, don't open a new window / external browser
+				// for a target outside it. This '_blank' path bypasses ShouldOverrideUrlLoading, so
+				// without this check an allowed page could still launch a disallowed URL externally.
+				if (_webViewHandler is not null &&
+					!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(requestUrl, _webViewHandler.VirtualView, AppOriginUri))
+				{
+					return false;
+				}
+
 				var intent = new Intent(Intent.ActionView, Uri.Parse(requestUrl));
 				view.Context.StartActivity(intent);
 			}

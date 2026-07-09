@@ -13,15 +13,35 @@
 		{
 			base.ConnectHandler(platformView);
 			platformView.PageLoadFinished += OnPageLoadFinished;
+			platformView.NavigationPolicyDecided += OnNavigationPolicyDecided;
 		}
 
 		protected override void DisconnectHandler(MauiWebView platformView)
 		{
+			// Unsubscribe before the HasBody() guard so a WebView disconnected during early
+			// creation / body teardown can't leave these native callbacks attached to a disconnected
+			// handler (NavigationPolicyDecided is subscribed in ConnectHandler).
+			platformView.PageLoadFinished -= OnPageLoadFinished;
+			platformView.NavigationPolicyDecided -= OnNavigationPolicyDecided;
+
 			if (!platformView.HasBody())
 				return;
 
 			base.DisconnectHandler(platformView);
-			platformView.PageLoadFinished -= OnPageLoadFinished;
+		}
+
+		// Enforces AllowedDomains at the navigation level on Tizen. When no allowlist is configured,
+		// IsUrlAllowed returns true and the navigation proceeds (Use), preserving default behavior.
+		void OnNavigationPolicyDecided(object? sender, Tizen.NUI.WebViewPolicyDecidedEventArgs e)
+		{
+			var maker = e.ResponsePolicyDecisionMaker;
+			if (maker is null)
+				return;
+
+			if (WebViewDomainAllowlist.IsUrlAllowed(maker.Url, VirtualView))
+				maker.Use();
+			else
+				maker.Ignore();
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)
