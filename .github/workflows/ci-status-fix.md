@@ -241,8 +241,15 @@ safe-outputs:
     # PER-RUN total (not per-PR): a sweep may surface several green PRs and/or
     # annotate several flaky reds in one run. At max:1 all but the first comment
     # were silently dropped, starving the workflow's #1 value (surfacing green PRs
-    # for review). Raised to 3 to match the per-run throughput of the other outputs.
-    max: 3
+    # for review). Sized to 6 (not 3) because a single green DRAFT PR that gets
+    # flipped ready in one sweep spends TWO comment slots — the Step 3 ✅ surface
+    # comment (which still names the /azp-gated legs a human must kick, so it is NOT
+    # redundant with 🎯) AND the Step 3.6 T3 🎯 readiness comment. At max:3 the shared
+    # bucket drained after ~1 draft flip and T3's atomicity pre-check then deferred
+    # every further mark-ready even while the mark-ready/add_labels buckets (also 3)
+    # sat idle; 6 lets ~3 draft flips (2 comments each) land per sweep, so the
+    # mark-ready:3 / add_labels:3 caps are actually reachable.
+    max: 6
     target: "*"
     # Hard constraint (defense-in-depth): only comment on THIS workflow's own
     # ci-fix PRs — [ci-fix] title prefix AND agentic-workflows label. Mirrors the
@@ -408,13 +415,16 @@ through `safe-outputs`.
    edit, un-draft, or label any PR that lacks both.
 7. **Per-run safe-output caps (per RUN, not per PR).** Each output type is capped
    per run: `create_pull_request` 3, `push_to_pull_request_branch` 3,
-   `add_comment` 3, `update_pull_request` 3, `mark_pull_request_as_ready_for_review`
+   `add_comment` 6, `update_pull_request` 3, `mark_pull_request_as_ready_for_review`
    3, `add_labels` 3 (counts LABELS, not calls). Note an ADVANCE spends one push
    **and** one update **and** one comment, so ≤ 3 advances/run; surfacing a green or
-   annotating a flake spends one comment; a **mark-ready (Step 3.6 T3)** spends one
-   comment **and** one mark-ready **and** one label as an ALL-OR-NOTHING set (T3
-   pre-checks those buckets and defers the whole PR if any is exhausted — never mark
-   a PR ready without its 🎯 audit comment). When a bucket is exhausted, do NOT keep
+   annotating a flake spends one comment; a **mark-ready (Step 3.6 T3)** of a
+   still-draft PR spends TWO comments (the Step 3 ✅ surface **and** the T3 🎯
+   readiness note) **and** one mark-ready **and** one label as an ALL-OR-NOTHING set
+   (T3 pre-checks those buckets and defers the whole PR if any is exhausted — never
+   mark a PR ready without its 🎯 audit comment). `add_comment` is therefore sized 6
+   (not 3) so ~3 draft flips, at 2 comments each, can land in one sweep instead of the
+   shared comment bucket starving the otherwise-idle mark-ready/add_labels buckets. When a bucket is exhausted, do NOT keep
    emitting (extras are silently dropped) — record `skipped: per-run <output> cap
    reached; deferring PR #<P> to next cycle` for each remaining PR so the drop is a
    deliberate, logged decision. The continuous loop picks the deferred PRs up next
@@ -974,8 +984,11 @@ existing does NOT prove the mark-ready took effect, so they are tracked independ
 
 - **Comment idempotency (dup-suppress only — never gates the mark-ready).** We only reach
   T3 while `C.isDraft == true` (the precondition stops an already-ready PR before here). So
-  if a prior bot `🎯 … target test … validated … on <C.headSha>` comment for THIS head
-  already exists, the comment landed on an earlier sweep but the **mark-ready did NOT take
+  if a prior bot `🎯 … validated green … on <C.headSha>` comment for THIS head
+  already exists (match the common `validated green … on <C.headSha>` substring so BOTH
+  the `🎯 Target test validated green` and the build-only `🎯 Build validated green`
+  phrasings are recognized — keying on `target test` would miss the build-only comment
+  and re-post it every sweep), the comment landed on an earlier sweep but the **mark-ready did NOT take
   effect** (the PR is still a draft) — set `SUPPRESS_COMMENT = true` (do not re-post the
   duplicate 🎯 comment) but STILL complete the mark-ready + label below. Never treat the
   comment's existence as "already marked ready" while the PR is still a draft. Record this
@@ -1638,7 +1651,11 @@ Filed by [`ci-status-fix`](https://github.com/dotnet/maui/blob/main/.github/work
 
 ### Step 8 — Per-issue tally + end-of-run summary
 
-Per issue, append one outcome line to `/tmp/gh-aw/agent/coverage.txt`:
+Per issue, append **one** outcome line to `/tmp/gh-aw/agent/coverage.txt` — the
+terminal outcome for the cycle. When one cycle produces a chained pair (a green draft
+PR is `surfaced-green` by Step 3 **and then** `marked-ready` by Step 3.6), record ONLY
+the terminal `marked-ready` line — it supersedes `surfaced-green`, so an aggregator
+keying on one-line-per-issue never double-counts:
 
 ```
 #<N>  main  attempt-<K>  <outcome>  <reason>

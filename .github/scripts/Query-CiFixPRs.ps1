@@ -39,11 +39,12 @@ $BotLogins = @(
     # create_pull_request commit is authored by github-actions[bot] but COMMITTED by
     # web-flow, because gh-aw builds the PR's initial commit through the GitHub API and
     # GitHub stamps API-created commits with a web-flow committer. So a web-flow committer
-    # does NOT by itself prove human engagement — Test-AnyHumanCommitActor only lets a
-    # web-flow (or any human) committer trip the hand-off when the commit AUTHOR is not one
-    # of this workflow's own bot identities. push-to-pull-request-branch commits, by
-    # contrast, are authored AND committed by github-actions[bot] (a real git push), so the
-    # author check alone already excludes them.
+    # does NOT by itself prove human engagement — Test-AnyHumanCommitActor suppresses a
+    # committer-based hand-off ONLY for the exact self-commit signature (committer
+    # 'web-flow' AND author one of this workflow's own bot identities). A named human who
+    # commits a bot-authored commit (committer != 'web-flow') still trips the boundary.
+    # push-to-pull-request-branch commits, by contrast, are authored AND committed by
+    # github-actions[bot] (a real git push), so the author check alone already excludes them.
     'app/github-actions',
     'dotnet-maestro[bot]',
     'azure-pipelines[bot]',
@@ -65,10 +66,13 @@ $BotLogins = @(
 # Commit-author logins that identify THIS workflow's own pushes. A commit authored by one
 # of these is either the create_pull_request commit or a push-to-pull-request-branch commit
 # — never a human action — even when GitHub stamps its COMMITTER as 'web-flow' (which it
-# does for the API-created initial PR commit). Test-AnyHumanCommitActor uses this list to
-# stop that self-authored commit's web-flow committer from being read as human engagement,
-# which would otherwise make every freshly opened [ci-fix] PR look 'human owned' from its
-# first commit and be skipped by the watch loop forever. Compared lowercased.
+# does for the API-created initial PR commit). Test-AnyHumanCommitActor uses this list, in
+# conjunction with a committer == 'web-flow' check, to stop ONLY that self-authored initial
+# commit's web-flow committer from being read as human engagement (which would otherwise
+# make every freshly opened [ci-fix] PR look 'human owned' from its first commit and be
+# skipped by the watch loop forever). A bot-authored commit with a NAMED human committer
+# (committer != 'web-flow') is NOT suppressed — that is a genuine maintainer amend/rebase.
+# Compared lowercased.
 $LoopBotCommitAuthors = @(
     'github-actions[bot]',
     'github-actions',
@@ -238,13 +242,23 @@ function Test-AnyHumanCommitActor {
         }
 
         # A human COMMITTER (e.g. 'web-flow' on a web-UI 'Update branch' merge) counts as
-        # human engagement ONLY when the author is not one of THIS workflow's own bot
-        # identities. gh-aw's create_pull_request builds the PR's initial commit through the
-        # GitHub API, which stamps author=github-actions[bot] but committer=web-flow; without
-        # this carve-out that self-authored commit reads as 'human engaged' and every fresh
-        # [ci-fix] PR is skipped by the watch loop from its very first commit.
+        # human engagement — EXCEPT for this workflow's OWN API-created PR commit, whose
+        # signature is precisely author=one-of-our-bots AND committer='web-flow'. gh-aw's
+        # create_pull_request builds the PR's initial commit through the GitHub API, which
+        # stamps author=github-actions[bot] but committer=web-flow (verified: the top-level
+        # committer.login on pulls/N/commits is literally 'web-flow'); without this carve-out
+        # that self-authored commit reads as 'human engaged' and every fresh [ci-fix] PR is
+        # skipped by the watch loop from its very first commit. Suppress ONLY that exact
+        # signature (committer 'web-flow' + our own bot author). A NAMED human committer of a
+        # bot-authored commit (e.g. a maintainer who amends/rebases one of our commits) keeps
+        # committer != 'web-flow', so it STILL correctly trips human engagement — the earlier
+        # "author not in $LoopBotCommitAuthors" form wrongly suppressed that real hand-off.
+        # (A push-to-pull-request-branch commit is authored AND committed by our bot, so
+        # Test-IsHumanLogin on its committer is already false and never reaches here.)
         $authorKey = if ($null -ne $authorLogin) { $authorLogin.Trim().ToLowerInvariant() } else { '' }
-        if ((Test-IsHumanLogin -Login $committerLogin) -and ($LoopBotCommitAuthors -notcontains $authorKey)) {
+        $committerKey = if ($null -ne $committerLogin) { $committerLogin.Trim().ToLowerInvariant() } else { '' }
+        $isOwnApiCreatedCommit = ($committerKey -eq 'web-flow') -and ($LoopBotCommitAuthors -contains $authorKey)
+        if ((Test-IsHumanLogin -Login $committerLogin) -and (-not $isOwnApiCreatedCommit)) {
             return $true
         }
     }
