@@ -102,6 +102,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
 ~static Microsoft.Maui.Controls.NavigationPage.SetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page, string value) -> void
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
+Microsoft.Maui.Controls.Internals.TypedBinding<TSource, TProperty>.TypedBinding(System.Func<TSource, (TProperty value, bool success)>! getter, System.Action<TSource, TProperty>? setter, int handlersCount, System.Func<TSource, System.Collections.Generic.IEnumerable<(System.ComponentModel.INotifyPropertyChanged?, string!)>!>? handlers) -> void
 ~static Microsoft.Maui.Controls.VisualStateManager.InvalidateVisualStates(Microsoft.Maui.Controls.VisualElement visualElement) -> void
 ~static readonly Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty

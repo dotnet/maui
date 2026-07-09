@@ -99,6 +99,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.Internals.TypedBinding<TSource, TProperty>.TypedBinding(System.Func<TSource, (TProperty value, bool success)>! getter, System.Action<TSource, TProperty>? setter, int handlersCount, System.Func<TSource, System.Collections.Generic.IEnumerable<(System.ComponentModel.INotifyPropertyChanged?, string!)>!>? handlers) -> void
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
 static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!

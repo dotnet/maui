@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Threading;
 using Microsoft.Maui.Controls.Internals;
@@ -105,13 +107,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var binding = new TypedBinding<MockViewModel, string>(
 				getter: vm => (vm.Text, true),
 				setter: (vm, value) => vm.Text = value,
-				handlers: new[]
-				{
-					new Tuple<Func<MockViewModel, object>, string>(vm => vm, nameof(MockViewModel.Text))
-				})
+				handlersCount: 1,
+				handlers: GetHandlers)
 			{
 				Converter = new CultureNameConverter()
 			};
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(MockViewModel source)
+			{
+				yield return (source, nameof(MockViewModel.Text));
+			}
 
 			if (culture is not null)
 				binding.ConverterCulture = culture;

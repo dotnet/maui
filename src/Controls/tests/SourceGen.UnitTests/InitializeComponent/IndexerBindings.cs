@@ -139,6 +139,7 @@ public class IndexedModel
 		// Verify the generated code uses "Item" (default indexer name)
 		Assert.Contains("\"Item\"", generated, StringComparison.Ordinal);
 		Assert.Contains("\"Item[2]\"", generated, StringComparison.Ordinal);
+		Assert.Contains("var handlersCount = 3;", generated, StringComparison.Ordinal);
 
 		// Verify the getter and setter use the indexer correctly
 		Assert.Contains("source.Model[2]", generated, StringComparison.Ordinal);
@@ -309,7 +310,10 @@ public class TestViewModel
 
 		// For arrays, the handler should use empty string for indexer name (no property to listen to on the array itself)
 		// The array itself can't notify about element changes - only the containing property can
-		Assert.Contains("new(static source => source, \"Names\")", generated, StringComparison.Ordinal);
+		Assert.Contains("\"Names\"", generated, StringComparison.Ordinal);
+
+		// Verify the handler shape (handlersCount) is generated for the indexer binding
+		Assert.Contains("var handlersCount =", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -486,6 +490,7 @@ public class TestViewModel
 
 		// Verify the getter uses conditional access for nullable Model
 		Assert.Contains("source.Model?[0]", generated, StringComparison.Ordinal);
+		Assert.Contains("var handlersCount = 3;", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]

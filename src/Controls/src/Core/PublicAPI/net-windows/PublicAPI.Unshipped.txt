@@ -100,6 +100,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
 ~static Microsoft.Maui.Controls.NavigationPage.SetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page, string value) -> void
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
+Microsoft.Maui.Controls.Internals.TypedBinding<TSource, TProperty>.TypedBinding(System.Func<TSource, (TProperty value, bool success)>! getter, System.Action<TSource, TProperty>? setter, int handlersCount, System.Func<TSource, System.Collections.Generic.IEnumerable<(System.ComponentModel.INotifyPropertyChanged?, string!)>!>? handlers) -> void
 abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.Layout.get -> Microsoft.Maui.Controls.IItemsLayout!
 Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2
 Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.CollectionViewHandler2() -> void

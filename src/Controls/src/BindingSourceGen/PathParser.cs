@@ -61,22 +61,29 @@ internal class PathParser
 		var isReferenceType = typeInfo.IsReferenceType;
 		var accessorKind = symbol.ToAccessorKind();
 		var memberType = typeInfo.CreateTypeDescription(_enabledNullable);
-		var containgType = symbol.ContainingType.CreateTypeDescription(_enabledNullable);
+		var containingTypeSymbol = symbol.ContainingType;
+		var containingType = containingTypeSymbol.CreateTypeDescription(_enabledNullable);
 
 		// For properties, we need to check both getter and setter accessibility
 		// because the same path is used for both reading and writing.
 		// Track which accessors are inaccessible so UnsafeAccessors can be generated as needed.
 		bool isGetterAccessible = symbol.IsGetterAccessible();
 		bool isSetterAccessible = symbol.IsSetterAccessible();
+		
+		// Check if the containing type implements (or could implement) INotifyPropertyChanged
+		bool definitelyImplementsINPC = containingTypeSymbol.ImplementsINPC();
+		bool maybeImplementsINPC = containingTypeSymbol.MaybeImplementsINPC();
 
 		IPathPart part = new MemberAccess(
 			MemberName: member,
 			IsValueType: !isReferenceType,
-			ContainingType: containgType,
+			ContainingType: containingType,
 			MemberType: memberType,
 			Kind: accessorKind,
 			IsGetterAccessible: isGetterAccessible,
-			IsSetterAccessible: isSetterAccessible);
+			IsSetterAccessible: isSetterAccessible,
+			DefinitelyImplementsINPC: definitelyImplementsINPC,
+			MaybeImplementsINPC: maybeImplementsINPC);
 
 		result.Value.Add(part);
 		return Result<List<IPathPart>>.Success(result.Value);
@@ -119,7 +126,9 @@ internal class PathParser
 				MemberType: memberType,
 				Kind: AccessorKind.Property,
 				IsGetterAccessible: true, // Assume generated property is accessible
-				IsSetterAccessible: true); // ObservableProperty properties have setters
+				IsSetterAccessible: true, // ObservableProperty properties have setters
+				DefinitelyImplementsINPC: expressionType.ImplementsINPC(),
+				MaybeImplementsINPC: expressionType.MaybeImplementsINPC());
 
 			return true;
 		}
@@ -137,8 +146,9 @@ internal class PathParser
 
 		var elementAccessSymbol = _context.SemanticModel.GetSymbolInfo(elementAccess).Symbol;
 		var elementType = _context.SemanticModel.GetTypeInfo(elementAccess).Type;
+		var containingType = _context.SemanticModel.GetTypeInfo(elementAccess.Expression).Type;
 
-		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, elementAccess.ArgumentList.Arguments, elementAccess.GetLocation());
+		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, containingType, elementAccess.ArgumentList.Arguments, elementAccess.GetLocation());
 		if (elementAccessResult.HasDiagnostics)
 		{
 			return elementAccessResult;
@@ -172,7 +182,15 @@ internal class PathParser
 		var member = memberBinding.Name.Identifier.Text;
 		var typeInfo = _context.SemanticModel.GetTypeInfo(memberBinding).Type;
 		var isReferenceType = typeInfo?.IsReferenceType ?? false;
-		IPathPart part = new MemberAccess(member, !isReferenceType);
+		
+		// Get the symbol to determine the containing type for INPC check
+		var symbol = _context.SemanticModel.GetSymbolInfo(memberBinding).Symbol;
+		var containingType = symbol?.ContainingType;
+		
+		bool definitelyImplementsINPC = containingType.ImplementsINPC();
+		bool maybeImplementsINPC = containingType.MaybeImplementsINPC();
+		
+		IPathPart part = new MemberAccess(member, !isReferenceType, DefinitelyImplementsINPC: definitelyImplementsINPC, MaybeImplementsINPC: maybeImplementsINPC);
 		part = new ConditionalAccess(part);
 
 		return Result<List<IPathPart>>.Success(new List<IPathPart>([part]));
@@ -182,8 +200,10 @@ internal class PathParser
 	{
 		var elementAccessSymbol = _context.SemanticModel.GetSymbolInfo(elementBinding).Symbol;
 		var elementType = _context.SemanticModel.GetTypeInfo(elementBinding).Type;
+		// For element binding (?.[] syntax), get the containing type from the indexer's containing type
+		var containingType = elementAccessSymbol?.ContainingType;
 
-		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, elementBinding.ArgumentList.Arguments, elementBinding.GetLocation());
+		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, containingType, elementBinding.ArgumentList.Arguments, elementBinding.GetLocation());
 		if (elementAccessResult.HasDiagnostics)
 		{
 			return elementAccessResult;
@@ -240,7 +260,7 @@ internal class PathParser
 		return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(_context.Node.GetLocation()));
 	}
 
-	private Result<List<IPathPart>> CreateIndexAccess(ISymbol? elementAccessSymbol, ITypeSymbol? typeSymbol, SeparatedSyntaxList<ArgumentSyntax> argumentList, Location location)
+	private Result<List<IPathPart>> CreateIndexAccess(ISymbol? elementAccessSymbol, ITypeSymbol? typeSymbol, ITypeSymbol? containingTypeSymbol, SeparatedSyntaxList<ArgumentSyntax> argumentList, Location location)
 	{
 		if (argumentList.Count != 1)
 		{
@@ -256,7 +276,11 @@ internal class PathParser
 
 		var name = elementAccessSymbol.GetIndexerName();
 		var isReferenceType = typeSymbol?.IsReferenceType ?? false;
-		IPathPart part = new IndexAccess(name, indexValue, !isReferenceType);
+		
+		bool definitelyImplementsINPC = containingTypeSymbol.ImplementsINPC();
+		bool maybeImplementsINPC = containingTypeSymbol.MaybeImplementsINPC();
+		
+		IPathPart part = new IndexAccess(name, indexValue, !isReferenceType, definitelyImplementsINPC, maybeImplementsINPC);
 
 		return Result<List<IPathPart>>.Success(new List<IPathPart>([part]));
 	}

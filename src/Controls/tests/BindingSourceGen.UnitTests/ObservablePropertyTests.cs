@@ -55,7 +55,9 @@ public class ObservablePropertyTests
 		// Verify the generated interceptor code contains the correct getter and setter references
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
 		// Check that the handler contains the property access
-		Assert.Contains("new(static source => source, \"Name\")", allGeneratedCode, System.StringComparison.Ordinal);
+		Assert.Contains("\"Name\"", allGeneratedCode, System.StringComparison.Ordinal);
+		// Verify the handler shape (a GetHandlers function) is generated, not just the property name string
+		Assert.Contains("GetHandlers", allGeneratedCode, System.StringComparison.Ordinal);
 		// Check that setter assigns to .Name
 		Assert.Contains("source.Name = value;", allGeneratedCode, System.StringComparison.Ordinal);
 
@@ -105,7 +107,7 @@ public class ObservablePropertyTests
 		// Verify the generated interceptor code contains the correct getter and setter references
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
 		// Check that the handler contains the property access
-		Assert.Contains("new(static source => source, \"Title\")", allGeneratedCode, System.StringComparison.Ordinal);
+		Assert.Contains("\"Title\"", allGeneratedCode, System.StringComparison.Ordinal);
 		// Check that setter assigns to .Title
 		Assert.Contains("source.Title = value;", allGeneratedCode, System.StringComparison.Ordinal);
 	}
@@ -153,7 +155,7 @@ public class ObservablePropertyTests
 		// Verify the generated interceptor code contains the correct getter and setter references
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
 		// Check that the handler contains the property access
-		Assert.Contains("new(static source => source, \"Tags\")", allGeneratedCode, System.StringComparison.Ordinal);
+		Assert.Contains("\"Tags\"", allGeneratedCode, System.StringComparison.Ordinal);
 		// Check that setter assigns to .Tags
 		Assert.Contains("source.Tags = value;", allGeneratedCode, System.StringComparison.Ordinal);
 	}

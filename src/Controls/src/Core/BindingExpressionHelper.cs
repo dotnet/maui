@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	{
 		static readonly Type[] DecimalTypes = { typeof(float), typeof(decimal), typeof(double) };
 
-		internal static bool TryConvert(ref object value, BindableProperty targetProperty, Type convertTo, bool toTarget)
+		internal static bool TryConvert(ref object? value, BindableProperty targetProperty, Type convertTo, bool toTarget)
 		{
 			if (value == null)
 				return !convertTo.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(convertTo) != null;
