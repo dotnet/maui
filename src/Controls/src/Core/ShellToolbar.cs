@@ -170,11 +170,11 @@ namespace Microsoft.Maui.Controls
 				Shell.GetTitleView(_shell));
 
 			var title = GetCurrentTitle();
-			if (!IsShellTitleSetByUser())
-				_shell.SetValueFromRenderer(Shell.TitleProperty, title);
 
 			if (TitleView != null)
 			{
+				if (!IsShellTitleSetByUser())
+					_shell.SetValueFromRenderer(Shell.TitleProperty, title);  // only when TitleView exists
 				Title = String.Empty;
 				return;
 			}
