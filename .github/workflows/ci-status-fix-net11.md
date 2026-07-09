@@ -1677,10 +1677,14 @@ Filed by [`ci-status-fix-net11`](https://github.com/dotnet/maui/blob/main/.githu
 ### Step 8 — Per-issue tally + end-of-run summary
 
 Per issue, append **one** outcome line to `/tmp/gh-aw/agent/coverage.txt` — the
-terminal outcome for the cycle. When one cycle produces a chained pair (a green draft
-PR is `surfaced-green` by Step 3 **and then** `marked-ready` by Step 3.6), record ONLY
-the terminal `marked-ready` line — it supersedes `surfaced-green`, so an aggregator
-keying on one-line-per-issue never double-counts:
+terminal outcome for the cycle. When one cycle produces a chained pair — a green PR
+gets a Step 3 green line (`surfaced-green` on the first comment, or `already-surfaced`
+when the ✅ already exists) **and then** a Step 3.6 readiness line (`marked-ready` on the
+draft→ready flip, or `already-ready` on a later steady-state sweep of an already-ready
+PR) — record ONLY the terminal Step 3.6 readiness line: it supersedes the Step 3 green
+line, so an aggregator keying on one-line-per-issue never double-counts. This holds for
+BOTH the flip cycle (`surfaced-green` → `marked-ready`) and the post-flip steady state
+(`already-surfaced` → `already-ready`):
 
 ```
 #<N>  net11.0  attempt-<K>  <outcome>  <reason>
@@ -1693,7 +1697,11 @@ existing PR), `surfaced-green PR #<P>` (fix's own CI went green; commented for
 review, did not advance), `annotated-flake PR #<P>` (red was unrelated flake;
 commented, attempt NOT burned), `marked-ready PR #<P>` (the specific fixed test
 was confirmed green in the PR's own CI; draft flipped to ready for review),
-`waiting PR #<P>` (CI not settled yet),
+`already-surfaced PR #<P>` (the fix's ✅ green comment already existed this sweep;
+re-post suppressed — superseded by the Step 3.6 readiness line when the PR also flips
+ready that cycle), `already-ready PR #<P>` (terminal steady state — the PR was flipped
+ready on a prior cycle and remains green on an unchanged head; no action taken,
+supersedes `already-surfaced`), `waiting PR #<P>` (CI not settled yet),
 `dry-run: would-<fix|help|deflake|advance|mark-ready>`, `skipped: <reason>`. (The
 `needs-human-PR` outcome is reserved for the deferred hand-off — Step 6 currently
 records a skip instead, so it is not emitted.)

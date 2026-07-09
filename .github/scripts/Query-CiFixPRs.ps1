@@ -262,17 +262,21 @@ function Test-AnyHumanCommitActor {
             return $true
         }
 
-        # Fail closed on a FULLY-unidentified commit. If GitHub could map NEITHER the author
-        # NOR the committer to an account (both logins null/empty — e.g. a maintainer who
-        # amended or pushed with a git email not linked to their GitHub account, so the
-        # pulls/N/commits API returns author=null AND committer=null), we cannot prove it is
-        # one of the loop's OWN commits, which ALWAYS resolve (author github-actions[bot];
-        # committer github-actions[bot] or web-flow — both real accounts). Treat an
-        # unidentifiable commit as human engagement rather than silently pushing over a
-        # maintainer's work: the "never override a human" contract must fail safe toward
-        # hands-off. (Scoped to BOTH actors being unresolvable so it never over-trips on the
-        # loop's own commits, whose actors are always resolvable.)
-        if (($authorKey -eq '') -and ($committerKey -eq '')) {
+        # Fail closed on any commit with an UNIDENTIFIED actor. If GitHub could not map the
+        # author OR the committer to an account (its login is null/empty — e.g. a maintainer
+        # who amended or pushed with a git email not linked to their GitHub account, so the
+        # pulls/N/commits API returns null for that actor), we cannot prove the commit is one
+        # of the loop's OWN commits. Every loop commit resolves BOTH actors to real accounts
+        # (create-PR: author github-actions[bot] + committer web-flow; push-to-branch: both
+        # github-actions[bot]), so an EITHER-unresolvable commit is never one of ours — it is
+        # external work. The load-bearing case: a maintainer runs `git commit --amend` on the
+        # bot's commit, which PRESERVES author=github-actions[bot] but stamps the committer as
+        # their unlinked git email → committer.login null. That partial-unmapped commit (a real
+        # human hand-off) would otherwise read as non-human and the loop would push over it.
+        # Treat it as human engagement: the "never override a human" contract must fail safe
+        # toward hands-off. (Because both loop signatures resolve BOTH actors, this
+        # either-unresolvable test never over-trips on the loop's own commits.)
+        if (($authorKey -eq '') -or ($committerKey -eq '')) {
             return $true
         }
     }
