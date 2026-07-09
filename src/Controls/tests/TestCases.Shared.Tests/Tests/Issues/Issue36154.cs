@@ -6,6 +6,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue36154 : _IssuesUITest
 {
+#if WINDOWS
+	string _waitforElementId = "TheWebView"; // Windows throw Open selenium exception for SwipeView, so use the WebView directly
+#else
+	string _waitforElementId = "TheSwipeView";
+#endif
+
 	public Issue36154(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -17,7 +23,7 @@ public class Issue36154 : _IssuesUITest
 	[Category(UITestCategories.SwipeView)]
 	public void Issue36154SwipeViewShouldRevealItems()
 	{
-		var rect = App.WaitForElement("TheWebView").GetRect();
+		var rect = App.WaitForElement(_waitforElementId).GetRect();
 		var centerX = rect.X + rect.Width / 2;
 		var centerY = rect.Y + rect.Height / 2;
 
