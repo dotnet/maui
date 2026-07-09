@@ -32,14 +32,6 @@ parameters:
     type: string
     default: ''
 
-  # TEMP testing toggle: skip the deep UI/device tests (Gate) so the custom-prompt
-  # feature can be validated quickly. Default true for now; flip to false / remove
-  # to restore full gate behavior.
-  - name: SkipUITests
-    displayName: 'Skip UI/device tests (fast test mode)'
-    type: boolean
-    default: true
-
   - name: androidPool
     type: object
     default:
@@ -311,7 +303,7 @@ stages:
                 echo "=== Disk space after cleanup ==="
                 df -h /home
               displayName: 'Free Disk Space for Emulator'
-              condition: and(succeeded(), eq('${{ parameters.SkipUITests }}', 'False'))
+              condition: succeeded()
 
             - script: |
                 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
@@ -503,7 +495,7 @@ stages:
               displayName: 'Create AVD and Boot Android Emulator'
               retryCountOnTaskFailure: 3
               timeoutInMinutes: 15
-              condition: and(succeeded(), eq('${{ parameters.SkipUITests }}', 'False'))
+              condition: succeeded()
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
           - task: UseNode@1
@@ -515,7 +507,7 @@ stages:
               $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
               dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
             displayName: 'Install Appium'
-            condition: and(succeeded(), eq('${{ parameters.SkipUITests }}', 'False'))
+            condition: succeeded()
             retryCountOnTaskFailure: 2
             timeoutInMinutes: 10
             env:
@@ -650,7 +642,7 @@ stages:
               echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
               echo "iOS Simulator UDID: $UDID"
             displayName: 'Boot iOS Simulator'
-            condition: and(eq('${{ parameters.Platform }}', 'ios'), eq('${{ parameters.SkipUITests }}', 'False'))
+            condition: eq('${{ parameters.Platform }}', 'ios')
             timeoutInMinutes: 5
 
           # Warm up the emulator right before the agent runs.
@@ -719,7 +711,7 @@ stages:
 
               echo "✅ Emulator warmed up and responsive"
             displayName: 'Warm Up Android Emulator'
-            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'), eq('${{ parameters.SkipUITests }}', 'False'))
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
             timeoutInMinutes: 6
             retryCountOnTaskFailure: 2
 
@@ -810,12 +802,11 @@ stages:
               echo "═══ TASK 2: GATE ═══"
               TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
 
-              # When SkipUITests is true (fast test mode), pass -SkipGate so the Gate phase
-              # reports SKIPPED without running device/UI tests (no emulator/simulator needed).
+              # The gate ALWAYS runs. It self-selects its verdict: a PR with no runnable tests
+              # exits SKIPPED (no emulator work), unit/XAML tests run without a device, and only
+              # UI/device-test PRs use the emulator/simulator provisioned above. There is no
+              # "skip the gate" toggle — every review verifies the fix (or reports SKIPPED).
               GATE_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase Gate -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
-              if [ "${PARAM_SKIP_UITESTS}" = "True" ]; then
-                GATE_ARGS+=(-SkipGate)
-              fi
 
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${GATE_ARGS[@]}"
@@ -852,7 +843,6 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
-              PARAM_SKIP_UITESTS: ${{ parameters.SkipUITests }}
 
           # ─────────────────────────────────────────────────────────
           #  Task 3 — COPILOT REVIEW: expert review + try-fix.
