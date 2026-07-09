@@ -270,7 +270,7 @@ safe-outputs:
     # never the title, so disable title rewrites — this compiles to allow_title:false
     # and removes any ability to retitle an arbitrary PR.
     title: false
-    # NOTE: gh-aw v0.79.8 does NOT emit required-title-prefix/required-labels into
+    # NOTE: gh-aw v0.80.9 (the pinned compiler) does NOT emit required-title-prefix/required-labels into
     # the compiled config for update-pull-request (verified against the lock — it
     # silently drops them, unlike add-comment / push-to-pull-request-branch which
     # honor them). So which-PR scoping here relies on prompt Hard-Rule 6 +
@@ -410,7 +410,7 @@ through `safe-outputs`.
    `push_to_pull_request_branch`), and `add_labels` additionally has an
    `allowed: [p/0]` allowlist so it can ONLY ever add `p/0` — so these can only
    ever land on THIS workflow's own PRs. `update_pull_request` CANNOT be
-   config-locked to a title/label in gh-aw v0.79.8 (the compiler silently drops
+   config-locked to a title/label in gh-aw v0.80.9 (the compiler silently drops
    `required-*` for that output — verified against the lock), so it keeps
    `title: false` (no retitles; body-marker edits only) plus this prompt-level
    guard. Before emitting ANY of these, VERIFY the target PR carries BOTH the
@@ -1014,8 +1014,10 @@ existing does NOT prove the mark-ready took effect, so they are tracked independ
   `SUPPRESS_COMMENT`. Verify a free per-run slot remains in EACH bucket you are about to
   use. If ANY required bucket is exhausted, emit NONE of them — record `skipped: per-run
   cap reached; deferring mark-ready PR #<P> to next cycle` and stop this gate. Never mark a
-  PR ready (or label it) without also posting its 🎯 audit comment in the same sweep — the
-  set either all lands or all defers.
+  PR ready (or label it) unless its 🎯 audit comment is GUARANTEED to exist for this exact
+  head SHA — either posted in this same sweep, or (in the `SUPPRESS_COMMENT` re-marking case)
+  already present from a prior sweep. The outputs you DO emit either all land or all defer
+  together; the audit trail must never be absent, but it is NOT re-posted when it already exists.
 - **Dry-run gate (Step 0):** if `dry_run == "true"`, emit NOTHING — print the intended
   readiness comment and "would mark ready + add p/0" to the run log, tally `dry-run:
   would-mark-ready PR #<P>`, and stop.
