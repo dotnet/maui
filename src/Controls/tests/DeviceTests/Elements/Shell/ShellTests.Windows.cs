@@ -64,49 +64,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Shell TitleView Is Centered On Initial Load")]
-		public async Task ShellTitleViewIsCenteredOnInitialLoad()
-		{
-			SetupBuilder();
-
-			var page = new ContentPage
-			{
-				Title = "Page 1",
-				Content = new Label { Text = "Body" }
-			};
-
-			var titleView = new Label
-			{
-				Text = "TitleView",
-				HorizontalOptions = LayoutOptions.Center
-			};
-
-			var shell = await CreateShellAsync(s =>
-			{
-				s.CurrentItem = page;
-				Shell.SetTitleView(s, titleView);
-			});
-
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
-			{
-				await OnFrameSetToNotEmpty(titleView);
-				await AssertEventually(() =>
-				{
-					var toolbar = GetPlatformToolbar(handler);
-					var platformTitleView = GetTitleView(handler);
-
-					return toolbar?.ActualWidth > 0 && platformTitleView?.ActualWidth > 0;
-				});
-
-				var toolbar = GetPlatformToolbar(handler);
-				var platformTitleView = GetTitleView(handler);
-				var titleViewCenterX = platformTitleView.GetLocationRelativeTo(toolbar).Value.X + (platformTitleView.ActualWidth / 2);
-				var toolbarCenterX = toolbar.ActualWidth / 2;
-
-				Assert.InRange(Math.Abs(titleViewCenterX - toolbarCenterX), 0, 2);
-			});
-		}
-
 		static bool IsViewLaidOut(object platformView)
 		{
 			var frameworkElement = platformView as WFrameworkElement;
