@@ -271,6 +271,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(typeof(SearchBar), false)]
 		[InlineData(typeof(SearchHandler), true)]
 		[InlineData(typeof(SearchHandler), false)]
+		[InlineData(typeof(BackButtonBehavior), true)]
+		[InlineData(typeof(BackButtonBehavior), false)]
 		[InlineData(typeof(SwipeItemView), true)]
 		[InlineData(typeof(SwipeItemView), false)]
 		public async Task CommandsSubscribedToCanExecuteCollect(Type controlType, bool useWeakEventHandler)
@@ -312,6 +314,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						sh.Command = command;
 						sh.ClearPlaceholderCommand = command;
 						break;
+					case BackButtonBehavior bbb:
+						bbb.Command = command;
+            break;
 					case SwipeItemView sv:
 						sv.Command = command;
 						break;
