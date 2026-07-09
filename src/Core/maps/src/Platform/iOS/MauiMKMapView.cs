@@ -262,10 +262,13 @@ namespace Microsoft.Maui.Maps.Platform
 
 			if (hasCustomImage == viewShowsCustomImage)
 			{
-				// The current view type still matches; refresh the image in place.
-				view.Image = null;
+				// The current view type still matches; refresh the image in place. Don't pre-clear the
+				// custom image: ApplyCustomImageAsync only assigns on success, so a failed load keeps the
+				// previous icon (matching Android) instead of blanking a visible pin.
 				if (hasCustomImage)
 					ApplyCustomImageAsync(view, pin).FireAndForget();
+				else
+					view.Image = null;
 				return;
 			}
 
@@ -280,8 +283,8 @@ namespace Microsoft.Maui.Maps.Platform
 			if (wasSelected)
 			{
 				// DidSelectAnnotationView may fire after the view is (re)created rather than inside
-				// SelectAnnotation, so suppression is annotation-matched and one-shot instead of a
-				// flag scoped to this call.
+				// SelectAnnotation, so suppression is annotation-matched rather than a flag scoped to
+				// this call; it's consumed by the matching event, or dropped in Cleanup.
 				_suppressClickForAnnotation = annotation;
 				SelectAnnotation(annotation, false);
 			}
@@ -461,20 +464,23 @@ namespace Microsoft.Maui.Maps.Platform
 			RegionChanged -= MkMapViewOnRegionChanged;
 			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
 			DidUpdateUserLocation -= MkMapViewOnUserLocationUpdated;
+
+			// Annotations survive detach/reattach, so drop any pending click suppression to prevent it
+			// from swallowing the next real tap after navigation or a Shell tab switch.
+			_suppressClickForAnnotation = null;
 		}
 
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
 		{
 			var annotation = e.View.Annotation;
 
-			// One-shot: cleared on the first selection no matter which annotation it is, so a
-			// restore that never fires can swallow at most one event for that same annotation.
-			var suppressFor = _suppressClickForAnnotation;
-			_suppressClickForAnnotation = null;
-			if (annotation is not null && suppressFor is not null &&
-				(ReferenceEquals(annotation, suppressFor) || annotation.Handle == suppressFor.Handle))
+			// Selection was restored programmatically by UpdatePinImage; the user did not tap the pin.
+			// Only consume (and clear) the suppressor when this event is for the matching annotation, so
+			// a user tap on a different pin while the restore is pending isn't swallowed by mistake.
+			if (annotation is not null && _suppressClickForAnnotation is not null &&
+				(ReferenceEquals(annotation, _suppressClickForAnnotation) || annotation.Handle == _suppressClickForAnnotation.Handle))
 			{
-				// Selection was restored programmatically by UpdatePinImage; the user did not tap the pin.
+				_suppressClickForAnnotation = null;
 				return;
 			}
 			

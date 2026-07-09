@@ -76,8 +76,8 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			}
 		}
 
-		// Control case: Location and Label have real per-platform mappers, so these should update
-		// live on every platform (unlike ImageSource) — used to contrast the ImageSource behavior.
+		// Location and Label update live via their per-platform mappers; use this alongside Toggle Icon
+		// to confirm ImageSource now refreshes live at runtime too.
 		void OnMoveRenameClicked(object? sender, EventArgs e)
 		{
 			_moveCount++;
