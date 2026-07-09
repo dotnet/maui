@@ -878,16 +878,18 @@ not the base branch's flakiness.
 **Preconditions** (ALL must hold; otherwise record `skipped: readiness N/A PR #<P>
 (<reason>)` and stop this gate):
 - `C.isDraft == true` — if the PR is already ready-for-review, the draft→ready
-  transition is already done; do NOT re-mark. But still reconcile the priority label so
-  every validated loop PR carries it: if this PR is unmistakably THIS workflow's own
-  (`[ci-fix-net11] ` title prefix AND the `agentic-workflows` label) and is MISSING `p/0`,
-  emit a single `add_labels` `["p/0"]` for PR #<P> (subject to the Step 0 dry-run gate —
-  under `dry_run == "true"` tally `dry-run: would-label p/0 PR #<P>` and emit nothing) and
-  record `reconciled-label p/0 PR #<P> (already-ready)`; otherwise record `already-ready PR
-  #<P>`. This reconcile shares the per-run `add_labels` budget (Hard-Rule 7) with T3
-  mark-ready transitions, which take priority — if the label bucket is already exhausted, do
-  NOT emit; record `skipped: p/0 reconcile deferred PR #<P> (add_labels cap)` (it self-heals
-  next sweep). Either way, stop this gate.
+  transition is already done; do NOT re-mark **and do NOT re-apply `p/0`**. `p/0` is applied
+  exactly ONCE, atomically with the draft→ready flip (T3 — all-or-nothing with the 🎯 audit
+  comment + mark-ready), so an already-ready loop PR that is MISSING `p/0` has almost
+  certainly had it **removed by a maintainer** de-prioritizing the PR — a pure triage action
+  the human-engagement guard (which inspects comments/reviews/commits, NOT label changes)
+  cannot see. Re-adding `p/0` every sweep would fight that maintainer indefinitely, violating
+  the loop's "never override a human" contract. So the loop does NOT reconcile the label:
+  record `already-ready PR #<P>` and stop this gate. (Trade-off: on the rare occasion a
+  transient API error drops `p/0` at flip time *after* the T3 atomic pre-check passed, it is
+  not auto-re-added — but the PR is still ready-for-review with its 🎯 audit comment, and
+  re-adding `p/0` is a trivial manual action; that is strictly preferable to steam-rolling a
+  maintainer's deliberate de-prioritization.)
 - The PR is unmistakably THIS workflow's own: `[ci-fix-net11] ` title prefix AND the
   `agentic-workflows` label (mirrors the safe-output lock; the compensating scope
   control if the v0.80.9 compiler drops the declarative required-*).
@@ -909,9 +911,16 @@ implicated in any concluded red; additionally require, via the T2 timeline metho
 `C.headSha`, that the primary build pipeline `maui-pr` (def 302) has CONCLUDED with EVERY
 one of its platform build legs `succeeded`/`completed` and NONE failed/canceled or still
 pending — the build is green on **every** platform, not just the originally-broken one (the
-cross-platform guard, applied to the build instead of a test). If so, set `TARGET := "the
-maui-pr build (build-only fix — no single target test)"` and proceed to **T3** to mark
-ready. If any `maui-pr` build leg is still unconcluded, record `skipped: build-only fix PR
+cross-platform guard, applied to the build instead of a test). A build-only fix is undrafted
+ONLY on the strength of the auto-running `maui-pr` (def 302) whole-build green, which the
+loop CAN observe: if the PR's `[ci-scan]` issue signature or its own diff indicates the
+ORIGINATING failure was in a `/azp`-gated pipeline (`maui-pr-uitests` def 313 or
+`maui-pr-devicetests` def 314) rather than `maui-pr` (def 302), do NOT undraft on
+`maui-pr`-green alone — those pipelines do not auto-run on this PR (GITHUB_TOKEN cannot
+trigger them), so a green `maui-pr` build is NOT evidence the gated build break is fixed;
+record `skipped: build-only fix PR #<P> targets gated pipeline (<pipeline>) not run —
+deferring to human` and stop this gate. Otherwise, set `TARGET := "the maui-pr build
+(build-only fix — no single target test)"` and proceed to **T3** to mark ready. If any `maui-pr` build leg is still unconcluded, record `skipped: build-only fix PR
 #<P> not yet whole-build green (leg(s) <legs> pending)` and stop this gate WITHOUT marking
 ready (a green subset is not enough — a still-pending build leg could yet fail).
 
@@ -994,11 +1003,15 @@ existing does NOT prove the mark-ready took effect, so they are tracked independ
 
 - **Comment idempotency (dup-suppress only — never gates the mark-ready).** We only reach
   T3 while `C.isDraft == true` (the precondition stops an already-ready PR before here). So
-  if a prior bot `🎯 … validated green … on <C.headSha>` comment for THIS head
-  already exists (match the common `validated green … on <C.headSha>` substring so BOTH
-  the `🎯 Target test validated green` and the build-only `🎯 Build validated green`
-  phrasings are recognized — keying on `target test` would miss the build-only comment
-  and re-post it every sweep), the comment landed on an earlier sweep but the **mark-ready did NOT take
+  if a prior bot comment for THIS head that carries the leading `🎯` anchor AND the
+  contiguous phrase `validated green on <C.headSha>` already exists (BOTH T3 variants —
+  `🎯 Target test validated green on <sha>` and the build-only `🎯 Build validated green on
+  <sha>` — contain that exact contiguous phrase, so this recognizes both; keying on
+  `target test` alone would instead miss the build-only comment and re-post it every sweep.
+  **Require the `🎯` anchor** so the match can NEVER be loosened to a gapped
+  `validated…green…on` form that would false-positive on the Step 3 `✅ … validated — the
+  fix's CI is green on <sha>` surface comment and wrongly suppress the audit 🎯), the comment
+  landed on an earlier sweep but the **mark-ready did NOT take
   effect** (the PR is still a draft) — set `SUPPRESS_COMMENT = true` (do not re-post the
   duplicate 🎯 comment) but STILL complete the mark-ready + label below. Never treat the
   comment's existence as "already marked ready" while the PR is still a draft. Record this

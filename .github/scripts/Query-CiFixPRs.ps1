@@ -261,6 +261,20 @@ function Test-AnyHumanCommitActor {
         if ((Test-IsHumanLogin -Login $committerLogin) -and (-not $isOwnApiCreatedCommit)) {
             return $true
         }
+
+        # Fail closed on a FULLY-unidentified commit. If GitHub could map NEITHER the author
+        # NOR the committer to an account (both logins null/empty — e.g. a maintainer who
+        # amended or pushed with a git email not linked to their GitHub account, so the
+        # pulls/N/commits API returns author=null AND committer=null), we cannot prove it is
+        # one of the loop's OWN commits, which ALWAYS resolve (author github-actions[bot];
+        # committer github-actions[bot] or web-flow — both real accounts). Treat an
+        # unidentifiable commit as human engagement rather than silently pushing over a
+        # maintainer's work: the "never override a human" contract must fail safe toward
+        # hands-off. (Scoped to BOTH actors being unresolvable so it never over-trips on the
+        # loop's own commits, whose actors are always resolvable.)
+        if (($authorKey -eq '') -and ($committerKey -eq '')) {
+            return $true
+        }
     }
 
     return $false
