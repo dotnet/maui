@@ -69,14 +69,37 @@ namespace Microsoft.Maui.Platform
 
 			if (view is not null && request is not null && !string.IsNullOrEmpty(url))
 			{
-				// 1. Check if the app wants to modify or override the request
-				var response = WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, view, request, url, logger);
+				// 1. Handle framework-internal bridge endpoints (the JS bridge script and the
+				//    JS <-> .NET message/invoke channels) before user interception. A
+				//    WebResourceRequested handler must never receive — or be able to throw on —
+				//    these internal requests. Before JS -> .NET messages were routed over HTTP
+				//    they were invisible to interception, and they should remain so.
+				var bridgeResponse = TryGetBridgeResponse(url, request, logger);
+				if (bridgeResponse is not null)
+				{
+					return bridgeResponse;
+				}
+
+				// 2. Check if the app wants to modify or override the request
+				WebResourceResponse? response = null;
+				try
+				{
+					response = WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, view, request, url, logger);
+				}
+				catch (Exception ex)
+				{
+					// ShouldInterceptRequest runs on a native WebView thread; letting a user
+					// WebResourceRequested handler's exception unwind across the JNI boundary
+					// crashes the app. Log it and fall back to default handling instead.
+					logger?.LogError(ex, "A WebResourceRequested handler threw while intercepting {Url}.", url);
+				}
+
 				if (response is not null)
 				{
 					return response;
 				}
 
-				// 2. Check if the request is for a local resource
+				// 3. Check if the request is for a local resource
 				response = GetResponse(url, request, logger);
 				if (response is not null)
 				{
@@ -88,6 +111,87 @@ namespace Microsoft.Maui.Platform
 			logger?.LogDebug("Request for {Url} was not handled.", url);
 
 			return base.ShouldInterceptRequest(view, request);
+		}
+
+		// Handles the framework-internal HybridWebView bridge endpoints: the bridge script,
+		// the JS -> .NET InvokeDotNet channel, and the JS -> .NET message channel. These are
+		// resolved before user WebResourceRequested interception so app code never sees — or
+		// can block/crash on — the framework's own control requests. Returns null when the
+		// request is not one of these internal endpoints.
+		private WebResourceResponse? TryGetBridgeResponse(string fullUrl, IWebResourceRequest request, ILogger? logger)
+		{
+			if (Handler is null || (Handler is IViewHandler ivh && ivh.VirtualView is null))
+			{
+				return null;
+			}
+
+			var requestUri = WebUtils.RemovePossibleQueryString(fullUrl);
+			if (new Uri(requestUri) is not Uri uri || !HybridWebViewHandler.AppOriginUri.IsBaseOf(uri))
+			{
+				return null;
+			}
+
+			var relativePath = WebUtils.ResolveRelativePath(HybridWebViewHandler.AppOriginUri, uri);
+			if (relativePath is null)
+			{
+				return null;
+			}
+
+			// The bridge script
+			if (relativePath == HybridWebViewHandler.HybridWebViewDotJsPath)
+			{
+				logger?.LogDebug("Request for {Url} will return the hybrid web view script.", fullUrl);
+				var jsStream = HybridWebViewHandler.GetEmbeddedStream(HybridWebViewHandler.HybridWebViewDotJsPath);
+				if (jsStream is not null)
+				{
+					return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), jsStream);
+				}
+
+				return null;
+			}
+
+			// The JS -> .NET InvokeDotNet channel
+			if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
+			{
+				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
+
+				if (!TryValidateBridgeRequest(request, "InvokeDotNet", logger, out var requestBody, out var error))
+				{
+					return error;
+				}
+
+				var contentBytesTask = Handler.InvokeDotNetAsync(stringBody: requestBody);
+				var responseStream = new AsyncStream(contentBytesTask, logger);
+				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
+			}
+
+			// The JS -> .NET message channel
+			if (relativePath == HybridWebViewHandler.SendMessagePath)
+			{
+				logger?.LogDebug("Request for {Url} will be handled by the .NET message receiver.", fullUrl);
+
+				if (!TryValidateBridgeRequest(request, "SendMessage", logger, out var messageBody, out var error))
+				{
+					return error;
+				}
+
+				try
+				{
+					Handler.MessageReceived(messageBody);
+				}
+				catch (Exception ex)
+				{
+					// ShouldInterceptRequest runs on a native WebView thread; letting an exception
+					// unwind across the JNI boundary crashes the app (and breaks in the debugger).
+					// Log it and return an error response instead.
+					logger?.LogError(ex, "SendMessage handler threw while processing a JS -> .NET message.");
+					return new WebResourceResponse(null, "UTF-8", 500, "Internal Server Error", null, new MemoryStream());
+				}
+
+				return new WebResourceResponse(null, "UTF-8", 204, "No Content", null, new MemoryStream());
+			}
+
+			return null;
 		}
 
 		private WebResourceResponse? GetResponse(string fullUrl, IWebResourceRequest request, ILogger? logger)
@@ -112,47 +216,11 @@ namespace Microsoft.Maui.Platform
 				return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), new MemoryStream());
 			}
 
-			// 1.a. Try the special "_framework/hybridwebview.js" path
-			if (relativePath == HybridWebViewHandler.HybridWebViewDotJsPath)
-			{
-				logger?.LogDebug("Request for {Url} will return the hybrid web view script.", fullUrl);
-				var jsStream = HybridWebViewHandler.GetEmbeddedStream(HybridWebViewHandler.HybridWebViewDotJsPath);
-				if (jsStream is not null)
-				{
-					return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), jsStream);
-				}
-			}
+			// The framework-internal bridge endpoints (bridge script, InvokeDotNet and
+			// SendMessage channels) are handled earlier in ShouldInterceptRequest via
+			// TryGetBridgeResponse, so by this point only static app content remains.
 
-			// 1.b. Try special InvokeDotNet path
-			if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
-			{
-				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
-
-				if (!TryValidateBridgeRequest(request, "InvokeDotNet", logger, out var requestBody, out var error))
-				{
-					return error;
-				}
-
-				var contentBytesTask = Handler.InvokeDotNetAsync(stringBody: requestBody);
-				var responseStream = new AsyncStream(contentBytesTask, logger);
-				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
-			}
-
-			// 1.c. Try the special SendMessage path (JS -> .NET messages).
-			if (relativePath == HybridWebViewHandler.SendMessagePath)
-			{
-				logger?.LogDebug("Request for {Url} will be handled by the .NET message receiver.", fullUrl);
-
-				if (!TryValidateBridgeRequest(request, "SendMessage", logger, out var messageBody, out var error))
-				{
-					return error;
-				}
-
-				Handler.MessageReceived(messageBody);
-				return new WebResourceResponse(null, "UTF-8", 204, "No Content", null, new MemoryStream());
-			}
-
-			// 2. If nothing found yet, try to get static content from the asset path
+			// Try to get static content from the asset path
 			string? contentType;
 			if (string.IsNullOrEmpty(relativePath))
 			{
@@ -188,7 +256,8 @@ namespace Microsoft.Maui.Platform
 
 		// Validates a POST-only bridge request that carries its body in the
 		// X-Maui-Request-Body header (Android does not expose the POST body to
-		// ShouldInterceptRequest). On success returns true with the body in `body`;
+		// ShouldInterceptRequest). The header value is URL-encoded by the JS transport
+		// and decoded here. On success returns true with the decoded body in `body`;
 		// on failure returns false with the appropriate error response in `errorResponse`.
 		private static bool TryValidateBridgeRequest(IWebResourceRequest request, string endpointName, ILogger? logger, [NotNullWhen(true)] out string? body, [NotNullWhen(false)] out WebResourceResponse? errorResponse)
 		{
@@ -215,6 +284,11 @@ namespace Microsoft.Maui.Platform
 				errorResponse = new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
 				return false;
 			}
+
+			// The JS transport URL-encodes the header value so it survives the HTTP header byte-set
+			// restriction (headers cannot carry CR/LF/NUL or non-Latin-1 characters). Decode it here
+			// once for both the InvokeDotNet and SendMessage endpoints.
+			body = Uri.UnescapeDataString(body);
 
 			errorResponse = null;
 			return true;
