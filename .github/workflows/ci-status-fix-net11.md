@@ -796,9 +796,13 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
      (head <C.headSha>)` (re-surfacing the same green every tick is noise and burns the
      per-run comment budget other PRs need);
    - else `add_comment` on PR #<P>: `✅ Attempt <attempt>/10 validated — the fix's CI is
-     green on <C.headSha>. Ready for human review.` naming any `/azp`-gated legs (uitests
-     def 313 / devicetests def 314) that have not run and still need a maintainer `/azp
-     run`; record `surfaced-green PR #<P> (attempt <attempt>/10)`.
+     green on <C.headSha>.<if C.isDraft == false: " Ready for human review."><if C.isDraft
+     == true: " The cross-platform readiness gate then decides whether to flip this draft to
+     ready-for-review.">` naming any `/azp`-gated legs (uitests def 313 / devicetests def
+     314) that have not run and still need a maintainer `/azp run`; record `surfaced-green
+     PR #<P> (attempt <attempt>/10)`. (Do NOT assert "ready for human review" on a PR that
+     is still a draft — Step 3.6, not this comment, owns the draft→ready flip and posts its
+     own 🎯 announcement when it fires.)
    Do NOT advance. Then — in ALL of the above cases — run **Step 3.6** (target-test
    readiness gate) for this PR before stopping: its `/azp`-gated target legs may conclude
    green on this SAME head SHA on a LATER sweep (an `/azp run` adds no commit), and Step
@@ -886,18 +890,40 @@ not the base branch's flakiness.
 addresses (and the PR's own diff), extract the fully-qualified test method name(s) the
 fix targets — e.g. `SafeAreaShouldWorkOnAllShellTabs`. For a de-flake it is the
 de-flaked test; for a product fix it is the originally-failing test(s). If NO specific
-test can be identified (e.g. a product build-break rather than a test failure), record
-`skipped: readiness N/A PR #<P> (no target test)` and stop this gate — a build-only fix
-is validated by overall-green alone, which the Step 3 branch already handles.
+test can be identified (e.g. a product build-break rather than a test failure), this is a
+**build-only fix** — there is no single test to validate cross-platform, so validate at
+**whole-build** granularity rather than stopping (Step 3 only *comments*; Step 3.6 is the
+sole draft→ready flip, so a build-only fix is undrafted HERE or not at all). We only reach
+this gate from Step 3 (green) / Step 4 (unrelated-flake) / gate-2a, so the fix is not
+implicated in any concluded red; additionally require, via the T2 timeline method on
+`C.headSha`, that the primary build pipeline `maui-pr` (def 302) has CONCLUDED with EVERY
+one of its platform build legs `succeeded`/`completed` and NONE failed/canceled or still
+pending — the build is green on **every** platform, not just the originally-broken one (the
+cross-platform guard, applied to the build instead of a test). If so, set `TARGET := "the
+maui-pr build (build-only fix — no single target test)"` and proceed to **T3** to mark
+ready. If any `maui-pr` build leg is still unconcluded, record `skipped: build-only fix PR
+#<P> not yet whole-build green (leg(s) <legs> pending)` and stop this gate WITHOUT marking
+ready (a green subset is not enough — a still-pending build leg could yet fail).
 
 **T2 — Verify the target test's platform legs are green (anonymous, leg-level).** Per-test
 outcomes come from the AzDO **test-results** API (`_apis/test/...`), which is **NOT reachable
 anonymously — Hard-Rule 8**: those endpoints 302-redirect to a sign-in page on this runner, so
 a `curl` returns an HTML redirect (not JSON) and every target test would look "not executed".
 Validate instead at **leg granularity** using ONLY the anonymous `_apis/build/...` timeline
-(Hard-Rule 8) — which is a STRONGER bar anyway: a `succeeded` category leg means every test in
-that category, including the target, passed on that platform (a de-flaked / target test is
-never skipped, so a green category leg cannot hide a target-test failure).
+(Hard-Rule 8) — a `succeeded` category leg means every test in that category **that actually
+ran** passed on that platform. This is a strong bar **only if the target test genuinely
+executes**: a job can go green while one specific test is skipped at runtime (`[Ignore]`,
+`Assert.Ignore()`, `Assert.Inconclusive()`, a `Skip=`/conditional `[Fact]`, an `#if`-out, or
+an early `return` before the asserts). So before trusting a green leg as proof the target
+passed, **confirm from the PR's OWN diff that the fix does NOT skip, ignore, disable, or
+short-circuit the target test** (it adds no `[Ignore]`/`[Explicit]`, `Assert.Ignore`/
+`Assert.Inconclusive`, `Skip=`, category-exclusion, `#if`-out, or early `return` around the
+target). If the fix could cause the target to be runtime-skipped rather than genuinely pass,
+leg-level green is NOT sufficient evidence — record `skipped: target test <T> may be
+runtime-skipped by this fix (diff adds <marker>); leg-green insufficient, deferring to human
+on PR #<P>` and stop this gate WITHOUT marking ready. Otherwise (the target genuinely runs
+and asserts, as a de-flake or product fix does) a green category leg cannot hide a
+target-test failure, so treat it as authoritative.
 
 Map the target test to the CI leg(s) that run it. A leg name encodes platform + test category
 (e.g. `Android UITests SafeAreaEdges,Shadow`, `iOS UITests SafeAreaEdges,Shadow`, `macOS
@@ -979,7 +1005,10 @@ existing does NOT prove the mark-ready took effect, so they are tracked independ
      <C.headSha> — <TestList> passed on ALL platforms it runs on (<platforms/legs>,
      buildId <B>). <if any red: "The remaining red is unrelated flake on leg(s) <Y> — not
      caused by this fix.">  Transitioning this PR from draft to ready for review and adding
-     `p/0`; a maintainer still reviews and merges.`
+     `p/0`; a maintainer still reviews and merges.` (For a **build-only fix** — the T1
+     whole-build fallback, no single target test — phrase the first clause as `🎯 Build
+     validated green on <C.headSha> — the maui-pr build passed on ALL platforms (buildId
+     <B>).` instead of naming a test.)
   2. `mark_pull_request_as_ready_for_review` with `reason:` a one-line justification
      naming the validated test(s) and `<C.headSha>`.
   3. `add_labels` with `labels: ["p/0"]` for PR #<P> — put the now-review-ready fix into
