@@ -38,6 +38,15 @@ namespace Microsoft.Maui.Controls
 
 				foreach (var group in oldVisualStateGroupList)
 				{
+					// Detach triggers first so OnDetached() unsubscribes window events before visual cleanup.
+					foreach (var visualState in group.States)
+					{
+						foreach (var trigger in visualState.StateTriggers)
+						{
+							trigger.SendDetached();
+						}
+					}
+
 					if (group.CurrentState is { } state)
 					{
 						// Only promote system-driven states (Disabled, Focused, etc.) to full VSM priority.
@@ -62,6 +71,14 @@ namespace Microsoft.Maui.Controls
 			visualElement.ChangeVisualState();
 
 			UpdateStateTriggers(visualElement);
+
+			// Attach state triggers from the incoming groups if the element is already in a Window.
+			// Normally triggers are attached via VisualElement.InvalidateStateTriggers(true) when the
+			// element joins a Window, but that event has already fired before this replacement occurs.
+			if (newValue != null && visualElement.Window != null)
+			{
+				visualElement.InvalidateStateTriggers(true);
+			}
 		}
 
 		/// <summary>
@@ -87,6 +104,9 @@ namespace Microsoft.Maui.Controls
 		/// <param name="name">The name of the visual state to transition to.</param>
 		/// <returns><see langword="true"/> if the transition was successful; otherwise, <see langword="false"/>.</returns>
 		public static bool GoToState(VisualElement visualElement, string name)
+			=> GoToState(visualElement, name, force: false);
+
+		internal static bool GoToState(VisualElement visualElement, string name, bool force)
 		{
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
 			if (context is null)
@@ -108,17 +128,17 @@ namespace Microsoft.Maui.Controls
 
 			foreach (VisualStateGroup group in groups)
 			{
-				if (group.CurrentState?.Name == name)
-				{
-					// We're already in the target state; nothing else to do
-					return true;
-				}
-
 				// See if this group contains the new state
 				var target = group.GetState(name);
 				if (target == null)
 				{
 					continue;
+				}
+
+				if (group.CurrentState?.Name == name && !force)
+				{
+					// We're already in the target state; nothing else to do
+					return true;
 				}
 
 				// If we've got a new state to transition to, unapply the setters from the current state
