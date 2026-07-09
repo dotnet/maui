@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+namespace Maui.Controls.Sample;
 
 public class LabelViewModel : INotifyPropertyChanged
 {
