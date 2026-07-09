@@ -36,5 +36,22 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.False(Resizer.IsUpToDate(new[] { inputFile }, outputFile, inputsFile, logger));
 			Assert.Empty(logger.Messages);
 		}
+
+		[Fact]
+		public void MultiInputIsNotUpToDateWhenSourceInputsAreMissing()
+		{
+			var missingInputFile = Path.Combine(DestinationDirectory, "missing.png");
+			var outputFile = Path.Combine(DestinationDirectory, "image.out");
+			var inputsFile = Path.Combine(DestinationDirectory, "mauiimage.inputs");
+
+			File.WriteAllText(inputsFile, "ResizeQuality=Auto");
+			File.WriteAllText(outputFile, "output");
+			File.SetLastWriteTimeUtc(outputFile, File.GetLastWriteTimeUtc(inputsFile).AddSeconds(1));
+
+			var logger = new TestLogger();
+
+			Assert.False(Resizer.IsUpToDate(new[] { missingInputFile }, outputFile, inputsFile, logger));
+			Assert.Empty(logger.Messages);
+		}
 	}
 }

@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Resizetizer
 				return false;
 
 			var newestInput = fileInputs.LastWriteTimeUtc;
-			var hasInput = true;
+			var hasSourceInput = false;
 
 			foreach (var inputFile in inputFiles)
 			{
@@ -104,12 +104,12 @@ namespace Microsoft.Maui.Resizetizer
 				if (!fileIn.Exists)
 					continue;
 
-				hasInput = true;
+				hasSourceInput = true;
 				if (fileIn.LastWriteTimeUtc > newestInput)
 					newestInput = fileIn.LastWriteTimeUtc;
 			}
 
-			if (!hasInput || newestInput > fileOut.LastWriteTimeUtc)
+			if (!hasSourceInput || newestInput > fileOut.LastWriteTimeUtc)
 				return false;
 
 			var description = string.IsNullOrEmpty(inputDescription) ? "inputs" : inputDescription;
