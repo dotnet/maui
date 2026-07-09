@@ -773,14 +773,7 @@ internal class TabbedViewManager
         // (reuses existing IMenuItem objects at unchanged positions, preserving identity).
         // This matches the renderer's ShellItemRenderer.SetupMenu behavior and avoids
         // menu.Clear() which destroys all IMenuItem references on every tab add/remove.
-        var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
-        for (int i = 0; i < tabs.Count; i++)
-        {
-            var tab = tabs[i];
-            // Fallback for null/whitespace Title to avoid a blank bottom tab label.
-            var title = !string.IsNullOrWhiteSpace(tab.Title) ? tab.Title : $"Tab {i + 1}";
-            items.Add((title, tab.Icon as ImageSource, tab.IsEnabled));
-        }
+        var items = CreateTabList();
 
         var currentIndex = Element.CurrentTabIndex;
         BottomNavigationViewUtils.SetupMenu(
