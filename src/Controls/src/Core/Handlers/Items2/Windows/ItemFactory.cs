@@ -24,6 +24,14 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		(Microsoft.UI.Xaml.Controls.ControlTemplate)Microsoft.UI.Xaml.Application.Current.Resources["NonSelectableItemContainerTemplate"];
 
 	/// <summary>
+	/// Default sizing hints for null-data item containers in CV2, based on CV1 behavior.
+	/// CV2 uses ItemContainer with MinHeight/MinWidth properties directly since there's
+	/// no ListViewItem wrapper. These constants preserve CV1's proven sizing strategy.
+	/// </summary>
+	const double NullItemContainerMinHeightVertical = 32;
+	const double NullItemContainerMinWidthHorizontal = 88;
+
+	/// <summary>
 	/// Caches the default ItemContainer template so it can be restored
 	/// when a header/footer container is recycled for a regular item.
 	/// </summary>
@@ -46,14 +54,12 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			// path so they can inherit the parent ItemsView.BindingContext.
 			if (templateContext.Item is null && !templateContext.IsHeader && !templateContext.IsFooter)
 			{
-				// CV1's ItemContentControl.MeasureOverride returns a 32px height hint when
-				// _handler is null (virtualization hint only). The actual rendered height
-				// is driven by WinUI's ListViewItem default MinHeight (40px from the
-				// ListViewItemMinHeight theme resource). CV2 has no ListViewItem wrapper, so
-				// set MinHeight = 40 directly on the ItemContainer to match CV1's visual slot.
+				// CV2 has no ListViewItem wrapper, so we set both MinHeight and MinWidth on ItemContainer.
+				// The layout engine will apply whichever is appropriate based on parent orientation.
 				return new ItemContainer
 				{
-					MinHeight = 40,
+					MinHeight = NullItemContainerMinHeightVertical,
+					MinWidth = NullItemContainerMinWidthHorizontal,
 					VerticalAlignment = VerticalAlignment.Stretch,
 					HorizontalAlignment = HorizontalAlignment.Stretch
 				};

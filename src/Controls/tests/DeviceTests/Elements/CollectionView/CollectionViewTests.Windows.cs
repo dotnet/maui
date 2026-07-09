@@ -522,7 +522,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task NullItem_DragReorder_DoesNotMoveWrongRow()
+		public async Task NullItem_CollectionMove_DoesNotMoveWrongRow()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -559,8 +559,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await Task.Delay(500);
 
-				// Simulate a reorder: move item at index 0 ("Item 1") to index 2
-				// This exercises the code path where null items exist in the collection
+				// Test ObservableCollection.Move() directly instead of drag/drop simulation.
+				// This exercises the code path where null items exist in the collection.
+				// NOTE: This tests data binding behavior, not actual drag-drop UI interaction.
+				// For real drag-drop testing, use actual pointer events (tap + drag).
 				data.Move(0, 2);
 				await Task.Delay(200);
 
