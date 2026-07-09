@@ -141,17 +141,28 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var menuSize = menu.Size();
+			IMenuItem moreMenuItem = null;
 			if (showMore && menu.GetItem(menuSize - 1).ItemId != MoreTabId)
 			{
 				var moreString = context.Resources.GetText(Resource.String.overflow_tab_title);
 				if (menuSize == maxBottomItems)
 					menu.RemoveItem(menu.GetItem(menuSize - 1).ItemId);
-				var menuItem = menu.Add(0, MoreTabId, 0, moreString);
-				menuItems.Add(menuItem);
+				moreMenuItem = menu.Add(0, MoreTabId, 0, moreString);
+				menuItems.Add(moreMenuItem);
 
-				menuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
-				if (currentIndex >= maxBottomItems - 1)
-					menuItem.SetChecked(true);
+				moreMenuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
+			}
+			else if (showMore)
+			{
+				// The More item already exists (reused, not recreated) — still need to
+				// reapply its selected state below in case currentIndex has changed.
+				moreMenuItem = menu.GetItem(menuSize - 1);
+			}
+
+			if (moreMenuItem is not null && currentIndex >= maxBottomItems - 1)
+			{
+				// Use SetChecked only — setting SelectedItemId would trigger ShowMoreBottomSheet().
+				moreMenuItem.SetChecked(true);
 			}
 
 			bottomView.SetShiftMode(false, false);
@@ -173,9 +184,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (source is null)
 			{
-				// Clear any stale icon left on this (possibly reused) menu item.
-				menuItem.SetIcon(null);
-				onIconLoaded?.Invoke(menuItem);
+				try
+				{
+					// Clear any stale icon left on this (possibly reused) menu item.
+					menuItem.SetIcon(null);
+					onIconLoaded?.Invoke(menuItem);
+				}
+				catch (Exception ex)
+				{
+					// Prevent an unhandled exception from onIconLoaded escaping this
+					// async operation and crashing the app (matches the try/catch
+					// used in the non-null icon path below).
+					System.Diagnostics.Debug.WriteLine($"SetMenuItemIcon failed: {ex}");
+				}
 				return;
 			}
 
