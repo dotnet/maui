@@ -6,9 +6,7 @@
         <ImageButton AutomationId="Issue36322TitleView"
                      Source="dotnet_bot.png"
                      HeightRequest="25"
-                     WidthRequest="25"
-                     HorizontalOptions="Center"
-                     VerticalOptions="Center"/>
+                     WidthRequest="25"/>
     </Shell.TitleView>
 
     <ShellContent Title="Home">
