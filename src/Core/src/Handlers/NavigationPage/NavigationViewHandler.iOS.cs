@@ -162,10 +162,36 @@ namespace Microsoft.Maui.Handlers
 
 					if (newStack.Count == 1)
 					{
-						// Pop to root — store expected stack; OnNavigationComplete calls NavigationFinished.
+						// Pop to root
 						var rootVC = GetOrCreateViewController(newStack[0]);
 						_pendingNavigationStack = new List<IView>(newStack);
 						navManager.PopToRootViewController(rootVC, animated);
+
+						// For non-animated pops, DidShowViewController won't fire so
+						// OnNavigationComplete never runs. Consume pending stack directly.
+						if (!animated)
+						{
+							var pendingStack = _pendingNavigationStack;
+							_pendingNavigationStack = null;
+
+							// Clean up popped pages from the VC map
+							var newSet = new HashSet<IView>(pendingStack);
+							foreach (var view in oldStack)
+							{
+								if (!newSet.Contains(view))
+								{
+									if (_viewControllerMap.TryGetValue(view, out var vc))
+									{
+										(vc as IDisposable)?.Dispose();
+									}
+									_viewControllerMap.Remove(view);
+								}
+							}
+
+							NavigationStack = pendingStack;
+							NavigationView.NavigationFinished(pendingStack);
+						}
+
 						return;
 					}
 					else

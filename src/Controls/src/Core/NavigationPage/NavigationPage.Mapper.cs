@@ -41,8 +41,20 @@ namespace Microsoft.Maui.Controls
 						// Match renderer's RemoveAsyncInner — fire lifecycle events
 						// that NavigationFinished (stack sync) does not handle.
 						navPage.FireDisappearing(page);
-						navPage.FireAppearing(navPage.CurrentPage);
-						navPage.SendNavigatedFromHandler(page, NavigationType.Pop);
+
+						// Fire NavigatedFrom on the popped page directly, bypassing
+						// SendNavigatedFromHandler's HasNavigatedTo guard which blocks
+						// subsequent pages in a multi-pop scenario.
+						page.SendNavigatedFrom(new NavigatedFromEventArgs(navPage.CurrentPage, NavigationType.Pop));
+
+						// Fire NavigatedTo + Appearing on CurrentPage only if not already done
+						// (avoids duplicate events for multi-pop where this callback fires per page).
+						if (!navPage.CurrentPage.HasNavigatedTo)
+						{
+							navPage.FireAppearing(navPage.CurrentPage);
+							navPage.CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(page, NavigationType.Pop));
+						}
+
 						navPage.Popped?.Invoke(navPage, new NavigationEventArgs(page));
 					}
 				},

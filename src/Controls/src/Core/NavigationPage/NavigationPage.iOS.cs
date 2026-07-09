@@ -125,6 +125,14 @@ namespace Microsoft.Maui.Controls
 				// Match renderer: default translucency is driven by IsNavigationBarTranslucent (defaults to false)
 				navBar.Translucent = userTranslucentValue;
 			}
+			else if (barBackgroundColor is null && barBackground is not null)
+			{
+				// Gradient/image brush with no explicit color — reset appearance
+				// to clear any stale BackgroundColor/Translucent from a previous call.
+				navigationBarAppearance.ConfigureWithOpaqueBackground();
+				navigationBarAppearance.BackgroundColor = null;
+				navBar.Translucent = userTranslucentValue;
+			}
 			else if (barBackgroundColor is not null)
 			{
 				// Match renderer: if IsNavigationBarTranslucent is explicitly set, respect it;
