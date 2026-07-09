@@ -8,7 +8,6 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using AndroidX.DrawerLayout.Widget;
-using AndroidX.AppCompat.Widget;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.CoordinatorLayout.Widget;
 using Google.Android.Material.AppBar;
