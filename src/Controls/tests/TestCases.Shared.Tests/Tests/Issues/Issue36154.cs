@@ -17,7 +17,7 @@ public class Issue36154 : _IssuesUITest
 	[Category(UITestCategories.SwipeView)]
 	public void Issue36154SwipeViewShouldRevealItems()
 	{
-		var rect = App.WaitForElement("TheSwipeView").GetRect();
+		var rect = App.WaitForElement("TheWebView").GetRect();
 		var centerX = rect.X + rect.Width / 2;
 		var centerY = rect.Y + rect.Height / 2;
 
