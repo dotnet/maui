@@ -169,7 +169,13 @@ namespace Microsoft.Maui.Platform
 				ClipBounds = null;
 			}
 
-			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
+			// Overlap-based safe-area padding depends on the view's size, but is only recomputed on an inset
+			// dispatch, SafeAreaEdges change, or config change — never on a plain resize. Re-request insets when a
+			// tracked safe-area view resizes (e.g. a page growing back to full height after its TabBar is hidden)
+			// so its padding isn't left stale. The IsViewTracked gate excludes plain, non-safe-area views. See #36269
+			if (_isInsetListenerSet &&
+				(_didSafeAreaEdgeConfigurationChange ||
+					(changed && MauiWindowInsetListener.FindListenerForView(this)?.IsViewTracked(this) == true)))
 			{
 				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;
