@@ -39,7 +39,12 @@ jobs:
   match:
     if: github.event_name == 'workflow_dispatch' || github.event.issue.pull_request
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    # The actual work (a bash regex match) takes <1s, but GitHub-hosted runner
+    # provisioning ("Set up job") can take ~2 min under load. A 2-minute cap let that
+    # provisioning latency cancel the whole job mid-setup, skipping trigger-review so the
+    # AzDO pipeline never queued (e.g. dotnet/maui#36307 comment 4925414214). Give the
+    # runner ample headroom — the trivial step can't itself hang for minutes.
+    timeout-minutes: 10
     outputs:
       matched: ${{ steps.check.outputs.matched }}
       command: ${{ steps.check.outputs.command }}
