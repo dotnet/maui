@@ -216,6 +216,32 @@ function Get-ClassNameFromFile {
     return $null
 }
 
+function Test-CsFileHasTestMethods {
+    <#
+    .SYNOPSIS
+        Returns $true only if a .cs file actually declares test methods.
+    .DESCRIPTION
+        Test-support files (helpers, base classes, fixtures, data builders) live under the
+        same test projects but contain NO [Fact]/[Test] methods. Detecting one as a "test"
+        (e.g. VisualStateTestHelpers.cs) makes the gate run a filter that matches zero tests;
+        the empty run is then scored as a failure and drags the whole gate to FAILED even when
+        the PR's real tests pass FAIL→PASS. Requiring at least one test-method attribute keeps
+        those support files out of the detected-test set.
+    #>
+    param([string]$RelativePath)
+    $candidates = @($RelativePath)
+    if ($RepoRootForRead) { $candidates += (Join-Path $RepoRootForRead $RelativePath) }
+    foreach ($p in $candidates) {
+        if (Test-Path $p) {
+            try { $content = Get-Content $p -Raw -ErrorAction Stop } catch { continue }
+            # xUnit: [Fact] [Theory]; NUnit: [Test] [TestCase] [TestCaseSource]; MSTest: [TestMethod]
+            return ($content -match '(?m)\[\s*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b')
+        }
+    }
+    # File unreadable (deleted/unresolvable) — don't over-filter; let existing fallbacks handle it.
+    return $true
+}
+
 foreach ($file in $ChangedFiles) {
     # Skip non-code files
     if ($file -notmatch "\.(cs|xaml)$") { continue }
@@ -224,6 +250,16 @@ foreach ($file in $ChangedFiles) {
     # Skip infrastructure files (MauiProgram.cs, Startup.cs, etc.)
     $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file) -replace '\.(iOS|Android|Windows|MacCatalyst)$', ''
     if ($baseName -in $IgnoredFileNames) { continue }
+
+    # Skip test-support .cs files that contain NO test methods (helpers, base classes,
+    # fixtures, data builders). Detecting e.g. VisualStateTestHelpers.cs as a "test" makes
+    # the gate run a filter that matches nothing; that empty run is scored as a failure and
+    # drags the whole gate to FAILED even when the PR's real tests pass. HostApp companion
+    # pages and .xaml files legitimately have no test attributes, so exempt them here — they
+    # are matched/merged separately.
+    if ($file -match '\.cs$' -and $file -notmatch 'TestCases\.HostApp') {
+        if (-not (Test-CsFileHasTestMethods -RelativePath $file)) { continue }
+    }
 
     foreach ($rule in $TestTypeRules) {
         if ($file -match $rule.PathPattern) {
