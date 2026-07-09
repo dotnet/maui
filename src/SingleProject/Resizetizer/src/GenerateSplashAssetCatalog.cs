@@ -80,8 +80,16 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			foreach (var dpi in DpiPath.Ios.SplashImageAsset)
 			{
-				Log.LogMessage(MessageImportance.Low, $"Splash Screen Asset Catalog Resize: " + dpi);
-				resizer.Resize(dpi, InputsFile);
+				if (resizer.Info.Resize)
+				{
+					Log.LogMessage(MessageImportance.Low, $"Splash Screen Asset Catalog Resize: " + dpi);
+					resizer.Resize(dpi, InputsFile);
+				}
+				else
+				{
+					Log.LogMessage(MessageImportance.Low, $"Splash Screen Asset Catalog Copy: " + dpi);
+					resizer.CopyFile(dpi, InputsFile);
+				}
 			}
 		}
 

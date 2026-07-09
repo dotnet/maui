@@ -81,6 +81,27 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
+		public void RasterWithoutResizePreservesOriginalImageDimensions()
+		{
+			var splash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Resize"] = bool.FalseString,
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.png", 1792, 1792);
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage@2x.png", 1792, 1792);
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage@3x.png", 1792, 1792);
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.png", 256, 256);
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark@2x.png", 256, 256);
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark@3x.png", 256, 256);
+		}
+
+		[Fact]
 		public void DarkFileWithoutColorDoesNotGenerateColorAsset()
 		{
 			var splash = new TaskItem("images/camera.png", new Dictionary<string, string>
