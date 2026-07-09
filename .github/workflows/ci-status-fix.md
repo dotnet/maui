@@ -386,7 +386,10 @@ through `safe-outputs`.
 5. **One issue = one outcome per run.** Exactly one of: respond to a maintainer's
    change-request on the open PR (Track C, Step 3.5.R); open the first fix/help/
    de-flake PR; advance an existing PR by one attempt (push a follow-up fix);
-   surface a validated-green PR for review; annotate an unrelated-flake red; wait
+   surface a validated-green PR for review; mark a target-validated draft PR
+   ready-for-review (Step 3.6 T3 — the terminal outcome that supersedes the same
+   run's surface/annotate precursor line), or record its `already-ready`
+   steady-state no-op; annotate an unrelated-flake red; wait
    (CI not yet settled); or a recorded skip (the dedicated needs-human PR is
    deferred — the attempt cap records a skip instead; see Step 6). Always prefer
    advancing or opening a PR over a skip when a non-mute diff is producible.
@@ -1665,14 +1668,18 @@ Filed by [`ci-status-fix`](https://github.com/dotnet/maui/blob/main/.github/work
 ### Step 8 — Per-issue tally + end-of-run summary
 
 Per issue, append **one** outcome line to `/tmp/gh-aw/agent/coverage.txt` — the
-terminal outcome for the cycle. When one cycle produces a chained pair — a green PR
-gets a Step 3 green line (`surfaced-green` on the first comment, or `already-surfaced`
-when the ✅ already exists) **and then** a Step 3.6 readiness line (`marked-ready` on the
+terminal outcome for the cycle. When one cycle produces a chained pair — a PR gets a
+same-cycle precursor line and **then** a Step 3.6 readiness line (`marked-ready` on the
 draft→ready flip, or `already-ready` on a later steady-state sweep of an already-ready
-PR) — record ONLY the terminal Step 3.6 readiness line: it supersedes the Step 3 green
-line, so an aggregator keying on one-line-per-issue never double-counts. This holds for
-BOTH the flip cycle (`surfaced-green` → `marked-ready`) and the post-flip steady state
-(`already-surfaced` → `already-ready`):
+PR) — record ONLY the terminal Step 3.6 readiness line: it supersedes ANY same-cycle
+non-readiness precursor for that PR, so an aggregator keying on one-line-per-issue never
+double-counts. The precursor may be a Step 3 green line (`surfaced-green` on the first ✅,
+or `already-surfaced` when it already exists) OR — when an unrelated-flake red and a
+target-green coincide — a Step 4 `annotated-flake` line; either way the readiness line is
+terminal, and the superseded precursor's signal survives in the PR's 🎯/♻️ comment so no
+information is lost. This covers the flip cycle (`surfaced-green` → `marked-ready`), the
+post-flip steady state (`already-surfaced` → `already-ready`), and the flake-coincident
+flip (`annotated-flake` → `marked-ready`):
 
 ```
 #<N>  main  attempt-<K>  <outcome>  <reason>
