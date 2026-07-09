@@ -31,8 +31,8 @@ public class Issue32275 : _IssuesUITest
 		App.Tap("ToggleHeaderFooter");
 		App.WaitForElement("PageLoaded");
 		App.ShowFlyout();
-		App.WaitForElement("Header View");
-		App.WaitForElement("Footer View");
+		App.WaitForElement("Header");
+		App.WaitForElement("Footer");
 		VerifyScreenshot();
 	}
 
@@ -59,8 +59,8 @@ public class Issue32275 : _IssuesUITest
 		App.Tap("ToggleHeaderFooter");
 		App.WaitForElement("PageLoaded");
 		App.ShowFlyout();
-		App.WaitForElement("Header View");
-		App.WaitForElement("Footer View");
+		App.WaitForElement("Header");
+		App.WaitForElement("Footer");
 		VerifyScreenshot();
 	}
 
@@ -89,8 +89,8 @@ public class Issue32275 : _IssuesUITest
 		App.WaitForElement("PageLoaded");
 		App.ShowFlyout();
 		App.WaitForElement("ContentView");
-		App.WaitForElement("Header View");
-		App.WaitForElement("Footer View");
+		App.WaitForElement("Header");
+		App.WaitForElement("Footer");
 		VerifyScreenshot();
 	}
 }
