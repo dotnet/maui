@@ -22,14 +22,29 @@ public class Issue36322 : Shell
 			}
 		};
 
-		Shell.SetTitleView(rootPage, new Label
+		Shell.SetTitleView(rootPage, new HorizontalStackLayout
 		{
 			AutomationId = "Issue36322TitleView",
-			Text = "Centered TitleView",
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center,
 			BackgroundColor = Colors.LightBlue,
-			Padding = new Thickness(8, 2)
+			Padding = new Thickness(8, 2),
+			Spacing = 8,
+			Children =
+			{
+				new Image
+				{
+					Source = "dotnet_bot.png",
+					HeightRequest = 24,
+					WidthRequest = 24,
+					VerticalOptions = LayoutOptions.Center
+				},
+				new Label
+				{
+					Text = "Centered TitleView",
+					VerticalOptions = LayoutOptions.Center
+				}
+			}
 		});
 
 		Items.Add(new FlyoutItem
