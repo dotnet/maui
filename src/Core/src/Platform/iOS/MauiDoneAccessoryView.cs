@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Platform
 		static bool UseGlassButton => OperatingSystem.IsIOSVersionAtLeast(26);
 
 		readonly BarButtonItemProxy _proxy;
+		UIButton? _doneButton;
 
 		public MauiDoneAccessoryView() : base(InitialFrame())
 		{
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Platform
 			Initialize(_proxy.OnClicked);
 		}
 
-		internal UIButton? DoneButton => FindDoneButton(this);
+		internal UIButton? DoneButton => _doneButton ??= FindDoneButton(this);
 
 		internal void SetDoneClicked(Action<object>? value) => _proxy.SetDoneClicked(value);
 
@@ -102,6 +103,7 @@ namespace Microsoft.Maui.Platform
 			ClipsToBounds = false;
 
 			var button = CreateGlassButton(doneClicked);
+			_doneButton = button;
 			AddSubview(button);
 
 			NSLayoutConstraint.ActivateConstraints(new[]
