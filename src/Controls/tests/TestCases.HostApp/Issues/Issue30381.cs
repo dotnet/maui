@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 30381, "WebView GoBack/GoForward not working for HtmlWebViewSource on iOS", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 30381, "WebView GoBack/GoForward not working for HtmlWebViewSource on iOS", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue30381 : ContentPage
 {
     WebView MyWebView;
