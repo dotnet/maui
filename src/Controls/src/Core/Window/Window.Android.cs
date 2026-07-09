@@ -7,8 +7,15 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Window : IPlatformEventsListener
+	public partial class Window : IPlatformEventsListener, IBackNavigationState
 	{
+		bool IBackNavigationState.CanConsumeBackNavigation =>
+			Navigation.ModalStack.Count > 0 || CanConsumeBackNavigation(Page);
+
+		void RefreshPredictiveBackRegistration() =>
+			(Handler?.PlatformView as MauiAppCompatActivity)
+				?.UpdatePredictiveBackRegistration();
+
 		internal Activity PlatformActivity =>
 			(Handler?.PlatformView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
 

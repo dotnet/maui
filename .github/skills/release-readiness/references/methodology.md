@@ -170,6 +170,7 @@ The skill must derive which `regressed-in-X.Y.Z` labels matter for a given SR:
 | `merged-on-main-no-backport` | Fix PR state=MERGED, `onMain=true`, no backport PR to `$SrBranch` exists |
 | `open-on-main` | Fix PR state=OPEN, base=main |
 | `no-fix-yet` | No cross-referenced PR with high-confidence evidence found |
+| `closed-fix-unlinked` | `no-fix-yet` would apply, BUT the issue is CLOSED and a closing comment **explicitly names** a fix PR (fix/resolve/close language) that is MERGED and whose commit is on `$SrBranch` (verified by SHA-ancestry OR the `(#<num>)` squash-subject token). A bare PR mention (the cause-PR blame pattern) is rejected. Surfaces a missing PR↔issue link rather than a false "no fix" alarm. Non-blocking (Tier 3) |
 | `needs-human-review` | Only weak evidence; OR multiple candidate PRs with conflicting verdicts |
 
 ## CI Freshness
