@@ -23,12 +23,13 @@ public class Material3ImageFeatureTests : _GalleryUITest
 	public const string ShadowCheckBox = "ShadowCheckBox";
 	public const string IsAnimationTrue = "IsAnimationTrue";
 	public const string IsAnimationFalse = "IsAnimationFalse";
+	public const string BackgroundColorNone = "BackgroundColorNone";
+	public const string BackgroundColorYellow = "BackgroundColorYellow";
 	public const string OpacityHalf = "OpacityHalf";
 	public const string FontColorGreen = "FontColorGreen";
 	public const string EntryFontSize = "EntryFontSize";
 	public const string ImageControl = "ImageControl";
 	public const string TapResultLabel = "TapResultLabel";
-	public const string BackgroundColorNone = "BackgroundColorNone";
 
 	public override string GalleryPageName => ImageFeatureMatrix;
 

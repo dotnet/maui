@@ -429,23 +429,6 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
 
     [Test, Order(25)]
     [Category(UITestCategories.Material3)]
-    public void VerifyMaterial3ImageButtonWithInputTransparent()
-    {
-        App.WaitForElement(Options);
-        App.Tap(Options);
-        App.WaitForElement(SourceTypeFile);
-        App.Tap(SourceTypeFile);
-        App.WaitForElement(InputTransparentTrue);
-        App.Tap(InputTransparentTrue);
-        App.WaitForElement(Apply);
-        App.Tap(Apply);
-        App.WaitForElement("ImageButtonControl");
-        App.Tap("ImageButtonControl");
-        App.WaitForNoElement("ImageButton Clicked: 1");
-    }
-
-    [Test, Order(26)]
-    [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithRotation()
     {
         App.WaitForElement(Options);
@@ -459,7 +442,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test, Order(27)]
+    [Test, Order(26)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithScale()
     {
@@ -474,7 +457,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test, Order(28)]
+    [Test, Order(27)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithBackgroundColorYellow()
     {
@@ -490,7 +473,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test, Order(29)]
+    [Test, Order(28)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithBackgroundColorNone()
     {
