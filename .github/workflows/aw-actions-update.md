@@ -126,19 +126,33 @@ creating another PR. Mention the existing PR in the run output only. (The `--aut
 the check to this workflow's own bot-created PRs — safe-outputs opens them as `app/github-actions` —
 so an unrelated user-opened PR with a colliding title cannot suppress the refresh.)
 
-## Step 1 — Ensure the gh-aw CLI is available
+## Step 1 — Ensure the gh-aw CLI is available at the pinned version
 
 The `gh aw` command comes from the `github/gh-aw` gh extension, which may not be preinstalled on
-the runner. Always land on the **latest** release so pins are resolved by current gh-aw: install it
-if missing, otherwise upgrade it in place.
+the runner. **Pin the install to `v0.80.9`** — the same `compiler_version` all committed
+`.github/workflows/*.lock.yml` files were built with. `gh aw update` caps native action-pin
+resolution at the CLI's own version, so a newer CLI would refresh `actions-lock.json` in a way
+that no longer matches the v0.80.9-compiled locks (version skew). Bumping gh-aw is a deliberate,
+coordinated change handled by the separate `aw-version-update` runbook — not something this
+weekly pin-refresher should do implicitly.
+
+Remove any pre-installed copy, then install the pinned tag. **Fail closed** (log and exit without
+creating a PR) if the pinned install does not succeed — never silently continue on a stale or
+wrong-version CLI.
 
 ```bash
-if gh aw --version >/dev/null 2>&1; then
-  gh extension upgrade gh-aw || true   # already installed — force latest
-else
-  gh extension install github/gh-aw || { echo "Failed to install gh-aw; not creating a PR."; exit 0; }
+GH_AW_PINNED_VERSION="v0.80.9"   # keep in sync with the committed *.lock.yml compiler_version
+gh extension remove gh-aw 2>/dev/null || true
+if ! gh extension install github/gh-aw --pin "$GH_AW_PINNED_VERSION"; then
+  echo "Failed to install gh-aw $GH_AW_PINNED_VERSION; not creating a PR."
+  exit 0
 fi
-gh aw --version
+INSTALLED_VERSION="$(gh aw --version 2>/dev/null || true)"
+echo "gh-aw: $INSTALLED_VERSION"
+case "$INSTALLED_VERSION" in
+  *"$GH_AW_PINNED_VERSION"*) : ;;   # good — pinned version is active
+  *) echo "gh-aw is not the pinned $GH_AW_PINNED_VERSION; not creating a PR."; exit 0 ;;
+esac
 ```
 
 ## Step 2 — Run the update command
