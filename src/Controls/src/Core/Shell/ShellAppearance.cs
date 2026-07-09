@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty[] s_ingestBrushArray = new[]
 		{
-			Shell.FlyoutBackdropProperty
+			Shell.FlyoutBackdropProperty,
+			Shell.BackgroundProperty
 		};
 
 		static readonly BindableProperty[] s_ingestDoubleArray = new[]
@@ -71,6 +72,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Gets the backdrop brush for the Shell flyout.</summary>
 		public Brush FlyoutBackdrop => _brushArray[0];
+
+		/// <summary>Gets the background brush of the Shell.</summary>
+		public Brush Background => _brushArray[1];
 		public double FlyoutWidth => _doubleArray[0];
 		public double FlyoutHeight => _doubleArray[1];
 
