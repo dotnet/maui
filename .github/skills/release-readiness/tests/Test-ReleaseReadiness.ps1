@@ -4262,6 +4262,15 @@ Assert-Eq -Label "sdk-bump: dotnet/android bump → false (not SDK)"  -Expected 
 Assert-Eq -Label "sdk-bump: merge-up PR → false"                   -Expected $false -Actual (Test-IsSdkBumpPr $dfMergeUp)
 Assert-Eq -Label "sdk-bump: plain human PR → false"                -Expected $false -Actual (Test-IsSdkBumpPr $dfPlain)
 Assert-Eq -Label "sdk-bump: null PR → false"                       -Expected $false -Actual (Test-IsSdkBumpPr $null)
+# Boundary regression: a hyphenated sibling repo must NOT collide with the SDK/VMR
+# bump. A bare `\b` sat between `t` and `-` and misclassified `dotnet/dotnet-
+# optimization` as an SDK bump; the `(?![\w-])` look-ahead fixes it. This mirrors
+# the Get-ComponentFlowSignal collision guard below (which was tested, while this
+# sibling matcher was not — the exact gap the follow-up closes).
+$sbVmrOptColl = [PSCustomObject]@{ title = 'Bump dotnet/dotnet-optimization from 1.0 to 1.2 (BAR 3)' }
+$sbSdkTrail   = [PSCustomObject]@{ title = 'Bump dotnet/dotnet-optimization then dotnet/sdk (BAR 4)' }
+Assert-Eq -Label "sdk-bump: dotnet/dotnet-optimization does NOT collide → false" -Expected $false -Actual (Test-IsSdkBumpPr $sbVmrOptColl)
+Assert-Eq -Label "sdk-bump: real dotnet/sdk later in title still matches → true" -Expected $true  -Actual (Test-IsSdkBumpPr $sbSdkTrail)
 
 # --- Get-ComponentFlowSignal: infer subscription health from the public PR trail ---
 # A working sub leaves a public trail of dep-flow PRs; classify open/fresh/stale/missing.
@@ -4443,6 +4452,51 @@ if (-not (Test-Path -LiteralPath $gateScript)) {
 
     # 6. Empty/null input is returned as-is (no throw).
     Assert-Eq -Label "jsonc: empty input returned unchanged" -Expected '' -Actual (Remove-JsoncComments '')
+}
+
+# --- Test-PluginEnabled: reads the enabled-plugin opt-in out of the user-scope
+#     Copilot settings.json. Regression guard for the minified-JSON false negative:
+#     the matcher was anchored to the start of a physical line ((?m)^\s*), so a
+#     single-line/minified settings.json reported an *enabled* plugin as NOT enabled
+#     (→ wrong AVAILABLE_NOT_ENABLED degradation). The look-behind key-boundary
+#     anchor now tolerates minified JSON. Hermetic: writes fixtures into a throwaway
+#     HOME/USERPROFILE, restores them in finally; no gh/network dependency.
+Write-Host "`n[Unit] Test-PluginEnabled (minified + pretty settings.json)" -ForegroundColor Cyan
+if (Get-Command Test-PluginEnabled -ErrorAction SilentlyContinue) {
+    $savedHome = $env:HOME; $savedProfile = $env:USERPROFILE
+    $tmpHome = Join-Path ([System.IO.Path]::GetTempPath()) ("rr_plugintest_" + [guid]::NewGuid().ToString('N'))
+    try {
+        $cfgDir = Join-Path $tmpHome '.copilot'
+        New-Item -ItemType Directory -Force -Path $cfgDir | Out-Null
+        $cfgPath = Join-Path $cfgDir 'settings.json'
+        $env:HOME = $tmpHome; $env:USERPROFILE = $tmpHome
+
+        # 1. Minified (single-line) settings — the regression case.
+        Set-Content -LiteralPath $cfgPath -Value '{"enabledPlugins":{"dotnet-release-tracker@dotnet-release":true}}' -NoNewline
+        $rMin = Test-PluginEnabled -Plugin 'dotnet-release-tracker'
+        Assert-Eq -Label "plugin: minified single-line settings → enabled"       -Expected $true    -Actual $rMin.Enabled
+        Assert-Eq -Label "plugin: minified reports the fixture as Source"         -Expected $cfgPath -Actual $rMin.Source
+
+        # 2. Pretty-printed settings — must still work (no marketplace suffix).
+        Set-Content -LiteralPath $cfgPath -Value "{`n  `"enabledPlugins`": {`n    `"dotnet-release-tracker`": true`n  }`n}"
+        Assert-Eq -Label "plugin: pretty multi-line settings → enabled"          -Expected $true    -Actual (Test-PluginEnabled -Plugin 'dotnet-release-tracker').Enabled
+
+        # 3. A different key that merely ends with the plugin name must NOT match.
+        Set-Content -LiteralPath $cfgPath -Value '{"enabledPlugins":{"my-dotnet-release-tracker":true}}' -NoNewline
+        Assert-Eq -Label "plugin: suffix-only key does NOT false-positive"        -Expected $false   -Actual (Test-PluginEnabled -Plugin 'dotnet-release-tracker').Enabled
+
+        # 4. Plugin absent entirely → not enabled, null Source.
+        Set-Content -LiteralPath $cfgPath -Value '{"enabledPlugins":{}}' -NoNewline
+        $rNone = Test-PluginEnabled -Plugin 'dotnet-release-tracker'
+        Assert-Eq -Label "plugin: absent entry → not enabled"                    -Expected $false   -Actual $rNone.Enabled
+        Assert-Eq -Label "plugin: absent entry → null Source"                    -Expected $true    -Actual ($null -eq $rNone.Source)
+    } finally {
+        if ($null -eq $savedHome)    { Remove-Item Env:HOME -ErrorAction SilentlyContinue }        else { $env:HOME = $savedHome }
+        if ($null -eq $savedProfile) { Remove-Item Env:USERPROFILE -ErrorAction SilentlyContinue } else { $env:USERPROFILE = $savedProfile }
+        if (Test-Path -LiteralPath $tmpHome) { Remove-Item -LiteralPath $tmpHome -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+} else {
+    Assert-Eq -Label "plugin: Test-PluginEnabled loaded from gate script" -Expected $true -Actual $false
 }
 
 # --- Access-gate dot-source guard: must skip the driver body (return before any
