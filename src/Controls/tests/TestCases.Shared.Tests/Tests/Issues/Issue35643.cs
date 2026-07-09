@@ -18,6 +18,9 @@ public class Issue35643 : _IssuesUITest
 	public void CurrentItemShouldUpdateWhenCurrentItemIsReplaced()
 	{
 		App.WaitForElement("CurrentItemLabel");
+		App.WaitForElement("PositionLabel");
+		App.WaitForTextToBePresentInElement("CurrentItemLabel", "2");
+		App.WaitForTextToBePresentInElement("PositionLabel", "2");
 		Assert.That(App.FindElement("CurrentItemLabel").GetText(), Is.EqualTo("2"), "Initial CurrentItem should be '2'");
 		Assert.That(App.FindElement("PositionLabel").GetText(), Is.EqualTo("2"), "Initial Position should be 2");
 
@@ -36,10 +39,14 @@ public class Issue35643 : _IssuesUITest
 	public void CurrentItemShouldUpdateWhenCurrentItemIsReplacedInLoopMode()
 	{
 		App.WaitForElement("LoopCurrentItemLabel");
+		App.WaitForElement("LoopPositionLabel");
+		App.WaitForTextToBePresentInElement("LoopCurrentItemLabel", "C");
+		App.WaitForTextToBePresentInElement("LoopPositionLabel", "2");
 		Assert.That(App.FindElement("LoopCurrentItemLabel").GetText(), Is.EqualTo("C"), "Initial CurrentItem should be 'C'");
 		Assert.That(App.FindElement("LoopPositionLabel").GetText(), Is.EqualTo("2"), "Initial Position should be 2");
 
 		App.ScrollTo("LoopReplaceButton");
+		App.WaitForElement("LoopReplaceButton");
 		App.Tap("LoopReplaceButton");
 
 		App.WaitForTextToBePresentInElement("LoopCurrentItemLabel", "C2");
