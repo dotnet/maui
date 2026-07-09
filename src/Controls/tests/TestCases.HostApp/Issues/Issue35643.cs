@@ -90,6 +90,10 @@ public class Issue35643 : ContentPage
 					FontSize = 20
 				};
 				label.SetBinding(Label.TextProperty, ".");
+				// Bind AutomationId to the item value itself so UI tests can confirm the on-screen
+				// carousel cell was actually rebound to the replaced value (RebindVisibleLoopItem),
+				// not just that the VM-bound labels outside the carousel updated.
+				label.SetBinding(Label.AutomationIdProperty, ".");
 				return new Border { Content = label, BackgroundColor = Colors.LightCoral };
 			})
 		};

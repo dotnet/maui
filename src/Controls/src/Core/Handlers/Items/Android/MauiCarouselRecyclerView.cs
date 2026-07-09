@@ -249,16 +249,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var count = observableItemsSource.Count;
 			var savedScrollToCounter = _scrollToCounter;
 
-			// A Replace does not change the item count, so the carousel must stay on the same
-			// position. Detecting the "current element" via GetPosition(CurrentItem) is unreliable
-			// for Replace: replacing the current item's value makes the old CurrentItem reference
-			// unresolvable (GetPosition returns -1), which would otherwise be misread as a removal
-			// and reset the position (e.g. to 0 under KeepItemsInView). Handle Replace explicitly
-			// using the change index so the position is preserved.
+			// Equal-count Replace keeps the item count unchanged, so the position is preserved
+			// explicitly instead of relying on GetPosition(CurrentItem), which returns -1 for the
+			// replaced item and would otherwise be misread as a removal. Unequal-count Replace
+			// (Android's ObservableItemsSource falls back to a full refresh for these) can change
+			// the total count, so it falls through to the existing count-changing logic below,
+			// after clamping the position to avoid going out of range.
 			if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Replace)
 			{
-				HandleReplaceAction(e, carouselPosition, count, savedScrollToCounter);
-				return;
+				var oldReplaceCount = e.OldItems?.Count ?? 0;
+				var newReplaceCount = e.NewItems?.Count ?? 0;
+
+				if (oldReplaceCount > 0 && oldReplaceCount == newReplaceCount)
+				{
+					HandleReplaceAction(e, carouselPosition, count, savedScrollToCounter);
+					return;
+				}
+
+				if (carouselPosition >= count)
+				{
+					carouselPosition = count - 1;
+				}
 			}
 
 			bool removingCurrentElement = currentItemPosition == -1;
