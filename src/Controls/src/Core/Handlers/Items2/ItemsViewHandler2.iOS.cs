@@ -184,6 +184,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				section = (int)indexPath.Section;
 				item = (int)indexPath.Item;
 
+				// Clear any previously armed restore before issuing the new scroll. Otherwise the
+				// synchronous KVO contentOffset notification fired by this ScrollToItem call could be
+				// evaluated against a stale armed target and queue a restore back to the old position.
+#if MACCATALYST
+				if (Controller?.CollectionView is MauiCollectionView mauiCVBeforeScroll)
+				{
+					mauiCVBeforeScroll.ClearPendingScrollRestore();
+				}
+#endif
+
 				Controller.CollectionView.ScrollToItem(indexPath,
 					scrollPosition, args.IsAnimated);
 			}
@@ -192,8 +202,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 #if MACCATALYST
 			if (Controller?.CollectionView is MauiCollectionView mauiCV)
 			{
-				mauiCV.ClearPendingScrollRestore();
-
 				if (!args.IsAnimated)
 				{
 					mauiCV.SetPendingScrollRestore(section, item, scrollPosition);
