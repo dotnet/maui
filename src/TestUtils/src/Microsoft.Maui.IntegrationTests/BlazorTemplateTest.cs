@@ -39,6 +39,14 @@ public class BlazorTemplateTest : BaseTemplateTests
 	[InlineData(DotNetCurrent, "Debug", "--interactivity Server --use-program-main", false, "")]
 	[InlineData(DotNetCurrent, "Release", "--interactivity Auto --use-program-main", false, "TrimMode=partial")]
 
+	// Global interactivity (--all-interactive) — re-enabled by removing the InteractivityLocation
+	// workaround. Only valid when interactivity != None. Exercises the root render mode plus the
+	// Layout -> Web.Client rename and @using ...Web.Client.Layout import for WASM/Auto at root.
+	[InlineData(DotNetCurrent, "Debug", "--interactivity Server --all-interactive", false, "")]
+	[InlineData(DotNetCurrent, "Release", "--interactivity WebAssembly --all-interactive", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Release", "--interactivity Auto --all-interactive", false, "TrimMode=partial")]
+	[InlineData(DotNetCurrent, "Debug", "--interactivity Auto --all-interactive --use-program-main", false, "")]
+
 	// Then, some scenarios with tricky names in Debug builds only
 	// This doesn't work on Android in Release, so we skip that for now
 	// See https://github.com/dotnet/android/issues/9107
@@ -86,6 +94,46 @@ public class BlazorTemplateTest : BaseTemplateTests
 		_output.WriteLine($"Building .NET MAUI app: {mauiAppProjectFile} props: {buildProps}");
 		Assert.True(DotnetInternal.Build(mauiAppProjectFile, config, target: "", properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(mauiAppProjectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	/// <summary>
+	/// Regression guard for the net11 removal of the InteractivityLocation workaround.
+	/// The default template uses per-page interactivity, so the SHARED components that the Hybrid
+	/// app consumes must carry an @rendermode directive (a no-op in the MAUI BlazorWebView thanks
+	/// to https://github.com/dotnet/aspnetcore/pull/65876). With --all-interactive the render mode
+	/// moves to the app root instead. A plain build cannot catch this (the old workaround built
+	/// fine — it failed at runtime), so we assert the generated content directly.
+	/// </summary>
+	[Fact]
+	public void MauiBlazorWebEmitsInteractivityAtCorrectLocation()
+	{
+		SetTestIdentifier("MauiBlazorWeb_InteractivityLocation");
+		const string templateShortName = "maui-blazor-web";
+
+		// Default: per-page interactivity — the shared Counter carries @rendermode, the root is static.
+		var perPageDir = Path.Combine(TestDirectory, "PerPage");
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: perPageDir, framework: DotNetCurrent, output: _output),
+			$"Unable to create per-page {templateShortName}. Check test output for errors.");
+
+		var perPageName = Path.GetFileName(perPageDir);
+		var perPageCounter = File.ReadAllText(Path.Combine(perPageDir, $"{perPageName}.Shared", "Pages", "Counter.razor"));
+		var perPageApp = File.ReadAllText(Path.Combine(perPageDir, $"{perPageName}.Web", "Components", "App.razor"));
+		Assert.Contains("@rendermode InteractiveServer", perPageCounter, StringComparison.Ordinal);
+		Assert.DoesNotContain("<Routes @rendermode", perPageApp, StringComparison.Ordinal);
+
+		// --all-interactive: global interactivity — the render mode moves to the root <Routes>,
+		// and the shared Counter no longer carries a per-page directive.
+		var globalDir = Path.Combine(TestDirectory, "GlobalInteractive");
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: globalDir, framework: DotNetCurrent, additionalDotNetNewParams: "--all-interactive", output: _output),
+			$"Unable to create global {templateShortName}. Check test output for errors.");
+
+		var globalName = Path.GetFileName(globalDir);
+		var globalCounter = File.ReadAllText(Path.Combine(globalDir, $"{globalName}.Shared", "Pages", "Counter.razor"));
+		var globalApp = File.ReadAllText(Path.Combine(globalDir, $"{globalName}.Web", "Components", "App.razor"));
+		Assert.DoesNotContain("@rendermode", globalCounter, StringComparison.Ordinal);
+		Assert.Contains("<Routes @rendermode=\"InteractiveServer\" />", globalApp, StringComparison.Ordinal);
+
+		_output.WriteLine("✅ Per-page emits @rendermode on the shared Counter; --all-interactive emits it at the app root.");
 	}
 
 	/// <summary>
