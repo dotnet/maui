@@ -17,6 +17,7 @@ public class Issue33037NonShell : _IssuesUITest
 	[Category(UITestCategories.Navigation)]
 	[TestCase("Issue33037ScrollViewButton", "Issue33037ScrollViewScroller", "Issue33037 Direct", "DirectScrollView")]
 	[TestCase("Issue33037GridScrollViewButton", "Issue33037GridScrollViewScroller", "Issue33037 Grid", "GridScrollView")]
+	[TestCase("Issue33037ContentViewGridScrollViewButton", "Issue33037ContentViewGridScrollViewScroller", "Issue33037 Wrapped", "ContentViewGridScrollView")]
 	[TestCase("Issue33037ListViewButton", "Issue33037ListViewScroller", "Issue33037 List", "ListView")]
 	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller", "Issue33037 Collection", "CollectionView")]
 	public void LargeTitleCollapsesToVisibleStandardTitle(string buttonId, string scrollerId, string title, string scenarioName)

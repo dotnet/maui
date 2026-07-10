@@ -2161,7 +2161,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				if (!_largeTitleSafeAreaApplied)
+				{
 					rootLayout.SetValueFromRenderer(MauiLayout.SafeAreaEdgesProperty, SafeAreaEdges.None);
+					InvalidateSafeArea(rootLayout);
+				}
 
 				_largeTitleSafeAreaRootLayout = new(rootLayout);
 				_largeTitleSafeAreaApplied = true;
@@ -2172,6 +2175,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_largeTitleSafeAreaRootLayout?.TryGetTarget(out var rootLayout) == true)
 				{
 					rootLayout.ClearValue(MauiLayout.SafeAreaEdgesProperty, SetterSpecificity.FromHandler);
+					InvalidateSafeArea(rootLayout);
 				}
 
 				_largeTitleSafeAreaRootLayout = null;
@@ -2190,7 +2194,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Child is not IContentView contentView)
 					return null;
 
-				return contentView.PresentedContent as MauiLayout;
+				return GetRootLayout(contentView.PresentedContent);
+			}
+
+			MauiLayout GetRootLayout(IView view)
+			{
+				if (view is MauiLayout layout)
+					return layout;
+
+				if (view is IContentView contentView && contentView.PresentedContent is IView content)
+				{
+					if (view is ISafeAreaView2 safeAreaView && safeAreaView.HasExplicitSafeAreaEdges)
+						return null;
+
+					return GetRootLayout(content);
+				}
+
+				return null;
 			}
 
 			bool ShouldExtendRootLayoutUnderNavigationBar(MauiLayout rootLayout)
@@ -2241,6 +2261,31 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				return false;
+			}
+
+			void InvalidateSafeArea(IView view)
+			{
+				if (view.Handler?.PlatformView is MauiView mauiView)
+				{
+					mauiView.InvalidateSafeArea();
+				}
+				else if (view.Handler?.PlatformView is MauiScrollView scrollView)
+				{
+					scrollView.InvalidateSafeArea();
+				}
+
+				if (view is MauiLayout layout)
+				{
+					for (int i = 0; i < layout.Count; i++)
+					{
+						InvalidateSafeArea(layout[i]);
+					}
+				}
+
+				if (view is IContentView contentView && contentView.PresentedContent is IView content)
+				{
+					InvalidateSafeArea(content);
+				}
 			}
 
 			public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations()

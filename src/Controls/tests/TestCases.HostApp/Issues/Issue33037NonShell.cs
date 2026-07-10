@@ -33,6 +33,7 @@ public class Issue33037NonShellRootPage : ContentPage
 				},
 				CreateButton("Issue33037ScrollViewButton", "Direct ScrollView", () => new Issue33037NonShellScrollViewPage()),
 				CreateButton("Issue33037GridScrollViewButton", "Grid wrapping ScrollView", () => new Issue33037NonShellGridScrollViewPage()),
+				CreateButton("Issue33037ContentViewGridScrollViewButton", "ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellContentViewGridScrollViewPage()),
 				CreateButton("Issue33037ListViewButton", "ListView", () => new Issue33037NonShellListViewPage()),
 				CreateButton("Issue33037CollectionViewButton", "CollectionView", () => new Issue33037NonShellCollectionViewPage())
 			}
@@ -135,6 +136,27 @@ class Issue33037NonShellGridScrollViewPage : Issue33037NonShellScenarioPage
 		};
 
 		Content = grid;
+	}
+}
+
+class Issue33037NonShellContentViewGridScrollViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellContentViewGridScrollViewPage() : base("Issue33037 Wrapped")
+	{
+		Content = new ContentView
+		{
+			Content = new Grid
+			{
+				Children =
+				{
+					new ScrollView
+					{
+						AutomationId = "Issue33037ContentViewGridScrollViewScroller",
+						Content = CreateStackContent("Issue33037Wrapped")
+					}
+				}
+			}
+		};
 	}
 }
 
