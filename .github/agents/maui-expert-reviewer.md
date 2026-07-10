@@ -442,7 +442,7 @@ External or caller-supplied values reaching file, path, process, parser, or navi
 **Every finding in this dimension MUST show a source → sink trace:** where the value originates (archive entry, URI, deep/app link, HybridWebView message, picked-file name, environment variable), the operation it reaches (file write, process argument, deserialization, navigation), and the specific missing guard. No trace → no finding. **Exception:** the committed-credentials CHECK below is a value-at-rest concern with no runtime sink — it is exempt from the trace requirement; cite the file and line of the committed value instead.
 
 Report all findings at `[major]`. This dimension does not escalate to `[critical]`; leave any judgment about how serious or what category an issue is to the human reviewer.
-When Wave 3 trims to the top findings by severity, do not drop this dimension's highest-impact findings — a committed-credential finding or an archive/path-escape finding — solely because other dimensions contributed `[critical]` items; the Wave 3 rules enforce keeping at least one representative of each in the posted set.
+When Wave 3 trims to the top findings by severity, do not drop this dimension's highest-impact findings — a committed-credential finding and an archive/path-escape finding — solely because other dimensions contributed `[critical]` items; the Wave 3 rules enforce keeping at least one representative of each in the posted set.
 
 - CHECK: Archive/asset extraction validates each entry and verifies the resolved path stays under the destination root; bulk extraction APIs are used only for archives produced locally by the same build/test step
 - CHECK: Paths built from external or caller-supplied values are normalized and prefix-checked against the intended root, accounting for directory-boundary false matches (`/root` vs `/rootother`)
@@ -631,7 +631,7 @@ Each entry has exactly 3 fields matching the GitHub Pull Request Review API:
 Rules:
 - Group related findings on adjacent lines into a single entry
 - Limit to ≤15 findings — prioritize by severity
-- Exception to the ≤15 cap: from Input and Path Correctness (#31), always retain at least one representative committed-credential finding and one archive/path-escape finding, even when higher-severity findings from other dimensions would otherwise fill the limit
+- Exception to the ≤15 cap: from Input and Path Correctness (#31), always retain at least one representative committed-credential finding and one archive/path-escape finding — these are posted **in addition to** the top-15 (the set may reach 17); they are never swapped in for, and never displace, a higher-severity finding from another dimension
 - Exclude findings already present in existing PR comments (checked in Wave 0 step 5)
 
 **After writing, validate the JSON.** Read back the file, verify it parses as a JSON array, and check every entry has `path` (string), `line` (integer ≥ 1), and `body` (string). If validation fails, fix the file and re-validate.
