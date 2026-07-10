@@ -87,9 +87,9 @@ param(
     [Parameter(Mandatory = $false)]
     [string]$CustomPrompt,
 
-    # Fast test-run toggle (wired from the SkipUITests pipeline parameter). When set, the
-    # Gate phase skips STEP 2-4 (UI-category detection, regression tests, and the device/UI
-    # test verification) and reports SKIPPED, so no emulator/simulator is required.
+    # Fast test-run toggle for local/diagnostic runs. When set, the Gate phase skips
+    # STEP 2-4 (UI-category detection, regression tests, and the device/UI test
+    # verification) and reports SKIPPED, so no emulator/simulator is required.
     [Parameter(Mandatory = $false)]
     [switch]$SkipGate
 )
@@ -1519,7 +1519,7 @@ if ($SkipGate) {
     @"
 ### Gate Result: ⚠️ SKIPPED
 
-Gate skipped (``SkipUITests`` fast test mode). No UI/device tests were run for this pipeline invocation.
+Gate skipped (``-SkipGate`` fast test mode). No UI/device tests were run for this pipeline invocation.
 "@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     Write-Host "  📄 Gate result persisted: SKIPPED (fast test mode)" -ForegroundColor Gray
 } else {
@@ -2742,8 +2742,9 @@ if (Test-Path $labelHelperPath) {
 #  this phase does NOT run. It is invoked (Task 3.5) only when the Copilot review
 #  failed and no summary will be posted — the pipeline gates it on CopilotFailed —
 #  guaranteeing the maintainer's prompt is never silently lost. The analysis file was
-#  written early in the CopilotReview phase (before the fragile try-fix/expert-review
-#  steps) and persists on the same agent. No-op unless -CustomPrompt was supplied.
+#  written at the END of the CopilotReview phase (in the `finally` around STEP 5, AFTER
+#  the try-fix/expert-review steps so it can factor in their results) and persists on the
+#  same agent. No-op unless -CustomPrompt was supplied.
 # ═════════════════════════════════════════════════════════════════════════════
 if ($runPostCustomPrompt -and -not [string]::IsNullOrWhiteSpace($CustomPrompt)) {
     Write-Host ""
