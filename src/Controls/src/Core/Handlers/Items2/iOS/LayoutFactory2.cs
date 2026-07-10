@@ -211,9 +211,13 @@ internal static class LayoutFactory2
 				: NSCollectionLayoutGroup.CreateVertical(groupSize, item, columns);
 
 			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+			{
 				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(horizontalItemSpacing));
+			}
 			else
+			{
 				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(verticalItemSpacing));
+			}
 
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
@@ -221,9 +225,13 @@ internal static class LayoutFactory2
 				section.ContentInsetsReference = UIContentInsetsReference.None;
 
 			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+			{
 				section.InterGroupSpacing = new NFloat(verticalItemSpacing);
+			}
 			else
+			{
 				section.InterGroupSpacing = new NFloat(horizontalItemSpacing);
+			}
 
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
