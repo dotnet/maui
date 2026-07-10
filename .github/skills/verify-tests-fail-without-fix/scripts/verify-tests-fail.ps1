@@ -1362,6 +1362,25 @@ function Write-Log {
     Add-Content -Path $ValidationLog -Value $logLine
 }
 
+# Does a set of build-error results point at one of the PR's OWN detected test files?
+# The gate reverts only FIX files, never test files, so a test file always compiles at the
+# PR's HEAD in BOTH the without-fix and with-fix states. When a self-contained compile error
+# lives in the PR's test (e.g. PR #36170 added `using Microsoft.UI.Xaml.Controls;`, making
+# `SelectionMode` ambiguous → CS0104), it fails identically in both states and would otherwise
+# be mislabeled "pre-existing build failure (not the fix)". Matching the build-error text
+# against a detected test's class name lets us attribute it to the PR (a real, blocking
+# FAILED) instead of downgrading it to a non-blocking INCONCLUSIVE.
+function Test-BuildErrorIsInDetectedTest {
+    param([array]$Results, [array]$Tests)
+    $errText = (@($Results) | Where-Object { $_.BuildError } | ForEach-Object { "$($_.FailureMessage) $($_.Error)" }) -join "`n"
+    if (-not $errText -or -not $Tests) { return $false }
+    foreach ($t in $Tests) {
+        $base = (($t.TestName -split ' \(')[0]).Trim()
+        if ($base -and $errText -match [regex]::Escape($base)) { return $true }
+    }
+    return $false
+}
+
 function Write-MarkdownReport {
     param(
         [bool]$VerificationPassed,
@@ -1389,7 +1408,12 @@ function Write-MarkdownReport {
     # non-blocking infra flake.
     $baselineBuildError = @($WithoutFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
 
-    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($hasEnvError -or $baselineBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
+    # A baseline build error located in the PR's OWN test file is NOT pre-existing/infra — the
+    # PR broke its own test (test files are never reverted). Attribute it to the PR (FAILED),
+    # not INCONCLUSIVE.
+    $prTestBuildError = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $WithoutFixResultsList -Tests $Tests)
+
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or $baselineBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     # When the gate PASSED under the relaxed "at least one test reproduces the bug, none
@@ -1466,7 +1490,9 @@ function Write-MarkdownReport {
             # mislabeled "Fix does not compile" (which blames the PR for a baseline breakage).
             $woExcerpt = ($woBuildError | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
             $woExcerptLine = if ($woExcerpt) { "`n> ``$woExcerpt``" } else { "" }
-            if ($wBuildError.Count -gt 0) {
+            if ($prTestBuildError) {
+                $failureClassification = "🩺 **The PR's test does not compile** — the build error is in one of the PR's own test files, which the gate never reverts, so it fails identically without and with the fix. This is NOT a pre-existing/environment failure — the PR must fix its test (e.g. an ambiguous ``using`` / type collision). Investigate the PR's test code.$woExcerptLine"
+            } elseif ($wBuildError.Count -gt 0) {
                 $failureClassification = "🩺 **Pre-existing build failure (not the fix)** — both the without-fix baseline AND the with-fix build fail with a build error, so the PR's fix is NOT the cause. This is a broken ``main``/merge-base or a toolchain/environment failure (e.g. an ILLink IL1012 trimmer crash). The gate cannot verify anything; investigate the build environment rather than the PR.$woExcerptLine"
             } else {
                 $failureClassification = "🩺 **Base branch does not compile** — the without-fix build failed. The gate's ""does the test fail without the fix"" check is unreliable here; this usually means ``main`` is broken or a merge-base file went missing. Investigate before trusting this gate.$woExcerptLine"
@@ -2086,7 +2112,11 @@ $verificationPassed = ($reproducingCount -gt 0) -and ($withFixGenuineFailCount -
 $baselineBuildError = (@($withoutFixResults) | Where-Object { $_.BuildError }).Count -gt 0
 $withFixBuildError  = (@($withFixResults)    | Where-Object { $_.BuildError }).Count -gt 0
 $anyEnvError        = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.EnvError }).Count -gt 0
-$gateInfraError     = $anyEnvError -or $baselineBuildError
+# A baseline build error inside the PR's OWN test file is the PR's fault (test files are never
+# reverted, so it breaks identically in both states) — a real FAILED, not an infra flake. Keep
+# it OUT of $gateInfraError so it exits 1 (FAILED), matching the report status.
+$prTestBuildError   = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $withoutFixResults -Tests $AllDetectedTests)
+$gateInfraError     = $anyEnvError -or ($baselineBuildError -and -not $prTestBuildError)
 
 Write-Log ""
 Write-Log "Summary:"
