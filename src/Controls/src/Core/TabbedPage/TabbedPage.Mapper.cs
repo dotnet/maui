@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls
 
 #endif
 
+#if PLATFORM
 			TabbedViewHandler.PlatformViewFactory = OnCreatePlatformView;
+#endif
 
 #if IOS
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty), MapPrefersHomeIndicatorAutoHiddenProperty);
