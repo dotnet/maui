@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutHeader = layout;
 				shell.FlyoutContent = new ScrollView() { Content = new Label() { Text = "FlyoutContent" } };
 			},
-			// RunShellTest's callback signature was changed from Func<Shell, IShellContext, Task>
+			// RunShellTest's callback signature was changed from Func<Shell, ShellHandler, Task>
 			// to Func<Shell, Task> so Android handler subclasses can inherit the test without
 			// a platform-specific handler type leaking into the shared callback signature.
 			// The handler is now accessed directly from shell.Handler inside the lambda.

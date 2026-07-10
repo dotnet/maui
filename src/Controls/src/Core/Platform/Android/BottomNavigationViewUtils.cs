@@ -168,7 +168,21 @@ namespace Microsoft.Maui.Controls.Platform
 			bottomView.SetShiftMode(false, false);
 
 			if (loadTasks.Count > 0)
-				await Task.WhenAll(loadTasks);
+			{
+				try
+				{
+					await Task.WhenAll(loadTasks);
+				}
+				catch (Exception ex)
+				{
+					// SetupMenu is async void — an unhandled exception here would crash
+					// the app. SetMenuItemIcon itself no longer swallows exceptions so
+					// its other caller (ShellItemRenderer.UpdateShellSectionIcon, via
+					// FireAndForget) can still observe/log a faulted Task; this catch
+					// only protects SetupMenu's own async-void boundary.
+					System.Diagnostics.Debug.WriteLine($"SetupMenu: one or more icon loads failed: {ex}");
+				}
+			}
 		}
 
 		internal static void SetMenuItemTitle(IMenuItem menuItem, string title)
@@ -184,46 +198,31 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (source is null)
 			{
-				try
-				{
-					// Clear any stale icon left on this (possibly reused) menu item.
-					menuItem.SetIcon(null);
-					onIconLoaded?.Invoke(menuItem);
-				}
-				catch (Exception ex)
-				{
-					// Prevent an unhandled exception from onIconLoaded escaping this
-					// async operation and crashing the app (matches the try/catch
-					// used in the non-null icon path below).
-					System.Diagnostics.Debug.WriteLine($"SetMenuItemIcon failed: {ex}");
-				}
+				// Clear any stale icon left on this (possibly reused) menu item.
+				menuItem.SetIcon(null);
+				onIconLoaded?.Invoke(menuItem);
 				return;
 			}
 
-			try
-			{
-				var services = context.Services;
-				var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-				var imageSourceService = provider.GetRequiredImageSourceService(source);
+			// Exceptions are intentionally allowed to propagate here (not swallowed) so
+			// callers can observe/log failures via the returned Task — e.g. the legacy
+			// ShellItemRenderer.UpdateShellSectionIcon relies on FireAndForget's error
+			// handler seeing a faulted Task. SetupMenu (the other caller) guards its own
+			// async-void boundary separately when awaiting these tasks.
+			var services = context.Services;
+			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
+			var imageSourceService = provider.GetRequiredImageSourceService(source);
 
-				var result = await imageSourceService.GetDrawableAsync(
-					source,
-					context.Context);
+			var result = await imageSourceService.GetDrawableAsync(
+				source,
+				context.Context);
 
-				if (menuItem.IsAlive())
-				{
-					menuItem.SetIcon(result?.Value);
-					// Let the caller reapply per-item icon tint (e.g. to preserve a
-					// FontImageSource's own Color) now that the drawable is installed.
-					onIconLoaded?.Invoke(menuItem);
-				}
-			}
-			catch (Exception ex)
+			if (menuItem.IsAlive())
 			{
-				// Prevent an unhandled exception from an image-load failure escaping
-				// this async operation and crashing the app (matches the previous
-				// LoadBottomNavIconAsync try/catch behavior).
-				System.Diagnostics.Debug.WriteLine($"SetMenuItemIcon failed: {ex}");
+				menuItem.SetIcon(result?.Value);
+				// Let the caller reapply per-item icon tint (e.g. to preserve a
+				// FontImageSource's own Color) now that the drawable is installed.
+				onIconLoaded?.Invoke(menuItem);
 			}
 		}
 
