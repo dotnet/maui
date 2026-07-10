@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using ControlsPage = Microsoft.Maui.Controls.Page;
 using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 
 namespace Maui.Controls.Sample.Issues;
@@ -40,7 +41,7 @@ public class Issue33037NonShellRootPage : ContentPage
 		};
 	}
 
-	Button CreateButton(string automationId, string text, Func<Page> createPage)
+	Button CreateButton(string automationId, string text, Func<ControlsPage> createPage)
 	{
 		var button = new Button
 		{
