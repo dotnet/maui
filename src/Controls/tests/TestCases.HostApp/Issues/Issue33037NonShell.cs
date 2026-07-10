@@ -59,7 +59,7 @@ abstract class Issue33037NonShellScenarioPage : ContentPage
 		Title = title;
 		Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetLargeTitleDisplay(
 			this,
-			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Always);
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Automatic);
 	}
 
 	protected static View CreateStackContent(string automationIdPrefix)

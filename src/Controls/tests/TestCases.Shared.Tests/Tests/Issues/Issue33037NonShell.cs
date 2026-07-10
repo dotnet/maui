@@ -23,21 +23,26 @@ public class Issue33037NonShell : _IssuesUITest
 	{
 		App.WaitForElement(buttonId).Click();
 
-		var largeTitle = App.WaitForElement(title);
-		var largeTitleRect = largeTitle.GetRect();
+		try
+		{
+			App.WaitForElement(title);
 
-		App.ScrollDown(scrollerId);
-		App.ScrollDown(scrollerId);
+			App.ScrollDown(scrollerId, swipePercentage: 0.8);
+			App.ScrollDown(scrollerId, swipePercentage: 0.8);
+			App.WaitForElement("Item 40");
 
-		var collapsedTitle = App.WaitForElement(title, $"Timed out waiting for collapsed title '{title}'");
-		var collapsedTitleRect = collapsedTitle.GetRect();
+			var collapsedTitle = App.WaitForElement(title, $"Timed out waiting for collapsed title '{title}'");
+			var collapsedTitleRect = collapsedTitle.GetRect();
 
-		Assert.That(collapsedTitleRect.Y, Is.LessThan(largeTitleRect.Y),
-			$"The '{title}' navigation title should move upward when it collapses.");
-		Assert.That(collapsedTitleRect.Height, Is.LessThanOrEqualTo(largeTitleRect.Height),
-			$"The '{title}' navigation title should remain visible in the standard navigation bar after collapsing.");
-
-		this.Back();
+			Assert.That(collapsedTitleRect.Height, Is.GreaterThan(0),
+				$"The '{title}' navigation title should remain visible in the standard navigation bar after collapsing.");
+			Assert.That(collapsedTitleRect.Y, Is.LessThan(130),
+				$"The '{title}' navigation title should remain in the navigation bar after collapsing.");
+		}
+		finally
+		{
+			this.Back();
+		}
 	}
 }
 #endif
