@@ -278,7 +278,7 @@ This step runs BEFORE testing so you can catch design flaws before spending time
    - **`## Dimension Routing`** + **`### Always-Active Dimensions`** — pick the dimensions that match your changed files
    - For each routed dimension, jump to its CHECK list under `## Review Dimensions` (e.g., `### 1. Layout Measure-Arrange Correctness`)
 
-   You only need the dimensions that match the files you actually touched plus the always-active ones — typically 3–6 sections, not all 30.
+   You only need the dimensions that match the files you actually touched plus the always-active ones — typically 3–6 sections, not all 31.
 
 2. **Identify your changed files:**
    ```powershell
