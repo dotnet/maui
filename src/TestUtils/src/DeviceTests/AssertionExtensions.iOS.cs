@@ -312,21 +312,6 @@ namespace Microsoft.Maui.DeviceTests
 			return dataBytes;
 		}
 
-		static bool IsPixelEquivalent(
-			byte[] pixelData,
-			int pixelLocation,
-			double red,
-			double green,
-			double blue,
-			double alpha,
-			double tolerance)
-		{
-			return Math.Abs(pixelData[pixelLocation] / 255.0 - red) <= tolerance
-				&& Math.Abs(pixelData[pixelLocation + 1] / 255.0 - green) <= tolerance
-				&& Math.Abs(pixelData[pixelLocation + 2] / 255.0 - blue) <= tolerance
-				&& Math.Abs(pixelData[pixelLocation + 3] / 255.0 - alpha) <= tolerance;
-		}
-
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y, double? tolerance = null)
 		{
 			var cap = bitmap.ColorAtPoint(x, y);
@@ -442,28 +427,25 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task<UIImage> AssertContainsColor(this UIImage bitmap, UIColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
-			var pixelData = GetPixelData(bitmap, out var width, out var height, out var bytesPerRow);
+			var pixelData = GetPixelData(bitmap, out _, out _, out var bytesPerRow);
 			expectedColor.GetRGBA(out var red, out var green, out var blue, out var alpha);
 			var colorTolerance = tolerance ?? 0.000001;
+			var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
 
 			return Task.Run(() =>
 			{
-				var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
-
-				if (withinRectModifier is not null)
-					imageRect = withinRectModifier.Invoke(imageRect);
-
-				var left = Math.Max(0, (int)imageRect.Left);
-				var top = Math.Max(0, (int)imageRect.Top);
-				var right = Math.Min(width, (int)imageRect.Width);
-				var bottom = Math.Min(height, (int)imageRect.Height);
-
-				for (int x = left; x < right; x++)
+				for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 				{
-					for (int y = top; y < bottom; y++)
+					for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 					{
 						var pixelLocation = (bytesPerRow * y) + PixelComponentCount * x;
-						if (IsPixelEquivalent(pixelData, pixelLocation, red, green, blue, alpha, colorTolerance))
+						if (Math.Abs(pixelData[pixelLocation] / 255.0 - red) <= colorTolerance
+							&& Math.Abs(pixelData[pixelLocation + 1] / 255.0 - green) <= colorTolerance
+							&& Math.Abs(pixelData[pixelLocation + 2] / 255.0 - blue) <= colorTolerance
+							&& Math.Abs(pixelData[pixelLocation + 3] / 255.0 - alpha) <= colorTolerance)
 						{
 							return bitmap;
 						}
@@ -476,9 +458,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task<UIImage> AssertDoesNotContainColor(this UIImage bitmap, UIColor unexpectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, ILogger? logger = null)
 		{
-			var pixelData = GetPixelData(bitmap, out var width, out var height, out var bytesPerRow);
-			unexpectedColor.GetRGBA(out var red, out var green, out var blue, out var alpha);
-
 			return Task.Run(() =>
 			{
 				var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
@@ -486,17 +465,11 @@ namespace Microsoft.Maui.DeviceTests
 				if (withinRectModifier is not null)
 					imageRect = withinRectModifier.Invoke(imageRect);
 
-				var left = Math.Max(0, (int)imageRect.Left);
-				var top = Math.Max(0, (int)imageRect.Top);
-				var right = Math.Min(width, (int)imageRect.Width);
-				var bottom = Math.Min(height, (int)imageRect.Height);
-
-				for (int x = left; x < right; x++)
+				for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 				{
-					for (int y = top; y < bottom; y++)
+					for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 					{
-						var pixelLocation = (bytesPerRow * y) + PixelComponentCount * x;
-						if (IsPixelEquivalent(pixelData, pixelLocation, red, green, blue, alpha, 0.000001))
+						if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), unexpectedColor))
 						{
 							throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
 						}

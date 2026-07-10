@@ -143,7 +143,7 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration, itemsLayout, null);
+		}, layoutConfiguration, itemsLayout);
 
 		return layout;
 	}
@@ -197,7 +197,7 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration, itemsLayout, null);
+		}, layoutConfiguration, itemsLayout);
 
 		return layout;
 	}
@@ -457,8 +457,7 @@ internal static class LayoutFactory2
 				null,
 				sectionProvider,
 				layoutConfiguration,
-				linearItemsLayout,
-				weakController)
+				linearItemsLayout)
 			: new UICollectionViewCompositionalLayout(sectionProvider, layoutConfiguration);
 
 		return layout;
@@ -504,22 +503,13 @@ internal static class LayoutFactory2
 		ItemsLayout? _itemsLayout;
 		LayoutGroupingInfo? _groupingInfo;
 		LayoutHeaderFooterInfo? _headerFooterInfo;
-		WeakReference<CarouselViewController2>? _weakCarouselController;
 
-		public CustomUICollectionViewCompositionalLayout(
-			LayoutSnapInfo snapInfo,
-			LayoutGroupingInfo? groupingInfo,
-			LayoutHeaderFooterInfo? headerFooterInfo,
-			UICollectionViewCompositionalLayoutSectionProvider sectionProvider,
-			UICollectionViewCompositionalLayoutConfiguration configuration,
-			ItemsLayout? itemsLayout,
-			WeakReference<CarouselViewController2>? weakCarouselController) : base(sectionProvider, configuration)
+		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsLayout? itemsLayout) : base(sectionProvider, configuration)
 		{
 			_snapInfo = snapInfo;
 			_itemsLayout = itemsLayout;
 			_groupingInfo = groupingInfo;
 			_headerFooterInfo = headerFooterInfo;
-			_weakCarouselController = weakCarouselController;
 		}
 
 		public override void FinalizeCollectionViewUpdates()
@@ -656,7 +646,8 @@ internal static class LayoutFactory2
 			var contentOffset = CollectionView.ContentOffset;
 			var viewport = new CGRect(contentOffset, CollectionView.Bounds.Size);
 
-			if (_weakCarouselController?.TryGetTarget(out var carouselController) == true && carouselController.IsDragging)
+			var carouselController = (CollectionView.Delegate as CarouselViewDelegator2)?.ViewController;
+			if (carouselController?.DragStartPosition is >= 0)
 			{
 				var currentIndexPath = carouselController.GetScrollToIndexPath(carouselController.DragStartPosition);
 				var itemCount = (int)CollectionView.NumberOfItemsInSection(currentIndexPath.Section);
