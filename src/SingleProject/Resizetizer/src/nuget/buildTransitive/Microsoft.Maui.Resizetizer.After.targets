@@ -329,7 +329,15 @@
 
         <ItemGroup>
             <_MauiSplashScreenWithHashes Update="@(_MauiSplashScreenWithHashes)" DarkFile="$([System.IO.Path]::GetFullPath('%(_MauiSplashScreenWithHashes.DarkFile)'))" Condition="'%(_MauiSplashScreenWithHashes.DarkFile)' != ''" />
-            <_MauiSplashScreenDarkFile Include="%(_MauiSplashScreenWithHashes.DarkFile)" Condition="'%(_MauiSplashScreenWithHashes.DarkFile)' != ''" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <_MauiSplashScreenDarkFilesForHash>@(_MauiSplashScreenWithHashes->'%(DarkFile)', '|')</_MauiSplashScreenDarkFilesForHash>
+            <_MauiFirstSplashScreenDarkFileForHash Condition="'@(_MauiSplashScreenWithHashes)' != ''">$(_MauiSplashScreenDarkFilesForHash.Split('|')[0])</_MauiFirstSplashScreenDarkFileForHash>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <_MauiSplashScreenDarkFile Include="$(_MauiFirstSplashScreenDarkFileForHash)" Condition="'$(_MauiFirstSplashScreenDarkFileForHash)' != ''" />
         </ItemGroup>
 
         <GetFileHash Files="@(_MauiSplashScreenDarkFile)" Condition="'@(_MauiSplashScreenDarkFile)' != ''">
@@ -464,7 +472,7 @@
         <GenerateSplashAndroidResources
             Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
-            MauiSplashScreen="@(MauiSplashScreen)"
+            MauiSplashScreen="@(_MauiSplashScreenWithHashes)"
             InputsFile="$(_MauiSplashInputsFile)"
         />
 

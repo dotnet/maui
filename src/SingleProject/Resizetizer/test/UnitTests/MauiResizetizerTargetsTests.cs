@@ -99,6 +99,64 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.Contains("Themed MauiSplashScreen assets require iOS or iPadOS 14.0 or later", output, StringComparison.Ordinal);
 		}
 
+		[Fact]
+		public void ProcessMauiSplashScreensPassesNormalizedSplashItemsToAndroid()
+		{
+			var targetFile = Path.Combine(
+				FindRepositoryRoot(),
+				"src",
+				"SingleProject",
+				"Resizetizer",
+				"src",
+				"nuget",
+				"buildTransitive",
+				"Microsoft.Maui.Resizetizer.After.targets");
+
+			var doc = XDocument.Load(targetFile);
+			var processSplashScreens = Assert.Single(doc.Root.Elements().Where(e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ProcessMauiSplashScreens"));
+			var generateAndroid = Assert.Single(processSplashScreens.Elements().Where(e => e.Name.LocalName == "GenerateSplashAndroidResources"));
+
+			Assert.Equal("@(_MauiSplashScreenWithHashes)", generateAndroid.Attribute("MauiSplashScreen")?.Value);
+		}
+
+		[Fact]
+		public void ResizetizeCollectItemsHashesOnlyFirstSplashDarkFile()
+		{
+			var targetFile = Path.Combine(
+				FindRepositoryRoot(),
+				"src",
+				"SingleProject",
+				"Resizetizer",
+				"src",
+				"nuget",
+				"buildTransitive",
+				"Microsoft.Maui.Resizetizer.After.targets");
+			var darkFileHashElements = GetDarkFileHashElements(targetFile);
+			var projectFile = Path.Combine(DestinationDirectory, "FirstDarkFileHash.proj");
+			var firstDarkFile = Path.Combine(DestinationDirectory, "first-dark.png");
+			var secondDarkFile = Path.Combine(DestinationDirectory, "second-dark.png");
+			Directory.CreateDirectory(DestinationDirectory);
+
+			File.WriteAllText(projectFile,
+				$$"""
+				<Project>
+				  <ItemGroup>
+				    <_MauiSplashScreenWithHashes Include="first.png" DarkFile="{{firstDarkFile}}" />
+				    <_MauiSplashScreenWithHashes Include="second.png" DarkFile="{{secondDarkFile}}" />
+				  </ItemGroup>
+				  <Target Name="Validate">
+				{{darkFileHashElements}}
+				    <Message Importance="high" Text="DarkFiles=@(_MauiSplashScreenDarkFile)" />
+				    <Error Condition="'@(_MauiSplashScreenDarkFile)' != '{{firstDarkFile}}'" Text="Expected only the first splash screen DarkFile to be hashed, got '@(_MauiSplashScreenDarkFile)'." />
+				  </Target>
+				</Project>
+				""");
+
+			var output = RunDotnetMSBuild(projectFile);
+
+			Assert.Contains($"DarkFiles={firstDarkFile}", output, StringComparison.Ordinal);
+		}
+
 		static string GetSplashMetadataElements(string targetFile, bool includeWarnings = false)
 		{
 			var doc = XDocument.Load(targetFile);
@@ -116,6 +174,23 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				: new[] { firstSplashMetadata, themedSplashMetadata };
 
 			return string.Join(Environment.NewLine, elements.Select(e => StripNamespace(e).ToString(SaveOptions.DisableFormatting)));
+		}
+
+		static string GetDarkFileHashElements(string targetFile)
+		{
+			var doc = XDocument.Load(targetFile);
+			var collectItems = Assert.Single(doc.Root.Elements().Where(e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ResizetizeCollectItems"));
+			var darkFileUpdate = Assert.Single(collectItems.Elements().Where(e =>
+				e.Name.LocalName == "ItemGroup" &&
+				e.Elements().Any(child => child.Name.LocalName == "_MauiSplashScreenWithHashes" && child.Attribute("DarkFile") is not null)));
+			var firstDarkFileMetadata = Assert.Single(collectItems.Elements().Where(e =>
+				e.Name.LocalName == "PropertyGroup" &&
+				e.Elements().Any(child => child.Name.LocalName == "_MauiFirstSplashScreenDarkFileForHash")));
+			var darkFileHashItem = Assert.Single(collectItems.Elements().Where(e =>
+				e.Name.LocalName == "ItemGroup" &&
+				e.Elements().Any(child => child.Name.LocalName == "_MauiSplashScreenDarkFile")));
+
+			return string.Join(Environment.NewLine, new[] { darkFileUpdate, firstDarkFileMetadata, darkFileHashItem }.Select(e => StripNamespace(e).ToString(SaveOptions.DisableFormatting)));
 		}
 
 		static XElement StripNamespace(XElement element) =>
