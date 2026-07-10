@@ -1,3 +1,13 @@
+---
+name: find-regression-risk
+description: >-
+  Detects potential regression risks in a PR by cross-referencing lines it REMOVES against
+  lines ADDED by recent labeled bug-fix PRs (i/regression, t/bug, p/0, p/1) touching the same
+  files. Purely mechanical (no AI) — flags REVERT (removed line matches a fix PR's added line),
+  OVERLAP (same file, no exact revert), or CLEAN. Use when asked to "check regression risk",
+  "is this PR reverting a fix", or "find regression risks in PR".
+---
+
 # find-regression-risk
 
 Detects potential regression risks in a PR by cross-referencing removed lines against lines added by recent labeled bug-fix PRs.
