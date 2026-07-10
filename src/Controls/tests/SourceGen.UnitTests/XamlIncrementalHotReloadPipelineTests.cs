@@ -539,6 +539,102 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
+	public void DataTemplate_HotReload_EmitsStableNamedMethod_NotAnonymousLambda()
+	{
+		// Regression for dotnet/maui#36482: under XAML Incremental Hot Reload, the DataTemplate
+		// content must be emitted as a stably-named method (EnC-stable across successive edits),
+		// NOT an anonymous `LoadTemplate = () => { ... }` lambda (whose synthesized-closure identity
+		// is unstable across regenerations and crashes hot reload on successive DataTemplate edits).
+		const string dtV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <CollectionView>
+			        <CollectionView.ItemTemplate>
+			            <DataTemplate>
+			                <Label Text="Hi" TextColor="Black" />
+			            </DataTemplate>
+			        </CollectionView.ItemTemplate>
+			    </CollectionView>
+			</ContentPage>
+			""";
+		const string dtV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <CollectionView>
+			        <CollectionView.ItemTemplate>
+			            <DataTemplate>
+			                <Label Text="Hi" TextColor="Green" />
+			            </DataTemplate>
+			        </CollectionView.ItemTemplate>
+			    </CollectionView>
+			</ContentPage>
+			""";
+
+		XamlHotReloadState.Reset();
+		var (run1, run2) = TwoRuns(dtV1, dtV2);
+
+		string? nameV1 = null, nameV2 = null;
+		foreach (var (label, run) in new[] { ("run1", run1), ("run2", run2) })
+		{
+			var ic = FindSourceByHintSuffix(run, ".xsg.cs");
+			Assert.NotNull(ic);
+
+			// The template content must NOT be an anonymous lambda assigned to LoadTemplate.
+			Assert.DoesNotContain("LoadTemplate = () =>", ic, StringComparison.Ordinal);
+
+			// It must be assigned a named method reference, and that method must be emitted.
+			Assert.Contains("LoadTemplate = LoadTemplate_", ic, StringComparison.Ordinal);
+			var m = System.Text.RegularExpressions.Regex.Match(ic, @"object (LoadTemplate_\d+_\d+)\(\)");
+			Assert.True(m.Success, "expected a named LoadTemplate method");
+
+			// The template body (the edited property) must be present inside the named method.
+			var expectedColor = label == "run1" ? "Colors.Black" : "Colors.Green";
+			Assert.Contains(expectedColor, ic, StringComparison.Ordinal);
+
+			if (label == "run1") nameV1 = m.Groups[1].Value; else nameV2 = m.Groups[1].Value;
+		}
+
+		// EnC anchor: the generated method name must be IDENTICAL across the edit, so Edit-and-Continue
+		// maps it as a clean method-body update rather than a deleted/added synthesized method.
+		Assert.Equal(nameV1, nameV2);
+	}
+
+	[Fact]
+	public void DataTemplate_HotReload_GeneratedNamedMethod_Compiles()
+	{
+		// Ensures the named-method form generated under Incremental Hot Reload for a DataTemplate
+		// (including one with a compiled binding inside it) is valid C# that compiles cleanly.
+		const string xaml = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <CollectionView>
+			        <CollectionView.ItemTemplate>
+			            <DataTemplate>
+			                <Label Text="{Binding Name, StringFormat='Fruit: {0}'}" TextColor="Black" FontSize="16" />
+			            </DataTemplate>
+			        </CollectionView.ItemTemplate>
+			    </CollectionView>
+			</ContentPage>
+			""";
+
+		XamlHotReloadState.Reset();
+		// assertNoCompilationErrors: true throws if the generated .xsg.cs has C# errors.
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(
+			CreateCompilation(), MakeFile(xaml), assertNoCompilationErrors: true);
+
+		var ic = FindSourceByHintSuffix(result, ".xsg.cs");
+		Assert.NotNull(ic);
+		Assert.DoesNotContain("LoadTemplate = () =>", ic, StringComparison.Ordinal);
+		Assert.Contains("LoadTemplate = LoadTemplate_", ic, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void FirstRun_SeedsHotReloadState()
 	{
 		// Arrange

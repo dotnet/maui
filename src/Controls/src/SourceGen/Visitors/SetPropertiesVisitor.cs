@@ -39,6 +39,17 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	// Track properties that have been set to detect duplicates
 	readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
 
+	// Stable, unique name for a DataTemplate's generated LoadTemplate method. Derived from the
+	// template content root's source position so it stays constant across successive property-value
+	// edits (keeping the Edit-and-Continue identity stable); distinct templates have distinct
+	// positions. See dotnet/maui#36482.
+	static string TemplateLoadMethodName(INode node)
+	{
+		var line = node is IXmlLineInfo li && li.HasLineInfo() ? li.LineNumber : 0;
+		var pos = node is IXmlLineInfo li2 && li2.HasLineInfo() ? li2.LinePosition : 0;
+		return $"LoadTemplate_{line}_{pos}";
+	}
+
 	void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
 	{
 		if (!setProperties.TryGetValue(parentNode, out var props))
@@ -229,6 +240,57 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (propertyName == XmlName._CreateContent)
 		{
 			var variable = Context.Variables[parentNode];
+
+			// Under XAML Incremental Hot Reload, emit the template content as a stably-named local
+			// method rather than an anonymous lambda. On each edit the source generator regenerates
+			// InitializeComponent; an anonymous `LoadTemplate = () => { ... }` lambda has an unstable
+			// synthesized-closure identity across regenerations, so successive edits to a control
+			// inside a DataTemplate produce invalid Edit-and-Continue deltas (deleted/renamed
+			// synthesized closure methods) that crash the app, poison Hot Reload, or kill the
+			// watcher (dotnet/maui#36482). A named local function gives EnC a stable name anchor
+			// while preserving capture semantics. Non-HR builds keep the anonymous lambda.
+			if (Context.ProjectItem.EnableIncrementalHotReload)
+			{
+				var methodName = TemplateLoadMethodName(node);
+
+				// Buffer the template body by pointing the child context at a fresh writer.
+				var bodyBuffer = new System.IO.StringWriter(System.Globalization.CultureInfo.InvariantCulture);
+				var bodyWriter = new IndentedTextWriter(bodyBuffer, "\t");
+				var bufferedContext = new SourceGenContext(bodyWriter, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem)
+				{
+					ParentContext = context,
+				};
+
+				node.Accept(new CreateValuesVisitor(bufferedContext), null);
+				node.Accept(new SetNamescopesAndRegisterNamesVisitor(bufferedContext), null);
+				node.Accept(new SetResourcesVisitor(bufferedContext), null);
+				node.Accept(new SetPropertiesVisitor(bufferedContext, stopOnResourceDictionary: true), null);
+				bodyWriter.WriteLine($"return {bufferedContext.Variables[node].ValueAccessor};");
+				bodyWriter.Flush();
+
+				// Wrap the buffered body in a named local function and hoist it to the top of the
+				// generated method (AddLocalMethod bubbles to the root context).
+				var methodBuffer = new System.IO.StringWriter(System.Globalization.CultureInfo.InvariantCulture);
+				var methodWriter = new IndentedTextWriter(methodBuffer, "\t");
+				methodWriter.WriteLine($"object {methodName}()");
+				methodWriter.WriteLine("{");
+				methodWriter.Indent++;
+				foreach (var line in bodyBuffer.ToString().Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))
+				{
+					if (string.IsNullOrWhiteSpace(line))
+						methodWriter.InnerWriter.WriteLine();
+					else
+						methodWriter.WriteLine(line);
+				}
+				methodWriter.Indent--;
+				methodWriter.WriteLine("}");
+				methodWriter.Flush();
+				Context.AddLocalMethod(methodBuffer.ToString());
+
+				Writer.WriteLine($"{variable.ValueAccessor}.LoadTemplate = {methodName};");
+				return;
+			}
+
 			Writer.WriteLine($"{variable.ValueAccessor}.LoadTemplate = () =>");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 			{
