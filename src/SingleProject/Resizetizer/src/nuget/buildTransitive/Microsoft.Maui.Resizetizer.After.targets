@@ -404,7 +404,7 @@
     <Target Name="ProcessMauiSplashScreens"
         Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
-        Outputs="$(_MauiSplashOutputsFile);@(_MauiSplashOutputs)"
+        Outputs="$(_MauiSplashOutputsFile)"
         DependsOnTargets="$(ProcessMauiSplashScreensDependsOnTargets)">
 
         <PropertyGroup>
@@ -511,14 +511,10 @@
             <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
 
-        <!-- Track the generated splash outputs in an obj-scoped manifest so the incremental
-             check re-runs this target if any generated file disappears (see _ReadMauiSplashOutputs
-             and the @(_MauiSplashOutputs) entries in this target's Outputs). The manifest is
-             touched (AlwaysCreate) so it acts as the single up-to-date stamp — mirroring the
-             ResizetizeImages target, which touches only $(_ResizetizerStampFile) and never the
-             generated files themselves. We deliberately do NOT touch @(_MauiSplashAssets): on
-             Android those are $(_MauiIntermediateSplashScreen)**\* and feed LibraryResourceDirectories,
-             so bumping their timestamps would needlessly re-trigger aapt2 on unchanged resources. -->
+        <!-- Track generated splash outputs in an obj-scoped manifest. _ReadMauiSplashOutputs
+             deletes this manifest before the incremental check if an entry is missing, which
+             re-runs this target without re-stamping unchanged Android assets and unnecessarily
+             invalidating aapt2. -->
         <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
         <WriteLinesToFile
             File="$(_MauiSplashOutputsFile)"
@@ -539,12 +535,16 @@
         <ReadLinesFromFile File="$(_MauiSplashOutputsFile)" Condition="Exists ('$(_MauiSplashOutputsFile)')">
             <Output TaskParameter="Lines" ItemName="_MauiSplashOutputs" />
         </ReadLinesFromFile>
+        <ItemGroup>
+            <_MauiMissingSplashOutput Include="@(_MauiSplashOutputs)" Condition="!Exists('%(_MauiSplashOutputs.Identity)')" />
+        </ItemGroup>
+        <Delete Files="$(_MauiSplashOutputsFile)" Condition="'@(_MauiMissingSplashOutput)' != ''" />
     </Target>
 
     <Target Name="ProcessMauiFonts"
         Condition="'$(EnableMauiFontProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
-        Outputs="$(_MauiFontOutputsFile);@(_MauiFontOutputs)"
+        Outputs="$(_MauiFontOutputsFile)"
         AfterTargets="$(ProcessMauiFontsAfterTargets)"
         BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
         DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)">
@@ -586,13 +586,10 @@
             Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(MauiFont)' == '' And Exists('$(_MauiIntermediateFonts)MauiInfo.plist')"
             Files="$(_MauiIntermediateFonts)MauiInfo.plist" />
 
-        <!-- Track the generated font outputs (copied fonts + any iOS partial plist) in an obj-scoped
-             manifest so the incremental check re-runs this target if any generated file disappears
-             (see _ReadMauiFontOutputs and the @(_MauiFontOutputs) entries in this target's Outputs).
-             The manifest is touched (AlwaysCreate) so it acts as the single up-to-date stamp, mirroring
-             ResizetizeImages. We deliberately do NOT touch @(_MauiFontOutputUnique): touching the
-             generated files would needlessly invalidate downstream consumers (e.g. Android aapt2 /
-             iOS asset processing) even when the font content is unchanged. -->
+        <!-- Track generated font outputs (copied fonts + any iOS partial plist) in an obj-scoped
+             manifest. _ReadMauiFontOutputs deletes this manifest before the incremental check if an
+             entry is missing, which re-runs this target without re-stamping unchanged generated files
+             and unnecessarily invalidating downstream consumers. -->
         <ItemGroup>
             <_MauiFontOutputUnique Include="$(_MauiIntermediateFonts)MauiInfo.plist"
                 Condition="'$(_ResizetizerIsiOSApp)' == 'True' And Exists('$(_MauiIntermediateFonts)MauiInfo.plist')" />
@@ -709,6 +706,10 @@
         <ReadLinesFromFile File="$(_MauiFontOutputsFile)" Condition="Exists ('$(_MauiFontOutputsFile)')">
             <Output TaskParameter="Lines" ItemName="_MauiFontOutputs" />
         </ReadLinesFromFile>
+        <ItemGroup>
+            <_MauiMissingFontOutput Include="@(_MauiFontOutputs)" Condition="!Exists('%(_MauiFontOutputs.Identity)')" />
+        </ItemGroup>
+        <Delete Files="$(_MauiFontOutputsFile)" Condition="'@(_MauiMissingFontOutput)' != ''" />
     </Target>
 
     <Target Name="_ReadResizetizeImagesOutputs">

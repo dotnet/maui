@@ -74,9 +74,15 @@ Each processing target (except `mauimanifest.stamp`) has a companion `.inputs` f
 
 1. Write the list of generated files to a `*.outputs` manifest with `WriteLinesToFile`.
 2. Read it back **before** the up-to-date check via a `_Read*Outputs` target wired through `DependsOnTargets`.
-3. Include those files in the target `Outputs`, e.g. `Outputs="$(_MauiFontOutputsFile);@(_MauiFontOutputs)"`.
+3. Before the incremental check, detect missing files from the manifest and delete the
+   manifest when any are absent.
+4. Use the manifest as the target's sole `Outputs`, e.g. `Outputs="$(_MauiFontOutputsFile)"`.
 
-Now if any generated file disappears, MSBuild sees a missing output and re-runs *only* that target. `ProcessMauiFonts` / `ProcessMauiSplashScreens` use this pattern; `ResizetizeImages` keeps its legacy stamp alongside its own `mauiimage.outputs`.
+Now if any generated file disappears, the read target invalidates the manifest, MSBuild sees
+the missing output, and re-runs *only* that target. The target does not re-stamp unchanged
+generated assets, so downstream consumers such as Android aapt2 avoid unnecessary work.
+`ProcessMauiFonts` / `ProcessMauiSplashScreens` use this pattern; `ResizetizeImages` keeps
+its legacy stamp alongside its own `mauiimage.outputs`.
 
 ## Target Pipeline
 
@@ -122,7 +128,7 @@ MSBuild's `Inputs`/`Outputs` incremental check skips **targets** when outputs ar
      in a manifest (read back by _ReadMauiFontOutputs) so a deleted output re-triggers it. -->
 <Target Name="ProcessMauiFonts"
     Inputs="@(MauiFont);$(_MauiFontInputsFile)"
-    Outputs="$(_MauiFontOutputsFile);@(_MauiFontOutputs)"
+    Outputs="$(_MauiFontOutputsFile)"
     DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)"
     ...>
     <Copy SourceFiles="@(MauiFont)" DestinationFolder="$(_MauiIntermediateFonts)" />
@@ -131,14 +137,20 @@ MSBuild's `Inputs`/`Outputs` incremental check skips **targets** when outputs ar
     </ItemGroup>
     <WriteLinesToFile File="$(_MauiFontOutputsFile)" Lines="@(_MauiFontOutput->'%(FullPath)')"
         Overwrite="true" WriteOnlyWhenDifferent="true" />
-    <Touch Files="$(_MauiFontOutputsFile);@(_MauiFontOutput)" AlwaysCreate="True" />
+    <Touch Files="$(_MauiFontOutputsFile)" AlwaysCreate="True" />
 </Target>
 
-<!-- Reads the previous manifest (via DependsOnTargets) so the up-to-date check knows the outputs -->
+<!-- Reads the previous manifest and invalidates it if a generated output is missing. -->
 <Target Name="_ReadMauiFontOutputs">
     <ReadLinesFromFile File="$(_MauiFontOutputsFile)" Condition="Exists('$(_MauiFontOutputsFile)')">
         <Output TaskParameter="Lines" ItemName="_MauiFontOutputs" />
     </ReadLinesFromFile>
+    <ItemGroup>
+        <_MauiMissingFontOutput Include="@(_MauiFontOutputs)"
+            Condition="!Exists('%(_MauiFontOutputs.Identity)')" />
+    </ItemGroup>
+    <Delete Files="$(_MauiFontOutputsFile)"
+        Condition="'@(_MauiMissingFontOutput)' != ''" />
 </Target>
 
 <!-- Target 2: Registers items, ALWAYS runs (no Inputs/Outputs) -->

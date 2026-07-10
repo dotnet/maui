@@ -154,8 +154,9 @@ public class ResizetizerTests : BaseBuildTest
 	// re-trigger ProcessMauiFonts / ProcessMauiSplashScreens on the next build. This is guaranteed by
 	// tracking the generated files in mauifont.outputs / mauisplash.outputs manifests that feed the
 	// targets' Outputs (see _ReadMauiFontOutputs / _ReadMauiSplashOutputs), replacing the old stamp
-	// files whose timestamps could stay newer than the deleted outputs. A final no-op build asserts
-	// both targets are skipped when nothing changed.
+	// files whose timestamps could stay newer than the deleted outputs. It first deletes only the
+	// Apple MauiInfo.plist to verify that its separate manifest entry re-triggers font processing.
+	// A final no-op build asserts both targets are skipped when nothing changed.
 	[Fact]
 	public void BuildRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing()
 	{
@@ -180,6 +181,30 @@ public class ResizetizerTests : BaseBuildTest
 		var intermediateOutputRoots = GetResizetizerOutputRoots(projectDir, config);
 		AssertBuiltTargetPlatforms(intermediateOutputRoots);
 		AssertIntermediateOutputsExist(intermediateOutputRoots);
+
+		var appleOutputRoots = intermediateOutputRoots
+			.Where(IsAppleTargetFramework)
+			.ToArray();
+		Assert.NotEmpty(appleOutputRoots);
+
+		foreach (var appleOutputRoot in appleOutputRoots)
+		{
+			var plistPath = Path.Combine(appleOutputRoot, "resizetizer", "f", "MauiInfo.plist");
+			Assert.True(File.Exists(plistPath), $"Missing generated font plist '{plistPath}'.");
+			File.Delete(plistPath);
+		}
+
+		var plistRecoveryBinlogPath = Path.Combine(projectDir, "plist-recovery.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, binlogPath: plistRecoveryBinlogPath, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to rebuild missing font plists. Check test output/attachments for errors.");
+
+		AssertTargetExecuted(plistRecoveryBinlogPath, "ProcessMauiFonts", appleOutputRoots.Length);
+
+		foreach (var appleOutputRoot in appleOutputRoots)
+		{
+			var plistPath = Path.Combine(appleOutputRoot, "resizetizer", "f", "MauiInfo.plist");
+			Assert.True(File.Exists(plistPath), $"Missing regenerated font plist '{plistPath}'.");
+		}
 
 		foreach (var intermediateOutputRoot in intermediateOutputRoots)
 		{
@@ -290,6 +315,10 @@ public class ResizetizerTests : BaseBuildTest
 	static bool ContainsTargetFramework(string path, string targetFramework) =>
 		path.Contains(targetFramework, StringComparison.OrdinalIgnoreCase);
 
+	static bool IsAppleTargetFramework(string path) =>
+		ContainsTargetFramework(path, $"{DotNetCurrent}-ios") ||
+		ContainsTargetFramework(path, $"{DotNetCurrent}-maccatalyst");
+
 	static void AssertIntermediateOutputsExist(IReadOnlyList<string> intermediateOutputRoots)
 	{
 		foreach (var intermediateOutputRoot in intermediateOutputRoots)
@@ -333,6 +362,17 @@ public class ResizetizerTests : BaseBuildTest
 
 		Assert.True(upToDateSkips >= minimumSkipCount,
 			$"Expected target '{targetName}' to be skipped as up-to-date at least {minimumSkipCount} times, but found {upToDateSkips}. See binlog: {binlogPath}");
+	}
+
+	static void AssertTargetExecuted(string binlogPath, string targetName, int minimumExecutionCount)
+	{
+		Assert.True(File.Exists(binlogPath), $"Binlog not found: {binlogPath}");
+
+		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+		var executions = started - upToDateSkips;
+
+		Assert.True(executions >= minimumExecutionCount,
+			$"Expected target '{targetName}' to execute at least {minimumExecutionCount} times, but found {executions}. See binlog: {binlogPath}");
 	}
 	[Theory]
 	[InlineData("maui", "mauilib", true)]
