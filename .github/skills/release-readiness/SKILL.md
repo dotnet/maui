@@ -264,14 +264,14 @@ Each candidate fix PR is classified with confidence + evidence:
 
 This skill remains report-only: it MUST NOT post a comment, create a branch, or open a backport PR. When reporting a backport candidate:
 
-1. For `merged-on-main-no-backport`, recommend posting this exact comment on the **merged source PR**:
+1. For `merged-on-main-no-backport`, include this exact command in the recommendation for the **merged source PR**:
 
    ```text
    /backport to release/<major>.0.1xx-sr<N>
    ```
 
 2. For `open-on-main`, wait for the source PR to merge, then recommend the same command. For `backport-in-progress`, do not trigger a duplicate backport.
-3. For `merged-non-main-only`, do **not** recommend the command. Require a fix PR to merge into `main` first, then re-evaluate its merge-commit ancestry.
+3. For `merged-non-main-only`, do **not** recommend the command yet. Require a fix PR to merge into `main` first, then rerun readiness; only recommend the command after the merged source PR's ancestry is verified on `main`.
 4. If the automation reports a conflict, recommend manually cherry-picking the source PR's **merge commit** onto the SR branch with `git cherry-pick -x`, resolving and testing the conflict, then opening a PR targeting the SR branch.
 
 Read [Gotcha #4](references/methodology.md#gotcha-4-source-to-sr-backport-workflow) for the generated PR shape and manual fallback commands.
@@ -295,7 +295,7 @@ The SR readiness report rolls operational checks into a single **Blocking** summ
 | **`Versions.props bump`** | All SR runs | `BLOCKED` if `eng/Versions.props` on `main` hasn't been bumped past the current SR cycle (next SR has nowhere to flow). |
 | **`Versions.props servicing flip`** | Live-SR mode only | `BLOCKED` if the SR branch's `eng/Versions.props` is not flipped to servicing-release mode (`PreReleaseVersionLabel=servicing` + `StabilizePackageVersion=true`). After the last backport, create a focused SR PR that preserves `PatchVersion`, replaces `ci.main` and its inflight conditional with `servicing`, and enables stable versions; rerun final CI after it merges. |
 | **`Bug template lists SR version`** | All SR runs | `CLEANUP` if `.github/ISSUE_TEMPLATE/bug-report.yml` on `main` is missing an entry for the SR being shipped (users can't file bugs against the version) — post-release housekeeping, not a ship blocker. |
-| **`Main bumped to next SR cycle`** | All SR runs | `BLOCKED` if the next SR cycle's version hasn't been promoted on `main`. |
+| **`Main bumped to next SR cycle`** | All SR runs | `BLOCKED` if the next SR cycle's version hasn't been promoted on `main`. The next action emits the exact one-line `PatchVersion` edit and PR title while preserving the mainline SDK-band and prerelease settings. |
 | **`BAR default-channel mapping`** | SR branches matching `release/X.Y.Zxx-srN` | `BLOCKED` if the SR branch is not wired to the `.NET <band> SDK` channel in BAR. `UNKNOWN` if `darc` isn't on PATH (report includes the exact verification command). |
 | **`BAR build for SR HEAD`** | When darc is available + SR HEAD SHA known | `READY` if BAR has a published build for the SR HEAD commit. `WATCH` (not blocking — transient) if CI hasn't published one yet. |
 | **`Milestone for current cycle`** | SR + preview branches | `BLOCKED` if the current cycle's milestone (e.g. `.NET 10 SR8` or `.NET 11.0-preview6`) doesn't exist in the GitHub milestone list — fixed issues have nowhere to land. |
@@ -303,6 +303,31 @@ The SR readiness report rolls operational checks into a single **Blocking** summ
 | **`Stale open milestones`** | SR + preview branches | `CLEANUP` if any milestones in the same major + same cycle type (SR or preview) are past their `due_on` by >7 days and still open (already-shipped releases accumulating untriaged issues). |
 | **`CI Failure Scanner signals`** | All SR runs | `WATCH` if fresh ci-scan issues are filed in the last 24h. |
 | **`Known Build Errors`** | All SR runs | `WATCH` if open Known Build Error issues exist that may explain background CI noise. |
+
+### Next-cycle main bump workflow
+
+After `release/<major>.0.1xx-sr<N>` is cut, `main` must move to the next SR
+cycle before SR<N> ships. Use a focused PR targeting `main`:
+
+1. Change only `PatchVersion` in `eng/Versions.props` from the current SR
+   patch to `(N+1)*10`.
+2. Title the PR `Update PatchVersion from <old> to <new>`.
+3. Keep `SdkBandVersion`, `PreReleaseVersionLabel=ci.main`, and
+   `StabilizePackageVersion=false` unchanged.
+4. Keep this PR separate from the release branch's servicing-flip PR.
+
+For SR9 → SR10, the complete source change is:
+
+```diff
+-    <PatchVersion>90</PatchVersion>
++    <PatchVersion>100</PatchVersion>
+```
+
+This is the same one-file, one-line pattern used for SR8 in
+[#35433](https://github.com/dotnet/maui/pull/35433) (`70` → `80`) and SR9 in
+[#35879](https://github.com/dotnet/maui/pull/35879) (`80` → `90`). The skill
+remains report-only: it must explain this PR precisely, never edit or push
+`main` itself.
 
 ### Expected ship date
 
@@ -321,7 +346,7 @@ The BAR checks shell out to `darc` (cached probe via `Get-Command darc`). When d
 
 ## Methodology
 
-Five critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
+Six critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
 
 1. **Cherry-pick number swap**: SR backports get NEW PR numbers (e.g. main #35356 → SR7 #35428). Cannot naively grep source PR numbers; must walk SR-only commits and extract refs from commit bodies.
 
@@ -332,6 +357,8 @@ Five critical gotchas this skill encodes — see [references/methodology.md](ref
 4. **Source-to-SR backport workflow**: Only a merged fix whose merge commit is on `main` is ready for the `/backport to release/<branch>` automation. Non-main fixes must flow to `main` first; an automated conflict requires a manual `git cherry-pick -x` of the source merge commit.
 
 5. **Servicing flip workflow**: The release branch must produce stable packages before ship. All .NET 10 SRs set `PreReleaseVersionLabel=servicing` and `StabilizePackageVersion=true`; a focused flip PR is the normal pattern, while SR8 validly inherited those values during its catch-up merge.
+
+6. **Next-cycle main bump workflow**: After an SR branch is cut, `main` advances through a separate one-line `PatchVersion` PR. The report emits the exact old/new XML and title while preserving `SdkBandVersion` and CI prerelease settings.
 
 ## Shared module
 

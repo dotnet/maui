@@ -743,9 +743,10 @@ function Get-ReleaseShipChecks {
                     -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main is at or past ``$major.$minor.$expectedNextPatchPrefix`` so PRs merging during SR$targetSr stabilization target SR$nextSr correctly." `
                     -NextAction "No bump needed."
             } else {
+                $mainBumpTitle = "Update PatchVersion from $($vpMain.Patch) to $expectedNextPatchPrefix"
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
                     -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. Once SR$targetSr tags, every PR currently merging to main as ``$($vpMain.FullVersion)`` would falsely claim to ship in SR$targetSr." `
-                    -NextAction "Bump eng/Versions.props on main: set <PatchVersion> from $($vpMain.Patch) to $expectedNextPatchPrefix (SR$nextSr cycle) before shipping SR$targetSr."
+                    -NextAction "Open a focused PR targeting ``$($Ctx.mainBranch)`` titled ``$mainBumpTitle``. In ``eng/Versions.props``, change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``. Keep ``SdkBandVersion``, ``PreReleaseVersionLabel=ci.main``, and ``StabilizePackageVersion=false`` unchanged; do not combine this main bump with the SR servicing-flip PR. This is the one-line pattern used by #35433 and #35879. Merge it before shipping SR$targetSr."
             }
         }
     }
@@ -2404,7 +2405,7 @@ function Classify-RegressionCandidate {
         'rejected-from-sr' { 'Check rejection rationale (WorkIQ) — was this intentional or stale?' }
         'backport-in-progress' { 'Track backport PR to completion' }
         'merged-on-main-no-backport' { "On the merged source PR, post ``$backportCommand``" }
-        'merged-non-main-only' { "Flow fix to main first; after its merge, post ``$backportCommand`` on the main PR" }
+        'merged-non-main-only' { 'Flow fix to main first, then rerun readiness to verify the merged source PR is on main before requesting a backport' }
         'open-on-main' { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" }
         'no-fix-yet' { 'No fix exists — investigate priority' }
         default { 'Manual review required' }

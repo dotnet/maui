@@ -3206,6 +3206,30 @@ Assert-Eq -Label "Main-not-bumped: details mention same cycle" -Expected $true `
     -Actual ([bool]($mainBumpCheck.Details -match 'same cycle'))
 Assert-Eq -Label "Main-not-bumped: next action points to 90" -Expected $true `
     -Actual ([bool]($mainBumpCheck.NextAction -match '\b90\b'))
+Assert-Eq -Label "Main-not-bumped: next action gives exact PR title" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match ([regex]::Escape('Update PatchVersion from 80 to 90'))))
+Assert-Eq -Label "Main-not-bumped: next action gives exact old PatchVersion XML" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match ([regex]::Escape('<PatchVersion>80</PatchVersion>'))))
+Assert-Eq -Label "Main-not-bumped: next action gives exact new PatchVersion XML" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match ([regex]::Escape('<PatchVersion>90</PatchVersion>'))))
+Assert-Eq -Label "Main-not-bumped: next action preserves mainline version settings" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match 'SdkBandVersion.*PreReleaseVersionLabel=ci\.main.*StabilizePackageVersion=false.*unchanged'))
+Assert-Eq -Label "Main-not-bumped: next action separates the servicing flip" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match 'do not combine.*servicing-flip'))
+
+# Scenario 1b: SR9 in-flight, main STILL at 10.0.90 — emit the exact
+# triple-digit SR10 bump used by the live 10.0.90 release.
+$checks1b = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=90 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90 } `
+    -SrBranch 'release/10.0.1xx-sr9'
+
+$mainBumpCheck1b = Get-CheckByAreaPrefix -Checks $checks1b -Prefix 'Main bumped to SR10 cycle'
+Assert-Eq -Label "Main-not-bumped SR9→SR10: status BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck1b.Status
+Assert-Eq -Label "Main-not-bumped SR9→SR10: exact PR title" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1b.NextAction -match ([regex]::Escape('Update PatchVersion from 90 to 100'))))
+Assert-Eq -Label "Main-not-bumped SR9→SR10: exact new PatchVersion XML" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1b.NextAction -match ([regex]::Escape('<PatchVersion>100</PatchVersion>'))))
 
 # Scenario 2: SR8 in-flight, main already bumped to 10.0.90 — READY
 $checks2 = Invoke-ShipChecksWithMockedVersions `

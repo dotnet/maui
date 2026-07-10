@@ -137,7 +137,7 @@ Post this exact comment on the merged source PR:
 
 ### Automation conflict fallback
 
-If the workflow cannot apply the change cleanly, use the source PR's **squash merge commit** — not its head-branch tip — to prepare a manual backport:
+If the workflow cannot apply the change cleanly, use the source PR's **merge commit** — not its head-branch tip — to prepare a manual backport:
 
 ```bash
 git fetch origin
@@ -184,6 +184,61 @@ transition:
 Keep the `main` version bump in its own `main` PR. After the servicing PR
 merges, rerun final CI at the new SR HEAD. The report is advisory only: it
 must recommend this PR workflow, never edit a release branch directly.
+
+## Gotcha #6: Next-Cycle Main PatchVersion Bump
+
+### The trap
+
+Cutting an SR branch does not automatically move `main` to the next release
+cycle. If both refs keep the same `PatchVersion`, new work merged to `main`
+continues to identify itself as part of the SR that is about to ship.
+
+Do not solve this by copying the release branch's servicing settings back to
+`main`. The two transitions are independent:
+
+- The SR branch keeps its current `PatchVersion` and switches to
+  `servicing`/stable package production.
+- `main` keeps `ci.main`/prerelease package production and advances only its
+  `PatchVersion`.
+
+### Historical pattern
+
+The .NET 10 transitions were focused, one-file, one-line PRs:
+
+| Preparing | PR | `PatchVersion` |
+|-----------|----|----------------|
+| SR7 | #34943 | `60` → `70` |
+| SR8 | #35433 | `70` → `80` |
+| SR9 | #35879 | `80` → `90` |
+
+`SdkBandVersion` remained `10.0.100`, and the mainline prerelease settings
+were unchanged in each PR.
+
+### The workflow
+
+After `release/<major>.0.1xx-sr<N>` is cut and before SR<N> ships:
+
+1. Open a focused PR targeting `main`.
+2. Change only `eng/Versions.props`:
+
+   ```diff
+   - <PatchVersion><current></PatchVersion>
+   + <PatchVersion><(N+1)*10></PatchVersion>
+   ```
+
+3. Title it `Update PatchVersion from <current> to <(N+1)*10>`.
+4. Keep `SdkBandVersion`, `PreReleaseVersionLabel=ci.main`, and
+   `StabilizePackageVersion=false` unchanged.
+5. Keep the PR separate from the SR servicing-flip PR and merge it before
+   shipping the current SR.
+
+For SR9 → SR10, that means changing only
+`<PatchVersion>90</PatchVersion>` to
+`<PatchVersion>100</PatchVersion>` with title
+`Update PatchVersion from 90 to 100`.
+
+The readiness report must emit these exact instructions when the check is
+blocked. It remains report-only and must not edit or push `main`.
 
 ## Revert Detection
 
