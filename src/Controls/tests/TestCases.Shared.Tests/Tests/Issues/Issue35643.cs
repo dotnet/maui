@@ -59,8 +59,10 @@ public class Issue35643 : _IssuesUITest
 		// The VM-bound labels above are updated directly by the button handler and would pass
 		// even if the on-screen carousel cell itself was never rebound. Confirm the visible
 		// loop carousel cell (whose AutomationId is bound to the item value) was actually
-		// rebound to the replacement value by RebindVisibleLoopItem.
-		App.WaitForElement("C2");
+		// rebound to the replacement value by RebindVisibleLoopItem. Use an id-only query
+		// so this can't be satisfied by WaitForElement's text-fallback matching the VM-bound
+		// LoopCurrentItemLabel, whose displayed text is also "C2".
+		App.WaitForElement(AppiumQuery.ById("C2"));
 	}
 }
 #endif
