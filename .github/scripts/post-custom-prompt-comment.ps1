@@ -211,7 +211,7 @@ if (-not [string]::IsNullOrWhiteSpace($ReviewId) -and $ReviewId -match '^\d+$') 
 # Fallback: search PR reviews for the marker (last match wins — freshest review).
 if (-not $targetReview) {
     try {
-        $reviews = gh api "repos/$REPO/pulls/$PRNumber/reviews?per_page=100" --paginate 2>$null | ConvertFrom-Json
+        $reviews = gh api "repos/$REPO/pulls/$PRNumber/reviews?per_page=100" 2>$null | ConvertFrom-Json
         foreach ($rv in $reviews) {
             if ($rv.body -match [regex]::Escape($MAIN_MARKER)) {
                 $targetReview = $rv
