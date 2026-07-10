@@ -1,5 +1,3 @@
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using ControlsPage = Microsoft.Maui.Controls.Page;
 using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 
@@ -12,7 +10,7 @@ public class Issue33037NonShell : NavigationPage
 	{
 		BarBackgroundColor = Colors.Transparent;
 		BackgroundColor = Colors.Brown;
-		On<iOS>().SetPrefersLargeTitles(true);
+		Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetPrefersLargeTitles(this, true);
 	}
 }
 
@@ -59,7 +57,9 @@ abstract class Issue33037NonShellScenarioPage : ContentPage
 	protected Issue33037NonShellScenarioPage(string title)
 	{
 		Title = title;
-		On<iOS>().SetLargeTitleDisplay(LargeTitleDisplayMode.Always);
+		Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetLargeTitleDisplay(
+			this,
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Always);
 	}
 
 	protected static View CreateStackContent(string automationIdPrefix)
