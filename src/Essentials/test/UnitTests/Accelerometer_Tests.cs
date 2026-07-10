@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices.Sensors;
 using Xunit;
@@ -7,6 +8,83 @@ namespace Tests
 {
 	public class Accelerometer_Tests
 	{
+		// A subscriber that forgets to unsubscribe with "-=" should still be collectible
+		// instead of being retained for the lifetime of the process.
+		[Fact]
+		public void Accelerometer_ReadingChanged_DoesNotLeakForgottenSubscriber()
+		{
+			var subscriberRef = SubscribeWithoutUnsubscribing();
+
+			for (var i = 0; i < 3 && subscriberRef.IsAlive; i++)
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+			}
+
+			Assert.False(subscriberRef.IsAlive,
+				"Accelerometer.ReadingChanged subscriber was still alive after GC; " +
+				"a forgotten unsubscribe should not leak the subscriber for the process lifetime.");
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference SubscribeWithoutUnsubscribing()
+		{
+			var subscriber = new LeakySubscriber();
+			Accelerometer.ReadingChanged += subscriber.OnReadingChanged;
+
+			try
+			{
+				Accelerometer.Stop();
+			}
+			catch
+			{
+				// Not implemented in the reference assembly used by unit tests; the leak
+				// reproduces independently of Start()/Stop() actually running.
+			}
+
+			return new WeakReference(subscriber);
+		}
+
+		sealed class LeakySubscriber
+		{
+			public void OnReadingChanged(object sender, AccelerometerChangedEventArgs e)
+			{
+			}
+		}
+
+		// A weak-reference-based fix must not drop live subscribers: a subscriber that is
+		// still alive should keep receiving ReadingChanged after a GC.
+		[Fact]
+		public void Accelerometer_ReadingChanged_StillNotifiesLiveSubscriberAfterGC()
+		{
+			var subscriber = new CountingSubscriber();
+			Accelerometer.ReadingChanged += subscriber.OnReadingChanged;
+
+			try
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+
+				var implementation = (AccelerometerImplementation)Accelerometer.Default;
+				implementation.OnChanged(new AccelerometerData(1, 2, 3));
+
+				Assert.Equal(1, subscriber.CallCount);
+			}
+			finally
+			{
+				Accelerometer.ReadingChanged -= subscriber.OnReadingChanged;
+			}
+		}
+
+		sealed class CountingSubscriber
+		{
+			public int CallCount { get; private set; }
+
+			public void OnReadingChanged(object sender, AccelerometerChangedEventArgs e) => CallCount++;
+		}
+
 		[Fact]
 		public void Accelerometer_Start() =>
 			Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Accelerometer.Stop());
