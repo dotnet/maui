@@ -113,6 +113,43 @@ git merge-base --is-ancestor "$mergeSha" origin/release/10.0.1xx-sr7 && echo "on
 
 The skill records `onMain`, `onInflight`, `onSr` independently. A PR can be merged-and-on-main, merged-but-only-on-inflight, or merged-and-on-SR (via direct merge or backport).
 
+## Gotcha #4: Source-to-SR Backport Workflow
+
+### The trap
+
+Do not treat a merged PR or an open SR fix branch as a backport candidate. A backport starts from a **merged source PR whose merge commit is on `main`**. Triggering the automation before that point is skipped; triggering it for `merged-non-main-only` bypasses the required mainline fix.
+
+### The automated path
+
+Confirm all of these first:
+
+1. Source PR state is `MERGED`.
+2. Its merge commit is an ancestor of `origin/main`.
+3. No OPEN or MERGED backport PR already targets the SR branch.
+
+Post this exact comment on the merged source PR:
+
+```text
+/backport to release/<major>.0.1xx-sr<N>
+```
+
+`.github/workflows/backport.yml` delegates this operation to Arcade. A successful run creates a branch named `backport/pr-<source-pr>-to-release/<major>.0.1xx-sr<N>` and an SR-targeted PR whose body identifies `Backport of #<source-pr>`. Its cherry-pick commit preserves source pedigree with `(cherry picked from commit <source-merge-sha>)`.
+
+### Automation conflict fallback
+
+If the workflow cannot apply the change cleanly, use the source PR's **squash merge commit** — not its head-branch tip — to prepare a manual backport:
+
+```bash
+git fetch origin
+git switch -c backport/pr-<source-pr>-to-release/<major>.0.1xx-sr<N> \
+  origin/release/<major>.0.1xx-sr<N>
+git cherry-pick -x <source-merge-sha>
+# Resolve any conflicts, then test the resolved behavior.
+git push -u origin HEAD
+```
+
+Open the resulting PR against the SR branch, keep the generated branch/title convention, and state `Backport of #<source-pr>` in its body. After it merges, re-run readiness so the regression is classified from the SR contents rather than the source PR's state.
+
 ## Revert Detection
 
 A fix can land on SR and then be **reverted** later in the same SR window — e.g. PR #35744 was backported to SR7 then reverted via a `[Revert]` commit. A naive "is the PR in SR?" check would falsely report "in SR" while the user effectively ships without the fix.

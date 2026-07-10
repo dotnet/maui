@@ -1432,6 +1432,23 @@ Assert-Eq -Label "contradictory merged backport evidence is low confidence" `
 Assert-Eq -Label "contradictory evidence explains missing SR git contents" `
     -Expected $true -Actual (($classification.evidence -join "`n") -match 'not found in SR git contents')
 
+# A merged source whose commit is on main is ready for the repository's
+# backport automation. The report must emit the exact command, not a generic
+# "open a backport" instruction.
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+
+$mainBackportCandidate = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "merged main source without backport is classified for backport" `
+    -Expected 'merged-on-main-no-backport' -Actual $mainBackportCandidate.classification
+Assert-Eq -Label "merged main source emits exact backport command" `
+    -Expected 'On the merged source PR, post `/backport to release/10.0.1xx-sr7`' `
+    -Actual $mainBackportCandidate.recommendedAction
+
 # ───── Bug regression: issue fixed by SR-direct PR (closing keyword on SR commit) ─────
 # Real-world case: issue #35756 (TabbedPage modal) was fixed by PR #35768 opened
 # directly against release/10.0.1xx-sr7. A later PR #35803 opened against main
@@ -1525,6 +1542,36 @@ $cls2 = Classify-RegressionCandidate `
     -SrContents @{ sourcePrs = @(); reverts = @() }
 Assert-Eq -Label "Partial SrContents (no commits/fixedIssues) does not throw" `
     -Expected 'no-fix-yet' -Actual $cls2.classification
+
+# An open PR against a non-main branch must not be described as ready to
+# backport after merging; it needs a mainline PR first.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix regression on inflight'
+        state       = 'OPEN'
+        baseRefName = 'inflight/current'
+        mergedAt    = $null
+        closedAt    = $null
+        body        = 'Fixes #88888'
+        mergeCommit = $null
+        files       = @([pscustomobject]@{ path = 'src/Core/src/Core.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $false }
+
+$nonMainOpen = Classify-RegressionCandidate `
+    -Issue @{ number = 88888 } `
+    -CandidatePrs @(88889) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "open non-main PR requires review instead of open-on-main" `
+    -Expected 'needs-human-review' -Actual $nonMainOpen.classification
+Assert-Eq -Label "open non-main PR evidence requires main targeting" `
+    -Expected $true -Actual (($nonMainOpen.evidence -join "`n") -match 'must target main')
 
 # ───── Get-IssueCommentPrs (negation guard on fix-phrase scoring) ─────
 # A maintainer comment that NEGATES a fix ("not fixed by #X", "won't fix #Y") must
@@ -2980,14 +3027,14 @@ $mdDataInbound['regressions'] = @(
        candidateFixPrs = @(
            @{ number = 4001; title = 'Fix 9001'; state = 'OPEN'; baseRef = 'main'; onMain = $false; backports = @() }
        )
-       recommendedAction = 'Wait for main merge, then open backport' }
+       recommendedAction = 'Wait for main merge, then post `/backport to release/10.0.1xx-sr8` on the merged source PR' }
     @{ issue = 9002; title = 'Open-on-main regression 2 with very long title that should be truncated when rendered to keep the column readable'
        state = 'OPEN'
        classification = 'open-on-main'; confidence = 'high'; evidence = @()
        candidateFixPrs = @(
            @{ number = 4002; title = 'Fix 9002'; state = 'OPEN'; baseRef = 'main'; onMain = $false; backports = @() }
        )
-       recommendedAction = 'Wait for main merge, then open backport' }
+       recommendedAction = 'Wait for main merge, then post `/backport to release/10.0.1xx-sr8` on the merged source PR' }
     @{ issue = 9003; title = 'Backport-in-progress regression'; state = 'OPEN'
        classification = 'backport-in-progress'; confidence = 'high'; evidence = @()
        candidateFixPrs = @(
@@ -3021,6 +3068,8 @@ Assert-Eq -Label "Open Fix PRs Inbound: in-sr-active regression (#9004) NOT list
     -Actual ($inboundSection -match '#9004')
 Assert-Eq -Label "Open Fix PRs Inbound: status column distinguishes main vs SR" -Expected $true `
     -Actual (($inboundSection -match '🔵 OPEN — awaiting main merge') -and ($inboundSection -match '🟡 backport OPEN on SR'))
+Assert-Eq -Label "Open Fix PRs Inbound: main PR row shows exact backport command" -Expected $true `
+    -Actual ($inboundSection -match '/backport to release/10\.0\.1xx-sr8')
 Assert-Eq -Label "Open Fix PRs Inbound: long titles truncated at 70 chars" -Expected $true `
     -Actual ($inboundSection -match 'Open-on-main regression 2[^|]*\.\.\.')
 

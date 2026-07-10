@@ -260,6 +260,22 @@ Each candidate fix PR is classified with confidence + evidence:
 | `closed-fix-unlinked` | Issue is CLOSED and a closing comment **explicitly names** a fix PR (fix/resolve/close language) that is MERGED and present on the release branch, but the PR↔issue link was never recorded (no closing keyword / cross-reference). A bare mention of a PR (e.g. naming the *cause* PR for context) does **not** qualify. Non-blocking; action is to add a closing reference for traceability |
 | `needs-human-review` | Evidence is contradictory or weak |
 
+## SR backport handoff
+
+This skill remains report-only: it MUST NOT post a comment, create a branch, or open a backport PR. When reporting a backport candidate:
+
+1. For `merged-on-main-no-backport`, recommend posting this exact comment on the **merged source PR**:
+
+   ```text
+   /backport to release/<major>.0.1xx-sr<N>
+   ```
+
+2. For `open-on-main`, wait for the source PR to merge, then recommend the same command. For `backport-in-progress`, do not trigger a duplicate backport.
+3. For `merged-non-main-only`, do **not** recommend the command. Require a fix PR to merge into `main` first, then re-evaluate its merge-commit ancestry.
+4. If the automation reports a conflict, recommend manually cherry-picking the source PR's **merge commit** onto the SR branch with `git cherry-pick -x`, resolving and testing the conflict, then opening a PR targeting the SR branch.
+
+Read [Gotcha #4](references/methodology.md#gotcha-4-source-to-sr-backport-workflow) for the generated PR shape and manual fallback commands.
+
 ## CI Status Categories
 
 | CI verdict | Meaning |
@@ -305,13 +321,15 @@ The BAR checks shell out to `darc` (cached probe via `Get-Command darc`). When d
 
 ## Methodology
 
-Three critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
+Four critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
 
 1. **Cherry-pick number swap**: SR backports get NEW PR numbers (e.g. main #35356 → SR7 #35428). Cannot naively grep source PR numbers; must walk SR-only commits and extract refs from commit bodies.
 
 2. **Timeline cross-references**: `closedByPullRequestsReferences` returns empty for most MAUI issues. The skill walks `gh api repos/.../issues/N/timeline` filtering on `cross-referenced` events.
 
 3. **Forward-flow / non-main merges**: A fix can merge into `inflight/current` only, not `main` (real example: PR #35609). The skill checks `git merge-base --is-ancestor $mergeCommit origin/main` before claiming a fix is "on main, just needs backport".
+
+4. **Source-to-SR backport workflow**: Only a merged fix whose merge commit is on `main` is ready for the `/backport to release/<branch>` automation. Non-main fixes must flow to `main` first; an automated conflict requires a manual `git cherry-pick -x` of the source merge commit.
 
 ## Shared module
 

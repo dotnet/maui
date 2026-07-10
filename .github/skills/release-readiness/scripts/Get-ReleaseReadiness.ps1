@@ -2331,8 +2331,14 @@ function Classify-RegressionCandidate {
                 }
             }
             elseif ($pr.state -eq 'OPEN') {
-                $verdict = 'open-on-main'
-                $evidence += "PR #$($pr.number) is OPEN, base=$($pr.baseRef)"
+                if ($pr.baseRef -eq $Ctx.mainBranch) {
+                    $verdict = 'open-on-main'
+                    $evidence += "PR #$($pr.number) is OPEN against main"
+                } else {
+                    $verdict = 'needs-human-review'
+                    $confidence = 'medium'
+                    $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef), not main — it must target main before it can be backported"
+                }
             }
             else {
                 $verdict = 'needs-human-review'
@@ -2391,14 +2397,15 @@ function Classify-RegressionCandidate {
         }
     }
 
+    $backportCommand = "/backport to $($Ctx.srBranch)"
     $recAction = switch ($best.verdict) {
         'in-sr-active' { 'No action — fix is shipping' }
         'in-sr-reverted' { 'Investigate: backport landed and was reverted on SR' }
         'rejected-from-sr' { 'Check rejection rationale (WorkIQ) — was this intentional or stale?' }
         'backport-in-progress' { 'Track backport PR to completion' }
-        'merged-on-main-no-backport' { 'Open a backport PR to SR' }
-        'merged-non-main-only' { 'Flow fix to main first, then backport to SR' }
-        'open-on-main' { 'Wait for main merge, then open backport' }
+        'merged-on-main-no-backport' { "On the merged source PR, post ``$backportCommand``" }
+        'merged-non-main-only' { "Flow fix to main first; after its merge, post ``$backportCommand`` on the main PR" }
+        'open-on-main' { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" }
         'no-fix-yet' { 'No fix exists — investigate priority' }
         default { 'Manual review required' }
     }
@@ -3761,7 +3768,7 @@ function Format-MarkdownReport {
                         baseCell = $base
                         issCell = $issCell
                         statusCell = '🔵 OPEN — awaiting main merge'
-                        actionCell = 'Watch for merge, then open backport to SR'
+                        actionCell = "Watch for merge, then post ``/backport to $srBranch`` on the merged source PR"
                     })
                 }
             }
