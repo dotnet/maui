@@ -27,7 +27,6 @@ public class Issue36298 : _IssuesUITest
 		// Label is updated to "Success" only if the switch completed without crashing.
 		// WaitForElement("SuccessLabel") alone is insufficient because the label
 		// is present from page load; we must verify the text was actually updated.
-		App.WaitForElement("SuccessLabel");
-		Assert.That(App.FindElement("SuccessLabel").GetText(), Is.EqualTo("Success"));
+		Assert.That(App.WaitForTextToBePresentInElement("SuccessLabel", "Success"), Is.True);
 	}
 }

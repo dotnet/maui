@@ -27,11 +27,19 @@ namespace Microsoft.Maui.Handlers
 			{
 				var platformView = view.ToPlatform(handler.MauiContext);
 
-				// Detach from existing parent — mirrors Android RemoveFromParent / iOS RemoveFromSuperview
-				if (platformView is FrameworkElement fwElement &&
-					fwElement.Parent is MauiPanel existingParent)
+				// Detach from existing parent — mirrors Android RemoveFromParent / iOS RemoveFromSuperview.
+				// When the parent is a ContentPanel, use its Content setter so the internal _content
+				// field is cleared consistently (clip/border logic relies on ContentPanel._content).
+				if (platformView is FrameworkElement fwElement && fwElement.Parent is not null)
 				{
-					existingParent.CachedChildren.Remove(fwElement);
+					if (fwElement.Parent is ContentPanel existingContentPanel)
+					{
+						existingContentPanel.Content = null;
+					}
+					else if (fwElement.Parent is MauiPanel existingPanel)
+					{
+						existingPanel.CachedChildren.Remove(fwElement);
+					}
 				}
 
 				handler.PlatformView.Content = platformView;
