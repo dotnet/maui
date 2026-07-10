@@ -21,11 +21,7 @@ public class Issue28986_FlyoutPage : _IssuesUITest
 		App.WaitForElement("ContentGrid");
 		App.SetOrientationLandscape();
 		App.WaitForElement("ContentGrid");
-#if ANDROID
-		VerifyScreenshot(cropLeft: 125);
-#else
 		VerifyScreenshot();
-#endif
 	}
 }
 #endif
