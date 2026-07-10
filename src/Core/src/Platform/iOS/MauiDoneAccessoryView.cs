@@ -20,7 +20,12 @@ namespace Microsoft.Maui.Platform
 		static bool UseGlassButton => OperatingSystem.IsIOSVersionAtLeast(26);
 
 		readonly BarButtonItemProxy _proxy;
-		UIButton? _doneButton;
+
+		// Cache the discovered button so hit-testing (iOS 26+) doesn't walk the subview tree on every
+		// touch. It's held weakly because the button is already retained by the native Subviews array,
+		// so a strong managed field here would trip the MEM0002 memory-leak analyzer for NSObject
+		// subclasses. The weak reference effectively always resolves while the button is a subview.
+		WeakReference<UIButton>? _doneButton;
 
 		public MauiDoneAccessoryView() : base(InitialFrame())
 		{
@@ -34,7 +39,18 @@ namespace Microsoft.Maui.Platform
 			Initialize(_proxy.OnClicked);
 		}
 
-		internal UIButton? DoneButton => _doneButton ??= FindDoneButton(this);
+		internal UIButton? DoneButton
+		{
+			get
+			{
+				if (_doneButton is not null && _doneButton.TryGetTarget(out var cached))
+					return cached;
+
+				var button = FindDoneButton(this);
+				_doneButton = button is null ? null : new WeakReference<UIButton>(button);
+				return button;
+			}
+		}
 
 		internal void SetDoneClicked(Action<object>? value) => _proxy.SetDoneClicked(value);
 
@@ -103,7 +119,7 @@ namespace Microsoft.Maui.Platform
 			ClipsToBounds = false;
 
 			var button = CreateGlassButton(doneClicked);
-			_doneButton = button;
+			_doneButton = new WeakReference<UIButton>(button);
 			AddSubview(button);
 
 			NSLayoutConstraint.ActivateConstraints(new[]
