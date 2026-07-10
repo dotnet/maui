@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
-		public void MultiInputIsNotUpToDateWhenSourceInputsAreMissing()
+		public void MultiInputIsNotUpToDateWhenDeclaredSourceInputIsMissing()
 		{
 			var missingInputFile = Path.Combine(DestinationDirectory, "missing.png");
 			var outputFile = Path.Combine(DestinationDirectory, "image.out");
@@ -52,6 +52,22 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			Assert.False(Resizer.IsUpToDate(new[] { missingInputFile }, outputFile, inputsFile, logger));
 			Assert.Empty(logger.Messages);
+		}
+
+		[Fact]
+		public void MultiInputCanBeUpToDateWhenSourceInputsAreEmpty()
+		{
+			var outputFile = Path.Combine(DestinationDirectory, "image.out");
+			var inputsFile = Path.Combine(DestinationDirectory, "mauiimage.inputs");
+
+			File.WriteAllText(inputsFile, "ResizeQuality=Auto");
+			File.WriteAllText(outputFile, "output");
+			File.SetLastWriteTimeUtc(outputFile, File.GetLastWriteTimeUtc(inputsFile).AddSeconds(1));
+
+			var logger = new TestLogger();
+
+			Assert.True(Resizer.IsUpToDate(new string[] { null, string.Empty }, outputFile, inputsFile, logger));
+			Assert.Single(logger.Messages);
 		}
 	}
 }
