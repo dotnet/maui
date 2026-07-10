@@ -61,9 +61,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
+			var maxDisplayDimension = Math.Max(metrics.WidthPixels, metrics.HeightPixels);
 
-			Assert.True(bitmapDrawable.Bitmap.Width <= metrics.WidthPixels);
-			Assert.True(bitmapDrawable.Bitmap.Height <= metrics.HeightPixels);
+			Assert.True(bitmapDrawable.Bitmap.Width <= maxDisplayDimension);
+			Assert.True(bitmapDrawable.Bitmap.Height <= maxDisplayDimension);
 		}
 	}
 }

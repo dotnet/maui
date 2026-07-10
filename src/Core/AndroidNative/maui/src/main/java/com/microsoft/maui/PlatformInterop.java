@@ -359,7 +359,6 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(file);
-        builder = limitToDisplaySize(builder, imageView.getContext());
         loadInto(builder, imageView, true, callback, file);
     }
 
@@ -367,7 +366,6 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(resourceId);
-        builder = limitToDisplaySize(builder, imageView.getContext());
         loadInto(builder, imageView, true, callback, resourceId);
     }
 
@@ -380,7 +378,6 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(androidUri);
-        builder = limitToDisplaySize(builder, imageView.getContext());
         loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
@@ -388,7 +385,6 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(inputStream);
-        builder = limitToDisplaySize(builder, imageView.getContext());
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
