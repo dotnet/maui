@@ -52,10 +52,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			var platformView = handler.PlatformView;
 
+			if (platformView is null)
+				return;
+
 			if (imageButton.Background.IsNullOrEmpty())
 			{
 				platformView.RemoveBackgroundLayer();
-				platformView.BackgroundColor = null;
+				platformView.BackgroundColor = UIColor.Clear;
 			}
 			else
 			{

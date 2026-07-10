@@ -2,7 +2,7 @@ namespace Maui.Controls.Sample.Issues;
 
 
 [Issue(IssueTracker.Github, 36302, "Image and ImageButton backgrounds not cleared on iOS/MacCatalyst when set to null",
-    PlatformAffected.iOS)]
+    PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue36302 : ContentPage
 {
     public Issue36302()
@@ -12,7 +12,7 @@ public class Issue36302 : ContentPage
             Source = "dotnet_bot.png",
             HeightRequest = 80,
             WidthRequest = 80,
-            Background = new SolidColorBrush(Colors.Blue),
+            BackgroundColor = Colors.Blue,
             AutomationId = "BackgroundImage",
         };
 
@@ -21,7 +21,7 @@ public class Issue36302 : ContentPage
             Source = "dotnet_bot.png",
             HeightRequest = 80,
             WidthRequest = 80,
-            Background = new SolidColorBrush(Colors.Blue),
+            BackgroundColor = Colors.Blue,
             AutomationId = "BackgroundImageButton",
         };
 
@@ -32,8 +32,8 @@ public class Issue36302 : ContentPage
         };
         clearButton.Clicked += (s, e) =>
         {
-            image.Background = null;
-            imageButton.Background = null;
+            image.BackgroundColor = null;
+            imageButton.BackgroundColor = null;
         };
 
         Content = new VerticalStackLayout

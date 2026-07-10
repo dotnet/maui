@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Handlers
 #endif
 			[nameof(IImage.Aspect)] = MapAspect,
 			[nameof(IImage.IsAnimationPlaying)] = MapIsAnimationPlaying,
+#if __ANDROID__ || __IOS__ || MACCATALYST || WINDOWS || TIZEN
 			[nameof(IImage.Background)] = MapBackground,
+#endif
 			[nameof(IImage.Source)] = MapSource,
 		};
 
