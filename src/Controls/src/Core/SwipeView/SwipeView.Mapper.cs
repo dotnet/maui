@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls
 			if (swipeView.Content is not null)
 			{
 				var contentBackgroundIsNull = Brush.IsNullOrEmpty(swipeView.Content.Background);
+#pragma warning disable CS0618 // BackgroundColor — SwipeView backward compatibility
 				var contentBackgroundColorIsNull = swipeView.Content.BackgroundColor == null;
+#pragma warning restore CS0618
 
 				if (contentBackgroundIsNull && contentBackgroundColorIsNull)
 				{
@@ -24,10 +26,12 @@ namespace Microsoft.Maui.Controls
 					{
 						swipeView.Content.Background = swipeView.Background;
 					}
+#pragma warning disable CS0618 // BackgroundColor — SwipeView backward compatibility
 					else if (swipeView.BackgroundColor != null)
 					{
 						swipeView.Content.BackgroundColor = swipeView.BackgroundColor;
 					}
+#pragma warning restore CS0618
 				}
 			}
 		}

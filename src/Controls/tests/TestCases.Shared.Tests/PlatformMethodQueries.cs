@@ -16,7 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				{ ImageButton.BorderWidthProperty, Tuple.Create (new[] { "layer", "borderWidth" }, false) },
 				{ View.AnchorXProperty, Tuple.Create (new[] { "getLayerTransformString" }, true) },
 				{ View.AnchorYProperty, Tuple.Create (new[] { "lgetLayerTransformString" }, true) },
+#pragma warning disable CS0618 // Type or member is obsolete
 				{ View.BackgroundColorProperty, Tuple.Create (new[] { "backgroundColor" }, false) },
+#pragma warning restore CS0618 // Type or member is obsolete
 				{ View.IsEnabledProperty, Tuple.Create (new[] { "enabled" }, false) },
 				{ View.OpacityProperty, Tuple.Create (new [] { "alpha" }, true) },
 				{ View.RotationProperty, Tuple.Create (new[] { "getLayerTransformString" }, true) },
@@ -40,7 +42,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				{ ImageButton.SourceProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ View.AnchorXProperty, Tuple.Create(new[] { "getPivotX" }, true) },
 				{ View.AnchorYProperty, Tuple.Create(new[] { "getPivotY" }, true) },
+#pragma warning disable CS0618 // Type or member is obsolete
 				{ View.BackgroundColorProperty, Tuple.Create(new[] { "getBackground", "getColor" }, true) },
+#pragma warning restore CS0618 // Type or member is obsolete
 				{ View.IsEnabledProperty, Tuple.Create(new[] { "isEnabled" }, false) },
 				{ View.OpacityProperty, Tuple.Create(new[] { "getAlpha" }, true) },
 				{ View.RotationProperty, Tuple.Create(new[] { "getRotation" }, true) },
@@ -64,7 +68,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				{ ImageButton.SourceProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ View.AnchorXProperty, Tuple.Create(new[] { "getPivotX" }, true) },
 				{ View.AnchorYProperty, Tuple.Create(new[] { "getPivotY" }, true) },
+#pragma warning disable CS0618 // Type or member is obsolete
 				{ View.BackgroundColorProperty, Tuple.Create(new[] { "getBackground", "getColor" }, true) },
+#pragma warning restore CS0618 // Type or member is obsolete
 				{ View.IsEnabledProperty, Tuple.Create(new[] { "enabled" }, false) },
 				{ View.OpacityProperty, Tuple.Create(new[] { "getAlpha" }, true) },
 				{ View.RotationProperty, Tuple.Create(new[] { "getRotation" }, true) },

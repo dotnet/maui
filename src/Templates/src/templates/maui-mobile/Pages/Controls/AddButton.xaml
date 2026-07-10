@@ -1,6 +1,6 @@
 <Button x:Class="MauiApp._1.Pages.Controls.AddButton"
     ImageSource="{StaticResource IconAdd}" 
-    BackgroundColor="{StaticResource Primary}" 
+    Background="{StaticResource Primary}" 
     CornerRadius="30" 
     HeightRequest="60" 
     WidthRequest="60" 

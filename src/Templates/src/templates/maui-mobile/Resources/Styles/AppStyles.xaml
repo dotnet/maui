@@ -103,7 +103,7 @@
     <Style TargetType="Label">
         <Setter Property="TextColor"
                 Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
-        <Setter Property="BackgroundColor"
+        <Setter Property="Background"
                 Value="Transparent" />
         <Setter Property="FontSize"
                 Value="17" />
@@ -271,7 +271,7 @@
     
 
     <Style TargetType="BoxView" x:Key="ShimmerCustomViewStyle">
-        <Setter Property="BackgroundColor" Value="Gray" />
+        <Setter Property="Background" Value="Gray" />
         <Setter Property="HorizontalOptions" Value="Fill" />
         <Setter Property="VerticalOptions" Value="Center" />
     </Style>

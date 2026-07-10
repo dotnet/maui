@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.ComponentModel;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
@@ -34,7 +35,9 @@ namespace Microsoft.Maui.Controls
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
 #endif
+#pragma warning disable CS0618 // BackgroundColor mapper registration — kept for backward compatibility with existing XAML and bindings
 			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColor);
+#pragma warning restore CS0618
 			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
@@ -45,8 +48,14 @@ namespace Microsoft.Maui.Controls
 			commandMapper.ModifyMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
 		}
 
-		public static void MapBackgroundColor(IViewHandler handler, IView view) =>
+		/// <summary>Updates the handler by re-applying <see cref="VisualElement.Background"/>.</summary>
+		public static void MapBackground(IViewHandler handler, IView view) =>
 			handler.UpdateValue(nameof(Background));
+			
+		[Obsolete("MapBackgroundColor is obsolete. Use MapBackground instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void MapBackgroundColor(IViewHandler handler, IView view) =>
+			MapBackground(handler, view);
 
 		public static void MapBackgroundImageSource(IViewHandler handler, IView view) =>
 			handler.UpdateValue(nameof(Background));
