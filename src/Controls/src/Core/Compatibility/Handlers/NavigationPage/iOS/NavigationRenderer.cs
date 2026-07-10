@@ -16,6 +16,7 @@ using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
+using MauiLayout = Microsoft.Maui.Controls.Layout;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
@@ -547,6 +548,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
 			{
 				UpdateBarBackground();
+				UpdateCurrentPageLargeTitleSafeArea();
 			}
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName
 				  || e.PropertyName == StatusBarTextColorModeProperty.PropertyName)
@@ -567,6 +569,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == IsNavigationBarTranslucentProperty.PropertyName)
 			{
 				UpdateTranslucent();
+				UpdateCurrentPageLargeTitleSafeArea();
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
@@ -576,6 +579,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PrefersLargeTitlesProperty.PropertyName)
 			{
 				UpdateUseLargeTitles();
+				UpdateCurrentPageLargeTitleSafeArea();
 			}
 			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
 			{
@@ -676,6 +680,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateUseLargeTitles()
 		{
 			_viewHandlerWrapper.UpdateProperty(PrefersLargeTitlesProperty.PropertyName);
+		}
+
+		void UpdateCurrentPageLargeTitleSafeArea()
+		{
+			(TopViewController as ParentingViewController)?.UpdateLargeTitleSafeArea();
 		}
 
 		void UpdateTranslucent()
@@ -1386,6 +1395,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			readonly WeakReference<NavigationRenderer> _navigation;
 
 			WeakReference<Page> _child;
+			WeakReference<MauiLayout> _largeTitleSafeAreaRootLayout;
+			bool _largeTitleSafeAreaApplied;
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
@@ -1411,6 +1422,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (child is not null)
 					{
+						RestoreLargeTitleSafeArea();
 						child.PropertyChanged -= HandleChildPropertyChanged;
 					}
 
@@ -1549,6 +1561,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_navigation.TryGetTarget(out n))
 					isTranslucent = n.NavigationBar.Translucent;
 				EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+				UpdateLargeTitleSafeArea();
 
 				base.ViewWillAppear(animated);
 			}
@@ -1646,7 +1659,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
 					UpdatePrefersStatusBarHidden();
 				else if (e.PropertyName == LargeTitleDisplayProperty.PropertyName)
+				{
 					UpdateLargeTitles();
+				}
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
@@ -1654,6 +1669,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
+				else if (e.PropertyName == ContentPage.ContentProperty.PropertyName)
+					UpdateLargeTitleSafeArea();
 			}
 
 			internal void SetupDefaultNavigationBarAppearance()
@@ -2123,6 +2140,107 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							break;
 					}
 				}
+
+				UpdateLargeTitleSafeArea();
+			}
+
+			internal void UpdateLargeTitleSafeArea()
+			{
+				var rootLayout = GetRootLayout();
+
+				if (!IsTrackedRootLayout(rootLayout))
+					RestoreLargeTitleSafeArea();
+
+				if (rootLayout is null)
+					return;
+
+				if (!ShouldExtendRootLayoutUnderNavigationBar(rootLayout))
+				{
+					RestoreLargeTitleSafeArea();
+					return;
+				}
+
+				if (!_largeTitleSafeAreaApplied)
+					rootLayout.SetValueFromRenderer(MauiLayout.SafeAreaEdgesProperty, SafeAreaEdges.None);
+
+				_largeTitleSafeAreaRootLayout = new(rootLayout);
+				_largeTitleSafeAreaApplied = true;
+			}
+
+			void RestoreLargeTitleSafeArea()
+			{
+				if (_largeTitleSafeAreaRootLayout?.TryGetTarget(out var rootLayout) == true)
+				{
+					rootLayout.ClearValue(MauiLayout.SafeAreaEdgesProperty, SetterSpecificity.FromHandler);
+				}
+
+				_largeTitleSafeAreaRootLayout = null;
+				_largeTitleSafeAreaApplied = false;
+			}
+
+			bool IsTrackedRootLayout(MauiLayout rootLayout)
+			{
+				return rootLayout is not null &&
+					_largeTitleSafeAreaRootLayout?.TryGetTarget(out var trackedRootLayout) == true &&
+					ReferenceEquals(rootLayout, trackedRootLayout);
+			}
+
+			MauiLayout GetRootLayout()
+			{
+				if (Child is not IContentView contentView)
+					return null;
+
+				return contentView.PresentedContent as MauiLayout;
+			}
+
+			bool ShouldExtendRootLayoutUnderNavigationBar(MauiLayout rootLayout)
+			{
+				if (!(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+					return false;
+
+				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+					return false;
+
+				if (!navigationRenderer.NavigationBar.Translucent || !navigationRenderer.NavigationBar.PrefersLargeTitles)
+					return false;
+
+				if (NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never)
+					return false;
+
+				if (rootLayout is not ISafeAreaView2 safeAreaView)
+					return false;
+
+				if (!_largeTitleSafeAreaApplied && safeAreaView.HasExplicitSafeAreaEdges)
+					return false;
+
+				if (!HasScrollableContent(rootLayout))
+					return false;
+
+				return true;
+			}
+
+			bool HasScrollableContent(IView view)
+			{
+#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
+				if (view is ScrollView or ListView or ItemsView)
+					return true;
+#pragma warning restore CS0618
+
+				if (view is MauiLayout layout)
+				{
+					for (int i = 0; i < layout.Count; i++)
+					{
+						if (HasScrollableContent(layout[i]))
+							return true;
+					}
+				}
+
+				if (view is IContentView contentView && contentView.PresentedContent is IView content)
+				{
+					return HasScrollableContent(content);
+				}
+
+				return false;
 			}
 
 			public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations()

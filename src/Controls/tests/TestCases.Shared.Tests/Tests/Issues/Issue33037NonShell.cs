@@ -15,11 +15,11 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
-	[TestCase("Issue33037ScrollViewButton", "Issue33037ScrollViewScroller", "Issue33037 Direct")]
-	[TestCase("Issue33037GridScrollViewButton", "Issue33037GridScrollViewScroller", "Issue33037 Grid")]
-	[TestCase("Issue33037ListViewButton", "Issue33037ListViewScroller", "Issue33037 List")]
-	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller", "Issue33037 Collection")]
-	public void LargeTitleCollapsesToVisibleStandardTitle(string buttonId, string scrollerId, string title)
+	[TestCase("Issue33037ScrollViewButton", "Issue33037ScrollViewScroller", "Issue33037 Direct", "DirectScrollView")]
+	[TestCase("Issue33037GridScrollViewButton", "Issue33037GridScrollViewScroller", "Issue33037 Grid", "GridScrollView")]
+	[TestCase("Issue33037ListViewButton", "Issue33037ListViewScroller", "Issue33037 List", "ListView")]
+	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller", "Issue33037 Collection", "CollectionView")]
+	public void LargeTitleCollapsesToVisibleStandardTitle(string buttonId, string scrollerId, string title, string scenarioName)
 	{
 		App.WaitForElement(buttonId).Click();
 
@@ -38,10 +38,12 @@ public class Issue33037NonShell : _IssuesUITest
 				$"The '{title}' navigation title should remain visible in the standard navigation bar after collapsing.");
 			Assert.That(collapsedTitleRect.Y, Is.LessThan(130),
 				$"The '{title}' navigation title should remain in the navigation bar after collapsing.");
+
+			VerifyScreenshot($"Issue33037NonShell_{scenarioName}_AfterScroll", retryTimeout: TimeSpan.FromSeconds(2));
 		}
 		finally
 		{
-			this.Back();
+			App.Back();
 		}
 	}
 }
