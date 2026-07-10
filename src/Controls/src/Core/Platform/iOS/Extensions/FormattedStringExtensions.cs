@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TextTransform defaultTextTransform = TextTransform.Default)
 			=> formattedString.ToNSAttributedString(fontManager, LineBreakMode.WordWrap, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform);
 
-		public static NSAttributedString ToNSAttributedString(
+		internal static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
 			IFontManager fontManager,
 			LineBreakMode defaultLineBreakMode,
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TextTransform defaultTextTransform = TextTransform.Default)
 			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultLineBreakMode: LineBreakMode.WordWrap);
 
-		public static NSAttributedString ToNSAttributedString(
+		internal static NSAttributedString ToNSAttributedString(
 			this Span span,
 			IFontManager fontManager,
 			LineBreakMode defaultLineBreakMode,

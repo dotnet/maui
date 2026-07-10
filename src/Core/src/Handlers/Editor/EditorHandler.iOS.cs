@@ -81,8 +81,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(editor);
 
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, editor);
+			if (!handler.IsConnectingHandler())
+			{
+				// Any text update requires that we update any attributed string formatting
+				MapFormatting(handler, editor);
+			}
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor)

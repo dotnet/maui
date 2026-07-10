@@ -67,8 +67,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(searchBar);
 
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, searchBar);
+			if (!handler.IsConnectingHandler())
+			{
+				// Any text update requires that we update any attributed string formatting
+				MapFormatting(handler, searchBar);
+			}
 		}
 
 		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
