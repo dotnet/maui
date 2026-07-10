@@ -1,6 +1,6 @@
 # Release Readiness — Methodology
 
-This document captures the algorithms used by `Get-ReleaseReadiness.ps1` and **the three gotchas** discovered through real SR analysis that the algorithms exist to prevent.
+This document captures the algorithms used by `Get-ReleaseReadiness.ps1` and **the five gotchas** discovered through real SR analysis that the algorithms exist to prevent.
 
 ## Gotcha #1: Cherry-Pick Number Swap
 
@@ -149,6 +149,41 @@ git push -u origin HEAD
 ```
 
 Open the resulting PR against the SR branch, keep the generated branch/title convention, and state `Backport of #<source-pr>` in its body. After it merges, re-run readiness so the regression is classified from the SR contents rather than the source PR's state.
+
+## Gotcha #5: Servicing Version Flip
+
+### The trap
+
+A release branch cut from `main` normally retains CI versioning. Green CI does
+not prove the branch will produce stable packages: it must use
+`PreReleaseVersionLabel=servicing` and `StabilizePackageVersion=true`.
+
+Every .NET 10 SR1–SR8 finished with both values. SR1–SR7 used an explicit
+flip PR; SR8 inherited the same diff through its catch-up merge from SR7:
+
+| SR | Transition |
+|----|------------|
+| SR1–SR7 | Dedicated servicing flip PRs: #32433, #33057, #33520, #34001, #34371, #34942, #35520 |
+| SR8 | Catch-up merge #35810 preserved PatchVersion 80 and inherited the flip |
+
+### The workflow
+
+After the last required content backport, open a focused PR **targeting the
+SR branch**. Keep `PatchVersion` unchanged and make only this versioning
+transition:
+
+```diff
+- <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
+- <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
++ <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
+...
+- <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
++ <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
+```
+
+Keep the `main` version bump in its own `main` PR. After the servicing PR
+merges, rerun final CI at the new SR HEAD. The report is advisory only: it
+must recommend this PR workflow, never edit a release branch directly.
 
 ## Revert Detection
 

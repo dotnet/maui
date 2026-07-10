@@ -687,7 +687,7 @@ function Get-ReleaseShipChecks {
                 } else {
                     "inherited from ``$prevSrBranch``"
                 }
-                $details = "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` — branch IS configured to produce stable release packages, but the values were $provenance, not from an SR-direct flip PR (no commit on ``$($Ctx.srBranch)`` alone has set ``PreReleaseVersionLabel=servicing``). Functionally fine; surfaced so the release captain knows the workflow deviated from the previous SR's pattern (e.g., SR$($targetSr-1)'s explicit flip PR)."
+                $details = "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` — branch IS configured to produce stable release packages. The values were $provenance, rather than from an SR-direct flip PR; this is the valid cut-then-merge pattern used by .NET 10 SR8."
             }
 
             $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
@@ -699,7 +699,7 @@ function Get-ReleaseShipChecks {
             if (-not $stabilizeOk) { $missing += "``StabilizePackageVersion=$actualStabilize`` (expected ``true``)" }
             $checks += New-ReadinessCheck -Area $flipArea -Status 'BLOCKED' `
                 -Details "``$versionsRef`` is NOT flipped to servicing-release mode: $($missing -join '; '). Without these flips the branch builds prerelease packages and will not ship as a stable .NET release — CI stays green so nothing else catches it." `
-                -NextAction "Edit eng/Versions.props on ``$($Ctx.srBranch)``: set ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>`` and ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. See ``release/$major.$minor.1xx-sr$($targetSr - 1)`` for the canonical diff."
+                -NextAction "After the last required backport, open a focused PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion``; replace the base ``ci.main`` label and remove its ``inflight/current`` conditional with ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>``, then set ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. Keep ``main`` on its next-cycle version and rerun final CI after the SR PR merges."
         }
     }
 

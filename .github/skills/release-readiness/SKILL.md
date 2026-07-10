@@ -293,7 +293,7 @@ The SR readiness report rolls operational checks into a single **Blocking** summ
 | Check | When | Status meanings |
 |-------|------|-----------------|
 | **`Versions.props bump`** | All SR runs | `BLOCKED` if `eng/Versions.props` on `main` hasn't been bumped past the current SR cycle (next SR has nowhere to flow). |
-| **`Versions.props servicing flip`** | Live-SR mode only | `BLOCKED` if the SR branch's `eng/Versions.props` is not flipped to servicing-release mode (`PreReleaseVersionLabel=servicing` + `StabilizePackageVersion=true`). Without it the branch builds prerelease packages and never ships as stable — CI stays green so nothing else catches it. |
+| **`Versions.props servicing flip`** | Live-SR mode only | `BLOCKED` if the SR branch's `eng/Versions.props` is not flipped to servicing-release mode (`PreReleaseVersionLabel=servicing` + `StabilizePackageVersion=true`). After the last backport, create a focused SR PR that preserves `PatchVersion`, replaces `ci.main` and its inflight conditional with `servicing`, and enables stable versions; rerun final CI after it merges. |
 | **`Bug template lists SR version`** | All SR runs | `CLEANUP` if `.github/ISSUE_TEMPLATE/bug-report.yml` on `main` is missing an entry for the SR being shipped (users can't file bugs against the version) — post-release housekeeping, not a ship blocker. |
 | **`Main bumped to next SR cycle`** | All SR runs | `BLOCKED` if the next SR cycle's version hasn't been promoted on `main`. |
 | **`BAR default-channel mapping`** | SR branches matching `release/X.Y.Zxx-srN` | `BLOCKED` if the SR branch is not wired to the `.NET <band> SDK` channel in BAR. `UNKNOWN` if `darc` isn't on PATH (report includes the exact verification command). |
@@ -321,7 +321,7 @@ The BAR checks shell out to `darc` (cached probe via `Get-Command darc`). When d
 
 ## Methodology
 
-Four critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
+Five critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
 
 1. **Cherry-pick number swap**: SR backports get NEW PR numbers (e.g. main #35356 → SR7 #35428). Cannot naively grep source PR numbers; must walk SR-only commits and extract refs from commit bodies.
 
@@ -330,6 +330,8 @@ Four critical gotchas this skill encodes — see [references/methodology.md](ref
 3. **Forward-flow / non-main merges**: A fix can merge into `inflight/current` only, not `main` (real example: PR #35609). The skill checks `git merge-base --is-ancestor $mergeCommit origin/main` before claiming a fix is "on main, just needs backport".
 
 4. **Source-to-SR backport workflow**: Only a merged fix whose merge commit is on `main` is ready for the `/backport to release/<branch>` automation. Non-main fixes must flow to `main` first; an automated conflict requires a manual `git cherry-pick -x` of the source merge commit.
+
+5. **Servicing flip workflow**: The release branch must produce stable packages before ship. All .NET 10 SRs set `PreReleaseVersionLabel=servicing` and `StabilizePackageVersion=true`; a focused flip PR is the normal pattern, while SR8 validly inherited those values during its catch-up merge.
 
 ## Shared module
 

@@ -3312,8 +3312,12 @@ Assert-Eq -Label "Flip-never-applied: details flag StabilizePackageVersion" -Exp
     -Actual ([bool]($flipCheckD.Details -match 'StabilizePackageVersion'))
 Assert-Eq -Label "Flip-never-applied: details mark unset values" -Expected $true `
     -Actual ([bool]($flipCheckD.Details -match '<unset>'))
-Assert-Eq -Label "Flip-never-applied: next action references the prior SR's diff" -Expected $true `
-    -Actual ([bool]($flipCheckD.NextAction -match 'release/10\.0\.1xx-sr7'))
+Assert-Eq -Label "Flip-never-applied: next action requires a focused SR PR" -Expected $true `
+    -Actual ([bool]($flipCheckD.NextAction -match 'focused PR targeting.*release/10\.0\.1xx-sr8'))
+Assert-Eq -Label "Flip-never-applied: next action preserves PatchVersion" -Expected $true `
+    -Actual ([bool]($flipCheckD.NextAction -match 'PatchVersion'))
+Assert-Eq -Label "Flip-never-applied: next action requires final CI" -Expected $true `
+    -Actual ([bool]($flipCheckD.NextAction -match 'rerun final CI'))
 
 # Scenario E: Candidate mode → flip check SKIPPED (main is supposed to be ci.main/false)
 $flipChecksE = Invoke-ShipChecksWithMockedVersions `
