@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Controls.Platform
 {
-    internal static class ShellContentExtension
+    internal static class ShellContentExtensions
     {
 		internal static void UpdateTitle(this ShellContent shellContent)
 		{
