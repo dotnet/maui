@@ -143,7 +143,7 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration, itemsLayout);
+		}, layoutConfiguration, itemsLayout, null);
 
 		return layout;
 	}
@@ -197,7 +197,7 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration, itemsLayout);
+		}, layoutConfiguration, itemsLayout, null);
 
 		return layout;
 	}
@@ -457,7 +457,8 @@ internal static class LayoutFactory2
 				null,
 				sectionProvider,
 				layoutConfiguration,
-				linearItemsLayout)
+				linearItemsLayout,
+				weakController)
 			: new UICollectionViewCompositionalLayout(sectionProvider, layoutConfiguration);
 
 		return layout;
@@ -503,13 +504,22 @@ internal static class LayoutFactory2
 		ItemsLayout? _itemsLayout;
 		LayoutGroupingInfo? _groupingInfo;
 		LayoutHeaderFooterInfo? _headerFooterInfo;
+		WeakReference<CarouselViewController2>? _weakCarouselController;
 
-		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsLayout? itemsLayout) : base(sectionProvider, configuration)
+		public CustomUICollectionViewCompositionalLayout(
+			LayoutSnapInfo snapInfo,
+			LayoutGroupingInfo? groupingInfo,
+			LayoutHeaderFooterInfo? headerFooterInfo,
+			UICollectionViewCompositionalLayoutSectionProvider sectionProvider,
+			UICollectionViewCompositionalLayoutConfiguration configuration,
+			ItemsLayout? itemsLayout,
+			WeakReference<CarouselViewController2>? weakCarouselController) : base(sectionProvider, configuration)
 		{
 			_snapInfo = snapInfo;
 			_itemsLayout = itemsLayout;
 			_groupingInfo = groupingInfo;
 			_headerFooterInfo = headerFooterInfo;
+			_weakCarouselController = weakCarouselController;
 		}
 
 		public override void FinalizeCollectionViewUpdates()
@@ -645,6 +655,42 @@ internal static class LayoutFactory2
 			// Get the viewport of the UICollectionView at the current content offset
 			var contentOffset = CollectionView.ContentOffset;
 			var viewport = new CGRect(contentOffset, CollectionView.Bounds.Size);
+
+			if (_weakCarouselController?.TryGetTarget(out var carouselController) == true && carouselController.IsDragging)
+			{
+				var currentIndexPath = carouselController.GetScrollToIndexPath(carouselController.DragStartPosition);
+				var itemCount = (int)CollectionView.NumberOfItemsInSection(currentIndexPath.Section);
+				if (itemCount > 0)
+				{
+					var velocity = Configuration.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+						? scrollingVelocity.X
+						: scrollingVelocity.Y;
+
+					if (velocity != 0)
+					{
+						var targetItem = (int)currentIndexPath.Item;
+
+						if (velocity > 0)
+							targetItem++;
+						else
+							targetItem--;
+
+						targetItem = Math.Clamp(targetItem, 0, itemCount - 1);
+						var targetIndexPath = NSIndexPath.FromItemSection(targetItem, currentIndexPath.Section);
+						var targetItemAttributes = LayoutAttributesForItem(targetIndexPath);
+
+						if (targetItemAttributes is not null)
+						{
+							return Items.SnapHelpers.AdjustContentOffset(
+								CollectionView.ContentOffset,
+								targetItemAttributes.Frame,
+								viewport,
+								alignment,
+								Configuration.ScrollDirection);
+						}
+					}
+				}
+			}
 
 			// Find the spot in the viewport we're trying to align with
 			var alignmentTarget = Items.SnapHelpers.FindAlignmentTarget(alignment, contentOffset, CollectionView, Configuration.ScrollDirection);

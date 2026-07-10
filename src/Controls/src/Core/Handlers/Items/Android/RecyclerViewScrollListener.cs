@@ -71,29 +71,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// This can also happen if a layout pass has not happened yet
 			if (Last == -1 || ItemsViewAdapter is null || _itemsView.RemainingItemsThreshold == -1)
 			{
+				_pendingRemainingItemsThresholdReached = false;
 				return;
 			}
 
-			var itemsSource = ItemsViewAdapter.ItemsSource;
-			int headerValue = itemsSource.HasHeader ? 1 : 0;
-			int footerValue = itemsSource.HasFooter ? 1 : 0;
-
-			// Calculate actual data item count (excluding header and footer positions)
-			int actualItemCount = ItemsViewAdapter.ItemCount - footerValue - headerValue;
-
-			// Ensure we're within the data items region (not in header/footer)
-			if (Last < headerValue || Last > actualItemCount)
-			{
-				return;
-			}
-
-			// Check if we're at or within threshold distance from the last data item
-			bool isThresholdReached = (Last == actualItemCount - 1) || (actualItemCount - 1 - Last <= _itemsView.RemainingItemsThreshold);
-
-			if (isThresholdReached)
-			{
-				HandleRemainingItemsThresholdReached();
-			}
+			_pendingRemainingItemsThresholdReached = IsRemainingItemsThresholdReached(Last);
 		}
 
 		public override void OnScrollStateChanged(RecyclerView recyclerView, int newState)
@@ -105,19 +87,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_pendingRemainingItemsThresholdReached && newState == RecyclerView.ScrollStateIdle)
 			{
 				_pendingRemainingItemsThresholdReached = false;
-				if (!_disposed && _itemsView is not null)
+				var (_, _, last) = GetVisibleItemsIndex(recyclerView);
+				if (!_disposed && _itemsView is not null && IsRemainingItemsThresholdReached(last))
 				{
 					_itemsView.SendRemainingItemsThresholdReached();
 				}
 			}
 		}
 
-		void HandleRemainingItemsThresholdReached()
+		bool IsRemainingItemsThresholdReached(int lastVisibleItemIndex)
 		{
-			// Mark that we need to trigger the threshold reached event
-			// This will be handled when the RecyclerView transitions to idle state
-			// to avoid the "Cannot call this method in a scroll callback" exception
-			_pendingRemainingItemsThresholdReached = true;
+			if (lastVisibleItemIndex == -1 || ItemsViewAdapter is null || _itemsView.RemainingItemsThreshold == -1)
+			{
+				return false;
+			}
+
+			var itemsSource = ItemsViewAdapter.ItemsSource;
+			int headerValue = itemsSource.HasHeader ? 1 : 0;
+			int footerValue = itemsSource.HasFooter ? 1 : 0;
+			int actualItemCount = ItemsViewAdapter.ItemCount - footerValue - headerValue;
+
+			if (actualItemCount <= 0 || lastVisibleItemIndex < headerValue || lastVisibleItemIndex > actualItemCount)
+			{
+				return false;
+			}
+
+			return lastVisibleItemIndex == actualItemCount - 1
+				|| actualItemCount - 1 - lastVisibleItemIndex <= _itemsView.RemainingItemsThreshold;
 		}
 
 		protected virtual (int First, int Center, int Last) GetVisibleItemsIndex(RecyclerView recyclerView)
