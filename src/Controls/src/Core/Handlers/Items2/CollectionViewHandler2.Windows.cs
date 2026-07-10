@@ -327,21 +327,24 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			? itemPair.Item
 			: PlatformView.SelectedItem;
 
-		// Use flag instead of detach/re-attach so that MapSelectedItem is suppressed
-		// while SelectedItem is set. Both fire synchronously; the flag is reset after.
-			// try/finally ensures the flag and event handler are always restored even if
-			// a BindableProperty callback or user PropertyChanged handler throws.
+		// Detach the SelectionChanged event handler and set a flag to prevent MapSelectedItem
+		// from calling UpdatePlatformSelection when SelectedItem is set. This breaks the
+		// round-trip: WinUI selects item → SelectedItem = item → MapSelectedItem → 
+		// UpdatePlatformSelection (which would undo the selection). Both fire synchronously; 
+		// the flag and handler are restored after. Try/finally ensures the flag and event
+		// handler are always restored even if a BindableProperty callback or user
+		// PropertyChanged handler throws.
 		_ignoreVirtualSelectionChange = true;
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
-			try
-			{
-				ItemsView.SelectedItem = selectedItem;
-			}
-			finally
-			{
-				ItemsView.SelectionChanged += VirtualSelectionChanged;
-				_ignoreVirtualSelectionChange = false;
-			}
+		try
+		{
+			ItemsView.SelectedItem = selectedItem;
+		}
+		finally
+		{
+			ItemsView.SelectionChanged += VirtualSelectionChanged;
+			_ignoreVirtualSelectionChange = false;
+		}
 	}
 
 	void UpdateVirtualMultipleSelection()

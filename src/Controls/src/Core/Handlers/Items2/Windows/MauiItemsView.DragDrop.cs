@@ -582,6 +582,14 @@ internal partial class MauiItemsView
 			return item is null;
 		}
 
+		// Prevent header/footer containers from being treated as dragged sources.
+		// Header/footer items are not draggable and should never match the dragged item,
+		// even if both have null BindingContext. Only data items can be the drag source.
+		if (wrapper.IsHeaderOrFooter)
+		{
+			return false;
+		}
+
 		var bound = view.BindingContext;
 		// Allow null-bound containers to match a null dragged item.
 		// ReferenceEquals(null, null) == true, Equals(null, null) == true.
