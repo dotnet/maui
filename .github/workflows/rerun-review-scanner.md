@@ -323,9 +323,18 @@ such limit. Volume is instead bounded structurally:
    either by a maintainer's `/review rerun` or autonomously by the PR Review Queue
    workflow — but in both cases only when the deterministic gate
    (`Resolve-RerunEligibility.ps1` / `Resolve-AutonomousRerunEligibility`) finds
-   new activity since the last AI Summary. Because a completed review posts a fresh
-   AI Summary that advances the checkpoint, the identical PR state cannot re-qualify,
-   so even autonomous re-entry cannot loop.
+   new activity since the last AI Summary. When a review **completes** (the `trigger`
+   path) it posts a fresh AI Summary that advances the checkpoint, so the identical
+   PR state cannot re-qualify and autonomous re-entry cannot loop.
+
+   > **Known limitation (deferred):** this advance-the-checkpoint guarantee holds only
+   > for the `trigger` path. On a `skip` decision the scanner removes
+   > `s/agent-ready-for-rerun` but posts **no** new AI Summary, so the checkpoint does
+   > not advance. A PR the scanner keeps skipping is therefore re-labelled by
+   > `Query-AutoRerunCandidates.ps1` on the next daily run — a harmless applied→removed
+   > flap (no review actually runs), but a flap nonetheless. For the `new-head-commit`
+   > reason this repeats every cycle until trigger-worthy activity posts a fresh summary.
+   > Closing this fully needs a scanner-side checkpoint on `skip`; tracked as a follow-up.
 3. The per-PR in-progress lock prevents overlapping reviews of the same PR.
 
 This is an accepted, documented cost trade-off: it matches manual `/review`

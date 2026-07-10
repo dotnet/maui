@@ -24,7 +24,7 @@
     Repository name (default: maui).
 
 .PARAMETER Limit
-    Maximum number of open PRs to inspect (default: 100).
+    Maximum number of open PRs to inspect (default: 300).
 
 .PARAMETER DryRun
     Evaluate and report without applying any labels.
@@ -180,7 +180,9 @@ foreach ($pr in $openPRs) {
             }
 
             $addSucceeded = Add-Label -PRNumber $number -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo
-            $updatedLabels = @(gh api "repos/$Owner/$Repo/issues/$number/labels" --jq '.[].name' 2>$null)
+            # Re-read via Get-IssueLabels (fail-loud) rather than a raw stderr-suppressed gh api, so a
+            # failed verification surfaces as a per-PR error instead of a false "label not present".
+            $updatedLabels = @(Get-IssueLabels -Number $number)
             $labelIsPresent = @($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
             if ($addSucceeded -or $labelIsPresent) {
                 $applied = $true
