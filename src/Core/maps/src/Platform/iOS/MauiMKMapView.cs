@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Maps.Platform
 
 		UILongPressGestureRecognizer? _mapLongClickedGestureRecognizer;
 		List<IMapElement>? _trackedMapElements;
-		Dictionary<string, UIImage>? _clusterIconCache;
+		Dictionary<string, (UIImage Icon, DateTime ExpiresAtUtc)>? _clusterIconCache;
 		int _clusterIconCacheGeneration;
 		// Bounds icon memory when a provider derives a distinct image per cluster (e.g. count-based
 		// glyphs) on a map that stays in a window for the app lifetime. Simple clear-when-full; an
@@ -230,11 +230,22 @@ namespace Microsoft.Maui.Maps.Platform
 				customView.Annotation = clusterAnnotation;
 
 				var cacheKey = MapHandler.GetClusterIconCacheKey(clusterImage);
-				if (cacheKey != null && _clusterIconCache != null && _clusterIconCache.TryGetValue(cacheKey, out var cachedImage))
+				var cacheHit = false;
+				if (cacheKey != null && _clusterIconCache != null && _clusterIconCache.TryGetValue(cacheKey, out var cached))
 				{
-					customView.Image = cachedImage;
+					if (DateTime.UtcNow < cached.ExpiresAtUtc)
+					{
+						customView.Image = cached.Icon;
+						cacheHit = true;
+					}
+					else
+					{
+						// CacheValidity window elapsed (URI source) - evict and reload as a miss.
+						_clusterIconCache.Remove(cacheKey);
+					}
 				}
-				else
+
+				if (!cacheHit)
 				{
 					customView.Image = null;
 					ApplyCustomClusterImageAsync(customView, clusterImage, clusterCount, cacheKey).FireAndForget();
@@ -398,10 +409,10 @@ namespace Microsoft.Maui.Maps.Platform
 					// in the pooled view for the app lifetime.
 					if (cacheKey != null && generation == _clusterIconCacheGeneration && Window != null)
 					{
-						_clusterIconCache ??= new Dictionary<string, UIImage>();
+						_clusterIconCache ??= new Dictionary<string, (UIImage Icon, DateTime ExpiresAtUtc)>();
 						if (_clusterIconCache.Count >= MaxClusterIconCacheSize)
 							_clusterIconCache.Clear();
-						_clusterIconCache[cacheKey] = scaledImage;
+						_clusterIconCache[cacheKey] = (scaledImage, MapHandler.GetClusterIconCacheExpiry(imageSource));
 					}
 					return;
 				}

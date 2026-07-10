@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
-		Dictionary<string, BitmapDescriptor>? _clusterIconCache;
+		Dictionary<string, (BitmapDescriptor Icon, DateTime ExpiresAtUtc)>? _clusterIconCache;
 		// Bounds icon memory when a provider derives a distinct image per cluster (e.g. count-based glyphs); simple clear-when-full.
 		const int MaxClusterIconCacheSize = 64;
 
@@ -930,17 +930,32 @@ namespace Microsoft.Maui.Maps.Handlers
 				// per recluster still reuses the decoded bitmap instead of re-decoding and leaking one
 				// entry per call. Unkeyable sources (key == null) are loaded fresh, never cached.
 				var cacheKey = GetClusterIconCacheKey(image);
-				if (cacheKey == null || !(_clusterIconCache?.TryGetValue(cacheKey, out icon) ?? false))
+				var cacheHit = false;
+				if (cacheKey != null && _clusterIconCache != null && _clusterIconCache.TryGetValue(cacheKey, out var cached))
+				{
+					if (DateTime.UtcNow < cached.ExpiresAtUtc)
+					{
+						icon = cached.Icon;
+						cacheHit = true;
+					}
+					else
+					{
+						// CacheValidity window elapsed (URI source) - evict and reload as a miss.
+						_clusterIconCache.Remove(cacheKey);
+					}
+				}
+
+				if (!cacheHit)
 				{
 					icon = await LoadPinIconAsync(image, MauiContext, ct);
 					if (ct.IsCancellationRequested || MauiContext == null)
 						return;
 					if (icon != null && cacheKey != null)
 					{
-						_clusterIconCache ??= new Dictionary<string, BitmapDescriptor>();
+						_clusterIconCache ??= new Dictionary<string, (BitmapDescriptor Icon, DateTime ExpiresAtUtc)>();
 						if (_clusterIconCache.Count >= MaxClusterIconCacheSize)
 							_clusterIconCache.Clear();
-						_clusterIconCache[cacheKey] = icon;
+						_clusterIconCache[cacheKey] = (icon, GetClusterIconCacheExpiry(image));
 					}
 				}
 			}

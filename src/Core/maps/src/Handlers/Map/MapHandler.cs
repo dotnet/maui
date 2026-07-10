@@ -9,6 +9,7 @@ using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
+using System;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -116,5 +117,17 @@ namespace Microsoft.Maui.Maps.Handlers
 					$"font:{font.Glyph}|{font.Font.Family}|{font.Font.Size}|{font.Font.Weight}|{font.Font.Slant}|{font.Color?.ToArgbHex()}",
 				_ => null,
 			};
+
+		// URI sources carry an explicit CacheValidity; other stable sources never expire on their own
+		// (the cache is already bounded and cleared on pins rebuild / cleanup). Clamped so a large
+		// validity like TimeSpan.MaxValue ("cache forever") can't overflow DateTime arithmetic.
+		internal static DateTime GetClusterIconCacheExpiry(IImageSource? source)
+		{
+			if (source is not IUriImageSource uri)
+				return DateTime.MaxValue;
+
+			var now = DateTime.UtcNow;
+			return uri.CacheValidity < DateTime.MaxValue - now ? now + uri.CacheValidity : DateTime.MaxValue;
+		}
 	}
 }
