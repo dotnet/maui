@@ -703,6 +703,26 @@ function Get-TestResultFromOutput {
         # If tests actually ran (passed > 0), trust the results over exit codes
         if ($devicePassCount -gt 0) {
             if ($deviceFailCount -gt 0) {
+                # A run can report real passes AND failures where EVERY failure is a brand-new
+                # VerifyScreenshot test whose baseline PNG isn't committed yet ("Baseline
+                # snapshot not yet created"). That is NOT a genuine failure — the gate simply
+                # has nothing to compare against — so it must be INCONCLUSIVE, not FAILED. This
+                # check has to run HERE (inside the trust-the-counts path); otherwise a PR that
+                # adds many new snapshot tests plus a couple that already have baselines (e.g.
+                # PR #36448: Passed=2, Failed=30, all 30 baseline-missing) falls straight through
+                # to the plain-FAIL return below and is falsely blocked. A real pixel DIFF
+                # against an EXISTING baseline prints "Snapshot different than baseline" (NOT
+                # "not yet created"), so baselineMissing < deviceFailCount and we correctly fall
+                # through to a genuine failure.
+                $baselineMissingCount = ([regex]::Matches($content, '(?i)Baseline snapshot not yet created')).Count
+                if ($baselineMissingCount -ge $deviceFailCount) {
+                    Write-Host "  ⚠️  All $deviceFailCount failing test(s) are new snapshots with no committed baseline — INCONCLUSIVE (gate cannot validate a brand-new VerifyScreenshot)" -ForegroundColor Yellow
+                    return @{
+                        Passed = $false; EnvError = $true; SnapshotBaselineMissing = $true
+                        Error = "New snapshot test(s) — baseline image not yet created for $deviceFailCount test(s); the gate cannot validate brand-new VerifyScreenshot tests (baseline PNGs are added separately by a maintainer)"
+                        FailCount = 0; Failed = 0; Total = $deviceTotal; Skipped = 0
+                    }
+                }
                 return @{
                     Passed = $false; FailCount = $deviceFailCount; Failed = $deviceFailCount
                     PassCount = $devicePassCount; Total = $deviceTotal; Skipped = 0
@@ -720,6 +740,7 @@ function Get-TestResultFromOutput {
     $envErrorPatterns = @(
         @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
         @{ Pattern = "XHarness exit code:\s*83"; Message = "App failed to launch (XHarness exit 83)" }
+        @{ Pattern = "XHarness exit code:\s*80"; Message = "App crashed during test run (XHarness exit 80 APP_CRASH)" }
         @{ Pattern = "XHarness exit code:\s*78"; Message = "Package installation failed (XHarness exit 78)" }
         @{ Pattern = "PACKAGE_INSTALLATION_FAILURE"; Message = "Package installation failed (XHarness package installation failure)" }
         @{ Pattern = "Waiting for command timed out: execution may be compromised"; Message = "Device package operation timed out" }
