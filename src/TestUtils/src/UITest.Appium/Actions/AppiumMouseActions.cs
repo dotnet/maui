@@ -353,6 +353,7 @@ namespace UITest.Appium
 
 		const uint MonitorDefaultToNearest = 2;
 
+		[StructLayout(LayoutKind.Sequential)]
 		readonly struct NativePoint
 		{
 			public NativePoint(int x, int y)
@@ -361,9 +362,9 @@ namespace UITest.Appium
 				Y = y;
 			}
 
-			public int X { get; }
+			public readonly int X;
 
-			public int Y { get; }
+			public readonly int Y;
 		}
 
 		enum MonitorDpiType

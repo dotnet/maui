@@ -269,6 +269,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PointerOverReappliesAfterFocusChangesWhileHovered()
+		{
+			var label = new PointerOverLabel();
+
+			var commonStatesGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			commonStatesGroup.States.Add(CreateTextState(NormalStateName));
+			commonStatesGroup.States.Add(CreateTextState(VisualStateManager.CommonStates.PointerOver));
+
+			var focusStatesGroup = new VisualStateGroup { Name = FocusStatesGroupName };
+			focusStatesGroup.States.Add(CreateTextState(FocusedStateName));
+			focusStatesGroup.States.Add(new VisualState { Name = UnfocusedStateName });
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { commonStatesGroup, focusStatesGroup });
+
+			label.SetPointerOver(true);
+			Assert.Equal(VisualStateManager.CommonStates.PointerOver, label.Text);
+
+			label.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			Assert.Equal(VisualStateManager.CommonStates.PointerOver, label.Text);
+		}
+
+		static VisualState CreateTextState(string name)
+		{
+			var state = new VisualState { Name = name };
+			state.Setters.Add(new Setter { Property = Label.TextProperty, Value = name });
+			return state;
+		}
+
+		class PointerOverLabel : Label
+		{
+			public void SetPointerOver(bool value) => base.SetPointerOver(value);
+		}
+
+		[Fact]
 		public void VisualElementGoesToCorrectStateWhenAvailable()
 		{
 			var label = new Label();

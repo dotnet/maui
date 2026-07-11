@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 		/// Defines the names of the focus-related visual states (<see cref="Focused"/> and
 		/// <see cref="Unfocused"/>) that the framework applies to focusable controls.
 		/// </summary>
-		public class FocusStates
+		public static class FocusStates
 		{
 			public const string Focused = "Focused";
 			public const string Unfocused = "Unfocused";
@@ -97,6 +97,9 @@ namespace Microsoft.Maui.Controls
 		/// <param name="name">The name of the visual state to transition to.</param>
 		/// <returns><see langword="true"/> if the transition was successful; otherwise, <see langword="false"/>.</returns>
 		public static bool GoToState(VisualElement visualElement, string name)
+			=> GoToState(visualElement, name, false);
+
+		internal static bool GoToState(VisualElement visualElement, string name, bool force)
 		{
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
 			if (context is null)
@@ -118,17 +121,17 @@ namespace Microsoft.Maui.Controls
 
 			foreach (VisualStateGroup group in groups)
 			{
-				if (group.CurrentState?.Name == name)
-				{
-					// We're already in the target state; nothing else to do
-					return true;
-				}
-
 				// See if this group contains the new state
 				var target = group.GetState(name);
 				if (target == null)
 				{
 					continue;
+				}
+
+				if (!force && group.CurrentState?.Name == name)
+				{
+					// We're already in the target state; nothing else to do
+					return true;
 				}
 
 				// If we've got a new state to transition to, unapply the setters from the current state

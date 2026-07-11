@@ -1823,11 +1823,11 @@ namespace Microsoft.Maui.Controls
 			// in CommonStates keep their historical precedence over Normal.
 			if (shouldFocus)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Focused);
+				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Focused, force: true);
 			}
 			else if (shouldUnfocus && IsEnabled && !isSelected && !IsPointerOver && unfocusedStateKind == UnfocusedStateKind.CommonStatesGroup)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
+				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused, force: true);
 			}
 
 			// The PointerOver state is applied last so that it can override the focus state.
@@ -1835,7 +1835,7 @@ namespace Microsoft.Maui.Controls
 			// though it is set separately here it is still part of the CommonStates group.
 			if (IsEnabled && !isSelected && IsPointerOver)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver, force: true);
 			}
 		}
 
