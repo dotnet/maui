@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -15,10 +16,9 @@ namespace Microsoft.Maui.Controls
 			GradientStops = new GradientStopCollection();
 		}
 
-		WeakNotifyCollectionChangedProxy _gradientStopsProxy;
+		GradientStopSubscriptions _gradientStopSubscriptions;
 		NotifyCollectionChangedEventHandler _gradientStopsCollectionChanged;
-
-		~GradientBrush() => _gradientStopsProxy?.Unsubscribe();
+		PropertyChangedEventHandler _gradientStopPropertyChanged;
 
 		public event EventHandler InvalidateGradientBrushRequested;
 
@@ -54,12 +54,14 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldCollection != null)
 			{
-				_gradientStopsProxy?.Unsubscribe();
+				_gradientStopSubscriptions?.UnsubscribeAll();
 
 				foreach (var oldStop in oldCollection)
 				{
+					if (oldStop is null)
+						continue;
+
 					oldStop.Parent = null;
-					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
 				}
 			}
 
@@ -67,22 +69,28 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_gradientStopsCollectionChanged ??= OnGradientStopCollectionChanged;
-			_gradientStopsProxy ??= new WeakNotifyCollectionChangedProxy();
-			_gradientStopsProxy.Subscribe(newCollection, _gradientStopsCollectionChanged);
+			_gradientStopPropertyChanged ??= OnGradientStopPropertyChanged;
+
+			var subscriptions = _gradientStopSubscriptions ??= new GradientStopSubscriptions();
+			subscriptions.Subscribe(newCollection, _gradientStopsCollectionChanged);
 
 			foreach (var newStop in newCollection)
 			{
 				if (newStop is not null)
 				{
 					newStop.Parent = this;
-					newStop.PropertyChanged += OnGradientStopPropertyChanged;
+					subscriptions.Add(newStop, _gradientStopPropertyChanged);
 				}
 			}
 		}
 
 		void OnGradientStopCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.OldItems != null)
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				_gradientStopSubscriptions?.ResetStops();
+			}
+			else if (e.OldItems != null)
 			{
 				foreach (var oldItem in e.OldItems)
 				{
@@ -90,7 +98,7 @@ namespace Microsoft.Maui.Controls
 						continue;
 
 					oldStop.Parent = null;
-					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
+					_gradientStopSubscriptions?.Remove(oldStop);
 				}
 			}
 
@@ -102,11 +110,71 @@ namespace Microsoft.Maui.Controls
 						continue;
 
 					newStop.Parent = this;
-					newStop.PropertyChanged += OnGradientStopPropertyChanged;
+					_gradientStopSubscriptions?.Add(newStop, _gradientStopPropertyChanged);
 				}
 			}
 
 			Invalidate();
+		}
+
+		sealed class GradientStopSubscriptions
+		{
+			readonly WeakNotifyCollectionChangedProxy _collectionProxy = new();
+			readonly List<WeakNotifyPropertyChangedProxy> _stopProxies = new();
+
+			~GradientStopSubscriptions() => UnsubscribeAll();
+
+			public void Subscribe(GradientStopCollection source, NotifyCollectionChangedEventHandler handler)
+			{
+				_collectionProxy.Subscribe(source, handler);
+			}
+
+			public void Add(GradientStop source, PropertyChangedEventHandler handler)
+			{
+				_stopProxies.Add(new WeakNotifyPropertyChangedProxy(source, handler));
+			}
+
+			public void Remove(GradientStop source)
+			{
+				for (int i = _stopProxies.Count - 1; i >= 0; i--)
+				{
+					var proxy = _stopProxies[i];
+					if (proxy.TryGetSource(out var proxySource) && ReferenceEquals(proxySource, source))
+					{
+						proxy.Unsubscribe();
+						_stopProxies.RemoveAt(i);
+						break;
+					}
+				}
+			}
+
+			public void ResetStops()
+			{
+				UnsubscribeStops(clearParent: true);
+			}
+
+			public void UnsubscribeAll()
+			{
+				_collectionProxy.Unsubscribe();
+				UnsubscribeStops(clearParent: false);
+			}
+
+			void UnsubscribeStops(bool clearParent)
+			{
+				var proxies = _stopProxies.ToArray();
+				_stopProxies.Clear();
+
+				foreach (var proxy in proxies)
+				{
+					GradientStop gradientStop = null;
+					if (clearParent && proxy.TryGetSource(out var source))
+						gradientStop = source as GradientStop;
+
+					proxy.Unsubscribe();
+
+					gradientStop?.Parent = null;
+				}
+			}
 		}
 
 		void OnGradientStopPropertyChanged(object sender, PropertyChangedEventArgs e)
