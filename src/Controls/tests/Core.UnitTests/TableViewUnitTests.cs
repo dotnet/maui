@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -83,14 +84,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		static WeakReference AssignSharedRootAndDrop(TableRoot sharedRoot)
+		static (WeakReference Table, WeakReference CollectionChangedProxy, WeakReference SectionCollectionChangedProxy, WeakReference PropertyChangedProxy)
+			AssignSharedRootAndDrop(TableRoot sharedRoot, bool useConstructor)
 		{
-			var table = new TableView { Root = sharedRoot };
-			return new WeakReference(table);
+			var table = useConstructor
+				? new TableView(sharedRoot)
+				: new TableView { Root = sharedRoot };
+
+			var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+			var model = table.Model;
+			var modelType = model.GetType();
+
+			return (
+				new WeakReference(table),
+				new WeakReference(modelType.GetField("_collectionChangedProxy", flags).GetValue(model)),
+				new WeakReference(modelType.GetField("_sectionCollectionChangedProxy", flags).GetValue(model)),
+				new WeakReference(modelType.GetField("_propertyChangedProxy", flags).GetValue(model)));
 		}
 
-		[Fact]
-		public async Task RootedTableRootDoesNotLeakTableView()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task RootedTableRootDoesNotLeakTableViewOrProxies(bool useConstructor)
 		{
 			// A long-lived / shared TableRoot, e.g. one reused across pages.
 			var sharedRoot = new TableRoot
@@ -101,13 +116,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			WeakReference weakTable = AssignSharedRootAndDrop(sharedRoot);
+			var weakReferences = AssignSharedRootAndDrop(sharedRoot, useConstructor);
 
-			Assert.False(await weakTable.WaitForCollect(), "TableView should not be alive!");
+			Assert.False(await weakReferences.Table.WaitForCollect(), "TableView should not be alive!");
+			Assert.False(await weakReferences.CollectionChangedProxy.WaitForCollect(), "WeakNotifyCollectionChangedProxy should not be alive!");
+			Assert.False(await weakReferences.SectionCollectionChangedProxy.WaitForCollect(), "WeakSectionCollectionChangedProxy should not be alive!");
+			Assert.False(await weakReferences.PropertyChangedProxy.WaitForCollect(), "WeakNotifyPropertyChangedProxy should not be alive!");
 
 			// Keep the shared root alive for the whole test so the only question is
 			// whether it still roots the (dropped) TableView.
 			GC.KeepAlive(sharedRoot);
+		}
+
+		[Fact]
+		public void ConstructorRootPropertyChangeRaisesModelChanged()
+		{
+			var root = new TableRoot();
+			var table = new TableView(root);
+			bool changed = false;
+			table.ModelChanged += (sender, e) => changed = true;
+
+			root.Title = "New title";
+
+			Assert.True(changed);
 		}
 	}
 }
