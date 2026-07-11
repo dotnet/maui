@@ -1,4 +1,7 @@
+using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 using Xunit;
 
@@ -77,6 +80,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(table, viewCell.Parent);
 			Assert.Equal(viewCell, viewCell.View.Parent);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference AssignSharedRootAndDrop(TableRoot sharedRoot)
+		{
+			var table = new TableView { Root = sharedRoot };
+			return new WeakReference(table);
+		}
+
+		[Fact]
+		public async Task RootedTableRootDoesNotLeakTableView()
+		{
+			// A long-lived / shared TableRoot, e.g. one reused across pages.
+			var sharedRoot = new TableRoot
+			{
+				new TableSection("Section")
+				{
+					new TextCell { Text = "Cell" }
+				}
+			};
+
+			WeakReference weakTable = AssignSharedRootAndDrop(sharedRoot);
+
+			Assert.False(await weakTable.WaitForCollect(), "TableView should not be alive!");
+
+			// Keep the shared root alive for the whole test so the only question is
+			// whether it still roots the (dropped) TableView.
+			GC.KeepAlive(sharedRoot);
 		}
 	}
 }
