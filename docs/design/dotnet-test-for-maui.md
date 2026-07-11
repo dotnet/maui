@@ -351,7 +351,7 @@ We recommend a phased approach for device ↔ host communication:
 ```xml
 <PropertyGroup>
   <!-- Deterministic file names avoid trusting device-controlled directory listings. -->
-  <_DeviceTrxFileName>$(ProjectName).trx</_DeviceTrxFileName>
+  <_DeviceTrxFileName>test-results.trx</_DeviceTrxFileName>
 </PropertyGroup>
 
 <ItemGroup>
@@ -360,8 +360,8 @@ We recommend a phased approach for device ↔ host communication:
   <TestRunArguments Include="--report-trx-filename $(_DeviceTrxFileName)" />
 </ItemGroup>
 
-<!-- Pull the expected TRX file using run-as + cat. The basename is host-controlled. -->
-<Exec Command="adb $(_AdbDevice) exec-out run-as $(ApplicationId) cat files/TestResults/$(_DeviceTrxFileName) &gt; &quot;$(TestResultsDirectory)/$(_DeviceTrxFileName)&quot;" />
+<!-- Pull the expected TRX file using run-as + cat. The basename is fixed and host-controlled. -->
+<Exec Command="adb $(_AdbDevice) exec-out run-as $(ApplicationId) cat &quot;files/TestResults/$(_DeviceTrxFileName)&quot; &gt; &quot;$(TestResultsDirectory)/$(_DeviceTrxFileName)&quot;" />
 
 <!-- Capture logcat for debugging -->
 <Exec Command="adb $(_AdbDevice) logcat -d &gt; &quot;$(TestResultsDirectory)/$(ProjectName)_logcat.txt&quot;" />
@@ -631,7 +631,7 @@ Building on the `dotnet run` infrastructure, we need these new targets. Note: Ta
         Returns="@(TestRunArguments)">
 
   <PropertyGroup>
-    <_DeviceTrxFileName>$(MSBuildProjectName).trx</_DeviceTrxFileName>
+    <_DeviceTrxFileName>test-results.trx</_DeviceTrxFileName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -717,8 +717,9 @@ dotnet test --project MyMauiTests.csproj -f net10.0-android --list-devices
 # Filter tests
 dotnet test --project MyMauiTests.csproj -f net10.0-ios --filter "FullyQualifiedName~Button"
 
-# Output formats
-dotnet test --project MyMauiTests.csproj -f net10.0-ios --logger trx --logger html
+# Output formats (MTP report extensions)
+dotnet test --project MyMauiTests.csproj -f net10.0-ios \
+  -- --report-trx --report-trx-filename ios.trx
 ```
 
 ### 6.2 Non-Interactive Mode (CI/AI)
@@ -726,19 +727,21 @@ dotnet test --project MyMauiTests.csproj -f net10.0-ios --logger trx --logger ht
 For CI pipelines and AI agents, non-interactive mode is essential:
 
 ```bash
-# Non-interactive with explicit device
+# Non-interactive with explicit device and deterministic TRX output
 dotnet test --project MyMauiTests.csproj \
   -f net10.0-ios \
   --device "iossimulator-arm64:iPhone 15" \
   --no-restore \
-  --logger "console;verbosity=detailed"
+  --results-directory ./TestResults \
+  -- --report-trx --report-trx-filename ios.trx
 
-# With coverage for AI agent analysis
+# With coverage for AI agent analysis, using MTP extension switches
 dotnet test --project MyMauiTests.csproj \
   -f net10.0-android \
   --device "emulator-5554" \
   --results-directory ./TestResults \
-  --logger "json;LogFileName=results.json"
+  -- --report-trx --report-trx-filename android.trx \
+     --coverage --coverage-output TestResults/android.cobertura.xml --coverage-output-format cobertura
 ```
 
 ### 6.3 Command-Line Switches (New)
@@ -771,7 +774,8 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 ```
 
 **Notes:**
-- In MTP mode, MTP args should not require the legacy `--` indirection that VSTest mode uses; keep `--` as an escape hatch for parity with existing CLI patterns.
+- In MTP mode, prefer MTP report-extension switches such as `--report-trx` instead of VSTest `--logger` samples unless the CLI has explicitly mapped the option for MTP.
+- MTP args should not require the legacy `--` indirection that VSTest mode uses; keep `--` as an escape hatch for parity with existing CLI patterns.
 - Keep naming and output paths stable/predictable for AI agents to parse reliably.
 
 ### 6.6 Expected Console Output Format
