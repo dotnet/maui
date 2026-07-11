@@ -418,7 +418,7 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
   -- --coverage --coverage-output TestResults/coverage.cobertura.xml --coverage-output-format cobertura
 ```
 
-This is simplest for MAUI device tests because coverage is collected during test execution and saved to artifacts.
+This is simplest for MAUI device tests because coverage is collected during test execution and saved to artifacts. V1 extraction should either use host-known coverage filenames or write a manifest/archive inside the app sandbox so Android can retrieve files through `run-as` without relying on `adb pull` from private directories.
 
 #### Path 2 (advanced): Instrument + Collect in Server Mode
 
@@ -448,14 +448,14 @@ This is a potential future enhancement (particularly for complex native coverage
 │  1. Tests execute with instrumented code                                     │
 │  2. Coverage data collected in memory                                        │
 │  3. On test completion, coverage file written to device storage              │
-│  4. Coverage file path sent via protocol                                     │
+│  4. Coverage file written with a host-known name or manifest entry          │
 └─────────────────────────────────────────────────────────────────────────────┘
                                      │
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                       Post-Test (Host Machine)                               │
 │                                                                              │
-│  1. Pull coverage file from device (via adb pull / xcrun simctl)            │
+│  1. Extract coverage via platform sandbox tooling (run-as cat/archive on Android, xcrun simctl for simulators, or equivalent) │
 │  2. Merge with any host-side coverage                                        │
 │  3. Generate report (Cobertura XML, HTML, etc.)                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -506,7 +506,7 @@ dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554 
 
 **Pros:**
 - More reliable completion detection
-- Proper exit code propagation via `Finish()`
+- Deterministic completion; the SDK must parse the instrumentation result bundle or TRX to propagate the MTP exit code
 - Standard Android test pattern
 
 **Cons:**
@@ -514,16 +514,11 @@ dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554 
 - Requires AndroidManifest.xml instrumentation registration
 - **Requires Android SDK enhancement** (see below)
 
-#### 4.5.3 Required Android SDK Enhancement
+#### 4.5.3 Android SDK Instrumentation Integration
 
-To support Instrumentation Mode via `dotnet run`, the Android SDK's `Microsoft.Android.Sdk.Application.targets` needs modification:
+Instrumentation Mode should build on existing Android SDK instrumentation plumbing where available (for example MSTest runner/instrumentation properties and `Microsoft.Android.Run --instrument`) instead of duplicating it. The remaining SDK work is to pass MTP arguments losslessly, wait for completion, collect artifacts, and propagate the MTP result.
 
-**Current target** (`_AndroidComputeRunArguments`) only supports activity launch:
-```xml
-<RunArguments>$(AdbTarget) shell am start -S -n "$(_AndroidPackage)/$(AndroidLaunchActivity)"</RunArguments>
-```
-
-**Required enhancement** - add support for `UseInstrumentation` property:
+**Illustrative target shape** - exact property names should align with the Android SDK's existing instrumentation support:
 ```xml
 <PropertyGroup Condition="'$(UseInstrumentation)' == 'true'">
   <RunCommand>$(_AdbToolPath)</RunCommand>
@@ -533,14 +528,15 @@ To support Instrumentation Mode via `dotnet run`, the Android SDK's `Microsoft.A
 
 The SDK target must encode `@(TestRunArguments)` losslessly (for example JSON + Base64, a response file, or separate bundle entries) instead of joining on spaces, because filters, file names, and logger arguments can contain spaces or quotes. It must also treat the instrumentation result as test execution state, not just process completion. `adb shell am instrument -w` can complete successfully even when tests fail, so the target should parse the instrumentation result bundle and/or deterministic TRX artifact and fail the MSBuild target when the MTP exit code is non-zero.
 
-**New MSBuild Properties:**
+**MSBuild Properties:**
 
 | Property | Description | Default |
 |----------|-------------|---------|
-| `$(UseInstrumentation)` | Use `adb instrument` instead of `adb am start` | `false` |
-| `$(AndroidInstrumentationName)` | Full instrumentation class name (e.g., `myapp.TestInstrumentation`) | (none) |
+| existing Android instrumentation opt-in property | Use `adb instrument` instead of activity launch | SDK-defined |
+| existing or new instrumentation class property | Full instrumentation class name (e.g., `myapp.TestInstrumentation`) | SDK-defined |
+| `$(DeviceTrxFileName)` | Fixed host-controlled TRX basename passed to MTP and used for extraction | `test-results.trx` |
 
-**Action Item:** File issue on dotnet/android to add `UseInstrumentation` support to `_AndroidComputeRunArguments` target.
+**Action Item:** Validate the current dotnet/android instrumentation properties and add only the missing MTP argument/result/artifact plumbing.
 
 #### 4.5.4 Test Project Requirements (Instrumentation Mode)
 
@@ -550,6 +546,11 @@ The SDK target must encode `@(TestRunArguments)` losslessly (for example JSON + 
 public class TestInstrumentation : Instrumentation
 {
     string[] _testArguments = [];
+
+    public TestInstrumentation(IntPtr handle, JniHandleOwnership transfer)
+        : base(handle, transfer)
+    {
+    }
 
     public override void OnCreate(Bundle? arguments)
     {
@@ -592,7 +593,7 @@ public class TestInstrumentation : Instrumentation
     private static string[] ParseTestArguments(string? encodedArgumentsBase64)
     {
         if (string.IsNullOrWhiteSpace(encodedArgumentsBase64))
-            return ["--results-directory", "TestResults", "--report-trx", "--report-trx-filename", "android.trx"];
+            return ["--results-directory", "TestResults", "--report-trx", "--report-trx-filename", "test-results.trx"];
 
         var json = Encoding.UTF8.GetString(Convert.FromBase64String(encodedArgumentsBase64));
         return JsonSerializer.Deserialize<string[]>(json) ?? [];
@@ -729,7 +730,7 @@ dotnet test --project MyMauiTests.csproj -f net10.0-ios --filter "FullyQualified
 
 # Output formats (MTP report extensions)
 dotnet test --project MyMauiTests.csproj -f net10.0-ios \
-  -- --report-trx --report-trx-filename ios.trx
+  -- --report-trx --report-trx-filename test-results.trx
 ```
 
 ### 6.2 Non-Interactive Mode (CI/AI)
@@ -743,14 +744,14 @@ dotnet test --project MyMauiTests.csproj \
   --device "iossimulator-arm64:iPhone 15" \
   --no-restore \
   --results-directory ./TestResults \
-  -- --report-trx --report-trx-filename ios.trx
+  -- --report-trx --report-trx-filename test-results.trx
 
 # With coverage for AI agent analysis, using MTP extension switches
 dotnet test --project MyMauiTests.csproj \
   -f net10.0-android \
   --device "emulator-5554" \
   --results-directory ./TestResults \
-  -- --report-trx --report-trx-filename android.trx \
+  -- --report-trx --report-trx-filename test-results.trx \
      --coverage --coverage-output TestResults/android.cobertura.xml --coverage-output-format cobertura
 ```
 
@@ -779,14 +780,14 @@ dotnet test --project MyDeviceTests.csproj -f net10.0-android -p:Device=emulator
 ```bash
 dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
   --results-directory TestResults \
-  -- --report-trx --report-trx-filename maui_android.trx \
+  -- --report-trx --report-trx-filename test-results.trx \
      --coverage --coverage-output TestResults/maui_android.cobertura.xml --coverage-output-format cobertura
 ```
 
 **Notes:**
 - In MTP mode, prefer MTP report-extension switches such as `--report-trx` instead of VSTest `--logger` samples unless the CLI has explicitly mapped the option for MTP.
 - MTP args should not require the legacy `--` indirection that VSTest mode uses; keep `--` as an escape hatch for parity with existing CLI patterns.
-- Keep naming and output paths stable/predictable for AI agents to parse reliably.
+- Keep naming and output paths stable/predictable for AI agents to parse reliably. For V1 device runs, the SDK target should own artifact file names (for example `test-results.trx`) or expose MSBuild properties for them so the same value is passed to MTP and used during extraction.
 
 ### 6.6 Expected Console Output Format
 
