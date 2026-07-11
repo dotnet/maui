@@ -629,8 +629,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			// A single, long-lived ResourceDictionary instance that is merged into a
 			// transient element's Resources must not keep that element alive after it is
-			// dropped. The merged (child) dictionary subscribed to the parent dictionary's
-			// ValuesChanged event, which rooted the element for the dictionary's lifetime.
+			// dropped. The transient host dictionary subscribed its handler to the shared
+			// merged dictionary's ValuesChanged event, which rooted the element for the
+			// shared dictionary's lifetime.
 			var sharedResources = new ResourceDictionary { { "Key", "Value" } };
 
 			WeakReference weakElement;
