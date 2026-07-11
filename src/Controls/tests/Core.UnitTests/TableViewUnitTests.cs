@@ -128,17 +128,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.KeepAlive(sharedRoot);
 		}
 
-		[Fact]
-		public void ConstructorRootPropertyChangeRaisesModelChanged()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task RootChangesStillRaiseModelChangedAfterGc(bool useConstructor)
 		{
-			var root = new TableRoot();
-			var table = new TableView(root);
-			bool changed = false;
-			table.ModelChanged += (sender, e) => changed = true;
+			var section = new TableSection("Section");
+			var root = new TableRoot { section };
+			var table = useConstructor
+				? new TableView(root)
+				: new TableView { Root = root };
+			int modelChangedCount = 0;
+			table.ModelChanged += (sender, e) => modelChangedCount++;
 
+			await TestHelpers.Collect();
 			root.Title = "New title";
+			root.Add(new TableSection("Added section"));
+			section.Add(new TextCell { Text = "Added cell" });
 
-			Assert.True(changed);
+			Assert.Equal(3, modelChangedCount);
+			GC.KeepAlive(table);
+		}
+
+		[Fact]
+		public void RootReplacementMovesEventSubscriptions()
+		{
+			var oldSection = new TableSection("Old section");
+			var oldRoot = new TableRoot { oldSection };
+			var newSection = new TableSection("New section");
+			var newRoot = new TableRoot { newSection };
+			var table = new TableView(oldRoot)
+			{
+				Root = newRoot
+			};
+			int modelChangedCount = 0;
+			table.ModelChanged += (sender, e) => modelChangedCount++;
+
+			oldRoot.Title = "Changed old root";
+			oldRoot.Add(new TableSection("Added old section"));
+			oldSection.Add(new TextCell { Text = "Added old cell" });
+
+			Assert.Equal(0, modelChangedCount);
+
+			newRoot.Title = "Changed new root";
+			newRoot.Add(new TableSection("Added new section"));
+			newSection.Add(new TextCell { Text = "Added new cell" });
+
+			Assert.Equal(3, modelChangedCount);
 		}
 	}
 }
