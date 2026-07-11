@@ -351,7 +351,8 @@ We recommend a phased approach for device ↔ host communication:
 ```xml
 <PropertyGroup>
   <!-- Deterministic file names avoid trusting device-controlled directory listings. -->
-  <_DeviceTrxFileName>test-results.trx</_DeviceTrxFileName>
+  <DeviceTrxFileName Condition="'$(DeviceTrxFileName)' == ''">test-results.trx</DeviceTrxFileName>
+  <_DeviceTrxFileName>$(DeviceTrxFileName)</_DeviceTrxFileName>
 </PropertyGroup>
 
 <ItemGroup>
@@ -372,7 +373,8 @@ We recommend a phased approach for device ↔ host communication:
 If a platform must discover artifact names dynamically, the SDK target must validate that each discovered value is a simple basename from an allowlist or fixed pattern before composing any host command. Device/app-controlled paths must not be interpolated into shell commands.
 
 **Why `run-as` + `cat`:**
-- Works with debuggable APKs (debug builds) without root
+- V1 Android artifact extraction requires a debuggable package (debug builds) or an equivalent SDK-supported sandbox extraction path; the target should preflight this requirement and fail with a clear message when `run-as` is unavailable.
+- Works with debuggable APKs without root
 - `run-as <package>` accesses app's private storage
 - `cat` outputs file content to stdout which can be redirected locally
 - Alternative `adb pull` doesn't work with app-private directories
@@ -479,8 +481,9 @@ dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554
 1. `dotnet run --device` builds and deploys the APK
 2. Launches `MainActivity` via `adb shell am start`
 3. `MainActivity.OnCreate` calls `MicrosoftTestingPlatformEntryPoint.Main()`
-4. Tests execute, results stream to logcat
-5. App exits via `Java.Lang.JavaSystem.Exit(exitCode)`
+4. SDK passes the same encoded MTP arguments to the app launch path (for example via intent extras or environment variables)
+5. App normalizes device-local artifact paths, executes tests, and mirrors summary output to logcat
+6. App exits via `Java.Lang.JavaSystem.Exit(exitCode)` or another SDK-observable completion signal
 
 **Pros:**
 - Simple, leverages existing `dotnet run` infrastructure
@@ -489,6 +492,7 @@ dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554
 **Cons:**
 - App may not signal completion reliably in some scenarios
 - Exit code propagation depends on app termination being detected
+- Argument delivery must be explicitly implemented for the app launch path; it cannot rely on desktop `string[] args`
 
 #### 4.5.2 Instrumentation Mode - via `adb instrument`
 
@@ -565,6 +569,7 @@ public class TestInstrumentation : Instrumentation
     {
         base.OnStart();
         int exitCode = 1;
+        var instrumentationResult = Result.Ok;
         Bundle results = new Bundle();
 
         try
@@ -573,13 +578,14 @@ public class TestInstrumentation : Instrumentation
         }
         catch (Exception ex)
         {
+            instrumentationResult = Result.Canceled;
             results.PutString("error", ex.ToString());
         }
         finally
         {
             results.PutInt("exitCode", exitCode);
             results.PutString("status", exitCode == 0 ? "SUCCESS" : "FAILURE");
-            Finish(exitCode == 0 ? Result.Ok : Result.Canceled, results);
+            Finish(instrumentationResult, results);
         }
     }
 
@@ -608,6 +614,8 @@ public class TestInstrumentation : Instrumentation
         {
             if (normalized[i] == "--results-directory" && !Path.IsPathRooted(normalized[i + 1]))
                 normalized[i + 1] = testResultsDir;
+            else if (normalized[i] == "--coverage-output" && !Path.IsPathRooted(normalized[i + 1]))
+                normalized[i + 1] = Path.Combine(testResultsDir, Path.GetFileName(normalized[i + 1]));
         }
 
         return normalized;
@@ -636,8 +644,12 @@ Building on the `dotnet run` infrastructure, we need these new targets. Note: Ta
         Returns="@(TestRunArguments)">
 
   <PropertyGroup>
-    <_DeviceTrxFileName>test-results.trx</_DeviceTrxFileName>
+    <DeviceTrxFileName Condition="'$(DeviceTrxFileName)' == ''">test-results.trx</DeviceTrxFileName>
+    <_DeviceTrxFileName>$(DeviceTrxFileName)</_DeviceTrxFileName>
   </PropertyGroup>
+
+  <Error Condition="'$(DeviceTestResultsPath)' == ''"
+         Text="DeviceTestResultsPath must be set to a platform-specific app sandbox results path before computing test arguments." />
 
   <ItemGroup>
     <TestRunArguments Include="--results-directory" />
@@ -1346,7 +1358,7 @@ Integrate with `Microsoft.CodeCoverage`:
   "type": "artifact/file",
   "sessionId": "550e8400-e29b-41d4-a716-446655440000",
   "artifactType": "log",
-  "filePath": "/data/user/0/com.myapp/cache/TestLogs/test.log",
+  "relativePath": "TestLogs/test.log",
   "size": 524288
 }
 ```
