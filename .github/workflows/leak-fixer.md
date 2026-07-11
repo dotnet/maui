@@ -36,7 +36,7 @@ imports:
 environment: copilot-pat-pool
 
 on:
-  schedule: every 3h
+  schedule: every 6h
   workflow_dispatch:
     inputs:
       issue_number:
@@ -152,7 +152,7 @@ safe-outputs:
     target: "*"                     # agent supplies the leak PR number
     required-title-prefix: "[leak-fix]"  # Track C only comments on this workflow's own [leak-fix] PRs
     max: 1
-  # Most 3h runs are idle (every open leak already has a [leak-fix] PR). Without this,
+  # Most 6h runs are idle (every open leak already has a [leak-fix] PR). Without this,
   # gh-aw's auto-injected default (noop: report-as-issue: true) files a "no action taken"
   # issue every idle run. Mirror the hunter, which already opts out.
   noop:
