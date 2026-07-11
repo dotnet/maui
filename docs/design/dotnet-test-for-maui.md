@@ -111,7 +111,7 @@ A device-test project is an **app that hosts MTP**. It produces an **app package
 **Example project file:**
 
 ```xml
-<Project Sdk="MSTest.Sdk">
+<Project Sdk="MSTest.Sdk/4.3.0">
 
   <PropertyGroup>
     <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-windows10.0.19041.0</TargetFrameworks>
@@ -124,7 +124,7 @@ A device-test project is an **app that hosts MTP**. It produces an **app package
 
   <ItemGroup>
     <!-- Additional MTP extensions can be referenced explicitly when needed. -->
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="2.3.1" />
   </ItemGroup>
 
 </Project>
@@ -134,7 +134,7 @@ A device-test project is an **app that hosts MTP**. It produces an **app package
 
 > **Note:** Using `MSTest.Sdk` as the project SDK (instead of a `PackageReference`) automatically brings in the MSTest framework, adapter, MTP runner, and common extensions. This is the recommended approach for MTP-based test projects. For other test frameworks like xUnit or NUnit, add the runner and extensions explicitly.
 
-> **Versioning:** Samples must not rely on wildcard package versions. Real projects should pin SDK/package versions directly or via central package management so device-test restores are reproducible in CI and Helix.
+> **Versioning:** Samples must not rely on wildcard package versions. Real projects should pin SDK/package versions directly (as shown) or via central package management so device-test restores are reproducible in CI and Helix. Validate exact versions during implementation.
 
 **MTP extensions provide:**
 - TRX reporting via `Microsoft.Testing.Extensions.TrxReport` (`--report-trx`, `--report-trx-filename`)
@@ -641,20 +641,23 @@ Building on the `dotnet run` infrastructure, we need these new targets. Note: Ta
   </ItemGroup>
 </Target>
 
-<!-- Execute tests on device -->
+<!-- Execute tests on device, recording the result without preventing cleanup. -->
 <Target Name="ExecuteDeviceTests"
         DependsOnTargets="DeployToDevice;ComputeTestRunArguments">
 
-  <!-- Platform-specific execution logic -->
+  <!-- Platform-specific execution logic should set _DeviceTestExitCode. -->
   <ExecuteDeviceTests
     Device="$(Device)"
     RuntimeIdentifier="$(RuntimeIdentifier)"
     TestArguments="@(TestRunArguments)"
     ResultsDirectory="$(TestResultsDirectory)"
-    Timeout="$(TestTimeout)" />
+    Timeout="$(TestTimeout)"
+    ContinueOnError="WarnAndContinue">
+    <Output TaskParameter="ExitCode" PropertyName="_DeviceTestExitCode" />
+  </ExecuteDeviceTests>
 </Target>
 
-<!-- Pull test artifacts from device -->
+<!-- Pull test artifacts from device even when test execution failed. -->
 <Target Name="CollectTestArtifacts"
         AfterTargets="ExecuteDeviceTests">
 
@@ -662,6 +665,13 @@ Building on the `dotnet run` infrastructure, we need these new targets. Note: Ta
     Device="$(Device)"
     SourcePath="$(DeviceTestResultsPath)"
     DestinationPath="$(TestResultsDirectory)" />
+</Target>
+
+<!-- Propagate test failure only after artifacts and diagnostics are collected. -->
+<Target Name="FailDeviceTestsIfNeeded"
+        AfterTargets="CollectTestArtifacts"
+        Condition="'$(_DeviceTestExitCode)' != '' and '$(_DeviceTestExitCode)' != '0'">
+  <Error Text="Device tests failed with exit code $(_DeviceTestExitCode). See $(TestResultsDirectory) for artifacts." />
 </Target>
 ```
 
@@ -1005,10 +1015,10 @@ The entry point differs by platform and execution mode:
 
 The `dotnet test` process on the host needs to:
 
-1. **Start Server**: Launch HTTP server to receive test results
-2. **Manage Device**: Deploy app and start test execution
-3. **Aggregate Results**: Collect and format test results
-4. **Pull Artifacts**: Retrieve test logs from device
+1. **Manage Device**: Deploy app and start test execution
+2. **Aggregate Results**: Collect and format test results
+3. **Pull Artifacts**: Retrieve test logs from device
+4. **Start Server (V2 streaming only)**: Launch an authenticated receiver when a streaming transport is explicitly selected
 
 ### 9.3 Network Considerations
 
