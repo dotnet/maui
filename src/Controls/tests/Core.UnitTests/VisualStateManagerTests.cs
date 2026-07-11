@@ -236,6 +236,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SeparateFocusGroupInitializesToUnfocused()
+		{
+			var label = new Label();
+			VisualStateManager.SetVisualStateGroups(label, CreateTestStateGroupsWithFocusGroup());
+
+			var groups = VisualStateManager.GetVisualStateGroups(label);
+			var commonStates = groups[0];
+			var focusStates = groups[1];
+
+			Assert.Equal(NormalStateName, commonStates.CurrentState?.Name);
+			Assert.Equal(UnfocusedStateName, focusStates.CurrentState?.Name);
+		}
+
+		[Fact]
+		public void UnfocusedInCommonStatesKeepsPrecedenceOverNormal()
+		{
+			var label = new Label();
+
+			var commonStatesGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			commonStatesGroup.States.Add(new VisualState { Name = NormalStateName });
+			commonStatesGroup.States.Add(new VisualState { Name = FocusedStateName });
+			commonStatesGroup.States.Add(new VisualState { Name = UnfocusedStateName });
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { commonStatesGroup });
+
+			label.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			Assert.Equal(FocusedStateName, commonStatesGroup.CurrentState?.Name);
+
+			label.SetValue(VisualElement.IsFocusedPropertyKey, false);
+			Assert.Equal(UnfocusedStateName, commonStatesGroup.CurrentState?.Name);
+		}
+
+		[Fact]
 		public void VisualElementGoesToCorrectStateWhenAvailable()
 		{
 			var label = new Label();

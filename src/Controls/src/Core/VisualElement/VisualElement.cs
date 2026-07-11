@@ -1791,12 +1791,14 @@ namespace Microsoft.Maui.Controls
 			// is kept selected across visual state changes.
 			var isSelected = this.IsElementInSelectedState();
 
-			var shouldUnfocus = !shouldFocus && this.HasVisualState(VisualStateManager.FocusStates.Unfocused);
+			var unfocusedStateKind = !shouldFocus ? GetUnfocusedStateKind() : UnfocusedStateKind.None;
+			var shouldUnfocus = unfocusedStateKind != UnfocusedStateKind.None;
 
 			// If the control cannot have focus and another CommonStates value is going to win
-			// (Disabled, Selected, or PointerOver), first move any focus group to Unfocused so
-			// that Focused setters are unapplied without overriding the final common state.
-			if (shouldUnfocus && (!IsEnabled || isSelected || IsPointerOver))
+			// (Disabled, Selected, or PointerOver), or if Unfocused is in a separate group, first
+			// move any focus group to Unfocused so Focused setters are unapplied without
+			// overriding the final common state.
+			if (shouldUnfocus && (!IsEnabled || isSelected || IsPointerOver || unfocusedStateKind == UnfocusedStateKind.SeparateGroup))
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
 			}
@@ -1823,7 +1825,7 @@ namespace Microsoft.Maui.Controls
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Focused);
 			}
-			else if (shouldUnfocus && IsEnabled && !isSelected && !IsPointerOver)
+			else if (shouldUnfocus && IsEnabled && !isSelected && !IsPointerOver && unfocusedStateKind == UnfocusedStateKind.CommonStatesGroup)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
 			}
@@ -1837,34 +1839,55 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// Returns true when any of this element's visual state groups is currently in the
-		// Focused state. Used by ChangeVisualState to only transition to Unfocused when the
-		// element is actually leaving a focused visual state.
-		bool IsInFocusedVisualState()
+		enum UnfocusedStateKind
+		{
+			None,
+			CommonStatesGroup,
+			SeparateGroup,
+		}
+
+		UnfocusedStateKind GetUnfocusedStateKind()
 		{
 			// Guard the hot path: ChangeVisualState runs on every focus, enabled and pointer
 			// transition. HasVisualStateGroups short-circuits without materializing the default
 			// VisualStateGroupList for controls that never declared any VSM groups.
 			if (!this.HasVisualStateGroups())
 			{
-				return false;
+				return UnfocusedStateKind.None;
 			}
 
 			var groups = VisualStateManager.GetVisualStateGroups(this);
 			if (groups is null)
 			{
-				return false;
+				return UnfocusedStateKind.None;
 			}
 
 			for (var i = 0; i < groups.Count; i++)
 			{
-				if (groups[i].CurrentState?.Name == VisualStateManager.FocusStates.Focused)
+				var group = groups[i];
+				var hasUnfocused = false;
+				var hasNormal = false;
+
+				for (var j = 0; j < group.States.Count; j++)
 				{
-					return true;
+					var stateName = group.States[j].Name;
+					if (stateName == VisualStateManager.FocusStates.Unfocused)
+					{
+						hasUnfocused = true;
+					}
+					else if (stateName == VisualStateManager.CommonStates.Normal)
+					{
+						hasNormal = true;
+					}
+				}
+
+				if (hasUnfocused)
+				{
+					return hasNormal ? UnfocusedStateKind.CommonStatesGroup : UnfocusedStateKind.SeparateGroup;
 				}
 			}
 
-			return false;
+			return UnfocusedStateKind.None;
 		}
 
 		static void OnVisualChanged(BindableObject bindable, object oldValue, object newValue)
