@@ -19,7 +19,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var sharedGeometry = (Geometry)Activator.CreateInstance(geometryType);
 
-			var reference = new WeakReference(new Path { Data = sharedGeometry });
+			static WeakReference CreatePath(Geometry geometry)
+			{
+				var path = new Path { Data = geometry };
+				return new WeakReference(path);
+			}
+
+			var reference = CreatePath(sharedGeometry);
+
+			await TestHelpers.Collect();
 
 			Assert.False(await reference.WaitForCollect(), "Path should not be alive!");
 
@@ -33,11 +41,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var sharedTransform = new RotateTransform { Angle = 45 };
 
-			var reference = new WeakReference(new Path { RenderTransform = sharedTransform });
+			static WeakReference CreatePath(Transform transform)
+			{
+				var path = new Path { RenderTransform = transform };
+				return new WeakReference(path);
+			}
+
+			var reference = CreatePath(sharedTransform);
+
+			await TestHelpers.Collect();
 
 			Assert.False(await reference.WaitForCollect(), "Path should not be alive!");
 
 			GC.KeepAlive(sharedTransform);
+		}
+
+		[Fact]
+		public async Task PathDataChangesStillNotifyAfterGc()
+		{
+			var geometry = new PathGeometry();
+			var path = new Path { Data = geometry };
+			bool changed = false;
+			path.PropertyChanged += (_, e) => changed |= e.PropertyName == nameof(Path.Data);
+
+			await TestHelpers.Collect();
+
+			geometry.Figures.Add(new PathFigure());
+
+			Assert.True(changed);
+			GC.KeepAlive(path);
+		}
+
+		[Fact]
+		public async Task PathRenderTransformChangesStillNotifyAfterGc()
+		{
+			var transform = new RotateTransform();
+			var path = new Path { RenderTransform = transform };
+			bool changed = false;
+			path.PropertyChanged += (_, e) => changed |= e.PropertyName == nameof(Path.RenderTransform);
+
+			await TestHelpers.Collect();
+
+			transform.Angle = 45;
+
+			Assert.True(changed);
+			GC.KeepAlive(path);
 		}
 	}
 }

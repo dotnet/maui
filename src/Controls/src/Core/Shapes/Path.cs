@@ -52,16 +52,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Transform)GetValue(RenderTransformProperty); }
 		}
 
-		WeakGeometryChangedProxy _dataProxy;
-		WeakNotifyPropertyChangedProxy _renderTransformProxy;
+		PathChangeSubscriptions _changeSubscriptions;
 		EventHandler _dataChanged;
 		PropertyChangedEventHandler _renderTransformChanged;
-
-		~Path()
-		{
-			_dataProxy?.Unsubscribe();
-			_renderTransformProxy?.Unsubscribe();
-		}
 
 		static void OnGeometryPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -74,13 +67,13 @@ namespace Microsoft.Maui.Controls.Shapes
 		void NotifyGeometryChanges(Geometry geometry)
 		{
 			_dataChanged ??= (sender, e) => OnPropertyChanged(nameof(Data));
-			_dataProxy ??= new();
-			_dataProxy.Subscribe(geometry, _dataChanged);
+			var subscriptions = _changeSubscriptions ??= new PathChangeSubscriptions();
+			subscriptions.SubscribeData(geometry, _dataChanged);
 		}
 
 		void StopNotifyingGeometryChanges()
 		{
-			_dataProxy?.Unsubscribe();
+			_changeSubscriptions?.UnsubscribeData();
 		}
 
 		static void OnTransformPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -98,13 +91,47 @@ namespace Microsoft.Maui.Controls.Shapes
 				if (e.PropertyName == Transform.ValueProperty.PropertyName)
 					OnPropertyChanged(nameof(RenderTransform));
 			};
-			_renderTransformProxy ??= new();
-			_renderTransformProxy.Subscribe(transform, _renderTransformChanged);
+			var subscriptions = _changeSubscriptions ??= new PathChangeSubscriptions();
+			subscriptions.SubscribeRenderTransform(transform, _renderTransformChanged);
 		}
 
 		void StopNotifyingTransformChanges()
 		{
-			_renderTransformProxy?.Unsubscribe();
+			_changeSubscriptions?.UnsubscribeRenderTransform();
+		}
+
+		sealed class PathChangeSubscriptions
+		{
+			WeakGeometryChangedProxy _dataProxy;
+			WeakNotifyPropertyChangedProxy _renderTransformProxy;
+
+			~PathChangeSubscriptions()
+			{
+				_dataProxy?.Unsubscribe();
+				_renderTransformProxy?.Unsubscribe();
+			}
+
+			public void SubscribeData(Geometry source, EventHandler handler)
+			{
+				_dataProxy ??= new WeakGeometryChangedProxy();
+				_dataProxy.Subscribe(source, handler);
+			}
+
+			public void UnsubscribeData()
+			{
+				_dataProxy?.Unsubscribe();
+			}
+
+			public void SubscribeRenderTransform(Transform source, PropertyChangedEventHandler handler)
+			{
+				_renderTransformProxy ??= new WeakNotifyPropertyChangedProxy();
+				_renderTransformProxy.Subscribe(source, handler);
+			}
+
+			public void UnsubscribeRenderTransform()
+			{
+				_renderTransformProxy?.Unsubscribe();
+			}
 		}
 
 		class WeakGeometryChangedProxy : WeakEventProxy<Geometry, EventHandler>
