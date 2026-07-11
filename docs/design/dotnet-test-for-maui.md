@@ -527,11 +527,11 @@ To support Instrumentation Mode via `dotnet run`, the Android SDK's `Microsoft.A
 ```xml
 <PropertyGroup Condition="'$(UseInstrumentation)' == 'true'">
   <RunCommand>$(_AdbToolPath)</RunCommand>
-  <RunArguments>$(AdbTarget) shell am instrument -w -e TestRunArguments "@(TestRunArguments, ' ')" "$(_AndroidPackage)/$(AndroidInstrumentationName)"</RunArguments>
+  <RunArguments>$(AdbTarget) shell am instrument -w -e TestRunArgumentsBase64 "$(_EncodedTestRunArguments)" "$(_AndroidPackage)/$(AndroidInstrumentationName)"</RunArguments>
 </PropertyGroup>
 ```
 
-The SDK target must treat the instrumentation result as test execution state, not just process completion. `adb shell am instrument -w` can complete successfully even when tests fail, so the target should parse the instrumentation result bundle and/or deterministic TRX artifact and fail the MSBuild target when the MTP exit code is non-zero.
+The SDK target must encode `@(TestRunArguments)` losslessly (for example JSON + Base64, a response file, or separate bundle entries) instead of joining on spaces, because filters, file names, and logger arguments can contain spaces or quotes. It must also treat the instrumentation result as test execution state, not just process completion. `adb shell am instrument -w` can complete successfully even when tests fail, so the target should parse the instrumentation result bundle and/or deterministic TRX artifact and fail the MSBuild target when the MTP exit code is non-zero.
 
 **New MSBuild Properties:**
 
@@ -554,7 +554,7 @@ public class TestInstrumentation : Instrumentation
     public override void OnCreate(Bundle? arguments)
     {
         base.OnCreate(arguments);
-        _testArguments = ParseTestArguments(arguments?.GetString("TestRunArguments"));
+        _testArguments = ParseTestArguments(arguments?.GetString("TestRunArgumentsBase64"));
         Start();
     }
 
@@ -589,12 +589,13 @@ public class TestInstrumentation : Instrumentation
         return await MicrosoftTestingPlatformEntryPoint.Main(args);
     }
 
-    private static string[] ParseTestArguments(string? encodedArguments)
+    private static string[] ParseTestArguments(string? encodedArgumentsBase64)
     {
-        // SDK implementation should use structured encoding/escaping; simplified for the design sample.
-        return string.IsNullOrWhiteSpace(encodedArguments)
-            ? ["--results-directory", "TestResults", "--report-trx", "--report-trx-filename", "android.trx"]
-            : encodedArguments.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (string.IsNullOrWhiteSpace(encodedArgumentsBase64))
+            return ["--results-directory", "TestResults", "--report-trx", "--report-trx-filename", "android.trx"];
+
+        var json = Encoding.UTF8.GetString(Convert.FromBase64String(encodedArgumentsBase64));
+        return JsonSerializer.Deserialize<string[]>(json) ?? [];
     }
 
     private static string[] NormalizeDevicePaths(string[] args, string testResultsDir)
@@ -611,13 +612,9 @@ public class TestInstrumentation : Instrumentation
 }
 ```
 
-**2. AndroidManifest.xml registration:**
-```xml
-<instrumentation
-  android:name="mypackage.TestInstrumentation"
-  android:targetPackage="com.mycompany.mytestapp"
-  android:label="Test Instrumentation" />
-```
+**2. Android manifest registration:**
+
+The `[Instrumentation]` attribute should generate the manifest entry in .NET Android. Avoid adding a duplicate manual `<instrumentation>` element unless the SDK explicitly requires custom manifest metadata not covered by the attribute.
 
 ---
 
@@ -919,12 +916,16 @@ The snippets below focus on the device-specific logic; real extensions must also
 ```csharp
 internal sealed class DeviceTestReporter : IDataConsumer, IOutputDeviceDataProducer
 {
+    const string TAG = "DeviceTests";
+
     public Type[] DataTypesConsumed => [typeof(TestNodeUpdateMessage)];
 
     public async Task ConsumeAsync(IDataProducer dataProducer, IData value, CancellationToken cancellationToken)
     {
         var testNodeUpdateMessage = (TestNodeUpdateMessage)value;
-        TestNodeStateProperty nodeState = testNodeUpdateMessage.TestNode.Properties.Single<TestNodeStateProperty>();
+        TestNodeStateProperty? nodeState = testNodeUpdateMessage.TestNode.Properties.SingleOrDefault<TestNodeStateProperty>();
+        if (nodeState is null)
+            return;
 
         switch (nodeState)
         {
@@ -945,6 +946,8 @@ internal sealed class DeviceTestReporter : IDataConsumer, IOutputDeviceDataProdu
 ```csharp
 internal sealed class DeviceTestSessionHandler : ITestSessionLifetimeHandler, IOutputDeviceDataProducer
 {
+    const string TAG = "DeviceTests";
+
     public async Task OnTestSessionStartingAsync(ITestSessionContext testSessionContext)
     {
         Log.Info(TAG, "Test session starting...");
@@ -963,8 +966,8 @@ public static class DeviceTestingPlatformBuilderHook
 {
     public static void AddExtensions(ITestApplicationBuilder builder, string[] args)
     {
-        builder.TestHost.AddDataConsumer(sp => new DeviceTestReporter(sp.GetOutputDevice()));
-        builder.TestHost.AddTestSessionLifetimeHandler(sp => new DeviceTestSessionHandler(sp.GetOutputDevice()));
+        builder.TestHost.AddDataConsumer(sp => new DeviceTestReporter());
+        builder.TestHost.AddTestSessionLifetimeHandler(sp => new DeviceTestSessionHandler());
     }
 }
 ```
