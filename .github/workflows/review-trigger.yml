@@ -25,6 +25,10 @@ on:
         description: 'AzDO pipeline branch (default: main)'
         required: false
         default: 'main'
+      custom_prompt:
+        description: 'Optional free-text custom review prompt (adds a supplementary analysis to the AI Review Summary)'
+        required: false
+        default: ''
 
 jobs:
   # Coarse pre-filter that decides whether the comment is a /review command.
@@ -35,7 +39,12 @@ jobs:
   match:
     if: github.event_name == 'workflow_dispatch' || github.event.issue.pull_request
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    # The actual work (a bash regex match) takes <1s, but GitHub-hosted runner
+    # provisioning ("Set up job") can take ~2 min under load. A 2-minute cap let that
+    # provisioning latency cancel the whole job mid-setup, skipping trigger-review so the
+    # AzDO pipeline never queued (e.g. dotnet/maui#36307 comment 4925414214). Give the
+    # runner ample headroom — the trivial step can't itself hang for minutes.
+    timeout-minutes: 10
     outputs:
       matched: ${{ steps.check.outputs.matched }}
       command: ${{ steps.check.outputs.command }}
@@ -200,14 +209,17 @@ jobs:
           INPUT_PR_NUMBER: ${{ inputs.pr_number }}
           INPUT_PLATFORM: ${{ inputs.platform }}
           INPUT_PIPELINE_REF: ${{ inputs.pipeline_ref }}
+          INPUT_CUSTOM_PROMPT: ${{ inputs.custom_prompt }}
         run: |
           # Valid platforms (from AzDO pipeline definition)
           VALID_PLATFORMS="android ios catalyst windows"
+          CUSTOM_PROMPT=""
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUMBER="${INPUT_PR_NUMBER}"
             PLATFORM="${INPUT_PLATFORM}"
             PIPELINE_REF="${INPUT_PIPELINE_REF:-main}"
+            CUSTOM_PROMPT="${INPUT_CUSTOM_PROMPT}"
           else
             PR_NUMBER="${{ github.event.issue.number }}"
             # Trim any leading whitespace (spaces/tabs/newlines) the user may have
@@ -215,6 +227,16 @@ jobs:
             # prefix and parse remaining args.
             TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//')
             ARGS=$(echo "${TRIMMED_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
+
+            # Extract an optional custom prompt: -prompt "..." / --prompt "..."
+            # (double- or single-quoted). This MUST run before the word-splitting
+            # arg loop below, which would otherwise lose the quotes and shatter the
+            # multi-word prompt across positional tokens. \x27 is a single quote.
+            CUSTOM_PROMPT=$(printf '%s' "${ARGS}" | perl -ne 'if (/--?prompt\s+"([^"]*)"/s){print $1} elsif (/--?prompt\s+\x27([^\x27]*)\x27/s){print $1}')
+            # Remove the whole -prompt "..." token from ARGS so the positional /
+            # flag parsing below is unaffected by the prompt's contents.
+            ARGS=$(printf '%s' "${ARGS}" | perl -pe 's/--?prompt\s+"[^"]*"//g; s/--?prompt\s+\x27[^\x27]*\x27//g')
+            ARGS=$(echo "${ARGS}" | tr -s ' ')
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
@@ -286,10 +308,27 @@ jobs:
             exit 1
           fi
 
+          # Sanitize the custom prompt: collapse to a single line (strip CR/LF and
+          # other control chars) and cap length. It is passed to AzDO as a data-only
+          # templateParameter (jq --arg → JSON-safe) and handled as data by the
+          # pipeline; only maintainers (write/maintain/admin) can reach this step.
+          CUSTOM_PROMPT=$(printf '%s' "${CUSTOM_PROMPT}" | tr -d '\000-\037' | cut -c1-2000)
+
           echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
           echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
           echo "pipeline_ref=${PIPELINE_REF}" >> "$GITHUB_OUTPUT"
-          echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}"
+          # Multiline-safe delimiter form (value is single-line after sanitizing, but
+          # this is robust to '=' and other characters in the prompt).
+          {
+            echo "custom_prompt<<CUSTOM_PROMPT_EOF"
+            printf '%s\n' "${CUSTOM_PROMPT}"
+            echo "CUSTOM_PROMPT_EOF"
+          } >> "$GITHUB_OUTPUT"
+          if [ -n "${CUSTOM_PROMPT}" ]; then
+            echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}, CustomPrompt: '${CUSTOM_PROMPT}'"
+          else
+            echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}"
+          fi
 
       - name: Validate PR
         id: pr
@@ -435,17 +474,24 @@ jobs:
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
           PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
           PLATFORM: ${{ steps.infer.outputs.platform }}
+          CUSTOM_PROMPT: ${{ steps.params.outputs.custom_prompt }}
         run: |
           echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM}, ref: ${PIPELINE_REF})..."
 
           # Platform is always resolved at this point (inferred or explicit)
-          # Build JSON payload safely with jq to avoid injection
+          # Build JSON payload safely with jq to avoid injection. CustomPrompt is
+          # added only when non-empty so normal /review runs are byte-for-byte
+          # unaffected (the pipeline default is an empty CustomPrompt).
           PAYLOAD=$(jq -n \
             --arg pr "${PR_NUMBER}" \
             --arg plat "${PLATFORM}" \
             --arg ref "refs/heads/${PIPELINE_REF}" \
+            --arg prompt "${CUSTOM_PROMPT}" \
             '{
-              templateParameters: { PRNumber: $pr, Platform: $plat },
+              templateParameters: (
+                { PRNumber: $pr, Platform: $plat }
+                + (if $prompt == "" then {} else { CustomPrompt: $prompt } end)
+              ),
               resources: { repositories: { self: { refName: $ref } } }
             }')
 

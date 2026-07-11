@@ -467,7 +467,15 @@ function Invoke-TestRun {
             $deviceParams = @{
                 Project       = $deviceProject
                 Platform      = $devicePlatform
-                Configuration = "Release"
+                # Build device tests in DEBUG, not Release. The gate only needs to verify test
+                # BEHAVIOUR (does it fail without the fix, pass with it) — not Release/AOT/trim.
+                # On iOS/MacCatalyst, Release does FULL ILLink trimming (links every assembly),
+                # which both massively slows the build (the gate builds twice per test) and
+                # maximizes the chance of hitting the ILLink "IL1012 IL Trimmer has encountered
+                # an unexpected error" crash — surfacing as an INCONCLUSIVE that has nothing to
+                # do with the PR (e.g. dotnet/maui#36328, #35892). Debug matches the UI-test /
+                # HostApp path above, which already builds --configuration Debug.
+                Configuration = "Debug"
             }
 
             # Pass filter through — detection ensures it's Category= format
@@ -524,7 +532,11 @@ function Invoke-TestRunWithRetry {
 
         $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $TestEntry.Filter
 
-        if (-not $result.EnvError) {
+        # A missing snapshot baseline is deterministic (the baseline PNG simply isn't in the
+        # repo yet) — retrying re-runs the whole test for the same guaranteed result. Return
+        # immediately so it flows straight to the INCONCLUSIVE classification without burning
+        # retry attempts (and device reboots).
+        if (-not $result.EnvError -or $result.SnapshotBaselineMissing) {
             return $result
         }
 
@@ -563,6 +575,70 @@ function Invoke-TestRunWithRetry {
             return $result
         }
     }
+}
+
+# ============================================================
+# Run a test and, when the observed outcome does NOT match the expected one,
+# re-run to confirm — making the gate DETERMINISTIC in the face of flaky tests.
+#
+# The gate contract is: the test(s) must FAIL without the fix and PASS with it.
+# A single run can flip on a flaky test (a bug-reproducing test that passes once
+# without the fix, or a real fix whose test fails once with it), which previously
+# produced spurious "Tests PASSED without fix" / "FAILED with fix" gate blocks.
+#
+# Decision rule (credit the EXPECTED direction if ANY run confirms it):
+#   - Expected 'Fail' (without-fix run): one FAIL proves the test reproduces the
+#     bug, so we only trust an unexpected PASS after every confirmation run also
+#     passes.
+#   - Expected 'Pass' (with-fix run): one PASS proves the fix makes the test green,
+#     so we only trust an unexpected FAIL after every confirmation run also fails.
+# Env/build/filter errors are never "confirmed" here — they are handled upstream as
+# INCONCLUSIVE so infra noise can't be mistaken for a flaky product outcome.
+# ============================================================
+function Invoke-TestRunConfirmed {
+    param(
+        [hashtable]$TestEntry,
+        [string]$LogFile,
+        [ValidateSet('Fail', 'Pass')][string]$Expected,
+        [int]$MaxConfirm = 2
+    )
+
+    $result = Invoke-TestRunWithRetry -TestEntry $TestEntry -LogFile $LogFile
+
+    # Only a clean pass/fail can be flaky; infra/build/filter problems are decided elsewhere.
+    if ($result.EnvError -or $result.BuildError -or $result.FilterMismatch) { return $result }
+
+    $matched = if ($Expected -eq 'Fail') { -not $result.Passed } else { $result.Passed }
+    if ($matched) { return $result }
+
+    $observed = if ($result.Passed) { 'PASS' } else { 'FAIL' }
+    Write-Host "  🔁 Observed unexpected '$observed' (expected $Expected) — confirming with up to $MaxConfirm re-run(s) to rule out flakiness" -ForegroundColor Yellow
+    Write-Log "  Unexpected '$observed' (expected $Expected) for $($TestEntry.TestName) — running up to $MaxConfirm confirmation re-run(s)"
+
+    for ($c = 1; $c -le $MaxConfirm; $c++) {
+        $confirmLog = "$LogFile.confirm$c"
+        $r = Invoke-TestRunWithRetry -TestEntry $TestEntry -LogFile $confirmLog
+        if ($r.EnvError -or $r.BuildError -or $r.FilterMismatch) {
+            # No clean confirmation run available — don't let infra noise overturn the
+            # original observation; keep looking.
+            Write-Host "  ⚠️ Confirmation run $c hit an env/build error — ignoring for the flakiness check" -ForegroundColor Yellow
+            continue
+        }
+        $rMatched = if ($Expected -eq 'Fail') { -not $r.Passed } else { $r.Passed }
+        if ($rMatched) {
+            Write-Host "  ✅ Confirmation run $c matched expected '$Expected' — test is FLAKY; crediting the expected outcome" -ForegroundColor Green
+            Write-Log "  Confirmation run $c matched '$Expected' — $($TestEntry.TestName) is flaky; crediting expected outcome"
+            $r.TestName = $TestEntry.TestName
+            $r.TestType = $TestEntry.Type
+            $r.Flaky = $true
+            return $r
+        }
+    }
+
+    Write-Host "  ❌ All $MaxConfirm confirmation run(s) still '$observed' — trusting the unexpected outcome as genuine" -ForegroundColor Red
+    Write-Log "  All $MaxConfirm confirmation run(s) still '$observed' — $($TestEntry.TestName) verdict is genuine"
+    $result.Confirmed = $true
+    return $result
 }
 
 # ============================================================
@@ -627,6 +703,26 @@ function Get-TestResultFromOutput {
         # If tests actually ran (passed > 0), trust the results over exit codes
         if ($devicePassCount -gt 0) {
             if ($deviceFailCount -gt 0) {
+                # A run can report real passes AND failures where EVERY failure is a brand-new
+                # VerifyScreenshot test whose baseline PNG isn't committed yet ("Baseline
+                # snapshot not yet created"). That is NOT a genuine failure — the gate simply
+                # has nothing to compare against — so it must be INCONCLUSIVE, not FAILED. This
+                # check has to run HERE (inside the trust-the-counts path); otherwise a PR that
+                # adds many new snapshot tests plus a couple that already have baselines (e.g.
+                # PR #36448: Passed=2, Failed=30, all 30 baseline-missing) falls straight through
+                # to the plain-FAIL return below and is falsely blocked. A real pixel DIFF
+                # against an EXISTING baseline prints "Snapshot different than baseline" (NOT
+                # "not yet created"), so baselineMissing < deviceFailCount and we correctly fall
+                # through to a genuine failure.
+                $baselineMissingCount = ([regex]::Matches($content, '(?i)Baseline snapshot not yet created')).Count
+                if ($baselineMissingCount -ge $deviceFailCount) {
+                    Write-Host "  ⚠️  All $deviceFailCount failing test(s) are new snapshots with no committed baseline — INCONCLUSIVE (gate cannot validate a brand-new VerifyScreenshot)" -ForegroundColor Yellow
+                    return @{
+                        Passed = $false; EnvError = $true; SnapshotBaselineMissing = $true
+                        Error = "New snapshot test(s) — baseline image not yet created for $deviceFailCount test(s); the gate cannot validate brand-new VerifyScreenshot tests (baseline PNGs are added separately by a maintainer)"
+                        FailCount = 0; Failed = 0; Total = $deviceTotal; Skipped = 0
+                    }
+                }
                 return @{
                     Passed = $false; FailCount = $deviceFailCount; Failed = $deviceFailCount
                     PassCount = $devicePassCount; Total = $deviceTotal; Skipped = 0
@@ -644,6 +740,7 @@ function Get-TestResultFromOutput {
     $envErrorPatterns = @(
         @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
         @{ Pattern = "XHarness exit code:\s*83"; Message = "App failed to launch (XHarness exit 83)" }
+        @{ Pattern = "XHarness exit code:\s*80"; Message = "App crashed during test run (XHarness exit 80 APP_CRASH)" }
         @{ Pattern = "XHarness exit code:\s*78"; Message = "Package installation failed (XHarness exit 78)" }
         @{ Pattern = "PACKAGE_INSTALLATION_FAILURE"; Message = "Package installation failed (XHarness package installation failure)" }
         @{ Pattern = "Waiting for command timed out: execution may be compromised"; Message = "Device package operation timed out" }
@@ -655,6 +752,25 @@ function Get-TestResultFromOutput {
     foreach ($envErr in $envErrorPatterns) {
         if ($content -match $envErr.Pattern) {
             return @{ Passed = $false; EnvError = $true; Error = $envErr.Message; FailCount = 0; Failed = 0; Total = 0; Skipped = 0 }
+        }
+    }
+
+    # ── New snapshot/visual UI test with no committed baseline ──
+    # A brand-new VerifyScreenshot test has no baseline PNG in the repo yet — maintainers
+    # add the baseline in a follow-up commit after visually confirming it — so VisualTestUtils
+    # throws "Baseline snapshot not yet created". This is NOT a fix failure: the gate simply
+    # cannot validate a snapshot that has nothing to compare against, so a PR that ADDS new
+    # snapshot tests would otherwise be falsely blocked with "Fix does not pass the tests"
+    # (e.g. PR #36442's Border_StrokeDashArrayWithStrokeLineCap_* tests). Treat a missing
+    # baseline as INCONCLUSIVE (env-class, non-blocking).
+    # IMPORTANT: this matches a MISSING baseline only. A real pixel DIFF against an EXISTING
+    # baseline (VisualTestFailedException without "not yet created") is a genuine failure and
+    # must still be counted — it can be a real visual regression.
+    if ($content -match '(?i)Baseline snapshot not yet created') {
+        return @{
+            Passed = $false; EnvError = $true; SnapshotBaselineMissing = $true
+            Error = "New snapshot test — baseline image not yet created; the gate cannot validate a brand-new VerifyScreenshot test (the baseline PNG is added separately by a maintainer)"
+            FailCount = 0; Failed = 0; Total = 0; Skipped = 0
         }
     }
 
@@ -1048,6 +1164,55 @@ if ($DetectedFixFiles.Count -eq 0) {
     New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 
     $ValidationLog = Join-Path $OutputPath "verification-log.txt"
+    # Failure-only mode must ALSO write verification-report.md. Without it the caller
+    # (Review-PR.ps1) sees exit 0 and labels the gate "PASSED" while simultaneously
+    # warning "verify-tests-fail.ps1 exited before writing a verification report" — a
+    # confusing false-positive for test-only PRs. Define the path here and emit a report
+    # on every exit path below.
+    $FailureOnlyReport = Join-Path $OutputPath "verification-report.md"
+
+    function Write-FailureOnlyReport {
+        param(
+            [string]$ReportStatus,   # "✅ PASSED" | "❌ FAILED" | "⚠️ INCONCLUSIVE"
+            [array]$Results
+        )
+        $mergeBaseShort = if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { "$MergeBase" }
+        $lines = @()
+        $lines += "## Gate: Test Verification (Failure-Only Mode)"
+        $lines += ""
+        $lines += "**Result:** $ReportStatus"
+        $lines += ""
+        $lines += "This is a **test-only** change (no fix files detected in the diff), so the gate only verifies that the new/changed tests **fail** against the merge base — proving they reproduce the bug they target."
+        $lines += ""
+        $lines += "**Platform:** $($Platform.ToUpper())  "
+        $lines += "**Merge base:** ``$mergeBaseShort``"
+        $lines += ""
+        $lines += "| Test | Type | Outcome |"
+        $lines += "|------|------|---------|"
+        foreach ($r in $Results) {
+            $outcome = if ($r.EnvError) { "⚠️ ENV ERROR" }
+                elseif ($r.BuildError) { "🛠️ BUILD ERROR" }
+                elseif ($r.FilterMismatch) { "🔍 NO MATCH" }
+                elseif (-not $r.Passed) { "FAIL ✅ (expected)" }
+                else { "PASS ❌ (should fail)" }
+            $lines += "| ``$($r.TestName)`` | $($r.TestType) | $outcome |"
+        }
+        $problem = @($Results | Where-Object { $_.Error })
+        if ($problem.Count -gt 0) {
+            $lines += ""
+            $lines += "<details>"
+            $lines += "<summary>Diagnostics</summary>"
+            $lines += ""
+            foreach ($r in $problem) {
+                $lines += "- **$($r.TestName)**: ``$($r.Error)``"
+            }
+            $lines += ""
+            $lines += "</details>"
+        }
+        ($lines -join "`n") | Set-Content -Path $FailureOnlyReport -Encoding UTF8
+        Write-Host ""
+        Write-Host "📄 Markdown report saved to: $FailureOnlyReport" -ForegroundColor Cyan
+    }
 
     # Initialize log
     "" | Set-Content $ValidationLog
@@ -1090,28 +1255,41 @@ if ($DetectedFixFiles.Count -eq 0) {
     Write-Host ""
 
     $allFailed = ($allResults | Where-Object { $_.Passed }).Count -eq 0
-    $hasErrors = ($allResults | Where-Object { $_.Error }).Count -gt 0
-
-    if ($hasErrors) {
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-        Write-Host "║              ERROR PARSING TEST RESULTS                   ║" -ForegroundColor Red
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-        foreach ($r in ($allResults | Where-Object { $_.Error })) {
-            Write-Host "  [$($r.TestType)] $($r.TestName): $($r.Error)" -ForegroundColor Red
-        }
-        exit 1
-    }
+    # Env/build/parse errors mean the gate could NOT verify the test's behaviour. Those
+    # must surface as INCONCLUSIVE (exit 3), not FAILED, so infra/build flakes don't
+    # masquerade as a broken test — mirroring the full-verification mode's classification.
+    $hasEnvError   = @($allResults | Where-Object { $_.EnvError }).Count -gt 0
+    $hasBuildError = @($allResults | Where-Object { $_.BuildError }).Count -gt 0
+    $hasOtherError = @($allResults | Where-Object { $_.Error -and -not $_.EnvError -and -not $_.BuildError }).Count -gt 0
 
     # Show per-test results
     foreach ($r in $allResults) {
         $icon = switch ($r.TestType) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
-        if (-not $r.Passed) {
+        if ($r.EnvError) {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ENV ERROR — $($r.Error)" -ForegroundColor Yellow
+        } elseif ($r.BuildError) {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): 🛠️ BUILD ERROR — $($r.Error)" -ForegroundColor Yellow
+        } elseif ($r.Error) {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ERROR — $($r.Error)" -ForegroundColor Yellow
+        } elseif (-not $r.Passed) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ✅ (expected)" -ForegroundColor Green
         } else {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ❌ (should fail!)" -ForegroundColor Red
         }
     }
     Write-Host ""
+
+    if ($hasEnvError -or $hasBuildError -or $hasOtherError) {
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+        Write-Host "║              VERIFICATION INCONCLUSIVE ⚠️                  ║" -ForegroundColor Yellow
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+        Write-Host "║  Could not verify the test(s) — env/build/parse error.    ║" -ForegroundColor Yellow
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+        Write-FailureOnlyReport -ReportStatus "⚠️ INCONCLUSIVE" -Results $allResults
+        # Exit 3 = inconclusive (build/env error). The report keeps the literal "ENV ERROR"
+        # marker so the caller's retry loop can distinguish transient infra flakes.
+        exit 3
+    }
 
     if ($allFailed) {
         Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
@@ -1120,6 +1298,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "║  All $($allResults.Count) test(s) FAILED as expected!                      ║" -ForegroundColor Green
         Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        Write-FailureOnlyReport -ReportStatus "✅ PASSED" -Results $allResults
         exit 0
     } else {
         $passedCount = ($allResults | Where-Object { $_.Passed }).Count
@@ -1129,6 +1308,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED but should FAIL!                   ║" -ForegroundColor Red
         Write-Host "║  Those tests don't reproduce the bug. Revise them!        ║" -ForegroundColor Red
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        Write-FailureOnlyReport -ReportStatus "❌ FAILED" -Results $allResults
         exit 1
     }
 }
@@ -1211,6 +1391,25 @@ function Write-Log {
     Add-Content -Path $ValidationLog -Value $logLine
 }
 
+# Does a set of build-error results point at one of the PR's OWN detected test files?
+# The gate reverts only FIX files, never test files, so a test file always compiles at the
+# PR's HEAD in BOTH the without-fix and with-fix states. When a self-contained compile error
+# lives in the PR's test (e.g. PR #36170 added `using Microsoft.UI.Xaml.Controls;`, making
+# `SelectionMode` ambiguous → CS0104), it fails identically in both states and would otherwise
+# be mislabeled "pre-existing build failure (not the fix)". Matching the build-error text
+# against a detected test's class name lets us attribute it to the PR (a real, blocking
+# FAILED) instead of downgrading it to a non-blocking INCONCLUSIVE.
+function Test-BuildErrorIsInDetectedTest {
+    param([array]$Results, [array]$Tests)
+    $errText = (@($Results) | Where-Object { $_.BuildError } | ForEach-Object { "$($_.FailureMessage) $($_.Error)" }) -join "`n"
+    if (-not $errText -or -not $Tests) { return $false }
+    foreach ($t in $Tests) {
+        $base = (($t.TestName -split ' \(')[0]).Trim()
+        if ($base -and $errText -match [regex]::Escape($base)) { return $true }
+    }
+    return $false
+}
+
 function Write-MarkdownReport {
     param(
         [bool]$VerificationPassed,
@@ -1238,8 +1437,40 @@ function Write-MarkdownReport {
     # non-blocking infra flake.
     $baselineBuildError = @($WithoutFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
 
-    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($hasEnvError -or $baselineBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
+    # A baseline build error located in the PR's OWN test file is NOT pre-existing/infra — the
+    # PR broke its own test (test files are never reverted). Attribute it to the PR (FAILED),
+    # not INCONCLUSIVE.
+    $prTestBuildError = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $WithoutFixResultsList -Tests $Tests)
+
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or $baselineBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
+
+    # When the gate PASSED under the relaxed "at least one test reproduces the bug, none
+    # regress" rule but some tests pass in both states, note it so a PASS with an always-green
+    # row in the table doesn't look inconsistent.
+    $reproPairs = 0; $alwaysGreenPairs = 0
+    foreach ($t in $Tests) {
+        $woP = $WithoutFixResultsList | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+        $wP  = $WithFixResultsList    | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+        if (-not $woP -or -not $wP) { continue }
+        $woInc = $woP.EnvError -or $woP.BuildError -or $woP.FilterMismatch
+        $wInc  = $wP.EnvError  -or $wP.BuildError  -or $wP.FilterMismatch
+        if ($woInc -or $wInc) { continue }
+        if ((-not $woP.Passed) -and $wP.Passed) { $reproPairs++ }
+        if ($woP.Passed -and $wP.Passed) { $alwaysGreenPairs++ }
+    }
+    $mixedPassNote = if ($VerificationPassed -and $reproPairs -gt 0 -and $alwaysGreenPairs -gt 0) {
+        "✅ **Fix verified** — $reproPairs test(s) reproduce the bug (FAIL without the fix → PASS with it). $alwaysGreenPairs test(s) pass in both states and are not bug-reproducing; under the ""at least one test reproduces the bug and none regress"" rule they don't block the gate."
+    } else { $null }
+
+    # A brand-new snapshot test with no committed baseline drives the INCONCLUSIVE above via
+    # its EnvError flag. Give it a dedicated, actionable headline instead of the generic
+    # "environment error" framing so the reader knows the fix is fine — only the baseline is
+    # missing.
+    $snapshotBaselineMissing = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.SnapshotBaselineMissing }).Count -gt 0
+    $snapshotNote = if ($snapshotBaselineMissing) {
+        "📷 **New snapshot test — no baseline yet** — the test calls ``VerifyScreenshot`` but its baseline image is not committed (brand-new snapshot tests get their baseline added separately). The gate cannot validate a snapshot with nothing to compare against, so this is **inconclusive, not a fix failure**. Download the ``snapshots-diff`` artifact, confirm the rendering, and commit the baseline PNG."
+    } else { $null }
 
     # ─── Improvement #2: classify the failure mode so the headline matches the cause ───
     # Without this, every non-PASSED gate just says "tests did not behave as expected".
@@ -1278,12 +1509,29 @@ function Write-MarkdownReport {
             if ($woStates[$i] -eq "FAIL" -and $wStates[$i] -eq "PASS") { $hasFixedTest = $true }
         }
 
-        if ($wBuildError.Count -gt 0) {
+        if ($woBuildError.Count -gt 0) {
+            # Baseline (without-fix / merge-base) does not build. The gate cannot establish a
+            # working "before" state, so it can NEVER attribute the failure to the PR's fix —
+            # even when the with-fix build ALSO errors (which is the common case: the SAME
+            # pre-existing/toolchain failure hits both states, e.g. an ILLink IL1012 trimmer
+            # crash). This branch MUST be evaluated before the with-fix branch so a
+            # both-states build error is reported as a pre-existing/inconclusive failure, not
+            # mislabeled "Fix does not compile" (which blames the PR for a baseline breakage).
+            $woExcerpt = ($woBuildError | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
+            $woExcerptLine = if ($woExcerpt) { "`n> ``$woExcerpt``" } else { "" }
+            if ($prTestBuildError) {
+                $failureClassification = "🩺 **The PR's test does not compile** — the build error is in one of the PR's own test files, which the gate never reverts, so it fails identically without and with the fix. This is NOT a pre-existing/environment failure — the PR must fix its test (e.g. an ambiguous ``using`` / type collision). Investigate the PR's test code.$woExcerptLine"
+            } elseif ($wBuildError.Count -gt 0) {
+                $failureClassification = "🩺 **Pre-existing build failure (not the fix)** — both the without-fix baseline AND the with-fix build fail with a build error, so the PR's fix is NOT the cause. This is a broken ``main``/merge-base or a toolchain/environment failure (e.g. an ILLink IL1012 trimmer crash). The gate cannot verify anything; investigate the build environment rather than the PR.$woExcerptLine"
+            } else {
+                $failureClassification = "🩺 **Base branch does not compile** — the without-fix build failed. The gate's ""does the test fail without the fix"" check is unreliable here; this usually means ``main`` is broken or a merge-base file went missing. Investigate before trusting this gate.$woExcerptLine"
+            }
+        } elseif ($wBuildError.Count -gt 0) {
+            # Reached only when the baseline builds cleanly but the PR's fix does NOT — a
+            # genuine, PR-caused compile failure (FAILED, not inconclusive).
             $excerpt = ($wBuildError | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
             $excerptLine = if ($excerpt) { "`n> ``$excerpt``" } else { "" }
-            $failureClassification = "🩺 **Fix does not compile** — applying the PR's fix produces a build error before tests can run. The earlier-than-test failure is the root cause; the per-test ❌ FAIL marks are downstream effects, not real test failures.$excerptLine"
-        } elseif ($woBuildError.Count -gt 0) {
-            $failureClassification = "🩺 **Base branch does not compile** — the without-fix build failed. The gate's ""does the test fail without the fix"" check is unreliable here; this usually means ``main`` is broken or a merge-base file went missing. Investigate before trusting this gate."
+            $failureClassification = "🩺 **Fix does not compile** — applying the PR's fix produces a build error before tests can run (the baseline builds fine). The earlier-than-test failure is the root cause; the per-test ❌ FAIL marks are downstream effects, not real test failures.$excerptLine"
         } elseif ($wFilterMiss.Count -gt 0 -or $woFilterMiss.Count -gt 0) {
             $missing = ($wFilterMiss + $woFilterMiss | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
             $hint = if ($missing) { " — filter ``$missing`` matched 0 tests" } else { "" }
@@ -1305,6 +1553,14 @@ function Write-MarkdownReport {
     $lines += ""
     $platformDisplay = if ($ReportPlatform) { $ReportPlatform.ToUpper() } else { "N/A" }
     $lines += "**Platform:** $platformDisplay · **Base:** $ReportBaseBranch · **Merge base:** ``$mergeBaseShort``"
+    if ($mixedPassNote) {
+        $lines += ""
+        $lines += $mixedPassNote
+    }
+    if ($snapshotNote) {
+        $lines += ""
+        $lines += $snapshotNote
+    }
     if ($failureClassification) {
         $lines += ""
         $lines += $failureClassification
@@ -1321,7 +1577,9 @@ function Write-MarkdownReport {
 
         # Without fix cell
         $woDur = if ($woResult.Duration) { "$([math]::Round($woResult.Duration.TotalSeconds))s" } else { "" }
-        if ($woResult.EnvError) {
+        if ($woResult.SnapshotBaselineMissing) {
+            $woCell = "📷 NEW SNAPSHOT (no baseline)"
+        } elseif ($woResult.EnvError) {
             $woCell = "⚠️ ENV ERROR"
         } elseif ($woResult.BuildError) {
             $woCell = "🛠️ BUILD ERROR"
@@ -1335,7 +1593,9 @@ function Write-MarkdownReport {
 
         # With fix cell
         $wDur = if ($wResult.Duration) { "$([math]::Round($wResult.Duration.TotalSeconds))s" } else { "" }
-        if ($wResult.EnvError) {
+        if ($wResult.SnapshotBaselineMissing) {
+            $wCell = "📷 NEW SNAPSHOT (no baseline)"
+        } elseif ($wResult.EnvError) {
             $wCell = "⚠️ ENV ERROR"
         } elseif ($wResult.BuildError) {
             $wCell = "🛠️ BUILD ERROR"
@@ -1655,7 +1915,7 @@ foreach ($testEntry in $AllDetectedTests) {
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     try {
-        $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+        $result = Invoke-TestRunConfirmed -TestEntry $testEntry -LogFile $testLogFile -Expected 'Fail'
     } catch {
         $result = @{ Passed = $false; Failed = 0; Total = 0; PassCount = 0; FailCount = 0; Skipped = 0; EnvError = $true; Error = $_.Exception.Message }
         Write-Host "  ⚠️ Test invocation threw: $($_.Exception.Message)" -ForegroundColor Yellow
@@ -1754,7 +2014,7 @@ foreach ($testEntry in $AllDetectedTests) {
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     try {
-        $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+        $result = Invoke-TestRunConfirmed -TestEntry $testEntry -LogFile $testLogFile -Expected 'Pass'
     } catch {
         $result = @{ Passed = $false; Failed = 0; Total = 0; PassCount = 0; FailCount = 0; Skipped = 0; EnvError = $true; Error = $_.Exception.Message }
         Write-Host "  ⚠️ Test invocation threw: $($_.Exception.Message)" -ForegroundColor Yellow
@@ -1809,9 +2069,9 @@ Write-Log ""
 Write-Log "VERIFICATION RESULTS"
 
 $verificationPassed = $false
-# "Without fix" should FAIL → all tests should NOT pass
+# "Without fix" should FAIL and "with fix" should PASS. These two aggregates are kept for the
+# report/summary text, but the PASS/FAIL DECISION now uses the relaxed per-test rule below.
 $failedWithoutFix = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq 0
-# "With fix" should PASS → all tests should pass
 $passedWithFix = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
 
 # Print a clear comparison table
@@ -1845,6 +2105,33 @@ Write-Host ""
 
 $verificationPassed = $failedWithoutFix -and $passedWithFix
 
+# ── Relaxed gate rule (user-selected) ──
+# PASS when AT LEAST ONE test genuinely REPRODUCES the bug (FAIL without the fix → PASS with
+# it) AND the fix leaves NO test failing (no genuine with-fix failure). A test that passes in
+# both states (PASS→PASS) neither proves nor blocks the fix, so it's ignored. This replaces the
+# old "ALL tests must fail without the fix" rule, which false-FAILED mixed PRs where a strong
+# regression test coexists with an always-green test (e.g. PR #27477: VisualStateManagerTests
+# FAIL→PASS but Issue19752 PASS→PASS). Env/build/filter results are inconclusive (handled
+# below) and are excluded from both counts.
+$reproducingCount = 0
+$withFixGenuineFailCount = 0
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w  = $withFixResults    | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+    $woInconclusive = $wo.EnvError -or $wo.BuildError -or $wo.FilterMismatch
+    $wInconclusive  = $w.EnvError  -or $w.BuildError  -or $w.FilterMismatch
+    # FAIL → PASS: reproduces the bug and the fix resolves it.
+    if ((-not $woInconclusive) -and (-not $wInconclusive) -and (-not $wo.Passed) -and $w.Passed) {
+        $reproducingCount++
+    }
+    # A genuine failure that remains WITH the fix (FAIL→FAIL or a PASS→FAIL regression).
+    if ((-not $wInconclusive) -and (-not $w.Passed)) {
+        $withFixGenuineFailCount++
+    }
+}
+$verificationPassed = ($reproducingCount -gt 0) -and ($withFixGenuineFailCount -eq 0)
+
 # A test that hit an ENVIRONMENT error, or a BASELINE (without-fix) BUILD error, never
 # established whether the bug reproduces, so the gate could not verify anything — treat that
 # as INCONCLUSIVE (exit 3) so build/infra flakes don't masquerade as a broken fix.
@@ -1854,7 +2141,11 @@ $verificationPassed = $failedWithoutFix -and $passedWithFix
 $baselineBuildError = (@($withoutFixResults) | Where-Object { $_.BuildError }).Count -gt 0
 $withFixBuildError  = (@($withFixResults)    | Where-Object { $_.BuildError }).Count -gt 0
 $anyEnvError        = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.EnvError }).Count -gt 0
-$gateInfraError     = $anyEnvError -or $baselineBuildError
+# A baseline build error inside the PR's OWN test file is the PR's fault (test files are never
+# reverted, so it breaks identically in both states) — a real FAILED, not an infra flake. Keep
+# it OUT of $gateInfraError so it exits 1 (FAILED), matching the report status.
+$prTestBuildError   = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $withoutFixResults -Tests $AllDetectedTests)
+$gateInfraError     = $anyEnvError -or ($baselineBuildError -and -not $prTestBuildError)
 
 Write-Log ""
 Write-Log "Summary:"

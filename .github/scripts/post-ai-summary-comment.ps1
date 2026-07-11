@@ -654,6 +654,32 @@ if (-not $gateSection -and $phaseSections.Count -eq 0) {
     throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
 }
 
+# ── Custom Prompt Analysis (maintainer-supplied) ──────────────────────────────
+# When a maintainer triggered the review with a custom prompt, the CopilotReview
+# phase wrote its analysis to custom-prompt/content.md. Surface it as a prominent
+# OPEN section directly under the header (before the collapsed Review Sessions), so
+# the answer to the maintainer's question is the first thing they see. The section
+# markers make it idempotently replaceable and let the standalone fallback detect it.
+$customPromptSection = ""
+$customPromptFile = Join-Path $PRAgentDir "custom-prompt/content.md"
+if (Test-Path $customPromptFile) {
+    $cpContent = (Get-Content $customPromptFile -Raw -Encoding UTF8)
+    if (-not [string]::IsNullOrWhiteSpace($cpContent)) {
+        $customPromptSection = @"
+<!-- SECTION:CUSTOM-PROMPT -->
+<details open>
+<summary><strong>🔍 Custom Prompt Analysis</strong> — maintainer-requested</summary>
+<br/>
+
+$($cpContent.Trim())
+
+</details>
+<!-- /SECTION:CUSTOM-PROMPT -->
+"@
+        Write-Host "  ✅ custom-prompt ($((Get-Item $customPromptFile).Length) bytes) — folding into AI Review Summary" -ForegroundColor Green
+    }
+}
+
 # The trusted gate verdict comes from the pipeline (Gate task output variable). For
 # local/manual invocations that never post APPROVE, fall back to the non-blocking 'SKIPPED'
 # sentinel so the veto is a no-op rather than reading any agent-writable worktree file.
@@ -763,6 +789,8 @@ $authorPing
 $statusChipRow
 
 ---
+
+$customPromptSection
 
 $newSessionBlock
 
