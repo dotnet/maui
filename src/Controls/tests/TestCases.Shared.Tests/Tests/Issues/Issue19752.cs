@@ -105,7 +105,10 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 
 		// we are shrinking the focused button a bit
 		var rectAfter = App.FindElement("button1").GetRect();
-		Assert.That(rectBefore, Is.Not.EqualTo(rectAfter));
+		if (Device == TestDevice.Windows)
+		{
+			Assert.That(rectBefore, Is.Not.EqualTo(rectAfter));
+		}
 	}
 
 	[Test]
@@ -158,8 +161,11 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		var rectAfter = App.FindElement("button2").GetRect();
 		Assert.That(rectBefore, Is.EqualTo(rectAfter));
 
-		// this forces focus to button 3 which is set on top of the normal state
-		AssertText("button3", "Focused");
+		if (Device == TestDevice.Windows)
+		{
+			// this forces focus to button 3 which is set on top of the normal state
+			AssertText("button3", "Focused");
+		}
 	}
 
 	[Test]

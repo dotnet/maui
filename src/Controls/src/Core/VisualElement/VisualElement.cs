@@ -1795,15 +1795,17 @@ namespace Microsoft.Maui.Controls
 			var shouldUnfocus = unfocusedStateKind != UnfocusedStateKind.None;
 			var wasFocused = shouldFocus && IsInVisualState(VisualStateManager.FocusStates.Focused);
 			var wasPointerOver = IsInVisualState(VisualStateManager.CommonStates.PointerOver);
-			var applySeparateUnfocus = shouldUnfocus && unfocusedStateKind == UnfocusedStateKind.SeparateGroup;
+			var wasUnfocused = shouldUnfocus && IsInVisualState(VisualStateManager.FocusStates.Unfocused);
+			var hasSeparateUnfocus = shouldUnfocus && unfocusedStateKind == UnfocusedStateKind.SeparateGroup;
+			var applySeparateUnfocusBeforeCommonState = hasSeparateUnfocus && (!IsEnabled || isSelected || IsPointerOver);
 			var applyCommonUnfocusBeforePointerOver = shouldUnfocus && IsPointerOver && unfocusedStateKind == UnfocusedStateKind.CommonStatesGroup;
 
 			// If Unfocused is in a separate group, first move the focus group to Unfocused so
-			// Focused setters are unapplied before the final common state is applied. If
+			// Focused setters are unapplied before a stronger common state is applied. If
 			// Unfocused shares CommonStates while the pointer is over the control, transition
 			// through Unfocused before PointerOver so a missing PointerOver state cannot leave
 			// the group stuck in Focused.
-			if (applySeparateUnfocus || applyCommonUnfocusBeforePointerOver)
+			if (applySeparateUnfocusBeforeCommonState || applyCommonUnfocusBeforePointerOver)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
 			}
@@ -1813,11 +1815,11 @@ namespace Microsoft.Maui.Controls
 			// the Focused state, so that it can override the focus visuals when hovering.
 			if (!IsEnabled)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled, force: applySeparateUnfocus);
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled, force: applySeparateUnfocusBeforeCommonState && !wasUnfocused);
 			}
 			else if (isSelected)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Selected, force: applySeparateUnfocus);
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Selected, force: applySeparateUnfocusBeforeCommonState && !wasUnfocused);
 			}
 			else if (!IsPointerOver)
 			{
@@ -1834,13 +1836,17 @@ namespace Microsoft.Maui.Controls
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
 			}
+			else if (hasSeparateUnfocus && IsEnabled && !isSelected && !IsPointerOver)
+			{
+				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
+			}
 
 			// The PointerOver state is applied last so that it can override the focus state.
 			// It only applies to an enabled control that is not in the Selected state, and even
 			// though it is set separately here it is still part of the CommonStates group.
 			if (IsEnabled && !isSelected && IsPointerOver)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver, force: applySeparateUnfocus || (shouldFocus && !wasFocused));
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver, force: (applySeparateUnfocusBeforeCommonState && !wasUnfocused) || (shouldFocus && !wasFocused));
 			}
 		}
 
