@@ -192,7 +192,7 @@ The key limitations (VS-only, Windows-only, VSTest-coupled, no CLI support) mean
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              Developer/AI Agent                              │
 │                                                                              │
-│    dotnet test MyMauiTests.csproj -f net10.0-ios --device "iPhone 15"       │
+│    dotnet test --project MyMauiTests.csproj -f net10.0-ios --device "iPhone 15"       │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
@@ -414,7 +414,7 @@ Support two complementary paths for on-device code coverage.
 Use `Microsoft.Testing.Extensions.CodeCoverage` in the test app:
 
 ```bash
-dotnet test MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
+dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
   -- --coverage --coverage-output TestResults/coverage.cobertura.xml --coverage-output-format cobertura
 ```
 
@@ -470,7 +470,7 @@ Based on the POC implementation, Android device tests support **two execution mo
 Uses the existing `dotnet run --device` infrastructure to deploy and launch the app's `MainActivity`.
 
 ```bash
-dotnet test MyTests.csproj -f net10.0-android -p:Device=emulator-5554
+dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554
 ```
 
 **Flow:**
@@ -493,7 +493,7 @@ dotnet test MyTests.csproj -f net10.0-android -p:Device=emulator-5554
 Uses Android Instrumentation for more reliable test execution with proper wait-for-completion semantics.
 
 ```bash
-dotnet test MyTests.csproj -f net10.0-android -p:Device=emulator-5554 -p:UseInstrumentation=true
+dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554 -p:UseInstrumentation=true
 ```
 
 **Flow:**
@@ -527,9 +527,11 @@ To support Instrumentation Mode via `dotnet run`, the Android SDK's `Microsoft.A
 ```xml
 <PropertyGroup Condition="'$(UseInstrumentation)' == 'true'">
   <RunCommand>$(_AdbToolPath)</RunCommand>
-  <RunArguments>$(AdbTarget) shell am instrument -w "$(_AndroidPackage)/$(AndroidInstrumentationName)"</RunArguments>
+  <RunArguments>$(AdbTarget) shell am instrument -w -e TestRunArguments "@(TestRunArguments, ' ')" "$(_AndroidPackage)/$(AndroidInstrumentationName)"</RunArguments>
 </PropertyGroup>
 ```
+
+The SDK target must treat the instrumentation result as test execution state, not just process completion. `adb shell am instrument -w` can complete successfully even when tests fail, so the target should parse the instrumentation result bundle and/or deterministic TRX artifact and fail the MSBuild target when the MTP exit code is non-zero.
 
 **New MSBuild Properties:**
 
@@ -547,9 +549,12 @@ To support Instrumentation Mode via `dotnet run`, the Android SDK's `Microsoft.A
 [Instrumentation(Name = "mypackage.TestInstrumentation")]
 public class TestInstrumentation : Instrumentation
 {
+    string[] _testArguments = [];
+
     public override void OnCreate(Bundle? arguments)
     {
         base.OnCreate(arguments);
+        _testArguments = ParseTestArguments(arguments?.GetString("TestRunArguments"));
         Start();
     }
 
@@ -580,8 +585,28 @@ public class TestInstrumentation : Instrumentation
         var testResultsDir = Path.Combine(TargetContext.FilesDir.AbsolutePath, "TestResults");
         Directory.CreateDirectory(testResultsDir);
 
-        var args = new[] { "--results-directory", testResultsDir, "--report-trx", "--report-trx-filename", "android.trx" };
+        var args = NormalizeDevicePaths(_testArguments, testResultsDir);
         return await MicrosoftTestingPlatformEntryPoint.Main(args);
+    }
+
+    private static string[] ParseTestArguments(string? encodedArguments)
+    {
+        // SDK implementation should use structured encoding/escaping; simplified for the design sample.
+        return string.IsNullOrWhiteSpace(encodedArguments)
+            ? ["--results-directory", "TestResults", "--report-trx", "--report-trx-filename", "android.trx"]
+            : encodedArguments.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    }
+
+    private static string[] NormalizeDevicePaths(string[] args, string testResultsDir)
+    {
+        var normalized = args.ToArray();
+        for (var i = 0; i < normalized.Length - 1; i++)
+        {
+            if (normalized[i] == "--results-directory" && !Path.IsPathRooted(normalized[i + 1]))
+                normalized[i + 1] = testResultsDir;
+        }
+
+        return normalized;
     }
 }
 ```
@@ -888,6 +913,9 @@ The test application running on the device needs to:
 The POC demonstrates custom MTP extensions for device-specific output:
 
 **DeviceTestReporter (IDataConsumer):**
+
+The snippets below focus on the device-specific logic; real extensions must also implement the current required MTP extension metadata and enablement members.
+
 ```csharp
 internal sealed class DeviceTestReporter : IDataConsumer, IOutputDeviceDataProducer
 {
@@ -936,7 +964,7 @@ public static class DeviceTestingPlatformBuilderHook
     public static void AddExtensions(ITestApplicationBuilder builder, string[] args)
     {
         builder.TestHost.AddDataConsumer(sp => new DeviceTestReporter(sp.GetOutputDevice()));
-        builder.TestHost.AddTestSessionLifetimeHandle(sp => new DeviceTestSessionHandler(sp.GetOutputDevice()));
+        builder.TestHost.AddTestSessionLifetimeHandler(sp => new DeviceTestSessionHandler(sp.GetOutputDevice()));
     }
 }
 ```
@@ -1080,10 +1108,12 @@ Reuse these targets from the `dotnet run` spec:
 
 ### 10.2 With Microsoft.Testing.Platform
 
-Extend these MTP interfaces:
+Coordinate with MTP on a supported public transport/adapter surface before platform SDKs depend on streaming internals. Candidate concepts to align with include:
 - `IPushOnlyProtocol` - Base protocol for result streaming
 - `IPushOnlyProtocolConsumer` - Data consumer for results
 - `DotnetTestConnection` - Existing implementation for named pipes
+
+If those concepts remain internal implementation details, MTP should own the transport implementation or expose a stable public adapter API for the iOS/Android SDK targets to call.
 
 ### 10.3 With Code Coverage
 
