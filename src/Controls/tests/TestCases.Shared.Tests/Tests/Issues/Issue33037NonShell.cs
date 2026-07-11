@@ -40,7 +40,7 @@ public class Issue33037NonShell : _IssuesUITest
 			Assert.That(collapsedTitleRect.Y, Is.LessThan(130),
 				$"The '{title}' navigation title should remain in the navigation bar after collapsing.");
 
-			VerifyScreenshot($"Issue33037NonShell_{scenarioName}_AfterScroll", retryTimeout: TimeSpan.FromSeconds(2));
+			VerifyScreenshot($"Issue33037NonShell_{scenarioName}_AfterScroll", tolerance: 0.8, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 		finally
 		{

@@ -1397,6 +1397,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			WeakReference<Page> _child;
 			WeakReference<MauiLayout> _largeTitleSafeAreaRootLayout;
 			bool _largeTitleSafeAreaApplied;
+			static readonly SafeAreaEdges LargeTitleRootLayoutSafeAreaEdges = new(SafeAreaRegions.Container, SafeAreaRegions.None, SafeAreaRegions.Container, SafeAreaRegions.Container);
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
@@ -2162,7 +2163,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (!_largeTitleSafeAreaApplied)
 				{
-					rootLayout.SetValueFromRenderer(MauiLayout.SafeAreaEdgesProperty, SafeAreaEdges.None);
+					rootLayout.SetValueFromRenderer(MauiLayout.SafeAreaEdgesProperty, LargeTitleRootLayoutSafeAreaEdges);
 					InvalidateSafeArea(rootLayout);
 				}
 
