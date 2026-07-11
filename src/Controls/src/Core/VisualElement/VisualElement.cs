@@ -1651,7 +1651,7 @@ namespace Microsoft.Maui.Controls
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			
+
 			foreach (string key in keys)
 			{
 				if (innerKeys.Add(key))
@@ -1679,10 +1679,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			
+
 			if (mergedStyleClasses.Count > 0)
 				OnResourcesChanged(mergedStyleClasses);
-			
+
 			if (filteredKeys.Count != 0)
 				OnResourcesChangedKeys(filteredKeys);
 		}
@@ -1706,7 +1706,7 @@ namespace Microsoft.Maui.Controls
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			
+
 			foreach (string key in keys)
 			{
 				if (innerKeys.Add(key))
@@ -1732,10 +1732,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			
+
 			if (mergedStyleClasses.Count > 0)
 				OnResourcesChanged(mergedStyleClasses);
-			
+
 			if (filteredKeys.Count != 0)
 				OnResourcesChangedKeys(filteredKeys, resolver);
 		}
@@ -1791,12 +1791,12 @@ namespace Microsoft.Maui.Controls
 			// is kept selected across visual state changes.
 			var isSelected = this.IsElementInSelectedState();
 
-			// If the control cannot have focus, make sure it appears unfocused by moving to
-			// the Unfocused state. We only do this when the control is actually showing a
-			// Focused visual state, so that we don't churn the Unfocused state (and any of its
-			// transitions) on controls that were never focused, or whose Unfocused state shares
-			// a group with Normal/PointerOver.
-			if (!shouldFocus && IsInFocusedVisualState())
+			var shouldUnfocus = !shouldFocus && this.HasVisualState(VisualStateManager.FocusStates.Unfocused);
+
+			// If the control cannot have focus and another CommonStates value is going to win
+			// (Disabled, Selected, or PointerOver), first move any focus group to Unfocused so
+			// that Focused setters are unapplied without overriding the final common state.
+			if (shouldUnfocus && (!IsEnabled || isSelected || IsPointerOver))
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
 			}
@@ -1817,12 +1817,15 @@ namespace Microsoft.Maui.Controls
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
 			}
 
-			// Go to the Focus state after the Normal state, so that the Focus state can
-			// override the Normal state's properties if a control is both focused and
-			// hovered.
+			// Go to the focus state after the Normal state so that Focused/Unfocused states
+			// in CommonStates keep their historical precedence over Normal.
 			if (shouldFocus)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Focused);
+			}
+			else if (shouldUnfocus && IsEnabled && !isSelected && !IsPointerOver)
+			{
+				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
 			}
 
 			// The PointerOver state is applied last so that it can override the focus state.

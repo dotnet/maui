@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.ExceptionServices;
 using System.Drawing;
+using System.Runtime.ExceptionServices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
@@ -2675,18 +2675,18 @@ namespace UITest.Appium
 			}
 		}
 
-		/// <summary>
-		/// Taps a tab in the application.
-		/// </summary>
-		/// <param name="app">The IApp instance representing the application.</param>
-		/// <param name="tabName">The name of the tab to tap.</param>
-		/// <param name="isTopTab">Indicates whether the tab is a top tab (default is false).</param>
-		/// <remarks>
-		/// This method handles platform-specific behaviors:
-		/// - For Android, it converts the tab name to uppercase.
-		/// - For Windows, if it's a top tab, it taps the navigation view item first.
-		/// The method waits for the tab element to be available before tapping it.
-		/// </remarks>
+		/// <summary>
+		/// Taps a tab in the application.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="tabName">The name of the tab to tap.</param>
+		/// <param name="isTopTab">Indicates whether the tab is a top tab (default is false).</param>
+		/// <remarks>
+		/// This method handles platform-specific behaviors:
+		/// - For Android, it converts the tab name to uppercase.
+		/// - For Windows, if it's a top tab, it taps the navigation view item first.
+		/// The method waits for the tab element to be available before tapping it.
+		/// </remarks>
 		public static void TapTab(this IApp app, string tabName, bool isTopTab = false)
 		{
 			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
@@ -2708,7 +2708,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void MoveCursor(this IApp app, string element)
 		{
-			var elementToMoveTo = app.FindElement(element);
+			var elementToMoveTo = app.WaitForElement(element);
 			app.MoveCursor(elementToMoveTo);
 		}
 
@@ -2719,7 +2719,7 @@ namespace UITest.Appium
 		/// <param name="query">The query used to locate the target element.</param>
 		public static void MoveCursor(this IApp app, IQuery query)
 		{
-			var element = app.FindElement(query);
+			var element = app.WaitForElement(query);
 			app.MoveCursor(element);
 		}
 
@@ -2749,14 +2749,14 @@ namespace UITest.Appium
 			});
 		}
 
-		/// <summary>
-		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
-		/// </summary>
-		/// <param name="app">The IApp instance.</param>
-		/// <param name="tabName">The name of the tab to wait for.</param>
-		/// <remarks>
-		/// For Android apps, the tab name is converted to uppercase before searching.
-		/// </remarks>
+		/// <summary>
+		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="tabName">The name of the tab to wait for.</param>
+		/// <remarks>
+		/// For Android apps, the tab name is converted to uppercase before searching.
+		/// </remarks>
 		public static IUIElement WaitForTabElement(this IApp app, string tabName)
 		{
 			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
@@ -3093,18 +3093,18 @@ namespace UITest.Appium
 				{
 					// Signal cancellation (Appium driver won't respect it, but good hygiene)
 					cts.Cancel();
-					
+
 					// Warn about orphaned thread - the background task will continue blocking until
 					// the underlying Appium/WDA call times out or the process is killed
 					Debug.WriteLine($">>>>> Appium command timed out after {timeout.Value.TotalSeconds}s. Background thread may remain blocked until app is force-terminated.");
-					
+
 					// Observe any future exception from the orphaned task to prevent unobserved task exceptions
 					task.ContinueWith(t =>
 					{
 						if (t.Exception is not null)
 							Debug.WriteLine($">>>>> Orphaned Appium task faulted: {t.Exception.InnerException?.Message}");
 					}, TaskContinuationOptions.OnlyOnFaulted);
-					
+
 					throw new TimeoutException(
 						$"An Appium command did not complete within {timeout.Value.TotalSeconds}s. " +
 						"The application may be unresponsive (e.g., due to an infinite layout loop).");

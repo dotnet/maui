@@ -11,6 +11,16 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 
 	protected override bool ResetAfterEachTest => true;
 
+	protected override void TryToResetTestState()
+	{
+		if (Device is TestDevice.Android or TestDevice.iOS)
+		{
+			return;
+		}
+
+		base.TryToResetTestState();
+	}
+
 	// The Issue19752 tests validate focus and pointer-over visual states. They run on the desktop
 	// test devices (Mac Catalyst, Windows) only: mouse hover is unavailable on the Android/iOS CI
 	// runners, and the page's elements are not reliably reachable there (App.FindElement returns
@@ -33,15 +43,21 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		App.MoveCursorCoordinates(10, 10);
 	}
 
+	void AssertText(string automationId, string expectedText)
+	{
+		Assert.That(App.WaitForTextToBePresentInElement(automationId, expectedText), Is.True);
+		Assert.That(App.FindElement(automationId).GetText(), Is.EqualTo(expectedText));
+	}
+
 	[Test]
 	public void InitialStateAreAllCorrect()
 	{
 		IgnoreIfNotDesktop();
 		ResetCursorPosition();
 
-		Assert.That(App.FindElement("button1").GetText(), Is.EqualTo("Normal"));
-		Assert.That(App.FindElement("button2").GetText(), Is.EqualTo("Disabled"));
-		Assert.That(App.FindElement("button3").GetText(), Is.EqualTo("Normal"));
+		AssertText("button1", "Normal");
+		AssertText("button2", "Disabled");
+		AssertText("button3", "Normal");
 	}
 
 	[Test]
@@ -53,7 +69,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		App.MoveCursor("button1");
 
 		// when the mouse moves over a button, it gets a state
-		Assert.That(App.FindElement("button1").GetText(), Is.EqualTo("PointerOver"));
+		AssertText("button1", "PointerOver");
 	}
 
 	// TODO: find a way to send actions to appium and then read values simultaneously
@@ -85,7 +101,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		App.Tap("button1");
 
 		// Pressing a button sets it to be focused, but the pointer over state is applied after
-		Assert.That(App.FindElement("button1").GetText(), Is.EqualTo("PointerOver"));
+		AssertText("button1", "PointerOver");
 
 		// we are shrinking the focused button a bit
 		var rectAfter = App.FindElement("button1").GetRect();
@@ -105,7 +121,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 
 		// hovering over a button and then moving off goes back to the normal state
 		// and does not affect focus
-		Assert.That(App.FindElement("button1").GetText(), Is.EqualTo("Normal"));
+		AssertText("button1", "Normal");
 
 		// we are shrinking the focused button a bit, but the button is still not focused
 		var rectAfter = App.FindElement("button1").GetRect();
@@ -121,7 +137,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		App.Tap("button1");
 
 		// enabling a button just switches to the normal state
-		Assert.That(App.FindElement("button2").GetText(), Is.EqualTo("Normal"));
+		AssertText("button2", "Normal");
 	}
 
 	[Test]
@@ -136,14 +152,14 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		App.Tap("button2"); // move the focus to button 2, but then disable it
 
 		// the button is disabled without a focus change as it never had focus
-		Assert.That(App.FindElement("button2").GetText(), Is.EqualTo("Disabled"));
+		AssertText("button2", "Disabled");
 
 		// we are shrinking the focused button a bit, but the button never had focus
 		var rectAfter = App.FindElement("button2").GetRect();
 		Assert.That(rectBefore, Is.EqualTo(rectAfter));
 
 		// this forces focus to button 3 which is set on top of the normal state
-		Assert.That(App.FindElement("button3").GetText(), Is.EqualTo("Focused"));
+		AssertText("button3", "Focused");
 	}
 
 	[Test]
@@ -159,7 +175,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		App.Tap("button3"); // disable the focused button
 
 		// this disables the button, but the unfocus change is applied before all states
-		Assert.That(App.FindElement("button3").GetText(), Is.EqualTo("Disabled"));
+		AssertText("button3", "Disabled");
 
 		// we are shrinking the focused button a bit, so it should have been unfocused after disabling
 		var rectAfter = App.FindElement("button3").GetRect();

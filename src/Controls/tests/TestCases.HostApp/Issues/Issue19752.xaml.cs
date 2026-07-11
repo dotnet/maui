@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
-using System.Collections.Specialized;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -25,5 +19,5 @@ namespace Maui.Controls.Sample.Issues
 			button2.IsEnabled = sender != button2;
 			button3.IsEnabled = sender != button3;
 		}
-    }
+	}
 }

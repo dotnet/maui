@@ -226,7 +226,7 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 			}
 
-			// Mouse actions are not supported on Windows
+			// W3C pointer actions are not supported by the Windows driver
 			if (_appiumApp.GetTestDevice() == TestDevice.Windows)
 			{
 				var rect = GetAbsoluteRect(element);
@@ -267,7 +267,7 @@ namespace UITest.Appium
 			var endX = Convert.ToInt32(x);
 			var endY = Convert.ToInt32(y);
 
-			// Mouse actions are not supported on Windows
+			// W3C pointer actions are not supported by the Windows driver
 			if (_appiumApp.GetTestDevice() == TestDevice.Windows)
 			{
 				_appiumApp.Driver.ExecuteScript("windows: hover", new Dictionary<string, object>
@@ -340,24 +340,41 @@ namespace UITest.Appium
 				return 1;
 			}
 
-			var hwnd = GetForegroundWindow();
-			if (hwnd == 0)
+			var monitor = MonitorFromPoint(new NativePoint(windowLocation.X, windowLocation.Y), MonitorDefaultToNearest);
+			if (monitor == 0 || GetDpiForMonitor(monitor, MonitorDpiType.EffectiveDpi, out var dpiX, out _) != 0)
 			{
 				return 1;
 			}
 
-			var dpi = GetDpiForWindow(hwnd);
-
-			// Calculate the scale factor (assuming 96 DPI is 100%)
-			var scaleFactor = dpi / 96.0;
+			var scaleFactor = dpiX / 96.0;
 
 			return Math.Max(1, scaleFactor);
 		}
 
-		[DllImport("user32.dll")]
-		private static extern IntPtr GetForegroundWindow();
+		const uint MonitorDefaultToNearest = 2;
+
+		readonly struct NativePoint
+		{
+			public NativePoint(int x, int y)
+			{
+				X = x;
+				Y = y;
+			}
+
+			public int X { get; }
+
+			public int Y { get; }
+		}
+
+		enum MonitorDpiType
+		{
+			EffectiveDpi = 0,
+		}
 
 		[DllImport("user32.dll")]
-		private static extern uint GetDpiForWindow(IntPtr hWnd);
+		private static extern IntPtr MonitorFromPoint(NativePoint pt, uint dwFlags);
+
+		[DllImport("shcore.dll")]
+		private static extern int GetDpiForMonitor(IntPtr hmonitor, MonitorDpiType dpiType, out uint dpiX, out uint dpiY);
 	}
 }
