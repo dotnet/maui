@@ -15,6 +15,11 @@ namespace Microsoft.Maui.Controls
 			GradientStops = new GradientStopCollection();
 		}
 
+		WeakNotifyCollectionChangedProxy _gradientStopsProxy;
+		NotifyCollectionChangedEventHandler _gradientStopsCollectionChanged;
+
+		~GradientBrush() => _gradientStopsProxy?.Unsubscribe();
+
 		public event EventHandler InvalidateGradientBrushRequested;
 
 		/// <summary>Bindable property for <see cref="GradientStops"/>.</summary>
@@ -49,7 +54,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnGradientStopCollectionChanged;
+				_gradientStopsProxy?.Unsubscribe();
 
 				foreach (var oldStop in oldCollection)
 				{
@@ -61,7 +66,9 @@ namespace Microsoft.Maui.Controls
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnGradientStopCollectionChanged;
+			_gradientStopsCollectionChanged ??= OnGradientStopCollectionChanged;
+			_gradientStopsProxy ??= new WeakNotifyCollectionChangedProxy();
+			_gradientStopsProxy.Subscribe(newCollection, _gradientStopsCollectionChanged);
 
 			foreach (var newStop in newCollection)
 			{
