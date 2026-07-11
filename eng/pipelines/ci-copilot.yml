@@ -664,7 +664,11 @@ stages:
                 sleep 2
                 adb start-server
                 sleep 2
-                timeout 90 adb wait-for-device
+                # Best-effort: a stuck/slow emulator must NOT hard-abort the whole review via
+                # `set -e` (adb wait-for-device -> timeout exit 124). Warn and continue so the
+                # rest of the warmup sweep still runs; the downstream gate has its own emulator
+                # retry and reports INCONCLUSIVE on genuine infra failure.
+                timeout 90 adb wait-for-device || echo "##vso[task.logissue type=warning]adb wait-for-device timed out during warmup — emulator slow/stuck; continuing (gate will retry / report INCONCLUSIVE)"
                 # Wait for boot to complete after ADB reconnect
                 waited=0
                 while [ "$(adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
@@ -712,6 +716,12 @@ stages:
               echo "✅ Emulator warmed up and responsive"
             displayName: 'Warm Up Android Emulator'
             condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+            # Warmup is a best-effort keep-alive, never a gate: a slow/stuck emulator (exit 124
+            # from adb wait-for-device, seen killing whole reviews on PR #36215 / #36130) must
+            # NOT abort the review before Task 1-4 run. continueOnError downgrades any warmup
+            # failure to a warning so Setup/Gate/Review/Post still execute — the gate has its own
+            # emulator retry and INCONCLUSIVE classification for genuine infra failures.
+            continueOnError: true
             timeoutInMinutes: 6
             retryCountOnTaskFailure: 2
 
