@@ -136,6 +136,11 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		class WeakGeometryChangedProxy : WeakEventProxy<Geometry, EventHandler>
 		{
+			void OnGeometryChanged(object sender, PropertyChangedEventArgs e)
+			{
+				OnGeometryChanged(sender, (EventArgs)e);
+			}
+
 			void OnGeometryChanged(object sender, EventArgs e)
 			{
 				if (TryGetHandler(out var handler))
