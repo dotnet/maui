@@ -87,5 +87,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(changed);
 			GC.KeepAlive(path);
 		}
+
+		[Fact]
+		public void PathDataReassignmentMovesChangeSubscription()
+		{
+			var oldGeometry = new PathGeometry();
+			var newGeometry = new PathGeometry();
+			var path = new Path { Data = oldGeometry };
+			path.Data = newGeometry;
+
+			bool changed = false;
+			path.PropertyChanged += (_, e) => changed |= e.PropertyName == nameof(Path.Data);
+
+			oldGeometry.Figures.Add(new PathFigure());
+			Assert.False(changed);
+
+			newGeometry.Figures.Add(new PathFigure());
+			Assert.True(changed);
+			GC.KeepAlive(path);
+		}
+
+		[Fact]
+		public void PathRenderTransformReassignmentMovesChangeSubscription()
+		{
+			var oldTransform = new RotateTransform();
+			var newTransform = new RotateTransform();
+			var path = new Path { RenderTransform = oldTransform };
+			path.RenderTransform = newTransform;
+
+			bool changed = false;
+			path.PropertyChanged += (_, e) => changed |= e.PropertyName == nameof(Path.RenderTransform);
+
+			oldTransform.Angle = 45;
+			Assert.False(changed);
+
+			newTransform.Angle = 45;
+			Assert.True(changed);
+			GC.KeepAlive(path);
+		}
 	}
 }
