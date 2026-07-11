@@ -288,6 +288,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			label.SetValue(VisualElement.IsFocusedPropertyKey, true);
 			Assert.Equal(VisualStateManager.CommonStates.PointerOver, label.Text);
+
+			label.SetPointerOver(false);
+			Assert.Equal(FocusedStateName, label.Text);
+		}
+
+		[Fact]
+		public void FocusLossWhilePointerOverLeavesFocusedStateWithoutPointerOverState()
+		{
+			var label = new PointerOverLabel();
+
+			var commonStatesGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			commonStatesGroup.States.Add(CreateTextState(NormalStateName));
+			commonStatesGroup.States.Add(CreateTextState(FocusedStateName));
+			commonStatesGroup.States.Add(CreateTextState(UnfocusedStateName));
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { commonStatesGroup });
+
+			label.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			label.SetPointerOver(true);
+			Assert.Equal(FocusedStateName, label.Text);
+
+			label.SetValue(VisualElement.IsFocusedPropertyKey, false);
+			Assert.Equal(UnfocusedStateName, label.Text);
 		}
 
 		static VisualState CreateTextState(string name)

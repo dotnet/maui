@@ -1794,12 +1794,16 @@ namespace Microsoft.Maui.Controls
 			var unfocusedStateKind = !shouldFocus ? GetUnfocusedStateKind() : UnfocusedStateKind.None;
 			var shouldUnfocus = unfocusedStateKind != UnfocusedStateKind.None;
 			var wasFocused = shouldFocus && IsInVisualState(VisualStateManager.FocusStates.Focused);
-			var wasPointerOver = IsPointerOver && IsInVisualState(VisualStateManager.CommonStates.PointerOver);
+			var wasPointerOver = IsInVisualState(VisualStateManager.CommonStates.PointerOver);
 			var applySeparateUnfocus = shouldUnfocus && unfocusedStateKind == UnfocusedStateKind.SeparateGroup;
+			var applyCommonUnfocusBeforePointerOver = shouldUnfocus && IsPointerOver && unfocusedStateKind == UnfocusedStateKind.CommonStatesGroup;
 
 			// If Unfocused is in a separate group, first move the focus group to Unfocused so
-			// Focused setters are unapplied before the final common state is applied.
-			if (applySeparateUnfocus)
+			// Focused setters are unapplied before the final common state is applied. If
+			// Unfocused shares CommonStates while the pointer is over the control, transition
+			// through Unfocused before PointerOver so a missing PointerOver state cannot leave
+			// the group stuck in Focused.
+			if (applySeparateUnfocus || applyCommonUnfocusBeforePointerOver)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
 			}
