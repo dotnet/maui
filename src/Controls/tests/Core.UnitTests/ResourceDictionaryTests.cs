@@ -643,5 +643,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(await weakElement.WaitForCollect(), "ContentView should not be alive!");
 			GC.KeepAlive(sharedResources);
 		}
+
+		[Fact]
+		public void RemovingOneDuplicateMergedRDStillTriggersValueChanged()
+		{
+			var sharedResources = new ResourceDictionary();
+			var resources = new ResourceDictionary();
+			resources.MergedDictionaries.Add(sharedResources);
+			resources.MergedDictionaries.Add(sharedResources);
+
+			bool changed = false;
+			((IResourceDictionary)resources).ValuesChanged += (_, __) => changed = true;
+
+			resources.MergedDictionaries.Remove(sharedResources);
+			changed = false;
+			sharedResources.Add("Key", "Value");
+
+			Assert.True(changed);
+		}
+
+		[Fact]
+		public async Task LiveMergedResourceDictionaryStillPropagatesAfterGc()
+		{
+			var sharedResources = new ResourceDictionary();
+			var resources = new ResourceDictionary();
+			resources.MergedDictionaries.Add(sharedResources);
+
+			bool changed = false;
+			((IResourceDictionary)resources).ValuesChanged += (_, __) => changed = true;
+
+			await TestHelpers.Collect();
+
+			sharedResources.Add("Key", "Value");
+
+			Assert.True(changed);
+			GC.KeepAlive(resources);
+		}
 	}
 }

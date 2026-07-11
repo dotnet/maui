@@ -132,9 +132,11 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 		}
-		IList<ResourceDictionary> _collectionTrack;
-		Dictionary<ResourceDictionary, WeakResourcesChangedProxy> _mergedProxies;
-		EventHandler<ResourcesChangedEventArgs> _mergedValuesChanged;
+		MergedDictionarySubscriptions _mergedDictionarySubscriptions;
+		EventHandler<ResourcesChangedEventArgs> _itemValuesChangedHandler;
+
+		EventHandler<ResourcesChangedEventArgs> ItemValuesChangedHandler =>
+			_itemValuesChangedHandler ??= Item_ValuesChanged;
 
 		void MergedDictionaries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -142,37 +144,33 @@ namespace Microsoft.Maui.Controls
 			if (e.Action == NotifyCollectionChangedAction.Move)
 				return;
 
-			_collectionTrack = _collectionTrack ?? new List<ResourceDictionary>();
 			// Collection has been cleared
 			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
-				foreach (var dictionary in _collectionTrack)
-					UnsubscribeFromMergedDictionary(dictionary);
-
-				_collectionTrack.Clear();
+				_mergedDictionarySubscriptions?.UnsubscribeAll();
 				return;
 			}
 
 			// New Items
 			if (e.NewItems != null)
 			{
+				var subscriptions = _mergedDictionarySubscriptions ??= new MergedDictionarySubscriptions();
 				foreach (var item in e.NewItems)
 				{
 					var rd = (ResourceDictionary)item;
-					_collectionTrack.Add(rd);
-					SubscribeToMergedDictionary(rd);
+					var proxy = new WeakResourcesChangedProxy(rd, ItemValuesChangedHandler);
+					subscriptions.Add(proxy);
 					OnValuesChanged(rd.ToArray());
 				}
 			}
 
 			// Old Items
-			if (e.OldItems != null)
+			if (e.OldItems != null && _mergedDictionarySubscriptions is { } existingSubscriptions)
 			{
 				foreach (var item in e.OldItems)
 				{
 					var rd = (ResourceDictionary)item;
-					UnsubscribeFromMergedDictionary(rd);
-					_collectionTrack.Remove(rd);
+					existingSubscriptions.Remove(rd);
 				}
 			}
 		}
@@ -182,37 +180,38 @@ namespace Microsoft.Maui.Controls
 			OnValuesChanged(e.Values.ToArray());
 		}
 
-		// Merged dictionaries are often long-lived and/or shared across many elements. Subscribing to
-		// their ValuesChanged event directly would let the (shared) child dictionary strongly root this
-		// dictionary - and therefore the owning element - for the child's lifetime. Route the
-		// subscription through a weak proxy so the child no longer keeps this dictionary alive.
-		void SubscribeToMergedDictionary(ResourceDictionary rd)
+		sealed class MergedDictionarySubscriptions
 		{
-			_mergedProxies ??= new Dictionary<ResourceDictionary, WeakResourcesChangedProxy>();
-			_mergedValuesChanged ??= Item_ValuesChanged;
+			readonly List<WeakResourcesChangedProxy> _proxies = new();
 
-			if (_mergedProxies.TryGetValue(rd, out var existing))
-				existing.Unsubscribe();
+			~MergedDictionarySubscriptions() => UnsubscribeAll();
 
-			_mergedProxies[rd] = new WeakResourcesChangedProxy(rd, _mergedValuesChanged);
-		}
-
-		void UnsubscribeFromMergedDictionary(ResourceDictionary rd)
-		{
-			if (_mergedProxies is not null && _mergedProxies.TryGetValue(rd, out var proxy))
+			public void Add(WeakResourcesChangedProxy proxy)
 			{
-				proxy.Unsubscribe();
-				_mergedProxies.Remove(rd);
+				_proxies.Add(proxy);
 			}
-		}
 
-		~ResourceDictionary()
-		{
-			if (_mergedProxies is null)
-				return;
+			public void Remove(ResourceDictionary source)
+			{
+				for (int i = _proxies.Count - 1; i >= 0; i--)
+				{
+					var proxy = _proxies[i];
+					if (proxy.TryGetSource(out var proxySource) && ReferenceEquals(proxySource, source))
+					{
+						proxy.Unsubscribe();
+						_proxies.RemoveAt(i);
+						break;
+					}
+				}
+			}
 
-			foreach (var proxy in _mergedProxies.Values)
-				proxy.Unsubscribe();
+			public void UnsubscribeAll()
+			{
+				foreach (var proxy in _proxies)
+					proxy.Unsubscribe();
+
+				_proxies.Clear();
+			}
 		}
 
 		void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
