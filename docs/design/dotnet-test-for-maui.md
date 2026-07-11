@@ -1,5 +1,7 @@
 # `dotnet test` for Mobile Platforms
 
+<!-- cspell:words rmarinho testfx logcat Avalonia -->
+
 ## Overview
 
 This document describes the design and implementation plan for enabling `dotnet test` to work seamlessly with mobile and device test projects targeting iOS, Android, and other platforms. The goal is to allow developers and AI agents to write and run tests on simulators, emulators, and physical devices using the familiar `dotnet test` command-line experience, powered by the Microsoft Testing Platform (MTP).
@@ -109,7 +111,7 @@ A device-test project is an **app that hosts MTP**. It produces an **app package
 **Example project file:**
 
 ```xml
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-windows10.0.19041.0</TargetFrameworks>
@@ -121,12 +123,8 @@ A device-test project is an **app that hosts MTP**. It produces an **app package
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- MTP-based runners (start with MSTest runner) -->
-    <PackageReference Include="MSTest" Version="*" />
-    <PackageReference Include="MSTest.Sdk" Version="*" />
-
-    <!-- TRX reporting extension -->
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="*" />
+    <!-- Additional MTP extensions can be referenced explicitly when needed. -->
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsVersion)" />
   </ItemGroup>
 
 </Project>
@@ -134,7 +132,9 @@ A device-test project is an **app that hosts MTP**. It produces an **app package
 
 > **Note:** The `IsTestProject` property is sufficient to identify test projects. No additional markers are required.
 
-> **Note:** Using `MSTest.Sdk` as the project SDK (instead of `Microsoft.NET.Sdk`) automatically brings in the MSTest framework, adapter, MTP runner, and common extensions (TrxReport, CodeCoverage). This is the recommended approach for MTP-based test projects. For other test frameworks like xUnit or NUnit, you'll need to add the extensions explicitly.
+> **Note:** Using `MSTest.Sdk` as the project SDK (instead of a `PackageReference`) automatically brings in the MSTest framework, adapter, MTP runner, and common extensions. This is the recommended approach for MTP-based test projects. For other test frameworks like xUnit or NUnit, add the runner and extensions explicitly.
+
+> **Versioning:** Samples must not rely on wildcard package versions. Real projects should pin SDK/package versions directly or via central package management so device-test restores are reproducible in CI and Helix.
 
 **MTP extensions provide:**
 - TRX reporting via `Microsoft.Testing.Extensions.TrxReport` (`--report-trx`, `--report-trx-filename`)
@@ -301,8 +301,10 @@ Each scenario has different constraints for how the test host can communicate wi
 
 #### 4.2.4 Recommended Interface
 
+The protocol surface should use platform/test-generic names because this is an SDK capability for all mobile workloads, not a MAUI-only contract.
+
 ```csharp
-public interface IMauiTestProtocol : IPushOnlyProtocol
+public interface IDeviceTestProtocol : IPushOnlyProtocol
 {
     // Connection establishment
     Task<bool> ConnectAsync(Uri endpoint, CancellationToken cancellationToken);
@@ -347,18 +349,25 @@ We recommend a phased approach for device ↔ host communication:
 
 **POC Implementation (Android):**
 ```xml
-<!-- Get the most recent TRX file name -->
-<Exec Command="adb $(_AdbDevice) shell &quot;run-as $(ApplicationId) ls -t files/TestResults/ 2>/dev/null | head -1&quot;"
-      ConsoleToMSBuild="true">
-  <Output TaskParameter="ConsoleOutput" PropertyName="_LatestTrxFileName" />
-</Exec>
+<PropertyGroup>
+  <!-- Deterministic file names avoid trusting device-controlled directory listings. -->
+  <_DeviceTrxFileName>$(ProjectName).trx</_DeviceTrxFileName>
+</PropertyGroup>
 
-<!-- Pull the latest TRX file using run-as + cat -->
-<Exec Command="adb $(_AdbDevice) shell &quot;run-as $(ApplicationId) cat files/TestResults/$(_LatestTrxFileName)&quot; > &quot;$(TestResultsDirectory)/$(ProjectName).trx&quot;" />
+<ItemGroup>
+  <TestRunArguments Include="--results-directory files/TestResults" />
+  <TestRunArguments Include="--report-trx" />
+  <TestRunArguments Include="--report-trx-filename $(_DeviceTrxFileName)" />
+</ItemGroup>
+
+<!-- Pull the expected TRX file using run-as + cat. The basename is host-controlled. -->
+<Exec Command="adb $(_AdbDevice) exec-out run-as $(ApplicationId) cat files/TestResults/$(_DeviceTrxFileName) &gt; &quot;$(TestResultsDirectory)/$(_DeviceTrxFileName)&quot;" />
 
 <!-- Capture logcat for debugging -->
-<Exec Command="adb $(_AdbDevice) logcat -d > &quot;$(TestResultsDirectory)/$(ProjectName)_logcat.txt&quot;" />
+<Exec Command="adb $(_AdbDevice) logcat -d &gt; &quot;$(TestResultsDirectory)/$(ProjectName)_logcat.txt&quot;" />
 ```
+
+If a platform must discover artifact names dynamically, the SDK target must validate that each discovered value is a simple basename from an allowlist or fixed pattern before composing any host command. Device/app-controlled paths must not be interpolated into shell commands.
 
 **Why `run-as` + `cat`:**
 - Works with debuggable APKs (debug builds) without root
@@ -544,22 +553,15 @@ public class TestInstrumentation : Instrumentation
         Start();
     }
 
-    public override async void OnStart()
+    public override void OnStart()
     {
         base.OnStart();
         int exitCode = 1;
         Bundle results = new Bundle();
-        
+
         try
         {
-            var testResultsDir = Path.Combine(TargetContext.FilesDir.AbsolutePath, "TestResults");
-            Directory.CreateDirectory(testResultsDir);
-            
-            var args = new[] { "--results-directory", testResultsDir, "--report-trx" };
-            exitCode = await MicrosoftTestingPlatformEntryPoint.Main(args);
-            
-            results.PutInt("exitCode", exitCode);
-            results.PutString("status", exitCode == 0 ? "SUCCESS" : "FAILURE");
+            exitCode = RunTestsAsync(results).GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {
@@ -567,8 +569,19 @@ public class TestInstrumentation : Instrumentation
         }
         finally
         {
+            results.PutInt("exitCode", exitCode);
+            results.PutString("status", exitCode == 0 ? "SUCCESS" : "FAILURE");
             Finish(exitCode == 0 ? Result.Ok : Result.Canceled, results);
         }
+    }
+
+    private async Task<int> RunTestsAsync(Bundle results)
+    {
+        var testResultsDir = Path.Combine(TargetContext.FilesDir.AbsolutePath, "TestResults");
+        Directory.CreateDirectory(testResultsDir);
+
+        var args = new[] { "--results-directory", testResultsDir, "--report-trx", "--report-trx-filename", "android.trx" };
+        return await MicrosoftTestingPlatformEntryPoint.Main(args);
     }
 }
 ```
@@ -590,48 +603,47 @@ Building on the `dotnet run` infrastructure, we need these new targets. Note: Ta
 ```xml
 <!-- Implemented in iOS SDK / Android SDK -->
 
-<!-- Compute test-specific run arguments -->
-<Target Name="ComputeTestRunArguments" 
+<!-- Compute V1 file-artifact test arguments. Streaming/server mode is future work. -->
+<Target Name="ComputeTestRunArguments"
         DependsOnTargets="ComputeRunArguments"
         Returns="@(TestRunArguments)">
-  
+
   <PropertyGroup>
-    <!-- Enable MTP server mode for device communication -->
-    <_MTPServerMode Condition="'$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'android'">http</_MTPServerMode>
-    <_MTPServerMode Condition="'$(TargetPlatformIdentifier)' == 'windows'">pipe</_MTPServerMode>
+    <_DeviceTrxFileName>$(MSBuildProjectName).trx</_DeviceTrxFileName>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <TestRunArguments Include="--server" />
-    <TestRunArguments Include="--server-mode $(_MTPServerMode)" />
-    <TestRunArguments Include="--results-directory $(TestResultsDirectory)" />
+    <TestRunArguments Include="--results-directory $(DeviceTestResultsPath)" />
+    <TestRunArguments Include="--report-trx" />
+    <TestRunArguments Include="--report-trx-filename $(_DeviceTrxFileName)" />
   </ItemGroup>
 </Target>
 
 <!-- Execute tests on device -->
 <Target Name="ExecuteDeviceTests"
         DependsOnTargets="DeployToDevice;ComputeTestRunArguments">
-  
+
   <!-- Platform-specific execution logic -->
   <ExecuteDeviceTests
     Device="$(Device)"
     RuntimeIdentifier="$(RuntimeIdentifier)"
     TestArguments="@(TestRunArguments)"
     ResultsDirectory="$(TestResultsDirectory)"
-    Timeout="$(TestTimeout)"
-    ServerEndpoint="$(MTPServerEndpoint)" />
+    Timeout="$(TestTimeout)" />
 </Target>
 
 <!-- Pull test artifacts from device -->
 <Target Name="CollectTestArtifacts"
         AfterTargets="ExecuteDeviceTests">
-  
+
   <CollectDeviceArtifacts
     Device="$(Device)"
     SourcePath="$(DeviceTestResultsPath)"
     DestinationPath="$(TestResultsDirectory)" />
 </Target>
 ```
+
+A future streaming target can add `--server` / `--server-mode` only when the selected platform has an explicit, tested transport (for example, named pipes for local executables, Android emulator reverse/forwarding, or simulator loopback). It should not be part of the default V1 target chain for physical devices.
 
 ### 5.2 Property Reference
 
@@ -708,6 +720,9 @@ dotnet test --project MyMauiTests.csproj \
 ```
 
 ### 6.3 Command-Line Switches (New)
+
+`dotnet test --help` must remain useful even when a mobile app cannot be launched to query device-side extensions. The SDK/CLI should surface host-known options and clearly mark device/runtime extension options that are unavailable until build or launch time.
+
 
 | Switch | Description |
 |--------|-----------|
@@ -962,15 +977,16 @@ The `dotnet test` process on the host needs to:
 
 ### 9.3 Network Considerations
 
-For iOS simulator and Android emulator:
-- Use localhost with port forwarding
-- iOS: Simulator shares host network
-- Android: Use `adb forward` for emulator
+V1 does not require a device-to-host network connection: tests write deterministic files in the app sandbox and the SDK pulls artifacts after the run.
 
-For physical devices:
-- Devices must be on same network as host
-- Consider mDNS/Bonjour for discovery
-- Fallback to USB tunneling
+For future streaming scenarios, the endpoint is platform-specific:
+- iOS Simulator: host loopback is generally reachable from the simulator.
+- Android Emulator: use emulator host aliases such as `10.0.2.2`, or explicit `adb reverse` / `adb forward` setup depending on direction.
+- Android physical device: use `adb reverse` where available, or a constrained host LAN endpoint with authentication.
+- iOS physical device: do not assume TCP tunneling or `localhost`; local-network permission, ATS/HTTPS, certificates, provisioning, trust, and USB/network tunnel availability must be designed and tested explicitly.
+- MacCatalyst sandboxed apps cannot rely on Unix domain sockets; use the local executable path or a sandbox-compatible transport.
+
+Physical-device streaming should remain out of V1 until the per-platform transport and permission model is proven.
 
 ### 9.4 Security Considerations
 
@@ -1034,18 +1050,18 @@ Any new communication channel (TCP, HTTP, or WebSocket) from the device back to 
 │                            dotnet test (Host)                                │
 │                                                                              │
 │  1. Generate session token: SecureRandom(32 bytes) → Base64                │
-│  2. Start HTTP server on localhost:0 (ephemeral port)                       │
-│  3. Pass token + port to device app via launch args                        │
+│  2. Start receiver on a platform-specific endpoint (ephemeral port)        │
+│  3. Pass token + endpoint to device app via launch args/env                │
 │  4. Validate Authorization: Bearer <token> on all requests                 │
 └─────────────────────────────────────────────────────────────────────────────┘
                                      │
-                                     │ Token + Port passed at app launch
+                                     │ Token + endpoint passed at app launch
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                          Device/Simulator App                                │
 │                                                                              │
-│  1. Read token from launch args: --test-session-token <token>              │
-│  2. Read server endpoint: --test-server http://localhost:<port>            │
+│  1. Read token from launch args/env: --test-session-token <token>          │
+│  2. Read server endpoint mapped for this platform                          │
 │  3. Include header: Authorization: Bearer <token>                           │
 │  4. Send test results via HTTP POST                                         │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -1121,11 +1137,13 @@ Integrate with `Microsoft.CodeCoverage`:
 
 4. **Artifact Location Inside App**: Stable `TestResults` folder mapping vs per-run GUID folder?
 
-5. **Test Filtering**: Should we support filtering (category/trait) on-device or host-side?
+5. **Test Filtering**: Should we support filtering (category/trait) on-device or host-side? MTP filters that execute inside the test app may not be fully pre-filterable on the host.
 
 6. **Security Model Review**: When should we conduct a formal security review of the communication channel? Should this block streaming features?
 
 7. **Aspire Reuse**: What components from .NET Aspire's security model can we directly reuse vs. adapt?
+
+8. **Mixed Solutions**: Validate solutions that contain both mobile MTP app projects and normal desktop/non-MAUI test projects so `dotnet test --solution` can dispatch each project through the correct path.
 
 ### 12.4 .NET SDK / CLI Team
 
@@ -1175,6 +1193,12 @@ Integrate with `Microsoft.CodeCoverage`:
    - Best practice for push-only/event streaming (server mode / custom sink)
    - Stability/versioning expectations
 
+### MacCatalyst / Desktop Platform Owners
+
+1. **Execution mode**: Define whether MacCatalyst follows the local executable flow or an app-container launch flow.
+2. **Sandbox artifacts**: Document and implement sandbox-compatible artifact extraction for TRX, logs, and crash diagnostics.
+3. **Transport constraints**: Avoid Unix domain sockets for sandboxed MacCatalyst apps unless entitlement and sandbox behavior are explicitly validated.
+
 ### .NET SDK / CLI Team (if needed)
 
 1. **CLI UX alignment**: Decide whether `dotnet test --device` becomes official or stays MSBuild property-driven
@@ -1199,16 +1223,25 @@ Integrate with `Microsoft.CodeCoverage`:
 
 ### 15.1 Functional
 
+**V1 / MVP (file-based):**
 - [ ] `dotnet test` successfully runs tests on iOS simulator
 - [ ] `dotnet test` successfully runs tests on Android emulator
 - [ ] `dotnet test` successfully runs tests on Windows
+- [ ] TRX and JSON output formats are written with deterministic names
+- [ ] Console/app logs and crash diagnostics are copied back to the host
+- [ ] Device selection via `--device` flag or `-p:Device=` works
+
+**V2 / Future streaming:**
 - [ ] Test results appear in real-time in console
-- [ ] TRX and JSON output formats work correctly
-- [ ] Device selection via `--device` flag works
+- [ ] Streaming endpoint selection is correct for each supported device type
 
 ### 15.2 Performance
 
+**V1 / MVP:**
 - [ ] Test startup time ≤ current XHarness approach
+- [ ] Artifact collection time is acceptable for CI and local runs
+
+**V2 / Future streaming:**
 - [ ] Result streaming latency < 100ms
 - [ ] Coverage overhead < 2x test execution time
 
