@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
-		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		ItemsSourceCollectionChangedSubscription _itemsSourceCollectionChangedSubscription;
 		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
 
 		/// <summary>Initializes a new instance of the Picker class.</summary>
@@ -89,8 +89,6 @@ namespace Microsoft.Maui.Controls
 			_collectionChangedEventHandler = CollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Picker>>(() => new PlatformConfigurationRegistry<Picker>(this));
 		}
-
-		~Picker() => _collectionChangedProxy.Unsubscribe();
 
 		/// <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither. This is a bindable property.</summary>
 		public FontAttributes FontAttributes
@@ -340,14 +338,13 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
-			var oldObservable = oldValue as INotifyCollectionChanged;
-			if (oldObservable != null)
-				_collectionChangedProxy.Unsubscribe();
+			_itemsSourceCollectionChangedSubscription?.Unsubscribe();
 
 			var newObservable = newValue as INotifyCollectionChanged;
 			if (newObservable != null)
 			{
-				_collectionChangedProxy.Subscribe(newObservable, _collectionChangedEventHandler);
+				var subscription = _itemsSourceCollectionChangedSubscription ??= new ItemsSourceCollectionChangedSubscription();
+				subscription.Subscribe(newObservable, _collectionChangedEventHandler);
 			}
 
 			if (newValue != null)
@@ -360,6 +357,23 @@ namespace Microsoft.Maui.Controls
 				// Unlock, then clear, so OnItemsCollectionChanged executes
 				((LockableObservableListWrapper)Items).IsLocked = false;
 				((LockableObservableListWrapper)Items).InternalClear();
+			}
+		}
+
+		sealed class ItemsSourceCollectionChangedSubscription
+		{
+			readonly WeakNotifyCollectionChangedProxy _proxy = new();
+
+			~ItemsSourceCollectionChangedSubscription() => _proxy.Unsubscribe();
+
+			public void Subscribe(INotifyCollectionChanged source, NotifyCollectionChangedEventHandler handler)
+			{
+				_proxy.Subscribe(source, handler);
+			}
+
+			public void Unsubscribe()
+			{
+				_proxy.Unsubscribe();
 			}
 		}
 
