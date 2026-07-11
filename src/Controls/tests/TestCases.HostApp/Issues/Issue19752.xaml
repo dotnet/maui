@@ -45,7 +45,6 @@
               </VisualState>
               <VisualState x:Name="Unfocused">
                 <VisualState.Setters>
-                  <Setter Property="Text" Value="Unfocused"/>
                   <Setter Property="BorderColor" Value="Lime"/>
                   <Setter Property="Margin" Value="0"/>
                 </VisualState.Setters>
