@@ -224,7 +224,7 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
   (Track A). If blank (e.g. the scheduled run), do Track C first (Step R), then auto-pick a
   `[leak-scan]` target in Step 2.
 - `dry_run` (optional, default false): if `"true"`, do the full local work but **emit no
-  safe-output** — print what you *would* push/comment/open to the run log instead.
+  safe-output** — print what you *would* push/comment/open/close to the run log instead.
 
 ```bash
 mkdir -p /tmp/gh-aw/agent
@@ -436,6 +436,9 @@ jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent
   > stop the rebuild loop. Note: it may still reproduce in the shipped NuGet package until the
   > fix ships in a release.
 
+  > **Dry-run gate:** if `dry_run == "true"`, do NOT emit — print `DRY RUN — would close #<N>`
+  > and the closing comment to the run log instead, then stop.
+
   This is the run's single action — stop after emitting `close-issue`.
 - If an **open** fix PR already refs this issue (a) OR already fixes the same rooting
   `Type.Member` (b) → `skipped: leak already being fixed` and stop (or, if `issue_number` was
@@ -521,6 +524,9 @@ Interpret:
   > already GREEN on unpatched `main` (no fix applied), so this leak is already fixed. Closing
   > this `[leak-scan]` issue so it isn't re-processed and rebuilt from source each run. Note: it
   > may still reproduce in the shipped NuGet package until the fix ships in a release.
+
+  > **Dry-run gate:** if `dry_run == "true"`, do NOT emit — print `DRY RUN — would close #<N>`
+  > and the closing comment to the run log instead, then stop.
 
   Then record `skipped: already fixed on main (test green without fix)` and stop. Emitting the
   `close-issue` is this run's single action.
