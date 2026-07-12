@@ -264,18 +264,20 @@ namespace UITest.Appium
 
 			// The coordinates are boxed as floats by the caller, so convert them safely
 			// (an unboxing cast such as (int)x would throw InvalidCastException).
-			var endX = Convert.ToInt32(x);
-			var endY = Convert.ToInt32(y);
+			var endX = (int)Convert.ToSingle(x);
+			var endY = (int)Convert.ToSingle(y);
 
 			// W3C pointer actions are not supported by the Windows driver
 			if (_appiumApp.GetTestDevice() == TestDevice.Windows)
 			{
+				var point = GetAbsolutePoint(endX, endY);
+
 				_appiumApp.Driver.ExecuteScript("windows: hover", new Dictionary<string, object>
 				{
-					{ "startX", 0 },
-					{ "startY", 0 },
-					{ "endX", endX },
-					{ "endY", endY },
+					{ "startX", point.X },
+					{ "startY", point.Y },
+					{ "endX", point.X },
+					{ "endY", point.Y },
 				});
 			}
 			else
@@ -331,6 +333,16 @@ namespace UITest.Appium
 			y += (int)(wndPos.Y / screenDensity);
 
 			return new Rectangle(x, y, w, h);
+		}
+
+		Point GetAbsolutePoint(int x, int y)
+		{
+			var wndPos = _appiumApp.Driver.Manage().Window.Position;
+			var screenDensity = GetCurrentMonitorScaleFactor(wndPos);
+
+			return new Point(
+				(int)(x / screenDensity) + (int)(wndPos.X / screenDensity),
+				(int)(y / screenDensity) + (int)(wndPos.Y / screenDensity));
 		}
 
 		static double GetCurrentMonitorScaleFactor(Point windowLocation)
