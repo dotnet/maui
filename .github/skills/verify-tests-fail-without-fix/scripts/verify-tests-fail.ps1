@@ -545,7 +545,7 @@ function Invoke-TestRunWithRetry {
 
             # Device test environment failures can leave the emulator/simulator in
             # a bad package-manager state for the next without/with-fix attempt.
-            if ($result.Error -match "APP_LAUNCH_FAILURE|exit code.*83|app.*crash|package.*install|package.*operation|command timed out|XHarness exit 78" -and $script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
+            if ($result.Error -match "APP_LAUNCH_FAILURE|exit code.*83|app.*crash|package.*install|package.*operation|command timed out|XHarness exit 78|could not find/launch the app|InitialSetup/OneTimeSetup failed|OneTimeSetUp" -and $script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
                 Write-Host "  🔄 Rebooting device ($($script:BootedDeviceUdid)) to recover from environment error: $($result.Error)" -ForegroundColor Yellow
                 if ($Platform -in @("ios", "catalyst", "maccatalyst")) {
                     xcrun simctl shutdown $script:BootedDeviceUdid 2>$null
@@ -748,6 +748,19 @@ function Get-TestResultFromOutput {
         @{ Pattern = "SIGABRT.*load_aot_module"; Message = "App crashed during AOT loading" }
         @{ Pattern = "AppiumServerHasNotBeenStartedLocally"; Message = "Appium server failed to start" }
         @{ Pattern = "no such element.*could not be located"; Message = "Test element not found (app may not have loaded)" }
+        # Appium/NUnit fixture setup failures: when [OneTimeSetUp]/InitialSetup can't establish
+        # the Appium session or launch the app under test, EVERY test in the fixture fails before
+        # a single assertion runs — the harness then throws "Call InitialSetup before accessing the
+        # App property" in TearDown/SaveDeviceDiagnosticInfo. That is an infrastructure failure of
+        # the test agent (Appium/mac2/WebDriverAgent flakiness or the app bundle not registering),
+        # NOT a genuine product failure of the PR's fix. Without this the gate misreads a with-fix
+        # session-start flake as "fix does not pass the tests" and blocks the PR (false FAILED,
+        # e.g. MacCatalyst PR #27477 Issue19752: OneTimeSetUp UnknownErrorException "The app
+        # representing com.microsoft.maui.uitests could not be found"). Classify as env/INCONCLUSIVE
+        # so it is retried and, if persistent, surfaced as non-blocking.
+        @{ Pattern = "Call InitialSetup before accessing the App property"; Message = "Appium app/session did not initialize (InitialSetup/OneTimeSetup failed — test agent could not start the Appium session)" }
+        @{ Pattern = "The app representing .+ could not be found"; Message = "Appium could not find/launch the app under test (mac2/simulator driver could not resolve the app bundle)" }
+        @{ Pattern = "OneTimeSetUp:\s*OpenQA\.Selenium"; Message = "Appium/Selenium error during fixture OneTimeSetUp (session/app setup failed before any test ran)" }
     )
     foreach ($envErr in $envErrorPatterns) {
         if ($content -match $envErr.Pattern) {
