@@ -367,15 +367,19 @@ if ($Platform -eq "android") {
         # iOS 26 snapshots live in src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26
         # and UITest.cs selects ios-26 environment when platformVersion starts with "26."
         $preferredVersions = @("iOS-26", "iOS-18", "iOS-17")
-        # Preferred devices per iOS version to match CI configuration:
-        #   iOS 26.x → iPhone Xs / iPhone 16 Pro (snapshots in /ios-26 baseline are device-agnostic per UITest.cs:367)
-        #   iOS 18.x → iPhone Xs (matches /ios baseline default)
-        #   iOS 17.x → iPhone Xs (fallback)
+        # Preferred devices per iOS version. Every iOS UI-test snapshot baseline
+        # (both snapshots/ios and snapshots/ios-26) was captured at 1124x2286 —
+        # a 375pt-wide device (iPhone Xs / iPhone 11 Pro, 1125x2436). The baselines
+        # are NOT device-agnostic: a 393pt (iPhone 15/16) or 402pt (iPhone 16 Pro)
+        # simulator renders 1179/1206-wide screenshots and EVERY visual test then
+        # fails with a size mismatch. So only 375pt devices are eligible here; when
+        # none is pre-installed the create-fallback below makes an iPhone 11 Pro /
+        # iPhone Xs. (Do NOT add larger devices — that reintroduces the run-wide
+        # "actual 1206x2472 vs baseline 1124x2286" failure the deep UI-test stage hit.)
         $preferredDevicesPerVersion = @{
-            # iPhone 11 Pro first for iOS-26: baselines captured at 1124x1126 resolution
-            "iOS-26" = @("iPhone 11 Pro", "iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro")
-            "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
-            "iOS-17" = @("iPhone Xs", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-26" = @("iPhone 11 Pro", "iPhone Xs")
+            "iOS-18" = @("iPhone Xs", "iPhone 11 Pro")
+            "iOS-17" = @("iPhone Xs", "iPhone 11 Pro")
         }
         
         $selectedDevice = $null
