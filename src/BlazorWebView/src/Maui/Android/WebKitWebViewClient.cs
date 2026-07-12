@@ -28,8 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		//    has a live port before Blazor sends any messages.
 		//  - Sets window.__BlazorStarted after the Blazor.start() Promise resolves (used by test helpers as a readiness signal).
 		//  - Dispatches native→JS messages (arriving via PostWebMessage) directly to window.external.__callback.
-		//  - Validates message origin: only processes messages from the native PostWebMessage API
-		//    (event.source === null), skipping messages from subframes or other JS contexts.
+		//  - Validates message origin for dispatch messages, skipping messages from subframes or other JS contexts.
 		private const string BlazorInitScript = """
 			(function () {
 				if (window.__BlazorStarting) { return 'false'; }
@@ -45,26 +44,39 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					window.external.__callback = callback;
 				};
 
-				window.addEventListener('message', function (event) {
-					// Only process messages from the native PostWebMessage API.
+				if (window.__BlazorMessageHandler) {
+					window.removeEventListener('message', window.__BlazorMessageHandler, false);
+				}
+
+				window.__BlazorMessageHandler = function (event) {
+					if (event.data === 'capturePort') {
+						if (event.ports && event.ports[0] && !window.__nativePort) {
+							window.__nativePort = event.ports[0];
+							Promise.resolve().then(function () {
+								return Blazor.start();
+							}).then(function () {
+								window.__BlazorStarted = true;
+							}, function (err) {
+								console.error('Blazor.start() failed:', err);
+								window.__nativePort = null;
+								window.__BlazorStarted = false;
+								window.__BlazorStarting = false;
+							});
+						}
+						return;
+					}
+
+					// Only dispatch messages from the native PostWebMessage API.
 					// Native messages have event.source === null; messages from subframes
 					// or other JS contexts have event.source set to the sending window.
 					if (event.source !== null) { return; }
 
-					if (event.data === 'capturePort') {
-						if (event.ports && event.ports[0] && !window.__nativePort) {
-							window.__nativePort = event.ports[0];
-							Promise.resolve(Blazor.start()).then(function () {
-								window.__BlazorStarted = true;
-							}, function (err) {
-								console.error('Blazor.start() failed:', err);
-								window.__BlazorStarting = false;
-							});
-						}
-					} else if (window.external.__callback) {
+					if (window.external.__callback) {
 						window.external.__callback(event.data);
 					}
-				}, false);
+				};
+
+				window.addEventListener('message', window.__BlazorMessageHandler, false);
 
 				return 'true';
 			})();
@@ -213,7 +225,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (result?.ToString() == "\"true\"")
 				{
 					_webViewHandler?.WebviewManager?.SetUpMessageChannel();
-					_webViewHandler?.Logger.BlazorStartupScriptsFinished();
+					_webViewHandler?.Logger.BlazorStartupScriptsSubmitted();
 				}
 			}));
 		}
