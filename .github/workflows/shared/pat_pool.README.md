@@ -8,7 +8,7 @@ Selects a random Copilot PAT from a numbered pool of secrets. This addresses lim
 
 To use Agentic Workflows in a dotnet org repository:
 
-1. Follow the instructions for [Configuring Your Repository | Agentic Authoring | GitHub Agentic Workflows][configure-repo]. Use `gh aw` **v0.80.9 or newer**, which supports the agent job dependencies required for this implementation.
+1. Follow the instructions for [Configuring Your Repository | Agentic Authoring | GitHub Agentic Workflows][configure-repo]. Use `gh aw` **v0.81.6 or newer**, which supports the agent job dependencies required for this implementation.
 2. Copy the `pat_pool.md` and `pat_pool.README.md` files into the repository under `.github/workflows/shared`.
 3. Merge those additions into the repository and then follow the instructions for the PAT Creation and Usage below.
 

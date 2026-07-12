@@ -129,10 +129,10 @@ so an unrelated user-opened PR with a colliding title cannot suppress the refres
 ## Step 1 — Ensure the gh-aw CLI is available at the pinned version
 
 The `gh aw` command comes from the `github/gh-aw` gh extension, which may not be preinstalled on
-the runner. **Pin the install to `v0.80.9`** — the same `compiler_version` all committed
+the runner. **Pin the install to `v0.81.6`** — the same `compiler_version` all committed
 `.github/workflows/*.lock.yml` files were built with. `gh aw update` caps native action-pin
 resolution at the CLI's own version, so a newer CLI would refresh `actions-lock.json` in a way
-that no longer matches the v0.80.9-compiled locks (version skew). Bumping gh-aw is a deliberate,
+that no longer matches the v0.81.6-compiled locks (version skew). Bumping gh-aw is a deliberate,
 coordinated change handled by the separate `aw-version-update` runbook — not something this
 weekly pin-refresher should do implicitly.
 
@@ -141,7 +141,7 @@ creating a PR) if the pinned install does not succeed — never silently continu
 wrong-version CLI.
 
 ```bash
-GH_AW_PINNED_VERSION="v0.80.9"   # keep in sync with the committed *.lock.yml compiler_version
+GH_AW_PINNED_VERSION="v0.81.6"   # keep in sync with the committed *.lock.yml compiler_version
 gh extension remove gh-aw 2>/dev/null || true
 if ! gh extension install github/gh-aw --pin "$GH_AW_PINNED_VERSION"; then
   echo "Failed to install gh-aw $GH_AW_PINNED_VERSION; not creating a PR."

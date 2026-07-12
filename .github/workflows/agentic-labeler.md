@@ -53,6 +53,7 @@ on:
   # sandboxed job.
   roles: all
 
+checkout: false
 permissions:
   contents: read
   issues: read
