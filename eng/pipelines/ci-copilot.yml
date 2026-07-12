@@ -309,8 +309,21 @@ stages:
                 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
                 export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
 
+                # Ensure the required system image is present before creating the
+                # AVD (idempotent — a fast no-op when already installed). The
+                # "Provision Android SDK - Emulator Images" step can report success
+                # yet leave no image on the agent, in which case avdmanager create
+                # fails with "Package path is not valid. Valid system image paths
+                # are: null" and every retry fails identically. See deep-stage
+                # build 14635021.
+                SYS_IMAGE="system-images;android-30;google_apis_playstore;x86_64"
+                if ! sdkmanager --list_installed 2>/dev/null | grep -q "google_apis_playstore/x86_64"; then
+                  echo "=== System image not detected — installing $SYS_IMAGE ==="
+                  yes | sdkmanager "$SYS_IMAGE" 2>&1 | tail -8 || true
+                fi
+
                 echo "=== Creating AVD ==="
-                echo "no" | avdmanager create avd -n Emulator_30 -k "system-images;android-30;google_apis_playstore;x86_64" --device "Nexus 5X" --force
+                echo "no" | avdmanager create avd -n Emulator_30 -k "$SYS_IMAGE" --device "Nexus 5X" --force
                 
                 # Reduce userdata partition to fit on hosted agents (~4.2GB free)
                 AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
@@ -1195,8 +1208,22 @@ stages:
                 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
                 export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
 
+                # Ensure the required system image is present before creating the
+                # AVD. "Provision Android SDK - Emulator Images" normally installs
+                # it, but that step can report success yet leave no image on the
+                # agent — observed on deep build 14635021, where avdmanager create
+                # failed with "Package path is not valid. Valid system image paths
+                # are: null" and all 3 retries failed identically (retrying create
+                # cannot install a missing image). This check + install is idempotent
+                # (a fast no-op when already present) and closes that flake.
+                SYS_IMAGE="system-images;android-30;google_apis_playstore;x86_64"
+                if ! sdkmanager --list_installed 2>/dev/null | grep -q "google_apis_playstore/x86_64"; then
+                  echo "=== System image not detected — installing $SYS_IMAGE ==="
+                  yes | sdkmanager "$SYS_IMAGE" 2>&1 | tail -8 || true
+                fi
+
                 echo "=== Creating AVD ==="
-                echo "no" | avdmanager create avd -n Emulator_30 -k "system-images;android-30;google_apis_playstore;x86_64" --device "Nexus 5X" --force
+                echo "no" | avdmanager create avd -n Emulator_30 -k "$SYS_IMAGE" --device "Nexus 5X" --force
                 AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
                 [ -f "$AVD_CONFIG" ] && sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$AVD_CONFIG"
 
