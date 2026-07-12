@@ -142,7 +142,7 @@ wrong-version CLI.
 
 ```bash
 GH_AW_PINNED_VERSION="$(
-  jq -er '
+  jq -r '
     [.entries
       | to_entries[]
       | select(.key | startswith("github/gh-aw-actions/setup-cli@"))
