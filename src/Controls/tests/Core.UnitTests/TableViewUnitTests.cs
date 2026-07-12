@@ -138,17 +138,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.KeepAlive(table);
 		}
 
-		[Fact]
-		public void RootReplacementMovesEventSubscriptions()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void RootReplacementMovesEventSubscriptions(bool useConstructor)
 		{
 			var oldSection = new TableSection("Old section");
 			var oldRoot = new TableRoot { oldSection };
 			var newSection = new TableSection("New section");
 			var newRoot = new TableRoot { newSection };
-			var table = new TableView(oldRoot)
-			{
-				Root = newRoot
-			};
+			var table = useConstructor
+				? new TableView(oldRoot)
+				: new TableView { Root = oldRoot };
+			table.Root = newRoot;
 			int modelChangedCount = 0;
 			table.ModelChanged += (sender, e) => modelChangedCount++;
 
