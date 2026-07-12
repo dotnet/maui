@@ -1363,7 +1363,7 @@ Integrate with `Microsoft.CodeCoverage`:
 }
 ```
 
-#### Coverage Data
+#### Log Artifact
 ```json
 {
   "type": "artifact/file",
@@ -1373,6 +1373,8 @@ Integrate with `Microsoft.CodeCoverage`:
   "size": 524288
 }
 ```
+
+Future coverage artifacts should use an explicit coverage artifact type and schema rather than reusing the generic log artifact shape.
 
 ### B. References
 
