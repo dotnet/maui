@@ -531,17 +531,16 @@ For V1 Android device tests, the SDK should select the instrumentation-backed ex
 
 Instrumentation Mode should build on existing Android SDK instrumentation plumbing where available (for example MSTest runner/instrumentation properties and `Microsoft.Android.Run --instrument`) instead of duplicating it. The remaining SDK work is to pass MTP arguments losslessly, wait for completion, collect artifacts, and propagate the MTP result.
 
-**Illustrative target shape** - use typed SDK tasks/properties rather than raw host-shell command composition:
+**Existing Android SDK launch path** - extend the current instrumentation plumbing instead of introducing parallel public names:
 ```xml
-<AndroidRunInstrumentationTests
-  Device="$(Device)"
-  ApplicationId="$(ApplicationId)"
-  InstrumentationName="$(AndroidInstrumentationName)"
-  EncodedTestRunArguments="$(_EncodedTestRunArguments)"
-  Timeout="$(TestTimeout)">
-  <Output TaskParameter="MtpExitCode" PropertyName="_DeviceTestExitCode" />
-</AndroidRunInstrumentationTests>
+<PropertyGroup>
+  <!-- `EnableMSTestRunner=true` lets the Android SDK infer `AndroidInstrumentation` from the generated manifest when it is not explicitly set. -->
+  <EnableMSTestRunner>true</EnableMSTestRunner>
+  <AndroidInstrumentation Condition="'$(AndroidInstrumentation)' == ''">mypackage.TestInstrumentation</AndroidInstrumentation>
+</PropertyGroup>
 ```
+
+The Android SDK already computes run arguments by resolving `$(AndroidInstrumentation)` and passing it to `Microsoft.Android.Run` as `--instrument "$(AndroidInstrumentation)"`. The `dotnet test` work should extend that path with typed MTP argument/result/artifact plumbing rather than adding a parallel instrumentation task or new instrumentation-name property.
 
 The SDK target must encode `@(TestRunArguments)` losslessly (for example JSON + Base64, a response file, or separate bundle entries) instead of joining on spaces, because filters, file names, and logger arguments can contain spaces or quotes. It must also treat the instrumentation result as test execution state, not just process completion. `adb shell am instrument -w` can complete successfully even when tests fail, so the typed SDK task should parse the instrumentation result bundle and/or deterministic TRX artifact and fail the MSBuild target when the MTP exit code is non-zero.
 
@@ -549,7 +548,8 @@ The SDK target must encode `@(TestRunArguments)` losslessly (for example JSON + 
 
 | Property | Description | Default |
 |----------|-------------|---------|
-| `$(AndroidInstrumentationName)` | Full instrumentation class name (e.g., `myapp.TestInstrumentation`) when not inferred from the app manifest | SDK-defined |
+| `$(EnableMSTestRunner)` | Enables the Android MSTest runner path so instrumentation is used for test projects | `false` |
+| `$(AndroidInstrumentation)` | Full instrumentation class name (e.g., `myapp.TestInstrumentation`); inferred from the generated manifest when `$(EnableMSTestRunner)` is `true` and the property is unset | SDK-defined |
 | `$(DeviceTrxFileName)` | Fixed host-controlled TRX basename passed to MTP and used for extraction | `test-results.trx` |
 
 **Action Item:** Validate the current dotnet/android instrumentation support and add only the missing typed MTP argument/result/artifact plumbing.
