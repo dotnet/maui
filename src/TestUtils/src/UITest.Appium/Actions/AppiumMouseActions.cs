@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using System.Runtime.InteropServices;
+using System.Drawing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
@@ -322,15 +321,10 @@ namespace UITest.Appium
 			var rect = element.Rect;
 			var wndPos = element.WrappedDriver.Manage().Window.Position;
 
-			var screenDensity = GetCurrentMonitorScaleFactor(wndPos);
-
-			var x = (int)(rect.X / screenDensity);
-			var y = (int)(rect.Y / screenDensity);
-			var w = (int)(rect.Width / screenDensity);
-			var h = (int)(rect.Height / screenDensity);
-
-			x += (int)(wndPos.X / screenDensity);
-			y += (int)(wndPos.Y / screenDensity);
+			var x = rect.X + wndPos.X;
+			var y = rect.Y + wndPos.Y;
+			var w = rect.Width;
+			var h = rect.Height;
 
 			return new Rectangle(x, y, w, h);
 		}
@@ -338,56 +332,10 @@ namespace UITest.Appium
 		Point GetAbsolutePoint(int x, int y)
 		{
 			var wndPos = _appiumApp.Driver.Manage().Window.Position;
-			var screenDensity = GetCurrentMonitorScaleFactor(wndPos);
 
 			return new Point(
-				(int)(x / screenDensity) + (int)(wndPos.X / screenDensity),
-				(int)(y / screenDensity) + (int)(wndPos.Y / screenDensity));
+				x + wndPos.X,
+				y + wndPos.Y);
 		}
-
-		static double GetCurrentMonitorScaleFactor(Point windowLocation)
-		{
-			if (!OperatingSystem.IsWindows())
-			{
-				return 1;
-			}
-
-			var monitor = MonitorFromPoint(new NativePoint(windowLocation.X, windowLocation.Y), MonitorDefaultToNearest);
-			if (monitor == 0 || GetDpiForMonitor(monitor, MonitorDpiType.EffectiveDpi, out var dpiX, out _) != 0)
-			{
-				return 1;
-			}
-
-			var scaleFactor = dpiX / 96.0;
-
-			return Math.Max(1, scaleFactor);
-		}
-
-		const uint MonitorDefaultToNearest = 2;
-
-		[StructLayout(LayoutKind.Sequential)]
-		readonly struct NativePoint
-		{
-			public NativePoint(int x, int y)
-			{
-				X = x;
-				Y = y;
-			}
-
-			public readonly int X;
-
-			public readonly int Y;
-		}
-
-		enum MonitorDpiType
-		{
-			EffectiveDpi = 0,
-		}
-
-		[DllImport("user32.dll")]
-		private static extern IntPtr MonitorFromPoint(NativePoint pt, uint dwFlags);
-
-		[DllImport("shcore.dll")]
-		private static extern int GetDpiForMonitor(IntPtr hmonitor, MonitorDpiType dpiType, out uint dpiX, out uint dpiY);
 	}
 }
