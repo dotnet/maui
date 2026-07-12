@@ -136,6 +136,16 @@ When you interact with this agent, it will:
 - "Analyze coverage trends over time"
 - "Add a coverage gate that blocks PRs below a threshold"
 
+### ASCII Charts
+**Load when**: The workflow needs compact markdown charts that render reliably in GitHub issues, comments, or discussions.
+
+**Reference file**: `https://raw.githubusercontent.com/github/gh-aw/v0.81.6/.github/aw/asciicharts.md`
+
+**Use cases**:
+- "Render a compact trend chart in a status issue"
+- "Show a small markdown bar chart in a PR comment"
+- "Create GitHub-safe chart output without images"
+
 ### CLI Commands Reference
 **Load when**: The user asks how to run, compile, debug, or manage workflows from the command line; needs the MCP tool equivalent of a `gh aw` command; or is in a restricted environment (e.g., Copilot Cloud) without direct CLI access.
 

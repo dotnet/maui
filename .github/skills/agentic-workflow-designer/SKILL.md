@@ -380,11 +380,11 @@ In-repo references:
 - `.github/aw/create-agentic-workflow.md`
 
 Portable HTTPS references:
-- `https://github.com/github/gh-aw/blob/main/.github/aw/syntax.md` (index → `.../syntax-core.md`, `.../syntax-agentic.md`, `.../syntax-tools-imports.md`)
-- `https://github.com/github/gh-aw/blob/main/.github/aw/safe-outputs.md` (index → `.../safe-outputs-content.md`, `.../safe-outputs-management.md`, `.../safe-outputs-automation.md`, `.../safe-outputs-runtime.md`)
-- `https://github.com/github/gh-aw/blob/main/.github/aw/network.md`
-- `https://github.com/github/gh-aw/blob/main/.github/aw/patterns.md`
-- `https://github.com/github/gh-aw/blob/main/.github/aw/subagents.md`
-- `https://github.com/github/gh-aw/blob/main/.github/aw/token-optimization.md`
-- `https://github.com/github/gh-aw/blob/main/.github/aw/triggers.md`
-- `https://github.com/github/gh-aw/blob/main/.github/aw/create-agentic-workflow.md`
+- `https://github.com/github/gh-aw/blob/v0.81.6/.github/aw/syntax.md` (index → `.../syntax-core.md`, `.../syntax-agentic.md`, `.../syntax-tools-imports.md`)
+- `https://github.com/github/gh-aw/blob/v0.81.6/.github/aw/safe-outputs.md` (index → `.../safe-outputs-content.md`, `.../safe-outputs-management.md`, `.../safe-outputs-automation.md`, `.../safe-outputs-runtime.md`)
+- `https://github.com/github/gh-aw/blob/v0.81.6/.github/aw/network.md`
+- `https://github.com/github/gh-aw/blob/v0.81.6/.github/aw/patterns.md`
+- `https://github.com/github/gh-aw/blob/v0.81.6/.github/aw/subagents.md`
+- `https://github.com/github/gh-aw/blob/v0.81.6/.github/aw/token-optimization.md`
+- `https://github.com/github/gh-aw/blob/v0.81.6/.github/aw/triggers.md`
+- `https://github.com/github/gh-aw/blob/v0.81.6/.github/aw/create-agentic-workflow.md`

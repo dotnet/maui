@@ -86,6 +86,7 @@ tools:
   bash: ["gh", "git", "grep", "sed", "awk", "sort", "uniq", "jq", "cat", "echo", "date", "test", "true", "false", "bash", "sh"]
 
 safe-outputs:
+  needs: [pat_pool]
   create-pull-request:
     title-prefix: "[actions] "
     labels: [dependencies, agentic-workflows]
