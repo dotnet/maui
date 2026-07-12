@@ -27,9 +27,8 @@ namespace Microsoft.Maui
 						var id = imageView.Context?.GetDrawableId(file) ?? -1;
 						if (id > 0)
 						{
-							var resourceCallback = new ImageLoaderCallback();
-							PlatformInterop.LoadImageFromResource(imageView, id, resourceCallback);
-							return resourceCallback.Result;
+							imageView.SetImageResource(id);
+							return Task.FromResult<IImageSourceServiceResult?>(new ImageSourceServiceLoadResult());
 						}
 					}
 

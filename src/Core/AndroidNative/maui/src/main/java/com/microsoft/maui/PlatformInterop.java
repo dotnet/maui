@@ -365,14 +365,6 @@ public class PlatformInterop {
         loadInto(builder, imageView, true, callback, file);
     }
 
-    public static void loadImageFromResource(ImageView imageView, int resourceId, ImageLoaderCallback callback) {
-        RequestBuilder<Drawable> builder = Glide
-            .with(imageView)
-            .load(resourceId)
-            .downsample(DownsampleStrategy.CENTER_INSIDE);
-        loadInto(builder, imageView, true, callback, resourceId);
-    }
-
     public static void loadImageFromUri(ImageView imageView, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
         Uri androidUri = Uri.parse(uri);
         if (androidUri == null) {
