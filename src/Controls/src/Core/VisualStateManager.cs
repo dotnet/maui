@@ -18,19 +18,10 @@ namespace Microsoft.Maui.Controls
 		{
 			public const string Normal = "Normal";
 			public const string Disabled = "Disabled";
-			public const string Focused = FocusStates.Focused;
+			public const string Focused = "Focused";
 			public const string Selected = "Selected";
 			public const string PointerOver = "PointerOver";
-		}
-
-		/// <summary>
-		/// Defines the names of the focus-related visual states (<see cref="Focused"/> and
-		/// <see cref="Unfocused"/>) that the framework applies to focusable controls.
-		/// </summary>
-		public static class FocusStates
-		{
-			public const string Focused = "Focused";
-			public const string Unfocused = "Unfocused";
+			internal const string Unfocused = "Unfocused";
 		}
 
 		/// <summary>Bindable property for attached property <c>VisualStateGroups</c>.</summary>
@@ -178,7 +169,7 @@ namespace Microsoft.Maui.Controls
 		static bool IsSystemDrivenState(string stateName) =>
 			stateName == CommonStates.Disabled ||
 			stateName == CommonStates.Focused ||
-			stateName == FocusStates.Unfocused ||
+			stateName == CommonStates.Unfocused ||
 			stateName == CommonStates.Selected ||
 			stateName == CommonStates.PointerOver ||
 			stateName == ButtonElement.PressedVisualState;

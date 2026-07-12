@@ -122,6 +122,3 @@ Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Contr
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
 static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
-Microsoft.Maui.Controls.VisualStateManager.FocusStates
-~const Microsoft.Maui.Controls.VisualStateManager.FocusStates.Focused = "Focused" -> string
-~const Microsoft.Maui.Controls.VisualStateManager.FocusStates.Unfocused = "Unfocused" -> string
