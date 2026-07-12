@@ -672,19 +672,22 @@ Building on the `dotnet run` infrastructure, we need these new targets. Note: Ta
   </ItemGroup>
 </Target>
 
-<!-- Execute tests on device, recording the result without preventing cleanup. -->
+<!-- Execute tests on device, recording normal test failures without masking infrastructure failures. -->
 <Target Name="ExecuteDeviceTests"
         DependsOnTargets="DeployToDevice;ComputeTestRunArguments">
 
-  <!-- Platform-specific execution logic should set _DeviceTestExitCode. -->
+  <!--
+    Platform-specific execution logic should set _DeviceTestExitCode for completed
+    test runs, including failed tests. Infrastructure failures should remain task
+    errors and must not be converted into a false-green run.
+  -->
   <ExecuteDeviceTests
     Device="$(Device)"
     RuntimeIdentifier="$(RuntimeIdentifier)"
     TestArguments="@(TestRunArguments)"
     ResultsDirectory="$(TestResultsDirectory)"
-    Timeout="$(TestTimeout)"
-    ContinueOnError="WarnAndContinue">
-    <Output TaskParameter="ExitCode" PropertyName="_DeviceTestExitCode" />
+    Timeout="$(TestTimeout)">
+    <Output TaskParameter="MtpExitCode" PropertyName="_DeviceTestExitCode" />
   </ExecuteDeviceTests>
 </Target>
 
@@ -727,10 +730,11 @@ The test target chain (invoked from `dotnet test`):
 
 | Target | Description |
 |--------|-------------|
-| `PrepareTestApp` | Build test app |
-| `DeployTestApp` | Deploy to selected device |
-| `RunTestApp` | Execute tests on device |
+| `ComputeTestRunArguments` | Compute MTP arguments and validate required V1 artifact settings |
+| `DeployToDevice` | Deploy the test app to the selected device, reusing SDK deployment infrastructure |
+| `ExecuteDeviceTests` | Execute tests on device and record the completed MTP test-run exit code |
 | `CollectTestArtifacts` | Pull TRX and diagnostics from device sandbox |
+| `FailDeviceTestsIfNeeded` | Propagate non-zero MTP test-run exit code after artifacts are collected |
 
 ---
 
