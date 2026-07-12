@@ -112,52 +112,71 @@ namespace Microsoft.Maui.Controls
 
 			foreach (VisualStateGroup group in groups)
 			{
-				// See if this group contains the new state
-				var target = group.GetState(name);
-				if (target == null)
+				if (ApplyVisualStateGroup(visualElement, group, name, baseSpecificity, force))
 				{
-					continue;
-				}
-
-				if (!force && group.CurrentState?.Name == name)
-				{
-					// We're already in the target state; nothing else to do
 					return true;
 				}
-
-				// If we've got a new state to transition to, unapply the setters from the current state
-				if (group.CurrentState != null)
-				{
-					// Mirror the apply logic: use the same promoted specificity for system-driven states.
-					var unapplySpecificity = IsSystemDrivenState(group.CurrentState.Name)
-						? baseSpecificity.WithFullVsmPriority()
-						: baseSpecificity;
-					foreach (Setter setter in group.CurrentState.Setters)
-					{
-						setter.UnApply(visualElement, unapplySpecificity);
-					}
-				}
-
-				// Update the current state
-				group.CurrentState = target;
-
-				// For system-driven states (Disabled, Focused, Selected, PointerOver, Unfocused),
-				// promote implicit VSM to full VSM priority so it can override locally-set values.
-				// Normal state and custom developer-defined states keep downgraded priority (#18103, #34363).
-				var applySpecificity = IsSystemDrivenState(name)
-					? baseSpecificity.WithFullVsmPriority()
-					: baseSpecificity;
-
-				// Apply the setters from the new state
-				foreach (Setter setter in target.Setters)
-				{
-					setter.Apply(visualElement, applySpecificity);
-				}
-
-				return true;
 			}
 
 			return false;
+		}
+
+		internal static bool GoToState(VisualElement visualElement, VisualStateGroup group, string name, bool force)
+		{
+			var context = visualElement.GetContext(VisualStateGroupsProperty);
+			if (context is null)
+			{
+				return false;
+			}
+
+			var vsgSpecificityValue = context.Values.GetSpecificityAndValue();
+			var groups = (VisualStateGroupList)vsgSpecificityValue.Value;
+			if (groups?.IsDefault != false || group is null || !groups.Contains(group))
+			{
+				return false;
+			}
+
+			groups.Specificity = vsgSpecificityValue.Key;
+			var baseSpecificity = vsgSpecificityValue.Key.CopyStyle(1, 0, 0, 0);
+			return ApplyVisualStateGroup(visualElement, group, name, baseSpecificity, force);
+		}
+
+		static bool ApplyVisualStateGroup(VisualElement visualElement, VisualStateGroup group, string name, SetterSpecificity baseSpecificity, bool force)
+		{
+			var target = group.GetState(name);
+			if (target == null)
+			{
+				return false;
+			}
+
+			if (!force && group.CurrentState?.Name == name)
+			{
+				return true;
+			}
+
+			if (group.CurrentState != null)
+			{
+				var unapplySpecificity = IsSystemDrivenState(group.CurrentState.Name)
+					? baseSpecificity.WithFullVsmPriority()
+					: baseSpecificity;
+				foreach (Setter setter in group.CurrentState.Setters)
+				{
+					setter.UnApply(visualElement, unapplySpecificity);
+				}
+			}
+
+			group.CurrentState = target;
+
+			var applySpecificity = IsSystemDrivenState(name)
+				? baseSpecificity.WithFullVsmPriority()
+				: baseSpecificity;
+
+			foreach (Setter setter in target.Setters)
+			{
+				setter.Apply(visualElement, applySpecificity);
+			}
+
+			return true;
 		}
 
 		/// <summary>

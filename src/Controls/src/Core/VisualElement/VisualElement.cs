@@ -1781,149 +1781,105 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
-			// A disabled control should never be in a focused state as part of the feature
-			// of being disabled is that it cannot receive focus. If it was in focus, then
-			// it has to go out of focus.
 			var shouldFocus = IsFocused && IsEnabled;
-
-			// Capture the selected state before changing any states so that an element that
-			// was put into the Selected state (for example, a selected CollectionView item)
-			// is kept selected across visual state changes.
 			var isSelected = this.IsElementInSelectedState();
 
-			var unfocusedStateKind = !shouldFocus ? GetUnfocusedStateKind() : UnfocusedStateKind.None;
-			var shouldUnfocus = unfocusedStateKind != UnfocusedStateKind.None;
-			var wasFocused = shouldFocus && IsInVisualState(VisualStateManager.CommonStates.Focused);
-			var wasPointerOver = IsInVisualState(VisualStateManager.CommonStates.PointerOver);
-			var wasUnfocused = shouldUnfocus && IsInVisualState(VisualStateManager.CommonStates.Unfocused);
-			var isInFocusedState = shouldUnfocus && IsInVisualState(VisualStateManager.CommonStates.Focused);
-			var hasSeparateUnfocus = shouldUnfocus && unfocusedStateKind == UnfocusedStateKind.SeparateGroup;
-			var applySeparateUnfocusBeforeCommonState = hasSeparateUnfocus && (!IsEnabled || isSelected || IsPointerOver);
-			var applyCommonUnfocusBeforePointerOver = isInFocusedState && IsPointerOver && unfocusedStateKind == UnfocusedStateKind.CommonStatesGroup;
-
-			// If Unfocused is in a separate group, first move the focus group to Unfocused so
-			// Focused setters are unapplied before a stronger common state is applied. If
-			// Unfocused shares CommonStates while the pointer is over the control, transition
-			// through Unfocused before PointerOver so a missing PointerOver state cannot leave
-			// the group stuck in Focused.
-			if (applySeparateUnfocusBeforeCommonState || applyCommonUnfocusBeforePointerOver)
+			if (!this.HasVisualStateGroups())
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Unfocused);
+				return;
 			}
 
-			// Set the Disabled, Selected or Normal states depending on the values of IsEnabled,
-			// the selected state and IsPointerOver. The PointerOver state is set later, after
-			// the Focused state, so that it can override the focus visuals when hovering.
+			var groups = VisualStateManager.GetVisualStateGroups(this);
+			if (groups is null)
+			{
+				return;
+			}
+
+			var commonStatesGroup = FindVisualStateGroup(groups,
+				VisualStateManager.CommonStates.Normal,
+				VisualStateManager.CommonStates.Disabled,
+				VisualStateManager.CommonStates.Selected,
+				VisualStateManager.CommonStates.PointerOver);
+			var focusStatesGroup = FindFocusStatesGroup(groups);
+			var focusGroupIsSeparate = focusStatesGroup is not null && focusStatesGroup != commonStatesGroup;
+			var wasFocused = IsCurrentState(focusStatesGroup, VisualStateManager.CommonStates.Focused) ||
+				IsCurrentState(commonStatesGroup, VisualStateManager.CommonStates.Focused);
+			var wasPointerOver = IsCurrentState(commonStatesGroup, VisualStateManager.CommonStates.PointerOver);
+			var appliedSeparateUnfocus = focusGroupIsSeparate && !shouldFocus;
+
+			if (appliedSeparateUnfocus)
+			{
+				VisualStateManager.GoToState(this, focusStatesGroup, VisualStateManager.CommonStates.Unfocused, force: false);
+			}
+
 			if (!IsEnabled)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled, force: applySeparateUnfocusBeforeCommonState && !wasUnfocused);
+				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.Disabled, force: focusGroupIsSeparate && !wasPointerOver);
 			}
 			else if (isSelected)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Selected, force: applySeparateUnfocusBeforeCommonState && !wasUnfocused);
+				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.Selected, force: focusGroupIsSeparate && !wasPointerOver);
 			}
 			else if (!IsPointerOver)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.Normal, force: false);
 			}
 
-			// Go to the focus state after the Normal state so that Focused/Unfocused states
-			// in CommonStates keep their historical precedence over Normal.
 			if (shouldFocus)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Focused, force: !IsPointerOver && wasPointerOver);
+				VisualStateManager.GoToState(this, focusStatesGroup ?? commonStatesGroup, VisualStateManager.CommonStates.Focused, force: !IsPointerOver && wasPointerOver);
 			}
-			else if (shouldUnfocus && IsEnabled && !isSelected && !IsPointerOver && unfocusedStateKind == UnfocusedStateKind.CommonStatesGroup)
+			else if (!focusGroupIsSeparate && wasFocused)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Unfocused);
-			}
-			else if (hasSeparateUnfocus && IsEnabled && !isSelected && !IsPointerOver)
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Unfocused);
+				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.Unfocused, force: false);
 			}
 
-			// The PointerOver state is applied last so that it can override the focus state.
-			// It only applies to an enabled control that is not in the Selected state, and even
-			// though it is set separately here it is still part of the CommonStates group.
 			if (IsEnabled && !isSelected && IsPointerOver)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver, force: (applySeparateUnfocusBeforeCommonState && !wasUnfocused) || (shouldFocus && !wasFocused));
+				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.PointerOver, force: appliedSeparateUnfocus || (shouldFocus && !wasFocused));
 			}
 		}
 
-		enum UnfocusedStateKind
+		static VisualStateGroup FindVisualStateGroup(VisualStateGroupList groups, params string[] stateNames)
 		{
-			None,
-			CommonStatesGroup,
-			SeparateGroup,
-		}
-
-		UnfocusedStateKind GetUnfocusedStateKind()
-		{
-			// Guard the hot path: ChangeVisualState runs on every focus, enabled and pointer
-			// transition. HasVisualStateGroups short-circuits without materializing the default
-			// VisualStateGroupList for controls that never declared any VSM groups.
-			if (!this.HasVisualStateGroups())
-			{
-				return UnfocusedStateKind.None;
-			}
-
-			var groups = VisualStateManager.GetVisualStateGroups(this);
-			if (groups is null)
-			{
-				return UnfocusedStateKind.None;
-			}
-
 			for (var i = 0; i < groups.Count; i++)
 			{
 				var group = groups[i];
-				var hasUnfocused = false;
-				var hasNormal = false;
-
-				for (var j = 0; j < group.States.Count; j++)
+				for (var j = 0; j < stateNames.Length; j++)
 				{
-					var stateName = group.States[j].Name;
-					if (stateName == VisualStateManager.CommonStates.Unfocused)
+					if (group.GetState(stateNames[j]) is not null)
 					{
-						hasUnfocused = true;
+						return group;
 					}
-					else if (stateName == VisualStateManager.CommonStates.Normal)
-					{
-						hasNormal = true;
-					}
-				}
-
-				if (hasUnfocused)
-				{
-					return hasNormal ? UnfocusedStateKind.CommonStatesGroup : UnfocusedStateKind.SeparateGroup;
 				}
 			}
 
-			return UnfocusedStateKind.None;
+			return null;
 		}
 
-		bool IsInVisualState(string name)
+		static VisualStateGroup FindFocusStatesGroup(VisualStateGroupList groups)
 		{
-			if (!this.HasVisualStateGroups())
-			{
-				return false;
-			}
-
-			var groups = VisualStateManager.GetVisualStateGroups(this);
-			if (groups is null)
-			{
-				return false;
-			}
-
 			for (var i = 0; i < groups.Count; i++)
 			{
-				if (groups[i].CurrentState?.Name == name)
+				var group = groups[i];
+				if (group.GetState(VisualStateManager.CommonStates.Focused) is not null &&
+					group.GetState(VisualStateManager.CommonStates.Unfocused) is not null)
 				{
-					return true;
+					return group;
 				}
 			}
 
-			return false;
+			return FindVisualStateGroup(groups, VisualStateManager.CommonStates.Focused, VisualStateManager.CommonStates.Unfocused);
+		}
+
+		static bool IsCurrentState(VisualStateGroup group, string name)
+		{
+			if (group is null)
+			{
+				return false;
+			}
+
+			return group.CurrentState?.Name == name;
 		}
 
 		static void OnVisualChanged(BindableObject bindable, object oldValue, object newValue)
