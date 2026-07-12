@@ -180,6 +180,47 @@ namespace Microsoft.Maui.Controls
 			OnValuesChanged(e.Values.ToArray());
 		}
 
+		sealed class WeakResourcesChangedProxy : WeakEventProxy<ResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+		{
+			public WeakResourcesChangedProxy(ResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				Subscribe(source, handler);
+			}
+
+			void OnValuesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+				{
+					handler(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			public override void Subscribe(ResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				if (TryGetSource(out var existingSource))
+				{
+					existingSource.ValuesChanged -= OnValuesChanged;
+				}
+
+				source.ValuesChanged += OnValuesChanged;
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var source))
+				{
+					source.ValuesChanged -= OnValuesChanged;
+				}
+
+				base.Unsubscribe();
+			}
+		}
+
 		sealed class MergedDictionarySubscriptions
 		{
 			readonly List<WeakResourcesChangedProxy> _proxies = new();

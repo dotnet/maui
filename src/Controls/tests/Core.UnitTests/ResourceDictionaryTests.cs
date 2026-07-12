@@ -625,6 +625,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ReimplementedResourceDictionaryInterfaceStillPropagatesValueChanges()
+		{
+			var merged = new ReimplementedResourceDictionary();
+			var resources = new ResourceDictionary
+			{
+				MergedDictionaries = { merged }
+			};
+			var label = new Label
+			{
+				Resources = resources,
+			};
+			label.SetDynamicResource(Label.TextProperty, "foo");
+
+			merged.Add("foo", "Foo");
+
+			Assert.Equal("Foo", label.Text);
+		}
+
+		[Fact]
 		public async Task MergedResourceDictionaryDoesNotLeakElement()
 		{
 			// A single, long-lived ResourceDictionary instance that is merged into a
@@ -679,6 +698,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(changed);
 			GC.KeepAlive(resources);
+		}
+
+		sealed class ReimplementedResourceDictionary : ResourceDictionary, IResourceDictionary
+		{
+			event EventHandler<ResourcesChangedEventArgs> IResourceDictionary.ValuesChanged
+			{
+				add { }
+				remove { }
+			}
 		}
 	}
 }
