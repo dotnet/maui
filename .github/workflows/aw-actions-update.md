@@ -126,22 +126,26 @@ creating another PR. Mention the existing PR in the run output only. (The `--aut
 the check to this workflow's own bot-created PRs — safe-outputs opens them as `app/github-actions` —
 so an unrelated user-opened PR with a colliding title cannot suppress the refresh.)
 
-## Step 1 — Ensure the gh-aw CLI is available at the pinned version
+## Step 1 — Ensure the gh-aw CLI is available at the committed lock version
 
 The `gh aw` command comes from the `github/gh-aw` gh extension, which may not be preinstalled on
-the runner. **Pin the install to `v0.81.6`** — the same `compiler_version` all committed
-`.github/workflows/*.lock.yml` files were built with. `gh aw update` caps native action-pin
-resolution at the CLI's own version, so a newer CLI would refresh `actions-lock.json` in a way
-that no longer matches the v0.81.6-compiled locks (version skew). Bumping gh-aw is a deliberate,
-coordinated change handled by the separate `aw-version-update` runbook — not something this
-weekly pin-refresher should do implicitly.
+the runner. **Pin the install to the `github/gh-aw-actions/setup-cli` version recorded in
+`.github/aw/actions-lock.json`** — the same version all committed `.github/workflows/*.lock.yml`
+files were built with. `gh aw update` caps native action-pin resolution at the CLI's own version,
+so a newer CLI would refresh `actions-lock.json` in a way that no longer matches the compiled
+locks (version skew). Bumping gh-aw is a deliberate, coordinated change handled by the separate
+`aw-version-update` runbook — not something this weekly pin-refresher should do implicitly.
 
 Remove any pre-installed copy, then install the pinned tag. **Fail closed** (log and exit without
 creating a PR) if the pinned install does not succeed — never silently continue on a stale or
 wrong-version CLI.
 
 ```bash
-GH_AW_PINNED_VERSION="v0.81.6"   # keep in sync with the committed *.lock.yml compiler_version
+GH_AW_PINNED_VERSION="$(jq -r '.entries | to_entries[] | select(.key | startswith("github/gh-aw-actions/setup-cli@")) | .value.version' .github/aw/actions-lock.json)"
+if [ -z "$GH_AW_PINNED_VERSION" ] || [ "$GH_AW_PINNED_VERSION" = "null" ]; then
+  echo "Unable to determine gh-aw pinned version from .github/aw/actions-lock.json; not creating a PR."
+  exit 0
+fi
 gh extension remove gh-aw 2>/dev/null || true
 if ! gh extension install github/gh-aw --pin "$GH_AW_PINNED_VERSION"; then
   echo "Failed to install gh-aw $GH_AW_PINNED_VERSION; not creating a PR."
