@@ -325,6 +325,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { commonStatesGroup });
 
+			VisualStateManager.GoToState(label, NormalStateName);
 			Assert.Equal(NormalStateName, label.Text);
 
 			label.SetPointerOver(true);
