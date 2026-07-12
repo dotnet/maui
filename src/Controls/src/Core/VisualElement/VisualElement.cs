@@ -1802,12 +1802,11 @@ namespace Microsoft.Maui.Controls
 				VisualStateManager.CommonStates.PointerOver);
 			var focusStatesGroup = FindFocusStatesGroup(groups);
 			var focusGroupIsSeparate = focusStatesGroup is not null && focusStatesGroup != commonStatesGroup;
-			var wasFocused = IsCurrentState(focusStatesGroup, VisualStateManager.CommonStates.Focused) ||
-				IsCurrentState(commonStatesGroup, VisualStateManager.CommonStates.Focused);
-			var wasPointerOver = IsCurrentState(commonStatesGroup, VisualStateManager.CommonStates.PointerOver);
+			var wasFocused = IsCurrentState(groups, VisualStateManager.CommonStates.Focused);
+			var wasPointerOver = IsCurrentState(groups, VisualStateManager.CommonStates.PointerOver);
 			var wasUnfocused = IsCurrentState(focusStatesGroup, VisualStateManager.CommonStates.Unfocused);
-			var wasCommonUnfocused = IsCurrentState(commonStatesGroup, VisualStateManager.CommonStates.Unfocused);
-			var hasPointerOverState = commonStatesGroup?.GetState(VisualStateManager.CommonStates.PointerOver) is not null;
+			var wasCommonUnfocused = IsCurrentState(groups, VisualStateManager.CommonStates.Unfocused);
+			var hasPointerOverState = FindVisualStateGroup(groups, VisualStateManager.CommonStates.PointerOver) is not null;
 			var hasSeparateUnfocus = focusGroupIsSeparate && !shouldFocus;
 			var appliedSeparateUnfocus = hasSeparateUnfocus && (!IsEnabled || isSelected || IsPointerOver);
 			var separateUnfocusApplied = false;
@@ -1819,33 +1818,43 @@ namespace Microsoft.Maui.Controls
 
 			if (!IsEnabled)
 			{
-				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.Disabled, force: separateUnfocusApplied && !wasUnfocused);
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled, force: separateUnfocusApplied && !wasUnfocused);
 			}
 			else if (isSelected)
 			{
-				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.Selected, force: separateUnfocusApplied && !wasUnfocused);
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Selected, force: separateUnfocusApplied && !wasUnfocused);
 			}
 			else if (!IsPointerOver)
 			{
-				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.Normal, force: false);
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal, force: false);
 			}
 
 			if (shouldFocus)
 			{
-				VisualStateManager.GoToState(this, focusStatesGroup ?? commonStatesGroup, VisualStateManager.CommonStates.Focused, force: !IsPointerOver && wasPointerOver);
+				if (focusStatesGroup is not null)
+				{
+					VisualStateManager.GoToState(this, focusStatesGroup, VisualStateManager.CommonStates.Focused, force: !IsPointerOver && wasPointerOver);
+				}
+				else
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Focused, force: !IsPointerOver && wasPointerOver);
+				}
 			}
 			else if (IsEnabled && !isSelected && !focusGroupIsSeparate && (wasFocused || wasCommonUnfocused) && (!IsPointerOver || !hasPointerOverState))
 			{
-				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.Unfocused, force: false);
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Unfocused, force: false);
 			}
 			else if (hasSeparateUnfocus && IsEnabled && !isSelected && !IsPointerOver)
 			{
-				VisualStateManager.GoToState(this, focusStatesGroup, VisualStateManager.CommonStates.Unfocused, force: false);
+				if (VisualStateManager.GoToState(this, focusStatesGroup, VisualStateManager.CommonStates.Unfocused, force: false) && wasFocused)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal, force: true);
+				}
 			}
 
 			if (IsEnabled && !isSelected && IsPointerOver)
 			{
-				VisualStateManager.GoToState(this, commonStatesGroup, VisualStateManager.CommonStates.PointerOver, force: (separateUnfocusApplied && !wasUnfocused) || (shouldFocus && !wasFocused));
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver, force: (separateUnfocusApplied && !wasUnfocused) || (shouldFocus && !wasFocused));
 			}
 		}
 
@@ -1878,7 +1887,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			return FindVisualStateGroup(groups, VisualStateManager.CommonStates.Focused, VisualStateManager.CommonStates.Unfocused);
+			return null;
 		}
 
 		static bool IsCurrentState(VisualStateGroup group, string name)
@@ -1889,6 +1898,19 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return group.CurrentState?.Name == name;
+		}
+
+		static bool IsCurrentState(VisualStateGroupList groups, string name)
+		{
+			for (var i = 0; i < groups.Count; i++)
+			{
+				if (groups[i].CurrentState?.Name == name)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		static void OnVisualChanged(BindableObject bindable, object oldValue, object newValue)

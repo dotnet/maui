@@ -236,6 +236,85 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void CommonStatesSplitAcrossGroupsUseNameLookup()
+		{
+			var element = new PointerOverElement();
+
+			var normalStatesGroup = new VisualStateGroup { Name = "NormalStates" };
+			normalStatesGroup.States.Add(CreateElementTextState(NormalStateName));
+
+			var disabledStatesGroup = new VisualStateGroup { Name = "DisabledStates" };
+			disabledStatesGroup.States.Add(CreateElementTextState(DisabledStateName));
+
+			VisualStateManager.SetVisualStateGroups(element, new VisualStateGroupList { normalStatesGroup, disabledStatesGroup });
+
+			Assert.Equal(NormalStateName, element.Text);
+
+			element.IsEnabled = false;
+
+			Assert.Equal(DisabledStateName, element.Text);
+		}
+
+		[Fact]
+		public void SplitFocusStatesUseNameLookup()
+		{
+			var element = new PointerOverElement();
+
+			var focusedStatesGroup = new VisualStateGroup { Name = "FocusedStates" };
+			focusedStatesGroup.States.Add(CreateElementTextState(FocusedStateName));
+
+			var unfocusedStatesGroup = new VisualStateGroup { Name = "UnfocusedStates" };
+			unfocusedStatesGroup.States.Add(CreateElementTextState(UnfocusedStateName));
+
+			VisualStateManager.SetVisualStateGroups(element, new VisualStateGroupList { focusedStatesGroup, unfocusedStatesGroup });
+
+			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			Assert.Equal(FocusedStateName, element.Text);
+
+			element.SetValue(VisualElement.IsFocusedPropertyKey, false);
+
+			Assert.Equal(UnfocusedStateName, element.Text);
+		}
+
+		[Fact]
+		public void FocusUnfocusThenDisableClearsFocusedSetters()
+		{
+			var button = new Button();
+
+			var commonStatesGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			commonStatesGroup.States.Add(CreateButtonTextState(NormalStateName));
+			commonStatesGroup.States.Add(CreateButtonTextState(DisabledStateName));
+
+			var focusStatesGroup = new VisualStateGroup { Name = FocusStatesGroupName };
+			var focusedState = CreateButtonTextState(FocusedStateName);
+			focusedState.Setters.Add(new Setter { Property = View.MarginProperty, Value = new Thickness(20, 0) });
+			focusStatesGroup.States.Add(focusedState);
+			focusStatesGroup.States.Add(new VisualState
+			{
+				Name = UnfocusedStateName,
+				Setters =
+				{
+					new Setter { Property = View.MarginProperty, Value = new Thickness(0) },
+				},
+			});
+
+			VisualStateManager.SetVisualStateGroups(button, new VisualStateGroupList { commonStatesGroup, focusStatesGroup });
+
+			button.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			Assert.Equal(FocusedStateName, button.Text);
+			Assert.Equal(new Thickness(20, 0), button.Margin);
+
+			button.SetValue(VisualElement.IsFocusedPropertyKey, false);
+			Assert.Equal(NormalStateName, button.Text);
+			Assert.Equal(new Thickness(0), button.Margin);
+
+			button.IsEnabled = false;
+
+			Assert.Equal(DisabledStateName, button.Text);
+			Assert.Equal(new Thickness(0), button.Margin);
+		}
+
+		[Fact]
 		public void SeparateFocusGroupInitializesToUnfocused()
 		{
 			var label = new Label();
@@ -388,6 +467,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var state = new VisualState { Name = name };
 			state.Setters.Add(new Setter { Property = PointerOverElement.TextProperty, Value = name });
+			return state;
+		}
+
+		static VisualState CreateButtonTextState(string name)
+		{
+			var state = new VisualState { Name = name };
+			state.Setters.Add(new Setter { Property = Button.TextProperty, Value = name });
 			return state;
 		}
 
