@@ -132,8 +132,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			root.Title = "New title";
 			root.Add(new TableSection("Added section"));
 			section.Add(new TextCell { Text = "Added cell" });
+			section.Title = "New section title";
 
-			Assert.Equal(3, modelChangedCount);
+			Assert.Equal(4, modelChangedCount);
 			GC.KeepAlive(table);
 		}
 

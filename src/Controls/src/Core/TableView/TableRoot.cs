@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls
 			SetupEvents();
 		}
 
-		internal event EventHandler<ChildCollectionChangedEventArgs> SectionCollectionChanged;
-
 		internal event NotifyCollectionChangedEventHandler WeakCollectionChanged
 		{
 			add => _weakEventManager.AddEventHandler(value);
@@ -52,10 +50,6 @@ namespace Microsoft.Maui.Controls
 		void ChildCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
 			var args = new ChildCollectionChangedEventArgs(notifyCollectionChangedEventArgs);
-			EventHandler<ChildCollectionChangedEventArgs> handler = SectionCollectionChanged;
-			if (handler != null)
-				handler(this, args);
-
 			_weakEventManager.HandleEvent(this, args, nameof(WeakSectionCollectionChanged));
 		}
 
