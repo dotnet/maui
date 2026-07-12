@@ -1244,11 +1244,52 @@ stages:
                 done
 
                 adb kill-server 2>/dev/null || true; sleep 1; adb start-server
-                nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
-                echo "Emulator PID: $!"
 
-                echo "Waiting for device..."
-                timeout 120 adb wait-for-device || { echo "##[error]adb wait-for-device timed out"; tail -30 /tmp/emulator.log; exit 1; }
+                # Inner launch-attempt retry loop (mirrors the ReviewPR/gate stage
+                # boot). A single 'adb wait-for-device' is not enough on a slow or
+                # wedged hosted agent: the emulator process can start (qemu boots,
+                # androidboot logs appear) yet ADB never connects — observed on deep
+                # build 14635419, where the single-launch boot timed out and all 3
+                # whole-task (retryCountOnTaskFailure) retries failed identically.
+                # Re-launching within the same task after killing stale qemu +
+                # restarting adb recovers from that state far more cheaply and
+                # reliably than a full task restart.
+                MAX_LAUNCH_ATTEMPTS=2
+                EMULATOR_PID=""
+                for LAUNCH_ATTEMPT in $(seq 1 $MAX_LAUNCH_ATTEMPTS); do
+                  echo "--- Emulator launch attempt $LAUNCH_ATTEMPT of $MAX_LAUNCH_ATTEMPTS ---"
+                  if [ $LAUNCH_ATTEMPT -gt 1 ]; then
+                    echo "Cleaning up before retry..."
+                    if [ -n "$EMULATOR_PID" ] && kill -0 "$EMULATOR_PID" 2>/dev/null; then
+                      kill "$EMULATOR_PID" 2>/dev/null || true
+                      sleep 2
+                      kill -0 "$EMULATOR_PID" 2>/dev/null && kill -9 "$EMULATOR_PID" 2>/dev/null || true
+                    fi
+                    for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+                      kill -9 "$STALE_PID" 2>/dev/null || true
+                    done
+                    sleep 3
+                    adb kill-server 2>/dev/null || true; sleep 2; adb start-server; sleep 2
+                  fi
+
+                  nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
+                  EMULATOR_PID=$!
+                  echo "Emulator PID: $EMULATOR_PID"
+
+                  echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
+                  if timeout 120 adb wait-for-device; then
+                    echo "Device connected on attempt $LAUNCH_ATTEMPT"
+                    break
+                  fi
+
+                  echo "##vso[task.logissue type=warning]adb wait-for-device timed out (attempt $LAUNCH_ATTEMPT)"
+                  adb devices -l || true
+                  tail -30 /tmp/emulator.log || true
+                  if [ $LAUNCH_ATTEMPT -eq $MAX_LAUNCH_ATTEMPTS ]; then
+                    echo "##vso[task.logissue type=error]Emulator failed to connect after $MAX_LAUNCH_ATTEMPTS attempts"
+                    exit 1
+                  fi
+                done
 
                 echo "Waiting for boot_completed..."
                 waited=0
