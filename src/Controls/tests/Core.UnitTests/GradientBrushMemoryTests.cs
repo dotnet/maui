@@ -67,5 +67,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(replaced);
 			Assert.Single(brush.GradientStops);
 		}
+
+		[Fact]
+		public async Task ClearingAndReusingGradientStopsKeepsNewStopsSubscribed()
+		{
+			var stops = new GradientStopCollection { new GradientStop() };
+			var brush = new LinearGradientBrush
+			{
+				GradientStops = stops
+			};
+			bool invalidated = false;
+			brush.InvalidateGradientBrushRequested += (_, __) => invalidated = true;
+
+			stops.Clear();
+			var newStop = new GradientStop();
+			stops.Add(newStop);
+
+			await TestHelpers.Collect();
+			invalidated = false;
+
+			newStop.Offset = 0.5f;
+
+			Assert.True(invalidated);
+			GC.KeepAlive(brush);
+		}
 	}
 }
