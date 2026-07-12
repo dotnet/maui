@@ -1756,6 +1756,53 @@ stages:
             # on stage result propagation timing.
             continueOnError: true
 
+          # ── AI analysis of deep UI test failures (PR-related vs unrelated) ──
+          # Only runs when there are REGULAR (non-setup) failures. Split across
+          # three tasks so the Copilot analysis task holds ONLY the Copilot
+          # token and NEVER GH_TOKEN (security rule 1): prep (GH_TOKEN) gathers
+          # the failing tests + PR diff, analysis (Copilot token) classifies
+          # them, and the existing post task (GH_TOKEN) folds the result into
+          # the review. All three are non-fatal — a failure here never blocks
+          # posting the summary review.
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
+              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
+              $prepScript = ".github/scripts/shared/Prepare-UITestFailureAnalysis.ps1"
+              if (-not (Test-Path $prepScript)) { Write-Host "$prepScript missing — skipping"; exit 0 }
+              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -OutputFile $inputFile
+            displayName: 'Prepare UI failure analysis input'
+            continueOnError: true
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+          - bash: |
+              echo "Installing GitHub Copilot CLI for UI failure analysis..."
+              npm install -g @github/copilot
+              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
+              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
+              copilot --version || true
+            displayName: 'Install Copilot CLI (UI failure analysis)'
+            condition: eq(variables['hasUIFailures'], 'true')
+            continueOnError: true
+
+          # env: COPILOT_GITHUB_TOKEN ONLY — no GH_TOKEN (security rule 1). The
+          # Copilot CLI reads the prep data file + worktree (pipeline branch,
+          # not the PR) and writes its classification to a temp file; it cannot
+          # post to GitHub.
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
+              $analysisFile = Join-Path "$(Agent.TempDirectory)" "uifail-analysis.md"
+              $analyzeScript = ".github/scripts/shared/Analyze-UITestFailures.ps1"
+              if (-not (Test-Path $analyzeScript)) { Write-Host "$analyzeScript missing — skipping"; exit 0 }
+              & $analyzeScript -InputFile $inputFile -OutputFile $analysisFile -PRNumber "${{ parameters.PRNumber }}"
+            displayName: 'Analyze UI test failures (Copilot)'
+            condition: eq(variables['hasUIFailures'], 'true')
+            continueOnError: true
+            env:
+              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
+
           - pwsh: |
               $ErrorActionPreference = 'Continue'
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
@@ -1959,6 +2006,26 @@ stages:
                   [void]$sb.AppendLine("</details>")
                   [void]$sb.AppendLine()
                 }
+              }
+
+              # Fold in the AI classification of the deep UI test failures
+              # (PR-related vs unrelated) produced by the token-less Copilot
+              # analysis task. Best-effort — absent when there were no regular
+              # failures or the analysis didn't run. Built into $sb so BOTH the
+              # DEFERRED and PATCH posting paths (which share $deepBlock) get it.
+              $uiFailAnalysisFile = Join-Path "$(Agent.TempDirectory)" "uifail-analysis.md"
+              if ((Test-Path $uiFailAnalysisFile) -and -not [string]::IsNullOrWhiteSpace((Get-Content $uiFailAnalysisFile -Raw))) {
+                $analysisMd = ((Get-Content $uiFailAnalysisFile -Raw) -replace '##vso\[[^]]*\]', '').Trim()
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine("<details open><summary>🔍 <b>AI analysis of failures — PR-related vs unrelated</b></summary>")
+                [void]$sb.AppendLine("<br/>")
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine("> 🔍 _AI-generated triage (GitHub Copilot CLI) — a heuristic judgement of whether each deep UI test failure is connected to this PR's changes. Verify before relying on it._")
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine($analysisMd)
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine("</details>")
+                [void]$sb.AppendLine()
               }
 
               # Link to the published artifact so reviewers can download the
