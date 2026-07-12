@@ -313,6 +313,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(UnfocusedStateName, label.Text);
 		}
 
+		[Fact]
+		public void PointerEnterWithoutPointerOverStateDoesNotMoveNormalToUnfocused()
+		{
+			var label = new PointerOverLabel();
+
+			var commonStatesGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			commonStatesGroup.States.Add(CreateTextState(NormalStateName));
+			commonStatesGroup.States.Add(CreateTextState(FocusedStateName));
+			commonStatesGroup.States.Add(CreateTextState(UnfocusedStateName));
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { commonStatesGroup });
+
+			Assert.Equal(NormalStateName, label.Text);
+
+			label.SetPointerOver(true);
+			Assert.Equal(NormalStateName, label.Text);
+		}
+
 		static VisualState CreateTextState(string name)
 		{
 			var state = new VisualState { Name = name };
