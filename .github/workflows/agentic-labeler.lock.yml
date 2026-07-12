@@ -599,7 +599,10 @@ jobs:
                   },
                   "labels": {
                     "required": true,
-                    "type": "array"
+                    "type": "array",
+                    "itemType": "string",
+                    "itemSanitize": true,
+                    "itemMaxLength": 128
                   },
                   "repo": {
                     "type": "string",
