@@ -1067,6 +1067,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact, Category(TestCategory.Memory)]
+		public async Task PickerItemsSourceChangesStillApplyAfterGc()
+		{
+			var itemsSource = new ObservableCollection<string> { "a", "b", "c" };
+			var picker = new Picker { ItemsSource = itemsSource };
+
+			await TestHelpers.Collect();
+
+			itemsSource.Add("d");
+
+			Assert.Equal(4, picker.Items.Count);
+			Assert.Equal("d", picker.Items[3]);
+			GC.KeepAlive(picker);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
 		public async Task PickerItemsSourceClearReleasesCollectionChangedSubscription()
 		{
 			var sharedItemsSource = new ObservableCollection<string> { "a", "b", "c" };
