@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task PathRenderTransformDoesNotLeakWhenTransformOutlivesIt()
 		{
-			var sharedTransform = new RotateTransform { Angle = 45 };
+			var sharedTransform = new ScaleTransform { ScaleX = 2, ScaleY = 2 };
 
 			static WeakReference CreatePath(Transform transform)
 			{
