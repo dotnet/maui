@@ -332,6 +332,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(NormalStateName, element.Text);
 		}
 
+		[Fact]
+		public void DisablingFocusedControlWithSingleGroupMovesToDisabled()
+		{
+			var element = new PointerOverElement();
+
+			var commonStatesGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			commonStatesGroup.States.Add(CreateElementTextState(NormalStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(FocusedStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(UnfocusedStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(DisabledStateName));
+
+			VisualStateManager.SetVisualStateGroups(element, new VisualStateGroupList { commonStatesGroup });
+
+			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			Assert.Equal(FocusedStateName, element.Text);
+
+			element.IsEnabled = false;
+			Assert.Equal(DisabledStateName, element.Text);
+		}
+
 		static VisualState CreateTextState(string name)
 		{
 			var state = new VisualState { Name = name };
