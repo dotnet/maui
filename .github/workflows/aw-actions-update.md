@@ -141,9 +141,19 @@ creating a PR) if the pinned install does not succeed — never silently continu
 wrong-version CLI.
 
 ```bash
-GH_AW_PINNED_VERSION="$(jq -r '.entries | to_entries[] | select(.key | startswith("github/gh-aw-actions/setup-cli@")) | .value.version' .github/aw/actions-lock.json)"
-if [ -z "$GH_AW_PINNED_VERSION" ] || [ "$GH_AW_PINNED_VERSION" = "null" ]; then
-  echo "Unable to determine gh-aw pinned version from .github/aw/actions-lock.json; not creating a PR."
+GH_AW_PINNED_VERSION="$(
+  jq -er '
+    [.entries
+      | to_entries[]
+      | select(.key | startswith("github/gh-aw-actions/setup-cli@"))
+      | .value.version
+      | select(type == "string" and length > 0)
+    ] as $matches
+    | if ($matches | length) == 1 then $matches[0] else empty end
+  ' .github/aw/actions-lock.json
+)"
+if [ -z "$GH_AW_PINNED_VERSION" ]; then
+  echo "Unable to determine exactly one gh-aw pinned version from .github/aw/actions-lock.json; not creating a PR."
   exit 0
 fi
 gh extension remove gh-aw 2>/dev/null || true
