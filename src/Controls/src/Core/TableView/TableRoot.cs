@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls
 {
@@ -10,6 +11,8 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public sealed class TableRoot : TableSectionBase<TableSection>
 	{
+		readonly WeakEventManager _weakEventManager = new();
+
 		/// <summary>
 		/// Creates a new <see cref="TableRoot"/> with default values.
 		/// </summary>
@@ -28,11 +31,32 @@ namespace Microsoft.Maui.Controls
 
 		internal event EventHandler<ChildCollectionChangedEventArgs> SectionCollectionChanged;
 
+		internal event NotifyCollectionChangedEventHandler WeakCollectionChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
+
+		internal event EventHandler<ChildCollectionChangedEventArgs> WeakSectionCollectionChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
+
+		internal event PropertyChangedEventHandler WeakPropertyChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
+
 		void ChildCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
+			var args = new ChildCollectionChangedEventArgs(notifyCollectionChangedEventArgs);
 			EventHandler<ChildCollectionChangedEventArgs> handler = SectionCollectionChanged;
 			if (handler != null)
-				handler(this, new ChildCollectionChangedEventArgs(notifyCollectionChangedEventArgs));
+				handler(this, args);
+
+			_weakEventManager.HandleEvent(this, args, nameof(WeakSectionCollectionChanged));
 		}
 
 		void ChildPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
@@ -41,6 +65,14 @@ namespace Microsoft.Maui.Controls
 			{
 				OnPropertyChanged(TitleProperty.PropertyName);
 			}
+		}
+
+		protected override void OnPropertyChanged(string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == TitleProperty.PropertyName)
+				_weakEventManager.HandleEvent(this, new PropertyChangedEventArgs(propertyName), nameof(WeakPropertyChanged));
 		}
 
 		void SetupEvents()
@@ -64,6 +96,8 @@ namespace Microsoft.Maui.Controls
 						section.PropertyChanged -= ChildPropertyChanged;
 					}
 				}
+
+				_weakEventManager.HandleEvent(this, args, nameof(WeakCollectionChanged));
 			};
 		}
 	}

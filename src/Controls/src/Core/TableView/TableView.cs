@@ -190,32 +190,10 @@ namespace Microsoft.Maui.Controls
 			readonly TableView _parent;
 			TableRoot _root;
 
-			readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
-			readonly WeakSectionCollectionChangedProxy _sectionCollectionChangedProxy = new();
-			readonly WeakNotifyPropertyChangedProxy _propertyChangedProxy = new();
-
-			// The proxies above hold their handlers via WeakReference, so the model must keep a
-			// strong reference to each delegate. The delegates target _parent, which the model
-			// already references strongly, so this does not create a leaking root back from the
-			// long-lived TableRoot to the TableView.
-			readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
-			readonly EventHandler<ChildCollectionChangedEventArgs> _sectionCollectionChangedHandler;
-			readonly PropertyChangedEventHandler _propertyChangedHandler;
-
 			public TableSectionModel(TableView tableParent, TableRoot tableRoot)
 			{
 				_parent = tableParent;
-				_collectionChangedHandler = _parent.CollectionChanged;
-				_sectionCollectionChangedHandler = _parent.OnSectionCollectionChanged;
-				_propertyChangedHandler = _parent.OnTableModelRootPropertyChanged;
 				Root = tableRoot ?? new TableRoot();
-			}
-
-			~TableSectionModel()
-			{
-				_collectionChangedProxy.Unsubscribe();
-				_sectionCollectionChangedProxy.Unsubscribe();
-				_propertyChangedProxy.Unsubscribe();
 			}
 
 			public TableRoot Root
@@ -281,9 +259,9 @@ namespace Microsoft.Maui.Controls
 
 			void ApplyEvents(TableRoot tableRoot)
 			{
-				_collectionChangedProxy.Subscribe(tableRoot, _collectionChangedHandler);
-				_sectionCollectionChangedProxy.Subscribe(tableRoot, _sectionCollectionChangedHandler);
-				_propertyChangedProxy.Subscribe(tableRoot, _propertyChangedHandler);
+				tableRoot.WeakCollectionChanged += _parent.CollectionChanged;
+				tableRoot.WeakSectionCollectionChanged += _parent.OnSectionCollectionChanged;
+				tableRoot.WeakPropertyChanged += _parent.OnTableModelRootPropertyChanged;
 			}
 
 			void RemoveEvents(TableRoot tableRoot)
@@ -291,9 +269,9 @@ namespace Microsoft.Maui.Controls
 				if (tableRoot == null)
 					return;
 
-				_collectionChangedProxy.Unsubscribe();
-				_sectionCollectionChangedProxy.Unsubscribe();
-				_propertyChangedProxy.Unsubscribe();
+				tableRoot.WeakCollectionChanged -= _parent.CollectionChanged;
+				tableRoot.WeakSectionCollectionChanged -= _parent.OnSectionCollectionChanged;
+				tableRoot.WeakPropertyChanged -= _parent.OnTableModelRootPropertyChanged;
 			}
 
 			static void SetPath(Cell item, Tuple<int, int> index)
