@@ -134,6 +134,7 @@ safe-outputs:
         - name: Checkout repository scripts
           uses: actions/checkout@v7.0.0
           with:
+            ref: main
             persist-credentials: false
         - name: Download rerun candidate context
           uses: actions/download-artifact@v8.0.1
