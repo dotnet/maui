@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Internals;
 
 // NOTE: warning disabled for netstandard projects
 #pragma warning disable 0436
