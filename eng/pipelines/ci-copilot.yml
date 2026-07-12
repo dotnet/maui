@@ -1500,18 +1500,50 @@ stages:
               # not-run. Tunable via DEEP_UITEST_BUDGET_MIN.
               $budgetMin = 185
               if ($env:DEEP_UITEST_BUDGET_MIN -and ($env:DEEP_UITEST_BUDGET_MIN -as [int])) { $budgetMin = [int]$env:DEEP_UITEST_BUDGET_MIN }
-              $loopDeadline = (Get-Date).AddMinutes($budgetMin)
-              Write-Host "Per-category loop budget: $budgetMin min (deadline: $($loopDeadline.ToUniversalTime().ToString('u')))"
+              # Hard stop for the WHOLE loop, kept safely under this task's
+              # timeoutInMinutes (220). Every per-category wrapper call is bounded
+              # (-TimeoutMinutes below) so that it MUST return before this instant
+              # — that is the actual guarantee the task never hits the 220-min
+              # AzDO task timeout, which would fail the stage for an infra reason
+              # and drop all partial results. Tunable via DEEP_UITEST_HARDSTOP_MIN.
+              $hardStopMin = 210
+              if ($env:DEEP_UITEST_HARDSTOP_MIN -and ($env:DEEP_UITEST_HARDSTOP_MIN -as [int])) { $hardStopMin = [int]$env:DEEP_UITEST_HARDSTOP_MIN }
+              # Per-category wall-clock cap (build + deploy + run + retries). The
+              # dominant deep-stage failure mode is a single category whose
+              # `dotnet build`/`adb` hangs and never returns, stalling the task
+              # until the 220-min timeout (15 of 18 android failures surveyed).
+              # The wrapper tree-kills that category at this cap and reports it as
+              # not-run. Tunable via DEEP_UITEST_CATEGORY_CAP_MIN.
+              $perCatCapMin = 50
+              if ($env:DEEP_UITEST_CATEGORY_CAP_MIN -and ($env:DEEP_UITEST_CATEGORY_CAP_MIN -as [int])) { $perCatCapMin = [int]$env:DEEP_UITEST_CATEGORY_CAP_MIN }
+              $loopStart    = Get-Date
+              $loopDeadline = $loopStart.AddMinutes($budgetMin)
+              $taskHardStop = $loopStart.AddMinutes($hardStopMin)
+              Write-Host "Per-category loop budget: $budgetMin min (start-new-category deadline: $($loopDeadline.ToUniversalTime().ToString('u')))"
+              Write-Host "Hard stop: $hardStopMin min (every category must return by: $($taskHardStop.ToUniversalTime().ToString('u'))) · per-category cap: $perCatCapMin min"
               $skippedCats = @()
 
               $hadFailure = $false
               foreach ($cat in $catList) {
-                if ((Get-Date) -gt $loopDeadline) {
+                $catStart = Get-Date
+                if ($catStart -gt $loopDeadline) {
                   $skippedCats += $cat
                   Write-Host "##[warning]Deep UI test time budget ($budgetMin min) exhausted — not starting category '$cat' (avoids the 220-min task timeout)."
                   $hadFailure = $true
                   continue
                 }
+                # Bound this category so it is tree-killed and returns before the
+                # loop hard stop — this is what actually prevents the task-level
+                # 220-min timeout when a build/run hangs.
+                $remainToHardStopMin = [int][math]::Floor(($taskHardStop - $catStart).TotalMinutes)
+                if ($remainToHardStopMin -lt 3) {
+                  $skippedCats += $cat
+                  Write-Host "##[warning]Only $remainToHardStopMin min left before the hard stop — not starting category '$cat' (avoids the 220-min task timeout)."
+                  $hadFailure = $true
+                  continue
+                }
+                $catTimeoutMin = [int][math]::Min($perCatCapMin, $remainToHardStopMin)
+                Write-Host "Category '$cat' hard time budget: $catTimeoutMin min (of $remainToHardStopMin min remaining to hard stop)"
                 $safeCat = if ([string]::IsNullOrEmpty($cat)) { 'ALL' } else { $cat -replace '[^A-Za-z0-9_.-]', '_' }
                 $catDir = Join-Path $outputRoot "drop-${platform}_ui_tests-controls-$safeCat"
                 New-Item -ItemType Directory -Force -Path $catDir | Out-Null
@@ -1538,6 +1570,7 @@ stages:
                     }
                     if (-not [string]::IsNullOrEmpty($cat)) { $retryParams.Category = $cat }
                     if ($env:DEVICE_UDID) { $retryParams.DeviceUdid = $env:DEVICE_UDID }
+                    $retryParams.TimeoutMinutes = $catTimeoutMin
                     $runResult = & $retryScript @retryParams
                     $exitCode = if ($runResult) { $runResult.ExitCode } else { -1 }
                     Write-Host "Attempts: $(if ($runResult) { $runResult.Attempts } else { '?' }) · Exit: $exitCode · EnvError: $(if ($runResult) { $runResult.EnvErrorHit } else { 'N/A' })"

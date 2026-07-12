@@ -70,7 +70,15 @@ param(
     [int]      $RetryDelaySeconds = 30,
     [string]   $DeviceUdid,
     [string]   $LogFile,
-    [string]   $RepoRoot
+    [string]   $RepoRoot,
+    # Hard wall-clock budget for the WHOLE category (build + deploy + run,
+    # across all retry attempts). 0 = unlimited (default / back-compat for the
+    # Gate path). When > 0, each BuildAndRunHostApp.ps1 attempt runs in a child
+    # process that is tree-killed (dotnet/gradle/adb/java descendants included)
+    # the moment the budget is exhausted — so a hung build/run can never block
+    # until the caller's AzDO task timeout. A hard-kill is treated as a
+    # retryable environment error. See dotnet/maui deep-UI-test loop.
+    [int]      $TimeoutMinutes = 0
 )
 
 $ErrorActionPreference = 'Continue'
@@ -78,6 +86,85 @@ $ErrorActionPreference = 'Continue'
 if (-not $RepoRoot) {
     $RepoRoot = git rev-parse --show-toplevel 2>$null
     if (-not $RepoRoot) { $RepoRoot = (Get-Location).Path }
+}
+
+# ── Hard-timeout helpers (only used when -TimeoutMinutes > 0) ──────────────
+# Recursively terminate a process and all of its descendants. A hung
+# `dotnet build` / gradle / adb / java child is reparented (not killed) if we
+# only stop the parent pwsh, so we must walk the tree explicitly.
+function Stop-ProcessTree {
+    param([int]$ProcessId)
+    if ($ProcessId -le 0) { return }
+    try {
+        if ($IsWindows) {
+            Get-CimInstance Win32_Process -Filter "ParentProcessId=$ProcessId" -ErrorAction SilentlyContinue |
+                ForEach-Object { Stop-ProcessTree -ProcessId ([int]$_.ProcessId) }
+        } else {
+            $kids = & pgrep -P $ProcessId 2>$null
+            foreach ($k in $kids) {
+                if ($k -and ($k -as [int])) { Stop-ProcessTree -ProcessId ([int]$k) }
+            }
+        }
+    } catch { }
+    try { Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue } catch { }
+}
+
+# Run BuildAndRunHostApp.ps1 in a child pwsh process with a hard wall-clock
+# deadline. Returns @{ Output = [string[]]; ExitCode = int; TimedOut = bool }.
+function Invoke-BuildScriptBounded {
+    param(
+        [string]    $ScriptPath,
+        [hashtable] $Params,
+        [int]       $TimeoutSeconds
+    )
+    $pwshExe = try { (Get-Process -Id $PID).Path } catch { $null }
+    if (-not $pwshExe) { $pwshExe = 'pwsh' }
+    $argList = @('-NoProfile', '-NonInteractive', '-File', $ScriptPath)
+    foreach ($k in $Params.Keys) {
+        $v = $Params[$k]
+        if ($null -eq $v) { continue }
+        if ($v -is [bool] -or $v -is [switch]) { if ($v) { $argList += "-$k" } }
+        else { $argList += @("-$k", "$v") }
+    }
+    $outFile = [IO.Path]::GetTempFileName()
+    $errFile = [IO.Path]::GetTempFileName()
+    $timedOut = $false
+    $exit = -1
+    $start = Get-Date
+    try {
+        $proc = Start-Process -FilePath $pwshExe -ArgumentList $argList -PassThru -NoNewWindow `
+            -RedirectStandardOutput $outFile -RedirectStandardError $errFile
+        $deadline = $start.AddSeconds($TimeoutSeconds)
+        $lastBeat = $start
+        while (-not $proc.HasExited -and (Get-Date) -lt $deadline) {
+            Start-Sleep -Seconds 5
+            if (((Get-Date) - $lastBeat).TotalSeconds -ge 120) {
+                $elapsedMin = [int]((Get-Date) - $start).TotalMinutes
+                Write-Host "  … BuildAndRunHostApp still running ($elapsedMin min elapsed, hard budget $([int]($TimeoutSeconds/60)) min)"
+                $lastBeat = Get-Date
+            }
+        }
+        if (-not $proc.HasExited) {
+            Write-Host "##[warning]Hard timeout ($([int]($TimeoutSeconds/60)) min) reached — killing hung BuildAndRunHostApp process tree (pid $($proc.Id))" -ForegroundColor Yellow
+            Stop-ProcessTree -ProcessId $proc.Id
+            $timedOut = $true
+            for ($i = 0; $i -lt 8 -and -not $proc.HasExited; $i++) { Start-Sleep -Seconds 2 }
+            $exit = 124
+        } else {
+            $exit = $proc.ExitCode
+        }
+    } catch {
+        Write-Host "⚠️ Bounded BuildAndRunHostApp invocation threw: $_" -ForegroundColor Yellow
+        $exit = -1
+    }
+    $out = @()
+    foreach ($f in @($outFile, $errFile)) {
+        if (Test-Path $f) {
+            try { $out += Get-Content -Path $f -ErrorAction SilentlyContinue } catch { }
+            Remove-Item $f -Force -ErrorAction SilentlyContinue
+        }
+    }
+    return @{ Output = $out; ExitCode = $exit; TimedOut = $timedOut }
 }
 
 # Load shared env-error patterns (single source of truth).
@@ -135,9 +222,16 @@ $attempts = 0
 $lastOutput = @()
 $lastExit = -1
 $envHit = $null
+$overallDeadline = if ($TimeoutMinutes -gt 0) { (Get-Date).AddMinutes($TimeoutMinutes) } else { $null }
 
 for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     $attempts = $attempt
+    if ($overallDeadline -and (Get-Date) -ge $overallDeadline) {
+        Write-Host "##[warning]Category time budget ($TimeoutMinutes min) exhausted — stopping before attempt $attempt." -ForegroundColor Yellow
+        if (-not $envHit) { $envHit = 'timeout' }
+        if ($lastExit -eq -1) { $lastExit = 124 }
+        break
+    }
     if ($attempt -gt 1) {
         Write-Host "↻ Attempt $attempt/$MaxAttempts after environment error '$envHit'" -ForegroundColor Yellow
 
@@ -179,8 +273,26 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
 
     $envHit = $null
     Write-Host "▶ BuildAndRunHostApp.ps1 attempt $attempt/$MaxAttempts" -ForegroundColor Cyan
-    $lastOutput = & $buildScript @baseParams 2>&1
-    $lastExit = $LASTEXITCODE
+    if ($TimeoutMinutes -gt 0) {
+        $remainingSec = [int]($overallDeadline - (Get-Date)).TotalSeconds
+        if ($remainingSec -le 30) {
+            Write-Host "##[warning]Category time budget ($TimeoutMinutes min) exhausted before attempt $attempt — stopping." -ForegroundColor Yellow
+            $envHit = 'timeout'; $lastExit = 124
+            break
+        }
+        $bounded = Invoke-BuildScriptBounded -ScriptPath $buildScript -Params $baseParams -TimeoutSeconds $remainingSec
+        $lastOutput = $bounded.Output
+        $lastExit = $bounded.ExitCode
+        if ($bounded.TimedOut) {
+            Write-Host "##[warning]Attempt $attempt hard-killed after exhausting the category time budget." -ForegroundColor Yellow
+            $envHit = 'timeout'   # treat a hang as a retryable environment error
+            if ($attempt -eq $MaxAttempts) { break }
+            continue
+        }
+    } else {
+        $lastOutput = & $buildScript @baseParams 2>&1
+        $lastExit = $LASTEXITCODE
+    }
 
     if ($lastExit -eq 0) { break }
 
