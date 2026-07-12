@@ -1049,12 +1049,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// must not keep every Picker it was assigned to alive.
 			var sharedItemsSource = new ObservableCollection<string> { "a", "b", "c" };
 
-			WeakReference weakPicker;
+			static WeakReference CreatePickerReference(ObservableCollection<string> itemsSource)
 			{
-				var picker = new Picker();
-				picker.ItemsSource = sharedItemsSource;
-				weakPicker = new WeakReference(picker);
+				var picker = new Picker { ItemsSource = itemsSource };
+				return new WeakReference(picker);
 			}
+
+			var weakPicker = CreatePickerReference(sharedItemsSource);
 
 			Assert.False(await weakPicker.WaitForCollect(), "Picker should not be alive!");
 			GC.KeepAlive(sharedItemsSource);
