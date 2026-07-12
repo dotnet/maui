@@ -188,6 +188,7 @@ network:
     - "*.visualstudio.com"
     - helix.dot.net
     - "*.blob.core.windows.net"
+    - img.shields.io
 
 concurrency:
   group: "review-tests-${{ github.event.issue.number || inputs.pr_number || github.run_id }}"
@@ -286,7 +287,7 @@ When triggered via `workflow_dispatch`, `${{ inputs.suppress_output }}` controls
 
 ## When no failures are found
 
-If the gathered context shows no failing, pending, or inconclusive checks and no extracted failures, still post a PR conversation comment with `add_comment` unless dry-run mode is active. Use the same shape as other results, with the bold verdict line `**No failures found:** all inspected checks passed and no failures were extracted.`, no grouped bullets, and a `Recommended action` of no test-failure action is needed.
+If the gathered context shows no failing, pending, or inconclusive checks and no extracted failures, still post a PR conversation comment with `add_comment` unless dry-run mode is active. Use the same shape as other results — the badge row (`Overall` = `No failures found` in `1a7f37`, `Failures` = `0`, `Regressed vs base` = `0`, `Baseline` = `0 on base`) and the collapsible with an `**Overall verdict:** No failures found …` line, no grouped bullets, and a `Recommended action` of no test-failure action is needed.
 
 Only call `noop` when dry-run mode is active and no PR comment should be posted.
 
@@ -302,16 +303,21 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 > @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]).
 > To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
 
-**[Overall verdict]:** [one or two sentences summarizing the strongest evidence — how many distinct failures are genuine regressions vs the base branch, and how many are pre-existing or flaky-on-base. Name the base branch (`main` / `net11.0`) and that several recent base builds were sampled.]
+<p align="left">
+  <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[overallColor]?labelColor=30363d&style=flat-square">
+  <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">
+  <img alt="Regressed vs base [n]" src="https://img.shields.io/badge/Regressed_vs_base-[n]-[regColor]?labelColor=30363d&style=flat-square">
+  <img alt="Baseline [m on base]" src="https://img.shields.io/badge/Baseline-[m]_on_base-0969da?labelColor=30363d&style=flat-square">
+</p>
+
+<details>
+<summary><strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
+
+**Overall verdict:** [one or two sentences summarizing the strongest evidence — how many distinct failures are genuine regressions vs the base branch, and how many are pre-existing or flaky-on-base. Name the base branch (`main` / `net11.0`) and that several recent base builds were sampled.]
 
 - **✗ PR-related** — [root-cause group label] (~[N] tests): [one sentence tying the group to the PR's changed area or a shared failure pattern; name at most ONE representative test in `code`].
 - **ℹ Uncertain** — [root-cause group label] (~[N] legs): [one sentence — unexplained build legs, aborted/canceled checks, unattributed, or device-test-unverified].
 - **● Unrelated** — [root-cause group label] (~[N] tests): [one sentence — flaky-on-base / pre-existing-on-base / known issue].
-
-_[Optional single italic line: the strongest signal or the recommended next check.]_
-
-<details>
-<summary>Coverage &amp; evidence</summary>
 
 **Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [abortedFailingChecks] aborted failing checks · [canceledBuildChecks] canceled-build checks · [deviceTestUnverified] device-test unverified · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason from gate.ceilingReasons when present].
 
@@ -321,14 +327,14 @@ _[Optional single italic line: the strongest signal or the recommended next chec
 
 [One concise recommendation.]
 
-[Relevant checks, log excerpts, PR-scope details, and limitations (including when baseline data was unavailable).]
-
 </details>
 ```
 
-Structure the body like the deep UI-failure analysis: a single **bold verdict line**, then a flat bulleted list where **each bullet is one root-cause GROUP, never one bullet per test** (a run can have hundreds of failures — long name lists are unreadable). Do **not** emit a Markdown table and do **not** list every failing test name. Begin every bullet with exactly one assessment token in bold — **✗ PR-related** (a `deterministicAttribution = regressed-vs-base` failure: red on the PR but green across several recent base builds and red on none — treat as Likely PR-caused unless you can cite why the base comparison is invalid), **ℹ Uncertain** (`indeterminate` / an unexplained or aborted/canceled leg / `unattributedFailures` / device-test-unverified), or **● Unrelated** (only a `pre-existing-on-base`, `known-issue`, or flaky-on-base `legBaselineResult` failure). Then " — " a short human label for the group plus an approximate count in parentheses (e.g. "(~20 tests)"), then ": " a one-sentence why; name at most ONE representative test in `code`. Order the bullets ✗ PR-related first, then ℹ Uncertain, then ● Unrelated; aim for at most ~8 bullets and merge groups that share a root cause. The optional final italic line carries the strongest signal or the next check.
+The comment stays compact when collapsed: the badge row plus the `<details>` summary line carry the at-a-glance verdict, and all detail lives inside the collapsible. Badges (in order): `Overall` = the merge-readiness verdict; `Failures` = distinct-failure count; `Regressed vs base` = `gate.legsRegressedVsBase` (the PR-caused count); `Baseline` = how many distinct failures also appear on the base branch (dismissable). Badge colors: `Overall` uses `1a7f37` for `Ready to merge`/`No failures found`, `d1242f` for `Not ready`, `bf8700` for `Needs human investigation`, `6e7781` for `Insufficient data`; `Regressed vs base` is `d1242f` when > 0 and `1a7f37` when 0; `Failures` is `8250df`; `Baseline` is `0969da`.
 
-The `**[verdict]:**` line carries the merge-readiness verdict and **must never be more favorable than `gate.verdictCeiling`**. The collapsed **Coverage &amp; evidence** block reports the deterministic gate counts, `gate.verdictCeiling`, and the this-PR build / base-sampling IDs. Allowed verdicts: `Ready to merge`, `Not ready`, `Needs human investigation`, `Insufficient data`, `No failures found`.
+Inside the collapsible, replace the old per-test table with a **succinct root-cause-grouped bullet list** (the deep UI-failure-analysis shape) — **each bullet is one root-cause GROUP, never one bullet per test** (a run can have hundreds of failures — long name lists are unreadable). Do **not** emit a Markdown table and do **not** list every failing test name. Begin every bullet with exactly one assessment token in bold — **✗ PR-related** (a `deterministicAttribution = regressed-vs-base` failure: red on the PR but green across several recent base builds and red on none — treat as Likely PR-caused unless you can cite why the base comparison is invalid), **ℹ Uncertain** (`indeterminate` / an unexplained or aborted/canceled leg / `unattributedFailures` / device-test-unverified), or **● Unrelated** (only a `pre-existing-on-base`, `known-issue`, or flaky-on-base `legBaselineResult` failure). Then " — " a short human label for the group plus an approximate count in parentheses (e.g. "(~20 tests)"), then ": " a one-sentence why; name at most ONE representative test in `code`. Order the bullets ✗ PR-related first, then ℹ Uncertain, then ● Unrelated; aim for at most ~6 bullets and merge groups that share a root cause.
+
+The `**Overall verdict:**` line and the `Overall` badge carry the merge-readiness verdict and **must never be more favorable than `gate.verdictCeiling`**. The `**Coverage:**` line reports the deterministic gate counts and `gate.verdictCeiling`. Allowed verdicts: `Ready to merge`, `Not ready`, `Needs human investigation`, `Insufficient data`, `No failures found`.
 
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.
 
