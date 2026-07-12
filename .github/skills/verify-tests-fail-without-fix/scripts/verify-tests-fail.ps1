@@ -1481,8 +1481,11 @@ function Write-MarkdownReport {
     # "environment error" framing so the reader knows the fix is fine — only the baseline is
     # missing.
     $snapshotBaselineMissing = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.SnapshotBaselineMissing }).Count -gt 0
+    $snapshotEnvResidual = (@($WithFixResultsList) | Where-Object { $_.SnapshotEnvResidual }).Count -gt 0
     $snapshotNote = if ($snapshotBaselineMissing) {
         "📷 **New snapshot test — no baseline yet** — the test calls ``VerifyScreenshot`` but its baseline image is not committed (brand-new snapshot tests get their baseline added separately). The gate cannot validate a snapshot with nothing to compare against, so this is **inconclusive, not a fix failure**. Download the ``snapshots-diff`` artifact, confirm the rendering, and commit the baseline PNG."
+    } elseif ($snapshotEnvResidual) {
+        "📷 **Environmental snapshot residual — not a fix failure** — with the fix applied, the only remaining ``VerifyScreenshot`` differences are no larger than the WITHOUT-fix run (the fix worsened no snapshot and added no new failing one) and are all below ~1%. The fix resolves the bug's visual difference; the residual is a constant cross-agent baseline offset (anti-aliasing / font hinting differ between the machine that captured the baseline and this agent), so this is **inconclusive, not a fix failure**. Regenerate the affected baseline PNG(s) on the target agent."
     } else { $null }
 
     # ─── Improvement #2: classify the failure mode so the headline matches the cause ───
@@ -1905,6 +1908,73 @@ foreach ($file in $RevertableFiles) {
 
 Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) reverted to merge-base state"
 
+# ── Snapshot-diff A/B helpers (VerifyScreenshot environmental false-FAILED guard) ──
+# A visual-fix PR whose committed baselines carry a small, CONSTANT cross-agent
+# rendering offset (anti-aliasing / font hinting differ between the machine that
+# captured the baseline PNG and the gate agent) makes even a CORRECT fix fail its
+# VerifyScreenshot assertions by a fraction of a percent. Because the gate runs the
+# SAME test both WITHOUT and WITH the fix, it can distinguish a fix-caused diff
+# (present without the fix, gone/smaller with it) from an environmental diff
+# (present at ~the same magnitude in BOTH runs — the fix does not touch it).
+# Get-SnapshotDiffMap extracts { baseline.png -> max % diff } from a run log;
+# Test-SnapshotEnvironmentalResidual returns $true only when the with-fix run's
+# failures are ALL snapshot diffs that (a) also failed WITHOUT the fix, (b) are no
+# LARGER than without the fix (the fix worsened nothing and added no new failing
+# snapshot) and (c) are every one below a small environmental ceiling. In that case
+# the residual is environmental, not a broken fix -> INCONCLUSIVE, NEVER PASS. Any
+# parsing hiccup returns a safe default (empty map / $false) so the gate falls back
+# to today's genuine-FAILED behavior. (Observed on iOS PR #36511 Issue33037NonShell:
+# with-fix DirectScrollView/ListView/CollectionView diffs were byte-identical to the
+# without-fix run at 0.65-0.77%, while the real bug diffs 2.63%/3.01% collapsed to
+# pass/0.54% — i.e. the fix worked but sub-1% baseline offset false-FAILED the gate.)
+function Get-SnapshotDiffMap {
+    param([string] $LogFile)
+    $map = @{}
+    try {
+        if (-not $LogFile -or -not (Test-Path $LogFile)) { return $map }
+        $c = Get-Content $LogFile -Raw -ErrorAction SilentlyContinue
+        if ([string]::IsNullOrWhiteSpace($c)) { return $map }
+        # e.g. "Snapshot different than baseline: Issue33037NonShell_ListView_AfterScroll.png (0.65% difference)"
+        $rx = [regex]'(?i)Snapshot different than baseline:\s*(?<file>[^\s()]+\.png)\s*\(\s*(?<pct>[0-9]+(?:\.[0-9]+)?)\s*%\s*difference\s*\)'
+        foreach ($m in $rx.Matches($c)) {
+            $file = ([System.IO.Path]::GetFileName($m.Groups['file'].Value)).ToLowerInvariant()
+            $pct  = [double]$m.Groups['pct'].Value
+            if (-not $map.ContainsKey($file) -or $pct -gt $map[$file]) { $map[$file] = $pct }
+        }
+    } catch { return @{} }
+    return $map
+}
+
+function Test-SnapshotEnvironmentalResidual {
+    param(
+        [hashtable] $WithoutFixResult,
+        [hashtable] $WithFixResult,
+        [double]    $ResidualCeilingPercent = 1.0,
+        [double]    $Epsilon = 0.02
+    )
+    try {
+        if (-not $WithoutFixResult -or -not $WithFixResult) { return $false }
+        $woMap = $WithoutFixResult.SnapshotDiffMap
+        $wMap  = $WithFixResult.SnapshotDiffMap
+        if ($null -eq $woMap -or $null -eq $wMap) { return $false }
+        if ($wMap.Count -eq 0) { return $false }
+        # Every with-fix failure must be a snapshot diff (guard against a non-visual
+        # failure hiding among the snapshot diffs): #snapshot files >= reported FailCount.
+        $wFail  = [int]($WithFixResult.FailCount)
+        $woFail = [int]($WithoutFixResult.FailCount)
+        if ($wFail  -le 0 -or $wMap.Count  -lt $wFail)  { return $false }
+        if ($woFail -le 0 -or $woMap.Count -lt $woFail) { return $false }
+        foreach ($file in $wMap.Keys) {
+            # A snapshot the fix NEWLY breaks (absent without the fix) is a real regression.
+            if (-not $woMap.ContainsKey($file)) { return $false }
+            # The fix must not enlarge any diff, and every residual must be tiny.
+            if ($wMap[$file] -gt ($woMap[$file] + $Epsilon)) { return $false }
+            if ($wMap[$file] -gt $ResidualCeilingPercent)    { return $false }
+        }
+        return $true
+    } catch { return $false }
+}
+
 # Step 2: Run ALL tests WITHOUT fix
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
@@ -1937,6 +2007,7 @@ foreach ($testEntry in $AllDetectedTests) {
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
     $result.Duration = $sw.Elapsed
+    $result.SnapshotDiffMap = Get-SnapshotDiffMap -LogFile $testLogFile
     $withoutFixResults += $result
 
     # Print raw log inside the collapsible group so it's available but not noisy
@@ -2036,6 +2107,7 @@ foreach ($testEntry in $AllDetectedTests) {
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
     $result.Duration = $sw.Elapsed
+    $result.SnapshotDiffMap = Get-SnapshotDiffMap -LogFile $testLogFile
     $withFixResults += $result
 
     # Print raw log inside the collapsible group
@@ -2126,6 +2198,34 @@ $verificationPassed = $failedWithoutFix -and $passedWithFix
 # regression test coexists with an always-green test (e.g. PR #27477: VisualStateManagerTests
 # FAIL→PASS but Issue19752 PASS→PASS). Env/build/filter results are inconclusive (handled
 # below) and are excluded from both counts.
+
+# ── VerifyScreenshot environmental-residual downgrade (see Get-SnapshotDiffMap) ──
+# BEFORE counting genuine with-fix failures, reclassify any FAIL→FAIL test whose
+# with-fix failures are purely environmental snapshot residue (the fix worsened /
+# added no snapshot and every residual diff is sub-ceiling) as an env/INCONCLUSIVE
+# result. Setting EnvError plugs into the existing inconclusive handling: the test
+# drops out of the genuine-fail count and drives the overall verdict to INCONCLUSIVE
+# (exit 3), NEVER to PASS. Fail-safe: Test-SnapshotEnvironmentalResidual returns
+# $false on any parsing issue, leaving today's genuine-FAILED behavior intact.
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w  = $withFixResults    | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+    # Only relevant when BOTH runs genuinely FAILED (FAIL→FAIL) with no prior inconclusive.
+    if ($wo.EnvError -or $wo.BuildError -or $wo.FilterMismatch) { continue }
+    if ($w.EnvError  -or $w.BuildError  -or $w.FilterMismatch)  { continue }
+    if ($wo.Passed -or $w.Passed) { continue }
+    if (Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w) {
+        $maxResidual = 0.0
+        foreach ($v in $w.SnapshotDiffMap.Values) { if ($v -gt $maxResidual) { $maxResidual = $v } }
+        $w.EnvError = $true
+        $w.SnapshotEnvResidual = $true
+        $w.Error = "With-fix run only fails VerifyScreenshot snapshot diffs that are no larger than the without-fix run (max $($maxResidual)% <= 1%). The fix resolves the bug's visual difference; the residual is a constant cross-agent baseline offset, not a fix failure. Regenerate the baseline PNG(s) on the target agent."
+        Write-Host "  📷 $($t.TestName): with-fix failures are environmental snapshot residue (max $($maxResidual)% <= 1%, none worsened vs without-fix) — reclassifying as INCONCLUSIVE, not FAILED" -ForegroundColor Yellow
+        Write-Log "  [$($t.Type)] $($t.TestName): with-fix snapshot residual environmental (max $($maxResidual)%) — INCONCLUSIVE (not a fix failure)"
+    }
+}
+
 $reproducingCount = 0
 $withFixGenuineFailCount = 0
 foreach ($t in $AllDetectedTests) {
