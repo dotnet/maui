@@ -352,6 +352,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(DisabledStateName, element.Text);
 		}
 
+		[Fact]
+		public void SharedUnfocusedStateRemainsStableAcrossRepeatedChanges()
+		{
+			var element = new PointerOverElement();
+
+			var commonStatesGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			commonStatesGroup.States.Add(CreateElementTextState(NormalStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(FocusedStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(UnfocusedStateName));
+
+			VisualStateManager.SetVisualStateGroups(element, new VisualStateGroupList { commonStatesGroup });
+
+			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			element.SetValue(VisualElement.IsFocusedPropertyKey, false);
+			Assert.Equal(UnfocusedStateName, element.Text);
+
+			element.ChangeVisualStateInternal();
+			Assert.Equal(UnfocusedStateName, element.Text);
+		}
+
 		static VisualState CreateTextState(string name)
 		{
 			var state = new VisualState { Name = name };
