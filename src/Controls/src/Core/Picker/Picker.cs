@@ -347,6 +347,10 @@ namespace Microsoft.Maui.Controls
 				var subscription = _itemsSourceCollectionChangedSubscription ??= new ItemsSourceCollectionChangedSubscription();
 				subscription.Subscribe(newObservable, _collectionChangedEventHandler);
 			}
+			else
+			{
+				_itemsSourceCollectionChangedSubscription = null;
+			}
 
 			if (newValue != null)
 			{

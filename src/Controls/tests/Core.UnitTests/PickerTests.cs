@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
@@ -1049,16 +1050,45 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// must not keep every Picker it was assigned to alive.
 			var sharedItemsSource = new ObservableCollection<string> { "a", "b", "c" };
 
-			static WeakReference CreatePickerReference(ObservableCollection<string> itemsSource)
+			static (WeakReference Picker, WeakReference Subscription, WeakReference Proxy) CreatePickerReferences(
+				ObservableCollection<string> itemsSource)
 			{
 				var picker = new Picker { ItemsSource = itemsSource };
-				return new WeakReference(picker);
+				var (subscription, proxy) = GetItemsSourceSubscriptionReferences(picker);
+				return (new WeakReference(picker), subscription, proxy);
 			}
 
-			var weakPicker = CreatePickerReference(sharedItemsSource);
+			var references = CreatePickerReferences(sharedItemsSource);
 
-			Assert.False(await weakPicker.WaitForCollect(), "Picker should not be alive!");
+			Assert.False(await references.Picker.WaitForCollect(), "Picker should not be alive!");
+			Assert.False(await references.Subscription.WaitForCollect(), "ItemsSource subscription should not be alive!");
+			Assert.False(await references.Proxy.WaitForCollect(), "WeakNotifyCollectionChangedProxy should not be alive!");
 			GC.KeepAlive(sharedItemsSource);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task PickerItemsSourceClearReleasesCollectionChangedSubscription()
+		{
+			var sharedItemsSource = new ObservableCollection<string> { "a", "b", "c" };
+			var picker = new Picker { ItemsSource = sharedItemsSource };
+			var references = GetItemsSourceSubscriptionReferences(picker);
+
+			picker.ItemsSource = null;
+
+			Assert.False(await references.Subscription.WaitForCollect(), "ItemsSource subscription should not be alive!");
+			Assert.False(await references.Proxy.WaitForCollect(), "WeakNotifyCollectionChangedProxy should not be alive!");
+			GC.KeepAlive(picker);
+			GC.KeepAlive(sharedItemsSource);
+		}
+
+		static (WeakReference Subscription, WeakReference Proxy) GetItemsSourceSubscriptionReferences(Picker picker)
+		{
+			const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+			var subscription = typeof(Picker).GetField("_itemsSourceCollectionChangedSubscription", flags)?.GetValue(picker);
+			Assert.NotNull(subscription);
+			var proxy = subscription.GetType().GetField("_proxy", flags)?.GetValue(subscription);
+			Assert.NotNull(proxy);
+			return (new WeakReference(subscription), new WeakReference(proxy));
 		}
 	}
 }
