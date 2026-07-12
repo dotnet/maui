@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		//    has a live port before Blazor sends any messages.
 		//  - Sets window.__BlazorStarted after the Blazor.start() Promise resolves (used by test helpers as a readiness signal).
 		//  - Dispatches native→JS messages (arriving via PostWebMessage) directly to window.external.__callback.
-		//  - Validates message origin for dispatch messages, skipping messages from subframes or other JS contexts.
+		//  - Validates message origin: only processes messages from the native PostWebMessage API
+		//    (event.source === null), skipping messages from subframes or other JS contexts.
 		private const string BlazorInitScript = """
 			(function () {
 				if (window.__BlazorStarting) { return 'false'; }
@@ -49,6 +50,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 
 				window.__BlazorMessageHandler = function (event) {
+					// Only process messages from the native PostWebMessage API.
+					// Native messages have event.source === null; messages from subframes
+					// or other JS contexts have event.source set to the sending window.
+					if (event.source !== null) { return; }
+
 					if (event.data === 'capturePort') {
 						if (event.ports && event.ports[0] && !window.__nativePort) {
 							window.__nativePort = event.ports[0];
@@ -65,11 +71,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						}
 						return;
 					}
-
-					// Only dispatch messages from the native PostWebMessage API.
-					// Native messages have event.source === null; messages from subframes
-					// or other JS contexts have event.source set to the sending window.
-					if (event.source !== null) { return; }
 
 					if (window.external.__callback) {
 						window.external.__callback(event.data);
