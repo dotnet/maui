@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class StreamImageSourceServiceTests
 	{
-		const int OversizePixelMargin = 500;
+		const int ExtremeAspectRatioMultiplier = 4;
 
 		[Theory]
 		[InlineData(typeof(FileImageSourceStub))]
@@ -47,24 +47,26 @@ namespace Microsoft.Maui.DeviceTests
 			await bitmap.AssertContainsColor(expectedColor).ConfigureAwait(false);
 		}
 
-		[Fact]
-		public async Task GetDrawableAsyncLimitsLargeStreamToDisplaySize()
+		[Theory]
+		[InlineData(ExtremeAspectRatioMultiplier, 1)]
+		[InlineData(1, ExtremeAspectRatioMultiplier)]
+		public async Task GetDrawableAsyncLimitsExtremeAspectLargeStreamsToDisplaySize(int widthMultiplier, int heightMultiplier)
 		{
 			var metrics = MauiProgram.DefaultContext?.Resources?.DisplayMetrics;
 			Assert.NotNull(metrics);
 
 			var service = new StreamImageSourceService();
 			var expectedColor = Color.FromArgb("#FF0000").ToPlatform();
-			var sourceWidth = metrics.WidthPixels + OversizePixelMargin;
-			var sourceHeight = metrics.HeightPixels + OversizePixelMargin;
+			var sourceWidth = Math.Max(1, metrics.WidthPixels * widthMultiplier);
+			var sourceHeight = Math.Max(1, metrics.HeightPixels * heightMultiplier);
 			var imageSource = new StreamImageSourceStub(CreateBitmapStream(sourceWidth, sourceHeight, expectedColor));
 
 			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
-			var maxDisplayDimension = Math.Max(metrics.WidthPixels, metrics.HeightPixels);
+			var bitmap = bitmapDrawable.Bitmap;
 
-			Assert.True(bitmapDrawable.Bitmap.Width <= maxDisplayDimension);
-			Assert.True(bitmapDrawable.Bitmap.Height <= maxDisplayDimension);
+			Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels}.");
+			Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
 		}
 	}
 }

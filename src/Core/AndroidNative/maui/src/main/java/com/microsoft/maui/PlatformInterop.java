@@ -46,6 +46,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
 import com.bumptech.glide.request.target.Target;
 
 import com.google.android.material.appbar.AppBarLayout;
@@ -352,7 +353,9 @@ public class PlatformInterop {
             return builder;
         }
 
-        return builder.override(width, height);
+        return builder
+            .downsample(DownsampleStrategy.CENTER_INSIDE)
+            .override(width, height);
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
