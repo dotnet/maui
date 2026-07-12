@@ -432,6 +432,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(swipeItemView.IsEnabled);
 
+			swipeItemView.IsEnabled = true;
+
+			Assert.False(swipeItemView.IsEnabled);
+
 			canExecute = true;
 			command.ChangeCanExecute();
 
@@ -449,6 +453,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			command.ChangeCanExecute();
 
 			Assert.False(swipeItemView.IsEnabled);
+
+			swipeItemView.IsEnabled = true;
+
+			Assert.True(swipeItemView.IsEnabled);
 		}
 
 		[Fact]
