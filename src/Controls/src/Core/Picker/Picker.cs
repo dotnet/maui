@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
 		ItemsSourceCollectionChangedSubscription _itemsSourceCollectionChangedSubscription;
+		// WeakNotifyCollectionChangedProxy weakly references its handler, so the Picker must keep this delegate alive.
 		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
 
 		/// <summary>Initializes a new instance of the Picker class.</summary>
