@@ -316,20 +316,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void PointerEnterWithoutPointerOverStateDoesNotMoveNormalToUnfocused()
 		{
-			var label = new PointerOverLabel();
+			var element = new PointerOverElement();
 
 			var commonStatesGroup = new VisualStateGroup { Name = CommonStatesGroupName };
-			commonStatesGroup.States.Add(CreateTextState(NormalStateName));
-			commonStatesGroup.States.Add(CreateTextState(FocusedStateName));
-			commonStatesGroup.States.Add(CreateTextState(UnfocusedStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(NormalStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(FocusedStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(UnfocusedStateName));
 
-			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { commonStatesGroup });
+			VisualStateManager.SetVisualStateGroups(element, new VisualStateGroupList { commonStatesGroup });
 
-			VisualStateManager.GoToState(label, NormalStateName);
-			Assert.Equal(NormalStateName, label.Text);
+			VisualStateManager.GoToState(element, NormalStateName);
+			Assert.Equal(NormalStateName, element.Text);
 
-			label.SetPointerOver(true);
-			Assert.Equal(NormalStateName, label.Text);
+			element.SetPointerOver(true);
+			Assert.Equal(NormalStateName, element.Text);
 		}
 
 		static VisualState CreateTextState(string name)
@@ -341,6 +341,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		class PointerOverLabel : Label
 		{
+			public void SetPointerOver(bool value) => base.SetPointerOver(value);
+		}
+
+		static VisualState CreateElementTextState(string name)
+		{
+			var state = new VisualState { Name = name };
+			state.Setters.Add(new Setter { Property = PointerOverElement.TextProperty, Value = name });
+			return state;
+		}
+
+		class PointerOverElement : VisualElement
+		{
+			public static readonly BindableProperty TextProperty =
+				BindableProperty.Create(nameof(Text), typeof(string), typeof(PointerOverElement), null);
+
+			public string Text
+			{
+				get => (string)GetValue(TextProperty);
+				set => SetValue(TextProperty, value);
+			}
+
 			public void SetPointerOver(bool value) => base.SetPointerOver(value);
 		}
 
