@@ -79,18 +79,32 @@ How to judge each test:
 
 You MAY read files in the current repository worktree (it is the review pipeline branch, NOT the PR) if that helps you map a test to an area, but you do not need to. Do NOT fetch, build, run tests, modify any file except the output below, or post anything to GitHub.
 
-Write your result as concise GitHub-flavored Markdown to this EXACT file (create/overwrite it), and nothing else:
+Write your result as concise, SKIMMABLE GitHub-flavored Markdown to this EXACT file (create/overwrite it), and nothing else:
 $OutputFile
+
+READABILITY IS THE PRIORITY. Do NOT emit a Markdown table, and do NOT list every failing test name (a run can have 100+ failures — long name lists render as an unreadable wall of text). Group failures by ROOT CAUSE and use a short bulleted list.
 
 Use this structure exactly:
 1. A single bold summary line stating the overall verdict, one of:
    - "**Likely PR-related:** one or more failures appear connected to this PR's changes."
    - "**Likely unrelated:** the failures appear pre-existing, flaky, or infrastructure."
-   - "**Mixed / uncertain:** see per-test assessment."
-2. A Markdown table with columns: Test | Assessment | Why. In the Assessment column use exactly one of these tokens (subtle symbols, not colorful emojis): "✗ PR-related", "● Unrelated", or "ℹ Uncertain". Keep each "Why" to one sentence referencing the changed area/pattern.
-3. Optionally one short paragraph (<=3 sentences) with caveats or a recommended next check. Do not restate the diff.
+   - "**Mixed / uncertain:** see the grouped assessment below."
+   Follow this summary line with a blank line before the bullet list.
+2. Then a flat bulleted list where each bullet is ONE root-cause group (never one bullet per test). For each bullet, in this exact order:
+   - Begin with the assessment token in bold — exactly one of "**✗ PR-related**", "**● Unrelated**", or "**ℹ Uncertain**" (subtle symbols, not colorful emojis).
+   - Then " — " and a short human label for the group (the control/area, or the shared error pattern) plus an approximate count in parentheses, e.g. "(~20 tests)" or "(90+ tests)".
+   - Then ": " and a ONE-sentence why, referencing the changed area or the shared failure pattern.
+   - Do NOT paste lists of test names; you may name at most ONE representative test in ``code`` if it genuinely helps.
+   Order the bullets: all ✗ PR-related first, then ℹ Uncertain, then ● Unrelated. Aim for at most ~8 bullets total; merge groups that share the same root cause.
+3. Optionally one final italic line (<=2 sentences) with the strongest signal or a recommended next check. Do not restate the diff.
 
-Keep it skimmable. If there are many failures with the same root cause, group them in one row and say "(and N similar)".
+Example shape (illustrative only — do NOT copy this content, base your bullets on the DATA):
+**Mixed / uncertain:** see the grouped assessment below.
+- **✗ PR-related** — Large-title navigation tests (~8 tests): new tests/snapshots this PR adds for the modified iOS large-title behavior.
+- **ℹ Uncertain** — iOS NavigationPage visual tests (~20 tests): touch the PR's navigation area but show the run-wide snapshot-size mismatch.
+- **● Unrelated** — Screenshot tests across ViewBase/Clip/ContentView/AppTheme (90+ tests): same iOS-26 baseline size mismatch (actual 1206x2472 vs baseline 1124x2286), i.e. the wrong simulator.
+
+_Strongest signal: the repeated 1206x2472 vs 1124x2286 mismatch points to a simulator/baseline issue; re-check the PR-specific rows on the expected simulator._
 "@
 
 Write-Host "Running Copilot UI-failure analysis (model: $Model)..."
