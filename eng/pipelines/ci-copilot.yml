@@ -1797,7 +1797,7 @@ stages:
               $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
               $prepScript = ".github/scripts/shared/Prepare-UITestFailureAnalysis.ps1"
               if (-not (Test-Path $prepScript)) { Write-Host "$prepScript missing — skipping"; exit 0 }
-              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -OutputFile $inputFile
+              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile
             displayName: 'Prepare UI failure analysis input'
             continueOnError: true
             env:

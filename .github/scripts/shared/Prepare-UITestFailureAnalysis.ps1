@@ -44,6 +44,7 @@ param(
     [Parameter(Mandatory = $true)] [string] $ArtifactDir,
     [Parameter(Mandatory = $true)] [string] $PRNumber,
     [Parameter(Mandatory = $true)] [string] $OutputFile,
+    [string] $Platform,
     [int] $MaxDiffLines = 800
 )
 
@@ -100,6 +101,10 @@ Write-Host "Found $regularCount regular UI test failure(s) across $($regular.Cou
 $sb = [System.Text.StringBuilder]::new()
 [void]$sb.AppendLine("# Deep UI test failures — PR #$PRNumber")
 [void]$sb.AppendLine()
+if (-not [string]::IsNullOrWhiteSpace($Platform)) {
+    [void]$sb.AppendLine("**Deep run platform: $Platform** — these tests executed on the $Platform agent, so only code compiled for $Platform can affect their results.")
+    [void]$sb.AppendLine()
+}
 [void]$sb.AppendLine("$regularCount failing test(s) across $($regular.Count) categor$(if ($regular.Count -eq 1) {'y'} else {'ies'}).")
 [void]$sb.AppendLine()
 [void]$sb.AppendLine("## Failing tests")
