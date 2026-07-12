@@ -246,7 +246,7 @@ The key limitations (VS-only, Windows-only, VSTest-coupled, no CLI support) mean
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                   Microsoft Testing Platform (Host)                          │
 │                                                                              │
-│  • Receives test results via IPushOnlyProtocol                              │
+│  • Receives test results through a supported public MTP adapter             │
 │  • Aggregates results                                                        │
 │  • Collects code coverage                                                    │
 │  • Outputs to console / TRX / JSON                                          │
@@ -255,7 +255,7 @@ The key limitations (VS-only, Windows-only, VSTest-coupled, no CLI support) mean
 
 ### 4.2 Communication Protocol
 
-The key challenge is streaming test results from the device/simulator back to the host machine. We propose using the **IPushOnlyProtocol** interface from MTP, which is already designed for this scenario.
+The key challenge is streaming test results from the device/simulator back to the host machine. The design should align with MTP push-only protocol concepts, but platform SDKs must use a supported public MTP adapter rather than depending on internal protocol types.
 
 #### 4.2.1 Communication Requirements
 
@@ -301,19 +301,20 @@ Each scenario has different constraints for how the test host can communicate wi
 
 #### 4.2.4 Recommended Interface
 
-The protocol surface should use platform/test-generic names because this is an SDK capability for all mobile workloads, not a MAUI-only contract.
+The protocol surface should use platform/test-generic names because this is an SDK capability for all mobile workloads, not a MAUI-only contract. The exact contract must be a supported public MTP/SDK surface; platform SDKs should not depend on MTP internal protocol types.
 
 ```csharp
-public interface IDeviceTestProtocol : IPushOnlyProtocol
+// Illustrative public contract shape for a future V2 streaming adapter.
+public interface IDeviceTestResultSink
 {
     // Connection establishment
     Task<bool> ConnectAsync(Uri endpoint, CancellationToken cancellationToken);
-    
+
     // Test lifecycle events
     Task SendTestSessionStartingAsync(TestSessionInfo session);
     Task SendTestNodeUpdateAsync(TestNodeUpdate update);
     Task SendTestSessionFinishedAsync(TestSessionResult result);
-    
+
     // Artifacts (logs, screenshots)
     Task SendFileArtifactAsync(FileArtifact artifact);
 }
@@ -354,6 +355,9 @@ We recommend a phased approach for device ↔ host communication:
   <DeviceTrxFileName Condition="'$(DeviceTrxFileName)' == ''">test-results.trx</DeviceTrxFileName>
   <_DeviceTrxFileName>$(DeviceTrxFileName)</_DeviceTrxFileName>
 </PropertyGroup>
+
+<Error Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(_DeviceTrxFileName)', '^[A-Za-z0-9_.-]+$')) != 'true'"
+       Text="DeviceTrxFileName must be a simple host-controlled basename before composing adb commands." />
 
 <ItemGroup>
   <TestRunArguments Include="--results-directory" />
@@ -419,7 +423,7 @@ Use `Microsoft.Testing.Extensions.CodeCoverage` in the test app:
 
 ```bash
 dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
-  -- --coverage --coverage-output TestResults/coverage.cobertura.xml --coverage-output-format cobertura
+  --coverage --coverage-output TestResults/coverage.cobertura.xml --coverage-output-format cobertura
 ```
 
 This is simplest for MAUI device tests because coverage is collected during test execution and saved to artifacts. V1 extraction should either use host-known coverage filenames or write a manifest/archive inside the app sandbox so Android can retrieve files through `run-as` without relying on `adb pull` from private directories.
@@ -650,6 +654,8 @@ Building on the `dotnet run` infrastructure, we need these new targets. Note: Ta
 
   <Error Condition="'$(DeviceTestResultsPath)' == ''"
          Text="DeviceTestResultsPath must be set to a platform-specific app sandbox results path before computing test arguments." />
+  <Error Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(_DeviceTrxFileName)', '^[A-Za-z0-9_.-]+$')) != 'true'"
+         Text="DeviceTrxFileName must be a simple host-controlled basename before composing artifact commands." />
 
   <ItemGroup>
     <TestRunArguments Include="--results-directory" />
@@ -748,7 +754,7 @@ dotnet test --project MyMauiTests.csproj -f net10.0-ios --filter "FullyQualified
 
 # Output formats (MTP report extensions)
 dotnet test --project MyMauiTests.csproj -f net10.0-ios \
-  -- --report-trx --report-trx-filename test-results.trx
+  --report-trx --report-trx-filename test-results.trx
 ```
 
 ### 6.2 Non-Interactive Mode (CI/AI)
@@ -762,15 +768,15 @@ dotnet test --project MyMauiTests.csproj \
   --device "iossimulator-arm64:iPhone 15" \
   --no-restore \
   --results-directory ./TestResults \
-  -- --report-trx --report-trx-filename test-results.trx
+  --report-trx --report-trx-filename test-results.trx
 
 # With coverage for AI agent analysis, using MTP extension switches
 dotnet test --project MyMauiTests.csproj \
   -f net10.0-android \
   --device "emulator-5554" \
   --results-directory ./TestResults \
-  -- --report-trx --report-trx-filename test-results.trx \
-     --coverage --coverage-output TestResults/android.cobertura.xml --coverage-output-format cobertura
+  --report-trx --report-trx-filename test-results.trx \
+  --coverage --coverage-output TestResults/android.cobertura.xml --coverage-output-format cobertura
 ```
 
 ### 6.3 Command-Line Switches (New)
@@ -798,13 +804,13 @@ dotnet test --project MyDeviceTests.csproj -f net10.0-android -p:Device=emulator
 ```bash
 dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
   --results-directory TestResults \
-  -- --report-trx --report-trx-filename test-results.trx \
-     --coverage --coverage-output TestResults/maui_android.cobertura.xml --coverage-output-format cobertura
+  --report-trx --report-trx-filename test-results.trx \
+  --coverage --coverage-output TestResults/maui_android.cobertura.xml --coverage-output-format cobertura
 ```
 
 **Notes:**
-- In MTP mode, prefer MTP report-extension switches such as `--report-trx` instead of VSTest `--logger` samples unless the CLI has explicitly mapped the option for MTP.
-- MTP args should not require the legacy `--` indirection that VSTest mode uses; keep `--` as an escape hatch for parity with existing CLI patterns.
+- In MTP mode, prefer direct MTP report-extension switches such as `--report-trx` instead of VSTest `--logger` samples unless the CLI has explicitly mapped the option for MTP.
+- MTP args should not require the legacy `--` indirection that VSTest mode uses; keep `--` only as an escape hatch for parity with existing CLI patterns.
 - Keep naming and output paths stable/predictable for AI agents to parse reliably. For V1 device runs, the SDK target should own artifact file names (for example `test-results.trx`) or expose MSBuild properties for them so the same value is passed to MTP and used during extraction.
 
 ### 6.6 Expected Console Output Format
@@ -1146,10 +1152,7 @@ Reuse these targets from the `dotnet run` spec:
 
 ### 10.2 With Microsoft.Testing.Platform
 
-Coordinate with MTP on a supported public transport/adapter surface before platform SDKs depend on streaming internals. Candidate concepts to align with include:
-- `IPushOnlyProtocol` - Base protocol for result streaming
-- `IPushOnlyProtocolConsumer` - Data consumer for results
-- `DotnetTestConnection` - Existing implementation for named pipes
+Coordinate with MTP on a supported public transport/adapter surface before platform SDKs depend on streaming internals. Candidate MTP concepts to align with include push-only result protocols, result consumers, and the existing named-pipe connection implementation.
 
 If those concepts remain internal implementation details, MTP should own the transport implementation or expose a stable public adapter API for the iOS/Android SDK targets to call.
 
