@@ -296,21 +296,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void FocusLossWhilePointerOverLeavesFocusedStateWithoutPointerOverState()
 		{
-			var label = new PointerOverLabel();
+			var element = new PointerOverElement();
 
 			var commonStatesGroup = new VisualStateGroup { Name = CommonStatesGroupName };
-			commonStatesGroup.States.Add(CreateTextState(NormalStateName));
-			commonStatesGroup.States.Add(CreateTextState(FocusedStateName));
-			commonStatesGroup.States.Add(CreateTextState(UnfocusedStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(NormalStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(FocusedStateName));
+			commonStatesGroup.States.Add(CreateElementTextState(UnfocusedStateName));
 
-			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { commonStatesGroup });
+			VisualStateManager.SetVisualStateGroups(element, new VisualStateGroupList { commonStatesGroup });
 
-			label.SetValue(VisualElement.IsFocusedPropertyKey, true);
-			label.SetPointerOver(true);
-			Assert.Equal(FocusedStateName, label.Text);
+			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			element.SetPointerOver(true);
+			Assert.Equal(FocusedStateName, element.Text);
 
-			label.SetValue(VisualElement.IsFocusedPropertyKey, false);
-			Assert.Equal(UnfocusedStateName, label.Text);
+			element.SetValue(VisualElement.IsFocusedPropertyKey, false);
+			Assert.Equal(UnfocusedStateName, element.Text);
 		}
 
 		[Fact]
