@@ -354,17 +354,29 @@ on appearance alone:
    that it is the same failure as the name match, so it too is forced to `indeterminate`. A
    noisy/partially-present message still never inflates false reds.
 2. **Job-level baseline match** — for a build break with no test name (crossgen/NativeAOT/
-   linker/MSBuild), the same **leg** is also red on the most recent base build. Conversely,
-   a leg that is **red on the PR but green on base is PROOF the break is PR-caused** — this
-   is the strongest signal and a test-only diff cannot produce it. The automated lane now
-   **computes this in `Gather-TestFailureContext.ps1`** (per-failure `legBaselineResult` /
-   `legRegressedVsBase` / `legAlsoFailsOnBase` and a `deterministicAttribution` prior); the
-   interactive investigator does the same comparison by hand from the timelines. **Note the
-   asymmetry:** a leg being red on base (`legAlsoFailsOnBase`) is only **leg-level**
-   evidence — the leg can fail on base at a *different* test, so it does **not** on its own
-   prove *this* test is pre-existing. Only an **exact test+platform** base match
-   (`alsoFailsOnBaseline`, item 1) is strong enough to dismiss; a leg-only match is treated
-   as **indeterminate** (`Needs human investigation`), never dismissed.
+   linker/MSBuild), the same **leg** is also red on the base branch. Conversely,
+   a leg that is **red on the PR but green across several recent base builds is PROOF the
+   break is PR-caused** — this is the strongest signal and a test-only diff cannot produce
+   it. **Sample a few base builds, not one:** MAUI's UI suite is intermittently red on the
+   base branch, so a single green base build cannot tell a real regression from a flaky test
+   that merely happened to pass its one sampled base run. The automated lane computes the diff
+   over the **last few completed base builds of the PR's own base branch** (`main` for a
+   `main` PR, `net11.0` for a net11-targeting PR — `RegressionBaseBuilds`, default 5) and only
+   calls a leg `regressed-vs-base` when it was green on **at least `MinBaseGreenSamples`**
+   (default 2) of them and red on **none** — a deterministic build-error leg
+   (crossgen/NativeAOT/linker/MSBuild, which compiles or it doesn't) needs only one green base
+   build. A leg red on **some** sampled base builds and green on others is `flaky-on-base`
+   (never a regression); a leg green on base but on too few samples is
+   `succeeded-on-base-unconfirmed` (indeterminate, not a confident regression). The automated
+   lane **computes this in `Gather-TestFailureContext.ps1`** (per-failure `legBaselineResult` /
+   `legRegressedVsBase` / `legAlsoFailsOnBase`, the `baseSampleCount` / `baseGreenCount` /
+   `baseFailedCount` evidence, and a `deterministicAttribution` prior); the interactive
+   investigator does the same comparison by hand from the timelines. **Note the asymmetry:** a
+   leg being red on base (`legAlsoFailsOnBase`) is only **leg-level** evidence — the leg can
+   fail on base at a *different* test, so it does **not** on its own prove *this* test is
+   pre-existing. Only an **exact test+platform** base match (`alsoFailsOnBaseline`, item 1) is
+   strong enough to dismiss; a leg-only match is treated as **indeterminate** (`Needs human
+   investigation`), never dismissed.
 3. **Known-issue match** — the failure message matches an open `Known Build Error` issue
    (the dotnet Build Analysis registry). Cite the issue number/link — but treat it as a
    **hint, not a dismissal**: a text match alone can shadow a real PR break with a broad
@@ -416,7 +428,7 @@ build-error class). A `pre-existing-on-base` or exact-match `known-issue` dismis
 merely coincides with the base/known text) or when the PR and base failures of the same test
 have a known **reason conflict** (`baselineReasonConflict`). It is likewise **capped at `Not ready`** whenever
 a leg is red on the PR
-but green on the same leg of the most recent base build (`gate.legsRegressedVsBase > 0` — the
+but green across several recent base builds and red on none of them (`gate.legsRegressedVsBase > 0` — the
 computed job-level regression; a device-test BUILD break counts here, only device-test TEST
 results are excluded). A proven regression sets the ceiling to `Not ready` even when softer
 `Needs human investigation` reasons are also present — a definitive PR-introduced break is a
