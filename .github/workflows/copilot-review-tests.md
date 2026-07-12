@@ -292,7 +292,6 @@ If the gathered context shows no failing, pending, or inconclusive checks and no
 - Overall verdict: `No failures found`
 - Overall badge color: `1a7f37`
 - Failures badge value: `0`
-- No platform badges
 - Recommended action: no test-failure action is needed
 
 Only call `noop` when dry-run mode is active and no PR comment should be posted.
@@ -313,7 +312,6 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">
   <img alt="Baseline [n on base]" src="https://img.shields.io/badge/Baseline-[n]_on_base-0969da?labelColor=30363d&style=flat-square">
-  <img alt="Platform [platform]" src="https://img.shields.io/badge/Platform-[platform]-0969da?labelColor=30363d&style=flat-square">
 </p>
 
 <details>
