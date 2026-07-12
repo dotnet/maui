@@ -380,8 +380,8 @@ public class PlatformInterop {
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
-            .load(inputStream)
-            .downsample(DownsampleStrategy.CENTER_INSIDE);
+            .load(inputStream);
+        builder = limitToDisplaySize(builder, imageView.getContext());
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
