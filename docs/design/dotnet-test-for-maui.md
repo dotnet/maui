@@ -367,11 +367,17 @@ We recommend a phased approach for device ↔ host communication:
   <TestRunArguments Include="$(_DeviceTrxFileName)" />
 </ItemGroup>
 
-<!-- Pull the expected TRX file using run-as + cat. The basename is fixed and host-controlled. -->
-<Exec Command="adb $(_AdbDevice) exec-out run-as &quot;$(ApplicationId)&quot; cat &quot;files/TestResults/$(_DeviceTrxFileName)&quot; &gt; &quot;$(TestResultsDirectory)/$(_DeviceTrxFileName)&quot;" />
+<!-- Pull the expected TRX file using a typed SDK task. The basename is fixed and host-controlled. -->
+<AndroidCollectAppFile
+  AdbDevice="$(_AdbDevice)"
+  ApplicationId="$(ApplicationId)"
+  DeviceRelativePath="files/TestResults/$(_DeviceTrxFileName)"
+  DestinationFile="$(TestResultsDirectory)/$(_DeviceTrxFileName)" />
 
-<!-- Capture logcat for debugging -->
-<Exec Command="adb $(_AdbDevice) logcat -d &gt; &quot;$(TestResultsDirectory)/$(ProjectName)_logcat.txt&quot;" />
+<!-- Capture logcat for debugging via a typed task instead of host-shell redirection. -->
+<AndroidCollectLogcat
+  AdbDevice="$(_AdbDevice)"
+  DestinationFile="$(TestResultsDirectory)/$(ProjectName)_logcat.txt" />
 ```
 
 If a platform must discover artifact names dynamically, the SDK target must validate that each discovered value is a simple basename from an allowlist or fixed pattern before composing any host command. Device/app-controlled paths must not be interpolated into shell commands.
@@ -419,14 +425,9 @@ Support two complementary paths for on-device code coverage.
 
 #### Path 1 (preferred): MTP Code Coverage Extension
 
-Use `Microsoft.Testing.Extensions.CodeCoverage` in the test app:
+Future coverage support can use `Microsoft.Testing.Extensions.CodeCoverage` in the test app once the SDK owns coverage output naming and extraction.
 
-```bash
-dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
-  --coverage --coverage-output TestResults/coverage.cobertura.xml --coverage-output-format cobertura
-```
-
-This is simplest for MAUI device tests because coverage is collected during test execution and saved to artifacts. V1 extraction should either use host-known coverage filenames or write a manifest/archive inside the app sandbox so Android can retrieve files through `run-as` without relying on `adb pull` from private directories.
+This is simplest for MAUI device tests because coverage is collected during test execution and saved to artifacts. V2/Phase 2 extraction should either use host-known coverage filenames or write a manifest/archive inside the app sandbox so Android can retrieve files through the SDK sandbox extraction task without relying on `adb pull` from private directories.
 
 #### Path 2 (advanced): Instrument + Collect in Server Mode
 
@@ -473,9 +474,9 @@ This is a potential future enhancement (particularly for complex native coverage
 
 Based on the POC implementation, Android device tests support **two execution modes**:
 
-#### 4.5.1 Activity Mode (Default) - via `dotnet run --device`
+#### 4.5.1 Activity Mode (POC / future fallback) - via `dotnet run --device`
 
-Uses the existing `dotnet run --device` infrastructure to deploy and launch the app's `MainActivity`.
+Uses the existing `dotnet run --device` infrastructure to deploy and launch the app's `MainActivity`. This mode is useful for POC validation and possible future fallback scenarios, but it is not the recommended V1 CI path because completion and exit-code propagation are less reliable than instrumentation.
 
 ```bash
 dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554
@@ -498,13 +499,15 @@ dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554
 - Exit code propagation depends on app termination being detected
 - Argument delivery must be explicitly implemented for the app launch path; it cannot rely on desktop `string[] args`
 
-#### 4.5.2 Instrumentation Mode - via `adb instrument`
+#### 4.5.2 Instrumentation Mode (Recommended V1) - via Android SDK instrumentation
 
-Uses Android Instrumentation for more reliable test execution with proper wait-for-completion semantics.
+Uses Android Instrumentation through the Android SDK for more reliable test execution with proper wait-for-completion semantics.
 
 ```bash
-dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554 -p:<android-instrumentation-opt-in>=true
+dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554
 ```
+
+For V1 Android device tests, the SDK should select the instrumentation-backed execution path for test apps that declare Android instrumentation support.
 
 **Flow:**
 1. Build and install APK via `dotnet build -t:Install`
@@ -522,31 +525,34 @@ dotnet test --project MyTests.csproj -f net10.0-android -p:Device=emulator-5554 
 **Cons:**
 - Requires `TestInstrumentation` class in test project
 - Requires AndroidManifest.xml instrumentation registration
-- **Requires Android SDK enhancement** (see below)
+- **Requires Android SDK integration** (see below)
 
 #### 4.5.3 Android SDK Instrumentation Integration
 
 Instrumentation Mode should build on existing Android SDK instrumentation plumbing where available (for example MSTest runner/instrumentation properties and `Microsoft.Android.Run --instrument`) instead of duplicating it. The remaining SDK work is to pass MTP arguments losslessly, wait for completion, collect artifacts, and propagate the MTP result.
 
-**Illustrative target shape** - exact property names should align with the Android SDK's existing instrumentation support:
+**Illustrative target shape** - use typed SDK tasks/properties rather than raw host-shell command composition:
 ```xml
-<PropertyGroup Condition="'$(AndroidInstrumentationOptIn)' == 'true'">
-  <RunCommand>$(_AdbToolPath)</RunCommand>
-  <RunArguments>$(AdbTarget) shell am instrument -w -e TestRunArgumentsBase64 "$(_EncodedTestRunArguments)" "$(_AndroidPackage)/$(AndroidInstrumentationName)"</RunArguments>
-</PropertyGroup>
+<AndroidRunInstrumentationTests
+  Device="$(Device)"
+  ApplicationId="$(ApplicationId)"
+  InstrumentationName="$(AndroidInstrumentationName)"
+  EncodedTestRunArguments="$(_EncodedTestRunArguments)"
+  Timeout="$(TestTimeout)">
+  <Output TaskParameter="MtpExitCode" PropertyName="_DeviceTestExitCode" />
+</AndroidRunInstrumentationTests>
 ```
 
-In the illustrative snippet above, `AndroidInstrumentationOptIn` and `AndroidInstrumentationName` stand in for the Android SDK's validated instrumentation properties. The SDK target must encode `@(TestRunArguments)` losslessly (for example JSON + Base64, a response file, or separate bundle entries) instead of joining on spaces, because filters, file names, and logger arguments can contain spaces or quotes. It must also treat the instrumentation result as test execution state, not just process completion. `adb shell am instrument -w` can complete successfully even when tests fail, so the target should parse the instrumentation result bundle and/or deterministic TRX artifact and fail the MSBuild target when the MTP exit code is non-zero.
+The SDK target must encode `@(TestRunArguments)` losslessly (for example JSON + Base64, a response file, or separate bundle entries) instead of joining on spaces, because filters, file names, and logger arguments can contain spaces or quotes. It must also treat the instrumentation result as test execution state, not just process completion. `adb shell am instrument -w` can complete successfully even when tests fail, so the typed SDK task should parse the instrumentation result bundle and/or deterministic TRX artifact and fail the MSBuild target when the MTP exit code is non-zero.
 
 **MSBuild Properties:**
 
 | Property | Description | Default |
 |----------|-------------|---------|
-| existing Android instrumentation opt-in property | Use `adb instrument` instead of activity launch | SDK-defined |
-| existing or new instrumentation class property | Full instrumentation class name (e.g., `myapp.TestInstrumentation`) | SDK-defined |
+| `$(AndroidInstrumentationName)` | Full instrumentation class name (e.g., `myapp.TestInstrumentation`) when not inferred from the app manifest | SDK-defined |
 | `$(DeviceTrxFileName)` | Fixed host-controlled TRX basename passed to MTP and used for extraction | `test-results.trx` |
 
-**Action Item:** Validate the current dotnet/android instrumentation properties and add only the missing MTP argument/result/artifact plumbing.
+**Action Item:** Validate the current dotnet/android instrumentation support and add only the missing typed MTP argument/result/artifact plumbing.
 
 #### 4.5.4 Test Project Requirements (Instrumentation Mode)
 
@@ -770,13 +776,12 @@ dotnet test --project MyMauiTests.csproj \
   --results-directory ./TestResults \
   --report-trx --report-trx-filename test-results.trx
 
-# With coverage for AI agent analysis, using MTP extension switches
+# Android device run with deterministic TRX output
 dotnet test --project MyMauiTests.csproj \
   -f net10.0-android \
   --device "emulator-5554" \
   --results-directory ./TestResults \
-  --report-trx --report-trx-filename test-results.trx \
-  --coverage --coverage-output TestResults/android.cobertura.xml --coverage-output-format cobertura
+  --report-trx --report-trx-filename test-results.trx
 ```
 
 ### 6.3 Command-Line Switches (New)
@@ -799,13 +804,12 @@ Device selection via MSBuild properties (no new CLI parsing required initially):
 dotnet test --project MyDeviceTests.csproj -f net10.0-android -p:Device=emulator-5554
 ```
 
-### 6.5 Full TRX + Coverage Example
+### 6.5 Full TRX Example
 
 ```bash
 dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emulator-5554 \
   --results-directory TestResults \
-  --report-trx --report-trx-filename test-results.trx \
-  --coverage --coverage-output TestResults/maui_android.cobertura.xml --coverage-output-format cobertura
+  --report-trx --report-trx-filename test-results.trx
 ```
 
 **Notes:**
