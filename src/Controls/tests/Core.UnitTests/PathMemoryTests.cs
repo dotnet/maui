@@ -57,6 +57,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task SharedResourcesDoNotRetainTransientPaths()
+		{
+			const int pathCount = 32;
+			var sharedGeometry = new PathGeometry();
+			var sharedTransform = new ScaleTransform { ScaleX = 2, ScaleY = 2 };
+
+			static WeakReference[] CreatePaths(Geometry geometry, Transform transform, int count)
+			{
+				var references = new WeakReference[count];
+
+				for (var i = 0; i < count; i++)
+				{
+					var path = new Path
+					{
+						Data = geometry,
+						RenderTransform = transform
+					};
+					references[i] = new WeakReference(path);
+				}
+
+				return references;
+			}
+
+			var references = CreatePaths(sharedGeometry, sharedTransform, pathCount);
+
+			await TestHelpers.Collect();
+
+			foreach (var reference in references)
+				Assert.False(await reference.WaitForCollect(), "Path should not be alive!");
+
+			GC.KeepAlive(sharedGeometry);
+			GC.KeepAlive(sharedTransform);
+		}
+
+		[Fact]
 		public async Task PathDataChangesStillNotifyAfterGc()
 		{
 			var geometry = new PathGeometry();
@@ -108,6 +143,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PathDataNullAssignmentUnsubscribesOldSource()
+		{
+			var oldGeometry = new PathGeometry();
+			var path = new Path { Data = oldGeometry };
+			path.Data = null;
+
+			bool changed = false;
+			path.PropertyChanged += (_, e) => changed |= e.PropertyName == nameof(Path.Data);
+
+			oldGeometry.Figures.Add(new PathFigure());
+
+			Assert.False(changed);
+			GC.KeepAlive(path);
+		}
+
+		[Fact]
 		public void PathRenderTransformReassignmentMovesChangeSubscription()
 		{
 			var oldTransform = new RotateTransform();
@@ -123,6 +174,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			newTransform.Angle = 45;
 			Assert.True(changed);
+			GC.KeepAlive(path);
+		}
+
+		[Fact]
+		public void PathRenderTransformNullAssignmentUnsubscribesOldSource()
+		{
+			var oldTransform = new RotateTransform();
+			var path = new Path { RenderTransform = oldTransform };
+			path.RenderTransform = null;
+
+			bool changed = false;
+			path.PropertyChanged += (_, e) => changed |= e.PropertyName == nameof(Path.RenderTransform);
+
+			oldTransform.Angle = 45;
+
+			Assert.False(changed);
 			GC.KeepAlive(path);
 		}
 	}
