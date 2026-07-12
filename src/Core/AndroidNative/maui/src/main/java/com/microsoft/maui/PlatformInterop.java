@@ -368,7 +368,8 @@ public class PlatformInterop {
     public static void loadImageFromResource(ImageView imageView, int resourceId, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
-            .load(resourceId);
+            .load(resourceId)
+            .downsample(DownsampleStrategy.CENTER_INSIDE);
         loadInto(builder, imageView, true, callback, resourceId);
     }
 
@@ -387,7 +388,8 @@ public class PlatformInterop {
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
-            .load(inputStream);
+            .load(inputStream)
+            .downsample(DownsampleStrategy.CENTER_INSIDE);
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
