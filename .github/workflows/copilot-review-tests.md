@@ -188,7 +188,6 @@ network:
     - "*.visualstudio.com"
     - helix.dot.net
     - "*.blob.core.windows.net"
-    - img.shields.io
 
 concurrency:
   group: "review-tests-${{ github.event.issue.number || inputs.pr_number || github.run_id }}"
@@ -287,12 +286,7 @@ When triggered via `workflow_dispatch`, `${{ inputs.suppress_output }}` controls
 
 ## When no failures are found
 
-If the gathered context shows no failing, pending, or inconclusive checks and no extracted failures, still post a PR conversation comment with `add_comment` unless dry-run mode is active. Use the same collapsed shape as other results with:
-
-- Overall verdict: `No failures found`
-- Overall badge color: `1a7f37`
-- Failures badge value: `0`
-- Recommended action: no test-failure action is needed
+If the gathered context shows no failing, pending, or inconclusive checks and no extracted failures, still post a PR conversation comment with `add_comment` unless dry-run mode is active. Use the same shape as other results, with the bold verdict line `**No failures found:** all inspected checks passed and no failures were extracted.`, no grouped bullets, and a `Recommended action` of no test-failure action is needed.
 
 Only call `noop` when dry-run mode is active and no PR comment should be posted.
 
@@ -308,46 +302,37 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 > @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]).
 > To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
 
-<p align="left">
-  <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
-  <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">
-  <img alt="Baseline [n on base]" src="https://img.shields.io/badge/Baseline-[n]_on_base-0969da?labelColor=30363d&style=flat-square">
-</p>
+**[Overall verdict]:** [one or two sentences summarizing the strongest evidence — how many distinct failures are genuine regressions vs the base branch, and how many are pre-existing or flaky-on-base. Name the base branch (`main` / `net11.0`) and that several recent base builds were sampled.]
+
+- **✗ PR-related** — [root-cause group label] (~[N] tests): [one sentence tying the group to the PR's changed area or a shared failure pattern; name at most ONE representative test in `code`].
+- **ℹ Uncertain** — [root-cause group label] (~[N] legs): [one sentence — unexplained build legs, aborted/canceled checks, unattributed, or device-test-unverified].
+- **● Unrelated** — [root-cause group label] (~[N] tests): [one sentence — flaky-on-base / pre-existing-on-base / known issue].
+
+_[Optional single italic line: the strongest signal or the recommended next check.]_
 
 <details>
-<summary><strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
-
-**Overall verdict:** [Ready to merge | Not ready | Needs human investigation | Insufficient data | No failures found]
-
-[One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
+<summary>Coverage &amp; evidence</summary>
 
 **Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [abortedFailingChecks] aborted failing checks · [canceledBuildChecks] canceled-build checks · [deviceTestUnverified] device-test unverified · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason from gate.ceilingReasons when present].
 
-| Failure | Verdict | On base? | Evidence |
-| --- | --- | --- | --- |
-| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no — "regressed" when legRegressedVsBase, "also-red" when legAlsoFailsOnBase, else alsoFailsOnBaseline] | [specific evidence — lead with deterministicAttribution when regressed-vs-base/pre-existing-on-base, cite a known-issue link when matchesKnownIssue is set, note "retried still failing" when true, link build/test IDs] |
+**Builds (this PR):** [build definition + ID links]. **Base sampling ([base branch], several recent builds per definition):** [most-recent base build ID links].
 
 ### Recommended action
 
 [One concise recommendation.]
 
-<details>
-<summary>Evidence details</summary>
-
-[Relevant checks, build IDs, baseline build IDs, test run IDs, log excerpts, PR-scope details, and limitations (including when baseline data was unavailable).]
-
-</details>
+[Relevant checks, log excerpts, PR-scope details, and limitations (including when baseline data was unavailable).]
 
 </details>
 ```
 
-The `Overall` badge and `**Overall verdict:**` line carry the merge-readiness verdict. The per-failure table carries the per-failure verdicts plus an `On base?` column (driven by the computed job-level diff: "regressed" when `legRegressedVsBase`, "also-red" when `legAlsoFailsOnBase`, otherwise yes/no from `alsoFailsOnBaseline`). The `**Coverage:**` line reports the deterministic gate counts and `gate.verdictCeiling`; the overall verdict must never be more favorable than that ceiling. Overall badge colors: `1a7f37` for `Ready to merge` and `No failures found`, `d1242f` for `Not ready`, `bf8700` for `Needs human investigation`, `6e7781` for `Insufficient data`.
+Structure the body like the deep UI-failure analysis: a single **bold verdict line**, then a flat bulleted list where **each bullet is one root-cause GROUP, never one bullet per test** (a run can have hundreds of failures — long name lists are unreadable). Do **not** emit a Markdown table and do **not** list every failing test name. Begin every bullet with exactly one assessment token in bold — **✗ PR-related** (a `deterministicAttribution = regressed-vs-base` failure: red on the PR but green across several recent base builds and red on none — treat as Likely PR-caused unless you can cite why the base comparison is invalid), **ℹ Uncertain** (`indeterminate` / an unexplained or aborted/canceled leg / `unattributedFailures` / device-test-unverified), or **● Unrelated** (only a `pre-existing-on-base`, `known-issue`, or flaky-on-base `legBaselineResult` failure). Then " — " a short human label for the group plus an approximate count in parentheses (e.g. "(~20 tests)"), then ": " a one-sentence why; name at most ONE representative test in `code`. Order the bullets ✗ PR-related first, then ℹ Uncertain, then ● Unrelated; aim for at most ~8 bullets and merge groups that share a root cause. The optional final italic line carries the strongest signal or the next check.
+
+The `**[verdict]:**` line carries the merge-readiness verdict and **must never be more favorable than `gate.verdictCeiling`**. The collapsed **Coverage &amp; evidence** block reports the deterministic gate counts, `gate.verdictCeiling`, and the this-PR build / base-sampling IDs. Allowed verdicts: `Ready to merge`, `Not ready`, `Needs human investigation`, `Insufficient data`, `No failures found`.
 
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.
 
-Do not include a Data badge.
-
-Do not use emojis anywhere in the posted comment.
+Do not use colorful emojis anywhere in the posted comment; the only status glyphs are the subtle tokens ✗, ●, and ℹ.
 
 Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
 
