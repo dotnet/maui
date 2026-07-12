@@ -132,11 +132,15 @@ Never push, never open a PR, never comment, never edit product or test code in t
    device tests and are out of scope.
 4. **Skip weak-proxied code.** If the suspect uses `WeakEventManager`,
    `ConditionalWeakTable`, `WeakReference`, or any `Weak*Proxy`, it does not leak — move on.
-5. **De-dup against THIS SCANNER's own OPEN issues.** Before filing, fetch this workflow's open
-   `[leak-scan]` issues and skip a leak already covered by one (same rooting API / retention
-   path). Do NOT suppress a candidate because AdamEssenmacher (or anyone else) has a repro/issue
-   for it — duplicating those is fine. A
-   candidate whose only prior issue from this scanner is CLOSED may be re-filed.
+5. **De-dup against THIS SCANNER's own OPEN issues AND leaks already fixed on `main`.** Before
+   filing, fetch this workflow's open `[leak-scan]` issues and skip a leak already covered by one
+   (same rooting API / retention path). ALSO skip any leak whose rooting `Type.Member` is already
+   fixed on `main` — a merged `[leak-fix]` PR or a `[leak-scan]` issue closed as completed (Step 2
+   builds this set). Such leaks still reproduce against the SHIPPED package until the fix ships,
+   so the empirical test alone can't tell — de-dup is the only guard. Do NOT suppress a candidate
+   because AdamEssenmacher (or anyone else) has a repro/issue for it — duplicating those is fine.
+   A candidate whose only prior issue from this scanner is CLOSED **as not planned** (never fixed)
+   may be re-filed; one whose leak is fixed on `main` may not.
 6. **Never weaken or disable anything, and never commit code.** You only READ repo source
    and (Pass A) ADD a throwaway test under `/tmp`. Never edit product code, never
    `[ActiveIssue]`/skip/mute existing tests, never push.
@@ -176,6 +180,24 @@ jq -r '.[].title' /tmp/gh-aw/agent/my-open-leakscan.json \
   | sort -u \
   > /tmp/gh-aw/agent/already-filed-apis.txt
 echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
+
+# ── ALSO skip leaks ALREADY FIXED on main ──────────────────────────────────────────────────
+# Your Step 5 confirmation runs against the SHIPPED NuGet package (pinned 10.0.0), where an
+# already-MERGED fix has NOT shipped yet — so a leak that is fixed on `main` STILL reproduces
+# (goes red) and would be re-filed every run forever. De-dup is the ONLY guard. Build a
+# "fixed-on-main" rooting-Type.Member set from (a) every MERGED `[leak-fix]` PR title and
+# (b) every `[leak-scan]` issue this scanner closed as COMPLETED (fix landed).
+{
+  gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title' \
+    --limit 200 --json title -q '.[].title' | grep -E '^\[leak-fix\] ' | sed -E 's/^\[leak-fix\] *(Fix +)?//'
+  gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
+    --state closed --label agentic-workflows --limit 300 --json title,stateReason \
+    -q '.[] | select(.stateReason == "COMPLETED") | .title' | sed -E 's/^\[leak-scan\] *//'
+} \
+  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }' \
+  | sort -u \
+  > /tmp/gh-aw/agent/fixed-on-main-apis.txt
+echo "fixed-on-main (do NOT re-file) rooting APIs:"; cat /tmp/gh-aw/agent/fixed-on-main-apis.txt
 ```
 
 - A candidate is **OUT** if its rooting `Type.Member` (e.g. `SwipeItemView.Command`,
@@ -183,8 +205,15 @@ echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
   otherwise covers the same rooting API / retention path. **Check this for EVERY candidate
   before you write its test** — re-filing a leak this scanner already has open (even with
   different title wording) is the #1 failure mode, so be strict about matching the `Type.Member`.
+- A candidate is **ALSO OUT** if its rooting `Type.Member` is in `fixed-on-main-apis.txt`
+  (already fixed on `main` by a merged `[leak-fix]` PR, or a `[leak-scan]` issue closed as
+  completed). The shipped-package test in Step 5 will STILL go red for these because the fix
+  hasn't shipped in a release yet — that is expected. Do NOT re-file: the fix is already on
+  `main` and will ship. Re-filing just recreates an issue that was deliberately closed.
 
-A candidate whose only prior issue from this scanner is CLOSED may be re-filed.
+A candidate whose only prior `[leak-scan]` issue was closed as **not planned** (i.e. never
+fixed — wontfix / invalid / duplicate) may be re-filed if it still reproduces. A candidate whose
+leak is in `fixed-on-main-apis.txt` (fixed on `main`) must **not** be re-filed.
 
 # ===================== RUNTIME LEAK HUNT =====================
 
@@ -305,10 +334,11 @@ no MAUI source build, no emulator.
 ## Step 6 — File the issues (Pass A — one per confirmed leak)
 
 For **every** leak Step 5 confirmed, emit a `create-issue` safe-output (up to the 8 cap) — one
-issue per distinct leak. De-dup each against open `[leak-scan]` issues AND against the other
-issues you're filing this run (no two issues for the same rooting API). Each title MUST be of the
-form **`[leak-scan] <Type>.<Member> — <short mechanism>`** — it MUST **lead with the canonical
-rooting `Type.Member`** immediately after the tag (e.g. `[leak-scan] SwipeItemView.Command — non-weak
+issue per distinct leak. De-dup each against open `[leak-scan]` issues, against
+`fixed-on-main-apis.txt` (Step 2 — never re-file a leak already fixed on `main`), AND against the
+other issues you're filing this run (no two issues for the same rooting API). Each title MUST be
+of the form **`[leak-scan] <Type>.<Member> — <short mechanism>`** — it MUST **lead with the
+canonical rooting `Type.Member`** immediately after the tag (e.g. `[leak-scan] SwipeItemView.Command — non-weak
 ICommand.CanExecuteChanged retains the control`). De-dup (Step 2) matches on that leading
 `Type.Member`, so keep it stable and canonical — do not reword it run-to-run.
 Body (markdown):
