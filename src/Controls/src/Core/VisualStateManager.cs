@@ -141,6 +141,36 @@ namespace Microsoft.Maui.Controls
 			return ApplyVisualStateGroup(visualElement, group, name, baseSpecificity, force);
 		}
 
+		internal static bool ClearVisualStateGroup(VisualElement visualElement, VisualStateGroup group)
+		{
+			var context = visualElement.GetContext(VisualStateGroupsProperty);
+			if (context is null)
+			{
+				return false;
+			}
+
+			var vsgSpecificityValue = context.Values.GetSpecificityAndValue();
+			var groups = (VisualStateGroupList)vsgSpecificityValue.Value;
+			if (groups?.IsDefault != false || group is null || !groups.Contains(group) || group.CurrentState is not { } state)
+			{
+				return false;
+			}
+
+			groups.Specificity = vsgSpecificityValue.Key;
+			var baseSpecificity = vsgSpecificityValue.Key.CopyStyle(1, 0, 0, 0);
+			var unapplySpecificity = IsSystemDrivenState(state.Name)
+				? baseSpecificity.WithFullVsmPriority()
+				: baseSpecificity;
+
+			foreach (Setter setter in state.Setters)
+			{
+				setter.UnApply(visualElement, unapplySpecificity);
+			}
+
+			group.CurrentState = null;
+			return true;
+		}
+
 		static bool ApplyVisualStateGroup(VisualElement visualElement, VisualStateGroup group, string name, SetterSpecificity baseSpecificity, bool force)
 		{
 			var target = group.GetState(name);

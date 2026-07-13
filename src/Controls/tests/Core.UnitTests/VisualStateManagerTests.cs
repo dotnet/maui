@@ -253,6 +253,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.IsEnabled = false;
 
 			Assert.Equal(DisabledStateName, element.Text);
+
+			element.IsEnabled = true;
+
+			Assert.Equal(NormalStateName, element.Text);
 		}
 
 		[Fact]

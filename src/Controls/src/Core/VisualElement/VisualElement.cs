@@ -1818,15 +1818,15 @@ namespace Microsoft.Maui.Controls
 
 			if (!IsEnabled)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled, force: separateUnfocusApplied && !wasUnfocused);
+				GoToCommonState(groups, VisualStateManager.CommonStates.Disabled, force: separateUnfocusApplied && !wasUnfocused);
 			}
 			else if (isSelected)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Selected, force: separateUnfocusApplied && !wasUnfocused);
+				GoToCommonState(groups, VisualStateManager.CommonStates.Selected, force: separateUnfocusApplied && !wasUnfocused);
 			}
 			else if (!IsPointerOver)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal, force: false);
+				GoToCommonState(groups, VisualStateManager.CommonStates.Normal, force: false);
 			}
 
 			if (shouldFocus)
@@ -1848,14 +1848,51 @@ namespace Microsoft.Maui.Controls
 			{
 				if (VisualStateManager.GoToState(this, focusStatesGroup, VisualStateManager.CommonStates.Unfocused, force: false) && wasFocused)
 				{
-					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal, force: true);
+					GoToCommonState(groups, VisualStateManager.CommonStates.Normal, force: true);
 				}
 			}
 
 			if (IsEnabled && !isSelected && IsPointerOver)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver, force: (separateUnfocusApplied && !wasUnfocused) || (shouldFocus && !wasFocused));
+				GoToCommonState(groups, VisualStateManager.CommonStates.PointerOver, force: (separateUnfocusApplied && !wasUnfocused) || (shouldFocus && !wasFocused));
 			}
+		}
+
+		void GoToCommonState(VisualStateGroupList groups, string name, bool force)
+		{
+			var targetGroup = FindVisualStateGroup(groups, name);
+			if (targetGroup is null)
+			{
+				VisualStateManager.GoToState(this, name, force);
+				return;
+			}
+
+			var clearedState = ClearOtherCurrentCommonStates(groups, targetGroup);
+			VisualStateManager.GoToState(this, name, force || clearedState);
+		}
+
+		bool ClearOtherCurrentCommonStates(VisualStateGroupList groups, VisualStateGroup targetGroup)
+		{
+			var clearedState = false;
+
+			for (var i = 0; i < groups.Count; i++)
+			{
+				var group = groups[i];
+				if (group != targetGroup && IsCommonState(group.CurrentState?.Name))
+				{
+					clearedState |= VisualStateManager.ClearVisualStateGroup(this, group);
+				}
+			}
+
+			return clearedState;
+		}
+
+		static bool IsCommonState(string name)
+		{
+			return name == VisualStateManager.CommonStates.Normal ||
+				name == VisualStateManager.CommonStates.Disabled ||
+				name == VisualStateManager.CommonStates.Selected ||
+				name == VisualStateManager.CommonStates.PointerOver;
 		}
 
 		static VisualStateGroup FindVisualStateGroup(VisualStateGroupList groups, params string[] stateNames)
@@ -2642,8 +2679,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_unloaded is null && _loaded is null)
 			{
-				if (newWindow is not null)
-					newWindow.HandlerChanged -= OnWindowHandlerChanged;
+				newWindow?.HandlerChanged -= OnWindowHandlerChanged;
 
 #if PLATFORM
 				_loadedUnloadedToken?.Dispose();
@@ -2668,8 +2704,7 @@ namespace Microsoft.Maui.Controls
 
 			if (!_watchingPlatformLoaded)
 			{
-				if (newWindow is not null)
-					newWindow.HandlerChanged += OnWindowHandlerChanged;
+				newWindow?.HandlerChanged += OnWindowHandlerChanged;
 
 				_watchingPlatformLoaded = true;
 			}
