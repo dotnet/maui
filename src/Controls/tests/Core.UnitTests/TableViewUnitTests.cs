@@ -101,6 +101,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return new WeakReference(root);
 		}
 
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference AssignSharedSectionAndDrop(TableSection sharedSection)
+		{
+			var root = new TableRoot { sharedSection };
+			return new WeakReference(root);
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -132,6 +139,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(await rootReference.WaitForCollect(), "TableRoot should not be alive!");
 			GC.KeepAlive(section);
+		}
+
+		[Fact]
+		public async Task RootedTableSectionDoesNotLeakTableRoot()
+		{
+			var sharedSection = new TableSection("Section");
+			var rootReference = AssignSharedSectionAndDrop(sharedSection);
+
+			Assert.False(await rootReference.WaitForCollect(), "TableRoot should not be alive!");
+			GC.KeepAlive(sharedSection);
 		}
 
 		[Theory]

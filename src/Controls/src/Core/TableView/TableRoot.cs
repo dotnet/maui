@@ -12,8 +12,10 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public sealed class TableRoot : TableSectionBase<TableSection>
 	{
-		readonly List<TableSection> _subscribedSections = new();
 		readonly WeakEventManager _weakEventManager = new();
+		SectionSubscriptions _sectionSubscriptions;
+		NotifyCollectionChangedEventHandler _childCollectionChangedHandler;
+		PropertyChangedEventHandler _childPropertyChangedHandler;
 
 		/// <summary>
 		/// Creates a new <see cref="TableRoot"/> with default values.
@@ -77,13 +79,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (args.Action == NotifyCollectionChangedAction.Reset)
 				{
-					foreach (TableSection section in _subscribedSections)
-					{
-						section.CollectionChanged -= ChildCollectionChanged;
-						section.PropertyChanged -= ChildPropertyChanged;
-					}
-
-					_subscribedSections.Clear();
+					_sectionSubscriptions?.UnsubscribeAll();
 
 					foreach (TableSection section in this)
 						SubscribeToSection(section);
@@ -109,12 +105,13 @@ namespace Microsoft.Maui.Controls
 
 		void SubscribeToSection(TableSection section)
 		{
-			if (_subscribedSections.Contains(section))
+			var subscriptions = _sectionSubscriptions ??= new SectionSubscriptions();
+			if (subscriptions.Contains(section))
 				return;
 
-			section.CollectionChanged += ChildCollectionChanged;
-			section.PropertyChanged += ChildPropertyChanged;
-			_subscribedSections.Add(section);
+			_childCollectionChangedHandler ??= ChildCollectionChanged;
+			_childPropertyChangedHandler ??= ChildPropertyChanged;
+			subscriptions.Add(section, _childCollectionChangedHandler, _childPropertyChangedHandler);
 		}
 
 		void UnsubscribeFromSection(TableSection section)
@@ -122,9 +119,96 @@ namespace Microsoft.Maui.Controls
 			if (Contains(section))
 				return;
 
-			section.CollectionChanged -= ChildCollectionChanged;
-			section.PropertyChanged -= ChildPropertyChanged;
-			_subscribedSections.Remove(section);
+			_sectionSubscriptions?.Remove(section);
+		}
+
+		sealed class SectionSubscriptions
+		{
+			readonly List<SectionSubscription> _subscriptions = new();
+			bool _isFinalizationSuppressed;
+
+			~SectionSubscriptions() => UnsubscribeAll();
+
+			public bool Contains(TableSection source)
+			{
+				for (int i = 0; i < _subscriptions.Count; i++)
+				{
+					if (_subscriptions[i].IsSubscribedTo(source))
+						return true;
+				}
+
+				return false;
+			}
+
+			public void Add(TableSection source, NotifyCollectionChangedEventHandler collectionChangedHandler, PropertyChangedEventHandler propertyChangedHandler)
+			{
+				if (_isFinalizationSuppressed)
+				{
+					GC.ReRegisterForFinalize(this);
+					_isFinalizationSuppressed = false;
+				}
+
+				_subscriptions.Add(new SectionSubscription(source, collectionChangedHandler, propertyChangedHandler));
+			}
+
+			public void Remove(TableSection source)
+			{
+				for (int i = _subscriptions.Count - 1; i >= 0; i--)
+				{
+					var subscription = _subscriptions[i];
+					if (subscription.IsSubscribedTo(source))
+					{
+						subscription.Unsubscribe();
+						_subscriptions.RemoveAt(i);
+
+						if (_subscriptions.Count == 0)
+							SuppressFinalization();
+
+						break;
+					}
+				}
+			}
+
+			public void UnsubscribeAll()
+			{
+				for (int i = 0; i < _subscriptions.Count; i++)
+					_subscriptions[i].Unsubscribe();
+
+				_subscriptions.Clear();
+				SuppressFinalization();
+			}
+
+			void SuppressFinalization()
+			{
+				if (_isFinalizationSuppressed)
+					return;
+
+				GC.SuppressFinalize(this);
+				_isFinalizationSuppressed = true;
+			}
+		}
+
+		sealed class SectionSubscription
+		{
+			readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy;
+			readonly WeakNotifyPropertyChangedProxy _propertyChangedProxy;
+
+			public SectionSubscription(TableSection source, NotifyCollectionChangedEventHandler collectionChangedHandler, PropertyChangedEventHandler propertyChangedHandler)
+			{
+				_collectionChangedProxy = new WeakNotifyCollectionChangedProxy(source, collectionChangedHandler);
+				_propertyChangedProxy = new WeakNotifyPropertyChangedProxy(source, propertyChangedHandler);
+			}
+
+			public bool IsSubscribedTo(TableSection source)
+			{
+				return _collectionChangedProxy.TryGetSource(out var proxySource) && ReferenceEquals(proxySource, source);
+			}
+
+			public void Unsubscribe()
+			{
+				_collectionChangedProxy.Unsubscribe();
+				_propertyChangedProxy.Unsubscribe();
+			}
 		}
 	}
 }
