@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,11 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 public partial class BlazorWebViewTests
 {
 	async Task RunBlazorStartupTest(Func<PlatformWebView, Task> test)
+	{
+		await RunBlazorStartupTest((_, platformWebView) => test(platformWebView));
+	}
+
+	async Task RunBlazorStartupTest(Func<BlazorWebViewHandler, PlatformWebView, Task> test)
 	{
 		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
 		{
@@ -43,7 +49,7 @@ public partial class BlazorWebViewTests
 			await WebViewHelpers.WaitForWebViewReady(platformWebView);
 			await WebViewHelpers.WaitForControlDiv(platformWebView, controlValueToWaitFor: "Static");
 
-			await test(platformWebView);
+			await test(bwvHandler, platformWebView);
 		});
 	}
 
@@ -81,16 +87,19 @@ public partial class BlazorWebViewTests
 	});
 
 	[Fact]
-	public Task BlazorStartupScriptIsIdempotent() => RunBlazorStartupTest(async platformWebView =>
+	public Task BlazorStartupScriptIsIdempotent() => RunBlazorStartupTest(async (bwvHandler, platformWebView) =>
 	{
 		// Store the original native port reference
 		await WebViewHelpers.ExecuteScriptAsync(platformWebView, "window.__originalNativePort = window.__nativePort");
 
-		// The __BlazorStarting guard should prevent re-initialization on duplicate OnPageFinished
-		var rerunResult = await WebViewHelpers.ExecuteScriptAsync(platformWebView,
-			"(function() { if (window.__BlazorStarting) { return 'blocked'; } return 'ran'; })()");
+		var webViewClient = typeof(BlazorWebViewHandler)
+			.GetField("_webViewClient", BindingFlags.Instance | BindingFlags.NonPublic)!
+			.GetValue(bwvHandler) as global::Android.Webkit.WebViewClient;
 
-		Assert.Equal("\"blocked\"", rerunResult);
+		Assert.NotNull(webViewClient);
+
+		// Simulate a duplicate OnPageFinished callback so the production startup path runs again.
+		webViewClient.OnPageFinished(platformWebView, platformWebView.Url);
 
 		// Verify the native port is still the same reference
 		var portUnchanged = await WebViewHelpers.ExecuteScriptAsync(platformWebView, "window.__nativePort === window.__originalNativePort");
