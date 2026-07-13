@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				blazorAndroidWebView.Settings.JavaScriptEnabled = true;
 				blazorAndroidWebView.Settings.DomStorageEnabled = true;
+				blazorAndroidWebView.Settings.MinimumFontSize = 1;
 			}
 
 			_webViewClient = new WebKitWebViewClient(this);
