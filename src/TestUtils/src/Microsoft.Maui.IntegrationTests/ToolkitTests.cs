@@ -270,7 +270,7 @@ public class AndroidToolkitTests : BaseBuildTest
 			"</VerticalStackLayout>",
 			"""
 				<syncfusionButtons:SfButton
-					Content="Syncfusion Toolkit"
+					Text="Syncfusion Toolkit"
 					HorizontalOptions="Fill" />
 			</VerticalStackLayout>
 			""");
