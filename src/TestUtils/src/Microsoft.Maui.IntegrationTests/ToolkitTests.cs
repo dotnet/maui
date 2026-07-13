@@ -184,6 +184,7 @@ public class AndroidToolkitTests : BaseBuildTest
 		StripNonAndroidTfms(projectFile, framework);
 		AddSyncfusionToolkitPackage(projectFile);
 		RegisterSyncfusionToolkit(projectDir);
+		AddSyncfusionToolkitControl(projectDir);
 		AddInstrumentation(projectDir);
 
 		var buildProps = BuildProps;
@@ -230,6 +231,27 @@ public class AndroidToolkitTests : BaseBuildTest
 			"""
 			.UseMauiApp<App>()
 				.ConfigureSyncfusionToolkit()
+			""");
+	}
+
+	private static void AddSyncfusionToolkitControl(string projectDir)
+	{
+		var mainPageFile = Path.Combine(projectDir, "MainPage.xaml");
+
+		FileUtilities.ReplaceInFile(mainPageFile,
+			"xmlns:x=\"http://schemas.microsoft.com/winfx/2009/xaml\"",
+			"""
+			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:syncfusionButtons="clr-namespace:Syncfusion.Maui.Toolkit.Buttons;assembly=Syncfusion.Maui.Toolkit"
+			""");
+
+		FileUtilities.ReplaceInFile(mainPageFile,
+			"</VerticalStackLayout>",
+			"""
+				<syncfusionButtons:SfButton
+					Content="Syncfusion Toolkit"
+					HorizontalOptions="Fill" />
+			</VerticalStackLayout>
 			""");
 	}
 
