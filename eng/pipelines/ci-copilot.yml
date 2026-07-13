@@ -2286,6 +2286,16 @@ stages:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 5
         steps:
+          # This job only calls `gh api` (which targets repos/dotnet/maui via
+          # GH_TOKEN, not the local git repo), so it needs no source checkout.
+          # The implicit `checkout: self` of the multi-GB dotnet/maui repo used
+          # to take >5 min on a cold hosted agent, blowing this job's 5-minute
+          # timeout and marking the WHOLE build `failed` even when the review
+          # gate + deep UI tests both succeeded (e.g. build 14637181). Skipping
+          # the checkout makes this job finish in seconds. See
+          # ci-copilot-pipeline-security.instructions.md (no PR code runs here).
+          - checkout: none
+
           - bash: |
               set -euo pipefail
 
