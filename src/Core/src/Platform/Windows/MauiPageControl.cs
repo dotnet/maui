@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Platform
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center;
 			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center;
 			ItemsPanel = GetItemsPanelTemplate();
+			Template = GetControlTemplate();
 		}
 		public void SetIndicatorView(IIndicatorView indicatorView)
 		{
@@ -93,6 +94,24 @@ namespace Microsoft.Maui.Platform
 			   </ItemsPanelTemplate>";
 
 			return (ItemsPanelTemplate)XamlReader.Load(itemsPanelTemplateXaml);
+		}
+
+		static ControlTemplate GetControlTemplate()
+		{
+			// The default ItemsControl template is just an ItemsPresenter with no Border bound to
+			// Background, so setting IndicatorView.Background has no visual effect on Windows. Wrap
+			// the ItemsPresenter in a Border so Background is actually rendered. IndicatorView does not
+			// expose BorderBrush/BorderThickness, so only Background is bound here.
+			var controlTemplateXaml =
+				$@"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                  TargetType='ItemsControl'>
+                        <Border Background='{{TemplateBinding Background}}'>
+                            <ItemsPresenter/>
+                        </Border>
+			   </ControlTemplate>";
+
+			return (ControlTemplate)XamlReader.Load(controlTemplateXaml);
 		}
 
 		WShape? CreateIndicator(int i, int position)
