@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
-			DragStartPosition = ItemsView?.Position ?? 0;
+			DragStartPosition = ItemsView?.Position ?? -1;
 			ItemsView?.SetIsDragging(true);
 		}
 
