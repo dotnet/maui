@@ -442,47 +442,101 @@ if ($Platform -eq "android") {
                         $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-Xs"
                     }
 
-                    if ($createDevice -and $matchingRuntimes) {
-                        $createRuntime = $matchingRuntimes[0].Name
-                        Write-Info "No preferred device pre-installed for $version; creating $createDevice on $createRuntime to match snapshot baselines..."
-                        $createOutput = & xcrun simctl create $createDevice $createDeviceTypeId $createRuntime 2>&1
-                        if ($LASTEXITCODE -eq 0 -and $createOutput -match '^[0-9A-F-]{36}$') {
-                            $newUdid = $createOutput.Trim()
-                            Write-Info "Created $createDevice : $newUdid"
-                            # Re-query so we have the full device object
-                            $simList = xcrun simctl list devices available --json | ConvertFrom-Json
-                            $found = $null
-                            foreach ($rtProp in $simList.devices.PSObject.Properties) {
-                                if ($rtProp.Name -eq $createRuntime) {
-                                    $found = $rtProp.Value | Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
-                                    if ($found) {
-                                        $selectedDevice = $found
-                                        $selectedVersion = $rtProp.Name
-                                        break
+                    if ($createDevice) {
+                        # Resolve the create-runtime from `simctl list runtimes
+                        # available` (actually-INSTALLED runtimes) rather than the
+                        # device-list bucket keys used for detection above. The
+                        # device list can surface a runtime bucket (observed in CI:
+                        # com.apple.CoreSimulator.SimRuntime.iOS-26-5) that is NOT an
+                        # installed runtime, so `simctl create <device> <type>
+                        # <that-runtime>` fails with "Invalid runtime" and we fall
+                        # through to a wrong-size device (e.g. iPhone 17 Pro ->
+                        # 1206px screenshots, which breaks every visual snapshot
+                        # test with "size differs"). This mirrors the gate stage's
+                        # proven boot logic (eng/pipelines/ci-copilot.yml), which
+                        # selects its runtime from `list runtimes available`.
+                        $createRuntimeIds = @()
+                        try {
+                            $rtList = xcrun simctl list runtimes available --json | ConvertFrom-Json
+                            $createRuntimeIds = @(
+                                $rtList.runtimes |
+                                    Where-Object { $_.isAvailable -eq $true -and $_.identifier -match $version } |
+                                    Sort-Object { $_.version } -Descending |
+                                    ForEach-Object { $_.identifier }
+                            )
+                        } catch {
+                            Write-Info "Could not enumerate installed runtimes: $_"
+                        }
+                        # Fail-safe: if the runtimes query yielded nothing, fall back
+                        # to the device-bucket runtimes so behaviour is never worse
+                        # than before.
+                        if ($createRuntimeIds.Count -eq 0) {
+                            $createRuntimeIds = @($matchingRuntimes | ForEach-Object { $_.Name })
+                        }
+
+                        # Try to create the right-size device on each installed
+                        # runtime (highest first) until one succeeds — an "Invalid
+                        # runtime" (or any transient failure) on one candidate then
+                        # falls through to the next installed runtime instead of
+                        # giving up and booting a wrong-size device.
+                        foreach ($createRuntime in $createRuntimeIds) {
+                            if ($selectedDevice) { break }
+                            Write-Info "No preferred device pre-installed for $version; creating $createDevice on $createRuntime to match snapshot baselines..."
+                            $createOutput = & xcrun simctl create $createDevice $createDeviceTypeId $createRuntime 2>&1
+                            if ($LASTEXITCODE -eq 0 -and $createOutput -match '^[0-9A-F-]{36}$') {
+                                $newUdid = $createOutput.Trim()
+                                Write-Info "Created $createDevice : $newUdid on $createRuntime"
+                                # Re-query so we have the full device object
+                                $simList = xcrun simctl list devices available --json | ConvertFrom-Json
+                                foreach ($rtProp in $simList.devices.PSObject.Properties) {
+                                    if ($rtProp.Name -eq $createRuntime) {
+                                        $found = $rtProp.Value | Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
+                                        if ($found) {
+                                            $selectedDevice = $found
+                                            $selectedVersion = $rtProp.Name
+                                            break
+                                        }
                                     }
                                 }
                             }
-                        }
-                        else {
-                            Write-Info "Failed to create $createDevice on $createRuntime`: $createOutput"
+                            else {
+                                Write-Info "Failed to create $createDevice on $createRuntime`: $createOutput"
+                            }
                         }
                     }
                 }
 
-                # Last-resort: take first available iPhone (visual tests will likely
-                # report 'size differs' but at least non-visual tests can run)
+                # Last-resort: prefer a device whose logical size matches the
+                # snapshot baselines (375pt-wide @3x = 1125x2436 -> 1124x2286
+                # screenshots) so visual tests still get correct-size coverage even
+                # when the create step above could not run. Only if no correct-size
+                # device exists do we take an arbitrary iPhone (visual tests will
+                # then report 'size differs', but non-visual tests can still run).
                 if (-not $selectedDevice) {
+                    $preferredSizeNames = @("iPhone 11 Pro", "iPhone Xs", "iPhone X", "iPhone 13 mini", "iPhone 12 mini")
                     $anyiPhone = $null
                     $iphoneRuntime = $null
+                    # First pass: a correct-size device matching the baselines.
                     foreach ($rt in $matchingRuntimes) {
-                        $found = $rt.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | Select-Object -First 1
+                        $found = $rt.Value | Where-Object { $_.isAvailable -eq $true -and $preferredSizeNames -contains $_.name } | Select-Object -First 1
                         if ($found) {
                             $anyiPhone = $found
                             $iphoneRuntime = $rt.Name
                             break
                         }
                     }
-                    
+                    # Second pass: any available iPhone (wrong size, last resort).
+                    if (-not $anyiPhone) {
+                        foreach ($rt in $matchingRuntimes) {
+                            $found = $rt.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | Select-Object -First 1
+                            if ($found) {
+                                $anyiPhone = $found
+                                $iphoneRuntime = $rt.Name
+                                break
+                            }
+                        }
+                    }
+
                     if ($anyiPhone) {
                         $selectedDevice = $anyiPhone
                         $selectedVersion = $iphoneRuntime
@@ -492,8 +546,10 @@ if ($Platform -eq "android") {
             }
         }
         
-        # Last resort: find ANY available iPhone simulator
+        # Last resort: find ANY available iPhone simulator, still preferring a
+        # correct-size device (matching snapshot baselines) over an arbitrary one.
         if (-not $selectedDevice) {
+            $preferredSizeNames = @("iPhone 11 Pro", "iPhone Xs", "iPhone X", "iPhone 13 mini", "iPhone 12 mini")
             $allDevices = $simList.devices.PSObject.Properties | ForEach-Object { 
                 $runtime = $_.Name
                 $_.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | 
@@ -501,7 +557,10 @@ if ($Platform -eq "android") {
             }
             
             if ($allDevices) {
-                $selectedDevice = $allDevices | Select-Object -First 1
+                $selectedDevice = ($allDevices | Where-Object { $preferredSizeNames -contains $_.name } | Select-Object -First 1)
+                if (-not $selectedDevice) {
+                    $selectedDevice = $allDevices | Select-Object -First 1
+                }
                 $selectedVersion = $selectedDevice.runtime
                 Write-Info "Fallback: Using $($selectedDevice.name) on $selectedVersion"
             }
