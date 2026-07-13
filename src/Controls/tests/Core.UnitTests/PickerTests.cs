@@ -1095,6 +1095,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PickerItemsSourceReplacementWhileHandlerIsDetachedUsesReplacementOnReattach()
+		{
+			var oldItemsSource = new ObservableCollection<string> { "old" };
+			var replacementItemsSource = new ObservableCollection<string> { "replacement" };
+			var picker = new Picker { ItemsSource = oldItemsSource };
+
+			picker.Handler = new PickerHandlerStub();
+			picker.Handler = null;
+			picker.ItemsSource = replacementItemsSource;
+
+			oldItemsSource.Add("ignored while detached");
+			replacementItemsSource.Add("added while detached");
+
+			Assert.Single(picker.Items);
+			Assert.Equal("replacement", picker.Items[0]);
+
+			picker.Handler = new PickerHandlerStub();
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("replacement", picker.Items[0]);
+			Assert.Equal("added while detached", picker.Items[1]);
+
+			oldItemsSource.Add("ignored after reattach");
+			replacementItemsSource.Add("added after reattach");
+
+			Assert.Equal(3, picker.Items.Count);
+			Assert.Equal("added after reattach", picker.Items[2]);
+		}
+
+		[Fact]
 		public void PickerReconcilesRemovedSelectionWhenHandlerReattaches()
 		{
 			var itemsSource = new ObservableCollection<string> { "A", "B", "C" };
@@ -1134,6 +1164,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			picker.ItemsSource = replacementItemsSource;
 			var reusedReferences = GetItemsSourceSubscriptionObjects(picker);
 
+			// Reuse is intentional: this exercises finalizer suppression and re-registration
+			// on the same helper instead of masking lifecycle bugs with a new proxy.
 			Assert.Same(originalReferences.Subscription, reusedReferences.Subscription);
 			Assert.Same(originalReferences.Proxy, reusedReferences.Proxy);
 
