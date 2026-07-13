@@ -122,6 +122,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void DuplicateGradientStopsPreserveOccurrenceSubscriptions()
+		{
+			var sharedStop = new GradientStop();
+			var stops = new GradientStopCollection { sharedStop, sharedStop };
+			var brush = new LinearGradientBrush { GradientStops = stops };
+			int invalidationCount = 0;
+			brush.InvalidateGradientBrushRequested += (_, __) => invalidationCount++;
+
+			sharedStop.Offset = 0.1f;
+			Assert.Equal(2, invalidationCount);
+
+			stops.Remove(sharedStop);
+			invalidationCount = 0;
+
+			sharedStop.Offset = 0.2f;
+			Assert.Equal(1, invalidationCount);
+
+			stops.Remove(sharedStop);
+			invalidationCount = 0;
+
+			sharedStop.Offset = 0.3f;
+			Assert.Equal(0, invalidationCount);
+		}
+
+		[Fact]
 		public void ClearingGradientStopsAllowsReentrantReplacement()
 		{
 			var brush = new LinearGradientBrush
