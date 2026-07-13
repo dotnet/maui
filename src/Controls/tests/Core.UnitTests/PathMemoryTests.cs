@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	[Category(TestCategory.Memory)]
 	public class PathMemoryTests
 	{
 		// A shared / long-lived Geometry assigned to Path.Data must not keep the Path alive.
