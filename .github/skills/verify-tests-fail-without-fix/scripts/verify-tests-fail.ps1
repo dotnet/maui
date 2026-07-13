@@ -105,6 +105,65 @@ if ($Platform -eq "maccatalyst") {
 }
 
 # ============================================================
+# Platform-affinity gate: decide whether a PR's fix can possibly affect the
+# gate's run platform. When EVERY changed *code* file is unambiguously
+# platform-specific for a DIFFERENT platform (e.g. iOS/MacCatalyst handler
+# files reviewed on the WINDOWS gate), the fix is a no-op on the gate platform,
+# so the repro test necessarily "passes without the fix" — which the gate would
+# otherwise misread as VERIFICATION FAILED ("test passed without fix"). That is
+# a FALSE FAILED: nothing about the fix is verifiable on this platform, so the
+# correct verdict is INCONCLUSIVE (non-blocking).
+#
+# CONSERVATIVE by design — only returns $true when we are CERTAIN the fix cannot
+# touch the gate platform:
+#   * any file with NO platform marker (shared/neutral) → affects ALL platforms → $false
+#   * any single file whose affinity includes the gate platform            → $false
+# so a real, verifiable failure is never masked.
+#
+# Affinity rules (folder OR filename-suffix OR net-<plat> PublicAPI path):
+#   iOS      (.ios.cs, /iOS/, net-ios)                     → { ios, catalyst }  (.ios.cs compiles for MacCatalyst too)
+#   Catalyst (.maccatalyst.cs, /MacCatalyst/, net-maccatalyst) → { catalyst }
+#   Android  (.android.cs, /Android/, net-android)         → { android }
+#   Windows  (.windows.cs, /Windows/, net-windows)         → { windows }
+#   Tizen    (.tizen.cs, /Tizen/, net-tizen)               → { tizen }  (never a gate platform)
+# $Platform is already normalized to one of: android | ios | catalyst | windows.
+function Test-FixIrrelevantToPlatform {
+    param([string[]]$FixFiles, [string]$Platform)
+
+    # No fix files (verify-failure-only mode) or no known platform → cannot claim
+    # irrelevance; fall back to the normal verdict so nothing is masked.
+    if (-not $FixFiles -or @($FixFiles).Count -eq 0) { return $false }
+    if ([string]::IsNullOrWhiteSpace($Platform)) { return $false }
+
+    foreach ($file in $FixFiles) {
+        if ([string]::IsNullOrWhiteSpace($file)) { return $false }
+        $p = $file.Replace('\', '/').ToLowerInvariant()
+
+        $isIos   = ($p -match '\.ios\.(cs|xaml|fs|vb|razor)$')         -or ($p -match '/ios/')         -or ($p -match 'net-ios')
+        $isCat   = ($p -match '\.maccatalyst\.(cs|xaml|fs|vb|razor)$') -or ($p -match '/maccatalyst/') -or ($p -match 'net-maccatalyst')
+        $isDroid = ($p -match '\.android\.(cs|xaml|fs|vb|razor)$')     -or ($p -match '/android/')     -or ($p -match 'net-android')
+        $isWin   = ($p -match '\.windows\.(cs|xaml|fs|vb|razor)$')     -or ($p -match '/windows/')     -or ($p -match 'net-windows')
+        $isTizen = ($p -match '\.tizen\.(cs|xaml|fs|vb|razor)$')       -or ($p -match '/tizen/')       -or ($p -match 'net-tizen')
+
+        # No platform marker at all → shared/neutral code → affects EVERY platform.
+        if (-not ($isIos -or $isCat -or $isDroid -or $isWin -or $isTizen)) { return $false }
+
+        $affinity = New-Object System.Collections.Generic.HashSet[string]
+        if ($isIos)   { [void]$affinity.Add('ios'); [void]$affinity.Add('catalyst') }
+        if ($isCat)   { [void]$affinity.Add('catalyst') }
+        if ($isDroid) { [void]$affinity.Add('android') }
+        if ($isWin)   { [void]$affinity.Add('windows') }
+        if ($isTizen) { [void]$affinity.Add('tizen') }
+
+        # This file DOES target the gate platform → the fix is verifiable here → not irrelevant.
+        if ($affinity.Contains($Platform)) { return $false }
+    }
+
+    # Every fix file is platform-specific for a platform OTHER than the gate platform.
+    return $true
+}
+
+# ============================================================
 # Strip GH/Copilot tokens from environment for the duration of a
 # scriptblock that invokes PR-controlled code (dotnet test, MSBuild,
 # host-app, device tests). Trusted metadata fetches via `gh` CLI
@@ -1470,7 +1529,13 @@ function Write-MarkdownReport {
         if ((-not $wGInc) -and (-not $wG.Passed)) { $reportWithFixGenuineFail = $true }
     }
 
-    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or $baselineBuildError -or ($hasFilterMismatch -and -not $reportWithFixGenuineFail)) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
+    # Platform-affinity FALSE-FAILED guard (mirror of the exit-code $fixPlatformMismatch):
+    # when every changed code file targets a DIFFERENT platform than this gate, the fix is a
+    # no-op here, so "passes without fix" is expected -> INCONCLUSIVE, not FAILED.
+    $fixFilesForPlatform = @($ReportRevertableFiles) + @($ReportNewFiles)
+    $fixPlatformMismatch = (-not $reportWithFixGenuineFail) -and (Test-FixIrrelevantToPlatform -FixFiles $fixFilesForPlatform -Platform $ReportPlatform)
+
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or $baselineBuildError -or ($hasFilterMismatch -and -not $reportWithFixGenuineFail) -or $fixPlatformMismatch) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     # When the gate PASSED under the relaxed "at least one test reproduces the bug, none
@@ -1503,6 +1568,13 @@ function Write-MarkdownReport {
         "📷 **Environmental snapshot residual — not a fix failure** — with the fix applied, the only remaining ``VerifyScreenshot`` differences are no larger than the WITHOUT-fix run (the fix worsened no snapshot and added no new failing one) and are all below ~1%. The fix resolves the bug's visual difference; the residual is a constant cross-agent baseline offset (anti-aliasing / font hinting differ between the machine that captured the baseline and this agent), so this is **inconclusive, not a fix failure**. Regenerate the affected baseline PNG(s) on the target agent."
     } else { $null }
 
+    # A platform-mismatch FALSE-FAILED (every fix file targets another platform) gets a
+    # dedicated, actionable headline so the reader knows the fix is fine — it's just not
+    # verifiable on THIS gate's platform.
+    $platformMismatchNote = if ($fixPlatformMismatch) {
+        "🌐 **Fix not relevant to the $($ReportPlatform.ToUpper()) gate** — every changed code file is platform-specific for a *different* platform (an iOS/MacCatalyst/Android/Windows-only change). On $($ReportPlatform.ToUpper()) the change is a no-op, so the repro test behaves identically **with and without** the fix and the gate cannot verify it here. This is **inconclusive, not a fix failure** — verify this PR on its own platform."
+    } else { $null }
+
     # ─── Improvement #2: classify the failure mode so the headline matches the cause ───
     # Without this, every non-PASSED gate just says "tests did not behave as expected".
     # Map the without/with-fix outcomes per test into a concrete diagnosis the
@@ -1516,7 +1588,7 @@ function Write-MarkdownReport {
     #   (was misclassified as ENV ERROR or as a generic FAIL because zero
     #   tests ran but exit code was non-zero).
     $failureClassification = $null
-    if (-not $hasEnvError -and -not $VerificationPassed -and $WithoutFixResultsList -and $WithFixResultsList) {
+    if (-not $hasEnvError -and -not $VerificationPassed -and -not $fixPlatformMismatch -and $WithoutFixResultsList -and $WithFixResultsList) {
         # Build error in the with-fix run trumps every other classification — if
         # the fix doesn't compile, no per-test outcome is meaningful.
         $wBuildError    = @($WithFixResultsList    | Where-Object { $_.BuildError })
@@ -1591,6 +1663,10 @@ function Write-MarkdownReport {
     if ($snapshotNote) {
         $lines += ""
         $lines += $snapshotNote
+    }
+    if ($platformMismatchNote) {
+        $lines += ""
+        $lines += $platformMismatchNote
     }
     if ($failureClassification) {
         $lines += ""
@@ -2285,7 +2361,12 @@ $anyFilterMismatch  = (@($withoutFixResults) + @($withFixResults) | Where-Object
 # reverted, so it breaks identically in both states) — a real FAILED, not an infra flake. Keep
 # it OUT of $gateInfraError so it exits 1 (FAILED), matching the report status.
 $prTestBuildError   = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $withoutFixResults -Tests $AllDetectedTests)
-$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError)
+# A PLATFORM MISMATCH false-FAILED: every changed *code* file (fix files; test files excluded)
+# is platform-specific for a DIFFERENT platform than this gate, so the fix is a no-op here and
+# the repro test necessarily passes without it. Treat as INCONCLUSIVE (exit 3), like a filter
+# mismatch — guarded by $withFixGenuineFailCount -eq 0 so a real FAIL->FAIL is never masked.
+$fixPlatformMismatch = ($withFixGenuineFailCount -eq 0) -and (Test-FixIrrelevantToPlatform -FixFiles $FixFiles -Platform $Platform)
+$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError) -or $fixPlatformMismatch
 
 Write-Log ""
 Write-Log "Summary:"
@@ -2328,6 +2409,11 @@ if ($verificationPassed) {
     Write-Host "║  The gate could not verify the fix — this is NOT a         ║" -ForegroundColor Yellow
     Write-Host "║  genuine test failure and must not block the PR.          ║" -ForegroundColor Yellow
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+    if ($fixPlatformMismatch) {
+        Write-Host ""
+        Write-Host "  * Fix targets a different platform than the '$Platform' gate — a no-op here, so the" -ForegroundColor Yellow
+        Write-Host "    repro test passes with AND without the fix. Nothing is verifiable on this platform." -ForegroundColor Yellow
+    }
     exit 3
 } else {
     Write-Host ""
