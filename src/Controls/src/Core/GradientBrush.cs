@@ -87,6 +87,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
+			// Collection replacement must invalidate even when the new value is null or empty.
 			Invalidate();
 		}
 
