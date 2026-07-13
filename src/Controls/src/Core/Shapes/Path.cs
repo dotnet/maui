@@ -105,6 +105,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			WeakGeometryChangedProxy _dataProxy;
 			WeakNotifyPropertyChangedProxy _renderTransformProxy;
 
+			// Event sources retain the weak proxies, so detach them once the owning Path releases this holder.
 			~PathChangeSubscriptions()
 			{
 				_dataProxy?.Unsubscribe();
