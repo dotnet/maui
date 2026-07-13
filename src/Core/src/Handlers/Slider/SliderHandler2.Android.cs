@@ -46,8 +46,8 @@ public class SliderHandler2 : ViewHandler<ISlider, Slider>
         platformView.StopTrackingTouch -= OnStopTrackingTouch;
     }
 
-    // BaseOnChangeEventArgs: P0 = slider (Object), P1 = value (float), P2 = fromUser (bool)
-    void OnChange(object? sender, BaseOnChangeEventArgs e)
+    // Slider.ChangeEventArgs: P0 = slider (Slider), P1 = value (float), P2 = fromUser (bool)
+    void OnChange(object? sender, Slider.ChangeEventArgs e)
     {
         if (e.P2 && VirtualView is not null && (float)VirtualView.Value != e.P1)
         {
@@ -55,12 +55,12 @@ public class SliderHandler2 : ViewHandler<ISlider, Slider>
         }
     }
 
-    void OnStartTrackingTouch(object? sender, StartTrackingTouchEventArgs e)
+    void OnStartTrackingTouch(object? sender, Slider.StartTrackingTouchEventArgs e)
     {
         VirtualView?.DragStarted();
     }
 
-    void OnStopTrackingTouch(object? sender, StopTrackingTouchEventArgs e)
+    void OnStopTrackingTouch(object? sender, Slider.StopTrackingTouchEventArgs e)
     {
         VirtualView?.DragCompleted();
     }
