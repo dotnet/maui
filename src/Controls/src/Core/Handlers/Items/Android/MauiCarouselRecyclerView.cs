@@ -233,12 +233,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Set flag to disable animation during collection changes
 			_isInternalPositionUpdate = true;
 
-			// Guard: handler or MauiContext may be null during a teardown race (a background-thread
-			// collection change firing after TearDownOldElement begins). Reset the flag before
-			// bailing out so future scroll interactions are not permanently blocked. All code paths
-			// below assume Handler and MauiContext are non-null; a single guard here is preferable
+			// Guard: Carousel, Handler, or MauiContext may be null during a teardown race (a
+			// background-thread collection change firing after TearDownOldElement begins, which
+			// clears ItemsView and makes Carousel null). Reset the flag before bailing out so
+			// future scroll interactions are not permanently blocked. All code paths below assume
+			// Carousel, Handler, and MauiContext are non-null; a single guard here is preferable
 			// to inconsistent null-checks scattered across individual paths.
-			if (Carousel.Handler?.MauiContext is null)
+			if (Carousel?.Handler?.MauiContext is null)
 			{
 				_isInternalPositionUpdate = false;
 				return;
@@ -528,7 +529,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					RebindVisibleLoopItem(e.OldStartingIndex + i, count);
 				}
 
-				Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
+				var dispatched = Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
 				{
 					try
 					{
@@ -554,12 +555,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 				});
 
+				// Dispatch can refuse to queue work (e.g. during a teardown race). In that case the
+				// callback above (and its finally block) never runs, so reset the flags here to avoid
+				// leaving future position updates permanently blocked.
+				if (!dispatched)
+				{
+					_isInternalPositionUpdate = false;
+					_noNeedForScroll = false;
+				}
+
 				return;
 			}
 
 			// Handler and MauiContext are guaranteed non-null here — CollectionItemsSourceChanged
 			// guards for null at its entry point and returns early.
-			Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
+			var replaceDispatched = Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
 			{
 				try
 				{
@@ -583,6 +593,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_noNeedForScroll = false;
 				}
 			});
+
+			// Dispatch can refuse to queue work (e.g. during a teardown race). In that case the
+			// callback above (and its finally block) never runs, so reset the flags here to avoid
+			// leaving future position updates permanently blocked.
+			if (!replaceDispatched)
+			{
+				_isInternalPositionUpdate = false;
+				_noNeedForScroll = false;
+			}
 		}
 
 		// Rebinds the visible virtual cells that currently display the replaced item so a Replace
