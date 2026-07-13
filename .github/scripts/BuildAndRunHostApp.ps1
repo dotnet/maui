@@ -353,13 +353,21 @@ if ($Platform -eq "catalyst") {
         # (0 passed / all errored). Setting MAC_APP_PATH / options.App alone is
         # NOT sufficient — the driver still resolves via bundleId. `lsregister -f`
         # force-registers this exact bundle so the lookup succeeds.
-        $lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
-        if (Test-Path $lsregister) {
-            Write-Info "Registering app with LaunchServices (lsregister -f)..."
+        # Probe multiple known lsregister locations (the short symlinked path and
+        # the canonical Versions/A path) so a differing framework symlink layout
+        # on any agent macOS version can't silently skip registration and leave
+        # every catalyst test failing.
+        $lsregisterCandidates = @(
+            "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+            "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+        )
+        $lsregister = $lsregisterCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($lsregister) {
+            Write-Info "Registering app with LaunchServices (lsregister -f) via $lsregister ..."
             & $lsregister -f $appPath 2>&1 | Out-Null
             Write-Success "Registered MacCatalyst app with LaunchServices"
         } else {
-            Write-Warn "lsregister not found at expected path; skipping LaunchServices registration"
+            Write-Warn "lsregister not found at any known path; skipping LaunchServices registration"
         }
     } else {
         Write-Warn "MacCatalyst app not found at: $appPath"
