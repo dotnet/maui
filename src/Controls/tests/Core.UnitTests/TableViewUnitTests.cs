@@ -92,6 +92,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return new WeakReference(table);
 		}
 
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference ClearRootAndDrop(TableSection section)
+		{
+			var root = new TableRoot { section };
+			root.Clear();
+
+			return new WeakReference(root);
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -113,6 +122,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Keep the shared root alive for the whole test so the only question is
 			// whether it still roots the (dropped) TableView.
 			GC.KeepAlive(sharedRoot);
+		}
+
+		[Fact]
+		public async Task ClearedSectionDoesNotRetainTableRoot()
+		{
+			var section = new TableSection("Section");
+			var rootReference = ClearRootAndDrop(section);
+
+			Assert.False(await rootReference.WaitForCollect(), "TableRoot should not be alive!");
+			GC.KeepAlive(section);
 		}
 
 		[Theory]
@@ -165,6 +184,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			newSection.Add(new TextCell { Text = "Added new cell" });
 
 			Assert.Equal(3, modelChangedCount);
+		}
+
+		[Fact]
+		public void ClearMovesSectionEventSubscriptions()
+		{
+			var section = new TableSection("Section");
+			var root = new TableRoot { section };
+			var table = new TableView(root);
+			int modelChangedCount = 0;
+			table.ModelChanged += (sender, e) => modelChangedCount++;
+
+			root.Clear();
+			modelChangedCount = 0;
+
+			section.Add(new TextCell { Text = "Removed section cell" });
+			section.Title = "Removed section";
+
+			Assert.Equal(0, modelChangedCount);
+
+			root.Add(section);
+			modelChangedCount = 0;
+
+			section.Add(new TextCell { Text = "Re-added section cell" });
+			section.Title = "Re-added section";
+
+			Assert.Equal(2, modelChangedCount);
 		}
 	}
 }

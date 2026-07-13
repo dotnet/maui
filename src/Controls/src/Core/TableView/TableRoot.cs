@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.Maui;
@@ -11,6 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public sealed class TableRoot : TableSectionBase<TableSection>
 	{
+		readonly List<TableSection> _subscribedSections = new();
 		readonly WeakEventManager _weakEventManager = new();
 
 		/// <summary>
@@ -73,26 +75,50 @@ namespace Microsoft.Maui.Controls
 		{
 			CollectionChanged += (sender, args) =>
 			{
-				if (args.NewItems != null)
+				if (args.Action == NotifyCollectionChangedAction.Reset)
 				{
-					foreach (TableSection section in args.NewItems)
-					{
-						section.CollectionChanged += ChildCollectionChanged;
-						section.PropertyChanged += ChildPropertyChanged;
-					}
-				}
-
-				if (args.OldItems != null)
-				{
-					foreach (TableSection section in args.OldItems)
+					foreach (TableSection section in _subscribedSections)
 					{
 						section.CollectionChanged -= ChildCollectionChanged;
 						section.PropertyChanged -= ChildPropertyChanged;
+					}
+
+					_subscribedSections.Clear();
+
+					foreach (TableSection section in this)
+						SubscribeToSection(section);
+				}
+				else
+				{
+					if (args.OldItems != null)
+					{
+						foreach (TableSection section in args.OldItems)
+							UnsubscribeFromSection(section);
+					}
+
+					if (args.NewItems != null)
+					{
+						foreach (TableSection section in args.NewItems)
+							SubscribeToSection(section);
 					}
 				}
 
 				_weakEventManager.HandleEvent(this, args, nameof(WeakCollectionChanged));
 			};
+		}
+
+		void SubscribeToSection(TableSection section)
+		{
+			section.CollectionChanged += ChildCollectionChanged;
+			section.PropertyChanged += ChildPropertyChanged;
+			_subscribedSections.Add(section);
+		}
+
+		void UnsubscribeFromSection(TableSection section)
+		{
+			section.CollectionChanged -= ChildCollectionChanged;
+			section.PropertyChanged -= ChildPropertyChanged;
+			_subscribedSections.Remove(section);
 		}
 	}
 }
