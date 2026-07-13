@@ -343,6 +343,24 @@ if ($Platform -eq "catalyst") {
         # Set MAC_APP_PATH so Appium mac2 driver can launch the app directly
         $env:MAC_APP_PATH = $appPath
         Write-Success "MacCatalyst app prepared (MAC_APP_PATH=$appPath)"
+
+        # Register the freshly-built .app with LaunchServices so the Appium
+        # mac2 driver can resolve it by bundle ID. WebDriverAgentMac looks the
+        # app up via LaunchServices (NSWorkspace) using the bundleId capability;
+        # a newly-built, unregistered Catalyst app is not in the LaunchServices
+        # database, so OneTimeSetUp fails for EVERY test with
+        # "The app representing com.microsoft.maui.uitests could not be found"
+        # (0 passed / all errored). Setting MAC_APP_PATH / options.App alone is
+        # NOT sufficient — the driver still resolves via bundleId. `lsregister -f`
+        # force-registers this exact bundle so the lookup succeeds.
+        $lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+        if (Test-Path $lsregister) {
+            Write-Info "Registering app with LaunchServices (lsregister -f)..."
+            & $lsregister -f $appPath 2>&1 | Out-Null
+            Write-Success "Registered MacCatalyst app with LaunchServices"
+        } else {
+            Write-Warn "lsregister not found at expected path; skipping LaunchServices registration"
+        }
     } else {
         Write-Warn "MacCatalyst app not found at: $appPath"
         Write-Warn "Test may use wrong app bundle if another version is registered"
