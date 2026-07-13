@@ -423,10 +423,10 @@ namespace Microsoft.Maui.Controls
 				_isItemsSourceSubscriptionPaused = false;
 				SubscribeToItemsSourceCollection(ItemsSource as INotifyCollectionChanged);
 
-				// Keep display items in sync if this Picker is detached and later reattached.
+				// Rebuild display items and reconcile selection after changes skipped while detached.
 				if (ItemsSource is not null)
 				{
-					ResetItems();
+					ResyncItemsAndReconcileSelection();
 				}
 			}
 
