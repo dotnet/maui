@@ -1051,14 +1051,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// must not keep every Picker it was assigned to alive.
 			var sharedItemsSource = new ObservableCollection<string> { "a", "b", "c" };
 
-			static (WeakReference Picker, WeakReference Subscription, WeakReference Proxy) CreatePickerReferences(
-				ObservableCollection<string> itemsSource)
-			{
-				var picker = new Picker { ItemsSource = itemsSource };
-				var (subscription, proxy) = GetItemsSourceSubscriptionReferences(picker);
-				return (new WeakReference(picker), subscription, proxy);
-			}
-
 			var references = CreatePickerReferences(sharedItemsSource);
 
 			Assert.False(await references.Picker.WaitForCollect(), "Picker should not be alive!");
@@ -1131,6 +1123,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			picker.ItemsSource = new ObservableCollection<string> { "observable item" };
 
 			Assert.NotNull(handlerField.GetValue(picker));
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static (WeakReference Picker, WeakReference Subscription, WeakReference Proxy) CreatePickerReferences(
+			ObservableCollection<string> itemsSource)
+		{
+			var picker = new Picker { ItemsSource = itemsSource };
+			var (subscription, proxy) = GetItemsSourceSubscriptionReferences(picker);
+			return (new WeakReference(picker), subscription, proxy);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
