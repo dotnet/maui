@@ -23,12 +23,14 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    $function = $ast.Find({
-        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-        $args[0].Name -eq 'Get-TestResultFromOutput'
-    }, $true)
-    if (-not $function) { throw "Function 'Get-TestResultFromOutput' not found" }
-    Invoke-Expression $function.Extent.Text
+    foreach ($fnName in @('Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual')) {
+        $fn = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $fnName
+        }, $true)
+        if (-not $fn) { throw "Function '$fnName' not found" }
+        Invoke-Expression $fn.Extent.Text
+    }
 
     function New-LogFile {
         param([string]$Content)
@@ -156,5 +158,81 @@ OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : An unknown server-side err
         $r.EnvError | Should -BeTrue
         $r.SnapshotBaselineMissing | Should -BeTrue
         Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Get-SnapshotDiffMap — snapshot diff extraction' {
+    It 'extracts { filename -> percent } from "Snapshot different than baseline" lines' {
+        $log = New-LogFile @'
+  Snapshot different than baseline: Issue33037NonShell_ListView_AfterScroll.png (0.65% difference)
+  Snapshot different than baseline: Issue33037NonShell_GridScrollView_AfterScroll.png (2.63% difference)
+'@
+        $m = Get-SnapshotDiffMap -LogFile $log
+        $m.Count | Should -Be 2
+        $m['issue33037nonshell_listview_afterscroll.png'] | Should -Be 0.65
+        $m['issue33037nonshell_gridscrollview_afterscroll.png'] | Should -Be 2.63
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps the MAX percent when the same file appears more than once' {
+        $log = New-LogFile @'
+  Snapshot different than baseline: a.png (0.40% difference)
+  Snapshot different than baseline: a.png (0.90% difference)
+'@
+        (Get-SnapshotDiffMap -LogFile $log)['a.png'] | Should -Be 0.90
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'returns an empty map for a log with no snapshot diffs' {
+        $log = New-LogFile "everything is fine, no visual failures here"
+        (Get-SnapshotDiffMap -LogFile $log).Count | Should -Be 0
+        Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Test-SnapshotEnvironmentalResidual — FAIL->FAIL environmental downgrade' {
+    # Guards commit ecf272c7a8. The gate runs the SAME visual test WITHOUT and WITH the fix,
+    # so it can tell a fix-caused diff (present without, gone/smaller with) from an
+    # environmental one (present at ~the same magnitude in BOTH runs). The downgrade to
+    # INCONCLUSIVE must fire ONLY for a genuine environmental residual and must NEVER mask a
+    # real regression — these tests pin both directions. Data mirrors real iOS #36511
+    # (build 14635697) Issue33037NonShell.
+    It 'returns TRUE for the real #36511 case (fix collapses the 2 real diffs; 4 sub-1% residuals no larger than without-fix)' {
+        $wo = @{ FailCount = 5; SnapshotDiffMap = @{
+            'direct.png' = 0.70; 'grid.png' = 2.63; 'contentviewgrid.png' = 3.01; 'listview.png' = 0.65; 'collectionview.png' = 0.77 } }
+        $w  = @{ FailCount = 4; SnapshotDiffMap = @{
+            'direct.png' = 0.70; 'contentviewgrid.png' = 0.54; 'listview.png' = 0.65; 'collectionview.png' = 0.77 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeTrue
+    }
+
+    It 'returns FALSE when the fix WORSENS a snapshot (real regression, not environmental)' {
+        $wo = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 0.70 } }
+        $w  = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 0.90 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
+    }
+
+    It 'returns FALSE when the fix NEWLY breaks a snapshot absent from the without-fix run' {
+        $wo = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 0.70 } }
+        $w  = @{ FailCount = 1; SnapshotDiffMap = @{ 'newlybroken.png' = 0.30 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
+    }
+
+    It 'returns FALSE when any residual exceeds the ~1% environmental ceiling' {
+        $wo = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 2.00 } }
+        $w  = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 1.50 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
+    }
+
+    It 'returns FALSE when a non-snapshot failure hides among the diffs (FailCount > snapshot files)' {
+        $wo = @{ FailCount = 5; SnapshotDiffMap = @{ 'direct.png' = 0.70; 'listview.png' = 0.65 } }
+        $w  = @{ FailCount = 2; SnapshotDiffMap = @{ 'direct.png' = 0.70 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
+    }
+
+    It 'is fail-safe: returns FALSE for null inputs and an empty with-fix map' {
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $null -WithFixResult $null | Should -BeFalse
+        $wo = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 0.70 } }
+        $w  = @{ FailCount = 0; SnapshotDiffMap = @{} }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
     }
 }
