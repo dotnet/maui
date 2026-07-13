@@ -211,5 +211,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(2, modelChangedCount);
 		}
+
+		[Fact]
+		public void DuplicateSectionsShareSubscriptionUntilLastRemoval()
+		{
+			var section = new TableSection("Section");
+			var root = new TableRoot { section, section };
+			var table = new TableView(root);
+			int modelChangedCount = 0;
+			table.ModelChanged += (sender, e) => modelChangedCount++;
+
+			section.Add(new TextCell { Text = "Shared cell" });
+			section.Title = "Shared section";
+
+			Assert.Equal(2, modelChangedCount);
+
+			root.Remove(section);
+			modelChangedCount = 0;
+			section.Add(new TextCell { Text = "Still shared cell" });
+			section.Title = "Still shared section";
+
+			Assert.Equal(2, modelChangedCount);
+
+			root.Remove(section);
+			modelChangedCount = 0;
+			section.Add(new TextCell { Text = "Detached cell" });
+			section.Title = "Detached section";
+
+			Assert.Equal(0, modelChangedCount);
+		}
 	}
 }

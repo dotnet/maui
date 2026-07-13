@@ -109,6 +109,9 @@ namespace Microsoft.Maui.Controls
 
 		void SubscribeToSection(TableSection section)
 		{
+			if (_subscribedSections.Contains(section))
+				return;
+
 			section.CollectionChanged += ChildCollectionChanged;
 			section.PropertyChanged += ChildPropertyChanged;
 			_subscribedSections.Add(section);
@@ -116,6 +119,9 @@ namespace Microsoft.Maui.Controls
 
 		void UnsubscribeFromSection(TableSection section)
 		{
+			if (Contains(section))
+				return;
+
 			section.CollectionChanged -= ChildCollectionChanged;
 			section.PropertyChanged -= ChildPropertyChanged;
 			_subscribedSections.Remove(section);
