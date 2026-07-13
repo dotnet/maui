@@ -198,17 +198,7 @@ internal static class LayoutFactory2
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
 			// Create the item itself from the size
 			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
-			var halfHorizontalSpacing = new NFloat(horizontalItemSpacing / 2d);
-			var halfVerticalSpacing = new NFloat(verticalItemSpacing / 2d);
 
-			if (scrollDirection == UICollectionViewScrollDirection.Vertical && horizontalItemSpacing > 0 && columns > 1)
-			{
-				item.ContentInsets = new NSDirectionalEdgeInsets(0, halfHorizontalSpacing, 0, halfHorizontalSpacing);
-			}
-			else if (scrollDirection == UICollectionViewScrollDirection.Horizontal && verticalItemSpacing > 0 && columns > 1)
-			{
-				item.ContentInsets = new NSDirectionalEdgeInsets(halfVerticalSpacing, 0, halfVerticalSpacing, 0);
-			}
 			// Each group of items (for grouped collections) has a size
 			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
 
@@ -220,7 +210,15 @@ internal static class LayoutFactory2
 				? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, columns)
 				: NSCollectionLayoutGroup.CreateVertical(groupSize, item, columns);
 
-			group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(0);
+			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+			{
+				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(horizontalItemSpacing));
+			}
+			else
+			{
+				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(verticalItemSpacing));
+			}
+
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
 			if (OperatingSystem.IsIOSVersionAtLeast(26))
