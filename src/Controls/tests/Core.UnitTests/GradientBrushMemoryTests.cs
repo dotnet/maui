@@ -46,6 +46,61 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task SharedGradientStopsInvalidateEachLiveBrushAfterGc()
+		{
+			var stop = new GradientStop();
+			var sharedStops = new GradientStopCollection { stop };
+			var firstBrush = new LinearGradientBrush { GradientStops = sharedStops };
+			var secondBrush = new LinearGradientBrush { GradientStops = sharedStops };
+			int firstInvalidationCount = 0;
+			int secondInvalidationCount = 0;
+			firstBrush.InvalidateGradientBrushRequested += (_, __) => firstInvalidationCount++;
+			secondBrush.InvalidateGradientBrushRequested += (_, __) => secondInvalidationCount++;
+
+			await TestHelpers.Collect();
+
+			stop.Offset = 0.5f;
+
+			Assert.Equal(1, firstInvalidationCount);
+			Assert.Equal(1, secondInvalidationCount);
+			GC.KeepAlive(firstBrush);
+			GC.KeepAlive(secondBrush);
+		}
+
+		[Fact]
+		public void RemovingAndReplacingGradientStopsMovesSubscriptions()
+		{
+			var removedStop = new GradientStop { Offset = 0.1f };
+			var retainedStop = new GradientStop { Offset = 0.2f };
+			var oldStops = new GradientStopCollection { removedStop, retainedStop };
+			var brush = new LinearGradientBrush { GradientStops = oldStops };
+			int invalidationCount = 0;
+			brush.InvalidateGradientBrushRequested += (_, __) => invalidationCount++;
+
+			oldStops.Remove(removedStop);
+			invalidationCount = 0;
+
+			removedStop.Offset = 0.3f;
+			Assert.Equal(0, invalidationCount);
+
+			retainedStop.Offset = 0.4f;
+			Assert.Equal(1, invalidationCount);
+
+			var replacementStop = new GradientStop { Offset = 0.1f };
+			brush.GradientStops = new GradientStopCollection { replacementStop };
+			invalidationCount = 0;
+
+			retainedStop.Offset = 0.5f;
+			oldStops.Add(new GradientStop());
+
+			Assert.Equal(0, invalidationCount);
+
+			replacementStop.Offset = 0.6f;
+
+			Assert.Equal(1, invalidationCount);
+		}
+
+		[Fact]
 		public void ClearingGradientStopsAllowsReentrantReplacement()
 		{
 			var brush = new LinearGradientBrush
