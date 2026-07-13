@@ -17,4 +17,18 @@ public class Issue31480 : _IssuesUITest
 		App.WaitForElement("RTLFormattedLabel");
 		VerifyScreenshot();
 	}
+
+	[Test]
+	[Category(UITestCategories.Label)]
+	public void LabelFormattedTextShouldUpdateWhenFlowDirectionChanges()
+	{
+		App.WaitForElement("RTLFormattedLabel");
+
+		// Toggle the flow direction after the initial render so the dynamic
+		// MapFlowDirection rebuild path is exercised (the RTL label becomes
+		// left-aligned and the LTR label becomes right-aligned).
+		App.Tap("ToggleFlowDirectionButton");
+		App.WaitForElement("RTLFormattedLabel");
+		VerifyScreenshot();
+	}
 }

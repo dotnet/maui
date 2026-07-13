@@ -44,6 +44,29 @@ public class Issue31480 : ContentPage
 			}
 		};
 
+		// Toggles the flow direction of the labels *after* the initial render so the
+		// dynamic MapFlowDirection / HasFormattedTextSpans rebuild path is exercised
+		// (the mapper skips the connecting-handler pass, so only a later change hits it).
+		var toggleButton = new Button
+		{
+			Text = "Toggle FlowDirection",
+			AutomationId = "ToggleFlowDirectionButton",
+			FlowDirection = FlowDirection.LeftToRight
+		};
+
+		toggleButton.Clicked += (_, _) =>
+		{
+			// rtlLabel starts as inherited RTL (default MatchParent), so flip it to an
+			// explicit LeftToRight on the first click to force a visible re-alignment.
+			rtlLabel.FlowDirection = rtlLabel.FlowDirection == FlowDirection.LeftToRight
+				? FlowDirection.RightToLeft
+				: FlowDirection.LeftToRight;
+
+			ltrLabel.FlowDirection = ltrLabel.FlowDirection == FlowDirection.LeftToRight
+				? FlowDirection.RightToLeft
+				: FlowDirection.LeftToRight;
+		};
+
 		Content = new VerticalStackLayout
 		{
 			Padding = new Thickness(20),
@@ -54,6 +77,7 @@ public class Issue31480 : ContentPage
 				rtlLabel,
 				new Label { Text = "LTR FormattedText (should be left-aligned):", AutomationId = "LTRHeaderLabel", FlowDirection = FlowDirection.LeftToRight },
 				ltrLabel,
+				toggleButton,
 			}
 		};
 	}
