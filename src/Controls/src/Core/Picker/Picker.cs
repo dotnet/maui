@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls
 				UnsubscribeFromItemsSourceCollection();
 			}
 
-			if (!_isHandlerDetached)
+			if (!_isItemsSourceSubscriptionPaused)
 			{
 				SubscribeToItemsSourceCollection(newValue as INotifyCollectionChanged);
 			}
@@ -364,23 +364,37 @@ namespace Microsoft.Maui.Controls
 		sealed class ItemsSourceCollectionChangedSubscription
 		{
 			readonly WeakNotifyCollectionChangedProxy _proxy = new();
+			bool _isFinalizationSuppressed;
 
 			~ItemsSourceCollectionChangedSubscription() => _proxy.Unsubscribe();
 
 			public void Subscribe(INotifyCollectionChanged source, NotifyCollectionChangedEventHandler handler)
 			{
+				if (_isFinalizationSuppressed)
+				{
+					GC.ReRegisterForFinalize(this);
+					_isFinalizationSuppressed = false;
+				}
+
 				_proxy.Subscribe(source, handler);
 			}
 
 			public void Unsubscribe()
 			{
 				_proxy.Unsubscribe();
+
+				if (_isFinalizationSuppressed)
+					return;
+
+				GC.SuppressFinalize(this);
+				_isFinalizationSuppressed = true;
 			}
 		}
 
 		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
 		INotifyCollectionChanged _subscribedItemsSourceCollection;
-		bool _isHandlerDetached;
+		// Preserve source updates before the first handler; pause only after explicit detachment.
+		bool _isItemsSourceSubscriptionPaused;
 
 		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
 		{
@@ -398,7 +412,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Handler is null)
 			{
-				_isHandlerDetached = true;
+				_isItemsSourceSubscriptionPaused = true;
 				UnsubscribeFromItemsSourceCollection();
 			}
 
@@ -406,7 +420,7 @@ namespace Microsoft.Maui.Controls
 
 			if (Handler is not null)
 			{
-				_isHandlerDetached = false;
+				_isItemsSourceSubscriptionPaused = false;
 				SubscribeToItemsSourceCollection(ItemsSource as INotifyCollectionChanged);
 
 				// Keep display items in sync if this Picker is detached and later reattached.
@@ -452,7 +466,6 @@ namespace Microsoft.Maui.Controls
 		void UnsubscribeFromItemsSourceCollection()
 		{
 			_itemsSourceCollectionChangedSubscription?.Unsubscribe();
-			_itemsSourceCollectionChangedSubscription = null;
 			_subscribedItemsSourceCollection = null;
 		}
 

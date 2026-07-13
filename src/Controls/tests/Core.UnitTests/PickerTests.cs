@@ -1094,18 +1094,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("d", picker.Items[3]);
 		}
 
-		[Fact, Category(TestCategory.Memory)]
-		public async Task PickerItemsSourceClearReleasesCollectionChangedSubscription()
+		[Fact]
+		public void PickerItemsSourceClearReusesCollectionChangedSubscription()
 		{
-			var sharedItemsSource = new ObservableCollection<string> { "a", "b", "c" };
-			var picker = new Picker { ItemsSource = sharedItemsSource };
-			var references = GetItemsSourceSubscriptionReferences(picker);
+			var oldItemsSource = new ObservableCollection<string> { "old" };
+			var replacementItemsSource = new ObservableCollection<string> { "replacement" };
+			var picker = new Picker { ItemsSource = oldItemsSource };
+			var originalReferences = GetItemsSourceSubscriptionObjects(picker);
 
 			picker.ItemsSource = null;
+			oldItemsSource.Add("ignored");
 
+			Assert.Empty(picker.Items);
+
+			picker.ItemsSource = replacementItemsSource;
+			var reusedReferences = GetItemsSourceSubscriptionObjects(picker);
+
+			Assert.Same(originalReferences.Subscription, reusedReferences.Subscription);
+			Assert.Same(originalReferences.Proxy, reusedReferences.Proxy);
+
+			replacementItemsSource.Add("added");
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("added", picker.Items[1]);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task ReusedPickerItemsSourceSubscriptionDoesNotLeak()
+		{
+			var sharedItemsSource = new ObservableCollection<string> { "a", "b", "c" };
+			var references = CreateReusedPickerReferences(sharedItemsSource);
+
+			Assert.False(await references.Picker.WaitForCollect(), "Picker should not be alive!");
 			Assert.False(await references.Subscription.WaitForCollect(), "ItemsSource subscription should not be alive!");
 			Assert.False(await references.Proxy.WaitForCollect(), "WeakNotifyCollectionChangedProxy should not be alive!");
-			GC.KeepAlive(picker);
 			GC.KeepAlive(sharedItemsSource);
 		}
 
@@ -1178,6 +1200,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
+		static (WeakReference Picker, WeakReference Subscription, WeakReference Proxy) CreateReusedPickerReferences(
+			ObservableCollection<string> itemsSource)
+		{
+			var picker = new Picker
+			{
+				ItemsSource = new ObservableCollection<string> { "temporary" }
+			};
+			picker.ItemsSource = null;
+			picker.ItemsSource = itemsSource;
+			var (subscription, proxy) = GetItemsSourceSubscriptionReferences(picker);
+			return (new WeakReference(picker), subscription, proxy);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
 		static WeakReference AssignAndReplaceItemsSource(Picker picker, ObservableCollection<string> replacementItemsSource)
 		{
 			var oldItemsSource = new ObservableCollection<string> { "old" };
@@ -1189,12 +1225,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		static (WeakReference Subscription, WeakReference Proxy) GetItemsSourceSubscriptionReferences(Picker picker)
 		{
+			var (subscription, proxy) = GetItemsSourceSubscriptionObjects(picker);
+			return (new WeakReference(subscription), new WeakReference(proxy));
+		}
+
+		static (object Subscription, object Proxy) GetItemsSourceSubscriptionObjects(Picker picker)
+		{
 			const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
 			var subscription = typeof(Picker).GetField("_itemsSourceCollectionChangedSubscription", flags)?.GetValue(picker);
 			Assert.NotNull(subscription);
 			var proxy = subscription.GetType().GetField("_proxy", flags)?.GetValue(subscription);
 			Assert.NotNull(proxy);
-			return (new WeakReference(subscription), new WeakReference(proxy));
+			return (subscription, proxy);
 		}
 
 		sealed class PickerHandlerStub : ViewHandler<Picker, object>
