@@ -52,7 +52,7 @@ public class ToolkitTests : BaseTemplateTests
 		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		AddPackageReference(projectFile, "Syncfusion.Maui.Toolkit", GetPackageVersion("SyncfusionMauiToolkitPackageVersion"));
+		AddPackageReference(projectFile, "Syncfusion.Maui.Toolkit", GetCurrentTemplateSyncfusionToolkitPackageVersion());
 		RegisterSyncfusionToolkit(projectDir);
 
 		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
@@ -133,6 +133,29 @@ public class ToolkitTests : BaseTemplateTests
 			""");
 	}
 
+	private static string GetCurrentTemplateSyncfusionToolkitPackageVersion()
+	{
+		var templateProjectPath = Path.Combine(
+			TestEnvironment.GetMauiDirectory(),
+			"src",
+			"Templates",
+			"src",
+			"templates",
+			"maui-mobile",
+			"MauiApp.1.csproj");
+		var templateProject = System.Xml.Linq.XDocument.Load(templateProjectPath);
+		var version = templateProject
+			.Descendants("PackageReference")
+			.FirstOrDefault(e => string.Equals((string?)e.Attribute("Include"), "Syncfusion.Maui.Toolkit", StringComparison.Ordinal))
+			?.Attribute("Version")
+			?.Value;
+
+		if (string.IsNullOrEmpty(version))
+			throw new Exception("Could not find Syncfusion.Maui.Toolkit version in the MAUI template project");
+
+		return version;
+	}
+
 	private static string GetPackageVersion(string propertyName)
 	{
 		var versionsPropsPath = Path.Combine(TestEnvironment.GetMauiDirectory(), "eng", "Versions.props");
@@ -182,7 +205,7 @@ public class AndroidToolkitTests : BaseBuildTest
 			$"Unable to create template {id}. Check test output for errors.");
 
 		StripNonAndroidTfms(projectFile, framework);
-		AddSyncfusionToolkitPackage(projectFile);
+		AddSyncfusionToolkitPackage(projectFile, GetCurrentTemplateSyncfusionToolkitPackageVersion());
 		RegisterSyncfusionToolkit(projectDir);
 		AddSyncfusionToolkitControl(projectDir);
 		AddInstrumentation(projectDir);
@@ -201,10 +224,8 @@ public class AndroidToolkitTests : BaseBuildTest
 			$"Project {Path.GetFileName(projectFile)} with Syncfusion.Maui.Toolkit failed to run. Check test output/attachments for errors.");
 	}
 
-	private static void AddSyncfusionToolkitPackage(string projectFile)
+	private static void AddSyncfusionToolkitPackage(string projectFile, string version)
 	{
-		var version = GetPackageVersion("SyncfusionMauiToolkitPackageVersion");
-
 		FileUtilities.ReplaceInFile(projectFile,
 			"</Project>",
 			$"""
@@ -281,6 +302,29 @@ public class AndroidToolkitTests : BaseBuildTest
 			$"<TargetFrameworks>{androidTfm}</TargetFrameworks>");
 
 		File.WriteAllText(projectFile, content);
+	}
+
+	private static string GetCurrentTemplateSyncfusionToolkitPackageVersion()
+	{
+		var templateProjectPath = Path.Combine(
+			TestEnvironment.GetMauiDirectory(),
+			"src",
+			"Templates",
+			"src",
+			"templates",
+			"maui-mobile",
+			"MauiApp.1.csproj");
+		var templateProject = System.Xml.Linq.XDocument.Load(templateProjectPath);
+		var version = templateProject
+			.Descendants("PackageReference")
+			.FirstOrDefault(e => string.Equals((string?)e.Attribute("Include"), "Syncfusion.Maui.Toolkit", StringComparison.Ordinal))
+			?.Attribute("Version")
+			?.Value;
+
+		if (string.IsNullOrEmpty(version))
+			throw new Exception("Could not find Syncfusion.Maui.Toolkit version in the MAUI template project");
+
+		return version;
 	}
 
 	private static string GetPackageVersion(string propertyName)
