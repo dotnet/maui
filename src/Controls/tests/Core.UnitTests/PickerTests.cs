@@ -1162,6 +1162,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return new WeakReference(oldItemsSource);
 		}
 
+		[MethodImpl(MethodImplOptions.NoInlining)]
 		static (WeakReference Subscription, WeakReference Proxy) GetItemsSourceSubscriptionReferences(Picker picker)
 		{
 			const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
