@@ -1455,7 +1455,22 @@ function Write-MarkdownReport {
     # not INCONCLUSIVE.
     $prTestBuildError = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $WithoutFixResultsList -Tests $Tests)
 
-    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or $baselineBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
+    # A FILTER MISMATCH (0 tests matched the -filter) on a deciding test means nothing was
+    # verified, so the headline must read INCONCLUSIVE to match the exit code ($gateInfraError).
+    # Apply the SAME guard as the exit-code logic: only downgrade to INCONCLUSIVE when NO genuine
+    # failure remains with the fix, so a real FAIL→FAIL in another detected test is never masked
+    # by an unrelated filter mismatch.
+    $hasFilterMismatch = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.FilterMismatch }).Count -gt 0
+    $reportWithFixGenuineFail = $false
+    foreach ($gt in $Tests) {
+        $woG = $WithoutFixResultsList | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
+        $wG  = $WithFixResultsList    | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
+        if (-not $woG -or -not $wG) { continue }
+        $wGInc = $wG.EnvError -or $wG.BuildError -or $wG.FilterMismatch
+        if ((-not $wGInc) -and (-not $wG.Passed)) { $reportWithFixGenuineFail = $true }
+    }
+
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or $baselineBuildError -or ($hasFilterMismatch -and -not $reportWithFixGenuineFail)) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     # When the gate PASSED under the relaxed "at least one test reproduces the bug, none
@@ -2254,11 +2269,23 @@ $verificationPassed = ($reproducingCount -gt 0) -and ($withFixGenuineFailCount -
 $baselineBuildError = (@($withoutFixResults) | Where-Object { $_.BuildError }).Count -gt 0
 $withFixBuildError  = (@($withFixResults)    | Where-Object { $_.BuildError }).Count -gt 0
 $anyEnvError        = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.EnvError }).Count -gt 0
+# A FILTER MISMATCH (the -filter expression matched 0 test cases) means the deciding test
+# never ran, so the gate verified NOTHING about it. This happens when the PR's test is
+# platform-gated/excluded on the run platform (e.g. wrapped in #if TEST_FAILS_ON_ANDROID or a
+# [Category] the run excludes) or the detected test name doesn't resolve in the built assembly.
+# Both without-fix and with-fix then report "No test matches the given testcase filter" with
+# Passed=False/Failed=0. Without routing this to INCONCLUSIVE the verdict falls through to a
+# false FAILED (exit 1) even though no test executed — e.g. build 14634904 (#35998 android,
+# Issue26049): both runs "No test matches ... 'Issue26049'", reported FAILED. Treat it as
+# INCONCLUSIVE (exit 3), exactly like an env error — BUT only when there is no genuine failure
+# remaining with the fix ($withFixGenuineFailCount -eq 0), so a real FAIL→FAIL in another
+# detected test is never masked by an unrelated filter mismatch.
+$anyFilterMismatch  = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.FilterMismatch }).Count -gt 0
 # A baseline build error inside the PR's OWN test file is the PR's fault (test files are never
 # reverted, so it breaks identically in both states) — a real FAILED, not an infra flake. Keep
 # it OUT of $gateInfraError so it exits 1 (FAILED), matching the report status.
 $prTestBuildError   = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $withoutFixResults -Tests $AllDetectedTests)
-$gateInfraError     = $anyEnvError -or ($baselineBuildError -and -not $prTestBuildError)
+$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError)
 
 Write-Log ""
 Write-Log "Summary:"
