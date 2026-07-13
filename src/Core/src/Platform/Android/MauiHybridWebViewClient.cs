@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Platform
 		// not under the HybridWebView app origin; returns true otherwise, with relativePath set to
 		// the resolved path (which may itself be null if the path could not be resolved). Shared by
 		// IsFrameworkInternalRequest and GetResponse to keep the URI parsing in one place.
-		private static bool TryGetAppRelativePath(string fullUrl, out string? relativePath)
+		static bool TryGetAppRelativePath(string fullUrl, out string? relativePath)
 		{
 			relativePath = null;
 
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Platform
 		//  - the message/invoke channels must ALSO carry the protocol marker header, because the
 		//    header name/value are public and a same-origin script could otherwise set it on an
 		//    arbitrary URL to bypass interception.
-		private static bool IsFrameworkInternalRequest(string fullUrl, IWebResourceRequest request)
+		static bool IsFrameworkInternalRequest(string fullUrl, IWebResourceRequest request)
 		{
 			if (!TryGetAppRelativePath(fullUrl, out var relativePath) || relativePath is null)
 			{
@@ -267,8 +267,7 @@ namespace Microsoft.Maui.Platform
 
 		// Validates a POST-only bridge request that carries its body in the
 		// X-Maui-Request-Body header (Android does not expose the POST body to
-		// ShouldInterceptRequest). The header value is URL-encoded by the JS transport
-		// and decoded here. On success returns true with the decoded body in `body`;
+		// ShouldInterceptRequest). On success returns true with the body in `body`;
 		// on failure returns false with the appropriate error response in `errorResponse`.
 		private static bool TryValidateBridgeRequest(IWebResourceRequest request, string endpointName, ILogger? logger, [NotNullWhen(true)] out string? body, [NotNullWhen(false)] out WebResourceResponse? errorResponse)
 		{
@@ -295,11 +294,6 @@ namespace Microsoft.Maui.Platform
 				errorResponse = new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
 				return false;
 			}
-
-			// The JS transport URL-encodes the header value so it survives the HTTP header byte-set
-			// restriction (headers cannot carry CR/LF/NUL or non-Latin-1 characters). Decode it here
-			// once for both the InvokeDotNet and SendMessage endpoints.
-			body = Uri.UnescapeDataString(body);
 
 			errorResponse = null;
 			return true;

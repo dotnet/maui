@@ -178,7 +178,9 @@ namespace Microsoft.Maui.Handlers
 					}
 					break;
 				case "__RawMessage":
-					VirtualView?.RawMessageReceived(messageContent);
+					// Payload is URL-encoded in JS (HybridWebView.ts sendRawMessage) so it survives
+					// transports that restrict the byte set (Android fetch header forbids CR/LF/NUL).
+					VirtualView?.RawMessageReceived(Uri.UnescapeDataString(messageContent));
 					break;
 				default:
 					throw new ArgumentException($"The message type '{messageType}' is not recognized.", nameof(rawMessage));

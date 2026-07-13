@@ -78,10 +78,7 @@
                     headers: {
                         'Content-Type': 'text/plain',
                         'X-Maui-Invoke-Token': 'HybridWebView',
-                        // URL-encode so the payload survives the HTTP header byte-set restriction
-                        // (headers cannot carry CR/LF/NUL or non-Latin-1 characters). The .NET side
-                        // decodes this in MauiHybridWebViewClient.TryValidateBridgeRequest.
-                        'X-Maui-Request-Body': encodeURIComponent(msg)
+                        'X-Maui-Request-Body': msg
                     },
                     body: msg
                 }).catch(err => {
@@ -153,10 +150,10 @@
      * @param message The message to send to the .NET host application.
      */
     function sendRawMessage(message) {
-        // Byte-set-sensitive transports (the Android fetch X-Maui-Request-Body header) are
-        // handled by encoding the whole message in sendMessageFunction, so no per-message
-        // encoding is needed here.
-        sendMessageToDotNet('__RawMessage', message);
+        // URL-encode the payload so it survives transports that restrict the byte set
+        // (the Android fetch X-Maui-Request-Body header rejects CR/LF/NUL). Decoded
+        // on the .NET side in HybridWebViewHandler.MessageReceived.
+        sendMessageToDotNet('__RawMessage', encodeURIComponent(message));
     }
     /*
      * Invoke a .NET method on the InvokeJavaScriptTarget instance.
@@ -192,10 +189,7 @@
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-Maui-Invoke-Token': 'HybridWebView',
-                // Some platforms (Android) do not expose the POST body, so we also send it as a
-                // header. URL-encode it so it survives the HTTP header byte-set restriction; the
-                // .NET side decodes this in MauiHybridWebViewClient.TryValidateBridgeRequest.
-                'X-Maui-Request-Body': encodeURIComponent(message)
+                'X-Maui-Request-Body': message // Some platforms (Android) do not expose the POST body
             },
             body: message
         });
