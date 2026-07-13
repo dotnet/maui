@@ -213,6 +213,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ReplacingSectionMovesEventSubscriptions()
+		{
+			var oldSection = new TableSection("Old section");
+			var newSection = new TableSection("New section");
+			var root = new TableRoot { oldSection };
+			var table = new TableView(root);
+			int modelChangedCount = 0;
+			table.ModelChanged += (sender, e) => modelChangedCount++;
+
+			root[0] = newSection;
+			modelChangedCount = 0;
+
+			oldSection.Add(new TextCell { Text = "Old section cell" });
+			oldSection.Title = "Changed old section";
+
+			Assert.Equal(0, modelChangedCount);
+
+			newSection.Add(new TextCell { Text = "New section cell" });
+			newSection.Title = "Changed new section";
+
+			Assert.Equal(2, modelChangedCount);
+		}
+
+		[Fact]
 		public void DuplicateSectionsShareSubscriptionUntilLastRemoval()
 		{
 			var section = new TableSection("Section");
