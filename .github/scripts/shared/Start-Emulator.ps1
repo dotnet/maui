@@ -545,22 +545,48 @@ if ($Platform -eq "android") {
         }
     }
 
-    # Boot simulator if not already booted
+    # Boot simulator if not already booted.
+    #
+    # Robustness: `simctl boot` transitions the device Booting -> Booted
+    # asynchronously. The previous code queried state ONCE immediately after
+    # `simctl boot` and did `exit 1` if it was not yet "Booted", which could
+    # spuriously fail the deep iOS UI-test stage on a slow/loaded CI agent (an
+    # infrastructure failure with no retry). Boot inside a bounded retry loop
+    # that waits for the device to actually reach the Booted state; on the happy
+    # path (already Booted) this returns on the first iteration with no
+    # behavioural change.
     Write-Info "Booting simulator (if not already running)..."
+    $bootDeadlineSeconds = 90
+    $bootWaited = 0
+    $device = $null
     xcrun simctl boot $DeviceUdid 2>$null
-    
-    # Verify booted
-    $simState = xcrun simctl list devices --json | ConvertFrom-Json
-    $device = $simState.devices.PSObject.Properties.Value | 
-        ForEach-Object { $_ } | 
-        Where-Object { $_.udid -eq $DeviceUdid } | 
-        Select-Object -First 1
-    
-    if ($device.state -ne "Booted") {
-        Write-Error "Simulator failed to boot. Current state: $($device.state)"
+    while ($bootWaited -lt $bootDeadlineSeconds) {
+        $simState = xcrun simctl list devices --json | ConvertFrom-Json
+        $device = $simState.devices.PSObject.Properties.Value |
+            ForEach-Object { $_ } |
+            Where-Object { $_.udid -eq $DeviceUdid } |
+            Select-Object -First 1
+        if ($device -and $device.state -eq "Booted") { break }
+        Start-Sleep -Seconds 3
+        $bootWaited += 3
+        # Re-issue boot periodically in case the device slipped back to Shutdown
+        # (a transient CoreSimulator hiccup) rather than progressing to Booted.
+        if ($bootWaited % 15 -eq 0) {
+            Write-Info "Simulator still not Booted after ${bootWaited}s (state: $($device.state)); re-issuing boot..."
+            xcrun simctl boot $DeviceUdid 2>$null
+        }
+    }
+
+    if (-not $device -or $device.state -ne "Booted") {
+        Write-Error "Simulator failed to boot within ${bootDeadlineSeconds}s. Current state: $($device.state)"
         exit 1
     }
-    
+
+    # The device reaches the Booted state a few seconds before SpringBoard /
+    # CoreSimulator services are fully up; give them a brief settle so Appium /
+    # WebDriverAgent can attach on the first try instead of erroring out.
+    Start-Sleep -Seconds 5
+
     Write-Success "Simulator is booted and ready: $deviceName"
     
     #endregion
