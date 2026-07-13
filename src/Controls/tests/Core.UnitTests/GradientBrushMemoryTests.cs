@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void NullGradientStopsAllowsBindingContextChange()
+		public void NullGradientStopCollectionAllowsBindingContextChange()
 		{
 			var brush = new LinearGradientBrush { GradientStops = null };
 			var bindingContext = new object();
@@ -147,6 +147,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			brush.BindingContext = bindingContext;
 
 			Assert.Same(bindingContext, brush.BindingContext);
+		}
+
+		[Fact]
+		public void NullGradientStopEntryAllowsBindingContextChange()
+		{
+			var brush = new LinearGradientBrush
+			{
+				GradientStops = new GradientStopCollection { null }
+			};
+			var bindingContext = new object();
+
+			brush.BindingContext = bindingContext;
+
+			Assert.Same(bindingContext, brush.BindingContext);
+		}
+
+		[Fact]
+		public void SharedGradientStopsPreserveExistingMostRecentlyAssignedParentBehavior()
+		{
+			var stop = new GradientStop();
+			var sharedStops = new GradientStopCollection { stop };
+			var firstBindingContext = new object();
+			var firstBrush = new LinearGradientBrush
+			{
+				BindingContext = firstBindingContext,
+				GradientStops = sharedStops
+			};
+
+			Assert.Same(firstBrush, stop.Parent);
+			Assert.Same(firstBindingContext, stop.BindingContext);
+
+			var secondBindingContext = new object();
+			var secondBrush = new LinearGradientBrush
+			{
+				BindingContext = secondBindingContext,
+				GradientStops = sharedStops
+			};
+
+			Assert.Same(secondBrush, stop.Parent);
+			Assert.Same(secondBindingContext, stop.BindingContext);
+			GC.KeepAlive(firstBrush);
 		}
 
 		[Fact]

@@ -51,7 +51,12 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			foreach (var gradientStop in gradientStops)
+			{
+				if (gradientStop is null)
+					continue;
+
 				SetInheritedBindingContext(gradientStop, BindingContext);
+			}
 		}
 
 		void UpdateGradientStops(GradientStopCollection oldCollection, GradientStopCollection newCollection)
