@@ -81,13 +81,12 @@ namespace Microsoft.Maui.Controls
 
 		ItemsSourceCollectionChangedSubscription _itemsSourceCollectionChangedSubscription;
 		// WeakNotifyCollectionChangedProxy weakly references its handler, so the Picker must keep this delegate alive.
-		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
+		NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
 
 		/// <summary>Initializes a new instance of the Picker class.</summary>
 		public Picker()
 		{
 			((INotifyCollectionChanged)Items).CollectionChanged += OnItemsCollectionChanged;
-			_collectionChangedEventHandler = CollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Picker>>(() => new PlatformConfigurationRegistry<Picker>(this));
 		}
 
@@ -345,6 +344,7 @@ namespace Microsoft.Maui.Controls
 			if (newObservable != null)
 			{
 				var subscription = _itemsSourceCollectionChangedSubscription ??= new ItemsSourceCollectionChangedSubscription();
+				_collectionChangedEventHandler ??= CollectionChanged;
 				subscription.Subscribe(newObservable, _collectionChangedEventHandler);
 			}
 			else
@@ -378,6 +378,7 @@ namespace Microsoft.Maui.Controls
 
 			public void Unsubscribe()
 			{
+				// The subscription is reused across ItemsSource changes, so its safety-net finalizer must remain registered.
 				_proxy.Unsubscribe();
 			}
 		}

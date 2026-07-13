@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
@@ -604,7 +605,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(0, 1, true)]  // Remove John - Paul should be preserved
 		[InlineData(2, 1, true)]  // Remove Ringo - Paul should be preserved
 		[InlineData(2, 2, true)]  // Remove Ringo and George - Paul should be preserved
-		// Cases where removed items include the selected item
+								  // Cases where removed items include the selected item
 		[InlineData(1, 1, false)] // Remove Paul - selection changes
 		[InlineData(0, 2, false)] // Remove John and Paul - selection changes
 		[InlineData(1, 2, false)] // Remove Paul and Ringo - selection changes
@@ -1094,6 +1095,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(await references.Proxy.WaitForCollect(), "WeakNotifyCollectionChangedProxy should not be alive!");
 			GC.KeepAlive(picker);
 			GC.KeepAlive(sharedItemsSource);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task PickerItemsSourceReassignmentMovesCollectionChangedSubscription()
+		{
+			var replacementItemsSource = new ObservableCollection<string> { "replacement" };
+			var picker = new Picker();
+			var oldItemsSourceReference = AssignAndReplaceItemsSource(picker, replacementItemsSource);
+
+			replacementItemsSource.Add("added");
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("added", picker.Items[1]);
+			Assert.False(await oldItemsSourceReference.WaitForCollect(), "Old ItemsSource should not be alive!");
+
+			replacementItemsSource.Add("added after GC");
+
+			Assert.Equal(3, picker.Items.Count);
+			Assert.Equal("added after GC", picker.Items[2]);
+			GC.KeepAlive(picker);
+			GC.KeepAlive(replacementItemsSource);
+		}
+
+		[Fact]
+		public void PickerItemsSourceCollectionChangedHandlerIsLazy()
+		{
+			const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+			var handlerField = typeof(Picker).GetField("_collectionChangedEventHandler", flags);
+			Assert.NotNull(handlerField);
+			var picker = new Picker { ItemsSource = new List<string> { "item" } };
+
+			Assert.Null(handlerField.GetValue(picker));
+
+			picker.ItemsSource = new ObservableCollection<string> { "observable item" };
+
+			Assert.NotNull(handlerField.GetValue(picker));
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference AssignAndReplaceItemsSource(Picker picker, ObservableCollection<string> replacementItemsSource)
+		{
+			var oldItemsSource = new ObservableCollection<string> { "old" };
+			picker.ItemsSource = oldItemsSource;
+			picker.ItemsSource = replacementItemsSource;
+			return new WeakReference(oldItemsSource);
 		}
 
 		static (WeakReference Subscription, WeakReference Proxy) GetItemsSourceSubscriptionReferences(Picker picker)
