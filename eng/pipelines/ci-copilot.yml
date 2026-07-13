@@ -2333,7 +2333,16 @@ stages:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 10
         steps:
+          # This job only runs Aggregate-CopilotTokenUsage.ps1 and processes
+          # downloaded artifacts — it needs no git history. A shallow checkout
+          # (fetchDepth 1, no tags) minimizes the clone's network/data exposure
+          # so a transient git-fetch hang (observed on build 14637181, where one
+          # job's checkout stalled to 5 min while others took ~0.8 min) can't
+          # blow this job's 10-minute timeout and red-fail an otherwise-green
+          # build. See also the CleanupReviewLock 'checkout: none' fix.
           - checkout: self
+            fetchDepth: 1
+            fetchTags: false
             persistCredentials: false
 
           - task: DownloadPipelineArtifact@2
