@@ -1111,6 +1111,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PickerItemsSourceReassignmentIgnoresOldCollectionChanges()
+		{
+			var oldItemsSource = new ObservableCollection<string> { "old" };
+			var replacementItemsSource = new ObservableCollection<string> { "replacement" };
+			var picker = new Picker { ItemsSource = oldItemsSource };
+
+			picker.ItemsSource = replacementItemsSource;
+			oldItemsSource.Add("ignored");
+
+			Assert.Single(picker.Items);
+			Assert.Equal("replacement", picker.Items[0]);
+
+			replacementItemsSource.Add("added");
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("added", picker.Items[1]);
+		}
+
+		[Fact]
 		public void PickerItemsSourceCollectionChangedHandlerIsLazy()
 		{
 			const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
