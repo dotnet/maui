@@ -208,9 +208,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 				else if (shellContent.Parent is ShellSection existingSection && existingSection.CurrentItem != shellContent)
 				{
-					// Fire OnNavigatingFrom before switching CurrentItem, so it correctly captures
-					// the outgoing page. SetValueFromRenderer marks this as handler-driven, so
-					// ShellSection.OnCurrentItemChanged skips its own (mistimed) navigation call.
+					// Fire OnNavigatingFrom before CurrentItem changes, so it captures the correct outgoing page.
 					parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
 						ShellNavigationSource.ShellContentChanged,
 						parentShell.CurrentItem,
@@ -220,6 +218,8 @@ namespace Microsoft.Maui.Controls.Handlers
 						canCancel: false,
 						isAnimated: true);
 
+					// Set ShellSection.CurrentItem directly (using SetValueFromRenderer) to avoid
+					// re-triggering the mistimed-navigation bug via CreateFromShellContent.
 					existingSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);
 				}
 				else
@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.UpdateSearchHandlerBackground(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerHorizontalTextAlignment(_currentSearchHandler);
-					
+
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
 
 					autoSuggestBox.Visibility = _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
