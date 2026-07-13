@@ -139,6 +139,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void NullGradientStopsAllowsBindingContextChange()
+		{
+			var brush = new LinearGradientBrush { GradientStops = null };
+			var bindingContext = new object();
+
+			brush.BindingContext = bindingContext;
+
+			Assert.Same(bindingContext, brush.BindingContext);
+		}
+
+		[Fact]
 		public void DuplicateGradientStopsPreserveOccurrenceSubscriptions()
 		{
 			var sharedStop = new GradientStop();

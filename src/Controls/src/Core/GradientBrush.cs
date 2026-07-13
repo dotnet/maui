@@ -46,7 +46,11 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 
-			foreach (var gradientStop in GradientStops)
+			var gradientStops = GradientStops;
+			if (gradientStops is null)
+				return;
+
+			foreach (var gradientStop in gradientStops)
 				SetInheritedBindingContext(gradientStop, BindingContext);
 		}
 
