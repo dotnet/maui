@@ -465,6 +465,80 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ReusedBottomTabReappliesEnabledState()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1", Icon = "red.png" });
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 2", Icon = "red.png", IsEnabled = false });
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 3", Icon = "red.png" });
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				var shellContext = (IShellContext)shell.Handler;
+				var bottomView = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>();
+				var menu = bottomView.Menu;
+				var menuItem2 = menu.GetItem(1);
+
+				Assert.False(menuItem2.IsEnabled);
+
+				// Remove an unrelated tab so SetupMenu re-runs and this position-stable
+				// item goes through the reused-item branch — it must reapply the
+				// disabled state on reuse, not silently reset it to enabled.
+				shell.CurrentItem.Items.RemoveAt(2);
+
+				// let the change propagate
+				await AssertEventually(() => bottomView.Menu.Size() == 2);
+
+				menu = bottomView.Menu;
+				Assert.Equal(menuItem2, menu.GetItem(1));
+				Assert.False(menuItem2.IsEnabled);
+			});
+		}
+
+		[Fact]
+		public async Task MoreOverflowItemIsReusedNotRecreated()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				for (int i = 1; i <= 7; i++)
+				{
+					shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = $"Tab {i}", Icon = "red.png" });
+				}
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				var shellContext = (IShellContext)shell.Handler;
+				var bottomView = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>();
+				var menu = bottomView.Menu;
+
+				// 4 regular tabs + "More" overflow item covering the remaining 3
+				Assert.Equal(5, menu.Size());
+				var moreItem = menu.GetItem(4);
+				Assert.Equal(BottomNavigationViewUtils.MoreTabId, moreItem.ItemId);
+
+				// Remove one of the overflowed tabs while overflow is still active
+				// (6 tabs remain, still over the 5-item max) — the "More" IMenuItem
+				// must be reused, not recreated, since it's not structurally changing.
+				shell.CurrentItem.Items.RemoveAt(6);
+
+				// let the change propagate
+				await AssertEventually(() => shell.CurrentItem.Items.Count == 6);
+
+				menu = bottomView.Menu;
+				Assert.Equal(5, menu.Size());
+				Assert.Equal(moreItem, menu.GetItem(4));
+				Assert.Equal(BottomNavigationViewUtils.MoreTabId, menu.GetItem(4).ItemId);
+			});
+		}
+
 		//src/Compatibility/Core/tests/Android/ShellTests.cs
 		[Fact(DisplayName = "Flyout Header Changes When Updated")]
 		public async Task FlyoutHeaderReactsToChanges()
