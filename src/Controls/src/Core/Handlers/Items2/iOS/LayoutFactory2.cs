@@ -198,7 +198,17 @@ internal static class LayoutFactory2
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
 			// Create the item itself from the size
 			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
+			var halfHorizontalSpacing = new NFloat(horizontalItemSpacing / 2d);
+			var halfVerticalSpacing = new NFloat(verticalItemSpacing / 2d);
 
+			if (scrollDirection == UICollectionViewScrollDirection.Vertical && horizontalItemSpacing > 0 && columns > 1)
+			{
+				item.ContentInsets = new NSDirectionalEdgeInsets(0, halfHorizontalSpacing, 0, halfHorizontalSpacing);
+			}
+			else if (scrollDirection == UICollectionViewScrollDirection.Horizontal && verticalItemSpacing > 0 && columns > 1)
+			{
+				item.ContentInsets = new NSDirectionalEdgeInsets(halfVerticalSpacing, 0, halfVerticalSpacing, 0);
+			}
 			// Each group of items (for grouped collections) has a size
 			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
 
@@ -210,20 +220,20 @@ internal static class LayoutFactory2
 				? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, columns)
 				: NSCollectionLayoutGroup.CreateVertical(groupSize, item, columns);
 
-			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
-				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(horizontalItemSpacing));
-			else
-				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(verticalItemSpacing));
-
+			group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(0);
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
 			if (OperatingSystem.IsIOSVersionAtLeast(26))
 				section.ContentInsetsReference = UIContentInsetsReference.None;
 
 			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+			{
 				section.InterGroupSpacing = new NFloat(verticalItemSpacing);
+			}
 			else
+			{
 				section.InterGroupSpacing = new NFloat(horizontalItemSpacing);
+			}
 
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
@@ -540,6 +550,7 @@ internal static class LayoutFactory2
 		ItemsLayout? _itemsLayout;
 		LayoutGroupingInfo? _groupingInfo;
 		LayoutHeaderFooterInfo? _headerFooterInfo;
+		CGSize _currentSize;
 
 		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsLayout? itemsLayout) : base(sectionProvider, configuration)
 		{
@@ -591,6 +602,20 @@ internal static class LayoutFactory2
 				}
 			}
 		}
+
+		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
+        {
+            // If the size hasn't changed, use the base implementation
+			if (newBounds.Size.IsCloseTo(_currentSize))
+            {
+                return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
+            }
+ 
+            // Size has changed (e.g., rotation), so we need to invalidate the layout
+            // to ensure cells are properly measured and displayed
+            _currentSize = newBounds.Size;
+            return true;
+        }
 
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
