@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		static void OnGeometryPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			// The subscription helper owns old-source cleanup, so only the new value determines the next state.
 			if (newValue is Geometry geometry)
 				((Path)bindable).NotifyGeometryChanges(geometry);
 			else
@@ -78,6 +79,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		static void OnTransformPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			// The subscription helper owns old-source cleanup, so only the new value determines the next state.
 			if (newValue is Transform transform)
 				((Path)bindable).NotifyTransformChanges(transform);
 			else
