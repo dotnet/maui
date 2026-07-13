@@ -651,6 +651,38 @@ Write-Info "Test artifacts collected: $screenshotCount screenshot(s), $pageSourc
 
 #region Capture Device Logs
 
+# Run a diagnostic command with a hard timeout so a wedged tool (notably
+# `xcrun simctl spawn booted log show`, which can hang indefinitely when the
+# simulator is left in a bad state after a test-host crash) cannot consume the
+# whole per-category time budget. Observed live: an iOS CollectionView run hit
+# MSBUILD MSB4166 (test-host node crash) mid-run, then `log show` hung for ~48
+# min until the loop's 50-min hard-kill, wasting the category. The command runs
+# in a child pwsh (so any redirection inside $Command still works) and the whole
+# process tree is killed on timeout. Returns $true if it finished in time.
+function Invoke-ScriptWithTimeout {
+    param(
+        [Parameter(Mandatory = $true)][string]$Command,
+        [int]$TimeoutSec = 120
+    )
+    $pwshExe = (Get-Process -Id $PID -ErrorAction SilentlyContinue).Path
+    if (-not $pwshExe) { $pwshExe = 'pwsh' }
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = $pwshExe
+    $psi.ArgumentList.Add('-NoProfile')
+    $psi.ArgumentList.Add('-NonInteractive')
+    $psi.ArgumentList.Add('-Command')
+    $psi.ArgumentList.Add($Command)
+    $psi.UseShellExecute = $false
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    if (-not $proc.WaitForExit($TimeoutSec * 1000)) {
+        # Kill the entire tree (child pwsh + xcrun + log). Fall back to a plain
+        # kill if the tree overload is unavailable.
+        try { $proc.Kill($true) } catch { try { $proc.Kill() } catch { <# best effort #> } }
+        return $false
+    }
+    return $true
+}
+
 Write-Step "Capturing device logs..."
 
 if ($Platform -eq "android") {
@@ -675,9 +707,11 @@ if ($Platform -eq "android") {
     
     $iosLogCommand = "xcrun simctl spawn booted log show --predicate 'processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
     
-    Invoke-Expression "$iosLogCommand > `"$deviceLogFile`" 2>&1"
-    
-    Write-Info "iOS logs saved to: $deviceLogFile"
+    if (Invoke-ScriptWithTimeout -Command "$iosLogCommand > `"$deviceLogFile`" 2>&1" -TimeoutSec 120) {
+        Write-Info "iOS logs saved to: $deviceLogFile"
+    } else {
+        Write-Warn "iOS log capture (log show) exceeded 120s and was killed — continuing without full device logs"
+    }
 } elseif ($Platform -eq "catalyst") {
     # App writes directly to $deviceLogFile via MAUI_LOG_FILE env var
     # Just verify the file exists and has content
@@ -688,7 +722,9 @@ if ($Platform -eq "android") {
         Write-Info "File logging output was minimal, using os_log fallback..."
         $logStartTimeStr = $testStartTime.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm:ss")
         $catalystLogCommand = "log show --level debug --predicate 'process contains `"Controls.TestCases.HostApp`" OR processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
-        Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
+        if (-not (Invoke-ScriptWithTimeout -Command "$catalystLogCommand > `"$deviceLogFile`" 2>&1" -TimeoutSec 120)) {
+            Write-Warn "MacCatalyst os_log capture exceeded 120s and was killed — continuing"
+        }
     }
     
     Write-Info "MacCatalyst logs saved to: $deviceLogFile"
