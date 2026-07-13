@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -6,6 +7,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class GradientBrushMemoryTests : BaseTestFixture
 	{
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateBrushWithSharedGradientStops(GradientStopCollection sharedStops)
+		{
+			var brush = new LinearGradientBrush { GradientStops = sharedStops };
+			return new WeakReference(brush);
+		}
+
 		[Fact]
 		public async Task GradientBrushDoesNotLeakWhenSharingGradientStops()
 		{
@@ -14,13 +22,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				new GradientStop()
 			};
-
-			WeakReference weakBrush;
-			{
-				var brush = new LinearGradientBrush();
-				brush.GradientStops = sharedStops;
-				weakBrush = new WeakReference(brush);
-			}
+			var weakBrush = CreateBrushWithSharedGradientStops(sharedStops);
 
 			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
 			GC.KeepAlive(sharedStops);
@@ -65,6 +67,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, secondInvalidationCount);
 			GC.KeepAlive(firstBrush);
 			GC.KeepAlive(secondBrush);
+		}
+
+		[Fact]
+		public async Task AliveBrushStillInvalidatesAfterSiblingBrushIsCollected()
+		{
+			var stop = new GradientStop();
+			var sharedStops = new GradientStopCollection { stop };
+			var weakCollectedBrush = CreateBrushWithSharedGradientStops(sharedStops);
+			var aliveBrush = new LinearGradientBrush { GradientStops = sharedStops };
+			int invalidationCount = 0;
+			aliveBrush.InvalidateGradientBrushRequested += (_, __) => invalidationCount++;
+
+			Assert.False(await weakCollectedBrush.WaitForCollect(), "Sibling LinearGradientBrush should not be alive!");
+
+			stop.Offset = 0.5f;
+
+			Assert.Equal(1, invalidationCount);
+			GC.KeepAlive(aliveBrush);
+			GC.KeepAlive(sharedStops);
 		}
 
 		[Fact]
