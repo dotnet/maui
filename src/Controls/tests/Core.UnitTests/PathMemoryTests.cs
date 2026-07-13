@@ -108,6 +108,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task DirectGeometryPropertyChangesStillNotifyAfterGc()
+		{
+			var geometry = new EllipseGeometry();
+			var path = new Path { Data = geometry };
+			bool changed = false;
+			path.PropertyChanged += (_, e) => changed |= e.PropertyName == nameof(Path.Data);
+
+			await TestHelpers.Collect();
+
+			geometry.RadiusX = 10;
+
+			Assert.True(changed);
+			GC.KeepAlive(path);
+		}
+
+		[Fact]
 		public async Task PathRenderTransformChangesStillNotifyAfterGc()
 		{
 			var transform = new RotateTransform();
