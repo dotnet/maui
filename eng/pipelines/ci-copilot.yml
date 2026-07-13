@@ -147,8 +147,8 @@ stages:
                 exit 0
               fi
               # Validate BEFORE echoing/using to avoid any injection via the ref.
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
-                echo "##vso[task.logissue type=error]The Copilot PR reviewer only supports PRs targeting 'main' or a 'netN.0' branch. This PR's base branch is not supported, so the review cannot run: no workloads/SDK band or safe merge-base can be derived for that base. (Trigger the reviewer only on PRs whose base is 'main' or 'netN.0'.)"
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+                echo "##vso[task.logissue type=error]The Copilot PR reviewer only supports PRs targeting 'main', a 'netN.0' branch, an 'inflight/*' branch, or a 'release/*' servicing branch. This PR's base branch is not supported, so the review cannot run: no workloads/SDK band or safe merge-base can be derived for that base."
                 exit 1
               fi
               echo "PR #${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the reviewer."
@@ -220,8 +220,8 @@ stages:
 
               # Allowlist: only ever switch to a known protected base branch.
               # Validate BEFORE echoing/using to avoid any injection via the ref.
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
-                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main or netN.0). Refusing to switch."
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN.0, inflight/*, or release/*). Refusing to switch."
                 exit 1
               fi
               echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
@@ -1146,8 +1146,8 @@ stages:
                   "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" \
                   | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])")
               fi
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
-                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main or netN.0). Refusing to switch."
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN.0, inflight/*, or release/*). Refusing to switch."
                 exit 1
               fi
               echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
