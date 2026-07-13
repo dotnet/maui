@@ -127,6 +127,11 @@ namespace Microsoft.Maui.Controls
 
 		sealed class SpanSubscription
 		{
+			// The Span's event delegate holds a strong reference to this SpanSubscription, so the
+			// instance is kept alive until either the Span fires an event (which triggers self-cleanup
+			// via the weak-owner check in OnPropertyChanged/OnPropertyChanging) or the SpanSubscriptions
+			// finalizer runs. This is an accepted trade-off of weak-event cleanup: only these small
+			// tokens may linger briefly, while the owning FormattedString is free to be collected.
 			readonly WeakReference<FormattedString> _owner;
 			Span _span;
 

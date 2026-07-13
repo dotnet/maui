@@ -85,6 +85,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void DuplicateSpanKeepsOneSubscriptionAfterSingleRemove()
+		{
+			var span = new Span();
+			var fs = new FormattedString();
+			fs.Spans.Add(span);
+			fs.Spans.Add(span);
+			fs.Spans.Remove(span); // removes one occurrence only
+
+			bool spansChanged = false;
+			fs.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == "Spans")
+					spansChanged = true;
+			};
+
+			span.Text = "New text";
+
+			Assert.True(spansChanged); // second subscription still active
+		}
+
+		[Fact]
+		public void SpanChangingUnsubscribesAfterRemoval()
+		{
+			var span = new Span { Text = "Original" };
+			var fs = new FormattedString();
+			fs.Spans.Add(span);
+			fs.Spans.Remove(span);
+
+			bool spansChanging = false;
+			fs.PropertyChanging += (s, e) =>
+			{
+				if (e.PropertyName == "Spans")
+					spansChanging = true;
+			};
+
+			span.Text = "New text";
+
+			Assert.False(spansChanging);
+		}
+
+		[Fact]
 		public void SpanChangingTriggersSpansPropertyChanging()
 		{
 			var span = new Span { Text = "Original text" };
