@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 			new PropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler>(ViewHandler.ElementMapper)
 			{
 				[nameof(ISwipeItemMenuItem.Visibility)] = MapVisibility,
-				[nameof(IView.Background)] = MapBackground,
+				[nameof(ISwipeItemMenuItem.Background)] = MapBackground,
 				[nameof(IMenuElement.Text)] = MapText,
 				[nameof(ITextStyle.TextColor)] = MapTextColor,
 				[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,

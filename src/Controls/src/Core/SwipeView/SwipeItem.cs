@@ -12,7 +12,14 @@ namespace Microsoft.Maui.Controls
 	public partial class SwipeItem : MenuItem, Controls.ISwipeItem, Maui.ISwipeItemMenuItem
 	{
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SwipeItem), null);
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SwipeItem), null,
+			propertyChanged: OnBackgroundColorPropertyChanged);
+
+		static void OnBackgroundColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is SwipeItem swipeItem)
+				swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.Background));
+		}
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(SwipeItem), BooleanBoxes.TrueBox, propertyChanged: OnIsVisibleChanged);
