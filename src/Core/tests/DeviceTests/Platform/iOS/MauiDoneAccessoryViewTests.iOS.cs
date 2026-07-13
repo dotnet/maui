@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 	public class MauiDoneAccessoryViewTests : TestBase
 	{
 		// iOS 26+ shows the floating, pass-through Liquid Glass close button; earlier versions keep the
-		// original opaque, blocking Done toolbar. The expected behavior differs by path.
+		// original full-width touch-blocking Done toolbar. The expected behavior differs by path.
 		static bool UsesGlassButton => OperatingSystem.IsIOSVersionAtLeast(26);
 
 		[Theory]
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 				if (UsesGlassButton)
 					Assert.Null(hitView); // iOS 26+ floating button lets taps pass through to the field behind
 				else
-					Assert.NotNull(hitView); // classic toolbar is opaque and keeps blocking taps
+					Assert.NotNull(hitView); // classic toolbar keeps blocking taps across its full width
 			});
 		}
 

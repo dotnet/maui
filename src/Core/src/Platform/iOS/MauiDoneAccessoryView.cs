@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		// iOS 26 gives bars a translucent Liquid Glass background, so a full-width accessory looks empty
 		// and appears to let taps through to the field behind it (dotnet/maui#36412). On those versions
 		// we replace the bar with a floating, pass-through close button. Earlier iOS keeps the original
-		// opaque Done toolbar, which reads as a solid bar and needs no change.
+		// full-width touch-blocking Done toolbar, so the accessory already blocks taps behind it.
 		static bool UseGlassButton => OperatingSystem.IsIOSVersionAtLeast(26);
 
 		readonly BarButtonItemProxy _proxy;
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var hitView = base.HitTest(point, uievent);
 
-			// The classic toolbar (iOS < 26) is opaque, so keep its original blocking behavior.
+			// The classic toolbar (iOS < 26) keeps its original full-width touch-blocking behavior.
 			if (!UseGlassButton)
 				return hitView;
 
