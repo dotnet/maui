@@ -85,6 +85,30 @@ namespace Tests
 			public void OnReadingChanged(object sender, AccelerometerChangedEventArgs e) => CallCount++;
 		}
 
+		// A weak-event-backed subscriber invocation must surface the subscriber's original
+		// exception instance directly, not a wrapping System.Reflection.TargetInvocationException,
+		// to match plain multicast delegate invocation semantics.
+		[Fact]
+		public void Accelerometer_ReadingChanged_PropagatesSubscriberExceptionDirectly()
+		{
+			var expected = new InvalidOperationException("subscriber failed");
+			EventHandler<AccelerometerChangedEventArgs> handler = (_, _) => throw expected;
+
+			Accelerometer.ReadingChanged += handler;
+
+			try
+			{
+				var implementation = (AccelerometerImplementation)Accelerometer.Default;
+				var actual = Assert.Throws<InvalidOperationException>(() => implementation.OnChanged(new AccelerometerData(1, 2, 3)));
+
+				Assert.Same(expected, actual);
+			}
+			finally
+			{
+				Accelerometer.ReadingChanged -= handler;
+			}
+		}
+
 		[Fact]
 		public void Accelerometer_Start() =>
 			Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Accelerometer.Stop());
