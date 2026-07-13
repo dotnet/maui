@@ -944,11 +944,36 @@ function Get-MaestroOperationalChecks {
         } else {
             # Sort by BAR build id (monotonic, locale-independent) to pick the latest.
             $latest = @($builds.Data | Sort-Object id -Descending)[0]
-            $chans = if ($latest.channels) { ($latest.channels -join ', ') } else { '_none_' }
+            $hasChans = @($latest.channels).Count -gt 0
+            $chans = if ($hasChans) { ($latest.channels -join ', ') } else { '_none_' }
             $buildLink = if ($latest.buildLink) { " ([build $($latest.id)]($($latest.buildLink)))" } else { " (build $($latest.id))" }
             $checks += New-ReadinessCheck -Area $buildArea -Status 'READY' `
                 -Details "Build **$($latest.buildNumber)**$buildLink for SR HEAD ``$headShort`` is in BAR; channels: $chans." `
                 -NextAction "No action needed."
+
+            # === Check 3: per-build validation feed for the ship Assessment ===
+            # The DevDiv ship "Assessment" work item MUST link the per-build
+            # darc-pub NuGet feed so CSI/customers can validate the exact
+            # candidate packages. That feed is generated ONLY when the build is
+            # promoted to a channel (which requires the default-channel mapping
+            # in Check 1). No promotion => no feed => the Assessment gets created
+            # without a validation feed (the exact gap that shipped an incomplete
+            # SR9 assessment). Feed name is darc-pub-dotnet-maui-<sha8>, sha8 =
+            # the build's commit short SHA (falls back to SR HEAD).
+            $feedArea = "Ship Assessment validation feed"
+            $commitProp = $latest.PSObject.Properties['commit']
+            $buildCommit = if ($commitProp -and $commitProp.Value) { [string]$commitProp.Value } else { [string]$Ctx.srHeadSha }
+            $buildSha8 = $buildCommit.Substring(0, [Math]::Min(8, $buildCommit.Length))
+            $feedUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-$buildSha8/nuget/v3/index.json"
+            if ($hasChans) {
+                $checks += New-ReadinessCheck -Area $feedArea -Status 'READY' `
+                    -Details "Build **$($latest.buildNumber)** is promoted ($chans) → its per-build feed exists: ``$feedUrl``. Link this feed in the ship Assessment (DevDiv 'Assessment' work item) so CSI/customers can validate the exact candidate packages." `
+                    -NextAction "Add the feed URL to the Assessment. Confirm the location with ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` (prints the NugetFeed location)."
+            } else {
+                $checks += New-ReadinessCheck -Area $feedArea -Status 'WATCH' `
+                    -Details "Build **$($latest.buildNumber)** for SR HEAD is NOT promoted to any channel → its per-build darc-pub feed is not generated, so the ship Assessment has no validation feed to link (this is what left the SR9 assessment incomplete). Once promoted, the feed will be ``$feedUrl``." `
+                    -NextAction "Ensure the default-channel mapping (Check 1) exists, then promote the build to ``$expectedChannel`` (release-eng). Verify with ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` and add the resulting NugetFeed URL to the Assessment."
+            }
         }
     }
 

@@ -298,6 +298,7 @@ The SR readiness report rolls operational checks into a single **Blocking** summ
 | **`Main bumped to next SR cycle`** | All SR runs | `BLOCKED` if the next SR cycle's version hasn't been promoted on `main`. The next action emits the exact one-line `PatchVersion` edit and PR title while preserving the mainline SDK-band and prerelease settings. |
 | **`BAR default-channel mapping`** | SR branches matching `release/X.Y.Zxx-srN` | `BLOCKED` if the SR branch is not wired to the `.NET <band> SDK` channel in BAR. `UNKNOWN` if `darc` isn't on PATH (report includes the exact verification command). |
 | **`BAR build for SR HEAD`** | When darc is available + SR HEAD SHA known | `READY` if BAR has a published build for the SR HEAD commit. `WATCH` (not blocking — transient) if CI hasn't published one yet. |
+| **`Ship Assessment validation feed`** | When a BAR build exists for SR HEAD | `READY` surfaces the per-build `darc-pub-dotnet-maui-<sha8>` NuGet feed URL to paste into the DevDiv ship **Assessment**. `WATCH` if the build isn't promoted to a channel yet (no channel → no feed → the Assessment has no validation feed to link — the SR9 miss). |
 | **`Milestone for current cycle`** | SR + preview branches | `BLOCKED` if the current cycle's milestone (e.g. `.NET 10 SR8` or `.NET 11.0-preview6`) doesn't exist in the GitHub milestone list — fixed issues have nowhere to land. |
 | **`Milestone for next cycle`** | SR + preview branches | `CLEANUP` if the next cycle's milestone isn't pre-created — open issues can't roll forward when current ships, but it doesn't block the current release. |
 | **`Stale open milestones`** | SR + preview branches | `CLEANUP` if any milestones in the same major + same cycle type (SR or preview) are past their `due_on` by >7 days and still open (already-shipped releases accumulating untriaged issues). |
@@ -346,7 +347,7 @@ The BAR checks shell out to `darc` (cached probe via `Get-Command darc`). When d
 
 ## Methodology
 
-Six critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
+Seven critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
 
 1. **Cherry-pick number swap**: SR backports get NEW PR numbers (e.g. main #35356 → SR7 #35428). Cannot naively grep source PR numbers; must walk SR-only commits and extract refs from commit bodies.
 
@@ -359,6 +360,8 @@ Six critical gotchas this skill encodes — see [references/methodology.md](refe
 5. **Servicing flip workflow**: The release branch must produce stable packages before ship. All .NET 10 SRs set `PreReleaseVersionLabel=servicing` and `StabilizePackageVersion=true`; a focused flip PR is the normal pattern, while SR8 validly inherited those values during its catch-up merge.
 
 6. **Next-cycle main bump workflow**: After an SR branch is cut, `main` advances through a separate one-line `PatchVersion` PR. The report emits the exact old/new XML and title while preserving `SdkBandVersion` and CI prerelease settings.
+
+7. **Default-channel → per-build feed → ship Assessment**: An SR branch needs a BAR default-channel mapping so its build is promoted and generates the per-build `darc-pub-dotnet-maui-<sha8>` NuGet feed. The DevDiv ship **Assessment** must link that feed so CSI/customers can validate the exact candidate packages; without the mapping + promotion the feed never exists and the Assessment ships incomplete (the SR9 miss). The report derives and surfaces the exact feed URL once a promoted build exists.
 
 ## Shared module
 

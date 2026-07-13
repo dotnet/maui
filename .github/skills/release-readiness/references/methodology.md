@@ -240,6 +240,55 @@ For SR9 → SR10, that means changing only
 The readiness report must emit these exact instructions when the check is
 blocked. It remains report-only and must not edit or push `main`.
 
+## Gotcha #7: Default-Channel → Per-Build Feed → Ship Assessment
+
+### The trap
+
+The DevDiv ship **Assessment** (an Azure DevOps "Assessment" work item) must
+link the **per-build NuGet feed** so CSI and customers can validate the exact
+candidate packages before the release ships. That feed —
+`https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-<sha8>/nuget/v3/index.json`
+(`<sha8>` = the build's commit short SHA) — is **only generated when the build
+is promoted to a channel**. Promotion requires a **BAR default-channel
+mapping** for the SR branch (Gotcha checks emit this as `BAR default-channel
+mapping`).
+
+If the branch has no default channel, the build is never promoted, no per-build
+feed is generated, and the Assessment gets created **without** the validation
+feed — exactly what happened for SR9: the assessment shipped incomplete and CSI
+had no feed to validate against. CI stays green throughout, so nothing else
+catches it.
+
+### Real example (SR9)
+
+- SR9 branch `release/10.0.1xx-sr9` was cut **without** a default channel.
+- Build `20260710.6` (BAR **322419** / AzDO **3019432**) was **not promoted** →
+  no per-build feed → the Assessment was created without a feed link.
+- Fixed by `darc add-default-channel --repo https://github.com/dotnet/maui
+  --branch release/10.0.1xx-sr9 --channel ".NET 10.0.1xx SDK"` (maestro-config
+  PR) and re-promoting the build. `darc get-asset --name
+  Microsoft.Maui.Controls --build 322419` then showed channel `.NET 10.0.1xx
+  SDK` and feed `darc-pub-dotnet-maui-8e2547a4`.
+- SR8 for reference used feed `darc-pub-dotnet-maui-bf615689` — same
+  `darc-pub-dotnet-maui-<sha8>` pattern.
+
+### The workflow
+
+1. Ensure the SR branch has a BAR default-channel mapping (the
+   `BAR default-channel mapping` check). Without it, escalate to release
+   engineering: `darc add-default-channel --channel ".NET <band> SDK" --branch
+   release/<major>.0.1xx-sr<N> --repo https://github.com/dotnet/maui`.
+2. Ensure the SR HEAD build is **promoted** to that channel. The
+   `Ship Assessment validation feed` check reports `READY` (with the derived
+   feed URL) once the build carries a channel, or `WATCH` while it is
+   unpromoted.
+3. Confirm the feed location with `darc get-asset --name
+   Microsoft.Maui.Controls --build <BAR id>` (prints the `NugetFeed` location).
+4. **Paste that feed URL into the DevDiv ship Assessment.**
+
+The report derives and surfaces the feed URL but remains report-only — it does
+not create channels, promote builds, or edit the Assessment.
+
 ## Revert Detection
 
 A fix can land on SR and then be **reverted** later in the same SR window — e.g. PR #35744 was backported to SR7 then reverted via a `[Revert]` commit. A naive "is the PR in SR?" check would falsely report "in SR" while the user effectively ships without the fix.

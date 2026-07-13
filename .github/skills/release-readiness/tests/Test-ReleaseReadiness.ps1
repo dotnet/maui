@@ -3706,7 +3706,7 @@ Assert-Eq -Label "darc-unavailable: mapping NextAction mentions add-default-chan
 $s1Build = Get-MaestroCheckByPrefix -Checks $s1 -Prefix 'BAR build for SR HEAD'
 Assert-Eq -Label "darc-unavailable: build check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s1Build.Status
 
-# ── Scenario 2: SR branch present in BAR mappings + build for HEAD → 2x READY ──
+# ── Scenario 2: SR mapped + promoted build for HEAD → mapping/build/feed all READY ──
 $s2 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead
 $s2Map = Get-MaestroCheckByPrefix -Checks $s2 -Prefix 'BAR default-channel'
 Assert-Eq -Label "sr-mapped + build-present: mapping is READY" -Expected 'READY' -Actual $s2Map.Status
@@ -3716,6 +3716,12 @@ $s2Build = Get-MaestroCheckByPrefix -Checks $s2 -Prefix 'BAR build for SR HEAD'
 Assert-Eq -Label "sr-mapped + build-present: build check is READY" -Expected 'READY' -Actual $s2Build.Status
 Assert-Eq -Label "sr-mapped + build-present: build details show build number" -Expected $true `
     -Actual ($s2Build.Details -match '20260610\.5')
+$s2Feed = Get-MaestroCheckByPrefix -Checks $s2 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "sr-mapped + promoted build: feed check is READY" -Expected 'READY' -Actual $s2Feed.Status
+Assert-Eq -Label "sr-mapped + promoted build: feed URL derived from build commit sha8" -Expected $true `
+    -Actual ($s2Feed.Details -match 'darc-pub-dotnet-maui-a11840bf/nuget/v3/index\.json')
+Assert-Eq -Label "sr-mapped + promoted build: feed NextAction names darc get-asset for the BAR build" -Expected $true `
+    -Actual ($s2Feed.NextAction -match 'darc get-asset --name Microsoft\.Maui\.Controls --build 318278')
 
 # ── Scenario 3: SR branch MISSING from BAR (the SR8 real-world bug) → BLOCKED ──
 $s3 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr7 -BuildResponse @()
@@ -3781,6 +3787,23 @@ Assert-Eq -Label "multiple-builds: details report highest-id build (20260610.5)"
 $s13 = Invoke-MaestroChecksWithMocks -SrBranch 'release/10.0.1xx-sr7' -DefaultChannelsResponse $mockChannelsWithSr7 -BuildResponse $mockBuildForHead
 $s13Map = Get-MaestroCheckByPrefix -Checks $s13 -Prefix 'BAR default-channel'
 Assert-Eq -Label "sr7-already-mapped: READY" -Expected 'READY' -Actual $s13Map.Status
+
+# ── Scenario 14: build exists but NOT promoted (no channels) → feed check WATCH ──
+# The SR9 incident: a build existed for HEAD but carried no channel, so no
+# per-build darc-pub feed was generated and the ship Assessment had no feed to
+# link. The feed check must still derive the eventual URL from the build commit.
+$unpromotedBuild = @(
+    [PSCustomObject]@{ id = 322419; buildNumber = '20260710.6'; buildLink = 'https://example/sr9'
+        commit = '8e2547a4707f745a27a7791495b240e756926980'; channels = @() }
+)
+$s14 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $unpromotedBuild
+$s14Feed = Get-MaestroCheckByPrefix -Checks $s14 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "build-not-promoted: feed check is WATCH (no channel → no feed)" -Expected 'WATCH' -Actual $s14Feed.Status
+Assert-Eq -Label "build-not-promoted: feed details derive the eventual URL from the build commit" -Expected $true `
+    -Actual ($s14Feed.Details -match 'darc-pub-dotnet-maui-8e2547a4/nuget/v3/index\.json')
+$s14Build = Get-MaestroCheckByPrefix -Checks $s14 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "build-not-promoted: build check still READY, channels shown as '_none_'" -Expected $true `
+    -Actual ($s14Build.Details -match '_none_')
 
 # =========================================================================
 # Get-MilestoneHygieneChecks — current/next milestone existence + stale detection
