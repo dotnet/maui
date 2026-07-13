@@ -65,23 +65,25 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			if (newCollection == null)
-				return;
-
-			_gradientStopsCollectionChanged ??= OnGradientStopCollectionChanged;
-			_gradientStopPropertyChanged ??= OnGradientStopPropertyChanged;
-
-			var subscriptions = _gradientStopSubscriptions ??= new GradientStopSubscriptions();
-			subscriptions.Subscribe(newCollection, _gradientStopsCollectionChanged);
-
-			foreach (var newStop in newCollection)
+			if (newCollection != null)
 			{
-				if (newStop is not null)
+				_gradientStopsCollectionChanged ??= OnGradientStopCollectionChanged;
+				_gradientStopPropertyChanged ??= OnGradientStopPropertyChanged;
+
+				var subscriptions = _gradientStopSubscriptions ??= new GradientStopSubscriptions();
+				subscriptions.Subscribe(newCollection, _gradientStopsCollectionChanged);
+
+				foreach (var newStop in newCollection)
 				{
-					newStop.Parent = this;
-					subscriptions.Add(newStop, _gradientStopPropertyChanged);
+					if (newStop is not null)
+					{
+						newStop.Parent = this;
+						subscriptions.Add(newStop, _gradientStopPropertyChanged);
+					}
 				}
 			}
+
+			Invalidate();
 		}
 
 		void OnGradientStopCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

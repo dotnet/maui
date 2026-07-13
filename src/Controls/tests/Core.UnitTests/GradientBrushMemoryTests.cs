@@ -121,6 +121,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, invalidationCount);
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void ReplacingGradientStopsInvalidatesBrush(bool replaceWithNull)
+		{
+			var brush = new LinearGradientBrush
+			{
+				GradientStops = new GradientStopCollection { new GradientStop() }
+			};
+			int invalidationCount = 0;
+			brush.InvalidateGradientBrushRequested += (_, __) => invalidationCount++;
+
+			brush.GradientStops = replaceWithNull ? null : new GradientStopCollection();
+
+			Assert.Equal(1, invalidationCount);
+		}
+
 		[Fact]
 		public void DuplicateGradientStopsPreserveOccurrenceSubscriptions()
 		{
