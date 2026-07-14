@@ -347,14 +347,15 @@ public class PlatformInterop {
             return builder;
         }
 
-        int maxSize = Math.max(metrics.widthPixels, metrics.heightPixels);
-        if (maxSize <= 0) {
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
+        if (width <= 0 || height <= 0) {
             return builder;
         }
 
         return builder
             .downsample(DownsampleStrategy.CENTER_INSIDE)
-            .override(maxSize, maxSize);
+            .override(width, height);
     }
 
     private static RequestBuilder<Drawable> limitToTargetSize(RequestBuilder<Drawable> builder, ImageView imageView) {
