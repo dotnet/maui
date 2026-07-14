@@ -440,10 +440,18 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 #     re-picked and rebuilt from source every run. Detect the merged fix by BOTH the issue-ref
 #     AND the rooting Type.Member so we can close this issue instead of rebuilding. The search is
 #     scoped to label:agentic-workflows so ONLY workflow-owned merged fixes can close a scan issue.
-gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
-  --json number,title,body \
-  | jq --arg n "$N" --arg api "$API_RE" --arg repo "$REPO_RE" \
-      '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) or (.title | test("Fix +"+$api+"([. ]|$)")))]' \
+#     --limit 1000 = the GitHub SEARCH API's hard result ceiling (pagination cannot exceed it). If
+#     the merged [leak-fix] set ever hits 1000, older fixes are TRUNCATED and this gate could miss a
+#     valid merged fix. Gate (d) stays fail-safe (it only CLOSES on a positive match, so a miss
+#     under-closes rather than wrongly closing), but close-coverage would be incomplete, so warn.
+gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' --limit 1000 \
+  --json number,title,body > /tmp/gh-aw/agent/merged-leakfix-all.json
+if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-all.json)" -ge 1000 ]; then
+  echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older merged fixes may be TRUNCATED. Gate (d) stays fail-safe (under-closes) but close-coverage is incomplete — switch to date-windowed enumeration."
+fi
+jq --arg n "$N" --arg api "$API_RE" --arg repo "$REPO_RE" \
+    '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) or (.title | test("Fix +"+$api+"([. ]|$)")))]' \
+    /tmp/gh-aw/agent/merged-leakfix-all.json \
   > /tmp/gh-aw/agent/merged-fix-prs.json
 jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent/merged-fix-prs.json
 ```

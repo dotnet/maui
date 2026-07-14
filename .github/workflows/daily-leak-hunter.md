@@ -197,9 +197,16 @@ echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 # completed), so treating "closed as completed" as fixed would permanently suppress a still-valid
 # leak. Worst case here (a human-fixed leak with no [leak-fix] PR) is a single bounded re-file
 # that the OPEN-issue de-dup above then catches — far safer than permanent data loss.
+# --limit 1000 = the GitHub SEARCH API's hard result ceiling (pagination cannot exceed it). If the
+# merged [leak-fix] set ever hits 1000, older fixes are TRUNCATED: because Step 5 tests the SHIPPED
+# package (where a merged-but-unshipped fix still reproduces), a dropped-out fix would be re-filed
+# once (then the OPEN-issue de-dup catches it), so warn loudly if we ever reach the ceiling.
 gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' \
-  --limit 300 --json title -q '.[].title' \
-  | grep -E '^\[leak-fix\] ' | sed -E 's/^\[leak-fix\] *(Fix +)?//' \
+  --limit 1000 --json title -q '.[].title' > /tmp/gh-aw/agent/merged-leakfix-titles.txt
+if [ "$(grep -c '' /tmp/gh-aw/agent/merged-leakfix-titles.txt)" -ge 1000 ]; then
+  echo "WARNING: fixed-on-main provenance hit the 1000 search-API ceiling; older merged [leak-fix] fixes may be TRUNCATED and their leaks could be re-filed once — switch to date-windowed enumeration."
+fi
+grep -E '^\[leak-fix\] ' /tmp/gh-aw/agent/merged-leakfix-titles.txt | sed -E 's/^\[leak-fix\] *(Fix +)?//' \
   | awk '{
       if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) {
         chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n]
