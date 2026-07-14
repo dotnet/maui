@@ -409,10 +409,16 @@ echo "target rooting API: $API"
 # Escape regex metacharacters (notably the '.' in Type.Member) so the jq test() calls below match
 # a LITERAL "Type.Member" — otherwise "BackButtonBehavior.Command" would also match "BackButtonBehaviorXCommand".
 API_RE=$(printf '%s' "$API" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
+# Escape the owner/repo so it embeds literally in the jq test() calls below. The issue-ref match
+# requires "#<N>" to be a BARE same-repo reference OR an explicit "<owner>/<repo>#<N>" qualifier —
+# NEVER an arbitrary cross-repo "other/repo#<N>". Otherwise an unrelated upstream ref such as
+# "Refs: dotnet/runtime#5000" would satisfy a search for maui #5000 and let a foreign reference
+# drive the destructive close path in gate (d) against a live [leak-scan] issue.
+REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 # (a) Open [leak-fix] PR already addressing THIS issue number?
 gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title,body \
-  | jq --arg n "$N" '[.[] | select((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b"))]' \
+  | jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select((.body // "") | test("(Fixes|Refs)[^0-9]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b"))]' \
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 # (b) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
@@ -425,7 +431,7 @@ jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/sam
 # (c) Closed-unmerged attempts for this issue (attempt cap = 3).
 gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title,body,mergedAt \
-  | jq --arg n "$N" '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b")) and (.mergedAt == null))]' \
+  | jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) and (.mergedAt == null))]' \
   > /tmp/gh-aw/agent/closed-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 # (d) MERGED [leak-fix] PR already fixing this issue number OR the SAME rooting Type.Member?
@@ -436,8 +442,8 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 #     scoped to label:agentic-workflows so ONLY workflow-owned merged fixes can close a scan issue.
 gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title,body \
-  | jq --arg n "$N" --arg api "$API_RE" \
-      '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b")) or (.title | test("Fix +"+$api+"([. ]|$)")))]' \
+  | jq --arg n "$N" --arg api "$API_RE" --arg repo "$REPO_RE" \
+      '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) or (.title | test("Fix +"+$api+"([. ]|$)")))]' \
   > /tmp/gh-aw/agent/merged-fix-prs.json
 jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent/merged-fix-prs.json
 ```
