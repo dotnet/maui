@@ -16,5 +16,6 @@ override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<
 Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.LayoutSubviews() -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
