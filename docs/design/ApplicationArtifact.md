@@ -6,9 +6,9 @@
 - .NET for iOS, Mac Catalyst, tvOS, and macOS creates `.app`, `.ipa`, `.pkg`, and `.xcarchive` items.
 - Other platforms should populate the same item group from their own build or publish pipeline.
 
-MAUI does not rediscover platform package files and does not create a parallel MAUI-specific artifact item group. Instead, MAUI participates through `$(GetApplicationArtifactsDependsOn)` and updates existing `@(ApplicationArtifact)` items with MAUI project metadata after the platform SDK `GetApplicationArtifacts` target has run `Build` and platform-produced items exist.
+MAUI does not rediscover platform package files and does not create a parallel MAUI-specific artifact item group. Instead, it defines default MAUI metadata for the shared `ApplicationArtifact` item type. Platform SDKs create the items, and the defaults supplement their platform-specific metadata.
 
-The MAUI metadata enrichment target adds these metadata values when the matching project properties are set:
+MAUI supplies these metadata values when the matching project properties are set:
 
 - `ApplicationId`
 - `ApplicationIdGuid`
@@ -17,4 +17,6 @@ The MAUI metadata enrichment target adds these metadata values when the matching
 - `ApplicationDisplayVersion`
 - `ApplicationVersion`
 
-`GetApplicationArtifacts` and `Publish` remain platform-owned result paths. Platform SDK `GetApplicationArtifacts` depends on `Build`, then executes targets appended to `$(GetApplicationArtifactsDependsOn)` before returning `@(ApplicationArtifact)` items. `Publish` uses the same post-`Build` extension path before returning items. Replacing `$(GetApplicationArtifactsDependsOn)` must not bypass platform build or platform artifact population; platform SDKs keep `Build` outside that extensibility property.
+The defaults are declared with an MSBuild `ItemDefinitionGroup`, so explicit metadata from a platform SDK takes precedence. The defaults also apply when a platform recreates an item, as Android does when changing artifact identities to published paths.
+
+`GetApplicationArtifacts` and `Publish` remain platform-owned result paths. MAUI only supplies shared metadata and does not change which artifacts those targets produce or return.

@@ -121,12 +121,21 @@ public class SimpleTemplateTest : BaseTemplateTests
 		SetTestIdentifier(nameof(ApplicationArtifactsAreEnrichedWithMauiMetadata));
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
-		var getArtifactsFile = Path.Combine(projectDir, "get-application-artifacts.txt");
-		var publishArtifactsFile = Path.Combine(projectDir, "publish-application-artifacts.txt");
-		var dependsOnFile = Path.Combine(projectDir, "get-application-artifacts-depends-on.txt");
+		var seededArtifactsFile = Path.Combine(projectDir, "seeded-application-artifacts.txt");
+		var publishedArtifactsFile = Path.Combine(projectDir, "published-application-artifacts.txt");
+		var mauiSdkAfterTargets = Path.Combine(
+			TestEnvironment.GetMauiDirectory(),
+			"src",
+			"Workload",
+			"Microsoft.Maui.Sdk",
+			"Sdk",
+			"Microsoft.Maui.Sdk.After.targets");
 
 		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template maui. Check test output for errors.");
+
+		var buildProps = BuildProps;
+		buildProps.Add($"MauiSdkAfterTargets=\"{mauiSdkAfterTargets}\"");
 
 		FileUtilities.ReplaceInFile(projectFile,
 			"</Project>",
@@ -138,49 +147,58 @@ public class SimpleTemplateTest : BaseTemplateTests
 			    <ApplicationDisplayVersion>2.3</ApplicationDisplayVersion>
 			    <ApplicationVersion>42</ApplicationVersion>
 			  </PropertyGroup>
-			  <Import Project="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\src\Workload\Microsoft.Maui.Sdk\Sdk\Microsoft.Maui.Sdk.After.targets'))" />
+			  <Import Project="$(MauiSdkAfterTargets)" />
 			  <Target Name="SeedApplicationArtifacts">
 			    <ItemGroup>
 			      <ApplicationArtifact Include="$(MSBuildProjectDirectory)/artifacts/platform/android/MyArtifactApp-Signed.apk">
 			        <PackageFormat>apk</PackageFormat>
 			        <Signed>true</Signed>
 			        <PackageId>com.example.platform</PackageId>
+			        <Abi>arm64-v8a</Abi>
 			      </ApplicationArtifact>
-			      <ApplicationArtifact Include="$(MSBuildProjectDirectory)/artifacts/platform/apple/MyArtifactApp.app">
-			        <PackageFormat>app</PackageFormat>
-			        <IsDirectory>true</IsDirectory>
-			        <PlatformName>iOS</PlatformName>
-			        <BundleIdentifier>com.example.platform</BundleIdentifier>
+			      <ApplicationArtifact Include="$(MSBuildProjectDirectory)/artifacts/platform/android/MyArtifactApp-Signed.aab">
+			        <PackageFormat>aab</PackageFormat>
+			        <Signed>true</Signed>
+			        <PackageId>com.example.platform</PackageId>
 			      </ApplicationArtifact>
 			    </ItemGroup>
 			  </Target>
-			  <Target Name="WriteGetApplicationArtifactsMetadata" DependsOnTargets="SeedApplicationArtifacts;_AddMauiApplicationArtifactMetadata">
+			  <Target Name="WriteSeededApplicationArtifactsMetadata" DependsOnTargets="SeedApplicationArtifacts">
 			    <WriteLinesToFile
-			        File="$(MSBuildProjectDirectory)/get-application-artifacts-depends-on.txt"
-			        Lines="$(GetApplicationArtifactsDependsOn)"
-			        Overwrite="true" />
-			    <WriteLinesToFile
-			        File="$(MSBuildProjectDirectory)/get-application-artifacts.txt"
-			        Lines="@(ApplicationArtifact->'%(Filename)%(Extension)|%(PackageFormat)|%(ApplicationTitle)|%(ApplicationName)|%(ApplicationId)|%(ApplicationIdGuid)|%(ApplicationDisplayVersion)|%(ApplicationVersion)|%(Signed)|%(PackageId)|%(PlatformName)|%(BundleIdentifier)')"
+			        File="$(MSBuildProjectDirectory)/seeded-application-artifacts.txt"
+			        Lines="@(ApplicationArtifact->'%(Filename)%(Extension)|%(PackageFormat)|%(ApplicationTitle)|%(ApplicationName)|%(ApplicationId)|%(ApplicationIdGuid)|%(ApplicationDisplayVersion)|%(ApplicationVersion)|%(Signed)|%(PackageId)|%(Abi)')"
 			        Overwrite="true" />
 			  </Target>
-			  <Target Name="WritePublishApplicationArtifactsMetadata" DependsOnTargets="SeedApplicationArtifacts;_AddMauiApplicationArtifactMetadata">
+			  <Target Name="RecreatePublishedApplicationArtifacts" DependsOnTargets="SeedApplicationArtifacts">
+			    <ItemGroup>
+			      <_ApplicationArtifactForPublish Include="@(ApplicationArtifact)" />
+			      <_ApplicationArtifactPublishCopy
+			          Include="@(_ApplicationArtifactForPublish->'$(MSBuildProjectDirectory)/artifacts/publish/%(Filename)%(Extension)')">
+			        <PackageFormat>%(_ApplicationArtifactForPublish.PackageFormat)</PackageFormat>
+			        <Signed>%(_ApplicationArtifactForPublish.Signed)</Signed>
+			        <PackageId>%(_ApplicationArtifactForPublish.PackageId)</PackageId>
+			        <Abi Condition="'%(_ApplicationArtifactForPublish.Abi)' != ''">%(_ApplicationArtifactForPublish.Abi)</Abi>
+			      </_ApplicationArtifactPublishCopy>
+			      <ApplicationArtifact Remove="@(ApplicationArtifact)" />
+			      <ApplicationArtifact Include="@(_ApplicationArtifactPublishCopy)" />
+			    </ItemGroup>
+			  </Target>
+			  <Target Name="WritePublishedApplicationArtifactsMetadata" DependsOnTargets="RecreatePublishedApplicationArtifacts">
 			    <WriteLinesToFile
-			        File="$(MSBuildProjectDirectory)/publish-application-artifacts.txt"
-			        Lines="@(ApplicationArtifact->'%(Filename)%(Extension)|%(PackageFormat)|%(ApplicationTitle)|%(ApplicationName)|%(ApplicationId)|%(ApplicationIdGuid)|%(ApplicationDisplayVersion)|%(ApplicationVersion)|%(Signed)|%(PackageId)|%(PlatformName)|%(BundleIdentifier)')"
+			        File="$(MSBuildProjectDirectory)/published-application-artifacts.txt"
+			        Lines="@(ApplicationArtifact->'%(Filename)%(Extension)|%(PackageFormat)|%(ApplicationTitle)|%(ApplicationName)|%(ApplicationId)|%(ApplicationIdGuid)|%(ApplicationDisplayVersion)|%(ApplicationVersion)|%(Signed)|%(PackageId)|%(Abi)')"
 			        Overwrite="true" />
 			  </Target>
 			</Project>
 			""");
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "WriteGetApplicationArtifactsMetadata", framework: $"{DotNetCurrent}-android", properties: BuildProps, output: _output),
-			$"Project {Path.GetFileName(projectFile)} failed to write GetApplicationArtifacts metadata. Check test output/attachments for errors.");
-		Assert.Contains("_AddMauiApplicationArtifactMetadata", File.ReadAllText(dependsOnFile), StringComparison.Ordinal);
-		AssertApplicationArtifactMetadata(File.ReadAllLines(getArtifactsFile));
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "WriteSeededApplicationArtifactsMetadata", framework: $"{DotNetCurrent}-android", properties: buildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to write seeded ApplicationArtifact metadata. Check test output/attachments for errors.");
+		AssertApplicationArtifactMetadata(File.ReadAllLines(seededArtifactsFile));
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "WritePublishApplicationArtifactsMetadata", framework: $"{DotNetCurrent}-android", properties: BuildProps, output: _output),
-			$"Project {Path.GetFileName(projectFile)} failed to write Publish metadata. Check test output/attachments for errors.");
-		AssertApplicationArtifactMetadata(File.ReadAllLines(publishArtifactsFile));
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "WritePublishedApplicationArtifactsMetadata", framework: $"{DotNetCurrent}-android", properties: buildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to write published ApplicationArtifact metadata. Check test output/attachments for errors.");
+		AssertApplicationArtifactMetadata(File.ReadAllLines(publishedArtifactsFile));
 
 		static void AssertApplicationArtifactMetadata(string[] artifactLines)
 		{
@@ -192,20 +210,18 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"apk",
 				signed: "true",
 				packageId: "com.example.platform",
-				platformName: "",
-				bundleIdentifier: "");
+				abi: "arm64-v8a");
 
 			AssertArtifact(
-				artifactLines.Single(line => line.StartsWith("MyArtifactApp.app|app|", StringComparison.Ordinal)),
-				"MyArtifactApp.app",
-				"app",
-				signed: "",
-				packageId: "",
-				platformName: "iOS",
-				bundleIdentifier: "com.example.platform");
+				artifactLines.Single(line => line.StartsWith("MyArtifactApp-Signed.aab|aab|", StringComparison.Ordinal)),
+				"MyArtifactApp-Signed.aab",
+				"aab",
+				signed: "true",
+				packageId: "com.example.platform",
+				abi: "");
 		}
 
-		static void AssertArtifact(string artifactLine, string fileName, string packageFormat, string signed, string packageId, string platformName, string bundleIdentifier)
+		static void AssertArtifact(string artifactLine, string fileName, string packageFormat, string signed, string packageId, string abi)
 		{
 			var metadata = artifactLine.Split('|');
 
@@ -219,8 +235,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 			Assert.Equal("42", metadata[7]);
 			Assert.Equal(signed, metadata[8]);
 			Assert.Equal(packageId, metadata[9]);
-			Assert.Equal(platformName, metadata[10]);
-			Assert.Equal(bundleIdentifier, metadata[11]);
+			Assert.Equal(abi, metadata[10]);
 		}
 	}
 
