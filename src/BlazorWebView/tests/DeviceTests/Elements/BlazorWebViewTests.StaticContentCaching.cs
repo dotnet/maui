@@ -13,13 +13,18 @@ public partial class BlazorWebViewTests
 	const string CacheControlTestFilePath = "cache-control-test.txt";
 	const string CacheControlTestFileContents = "static asset used by the cache-control tests";
 
+	// Each test fetches a unique URL (path + query): the WebView HTTP cache is shared for the app origin across
+	// BlazorWebView instances (and persists across runs on a device), so a response cached by one test (e.g. with
+	// max-age=3600) must not be able to satisfy another test's fetch and skip its provider invocation.
+
 	[Fact]
 	public async Task StaticContentCacheControlProviderCanOverrideCacheControlHeader()
 	{
-		var cacheControl = await GetServedCacheControlHeaderAsync(request =>
-			request.Uri.AbsolutePath.EndsWith(CacheControlTestFilePath, StringComparison.Ordinal)
+		var cacheControl = await GetServedCacheControlHeaderAsync(
+			request => request.Uri.AbsolutePath.EndsWith(CacheControlTestFilePath, StringComparison.Ordinal)
 				? "max-age=3600"
-				: null);
+				: null,
+			fetchQueryString: "?test=override");
 
 		Assert.Equal("max-age=3600", cacheControl);
 	}
@@ -28,7 +33,7 @@ public partial class BlazorWebViewTests
 	public async Task StaticContentCacheControlProviderReturningNullKeepsDefaultNoStore()
 	{
 		// Returning null from the provider must preserve the historical default so that the change is non-breaking.
-		var cacheControl = await GetServedCacheControlHeaderAsync(_ => null);
+		var cacheControl = await GetServedCacheControlHeaderAsync(_ => null, fetchQueryString: "?test=null-provider");
 
 		Assert.Contains("no-store", cacheControl, StringComparison.Ordinal);
 	}
@@ -38,7 +43,7 @@ public partial class BlazorWebViewTests
 	{
 		// An empty string is treated the same as null: an empty Cache-Control header value is non-standard and
 		// more likely accidental than an intentional opt-in, so the safe default is preserved.
-		var cacheControl = await GetServedCacheControlHeaderAsync(_ => string.Empty);
+		var cacheControl = await GetServedCacheControlHeaderAsync(_ => string.Empty, fetchQueryString: "?test=empty-provider");
 
 		Assert.Contains("no-store", cacheControl, StringComparison.Ordinal);
 	}
@@ -48,7 +53,7 @@ public partial class BlazorWebViewTests
 	{
 		// Values containing CR/LF are rejected in favor of the default: some platforms concatenate the value into
 		// a raw response header block, where a newline would produce a malformed response or allow header injection.
-		var cacheControl = await GetServedCacheControlHeaderAsync(_ => "max-age=3600\r\nX-Injected: 1");
+		var cacheControl = await GetServedCacheControlHeaderAsync(_ => "max-age=3600\r\nX-Injected: 1", fetchQueryString: "?test=newline-provider");
 
 		Assert.Contains("no-store", cacheControl, StringComparison.Ordinal);
 	}
@@ -58,14 +63,16 @@ public partial class BlazorWebViewTests
 	{
 		string observedContentType = null;
 
-		await GetServedCacheControlHeaderAsync(request =>
-		{
-			if (request.Uri.AbsolutePath.EndsWith(CacheControlTestFilePath, StringComparison.Ordinal))
+		await GetServedCacheControlHeaderAsync(
+			request =>
 			{
-				observedContentType = request.ContentType;
-			}
-			return null;
-		});
+				if (request.Uri.AbsolutePath.EndsWith(CacheControlTestFilePath, StringComparison.Ordinal))
+				{
+					observedContentType = request.ContentType;
+				}
+				return null;
+			},
+			fetchQueryString: "?test=content-type");
 
 		Assert.Equal("text/plain", observedContentType);
 	}
