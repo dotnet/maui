@@ -1644,6 +1644,7 @@ stages:
 
               $hadFailure = $false
               $catIdx = 0
+              $needDeviceReset = $false
               foreach ($cat in $catList) {
                 $catIdx++
                 $catStart = Get-Date
@@ -1662,6 +1663,24 @@ stages:
                   Write-Host "##[warning]Only $remainToHardStopMin min left before the hard stop — not starting category '$cat' (avoids the 220-min task timeout)."
                   $hadFailure = $true
                   continue
+                }
+                # A prior category ended in a tree-kill/timeout (wall OR idle),
+                # which can leave the SHARED emulator/simulator degraded — the
+                # HostApp then starts crashing on launch ("… keeps stopping") and
+                # every fixture's OneTimeSetup in the NEXT category times out
+                # waiting for the gallery, falsely failing the whole category
+                # (observed: Material3 0/338 right after CollectionView was
+                # hard-killed at its budget). Reboot the shared device to reclaim
+                # a clean state before starting this category. Best-effort — a
+                # reset failure never blocks the run.
+                if ($needDeviceReset) {
+                  $needDeviceReset = $false
+                  $resetScript = ".github/scripts/shared/Reset-DeviceState.ps1"
+                  if (Test-Path $resetScript) {
+                    Write-Host "Prior category ended abnormally — resetting the shared $platform device before the next category…"
+                    try { & $resetScript -Platform $platform -DeviceUdid $env:DEVICE_UDID } catch { Write-Host "(device reset failed: $_)" -ForegroundColor DarkGray }
+                    $catStart = Get-Date   # reboot consumed time; refresh the budget baseline
+                  }
                 }
                 # Give each still-pending category a fair slice of the remaining
                 # budget so one large category cannot starve the rest, floored at
@@ -1715,6 +1734,11 @@ stages:
                     if ($exitCode -ne 0) {
                       Write-Host "Category $cat exited with code $exitCode" -ForegroundColor Yellow
                       $hadFailure = $true
+                      # A tree-kill/timeout (exit 124 or env-error 'timeout' — wall
+                      # or idle) can wedge the shared device; reboot it before the
+                      # next category so it does not inherit a degraded emulator.
+                      $envHitVal = if ($runResult) { "$($runResult.EnvErrorHit)" } else { '' }
+                      if ($exitCode -eq 124 -or $envHitVal -eq 'timeout') { $needDeviceReset = $true }
                     }
                   } else {
                     # Fallback: call BuildAndRunHostApp.ps1 directly
