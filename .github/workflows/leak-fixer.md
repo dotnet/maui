@@ -271,7 +271,7 @@ request). Otherwise, BEFORE looking for new work, see whether one of this workfl
 # same-repo (dotnet/maui-hosted) PRs here; skip fork-hosted [leak-fix] PRs entirely.
 OWNER="${GITHUB_REPOSITORY%%/*}"
 gh pr list --repo "$GITHUB_REPOSITORY" --state open \
-  --search '"[leak-fix]" in:title label:agentic-workflows' \
+  --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title,headRefName,headRepositoryOwner,url,updatedAt \
   | jq --arg owner "$OWNER" '[.[] | select((.headRepositoryOwner.login // "") == $owner)] | sort_by(.number)' \
   > /tmp/gh-aw/agent/my-open-prs.json
