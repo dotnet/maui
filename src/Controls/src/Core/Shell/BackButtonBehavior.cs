@@ -125,16 +125,16 @@ namespace Microsoft.Maui.Controls
 			IsEnabledCore = Command.CanExecute(CommandParameter);
 		}
 
+		WeakCommandSubscription _commandSubscription;
+
 		void OnCommandChanged(ICommand oldCommand, ICommand newCommand)
 		{
-			if (oldCommand != null)
-			{
-				oldCommand.CanExecuteChanged -= CanExecuteChanged;
-			}
+			_commandSubscription?.Dispose();
+			_commandSubscription = null;
 
 			if (newCommand != null)
 			{
-				newCommand.CanExecuteChanged += CanExecuteChanged;
+				_commandSubscription = new WeakCommandSubscription(this, newCommand, CanExecuteChanged);
 				IsEnabledCore = Command.CanExecute(CommandParameter);
 			}
 			else
