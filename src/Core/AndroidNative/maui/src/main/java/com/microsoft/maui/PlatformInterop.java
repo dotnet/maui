@@ -358,10 +358,15 @@ public class PlatformInterop {
             .override(width, height);
     }
 
+    private static RequestBuilder<Drawable> limitToTargetSize(RequestBuilder<Drawable> builder) {
+        return builder.downsample(DownsampleStrategy.CENTER_INSIDE);
+    }
+
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(file);
+        builder = limitToTargetSize(builder);
         loadInto(builder, imageView, true, callback, file);
     }
 
@@ -374,6 +379,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(androidUri);
+        builder = limitToTargetSize(builder);
         loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
@@ -381,7 +387,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(inputStream);
-        builder = limitToDisplaySize(builder, imageView.getContext());
+        builder = limitToTargetSize(builder);
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
@@ -389,7 +395,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(resourceId);
-        builder = limitToDisplaySize(builder, imageView.getContext());
+        builder = limitToTargetSize(builder);
         loadInto(builder, imageView, true, callback, resourceId);
     }
 

@@ -35,6 +35,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
 		}
 
+		[Theory]
+		[InlineData(ExtremeAspectRatioMultiplier, 1)]
+		[InlineData(1, ExtremeAspectRatioMultiplier)]
+		public async Task LoadDrawableAsyncLimitsExtremeAspectLargeFilesToDisplaySize(int widthMultiplier, int heightMultiplier)
+		{
+			var metrics = MauiProgram.DefaultContext?.Resources?.DisplayMetrics;
+			Assert.NotNull(metrics);
+
+			var expectedColor = Color.FromArgb("#FF0000").ToPlatform();
+			var sourceWidth = Math.Max(1, metrics.WidthPixels * widthMultiplier);
+			var sourceHeight = Math.Max(1, metrics.HeightPixels * heightMultiplier);
+			var filename = CreateBitmapFile(sourceWidth, sourceHeight, expectedColor);
+			var imageSource = new FileImageSourceStub(filename);
+			var imageView = new ImageView(MauiProgram.DefaultContext);
+
+			var service = new FileImageSourceService();
+			using var result = await service.LoadDrawableAsync(imageSource, imageView);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(imageView.Drawable);
+			var bitmap = bitmapDrawable.Bitmap;
+
+			Assert.NotNull(result);
+			Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels}.");
+			Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
+		}
+
 		[Fact]
 		public async Task GetDrawableAsyncLoadsResourceThroughBoundedDrawablePath()
 		{
