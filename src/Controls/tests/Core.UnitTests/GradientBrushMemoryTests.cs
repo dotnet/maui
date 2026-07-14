@@ -283,6 +283,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void RemovingGradientStopAllowsReentrantReuse()
+		{
+			var stop = new GradientStop();
+			var stops = new GradientStopCollection { stop };
+			var brush = new LinearGradientBrush { GradientStops = stops };
+			bool replaced = false;
+			int invalidationCount = 0;
+			brush.InvalidateGradientBrushRequested += (_, __) =>
+			{
+				invalidationCount++;
+				if (!replaced && stop.Parent is null)
+				{
+					replaced = true;
+					brush.GradientStops = new GradientStopCollection { stop };
+				}
+			};
+
+			stops.Remove(stop);
+
+			Assert.True(replaced);
+			Assert.Same(brush, stop.Parent);
+
+			invalidationCount = 0;
+			stop.Offset = 0.5f;
+
+			Assert.Equal(1, invalidationCount);
+		}
+
+		[Fact]
 		public void ClearingGradientStopsAllowsReentrantReplacement()
 		{
 			var brush = new LinearGradientBrush

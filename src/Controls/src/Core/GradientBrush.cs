@@ -109,8 +109,8 @@ namespace Microsoft.Maui.Controls
 					if (!(oldItem is GradientStop oldStop))
 						continue;
 
-					ClearGradientStopParentIfUnused(oldStop);
 					_gradientStopSubscriptions?.Remove(oldStop);
+					ClearGradientStopParentIfUnused(oldStop);
 				}
 			}
 
