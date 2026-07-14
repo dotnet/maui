@@ -863,6 +863,15 @@ stages:
               echo "##vso[task.setvariable variable=gateResult;isOutput=true]$GATE_VERDICT"
             name: RunGate
             displayName: 'Task 2: Gate (test verification)'
+            # timeoutInMinutes: 120 — SAFETY NET. The gate runs UI tests via
+            # BuildAndRunHostApp.ps1 which has no internal overall timeout, and the
+            # env-error retry loop only triggers when a run RETURNS an error — a run
+            # that HANGS (emulator boot / Appium / dotnet test never returns) is
+            # unbounded and would otherwise run to the 360m job limit (observed:
+            # build 14649450 gate stuck at 120m on a boot hang). 120m is generous
+            # over the typical 5-25m gate (even retry-heavy multi-test gates stay
+            # well under) while catching true hangs ~3h earlier than the job cap.
+            timeoutInMinutes: 120
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
