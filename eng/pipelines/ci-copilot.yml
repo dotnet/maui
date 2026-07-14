@@ -1886,12 +1886,21 @@ stages:
           # Trusted gate verdict from the Gate task (frozen pre-agent). Passed to the post script
           # so the APPROVE veto does not trust the agent-writable gate-result.txt in the artifact.
           trustedGateResult: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.gateResult'] ]
-          # Built-in stage RESULT of the deep stage — ALWAYS populated (Succeeded/
+          # Built-in stage RESULT of the deep stage — populated (Succeeded/
           # SucceededWithIssues/Failed/Skipped) and frozen before this job inits
-          # (this stage dependsOn RunDeepUITests). Reliable, unlike the removed
-          # deepTestsRan OUTPUT var. Used to skip the deep-artifact download
-          # cleanly when deep was Skipped (see the download task below).
-          runDeepUITestsResult: $[ dependencies.RunDeepUITests.result ]
+          # (this stage dependsOn RunDeepUITests). Used to skip the deep-artifact
+          # download cleanly when deep was Skipped (see the download task below).
+          # ⚠️ At JOB scope this MUST use stageDependencies (cross-stage context),
+          # NOT dependencies (which resolves SAME-STAGE jobs). With the wrong
+          # `dependencies.RunDeepUITests.result` the value silently resolved to
+          # EMPTY, so the download condition's in() was ALWAYS false → the deep
+          # artifact was NEVER downloaded → the aggregator saw no categories → the
+          # summary falsely reported "No UI test results were produced" even when
+          # deep ran fine and published its artifact. Regression observed on build
+          # 14651727 / PR #36564: the Label deep category ran 18 min and published
+          # drop-ios_ui_tests-controls-Label, yet the summary claimed no results.
+          # (The other two vars above already correctly use stageDependencies.)
+          runDeepUITestsResult: $[ stageDependencies.RunDeepUITests.result ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -1936,8 +1945,9 @@ stages:
             # continueOnError that failure surfaces as succeededWithIssues, turning
             # a fully healthy gate-passed/deep-skipped build YELLOW
             # (partiallySucceeded). We gate on the built-in STAGE RESULT
-            # (dependencies.RunDeepUITests.result via the runDeepUITestsResult job
-            # var), which is always populated and frozen before this job inits
+            # (stageDependencies.RunDeepUITests.result via the runDeepUITestsResult
+            # job var — stageDependencies because this is a JOB-scoped var reaching
+            # a sibling STAGE), which is populated and frozen before this job inits
             # (this stage dependsOn RunDeepUITests) — unlike the earlier
             # deepTestsRan OUTPUT variable, which was empty/undefined when the deep
             # job was skipped and made $[ in() ] unreliable. The downstream render
@@ -1945,7 +1955,16 @@ stages:
             # when it is absent, so skipping the download is behaviourally
             # identical minus the yellow. continueOnError stays as
             # defense-in-depth for the rare case where deep ran but publish failed.
-            condition: and(succeeded(), in(variables['runDeepUITestsResult'], 'Succeeded', 'SucceededWithIssues', 'Failed'))
+            #
+            # DEFENSIVE by design: we skip the download ONLY when the deep stage is
+            # DEFINITIVELY 'Skipped'. For every other value (Succeeded / *WithIssues
+            # / Failed / Canceled / or — should the var ever resolve empty again —
+            # unknown) we DO download, erring toward SHOWING results. Hiding real
+            # results (the 14651727/#36564 regression, where an empty var made an
+            # in()-allowlist silently false) is far worse than a cosmetic yellow on
+            # the rare skipped-but-mis-resolved edge; continueOnError absorbs a
+            # missing artifact in that case.
+            condition: and(succeeded(), ne(variables['runDeepUITestsResult'], 'Skipped'))
             continueOnError: true
 
           # ── AI analysis of deep UI test failures (PR-related vs unrelated) ──
