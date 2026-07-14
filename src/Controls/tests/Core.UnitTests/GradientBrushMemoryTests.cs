@@ -190,6 +190,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.KeepAlive(firstBrush);
 		}
 
+		[Theory]
+		[InlineData(SharedStopDetachment.ClearCollection)]
+		[InlineData(SharedStopDetachment.RemoveStop)]
+		[InlineData(SharedStopDetachment.ReplaceCollection)]
+		public void DetachingSharedStopFromPreviousBrushPreservesCurrentParent(SharedStopDetachment detachment)
+		{
+			var stop = new GradientStop();
+			var firstStops = new GradientStopCollection { stop };
+			var secondStops = new GradientStopCollection { stop };
+			var firstBrush = new LinearGradientBrush { GradientStops = firstStops };
+			var secondBindingContext = new object();
+			var secondBrush = new LinearGradientBrush
+			{
+				BindingContext = secondBindingContext,
+				GradientStops = secondStops
+			};
+
+			switch (detachment)
+			{
+				case SharedStopDetachment.ClearCollection:
+					firstStops.Clear();
+					break;
+				case SharedStopDetachment.RemoveStop:
+					firstStops.Remove(stop);
+					break;
+				case SharedStopDetachment.ReplaceCollection:
+					firstBrush.GradientStops = new GradientStopCollection();
+					break;
+			}
+
+			Assert.Same(secondBrush, stop.Parent);
+			Assert.Same(secondBindingContext, stop.BindingContext);
+		}
+
 		[Fact]
 		public void DuplicateGradientStopsPreserveOccurrenceSubscriptions()
 		{
@@ -201,18 +235,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			sharedStop.Offset = 0.1f;
 			Assert.Equal(2, invalidationCount);
+			Assert.Same(brush, sharedStop.Parent);
 
 			stops.Remove(sharedStop);
 			invalidationCount = 0;
 
 			sharedStop.Offset = 0.2f;
 			Assert.Equal(1, invalidationCount);
+			Assert.Same(brush, sharedStop.Parent);
 
 			stops.Remove(sharedStop);
 			invalidationCount = 0;
 
 			sharedStop.Offset = 0.3f;
 			Assert.Equal(0, invalidationCount);
+			Assert.Null(sharedStop.Parent);
 		}
 
 		[Fact]
@@ -260,6 +297,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(invalidated);
 			GC.KeepAlive(brush);
+		}
+
+		public enum SharedStopDetachment
+		{
+			ClearCollection,
+			RemoveStop,
+			ReplaceCollection,
 		}
 	}
 }

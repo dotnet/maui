@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 					if (oldStop is null)
 						continue;
 
-					oldStop.Parent = null;
+					ClearGradientStopParentIfUnused(oldStop);
 				}
 			}
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
-				_gradientStopSubscriptions?.ResetStops();
+				_gradientStopSubscriptions?.ResetStops(this);
 			}
 			else if (e.OldItems != null)
 			{
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls
 					if (!(oldItem is GradientStop oldStop))
 						continue;
 
-					oldStop.Parent = null;
+					ClearGradientStopParentIfUnused(oldStop);
 					_gradientStopSubscriptions?.Remove(oldStop);
 				}
 			}
@@ -127,6 +127,15 @@ namespace Microsoft.Maui.Controls
 			}
 
 			Invalidate();
+		}
+
+		void ClearGradientStopParentIfUnused(GradientStop gradientStop)
+		{
+			if (ReferenceEquals(gradientStop.Parent, this) &&
+				(GradientStops is null || !GradientStops.Contains(gradientStop)))
+			{
+				gradientStop.Parent = null;
+			}
 		}
 
 		sealed class GradientStopSubscriptions
@@ -160,18 +169,18 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			public void ResetStops()
+			public void ResetStops(GradientBrush owner)
 			{
-				UnsubscribeStops(clearParent: true);
+				UnsubscribeStops(owner);
 			}
 
 			public void UnsubscribeAll()
 			{
 				_collectionProxy.Unsubscribe();
-				UnsubscribeStops(clearParent: false);
+				UnsubscribeStops(owner: null);
 			}
 
-			void UnsubscribeStops(bool clearParent)
+			void UnsubscribeStops(GradientBrush owner)
 			{
 				var proxies = _stopProxies.ToArray();
 				_stopProxies.Clear();
@@ -179,12 +188,13 @@ namespace Microsoft.Maui.Controls
 				foreach (var proxy in proxies)
 				{
 					GradientStop gradientStop = null;
-					if (clearParent && proxy.TryGetSource(out var source))
+					if (owner is not null && proxy.TryGetSource(out var source))
 						gradientStop = source as GradientStop;
 
 					proxy.Unsubscribe();
 
-					gradientStop?.Parent = null;
+					if (gradientStop is not null)
+						owner.ClearGradientStopParentIfUnused(gradientStop);
 				}
 			}
 		}
