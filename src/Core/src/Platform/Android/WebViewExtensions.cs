@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Platform
 			// Android WebView defaults MinimumFontSize to 8, which silently
 			// clamps up any CSS font-size below 8px.
 			platformWebView.Settings.MinimumFontSize = 1;
+			platformWebView.Settings.MinimumLogicalFontSize = 1;
 		}
 
 		public static void UpdateUserAgent(this AWebView platformWebView, IWebView webView)
