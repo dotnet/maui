@@ -1862,6 +1862,12 @@ stages:
           # Trusted gate verdict from the Gate task (frozen pre-agent). Passed to the post script
           # so the APPROVE veto does not trust the agent-writable gate-result.txt in the artifact.
           trustedGateResult: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.gateResult'] ]
+          # Built-in stage RESULT of the deep stage — ALWAYS populated (Succeeded/
+          # SucceededWithIssues/Failed/Skipped) and frozen before this job inits
+          # (this stage dependsOn RunDeepUITests). Reliable, unlike the removed
+          # deepTestsRan OUTPUT var. Used to skip the deep-artifact download
+          # cleanly when deep was Skipped (see the download task below).
+          runDeepUITestsResult: $[ dependencies.RunDeepUITests.result ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -1886,11 +1892,22 @@ stages:
               buildType: 'current'
               artifactName: 'drop-deep-uitests'
               targetPath: '$(Pipeline.Workspace)/drop-deep-uitests'
-            # Always attempt download — continueOnError handles the case where
-            # RunDeepUITests was skipped and no artifact exists. The previous
-            # condition-based skip using deepTestsRan was unreliable because
-            # AzDO's $[ in() ] expression can return unexpected values depending
-            # on stage result propagation timing.
+            # Only attempt the download when the deep stage actually RAN and thus
+            # published the artifact. When RunDeepUITests was Skipped the artifact
+            # never exists, and an unconditional download fails — with
+            # continueOnError that failure surfaces as succeededWithIssues, turning
+            # a fully healthy gate-passed/deep-skipped build YELLOW
+            # (partiallySucceeded). We gate on the built-in STAGE RESULT
+            # (dependencies.RunDeepUITests.result via the runDeepUITestsResult job
+            # var), which is always populated and frozen before this job inits
+            # (this stage dependsOn RunDeepUITests) — unlike the earlier
+            # deepTestsRan OUTPUT variable, which was empty/undefined when the deep
+            # job was skipped and made $[ in() ] unreliable. The downstream render
+            # step Test-Paths the artDir and posts the summary WITHOUT a deep block
+            # when it is absent, so skipping the download is behaviourally
+            # identical minus the yellow. continueOnError stays as
+            # defense-in-depth for the rare case where deep ran but publish failed.
+            condition: and(succeeded(), in(variables['runDeepUITestsResult'], 'Succeeded', 'SucceededWithIssues', 'Failed'))
             continueOnError: true
 
           # ── AI analysis of deep UI test failures (PR-related vs unrelated) ──
