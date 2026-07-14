@@ -245,8 +245,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!SearchHandler.ShowsResults || string.IsNullOrEmpty(_textBlock.Text))
 			{
 				_textBlock.DismissDropDown();
+				return;
 			}
-			else
+
+			if (_textBlock.IsAttachedToWindow)
 			{
 				_textBlock.ShowDropDown();
 			}
@@ -264,6 +266,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_disposed)
 				return;
+
+			UpdateShowsResults();
 		}
 
 		protected virtual void OnClearButtonClicked(object sender, EventArgs e)
