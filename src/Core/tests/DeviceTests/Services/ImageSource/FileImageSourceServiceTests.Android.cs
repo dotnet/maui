@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -47,6 +48,26 @@ namespace Microsoft.Maui.DeviceTests
 			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 			var bitmap = bitmapDrawable.Bitmap;
 
+			Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels}.");
+			Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
+			bitmap.AssertColorAtCenter(Color.FromArgb("#FF0000").ToPlatform());
+		}
+
+		[Fact]
+		public async Task LoadDrawableAsyncLoadsResourceThroughBoundedDrawablePath()
+		{
+			var metrics = MauiProgram.DefaultContext?.Resources?.DisplayMetrics;
+			Assert.NotNull(metrics);
+
+			var service = new FileImageSourceService();
+			var imageSource = new FileImageSourceStub("red.png");
+			var imageView = new ImageView(MauiProgram.DefaultContext);
+
+			using var result = await service.LoadDrawableAsync(imageSource, imageView);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(imageView.Drawable);
+			var bitmap = bitmapDrawable.Bitmap;
+
+			Assert.NotNull(result);
 			Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels}.");
 			Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
 			bitmap.AssertColorAtCenter(Color.FromArgb("#FF0000").ToPlatform());

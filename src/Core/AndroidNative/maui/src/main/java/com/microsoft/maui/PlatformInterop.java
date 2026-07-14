@@ -385,6 +385,14 @@ public class PlatformInterop {
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
+    public static void loadImageFromResource(ImageView imageView, int resourceId, ImageLoaderCallback callback) {
+        RequestBuilder<Drawable> builder = Glide
+            .with(imageView)
+            .load(resourceId);
+        builder = limitToDisplaySize(builder, imageView.getContext());
+        loadInto(builder, imageView, true, callback, resourceId);
+    }
+
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
         RequestBuilder<Drawable> builder = Glide
