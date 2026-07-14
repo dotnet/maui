@@ -2516,21 +2516,11 @@ $trustedGateResultForPost = if (-not [string]::IsNullOrWhiteSpace($TrustedGateRe
     $gateResult
 }
 
-# ─── Gate posting (moved here so only the Post task needs GH_TOKEN) ──────
-$postGateScript = Join-Path $ScriptsDir "post-gate-comment.ps1"
-if (Test-Path $postGateScript) {
-    try {
-        if ($DryRun) {
-            & $postGateScript -PRNumber $PRNumber -DryRun
-        } else {
-            & $postGateScript -PRNumber $PRNumber
-        }
-    } catch {
-        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
-}
+# ─── Gate posting ────────────────────────────────────────────────────────
+# The standalone post-gate-comment.ps1 was removed in 67b1a9a316e ("Merge gate
+# result into the unified AI Summary comment"): the gate verdict is now rendered
+# directly into the AI Summary review (see "### Gate Result:" blocks above) and
+# reflected via the s/agent-gate-* labels below. No separate gate comment is posted.
 
 # Apply gate result label
 $gatePassLabel = "s/agent-gate-passed"
