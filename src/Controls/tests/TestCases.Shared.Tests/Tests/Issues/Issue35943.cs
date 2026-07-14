@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // BoxView AutomationId is not working on Windows. Related issue:https://github.com/dotnet/maui/issues/27195
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -30,3 +31,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
