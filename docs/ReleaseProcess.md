@@ -16,7 +16,7 @@ The pipeline accepts:
 - `pushWorkloadSet`: adds the resolved BAR build to the matching .NET workload release channel.
 - `pushNugetOrg`: enables the NuGet.org release stages.
 - `pushPackages`: when `false`, gathers and publishes release artifacts without running approvals or requesting the production NuGet service connection.
-- `nugetIncludeFilters` and `nugetExcludeFilters`: semicolon-separated wildcard filters applied to package file names.
+- `nugetIncludeFilters` and `nugetExcludeFilters`: semicolon-separated wildcard filters applied to package file names. Include filters select workload packs; workload manifests remain selected unless an exclude filter removes them, preserving the previous release behavior.
 
 ### Preparation
 
