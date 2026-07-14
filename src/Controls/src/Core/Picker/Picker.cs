@@ -410,6 +410,8 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnHandlerChanged()
 		{
+			var wasItemsSourceSubscriptionPaused = _isItemsSourceSubscriptionPaused;
+
 			if (Handler is null)
 			{
 				_isItemsSourceSubscriptionPaused = true;
@@ -423,8 +425,10 @@ namespace Microsoft.Maui.Controls
 				_isItemsSourceSubscriptionPaused = false;
 				SubscribeToItemsSourceCollection(ItemsSource as INotifyCollectionChanged);
 
-				// Rebuild display items and reconcile selection after changes skipped while detached.
-				if (ItemsSource is not null)
+				// Observable sources stay synchronized before the first handler; rebuild only after a
+				// detached interval or for non-observable sources that may have changed in place.
+				if (ItemsSource is not null &&
+					(wasItemsSourceSubscriptionPaused || ItemsSource is not INotifyCollectionChanged))
 				{
 					ResyncItemsAndReconcileSelection();
 				}

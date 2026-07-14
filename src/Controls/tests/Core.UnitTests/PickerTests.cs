@@ -1095,6 +1095,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PickerDoesNotResyncObservableItemsSourceOnFirstHandlerAttach()
+		{
+			var picker = new Picker
+			{
+				ItemsSource = new ObservableCollection<string> { "a", "b", "c" }
+			};
+			var handler = new PickerHandlerStub();
+
+			picker.Handler = handler;
+
+			Assert.Single(handler.Updates, update => update.Property == nameof(IPicker.Items));
+		}
+
+		[Fact]
+		public void PickerResyncsNonObservableItemsSourceOnFirstHandlerAttach()
+		{
+			var itemsSource = new List<string> { "a" };
+			var picker = new Picker { ItemsSource = itemsSource };
+			itemsSource.Add("b");
+
+			Assert.Single(picker.Items);
+
+			picker.Handler = new PickerHandlerStub();
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("b", picker.Items[1]);
+		}
+
+		[Fact]
 		public void PickerItemsSourceReplacementWhileHandlerIsDetachedUsesReplacementOnReattach()
 		{
 			var oldItemsSource = new ObservableCollection<string> { "old" };
@@ -1194,11 +1223,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(-1, picker.SelectedIndex);
 			Assert.Null(picker.SelectedItem);
 
-			picker.Handler = new PickerHandlerStub();
+			var handler = new PickerHandlerStub();
+			picker.Handler = handler;
 
 			Assert.Equal(2, picker.Items.Count);
 			Assert.Equal(1, picker.SelectedIndex);
 			Assert.Equal("B", picker.SelectedItem);
+
+			var itemsUpdateIndex = handler.Updates.FindIndex(
+				update => update.Property == nameof(IPicker.Items) &&
+					update.ItemsCount == 2 &&
+					update.SelectedIndex == -1);
+			Assert.True(itemsUpdateIndex >= 0);
+
+			var selectedIndexUpdateIndex = handler.Updates.FindIndex(
+				itemsUpdateIndex + 1,
+				update => update.Property == nameof(IPicker.SelectedIndex) &&
+					update.ItemsCount == 2 &&
+					update.SelectedIndex == 1);
+			Assert.True(selectedIndexUpdateIndex > itemsUpdateIndex);
 		}
 
 		[Fact]
@@ -1217,8 +1260,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			picker.ItemsSource = replacementItemsSource;
 			var reusedReferences = GetItemsSourceSubscriptionObjects(picker);
 
-			// Reuse is intentional: this exercises finalizer suppression and re-registration
-			// on the same helper instead of masking lifecycle bugs with a new proxy.
+			// Implementation/lifecycle invariant: reuse exercises finalizer suppression and
+			// re-registration on the same helper instead of masking lifecycle bugs with a new proxy.
 			Assert.Same(originalReferences.Subscription, reusedReferences.Subscription);
 			Assert.Same(originalReferences.Proxy, reusedReferences.Proxy);
 
@@ -1283,6 +1326,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void PickerItemsSourceCollectionChangedHandlerIsLazy()
 		{
+			// Implementation/performance invariant: a non-observable source must not allocate
+			// the collection-changed delegate or weak subscription infrastructure.
 			const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
 			var handlerField = typeof(Picker).GetField("_collectionChangedEventHandler", flags);
 			Assert.NotNull(handlerField);
@@ -1341,20 +1386,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		static (object Subscription, object Proxy) GetItemsSourceSubscriptionObjects(Picker picker)
 		{
 			const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-			var subscription = typeof(Picker).GetField("_itemsSourceCollectionChangedSubscription", flags)?.GetValue(picker);
+			var subscriptionField = typeof(Picker).GetField("_itemsSourceCollectionChangedSubscription", flags);
+			Assert.NotNull(subscriptionField);
+
+			var subscription = subscriptionField.GetValue(picker);
 			Assert.NotNull(subscription);
-			var proxy = subscription.GetType().GetField("_proxy", flags)?.GetValue(subscription);
+
+			var proxyField = subscription.GetType().GetField("_proxy", flags);
+			Assert.NotNull(proxyField);
+
+			var proxy = proxyField.GetValue(subscription);
 			Assert.NotNull(proxy);
 			return (subscription, proxy);
 		}
 
 		sealed class PickerHandlerStub : ViewHandler<Picker, object>
 		{
-			public PickerHandlerStub() : base(new PropertyMapper<IView>())
+			static readonly IPropertyMapper<Picker, PickerHandlerStub> Mapper =
+				new PropertyMapper<Picker, PickerHandlerStub>
+				{
+					[nameof(IPicker.Items)] = (handler, picker) => handler.RecordUpdate(nameof(IPicker.Items), picker),
+					[nameof(IPicker.SelectedIndex)] = (handler, picker) => handler.RecordUpdate(nameof(IPicker.SelectedIndex), picker),
+				};
+
+			public PickerHandlerStub() : base(Mapper)
 			{
 			}
 
+			public List<(string Property, int ItemsCount, int SelectedIndex)> Updates { get; } = new();
+
 			protected override object CreatePlatformView() => new object();
+
+			void RecordUpdate(string property, Picker picker)
+			{
+				Updates.Add((property, picker.Items.Count, picker.SelectedIndex));
+			}
 		}
 
 		// https://github.com/dotnet/maui/issues/33307
