@@ -1942,6 +1942,7 @@ stages:
               # than the PR (e.g. an android36 PublicAPI/RS0017 mismatch), so
               # the surfaced message must be honest and NOT blame the author.
               $buildFailedCats = @()
+              $interruptedCats = @()
               if (Test-Path $artDir) {
                 foreach ($d in @(Get-ChildItem -Path $artDir -Directory -Filter 'drop-*_ui_tests-*' -ErrorAction SilentlyContinue)) {
                   if (@(Get-ChildItem -Path $d.FullName -Filter '*.trx' -Recurse -ErrorAction SilentlyContinue).Count -gt 0) { continue }
@@ -1949,16 +1950,24 @@ stages:
                   if (-not (Test-Path $bo)) { continue }
                   $boText = Get-Content $bo -Raw -ErrorAction SilentlyContinue
                   if ([string]::IsNullOrEmpty($boText)) { continue }
+                  $cat = Get-CategoryFromArtifactName -ArtifactName $d.Name
+                  if ([string]::IsNullOrWhiteSpace($cat) -or $byCat.ContainsKey($cat)) { continue }
                   if ($boText -match '(?m)^\s*Build FAILED\.' -or
                       $boText -match 'Build/deploy failed after \d+ attempt' -or
                       $boText -match 'Build or deployment failed') {
-                    $cat = Get-CategoryFromArtifactName -ArtifactName $d.Name
-                    if (-not [string]::IsNullOrWhiteSpace($cat) -and -not $byCat.ContainsKey($cat)) {
-                      $buildFailedCats += $cat
-                    }
+                    $buildFailedCats += $cat
+                  } elseif ($boText -match 'Build and deploy completed' -or
+                            $boText -match 'Running UI tests with category' -or
+                            $boText -match 'Executing: dotnet test') {
+                    # Built OK and the test run STARTED, but no .trx was written
+                    # → the run was interrupted (per-category time-budget hard
+                    # kill, an emulator/Appium hang, or a crash). Surface it
+                    # honestly instead of silently omitting the category.
+                    $interruptedCats += $cat
                   }
                 }
                 $buildFailedCats = @($buildFailedCats | Select-Object -Unique | Sort-Object)
+                $interruptedCats = @($interruptedCats | Select-Object -Unique | Sort-Object)
               }
               $buildFailedNote = ''
               if ($buildFailedCats.Count -gt 0) {
@@ -1966,6 +1975,14 @@ stages:
                 $bfList = '`' + ($buildFailedCats -join '`, `') + '`'
                 $bfCatText = if ($buildFailedCats.Count -eq 1) { "1 category ($bfList)" } else { "$($buildFailedCats.Count) categories ($bfList)" }
                 $buildFailedNote = "The HostApp failed to **compile** for $bfCatText, so those deep UI tests could not run. A compile failure here is frequently a **base-branch build break** rather than this PR — check the ``build-output.log`` in the ``drop-deep-uitests`` artifact. Once the build is fixed, re-run the review to execute these tests."
+              }
+
+              $interruptedNote = ''
+              if ($interruptedCats.Count -gt 0) {
+                Write-Host "Detected $($interruptedCats.Count) interrupted deep categor(y/ies) (built OK, no TRX): $($interruptedCats -join ', ')"
+                $inList = '`' + ($interruptedCats -join '`, `') + '`'
+                $inCatText = if ($interruptedCats.Count -eq 1) { "1 category ($inList)" } else { "$($interruptedCats.Count) categories ($inList)" }
+                $interruptedNote = "The HostApp built and the tests **started** for $inCatText but produced no results — the run was **interrupted** (most often the per-category time budget was hit, or an emulator/Appium hang). This is usually an **infrastructure flake** rather than a code problem; re-run the review to try again. See the ``build-output.log`` in the ``drop-deep-uitests`` artifact."
               }
 
               if (-not $byCat -or $byCat.Count -eq 0) {
@@ -2205,19 +2222,29 @@ stages:
                 # with "didn't compile."
                 $headerLine = "$headerLine " + $buildFailedNote
               }
+              if ($interruptedCats.Count -gt 0) {
+                # Some categories ran; others started but produced no TRX
+                # (interrupted/hard-killed). Append the honest note so a
+                # missing category is never silently dropped from the count.
+                $headerLine = "$headerLine " + $interruptedNote
+              }
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
               $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
               } # end if ($byCat.Count -gt 0)
 
-              if ((-not $byCat -or $byCat.Count -eq 0) -and $buildFailedCats.Count -gt 0) {
-                # No TRX anywhere (nothing ran), but we DID detect compile
-                # failures. Render an honest deep block explaining the build
-                # break instead of leaving the deep section silent/empty.
+              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $interruptedCats.Count -gt 0)) {
+                # No TRX anywhere (nothing produced results), but we DID detect
+                # compile failures and/or interrupted (built-OK-but-killed) runs.
+                # Render an honest deep block explaining it instead of leaving
+                # the deep section silent/empty.
                 $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
                 $endMarker   = '<!-- DEEP_UITESTS_END -->'
-                $headerLine  = "⚠️ **Deep UI tests** — $buildFailedNote"
+                $noteParts = @()
+                if ($buildFailedCats.Count -gt 0) { $noteParts += $buildFailedNote }
+                if ($interruptedCats.Count -gt 0) { $noteParts += $interruptedNote }
+                $headerLine  = "⚠️ **Deep UI tests** — " + ($noteParts -join ' ')
                 $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + "$endMarker"
               }
 
