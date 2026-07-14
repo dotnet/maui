@@ -8,14 +8,23 @@ using Stream = System.IO.Stream;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-	public class PlatformImage : IImage
+	public class PlatformImage : IImageWithMetadata
 	{
 		private Bitmap _bitmap;
+		private readonly AndroidImageMetadata _metadata;
 
 		public PlatformImage(Bitmap bitmap)
+			: this(bitmap, null)
+		{
+		}
+
+		internal PlatformImage(Bitmap bitmap, AndroidImageMetadata metadata)
 		{
 			_bitmap = bitmap;
+			_metadata = metadata;
 		}
+
+		public IImageMetadata Metadata => _metadata;
 
 		public float Width => _bitmap?.Width ?? 0;
 
@@ -24,13 +33,13 @@ namespace Microsoft.Maui.Graphics.Platform
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
 			var downsizedImage = _bitmap.Downsize((int)maxWidthOrHeight, disposeOriginal);
-			return new PlatformImage(downsizedImage);
+			return new PlatformImage(downsizedImage, _metadata);
 		}
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
 			var downsizedImage = _bitmap.Downsize((int)maxWidth, (int)maxHeight, disposeOriginal);
-			return new PlatformImage(downsizedImage);
+			return new PlatformImage(downsizedImage, _metadata);
 		}
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
@@ -125,7 +134,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		/// <inheritdoc cref="Save"/>
+		/// <inheritdoc cref="Save(System.IO.Stream, ImageFormat, float)"/>
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
@@ -140,6 +149,78 @@ namespace Microsoft.Maui.Graphics.Platform
 					await _bitmap.CompressAsync(Bitmap.CompressFormat.Png, 100, stream);
 					break;
 			}
+		}
+
+		/// <inheritdoc/>
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+		{
+			if (!TryGetMetadataToEmbed(format, options, out var metadata))
+			{
+				Save(stream, format, ClampQuality(options.Quality));
+				return;
+			}
+
+			var tempPath = CreateTempJpegPath();
+			try
+			{
+				using (var fileStream = File.Create(tempPath))
+					_bitmap.Compress(Bitmap.CompressFormat.Jpeg, (int)(ClampQuality(options.Quality) * 100), fileStream);
+
+				metadata.ApplyTo(tempPath);
+
+				using var readStream = File.OpenRead(tempPath);
+				readStream.CopyTo(stream);
+			}
+			finally
+			{
+				TryDeleteFile(tempPath);
+			}
+		}
+
+		/// <inheritdoc/>
+		public async Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+		{
+			if (!TryGetMetadataToEmbed(format, options, out var metadata))
+			{
+				await SaveAsync(stream, format, ClampQuality(options.Quality));
+				return;
+			}
+
+			var tempPath = CreateTempJpegPath();
+			try
+			{
+				using (var fileStream = File.Create(tempPath))
+					await _bitmap.CompressAsync(Bitmap.CompressFormat.Jpeg, (int)(ClampQuality(options.Quality) * 100), fileStream);
+
+				metadata.ApplyTo(tempPath);
+
+				using var readStream = File.OpenRead(tempPath);
+				await readStream.CopyToAsync(stream);
+			}
+			finally
+			{
+				TryDeleteFile(tempPath);
+			}
+		}
+
+		// Metadata embedding is only supported for JPEG. When it can't be applied we fall back to a
+		// plain pixel-only save.
+		bool TryGetMetadataToEmbed(ImageFormat format, ImageSaveOptions options, out AndroidImageMetadata metadata)
+		{
+			metadata = _metadata;
+			return options.PreserveMetadata && metadata is not null && format == ImageFormat.Jpeg;
+		}
+
+		static float ClampQuality(float quality) => Math.Max(0f, Math.Min(1f, quality));
+
+		static string CreateTempJpegPath()
+			=> System.IO.Path.Combine(System.IO.Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".jpg");
+
+		static void TryDeleteFile(string path)
+		{
+			try
+			{ File.Delete(path); }
+			catch { }
 		}
 
 		public void Dispose()
@@ -206,6 +287,68 @@ namespace Microsoft.Maui.Graphics.Platform
 				bitmap = BitmapFactory.DecodeStream(seekableStream);
 			}
 			return new PlatformImage(bitmap);
+		}
+
+		public static IImage FromStream(Stream stream, ImageLoadOptions options)
+		{
+			// Use original stream if seekable, otherwise copy to memory stream
+			if (stream.CanSeek)
+			{
+				return CreateImageFromSeekableStream(stream, options);
+			}
+			else
+			{
+				using var memoryStream = new MemoryStream();
+				stream.CopyTo(memoryStream);
+				memoryStream.Position = 0;
+				return CreateImageFromSeekableStream(memoryStream, options);
+			}
+		}
+
+		private static IImage CreateImageFromSeekableStream(Stream seekableStream, ImageLoadOptions options)
+		{
+			// Older Android has no ExifInterface stream constructor, so there is no orientation/metadata
+			// to work with; just decode the pixels as-is.
+			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return new PlatformImage(BitmapFactory.DecodeStream(seekableStream));
+			}
+
+			int orientation = 1;
+			AndroidImageMetadata metadata = null;
+			try
+			{
+				var exif = new ExifInterface(seekableStream);
+				orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
+				if (options.PreserveMetadata)
+				{
+					metadata = AndroidImageMetadata.Capture(exif, orientation);
+				}
+			}
+			catch (Exception)
+			{
+				// If EXIF can't be read there is nothing to normalize or preserve.
+				orientation = 1;
+				metadata = null;
+			}
+
+			seekableStream.Position = 0;
+			var bitmap = BitmapFactory.DecodeStream(seekableStream);
+
+			// Apply orientation normalization unless the caller opted out.
+			if (!options.DisableRotationNormalization && orientation != 1)
+			{
+				bitmap = RotateBitmap(bitmap, orientation);
+
+				// The pixels are now upright, so any preserved metadata must report orientation = 1
+				// to avoid a viewer rotating the already-corrected image a second time.
+				if (metadata is not null)
+				{
+					metadata.Orientation = 1;
+				}
+			}
+
+			return new PlatformImage(bitmap, metadata);
 		}
 
 		static Bitmap RotateBitmap(Bitmap bitmap, int orientation)
