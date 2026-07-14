@@ -1,0 +1,124 @@
+require "fileutils"
+require "tmpdir"
+
+def required_option(options, key)
+  value = options[key].to_s
+  UI.user_error!("Missing required option: #{key}") if value.empty?
+  value
+end
+
+def optional_option(options, key)
+  value = options[key].to_s
+  value.empty? ? nil : value
+end
+
+def release_notes
+  value = ENV["TEMPLATE_APP_RELEASE_NOTES"].to_s
+  value.empty? ? nil : value
+end
+
+def truthy_environment?(key)
+  ["1", "true", "yes"].include?(ENV[key].to_s.downcase)
+end
+
+def integer_environment(key, default_value)
+  value = ENV[key].to_s.strip
+  return default_value if value.empty?
+  Integer(value)
+rescue ArgumentError
+  UI.user_error!("Invalid integer environment value for #{key}: #{value}")
+end
+
+def testflight_review_conflict?(error)
+  message = error.to_s
+  message.include?("Another build is in review") ||
+    message.include?("already in beta review")
+end
+
+def testflight_processing_timeout?(error)
+  message = error.to_s
+  message.include?("BuildWatcher exceeded") ||
+    (message.include?("processing") &&
+      (message.include?("timeout") || message.include?("timed out") || message.include?("waited")))
+end
+
+default_platform(:ios)
+
+platform :android do
+  desc "Upload a generated MAUI template app bundle to a Google Play testing track"
+  lane :template_app_play do |options|
+    changelog = release_notes
+    metadata_path = nil
+
+    unless changelog.nil?
+      metadata_path = File.join(Dir.mktmpdir("template-app-play-metadata"), "android")
+      changelog_dir = File.join(metadata_path, "en-US", "changelogs")
+      FileUtils.mkdir_p(changelog_dir)
+      File.write(File.join(changelog_dir, "default.txt"), changelog)
+    end
+
+    upload_to_play_store(
+      package_name: required_option(options, :package_name),
+      aab: required_option(options, :aab),
+      track: required_option(options, :track),
+      json_key: required_option(options, :json_key),
+      release_status: optional_option(options, :release_status) || "completed",
+      version_name: optional_option(options, :version_name),
+      metadata_path: metadata_path,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: changelog.nil?,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end
+
+platform :ios do
+  desc "Upload a generated MAUI template IPA or Mac Catalyst PKG to TestFlight"
+  lane :template_app_testflight do |options|
+    groups = optional_option(options, :groups).to_s.split(",").map(&:strip).reject(&:empty?)
+    changelog = release_notes
+    api_key = app_store_connect_api_key(
+      key_id: required_option(options, :api_key_id),
+      issuer_id: required_option(options, :issuer_id),
+      key_filepath: required_option(options, :api_private_key_path)
+    )
+
+    upload_options = {
+      app_identifier: required_option(options, :app_identifier),
+      api_key: api_key,
+      uses_non_exempt_encryption: false,
+      wait_processing_timeout_duration: integer_environment("TEMPLATE_APP_TESTFLIGHT_WAIT_TIMEOUT_SECONDS", 2700),
+      skip_waiting_for_build_processing: groups.empty? && changelog.nil?
+    }
+
+    pkg = optional_option(options, :pkg)
+    if pkg.nil?
+      upload_options[:ipa] = required_option(options, :ipa)
+    else
+      upload_options[:pkg] = pkg
+      upload_options[:app_platform] = optional_option(options, :app_platform) || "osx"
+    end
+
+    upload_options[:changelog] = changelog unless changelog.nil?
+
+    unless groups.empty?
+      upload_options[:groups] = groups
+      upload_options[:distribute_external] = true
+      upload_options[:notify_external_testers] = true
+      upload_options[:reject_build_waiting_for_review] = true if truthy_environment?("TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW")
+    end
+
+    begin
+      upload_to_testflight(upload_options)
+    rescue => error
+      if testflight_review_conflict?(error)
+        UI.important("The build was uploaded, but another build in this train is already in beta review. Treating this as a successful upload.")
+      elsif testflight_processing_timeout?(error)
+        UI.important("The build was uploaded, but App Store Connect did not finish processing it before the configured wait timeout. Treating this as a successful upload.")
+      else
+        raise
+      end
+    end
+  end
+end
