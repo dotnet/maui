@@ -798,7 +798,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		static bool TryParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module, out IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> pathProperties, bool suppressPropertyNotFoundWarning = false)
+		static bool TryParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module, out IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> pathProperties)
 		{
 			pathProperties = null;
 
@@ -838,14 +838,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic && !pd.GetMethod.IsStatic, out var propDeclTypeRef);
 					if (property is null)
 					{
-						// For x:Reference-sourced bindings, resolving against the referenced
-						// element's actual type is a best-effort improvement over always falling
-						// back to reflection. If the path doesn't resolve against that type, we
-						// silently fall back to a reflection-based binding instead of emitting a
-						// new warning — these bindings were never compiled before, so emitting a
-						// warning here would be a regression in diagnostic noise.
-						if (!suppressPropertyNotFoundWarning)
-							context.LoggingHelper.LogWarningOrError(BindingPropertyNotFound, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, p, previousPartTypeRef);
+						context.LoggingHelper.LogWarningOrError(BindingPropertyNotFound, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, p, previousPartTypeRef);
 						return false;
 					}
 
