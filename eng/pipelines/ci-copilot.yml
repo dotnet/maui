@@ -1738,11 +1738,17 @@ stages:
                 Write-Host "##vso[task.logissue type=warning]$($skippedCats.Count) deep UI test categor$(if($skippedCats.Count -eq 1){'y was'}else{'ies were'}) not started due to the $budgetMin-min time budget: $($skippedCats -join ', ')"
               }
               if ($hadFailure) {
-                # Don't fail the stage — the AI summary review is the
-                # deliverable; failed tests get reported there. Stage-level
-                # failure would prevent the UpdateAISummaryComment stage
-                # from running.
+                # Don't FAIL the stage — the AI summary review is the deliverable
+                # and a hard failure would skip the Post AI Summary stage. But DO
+                # mark the task SucceededWithIssues so the Deep stage shows amber
+                # instead of a misleading green when a category failed or produced
+                # no results (e.g. the HostApp build failed and 0 tests ran). The
+                # Post AI Summary stage condition explicitly accepts
+                # 'SucceededWithIssues', so the honest "no results / rerun" summary
+                # still posts. Without this the stage reads green even though
+                # nothing was actually verified.
                 Write-Host "##vso[task.logissue type=warning]One or more deep UI test categories failed (see TRX in drop-deep-uitests artifact)"
+                Write-Host "##vso[task.complete result=SucceededWithIssues;]One or more deep UI test categories failed or produced no results"
               }
               exit 0
             displayName: 'Run deep UI tests (per-category loop)'
