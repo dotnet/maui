@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			// the user-registered override type instead of the inherited ElementHandler default.
 			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
 			{
-				return elementHandlerAttribute.GetHandlerType();
+				return GetValidatedHandlerType(iview, elementHandlerAttribute);
 			}
 
 			// ContentViewHandler is the default/fallback handler for any IContentView
@@ -132,14 +132,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		private static IElementHandler? CreateAttributeHandler(Type viewType, ElementHandlerAttribute elementHandlerAttribute)
 		{
-			var handlerType = elementHandlerAttribute.GetHandlerType();
-
-			if (!typeof(IElementHandler).IsAssignableFrom(handlerType))
-			{
-				throw new HandlerNotFoundException(
-					$"Unable to create the {nameof(IElementHandler)} {handlerType} declared by {nameof(ElementHandlerAttribute)} for {viewType}. " +
-					$"The declared handler type must implement {nameof(IElementHandler)}.");
-			}
+			var handlerType = GetValidatedHandlerType(viewType, elementHandlerAttribute);
 
 			try
 			{
@@ -153,6 +146,21 @@ namespace Microsoft.Maui.Hosting.Internal
 					$"Use `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` to register handlers that require constructor arguments, or resolve through `ToHandler()` so constructor arguments can come from the DI container.",
 					ex);
 			}
+		}
+
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		private static Type GetValidatedHandlerType(Type viewType, ElementHandlerAttribute elementHandlerAttribute)
+		{
+			var handlerType = elementHandlerAttribute.GetHandlerType();
+
+			if (!typeof(IElementHandler).IsAssignableFrom(handlerType))
+			{
+				throw new HandlerNotFoundException(
+					$"Unable to use the handler type {handlerType} declared by {nameof(ElementHandlerAttribute)} for {viewType}. " +
+					$"The declared handler type must implement {nameof(IElementHandler)}.");
+			}
+
+			return handlerType;
 		}
 	}
 }

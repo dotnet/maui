@@ -434,6 +434,20 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void HostBuilderThrowsActionableExceptionWhenGettingHandlerTypeForElementHandlerAttributeWithNonHandlerType()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var exception = Assert.Throws<HandlerNotFoundException>(() => mauiHandlersFactory.GetHandlerType(typeof(AttributedNonHandlerViewStub)));
+
+			Assert.Contains(nameof(IElementHandler), exception.Message, StringComparison.Ordinal);
+			Assert.Contains(typeof(NonHandler).FullName!, exception.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
 		public void HostBuilderUsesOverriddenElementHandlerAttributeHandlerType()
 		{
 			var mauiApp = MauiApp.CreateBuilder()
