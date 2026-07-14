@@ -1149,6 +1149,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PickerPreservesSelectionWhenItemInsertedBeforeItWhileHandlerDetached()
+		{
+			var itemsSource = new ObservableCollection<string> { "A", "B", "C" };
+			var picker = new Picker
+			{
+				ItemsSource = itemsSource,
+				SelectedItem = "B"
+			};
+
+			picker.Handler = new PickerHandlerStub();
+			picker.Handler = null;
+			itemsSource.Insert(0, "Inserted");
+
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			picker.Handler = new PickerHandlerStub();
+
+			Assert.Equal(4, picker.Items.Count);
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
+		}
+
+		[Fact]
 		public void PickerAppliesPendingSelectedIndexWhenHandlerReattaches()
 		{
 			var itemsSource = new ObservableCollection<string>();
