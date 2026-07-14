@@ -164,15 +164,17 @@ extends:
                       $reader.Dispose()
                     }
 
-                    $id = $document.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='id']").InnerText
-                    $version = $document.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='version']").InnerText
-                    if ([string]::IsNullOrWhiteSpace($id) -or [string]::IsNullOrWhiteSpace($version)) {
+                    $idNode = $document.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='id']")
+                    $versionNode = $document.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='version']")
+                    if (!$idNode -or !$versionNode -or
+                        [string]::IsNullOrWhiteSpace($idNode.InnerText) -or
+                        [string]::IsNullOrWhiteSpace($versionNode.InnerText)) {
                       throw "Package '$($package.FullName)' has no ID or version."
                     }
 
                     return [pscustomobject]@{
-                      id = $id
-                      version = $version
+                      id = $idNode.InnerText
+                      version = $versionNode.InnerText
                       fileName = $package.Name
                     }
                   }
