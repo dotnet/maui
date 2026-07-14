@@ -409,9 +409,6 @@ API=$(gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title -q '.title' \
   | sed -E 's/^\[leak-scan\] *//' \
   | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } else print }')
 echo "target rooting API: $API"
-# Escape regex metacharacters (notably the '.' in Type.Member) so the jq test() calls below match
-# a LITERAL "Type.Member" — otherwise "BackButtonBehavior.Command" would also match "BackButtonBehaviorXCommand".
-API_RE=$(printf '%s' "$API" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 # Escape the owner/repo so it embeds literally in the jq test() calls below. The issue-ref match
 # requires "#<N>" to be a BARE same-repo reference OR an explicit "<owner>/<repo>#<N>" qualifier —
 # NEVER an arbitrary cross-repo "other/repo#<N>". Otherwise an unrelated upstream ref such as
@@ -425,10 +422,15 @@ gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:ti
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 # (b) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
-#     [leak-fix] PR titles are "Fix <Type>.<Member> memory leak".
+#     [leak-fix] PR titles lead with "Fix <Type>.<Member> ...". Normalize each PR title with the
+#     SAME last-dotted-pair extraction used for $API above (issue side) instead of anchoring the
+#     API right after "Fix " — that keys both sides identically, so a qualifier ("Fix Shell
+#     BackButtonBehavior.Command ...") or a fully-qualified title ("Fix
+#     Microsoft.Maui.Controls.Picker.ItemsSource ...") still matches the target Type.Member, and a
+#     deeper member ("Fix Picker.ItemsSource.Something") no longer false-matches Picker.ItemsSource.
 gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title \
-  | jq --arg api "$API_RE" '[.[] | select(.title | test("Fix +"+$api+"([. ]|$)"))]' \
+  | jq --arg apiplain "$API" 'def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end; [.[] | select(((.title // "") | titleapi) == $apiplain)]' \
   > /tmp/gh-aw/agent/same-api-prs.json
 jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/same-api-prs.json
 # (c) Closed-unmerged attempts for this issue (attempt cap = 3).
@@ -449,8 +451,10 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 # (d) MERGED [leak-fix] PR already fixing this issue number OR the SAME rooting Type.Member?
 #     Merged fixes often reference an UPSTREAM issue (e.g. "Fixes #35775") instead of this
 #     [leak-scan] number, so GitHub never auto-closed this scan issue — leaving it to be
-#     re-picked and rebuilt from source every run. Detect the merged fix by BOTH the issue-ref
-#     AND the rooting Type.Member so we can close this issue instead of rebuilding. The search is
+#     re-picked and rebuilt from source every run. Detect the merged fix by the issue-ref OR the
+#     rooting Type.Member (each merged title normalized with the SAME last-dotted-pair extraction
+#     as $API, so qualified / fully-qualified titles key identically) so we can close this issue
+#     instead of rebuilding. The search is
 #     scoped to label:agentic-workflows so ONLY workflow-owned merged fixes can close a scan issue.
 #     --limit 1000 = the GitHub SEARCH API's hard result ceiling (pagination cannot exceed it). If
 #     the merged [leak-fix] set ever hits 1000, older fixes are TRUNCATED and this gate could miss a
@@ -461,8 +465,8 @@ gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:
 if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-all.json)" -ge 1000 ]; then
   echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older merged fixes may be TRUNCATED. Gate (d) stays fail-safe (under-closes) but close-coverage is incomplete — switch to date-windowed enumeration."
 fi
-jq --arg n "$N" --arg api "$API_RE" --arg repo "$REPO_RE" \
-    '[.[] | select(((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) or (.title | test("Fix +"+$api+"([. ]|$)")))]' \
+jq --arg n "$N" --arg apiplain "$API" --arg repo "$REPO_RE" \
+    'def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end; [.[] | select(((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) or (((.title // "") | titleapi) == $apiplain))]' \
     /tmp/gh-aw/agent/merged-leakfix-all.json \
   > /tmp/gh-aw/agent/merged-fix-prs.json
 jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent/merged-fix-prs.json
