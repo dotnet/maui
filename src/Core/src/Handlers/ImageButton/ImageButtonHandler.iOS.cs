@@ -55,7 +55,13 @@ namespace Microsoft.Maui.Handlers
 			if (platformView is null)
 				return;
 
-			if (imageButton.Background.IsNullOrEmpty())
+			if (imageButton.Background is ImageSourcePaint imagePaint)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(imagePaint.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (imageButton.Background.IsNullOrEmpty())
 			{
 				platformView.RemoveBackgroundLayer();
 				platformView.BackgroundColor = UIColor.Clear;
