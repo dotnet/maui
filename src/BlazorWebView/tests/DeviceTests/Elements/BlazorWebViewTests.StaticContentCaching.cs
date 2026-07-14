@@ -34,6 +34,16 @@ public partial class BlazorWebViewTests
 	}
 
 	[Fact]
+	public async Task StaticContentCacheControlProviderReturningEmptyStringKeepsDefaultNoStore()
+	{
+		// An empty string is treated the same as null: an empty Cache-Control header value is non-standard and
+		// more likely accidental than an intentional opt-in, so the safe default is preserved.
+		var cacheControl = await GetServedCacheControlHeaderAsync(_ => string.Empty);
+
+		Assert.Contains("no-store", cacheControl, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public async Task StaticContentCacheControlProviderReceivesResolvedContentType()
 	{
 		string observedContentType = null;

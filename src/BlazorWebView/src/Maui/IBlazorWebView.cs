@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <summary>
 		/// Gets a callback that returns the <c>Cache-Control</c> header value to use for a static content request
 		/// served by the <see cref="BlazorWebView"/>, or <see langword="null"/> to use the default (which disables
-		/// caching). Returning <see langword="null"/> from the callback for a given request also falls back to the
-		/// default for that request.
+		/// caching). Returning <see langword="null"/> or an empty string from the callback for a given request also
+		/// falls back to the default for that request.
 		/// </summary>
 		Func<BlazorWebViewStaticContentRequest, string?>? StaticContentCacheControlProvider => null;
 
