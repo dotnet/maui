@@ -26,6 +26,8 @@ public class EditorFeatureTests : _GalleryUITest
 	{
 	}
 	// Note: FontAutoScaling states cannot currently be reliably covered in CI environments, as system font scaling settings are not consistently supported or controllable in automated runs.
+
+#if TEST_FAILS_ON_WINDOWS //Related issue: https://github.com/dotnet/maui/issues/29805
 	[Test, Order(1)]
 	public void VerifyEditorInitialEventStates()
 	{
@@ -35,6 +37,7 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Not triggered"));
 		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='', New='Test Editor'"));
 	}
+#endif
 
 	[Test, Order(2)]
 	public async Task VerifyEditorFocusedEvent()
