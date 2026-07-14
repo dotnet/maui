@@ -366,6 +366,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var realParent = _realParent;
 			if (realParent is not null && !realParent.TryGetTarget(out _))
+				// Only clear the reference we observed; a new parent may be assigned concurrently.
 				Interlocked.CompareExchange(ref _realParent, null, realParent);
 		}
 

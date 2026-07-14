@@ -166,14 +166,20 @@ namespace Microsoft.Maui.Controls
 
 			public void Remove(GradientStop source)
 			{
+				bool removed = false;
 				for (int i = _stopProxies.Count - 1; i >= 0; i--)
 				{
 					var proxy = _stopProxies[i];
-					if (proxy.TryGetSource(out var proxySource) && ReferenceEquals(proxySource, source))
+					if (!proxy.TryGetSource(out var proxySource))
 					{
 						proxy.Unsubscribe();
 						_stopProxies.RemoveAt(i);
-						break;
+					}
+					else if (!removed && ReferenceEquals(proxySource, source))
+					{
+						proxy.Unsubscribe();
+						_stopProxies.RemoveAt(i);
+						removed = true;
 					}
 				}
 			}
