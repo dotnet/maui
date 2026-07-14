@@ -871,6 +871,18 @@ stages:
           #  Task 3 — COPILOT REVIEW: expert review + try-fix.
           #  env: COPILOT_GITHUB_TOKEN (for copilot agent).
           #  NO GH_TOKEN — the agent can't push or post comments.
+          #
+          #  timeoutInMinutes: 150 — SAFETY NET against a hung `copilot` CLI.
+          #  The CLI is invoked streaming (Review-PR.ps1: `& copilot ... |
+          #  ForEach-Object`) with NO internal timeout, so a network/MCP/model
+          #  stall would otherwise block this step until the 360-min JOB cap —
+          #  and because the Deep UI Tests stage dependsOn ReviewPR, a hung
+          #  review blocks Deep for up to 6h. Observed legitimate Task 3 max is
+          #  ~53m; a worst-case 5-attempt try-fix is ~95m, so 150m never kills a
+          #  real review but caps a true hang at 2.5h. Safe to fire: the Deep
+          #  stage still runs (its condition accepts ReviewPR result 'Failed' and
+          #  reads categories from RunGate, which already succeeded), and
+          #  UpdateAISummaryComment still posts a summary from the deep results.
           # ─────────────────────────────────────────────────────────
           - bash: |
               echo "═══ TASK 3: COPILOT REVIEW ═══"
@@ -896,6 +908,7 @@ stages:
               fi
             name: RunReview
             displayName: 'Task 3: Copilot Review (expert review + try-fix)'
+            timeoutInMinutes: 150
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
