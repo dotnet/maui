@@ -17,7 +17,12 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(ISearchBarHandler handler, SearchBar searchBar)
 		{
 			Platform.SearchBarExtensions.UpdateText(handler.PlatformView, searchBar);
-			SearchBarHandler.MapFormatting(handler, searchBar);
+
+			if (!handler.IsConnectingHandler())
+			{
+				// Any text update requires that we update any attributed string formatting
+				SearchBarHandler.MapFormatting(handler, searchBar);
+			}
 		}
 
 		internal static void MapUserInteraction(ISearchBarHandler handler, SearchBar searchBar)
