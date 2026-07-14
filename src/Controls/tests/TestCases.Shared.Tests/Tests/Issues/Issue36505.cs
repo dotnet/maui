@@ -1,4 +1,4 @@
-#if IOS
+#if IOS || MACCATALYST   // This issue is only reproducible on iOS and MacCatalyst, so skip the test on other platforms.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -26,10 +26,22 @@ public class Issue36505 : _IssuesUITest
 		var y = location.Y;
 
 		// Tap "Click me" (line 16) at its visual centre.
-		App.TapCoordinates(location.X + 10, y + (visualLineHeight * 15) + lineCenterOffset);
+		// On MacCatalyst the rendered position is slightly higher, so shift up by
+		// half a visual line to land reliably on the tappable span.
+		TapClickMe(location.X + 10, y, visualLineHeight, lineCenterOffset);
 
-		App.WaitForTextToBePresentInElement("StatusLabel", "Success");
+		Assert.That(App.WaitForTextToBePresentInElement("StatusLabel", "Success", timeout: TimeSpan.FromSeconds(3)),
+			Is.True,
+			"Tapping the span at its visual position should trigger the TapGestureRecognizer");
 	}
-		
+
+	void TapClickMe(float x, float y, float visualLineHeight, float lineCenterOffset)
+	{
+#if MACCATALYST
+			App.TapCoordinates(x, y + (visualLineHeight * 15) + lineCenterOffset - visualLineHeight * 0.5f);
+#else
+			App.TapCoordinates(x, y + (visualLineHeight * 15) + lineCenterOffset);
+#endif
+	}
 }
 #endif
