@@ -468,14 +468,22 @@ try {
         $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
     }
     Write-Info "Actual dotnet test args: $($testArgs -join ' ')"
-    $testOutput = & dotnet test @testArgs 2>&1
-    
+    # Stream each line to this script's output stream *as it is produced* (via
+    # Tee-Object pass-through) while still capturing every line into $testOutput.
+    # Streaming live is essential: the deep per-category loop runs this script
+    # under a bounded runner that detects hangs by watching the child's stdout
+    # for growth. `dotnet test` (which includes the multi-minute HostApp build)
+    # emits nothing until it finishes when its output is captured silently, so a
+    # slow-but-healthy build on a saturated agent looked identical to a hang and
+    # got idle-killed mid-build (observed: catalyst CollectionView killed 3x at
+    # ~26 min, whole category falsely failed). Tee gives the idle detector a real
+    # progress signal, keeps $testOutput for the TRX/marker logic below, and — via
+    # the success stream — still reaches gate callers that capture with `2>&1`.
+    # (Do NOT revert to a silent `$testOutput = & dotnet test ... 2>&1` capture.)
+    & dotnet test @testArgs 2>&1 | Tee-Object -Variable testOutput
+
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
-    
-    # Output test results to the output stream so callers can capture them
-    # (Write-Host goes to the Information stream which is not captured by 2>&1)
-    $testOutput | ForEach-Object { Write-Output $_ }
 
     # Surface the TRX path on a marker line so callers (Invoke-UITestWithRetry
     # and Review-PR.ps1) can locate the authoritative results file regardless
