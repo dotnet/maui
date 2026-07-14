@@ -9,8 +9,9 @@ description: |
   2. Writes a focused **regression unit test** in `Controls.Core.UnitTests` (managed,
      library-TFM, no workload/emulator) that asserts the transient is collected.
   3. Builds + runs that test and confirms it **FAILS** on the unpatched source — proving
-     the test actually catches the leak. (If it already passes, the leak is already fixed
-     on this branch: the agent opens NO PR and stops.)
+     the test actually catches the leak. (If it already passes on unpatched source, the agent
+     opens NO PR — but a single green run is **not** proof the leak is fixed, so it does **not**
+     close the scan issue; closure happens only via a merged fix PR — see Step 6 / gate (d).)
   4. Implements the product fix (weak subscription / `WeakEventManager` / teardown on the
      missing path), rebuilds, and confirms the **same test now PASSES** with no regression
      in its neighbours.
@@ -270,7 +271,7 @@ request). Otherwise, BEFORE looking for new work, see whether one of this workfl
 # same-repo (dotnet/maui-hosted) PRs here; skip fork-hosted [leak-fix] PRs entirely.
 OWNER="${GITHUB_REPOSITORY%%/*}"
 gh pr list --repo "$GITHUB_REPOSITORY" --state open \
-  --search '"[leak-fix]" in:title' \
+  --search '"[leak-fix]" in:title label:agentic-workflows' \
   --json number,title,headRefName,headRepositoryOwner,url,updatedAt \
   | jq --arg owner "$OWNER" '[.[] | select((.headRepositoryOwner.login // "") == $owner)] | sort_by(.number)' \
   > /tmp/gh-aw/agent/my-open-prs.json
@@ -409,20 +410,20 @@ echo "target rooting API: $API"
 # a LITERAL "Type.Member" — otherwise "BackButtonBehavior.Command" would also match "BackButtonBehaviorXCommand".
 API_RE=$(printf '%s' "$API" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 # (a) Open [leak-fix] PR already addressing THIS issue number?
-gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title' --limit 200 \
+gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title,body \
   | jq --arg n "$N" '[.[] | select((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b"))]' \
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 # (b) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
 #     [leak-fix] PR titles are "Fix <Type>.<Member> memory leak".
-gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title' --limit 200 \
+gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title \
   | jq --arg api "$API_RE" '[.[] | select(.title | test("Fix +"+$api+"([. ]|$)"))]' \
   > /tmp/gh-aw/agent/same-api-prs.json
 jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/same-api-prs.json
 # (c) Closed-unmerged attempts for this issue (attempt cap = 3).
-gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:title' --limit 200 \
+gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title,body,mergedAt \
   | jq --arg n "$N" '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b")) and (.mergedAt == null))]' \
   > /tmp/gh-aw/agent/closed-fix-prs.json
@@ -431,8 +432,9 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 #     Merged fixes often reference an UPSTREAM issue (e.g. "Fixes #35775") instead of this
 #     [leak-scan] number, so GitHub never auto-closed this scan issue — leaving it to be
 #     re-picked and rebuilt from source every run. Detect the merged fix by BOTH the issue-ref
-#     AND the rooting Type.Member so we can close this issue instead of rebuilding.
-gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title' --limit 200 \
+#     AND the rooting Type.Member so we can close this issue instead of rebuilding. The search is
+#     scoped to label:agentic-workflows so ONLY workflow-owned merged fixes can close a scan issue.
+gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title,body \
   | jq --arg n "$N" --arg api "$API_RE" \
       '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b")) or (.title | test("Fix +"+$api+"([. ]|$)")))]' \

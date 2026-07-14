@@ -188,13 +188,15 @@ echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 # already-MERGED fix has NOT shipped yet — so a leak that is fixed on `main` STILL reproduces
 # (goes red) and would be re-filed every run forever. De-dup is the ONLY guard. Build the
 # "fixed-on-main" rooting-Type.Member set from **MERGED `[leak-fix]` PR titles ONLY** — a merged
-# fix PR is durable, workflow-owned provenance that a fix ACTUALLY LANDED on `main`. Do NOT trust
+# fix PR is durable, workflow-owned provenance that a fix ACTUALLY LANDED on `main`. The query is
+# scoped to `label:agentic-workflows`, so ONLY this workflow's own merged fixes count (a manually
+# created `[leak-fix]`-titled PR is ignored). Do NOT trust
 # an issue's close *reason*: a `[leak-scan]` issue closed as COMPLETED records only that SOMEONE
 # closed it, not that a fix merged (a maintainer can close a still-reproducing issue as
 # completed), so treating "closed as completed" as fixed would permanently suppress a still-valid
 # leak. Worst case here (a human-fixed leak with no [leak-fix] PR) is a single bounded re-file
 # that the OPEN-issue de-dup above then catches — far safer than permanent data loss.
-gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title' \
+gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' \
   --limit 300 --json title -q '.[].title' \
   | grep -E '^\[leak-fix\] ' | sed -E 's/^\[leak-fix\] *(Fix +)?//' \
   | awk '{
