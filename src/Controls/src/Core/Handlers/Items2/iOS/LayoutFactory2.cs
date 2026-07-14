@@ -85,6 +85,35 @@ internal static class LayoutFactory2
 		return [];
 	}
 
+	static void ApplyHeaderFooterBoundarySpacing(NSCollectionLayoutSection section, UICollectionViewScrollDirection scrollDirection, double verticalSpacing, double horizontalSpacing, bool hasHeader, bool hasFooter, bool applySpacing)
+	{
+		if (!applySpacing)
+		{
+			return;
+		}
+
+		if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+		{
+			var topInset = hasHeader ? new NFloat(verticalSpacing) : new NFloat(0);
+			var bottomInset = hasFooter ? new NFloat(verticalSpacing) : new NFloat(0);
+
+			if (topInset > 0 || bottomInset > 0)
+			{
+				section.ContentInsets = new NSDirectionalEdgeInsets(topInset, 0, bottomInset, 0);
+			}
+		}
+		else
+		{
+			var leadingInset = hasHeader ? new NFloat(horizontalSpacing) : new NFloat(0);
+			var trailingInset = hasFooter ? new NFloat(horizontalSpacing) : new NFloat(0);
+
+			if (leadingInset > 0 || trailingInset > 0)
+			{
+				section.ContentInsets = new NSDirectionalEdgeInsets(0, leadingInset, 0, trailingInset);
+			}
+		}
+	}
+
 	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo layoutHeaderFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing, Func<Thickness>? peekAreaInsetsFunc, ItemsLayout itemsLayout)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
@@ -145,31 +174,14 @@ internal static class LayoutFactory2
 			// For grouped sections with a group header/footer, add content insets to create
 			// the gap between the header/footer supplementary item and the first/last item.
 			// InterSectionSpacing (set on layoutConfiguration above) handles the gap between sections.
-			if (groupingInfo.IsGrouped && itemSpacing > 0)
-			{
-				if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
-				{
-					var leadingInset = groupingInfo.HasHeader ? new NFloat(itemSpacing) : new NFloat(0);
-					var trailingInset = groupingInfo.HasFooter ? new NFloat(itemSpacing) : new NFloat(0);
-
-					if (leadingInset > 0 || trailingInset > 0)
-					{
-						section.ContentInsets = new NSDirectionalEdgeInsets(0, leadingInset, 0, trailingInset);
-					}
-				}
-				else
-				{
-					// Vertical: top inset creates gap between header and first item,
-					// bottom inset creates gap between last item and footer.
-					var topInset = groupingInfo.HasHeader ? new NFloat(itemSpacing) : new NFloat(0);
-					var bottomInset = groupingInfo.HasFooter ? new NFloat(itemSpacing) : new NFloat(0);
-
-					if (topInset > 0 || bottomInset > 0)
-					{
-						section.ContentInsets = new NSDirectionalEdgeInsets(topInset, 0, bottomInset, 0);
-					}
-				}
-			}
+			ApplyHeaderFooterBoundarySpacing(
+				section,
+				scrollDirection,
+				itemSpacing,
+				itemSpacing,
+				groupingInfo.HasHeader,
+				groupingInfo.HasFooter,
+				groupingInfo.IsGrouped && itemSpacing > 0);
 
 			// Create header and footer for group
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
@@ -246,30 +258,14 @@ internal static class LayoutFactory2
 
 			var hasHeader = groupingInfo.IsGrouped ? groupingInfo.HasHeader : headerFooterInfo.HasHeader;
 			var hasFooter = groupingInfo.IsGrouped ? groupingInfo.HasFooter : headerFooterInfo.HasFooter;
-
-			if (mainAxisSpacing > 0)
-			{
-				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
-				{
-					var topInset = hasHeader ? new NFloat(verticalItemSpacing) : new NFloat(0);
-					var bottomInset = hasFooter ? new NFloat(verticalItemSpacing) : new NFloat(0);
-
-					if (topInset > 0 || bottomInset > 0)
-					{
-						section.ContentInsets = new NSDirectionalEdgeInsets(topInset, 0, bottomInset, 0);
-					}
-				}
-				else
-				{
-					var leadingInset = hasHeader ? new NFloat(horizontalItemSpacing) : new NFloat(0);
-					var trailingInset = hasFooter ? new NFloat(horizontalItemSpacing) : new NFloat(0);
-
-					if (leadingInset > 0 || trailingInset > 0)
-					{
-						section.ContentInsets = new NSDirectionalEdgeInsets(0, leadingInset, 0, trailingInset);
-					}
-				}
-			}
+			ApplyHeaderFooterBoundarySpacing(
+				section,
+				scrollDirection,
+				verticalItemSpacing,
+				horizontalItemSpacing,
+				hasHeader,
+				hasFooter,
+				mainAxisSpacing > 0);
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
