@@ -252,6 +252,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(sharedStop.Parent);
 		}
 
+		[Theory]
+		[InlineData(ValueEqualStopDetachment.RemoveStop)]
+		[InlineData(ValueEqualStopDetachment.ReplaceStop)]
+		[InlineData(ValueEqualStopDetachment.ReplaceCollection)]
+		public void DetachingValueEqualStopClearsRemovedParent(ValueEqualStopDetachment detachment)
+		{
+			var removedStop = new GradientStop { Offset = 0.5f };
+			var equalStop = new GradientStop { Offset = 0.5f };
+			var stops = new GradientStopCollection { removedStop, equalStop };
+			var brush = new LinearGradientBrush { GradientStops = stops };
+
+			Assert.Equal(removedStop, equalStop);
+
+			switch (detachment)
+			{
+				case ValueEqualStopDetachment.RemoveStop:
+					stops.RemoveAt(0);
+					break;
+				case ValueEqualStopDetachment.ReplaceStop:
+					stops[0] = new GradientStop { Offset = 0.5f };
+					break;
+				case ValueEqualStopDetachment.ReplaceCollection:
+					brush.GradientStops = new GradientStopCollection { equalStop };
+					break;
+			}
+
+			Assert.Null(removedStop.Parent);
+			Assert.All(brush.GradientStops, stop => Assert.Same(brush, stop.Parent));
+		}
+
 		[Fact]
 		public void ClearingGradientStopsAllowsReentrantReplacement()
 		{
@@ -307,6 +337,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			ClearCollection,
 			RemoveStop,
+			ReplaceCollection,
+		}
+
+		public enum ValueEqualStopDetachment
+		{
+			RemoveStop,
+			ReplaceStop,
 			ReplaceCollection,
 		}
 	}

@@ -131,11 +131,20 @@ namespace Microsoft.Maui.Controls
 
 		void ClearGradientStopParentIfUnused(GradientStop gradientStop)
 		{
-			if (ReferenceEquals(gradientStop.Parent, this) &&
-				(GradientStops is null || !GradientStops.Contains(gradientStop)))
+			if (!ReferenceEquals(gradientStop.Parent, this))
+				return;
+
+			var gradientStops = GradientStops;
+			if (gradientStops is not null)
 			{
-				gradientStop.Parent = null;
+				for (int i = 0; i < gradientStops.Count; i++)
+				{
+					if (ReferenceEquals(gradientStops[i], gradientStop))
+						return;
+				}
 			}
+
+			gradientStop.Parent = null;
 		}
 
 		sealed class GradientStopSubscriptions
