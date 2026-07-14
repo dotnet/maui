@@ -336,38 +336,61 @@ namespace Microsoft.Maui.Controls
 		WeakReference<Element> _realParent;
 		Element TryGetRealParent(bool logWarningIfParentHasBeenCollected = true)
 		{
-			var realParent = _realParent;
-			if (realParent is null)
+			while (true)
 			{
-				return null;
-			}
-			if (realParent.TryGetTarget(out var parent))
-			{
-				return parent;
-			}
-			else
-			{
-				// Clear the weak reference since the target has been garbage collected
-				// This prevents repeated checks and warnings on subsequent accesses
-				_realParent = null;
+				var realParent = Volatile.Read(ref _realParent);
+				if (realParent is null)
+					return null;
+
+				if (realParent.TryGetTarget(out var parent))
+					return parent;
+
+				if (!ClearRealParentAndInheritedContextIfCollected(realParent))
+					continue;
+
 				if (logWarningIfParentHasBeenCollected)
 				{
 					Application.Current?
 										.FindMauiContext()?
 										.CreateLogger<Element>()?
 										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					logWarningIfParentHasBeenCollected = false;
 				}
 			}
-
-			return null;
 		}
 
-		internal void ClearRealParentIfCollected()
+		internal void ClearRealParentAndInheritedContextIfCollected()
 		{
-			var realParent = _realParent;
-			if (realParent is not null && !realParent.TryGetTarget(out _))
-				// Only clear the reference we observed; a new parent may be assigned concurrently.
-				Interlocked.CompareExchange(ref _realParent, null, realParent);
+			var realParent = Volatile.Read(ref _realParent);
+			if (realParent is not null)
+				ClearRealParentAndInheritedContextIfCollected(realParent);
+		}
+
+		bool ClearRealParentAndInheritedContextIfCollected(WeakReference<Element> realParent)
+		{
+			if (realParent.TryGetTarget(out _))
+				return false;
+
+			// Only clear the reference we observed; a new parent may be assigned concurrently.
+			if (!ReferenceEquals(Interlocked.CompareExchange(ref _realParent, null, realParent), realParent))
+				return false;
+
+			if (Volatile.Read(ref _realParent) is not null)
+				return true;
+
+			var inheritedContext = MarkInheritedBindingContextForCleanup();
+			if (inheritedContext is null)
+				return true;
+
+			if (Volatile.Read(ref _realParent) is not null)
+			{
+				CancelInheritedBindingContextCleanup(inheritedContext);
+				return true;
+			}
+
+			DispatchInheritedBindingContextCleanup();
+
+			return true;
 		}
 
 		/// <summary>For internal use by .NET MAUI.</summary>
@@ -378,9 +401,9 @@ namespace Microsoft.Maui.Controls
 			private set
 			{
 				if (value is null)
-					_realParent = null;
+					Volatile.Write(ref _realParent, null);
 				else
-					_realParent = new WeakReference<Element>(value);
+					Volatile.Write(ref _realParent, new WeakReference<Element>(value));
 			}
 		}
 

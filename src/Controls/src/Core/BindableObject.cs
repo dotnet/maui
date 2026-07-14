@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls
 
 		internal ushort _triggerCount = 0;
 		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity = new();
+		static readonly WeakReference s_inheritedContextCleanupPending = new(null);
 		readonly Dictionary<int, BindablePropertyContext> _properties = new(4);
 		bool _applying;
 		WeakReference _inheritedContext;
@@ -55,7 +57,17 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public object BindingContext
 		{
-			get => _inheritedContext?.Target ?? GetValue(BindingContextProperty);
+			get
+			{
+				var inheritedContext = _inheritedContext;
+				if (ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending))
+				{
+					ClearPendingInheritedBindingContext();
+					inheritedContext = _inheritedContext;
+				}
+
+				return inheritedContext?.Target ?? GetValue(BindingContextProperty);
+			}
 			set => SetValue(BindingContextProperty, value);
 		}
 
@@ -356,12 +368,19 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetInheritedBindingContext(BindableObject bindable, object value)
 		{
+			SetInheritedBindingContextCore(bindable, value, force: false);
+		}
+
+		static void SetInheritedBindingContextCore(BindableObject bindable, object value, bool force)
+		{
 			// I wonder if we couldn't treat BindingContext with specificities
 			BindablePropertyContext bpContext = bindable.GetContext(BindingContextProperty);
 			if (bpContext != null && bpContext.Values.GetSpecificity() >= SetterSpecificity.ManualValueSetter)
 				return;
 
-			if (ReferenceEquals(bindable._inheritedContext?.Target, value))
+			if (!force
+				&& !ReferenceEquals(bindable._inheritedContext, s_inheritedContextCleanupPending)
+				&& ReferenceEquals(bindable._inheritedContext?.Target, value))
 				return;
 
 			var binding = bpContext?.Bindings.GetValue();
@@ -379,6 +398,62 @@ namespace Microsoft.Maui.Controls
 				bindable.ApplyBindings(fromBindingContextChanged: true);
 				bindable.OnBindingContextChanged();
 			}
+		}
+
+		internal WeakReference MarkInheritedBindingContextForCleanup()
+		{
+			var inheritedContext = _inheritedContext;
+			if (inheritedContext is null || ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending))
+				return null;
+
+			if (inheritedContext.Target is null)
+			{
+				// The effective inherited context is already null, so no binding-context
+				// transition needs to be raised.
+				Interlocked.CompareExchange(ref _inheritedContext, null, inheritedContext);
+				return null;
+			}
+
+			if (!ReferenceEquals(
+				Interlocked.CompareExchange(ref _inheritedContext, s_inheritedContextCleanupPending, inheritedContext),
+				inheritedContext))
+			{
+				return null;
+			}
+
+			return inheritedContext;
+		}
+
+		internal void CancelInheritedBindingContextCleanup(WeakReference inheritedContext)
+		{
+			Interlocked.CompareExchange(
+				ref _inheritedContext,
+				inheritedContext,
+				s_inheritedContextCleanupPending);
+		}
+
+		internal void DispatchInheritedBindingContextCleanup()
+		{
+			if (!ReferenceEquals(_inheritedContext, s_inheritedContextCleanupPending))
+				return;
+
+			// Finalizer callers only queue work here. Binding callbacks run on the dispatcher
+			// or lazily on the next BindingContext access.
+			var dispatcher = _dispatcher;
+			if (dispatcher is not null && dispatcher.IsDispatchRequired)
+				dispatcher.Dispatch(ClearPendingInheritedBindingContext);
+		}
+
+		void ClearPendingInheritedBindingContext()
+		{
+			if (!ReferenceEquals(
+				Interlocked.CompareExchange(ref _inheritedContext, null, s_inheritedContextCleanupPending),
+				s_inheritedContextCleanupPending))
+			{
+				return;
+			}
+
+			SetInheritedBindingContextCore(this, null, force: true);
 		}
 
 		/// <summary>

@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -8,10 +10,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class GradientBrushMemoryTests : BaseTestFixture
 	{
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		static WeakReference CreateBrushWithSharedGradientStops(GradientStopCollection sharedStops)
+		static WeakReference CreateBrushWithSharedGradientStops(GradientStopCollection sharedStops, object bindingContext = null)
 		{
 			var brush = new LinearGradientBrush { GradientStops = sharedStops };
+			if (bindingContext is not null)
+				brush.BindingContext = bindingContext;
+
 			return new WeakReference(brush);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateFinalizerBlocker(
+			ManualResetEventSlim finalizerEntered,
+			ManualResetEventSlim releaseFinalizer)
+		{
+			var blocker = new FinalizerBlocker(finalizerEntered, releaseFinalizer);
+			return new WeakReference(blocker);
 		}
 
 		[Fact]
@@ -48,6 +62,113 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Application.ClearCurrent();
 			}
+		}
+
+		[Fact]
+		public async Task CollectedBrushClearsGradientStopInheritedBindingContext()
+		{
+			var bindingContext = new GradientStop { Offset = 0.25f };
+			var stop = new GradientStop();
+			stop.SetBinding(GradientStop.OffsetProperty, nameof(GradientStop.Offset));
+			var sharedStops = new GradientStopCollection { stop };
+			var weakBrush = CreateBrushWithSharedGradientStops(sharedStops, bindingContext);
+
+			Assert.Same(bindingContext, stop.BindingContext);
+			Assert.Equal(0.25f, stop.Offset);
+
+			bindingContext.Offset = 0.5f;
+			Assert.Equal(0.5f, stop.Offset);
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			Assert.Null(stop.Parent);
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(0f, stop.Offset);
+
+			bindingContext.Offset = 0.75f;
+			Assert.Equal(0f, stop.Offset);
+			GC.KeepAlive(bindingContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
+		public async Task CollectedBrushDispatchesGradientStopInheritedBindingContextCleanup()
+		{
+			var dispatchedCleanup = new TaskCompletionSource<Action>(TaskCreationOptions.RunContinuationsAsynchronously);
+			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+			DispatcherProviderStubOptions.InvokeOnMainThread = action => dispatchedCleanup.TrySetResult(action);
+
+			GradientStop bindingContext;
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			try
+			{
+				bindingContext = new GradientStop { Offset = 0.25f };
+				stop = new GradientStop();
+				stop.SetBinding(GradientStop.OffsetProperty, nameof(GradientStop.Offset));
+				sharedStops = new GradientStopCollection { stop };
+				weakBrush = CreateBrushWithSharedGradientStops(sharedStops, bindingContext);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+			}
+
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			var cleanup = await dispatchedCleanup.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Equal(0, bindingContextChanged);
+			Assert.Equal(0.25f, stop.Offset);
+
+			cleanup();
+
+			Assert.Equal(1, bindingContextChanged);
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(0f, stop.Offset);
+			GC.KeepAlive(bindingContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
+		public void ParentAccessBeforeSubscriptionFinalizerClearsInheritedBindingContext()
+		{
+			using var finalizerEntered = new ManualResetEventSlim();
+			using var releaseFinalizer = new ManualResetEventSlim();
+			CreateFinalizerBlocker(finalizerEntered, releaseFinalizer);
+			GC.Collect();
+
+			Assert.True(finalizerEntered.Wait(TimeSpan.FromSeconds(5)), "Finalizer blocker did not start.");
+
+			var bindingContext = new GradientStop { Offset = 0.25f };
+			var stop = new GradientStop();
+			stop.SetBinding(GradientStop.OffsetProperty, nameof(GradientStop.Offset));
+			var sharedStops = new GradientStopCollection { stop };
+			var weakBrush = CreateBrushWithSharedGradientStops(sharedStops, bindingContext);
+
+			try
+			{
+				GC.Collect();
+
+				Assert.False(weakBrush.IsAlive, "LinearGradientBrush should not be alive!");
+				Assert.Null(stop.Parent);
+				Assert.Null(stop.BindingContext);
+				Assert.Equal(0f, stop.Offset);
+
+				bindingContext.Offset = 0.75f;
+				Assert.Equal(0f, stop.Offset);
+			}
+			finally
+			{
+				releaseFinalizer.Set();
+				GC.WaitForPendingFinalizers();
+			}
+
+			GC.KeepAlive(bindingContext);
+			GC.KeepAlive(sharedStops);
 		}
 
 		[Fact]
@@ -417,6 +538,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			RemoveStop,
 			ReplaceStop,
 			ReplaceCollection,
+		}
+
+		sealed class FinalizerBlocker
+		{
+			readonly ManualResetEventSlim _finalizerEntered;
+			readonly ManualResetEventSlim _releaseFinalizer;
+
+			public FinalizerBlocker(
+				ManualResetEventSlim finalizerEntered,
+				ManualResetEventSlim releaseFinalizer)
+			{
+				_finalizerEntered = finalizerEntered;
+				_releaseFinalizer = releaseFinalizer;
+			}
+
+			~FinalizerBlocker()
+			{
+				_finalizerEntered.Set();
+				_releaseFinalizer.Wait();
+			}
 		}
 	}
 }

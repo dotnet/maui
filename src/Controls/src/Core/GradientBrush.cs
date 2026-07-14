@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Controls
 					if (owner is not null)
 						owner.ClearGradientStopParentIfUnused(gradientStop);
 					else
-						gradientStop.ClearRealParentIfCollected();
+						gradientStop.ClearRealParentAndInheritedContextIfCollected();
 				}
 			}
 		}
