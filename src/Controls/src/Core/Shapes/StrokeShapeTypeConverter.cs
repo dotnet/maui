@@ -30,6 +30,7 @@ public class StrokeShapeTypeConverter : TypeConverter
 		if (strValue is not null)
 		{
 			strValue = strValue.Trim();
+			culture ??= CultureInfo.CurrentCulture;
 
 			if (strValue.StartsWith(Ellipse, true, culture))
 			{
