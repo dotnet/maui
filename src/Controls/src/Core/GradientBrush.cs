@@ -63,15 +63,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldCollection != null)
 			{
-				_gradientStopSubscriptions?.UnsubscribeAll();
-
-				foreach (var oldStop in oldCollection)
-				{
-					if (oldStop is null)
-						continue;
-
-					ClearGradientStopParentIfUnused(oldStop);
-				}
+				_gradientStopSubscriptions?.UnsubscribeAll(this);
 			}
 
 			if (newCollection != null)
@@ -152,7 +144,7 @@ namespace Microsoft.Maui.Controls
 			readonly WeakNotifyCollectionChangedProxy _collectionProxy = new();
 			readonly List<WeakNotifyPropertyChangedProxy> _stopProxies = new();
 
-			~GradientStopSubscriptions() => UnsubscribeAll();
+			~GradientStopSubscriptions() => UnsubscribeAllForFinalization();
 
 			public void Subscribe(GradientStopCollection source, NotifyCollectionChangedEventHandler handler)
 			{
@@ -189,10 +181,20 @@ namespace Microsoft.Maui.Controls
 				UnsubscribeStops(owner);
 			}
 
-			public void UnsubscribeAll()
+			public void UnsubscribeAll(GradientBrush owner)
+			{
+				UnsubscribeAllCore(owner);
+			}
+
+			void UnsubscribeAllForFinalization()
+			{
+				UnsubscribeAllCore(owner: null);
+			}
+
+			void UnsubscribeAllCore(GradientBrush owner)
 			{
 				_collectionProxy.Unsubscribe();
-				UnsubscribeStops(owner: null);
+				UnsubscribeStops(owner);
 			}
 
 			void UnsubscribeStops(GradientBrush owner)

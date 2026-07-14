@@ -51,6 +51,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task CollectingPreviousBrushPreservesCurrentGradientStopParent()
+		{
+			var stop = new GradientStop();
+			var firstStops = new GradientStopCollection { stop };
+			var weakFirstBrush = CreateBrushWithSharedGradientStops(firstStops);
+			var secondBindingContext = new object();
+			var secondBrush = new LinearGradientBrush
+			{
+				BindingContext = secondBindingContext,
+				GradientStops = new GradientStopCollection { stop }
+			};
+
+			Assert.Same(secondBrush, stop.Parent);
+			Assert.False(await weakFirstBrush.WaitForCollect(), "Previous LinearGradientBrush should not be alive!");
+			Assert.Same(secondBrush, stop.Parent);
+			Assert.Same(secondBindingContext, stop.BindingContext);
+			GC.KeepAlive(firstStops);
+			GC.KeepAlive(secondBrush);
+		}
+
+		[Fact]
 		public async Task GradientStopChangesStillInvalidateAfterGc()
 		{
 			var stop = new GradientStop();
