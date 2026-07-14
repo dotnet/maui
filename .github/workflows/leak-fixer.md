@@ -209,8 +209,8 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
    `[leak-scan]` issue (AI-attributed comment linking the merged fix) and record
    `skipped: already fixed on main`. If instead your freshly-authored regression test merely
    passes on the *unpatched* source (Step 6) with **no** merged fix PR, that is NOT proof the
-   leak is gone — do NOT close it; record `skipped: test green on unpatched main (issue left
-   open)` and move on.
+   leak is gone — do NOT close it; record `skipped: test green on unpatched main (no PR, issue
+   left open)` and move on.
 3. **Managed scope for product fixes.** Any *product* change (Track A / a Track C code fix) must
    live in managed cross-platform code (`src/Controls/src`, `src/Core/src`, `src/Essentials/src`).
    If a `[leak-scan]` leak can only be reproduced with a platform handler / native peer, it is out
