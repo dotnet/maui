@@ -169,7 +169,19 @@ if ($Platform -eq "android") {
     $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
     Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId)
+    # ValidateXcodeVersion=false: skip the Microsoft.iOS SDK's Xcode-version gate
+    # (MT0180 "This version of Microsoft.iOS requires the iOS X SDK / Xcode Y").
+    # When a workload bump (e.g. net11.0-ios26.5, which wants Xcode 26.6) lands
+    # ahead of the agent's installed Xcode, that check crashes ILLink (IL1012)
+    # during the trim/AOT step, so the ENTIRE HostApp build fails and the gate
+    # falsely rules INCONCLUSIVE ("pre-existing build failure") — observed on
+    # PR #35892 review 4685252040 (2026-07-13): both without-fix and with-fix
+    # builds died with MT0180, so no test could be verified. A Debug SIMULATOR
+    # build does not need the exact device SDK headers, so skipping the check
+    # lets it proceed. Mirrors eng/Build.props (the repo's own Apple builds) and
+    # the deep stage's 'Disable Xcode version validation' step, keeping the gate
+    # and deep iOS builds equally resilient (this script is shared by both).
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false")
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -290,7 +302,11 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for MacCatalyst..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    # ValidateXcodeVersion=false: same Xcode-version-gate bypass as the iOS build
+    # above — MacCatalyst also builds through the Microsoft.MacCatalyst SDK and can
+    # hit MT0180/IL1012 when the workload outpaces the agent's Xcode. See the iOS
+    # block for the full rationale (PR #35892 review 4685252040).
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-p:ValidateXcodeVersion=false")
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
