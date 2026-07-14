@@ -323,6 +323,22 @@ $testStartTime = Get-Date
 # The app has built-in file logging that writes directly to MAUI_LOG_FILE path
 $catalystAppProcess = $null
 if ($Platform -eq "catalyst") {
+    # Dismiss the macOS "Sign in to your Apple Account" Setup Assistant modal
+    # before launching the app. On CI mac agents this pane is presented over the
+    # app under test, so Appium's mac2 driver sees no elements and EVERY test
+    # fails with a WaitForElement timeout. Running it here (not just once at job
+    # start) re-clears the screen before each category in the deep loop, in case
+    # the modal re-appears between categories. Best-effort; never blocks the run.
+    $dismissDialog = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../../eng/scripts/dismiss-apple-account-dialog.sh"))
+    if (Test-Path $dismissDialog) {
+        try {
+            & chmod +x $dismissDialog 2>$null
+            & bash $dismissDialog 2>&1 | ForEach-Object { Write-Host $_ }
+        } catch {
+            Write-Warn "Apple Account dialog dismissal failed (non-fatal): $_"
+        }
+    }
+
     # Determine runtime identifier
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
     $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }

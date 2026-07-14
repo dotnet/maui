@@ -1392,6 +1392,19 @@ stages:
               continueOnError: true
               timeoutInMinutes: 5
 
+            # Dismiss the "Sign in to your Apple Account" Setup Assistant modal.
+            # On the shared mac pool this pane is presented full-screen over the
+            # app under test, so Appium sees no elements and EVERY catalyst UI
+            # test fails with "Timed out waiting for element" (observed 391/391
+            # on CollectionView, each tear-down screenshot showing the sign-in
+            # pane). Killing the presenter + setting the "seen" flags clears it.
+            - bash: |
+                chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/dismiss-apple-account-dialog.sh
+                $(System.DefaultWorkingDirectory)/eng/scripts/dismiss-apple-account-dialog.sh
+              displayName: 'Dismiss Apple Account sign-in dialog'
+              continueOnError: true
+              timeoutInMinutes: 5
+
           # Disable macOS text autocorrect for iOS and Catalyst (mirrors main CI).
           # Autocapitalize/spellcheck can interfere with Appium text entry tests.
           - ${{ if or(eq(parameters.Platform, 'ios'), eq(parameters.Platform, 'catalyst')) }}:
