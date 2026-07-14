@@ -881,17 +881,22 @@ stages:
           #  env: COPILOT_GITHUB_TOKEN (for copilot agent).
           #  NO GH_TOKEN — the agent can't push or post comments.
           #
-          #  timeoutInMinutes: 150 — SAFETY NET against a hung `copilot` CLI.
+          #  timeoutInMinutes: 180 — SAFETY NET against a hung `copilot` CLI.
           #  The CLI is invoked streaming (Review-PR.ps1: `& copilot ... |
           #  ForEach-Object`) with NO internal timeout, so a network/MCP/model
           #  stall would otherwise block this step until the 360-min JOB cap —
           #  and because the Deep UI Tests stage dependsOn ReviewPR, a hung
-          #  review blocks Deep for up to 6h. Observed legitimate Task 3 max is
-          #  ~53m; a worst-case 5-attempt try-fix is ~95m, so 150m never kills a
-          #  real review but caps a true hang at 2.5h. Safe to fire: the Deep
-          #  stage still runs (its condition accepts ReviewPR result 'Failed' and
-          #  reads categories from RunGate, which already succeeded), and
-          #  UpdateAISummaryComment still posts a summary from the deep results.
+          #  review blocks Deep for up to 6h. A legitimate heavy 5-attempt
+          #  try-fix (build + UI test per attempt) reached 149m on build
+          #  14648767 (#36274) — 1 min under the former 150m cap — so 150m
+          #  risked false-killing real reviews; 180m gives ~30m headroom while
+          #  still capping a true hang at 3h. NB: a step that HITS this cap is
+          #  CANCELED (not Failed) → the rest of the ReviewPR job is skipped and
+          #  the Deep condition (accepts Succeeded/SucceededWithIssues/Failed,
+          #  NOT Canceled) skips Deep. That is acceptable — a CLI hung on this
+          #  agent won't yield a useful review or Deep run, so aborting and
+          #  re-triggering on a fresh agent is the right outcome. A NORMAL review
+          #  failure exits the step 0 (set +e) → job Succeeds → Deep still runs.
           # ─────────────────────────────────────────────────────────
           - bash: |
               echo "═══ TASK 3: COPILOT REVIEW ═══"
@@ -917,7 +922,7 @@ stages:
               fi
             name: RunReview
             displayName: 'Task 3: Copilot Review (expert review + try-fix)'
-            timeoutInMinutes: 150
+            timeoutInMinutes: 180
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
