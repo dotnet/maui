@@ -334,18 +334,31 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<Element> _realParent;
-		Element TryGetRealParent(bool logWarningIfParentHasBeenCollected = true)
+		Element TryGetRealParent(
+			bool logWarningIfParentHasBeenCollected = true,
+			bool clearInheritedContextIfDispatchNotRequired = true)
 		{
 			while (true)
 			{
 				var realParent = Volatile.Read(ref _realParent);
 				if (realParent is null)
+				{
+					if (clearInheritedContextIfDispatchNotRequired)
+					{
+						DispatchInheritedBindingContextCleanup(clearIfDispatchNotRequired: true);
+						if (Volatile.Read(ref _realParent) is not null)
+							continue;
+					}
+
 					return null;
+				}
 
 				if (realParent.TryGetTarget(out var parent))
 					return parent;
 
-				if (!ClearRealParentAndInheritedContextIfCollected(realParent))
+				if (!ClearRealParentAndInheritedContextIfCollected(
+					realParent,
+					clearInheritedContextIfDispatchNotRequired))
 					continue;
 
 				if (logWarningIfParentHasBeenCollected)
@@ -363,10 +376,14 @@ namespace Microsoft.Maui.Controls
 		{
 			var realParent = Volatile.Read(ref _realParent);
 			if (realParent is not null)
-				ClearRealParentAndInheritedContextIfCollected(realParent);
+				ClearRealParentAndInheritedContextIfCollected(
+					realParent,
+					clearInheritedContextIfDispatchNotRequired: false);
 		}
 
-		bool ClearRealParentAndInheritedContextIfCollected(WeakReference<Element> realParent)
+		bool ClearRealParentAndInheritedContextIfCollected(
+			WeakReference<Element> realParent,
+			bool clearInheritedContextIfDispatchNotRequired)
 		{
 			if (realParent.TryGetTarget(out _))
 				return false;
@@ -388,7 +405,7 @@ namespace Microsoft.Maui.Controls
 				return true;
 			}
 
-			DispatchInheritedBindingContextCleanup();
+			DispatchInheritedBindingContextCleanup(clearInheritedContextIfDispatchNotRequired);
 
 			return true;
 		}
@@ -427,7 +444,9 @@ namespace Microsoft.Maui.Controls
 
 		void SetParent(Element value)
 		{
-			Element realParent = TryGetRealParent(false);
+			Element realParent = TryGetRealParent(
+				logWarningIfParentHasBeenCollected: false,
+				clearInheritedContextIfDispatchNotRequired: value is null);
 
 			if (realParent == value)
 			{
@@ -452,12 +471,12 @@ namespace Microsoft.Maui.Controls
 			}
 
 			RealParent = value;
-			if (RealParent != null)
+			if (value != null)
 			{
 				var resources = GetParentResourcesForParentSet();
 				if (resources != null)
 					OnParentResourcesChanged(resources);
-				((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
+				((IElementDefinition)value).AddResourcesChangedListener(OnParentResourcesChanged);
 			}
 
 			object context = value?.BindingContext;

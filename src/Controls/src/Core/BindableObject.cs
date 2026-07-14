@@ -59,11 +59,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				var inheritedContext = _inheritedContext;
+				var inheritedContext = Volatile.Read(ref _inheritedContext);
 				if (ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending))
 				{
 					ClearPendingInheritedBindingContext();
-					inheritedContext = _inheritedContext;
+					inheritedContext = Volatile.Read(ref _inheritedContext);
 				}
 
 				return inheritedContext?.Target ?? GetValue(BindingContextProperty);
@@ -378,9 +378,10 @@ namespace Microsoft.Maui.Controls
 			if (bpContext != null && bpContext.Values.GetSpecificity() >= SetterSpecificity.ManualValueSetter)
 				return;
 
+			var inheritedContext = Volatile.Read(ref bindable._inheritedContext);
 			if (!force
-				&& !ReferenceEquals(bindable._inheritedContext, s_inheritedContextCleanupPending)
-				&& ReferenceEquals(bindable._inheritedContext?.Target, value))
+				&& !ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending)
+				&& ReferenceEquals(inheritedContext?.Target, value))
 				return;
 
 			var binding = bpContext?.Bindings.GetValue();
@@ -388,13 +389,13 @@ namespace Microsoft.Maui.Controls
 			if (binding != null)
 			{
 				binding.Context = value;
-				bindable._inheritedContext = null;
+				Volatile.Write(ref bindable._inheritedContext, null);
 				// OnBindingContextChanged fires from within BindingContextProperty propertyChanged callback
 				bindable.ApplyBinding(bpContext, fromBindingContextChanged: true);
 			}
 			else
 			{
-				bindable._inheritedContext = new WeakReference(value);
+				Volatile.Write(ref bindable._inheritedContext, new WeakReference(value));
 				bindable.ApplyBindings(fromBindingContextChanged: true);
 				bindable.OnBindingContextChanged();
 			}
@@ -402,7 +403,7 @@ namespace Microsoft.Maui.Controls
 
 		internal WeakReference MarkInheritedBindingContextForCleanup()
 		{
-			var inheritedContext = _inheritedContext;
+			var inheritedContext = Volatile.Read(ref _inheritedContext);
 			if (inheritedContext is null || ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending))
 				return null;
 
@@ -432,16 +433,22 @@ namespace Microsoft.Maui.Controls
 				s_inheritedContextCleanupPending);
 		}
 
-		internal void DispatchInheritedBindingContextCleanup()
+		internal void DispatchInheritedBindingContextCleanup(bool clearIfDispatchNotRequired = false)
 		{
-			if (!ReferenceEquals(_inheritedContext, s_inheritedContextCleanupPending))
+			if (!ReferenceEquals(Volatile.Read(ref _inheritedContext), s_inheritedContextCleanupPending))
 				return;
 
 			// Finalizer callers only queue work here. Binding callbacks run on the dispatcher
-			// or lazily on the next BindingContext access.
+			// or remain pending for a normal access path to clear safely.
 			var dispatcher = _dispatcher;
 			if (dispatcher is not null && dispatcher.IsDispatchRequired)
+			{
 				dispatcher.Dispatch(ClearPendingInheritedBindingContext);
+				return;
+			}
+
+			if (clearIfDispatchNotRequired)
+				ClearPendingInheritedBindingContext();
 		}
 
 		void ClearPendingInheritedBindingContext()
@@ -818,7 +825,7 @@ namespace Microsoft.Maui.Controls
 
 		static void BindingContextPropertyBindingChanging(BindableObject bindable, BindingBase oldBindingBase, BindingBase newBindingBase)
 		{
-			object context = bindable._inheritedContext?.Target;
+			object context = Volatile.Read(ref bindable._inheritedContext)?.Target;
 			var oldBinding = oldBindingBase as Binding;
 			var newBinding = newBindingBase as Binding;
 
@@ -830,7 +837,7 @@ namespace Microsoft.Maui.Controls
 
 		static void BindingContextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
-			bindable._inheritedContext = null;
+			Volatile.Write(ref bindable._inheritedContext, null);
 			bindable.ApplyBindings(fromBindingContextChanged: true);
 			bindable.OnBindingContextChanged();
 		}
