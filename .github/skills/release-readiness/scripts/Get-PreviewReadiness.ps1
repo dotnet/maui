@@ -76,6 +76,18 @@
     When true (default), any non-READY internal status is sanitized to
     omit raw error/log payloads before being included in the report.
 
+.PARAMETER ConfirmedWorkloadSetVersion
+    Exact workload-set CLI version confirmed by the release owner, for
+    example 11.0.100-preview.6.26363.2. Without this value, the script may
+    identify a coherent candidate but will not mark consumer installability
+    READY because a newer coherent package is not necessarily the blessed one.
+
+.PARAMETER AdditionalPackageSource
+    Optional authenticated package source in name=https://... form. Repeat for
+    multiple sources. Credentials are read from the standard NuGet environment
+    variable NuGetPackageSourceCredentials_<name>; never put a PAT in this
+    argument, the generated report, or the repository.
+
 .NOTES
     Faithfully ports the logic from the prior
     `.github/skills/net11-release-readiness/scripts/Get-Net11ReleaseReadiness.ps1`
@@ -118,6 +130,12 @@ param(
     [bool]$PublicSafe = $true,
 
     [Parameter(Mandatory = $false)]
+    [string]$ConfirmedWorkloadSetVersion,
+
+    [Parameter(Mandatory = $false)]
+    [string[]]$AdditionalPackageSource = @(),
+
+    [Parameter(Mandatory = $false)]
     [int]$MaxBodyBytes = 60000
 )
 
@@ -135,6 +153,17 @@ if (Test-Path $nightlyFeedHelperPath) {
     $Script:NightlyFeedHelperLoaded = $true
 } else {
     Write-Warning "NightlyFeed.ps1 helper not found at $nightlyFeedHelperPath — nightly-feed banner disabled." -WarningAction Continue
+}
+
+# Consumer installability helpers. This is a verdict-bearing signal, so a
+# missing helper becomes UNKNOWN in the main driver instead of being ignored.
+$Script:PreviewInstallabilityHelperLoaded = $false
+$previewInstallabilityHelperPath = Join-Path $PSScriptRoot 'PreviewInstallability.ps1'
+if (Test-Path $previewInstallabilityHelperPath) {
+    . $previewInstallabilityHelperPath
+    $Script:PreviewInstallabilityHelperLoaded = $true
+} else {
+    Write-Warning "PreviewInstallability.ps1 helper not found at $previewInstallabilityHelperPath — consumer installability will be UNKNOWN." -WarningAction Continue
 }
 
 # ===================================================================
@@ -1459,6 +1488,31 @@ function New-Check {
     }
 }
 
+function New-PreviewInstallabilityFallback {
+    param(
+        [Parameter(Mandatory)][string]$Summary,
+        [string]$CliVersion
+    )
+
+    return [PSCustomObject]@{
+        Status               = 'unknown'
+        Summary              = $Summary
+        SdkVersion           = $null
+        SdkFeatureBand       = $null
+        PackageId            = $null
+        CliVersion           = $CliVersion
+        NuGetVersion         = $null
+        VersionConfirmed     = -not [string]::IsNullOrWhiteSpace($CliVersion)
+        PinComparisons       = @()
+        ManifestPackages     = @()
+        PackProbes           = @()
+        RequiredSources      = @()
+        PlatformRequirements = $null
+        NuGetConfig          = $null
+        InstallCommand       = $null
+    }
+}
+
 function Get-OverallStatus {
     param([array]$Checks)
 
@@ -1935,6 +1989,44 @@ $requiredXcode = if ($xcodeRequirements.RequiredXcode) { $xcodeRequirements.Requ
 $deviceXcode = if ($xcodeRequirements.DeviceTestsRequiredXcode) { $xcodeRequirements.DeviceTestsRequiredXcode } else { "unknown" }
 $checks += New-Check -Area "Xcode / ICM" -Status "UNKNOWN" -Details "REQUIRED_XCODE=$requiredXcode; DEVICETESTS_REQUIRED_XCODE=$deviceXcode." -NextAction "Verify hosted Mac pool support and file/update ICM immediately when public Xcode availability requires it."
 
+# --- Consumer installability ---
+# Reuse the branch pins for both this gate and the component-build section.
+# A coherent but unconfirmed workload-set candidate remains UNKNOWN: the
+# newest coherent package is not necessarily the release-owner-blessed build.
+$componentPins = if ($surveyExists) {
+    Get-BranchComponentPins -Ref $SurveyRef -Major $majorVersion
+} else {
+    $null
+}
+$consumerInstallability = New-PreviewInstallabilityFallback `
+    -Summary 'Consumer installability could not be evaluated.' `
+    -CliVersion $ConfirmedWorkloadSetVersion
+if ($Script:PreviewInstallabilityHelperLoaded) {
+    try {
+        $consumerInstallability = Get-PreviewConsumerInstallability `
+            -Major $majorVersion `
+            -Preview $previewNumber `
+            -Pins $componentPins `
+            -WorkloadSetCliVersion $ConfirmedWorkloadSetVersion `
+            -AdditionalPackageSource $AdditionalPackageSource `
+            -PublicSafe $PublicSafe
+    } catch {
+        $warningDetail = if ($PublicSafe) { '' } else { ": $($_.Exception.Message)" }
+        Write-Warning "Consumer installability check failed (non-fatal)$warningDetail" -WarningAction Continue
+        $consumerInstallability = New-PreviewInstallabilityFallback `
+            -Summary 'Consumer installability evaluation failed; no readiness claim can be made.' `
+            -CliVersion $ConfirmedWorkloadSetVersion
+    }
+}
+
+if ($Script:PreviewInstallabilityHelperLoaded) {
+    $checks += ConvertTo-PreviewInstallabilityCheck -Result $consumerInstallability
+} else {
+    $checks += New-Check -Area 'Consumer installability' -Status 'UNKNOWN' `
+        -Details $consumerInstallability.Summary `
+        -NextAction 'Restore PreviewInstallability.ps1 and rerun the preview readiness report.'
+}
+
 # --- Internal release pipelines (sanitized) ---
 $internalStatus = "UNKNOWN"
 $internalDetails = "Internal dnceng pipeline details are not queried in public workflow mode."
@@ -2023,6 +2115,7 @@ $report = [PSCustomObject]@{
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
     CiScanIssues          = $ciScanIssues
+    ConsumerInstallability = $consumerInstallability
     NightlyFeed           = $null
 }
 
@@ -2198,7 +2291,6 @@ $notesBlockText = $notesSb.ToString()
 # preview subscriptions are both LOCAL tasks — the callout below points the captain
 # at the exact local prompt to run. Rendered OUTSIDE the human-notes markers so it
 # self-refreshes on every automated re-run.
-$componentPins = Get-BranchComponentPins -Ref $SurveyRef -Major $majorVersion
 if ($componentPins) {
     # --- Inferred subscription health (public PR trail) ---
     # We can't read Maestro subscription config from CI, but a *working* sub
@@ -2293,6 +2385,12 @@ if ($componentPins) {
     }
 }
 
+if ($consumerInstallability -and
+    (Get-Command Format-PreviewInstallabilityMarkdown -ErrorAction SilentlyContinue)) {
+    [void]$md.Append((Format-PreviewInstallabilityMarkdown `
+        -Result $consumerInstallability `
+        -PublicSafe $PublicSafe))
+}
 
 # === BLOCKING SUMMARY (hoisted to top) ===
 # Surface aggregate BLOCKED checks (e.g. CI red, versions.props not bumped).

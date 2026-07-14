@@ -1,6 +1,6 @@
 # Release Readiness — Methodology
 
-This document captures the algorithms used by `Get-ReleaseReadiness.ps1` and **the three gotchas** discovered through real SR analysis that the algorithms exist to prevent.
+This document captures the deterministic algorithms used by the SR and Preview readiness engines, including **the three gotchas** discovered through real SR analysis and the Preview **consumer-installability gate**.
 
 ## Gotcha #1: Cherry-Pick Number Swap
 
@@ -172,6 +172,133 @@ The skill must derive which `regressed-in-X.Y.Z` labels matter for a given SR:
 | `no-fix-yet` | No cross-referenced PR with high-confidence evidence found |
 | `closed-fix-unlinked` | `no-fix-yet` would apply, BUT the issue is CLOSED and a closing comment **explicitly names** a fix PR (fix/resolve/close language) that is MERGED and whose commit is on `$SrBranch` (verified by SHA-ancestry OR the `(#<num>)` squash-subject token). A bare PR mention (the cause-PR blame pattern) is rejected. Surfaces a missing PR↔issue link rather than a false "no fix" alarm. Non-blocking (Tier 3) |
 | `needs-human-review` | Only weak evidence; OR multiple candidate PRs with conflicting verdicts |
+
+## Preview Consumer Installability
+
+A green Preview branch or promoted SDK build does not prove that a customer can
+install the exact workload set from a clean machine. The gate in
+`PreviewInstallability.ps1` evaluates package identity, branch pins, source
+availability, and platform prerequisites before contributing to the Preview
+verdict.
+
+### Inputs and Trust Boundaries
+
+The evaluator uses:
+
+1. Branch pins for the VMR/runtime SDK, Android, and Apple. The VMR pin also
+   anchors Mono toolchain and Emscripten; MAUI is checked against the target
+   Preview train because the MAUI branch does not statically pin its own build
+   version.
+2. Public NuGet v3 sources derived from the SDK major version.
+3. An optional release-owner-confirmed workload-set CLI version.
+4. Optional additional HTTPS package sources in `name=https://...` form.
+
+Only a release owner can identify the blessed workload-set version. Discovery
+may find several coherent candidates, but "newest coherent" does not mean
+"approved for release." An unconfirmed version therefore cannot produce
+`READY`.
+
+Additional sources are accepted only for NuGet.org or dnceng Azure Artifacts
+HTTPS endpoints. User information embedded in a URL is rejected. Credentials
+come from NuGet's `NuGetPackageSourceCredentials_<name>` environment variable,
+where `<name>` exactly matches the source name. The value must contain non-empty
+`Username` and `Password` fields and `ValidAuthenticationTypes=Basic`.
+
+### Workload-Set Version Normalization
+
+The workload-set CLI version and NuGet package version differ:
+
+```text
+CLI:   <major>.0.<feature-band>-preview.<N>.<build>
+NuGet: <major>.<feature-band>.0-preview.<N>.<build>
+```
+
+For example:
+
+```text
+11.0.100-preview.6.26363.2
+    -> 11.100.0-preview.6.26363.2
+```
+
+The package ID is derived from the SDK feature band and Preview number:
+
+```text
+Microsoft.NET.Workloads.<major>.0.<feature-band>-preview.<N>
+```
+
+MSI packages are excluded from discovery because they are installer artifacts,
+not workload-set metadata packages.
+
+### Source Roles and Isolation
+
+The evaluator builds a clean source list instead of inheriting machine-wide
+NuGet configuration:
+
+| Source role | Expected contents |
+|-------------|-------------------|
+| `dotnet-workloads` | Workload-set metadata package |
+| `dotnet<major>-workloads` | Android and other platform manifest assets |
+| `dotnet<major>` | MAUI and Apple manifests and packs |
+| `dotnet<major>-transport` | Runtime transport packs |
+| `dotnet-public` | Shared dotnet dependencies |
+| NuGet.org | Public ecosystem dependencies |
+| Additional authenticated source | Release-specific assets not yet present on public feeds |
+
+The generated local NuGet configuration starts with `<clear />`. This prevents
+an old major-version or stale shipping feed from making an installation appear
+to work accidentally.
+
+### Evaluation Algorithm
+
+1. Derive the SDK major, feature band, Preview number, package ID, CLI version,
+   and normalized NuGet version.
+2. If no version is confirmed, discover prerelease candidates from accessible
+   sources as diagnostic evidence and return `unknown`.
+3. Download and extract the exact confirmed workload-set package.
+4. Compare its Android, Apple, runtime/VMR, and Emscripten versions with the
+   branch pins, and verify that its MAUI manifest targets the expected Preview
+   train.
+5. Probe every required manifest package.
+6. Probe representative Android, Apple, MAUI, and runtime transport packs.
+7. Extract the JDK, Android SDK, Xcode, Apple SDK, and Windows App SDK
+   prerequisites when present.
+8. Emit an isolated local NuGet configuration and exact install command only
+   when public-safe mode is disabled.
+
+Package probes distinguish absence from unavailable evidence:
+
+- A not-found response from all accessible sources can establish `missing`.
+- HTTP 401/403, an inaccessible authenticated source, timeout, malformed
+  metadata, or another read failure establishes only `unknown`.
+- A package found on one supplied source is available even if another source is
+  inaccessible.
+
+### State and Verdict Mapping
+
+| Gate state | Readiness check | Rule |
+|------------|-----------------|------|
+| `installable` | `READY` | The version is confirmed, pins agree, and all required manifests and representative packs resolve. |
+| `missing` | `BLOCKED` | A confirmed package or asset is absent from every accessible supplied source. |
+| `mismatched` | `BLOCKED` | Workload-set component versions disagree with branch pins or the target MAUI Preview train. |
+| `unknown` | `UNKNOWN` | Confirmation or trustworthy package evidence is unavailable. |
+
+`BLOCKED` prevents readiness; `UNKNOWN` prevents an unconditional `READY`.
+
+### Public-Output Safety
+
+Local release-captain output may contain the exact source list, generated NuGet
+configuration, resolved-source diagnostics, and install command. Public-safe
+serialization recursively removes:
+
+- additional source names and URLs
+- private source metadata, including nested resolved-source objects
+- generated NuGet configuration paths and content
+- authentication state and credential details
+- local installation commands that reference private sources
+
+The public report retains the state, safe package identities and versions, pin
+comparison, prerequisite summary, and remediation category needed to explain
+the readiness result.
 
 ## CI Freshness
 
