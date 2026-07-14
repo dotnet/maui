@@ -13,12 +13,16 @@
     <ProjectCapability Include="MauiEssentials" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
   </ItemGroup>
 
-  <PropertyGroup>
-    <GetApplicationArtifactsDependsOn>
-      $(GetApplicationArtifactsDependsOn);
-      _AddMauiApplicationArtifactMetadata
-    </GetApplicationArtifactsDependsOn>
-  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ApplicationArtifact>
+      <ApplicationId Condition="'$(ApplicationId)' != ''">$(ApplicationId)</ApplicationId>
+      <ApplicationIdGuid Condition="'$(ApplicationIdGuid)' != ''">$(ApplicationIdGuid)</ApplicationIdGuid>
+      <ApplicationName Condition="'$(ApplicationTitle)' != ''">$(ApplicationTitle)</ApplicationName>
+      <ApplicationTitle Condition="'$(ApplicationTitle)' != ''">$(ApplicationTitle)</ApplicationTitle>
+      <ApplicationDisplayVersion Condition="'$(ApplicationDisplayVersion)' != ''">$(ApplicationDisplayVersion)</ApplicationDisplayVersion>
+      <ApplicationVersion Condition="'$(ApplicationVersion)' != ''">$(ApplicationVersion)</ApplicationVersion>
+    </ApplicationArtifact>
+  </ItemDefinitionGroup>
 
   <!-- SingleProject-specific features -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
@@ -36,18 +40,5 @@
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' and !Exists('$(AndroidManifest)') ">
     <AndroidManifest Condition=" Exists('Platforms\Android\AndroidManifest.xml') ">Platforms\Android\AndroidManifest.xml</AndroidManifest>
   </PropertyGroup>
-
-  <Target Name="_AddMauiApplicationArtifactMetadata" Condition="'@(ApplicationArtifact)' != ''">
-    <ItemGroup>
-      <ApplicationArtifact Update="@(ApplicationArtifact)">
-        <ApplicationId Condition="'$(ApplicationId)' != ''">$(ApplicationId)</ApplicationId>
-        <ApplicationIdGuid Condition="'$(ApplicationIdGuid)' != ''">$(ApplicationIdGuid)</ApplicationIdGuid>
-        <ApplicationName Condition="'$(ApplicationTitle)' != ''">$(ApplicationTitle)</ApplicationName>
-        <ApplicationTitle Condition="'$(ApplicationTitle)' != ''">$(ApplicationTitle)</ApplicationTitle>
-        <ApplicationDisplayVersion Condition="'$(ApplicationDisplayVersion)' != ''">$(ApplicationDisplayVersion)</ApplicationDisplayVersion>
-        <ApplicationVersion Condition="'$(ApplicationVersion)' != ''">$(ApplicationVersion)</ApplicationVersion>
-      </ApplicationArtifact>
-    </ItemGroup>
-  </Target>
 
 </Project>
