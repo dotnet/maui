@@ -135,9 +135,20 @@ function Test-FixIrrelevantToPlatform {
     if (-not $FixFiles -or @($FixFiles).Count -eq 0) { return $false }
     if ([string]::IsNullOrWhiteSpace($Platform)) { return $false }
 
+    # Platform affinity is decided by the *product/source* code that gets toggled,
+    # not by the test harness. Test-project files and snapshot baselines compile/run
+    # on every platform, so if they were counted as "shared" they would force a
+    # single-platform product fix (e.g. a [Windows]-only fix in /Platform/Windows/)
+    # to look relevant on an unrelated gate platform. Skip them here; the safety
+    # guard below keeps the normal verdict for a pure test/snapshot change.
+    $sawProductFile = $false
     foreach ($file in $FixFiles) {
         if ([string]::IsNullOrWhiteSpace($file)) { return $false }
         $p = $file.Replace('\', '/').ToLowerInvariant()
+
+        if ($p -match '/tests?/' -or $p -match '/snapshots?/' -or $p -match '\.(png|jpg|jpeg|gif|webp)$') { continue }
+
+        $sawProductFile = $true
 
         $isIos   = ($p -match '\.ios\.(cs|xaml|fs|vb|razor)$')         -or ($p -match '/ios/')         -or ($p -match 'net-ios')
         $isCat   = ($p -match '\.maccatalyst\.(cs|xaml|fs|vb|razor)$') -or ($p -match '/maccatalyst/') -or ($p -match 'net-maccatalyst')
@@ -159,7 +170,11 @@ function Test-FixIrrelevantToPlatform {
         if ($affinity.Contains($Platform)) { return $false }
     }
 
-    # Every fix file is platform-specific for a platform OTHER than the gate platform.
+    # Pure test/snapshot change (no product/source code) → cannot claim the fix is
+    # irrelevant to this platform; keep the normal verdict so nothing is masked.
+    if (-not $sawProductFile) { return $false }
+
+    # Every product fix file is platform-specific for a platform OTHER than the gate platform.
     return $true
 }
 
