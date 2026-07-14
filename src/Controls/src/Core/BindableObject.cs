@@ -441,11 +441,10 @@ namespace Microsoft.Maui.Controls
 			// Finalizer callers only queue work here. Binding callbacks run on the dispatcher
 			// or remain pending for a normal access path to clear safely.
 			var dispatcher = _dispatcher;
-			if (dispatcher is not null && dispatcher.IsDispatchRequired)
-			{
-				dispatcher.Dispatch(ClearPendingInheritedBindingContext);
+			if (dispatcher is not null
+				&& dispatcher.IsDispatchRequired
+				&& dispatcher.Dispatch(ClearPendingInheritedBindingContext))
 				return;
-			}
 
 			if (clearIfDispatchNotRequired)
 				ClearPendingInheritedBindingContext();

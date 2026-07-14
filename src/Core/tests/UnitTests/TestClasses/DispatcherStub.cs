@@ -10,11 +10,16 @@ namespace Microsoft.Maui.UnitTests
 	{
 		readonly Func<bool>? _isInvokeRequired;
 		readonly Action<Action>? _invokeOnMainThread;
+		readonly Func<bool>? _dispatchResult;
 
-		public DispatcherStub(Func<bool>? isInvokeRequired, Action<Action>? invokeOnMainThread)
+		public DispatcherStub(
+			Func<bool>? isInvokeRequired,
+			Action<Action>? invokeOnMainThread,
+			Func<bool>? dispatchResult = null)
 		{
 			_isInvokeRequired = isInvokeRequired;
 			_invokeOnMainThread = invokeOnMainThread;
+			_dispatchResult = dispatchResult;
 
 			ManagedThreadId = Environment.CurrentManagedThreadId;
 		}
@@ -26,6 +31,9 @@ namespace Microsoft.Maui.UnitTests
 
 		public bool Dispatch(Action action)
 		{
+			if (_dispatchResult?.Invoke() == false)
+				return false;
+
 			if (_invokeOnMainThread is null)
 				action();
 			else
@@ -98,7 +106,8 @@ namespace Microsoft.Maui.UnitTests
 				? null
 				: new DispatcherStub(
 					DispatcherProviderStubOptions.IsInvokeRequired,
-					DispatcherProviderStubOptions.InvokeOnMainThread));
+					DispatcherProviderStubOptions.InvokeOnMainThread,
+					DispatcherProviderStubOptions.DispatchResult));
 
 		public void Dispose() =>
 			s_dispatcherInstance.Dispose();
@@ -126,6 +135,9 @@ namespace Microsoft.Maui.UnitTests
 
 		[ThreadStatic]
 		public static Action<Action>? InvokeOnMainThread;
+
+		[ThreadStatic]
+		public static Func<bool>? DispatchResult;
 	}
 
 	public static class DispatcherTest

@@ -161,6 +161,49 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task ParentAccessAfterFailedDispatchClearsGradientStopInheritedBindingContext()
+		{
+			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+			DispatcherProviderStubOptions.DispatchResult = () => false;
+
+			GradientStop bindingContext;
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			try
+			{
+				bindingContext = new GradientStop { Offset = 0.25f };
+				stop = new GradientStop();
+				stop.SetBinding(GradientStop.OffsetProperty, nameof(GradientStop.Offset));
+				sharedStops = new GradientStopCollection { stop };
+				weakBrush = CreateBrushWithSharedGradientStops(sharedStops, bindingContext);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+				DispatcherProviderStubOptions.DispatchResult = null;
+			}
+
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			Assert.Equal(0, bindingContextChanged);
+			Assert.Equal(0.25f, stop.Offset);
+
+			Assert.Null(stop.Parent);
+
+			Assert.Equal(1, bindingContextChanged);
+			Assert.Equal(0f, stop.Offset);
+
+			bindingContext.Offset = 0.75f;
+			Assert.Equal(0f, stop.Offset);
+			Assert.Null(stop.BindingContext);
+			GC.KeepAlive(bindingContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
 		public void ParentAccessBeforeSubscriptionFinalizerClearsInheritedBindingContext()
 		{
 			using var finalizerEntered = new ManualResetEventSlim();
