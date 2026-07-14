@@ -28,7 +28,7 @@ public sealed class FontAttributesConverter : TypeConverter
 
 	public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 	{
-		var strValue = value?.ToString() ?? string.Empty;
+		var strValue = value?.ToString()?.Trim() ?? string.Empty;
 
 		if (string.IsNullOrEmpty(strValue))
 		{
@@ -36,11 +36,10 @@ public sealed class FontAttributesConverter : TypeConverter
 		}
 
 		FontAttributes attributes = FontAttributes.None;
-		strValue = strValue.Trim();
 		if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
 		{
 			//Xaml
-			foreach (var part in strValue.Split(','))
+			foreach (var part in strValue.Split(',', StringSplitOptions.RemoveEmptyEntries))
 			{
 				attributes |= ParseSingleAttribute(part, strValue);
 			}
@@ -48,7 +47,7 @@ public sealed class FontAttributesConverter : TypeConverter
 		else
 		{
 			//CSS or single value
-			foreach (var part in strValue.Split(' '))
+			foreach (var part in strValue.Split(' ', StringSplitOptions.RemoveEmptyEntries))
 			{
 				attributes |= ParseSingleAttribute(part, strValue);
 			}
