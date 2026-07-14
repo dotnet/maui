@@ -215,6 +215,24 @@ jobs:
           VALID_PLATFORMS="android ios catalyst windows"
           CUSTOM_PROMPT=""
 
+          # Normalize a user-supplied platform token to the canonical AzDO value.
+          # Accepts friendly aliases (macos / maccatalyst / mac -> catalyst,
+          # win -> windows) so an explicit '-p macos' is not silently dropped —
+          # a dropped token falls through to label inference and can pick the
+          # wrong platform (e.g. 'ios' on a dual iOS/MacCatalyst PR). Prints the
+          # canonical token and returns 0 on success; returns 1 if unrecognized.
+          normalize_platform() {
+            _cand=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
+            case "${_cand}" in
+              macos|maccatalyst|mac) _cand="catalyst" ;;
+              win) _cand="windows" ;;
+            esac
+            for _p in ${VALID_PLATFORMS}; do
+              if [ "${_cand}" = "${_p}" ]; then printf '%s' "${_cand}"; return 0; fi
+            done
+            return 1
+          }
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUMBER="${INPUT_PR_NUMBER}"
             PLATFORM="${INPUT_PLATFORM}"
@@ -255,34 +273,28 @@ jobs:
                   fi
                   ;;
                 --platform=*|-p=*)
-                  CANDIDATE=$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')
-                  for p in ${VALID_PLATFORMS}; do
-                    if [ "${CANDIDATE}" = "${p}" ]; then
-                      PLATFORM="${p}"
-                      break
-                    fi
-                  done
+                  if _NORM=$(normalize_platform "${1#*=}"); then
+                    PLATFORM="${_NORM}"
+                  else
+                    echo "::warning::Ignoring unrecognized platform '${1#*=}' (valid: ${VALID_PLATFORMS}; aliases: macos/maccatalyst=catalyst)."
+                  fi
                   ;;
                 --platform|-p)
                   shift
                   if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
-                    CANDIDATE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-                    for p in ${VALID_PLATFORMS}; do
-                      if [ "${CANDIDATE}" = "${p}" ]; then
-                        PLATFORM="${p}"
-                        break
-                      fi
-                    done
+                    if _NORM=$(normalize_platform "$1"); then
+                      PLATFORM="${_NORM}"
+                    else
+                      echo "::warning::Ignoring unrecognized platform '$1' (valid: ${VALID_PLATFORMS}; aliases: macos/maccatalyst=catalyst)."
+                    fi
                   fi
                   ;;
                 *)
-                  # Check if it's a valid platform name
-                  for p in ${VALID_PLATFORMS}; do
-                    if [ "$(echo "$1" | tr '[:upper:]' '[:lower:]')" = "${p}" ]; then
-                      PLATFORM="${p}"
-                      break
-                    fi
-                  done
+                  # Accept a bare positional platform token (incl. aliases);
+                  # silently ignore anything that isn't a platform.
+                  if _NORM=$(normalize_platform "$1"); then
+                    PLATFORM="${_NORM}"
+                  fi
                   ;;
               esac
               shift || true
