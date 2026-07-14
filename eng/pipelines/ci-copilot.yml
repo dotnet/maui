@@ -1881,7 +1881,7 @@ stages:
               $ErrorActionPreference = 'Continue'
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
-              $prNumber = "${{ parameters.PRNumber }}"
+              $prNumber = "$env:PARAM_PR_NUMBER"
               $reviewId = "$(aiSummaryReviewId)"
               $isDeferred = ([string]::IsNullOrWhiteSpace($reviewId) -or $reviewId -eq 'DEFERRED')
 
@@ -2327,6 +2327,7 @@ stages:
             displayName: 'Post AI summary review'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
 
   - stage: CleanupReviewLock
