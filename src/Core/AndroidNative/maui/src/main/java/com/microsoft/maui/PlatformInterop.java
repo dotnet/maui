@@ -347,23 +347,18 @@ public class PlatformInterop {
             return builder;
         }
 
-        int width = metrics.widthPixels;
-        int height = metrics.heightPixels;
-        if (width <= 0 || height <= 0) {
+        int maxSize = Math.max(metrics.widthPixels, metrics.heightPixels);
+        if (maxSize <= 0) {
             return builder;
         }
 
         return builder
             .downsample(DownsampleStrategy.CENTER_INSIDE)
-            .override(width, height);
+            .override(maxSize, maxSize);
     }
 
     private static RequestBuilder<Drawable> limitToTargetSize(RequestBuilder<Drawable> builder, ImageView imageView) {
-        DownsampleStrategy strategy = imageView.getScaleType() == ImageView.ScaleType.CENTER_CROP
-            ? DownsampleStrategy.CENTER_OUTSIDE
-            : DownsampleStrategy.CENTER_INSIDE;
-
-        return builder.downsample(strategy);
+        return builder.downsample(DownsampleStrategy.CENTER_INSIDE);
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {

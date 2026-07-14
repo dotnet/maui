@@ -49,6 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 			var filename = CreateBitmapFile(sourceWidth, sourceHeight, expectedColor);
 			var imageSource = new FileImageSourceStub(filename);
 			var imageView = new ImageView(MauiProgram.DefaultContext);
+			imageView.SetScaleType(ImageView.ScaleType.CenterCrop);
 
 			var service = new FileImageSourceService();
 			await imageView.AttachAndRun(async () =>
