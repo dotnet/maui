@@ -30,7 +30,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// An empty string is deliberately treated like null (keep the default): an empty Cache-Control header
 			// value is non-standard and engine-dependent, and is more likely an accidental result of string
 			// manipulation than an intentional opt-in. Explicit directives are the supported way to enable caching.
-			return string.IsNullOrEmpty(cacheControl) ? null : cacheControl;
+			if (string.IsNullOrEmpty(cacheControl))
+			{
+				return null;
+			}
+
+			// Values containing CR/LF are also rejected: some platforms concatenate the value into a raw response
+			// header block, so a stray newline would produce a malformed response or allow header injection.
+			if (cacheControl.Contains('\r', StringComparison.Ordinal) || cacheControl.Contains('\n', StringComparison.Ordinal))
+			{
+				return null;
+			}
+
+			return cacheControl;
 		}
 	}
 }

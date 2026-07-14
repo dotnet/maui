@@ -16,6 +16,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="contentType">The resolved MIME content type of the requested static content.</param>
 		public BlazorWebViewStaticContentRequest(Uri uri, string contentType)
 		{
+			ArgumentNullException.ThrowIfNull(uri);
+			ArgumentNullException.ThrowIfNull(contentType);
+
 			Uri = uri;
 			ContentType = contentType;
 		}

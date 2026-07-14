@@ -44,6 +44,16 @@ public partial class BlazorWebViewTests
 	}
 
 	[Fact]
+	public async Task StaticContentCacheControlProviderReturningValueWithNewlinesKeepsDefaultNoStore()
+	{
+		// Values containing CR/LF are rejected in favor of the default: some platforms concatenate the value into
+		// a raw response header block, where a newline would produce a malformed response or allow header injection.
+		var cacheControl = await GetServedCacheControlHeaderAsync(_ => "max-age=3600\r\nX-Injected: 1");
+
+		Assert.Contains("no-store", cacheControl, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public async Task StaticContentCacheControlProviderReceivesResolvedContentType()
 	{
 		string observedContentType = null;
