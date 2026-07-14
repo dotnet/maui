@@ -221,7 +221,11 @@ echo "fixed-on-main (do NOT re-file) rooting APIs:"; cat /tmp/gh-aw/agent/fixed-
 - A candidate is **ALSO OUT** if its rooting `Type.Member` is in `fixed-on-main-apis.txt`
   (already fixed on `main` by a **merged `[leak-fix]` PR**). The shipped-package test in Step 5
   will STILL go red for these because the fix hasn't shipped in a release yet — that is expected.
-  Do NOT re-file: the fix is already on `main` and will ship.
+  Do NOT re-file: the fix is already on `main` and will ship. For an **off-contract candidate
+  whose title has no dotted `Type.Member`**, apply the SAME normalization the merged-PR list uses
+  (lower-case, replace each run of non-alphanumerics with `-`, trim leading/trailing `-`) and
+  treat the candidate as OUT if `title:<that-slug>` is in `fixed-on-main-apis.txt`. That is how the
+  `title:` fallback keys are matched, so off-contract fixed leaks aren't re-filed either.
 
 A candidate whose only prior `[leak-scan]` issue was **closed with no merged `[leak-fix]` PR**
 (closed as not planned — wontfix / invalid / duplicate — OR closed as completed by a maintainer

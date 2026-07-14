@@ -190,8 +190,8 @@ You produce **only `[leak-fix]` PRs for empirically-proven leaks** — there is 
 
 The PR base is always `main`. You build MAUI **from source** to validate. All scratch state goes
 under `/tmp/gh-aw/agent/` (each bash call is a fresh subshell; persist what you need). Your only
-writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch`, `add-comment`)
-— never push with raw git, never edit anything outside the fix/test.
+writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch`, `add-comment`,
+`close-issue`) — never push with raw git, never edit anything outside the fix/test.
 
 ## Hard rules — non-negotiable
 
@@ -387,10 +387,13 @@ Read the chosen issue's body in full (`gh issue view <N> --json title,body`). Ex
 
 ## Step 3 — De-dup + attempt cap (live GitHub searches)
 
-A fix PR carries `Fixes #<N>` (and `Refs: <owner>/<repo>#<N>`) in its body — that is the join
-key. But the same underlying leak can be filed under MULTIPLE issue numbers (duplicate
-`[leak-scan]` issues, or a pre-existing upstream issue), so also de-dup by the **rooting
-`Type.Member`** the target names — never open a second fix for a leak already being fixed.
+A fix PR carries `Fixes #<N>` in its body (where `<N>` is the `[leak-scan]` issue) — that is the
+sole scan-issue join / auto-close key. An optional `Refs: <owner>/<repo>#<UPSTREAM>` line may also
+be present, but it points at a SEPARATE pre-existing upstream issue, never at `#<N>`. Because the
+same underlying leak can still be filed under MULTIPLE issue numbers (duplicate `[leak-scan]`
+issues, or a pre-existing upstream issue), also de-dup by the **rooting `Type.Member`** the target
+names — never open a second fix for a leak already being fixed. (The gate (a) search below matches
+`Fixes` **or** `Refs` against `#<N>` for backward-compatibility with older fix PRs.)
 
 ```bash
 N=<issue-number>
