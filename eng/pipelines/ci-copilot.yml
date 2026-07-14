@@ -1924,6 +1924,42 @@ stages:
               . .github/scripts/shared/Get-CategoryFromArtifactName.ps1
               . .github/scripts/shared/Get-AggregatedTrxFromDirectory.ps1
               $byCat = Get-AggregatedTrxFromDirectory -RootDir $artDir
+
+              # Detect categories whose HostApp failed to COMPILE. A compile
+              # failure produces NO .trx, so the category is absent from $byCat
+              # entirely — without this, an all-build-failed deep run would
+              # render an EMPTY (silent) deep block even though nothing ran,
+              # leaving the reviewer with no explanation for the amber stage.
+              # A compile failure here is frequently a base-branch break rather
+              # than the PR (e.g. an android36 PublicAPI/RS0017 mismatch), so
+              # the surfaced message must be honest and NOT blame the author.
+              $buildFailedCats = @()
+              if (Test-Path $artDir) {
+                foreach ($d in @(Get-ChildItem -Path $artDir -Directory -Filter 'drop-*_ui_tests-*' -ErrorAction SilentlyContinue)) {
+                  if (@(Get-ChildItem -Path $d.FullName -Filter '*.trx' -Recurse -ErrorAction SilentlyContinue).Count -gt 0) { continue }
+                  $bo = Join-Path $d.FullName 'build-output.log'
+                  if (-not (Test-Path $bo)) { continue }
+                  $boText = Get-Content $bo -Raw -ErrorAction SilentlyContinue
+                  if ([string]::IsNullOrEmpty($boText)) { continue }
+                  if ($boText -match '(?m)^\s*Build FAILED\.' -or
+                      $boText -match 'Build/deploy failed after \d+ attempt' -or
+                      $boText -match 'Build or deployment failed') {
+                    $cat = Get-CategoryFromArtifactName -ArtifactName $d.Name
+                    if (-not [string]::IsNullOrWhiteSpace($cat) -and -not $byCat.ContainsKey($cat)) {
+                      $buildFailedCats += $cat
+                    }
+                  }
+                }
+                $buildFailedCats = @($buildFailedCats | Select-Object -Unique | Sort-Object)
+              }
+              $buildFailedNote = ''
+              if ($buildFailedCats.Count -gt 0) {
+                Write-Host "Detected $($buildFailedCats.Count) build-failed deep categor(y/ies): $($buildFailedCats -join ', ')"
+                $bfList = '`' + ($buildFailedCats -join '`, `') + '`'
+                $bfCatText = if ($buildFailedCats.Count -eq 1) { "1 category ($bfList)" } else { "$($buildFailedCats.Count) categories ($bfList)" }
+                $buildFailedNote = "The HostApp failed to **compile** for $bfCatText, so those deep UI tests could not run. A compile failure here is frequently a **base-branch build break** rather than this PR — check the ``build-output.log`` in the ``drop-deep-uitests`` artifact. Once the build is fixed, re-run the review to execute these tests."
+              }
+
               if (-not $byCat -or $byCat.Count -eq 0) {
                 Write-Host "Aggregator returned no categories"
                 # No deep test results — but in DEFERRED mode we still need to
@@ -2155,11 +2191,27 @@ stages:
                 $emptyText = if ($emptyCategories -eq 1) { '1 category reported 0 tests.' } else { "$emptyCategories categories reported 0 tests." }
                 $headerLine = "$headerLine $emptyText"
               }
+              if ($buildFailedCats.Count -gt 0) {
+                # Some categories ran; others failed to compile. Append the
+                # honest build-failure note so "0 tests" is never conflated
+                # with "didn't compile."
+                $headerLine = "$headerLine " + $buildFailedNote
+              }
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
               $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
               } # end if ($byCat.Count -gt 0)
+
+              if ((-not $byCat -or $byCat.Count -eq 0) -and $buildFailedCats.Count -gt 0) {
+                # No TRX anywhere (nothing ran), but we DID detect compile
+                # failures. Render an honest deep block explaining the build
+                # break instead of leaving the deep section silent/empty.
+                $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
+                $endMarker   = '<!-- DEEP_UITESTS_END -->'
+                $headerLine  = "⚠️ **Deep UI tests** — $buildFailedNote"
+                $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + "$endMarker"
+              }
 
               if ($isDeferred) {
                 # Keep deferred mode even if a prior AI Summary exists. The
