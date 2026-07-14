@@ -380,6 +380,41 @@ jobs:
               "locked=true" >> $env:GITHUB_OUTPUT
               "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
               "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
+
+              # Make the skip VISIBLE to the maintainer. Previously this path only
+              # wrote to the (invisible) job step-summary, so re-commenting /review
+              # while a review is in flight — which can now run for hours once the
+              # deep UI-test stage queues — looked like it silently did nothing.
+              # Post ONE concise, AI-attributed notice per in-progress cycle, deduped
+              # against the current lock's applied time so repeat /review comments
+              # during the same run don't spam the PR.
+              try {
+                $skipMarker = '<!-- copilot-review-inprogress-skip -->'
+                $appliedAt = Get-AgentReviewInProgressAppliedAt -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
+                $alreadyNoticed = $false
+                if ($appliedAt) {
+                  $noticeTimes = @(gh api "repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/$($env:PR_NUMBER)/comments?per_page=30" --jq ".[] | select(.body | contains(`"$skipMarker`")) | .created_at" 2>$null)
+                  foreach ($t in $noticeTimes) {
+                    if ([datetimeoffset]::Parse([string]$t, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal) -gt $appliedAt) { $alreadyNoticed = $true; break }
+                  }
+                }
+                if (-not $alreadyNoticed) {
+                  $skipBody = @(
+                    $skipMarker,
+                    '> [!NOTE]',
+                    '> ### 🔍 `/review` skipped — a review is already running',
+                    '>',
+                    '> This PR already holds the `s/agent-review-in-progress` lock, so a new review was **not** started (only one review runs at a time to avoid duplicate, racing reviews). The in-flight run must finish first — this can take a while when the deep UI-test stage is queued.',
+                    '>',
+                    '> Re-comment `/review` once it completes to start a fresh run.',
+                    '>',
+                    '> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline.</sub>'
+                  ) -join "`n"
+                  $skipBody | gh pr comment $env:PR_NUMBER --repo '${{ github.repository_owner }}/${{ github.event.repository.name }}' --body-file - | Out-Null
+                }
+              } catch {
+                Write-Host "  ⚠️  Could not post in-progress skip notice: $($_.Exception.Message)"
+              }
               exit 0
             }
           }

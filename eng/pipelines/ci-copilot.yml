@@ -1048,6 +1048,53 @@ stages:
               publishLocation: 'pipeline'
             condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
 
+          # ─────────────────────────────────────────────────────────────────
+          #  FALLBACK — guarantee every /review yields visible feedback.
+          #
+          #  Task 3 (review) and Task 4 (RunPost) both default to condition
+          #  succeeded(), so when an EARLIER step is killed by its hang-safety
+          #  timeout — most commonly the Gate (Task 2, 120m) stalling on an
+          #  emulator/simulator boot — Task 3/4 are SKIPPED and the PR gets a
+          #  RED build with NO comment at all (observed: build 14651883 on
+          #  #35606: gate timed out at 120m → review + post skipped → silence).
+          #
+          #  In the pipeline RunPost ALWAYS defers, emitting
+          #  aiSummaryReviewId="DEFERRED"; an EMPTY value here therefore means
+          #  RunPost never ran → no review was produced (covers the gate-timeout
+          #  AND the review-timeout silence paths). succeededOrFailed() ensures
+          #  this step still runs after an earlier step-timeout (empirically a
+          #  gate timeout is treated as failed, not canceled, so later
+          #  succeededOrFailed() steps DO run). Post a concise, AI-attributed
+          #  notice so the maintainer always knows to re-trigger. Skips on every
+          #  normal run (aiSummaryReviewId is non-empty).
+          # ─────────────────────────────────────────────────────────────────
+          - bash: |
+              echo "═══ FALLBACK: no review was posted → emitting review-incomplete notice ═══"
+              BUILD_URL="https://dev.azure.com/devdiv/DevDiv/_build/results?buildId=${BUILD_BUILDID}"
+              BODY_FILE="$(mktemp)"
+              {
+                echo "> [!WARNING]"
+                echo "> ### 🔍 Automated review could not complete"
+                echo ">"
+                echo "> A stage of the reviewer pipeline was stopped by its hang-safety timeout — most often the test-verification **gate** stalling on an emulator/simulator boot or an Appium hang on the CI agent. This is almost always a transient **infrastructure** issue, **not** a problem with your PR. Because the pipeline could not finish, **no review was produced** for this run."
+                echo ">"
+                echo "> Please re-comment \`/review\` to retry on a fresh agent."
+                echo ">"
+                echo "> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline · <a href=\"${BUILD_URL}\">build log</a></sub>"
+              } > "$BODY_FILE"
+              if gh pr comment "$PARAM_PR_NUMBER" --repo dotnet/maui --body-file "$BODY_FILE"; then
+                echo "Review-incomplete notice posted to PR #$PARAM_PR_NUMBER."
+              else
+                echo "##vso[task.logissue type=warning]Failed to post review-incomplete notice to PR #$PARAM_PR_NUMBER."
+              fi
+              rm -f "$BODY_FILE"
+            displayName: 'Post review-incomplete notice (no review produced)'
+            condition: and(succeededOrFailed(), eq(variables['RunPost.aiSummaryReviewId'], ''))
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              BUILD_BUILDID: $(Build.BuildId)
+
           # Fail the pipeline if any phase failed.
           # NOTE: CopilotFailed / GateFailed are output variables set only on the
           # failing paths of earlier steps, so on a clean pass they are UNDEFINED.

@@ -285,6 +285,35 @@ function Test-AgentReviewInProgressIsStale {
     return $false
 }
 
+function Get-AgentReviewInProgressAppliedAt {
+    <#
+    .SYNOPSIS
+        Returns the DateTimeOffset the in-progress lock label was most recently
+        applied, or $null when it isn't applied / history is unavailable.
+
+    .DESCRIPTION
+        Used to dedupe the "a review is already running" skip notice so at most
+        one notice is posted per in-progress cycle (see review-trigger.yml): a
+        skip comment newer than this timestamp means the current lock already
+        has a notice and a repeat /review must stay silent.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    $label = 's/agent-review-in-progress'
+    $createdAtValues = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/events?per_page=100" --paginate --jq ".[] | select(.event == `"labeled`" and .label.name == `"$label`") | .created_at" 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $createdAtValues.Count -eq 0) {
+        return $null
+    }
+
+    return ($createdAtValues | ForEach-Object {
+        [datetimeoffset]::Parse([string]$_, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
+    } | Sort-Object -Descending | Select-Object -First 1)
+}
+
 # ============================================================
 # Update-AgentOutcomeLabel
 # ============================================================
