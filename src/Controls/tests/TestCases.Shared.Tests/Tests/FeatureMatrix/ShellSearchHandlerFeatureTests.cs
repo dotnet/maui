@@ -20,6 +20,17 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 
+#if IOS
+	private const int CropBottomValue = 1450;
+#elif ANDROID
+	private const int CropBottomValue = 1050;
+#elif WINDOWS
+	private const int CropBottomValue = 100;
+#else
+	private const int CropBottomValue = 100;
+#endif
+
+
 	public ShellSearchHandlerFeatureTests(TestDevice device)
 		: base(device)
 	{
@@ -63,8 +74,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-
-
 	[Test, Order(3)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_PlaceholderColor()
@@ -95,7 +104,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		var selectedItem = App.WaitForElement("SelectedItem").GetText();
 		Assert.That(selectedItem, Is.EqualTo("Mango"));
 	}
-
 
 	[Test, Order(5)]
 	[Category(UITestCategories.Shell)]
@@ -153,22 +161,8 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35624
-	[Test, Order(10)]
-	[Category(UITestCategories.Shell)]
-	public void VerifyShellSearch_CharacterSpacing()
-	{
-		OpenOptions();
-		App.WaitForElement("CharacterSpacingEntry");
-		App.ClearText("CharacterSpacingEntry");
-		App.EnterText("CharacterSpacingEntry", "5");
-		ApplyAndReturn();
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-#endif
-
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/35085
-	[Test, Order(11)]
+	[Test, Order(10)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_HorizontalTextAlignmentCenter()
 	{
@@ -179,7 +173,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(12)]
+	[Test, Order(11)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_HorizontalTextAlignmentEnd()
 	{
@@ -190,7 +184,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(13)]
+	[Test, Order(12)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_VerticalTextAlignmentStart()
 	{
@@ -202,7 +196,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(14)]
+	[Test, Order(13)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_VerticalTextAlignmentEnd()
 	{
@@ -213,32 +207,8 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35667
-	[Test, Order(15)]
-	[Category(UITestCategories.Shell)]
-	public void VerifyShellSearch_TextTransformUppercase()
-	{
-		OpenOptions();
-		App.WaitForElement("TextTransformUppercase");
-		App.Tap("TextTransformUppercase");
-		ApplyAndReturn();
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-#endif
-
-	[Test, Order(16)]
-	[Category(UITestCategories.Shell)]
-	public void VerifyShellSearch_TextTransformLowercase()
-	{
-		OpenOptions();
-		App.WaitForElement("TextTransformLowercase");
-		App.Tap("TextTransformLowercase");
-		ApplyAndReturn();
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35085
-	[Test, Order(17)]
+	[Test, Order(14)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_HorizontalTextAlignmentStart()
 	{
@@ -250,7 +220,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(18)]
+	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_VerticalTextAlignmentCenter()
 	{
@@ -261,7 +231,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(19)]
+	[Test, Order(16)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_IsSearchEnabledFalse()
 	{
@@ -276,7 +246,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 
 	}
 
-	[Test, Order(20)]
+	[Test, Order(17)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_SearchBoxVisibilityHidden()
 	{
@@ -287,7 +257,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(21)]
+	[Test, Order(18)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_SearchBoxVisibilityCollapsible()
 	{
@@ -307,8 +277,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-
-	[Test, Order(22)]
+	[Test, Order(19)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_SearchBoxVisibilityExpanded()
 	{
@@ -320,7 +289,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/35764
-	[Test, Order(23)]
+	[Test, Order(20)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ClearPlaceholderEnabledTrue()
 	{
@@ -334,7 +303,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(24)]
+	[Test, Order(21)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35736")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_QueryIcon()
@@ -344,7 +313,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(25)]
+	[Test, Order(22)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35736")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ClearIcon()
@@ -354,7 +323,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(26)]
+	[Test, Order(23)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35736")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ClearPlaceholderIcon()
@@ -368,7 +337,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(27)]
+	[Test, Order(24)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35767")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ShowsResultsTrue()
@@ -386,7 +355,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("BackToSearchButton");
 	}
 
-	[Test, Order(28)]
+	[Test, Order(25)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35767")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_FocusAndUnfocusEvent()
@@ -409,7 +378,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 
 
-	[Test, Order(29)]
+	[Test, Order(26)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35767")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemsSourceFruits()
@@ -431,7 +400,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("BackToSearchButton");
 	}
 
-	[Test, Order(30)]
+	[Test, Order(27)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35767")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemsSourceBirds()
@@ -453,7 +422,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("BackToSearchButton");
 	}
 
-	[Test, Order(31)]
+	[Test, Order(28)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35767")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemsSourceQuery()
@@ -484,7 +453,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("BackToSearchButton");
 	}
 
-	[Test, Order(32)]
+	[Test, Order(29)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35767")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemsSourceNull()
@@ -502,7 +471,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Apple");
 	}
 
-	[Test, Order(33)]
+	[Test, Order(30)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35767")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemTemplateCustom()
@@ -521,7 +490,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(34)]
+	[Test, Order(31)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35767")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemTemplateNull()
@@ -540,7 +509,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(35)]
+	[Test, Order(32)]
 	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/35767")]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_CommandParameter()
@@ -567,7 +536,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/35764
-	[Test, Order(36)]
+	[Test, Order(33)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ClearPlaceholderCommand()
 	{
@@ -586,11 +555,33 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(37)]
-	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/26968")]
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/26968"
+	[Test, Order(34)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellSearch_TextTransformLowercase()
+	{
+		OpenOptions();
+		App.WaitForElement("TextTransformLowercase");
+		App.Tap("TextTransformLowercase");
+		ApplyAndReturn();
+		var searchHandler = App.GetShellSearchHandler();
+		searchHandler.Tap();
+		searchHandler.Clear();
+		searchHandler.SendKeys("Testing");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(35)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_TextColor()
 	{
+#if IOS
+		App.WaitForElement("Cancel");
+		App.Tap("Cancel");
+#elif MACCATALYST
+	 App.WaitForElement("Options");
+	 App.Tap("Options");
+#endif
 		OpenOptions();
 		App.WaitForElement("TextColorRedRadio");
 		App.Tap("TextColorRedRadio");
@@ -599,14 +590,20 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(38)]
-	[Ignore("Fails on all platforms, see https://github.com/dotnet/maui/issues/26968")]
+	[Test, Order(36)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_CancelButtonColor()
 	{
+#if IOS
+		App.WaitForElement("Cancel");
+		App.Tap("Cancel");
+#elif MACCATALYST
+	 App.WaitForElement("Options");
+	 App.Tap("Options");
+#endif
 		OpenOptions();
 		App.WaitForElement("CancelButtonColorOrangeRadio");
 		App.Tap("CancelButtonColorOrangeRadio");
@@ -615,6 +612,57 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
 	}
+#endif
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35624
+	[Test, Order(37)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellSearch_CharacterSpacing()
+	{
+#if IOS
+     App.WaitForElement("Cancel");
+	 App.Tap("Cancel");
+#elif MACCATALYST
+	 App.WaitForElement("Options");
+	 App.Tap("Options");
+#endif
+		OpenOptions();
+		App.WaitForElement("CharacterSpacingEntry");
+		App.ClearText("CharacterSpacingEntry");
+		App.EnterText("CharacterSpacingEntry", "5");
+		ApplyAndReturn();
+		var searchHandler = App.GetShellSearchHandler();
+		searchHandler.Tap();
+		searchHandler.Clear();
+		searchHandler.SendKeys("Testing");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
+	}
+#endif
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35667
+	[Test, Order(38)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellSearch_TextTransformUppercase()
+	{
+#if IOS
+     App.WaitForElement("Cancel");
+	 App.Tap("Cancel");
+#elif MACCATALYST
+	 App.WaitForElement("Options");
+	 App.Tap("Options");
+#endif
+		OpenOptions();
+		App.WaitForElement("TextTransformUppercase");
+		App.Tap("TextTransformUppercase");
+		ApplyAndReturn();
+		var searchHandler = App.GetShellSearchHandler();
+		searchHandler.Tap();
+		searchHandler.Clear();
+		searchHandler.SendKeys("Testing");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
+	}
+#endif
+
 }
