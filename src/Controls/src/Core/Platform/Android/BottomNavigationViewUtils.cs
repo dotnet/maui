@@ -191,10 +191,17 @@ namespace Microsoft.Maui.Controls.Platform
 			menuItem.SetTitle(jTitle);
 		}
 
+		// Records which ImageSource each reused IMenuItem is currently supposed to show, so a
+		// slower, stale load (from before the item was repurposed for a different tab) can
+		// detect it's been superseded and skip applying its now-outdated result.
+		static readonly ConditionalWeakTable<IMenuItem, ImageSource> s_pendingIconSource = new();
+
 		internal static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context, Action<IMenuItem> onIconLoaded = null)
 		{
 			if (!menuItem.IsAlive())
 				return;
+
+			s_pendingIconSource.AddOrUpdate(menuItem, source);
 
 			if (source is null)
 			{
@@ -217,7 +224,9 @@ namespace Microsoft.Maui.Controls.Platform
 				source,
 				context.Context);
 
-			if (menuItem.IsAlive())
+			// Skip applying if this menu item has since been repurposed for a different
+			// source (i.e. a newer SetMenuItemIcon call updated the pending source above).
+			if (menuItem.IsAlive() && s_pendingIconSource.TryGetValue(menuItem, out var pending) && ReferenceEquals(pending, source))
 			{
 				menuItem.SetIcon(result?.Value);
 				// Let the caller reapply per-item icon tint (e.g. to preserve a
