@@ -203,10 +203,14 @@ echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 # once (then the OPEN-issue de-dup catches it), so warn loudly if we ever reach the ceiling.
 gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' \
   --limit 1000 --json title -q '.[].title' > /tmp/gh-aw/agent/merged-leakfix-titles.txt
-if [ "$(grep -c '' /tmp/gh-aw/agent/merged-leakfix-titles.txt)" -ge 1000 ]; then
+if [ "$(awk 'END{print NR}' /tmp/gh-aw/agent/merged-leakfix-titles.txt)" -ge 1000 ]; then
   echo "WARNING: fixed-on-main provenance hit the 1000 search-API ceiling; older merged [leak-fix] fixes may be TRUNCATED and their leaks could be re-filed once — switch to date-windowed enumeration."
 fi
-grep -E '^\[leak-fix\] ' /tmp/gh-aw/agent/merged-leakfix-titles.txt | sed -E 's/^\[leak-fix\] *(Fix +)?//' \
+# awk (not grep) as the leading filter: grep exits 1 when nothing matches, which under the
+# runner's `set -eo pipefail` would abort this step on the common "no merged [leak-fix] PRs yet"
+# state (empty provenance is valid — it just means nothing is fixed-on-main yet). awk always
+# exits 0 and yields an empty fixed-on-main-apis.txt, which is the intended no-op.
+awk '/^\[leak-fix\] /' /tmp/gh-aw/agent/merged-leakfix-titles.txt | sed -E 's/^\[leak-fix\] *(Fix +)?//' \
   | awk '{
       if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) {
         chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n]
