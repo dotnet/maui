@@ -192,6 +192,15 @@ internal static class LayoutFactory2
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
+		var mainAxisSpacing = scrollDirection == UICollectionViewScrollDirection.Vertical
+			? verticalItemSpacing
+			: horizontalItemSpacing;
+
+		if (groupingInfo.IsGrouped && mainAxisSpacing > 0)
+		{
+			layoutConfiguration.InterSectionSpacing = new NFloat(mainAxisSpacing);
+		}
+
 		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
@@ -235,6 +244,32 @@ internal static class LayoutFactory2
 				section.InterGroupSpacing = new NFloat(horizontalItemSpacing);
 			}
 
+			var hasHeader = groupingInfo.IsGrouped ? groupingInfo.HasHeader : headerFooterInfo.HasHeader;
+			var hasFooter = groupingInfo.IsGrouped ? groupingInfo.HasFooter : headerFooterInfo.HasFooter;
+
+			if (mainAxisSpacing > 0)
+			{
+				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+				{
+					var topInset = hasHeader ? new NFloat(verticalItemSpacing) : new NFloat(0);
+					var bottomInset = hasFooter ? new NFloat(verticalItemSpacing) : new NFloat(0);
+
+					if (topInset > 0 || bottomInset > 0)
+					{
+						section.ContentInsets = new NSDirectionalEdgeInsets(topInset, 0, bottomInset, 0);
+					}
+				}
+				else
+				{
+					var leadingInset = hasHeader ? new NFloat(horizontalItemSpacing) : new NFloat(0);
+					var trailingInset = hasFooter ? new NFloat(horizontalItemSpacing) : new NFloat(0);
+
+					if (leadingInset > 0 || trailingInset > 0)
+					{
+						section.ContentInsets = new NSDirectionalEdgeInsets(0, leadingInset, 0, trailingInset);
+					}
+				}
+			}
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
