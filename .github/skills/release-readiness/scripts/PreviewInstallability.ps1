@@ -91,11 +91,11 @@ function ConvertFrom-PreviewPackageSourceSpec {
         $uriText = $Matches.uri
         $uri = [Uri]$uriText
         if ($uri.Scheme -ne 'https' -or
-            $uri.Host -notin @('pkgs.dev.azure.com', 'api.nuget.org') -or
+            $uri.Host -ne 'pkgs.dev.azure.com' -or
             -not [string]::IsNullOrEmpty($uri.UserInfo)) {
-            throw "Additional package source '$name' must be an HTTPS dnceng Azure Artifacts or NuGet.org service index without embedded credentials."
+            throw "Additional package source '$name' must be an HTTPS dnceng Azure Artifacts service index without embedded credentials."
         }
-        if ($uri.Host -eq 'pkgs.dev.azure.com' -and -not $uri.AbsolutePath.StartsWith('/dnceng/', [StringComparison]::OrdinalIgnoreCase)) {
+        if (-not $uri.AbsolutePath.StartsWith('/dnceng/', [StringComparison]::OrdinalIgnoreCase)) {
             throw "Additional Azure Artifacts source '$name' must belong to the dnceng organization."
         }
         if (@($sources | Where-Object { $_.Name -ieq $name }).Count -gt 0) {

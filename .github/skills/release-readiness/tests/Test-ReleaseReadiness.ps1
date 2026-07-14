@@ -4150,6 +4150,16 @@ Assert-Eq -Label "installability: CLI version converts to workload-set NuGet ver
 Assert-Eq -Label "installability: NuGet version converts back to CLI version" `
     -Expected '11.0.100-preview.6.26363.2' -Actual (ConvertTo-WorkloadSetCliVersion '11.100.0-preview.6.26363.2' '11.0.100')
 
+$iiExternalCredentialSourceRejected = $false
+try {
+    $null = ConvertFrom-PreviewPackageSourceSpec -Major 11 `
+        -AdditionalPackageSource 'credential_alias=https://api.nuget.org/v3/index.json'
+} catch {
+    $iiExternalCredentialSourceRejected = $true
+}
+Assert-Eq -Label "installability: credential-bearing additional sources cannot target NuGet.org" `
+    -Expected $true -Actual $iiExternalCredentialSourceRejected
+
 $iiPins = [PSCustomObject]@{
     Vmr     = [PSCustomObject]@{ Version = '11.0.100-preview.6.26359.118' }
     Android = [PSCustomObject]@{ Version = '37.0.0-preview.6.59' }

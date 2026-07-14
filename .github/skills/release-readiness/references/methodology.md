@@ -198,11 +198,13 @@ may find several coherent candidates, but "newest coherent" does not mean
 "approved for release." An unconfirmed version therefore cannot produce
 `READY`.
 
-Additional sources are accepted only for NuGet.org or dnceng Azure Artifacts
-HTTPS endpoints. User information embedded in a URL is rejected. Credentials
-come from NuGet's `NuGetPackageSourceCredentials_<name>` environment variable,
-where `<name>` exactly matches the source name. The value must contain non-empty
-`Username` and `Password` fields and `ValidAuthenticationTypes=Basic`.
+Additional sources are accepted only for dnceng Azure Artifacts HTTPS
+endpoints. NuGet.org is already part of the fixed public source set and cannot
+be supplied under an arbitrary credential-bearing name. User information
+embedded in a URL is rejected. Credentials come from NuGet's
+`NuGetPackageSourceCredentials_<name>` environment variable, where `<name>`
+exactly matches the source name. The value must contain non-empty `Username`
+and `Password` fields and `ValidAuthenticationTypes=Basic`.
 
 ### Workload-Set Version Normalization
 
