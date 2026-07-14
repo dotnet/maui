@@ -42,6 +42,12 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 			return null;
 		}
 		Type type = GetControlType(parts[0]);
+		if (type == null)
+		{
+			MauiLogger<BindablePropertyConverter>.Log(LogLevel.Warning, $"Can't resolve {parts[0]}.");
+			return null;
+		}
+
 		return ConvertFrom(type, parts[1], null);
 	}
 
