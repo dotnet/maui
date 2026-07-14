@@ -2181,6 +2181,7 @@ stages:
               # Render the new STEP 3 section.
               $totalPassed = 0; $totalFailed = 0
               $setupFailureCategories = 0; $setupImpactedTests = 0; $emptyCategories = 0; $appCrashCategories = 0
+              $baselineNotCreatedTests = 0
               $sb = [System.Text.StringBuilder]::new()
               [void]$sb.AppendLine()
               [void]$sb.AppendLine("### 🧪 UI Test Execution Results (deep, platform pool)")
@@ -2188,6 +2189,7 @@ stages:
               [void]$sb.AppendLine("| Category | Tests | Snapshot diffs |")
               [void]$sb.AppendLine("|---|---|---|")
               $perCategoryFailures = [ordered]@{}
+              $perCategoryBaseline = [ordered]@{}
               $perCategorySetupFailures = [ordered]@{}
               foreach ($k in ($byCat.Keys | Sort-Object)) {
                 $b = $byCat[$k]
@@ -2206,10 +2208,28 @@ stages:
                 if ($tCount -eq 0) {
                   $emptyCategories++
                 }
+                # "Baseline snapshot not yet created" failures are brand-new
+                # VerifyScreenshot tests whose baseline PNG hasn't been committed
+                # yet (a maintainer adds it separately). They are NOT a regression,
+                # so bucket them apart from real failures — mirroring the gate,
+                # which treats the identical case as inconclusive. This prevents a
+                # good PR that only adds new snapshot tests being shown as ❌ failed.
+                $catBaselineCount = 0
+                if (-not $isSetupFailure) {
+                  foreach ($r in @($b.Results)) {
+                    if ($r.status -eq 'Failed' -and (($r.error -as [string]) -match '(?i)Baseline snapshot not yet created')) {
+                      $catBaselineCount++
+                    }
+                  }
+                }
+                $baselineNotCreatedTests += $catBaselineCount
+                $catRealFail = $tFail - $catBaselineCount
                 $col = if ($tCount -eq 0) { '0 tests' }
                        elseif ($isSetupFailure -and $isAppCrash) { "$tPass/$tCount (app crashed; $tFail couldn't complete)" }
                        elseif ($isSetupFailure) { "$tPass/$tCount (setup failed; $tFail marked failed)" }
-                       elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
+                       elseif ($catRealFail -gt 0 -and $catBaselineCount -gt 0) { "$tPass/$tCount ($catRealFail ❌, $catBaselineCount ⚠ new baseline)" }
+                       elseif ($catRealFail -gt 0) { "$tPass/$tCount ($catRealFail ❌)" }
+                       elseif ($catBaselineCount -gt 0) { "$tPass/$tCount ($catBaselineCount ⚠ new baseline)" }
                        else { "$tPass/$tCount ✓" }
                 # Count snapshot-diff PNGs we shipped in this artifact subdir
                 $catDir = Join-Path $artDir $b.ArtifactName
@@ -2234,17 +2254,26 @@ stages:
                   continue
                 }
                 $catFailed = @()
+                $catBaseline = @()
                 foreach ($r in @($b.Results)) {
                   if ($r.status -eq 'Failed') {
-                    $catFailed += [pscustomobject]@{
+                    $entry = [pscustomobject]@{
                       Name  = $r.name
                       Error = $r.error -as [string]
                       Stack = $r.stack -as [string]
+                    }
+                    if (($r.error -as [string]) -match '(?i)Baseline snapshot not yet created') {
+                      $catBaseline += $entry
+                    } else {
+                      $catFailed += $entry
                     }
                   }
                 }
                 if ($catFailed.Count -gt 0) {
                   $perCategoryFailures[$k] = $catFailed
+                }
+                if ($catBaseline.Count -gt 0) {
+                  $perCategoryBaseline[$k] = $catBaseline
                 }
               }
 
@@ -2327,6 +2356,31 @@ stages:
                 }
               }
 
+              # Per-category "new baseline needed" disclosure — brand-new
+              # VerifyScreenshot tests whose baseline PNG isn't committed yet.
+              # Rendered as ⚠️ (informational), NOT ❌, because it isn't a
+              # regression — the maintainer adds the baseline separately.
+              if ($perCategoryBaseline.Count -gt 0) {
+                [void]$sb.AppendLine()
+                foreach ($cat in $perCategoryBaseline.Keys) {
+                  $bitems = $perCategoryBaseline[$cat]
+                  [void]$sb.AppendLine("<details><summary>⚠️ <code>$cat</code> — $($bitems.Count) new snapshot test$(if ($bitems.Count -eq 1) {''} else {'s'}) need a baseline PNG</summary>")
+                  [void]$sb.AppendLine("<br/>")
+                  [void]$sb.AppendLine()
+                  [void]$sb.AppendLine("These tests call ``VerifyScreenshot`` but their baseline image isn't committed yet (brand-new snapshot tests get their baseline added separately by a maintainer). There's nothing to compare against, so this is **not a regression** — download the ``drop-deep-uitests`` artifact, confirm the rendering, and commit the baseline PNG.")
+                  [void]$sb.AppendLine()
+                  foreach ($it in $bitems | Select-Object -First 30) {
+                    [void]$sb.AppendLine("- ``$($it.Name)``")
+                  }
+                  if ($bitems.Count -gt 30) {
+                    [void]$sb.AppendLine("_(+$($bitems.Count - 30) more — see TRX in artifact)_")
+                  }
+                  [void]$sb.AppendLine()
+                  [void]$sb.AppendLine("</details>")
+                  [void]$sb.AppendLine()
+                }
+              }
+
               # Fold in the AI classification of the deep UI test failures
               # (PR-related vs unrelated) produced by the token-less Copilot
               # analysis task. Best-effort — absent when there were no regular
@@ -2357,7 +2411,7 @@ stages:
               [void]$sb.AppendLine()
 
               $categoryText = if ($byCat.Count -eq 1) { '1 category' } else { "$($byCat.Count) categories" }
-              $regularFailed = [Math]::Max(0, $totalFailed - $setupImpactedTests)
+              $regularFailed = [Math]::Max(0, $totalFailed - $setupImpactedTests - $baselineNotCreatedTests)
               # A fixture / OneTimeSetUp ("category setup") failure means the tests
               # could NOT be run — a harness/infra problem on the platform-pool
               # agent (e.g. "Timed out waiting for Go To Test button" in
@@ -2368,6 +2422,8 @@ stages:
               if ($regularFailed -gt 0) {
                 $resultIcon = '❌'
               } elseif ($setupFailureCategories -gt 0) {
+                $resultIcon = '⚠️'
+              } elseif ($baselineNotCreatedTests -gt 0) {
                 $resultIcon = '⚠️'
               } elseif ($totalPassed -gt 0) {
                 $resultIcon = '✅'
@@ -2394,7 +2450,13 @@ stages:
                   $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed; plus $setupCategoryText ($setupImpactedText) could not run (fixture/OneTimeSetUp setup failure — infrastructure) across $categoryText on platform-pool agent (replaces in-process counts above)."
                 }
               } else {
-                $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $categoryText on platform-pool agent (replaces in-process counts above)."
+                $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed across $categoryText on platform-pool agent (replaces in-process counts above)."
+              }
+              if ($baselineNotCreatedTests -gt 0) {
+                # New VerifyScreenshot tests with no committed baseline yet are
+                # reported separately so they never inflate the ❌ failed count.
+                $blTestText = if ($baselineNotCreatedTests -eq 1) { '1 new snapshot test' } else { "$baselineNotCreatedTests new snapshot tests" }
+                $headerLine = "$headerLine $blTestText need a baseline PNG (added separately by a maintainer — not a regression)."
               }
               if ($emptyCategories -gt 0) {
                 $emptyText = if ($emptyCategories -eq 1) { '1 category reported 0 tests.' } else { "$emptyCategories categories reported 0 tests." }
