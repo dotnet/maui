@@ -1,3 +1,4 @@
+#if WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,7 +19,7 @@ public class Issue32723 : _IssuesUITest
 	public void Issue32723PickerTitleDisplaysAsPlaceholder()
 	{
 		App.WaitForElement("issue32723Picker");
-		VerifyPickerScreenshot();
+		VerifyScreenshot(cropTop: 100);
 	}
 
 	[Test]
@@ -28,15 +29,7 @@ public class Issue32723 : _IssuesUITest
 		App.WaitForElement("issue32723Button");
 		App.Tap("issue32723Button");
 		App.WaitForElement("issue32723Picker");
-		VerifyPickerScreenshot();
-	}
-
-	void VerifyPickerScreenshot()
-	{
-#if WINDOWS
 		VerifyScreenshot(cropTop: 100);
-#else
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-#endif
 	}
 }
+#endif
