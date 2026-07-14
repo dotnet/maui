@@ -4,6 +4,7 @@
 @inject NavigationManager NavigationManager
 
 ##endif*@
+@* NavMenu.razor.js is also loaded early from index.html so the document-level delegated collapse handler is ready before Hybrid renders this menu (no SSR prerender). The module is idempotent via globalThis.__mauiNavMenuCollapseInitialized, so listeners register once. *@
 <script type="module" src="_content/MauiApp.1.Shared/Layout/NavMenu.razor.js"></script>
 
 <div class="top-row ps-3 navbar navbar-dark">

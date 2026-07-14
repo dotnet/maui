@@ -27,6 +27,7 @@
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
 <!--#if (SampleContent) -->
+    <!-- NavMenu.razor.js is also loaded by NavMenu.razor; this early load registers the document-level delegated collapse handler before Hybrid renders the menu (no SSR prerender). The module is idempotent via globalThis.__mauiNavMenuCollapseInitialized, so listeners register once. -->
     <script type="module" src="Components/Layout/NavMenu.razor.js"></script>
 <!--#endif -->
 
