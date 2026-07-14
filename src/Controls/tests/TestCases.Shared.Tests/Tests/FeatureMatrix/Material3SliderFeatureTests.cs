@@ -534,8 +534,8 @@ public class Material3SliderFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("SliderGrid");
 		DragSlider(30, 70);
-		Assert.That(App.WaitForElement("DragStartStatusLabel").GetText(), Is.EqualTo("Drag Started"));
-		Assert.That(App.WaitForElement("DragCompletedStatusLabel").GetText(), Is.EqualTo("Drag Completed"));
+		App.WaitForTextToBePresentInElement("DragStartStatusLabel", "Drag Started");
+		App.WaitForTextToBePresentInElement("DragCompletedStatusLabel", "Drag Completed");
 	}
 
 	[Test]
@@ -552,10 +552,10 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("SliderGrid");
 
-		Assert.That(App.FindElement("ValueChangedEventStatus").GetText(), Is.EqualTo("Not Raised"));
+		App.WaitForTextToBePresentInElement("ValueChangedEventStatus", "Not Raised");
 
 		DragSlider(10, 60);
-		Assert.That(App.FindElement("ValueChangedEventStatus").GetText(), Is.EqualTo("Raised"));
+		App.WaitForTextToBePresentInElement("ValueChangedEventStatus", "Raised");
 	}
 }
 #endif

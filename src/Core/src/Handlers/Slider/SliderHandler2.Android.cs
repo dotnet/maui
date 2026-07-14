@@ -34,6 +34,7 @@ public class SliderHandler2 : ViewHandler<ISlider, Slider>
 
     protected override void ConnectHandler(Slider platformView)
     {
+        base.ConnectHandler(platformView);
         platformView.Change += OnChange;
         platformView.StartTrackingTouch += OnStartTrackingTouch;
         platformView.StopTrackingTouch += OnStopTrackingTouch;
@@ -44,6 +45,7 @@ public class SliderHandler2 : ViewHandler<ISlider, Slider>
         platformView.Change -= OnChange;
         platformView.StartTrackingTouch -= OnStartTrackingTouch;
         platformView.StopTrackingTouch -= OnStopTrackingTouch;
+        base.DisconnectHandler(platformView);
     }
 
     // Slider.ChangeEventArgs: P0 = slider (Slider), P1 = value (float), P2 = fromUser (bool)
