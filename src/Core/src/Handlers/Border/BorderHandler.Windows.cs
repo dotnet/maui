@@ -28,13 +28,19 @@ namespace Microsoft.Maui.Handlers
 				var platformView = view.ToPlatform(handler.MauiContext);
 
 				// Detach from existing parent — mirrors Android RemoveFromParent / iOS RemoveFromSuperview.
-				// When the parent is a ContentPanel, use its Content setter so the internal _content
-				// field is cleared consistently (clip/border logic relies on ContentPanel._content).
+				// Always remove via CachedChildren directly: Content = null is a no-op when _content
+				// is null (e.g. ScrollViewHandler adds via paddingShim.CachedChildren.Add, not the
+				// Content setter), leaving the element with a live parent and causing a COM exception
+				// when we try to reparent it. Only clear _content when it actually tracks fwElement.
 				if (platformView is FrameworkElement fwElement && fwElement.Parent is not null)
 				{
 					if (fwElement.Parent is ContentPanel existingContentPanel)
 					{
-						existingContentPanel.Content = null;
+						existingContentPanel.CachedChildren.Remove(fwElement);
+						if (existingContentPanel.Content == fwElement)
+						{
+							existingContentPanel.Content = null;
+						}
 					}
 					else if (fwElement.Parent is MauiPanel existingPanel)
 					{

@@ -23,6 +23,8 @@ public class Issue36298 : _IssuesUITest
 
 		// Switch back to View 1 — this triggered the ArgumentException before the fix
 		App.Tap("SwitchToView1");
+		App.Tap("SwitchToView2");
+		App.Tap("SwitchToView1");
 
 		// Label is updated to "Success" only if the switch completed without crashing.
 		// WaitForElement("SuccessLabel") alone is insufficient because the label
