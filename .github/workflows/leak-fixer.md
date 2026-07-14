@@ -158,13 +158,16 @@ safe-outputs:
   # The agent supplies the issue number + a closing comment linking the merged fix. Write
   # access lives ONLY in the isolated safe-outputs/conclusion jobs — the agent itself stays
   # read-only. Deterministic guards: the safe-output validator will ONLY close an issue whose
-  # title starts with "[leak-scan] " AND that carries this workflow's own `agentic-workflows`
-  # label, so a hallucinated or injected number pointing at an unrelated issue is rejected
-  # outright (not merely bounded by max:1).
+  # title starts with "[leak-scan] " AND that carries BOTH of this workflow's labels
+  # (`agentic-workflows` and `perf/memory-leak 💦` — the exact pair the hunter stamps, and locks
+  # via allowed-labels, on every [leak-scan] issue it creates). `agentic-workflows` alone is
+  # shared by other agentic workflows, so requiring the memory-leak label too prevents a
+  # hallucinated/injected number pointing at an unrelated agentic issue from being closed
+  # (rejected outright, not merely bounded by max:1).
   close-issue:
     target: "*"
     required-title-prefix: "[leak-scan] "
-    required-labels: [agentic-workflows]
+    required-labels: [agentic-workflows, "perf/memory-leak 💦"]
     max: 1
   # Most 6h runs are idle (every open leak already has a [leak-fix] PR). Without this,
   # gh-aw's auto-injected default (noop: report-as-issue: true) files a "no action taken"
