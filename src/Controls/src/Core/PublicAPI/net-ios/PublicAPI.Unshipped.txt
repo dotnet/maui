@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.LayoutSubviews() -> void
 Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 Microsoft.Maui.Controls.DragGestureRecognizer.SendDragStarting(Microsoft.Maui.Controls.View! element, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs = null) -> Microsoft.Maui.Controls.DragStartingEventArgs!
 Microsoft.Maui.Controls.DragGestureRecognizer.SendDropCompleted(Microsoft.Maui.Controls.DropCompletedEventArgs! args) -> void
