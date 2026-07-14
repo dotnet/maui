@@ -8,7 +8,6 @@ namespace Maui.Controls.Sample.Issues
 		Button _checkButton;
 
 		const string SmallFontSpanId = "smallFontSpan";
-		const string paraFontSpanId = "paraFontSpanId";
 		internal const string SmallFontCssValue = "4.87761px";
 
 		protected override void Init()
