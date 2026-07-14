@@ -125,8 +125,8 @@ namespace Microsoft.Maui.Controls
 		sealed class SectionSubscriptions
 		{
 			readonly List<SectionSubscription> _subscriptions = new();
-			bool _isFinalizationSuppressed;
 
+			// Keep finalization private so TableRoot does not gain a public API finalizer entry.
 			~SectionSubscriptions() => UnsubscribeAll();
 
 			public bool Contains(TableSection source)
@@ -142,12 +142,6 @@ namespace Microsoft.Maui.Controls
 
 			public void Add(TableSection source, NotifyCollectionChangedEventHandler collectionChangedHandler, PropertyChangedEventHandler propertyChangedHandler)
 			{
-				if (_isFinalizationSuppressed)
-				{
-					GC.ReRegisterForFinalize(this);
-					_isFinalizationSuppressed = false;
-				}
-
 				_subscriptions.Add(new SectionSubscription(source, collectionChangedHandler, propertyChangedHandler));
 			}
 
@@ -161,9 +155,6 @@ namespace Microsoft.Maui.Controls
 						subscription.Unsubscribe();
 						_subscriptions.RemoveAt(i);
 
-						if (_subscriptions.Count == 0)
-							SuppressFinalization();
-
 						break;
 					}
 				}
@@ -175,16 +166,6 @@ namespace Microsoft.Maui.Controls
 					_subscriptions[i].Unsubscribe();
 
 				_subscriptions.Clear();
-				SuppressFinalization();
-			}
-
-			void SuppressFinalization()
-			{
-				if (_isFinalizationSuppressed)
-					return;
-
-				GC.SuppressFinalize(this);
-				_isFinalizationSuppressed = true;
 			}
 		}
 
