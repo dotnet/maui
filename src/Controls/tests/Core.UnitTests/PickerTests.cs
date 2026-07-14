@@ -1149,6 +1149,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PickerAppliesPendingSelectedIndexWhenHandlerReattaches()
+		{
+			var itemsSource = new ObservableCollection<string>();
+			var picker = new Picker
+			{
+				ItemsSource = itemsSource,
+				SelectedIndex = 1
+			};
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Handler = new PickerHandlerStub();
+			picker.Handler = null;
+			itemsSource.Add("A");
+			itemsSource.Add("B");
+
+			Assert.Empty(picker.Items);
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Handler = new PickerHandlerStub();
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal("B", picker.SelectedItem);
+		}
+
+		[Fact]
 		public void PickerItemsSourceClearReusesCollectionChangedSubscription()
 		{
 			var oldItemsSource = new ObservableCollection<string> { "old" };

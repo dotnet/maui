@@ -552,6 +552,9 @@ namespace Microsoft.Maui.Controls
 
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
+			if (SelectedItem is null && TryApplyPendingSelectedIndex(forceClamp: true))
+				return;
+
 			if (SelectedItem is not null)
 			{
 				ClampSelectedIndex(ItemsSource.IndexOf(SelectedItem));
