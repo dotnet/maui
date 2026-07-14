@@ -429,9 +429,18 @@ gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:ti
   > /tmp/gh-aw/agent/same-api-prs.json
 jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/same-api-prs.json
 # (c) Closed-unmerged attempts for this issue (attempt cap = 3).
-gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
-  --json number,title,body,mergedAt \
-  | jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select(((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) and (.mergedAt == null))]' \
+#     --limit 1000 = the GitHub SEARCH API's hard ceiling (pagination cannot exceed it). The
+#     attempt cap is durable state (a genuinely un-fixable leak must stop being retried), but the
+#     search is global: as total closed [leak-fix] history grows past the cap, older attempts for
+#     THIS issue could fall off the set and let the 3-attempt cap under-count (allowing a 4th+
+#     rebuild). Fail-safe direction (over-processing, never data loss), but warn if we hit it.
+gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:title label:agentic-workflows' --limit 1000 \
+  --json number,title,body,mergedAt > /tmp/gh-aw/agent/closed-leakfix-all.json
+if [ "$(jq 'length' /tmp/gh-aw/agent/closed-leakfix-all.json)" -ge 1000 ]; then
+  echo "WARNING: closed [leak-fix] set hit the 1000 search-API ceiling; older attempts may be TRUNCATED and the 3-attempt cap could under-count for some issues — switch to date-windowed enumeration."
+fi
+jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select(((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) and (.mergedAt == null))]' \
+    /tmp/gh-aw/agent/closed-leakfix-all.json \
   > /tmp/gh-aw/agent/closed-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 # (d) MERGED [leak-fix] PR already fixing this issue number OR the SAME rooting Type.Member?
