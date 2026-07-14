@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// By default no callback is set and all served content uses <c>no-cache, max-age=0, must-revalidate,
 		/// no-store</c>, which disables WebView caching. Provide a callback to opt specific resources into caching,
 		/// for example to stop images from flickering when navigating between pages. Return <see langword="null"/>
-		/// from the callback to keep the default behavior for a given request.
+		/// or an empty string from the callback to keep the default behavior for a given request.
 		/// </para>
 		/// </summary>
 		public Func<BlazorWebViewStaticContentRequest, string?>? StaticContentCacheControlProvider { get; set; }

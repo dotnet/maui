@@ -26,6 +26,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			var cacheControl = provider(new BlazorWebViewStaticContentRequest(uri, contentType));
+
+			// An empty string is deliberately treated like null (keep the default): an empty Cache-Control header
+			// value is non-standard and engine-dependent, and is more likely an accidental result of string
+			// manipulation than an intentional opt-in. Explicit directives are the supported way to enable caching.
 			return string.IsNullOrEmpty(cacheControl) ? null : cacheControl;
 		}
 	}
