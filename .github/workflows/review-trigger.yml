@@ -393,7 +393,12 @@ jobs:
                 $appliedAt = Get-AgentReviewInProgressAppliedAt -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
                 $alreadyNoticed = $false
                 if ($appliedAt) {
-                  $noticeTimes = @(gh api "repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/$($env:PR_NUMBER)/comments?per_page=30" --jq ".[] | select(.body | contains(`"$skipMarker`")) | .created_at" 2>$null)
+                  # Fetch only comments created/updated since the lock was applied
+                  # (GitHub's default comment order is OLDEST-first, so a plain
+                  # per_page window would miss the newest notice on a busy PR);
+                  # `since` + --paginate reliably surfaces our marker comment.
+                  $sinceIso = $appliedAt.UtcDateTime.ToString('o')
+                  $noticeTimes = @(gh api --paginate "repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/$($env:PR_NUMBER)/comments?per_page=100&since=$sinceIso" --jq ".[] | select(.body | contains(`"$skipMarker`")) | .created_at" 2>$null)
                   foreach ($t in $noticeTimes) {
                     if ([datetimeoffset]::Parse([string]$t, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal) -gt $appliedAt) { $alreadyNoticed = $true; break }
                   }
