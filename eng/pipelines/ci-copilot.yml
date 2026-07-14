@@ -1897,7 +1897,21 @@ stages:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 30
         steps:
+          # This job only downloads artifacts + runs the render/post scripts from
+          # the working tree — it needs no git history (the merge-base/workloads
+          # resolution that needs full history runs in the gate/deep jobs, not
+          # here). A shallow checkout (fetchDepth 1, no tags) minimizes the clone
+          # so a transient git-fetch hang can't blow this job's 30-minute timeout
+          # and DISCARD a fully-completed deep run's results. Observed on build
+          # 14651479: gate + deep both SUCCEEDED (deep ran 41 min), but this job's
+          # `checkout: self` stalled to 29.8 min (while the same build's other
+          # checkouts took ~0.8-1.6 min), tripped the 30-min job cap, and every
+          # downstream step (artifact download, Post AI summary) was skipped — so
+          # the PR never got its deep-test summary. Mirrors the AnalyzeTokenUsage
+          # (fetchDepth 1) + CleanupReviewLock (checkout: none) hardening below.
           - checkout: self
+            fetchDepth: 1
+            fetchTags: false
             persistCredentials: false
 
           - task: DownloadPipelineArtifact@2
