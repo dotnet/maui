@@ -11,7 +11,7 @@ description: |
   3. Builds + runs that test and confirms it **FAILS** on the unpatched source — proving
      the test actually catches the leak. (If it already passes on unpatched source, the agent
      opens NO PR — but a single green run is **not** proof the leak is fixed, so it does **not**
-     close the scan issue; closure happens only via a merged fix PR — see Step 6 / gate (d).)
+     close the scan issue; closure happens only via a merged fix PR — see Step 3 / gate (d).)
   4. Implements the product fix (weak subscription / `WeakEventManager` / teardown on the
      missing path), rebuilds, and confirms the **same test now PASSES** with no regression
      in its neighbours.
@@ -418,7 +418,7 @@ REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 # (a) Open [leak-fix] PR already addressing THIS issue number?
 gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title,body \
-  | jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select((.body // "") | test("(Fixes|Refs)[^0-9]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b"))]' \
+  | jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b"))]' \
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 # (b) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
@@ -431,7 +431,7 @@ jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/sam
 # (c) Closed-unmerged attempts for this issue (attempt cap = 3).
 gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:title label:agentic-workflows' --limit 200 \
   --json number,title,body,mergedAt \
-  | jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) and (.mergedAt == null))]' \
+  | jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select(((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) and (.mergedAt == null))]' \
   > /tmp/gh-aw/agent/closed-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 # (d) MERGED [leak-fix] PR already fixing this issue number OR the SAME rooting Type.Member?
@@ -450,7 +450,7 @@ if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-all.json)" -ge 1000 ]; then
   echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older merged fixes may be TRUNCATED. Gate (d) stays fail-safe (under-closes) but close-coverage is incomplete — switch to date-windowed enumeration."
 fi
 jq --arg n "$N" --arg api "$API_RE" --arg repo "$REPO_RE" \
-    '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) or (.title | test("Fix +"+$api+"([. ]|$)")))]' \
+    '[.[] | select(((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) or (.title | test("Fix +"+$api+"([. ]|$)")))]' \
     /tmp/gh-aw/agent/merged-leakfix-all.json \
   > /tmp/gh-aw/agent/merged-fix-prs.json
 jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent/merged-fix-prs.json
@@ -466,8 +466,9 @@ jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent
   > stop the rebuild loop. Note: it may still reproduce in the shipped NuGet package until the
   > fix ships in a release.
 
-  > **Dry-run gate:** if `dry_run == "true"`, do NOT emit — print `DRY RUN — would close #<N>`
-  > and the closing comment to the run log instead, then stop.
+  **Dry-run gate** (control text — NOT part of the close comment above): if `dry_run == "true"`,
+  do NOT emit — print `DRY RUN — would close #<N>` and the closing comment to the run log
+  instead, then stop.
 
   This is the run's single action — stop after emitting `close-issue`.
 - If an **open** fix PR already refs this issue (a) OR already fixes the same rooting
