@@ -220,6 +220,14 @@ namespace Microsoft.Maui.Controls.Platform
 			nint NSMaxRange(NSRange range) => range.Location + range.Length;
 
 			using var textStorage = new NSTextStorage();
+			// On iOS 16+, NSLayoutManager's default UsesFontLeading=true causes it to include
+			// font leading (extra line spacing) from the OS/2 typographic metrics that CoreText
+			// uses when a font has an OpenType STAT table. This makes the layout manager compute
+			// line heights that don't match what CoreText uses to draw the glyphs, resulting in
+			// span tap hitboxes being vertically offset from the rendered text.
+			// Disabling UsesFontLeading on iOS 16+ makes NSLayoutManager match CoreText's metrics
+			// so the calculated span rects align with the actual rendered text positions.
+			// See: https://github.com/dotnet/maui/issues/36505
 			using var layoutManager = new NSLayoutManager
 			{
 				UsesFontLeading = !OperatingSystem.IsIOSVersionAtLeast(16)
