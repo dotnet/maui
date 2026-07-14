@@ -74,6 +74,7 @@ namespace Microsoft.Maui.Handlers
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
 
 		internal const string InvokeDotNetPath = "__hwvInvokeDotNet";
+		internal const string SendMessagePath = "__hwvSendMessage";
 		internal const string HybridWebViewDotJsPath = "_framework/hybridwebview.js";
 
 		internal const string InvokeDotNetTokenHeaderName = "X-Maui-Invoke-Token";
@@ -115,7 +116,7 @@ namespace Microsoft.Maui.Handlers
 		private static bool IsInvokeJavaScriptThrowsExceptionsEnabled =>
 			!AppContext.TryGetSwitch(InvokeJavaScriptThrowsExceptionsSwitch, out var enabled) || enabled;
 
-		void MessageReceived(string rawMessage)
+		internal void MessageReceived(string rawMessage)
 		{
 			if (string.IsNullOrEmpty(rawMessage))
 			{
@@ -177,7 +178,9 @@ namespace Microsoft.Maui.Handlers
 					}
 					break;
 				case "__RawMessage":
-					VirtualView?.RawMessageReceived(messageContent);
+					// Payload is URL-encoded in JS (HybridWebView.ts sendRawMessage) so it survives
+					// transports that restrict the byte set (Android fetch header forbids CR/LF/NUL).
+					VirtualView?.RawMessageReceived(Uri.UnescapeDataString(messageContent));
 					break;
 				default:
 					throw new ArgumentException($"The message type '{messageType}' is not recognized.", nameof(rawMessage));

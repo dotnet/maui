@@ -333,14 +333,14 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
-			var oldObservable = oldValue as INotifyCollectionChanged;
-			if (oldObservable != null)
-				oldObservable.CollectionChanged -= CollectionChanged;
-
-			var newObservable = newValue as INotifyCollectionChanged;
-			if (newObservable != null)
+			if (ReferenceEquals(oldValue, _subscribedItemsSourceCollection))
 			{
-				newObservable.CollectionChanged += CollectionChanged;
+				UnsubscribeFromItemsSourceCollection();
+			}
+
+			if (Handler is not null)
+			{
+				SubscribeToItemsSourceCollection(newValue as INotifyCollectionChanged);
 			}
 
 			if (newValue != null)
@@ -357,6 +357,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
+		INotifyCollectionChanged _subscribedItemsSourceCollection;
 
 		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
 		{
@@ -372,7 +373,23 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnHandlerChanged()
 		{
+			if (Handler is null)
+			{
+				UnsubscribeFromItemsSourceCollection();
+			}
+
 			base.OnHandlerChanged();
+
+			if (Handler is not null)
+			{
+				SubscribeToItemsSourceCollection(ItemsSource as INotifyCollectionChanged);
+
+				// Keep display items in sync if this Picker is detached and later reattached.
+				if (ItemsSource is not null)
+				{
+					ResetItems();
+				}
+			}
 
 			// Process any pending actions when handler becomes available
 			while (_pendingIsOpenActions.Count > 0 && Handler != null)
@@ -393,6 +410,29 @@ namespace Microsoft.Maui.Controls
 				picker.Closed?.Invoke(picker, PickerClosedEventArgs.Empty);
 		}
 
+		void SubscribeToItemsSourceCollection(INotifyCollectionChanged collection)
+		{
+			if (collection is null || ReferenceEquals(collection, _subscribedItemsSourceCollection))
+			{
+				return;
+			}
+
+			UnsubscribeFromItemsSourceCollection();
+			_subscribedItemsSourceCollection = collection;
+			_subscribedItemsSourceCollection.CollectionChanged += CollectionChanged;
+		}
+
+		void UnsubscribeFromItemsSourceCollection()
+		{
+			if (_subscribedItemsSourceCollection is null)
+			{
+				return;
+			}
+
+			_subscribedItemsSourceCollection.CollectionChanged -= CollectionChanged;
+			_subscribedItemsSourceCollection = null;
+		}
+
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			switch (e.Action)
@@ -404,7 +444,7 @@ namespace Microsoft.Maui.Controls
 					RemoveItems(e);
 					break;
 				default: //Move, Replace, Reset
-					ResetItems();
+					ResyncItemsAndReconcileSelection();
 					break;
 			}
 
@@ -415,6 +455,7 @@ namespace Microsoft.Maui.Controls
 		{
 			int insertIndex = e.NewStartingIndex < 0 ? Items.Count : e.NewStartingIndex;
 			int index = insertIndex;
+
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
 
@@ -422,9 +463,9 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			index = GetSelectedIndex();
+
 			if (insertIndex <= index)
 			{
-				// When an item is inserted before the current selection, the selected item changes because the selected index is not properly updated.
 				ClampSelectedIndex(index);
 			}
 		}
@@ -432,18 +473,15 @@ namespace Microsoft.Maui.Controls
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
 		{
 			int removeStart;
-			// Items are removed in reverse order, so index starts at the index of the last item to remove
 			int index;
 
 			if (e.OldStartingIndex < Items.Count)
 			{
-				// Remove e.OldItems.Count items starting at e.OldStartingIndex
 				removeStart = e.OldStartingIndex;
 				index = e.OldStartingIndex + e.OldItems.Count - 1;
 			}
 			else
 			{
-				// Remove e.OldItems.Count items at the end when e.OldStartingIndex is past the end of the Items collection
 				removeStart = Items.Count - e.OldItems.Count;
 				index = Items.Count - 1;
 			}
@@ -451,21 +489,50 @@ namespace Microsoft.Maui.Controls
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
 
-			index = GetSelectedIndex();
-			if (removeStart <= index)
+			if (SelectedItem is not null)
 			{
-				ClampSelectedIndex(index);
+				ClampSelectedIndex(ItemsSource?.IndexOf(SelectedItem) ?? -1);
+			}
+			else
+			{
+				index = GetSelectedIndex();
+
+				if (removeStart <= index)
+				{
+					ClampSelectedIndex(index);
+				}
+			}
+		}
+
+		void ResyncItemsAndReconcileSelection()
+		{
+			if (ItemsSource == null)
+				return;
+
+			((LockableObservableListWrapper)Items).InternalClear();
+
+			foreach (object item in ItemsSource)
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
+
+			if (SelectedItem is not null)
+			{
+				ClampSelectedIndex(ItemsSource.IndexOf(SelectedItem));
+			}
+			else
+			{
+				ClampSelectedIndex(SelectedIndex);
 			}
 		}
 
 		int GetSelectedIndex()
 		{
 			if (SelectedItem is null)
-			{
 				return SelectedIndex;
-			}
 
 			int newIndex = ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1;
+
 			return newIndex >= 0 ? newIndex : SelectedIndex;
 		}
 
@@ -473,9 +540,12 @@ namespace Microsoft.Maui.Controls
 		{
 			if (ItemsSource == null)
 				return;
+
 			((LockableObservableListWrapper)Items).InternalClear();
+
 			foreach (object item in ItemsSource)
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
 			if (!TryApplyPendingSelectedIndex(forceClamp: true))
@@ -496,7 +566,6 @@ namespace Microsoft.Maui.Controls
 			var picker = (Picker)bindable;
 			picker.UpdateSelectedIndex(newValue);
 		}
-
 		void ClampSelectedIndex(int selectedIndex)
 		{
 			var oldIndex = selectedIndex;

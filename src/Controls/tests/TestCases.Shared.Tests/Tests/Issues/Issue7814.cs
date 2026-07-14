@@ -13,6 +13,10 @@ public class Issue7814 : _IssuesUITest
 	const string OuterScrollViewId = "Issue7814OuterScrollView";
 	const string VerticalOffsetLabelId = "Issue7814VerticalScrollYLabel";
 	const string HorizontalOffsetLabelId = "Issue7814HorizontalScrollXLabel";
+	const string TouchParentPositionLabelId = "Issue7814TouchParentPositionLabel";
+	const string TouchStatusLabelId = "Issue7814TouchStatusLabel";
+	const string TouchClaimViewId = "Issue7814TouchClaimView";
+	const string TouchReleaseViewId = "Issue7814TouchReleaseView";
 
 	public Issue7814(TestDevice testDevice) : base(testDevice)
 	{
@@ -59,6 +63,78 @@ public class Issue7814 : _IssuesUITest
 		});
 	}
 
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void TouchClaimingRowInsideVerticalCollectionViewNestedInHorizontalParentKeepsHorizontalGesture()
+	{
+		if (App is not AppiumAndroidApp)
+		{
+			Assert.Ignore("The Issue7814 touch-dispatch change is Android-specific.");
+		}
+
+		App.WaitForElement(OuterScrollViewId);
+		ScrollUntilVisible(TouchClaimViewId);
+
+		var parentPositionBeforeGesture = GetTouchParentPosition();
+		var touchViewRect = GetVisibleRect(TouchClaimViewId);
+
+		App.DragCoordinates(
+			touchViewRect.Right - 20,
+			touchViewRect.Top + (touchViewRect.Height / 2),
+			touchViewRect.Left + 20,
+			touchViewRect.Top + (touchViewRect.Height / 2));
+
+		App.RetryAssert(() =>
+		{
+			var touchStatusAfterGesture = App.FindElement(TouchStatusLabelId).GetText();
+			var parentPositionAfterGesture = GetTouchParentPosition();
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(touchStatusAfterGesture, Does.Contain("Up"), "The row touch-claiming view should receive the whole drag.");
+				Assert.That(parentPositionAfterGesture, Is.EqualTo(parentPositionBeforeGesture), "The horizontal parent CarouselView should not steal the claimed row gesture.");
+			});
+		});
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void TouchReleasingRowInsideVerticalCollectionViewNestedInHorizontalParentHandsHorizontalGestureToParent()
+	{
+		if (App is not AppiumAndroidApp)
+		{
+			Assert.Ignore("The Issue7814 touch-dispatch change is Android-specific.");
+		}
+
+		App.WaitForElement(OuterScrollViewId);
+		ScrollUntilVisible(TouchReleaseViewId);
+
+		var parentPositionBeforeGesture = GetTouchParentPosition();
+		var touchViewRect = GetVisibleRect(TouchReleaseViewId);
+
+		App.DragCoordinates(
+			touchViewRect.Right - 20,
+			touchViewRect.Top + (touchViewRect.Height / 2),
+			touchViewRect.Left + 20,
+			touchViewRect.Top + (touchViewRect.Height / 2));
+
+		App.RetryAssert(() =>
+		{
+			Assert.That(GetTouchParentPosition(), Is.GreaterThan(parentPositionBeforeGesture), "The horizontal parent CarouselView should take over after the row releases the gesture.");
+		});
+
+		App.RetryAssert(() =>
+		{
+			var touchStatusAfterGesture = App.FindElement(TouchStatusLabelId).GetText();
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(touchStatusAfterGesture, Does.Contain("Cancel"), "The row touch-claiming view should be cancelled after releasing the gesture.");
+				Assert.That(touchStatusAfterGesture, Does.Not.Contain("Up"), "The row touch-claiming view should not complete a released gesture.");
+			});
+		});
+	}
+
 	void DragWithinVisibleArea(string automationId, double fromXRatio, double fromYRatio, double toXRatio, double toYRatio)
 	{
 		var visibleRect = GetVisibleRect(automationId);
@@ -75,6 +151,21 @@ public class Issue7814 : _IssuesUITest
 		App.DragCoordinates(fromX, fromY, toX, toY);
 	}
 
+	void ScrollUntilVisible(string automationId)
+	{
+		for (var attempt = 0; attempt < 6; attempt++)
+		{
+			if (IsVisibleEnough(automationId))
+			{
+				return;
+			}
+
+			App.ScrollDown(OuterScrollViewId, ScrollStrategy.Gesture, swipePercentage: 0.75);
+		}
+
+		Assert.Fail($"{automationId} should become visible after scrolling {OuterScrollViewId}.");
+	}
+
 	Rectangle GetVisibleRect(string automationId)
 	{
 		var elementRect = App.WaitForElement(automationId).GetRect();
@@ -87,6 +178,22 @@ public class Issue7814 : _IssuesUITest
 		return visibleRect;
 	}
 
+	bool IsVisibleEnough(string automationId)
+	{
+		try
+		{
+			var elementRect = App.WaitForElement(automationId).GetRect();
+			var viewportRect = App.WaitForElement(OuterScrollViewId).GetRect();
+			var visibleRect = Rectangle.Intersect(elementRect, viewportRect);
+
+			return visibleRect.Width > 40 && visibleRect.Height > 40;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
 	static float GetCoordinate(int start, int length, double ratio)
 	{
 		return (float)(start + (length * ratio));
@@ -95,6 +202,8 @@ public class Issue7814 : _IssuesUITest
 	int GetVerticalOffset() => GetOffset(VerticalOffsetLabelId);
 
 	int GetHorizontalOffset() => GetOffset(HorizontalOffsetLabelId);
+
+	int GetTouchParentPosition() => GetOffset(TouchParentPositionLabelId);
 
 	int GetOffset(string automationId)
 	{
