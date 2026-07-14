@@ -56,32 +56,6 @@ namespace Microsoft.Maui.Platform
 
 		internal bool IsInnerPath { get; private set; }
 
-		Func<bool>? _automationActivateCallback;
-
-		/// <summary>
-		/// Optional callback invoked by <see cref="ContentPanelAutomationPeer"/>/<see cref="MauiBorderAutomationPeer"/>
-		/// when UI Automation invokes this element (e.g. Narrator's Enter/double-tap activation).
-		/// Set by GesturePlatformManager for elements whose only interaction is a TapGestureRecognizer,
-		/// which otherwise have no native Invoke pattern (mirrors AccessibilityActivateCallback on iOS).
-		/// </summary>
-		/// <remarks>
-		/// Setting this also flips <see cref="Control.IsTabStop"/>-equivalent keyboard-focusability on
-		/// (via <see cref="UIElement.IsTabStop"/>, which is available on any UIElement, not just Control).
-		/// ContentPanel derives from Panel, so it isn't keyboard-focusable by default; without this,
-		/// Narrator's Enter/scan-activate never routes to this peer's IInvokeProvider because the
-		/// automation peer reports itself as not keyboard-focusable (see IsKeyboardFocusableCore on the
-		/// peers). This mirrors making a gesture-only element behave like a native focusable control.
-		/// </remarks>
-		internal Func<bool>? AutomationActivateCallback
-		{
-			get => _automationActivateCallback;
-			set
-			{
-				_automationActivateCallback = value;
-				IsTabStop = value is not null;
-			}
-		}
-
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			var measured = base.MeasureOverride(availableSize);
