@@ -72,6 +72,11 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 		}
 
 		var bp = bpinfo.GetValue(null) as BindableProperty;
+		if (bp == null)
+		{
+			throw new XamlParseException($"Can't resolve {name} on {type.Name}", lineinfo);
+		}
+
 		var isObsolete = GetObsoleteAttribute(bpinfo) != null;
 		if (bp.PropertyName != propertyName && !isObsolete)
 		{
@@ -105,6 +110,11 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 		// Skip 0; we would not be making this check if TargetObject were not a Setter
 		// Skip 1; we would not be making this check if the immediate parent were not a VisualState
 
+		if (parents.Count <= 3)
+		{
+			throw new XamlParseException($"Unable to find a TargetType for the Bindable Property. Try prefixing it with the TargetType.", lineInfo);
+		}
+
 		// VisualStates must be in a VisualStateGroup
 		if (parents[2] is not VisualStateGroup)
 		{
@@ -122,6 +132,11 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 			throw new XamlParseException($"Expected {nameof(VisualStateGroupList)} but found {parents[3]}.", lineInfo);
 		}
 
+		if (parents.Count <= 4)
+		{
+			throw new XamlParseException($"Unable to find a TargetType for the Bindable Property. Try prefixing it with the TargetType.", lineInfo);
+		}
+
 		if (parents[4] is VisualElement veTarget)
 		{
 			return veTarget.GetType();
@@ -130,6 +145,11 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 		if (parents[4] is not Setter)
 		{
 			throw new XamlParseException($"Expected {nameof(Setter)} but found {parents[4]}.", lineInfo);
+		}
+
+		if (parents.Count <= 5)
+		{
+			throw new XamlParseException($"Unable to find a TargetType for the Bindable Property. Try prefixing it with the TargetType.", lineInfo);
 		}
 
 		if (parents[5] is TriggerBase trigger)
