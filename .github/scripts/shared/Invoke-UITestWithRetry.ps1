@@ -161,6 +161,37 @@ function Save-AndroidHangDiagnostics {
     }
 }
 
+# When a deep attempt fails, the child BuildAndRunHostApp.ps1 process had its
+# stdout/stderr redirected to files (so this wrapper can watch them for idle
+# detection — see Invoke-BuildScriptBounded). That means the pipeline console
+# (the per-category loop log) only ever saw heartbeats, so a build or test
+# failure looks like a *silent* `exit N` with no error text. Echo the tail of
+# the captured output here so the real cause (an MSBuild `error XXNNNN`, a test
+# assertion, an app crash) is visible directly in the log, without depending on
+# the (often skipped) deep-uitests artifact download.
+function Write-CapturedFailureOutput {
+    param(
+        [string[]] $Output,
+        [int]      $ExitCode,
+        [int]      $Attempt,
+        [int]      $TailLines = 250
+    )
+    $lines = @($Output | ForEach-Object { "$_" })
+    if ($lines.Count -eq 0) {
+        Write-Host "  (attempt $Attempt exited $ExitCode but produced no captured output)" -ForegroundColor Yellow
+        return
+    }
+    $omitted = $lines.Count - $TailLines
+    $suffix  = if ($omitted -gt 0) { ", last $TailLines of $($lines.Count) lines" } else { "" }
+    Write-Host "##[group]BuildAndRunHostApp attempt $Attempt output (exit $ExitCode$suffix)" -ForegroundColor Yellow
+    if ($omitted -gt 0) {
+        Write-Host "  … $omitted earlier line(s) omitted — see the published deep-uitests log for the full output …"
+        $lines = $lines[-$TailLines..-1]
+    }
+    foreach ($l in $lines) { Write-Host $l }
+    Write-Host "##[endgroup]"
+}
+
 # Run BuildAndRunHostApp.ps1 in a child pwsh process with a hard wall-clock
 # deadline. Returns @{ Output = [string[]]; ExitCode = int; TimedOut = bool }.
 function Invoke-BuildScriptBounded {
@@ -381,9 +412,18 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     foreach ($p in $envErrorPatterns) {
         if ($joined -match $p) { $envHit = $p; break }
     }
-    if (-not $envHit) { break }   # real test failure — no point retrying
+    if (-not $envHit) {
+        # Real (non-env) failure — surface the captured build/test output so the
+        # actual error is visible in this log. Only needed on the bounded (deep)
+        # path, where the child's streams were redirected to files for idle
+        # detection; the Gate path (TimeoutMinutes -le 0) captures with 2>&1 and
+        # surfaces output through its own reporting.
+        if ($TimeoutMinutes -gt 0) { Write-CapturedFailureOutput -Output $lastOutput -ExitCode $lastExit -Attempt $attempt }
+        break   # real test failure — no point retrying
+    }
     if ($attempt -eq $MaxAttempts) {
         Write-Host "⚠️ Env error '$envHit' persisted after $MaxAttempts attempts" -ForegroundColor Yellow
+        if ($TimeoutMinutes -gt 0) { Write-CapturedFailureOutput -Output $lastOutput -ExitCode $lastExit -Attempt $attempt }
     }
 }
 
