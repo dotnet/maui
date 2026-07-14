@@ -51,13 +51,16 @@ namespace Microsoft.Maui.DeviceTests
 			var imageView = new ImageView(MauiProgram.DefaultContext);
 
 			var service = new FileImageSourceService();
-			using var result = await service.LoadDrawableAsync(imageSource, imageView);
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(imageView.Drawable);
-			var bitmap = bitmapDrawable.Bitmap;
+			await imageView.AttachAndRun(async () =>
+			{
+				using var result = await service.LoadDrawableAsync(imageSource, imageView);
+				var bitmapDrawable = Assert.IsType<BitmapDrawable>(imageView.Drawable);
+				var bitmap = bitmapDrawable.Bitmap;
 
-			Assert.NotNull(result);
-			Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels}.");
-			Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
+				Assert.NotNull(result);
+				Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels}.");
+				Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
+			});
 		}
 
 		[Fact]
@@ -88,14 +91,17 @@ namespace Microsoft.Maui.DeviceTests
 			var imageSource = new FileImageSourceStub("red.png");
 			var imageView = new ImageView(MauiProgram.DefaultContext);
 
-			using var result = await service.LoadDrawableAsync(imageSource, imageView);
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(imageView.Drawable);
-			var bitmap = bitmapDrawable.Bitmap;
+			await imageView.AttachAndRun(async () =>
+			{
+				using var result = await service.LoadDrawableAsync(imageSource, imageView);
+				var bitmapDrawable = Assert.IsType<BitmapDrawable>(imageView.Drawable);
+				var bitmap = bitmapDrawable.Bitmap;
 
-			Assert.NotNull(result);
-			Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels}.");
-			Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
-			bitmap.AssertColorAtCenter(Color.FromArgb("#FF0000").ToPlatform());
+				Assert.NotNull(result);
+				Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels}.");
+				Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
+				bitmap.AssertColorAtCenter(Color.FromArgb("#FF0000").ToPlatform());
+			});
 		}
 	}
 }

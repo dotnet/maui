@@ -358,15 +358,19 @@ public class PlatformInterop {
             .override(width, height);
     }
 
-    private static RequestBuilder<Drawable> limitToTargetSize(RequestBuilder<Drawable> builder) {
-        return builder.downsample(DownsampleStrategy.CENTER_INSIDE);
+    private static RequestBuilder<Drawable> limitToTargetSize(RequestBuilder<Drawable> builder, ImageView imageView) {
+        DownsampleStrategy strategy = imageView.getScaleType() == ImageView.ScaleType.CENTER_CROP
+            ? DownsampleStrategy.CENTER_OUTSIDE
+            : DownsampleStrategy.CENTER_INSIDE;
+
+        return builder.downsample(strategy);
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(file);
-        builder = limitToTargetSize(builder);
+        builder = limitToTargetSize(builder, imageView);
         loadInto(builder, imageView, true, callback, file);
     }
 
@@ -379,7 +383,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(androidUri);
-        builder = limitToTargetSize(builder);
+        builder = limitToTargetSize(builder, imageView);
         loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
@@ -387,7 +391,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(inputStream);
-        builder = limitToTargetSize(builder);
+        builder = limitToTargetSize(builder, imageView);
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
@@ -395,7 +399,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(resourceId);
-        builder = limitToTargetSize(builder);
+        builder = limitToTargetSize(builder, imageView);
         loadInto(builder, imageView, true, callback, resourceId);
     }
 
