@@ -66,7 +66,13 @@ namespace Microsoft.Maui
 							PlatformInterop.LoadImageFromResource(context, id, resourceCallback);
 
 							var result = await resourceCallback.Result.ConfigureAwait(false);
-							return result ?? throw new InvalidOperationException($"Unable to load image resource '{file}'.");
+							if (result is null)
+							{
+								Logger?.LogWarning("Unable to load image resource '{File}'.", file);
+								return null;
+							}
+
+							return result;
 						}
 					}
 
