@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Hosting;
@@ -359,6 +360,13 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return null;
+		}
+
+		internal void ClearRealParentIfCollected()
+		{
+			var realParent = _realParent;
+			if (realParent is not null && !realParent.TryGetTarget(out _))
+				Interlocked.CompareExchange(ref _realParent, null, realParent);
 		}
 
 		/// <summary>For internal use by .NET MAUI.</summary>

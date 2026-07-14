@@ -197,13 +197,18 @@ namespace Microsoft.Maui.Controls
 				foreach (var proxy in proxies)
 				{
 					GradientStop gradientStop = null;
-					if (owner is not null && proxy.TryGetSource(out var source))
+					if (proxy.TryGetSource(out var source))
 						gradientStop = source as GradientStop;
 
 					proxy.Unsubscribe();
 
-					if (gradientStop is not null)
+					if (gradientStop is null)
+						continue;
+
+					if (owner is not null)
 						owner.ClearGradientStopParentIfUnused(gradientStop);
+					else
+						gradientStop.ClearRealParentIfCollected();
 				}
 			}
 		}

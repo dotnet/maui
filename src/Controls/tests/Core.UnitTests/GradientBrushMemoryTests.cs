@@ -29,6 +29,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task CollectedBrushDoesNotLeaveStaleGradientStopParent()
+		{
+			ApplicationExtensions.CreateAndSetMockApplication();
+			try
+			{
+				var stop = new GradientStop();
+				var sharedStops = new GradientStopCollection { stop };
+				var weakBrush = CreateBrushWithSharedGradientStops(sharedStops);
+
+				Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+				Assert.Null(stop.Parent);
+				Assert.DoesNotContain(MockApplication.MockLogger.Messages,
+					message => message.Contains("RealParent", StringComparison.Ordinal));
+				GC.KeepAlive(sharedStops);
+			}
+			finally
+			{
+				Application.ClearCurrent();
+			}
+		}
+
+		[Fact]
 		public async Task GradientStopChangesStillInvalidateAfterGc()
 		{
 			var stop = new GradientStop();
