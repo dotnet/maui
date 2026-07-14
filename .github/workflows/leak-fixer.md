@@ -203,8 +203,9 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
      affected test so Track A stays red→green. Never push a change that breaks the PR's own test
      just to satisfy a review.
 2. **If a Track A leak is already fixed on `main`, open NO PR.** Close the scan issue **only**
-   when a **merged** `[leak-fix]` PR already covers the same rooting `Type.Member` (Step 3 gate
-   (d)) — that merged PR is the provenance a fix actually landed. Emit a `close-issue` on the
+   when a **merged** `[leak-fix]` PR either references this scan issue number (`Fixes`/`Refs #<N>`)
+   OR already covers the same rooting `Type.Member` (Step 3 gate (d)) — that merged PR is the
+   provenance a fix actually landed. Emit a `close-issue` on the
    `[leak-scan]` issue (AI-attributed comment linking the merged fix) and record
    `skipped: already fixed on main`. If instead your freshly-authored regression test merely
    passes on the *unpatched* source (Step 6) with **no** merged fix PR, that is NOT proof the
