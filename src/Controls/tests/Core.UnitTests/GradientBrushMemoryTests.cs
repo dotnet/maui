@@ -260,8 +260,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				GradientStops = new GradientStopCollection { new GradientStop() }
 			};
 			bool replaced = false;
+			int invalidationCount = 0;
 			brush.InvalidateGradientBrushRequested += (_, __) =>
 			{
+				invalidationCount++;
 				if (!replaced && brush.GradientStops.Count == 0)
 				{
 					replaced = true;
@@ -273,6 +275,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(replaced);
 			Assert.Single(brush.GradientStops);
+			// Clear and the reentrant replacement are distinct state changes.
+			Assert.Equal(2, invalidationCount);
 		}
 
 		[Fact]
