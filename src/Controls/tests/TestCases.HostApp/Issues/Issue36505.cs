@@ -2,7 +2,7 @@ namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 36505,
     "[iOS] Span TapGestureRecognizer hitbox is mispositioned inside FormattedString when the font contains a STAT table (line-height/leading mismatch)",
-    PlatformAffected.iOS)]
+    PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue36505 : ContentPage
 {
     public Issue36505()
