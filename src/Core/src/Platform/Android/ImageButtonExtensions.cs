@@ -69,42 +69,25 @@ namespace Microsoft.Maui.Platform
 					sourcePaint.ImageSource,
 					button.Handler,
 					button,
-					beforeSet: () =>
-					{
-						// We have a background, so we need to remove the things that were set on the
-						// platform view as they are now in the drawable.
-
-						platformView.StrokeColor = null;
-
-						platformView.StrokeWidth = 0;
-
-						platformView.ShapeAppearanceModel =
-							platformView.ShapeAppearanceModel
-								.ToBuilder()
-								.SetAllCornerSizes(0)
-								.Build();
-					});
+					beforeSet: ResetPlatformViewProperties);
 			}
 			else
 			{
 				platformView.UpdateMauiRippleDrawableBackground(
-					button.Background ?? new SolidPaint(Colors.Transparent), // transparent to force some background
+					button.Background ?? new SolidPaint(Colors.Transparent),
 					button,
-					beforeSet: () =>
-					{
-						// We have a background, so we need to remove the things that were set on the
-						// platform view as they are now in the drawable.
+					beforeSet: ResetPlatformViewProperties);
+			}
 
-						platformView.StrokeColor = null;
-
-						platformView.StrokeWidth = 0;
-
-						platformView.ShapeAppearanceModel =
-							platformView.ShapeAppearanceModel
-								.ToBuilder()
-								.SetAllCornerSizes(0)
-								.Build();
-					});
+			void ResetPlatformViewProperties()
+			{
+				platformView.StrokeColor = null;
+				platformView.StrokeWidth = 0;
+				platformView.ShapeAppearanceModel =
+					platformView.ShapeAppearanceModel
+						.ToBuilder()
+						.SetAllCornerSizes(0)
+						.Build();
 			}
 		}
 
