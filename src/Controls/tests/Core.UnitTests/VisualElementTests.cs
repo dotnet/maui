@@ -90,6 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IControlsVisualElement)visualElement).PlatformContainerViewChanged += (_, _) => fired = true;
 
+			visualElement.RemapForControls();
 			ViewHandler.ViewMapper.UpdateProperty(handler, visualElement, nameof(IViewHandler.ContainerView));
 
 			Assert.True(fired);
