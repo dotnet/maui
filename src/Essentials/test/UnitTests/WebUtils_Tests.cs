@@ -110,6 +110,10 @@ namespace Tests
 		[InlineData("https://example.com", "https://example.com")]
 		[InlineData("https://example.com?foo=bar", "https://example.com")]
 		[InlineData("https://example.com/path?query=1&other=2", "https://example.com/path")]
+		[InlineData("https://example.com/index.html#code=abc", "https://example.com/index.html")]
+		[InlineData("https://example.com/path?query=1#frag", "https://example.com/path")]
+		[InlineData("https://example.com/path#frag?notquery", "https://example.com/path")]
+		[InlineData("https://0.0.0.1/index.html#code=1234asdf", "https://0.0.0.1/index.html")]
 		public void RemovePossibleQueryString_ReturnsExpected(string? input, string expected)
 		{
 			var result = Microsoft.Maui.WebUtils.RemovePossibleQueryString(input);

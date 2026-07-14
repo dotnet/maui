@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.Widget;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -14,6 +17,146 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ScrollViewHandlerTests : CoreHandlerTestBase<ScrollViewHandler, ScrollViewStub>
 	{
+		// Regression test for https://github.com/dotnet/maui/issues/35180
+		// On Material3, the AppBarLayout was auto-detecting the scroll target as the outer
+		// FragmentContainerView, causing a flicker on every layout pass triggered by CheckBox /
+		// Switch animations after scrolling.  The fix pins LiftOnScrollTargetViewId to the
+		// real MauiScrollView so AppBarLayout correctly evaluates the scroll position.
+		[Fact]
+		[Category(TestCategory.ScrollView)]
+		public async Task AppBarLiftTargetSetToScrollViewOnAttach()
+		{
+			if (!Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var context = MauiContext.Context!;
+
+				// Replicate the NavigationPage CoordinatorLayout structure:
+				//   CoordinatorLayout
+				//     ├─ AppBarLayout  (sibling — the lift-on-scroll host)
+				//     └─ FrameLayout   (content container)
+				//          └─ MauiScrollView
+				var coordinator = new CoordinatorLayout(context);
+				var appBarLayout = new AppBarLayout(context);
+				appBarLayout.SetLiftable(true);
+
+				var contentFrame = new FrameLayout(context);
+				var scrollView = new Microsoft.Maui.Platform.MauiScrollView(context);
+
+				contentFrame.AddView(scrollView, new ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent,
+					ViewGroup.LayoutParams.MatchParent));
+
+				coordinator.AddView(appBarLayout, new CoordinatorLayout.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent,
+					ViewGroup.LayoutParams.WrapContent));
+
+				coordinator.AddView(contentFrame, new CoordinatorLayout.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent,
+					ViewGroup.LayoutParams.MatchParent));
+
+				// Attach the whole tree to the window so that OnAttachedToWindow fires.
+				await coordinator.AttachAndRun(async () =>
+				{
+					// Post() schedules the lift-target assignment on the next looper tick.
+					// Await a task continuation that runs after that tick has been processed.
+					var tcs = new TaskCompletionSource<bool>();
+					scrollView.Post(new Java.Lang.Runnable(() => tcs.SetResult(true)));
+					await tcs.Task;
+
+					Assert.Equal(scrollView.Id, appBarLayout.LiftOnScrollTargetViewId);
+				});
+
+				// After detach the lift target must be released to avoid stale references.
+				Assert.NotEqual(scrollView.Id, appBarLayout.LiftOnScrollTargetViewId);
+			});
+		}
+
+		[Fact]
+		[Category(TestCategory.ScrollView)]
+		public async Task AppBarLiftTargetClearedOnVisibilityGone()
+		{
+			if (!Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var context = MauiContext.Context!;
+
+				var coordinator = new CoordinatorLayout(context);
+				var appBarLayout = new AppBarLayout(context);
+				appBarLayout.SetLiftable(true);
+
+				var contentFrame = new FrameLayout(context);
+				var scrollView = new Microsoft.Maui.Platform.MauiScrollView(context);
+
+				contentFrame.AddView(scrollView, new ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+
+				coordinator.AddView(appBarLayout, new CoordinatorLayout.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
+
+				coordinator.AddView(contentFrame, new CoordinatorLayout.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+
+				await coordinator.AttachAndRun(async () =>
+				{
+					// Wait for the initial Post() to settle before checking.
+					var tcs = new TaskCompletionSource<bool>();
+					scrollView.Post(new Java.Lang.Runnable(() => tcs.SetResult(true)));
+					await tcs.Task;
+
+					Assert.Equal(scrollView.Id, appBarLayout.LiftOnScrollTargetViewId);
+
+					// Hiding the scroll view should synchronously clear the lift target.
+					scrollView.Visibility = ViewStates.Gone;
+					Assert.NotEqual(scrollView.Id, appBarLayout.LiftOnScrollTargetViewId);
+
+					// Restoring visibility should re-establish the lift target.
+					scrollView.Visibility = ViewStates.Visible;
+					var tcs2 = new TaskCompletionSource<bool>();
+					scrollView.Post(new Java.Lang.Runnable(() => tcs2.SetResult(true)));
+					await tcs2.Task;
+
+					Assert.Equal(scrollView.Id, appBarLayout.LiftOnScrollTargetViewId);
+				});
+			});
+		}
+
+		[Fact]
+		[Category(TestCategory.ScrollView)]
+		public async Task AppBarLiftTargetNotSetWhenNoAppBarLayout()
+		{
+			if (!Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var context = MauiContext.Context!;
+
+				// Plain FrameLayout with no CoordinatorLayout / AppBarLayout ancestor.
+				var frame = new FrameLayout(context);
+				var scrollView = new Microsoft.Maui.Platform.MauiScrollView(context);
+
+				frame.AddView(scrollView, new ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+
+				await frame.AttachAndRun(async () =>
+				{
+					// Allow the Post()-deferred work to settle.
+					var tcs = new TaskCompletionSource<bool>();
+					scrollView.Post(new Java.Lang.Runnable(() => tcs.SetResult(true)));
+					await tcs.Task;
+
+					// Without an AppBarLayout in the hierarchy, no view ID should be generated
+					// (SetAppBarLiftTarget only assigns an ID when it actually claims the target).
+					Assert.Equal(View.NoId, scrollView.Id);
+				});
+			});
+		}
+
 		[Fact]
 		public async Task ContentInitializesCorrectly()
 		{
