@@ -1878,6 +1878,14 @@ stages:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
 
           - pwsh: |
+              # DO NOT add AzDO compile-time template expressions (the double-curly
+              # -brace syntax) to THIS script block. It is ~28KB. AzDO compiles any
+              # block scalar that CONTAINS such an expression as ONE expression whose
+              # full literal length must stay under 21000 chars — a single one here
+              # makes the whole pipeline fail to queue (HTTP 400 "Exceeded max
+              # expression length"). Pass compile-time params via this step's env:
+              # (see PARAM_PR_NUMBER) and read them as env:NAME. Runtime macros $(var)
+              # are fine. (This comment deliberately avoids the literal brace syntax.)
               $ErrorActionPreference = 'Continue'
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
