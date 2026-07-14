@@ -2239,6 +2239,67 @@ foreach ($testEntry in $AllDetectedTests) {
     Write-Log "  [$($testEntry.Type)] $($testEntry.TestName): Passed=$($result.Passed) Failed=$($result.Failed) [$durStr]"
 }
 
+# ── Clean-rebuild retry for with-fix-only build errors (incremental-staleness guard) ──
+# The gate reverts fix files to the merge-base, builds, then restores them to HEAD
+# and builds again — all sharing one obj/. UI tests already Rebuild=$true, but
+# UNIT/XAML tests use an INCREMENTAL `dotnet test`, so this revert→build→restore→
+# build cycle can leave the with-fix build reusing stale intermediate state when the
+# PR ADDS a type the baseline lacks — producing a PHANTOM compile error whose
+# signature doesn't even match HEAD (observed on #36553: with-fix "CS8622 object
+# sender" while HEAD actually declares "object? sender"). That would fail the gate on
+# a PR that compiles cleanly. When a test shows a BuildError WITH the fix but the
+# baseline (without-fix) compiled, force ONE clean rebuild (-t:Rebuild across the P2P
+# graph) before trusting the failure. This can ONLY correct a false FAILED into the
+# true verdict: a genuine PR compile break still fails the clean rebuild (stays
+# FAILED), and a clean compile whose tests genuinely fail is preserved as FAILED.
+for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
+    $wr = $withFixResults[$ri]
+    if (-not $wr.BuildError) { continue }
+    if ($wr.TestType -ne 'UnitTest' -and $wr.TestType -ne 'XamlUnitTest') { continue }
+    $woMatch = @($withoutFixResults | Where-Object { $_.TestName -eq $wr.TestName }) | Select-Object -First 1
+    if ($woMatch -and $woMatch.BuildError) { continue }   # baseline ALSO failed to compile → handled as INCONCLUSIVE, not staleness
+    $retryEntry = @($AllDetectedTests | Where-Object { $_.TestName -eq $wr.TestName }) | Select-Object -First 1
+    if (-not $retryEntry) { continue }
+    $projRel = if ($retryEntry.Type -eq 'XamlUnitTest') { 'src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj' } else { $retryEntry.ProjectPath }
+    if (-not $projRel) { continue }
+    $projFull = Join-Path $RepoRoot $projRel
+    if (-not (Test-Path $projFull)) { continue }
+
+    Write-Host "##[group]♻️ CLEAN-REBUILD RETRY: $($retryEntry.TestName) (with-fix build error, baseline compiled)"
+    Write-Host "  A with-fix-only compile error can be incremental-build staleness from the revert/restore cycle. Forcing a clean -t:Rebuild to confirm before trusting the failure." -ForegroundColor Yellow
+    $rsan = ($retryEntry.TestName -replace '[^a-zA-Z0-9_\-\.]', '_'); if ($rsan.Length -gt 60) { $rsan = $rsan.Substring(0, 60) }
+    $cleanLog = Join-Path $OutputPath "test-with-fix-cleanrebuild-$rsan.log"
+    $rsw = [System.Diagnostics.Stopwatch]::StartNew()
+    $buildOut = Invoke-WithoutGhTokens { & dotnet build $projFull -c Debug -t:Rebuild 2>&1 }
+    $buildExit = $LASTEXITCODE
+    $combined = @($buildOut)
+    if ($buildExit -eq 0) {
+        $testOut = Invoke-WithoutGhTokens { & dotnet test $projFull -c Debug --logger "console;verbosity=normal" --filter $retryEntry.Filter 2>&1 }
+        $combined += @($testOut)
+    }
+    $combined | Out-File -FilePath $cleanLog -Force -Encoding utf8
+    $rsw.Stop()
+    Write-Host "##[endgroup]"
+
+    $clean = Get-TestResultFromOutput -LogFile $cleanLog -TestFilter $retryEntry.Filter
+    $clean.TestName = $retryEntry.TestName
+    $clean.TestType = $retryEntry.Type
+    $clean.Duration = $rsw.Elapsed
+    $clean.SnapshotDiffMap = Get-SnapshotDiffMap -LogFile $cleanLog
+    $durS = "$([math]::Round($rsw.Elapsed.TotalSeconds))s"
+    if ($clean.BuildError) {
+        Write-Host "  ❌ $($retryEntry.TestName): STILL a build error after a clean rebuild — genuine PR compile failure ($durS)." -ForegroundColor Red
+        Write-Log "  [CleanRetry] $($retryEntry.TestName): build error persists after -t:Rebuild — genuine compile failure"
+    } elseif ($clean.Passed) {
+        Write-Host "  ✅ $($retryEntry.TestName): PASSED after clean rebuild — the incremental with-fix build error was STALE; false FAILED avoided ($durS)." -ForegroundColor Green
+        Write-Log "  [CleanRetry] $($retryEntry.TestName): PASSED after -t:Rebuild — with-fix build error was incremental staleness"
+    } else {
+        Write-Host "  ❌ $($retryEntry.TestName): compiled clean but tests FAILED — genuine test failure ($durS)." -ForegroundColor Red
+        Write-Log "  [CleanRetry] $($retryEntry.TestName): compiled clean, tests failed — genuine failure"
+    }
+    $withFixResults[$ri] = $clean
+}
+
 # Combine into a single summary for backward compatibility
 $withFixResult = @{
     Passed = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
