@@ -1771,6 +1771,16 @@ stages:
                     $runResult = & $retryScript @retryParams
                     $exitCode = if ($runResult) { $runResult.ExitCode } else { -1 }
                     Write-Host "Attempts: $(if ($runResult) { $runResult.Attempts } else { '?' }) · Exit: $exitCode · EnvError: $(if ($runResult) { $runResult.EnvErrorHit } else { 'N/A' })"
+                    # Persist an authoritative terminal-status marker next to the
+                    # per-category artifacts. The Post stage reads this to classify
+                    # a timeout / hard-kill (exit 124 / EnvError 'timeout') as an
+                    # infrastructure interruption rather than a compile failure — a
+                    # hard-killed build-output.log can otherwise end in "Build
+                    # FAILED" and be wrongly reported as a compile break.
+                    try {
+                      $catEnvErr = if ($runResult) { "$($runResult.EnvErrorHit)" } else { '' }
+                      Set-Content -Path (Join-Path $catDir 'run-status.txt') -Value "ExitCode=$exitCode`r`nEnvError=$catEnvErr" -Encoding utf8 -ErrorAction SilentlyContinue
+                    } catch { }
 
                     # Copy the specific TRX file from the result into the category dir
                     if ($runResult -and $runResult.TrxResultFile -and (Test-Path $runResult.TrxResultFile)) {
@@ -2130,12 +2140,26 @@ stages:
               if (Test-Path $artDir) {
                 foreach ($d in @(Get-ChildItem -Path $artDir -Directory -Filter 'drop-*_ui_tests-*' -ErrorAction SilentlyContinue)) {
                   if (@(Get-ChildItem -Path $d.FullName -Filter '*.trx' -Recurse -ErrorAction SilentlyContinue).Count -gt 0) { continue }
+                  $cat = Get-CategoryFromArtifactName -ArtifactName $d.Name
+                  if ([string]::IsNullOrWhiteSpace($cat) -or $byCat.ContainsKey($cat)) { continue }
+                  # Authoritative terminal-status marker (written by the deep loop)
+                  # takes precedence over build-output.log text heuristics: a
+                  # timeout / hard-kill (exit 124 or EnvError 'timeout') is an
+                  # infrastructure interruption, NOT a compile failure — even
+                  # though the killed build-output.log may end in "Build FAILED"
+                  # or "Build/deploy failed after N attempts".
+                  $statusFile = Join-Path $d.FullName 'run-status.txt'
+                  if (Test-Path $statusFile) {
+                    $statusText = Get-Content $statusFile -Raw -ErrorAction SilentlyContinue
+                    if ($statusText -match 'ExitCode=124' -or $statusText -match '(?im)EnvError=timeout') {
+                      $interruptedCats += $cat
+                      continue
+                    }
+                  }
                   $bo = Join-Path $d.FullName 'build-output.log'
                   if (-not (Test-Path $bo)) { continue }
                   $boText = Get-Content $bo -Raw -ErrorAction SilentlyContinue
                   if ([string]::IsNullOrEmpty($boText)) { continue }
-                  $cat = Get-CategoryFromArtifactName -ArtifactName $d.Name
-                  if ([string]::IsNullOrWhiteSpace($cat) -or $byCat.ContainsKey($cat)) { continue }
                   if ($boText -match '(?m)^\s*Build FAILED\.' -or
                       $boText -match 'Build/deploy failed after \d+ attempt' -or
                       $boText -match 'Build or deployment failed') {
@@ -2166,7 +2190,7 @@ stages:
                 Write-Host "Detected $($interruptedCats.Count) interrupted deep categor(y/ies) (built OK, no TRX): $($interruptedCats -join ', ')"
                 $inList = '`' + ($interruptedCats -join '`, `') + '`'
                 $inCatText = if ($interruptedCats.Count -eq 1) { "1 category ($inList)" } else { "$($interruptedCats.Count) categories ($inList)" }
-                $interruptedNote = "The HostApp built and the tests **started** for $inCatText but produced no results — the run was **interrupted** (most often the per-category time budget was hit, or an emulator/Appium hang). This is usually an **infrastructure flake** rather than a code problem; re-run the review to try again. See the ``build-output.log`` in the ``drop-deep-uitests`` artifact."
+                $interruptedNote = "The deep UI run for $inCatText was **interrupted** before producing results — most often the per-category time budget (a very long-running category) was exhausted, or an emulator/Appium hang. This is usually an **infrastructure/timeout issue** rather than a code problem; re-run the review to try again. See the ``build-output.log`` in the ``drop-deep-uitests`` artifact."
               }
 
               if (-not $byCat -or $byCat.Count -eq 0) {
