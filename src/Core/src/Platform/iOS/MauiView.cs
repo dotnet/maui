@@ -998,5 +998,43 @@ namespace Microsoft.Maui.Platform
 
 			return base.AccessibilityActivate();
 		}
+
+		/// <summary>
+		/// Label for a phantom accessibility element announcing this container's own Description
+		/// as a separate VoiceOver stop (see #33612), without hiding its real children.
+		/// </summary>
+		internal string? AccessibilityContainerLabel { get; set; }
+
+		/// <summary>Hint for the phantom element. See <see cref="AccessibilityContainerLabel"/>.</summary>
+		internal string? AccessibilityContainerHint { get; set; }
+
+		// Informal protocol member, not a virtual property on UIView; override via selector export.
+		// Returning null matches UIKit's own default (VoiceOver infers elements from subviews).
+		[Export("accessibilityElements")]
+		internal virtual NSObject[]? AccessibilityElements
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(AccessibilityContainerLabel) && string.IsNullOrEmpty(AccessibilityContainerHint))
+				{
+					return null;
+				}
+
+				// UIKit recurses into each entry's own accessibility rules, so children stay reachable.
+				// Created fresh each call (not cached) to avoid holding an NSObject field on this view.
+				var containerLabelElement = new UIAccessibilityElement(this)
+				{
+					IsAccessibilityElement = true,
+					AccessibilityLabel = AccessibilityContainerLabel,
+					AccessibilityHint = AccessibilityContainerHint,
+					AccessibilityFrameInContainerSpace = Bounds,
+				};
+
+				var elements = new NSObject[Subviews.Length + 1];
+				elements[0] = containerLabelElement;
+				Array.Copy(Subviews, 0, elements, 1, Subviews.Length);
+				return elements;
+			}
+		}
 	}
 }

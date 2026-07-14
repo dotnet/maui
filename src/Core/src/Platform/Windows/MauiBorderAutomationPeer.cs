@@ -1,11 +1,12 @@
 ﻿using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
 	// TODO: Make this class public in .NET11.0. Issue Link: https://github.com/dotnet/maui/issues/30205
-	internal partial class MauiBorderAutomationPeer : FrameworkElementAutomationPeer
+	internal partial class MauiBorderAutomationPeer : FrameworkElementAutomationPeer, IInvokeProvider
 	{
 		internal MauiBorderAutomationPeer(ContentPanel owner) : base(owner) { }
 
@@ -71,5 +72,16 @@ namespace Microsoft.Maui.Platform
 			var accessibilityView = panel.ReadLocalValue(AutomationProperties.AccessibilityViewProperty);
 			return accessibilityView is AccessibilityView.Content;
 		}
+
+		// Expose the Invoke pattern only when GesturePlatformManager has wired an activate callback
+		// (i.e. this Border's only interaction is a TapGestureRecognizer). This is what makes
+		// Narrator announce "double tap to activate" and lets Enter/Narrator-activate fire the tap.
+		protected override object? GetPatternCore(PatternInterface patternInterface) =>
+			patternInterface == PatternInterface.Invoke && Owner is ContentPanel { AutomationActivateCallback: not null }
+				? this
+				: base.GetPatternCore(patternInterface);
+
+		// IInvokeProvider
+		public void Invoke() => (Owner as ContentPanel)?.AutomationActivateCallback?.Invoke();
 	}
 }

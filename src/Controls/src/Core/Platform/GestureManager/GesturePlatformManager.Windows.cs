@@ -316,6 +316,11 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_container != null)
 			{
+				if (_container is Microsoft.Maui.Platform.ContentPanel contentPanel)
+				{
+					contentPanel.AutomationActivateCallback = null;
+				}
+
 				if ((_subscriptionFlags & SubscriptionFlags.ContainerDragEventsSubscribed) != 0)
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDragEventsSubscribed;
@@ -984,6 +989,41 @@ namespace Microsoft.Maui.Controls.Platform
 					_subscriptionFlags |= SubscriptionFlags.ControlTapEventSubscribed;
 					_control.Tapped += HandleTapped;
 				}
+			}
+
+			// UI Automation has no built-in Invoke pattern for a plain gesture-only element
+			// (unlike a native Button). Without this, Narrator can neither invoke the element
+			// (Enter/Narrator-activate) nor announce "double tap to activate", since that hint
+			// is auto-generated only for peers that support Invoke. Wire an activate callback
+			// on the ContentPanel so ContentPanelAutomationPeer/MauiBorderAutomationPeer can
+			// expose IInvokeProvider (mirrors AccessibilityActivateCallback on iOS's MauiView).
+			// Decoupled from the tap-subscription block above so it also applies when the
+			// container only has a child-owned tap gesture reached via bubbling.
+			if (_container is Microsoft.Maui.Platform.ContentPanel activatablePanel && view is not null &&
+				view.HasAccessibleTapGesture())
+			{
+				var weakThis = new WeakReference<GesturePlatformManager>(this);
+
+				activatablePanel.AutomationActivateCallback = () =>
+				{
+					if (!weakThis.TryGetTarget(out var manager) || manager.Element is not View v)
+					{
+						return false;
+					}
+
+					if (!v.IsEnabled || v.InputTransparent)
+					{
+						return false;
+					}
+
+					if (v.HasAccessibleTapGesture(out var tapGestureRecognizer))
+					{
+						tapGestureRecognizer.SendTapped(v);
+						return true;
+					}
+
+					return false;
+				};
 			}
 
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2)

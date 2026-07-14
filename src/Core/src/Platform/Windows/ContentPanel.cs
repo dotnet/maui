@@ -56,6 +56,14 @@ namespace Microsoft.Maui.Platform
 
 		internal bool IsInnerPath { get; private set; }
 
+		/// <summary>
+		/// Optional callback invoked by <see cref="ContentPanelAutomationPeer"/>/<see cref="MauiBorderAutomationPeer"/>
+		/// when UI Automation invokes this element (e.g. Narrator's Enter/double-tap activation).
+		/// Set by GesturePlatformManager for elements whose only interaction is a TapGestureRecognizer,
+		/// which otherwise have no native Invoke pattern (mirrors AccessibilityActivateCallback on iOS).
+		/// </summary>
+		internal Func<bool>? AutomationActivateCallback { get; set; }
+
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			var measured = base.MeasureOverride(availableSize);
