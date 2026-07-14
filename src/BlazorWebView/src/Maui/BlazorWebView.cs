@@ -76,6 +76,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// for example to stop images from flickering when navigating between pages. Return <see langword="null"/>
 		/// or an empty string from the callback to keep the default behavior for a given request.
 		/// </para>
+		/// <para>
+		/// The callback is invoked from the platform's request handling, which may run on a background thread, so it
+		/// must not access UI state directly.
+		/// </para>
 		/// </summary>
 		public Func<BlazorWebViewStaticContentRequest, string?>? StaticContentCacheControlProvider { get; set; }
 
