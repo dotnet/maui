@@ -135,12 +135,14 @@ Never push, never open a PR, never comment, never edit product or test code in t
 5. **De-dup against THIS SCANNER's own OPEN issues AND leaks already fixed on `main`.** Before
    filing, fetch this workflow's open `[leak-scan]` issues and skip a leak already covered by one
    (same rooting API / retention path). ALSO skip any leak whose rooting `Type.Member` is already
-   fixed on `main` — a merged `[leak-fix]` PR or a `[leak-scan]` issue closed as completed (Step 2
-   builds this set). Such leaks still reproduce against the SHIPPED package until the fix ships,
-   so the empirical test alone can't tell — de-dup is the only guard. Do NOT suppress a candidate
-   because AdamEssenmacher (or anyone else) has a repro/issue for it — duplicating those is fine.
-   A candidate whose only prior issue from this scanner is CLOSED **as not planned** (never fixed)
-   may be re-filed; one whose leak is fixed on `main` may not.
+   fixed on `main` by a **merged `[leak-fix]` PR** (Step 2 builds this set — a merged fix PR is
+   durable, workflow-owned proof a fix landed; a close *reason* alone is not). Such leaks still
+   reproduce against the SHIPPED package until the fix ships, so the empirical test alone can't
+   tell — this provenance-gated de-dup is the only guard. Do NOT suppress a candidate because
+   AdamEssenmacher (or anyone else) has a repro/issue for it — duplicating those is fine. A
+   candidate whose only prior issue from this scanner is CLOSED with **no merged `[leak-fix]` PR**
+   (any close reason) may be re-filed if it still reproduces; one whose leak is fixed on `main` by
+   a merged `[leak-fix]` PR may not.
 6. **Never weaken or disable anything, and never commit code.** You only READ repo source
    and (Pass A) ADD a throwaway test under `/tmp`. Never edit product code, never
    `[ActiveIssue]`/skip/mute existing tests, never push.
@@ -181,20 +183,31 @@ jq -r '.[].title' /tmp/gh-aw/agent/my-open-leakscan.json \
   > /tmp/gh-aw/agent/already-filed-apis.txt
 echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 
-# ── ALSO skip leaks ALREADY FIXED on main ──────────────────────────────────────────────────
+# ── ALSO skip leaks ALREADY FIXED on main — MERGED [leak-fix] PRs ONLY ───────────────────────
 # Your Step 5 confirmation runs against the SHIPPED NuGet package (pinned 10.0.0), where an
 # already-MERGED fix has NOT shipped yet — so a leak that is fixed on `main` STILL reproduces
-# (goes red) and would be re-filed every run forever. De-dup is the ONLY guard. Build a
-# "fixed-on-main" rooting-Type.Member set from (a) every MERGED `[leak-fix]` PR title and
-# (b) every `[leak-scan]` issue this scanner closed as COMPLETED (fix landed).
-{
-  gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title' \
-    --limit 200 --json title -q '.[].title' | grep -E '^\[leak-fix\] ' | sed -E 's/^\[leak-fix\] *(Fix +)?//'
-  gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
-    --state closed --label agentic-workflows --limit 300 --json title,stateReason \
-    -q '.[] | select(.stateReason == "COMPLETED") | .title' | sed -E 's/^\[leak-scan\] *//'
-} \
-  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }' \
+# (goes red) and would be re-filed every run forever. De-dup is the ONLY guard. Build the
+# "fixed-on-main" rooting-Type.Member set from **MERGED `[leak-fix]` PR titles ONLY** — a merged
+# fix PR is durable, workflow-owned provenance that a fix ACTUALLY LANDED on `main`. Do NOT trust
+# an issue's close *reason*: a `[leak-scan]` issue closed as COMPLETED records only that SOMEONE
+# closed it, not that a fix merged (a maintainer can close a still-reproducing issue as
+# completed), so treating "closed as completed" as fixed would permanently suppress a still-valid
+# leak. Worst case here (a human-fixed leak with no [leak-fix] PR) is a single bounded re-file
+# that the OPEN-issue de-dup above then catches — far safer than permanent data loss.
+gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title' \
+  --limit 300 --json title -q '.[].title' \
+  | grep -E '^\[leak-fix\] ' | sed -E 's/^\[leak-fix\] *(Fix +)?//' \
+  | awk '{
+      if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) {
+        chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n]
+      } else {
+        # Off-contract title with no dotted Type.Member: keep a durable normalized-title
+        # fallback key (prefixed "title:") instead of SILENTLY DROPPING it, so the known-fixed
+        # leak still surfaces with a de-dup identity for the agent to match against.
+        key=tolower($0); gsub(/[^a-z0-9]+/, "-", key); gsub(/^-+|-+$/, "", key);
+        if (key != "") print "title:" key
+      }
+    }' \
   | sort -u \
   > /tmp/gh-aw/agent/fixed-on-main-apis.txt
 echo "fixed-on-main (do NOT re-file) rooting APIs:"; cat /tmp/gh-aw/agent/fixed-on-main-apis.txt
@@ -206,14 +219,15 @@ echo "fixed-on-main (do NOT re-file) rooting APIs:"; cat /tmp/gh-aw/agent/fixed-
   before you write its test** — re-filing a leak this scanner already has open (even with
   different title wording) is the #1 failure mode, so be strict about matching the `Type.Member`.
 - A candidate is **ALSO OUT** if its rooting `Type.Member` is in `fixed-on-main-apis.txt`
-  (already fixed on `main` by a merged `[leak-fix]` PR, or a `[leak-scan]` issue closed as
-  completed). The shipped-package test in Step 5 will STILL go red for these because the fix
-  hasn't shipped in a release yet — that is expected. Do NOT re-file: the fix is already on
-  `main` and will ship. Re-filing just recreates an issue that was deliberately closed.
+  (already fixed on `main` by a **merged `[leak-fix]` PR**). The shipped-package test in Step 5
+  will STILL go red for these because the fix hasn't shipped in a release yet — that is expected.
+  Do NOT re-file: the fix is already on `main` and will ship.
 
-A candidate whose only prior `[leak-scan]` issue was closed as **not planned** (i.e. never
-fixed — wontfix / invalid / duplicate) may be re-filed if it still reproduces. A candidate whose
-leak is in `fixed-on-main-apis.txt` (fixed on `main`) must **not** be re-filed.
+A candidate whose only prior `[leak-scan]` issue was **closed with no merged `[leak-fix]` PR**
+(closed as not planned — wontfix / invalid / duplicate — OR closed as completed by a maintainer
+without a landed fix) may be re-filed if it still reproduces: a close *reason* is not proof the
+leak is gone. A candidate whose leak is in `fixed-on-main-apis.txt` (fixed on `main` by a merged
+`[leak-fix]` PR) must **not** be re-filed.
 
 # ===================== RUNTIME LEAK HUNT =====================
 
