@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 				var inheritedContext = Volatile.Read(ref _inheritedContext);
 				if (ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending))
 				{
-					ClearPendingInheritedBindingContext();
+					DispatchInheritedBindingContextCleanup(clearIfDispatchNotRequired: true);
 					inheritedContext = Volatile.Read(ref _inheritedContext);
 				}
 

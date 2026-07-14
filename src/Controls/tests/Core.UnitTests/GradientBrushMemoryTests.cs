@@ -134,6 +134,50 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task BindingContextAccessBeforeDispatchedCleanupDoesNotRunCallbacks()
+		{
+			var dispatchedCleanup = new TaskCompletionSource<Action>(TaskCreationOptions.RunContinuationsAsynchronously);
+			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+			DispatcherProviderStubOptions.InvokeOnMainThread = action => dispatchedCleanup.TrySetResult(action);
+
+			GradientStop bindingContext;
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			try
+			{
+				bindingContext = new GradientStop { Offset = 0.25f };
+				stop = new GradientStop();
+				stop.SetBinding(GradientStop.OffsetProperty, nameof(GradientStop.Offset));
+				sharedStops = new GradientStopCollection { stop };
+				weakBrush = CreateBrushWithSharedGradientStops(sharedStops, bindingContext);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+			}
+
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => Interlocked.Increment(ref bindingContextChanged);
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			var cleanup = await dispatchedCleanup.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Null(await Task.Run(() => stop.BindingContext));
+			int callbacksBeforeCleanup = Volatile.Read(ref bindingContextChanged);
+
+			cleanup();
+
+			Assert.Equal(0, callbacksBeforeCleanup);
+			Assert.Equal(1, Volatile.Read(ref bindingContextChanged));
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(0f, stop.Offset);
+			GC.KeepAlive(bindingContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
 		public async Task ParentAccessAfterCollectedBrushClearsGradientStopInheritedBindingContext()
 		{
 			var bindingContext = new GradientStop { Offset = 0.25f };
