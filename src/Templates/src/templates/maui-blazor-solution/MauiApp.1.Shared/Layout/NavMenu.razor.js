@@ -6,7 +6,11 @@ if (!globalThis.__mauiNavMenuCollapseInitialized) {
         const target = event.target;
 
         if (target instanceof Element && target.closest("#nav-scrollable")) {
-            document.querySelector(".navbar-toggler")?.click();
+            const navToggler = document.querySelector(".navbar-toggler");
+
+            if (navToggler instanceof HTMLInputElement && navToggler.checked) {
+                navToggler.click();
+            }
         }
     });
 }
