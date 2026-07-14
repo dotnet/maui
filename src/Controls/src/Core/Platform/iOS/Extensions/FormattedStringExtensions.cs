@@ -220,16 +220,21 @@ namespace Microsoft.Maui.Controls.Platform
 			nint NSMaxRange(NSRange range) => range.Location + range.Length;
 
 			using var textStorage = new NSTextStorage();
-			using var layoutManager = new NSLayoutManager();
+			using var layoutManager = new NSLayoutManager
+			{
+				UsesFontLeading = !OperatingSystem.IsIOSVersionAtLeast(16)
+			};
 			using var textContainer = new NSTextContainer { LineFragmentPadding = 0 };
 
 			textStorage.AddLayoutManager(layoutManager);
 			layoutManager.AddTextContainer(textContainer);
 
-			// On iOS 26+ with NavigationPage, UILabel.Bounds may still be {0,0,0,0}
-			// during ArrangeOverride. Use finalSize (MAUI's computed size) as fallback.
-			var containerWidth = control.Bounds.Width > 0 ? control.Bounds.Width : (nfloat)finalSize.Width;
-			var containerHeight = control.Bounds.Height > 0 ? control.Bounds.Height : (nfloat)finalSize.Height;
+			// Always prefer finalSize from MAUI's layout system — it is the authoritative
+			// size for this arrange pass. On Mac Catalyst (and iOS 26+ with NavigationPage),
+			// control.Bounds may be stale or {0,0,0,0} during ArrangeOverride because UIKit
+			// frame updates can lag behind MAUI's layout.
+			var containerWidth = (nfloat)finalSize.Width > 0 ? (nfloat)finalSize.Width : control.Bounds.Width;
+			var containerHeight = (nfloat)finalSize.Height > 0 ? (nfloat)finalSize.Height : control.Bounds.Height;
 			textContainer.Size = new(containerWidth, control.Lines == 0 ? nfloat.MaxValue : containerHeight);
 
 			textStorage.SetString(attributedText);
