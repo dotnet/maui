@@ -83,6 +83,18 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
+    - ${{ if or(eq(parameters.commitHash, 'skip'), and(eq(parameters.pushWorkloadSet, false), eq(parameters.pushNugetOrg, false))) }}:
+      - stage: skip_release
+        displayName: Skip release
+        dependsOn: []
+        jobs:
+        - job: skip_release
+          displayName: Skip release
+          steps:
+          - checkout: none
+          - script: echo No release operations were requested.
+            displayName: Skip release
+
     - ${{ if and(ne(parameters.commitHash, 'skip'), or(eq(parameters.pushWorkloadSet, true), eq(parameters.pushNugetOrg, true))) }}:
       - stage: prepare_release
         displayName: Prepare release artifacts
@@ -202,13 +214,15 @@ extends:
 
                 $includeFilters = @(Get-Filters $env:NUGET_INCLUDE_FILTERS)
                 $excludeFilters = @(Get-Filters $env:NUGET_EXCLUDE_FILTERS)
-                $selectedPackages = @($allPackages | Where-Object {
+                $packPackages = @($allPackages | Where-Object {
+                  $_.Name -notlike '*Manifest*.nupkg' -and
                   ($includeFilters.Count -eq 0 -or (Test-AnyFilter $_.Name $includeFilters)) -and
                   !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
                 })
-
-                $manifestPackages = @($selectedPackages | Where-Object { $_.Name -like '*Manifest*.nupkg' })
-                $packPackages = @($selectedPackages | Where-Object { $_.Name -notlike '*Manifest*.nupkg' })
+                $manifestPackages = @($allPackages | Where-Object {
+                  $_.Name -like '*Manifest*.nupkg' -and
+                  !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
+                })
                 if ($packPackages.Count -eq 0) {
                   throw "Package filtering selected no workload packs."
                 }
