@@ -109,6 +109,51 @@ function Stop-ProcessTree {
     try { Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue } catch { }
 }
 
+# Best-effort on-device diagnostics for a HUNG Android deep run. When the
+# HostApp ANRs or never renders the gallery (the "GoToTestButton never appears"
+# symptom), BuildAndRunHostApp hangs until the hard timeout and the tree-kill
+# below tears the harness down (SIGKILL) before NUnit teardown can capture
+# anything — leaving only appium.log with no logcat/screenshot of the stuck
+# screen, so the hang is a black box. Capturing logcat + a screenshot + the UI
+# hierarchy here is what makes these hangs diagnosable. Android-only and fully
+# guarded: if adb is absent or no device is connected (iOS / Catalyst / Windows
+# deep jobs) this is a silent no-op. Files use names the per-category loop
+# already ships in the drop-deep-uitests artifact (android-device.log, *.png,
+# *.xml).
+function Save-AndroidHangDiagnostics {
+    param([string]$RepoRoot)
+    try {
+        if (-not (Get-Command adb -ErrorAction SilentlyContinue)) { return }
+        $serial = @()
+        if ($env:DEVICE_UDID) { $serial = @('-s', $env:DEVICE_UDID) }
+        # Only proceed if a device is actually online (keeps this a no-op off Android).
+        $state = (& adb @serial get-state 2>$null)
+        if ($LASTEXITCODE -ne 0 -or "$state".Trim() -ne 'device') { return }
+        if (-not $RepoRoot) { $RepoRoot = (Get-Location).Path }
+        $diagDir = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests'
+        New-Item -ItemType Directory -Force -Path $diagDir | Out-Null
+        Write-Host "  Capturing Android hang diagnostics (logcat/screenshot/ui-hierarchy) before kill…"
+        # 1) logcat tail — android-device.log is in the loop's copy allowlist.
+        try { & adb @serial logcat -d -v time -t 5000 2>$null | Out-File (Join-Path $diagDir 'android-device.log') -Encoding utf8 } catch { }
+        # 2) screenshot of the stuck screen — screencap to device then pull
+        #    (avoids corrupting binary PNG bytes over a text stdout pipe).
+        try {
+            & adb @serial shell screencap -p /sdcard/hang-screenshot.png 2>$null | Out-Null
+            & adb @serial pull /sdcard/hang-screenshot.png (Join-Path $diagDir 'hang-screenshot.png') 2>$null | Out-Null
+            & adb @serial shell rm -f /sdcard/hang-screenshot.png 2>$null | Out-Null
+        } catch { }
+        # 3) UI hierarchy — reveals whether an ANR dialog or a blank page (no
+        #    GoToTestButton) is on screen at the moment of the hang.
+        try {
+            & adb @serial shell uiautomator dump /sdcard/hang-window.xml 2>$null | Out-Null
+            & adb @serial pull /sdcard/hang-window.xml (Join-Path $diagDir 'hang-window.xml') 2>$null | Out-Null
+            & adb @serial shell rm -f /sdcard/hang-window.xml 2>$null | Out-Null
+        } catch { }
+    } catch {
+        Write-Host "  (Android hang-diagnostic capture failed: $_)"
+    }
+}
+
 # Run BuildAndRunHostApp.ps1 in a child pwsh process with a hard wall-clock
 # deadline. Returns @{ Output = [string[]]; ExitCode = int; TimedOut = bool }.
 function Invoke-BuildScriptBounded {
@@ -146,6 +191,7 @@ function Invoke-BuildScriptBounded {
         }
         if (-not $proc.HasExited) {
             Write-Host "##[warning]Hard timeout ($([int]($TimeoutSeconds/60)) min) reached — killing hung BuildAndRunHostApp process tree (pid $($proc.Id))" -ForegroundColor Yellow
+            Save-AndroidHangDiagnostics -RepoRoot $RepoRoot
             Stop-ProcessTree -ProcessId $proc.Id
             $timedOut = $true
             for ($i = 0; $i -lt 8 -and -not $proc.HasExited; $i++) { Start-Sleep -Seconds 2 }
