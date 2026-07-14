@@ -366,6 +366,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutTemplateFlyoutContent");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("FlyoutContent");
 		App.Tap("CloseFlyoutContentButton");
@@ -381,6 +382,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutTemplateFlyoutContentTemplate");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("FlyoutContentTemplate");
 		App.Tap("CloseFlyoutContentTemplateButton");

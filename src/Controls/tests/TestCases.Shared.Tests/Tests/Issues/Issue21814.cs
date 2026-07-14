@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void VerifyNavigationEventArgs()
 		{
 			App.WaitForElement("NavigateButton");
-			
 			App.WaitForElement("OnNavigatedToLabel");
 			var navigatedToBeforeNavigate = App.FindElement("OnNavigatedToLabel").GetText();
 			Assert.That(navigatedToBeforeNavigate, Is.EqualTo("PreviousPage: Null, NavigationType: Push"));
@@ -29,9 +28,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("NavigateButton");
 
 			App.WaitForElement("OnNavigatedToLabel");
-			var navigatedToPage2 = App.FindElement("OnNavigatedToLabel").GetText();
-			Assert.That(navigatedToPage2, Is.EqualTo("PreviousPage: Issue21814FirstPage, NavigationType: Push"));
-			
+			Assert.That(App.WaitForTextToBePresentInElement("OnNavigatedToLabel", "PreviousPage: Issue21814FirstPage, NavigationType: Push"), Is.True);
+
 			var navigatedFromPage2 = App.FindElement("OnNavigatedFromLabel").GetText();
 			Assert.That(navigatedFromPage2, Is.EqualTo("-"));
 

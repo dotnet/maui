@@ -29,6 +29,6 @@ public class Issue23902 : _IssuesUITest
 		App.Tap("FourthPageButton");
 		App.WaitForElement("Go Back to 3rd Page");
 		App.Tap("ThirdPageButton");
-		Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("NavigatedTo called 3 times"));
+		Assert.That(App.WaitForTextToBePresentInElement("HeaderLabel", "NavigatedTo called 3 times"), Is.True);
 	}
 }

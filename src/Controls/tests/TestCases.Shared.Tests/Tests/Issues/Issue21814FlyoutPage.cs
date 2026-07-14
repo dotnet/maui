@@ -144,6 +144,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 
 	void OpenFlyoutMenu()
 	{
+		App.WaitForElementTillPageNavigationSettled("FlyoutContent1");
 		App.TapFlyoutPageIcon("Flyout Menu");
 	}
 }

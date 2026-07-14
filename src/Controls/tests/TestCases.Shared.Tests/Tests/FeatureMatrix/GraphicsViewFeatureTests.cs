@@ -31,7 +31,7 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ValidateDefaultValues_VerifyInitialState()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 
 		// Verify default drawable type is Square
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Square"));
@@ -53,13 +53,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_SquareDrawable_VerifyTypeAndRendering()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("Square");
+		App.WaitForElementTillPageNavigationSettled("Square");
 		App.Tap("Square");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Square"));
 		VerifyShapeScreenshot();
@@ -69,13 +69,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_TriangleDrawable_VerifyTypeAndRendering()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("Triangle");
+		App.WaitForElementTillPageNavigationSettled("Triangle");
 		App.Tap("Triangle");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Triangle"));
 		VerifyShapeScreenshot();
@@ -85,13 +85,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_EllipseDrawable_VerifyTypeAndRendering()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("Ellipse");
+		App.WaitForElementTillPageNavigationSettled("Ellipse");
 		App.Tap("Ellipse");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Ellipse"));
 		VerifyShapeScreenshot();
@@ -101,13 +101,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_LineDrawable_VerifyTypeAndRendering()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("Line");
+		App.WaitForElementTillPageNavigationSettled("Line");
 		App.Tap("Line");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Line"));
 		VerifyShapeScreenshot();
@@ -117,13 +117,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_StringDrawable_VerifyTypeAndRendering()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("String");
+		App.WaitForElementTillPageNavigationSettled("String");
 		App.Tap("String");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("String"));
 		VerifyShapeScreenshot();
@@ -134,13 +134,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ImageDrawable_VerifyTypeAndRendering()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("Image");
+		App.WaitForElementTillPageNavigationSettled("Image");
 		App.Tap("Image");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Image"));
 		VerifyShapeScreenshot();
@@ -152,13 +152,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_TransparentEllipseDrawable_VerifyTypeAndRendering()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("TransparentEllipse");
+		App.WaitForElementTillPageNavigationSettled("TransparentEllipse");
 		App.Tap("TransparentEllipse");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("TransparentEllipse"));
 
@@ -174,13 +174,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_SetVisibilityToTrue_VerifyVisibleState()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("IsVisibleTrueRadio");
+		App.WaitForElementTillPageNavigationSettled("IsVisibleTrueRadio");
 		App.Tap("IsVisibleTrueRadio");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		// When IsVisible is true, the element should be visible
 		VerifyShapeScreenshot();
 	}
@@ -189,13 +189,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_SetVisibilityToFalse_VerifyHiddenState()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("IsVisibleFalseRadio");
+		App.WaitForElementTillPageNavigationSettled("IsVisibleFalseRadio");
 		App.Tap("IsVisibleFalseRadio");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		// When IsVisible is false, the element should not be visible
 		App.WaitForNoElement("GraphicsViewControl");
 	}
@@ -208,14 +208,14 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ChangeHeightRequest_VerifyDimensionsUpdate()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("HeightRequestEntry");
+		App.WaitForElementTillPageNavigationSettled("HeightRequestEntry");
 		App.ClearText("HeightRequestEntry");
 		App.EnterText("HeightRequestEntry", "150");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("DrawableTypeLabel");
+		App.WaitForElementTillPageNavigationSettled("DrawableTypeLabel");
 		App.Tap("DrawableTypeLabel");
 
 		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
@@ -226,14 +226,14 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ChangeWidthRequest_VerifyDimensionsUpdate()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("WidthRequestEntry");
+		App.WaitForElementTillPageNavigationSettled("WidthRequestEntry");
 		App.ClearText("WidthRequestEntry");
 		App.EnterText("WidthRequestEntry", "200");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("DrawableTypeLabel");
+		App.WaitForElementTillPageNavigationSettled("DrawableTypeLabel");
 		App.Tap("DrawableTypeLabel");
 
 		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
@@ -244,17 +244,17 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ChangeBothDimensions_VerifyDimensionsUpdate()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("HeightRequestEntry");
+		App.WaitForElementTillPageNavigationSettled("HeightRequestEntry");
 		App.ClearText("HeightRequestEntry");
 		App.EnterText("HeightRequestEntry", "180");
-		App.WaitForElement("WidthRequestEntry");
+		App.WaitForElementTillPageNavigationSettled("WidthRequestEntry");
 		App.ClearText("WidthRequestEntry");
 		App.EnterText("WidthRequestEntry", "250");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("DrawableTypeLabel");
+		App.WaitForElementTillPageNavigationSettled("DrawableTypeLabel");
 		App.Tap("DrawableTypeLabel");
 
 		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
@@ -272,15 +272,15 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_SetShadowProperties_VerifyVisualState()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("Triangle");
+		App.WaitForElementTillPageNavigationSettled("Triangle");
 		App.Tap("Triangle");
-		App.WaitForElement("ShadowInputEntry");
+		App.WaitForElementTillPageNavigationSettled("ShadowInputEntry");
 		App.EnterText("ShadowInputEntry", "5,5,10,0.5");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("DrawableTypeLabel");
+		App.WaitForElementTillPageNavigationSettled("DrawableTypeLabel");
 		App.Tap("DrawableTypeLabel");
 		VerifyShapeScreenshot();
 	}
@@ -289,15 +289,15 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_SetInvalidShadowProperties_VerifyGracefulHandling()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("Triangle");
+		App.WaitForElementTillPageNavigationSettled("Triangle");
 		App.Tap("Triangle");
-		App.WaitForElement("ShadowInputEntry");
+		App.WaitForElementTillPageNavigationSettled("ShadowInputEntry");
 		App.EnterText("ShadowInputEntry", "invalid,input");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("DrawableTypeLabel");
+		App.WaitForElementTillPageNavigationSettled("DrawableTypeLabel");
 		App.Tap("DrawableTypeLabel");
 		VerifyShapeScreenshot();
 	}
@@ -313,9 +313,9 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_StartInteraction_VerifyEventTriggered()
 	{
-		App.WaitForElement("ClearEventsButton");
+		App.WaitForElementTillPageNavigationSettled("ClearEventsButton");
 		App.Tap("ClearEventsButton");
-		App.WaitForElement("GraphicsViewControl");
+		App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
 		App.Tap("GraphicsViewControl");
 
 		var interactionLabel = App.FindElement("InteractionEventLabel");
@@ -326,9 +326,9 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_EndInteraction_VerifyEventTriggered()
 	{
-		App.WaitForElement("ClearEventsButton");
+		App.WaitForElementTillPageNavigationSettled("ClearEventsButton");
 		App.Tap("ClearEventsButton");
-		App.WaitForElement("GraphicsViewControl");
+		App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
 		App.Tap("GraphicsViewControl");
 
 		var interactionLabel = App.FindElement("InteractionEventLabel");
@@ -339,9 +339,9 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_DragInteraction_VerifyEventTriggered()
 	{
-		App.WaitForElement("ClearEventsButton");
+		App.WaitForElementTillPageNavigationSettled("ClearEventsButton");
 		App.Tap("ClearEventsButton");
-		App.WaitForElement("GraphicsViewControl");
+		App.WaitForElementTillPageNavigationSettled("GraphicsViewControl");
 
 		// Perform a longer drag gesture with multiple points to ensure DragInteraction is triggered
 		var graphicsView = App.FindElement("GraphicsViewControl");
@@ -367,13 +367,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_SetEnabledToTrue_VerifyEnabledState()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("IsEnabledTrueRadio");
+		App.WaitForElementTillPageNavigationSettled("IsEnabledTrueRadio");
 		App.Tap("IsEnabledTrueRadio");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 
 		var graphicsView = App.FindElement("GraphicsViewControl");
 		Assert.That(graphicsView.IsEnabled(), Is.True);
@@ -385,13 +385,13 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 		[Category(UITestCategories.GraphicsView)]
 		public void GraphicsView_SetEnabledToFalse_VerifyDisabledState()
 		{
-			App.WaitForElement("Options");
+			App.WaitForElementTillPageNavigationSettled("Options");
 			App.Tap("Options");
-			App.WaitForElement("IsEnabledFalseRadio");
+			App.WaitForElementTillPageNavigationSettled("IsEnabledFalseRadio");
 			App.Tap("IsEnabledFalseRadio");
-			App.WaitForElement("Apply");
+			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("Options");
+			App.WaitForElementTillPageNavigationSettled("Options");
 
 			var graphicsView = App.FindElement("GraphicsViewControl");
 			Assert.That(graphicsView.IsEnabled(), Is.False);
@@ -406,19 +406,19 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_TriangleWithCustomDimensions_VerifyState()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("Triangle");
+		App.WaitForElementTillPageNavigationSettled("Triangle");
 		App.Tap("Triangle");
-		App.WaitForElement("HeightRequestEntry");
+		App.WaitForElementTillPageNavigationSettled("HeightRequestEntry");
 		App.ClearText("HeightRequestEntry");
 		App.EnterText("HeightRequestEntry", "120");
-		App.WaitForElement("WidthRequestEntry");
+		App.WaitForElementTillPageNavigationSettled("WidthRequestEntry");
 		App.ClearText("WidthRequestEntry");
 		App.EnterText("WidthRequestEntry", "160");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("DrawableTypeLabel");
+		App.WaitForElementTillPageNavigationSettled("DrawableTypeLabel");
 		App.Tap("DrawableTypeLabel");
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Triangle"));
@@ -436,15 +436,15 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 		[Category(UITestCategories.GraphicsView)]
 		public void GraphicsView_DisabledSquareWithInteraction_VerifyNoInteraction()
 		{
-			App.WaitForElement("Options");
+			App.WaitForElementTillPageNavigationSettled("Options");
 			App.Tap("Options");
-			App.WaitForElement("Square");
+			App.WaitForElementTillPageNavigationSettled("Square");
 			App.Tap("Square");
-			App.WaitForElement("IsEnabledFalseRadio");
+			App.WaitForElementTillPageNavigationSettled("IsEnabledFalseRadio");
 			App.Tap("IsEnabledFalseRadio");
-			App.WaitForElement("Apply");
+			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("Options");
+			App.WaitForElementTillPageNavigationSettled("Options");
 			
 			var graphicsView = App.FindElement("GraphicsViewControl");
 			Assert.That(graphicsView.IsEnabled(), Is.False);
@@ -467,20 +467,20 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_SetDimensionsEdgeCases_VerifyHandling(string height, string width, bool shouldBeVisible)
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
-		App.WaitForElement("HeightRequestEntry");
+		App.WaitForElementTillPageNavigationSettled("HeightRequestEntry");
 		App.ClearText("HeightRequestEntry");
 		App.EnterText("HeightRequestEntry", height);
-		App.WaitForElement("WidthRequestEntry");
+		App.WaitForElementTillPageNavigationSettled("WidthRequestEntry");
 		App.ClearText("WidthRequestEntry");
 		App.EnterText("WidthRequestEntry", width);
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
 
 		if (shouldBeVisible)
 		{
-			App.WaitForElement("DrawableTypeLabel");
+			App.WaitForElementTillPageNavigationSettled("DrawableTypeLabel");
 			App.Tap("DrawableTypeLabel");
 #if WINDOWS
 			VerifyShapeScreenshot();
@@ -491,7 +491,7 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 		}
 		else
 		{
-			App.WaitForElement("Options");
+			App.WaitForElementTillPageNavigationSettled("Options");
 			App.WaitForNoElement("GraphicsViewControl");
 		}
 	}
@@ -500,7 +500,7 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_InvalidateButton_ChangesColorAndLogsEvent()
 	{
-		App.WaitForElement("Options");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		App.Tap("Options");
 		App.WaitForElementTillPageNavigationSettled("Square");
 		App.Tap("Square");
