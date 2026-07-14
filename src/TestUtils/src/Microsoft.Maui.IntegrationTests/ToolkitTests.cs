@@ -190,6 +190,41 @@ public class AndroidToolkitTests : BaseBuildTest
 		base.Dispose();
 	}
 
+
+	[Fact]
+	public void RunCommunityToolkitOnAndroid()
+	{
+		var id = "maui";
+		var framework = DotNetPrevious;
+		var config = "Debug";
+
+		SetTestIdentifier(id, framework, config, "CommunityToolkitAndroid");
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams: "--no-restore", output: _output),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		StripNonAndroidTfms(projectFile, framework);
+		AddCommunityToolkitPackage(projectFile);
+		RegisterCommunityToolkit(projectDir);
+		AddCommunityToolkitControl(projectDir);
+		AddInstrumentation(projectDir);
+
+		var buildProps = BuildProps;
+		buildProps.Add($"TargetFrameworks={framework}-android");
+
+		Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: buildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} with CommunityToolkit.Maui failed to install. Check test output/attachments for errors.");
+
+		var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));
+		Directory.CreateDirectory(xhResultsDir);
+
+		testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
+		Assert.True(XHarness.RunAndroid(testPackage, xhResultsDir, -1, output: _output),
+			$"Project {Path.GetFileName(projectFile)} with CommunityToolkit.Maui failed to run. Check test output/attachments for errors.");
+	}
+
 	[Fact]
 	public void RunSyncfusionToolkitOnAndroid()
 	{
@@ -222,6 +257,63 @@ public class AndroidToolkitTests : BaseBuildTest
 		testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
 		Assert.True(XHarness.RunAndroid(testPackage, xhResultsDir, -1, output: _output),
 			$"Project {Path.GetFileName(projectFile)} with Syncfusion.Maui.Toolkit failed to run. Check test output/attachments for errors.");
+	}
+
+
+	private static void AddCommunityToolkitPackage(string projectFile)
+	{
+		var version = GetPackageVersion("CommunityToolkitMauiPackageVersion");
+
+		FileUtilities.ReplaceInFile(projectFile,
+			"</Project>",
+			$"""
+			  <ItemGroup>
+			    <PackageReference Include="CommunityToolkit.Maui" Version="{version}" />
+			  </ItemGroup>
+			</Project>
+			""");
+	}
+
+	private static void RegisterCommunityToolkit(string projectDir)
+	{
+		var mauiProgramFile = Path.Combine(projectDir, "MauiProgram.cs");
+
+		FileUtilities.ReplaceInFile(mauiProgramFile,
+			"using Microsoft.Extensions.Logging;",
+			"""
+			using Microsoft.Extensions.Logging;
+			using CommunityToolkit.Maui;
+			""");
+
+		FileUtilities.ReplaceInFile(mauiProgramFile,
+			".UseMauiApp<App>()",
+			"""
+			.UseMauiApp<App>()
+				.UseMauiCommunityToolkit()
+			""");
+	}
+
+	private static void AddCommunityToolkitControl(string projectDir)
+	{
+		var mainPageFile = Path.Combine(projectDir, "MainPage.xaml");
+
+		FileUtilities.ReplaceInFile(mainPageFile,
+			"xmlns:x=\"http://schemas.microsoft.com/winfx/2009/xaml\"",
+			"""
+			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+			""");
+
+		FileUtilities.ReplaceInFile(mainPageFile,
+			"</VerticalStackLayout>",
+			"""
+				<toolkit:AvatarView
+					Text="CT"
+					WidthRequest="64"
+					HeightRequest="64"
+					HorizontalOptions="Center" />
+			</VerticalStackLayout>
+			""");
 	}
 
 	private static void AddSyncfusionToolkitPackage(string projectFile, string version)
