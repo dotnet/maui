@@ -1616,23 +1616,36 @@ stages:
               # and drop all partial results. Tunable via DEEP_UITEST_HARDSTOP_MIN.
               $hardStopMin = 210
               if ($env:DEEP_UITEST_HARDSTOP_MIN -and ($env:DEEP_UITEST_HARDSTOP_MIN -as [int])) { $hardStopMin = [int]$env:DEEP_UITEST_HARDSTOP_MIN }
-              # Per-category wall-clock cap (build + deploy + run + retries). The
-              # dominant deep-stage failure mode is a single category whose
-              # `dotnet build`/`adb` hangs and never returns, stalling the task
-              # until the 220-min timeout (15 of 18 android failures surveyed).
-              # The wrapper tree-kills that category at this cap and reports it as
-              # not-run. Tunable via DEEP_UITEST_CATEGORY_CAP_MIN.
-              $perCatCapMin = 50
+              # Per-category WALL-CLOCK ceiling (build + deploy + run + retries).
+              # A genuinely hung category (a `dotnet build`/`adb` that never
+              # returns — 15 of 18 android failures surveyed) is now caught fast
+              # by the IDLE timeout below (no stdout progress ⇒ tree-kill), so
+              # this ceiling only bounds a category that is *actively* producing
+              # test output. That lets a large-but-healthy category (e.g. the
+              # ~391-test CollectionView on the slow mac pool, which cannot finish
+              # in 50 min) run to completion instead of being cut off mid-run and
+              # mis-reported as an infra timeout. Tunable via DEEP_UITEST_CATEGORY_CAP_MIN.
+              $perCatCapMin = 150
               if ($env:DEEP_UITEST_CATEGORY_CAP_MIN -and ($env:DEEP_UITEST_CATEGORY_CAP_MIN -as [int])) { $perCatCapMin = [int]$env:DEEP_UITEST_CATEGORY_CAP_MIN }
+              # Idle (no-progress) timeout: tree-kill a category whose build/run
+              # has emitted NO new stdout for this many minutes. This is the real
+              # hang-killer (a deadlocked build/test stops writing output) and it
+              # fires far sooner than the wall-clock ceiling. Generous enough to
+              # never trip a slow build phase or a single long VerifyScreenshot.
+              # Tunable via DEEP_UITEST_CATEGORY_IDLE_MIN.
+              $perCatIdleMin = 25
+              if ($env:DEEP_UITEST_CATEGORY_IDLE_MIN -and ($env:DEEP_UITEST_CATEGORY_IDLE_MIN -as [int])) { $perCatIdleMin = [int]$env:DEEP_UITEST_CATEGORY_IDLE_MIN }
               $loopStart    = Get-Date
               $loopDeadline = $loopStart.AddMinutes($budgetMin)
               $taskHardStop = $loopStart.AddMinutes($hardStopMin)
               Write-Host "Per-category loop budget: $budgetMin min (start-new-category deadline: $($loopDeadline.ToUniversalTime().ToString('u')))"
-              Write-Host "Hard stop: $hardStopMin min (every category must return by: $($taskHardStop.ToUniversalTime().ToString('u'))) · per-category cap: $perCatCapMin min"
+              Write-Host "Hard stop: $hardStopMin min (every category must return by: $($taskHardStop.ToUniversalTime().ToString('u'))) · per-category ceiling: $perCatCapMin min · idle kill: $perCatIdleMin min"
               $skippedCats = @()
 
               $hadFailure = $false
+              $catIdx = 0
               foreach ($cat in $catList) {
+                $catIdx++
                 $catStart = Get-Date
                 if ($catStart -gt $loopDeadline) {
                   $skippedCats += $cat
@@ -1650,8 +1663,17 @@ stages:
                   $hadFailure = $true
                   continue
                 }
-                $catTimeoutMin = [int][math]::Min($perCatCapMin, $remainToHardStopMin)
-                Write-Host "Category '$cat' hard time budget: $catTimeoutMin min (of $remainToHardStopMin min remaining to hard stop)"
+                # Give each still-pending category a fair slice of the remaining
+                # budget so one large category cannot starve the rest, floored at
+                # the historical 50-min-per-category value and capped by the
+                # ceiling. The IDLE timeout — not this wall-clock number — is what
+                # fast-kills a hang, so a healthy category may safely use its full
+                # slice to run to completion.
+                $catsRemaining = [math]::Max(1, (@($catList).Count - $catIdx + 1))
+                $fairShareMin  = [int][math]::Floor($remainToHardStopMin / $catsRemaining)
+                $catFloorMin   = [int][math]::Min(50, $remainToHardStopMin)
+                $catTimeoutMin = [int][math]::Min($perCatCapMin, [math]::Max($catFloorMin, $fairShareMin))
+                Write-Host "Category '$cat' time budget: $catTimeoutMin min (fair-share $fairShareMin of $remainToHardStopMin min remaining · idle kill $perCatIdleMin min)"
                 $safeCat = if ([string]::IsNullOrEmpty($cat)) { 'ALL' } else { $cat -replace '[^A-Za-z0-9_.-]', '_' }
                 $catDir = Join-Path $outputRoot "drop-${platform}_ui_tests-controls-$safeCat"
                 New-Item -ItemType Directory -Force -Path $catDir | Out-Null
@@ -1679,6 +1701,7 @@ stages:
                     if (-not [string]::IsNullOrEmpty($cat)) { $retryParams.Category = $cat }
                     if ($env:DEVICE_UDID) { $retryParams.DeviceUdid = $env:DEVICE_UDID }
                     $retryParams.TimeoutMinutes = $catTimeoutMin
+                    $retryParams.IdleTimeoutMinutes = $perCatIdleMin
                     $runResult = & $retryScript @retryParams
                     $exitCode = if ($runResult) { $runResult.ExitCode } else { -1 }
                     Write-Host "Attempts: $(if ($runResult) { $runResult.Attempts } else { '?' }) · Exit: $exitCode · EnvError: $(if ($runResult) { $runResult.EnvErrorHit } else { 'N/A' })"

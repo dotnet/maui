@@ -78,7 +78,14 @@ param(
     # the moment the budget is exhausted — so a hung build/run can never block
     # until the caller's AzDO task timeout. A hard-kill is treated as a
     # retryable environment error. See dotnet/maui deep-UI-test loop.
-    [int]      $TimeoutMinutes = 0
+    [int]      $TimeoutMinutes = 0,
+    # Idle (no-progress) timeout in minutes for a single BuildAndRunHostApp.ps1
+    # attempt. 0 = disabled (default / back-compat). When > 0, an attempt that
+    # emits NO new stdout/stderr for this long is tree-killed as a hang — this
+    # catches a deadlocked build/test far faster than $TimeoutMinutes and lets
+    # the wall-clock budget be raised so a large-but-progressing category (e.g.
+    # the ~391-test CollectionView on the slow mac pool) can run to completion.
+    [int]      $IdleTimeoutMinutes = 0
 )
 
 $ErrorActionPreference = 'Continue'
@@ -160,7 +167,11 @@ function Invoke-BuildScriptBounded {
     param(
         [string]    $ScriptPath,
         [hashtable] $Params,
-        [int]       $TimeoutSeconds
+        [int]       $TimeoutSeconds,
+        # When > 0, tree-kill the child if it emits no new stdout/stderr for this
+        # many seconds (a hang), even if $TimeoutSeconds has not elapsed. Lets the
+        # wall-clock budget stay generous for slow-but-progressing categories.
+        [int]       $IdleTimeoutSeconds = 0
     )
     $pwshExe = try { (Get-Process -Id $PID).Path } catch { $null }
     if (-not $pwshExe) { $pwshExe = 'pwsh' }
@@ -181,16 +192,38 @@ function Invoke-BuildScriptBounded {
             -RedirectStandardOutput $outFile -RedirectStandardError $errFile
         $deadline = $start.AddSeconds($TimeoutSeconds)
         $lastBeat = $start
-        while (-not $proc.HasExited -and (Get-Date) -lt $deadline) {
+        # Progress tracking: a hung run stops writing to stdout/stderr, whereas a
+        # slow-but-healthy category keeps emitting test results. We watch the
+        # redirect files' byte length and reset the idle clock whenever they grow,
+        # so a genuine hang is killed after $IdleTimeoutSeconds of silence while a
+        # large category that is still producing output runs to the wall-clock cap.
+        $lastProgressAt = $start
+        $lastLen = -1L
+        $killReason = $null
+        while (-not $proc.HasExited) {
             Start-Sleep -Seconds 5
-            if (((Get-Date) - $lastBeat).TotalSeconds -ge 120) {
-                $elapsedMin = [int]((Get-Date) - $start).TotalMinutes
-                Write-Host "  … BuildAndRunHostApp still running ($elapsedMin min elapsed, hard budget $([int]($TimeoutSeconds/60)) min)"
-                $lastBeat = Get-Date
+            $now = Get-Date
+            $curLen = 0L
+            foreach ($f in @($outFile, $errFile)) {
+                try { if (Test-Path $f) { $curLen += [int64](Get-Item $f -ErrorAction SilentlyContinue).Length } } catch { }
+            }
+            if ($curLen -gt $lastLen) { $lastLen = $curLen; $lastProgressAt = $now }
+            if ($now -ge $deadline) { $killReason = 'budget'; break }
+            if ($IdleTimeoutSeconds -gt 0 -and (($now - $lastProgressAt).TotalSeconds -ge $IdleTimeoutSeconds)) { $killReason = 'idle'; break }
+            if (($now - $lastBeat).TotalSeconds -ge 120) {
+                $elapsedMin = [int]($now - $start).TotalMinutes
+                $idleMin    = [int]($now - $lastProgressAt).TotalMinutes
+                $idleNote   = if ($IdleTimeoutSeconds -gt 0) { ", idle $idleMin min (kill at $([int]($IdleTimeoutSeconds/60)))" } else { "" }
+                Write-Host "  … BuildAndRunHostApp still running ($elapsedMin min elapsed, wall budget $([int]($TimeoutSeconds/60)) min$idleNote)"
+                $lastBeat = $now
             }
         }
         if (-not $proc.HasExited) {
-            Write-Host "##[warning]Hard timeout ($([int]($TimeoutSeconds/60)) min) reached — killing hung BuildAndRunHostApp process tree (pid $($proc.Id))" -ForegroundColor Yellow
+            if ($killReason -eq 'idle') {
+                Write-Host "##[warning]No test progress for $([int]($IdleTimeoutSeconds/60)) min — killing hung BuildAndRunHostApp process tree (pid $($proc.Id)) [stalled $([int]((Get-Date) - $start).TotalMinutes) min in]" -ForegroundColor Yellow
+            } else {
+                Write-Host "##[warning]Hard timeout ($([int]($TimeoutSeconds/60)) min) reached — killing BuildAndRunHostApp process tree (pid $($proc.Id))" -ForegroundColor Yellow
+            }
             Save-AndroidHangDiagnostics -RepoRoot $RepoRoot
             Stop-ProcessTree -ProcessId $proc.Id
             $timedOut = $true
@@ -269,6 +302,7 @@ $lastOutput = @()
 $lastExit = -1
 $envHit = $null
 $overallDeadline = if ($TimeoutMinutes -gt 0) { (Get-Date).AddMinutes($TimeoutMinutes) } else { $null }
+$idleTimeoutSec  = if ($IdleTimeoutMinutes -gt 0) { $IdleTimeoutMinutes * 60 } else { 0 }
 
 for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     $attempts = $attempt
@@ -326,7 +360,7 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
             $envHit = 'timeout'; $lastExit = 124
             break
         }
-        $bounded = Invoke-BuildScriptBounded -ScriptPath $buildScript -Params $baseParams -TimeoutSeconds $remainingSec
+        $bounded = Invoke-BuildScriptBounded -ScriptPath $buildScript -Params $baseParams -TimeoutSeconds $remainingSec -IdleTimeoutSeconds $idleTimeoutSec
         $lastOutput = $bounded.Output
         $lastExit = $bounded.ExitCode
         if ($bounded.TimedOut) {
