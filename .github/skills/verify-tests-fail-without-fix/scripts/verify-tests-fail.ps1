@@ -2051,6 +2051,74 @@ if ($uncommittedFiles.Count -gt 0) {
 
 Write-Log "  ✓ All revertable fix files are committed"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# EARLY SKIP — fix is irrelevant to this gate's platform (skip build + test)
+# ─────────────────────────────────────────────────────────────────────────────
+# When EVERY changed product file is platform-specific for a DIFFERENT platform
+# than this gate (e.g. an iOS-only fix reviewed on the ANDROID gate), those files
+# are excluded from THIS platform's target framework — they never compile into its
+# binary — so reverting them or not produces a byte-identical build. The without-fix
+# and with-fix runs would be identical no-ops, and the gate can only ever reach an
+# INCONCLUSIVE "no match" AFTER spending the full build + device-test budget twice
+# (dotnet/maui#35998 ran the Android UI test 2×2342s ≈ 78 min to prove nothing).
+# Detect this up front and skip the whole revert/build/run cycle, emitting the SAME
+# INCONCLUSIVE verdict (exit 3) the post-hoc classifier ($fixPlatformMismatch) would
+# produce — the verdict is unchanged; only the wasted device time is removed.
+#
+# Conservative by construction: Test-FixIrrelevantToPlatform returns $true ONLY when
+# there is at least one product file AND every product file targets another platform.
+# Any shared/neutral file, any file targeting THIS platform, a pure test/snapshot
+# change, or fix-less (verify-failure-only) mode all return $false and fall through
+# to the normal gate below.
+if ((@($FixFiles).Count -gt 0) -and (Test-FixIrrelevantToPlatform -FixFiles $FixFiles -Platform $Platform)) {
+    Write-Log ""
+    Write-Log "=========================================="
+    Write-Log "GATE SKIPPED: fix not relevant to the '$Platform' platform"
+    Write-Log "=========================================="
+    Write-Log "  Every changed product file is platform-specific for a different platform;"
+    Write-Log "  the fix is a no-op on '$Platform'. Skipping build + test (would be a"
+    Write-Log "  guaranteed INCONCLUSIVE no-op) and reporting INCONCLUSIVE (exit 3)."
+    foreach ($f in $FixFiles) { Write-Log "    - $f" }
+
+    $platformUpper = if ($Platform) { $Platform.ToUpper() } else { "THIS" }
+    $skipMergeBaseShort = if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { "$MergeBase" }
+    $skipBase = if ($BaseBranchName) { $BaseBranchName } elseif ($BaseBranch) { $BaseBranch } else { "N/A" }
+    $skipTestRows = if (@($AllDetectedTests).Count -gt 0) {
+        (@($AllDetectedTests) | ForEach-Object { "| ``$($_.TestName)`` ($($_.Type)) | ⏭️ SKIPPED (not run on this platform) |" }) -join "`n"
+    } else { "| _(none detected)_ | ⏭️ SKIPPED |" }
+    $skipFixRows = (@($FixFiles) | ForEach-Object { "- ``$_``" }) -join "`n"
+
+    $skipReport = @"
+### Gate Result: ⚠️ INCONCLUSIVE
+
+**Platform:** $platformUpper · **Base:** $skipBase · **Merge base:** ``$skipMergeBaseShort``
+
+🌐 **Fix not relevant to the $platformUpper gate** — every changed code file is platform-specific for a *different* platform (an iOS/MacCatalyst/Android/Windows-only change). On $platformUpper the change is a no-op, so the repro test behaves identically **with and without** the fix and the gate cannot verify it here. This is **inconclusive, not a fix failure** — verify this PR on its own platform.
+
+⏭️ **Gate skipped up front** — because the fix cannot affect this platform's binary, the gate skipped the build + device-test cycle instead of running it to a guaranteed INCONCLUSIVE result, saving the full test-time budget.
+
+| Test | Status |
+|------|--------|
+$skipTestRows
+
+**Changed fix file(s) — all platform-specific for another platform:**
+$skipFixRows
+"@
+
+    Set-Content -Path $MarkdownReport -Value $skipReport -Encoding UTF8
+    Write-Log "  Wrote INCONCLUSIVE (skipped) report to $MarkdownReport"
+
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+    Write-Host "║           GATE SKIPPED — INCONCLUSIVE ⚠️                  ║" -ForegroundColor Yellow
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+    Write-Host "║  Fix targets a different platform than this gate — a       ║" -ForegroundColor Yellow
+    Write-Host "║  no-op here, so it can't be verified on this platform.     ║" -ForegroundColor Yellow
+    Write-Host "║  Skipped build + test to save the device-time budget.     ║" -ForegroundColor Yellow
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+    exit 3
+}
+
 # Step 1: Revert fix files to merge-base state
 Write-Log ""
 Write-Log "=========================================="
