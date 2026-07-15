@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
-using MG = Microsoft.Maui.Graphics;
 using Windows.Foundation.Collections;
 using Windows.Media.Capture;
 using Windows.Storage;
@@ -176,18 +175,17 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
-				var loadingService = new MG.Platform.PlatformImageLoadingService();
 				using var input = await file.OpenStreamForReadAsync();
 
 				var outputPath = await ImageProcessor.ProcessImageToCacheFileAsync(
-					loadingService,
 					input,
 					file.Name,
-					options?.MaximumWidth,
-					options?.MaximumHeight,
-					options?.CompressionQuality ?? 100,
-					options?.RotateImage ?? false,
-					options?.PreserveMetaData ?? true);
+					new ImageProcessingOptions(
+						options?.MaximumWidth,
+						options?.MaximumHeight,
+						options?.CompressionQuality ?? 100,
+						options?.RotateImage ?? false,
+						options?.PreserveMetaData ?? true));
 
 				return new FileResult(outputPath);
 			}

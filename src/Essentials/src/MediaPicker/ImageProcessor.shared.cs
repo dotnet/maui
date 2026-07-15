@@ -9,12 +9,23 @@ using Microsoft.Maui.Storage;
 namespace Microsoft.Maui.Essentials;
 
 /// <summary>
+/// The resolved set of image transformations the <see cref="IMediaPicker"/> applies to a picked or
+/// captured photo.
+/// </summary>
+internal readonly record struct ImageProcessingOptions(
+	int? MaximumWidth,
+	int? MaximumHeight,
+	int CompressionQuality,
+	bool RotateImage,
+	bool PreserveMetadata);
+
+/// <summary>
 /// Cross-platform image processing for the <see cref="IMediaPicker"/>, built entirely on the
 /// MAUI Graphics image pipeline (<see cref="IImageLoadingService"/> / <see cref="IImage"/>).
 ///
 /// The processing itself is shared across every platform; only the small amount of I/O plumbing
-/// (obtaining the source stream and the platform <see cref="IImageLoadingService"/>) lives in the
-/// platform-specific MediaPicker code.
+/// (obtaining the source stream and, on Android, the output location) lives in the platform-specific
+/// MediaPicker code.
 /// </summary>
 internal static class ImageProcessor
 {
@@ -59,40 +70,34 @@ internal static class ImageProcessor
 	/// capturing metadata per the options), applies any resize, and writes the encoded result directly
 	/// to <paramref name="output"/>. No intermediate in-memory buffering of the encoded image is done.
 	/// </summary>
-	public static async Task ProcessImageAsync(
-		IImageLoadingService loadingService,
-		Stream input,
-		Stream output,
-		ImageFormat format,
-		int? maxWidth,
-		int? maxHeight,
-		int qualityPercent,
-		bool rotateImage,
-		bool preserveMetaData)
+	public static async Task ProcessImageAsync(Stream input, Stream output, ImageFormat format, ImageProcessingOptions options)
 	{
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+		var loadingService = new Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService();
+
 		var loadOptions = new ImageLoadOptions
 		{
 			// RotateImage == true means "normalize the EXIF orientation into the pixels".
-			DisableRotationNormalization = !rotateImage,
-			PreserveMetadata = preserveMetaData,
+			DisableRotationNormalization = !options.RotateImage,
+			PreserveMetadata = options.PreserveMetadata,
 		};
 
 		using var image = loadingService.FromStream(input, loadOptions)
 			?? throw new InvalidOperationException("Failed to load image from stream.");
 
 		var current = image;
-		if (maxWidth.HasValue || maxHeight.HasValue)
+		if (options.MaximumWidth.HasValue || options.MaximumHeight.HasValue)
 		{
 			// Downsize preserves aspect ratio and only ever scales down.
-			current = image.Downsize(maxWidth ?? int.MaxValue, maxHeight ?? int.MaxValue, disposeOriginal: false);
+			current = image.Downsize(options.MaximumWidth ?? int.MaxValue, options.MaximumHeight ?? int.MaxValue, disposeOriginal: false);
 		}
 
 		try
 		{
 			var saveOptions = new ImageSaveOptions
 			{
-				Quality = Math.Max(0, Math.Min(100, qualityPercent)) / 100f,
-				PreserveMetadata = preserveMetaData,
+				Quality = Math.Max(0, Math.Min(100, options.CompressionQuality)) / 100f,
+				PreserveMetadata = options.PreserveMetadata,
 			};
 
 			await current.SaveAsync(output, format, saveOptions).ConfigureAwait(false);
@@ -104,6 +109,10 @@ internal static class ImageProcessor
 				current.Dispose();
 			}
 		}
+#else
+		await Task.CompletedTask.ConfigureAwait(false);
+		throw new PlatformNotSupportedException();
+#endif
 	}
 
 	/// <summary>
@@ -111,15 +120,7 @@ internal static class ImageProcessor
 	/// directory, preserving the original file name (with a corrected extension). The source is only
 	/// ever read, never modified. Returns the path to the new file.
 	/// </summary>
-	public static async Task<string> ProcessImageToCacheFileAsync(
-		IImageLoadingService loadingService,
-		Stream input,
-		string? originalFileName,
-		int? maxWidth,
-		int? maxHeight,
-		int qualityPercent,
-		bool rotateImage,
-		bool preserveMetaData)
+	public static async Task<string> ProcessImageToCacheFileAsync(Stream input, string? originalFileName, ImageProcessingOptions options)
 	{
 		var format = GetOutputFormat(originalFileName);
 		var extension = GetOutputExtension(format);
@@ -136,9 +137,7 @@ internal static class ImageProcessor
 
 		using (var output = File.Create(outputPath))
 		{
-			await ProcessImageAsync(
-				loadingService, input, output, format,
-				maxWidth, maxHeight, qualityPercent, rotateImage, preserveMetaData).ConfigureAwait(false);
+			await ProcessImageAsync(input, output, format, options).ConfigureAwait(false);
 		}
 
 		return outputPath;

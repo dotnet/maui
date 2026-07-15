@@ -30,14 +30,14 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				using var input = new MemoryStream(SampleJpeg);
 
 				outputPath = await ImageProcessor.ProcessImageToCacheFileAsync(
-					loadingService,
 					input,
 					"picked.jpg",
-					maxWidth: 40,
-					maxHeight: 40,
-					qualityPercent: 80,
-					rotateImage: false,
-					preserveMetaData: true);
+					new ImageProcessingOptions(
+						MaximumWidth: 40,
+						MaximumHeight: 40,
+						CompressionQuality: 80,
+						RotateImage: false,
+						PreserveMetadata: true));
 
 				// A brand new file is written to the app cache, preserving the original file name.
 				Assert.True(File.Exists(outputPath), "Processed output file was not created.");
@@ -63,21 +63,20 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public async Task ProcessImage_PreservesJpegContainer()
 		{
-			var loadingService = new PlatformImageLoadingService();
 			string outputPath = null;
 			try
 			{
 				using var input = new MemoryStream(SampleJpeg);
 
 				outputPath = await ImageProcessor.ProcessImageToCacheFileAsync(
-					loadingService,
 					input,
 					"picked.jpg",
-					maxWidth: null,
-					maxHeight: null,
-					qualityPercent: 60,
-					rotateImage: false,
-					preserveMetaData: true);
+					new ImageProcessingOptions(
+						MaximumWidth: null,
+						MaximumHeight: null,
+						CompressionQuality: 60,
+						RotateImage: false,
+						PreserveMetadata: true));
 
 				// Deterministic container preservation: a JPEG source stays a JPEG.
 				Assert.Equal(".jpg", Path.GetExtension(outputPath));

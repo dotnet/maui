@@ -7,7 +7,6 @@ using Foundation;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
 using MobileCoreServices;
 using Photos;
@@ -434,18 +433,17 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
-				var loadingService = new PlatformImageLoadingService();
 				using var originalStream = await original.OpenReadAsync();
 
 				var outputPath = await ImageProcessor.ProcessImageToCacheFileAsync(
-					loadingService,
 					originalStream,
 					original.FileName,
-					maxWidth: null,
-					maxHeight: null,
-					qualityPercent: 100,
-					rotateImage: true,
-					preserveMetaData: true);
+					new ImageProcessingOptions(
+						MaximumWidth: null,
+						MaximumHeight: null,
+						CompressionQuality: 100,
+						RotateImage: true,
+						PreserveMetadata: true));
 
 				return new FileResult(outputPath, original.FileName);
 			}
@@ -779,18 +777,17 @@ namespace Microsoft.Maui.Media
 				// Load the original once (NSItemProvider loads are expensive) and process it directly to
 				// a cache file through the shared Graphics pipeline — no in-memory buffering of the
 				// encoded image.
-				var loadingService = new PlatformImageLoadingService();
 				using var originalStream = await _originalResult.OpenReadAsync();
 
 				_processedPath = await ImageProcessor.ProcessImageToCacheFileAsync(
-					loadingService,
 					originalStream,
 					_originalResult.FileName,
-					_maximumWidth,
-					_maximumHeight,
-					_compressionQuality,
-					_rotateImage,
-					_preserveMetaData);
+					new ImageProcessingOptions(
+						_maximumWidth,
+						_maximumHeight,
+						_compressionQuality,
+						_rotateImage,
+						_preserveMetaData));
 
 				return File.OpenRead(_processedPath);
 			}

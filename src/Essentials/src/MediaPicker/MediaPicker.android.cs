@@ -16,7 +16,6 @@ using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using static AndroidX.Activity.Result.Contract.ActivityResultContracts;
 using AndroidUri = Android.Net.Uri;
-using MG = Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Media
 {
@@ -24,99 +23,6 @@ namespace Microsoft.Maui.Media
 	{
 		public bool IsCaptureSupported
 			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
-
-		internal static Task<string> ProcessPhotoAsync(string imagePath, MediaPickerOptions options)
-			=> ProcessPhotoPreservingSourceAsync(imagePath, GetPhotoProcessingOptions(options));
-
-		internal static async Task<string> ProcessPhotoPreservingSourceAsync(string imagePath, PersistedPhotoProcessingOptions options)
-		{
-			if (imagePath is null)
-			{
-				return null;
-			}
-
-			// Nothing to do unless the caller asked to rotate, resize, or recompress.
-			if (!options.RotateImage &&
-				!ImageProcessor.IsProcessingNeeded(options.MaximumWidth, options.MaximumHeight, options.CompressionQuality))
-			{
-				return imagePath;
-			}
-
-			// Never mutate or delete the source file. Picked files can live in external or otherwise
-			// unowned locations (an SD card, another app's shared storage, or the user's original gallery
-			// item), so we only ever read the source and write the processed result to a new MAUI-owned
-			// cache file.
-			var processed = await ProcessImageWithGraphicsAsync(imagePath, options);
-			return processed ?? imagePath;
-		}
-
-		// Loads the image through MAUI Graphics (applying EXIF orientation and capturing metadata per the
-		// options), applies any resize, and writes the result to a new MAUI-owned cache file that
-		// preserves the original file name. The source file is only ever read, never modified. The
-		// recovery infrastructure requires this to ALWAYS return a separate file (never the source), so
-		// on a processing failure we copy the source bytes to the new file rather than handing back the
-		// source path.
-		static async Task<string> ProcessImageWithGraphicsAsync(string imagePath, PersistedPhotoProcessingOptions options)
-		{
-			if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath))
-			{
-				return imagePath;
-			}
-
-			// Preserve the original container (JPEG/PNG). Deterministic: no automatic format switching.
-			var originalExtension = System.IO.Path.GetExtension(imagePath);
-			var isPng = string.Equals(originalExtension, FileExtensions.Png, StringComparison.OrdinalIgnoreCase);
-			var format = isPng ? MG.ImageFormat.Png : MG.ImageFormat.Jpeg;
-			var outputExtension = isPng ? FileExtensions.Png : FileExtensions.Jpg;
-
-			var outputFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + outputExtension;
-			var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
-			var outputPath = outputFile.AbsolutePath;
-
-			try
-			{
-				var loadingService = new MG.Platform.PlatformImageLoadingService();
-
-				using (var input = File.OpenRead(imagePath))
-				using (var output = File.Create(outputPath))
-				{
-					await ImageProcessor.ProcessImageAsync(
-						loadingService,
-						input,
-						output,
-						format,
-						options.MaximumWidth,
-						options.MaximumHeight,
-						options.CompressionQuality,
-						options.RotateImage,
-						options.PreserveMetaData);
-				}
-
-				return outputPath;
-			}
-			catch
-			{
-				// Processing failed (e.g. an undecodable image). Still hand back a separate MAUI-owned
-				// copy so callers never receive the untouched source path.
-				try
-				{
-					File.Copy(imagePath, outputPath, overwrite: true);
-					return outputPath;
-				}
-				catch
-				{
-					return imagePath;
-				}
-			}
-		}
-
-		internal static PersistedPhotoProcessingOptions GetPhotoProcessingOptions(MediaPickerOptions options)
-			=> new(
-				options?.MaximumWidth,
-				options?.MaximumHeight,
-				options?.CompressionQuality ?? 100,
-				options?.RotateImage ?? false,
-				options?.PreserveMetaData ?? true);
 
 		internal static bool IsPhotoPickerAvailable
 			=> PickVisualMedia.InvokeIsPhotoPickerAvailable(Platform.AppContext);
@@ -642,5 +548,84 @@ namespace Microsoft.Maui.Media
 				return [];
 			}
 		}
+
+		// --- Photo processing (shared MAUI Graphics pipeline) -------------------------------------
+
+		// Entry point used by the picker paths: resolves the MediaPickerOptions and processes the photo.
+		internal static Task<string> ProcessPhotoAsync(string imagePath, MediaPickerOptions options)
+			=> ProcessPhotoPreservingSourceAsync(imagePath, GetPhotoProcessingOptions(options));
+
+		// Loads the image through MAUI Graphics (applying EXIF orientation and capturing metadata per the
+		// options), applies any resize, and writes the result to a new MAUI-owned cache file that
+		// preserves the original file name. The source file is only ever read, never modified.
+		//
+		// The recovery infrastructure requires this to ALWAYS return a separate file (never the source),
+		// so on a processing failure we copy the source bytes to the new file rather than handing back the
+		// source path. Also used directly by MediaPickerRecoveryManager.
+		internal static async Task<string> ProcessPhotoPreservingSourceAsync(string imagePath, PersistedPhotoProcessingOptions options)
+		{
+			if (imagePath is null)
+			{
+				return null;
+			}
+
+			// Nothing to do unless the caller asked to rotate, resize, or recompress.
+			if (!options.RotateImage &&
+				!ImageProcessor.IsProcessingNeeded(options.MaximumWidth, options.MaximumHeight, options.CompressionQuality))
+			{
+				return imagePath;
+			}
+
+			if (!File.Exists(imagePath))
+			{
+				return imagePath;
+			}
+
+			// Preserve the original container (JPEG/PNG). Deterministic: no automatic format switching.
+			var format = ImageProcessor.GetOutputFormat(imagePath);
+			var outputFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + ImageProcessor.GetOutputExtension(format);
+			var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
+			var outputPath = outputFile.AbsolutePath;
+
+			var processingOptions = new ImageProcessingOptions(
+				options.MaximumWidth,
+				options.MaximumHeight,
+				options.CompressionQuality,
+				options.RotateImage,
+				options.PreserveMetaData);
+
+			try
+			{
+				using (var input = File.OpenRead(imagePath))
+				using (var output = File.Create(outputPath))
+				{
+					await ImageProcessor.ProcessImageAsync(input, output, format, processingOptions);
+				}
+
+				return outputPath;
+			}
+			catch
+			{
+				// Processing failed (e.g. an undecodable image). Still hand back a separate MAUI-owned
+				// copy so callers never receive the untouched source path.
+				try
+				{
+					File.Copy(imagePath, outputPath, overwrite: true);
+					return outputPath;
+				}
+				catch
+				{
+					return imagePath;
+				}
+			}
+		}
+
+		internal static PersistedPhotoProcessingOptions GetPhotoProcessingOptions(MediaPickerOptions options)
+			=> new(
+				options?.MaximumWidth,
+				options?.MaximumHeight,
+				options?.CompressionQuality ?? 100,
+				options?.RotateImage ?? false,
+				options?.PreserveMetaData ?? true);
 	}
 }
