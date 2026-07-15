@@ -720,25 +720,45 @@ stages:
               # and its matching runtime is installed only so actool can compile; the app
               # runs fine on 26.4, and rendering on the baseline OS avoids spurious
               # VerifyScreenshot diffs. Fall back to the newest iOS 26, then 18.x/17.x.
-              RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                [.runtimes[] | select(.name | test("iOS 26\\.4"))] | sort_by(.version) | last | .identifier // empty
-              ')
+              # Pick the newest runtime whose name matches regex $1. $2 (optional)
+              # is an extra simctl arg, e.g. "available" to restrict to enrolled runtimes.
+              pick_runtime() {
+                xcrun simctl list runtimes $2 --json 2>/dev/null | jq -r --arg re "$1" '
+                  [.runtimes[] | select(.name | test($re))] | sort_by(.version) | last | .identifier // empty
+                '
+              }
+              # Prefer iOS 26.4 (the OS the ios-26 visual baselines were captured on),
+              # then any 26, 18, 17, then the newest available iOS of ANY version.
+              for RE in "iOS 26\\.4" "iOS 26" "iOS 18" "iOS 17" "iOS "; do
+                RUNTIME=$(pick_runtime "$RE" available)
+                [ -n "$RUNTIME" ] && break
+              done
+              # After the "Install Simulator Runtimes" step recovers from an exit-70
+              # delete+reinstall, 'simctl list runtimes available' can transiently return
+              # EMPTY even though the runtime disk images are Ready — CoreSimulator has not
+              # re-enrolled them yet (build 14665868: iOS 26.3.1/26.5 Ready as disk images,
+              # yet 'available' returned nothing, so RUNTIME was empty and no sim booted).
+              # Settle + retry, then fall back to the unfiltered runtime list.
               if [ -z "$RUNTIME" ]; then
-                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                  [.runtimes[] | select(.name | test("iOS 26"))] | sort_by(.version) | last | .identifier // empty
-                ')
+                echo "No available iOS runtime on first pass — settling 15s and retrying..."
+                sleep 15
+                for RE in "iOS 26\\.4" "iOS 26" "iOS "; do
+                  RUNTIME=$(pick_runtime "$RE" available); [ -n "$RUNTIME" ] && break
+                done
               fi
               if [ -z "$RUNTIME" ]; then
-                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                  [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
-                ')
-              fi
-              if [ -z "$RUNTIME" ]; then
-                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                  [.runtimes[] | select(.name | test("iOS 17"))] | sort_by(.version) | last | .identifier // empty
-                ')
+                echo "Still none via 'available' — trying the unfiltered runtime list..."
+                for RE in "iOS 26\\.4" "iOS 26" "iOS "; do
+                  RUNTIME=$(pick_runtime "$RE"); [ -n "$RUNTIME" ] && break
+                done
               fi
               echo "Selected iOS runtime: $RUNTIME"
+              if [ -z "$RUNTIME" ]; then
+                echo "Available runtimes (diagnostic):"
+                xcrun simctl list runtimes || true
+                echo "##vso[task.logissue type=error]No usable iOS simulator runtime available"
+                exit 1
+              fi
               
               # Look for iPhone Xs (matches UI test baselines - required for snapshot tests)
               UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
