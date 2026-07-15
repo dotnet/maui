@@ -363,12 +363,17 @@ stages:
             - pwsh: |
                 $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
                 if (Test-Path $scriptPath) {
-                  $ErrorActionPreference = 'Stop'
                   try { & $scriptPath -Width 1920 -Height 1080 }
-                  catch { Write-Host "##[warning]Set-ScreenResolution failed (non-fatal): $($_.Exception.Message)" }
+                  catch { Write-Host "##[warning]Set-ScreenResolution threw (non-fatal): $($_.Exception.Message)" }
+                  if ($LASTEXITCODE -ne 0) { Write-Host "##[warning]Set-ScreenResolution exited $LASTEXITCODE (non-fatal) — using default resolution" }
                 } else {
                   Write-Host "##[warning]Set-ScreenResolution.ps1 not found — using default resolution"
                 }
+                # Best-effort ONLY: setting the resolution only affects screenshot
+                # dimensions. A display-less agent makes the script exit 1 (which a
+                # PowerShell try/catch canNOT catch), so force exit 0 here — this step
+                # must NEVER fail the Review/gate. continueOnError is the backstop.
+                exit 0
               displayName: 'Set screen resolution'
               continueOnError: true
 
@@ -1690,10 +1695,18 @@ stages:
             - pwsh: |
                 $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
                 if (Test-Path $scriptPath) {
-                  & $scriptPath -Width 1920 -Height 1080
+                  try { & $scriptPath -Width 1920 -Height 1080 }
+                  catch { Write-Host "##[warning]Set-ScreenResolution threw (non-fatal): $($_.Exception.Message)" }
+                  if ($LASTEXITCODE -ne 0) { Write-Host "##[warning]Set-ScreenResolution exited $LASTEXITCODE (non-fatal) — deep UI tests will run at the agent's default resolution" }
                 } else {
                   Write-Host "##[warning]Set-ScreenResolution.ps1 not found — using default resolution"
                 }
+                # Best-effort ONLY: a display-less agent makes Set-ScreenResolution.ps1
+                # exit 1 (EnumDisplaySettings "path1 null"), which a PowerShell try/catch
+                # canNOT catch. That must NOT turn the Deep UI Tests stage into
+                # partiallySucceeded — the tests still run at the default resolution.
+                # Force exit 0; continueOnError is the backstop. (build 14665387)
+                exit 0
               displayName: 'Set screen resolution (1920x1080)'
               continueOnError: true
 
