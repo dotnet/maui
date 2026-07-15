@@ -23,9 +23,9 @@
 #
 # Brittleness reduction:
 #   Each scenario has a narrow structural floor that tests the failure mode
-#   it is designed to catch. The lifecycle-latch scenario uses complementary
-#   verdict checks because surfacing a risk and then delivering LGTM is its
-#   exact regression. All other semantics — confidence calibration, file/
+#   it is designed to catch. The lifecycle-latch scenario checks its final
+#   verdict because surfacing a risk and then delivering LGTM is its exact
+#   regression. All other semantics — confidence calibration, file/
 #   symbol identification, mechanism description, blast-radius / failure-
 #   mode reasoning — are scored by an LLM-judge `prompt` grader against
 #   the rubric. No regex AND-gate of "confidence value + diff symbol +
@@ -326,14 +326,11 @@ stimuli:
         source: .
     graders:
       # The failure under test is a reviewer that identifies the risk but
-      # still reaches LGTM. Require the standard non-LGTM verdict form
-      # before asking the judge to assess the reasoning behind it.
-      - type: output-not-contains
-        config:
-          substring: '### Verdict: LGTM'
+      # still reaches LGTM. Match the required final verdict heading while
+      # accepting benign Markdown emphasis around the verdict token.
       - type: output-matches
         config:
-          pattern: '### Verdict:\s*(NEEDS_CHANGES|NEEDS_DISCUSSION)'
+          pattern: '### Verdict:[^A-Za-z]*(NEEDS_CHANGES|NEEDS_DISCUSSION)'
       - type: prompt
         name: regression-judge
         config:
@@ -395,15 +392,14 @@ scoring:
   # normalized) — rubric criteria are not individually AND-gated, which is
   # exactly the de-brittling we want.
   #
-  # Most stimuli use one structural floor plus one LLM judge. The lifecycle
-  # latch stimulus adds a complementary "not LGTM" floor because a reviewer
-  # that finds the failure mechanism but still ships an LGTM is the exact
-  # false-pass it must reject. With threshold 0.6 and a scale_1_5 judge
-  # (normalized = (raw-1)/4), that stimulus scores approximately:
-  #   - correct review: (not-LGTM 1.0 + verdict 1.0 + judge ~0.75) / 3
-  #                     = ~0.92  -> PASS
-  #   - silent LGTM:    (not-LGTM 0.0 + verdict 0.0 + judge ~0.25) / 3
-  #                     = ~0.08  -> FAIL
+  # Each stimulus uses one structural floor plus one LLM judge. The lifecycle
+  # latch floor is anchored to the final verdict heading, so it rejects a
+  # reviewer that finds the failure mechanism but still ships an LGTM while
+  # accepting benign Markdown emphasis around a non-LGTM verdict. With
+  # threshold 0.6 and a scale_1_5 judge (normalized = (raw-1)/4), that
+  # stimulus scores approximately:
+  #   - correct review: (verdict 1.0 + judge ~0.75) / 2 = ~0.875  -> PASS
+  #   - silent LGTM:    (verdict 0.0 + judge ~0.25) / 2 = ~0.125  -> FAIL
   # This preserves semantic grading while making the tested verdict
   # inconsistency falsifiable.
   threshold: 0.6
