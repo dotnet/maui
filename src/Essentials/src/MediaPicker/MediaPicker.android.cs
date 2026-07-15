@@ -23,28 +23,6 @@ namespace Microsoft.Maui.Media
 		public bool IsCaptureSupported
 			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
 
-		internal static async Task<string> RotateImage(string filePath, MediaPickerOptions options)
-		{
-			if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-				return filePath;
-
-			var fileName = System.IO.Path.GetFileName(filePath);
-			using var inputStream = File.OpenRead(filePath);
-			using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-			rotatedStream.Position = 0;
-
-			// Write the rotated image to a new MAUI-owned cache file instead of overwriting
-			// the picked source. The source path is resolved verbatim from the picker URI and
-			// is not a file we own (it may be the user's original on an SD card, in shared
-			// storage, or a file owned by another app), so mutating it in place is incorrect
-			// and risks data loss. GetTemporaryFile preserves the original filename (see #33258).
-			var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
-			using var outputStream = File.Create(outputFile.AbsolutePath);
-			await rotatedStream.CopyToAsync(outputStream);
-
-			return outputFile.AbsolutePath;
-		}
-
 		internal static bool IsPhotoPickerAvailable
 			=> PickVisualMedia.InvokeIsPhotoPickerAvailable(Platform.AppContext);
 
@@ -107,15 +85,9 @@ namespace Microsoft.Maui.Media
 				if (photo)
 				{
 					captureResult = await CapturePhotoAsync(captureIntent);
-					// Apply rotation if needed for photos
-					if (captureResult is not null && ImageProcessor.IsRotationNeeded(options))
-						captureResult = await RotateImage(captureResult, options);
-
-					// Apply compression/resizing if needed for photos
-					if (captureResult is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-					{
-						captureResult = await CompressImageIfNeeded(captureResult, options);
-					}
+					// Apply rotation and/or compression if needed for photos
+					if (captureResult is not null)
+						captureResult = await ProcessImage(captureResult, options);
 				}
 				else
 				{
@@ -161,15 +133,8 @@ namespace Microsoft.Maui.Media
 				{
 					if (photo)
 					{
-						// Apply rotation if needed
-						if (ImageProcessor.IsRotationNeeded(options))
-							path = await RotateImage(path, options);
-
-						// Apply compression/resizing if needed
-						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-						{
-							path = await CompressImageIfNeeded(path, options);
-						}
+						// Apply rotation and/or compression if needed
+						path = await ProcessImage(path, options);
 					}
 
 					return new FileResult(path);
@@ -200,15 +165,8 @@ namespace Microsoft.Maui.Media
 
 			if (photo)
 			{
-				// Apply rotation if needed
-				if (ImageProcessor.IsRotationNeeded(options))
-					path = await RotateImage(path, options);
-
-				// Apply compression/resizing if needed
-				if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-				{
-					path = await CompressImageIfNeeded(path, options);
-				}
+				// Apply rotation and/or compression if needed
+				path = await ProcessImage(path, options);
 			}
 
 			return new FileResult(path);
@@ -256,15 +214,8 @@ namespace Microsoft.Maui.Media
 
 					if (photo)
 					{
-						// Apply rotation if needed
-						if (ImageProcessor.IsRotationNeeded(options))
-							path = await RotateImage(path, options);
-
-						// Apply compression/resizing if needed
-						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-						{
-							path = await CompressImageIfNeeded(path, options);
-						}
+						// Apply rotation and/or compression if needed
+						path = await ProcessImage(path, options);
 					}
 
 					resultList.Add(new FileResult(path));
@@ -296,67 +247,6 @@ namespace Microsoft.Maui.Media
 			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
 
 			return tmpFile.AbsolutePath;
-		}
-
-		internal static async Task<string> CompressImageIfNeeded(string imagePath, MediaPickerOptions options)
-		{
-			if (!ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100) || string.IsNullOrEmpty(imagePath))
-				return imagePath;
-
-			try
-			{
-				if (!File.Exists(imagePath))
-				{
-					return imagePath;
-				}
-
-				// Use ImageProcessor for unified image processing
-				using var inputStream = File.OpenRead(imagePath);
-				var inputFileName = System.IO.Path.GetFileName(imagePath);
-				using var processedStream = await ImageProcessor.ProcessImageAsync(
-					inputStream,
-					options?.MaximumWidth,
-					options?.MaximumHeight,
-					options?.CompressionQuality ?? 100,
-					inputFileName,
-					options?.RotateImage ?? false,
-					options?.PreserveMetaData ?? true);
-
-				if (processedStream != null)
-				{
-					// Determine the correct output extension based on the processed format
-					processedStream.Position = 0;
-					var outputExtension = ImageProcessor.DetermineOutputExtension(processedStream, options?.CompressionQuality ?? 100, inputFileName);
-					var originalExtension = System.IO.Path.GetExtension(inputFileName);
-
-					// Preserve the original filename (see #33258), but honor a format change
-					// (e.g. PNG -> JPEG) by swapping the extension.
-					var outputFileName = inputFileName;
-					if (!string.Equals(outputExtension, originalExtension, StringComparison.OrdinalIgnoreCase))
-					{
-						outputFileName = System.IO.Path.ChangeExtension(inputFileName, outputExtension);
-					}
-
-					// Write the processed image to a new MAUI-owned cache file instead of
-					// overwriting the picked source, which is not a file we own.
-					var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
-					using var outputStream = File.Create(outputFile.AbsolutePath);
-					processedStream.Position = 0;
-					await processedStream.CopyToAsync(outputStream);
-
-					return outputFile.AbsolutePath;
-				}
-
-				// If ImageProcessor returns null (e.g., on .NET Standard), ImageProcessor.IsProcessingNeeded would have returned false,
-				// so we shouldn't reach this point. Return original path as fallback.
-				return imagePath;
-			}
-			catch
-			{
-				// If processing fails, return original path
-			}
-
-			return imagePath;
 		}
 
 		async Task<string> CaptureVideoAsync(Intent captureIntent)
@@ -464,17 +354,8 @@ namespace Microsoft.Maui.Media
 
 					foreach (var path in tempResultList)
 					{
-						string processedPath = path;
-
-						// Apply rotation if needed
-						if (ImageProcessor.IsRotationNeeded(options))
-							processedPath = await RotateImage(processedPath, options);
-
-						// Apply compression/resizing if needed
-						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-						{
-							processedPath = await CompressImageIfNeeded(processedPath, options);
-						}
+						// Apply rotation and/or compression if needed
+						var processedPath = await ProcessImage(path, options);
 
 						resultList.Add(new FileResult(processedPath));
 					}
@@ -486,6 +367,88 @@ namespace Microsoft.Maui.Media
 			{
 				return [];
 			}
+		}
+
+		internal static async Task<string> ProcessImage(string imagePath, MediaPickerOptions options)
+		{
+			if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath))
+				return imagePath;
+
+			var needsRotation = ImageProcessor.IsRotationNeeded(options);
+			var needsProcessing = ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
+
+			// Nothing to do - return the picked path untouched.
+			if (!needsRotation && !needsProcessing)
+				return imagePath;
+
+			try
+			{
+				var inputFileName = System.IO.Path.GetFileName(imagePath);
+
+				// Treat the picked source as read-only. It is resolved verbatim from the picker
+				// URI and is not a file we own (it may be the user's original on an SD card, in
+				// shared storage, or a file owned by another app), so we never delete or overwrite
+				// it. Rotation and compression are composed through in-memory streams and only the
+				// final result is written - once - to a new MAUI-owned cache file. GetTemporaryFile
+				// preserves the original filename (see #33258).
+				Stream currentStream = File.OpenRead(imagePath);
+				try
+				{
+					if (needsRotation)
+					{
+						var rotatedStream = await ImageProcessor.RotateImageAsync(currentStream, inputFileName);
+						currentStream.Dispose();
+						currentStream = rotatedStream;
+						currentStream.Position = 0;
+					}
+
+					if (needsProcessing)
+					{
+						var processedStream = await ImageProcessor.ProcessImageAsync(
+							currentStream,
+							options?.MaximumWidth,
+							options?.MaximumHeight,
+							options?.CompressionQuality ?? 100,
+							inputFileName,
+							false, // rotation, if any, has already been applied above
+							options?.PreserveMetaData ?? true);
+
+						if (processedStream is not null)
+						{
+							currentStream.Dispose();
+							currentStream = processedStream;
+							currentStream.Position = 0;
+						}
+					}
+
+					// Preserve the original filename (see #33258), but honor a format change
+					// (e.g. PNG -> JPEG) by swapping the extension.
+					var outputExtension = ImageProcessor.DetermineOutputExtension(currentStream, options?.CompressionQuality ?? 100, inputFileName);
+					var originalExtension = System.IO.Path.GetExtension(inputFileName);
+					var outputFileName = inputFileName;
+					if (!string.Equals(outputExtension, originalExtension, StringComparison.OrdinalIgnoreCase))
+					{
+						outputFileName = System.IO.Path.ChangeExtension(inputFileName, outputExtension);
+					}
+
+					var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
+					using var outputStream = File.Create(outputFile.AbsolutePath);
+					currentStream.Position = 0;
+					await currentStream.CopyToAsync(outputStream);
+
+					return outputFile.AbsolutePath;
+				}
+				finally
+				{
+					currentStream.Dispose();
+				}
+			}
+			catch
+			{
+				// If processing fails, leave the picked source untouched and return its path.
+			}
+
+			return imagePath;
 		}
 	}
 }
