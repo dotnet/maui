@@ -187,28 +187,31 @@ if ($Platform -eq "android") {
     $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
     Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
     
-    # Two properties keep the iOS HostApp build resilient when a Microsoft.iOS
-    # workload bump (e.g. net11.0-ios26.5, which wants Xcode 26.6) lands ahead of
-    # the agent's installed Xcode:
+    # ValidateXcodeVersion=false keeps the iOS HostApp build resilient when a
+    # Microsoft.iOS workload bump (e.g. net11.0-ios26.5, which advertises a
+    # requirement of Xcode 26.6) lands ahead of the agent's installed Xcode: it
+    # skips the SDK's EARLY Xcode-version gate (the up-front MT0180 "This version
+    # of Microsoft.iOS requires the iOS X SDK / Xcode Y" check).
     #
-    #  * ValidateXcodeVersion=false — skips the SDK's EARLY Xcode-version gate
-    #    (MT0180 "This version of Microsoft.iOS requires the iOS X SDK / Xcode Y").
-    #
-    #  * MtouchLink=None — disables the managed linker/trimmer. This is the part
-    #    that was MISSING: ValidateXcodeVersion=false only bypasses the up-front
-    #    check; because we pass an explicit -r <rid>, the ILLink trim step
-    #    ("Optimizing assemblies for size") still runs and RE-hits the same SDK
-    #    requirement, crashing with IL1012 -> MT0180 -> NETSDK1144 and failing
-    #    the ENTIRE HostApp build. Observed on PR #35892 review 4685252040 and
-    #    PR #36507 (2026-07-15, iOS deep): the C# compile SUCCEEDED (HostApp.dll
-    #    produced) but ILLink then died with MT0180, so every iOS gate/deep run
-    #    ruled INCONCLUSIVE / "failed to compile" and produced no test results.
-    #    A Debug SIMULATOR build does not need trimming at all (it runs on the
-    #    interpreter, un-trimmed, exactly like the local dev inner loop), so
-    #    turning the linker off removes the dependency on the newer device SDK
-    #    headers and lets the build finish on any agent Xcode. This script is
-    #    shared by the gate and deep stages, so both iOS paths stay resilient.
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false", "-p:MtouchLink=None") + $hostAppBuildProps
+    # Do NOT add -p:MtouchLink=None here. It is tempting ("a Debug simulator
+    # build doesn't need trimming, so turn the linker off"), but on the modern
+    # .NET-for-iOS CoreCLR SDK it does the OPPOSITE of what you'd expect:
+    #   * A Debug SIMULATOR `dotnet build -r iossimulator-arm64` already does NOT
+    #     run the managed linker/trimmer (the app runs un-trimmed on the
+    #     interpreter, like the local dev inner loop), so nothing re-checks the
+    #     device SDK headers and the build finishes on any agent Xcode.
+    #   * Explicitly passing MtouchLink=None re-activates the LEGACY mtouch/ILLink
+    #     compatibility path, which runs ILLink, which re-validates the SDK
+    #     version and crashes with IL1012 -> MT0180 -> NETSDK1144 — failing the
+    #     ENTIRE HostApp build and producing no test results.
+    # Proven by A/B on identical agents/Xcode (both provision-selected 26.0.1):
+    #   commit 00c941392dc (ValidateXcodeVersion=false, NO MtouchLink) -> iOS deep
+    #   BUILT and ran 216 tests on PR #36427; commit 57ff98c5fc8 (same args +
+    #   MtouchLink=None) -> iOS deep died with MT0180 on every category (PR #36507,
+    #   PR #36448). ValidateXcodeVersion=false alone is sufficient and correct.
+    # This script is shared by the gate and deep stages, so both iOS paths stay
+    # resilient.
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
