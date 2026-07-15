@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 using Xunit.Sdk;
 
@@ -718,6 +719,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetBinding(Label.TextProperty, Binding.SelfPath);
 
 			Assert.Same(label.BindingContext, label.GetValue(BindableObject.BindingContextProperty));
+		}
+
+		[Fact]
+		public void BoundBindingContextReturnsNullWhileInheritedCleanupIsPending()
+		{
+			bool dispatchAccepted = false;
+			Action dispatchedCleanup = null;
+			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+			DispatcherProviderStubOptions.InvokeOnMainThread = action => dispatchedCleanup = action;
+			DispatcherProviderStubOptions.DispatchResult = () => dispatchAccepted;
+
+			MockBindable bindable;
+			try
+			{
+				bindable = new MockBindable();
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+				DispatcherProviderStubOptions.DispatchResult = null;
+			}
+
+			var inheritedContext = new MockViewModel { Text = "FooBar" };
+			bindable.SetBinding(BindableObject.BindingContextProperty, nameof(MockViewModel.Text));
+			BindableObject.SetInheritedBindingContextForBinding(bindable, inheritedContext);
+			int bindingContextChanged = 0;
+			bindable.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.Equal("FooBar", bindable.BindingContext);
+			Assert.NotNull(bindable.MarkInheritedBindingContextForCleanup());
+
+			Assert.Null(bindable.BindingContext);
+			Assert.Null(dispatchedCleanup);
+			Assert.Equal(0, bindingContextChanged);
+
+			dispatchAccepted = true;
+			Assert.Null(bindable.BindingContext);
+			Assert.NotNull(dispatchedCleanup);
+			Assert.Equal(0, bindingContextChanged);
+
+			dispatchedCleanup();
+
+			Assert.Null(bindable.BindingContext);
+			Assert.Equal(1, bindingContextChanged);
 		}
 
 		[Fact]

@@ -82,11 +82,18 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				var inheritedContext = Volatile.Read(ref _inheritedContext);
+				var inheritedBindingContext = Volatile.Read(ref _inheritedBindingContext);
 				if (inheritedContext is PendingInheritedBindingContextCleanup
-					|| Volatile.Read(ref _inheritedBindingContext) is PendingInheritedBindingContextCleanup)
+					|| inheritedBindingContext is PendingInheritedBindingContextCleanup)
 				{
 					DispatchInheritedBindingContextCleanup(clearIfDispatchNotRequired: true);
 					inheritedContext = Volatile.Read(ref _inheritedContext);
+					inheritedBindingContext = Volatile.Read(ref _inheritedBindingContext);
+					if (inheritedContext is PendingInheritedBindingContextCleanup
+						|| inheritedBindingContext is PendingInheritedBindingContextCleanup)
+					{
+						return null;
+					}
 				}
 
 				return inheritedContext?.Target ?? GetValue(BindingContextProperty);
