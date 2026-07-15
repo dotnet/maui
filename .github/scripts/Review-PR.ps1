@@ -1837,6 +1837,16 @@ if (-not (Test-Path $verifyScript)) {
 $maxGateAttempts = 3
 $gateExitCode = 1
 $gateOutput = @()
+$gateLoopStart = Get-Date
+# Stop retrying env errors once another attempt would likely exceed this budget,
+# so a slow crashing gate emits a clean INCONCLUSIVE instead of being KILLED by
+# the RunGate task timeout (120m) mid-retry. A killed task never reaches the
+# `$gateExitCode = 3` assignment below, so the Post stage sees no gateResult (nor
+# the platform/category outputs) and renders Gate/Platform/Confidence as
+# "Unknown" (build 14664435, #35606: 3 outer retries of ~771s APP_CRASH device
+# tests, each with its own inner retries, blew past 120m -> task timed out ->
+# Unknown badges). Override via GATE_RETRY_BUDGET_MINUTES.
+$gateRetryBudgetMin = if ($env:GATE_RETRY_BUDGET_MINUTES) { [double]$env:GATE_RETRY_BUDGET_MINUTES } else { 95 }
 # Path is fixed across attempts — define once, then clear per-iteration so a stale
 # report from attempt N-1 can't be misclassified as the current attempt's output.
 $gateContentFile = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
@@ -1909,17 +1919,30 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     if ($gateExitCode -eq 0 -or -not $isEnvError) {
         break  # Real pass or real failure — don't retry
     }
+    # Wall-clock budget guard (see $gateRetryBudgetMin above). Each attempt can be
+    # very slow when device tests crash — XHarness APP_CRASH is only detected after
+    # the per-test timeout and the device-test runner retries internally — so 3 full
+    # outer retries can exceed the 120m RunGate timeout and get the task KILLED
+    # before it can report INCONCLUSIVE (-> Unknown badges). If another attempt at
+    # the observed average pace would reach the budget, stop now and report a clean
+    # INCONCLUSIVE ($isEnvError stays true -> $gateExitCode = 3 below).
+    $gateElapsedMin = ((Get-Date) - $gateLoopStart).TotalMinutes
+    $gateAvgMin = $gateElapsedMin / $gateAttempt
+    if (($gateElapsedMin + $gateAvgMin) -ge $gateRetryBudgetMin) {
+        Write-Host ("  ⏱️ Gate retry budget reached ({0:N0}m elapsed, ~{1:N0}m/attempt, budget {2}m) — stopping retries and reporting INCONCLUSIVE rather than risking a task-timeout kill (which would drop gateResult and render the badges Unknown)." -f $gateElapsedMin, $gateAvgMin, $gateRetryBudgetMin) -ForegroundColor Yellow
+        break
+    }
     if ($gateAttempt -lt $maxGateAttempts) {
         Write-Host "  ⏳ Waiting 30s before retry..." -ForegroundColor DarkGray
         Start-Sleep -Seconds 30
     }
 }
 if ($isEnvError) {
-    # Reachable only if EVERY iteration was an env error: real pass/fail
-    # iterations `break` out of the loop (so $isEnvError would be reset to $false
-    # at the top of the next iteration but we'd never get here). $isEnvError
-    # here means "all $maxGateAttempts attempts hit env errors" — not "any".
-    Write-Host "  ⚠️ All $maxGateAttempts gate attempts hit environment errors" -ForegroundColor Yellow
+    # Reachable when the loop ended while still in an env-error state — either
+    # EVERY attempt hit an env error, or we stopped early because another attempt
+    # would have blown the retry budget (real pass/fail iterations `break` with
+    # $isEnvError = $false, so we never get here for those).
+    Write-Host "  ⚠️ Gate could not verify the fix — all attempts hit environment errors (or the retry budget was reached)" -ForegroundColor Yellow
     # Persistent env error = the gate could not verify anything. Report INCONCLUSIVE
     # (exit 3) rather than letting it fall through to FAILED, so infra flakes don't
     # masquerade as a broken fix.
