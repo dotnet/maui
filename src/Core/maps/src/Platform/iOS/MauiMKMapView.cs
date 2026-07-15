@@ -23,10 +23,10 @@ namespace Microsoft.Maui.Maps.Platform
 		UILongPressGestureRecognizer? _mapLongClickedGestureRecognizer;
 		List<IMapElement>? _trackedMapElements;
 		Dictionary<string, (UIImage Icon, DateTime ExpiresAtUtc)>? _clusterIconCache;
+		Queue<string>? _clusterIconCacheOrder;
 		int _clusterIconCacheGeneration;
 		// Bounds icon memory when a provider derives a distinct image per cluster (e.g. count-based
-		// glyphs) on a map that stays in a window for the app lifetime. Simple clear-when-full; an
-		// LRU is overkill here.
+		// glyphs) on a map that stays in a window for the app lifetime. FIFO evict-oldest when full.
 		const int MaxClusterIconCacheSize = 64;
 
 		public MauiMKMapView(IMapHandler handler)
@@ -410,9 +410,16 @@ namespace Microsoft.Maui.Maps.Platform
 					if (cacheKey != null && generation == _clusterIconCacheGeneration && Window != null)
 					{
 						_clusterIconCache ??= new Dictionary<string, (UIImage Icon, DateTime ExpiresAtUtc)>();
-						if (_clusterIconCache.Count >= MaxClusterIconCacheSize)
-							_clusterIconCache.Clear();
+						_clusterIconCacheOrder ??= new Queue<string>();
+						// Evict oldest-first until there is room. Skip keys already gone (e.g. expired and removed on
+						// lookup) so a stale order entry just falls through instead of dropping a live one.
+						while (_clusterIconCache.Count >= MaxClusterIconCacheSize && _clusterIconCacheOrder.Count > 0)
+						{
+							var oldest = _clusterIconCacheOrder.Dequeue();
+							_clusterIconCache.Remove(oldest);
+						}
 						_clusterIconCache[cacheKey] = (scaledImage, MapHandler.GetClusterIconCacheExpiry(imageSource));
+						_clusterIconCacheOrder.Enqueue(cacheKey);
 					}
 					return;
 				}
@@ -620,6 +627,7 @@ namespace Microsoft.Maui.Maps.Platform
 		void InvalidateClusterIconCache()
 		{
 			_clusterIconCache?.Clear();
+			_clusterIconCacheOrder?.Clear();
 			unchecked { _clusterIconCacheGeneration++; }
 		}
 

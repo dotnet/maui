@@ -48,7 +48,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
 		Dictionary<string, (BitmapDescriptor Icon, DateTime ExpiresAtUtc)>? _clusterIconCache;
-		// Bounds icon memory when a provider derives a distinct image per cluster (e.g. count-based glyphs); simple clear-when-full.
+		Queue<string>? _clusterIconCacheOrder;
+		// Bounds icon memory when a provider derives a distinct image per cluster (e.g. count-based glyphs); FIFO evict-oldest when full.
 		const int MaxClusterIconCacheSize = 64;
 
 		CancellationTokenSource? _addPinsCts;
@@ -98,6 +99,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			_clusters?.Clear();
 			_clusterMarkers?.Clear();
 			_clusterIconCache?.Clear();
+			_clusterIconCacheOrder?.Clear();
 			_mapReady = null;
 		}
 
@@ -338,6 +340,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				// A pins rebuild is also how ClusterImageSource/ClusterImageProvider changes reach the
 				// handler, so icons keyed to the previous source must not survive.
 				mapHandler._clusterIconCache?.Clear();
+				mapHandler._clusterIconCacheOrder?.Clear();
 
 				if (mapHandler._markers != null)
 				{
@@ -953,9 +956,16 @@ namespace Microsoft.Maui.Maps.Handlers
 					if (icon != null && cacheKey != null)
 					{
 						_clusterIconCache ??= new Dictionary<string, (BitmapDescriptor Icon, DateTime ExpiresAtUtc)>();
-						if (_clusterIconCache.Count >= MaxClusterIconCacheSize)
-							_clusterIconCache.Clear();
+						_clusterIconCacheOrder ??= new Queue<string>();
+						// Evict oldest-first until there is room. Skip keys already gone (e.g. expired and removed on
+						// lookup) so a stale order entry just falls through instead of dropping a live one.
+						while (_clusterIconCache.Count >= MaxClusterIconCacheSize && _clusterIconCacheOrder.Count > 0)
+						{
+							var oldest = _clusterIconCacheOrder.Dequeue();
+							_clusterIconCache.Remove(oldest);
+						}
 						_clusterIconCache[cacheKey] = (icon, GetClusterIconCacheExpiry(image));
+						_clusterIconCacheOrder.Enqueue(cacheKey);
 					}
 				}
 			}
