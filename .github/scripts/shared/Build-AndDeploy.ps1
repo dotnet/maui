@@ -203,42 +203,30 @@ if ($Platform -eq "android") {
     $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
     Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
     
-    # Two INDEPENDENT guards keep the iOS HostApp build resilient to a
-    # Microsoft.iOS workload (e.g. net11.0-ios 26.5, which advertises a
-    # requirement of Xcode 26.6) landing ahead of the agent's installed Xcode:
+    # Build the iOS HostApp using the SAME proven recipe the MAIN maui-pr-uitests
+    # pipeline uses (eng/devices/ios.cake -> ExecuteBuildUITestApp), so the deep
+    # stage builds byte-for-byte the way the shipping UI-test lane does:
     #
-    #  1. ValidateXcodeVersion=false — skips the SDK's EARLY, up-front
-    #     Xcode-version gate (the eager check that fires before any compilation).
+    #     dotnet build <HostApp> -c Debug -f net-ios \
+    #        -p:BuildIpa=true -p:_UseNativeAot=false -r iossimulator-<arch>
     #
-    #  2. _MustTrim=false — stops the ILLink trimmer from running at all, whose
-    #     Xamarin custom SetupStep re-validates the device SDK/Xcode version and
-    #     throws IL1012 -> MT0180 -> NETSDK1144 when the agent's Xcode is older
-    #     than the workload wants. ValidateXcodeVersion=false does NOT cover this
-    #     later pass, so BOTH guards are required.
+    #  * BuildIpa=true — runs the FULL iOS app-packaging pipeline, which is what
+    #    compiles + links the native launcher stub that provides the executable's
+    #    `main` symbol. This is the load-bearing flag.
+    #  * _UseNativeAot=false — Debug simulator uses Mono (NativeAOT is Release-only
+    #    for UI tests); mirrors the cake recipe's USE_NATIVE_AOT=false default.
+    #  * ValidateXcodeVersion=false — harmless extra guard that skips the SDK's
+    #    early Xcode-version gate on heterogeneous agents (the Tahoe image demand
+    #    already pins a current-Xcode agent, so ILLink's own SDK check passes).
     #
-    # ROOT CAUSE (decoded from Microsoft.iOS Xamarin.Shared.Sdk.targets):
-    #   * Passing an explicit RID (-r iossimulator-arm64) sets the SDK's internal
-    #     _MustTrim=true  (RuntimeIdentifier != '' AND ExecutableProject AND
-    #     IsMacEnabled), which FORCES PublishTrimmed=true, which runs ILLink.
-    #   * ILLink's Xamarin SetupStep validates the SDK/Xcode version -> MT0180 on
-    #     agents lacking Xcode 26.6. This is why the failure looked like "agent
-    #     heterogeneity": the AcesShared pool mixes Xcode versions.
-    #
-    # WHY THE OBVIOUS LEVERS DON'T WORK (all empirically confirmed on AcesShared):
-    #   * MtouchLink=None/SdkOnly/Full only picks a TrimMode (copy/partial/full);
-    #     ILLink STILL RUNS in every mode, so the SetupStep still throws MT0180
-    #     (build 14660232 ran the trimmer and MT0180'd *with* MtouchLink=None).
-    #   * PublishTrimmed=false is HARD-REJECTED: "iOS projects do not support
-    #     setting 'PublishTrimmed' to any value" (build 14661796 -> Build FAILED).
-    #   * RunILLink=false skips ILLink but then the app's managed assemblies are
-    #     never bundled (they flow through ILLink when PublishTrimmed=true).
-    #
-    # THE FIX: _MustTrim=false keeps PublishTrimmed unset, so ILLink is skipped
-    # entirely (no MT0180) AND assemblies bundle via the normal untrimmed publish
-    # path — exactly what a Debug SIMULATOR app wants. RID is still passed so the
-    # .app is produced at the expected iossimulator-<arch> path. This script is
-    # shared by the gate and deep stages, so both iOS paths stay resilient.
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false", "-p:_MustTrim=false") + $hostAppBuildProps
+    # DO NOT set _MustTrim=false here. It was tried (commit a00af5df24) to dodge an
+    # intermittent MT0180 from ILLink's Xcode SetupStep, but it ALSO short-circuits
+    # the app-packaging path that emits `main`, so the native link then hard-fails
+    # with `Undefined symbols for architecture arm64: "_main"` (build 14662537 —
+    # managed .dll built fine, then clang++ ld error, ZERO results EVERY run). The
+    # main pipeline never sets _MustTrim and does not hit MT0180 on the Tahoe pool,
+    # so matching its recipe fixes the link failure without reintroducing MT0180.
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:BuildIpa=true", "-p:_UseNativeAot=false", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -359,15 +347,19 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for MacCatalyst..."
     
-    # ValidateXcodeVersion=false + _MustTrim=false: same two-guard resilience as
-    # the iOS build above — MacCatalyst also builds through the Microsoft.iOS /
-    # Microsoft.MacCatalyst SDK and can hit BOTH the early Xcode gate AND the
-    # ILLink SetupStep (MT0180/IL1012/NETSDK1144) when the workload outpaces the
-    # agent's Xcode. _MustTrim=false keeps PublishTrimmed unset so ILLink is
-    # skipped and assemblies bundle untrimmed. PublishTrimmed=false itself is
-    # hard-rejected by the SDK, so do NOT reach for it. See the iOS block for the
-    # full SDK-targets decode (PR #35892 review 4685252040).
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-p:ValidateXcodeVersion=false", "-p:_MustTrim=false") + $hostAppBuildProps
+    # Build the MacCatalyst HostApp with the SAME proven recipe the MAIN pipeline
+    # uses (eng/devices/catalyst.cake): dotnet build -c Debug -f net-maccatalyst
+    #   -p:BuildIpa=true -r maccatalyst-<arch>
+    # BuildIpa=true runs the full app-packaging pipeline that emits the native
+    # launcher `main` symbol — see the iOS block above: omitting it caused an
+    # "Undefined symbols for architecture arm64: _main" hard link failure. The
+    # ValidateXcodeVersion=false guard harmlessly skips the SDK's early Xcode gate
+    # on heterogeneous agents. Do NOT set _MustTrim=false: it short-circuits the
+    # very packaging step that produces `main`, so the native link would fail.
+    $macArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
+    $macRid = if ($macArch -eq "x64") { "maccatalyst-x64" } else { "maccatalyst-arm64" }
+    Write-Info "MacCatalyst RuntimeIdentifier: $macRid"
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $macRid, "-p:BuildIpa=true", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
