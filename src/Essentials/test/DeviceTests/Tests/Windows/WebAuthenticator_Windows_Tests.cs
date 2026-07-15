@@ -1,4 +1,3 @@
-#if WINDOWS
 using System;
 using Microsoft.Maui.Authentication;
 using Xunit;
@@ -49,4 +48,3 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 	}
 }
-#endif

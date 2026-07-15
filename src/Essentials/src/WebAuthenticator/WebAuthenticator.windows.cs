@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Authentication
 				return true;
 			}
 
-			// A callback can have the expected scheme and still fail host/path validation.
+			// A callback can have the expected scheme and still fail host validation.
 			// Leave the active route registered so a later valid callback can complete it.
 			if (isLocalCallbackRoute)
 				return false;
@@ -237,7 +237,8 @@ namespace Microsoft.Maui.Authentication
 			if (string.Equals(currentKey, routeKey, StringComparison.Ordinal))
 				return;
 
-			// Preserve application-owned AppInstance routing.
+			// Preserve application-owned AppInstance routing. Such apps must redirect protocol
+			// activations to this instance so the lifecycle callback above can complete the request.
 			if (!CanRegisterCallbackRoute(currentKey))
 				return;
 

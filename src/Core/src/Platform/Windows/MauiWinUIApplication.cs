@@ -83,6 +83,8 @@ namespace Microsoft.Maui
 			if (_isRegisteredForAppInstanceActivated)
 				return;
 
+			var dispatcher = _services!.GetRequiredApplicationDispatcher();
+
 			_isRegisteredForAppInstanceActivated = true;
 
 			// After startup, later file/protocol/redirected activations are delivered through AppInstance.
@@ -90,6 +92,14 @@ namespace Microsoft.Maui
 
 			void HandleAppInstanceActivated(object? sender, AppActivationArguments args)
 			{
+				// WinAppSDK delivers redirected activations on a worker thread, while MAUI
+				// lifecycle handlers are UI-facing.
+				if (dispatcher.IsDispatchRequired)
+				{
+					dispatcher.Dispatch(() => OnAppInstanceActivated(args));
+					return;
+				}
+
 				OnAppInstanceActivated(args);
 			}
 		}
