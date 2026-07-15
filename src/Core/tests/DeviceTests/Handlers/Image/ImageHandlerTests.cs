@@ -9,7 +9,6 @@ using Xunit;
 
 #if ANDROID
 using Android.Graphics.Drawables;
-using PlatformImageType = System.Int32;
 #elif IOS || MACCATALYST
 using UIKit;
 using PlatformImageType = UIKit.UIImage;
@@ -29,7 +28,6 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : StubBase, IImageStub, new()
 	{
 #if ANDROID
-		const string ImageEventAppResourceMemberName = "SetImageResource";
 		const string ImageEventCustomMemberName = "SetImageDrawable";
 #elif IOS || MACCATALYST
 		const string ImageEventAppResourceMemberName = "Image";
@@ -405,12 +403,15 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				Assert.Single(handler.ImageEvents);
-				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);
-				var platformImage = Assert.IsType<PlatformImageType>(handler.ImageEvents[0].Value);
+				Assert.Equal(ImageEventCustomMemberName, handler.ImageEvents[0].Member);
 
 #if ANDROID
-				Assert.Equal(GetDrawableId("red"), platformImage);
+				// App-resource images now decode through Glide (to bound oversized bitmaps), which
+				// applies the decoded result via SetImageDrawable instead of the native SetImageResource(id).
+				// The rendered color is already asserted above via PlatformView.AssertContainsColor.
+				Assert.IsAssignableFrom<BitmapDrawable>(handler.ImageEvents[0].Value);
 #elif IOS || MACCATALYST
+				var platformImage = Assert.IsType<PlatformImageType>(handler.ImageEvents[0].Value);
 				await platformImage.AssertContainsColor(Colors.Red.ToPlatform()).ConfigureAwait(false);
 #endif
 			});
@@ -447,12 +448,15 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
 
 				Assert.Single(handler.ImageEvents);
-				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);
-				var platformImage = Assert.IsType<PlatformImageType>(handler.ImageEvents[0].Value);
+				Assert.Equal(ImageEventCustomMemberName, handler.ImageEvents[0].Member);
 
 #if ANDROID
-				Assert.Equal(GetDrawableId("blue"), platformImage);
+				// App-resource images now decode through Glide (to bound oversized bitmaps), which
+				// applies the decoded result via SetImageDrawable instead of the native SetImageResource(id).
+				// The rendered color is already asserted above via PlatformView.AssertContainsColor.
+				Assert.IsAssignableFrom<BitmapDrawable>(handler.ImageEvents[0].Value);
 #elif IOS || MACCATALYST
+				var platformImage = Assert.IsType<PlatformImageType>(handler.ImageEvents[0].Value);
 				await platformImage.AssertContainsColor(Colors.Blue.ToPlatform()).ConfigureAwait(false);
 #endif
 			});
@@ -515,11 +519,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			return handler;
 		}
-
-#if ANDROID
-		static int GetDrawableId(string image) =>
-			MauiProgram.DefaultContext.Resources.GetDrawableId(MauiProgram.DefaultContext.PackageName, image);
-#endif
 
 		[Fact(
 #if WINDOWS
