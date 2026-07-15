@@ -406,7 +406,30 @@ stages:
 
                 echo "=== Creating AVD ==="
                 echo "no" | avdmanager create avd -n Emulator_30 -k "$SYS_IMAGE" --device "Nexus 5X" --force
-                
+
+                # avdmanager can fail/stall (e.g. "Loading local repository…" hangs,
+                # or the system image is registered but incomplete) and leave NO AVD
+                # behind. Booting a non-existent AVD then spins "Unknown AVD name
+                # [Emulator_30]" for 120s on EVERY launch/retry until the whole task
+                # times out — 6+ min wasted and no review (build 14665001, PR #36130).
+                # Verify the .ini the emulator actually loads exists; if not, force
+                # re-install the image and re-create (up to 3×), then fail FAST rather
+                # than fall through to an unbootable AVD.
+                AVD_INI="$HOME/.android/avd/Emulator_30.ini"
+                CREATE_TRIES=0
+                while [ ! -f "$AVD_INI" ] && [ $CREATE_TRIES -lt 3 ]; do
+                  CREATE_TRIES=$((CREATE_TRIES + 1))
+                  echo "##vso[task.logissue type=warning]AVD Emulator_30 not created (try $CREATE_TRIES) — re-installing $SYS_IMAGE and re-creating"
+                  yes | sdkmanager "$SYS_IMAGE" 2>&1 | tail -5 || true
+                  echo "no" | avdmanager create avd -n Emulator_30 -k "$SYS_IMAGE" --device "Nexus 5X" --force
+                done
+                if [ ! -f "$AVD_INI" ]; then
+                  echo "##vso[task.logissue type=error]Could not create AVD Emulator_30 (system image unavailable on this agent). Failing fast instead of booting a non-existent AVD."
+                  avdmanager list avd 2>/dev/null || true
+                  exit 1
+                fi
+                echo "AVD Emulator_30 ready: $AVD_INI"
+
                 # Reduce userdata partition to fit on hosted agents (~4.2GB free)
                 AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
                 if [ -f "$AVD_CONFIG" ]; then
@@ -1389,6 +1412,22 @@ stages:
 
                 echo "=== Creating AVD ==="
                 echo "no" | avdmanager create avd -n Emulator_30 -k "$SYS_IMAGE" --device "Nexus 5X" --force
+                # Guard: never boot a non-existent AVD (see Review-stage note /
+                # build 14665001, PR #36130 — 6-min "Unknown AVD name" timeout spin).
+                AVD_INI="$HOME/.android/avd/Emulator_30.ini"
+                CREATE_TRIES=0
+                while [ ! -f "$AVD_INI" ] && [ $CREATE_TRIES -lt 3 ]; do
+                  CREATE_TRIES=$((CREATE_TRIES + 1))
+                  echo "##vso[task.logissue type=warning]AVD Emulator_30 not created (try $CREATE_TRIES) — re-installing $SYS_IMAGE and re-creating"
+                  yes | sdkmanager "$SYS_IMAGE" 2>&1 | tail -5 || true
+                  echo "no" | avdmanager create avd -n Emulator_30 -k "$SYS_IMAGE" --device "Nexus 5X" --force
+                done
+                if [ ! -f "$AVD_INI" ]; then
+                  echo "##vso[task.logissue type=error]Could not create AVD Emulator_30 (system image unavailable on this agent). Failing fast instead of booting a non-existent AVD."
+                  avdmanager list avd 2>/dev/null || true
+                  exit 1
+                fi
+                echo "AVD Emulator_30 ready: $AVD_INI"
                 AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
                 [ -f "$AVD_CONFIG" ] && sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$AVD_CONFIG"
 
