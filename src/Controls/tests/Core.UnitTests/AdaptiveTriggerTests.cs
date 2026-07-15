@@ -109,6 +109,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ReplacingVisualStateGroupsPreservesReusedAdaptiveTrigger()
+		{
+			var redBrush = new SolidColorBrush(Colors.Red);
+			var greenBrush = new SolidColorBrush(Colors.Green);
+			var label = new Label { Background = redBrush };
+			var trigger = new AdaptiveTrigger { MinWindowWidth = 300 };
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState
+						{
+							Name = "OriginalLarge",
+							StateTriggers = { trigger },
+						},
+					}
+				}
+			});
+
+			var page = new ContentPage { Content = label };
+			IWindow window = new Window { Page = page };
+			window.FrameChanged(new Rect(0, 0, 100, 100));
+
+			Assert.True(trigger.IsAttached);
+			Assert.Equal(redBrush, label.Background);
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState
+						{
+							Name = "ReplacementLarge",
+							StateTriggers = { trigger },
+							Setters = { new Setter { Property = Label.BackgroundProperty, Value = greenBrush } },
+						},
+					}
+				}
+			});
+
+			Assert.True(trigger.IsAttached);
+
+			window.FrameChanged(new Rect(0, 0, 500, 100));
+
+			Assert.Equal(greenBrush, label.Background);
+		}
+
+		[Fact]
 		public async Task ReplacingVisualStateGroupsDoesNotLeakVisualElement()
 		{
 			// A long-lived window that stays alive for the duration of the test.

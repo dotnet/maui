@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Controls
 
 		static void VisualStateGroupsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			var newVisualStateGroupList = newValue as VisualStateGroupList;
+
 			if (oldValue is VisualStateGroupList { VisualElement: { } oldElement } oldVisualStateGroupList)
 			{
 				var vsgSpecificity = oldVisualStateGroupList.Specificity;
@@ -52,16 +54,16 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				// Detach the old triggers so they release their subscriptions (e.g. an
-				// AdaptiveTrigger's Window.SizeChanged handler), otherwise the old triggers
-				// keep the VisualElement alive after the groups are replaced.
+				// Detach old triggers that are not reused by the replacement list so they
+				// release subscriptions without disrupting the replacement trigger lifecycle.
 				foreach (var group in oldVisualStateGroupList)
 				{
 					foreach (var state in group.States)
 					{
 						foreach (var stateTrigger in state.StateTriggers)
 						{
-							stateTrigger.SendDetached();
+							if (!ContainsStateTrigger(newVisualStateGroupList, stateTrigger))
+								stateTrigger.SendDetached();
 						}
 					}
 				}
@@ -71,12 +73,25 @@ namespace Microsoft.Maui.Controls
 
 			var visualElement = (VisualElement)bindable;
 
-			if (newValue != null)
-				((VisualStateGroupList)newValue).VisualElement = visualElement;
+			newVisualStateGroupList?.VisualElement = visualElement;
 
 			visualElement.ChangeVisualState();
 
 			UpdateStateTriggers(visualElement);
+		}
+
+		static bool ContainsStateTrigger(VisualStateGroupList visualStateGroupList, StateTriggerBase stateTrigger)
+		{
+			if (visualStateGroupList is null)
+				return false;
+
+			foreach (var group in visualStateGroupList)
+				foreach (var state in group.States)
+					foreach (var replacementTrigger in state.StateTriggers)
+						if (ReferenceEquals(replacementTrigger, stateTrigger))
+							return true;
+
+			return false;
 		}
 
 		/// <summary>
