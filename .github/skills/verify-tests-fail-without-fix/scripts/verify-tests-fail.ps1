@@ -1707,7 +1707,8 @@ function Write-MarkdownReport {
             } elseif ($wBuildError.Count -gt 0) {
                 $failureClassification = "🩺 **Pre-existing build failure (not the fix)** — both the without-fix baseline AND the with-fix build fail with a build error, so the PR's fix is NOT the cause. This is a broken ``main``/merge-base or a toolchain/environment failure (e.g. an ILLink IL1012 trimmer crash). The gate cannot verify anything; investigate the build environment rather than the PR.$woExcerptLine"
             } else {
-                $failureClassification = "🩺 **Base branch does not compile** — the without-fix build failed. The gate's ""does the test fail without the fix"" check is unreliable here; this usually means ``main`` is broken or a merge-base file went missing. Investigate before trusting this gate.$woExcerptLine"
+                $newFileNote = if ($ReportNewFiles.Count -gt 0) { " Note: this PR ADDS $($ReportNewFiles.Count) new file(s), which the gate removes to reconstruct the pre-fix baseline; if the PR's own (never-reverted) test files reference types defined in those new files, the baseline cannot compile — that reflects a **new-feature PR the gate cannot isolate a ""before"" state for**, not necessarily a broken ``main``. The with-fix result below is the reliable signal." } else { "" }
+                $failureClassification = "🩺 **Base branch does not compile** — the without-fix build failed. The gate's ""does the test fail without the fix"" check is unreliable here; this usually means ``main`` is broken or a merge-base file went missing.$newFileNote Investigate before trusting this gate.$woExcerptLine"
             }
         } elseif ($wBuildError.Count -gt 0) {
             # Reached only when the baseline builds cleanly but the PR's fix does NOT — a
@@ -2068,6 +2069,29 @@ foreach ($file in $RevertableFiles) {
 
 Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) reverted to merge-base state"
 
+# A PR-ADDED product file did not exist at the merge-base, so the true
+# "without-fix" baseline is that file being ABSENT — not left on disk at its
+# HEAD (fixed) version. Leaving new files behind while reverting the files they
+# depend on produces a SPURIOUS build break: e.g. a new derived class
+# (MauiCarouselRecyclerView2) that `override`s a member whose declaration lives
+# in a MODIFIED base class — once the base is reverted the override has nothing
+# to override → CS0115, which the gate then mis-reports as "base branch does not
+# compile / main is broken" and needlessly goes INCONCLUSIVE (dotnet/maui
+# #35640). Reverted (base-version) product code can NEVER reference a PR-added
+# file, so removing new files is always safe for the product baseline; STEP 3
+# restores them from HEAD (they are committed there) for the with-fix run.
+if ($NewFiles.Count -gt 0) {
+    Write-Log ""
+    Write-Log "  Removing $($NewFiles.Count) PR-added file(s) so the baseline matches the pre-fix tree:"
+    foreach ($file in $NewFiles) {
+        Write-Log "    Removing (new in PR): $file"
+        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
+        $wtPath = Join-Path $RepoRoot $file
+        if (Test-Path $wtPath) { Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue }
+    }
+    Write-Log "  ✓ $($NewFiles.Count) PR-added file(s) removed for the baseline"
+}
+
 # ── Snapshot-diff A/B helpers (VerifyScreenshot environmental false-FAILED guard) ──
 # A visual-fix PR whose committed baselines carry a small, CONSTANT cross-agent
 # rendering offset (anti-aliasing / font hinting differ between the machine that
@@ -2251,6 +2275,23 @@ foreach ($file in $RevertableFiles) {
 }
 
 Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) restored from HEAD"
+
+# Restore the PR-added files STEP 1 removed to form the baseline. They are
+# committed at HEAD (they came from `git diff MergeBase HEAD`), so a plain
+# checkout brings them back for the with-fix run.
+if ($NewFiles.Count -gt 0) {
+    Write-Log "  Restoring $($NewFiles.Count) PR-added file(s) for the with-fix run:"
+    foreach ($file in $NewFiles) {
+        Write-Log "    Restoring (new in PR): $file"
+        $gitOutput = git checkout HEAD -- $file 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log "  ERROR: Failed to restore new file $file from HEAD"
+            Write-Log "  Git output: $gitOutput"
+            exit 1
+        }
+    }
+    Write-Log "  ✓ $($NewFiles.Count) PR-added file(s) restored from HEAD"
+}
 
 # Step 4: Run ALL tests WITH fix
 Write-Host ""
