@@ -286,6 +286,48 @@ stages:
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
 
+          # ─────────────────────────────────────────────────────────
+          #  EARLY UI-CATEGORY DETECTION (infra-independent) — emits
+          #  detectedCategories BEFORE any device-infra setup so the Deep UI
+          #  Tests stage can run on its OWN fresh agent even when a gate-stage
+          #  infra step fails (emulator boot / screen resolution / sim boot) or
+          #  the buildtasks/setup/review steps fail. Previously detection ran
+          #  ONLY inside Task 2 (Gate), AFTER emulator/screen/sim setup, so ANY
+          #  of those flakes skipped RunGate -> detectedCategories was never
+          #  emitted -> the Deep stage's condition (needs a non-empty category)
+          #  skipped Deep -> the PR got ZERO UI results (e.g. build 14664889
+          #  android "Create AVD" timeout; 14664890 windows "Set screen
+          #  resolution" EnumDisplaySettings null — both skipped Deep despite the
+          #  PR code being fine). detect-ui-test-categories.ps1 is self-contained:
+          #  given -PrNumber it fetches the PR head via the GitHub API, checks it
+          #  out, diffs vs the base, emits the list, then reverts HEAD — it needs
+          #  only git + a GH token (no emulator / dotnet build). RunGate re-emits
+          #  the same variable later; Deep/Post coalesce RunReview, then RunGate,
+          #  then RunDetect (this early fallback).
+          # ─────────────────────────────────────────────────────────
+          - pwsh: |
+              $detect = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "detect-ui-test-categories.ps1"
+              if (-not (Test-Path $detect)) {
+                Write-Host "##[warning]detect-ui-test-categories.ps1 not found at $detect — Deep will fall back to RunGate detection"
+                return
+              }
+              $cats = ""
+              $out = & pwsh -NoProfile -File $detect -PrNumber "$env:PARAM_PR_NUMBER" 2>&1
+              $out | ForEach-Object { Write-Host "  $_" }
+              foreach ($line in $out) {
+                if ($line.ToString() -match 'UITestCategoryList;isOutput=true\](.*)$') { $cats = $Matches[1] }
+              }
+              $catsForOutput = if ($cats -eq 'NONE') { 'NONE' } elseif ([string]::IsNullOrWhiteSpace($cats)) { 'ALL' } else { $cats }
+              Write-Host "Early-detected categories (RunDetect): '$catsForOutput'"
+              Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$catsForOutput"
+            name: RunDetect
+            displayName: 'Detect UI categories (early, infra-independent)'
+            condition: succeededOrFailed()
+            retryCountOnTaskFailure: 1
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
           # Build MSBuild tasks (required for MAUI builds)
           - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
             displayName: 'Build MSBuild Tasks'
@@ -1182,15 +1224,15 @@ stages:
     condition: >-
       and(
         in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'),
-        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), ''),
-        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), 'NONE'),
-        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), 'ALL')
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), ''),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), 'NONE'),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), 'ALL')
       )
     jobs:
       - job: RunUITests
         displayName: 'Run detected UI test categories'
         variables:
-          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories']) ]
+          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunDetect.detectedCategories']) ]
         # Use the SAME platform-pool selection logic as the CopilotReview
         # job — the deep-test agent should be the right OS for the
         # requested target platform.
@@ -2037,7 +2079,7 @@ stages:
           # ReviewPR ALWAYS runs, so its detectedCategories output IS reliable, and
           # it is the exact signal the deep stage itself gates on — download when
           # (and only when) the deep stage actually ran and published an artifact.
-          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories']) ]
+          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunDetect.detectedCategories']) ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
