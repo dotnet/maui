@@ -42,3 +42,35 @@ Microsoft.Maui.Graphics.Color.MultiplyAlpha(float multiplyBy) -> Microsoft.Maui.
 Microsoft.Maui.Graphics.Color.WithAlpha(float alpha) -> Microsoft.Maui.Graphics.Color!
 override Microsoft.Maui.Graphics.Color.ToString() -> string!
 static Microsoft.Maui.Graphics.Color.FromHex(string! colorAsArgbHex) -> Microsoft.Maui.Graphics.Color!
+
+Microsoft.Maui.Graphics.IImageMetadata
+Microsoft.Maui.Graphics.IImageWithMetadata
+Microsoft.Maui.Graphics.IImageWithMetadata.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata?
+Microsoft.Maui.Graphics.IImageWithMetadata.Save(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
+Microsoft.Maui.Graphics.IImageWithMetadata.SaveAsync(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Graphics.IMetadataImageLoadingService
+Microsoft.Maui.Graphics.IMetadataImageLoadingService.FromStream(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage!
+Microsoft.Maui.Graphics.ImageLoadOptions
+Microsoft.Maui.Graphics.ImageLoadOptions.DisableRotationNormalization.get -> bool
+Microsoft.Maui.Graphics.ImageLoadOptions.DisableRotationNormalization.init -> void
+Microsoft.Maui.Graphics.ImageLoadOptions.Equals(Microsoft.Maui.Graphics.ImageLoadOptions other) -> bool
+Microsoft.Maui.Graphics.ImageLoadOptions.ImageLoadOptions() -> void
+Microsoft.Maui.Graphics.ImageLoadOptions.PreserveMetadata.get -> bool
+Microsoft.Maui.Graphics.ImageLoadOptions.PreserveMetadata.init -> void
+Microsoft.Maui.Graphics.ImageSaveOptions
+Microsoft.Maui.Graphics.ImageSaveOptions.Equals(Microsoft.Maui.Graphics.ImageSaveOptions other) -> bool
+Microsoft.Maui.Graphics.ImageSaveOptions.ImageSaveOptions() -> void
+Microsoft.Maui.Graphics.ImageSaveOptions.PreserveMetadata.get -> bool
+Microsoft.Maui.Graphics.ImageSaveOptions.PreserveMetadata.init -> void
+Microsoft.Maui.Graphics.ImageSaveOptions.Quality.get -> float
+Microsoft.Maui.Graphics.ImageSaveOptions.Quality.init -> void
+override Microsoft.Maui.Graphics.ImageLoadOptions.GetHashCode() -> int
+override Microsoft.Maui.Graphics.ImageSaveOptions.GetHashCode() -> int
+static Microsoft.Maui.Graphics.ImageLoadOptions.operator !=(Microsoft.Maui.Graphics.ImageLoadOptions left, Microsoft.Maui.Graphics.ImageLoadOptions right) -> bool
+static Microsoft.Maui.Graphics.ImageLoadOptions.operator ==(Microsoft.Maui.Graphics.ImageLoadOptions left, Microsoft.Maui.Graphics.ImageLoadOptions right) -> bool
+static Microsoft.Maui.Graphics.ImageSaveOptions.operator !=(Microsoft.Maui.Graphics.ImageSaveOptions left, Microsoft.Maui.Graphics.ImageSaveOptions right) -> bool
+static Microsoft.Maui.Graphics.ImageSaveOptions.operator ==(Microsoft.Maui.Graphics.ImageSaveOptions left, Microsoft.Maui.Graphics.ImageSaveOptions right) -> bool
+~override Microsoft.Maui.Graphics.ImageLoadOptions.Equals(object obj) -> bool
+~override Microsoft.Maui.Graphics.ImageLoadOptions.ToString() -> string
+~override Microsoft.Maui.Graphics.ImageSaveOptions.Equals(object obj) -> bool
+~override Microsoft.Maui.Graphics.ImageSaveOptions.ToString() -> string
