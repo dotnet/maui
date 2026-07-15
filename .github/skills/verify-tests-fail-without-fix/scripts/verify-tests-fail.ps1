@@ -1497,6 +1497,60 @@ function Test-BuildErrorIsInDetectedTest {
     return $false
 }
 
+# Condense a raw build/test log into an error-relevant excerpt for a PR comment.
+# Dumping the full transcript (warnings, DLL output paths, ##vso commands) bloated the
+# AI summary to tens of KB of noise (e.g. PR #34883 review = 56 KB) and buried the real
+# failure. This keeps only lines that actually explain a failure — coded compiler/MSBuild
+# errors, exceptions, stack frames, "Build FAILED" — capped to a small budget; if none
+# match, it falls back to a short raw tail.
+function Format-GateLogExcerpt {
+    param(
+        [string]$LogContent,
+        [int]$MaxChars = 4000,
+        [int]$RawTailChars = 1200
+    )
+    if ([string]::IsNullOrWhiteSpace($LogContent)) { return @() }
+    $out = @()
+    $logLines = $LogContent -split "`r?`n"
+    # Lines that actually explain a failure.
+    $errRx = '(:\s*error\s|error\s(CS|MSB|MT|NETSDK|XA|NU|CA|APT|AMM|IL)\d|MSBUILD\s*:\s*error|Build FAILED|##\[error\]|Unhandled exception|^\s*at\s+\S+\(|\.Exception:|Exception has been thrown)'
+    # Noise to drop even when a line otherwise matches.
+    $noiseRx = '(^\s*\d+ Warning\(s\)|->\s+\S+\.dll\s*$|##vso\[|:\s*warning\s)'
+    $errLines = @($logLines | Where-Object { $_ -match $errRx -and $_ -notmatch $noiseRx })
+    if ($errLines.Count -gt 0) {
+        # De-dup (MSBuild repeats each error once per target framework).
+        $seen = [System.Collections.Generic.HashSet[string]]::new()
+        $uniq = @()
+        foreach ($l in $errLines) { $k = $l.Trim(); if ($k -and $seen.Add($k)) { $uniq += $l } }
+        # Keep the LAST lines within budget (failures surface at the end of a build).
+        $buf = @(); $len = 0
+        for ($i = $uniq.Count - 1; $i -ge 0; $i--) {
+            $l = $uniq[$i]
+            if ($len + $l.Length + 1 -gt $MaxChars) { break }
+            $buf = , $l + $buf; $len += $l.Length + 1
+        }
+        $out += "**Error-relevant lines** (filtered from the build log):"
+        $out += ""
+        $out += '```'
+        $out += $buf
+        $out += '```'
+        return $out
+    }
+    # No coded error matched — show a short raw tail as a fallback.
+    if ($LogContent.Length -gt $RawTailChars) {
+        $out += "*(no coded error found; showing last $RawTailChars chars)*"
+        $out += ""
+        $out += '```'
+        $out += $LogContent.Substring($LogContent.Length - $RawTailChars)
+        $out += '```'
+    } else {
+        $out += '```'
+        $out += $LogContent
+        $out += '```'
+    }
+    return $out
+}
+
 function Write-MarkdownReport {
     param(
         [bool]$VerificationPassed,
@@ -1753,15 +1807,7 @@ function Write-MarkdownReport {
         if (Test-Path $woLogFile) {
             $logContent = Get-Content $woLogFile -Raw -ErrorAction SilentlyContinue
             if ($logContent) {
-                # Truncate if too large for a PR comment (GitHub limit ~65k chars total)
-                if ($logContent.Length -gt 15000) {
-                    $logContent = $logContent.Substring($logContent.Length - 15000)
-                    $lines += "*(truncated to last 15,000 chars)*"
-                    $lines += ""
-                }
-                $lines += '```'
-                $lines += $logContent
-                $lines += '```'
+                $lines += Format-GateLogExcerpt -LogContent $logContent
             } else {
                 $lines += "*Log file empty*"
             }
@@ -1782,14 +1828,7 @@ function Write-MarkdownReport {
         if (Test-Path $wLogFile) {
             $logContent = Get-Content $wLogFile -Raw -ErrorAction SilentlyContinue
             if ($logContent) {
-                if ($logContent.Length -gt 15000) {
-                    $logContent = $logContent.Substring($logContent.Length - 15000)
-                    $lines += "*(truncated to last 15,000 chars)*"
-                    $lines += ""
-                }
-                $lines += '```'
-                $lines += $logContent
-                $lines += '```'
+                $lines += Format-GateLogExcerpt -LogContent $logContent
             } else {
                 $lines += "*Log file empty*"
             }
