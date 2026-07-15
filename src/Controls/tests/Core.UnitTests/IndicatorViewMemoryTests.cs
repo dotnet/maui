@@ -28,5 +28,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(await weakIndicatorView.WaitForCollect(), "IndicatorView should not be alive!");
 			GC.KeepAlive(sharedSource);
 		}
+
+		[Fact]
+		public void ReassigningAndClearingItemsSourceMovesCollectionSubscription()
+		{
+			var firstSource = new ObservableCollection<string> { "a" };
+			var secondSource = new ObservableCollection<string> { "a", "b", "c" };
+			var indicatorView = new IndicatorView { ItemsSource = firstSource };
+
+			Assert.Equal(1, indicatorView.Count);
+
+			indicatorView.ItemsSource = secondSource;
+			Assert.Equal(3, indicatorView.Count);
+
+			firstSource.Add("stale");
+			Assert.Equal(3, indicatorView.Count);
+
+			secondSource.Add("current");
+			Assert.Equal(4, indicatorView.Count);
+
+			indicatorView.ItemsSource = null;
+			Assert.Equal(0, indicatorView.Count);
+
+			secondSource.Add("detached");
+			Assert.Equal(0, indicatorView.Count);
+		}
 	}
 }
