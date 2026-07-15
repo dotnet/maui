@@ -1823,6 +1823,16 @@ stages:
               set -e
               git config user.email "copilot-ci@microsoft.com"
               git config user.name  "Copilot CI"
+              # On Windows agents the initial checkout renormalizes some text
+              # files (e.g. *.js under core.autocrlf) LF->CRLF, leaving the
+              # working tree dirty. The squash-merge AND the head-checkout
+              # fallback below then abort with "local changes would be
+              # overwritten by merge/checkout", blocking the ENTIRE Windows deep
+              # stage (build 14666239, #36544: HybridWebView.js). Pin LF and
+              # discard the renormalization so the merge runs on a clean base tree.
+              git config core.autocrlf false
+              git config core.eol lf
+              git checkout -- . 2>/dev/null || true
               # Merge the PR head commit so we run tests against the same
               # tree the Copilot reviewer saw. Mirror Review-PR.ps1 STEP 1
               # logic (squash-merge, fall back to head checkout on
