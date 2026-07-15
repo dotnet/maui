@@ -509,15 +509,35 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await Task.Delay(500);
 
-				// Selecting the null item programmatically should not throw
+				var itemsView = (WItemsView)collectionView.Handler.PlatformView;
+				var containers = itemsView.GetChildren<ItemContainer>().ToList();
+				Assert.True(containers.Count >= 3, $"Expected at least 3 containers, got {containers.Count}");
+
+				// Drive selection from the platform side (as a real tap would), instead of
+				// setting CollectionView.SelectedItem directly. This exercises the
+				// PlatformSelectionChanged -> UpdateVirtualSingleSelection round-trip, which
+				// is the path that previously threw/undid selection for a null-item row.
+				var nullContainer = containers[1];
 				var exception = await Record.ExceptionAsync(async () =>
 				{
-					collectionView.SelectedItem = null;
+					nullContainer.IsSelected = true;
 					await Task.Delay(100);
 				});
 
 				Assert.Null(exception);
 				Assert.Null(collectionView.SelectedItem);
+				Assert.True(nullContainer.IsSelected, "Platform container for the null item should remain selected.");
+
+				// Deselecting from the platform side should also round-trip cleanly.
+				exception = await Record.ExceptionAsync(async () =>
+				{
+					nullContainer.IsSelected = false;
+					await Task.Delay(100);
+				});
+
+				Assert.Null(exception);
+				Assert.Null(collectionView.SelectedItem);
+				Assert.False(nullContainer.IsSelected);
 			});
 		}
 
