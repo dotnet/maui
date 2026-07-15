@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 				CoreWebView2.SetVirtualHostNameToFolderMapping(
 					LocalHostName,
 					ApplicationPath,
-					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.DenyCors);
 			}
 
 			// Insert script to set the base tag
@@ -74,15 +74,14 @@ namespace Microsoft.Maui.Platform
 		{
 			Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
 
-			if (!uri.IsAbsoluteUri ||
-				IsUriWithLocalScheme(uri.AbsoluteUri))
+			if (IsLocalAppDirUrl(url ?? string.Empty))
 			{
 				await EnsureCoreWebView2Async();
 
 				CoreWebView2.SetVirtualHostNameToFolderMapping(
 					LocalHostName,
 					ApplicationPath,
-					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.DenyCors);
 
 				if (!uri.IsAbsoluteUri)
 					uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
@@ -112,7 +111,7 @@ namespace Microsoft.Maui.Platform
 					CoreWebView2.SetVirtualHostNameToFolderMapping(
 						LocalHostName,
 						ApplicationPath,
-						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.DenyCors);
 				}
 				// Auto unmap local virtual app dir host if navigating to any other potentially unsafe domain
 				else
@@ -122,12 +121,33 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		static bool IsUriWithLocalScheme(string? uri)
+		// Determines whether a URL should be served from the local app directory,
+		// which is mapped to the "appdir" virtual host. Relative URLs are always
+		// treated as local; absolute URLs are only local when their parsed host is
+		// exactly "appdir" over https. This mirrors the decision made in LoadUrl and
+		// is exposed as an internal helper so the classification can be unit tested
+		// without spinning up a live WebView2.
+		internal static bool IsLocalAppDirUrl(string? url)
 		{
-			return uri?
-				.StartsWith(
-					LocalScheme.TrimEnd('/'),
-					StringComparison.OrdinalIgnoreCase) == true;
+			if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+				return false;
+
+			// Relative URLs stay local and are later rebased onto the appdir host.
+			return !uri.IsAbsoluteUri || IsUriWithLocalScheme(uri.AbsoluteUri);
+		}
+
+		// Returns true only when the string parses as an absolute URL whose scheme is
+		// https and whose host is exactly "appdir". Comparing the parsed host (rather
+		// than a raw string prefix) prevents unrelated hosts such as
+		// "appdir.example.com" or "appdir@host.example.com" from being treated as
+		// local content.
+		internal static bool IsUriWithLocalScheme(string? uri)
+		{
+			if (!Uri.TryCreate(uri, UriKind.Absolute, out var parsed))
+				return false;
+
+			return parsed.Scheme == Uri.UriSchemeHttps &&
+				string.Equals(parsed.Host, LocalHostName, StringComparison.OrdinalIgnoreCase);
 		}
 
 		static bool IsWebView2DataUriWithBaseUrl(string? uri)
