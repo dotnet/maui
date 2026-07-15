@@ -37,8 +37,9 @@ namespace Microsoft.Maui.Handlers
 
         protected override void DisconnectHandler(UIView platformView)
         {
-            _manager?.Dispose();
-            _manager = null;
+            // Don't dispose the manager here — DisconnectHandler can be a transient
+            // detach/re-attach. The Controls layer handles cleanup via OnHandlerChangingPartial,
+            // and the manager is disposed when the handler is fully removed.
             ViewController = null;
             base.DisconnectHandler(platformView);
         }

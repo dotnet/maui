@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 
 			// Handler is being removed — clean up resources
 
-			// Fix 4: Unsubscribe manager events to prevent leaks
+			// Unsubscribe manager events to prevent leaks
 			if (args.OldHandler is TabbedViewHandler oldHandler)
 			{
 				var manager = oldHandler.Manager;
@@ -60,10 +60,11 @@ namespace Microsoft.Maui.Controls
 					manager.ViewDidDisappear -= OnManagerViewDidDisappear;
 					manager.TabsReordered -= OnManagerTabsReordered;
 					manager.GetCurrentPageViewControllerFunc = null;
+					manager.Dispose();
 				}
 			}
 
-			// Fix 2: Dispose UITabBarAppearance
+			// Dispose UITabBarAppearance
 			_tabBarAppearance?.Dispose();
 			_tabBarAppearance = null;
 
@@ -71,6 +72,10 @@ namespace Microsoft.Maui.Controls
 			_defaultBarColorSet = false;
 			_defaultBarTextColorSet = false;
 			_defaultBarTranslucent = null;
+			_barBackgroundColorWasSet = false;
+			_barTextColorWasSet = false;
+			_defaultBarColor = null;
+			_defaultBarTextColor = null;
 
 			// Clean up gradient brush subscription
 			if (_currentBarBackground is GradientBrush gradientBrush)
@@ -729,6 +734,15 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var icons = await GetIcon(page);
+
+			// Post-await guard: page may have been removed or handler disconnected during icon load
+			if (page.Handler is null || renderer.ViewController is null || Children.IndexOf(page) < 0)
+			{
+				icons?.Item1?.Dispose();
+				icons?.Item2?.Dispose();
+				return;
+			}
+
 			var resizedImage = TabbedViewExtensions.AutoResizeTabBarImage(manager.TraitCollection, icons?.Item1);
 			var resizedSelectedImage = TabbedViewExtensions.AutoResizeTabBarImage(manager.TraitCollection, icons?.Item2);
 
