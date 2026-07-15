@@ -7,6 +7,7 @@ using Foundation;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
 using MobileCoreServices;
 using Photos;
@@ -276,6 +277,12 @@ namespace Microsoft.Maui.Media
 			// Rotation, resizing and recompression are all handled lazily by the single Graphics-based
 			// processing wrapper below (see PHPickerProcessedFileResult).
 			var needsProcessing = ImageProcessor.IsProcessingNeeded(options);
+			var processingOptions = new ImageProcessingOptions(
+				options?.MaximumWidth,
+				options?.MaximumHeight,
+				options?.CompressionQuality ?? 100,
+				options?.RotateImage ?? false,
+				options?.PreserveMetaData ?? true);
 
 			var fileResults = results
 				.Select(file =>
@@ -283,13 +290,7 @@ namespace Microsoft.Maui.Media
 					FileResult result = new PHPickerFileResult(file.ItemProvider);
 					if (needsProcessing)
 					{
-						result = new PHPickerProcessedFileResult(
-							result,
-							options?.MaximumWidth,
-							options?.MaximumHeight,
-							options?.CompressionQuality ?? 100,
-							options?.RotateImage ?? false,
-							options?.PreserveMetaData ?? true);
+						result = new PHPickerProcessedFileResult(result, processingOptions);
 					}
 					return result;
 				})
@@ -726,25 +727,17 @@ namespace Microsoft.Maui.Media
 	class PHPickerProcessedFileResult : FileResult, IDisposable
 	{
 		readonly FileResult _originalResult;
-		readonly int? _maximumWidth;
-		readonly int? _maximumHeight;
-		readonly int _compressionQuality;
-		readonly bool _rotateImage;
-		readonly bool _preserveMetaData;
+		readonly ImageProcessingOptions _options;
 
 		// Path to the processed cache file, produced on the first call to PlatformOpenReadAsync and
 		// reused on subsequent calls to avoid re-processing.
 		string _processedPath;
 
-		internal PHPickerProcessedFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality, bool rotateImage, bool preserveMetaData)
+		internal PHPickerProcessedFileResult(FileResult originalResult, ImageProcessingOptions options)
 			: base()
 		{
 			_originalResult = originalResult;
-			_maximumWidth = maximumWidth;
-			_maximumHeight = maximumHeight;
-			_compressionQuality = compressionQuality;
-			_rotateImage = rotateImage;
-			_preserveMetaData = preserveMetaData;
+			_options = options;
 
 			// Copy metadata from original, adjusting extension for compressed output
 			var originalFileName = originalResult.FileName;
@@ -782,12 +775,7 @@ namespace Microsoft.Maui.Media
 				_processedPath = await ImageProcessor.ProcessImageToCacheFileAsync(
 					originalStream,
 					_originalResult.FileName,
-					new ImageProcessingOptions(
-						_maximumWidth,
-						_maximumHeight,
-						_compressionQuality,
-						_rotateImage,
-						_preserveMetaData));
+					_options);
 
 				return File.OpenRead(_processedPath);
 			}

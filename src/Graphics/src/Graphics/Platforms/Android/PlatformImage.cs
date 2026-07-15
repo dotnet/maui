@@ -289,7 +289,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			return new PlatformImage(bitmap);
 		}
 
-		public static IImage FromStream(Stream stream, ImageLoadOptions options)
+		// Loading is exposed through IImageLoadingService; this internal helper backs the loading
+		// service's options-based FromStream and is not part of the public image surface.
+		internal static IImage FromStream(Stream stream, ImageLoadOptions options)
 		{
 			// Use original stream if seekable, otherwise copy to memory stream
 			if (stream.CanSeek)

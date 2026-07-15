@@ -236,7 +236,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			return new PlatformImage(image.NormalizeOrientation(disposeOriginal: true));
 		}
 
-		public static IImage FromStream(Stream stream, ImageLoadOptions options)
+		// Loading is exposed through IImageLoadingService; this internal helper backs the loading
+		// service's options-based FromStream and is not part of the public image surface.
+		internal static IImage FromStream(Stream stream, ImageLoadOptions options)
 		{
 			using var data = NSData.FromStream(stream);
 
