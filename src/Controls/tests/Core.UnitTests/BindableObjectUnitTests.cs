@@ -794,7 +794,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
-		public async Task FinalizerCleanupLeavesPendingWhenDispatcherIsDisposed(bool throwFromIsDispatchRequired)
+		public async Task CleanupLeavesPendingWhenDispatcherIsDisposed(bool throwFromIsDispatchRequired)
 		{
 			bool dispatcherDisposed = true;
 			bool dispatchRequired = true;
@@ -836,6 +836,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var exception = Record.Exception(bindable.ClearRealParentAndInheritedContextIfCollected);
 
 			Assert.Null(exception);
+
+			Element parent = null;
+			object bindingContext = new();
+			var parentException = Record.Exception(() => parent = bindable.Parent);
+			var bindingContextException = Record.Exception(() => bindingContext = bindable.BindingContext);
+
+			Assert.Null(parentException);
+			Assert.Null(bindingContextException);
+			Assert.Null(parent);
+			Assert.Null(bindingContext);
 			Assert.Equal(0, bindingContextChanged);
 			Assert.Equal("FooBar", bindable.GetValue(BindableObject.BindingContextProperty));
 

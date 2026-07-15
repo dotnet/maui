@@ -560,8 +560,10 @@ namespace Microsoft.Maui.Controls
 			{
 				isDispatchRequired = dispatcher?.IsDispatchRequired == true;
 			}
-			catch (ObjectDisposedException) when (!clearIfDispatchNotRequired)
+			catch (ObjectDisposedException)
 			{
+				// A cached dispatcher can outlive its window. Keep the cleanup pending
+				// instead of leaking disposal through Parent or BindingContext access.
 				return;
 			}
 
@@ -575,7 +577,7 @@ namespace Microsoft.Maui.Controls
 				{
 					dispatchAccepted = dispatcher.Dispatch(() => ClearPendingInheritedBindingContext(pendingCleanup));
 				}
-				catch (ObjectDisposedException) when (!clearIfDispatchNotRequired)
+				catch (ObjectDisposedException)
 				{
 					return;
 				}
