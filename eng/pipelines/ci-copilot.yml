@@ -1874,6 +1874,17 @@ stages:
               $hadFailure = $false
               $catIdx = 0
               $needDeviceReset = $false
+              # Signatures that mean the just-finished category left the shared
+              # device/app in a degraded state and the NEXT category will cascade
+              # into a OneTimeSetUp wipeout unless we reboot first. Beyond the
+              # test-side TearDown crash text, this also catches:
+              #   • OneTimeSetUp: System.TimeoutException — fixture setup could not
+              #     navigate the gallery (app unresponsive/ANR); the Brush trigger
+              #     in PR #36329 build 14656790 that got NO reset and cascaded.
+              #   • Android logcat app-death — the HostApp crashed on launch or was
+              #     killed/ANR'd (only visible in logcat, exit code 1, NOT the
+              #     test-side keyword): AndroidRuntime FATAL, "has died", "Killing".
+              $crashSig = 'investigate as possible crash|was expected to be running still|keeps stopping|OneTimeSetUp: System\.TimeoutException|AndroidRuntime: Process: com\.microsoft\.maui\.uitests|Process com\.microsoft\.maui\.uitests.*has died|Killing [0-9]+:com\.microsoft\.maui\.uitests'
               foreach ($cat in $catList) {
                 $catIdx++
                 $catStart = Get-Date
@@ -1982,17 +1993,19 @@ stages:
                       }
                       # An in-run HostApp CRASH (exit non-124) degrades the shared
                       # device just as badly as a tree-kill: the app "keeps
-                      # stopping" / "was expected to be running still", and every
+                      # stopping" / "was expected to be running still" / crashes on
+                      # launch (logcat AndroidRuntime FATAL / "has died"), and every
                       # FOLLOWING category's OneTimeSetup then times out waiting for
                       # the gallery — one crash cascades into a wipeout of all
                       # remaining categories (PR #30875: 67 passed, then 347 could
-                      # not complete). Detect the crash signature in this category's
-                      # log and reset the device before the next category so the
-                      # crash does not cascade. Select-String -Quiet streams the
-                      # file (memory-safe); guarded by exitCode -ne 0 so a clean
-                      # run never triggers a reboot.
-                      elseif ((Test-Path $catLog) -and (Select-String -Path $catLog -Pattern 'investigate as possible crash|was expected to be running still|keeps stopping' -Quiet -ErrorAction SilentlyContinue)) {
-                        Write-Host "Category '$cat' shows a HostApp-crash signature — resetting the shared $platform device before the next category to prevent a cascade (PR #30875)." -ForegroundColor Yellow
+                      # not complete; PR #36329: Brush ANR/killed, then Layout +
+                      # ViewBaseTests wiped out). Detect the crash/ANR/fixture-timeout
+                      # signature in this category's log and reset the device before
+                      # the next category so it does not cascade. Select-String
+                      # -Quiet streams the file (memory-safe); guarded by the
+                      # surrounding exitCode -ne 0 so a clean run never reboots.
+                      elseif ((Test-Path $catLog) -and (Select-String -Path $catLog -Pattern $crashSig -Quiet -ErrorAction SilentlyContinue)) {
+                        Write-Host "Category '$cat' shows a HostApp-crash/ANR/fixture-timeout signature — resetting the shared $platform device before the next category to prevent a cascade (PR #30875 / #36329)." -ForegroundColor Yellow
                         $needDeviceReset = $true
                       }
                     }
@@ -2015,11 +2028,12 @@ stages:
                       Write-Host "Category $cat exited with code $LASTEXITCODE" -ForegroundColor Yellow
                       $hadFailure = $true
                       # Same crash-cascade guard as the retry-wrapper path (PR
-                      # #30875): a timeout tree-kill OR an in-run HostApp crash
-                      # degrades the shared device and wipes out every following
-                      # category unless we reboot before the next one.
-                      if ($LASTEXITCODE -eq 124 -or ((Test-Path $catLog) -and (Select-String -Path $catLog -Pattern 'investigate as possible crash|was expected to be running still|keeps stopping' -Quiet -ErrorAction SilentlyContinue))) {
-                        Write-Host "Category '$cat' ended abnormally (timeout or HostApp-crash signature) — resetting the shared $platform device before the next category (PR #30875)." -ForegroundColor Yellow
+                      # #30875 / #36329): a timeout tree-kill OR an in-run HostApp
+                      # crash / ANR / fixture-setup timeout degrades the shared
+                      # device and wipes out every following category unless we
+                      # reboot before the next one.
+                      if ($LASTEXITCODE -eq 124 -or ((Test-Path $catLog) -and (Select-String -Path $catLog -Pattern $crashSig -Quiet -ErrorAction SilentlyContinue))) {
+                        Write-Host "Category '$cat' ended abnormally (timeout or HostApp-crash/ANR/fixture-timeout signature) — resetting the shared $platform device before the next category (PR #30875 / #36329)." -ForegroundColor Yellow
                         $needDeviceReset = $true
                       }
                     }
