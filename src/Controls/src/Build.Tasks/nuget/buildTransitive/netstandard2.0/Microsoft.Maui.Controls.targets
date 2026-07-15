@@ -62,6 +62,7 @@
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+		<!-- Include any default Android PGO profiles under the mibc\android directory. -->
 		<_ReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'" Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
 	</ItemGroup>
 
