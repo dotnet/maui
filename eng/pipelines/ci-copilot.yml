@@ -1405,9 +1405,10 @@ stages:
               timeoutInMinutes: 15
 
           # ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
-          # Tahoe agents (macOS 26.4) have Xcode 26.3 which can download
-          # iOS 26.4 simulator. provision.yml only installs 26.0 (for build).
-          # Explicitly download 26.4 so visual tests match baselines exactly.
+          # Download the iOS 26.4 simulator runtime so visual tests render against
+          # the same OS the baselines were captured on. NOTE: the sim runtime (26.4)
+          # is independent of the BUILD SDK — see the "Selecting build Xcode" block
+          # below, which pins the build to the newest Xcode the net11 workload needs.
           - ${{ if eq(parameters.Platform, 'ios') }}:
             - script: |
                 set -x
@@ -1433,9 +1434,18 @@ stages:
                 echo "--- Attempt 3: build 23E244 ---"
                 sudo xcodebuild -downloadPlatform iOS -buildVersion 23E244 2>&1 || true
 
-                # Restore Xcode for build step
-                RESTORE_XCODE=$(ls -d /Applications/Xcode_$(REQUIRED_XCODE)*.app 2>/dev/null | head -1)
-                [ -n "$RESTORE_XCODE" ] && sudo xcode-select -s "$RESTORE_XCODE/Contents/Developer"
+                # Select the NEWEST installed Xcode for the BUILD step. The net11
+                # Microsoft.iOS workload requires the iOS 26.5 SDK; restoring to an
+                # older REQUIRED_XCODE (e.g. 26.0.1) made the HostApp build fail with
+                # `error MT0180: requires the iOS 26.5 SDK` (build 14663118) -> zero iOS
+                # deep results. The app built with the 26.5 SDK still runs on the iOS
+                # 26.4 simulator (deployment target is far below iOS 26), so visual
+                # baselines are unaffected (rendering is decided by the sim runtime).
+                BUILD_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                if [ -n "$BUILD_XCODE" ]; then
+                  echo "Selecting build Xcode: $BUILD_XCODE"
+                  sudo xcode-select -s "$BUILD_XCODE/Contents/Developer"
+                fi
 
                 echo "=== Final runtimes ==="
                 xcrun simctl list runtimes
