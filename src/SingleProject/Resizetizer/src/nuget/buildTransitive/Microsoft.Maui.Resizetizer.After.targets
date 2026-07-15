@@ -483,7 +483,7 @@
             </LibraryResourceDirectories>
         </ItemGroup>
 
-        <!-- iOS, but not Catalyst -->
+        <!-- Apple platforms -->
         <RemoveDir
             Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(_MauiShouldUseThemedAppleSplashScreen)' != 'true' and Exists('$(_MauiIntermediateSplashScreen)Assets.xcassets')"
             Directories="$(_MauiIntermediateSplashScreen)Assets.xcassets"

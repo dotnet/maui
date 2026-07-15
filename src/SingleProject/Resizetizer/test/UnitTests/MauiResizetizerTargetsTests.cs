@@ -201,6 +201,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		string RunDotnetMSBuild(string projectFile)
 		{
+			const int timeoutMilliseconds = 60_000;
 			var startInfo = new ProcessStartInfo
 			{
 				FileName = GetDotNetHost(),
@@ -220,7 +221,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			var outputTask = process.StandardOutput.ReadToEndAsync();
 			var errorTask = process.StandardError.ReadToEndAsync();
-			process.WaitForExit();
+			if (!process.WaitForExit(timeoutMilliseconds))
+			{
+				process.Kill(entireProcessTree: true);
+				process.WaitForExit();
+				var timedOutOutput = outputTask.GetAwaiter().GetResult();
+				var timedOutError = errorTask.GetAwaiter().GetResult();
+				Assert.Fail($"MSBuild timed out after {timeoutMilliseconds}ms.\n{timedOutOutput}{timedOutError}");
+			}
+
 			var output = outputTask.GetAwaiter().GetResult();
 			var error = errorTask.GetAwaiter().GetResult();
 

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				WriteImages(lightResizer);
 				WriteImages(new Resizer(darkInfo, IntermediateOutputPath, this));
-				WriteImageSet();
+				WriteImageSet(lightInfo, darkInfo);
 				if (info.Color is not null || info.DarkColor is not null)
 				{
 					if (info.Color is null && info.DarkColor is not null)
@@ -68,13 +68,18 @@ namespace Microsoft.Maui.Resizetizer
 			new ResizeImageInfo
 			{
 				ItemSpec = info.ItemSpec,
-				Alias = alias + Resizer.RasterFileExtension,
+				Alias = alias + GetAssetExtension(info),
 				Filename = info.Filename,
 				BaseSize = info.BaseSize,
 				Resize = info.Resize,
 				TintColor = info.TintColor,
 				Color = info.Color,
 			};
+
+		private static string GetAssetExtension(ResizeImageInfo info) =>
+			!info.Resize && !info.IsVector && !string.IsNullOrEmpty(info.OutputExtension)
+				? info.OutputExtension
+				: Resizer.RasterFileExtension;
 
 		private void WriteImages(Resizer resizer)
 		{
@@ -93,7 +98,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 		}
 
-		private void WriteImageSet()
+		private void WriteImageSet(ResizeImageInfo lightInfo, ResizeImageInfo darkInfo)
 		{
 			var imageSetPath = Path.Combine(IntermediateOutputPath, DpiPath.Ios.SplashImageSetPath);
 			Directory.CreateDirectory(imageSetPath);
@@ -105,22 +110,22 @@ namespace Microsoft.Maui.Resizetizer
 				  "images": [
 				    {
 				      "idiom": "universal",
-				      "filename": "MauiSplashImage.png",
+				      "filename": "{{GetAssetFilename(lightInfo, DpiPath.Ios.SplashImageAsset[0])}}",
 				      "scale": "1x"
 				    },
 				    {
 				      "idiom": "universal",
-				      "filename": "MauiSplashImage@2x.png",
+				      "filename": "{{GetAssetFilename(lightInfo, DpiPath.Ios.SplashImageAsset[1])}}",
 				      "scale": "2x"
 				    },
 				    {
 				      "idiom": "universal",
-				      "filename": "MauiSplashImage@3x.png",
+				      "filename": "{{GetAssetFilename(lightInfo, DpiPath.Ios.SplashImageAsset[2])}}",
 				      "scale": "3x"
 				    },
 				    {
 				      "idiom": "universal",
-				      "filename": "MauiSplashImage.png",
+				      "filename": "{{GetAssetFilename(lightInfo, DpiPath.Ios.SplashImageAsset[0])}}",
 				      "scale": "1x",
 				      "appearances": [
 				        {
@@ -131,7 +136,7 @@ namespace Microsoft.Maui.Resizetizer
 				    },
 				    {
 				      "idiom": "universal",
-				      "filename": "MauiSplashImage@2x.png",
+				      "filename": "{{GetAssetFilename(lightInfo, DpiPath.Ios.SplashImageAsset[1])}}",
 				      "scale": "2x",
 				      "appearances": [
 				        {
@@ -142,7 +147,7 @@ namespace Microsoft.Maui.Resizetizer
 				    },
 				    {
 				      "idiom": "universal",
-				      "filename": "MauiSplashImage@3x.png",
+				      "filename": "{{GetAssetFilename(lightInfo, DpiPath.Ios.SplashImageAsset[2])}}",
 				      "scale": "3x",
 				      "appearances": [
 				        {
@@ -153,7 +158,7 @@ namespace Microsoft.Maui.Resizetizer
 				    },
 				    {
 				      "idiom": "universal",
-				      "filename": "MauiSplashImageDark.png",
+				      "filename": "{{GetAssetFilename(darkInfo, DpiPath.Ios.SplashImageAsset[0])}}",
 				      "scale": "1x",
 				      "appearances": [
 				        {
@@ -164,7 +169,7 @@ namespace Microsoft.Maui.Resizetizer
 				    },
 				    {
 				      "idiom": "universal",
-				      "filename": "MauiSplashImageDark@2x.png",
+				      "filename": "{{GetAssetFilename(darkInfo, DpiPath.Ios.SplashImageAsset[1])}}",
 				      "scale": "2x",
 				      "appearances": [
 				        {
@@ -175,7 +180,7 @@ namespace Microsoft.Maui.Resizetizer
 				    },
 				    {
 				      "idiom": "universal",
-				      "filename": "MauiSplashImageDark@3x.png",
+				      "filename": "{{GetAssetFilename(darkInfo, DpiPath.Ios.SplashImageAsset[2])}}",
 				      "scale": "3x",
 				      "appearances": [
 				        {
@@ -192,6 +197,9 @@ namespace Microsoft.Maui.Resizetizer
 				}
 				""");
 		}
+
+		private static string GetAssetFilename(ResizeImageInfo info, DpiPath dpi) =>
+			info.OutputName + dpi.FileSuffix + info.OutputExtension;
 
 		private void WriteColorSet(SKColor lightColor, SKColor darkColor)
 		{
