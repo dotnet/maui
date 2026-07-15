@@ -180,13 +180,30 @@ function Select-WindowsDeviceTestCategories {
         return @($AllCategories)
     }
 
-    return @($AllCategories | Where-Object {
-        $category = $_
-        @($filters | Where-Object {
-            $category.Equals($_, [System.StringComparison]::OrdinalIgnoreCase) -or
-            $category.IndexOf($_, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
-        }).Count -gt 0
-    })
+    # Match each filter token EXACTLY first, falling back to substring matching only
+    # when no category equals the token. A bare category name is frequently a substring
+    # of many others — "View" is contained in BoxView, CarouselView, CollectionView,
+    # ScrollView, WebView, … — so a naive substring match fans a single
+    # "Category=View" filter out to every *View* category. That runs a dozen unrelated
+    # categories (minutes of wasted device time) and, when their result files are
+    # aggregated, previously surfaced as a spurious gate "ENV ERROR". Preferring an
+    # exact match keeps "Category=View" scoped to the View category while still
+    # allowing genuine partial filters (no exact category) to substring-match.
+    $selected = [System.Collections.Generic.List[string]]::new()
+    foreach ($token in $filters) {
+        $exact = @($AllCategories | Where-Object { $_.Equals($token, [System.StringComparison]::OrdinalIgnoreCase) })
+        $candidates = if ($exact.Count -gt 0) {
+            $exact
+        } else {
+            @($AllCategories | Where-Object { $_.IndexOf($token, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
+        }
+        foreach ($c in $candidates) {
+            if (-not $selected.Contains($c)) { $selected.Add($c) }
+        }
+    }
+
+    # Return in discovery order for deterministic, stable output.
+    return @($AllCategories | Where-Object { $selected.Contains($_) })
 }
 
 function Wait-ForPath {
@@ -220,6 +237,28 @@ function Wait-ForPath {
     return (Test-Path $Path)
 }
 
+function ConvertTo-DeviceTestCount {
+    <#
+    .SYNOPSIS
+        Coerces an xUnit result-XML count attribute to a non-negative [int], safely.
+    .DESCRIPTION
+        PowerShell's XML adapter returns an [object[]] for a property when the element
+        exposes it more than once (e.g. an attribute AND a like-named child element).
+        A direct [int](...) cast of that array throws
+        "Cannot convert the ""System.Object[]"" value ... to type ""System.Int32""",
+        which the gate surfaces as a spurious "ENV ERROR" with no results. Take the
+        first value, tolerate nulls/blanks, and default to 0 so aggregation can never
+        throw on an unexpected result-file shape.
+    #>
+    param($Value)
+
+    if ($null -eq $Value) { return 0 }
+    if ($Value -is [System.Array]) { $Value = @($Value)[0] }
+    $parsed = 0
+    if ([int]::TryParse([string]$Value, [ref]$parsed)) { return $parsed }
+    return 0
+}
+
 function Get-WindowsDeviceTestResultSummary {
     param([Parameter(Mandatory = $true)][string[]]$ResultFiles)
 
@@ -239,11 +278,11 @@ function Get-WindowsDeviceTestResultSummary {
         [xml]$xml = Get-Content $file -Raw
         $assemblies = @($xml.SelectNodes('/assemblies/assembly'))
         foreach ($assembly in $assemblies) {
-            $summary.Total += [int]($assembly.total ?? 0)
-            $summary.Passed += [int]($assembly.passed ?? 0)
-            $summary.Failed += [int]($assembly.failed ?? 0)
-            $summary.Skipped += [int]($assembly.skipped ?? 0)
-            $summary.Errors += [int]($assembly.errors ?? 0)
+            $summary.Total += ConvertTo-DeviceTestCount $assembly.total
+            $summary.Passed += ConvertTo-DeviceTestCount $assembly.passed
+            $summary.Failed += ConvertTo-DeviceTestCount $assembly.failed
+            $summary.Skipped += ConvertTo-DeviceTestCount $assembly.skipped
+            $summary.Errors += ConvertTo-DeviceTestCount $assembly.errors
         }
     }
 
