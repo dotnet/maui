@@ -284,6 +284,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.All(observedParameters, parameter => Assert.Same(expectedParameter, parameter));
 		}
 
+		[Fact]
+		public void BackButtonBehaviorPreservesUserDefinedDisabledStateForExecutableCommand()
+		{
+			var command = new Command(() => { });
+			var behavior = new BackButtonBehavior
+			{
+				IsEnabled = false,
+				Command = command
+			};
+
+			Assert.False(behavior.IsEnabled);
+
+			command.ChangeCanExecute();
+
+			Assert.False(behavior.IsEnabled);
+		}
+
 		[Theory]
 		[InlineData(typeof(Button), true)]
 		[InlineData(typeof(Button), false)]
