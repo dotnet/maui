@@ -5,6 +5,8 @@
 # document explicitly. They therefore use frozen worktrees instead of the live
 # capability suite: the reviewer must derive its assessment from the commit
 # diff and surrounding source, not from a PR body or a squash-merge message.
+# Each rubric also requires the evaluator to reject runs that violate this
+# boundary, rather than relying on the prompt restriction alone.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: code-review-trim-aot
@@ -79,6 +81,10 @@ stimuli:
         must be limited to the affected call and diagnostic, restored
         immediately, and accompanied by evidence that the code is
         unreachable for the affected configuration.
+      - >-
+        The agent derives its conclusion from the pinned diff and source
+        context. It does not use a GitHub/HTTP lookup, `git log`, `git show`,
+        `git blame`, or commit-message text to obtain the diagnosis.
     constraints:
       max_duration: 10m
       expect_skills:
@@ -138,6 +144,10 @@ stimuli:
         The agent does not claim that reading a const string from another type
         by itself creates a type or member metadata reference. It evaluates
         the actual annotation and reachability behavior instead.
+      - >-
+        The agent derives its conclusion from the pinned diff and source
+        context. It does not use a GitHub/HTTP lookup, `git log`, `git show`,
+        `git blame`, or commit-message text to obtain the diagnosis.
     constraints:
       max_duration: 10m
       expect_skills:
