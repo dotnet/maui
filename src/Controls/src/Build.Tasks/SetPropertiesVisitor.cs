@@ -524,43 +524,65 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				n = GetParent(n);
 			}
 
-			if (dataTypeNode is null)
-			{
-				context.LoggingHelper.LogWarningOrError(BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+			bool xDataTypeIsOnBindingNode = n == node;
 
+			if (IsRelativeSourceWithoutAncestorType(node, context, module))
+			{
 				return false;
 			}
 
-			if (xDataTypeIsInOuterScope)
+			TypeReference tSourceRef = null;
+			if (HasRelativeOrReferenceSource(node) && !xDataTypeIsOnBindingNode)
 			{
-				context.LoggingHelper.LogWarningOrError(BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-				// continue compilation
+				if (!TryGetRelativeSourceAncestorTypeReference(node, context, module, out tSourceRef))
+				{
+					return false;
+				}
 			}
 
-			if (   dataTypeNode is ElementNode enode
-				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
-				&& enode.XmlType.Name == nameof(Xaml.NullExtension))
+			if (tSourceRef is null)
 			{
-				context.LoggingHelper.LogWarningOrError(BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-				return false;
+				if (dataTypeNode is null)
+				{
+					context.LoggingHelper.LogWarningOrError(BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+
+					return false;
+				}
+
+				if (xDataTypeIsInOuterScope)
+				{
+					context.LoggingHelper.LogWarningOrError(BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+					// continue compilation
+				}
+
+				if (   dataTypeNode is ElementNode enode
+					&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
+					&& enode.XmlType.Name == nameof(Xaml.NullExtension))
+				{
+					context.LoggingHelper.LogWarningOrError(BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+					return false;
+				}
+
+				if ((dataTypeNode as ValueNode)?.Value is not string dataType)
+					throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+
+				XmlType dtXType = null;
+				try
+				{
+					dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
+						?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+				}
+				catch (XamlParseException)
+				{
+					var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
+					throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
+				}
+
+				tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
+				if (tSourceRef == null)
+					return false;
 			}
 
-			if ((dataTypeNode as ValueNode)?.Value is not string dataType)
-				throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
-
-			XmlType dtXType = null;
-			try
-			{
-				dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
-					?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
-			}
-			catch (XamlParseException)
-			{
-				var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
-				throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
-			}
-
-			var tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (tSourceRef == null)
 				return false; //throw
 
@@ -638,6 +660,131 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					&& node.TryGetPropertyName(parentNode, out var propertyName)
 					&& propertyName.NamespaceURI == ""
 					&& propertyName.LocalName == nameof(BindableObject.BindingContext);
+			}
+
+			// Returns true when the binding's Source property is a RelativeSource or x:Reference.
+			// When Source is a RelativeSource or x:Reference, x:DataType inherited from an
+			// ancestor DataTemplate describes template items — not the actual binding source type.
+			// This matches the behaviour in KnownMarkups.ProvideValueForBindingExtension (SourceGen)
+			// and the runtime BindingExtension.ProvideValue (which already sets DataType=null for
+			// all non-RelativeBindingSource sources, including x:Reference resolved objects).
+			static bool HasRelativeOrReferenceSource(ElementNode bindingNode)
+			{
+				if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode sourceNode)
+					&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
+				{
+					return false;
+				}
+
+				return sourceNode is ElementNode sourceElementNode
+					&& sourceElementNode.XmlType.Name is "RelativeSourceExtension"
+						or "RelativeSource"
+						or "ReferenceExtension"
+						or "Reference";
+			}
+
+			static bool IsRelativeSourceWithoutAncestorType(ElementNode bindingNode, ILContext context, ModuleDefinition module)
+			{
+				if (!TryGetRelativeSourceNode(bindingNode, out var relativeSourceNode))
+				{
+					return false;
+				}
+
+				return !TryGetRelativeSourceAncestorTypeReference(bindingNode, context, module, out _);
+			}
+
+			static bool TryGetRelativeSourceAncestorTypeReference(ElementNode bindingNode, ILContext context, ModuleDefinition module, out TypeReference ancestorType)
+			{
+				ancestorType = null;
+
+				if (!TryGetRelativeSourceNode(bindingNode, out var relativeSourceNode))
+				{
+					return false;
+				}
+
+				if (!relativeSourceNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out INode ancestorTypeNode)
+					&& !relativeSourceNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode)
+					&& !relativeSourceNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "AncestorType"), out ancestorTypeNode))
+				{
+					return false;
+				}
+
+				if (ancestorTypeNode is ElementNode ancestorTypeElement)
+				{
+					if (context.TypeExtensions.TryGetValue(ancestorTypeElement, out var mappedType))
+					{
+						ancestorType = module.ImportReference(mappedType);
+						return true;
+					}
+
+					if (!TryGetTypeNameFromTypeExtensionNode(ancestorTypeElement, out var typeName))
+					{
+						return false;
+					}
+
+					return TryResolveTypeFromName(typeName, ancestorTypeElement, context, module, out ancestorType);
+				}
+
+				if (ancestorTypeNode is ValueNode { Value: string directTypeName })
+				{
+					return TryResolveTypeFromName(directTypeName, bindingNode, context, module, out ancestorType);
+				}
+
+				return false;
+			}
+
+			static bool TryGetRelativeSourceNode(ElementNode bindingNode, out ElementNode relativeSourceNode)
+			{
+				relativeSourceNode = null;
+
+				if ((!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode sourceNode)
+						&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
+					|| sourceNode is not ElementNode sourceElementNode)
+				{
+					return false;
+				}
+
+				if (sourceElementNode.XmlType.Name is not "RelativeSourceExtension" and not "RelativeSource")
+				{
+					return false;
+				}
+
+				relativeSourceNode = sourceElementNode;
+				return true;
+			}
+
+			static bool TryGetTypeNameFromTypeExtensionNode(ElementNode typeNode, out string typeName)
+			{
+				typeName = null;
+
+				if (!typeNode.Properties.TryGetValue(new XmlName("", "TypeName"), out INode typeNameNode)
+					&& !typeNode.Properties.TryGetValue(new XmlName(null, "TypeName"), out typeNameNode)
+					&& !typeNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
+					&& typeNode.CollectionItems.Count == 1)
+				{
+					typeNameNode = typeNode.CollectionItems[0];
+				}
+
+				typeName = (typeNameNode as ValueNode)?.Value as string;
+				return !string.IsNullOrEmpty(typeName);
+			}
+
+			static bool TryResolveTypeFromName(string typeName, ElementNode namespaceNode, ILContext context, ModuleDefinition module, out TypeReference typeReference)
+			{
+				typeReference = null;
+
+				XmlType xmlType;
+				try
+				{
+					xmlType = TypeArgumentsParser.ParseSingle(typeName, namespaceNode.NamespaceResolver, namespaceNode as IXmlLineInfo);
+				}
+				catch (XamlParseException)
+				{
+					return false;
+				}
+
+				typeReference = xmlType?.GetTypeReference(context.Cache, module, namespaceNode as IXmlLineInfo);
+				return typeReference is not null;
 			}
 
 			bool DoesNotInheritDataType(ElementNode node)
@@ -1280,9 +1427,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//			IL_0008:  ldarg.0 
 			//
 			//			IL_0009:  ldftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
-			//OR, if the handler is virtual
-			//			IL_000x:  ldarg.0 
-			//			IL_0009:  ldvirtftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
+			//OR, if the handler is virtual (non-static)
+			//			IL_000x:  dup          ; copy target already on stack
+			//			IL_000y:  ldvirtftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
 			//
 			//			IL_000f:  newobj instance void class [mscorlib]System.EventHandler::'.ctor'(object, native int)
 			//			IL_0014:  callvirt instance void class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.Button::add_Clicked(class [mscorlib]System.EventHandler)
@@ -1340,9 +1487,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					throw new InvalidProgramException();
 			}
 
-			if (methodDef.IsVirtual)
+			if (methodDef.IsVirtual && !methodDef.IsStatic)
 			{
-				yield return Create(Ldarg_0);
+				// ldvirtftn needs the object whose vtable drives virtual dispatch.
+				// In a DataTemplate context, Ldarg_0 is the anonymous nested class, not the root
+				// XAML element — using it causes iOS/Mac Full AOT to crash on virtual handlers.
+				// The delegate target (already on the stack) IS the correct vtable object, so
+				// dup it: stack goes [parent, target] → [parent, target, target], ldvirtftn pops one, leaving
+				// [parent, target, ftn] for the delegate ctor.
+				// Static methods (including C# 11+ interface static-abstract members) are never
+				// virtual-dispatched; fall through to ldftn below.
+				yield return Create(Dup);
 				yield return Create(Ldvirtftn, handlerRef);
 			}
 			else

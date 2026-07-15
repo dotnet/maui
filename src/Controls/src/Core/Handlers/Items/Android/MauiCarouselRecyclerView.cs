@@ -18,8 +18,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _initialized;
 		bool _isVisible;
 		bool _disposed;
+		bool? _lastLoopValue;
 		bool _isInternalPositionUpdate;
-
+		readonly float _touchSlop;
+		float _initialTouchX;
+		float _initialTouchY;
+		bool _directionLocked;
+		bool _delegatingToChild;
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
 
@@ -29,18 +34,92 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_oldViews = new List<View>();
 			_carouselViewLoopManager = new CarouselViewLoopManager();
+			_touchSlop = ViewConfiguration.Get(context).ScaledTouchSlop;
 		}
 
+		// Gets or sets a value indicating whether swipe gestures are enabled for the carousel.
 		public bool IsSwipeEnabled { get; set; }
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
+			// If ItemsView is explicitly disabled, defer to the base implementation so it can
+			// intercept all touch events and block interaction. Returning false here (for either
+			// the swipe-disabled or off-axis delegation paths) would bypass that guard and allow
+			// a disabled CarouselView to delegate gestures to a nested child.
+			if (ItemsView?.IsEnabled == false && !ItemsView.IsExplicitlyEnabled)
+			{
+				return base.OnInterceptTouchEvent(ev);
+			}
+
 			if (!IsSwipeEnabled)
 			{
 				return false;
 			}
 
+			switch (ev.Action)
+			{
+				case MotionEventActions.Down:
+					_initialTouchX = ev.GetX();
+					_initialTouchY = ev.GetY();
+					_directionLocked = false;
+					_delegatingToChild = false;
+					break;
+
+				case MotionEventActions.Move:
+					// Once a gesture has been delegated to a nested child, keep delegating for the
+					// rest of the gesture. This prevents a later ambiguous move - or the child
+					// reaching its scroll boundary - from letting the carousel hijack the swipe and
+					// transition to the next item.
+					if (_delegatingToChild)
+					{
+						return false;
+					}
+
+					if (!_directionLocked)
+					{
+						float deltaX = ev.GetX() - _initialTouchX;
+						float deltaY = ev.GetY() - _initialTouchY;
+
+						// Lock the gesture direction the first time movement exceeds touch slop.
+						if (Math.Abs(deltaX) > _touchSlop || Math.Abs(deltaY) > _touchSlop)
+						{
+							_directionLocked = true;
+
+							if (IsOffAxisGesture(deltaX, deltaY))
+							{
+								// Perpendicular gesture (e.g. a vertical swipe on a horizontal carousel):
+								// it belongs to nested scrollable content, never the carousel.
+								_delegatingToChild = true;
+								return false;
+							}
+						}
+					}
+					break;
+
+				case MotionEventActions.Cancel:
+				case MotionEventActions.Up:
+					// Reset gesture state at the end of the gesture
+					// to prevent old values from being used if we don't get a Down event
+					_initialTouchX = 0;
+					_initialTouchY = 0;
+					_directionLocked = false;
+					_delegatingToChild = false;
+					break;
+			}
+
 			return base.OnInterceptTouchEvent(ev);
+		}
+
+		// Determines whether the gesture's dominant axis is the opposite of the carousel's scroll
+		// orientation (e.g. a vertical swipe on a horizontal carousel). Off-axis gestures belong to
+		// nested scrollable content, so the carousel must not intercept them.
+		bool IsOffAxisGesture(float deltaX, float deltaY)
+		{
+			float absDeltaX = Math.Abs(deltaX);
+			float absDeltaY = Math.Abs(deltaY);
+			bool isVerticalGesture = absDeltaY > absDeltaX;
+
+			return IsHorizontal ? isVerticalGesture : !isVerticalGesture;
 		}
 
 		protected virtual bool IsHorizontal => (Carousel?.ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
@@ -64,6 +143,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
+			if (!IsSwipeEnabled)
+			{
+				return false;
+			}
+
 			if (Carousel.Loop)
 				_carouselViewLoopManager.CenterIfNeeded(this, IsHorizontal);
 
@@ -90,6 +174,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void SetUpNewElement(CarouselView newElement)
 		{
 			base.SetUpNewElement(newElement);
+			_lastLoopValue = null;
 
 			AddLayoutListener();
 			UpdateItemSpacing();
@@ -104,6 +189,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView is not null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
+
+			// Reset lifecycle state so the next element setup starts cleanly.
+			_initialized = false;
+			_lastLoopValue = null;
 
 			ClearLayoutListener();
 			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
@@ -257,6 +346,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (Carousel.Loop)
 				{
 					UpdateAdapter();
+					// Sync the loop manager's source so GetGoToIndex uses the correct item count
+					// after the adapter is rebuilt. Without this, _itemsSource stays stale and
+					// GetNearestAdapterPosition produces wrong results
+					_carouselViewLoopManager.SetItemsSource(ItemsViewAdapter.ItemsSource);
 					ScrollToPosition(carouselPosition);
 				}
 			}
@@ -314,9 +407,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 									UpdateItemDecoration();
 								}
 
-								UpdateVisualStates();
+								if (Carousel.Loop)
+								{
+									UpdateLoopCentering(count);
+								}
+								else
+								{
+									ScrollToPosition(carouselPosition);
+								}
 
-								ScrollToPosition(carouselPosition);
+								UpdateVisualStates();
 							}
 						}
 						finally
@@ -334,6 +434,58 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				RemoveItemDecoration(_itemDecoration);
 			_itemDecoration = CreateSpacingDecoration(ItemsLayout);
 			AddItemDecoration(_itemDecoration);
+		}
+
+		internal void UpdateLoop()
+		{
+			if (Carousel is null)
+			{
+				return;
+			}
+
+			var loopValue = Carousel.Loop;
+			var previousLoopValue = _lastLoopValue;
+			_lastLoopValue = loopValue;
+
+			// Ignore startup mapper call and repeated same-value mapper calls.
+			if (!_initialized || !previousLoopValue.HasValue || previousLoopValue.Value == loopValue)
+			{
+				return;
+			}
+
+			// Preserve both the Position and the CurrentItem because UpdateAdapter() resets
+			// CarouselView.Position to 0 and CarouselView.CurrentItem to null on rebuild.
+			int currentPosition = Carousel.Position;
+			object currentItem = Carousel.CurrentItem;
+
+			UpdateAdapter();
+
+			// Restore the logical position and current item so bindings/MVVM observers
+			// see the same state after the loop change.
+			if (ItemsViewAdapter?.ItemsSource is not null && ItemsViewAdapter.ItemsSource.Count > 0)
+			{
+				if (currentPosition >= 0 && currentPosition < ItemsViewAdapter.ItemsSource.Count)
+				{
+					Carousel.SetValueFromRenderer(CarouselView.PositionProperty, currentPosition);
+
+					var restoredItem = currentItem ?? ItemsViewAdapter.ItemsSource.GetItem(currentPosition);
+					Carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, restoredItem);
+				}
+			}
+
+			// In Windows, the scrollbar is hidden when Loop is enabled.
+			// For platform consistency, apply the same behavior on Android.
+			UpdateScrollBarVisibility(Carousel);
+			if (Carousel.Loop)
+			{
+				var itemCount = ItemsViewAdapter.ItemsSource.Count;
+				int loopedPosition = LoopedPosition(itemCount) + currentPosition;
+				ScrollToPosition(loopedPosition);
+			}
+			else	
+			{
+				ScrollToPosition(currentPosition);
+			}
 		}
 
 		void UpdateInitialPosition()
@@ -372,8 +524,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			SetCurrentItem(_oldPosition);
 
-			var index = Carousel.Loop ? LoopedPosition(itemCount) + _oldPosition : _oldPosition;
-			ScrollHelper.JumpScrollToPosition(index, Microsoft.Maui.Controls.ScrollToPosition.Center);
+			if (Carousel.Loop)
+			{
+				UpdateLoopCentering(itemCount);
+			}
+			else
+			{
+				ScrollHelper.JumpScrollToPosition(_oldPosition, Microsoft.Maui.Controls.ScrollToPosition.Center);
+			}
 			_gotoPosition = -1;
 		}
 
@@ -388,12 +546,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return loopScale - (loopScale % itemCount);
 		}
 
+		void UpdateLoopCentering(int itemCount)
+		{
+			if (ItemsViewAdapter is null || itemCount == 0)
+			{
+				return;
+			}
+
+			var currentPosition = Carousel.Position;
+
+			// Calculate the proper looped index for centering
+			var index = LoopedPosition(itemCount) + currentPosition;
+			ScrollHelper.JumpScrollToPosition(index, Microsoft.Maui.Controls.ScrollToPosition.Center);
+		}
+
 		void UpdatePositionFromVisibilityChanges()
 		{
 			if (_isVisible != ItemsView.IsVisible)
 				UpdateInitialPosition();
 
 			_isVisible = ItemsView.IsVisible;
+		}
+
+		void UpdateScrollBarVisibility(CarouselView carouselView)
+		{
+			if (carouselView.Loop)
+			{
+				HorizontalScrollBarEnabled = false;
+				VerticalScrollBarEnabled = false;
+			}
+			else
+			{
+				UpdateHorizontalScrollBarVisibility();
+				UpdateVerticalScrollBarVisibility();
+			}
 		}
 
 		void UpdateVisualStates()
@@ -622,6 +808,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ViewTreeObserver?.RemoveOnGlobalLayoutListener(_carouselViewLayoutListener);
 			_carouselViewLayoutListener = null;
+		}
+
+		// https://github.com/dotnet/maui/issues/13323
+		// CarouselView is a full-page pager; child-initiated rectangle scroll requests
+		// (e.g. EditText cursor positioning) must not scroll the carousel.
+		public override bool RequestChildRectangleOnScreen(
+			global::Android.Views.View child,
+			global::Android.Graphics.Rect rect,
+			bool immediate)
+		{
+			return false;
+		}
+
+		// https://github.com/dotnet/maui/issues/13323
+		// base.RequestChildFocus preserves normal focus propagation, but it may
+		// start a focus-driven scroll from an otherwise idle CarouselView.
+		public override void RequestChildFocus(
+			global::Android.Views.View child,
+			global::Android.Views.View focused)
+		{
+			var wasIdleBeforeFocus = ScrollState == RecyclerView.ScrollStateIdle;
+
+			base.RequestChildFocus(child, focused);
+
+			if (wasIdleBeforeFocus && ScrollState != RecyclerView.ScrollStateIdle)
+			{
+				StopScroll();
+			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

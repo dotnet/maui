@@ -5,7 +5,19 @@ description: |
   maui-pr-uitests). Files tracking issues for recurring failures so the team
   can triage.
 
-environment: gh-aw-agents
+# ###############################################################
+# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Run agentic jobs in an isolated `copilot-pat-pool` environment.
+#
+# When org-level billing is available, this will be removed.
+# See `shared/pat_pool.README.md` for more information.
+# ###############################################################
+imports:
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
+
+environment: copilot-pat-pool
 
 permissions:
   contents: read
@@ -14,10 +26,26 @@ permissions:
 on:
   schedule: every 12h
   workflow_dispatch:
+  permissions: {}
 
 engine:
   id: copilot
   model: claude-sonnet-4.6
+  env:
+    COPILOT_GITHUB_TOKEN: |
+      ${{ case(
+        needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
+        needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1,
+        needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2,
+        needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3,
+        needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4,
+        needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5,
+        needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6,
+        needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
+        needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
+        needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
+        'NO COPILOT PAT AVAILABLE')
+      }}
 
 concurrency:
   group: "ci-failure-scan"
@@ -78,6 +106,7 @@ steps:
       check_url "Helix" 'https://helix.dot.net/api/2019-06-17/jobs?count=1'
 
       echo "=== Skill files ==="
+      test -f .github/docs/maui-ci-facts.md && echo "✅ maui-ci-facts" || echo "⚠️ maui-ci-facts missing"
       test -f .github/skills/azdo-build-investigator/SKILL.md && echo "✅ azdo-build-investigator" || echo "⚠️ azdo-build-investigator missing"
 ---
 
@@ -89,43 +118,21 @@ Periodic scan of MAUI CI pipelines on `main`. Every actionable failure becomes a
 
 Process pipelines in this order. For each, fetch recent completed builds on `main`, pick the latest, and look back through ~10 prior completed builds for occurrence counts.
 
-| Pipeline | Definition ID | Notes |
-|----------|---------------|-------|
-| maui-pr | 302 | Main build — check first |
-| maui-pr-devicetests | 314 | Helix device tests (iOS, Android, Windows, MacCatalyst) |
-| maui-pr-uitests | 313 | Appium-based UI tests |
-
-**Organization**: `dnceng-public` / **Project**: `public`
+The pipeline names, definition IDs (`maui-pr` 302, `maui-pr-devicetests` 314, `maui-pr-uitests` 313), org/project, and investigation priority order are defined canonically in `.github/docs/maui-ci-facts.md` — read it first (see below) and use those values; do not maintain a second copy here.
 
 If a pipeline has no completed build in the last 7 days, skip it silently.
 
-## Skills and tools to consult
+## MAUI CI facts and skills to consult
 
-Read the azdo-build-investigator skill before classifying failures:
+First, read the canonical facts doc and the investigator skill:
 ```bash
+cat .github/docs/maui-ci-facts.md
 cat .github/skills/azdo-build-investigator/SKILL.md
 ```
 
-Key points from that skill:
-- **XHarness exit-0 blind spot**: XHarness (device tests) exits 0 even when tests fail. A green AzDO job does NOT mean all tests passed. Check Helix work items for hidden failures.
-- **Pipeline priority**: `maui-pr` → `maui-pr-devicetests` → `maui-pr-uitests`
-- **Container artifacts**: MAUI build artifacts are Container type, not PipelineArtifact
+`.github/docs/maui-ci-facts.md` is the single source of truth for pipeline IDs, the priority order, the **XHarness exit-0 blind spot** (a green AzDO device-test job does NOT mean tests passed — check Helix work items), container artifacts, the test-count deduplication rule, and the common failure-pattern table. Do not restate those facts here.
 
 All data retrieval uses `curl` + `jq` against the AzDO and Helix REST APIs (see **Data sources** below). The MCP Gateway in the gh-aw runtime does not support stdio MCP servers, so the arcade-skills tooling is not available at agent runtime.
-
-## MAUI-specific failure patterns
-
-| Pattern | Pipeline | Notes |
-|---------|----------|-------|
-| `error CS####` | maui-pr | C# compiler error — check file/line |
-| `error XA####` | maui-pr | Android build error |
-| `XamlC` | maui-pr | XAML compiler — usually missing type or bad binding |
-| `error XAGRDL0000` / `401` / `No local versions` | maui-pr | Gradle/Maven feed issue — NOT a test failure |
-| `XHarness timeout` | maui-pr-devicetests | Test killed by infrastructure; may be transient |
-| `No test result files found` | maui-pr-devicetests | Tests never ran or app crashed on launch |
-| UI test screenshot diff | maui-pr-uitests | Visual regression; check baseline images |
-
-## Outcome per actionable failure
 
 For each actionable failure, produce **one artifact**:
 
@@ -157,7 +164,7 @@ Classify every failed timeline record before deciding action. Walk `Stage → Ph
 
 ## Test count deduplication
 
-MAUI tests run across multiple variants (CoreCLR/Mono, iOS/Android/Windows, retry attempts). A single failing test can appear in 4–8+ test runs. **Always deduplicate** by `(test name, OS platform)` before reporting counts. Don't inflate failures.
+Deduplicate by `(test name, OS platform)` before reporting counts — a single failing test can appear in 4–8+ runs across CoreCLR/Mono, platform versions, and retries. See the canonical deduplication rule in `.github/docs/maui-ci-facts.md`. Don't inflate failures.
 
 ## Issue body
 

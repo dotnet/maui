@@ -188,6 +188,40 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(requestedHeight, actualHeight);
 			});
 		}
+
+		[Theory(DisplayName = "SearchBar small HeightRequest keeps intrinsic minimum height on iOS/Mac")]
+		[InlineData(35)]
+		[InlineData(20)]
+		public async Task ValidateSearchBarSmallHeightRequestRendering(double requestedHeight)
+		{
+			// This test is gated to iOS/MacCatalyst 26+ where the handler clamp is applied
+			if (!OperatingSystem.IsIOSVersionAtLeast(26) && !OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				return;
+			}
+
+			var searchBar = new SearchBar
+			{
+				HeightRequest = requestedHeight,
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<SearchBarHandler>(searchBar);
+				var platformControl = GetPlatformControl(handler);
+
+				double actualHeight = 0;
+				double intrinsicHeight = 0;
+
+				if (platformControl is UIKit.UISearchBar uiSearchBar)
+				{
+					actualHeight = uiSearchBar.Frame.Height;
+					intrinsicHeight = uiSearchBar.IntrinsicContentSize.Height;
+				}
+
+				Assert.True(actualHeight >= intrinsicHeight, $"Expected SearchBar height to remain at least the intrinsic height ({intrinsicHeight}), but was {actualHeight} for HeightRequest={requestedHeight}.");
+			});
+		}
 #endif
 	}
 }

@@ -82,6 +82,165 @@ BeforeAll {
     . "$PSScriptRoot/Fix-MilestoneDrift.ps1"
 }
 
+Describe 'Resolve-MergedAfterCutoff' {
+    It 'defaults to 2026-01-01 UTC when value is "<Value>"' -ForEach @(
+        @{ Value = $null }
+        @{ Value = '' }
+        @{ Value = '   ' }
+    ) {
+        $result = Resolve-MergedAfterCutoff $Value
+        $result | Should -Be ([datetime]::new(2026, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc))
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+    }
+
+    It 'parses a date-only value "<Value>" as UTC midnight' -ForEach @(
+        @{ Value = '2025-01-01'; Year = 2025; Month = 1;  Day = 1 }
+        @{ Value = '2024-06-15'; Year = 2024; Month = 6;  Day = 15 }
+        @{ Value = '2020-12-31'; Year = 2020; Month = 12; Day = 31 }
+    ) {
+        $result = Resolve-MergedAfterCutoff $Value
+        $result.Year  | Should -Be $Year
+        $result.Month | Should -Be $Month
+        $result.Day   | Should -Be $Day
+        $result.Hour  | Should -Be 0
+        $result.Kind  | Should -Be ([System.DateTimeKind]::Utc)
+    }
+
+    It 'parses an ISO-8601 value with explicit UTC offset' {
+        $result = Resolve-MergedAfterCutoff '2025-06-01T12:30:00Z'
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result | Should -Be ([datetime]::new(2025, 6, 1, 12, 30, 0, [System.DateTimeKind]::Utc))
+    }
+
+    It 'normalizes a non-UTC offset to UTC' {
+        # 2025-06-01T00:00:00+05:00 == 2025-05-31T19:00:00Z
+        $result = Resolve-MergedAfterCutoff '2025-06-01T00:00:00+05:00'
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result | Should -Be ([datetime]::new(2025, 5, 31, 19, 0, 0, [System.DateTimeKind]::Utc))
+    }
+
+    It 'throws a clear error for unparseable value "<Value>"' -ForEach @(
+        @{ Value = 'garbage' }
+        @{ Value = 'not-a-date' }
+        @{ Value = '2025-13-99' }
+        @{ Value = '13/13/2025' }
+    ) {
+        { Resolve-MergedAfterCutoff $Value } | Should -Throw "*Invalid -MergedAfter value*"
+    }
+}
+
+Describe 'Get-PrInfo — merged-after cutoff enforcement' {
+    BeforeAll {
+        # Build a GitHub-pulls-API-shaped object (ConvertFrom-Json style) for the mock.
+        function New-FakePr {
+            param([string]$MergedAt, [int]$Number = 42)
+            [pscustomobject]@{
+                title            = "PR $Number"
+                html_url         = "https://github.com/dotnet/maui/pull/$Number"
+                body             = ''
+                merged_at        = $MergedAt
+                milestone        = $null
+                base             = [pscustomobject]@{ ref = 'net11.0' }
+                merge_commit_sha = 'deadbeef'
+            }
+        }
+    }
+
+    AfterAll {
+        # Restore the default cutoff so later Describes are unaffected.
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''
+    }
+
+    It 'skips a PR merged before the cutoff (returns a pre-cutoff sentinel, not $null)' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2025-05-01T00:00:00Z' -Number 100 }
+        $result = Get-PrInfo 100
+        $result | Should -BeOfType [hashtable]
+        $result.SkippedPreCutoff | Should -BeTrue
+        $result.Number | Should -Be 100
+    }
+
+    It 'includes a PR merged on/after the cutoff (returns the object, no skip sentinel)' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2026-03-01T00:00:00Z' -Number 101 }
+        $pr = Get-PrInfo 101
+        $pr | Should -Not -BeNullOrEmpty
+        $pr.Number | Should -Be 101
+        $pr.ContainsKey('SkippedPreCutoff') | Should -BeFalse
+    }
+
+    It 'includes a PR merged exactly at the cutoff boundary (strict less-than)' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01T00:00:00Z
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2026-01-01T00:00:00Z' -Number 102 }
+        Get-PrInfo 102 | Should -Not -BeNullOrEmpty
+    }
+
+    It 'a lowered cutoff lets an older PR through (the configurable use case)' {
+        # Same 2025 PR that the default cutoff skips is now processed.
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff '2024-01-01'
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2025-05-01T00:00:00Z' -Number 103 }
+        $pr = Get-PrInfo 103
+        $pr | Should -Not -BeNullOrEmpty
+        $pr.Number | Should -Be 103
+    }
+
+    It 'a raised cutoff skips a PR that the default would include' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff '2026-06-01'
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2026-03-01T00:00:00Z' -Number 104 }
+        $result = Get-PrInfo 104
+        $result.SkippedPreCutoff | Should -BeTrue
+        $result.Number | Should -Be 104
+    }
+
+    It 'never skips an unmerged PR (no merged_at) regardless of cutoff' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''
+        Mock Invoke-GhApi { New-FakePr -MergedAt $null -Number 105 }
+        Get-PrInfo 105 | Should -Not -BeNullOrEmpty
+    }
+}
+
+Describe 'Invoke-AnalyzeRelease — pre-cutoff skips are accounted separately from errors' {
+    BeforeEach {
+        # Minimal mocks so Invoke-AnalyzeRelease reaches the PR loop without touching git/gh.
+        Mock ConvertTo-Milestone { '.NET 10 SR8' }
+        Mock Get-AllTags { @('10.0.70', '10.0.80') }
+        Mock Initialize-MilestoneValidationContext { }
+        Mock Get-MainBranchForVersion { 'net10.0' }
+        Mock Get-AllMilestones { @{ '.NET 10 SR8' = 999 } }
+        Mock Find-MatchingMilestone { @{ Number = 999; Title = '.NET 10 SR8' } }
+        Mock Get-PrNumbersBetweenTags { @(100, 101) }
+        # Defensive: only reached for real (non-skipped, non-null) PRs — never hit in these tests.
+        Mock Test-PrBelongsToVersion { $true }
+        Mock Test-AndRecordCorrection { }
+        Mock Get-LinkedIssues { @() }
+    }
+
+    It 'counts an all-pre-cutoff cohort as skipped, not as errors (no spurious failure)' {
+        # Regression: a cohort whose PRs all predate the cutoff must NOT be reported as
+        # "0 PRs checked, N errors" (which makes the top-level script throw a red run).
+        Mock Get-PrInfo {
+            param([int]$PrNum)
+            return @{ SkippedPreCutoff = $true; Number = $PrNum }
+        }
+        $report = Invoke-AnalyzeRelease '10.0.80' '10.0.70' '.'
+        $report.PrsSkippedPreCutoff | Should -Be 2
+        $report.PrsChecked          | Should -Be 0
+        $report.Errors.Count        | Should -Be 0   # the top-level throw guard keys off Errors.Count
+    }
+
+    It 'still records a genuine fetch failure as an error, distinct from a pre-cutoff skip' {
+        Mock Get-PrInfo {
+            param([int]$PrNum)
+            if ($PrNum -eq 101) { return $null }                   # real fetch failure
+            return @{ SkippedPreCutoff = $true; Number = $PrNum }   # pre-cutoff skip
+        }
+        $report = Invoke-AnalyzeRelease '10.0.80' '10.0.70' '.'
+        $report.PrsSkippedPreCutoff | Should -Be 1
+        $report.Errors.Count        | Should -Be 1
+        $report.Errors[0]           | Should -BeLike '*Failed to fetch PR #101*'
+    }
+}
+
 Describe 'ConvertTo-Milestone' {
     It 'maps GA tag "<Tag>" to "<Expected>"' -ForEach @(
         @{ Tag = '10.0.0';  Expected = '.NET 10.0 GA' }
@@ -1066,6 +1225,74 @@ Describe 'Invoke-AnalyzeSinglePr — validation context seeding' {
         $script:_initArgs.Major | Should -Be 11
         # The tags array we passed in must reach the initializer (so KEEP queries have data to work with).
         $script:_initArgs.AllTags | Should -Contain '10.0.60'
+    }
+}
+
+Describe 'Invoke-AnalyzeSinglePr — milestone-not-found skip report shape' {
+    BeforeEach {
+        # Same start-to-finish scaffolding as the validation-context seeding tests, but here we
+        # force Find-MatchingMilestone to return $null so we exercise the graceful-skip path taken
+        # when the expected milestone (e.g. ".NET 11.0-preview7") has not been created in GitHub yet.
+        Mock Initialize-MilestoneValidationContext { }
+        Mock Get-PrInfo {
+            return @{
+                Number         = 42
+                Title          = 'Test PR'
+                Url            = 'u'
+                Milestone      = ''
+                BaseRef        = 'net11.0'
+                MergedAt       = '2025-01-01T00:00:00Z'
+                MergeCommitSha = 'abc123'
+                Body           = ''
+            }
+        }
+        Mock Get-AllTags { return @('10.0.60', '10.0.70', '11.0.0-preview.3') }
+        Mock Get-VersionFromGitRef { return @{ Tag = '11.0.0'; PreLabel = 'preview'; PreIter = 7 } }
+        Mock Find-ReleaseBranchForCommit { return @{ Branch = 'release/11.0.1xx-preview7'; Milestone = '.NET 11.0-preview7' } }
+        Mock ConvertBranchToMilestone { return '.NET 11.0-preview7' }
+        Mock Get-MainBranchForVersion { return 'net11.0' }
+        Mock Get-CurrentMajorVersion { return 11 }
+        # The milestone does not exist yet: Get-AllMilestones has no match and Find-MatchingMilestone
+        # returns $null, driving Invoke-AnalyzeSinglePr into the early-return skip report.
+        Mock Get-AllMilestones { return @(@{ Number = 99; Title = '.NET 11.0-preview6' }) }
+        Mock Find-MatchingMilestone { return $null }
+        Mock Test-PrBelongsToVersion { return $true }
+        Mock Get-LinkedIssues { return @() }
+        Mock Test-AndRecordCorrection { }
+    }
+
+    It 'includes ResolvedMilestone/ResolvedMsNumber keys (set to $null) so downstream writers do not crash under StrictMode' {
+        $report = Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.'
+
+        # The skip report MUST carry the same key shape as the success-path report. Write-Report
+        # (line ~1326) and Save-ReportJson (line ~1381) read $Report.ResolvedMilestone WITHOUT a
+        # ContainsKey guard; under StrictMode a missing key throws PropertyNotFound -> exit 1.
+        $report.ContainsKey('ResolvedMilestone') | Should -BeTrue
+        $report.ContainsKey('ResolvedMsNumber')  | Should -BeTrue
+        $report.ResolvedMilestone | Should -BeNullOrEmpty
+        $report.ResolvedMsNumber  | Should -BeNullOrEmpty
+        # And the report is genuinely a no-op skip: no corrections to apply.
+        $report.Corrections.Count | Should -Be 0
+    }
+
+    It 'does not crash Write-Report/Save-ReportJson under StrictMode Latest (faithful CI reproduction)' {
+        # StrictMode is intentionally NOT enabled when the script is dot-sourced for Pester (see the
+        # $MyInvocation.InvocationName -ne '.' guard in Fix-MilestoneDrift.ps1). So we must re-create
+        # the exact production condition here: the workflow runs with Set-StrictMode -Version Latest,
+        # under which reading a missing hashtable key throws. Without the fix, this test throws
+        # PropertyNotFound and fails; with the fix it passes.
+        $report = Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.'
+
+        $tempPath = Join-Path ([System.IO.Path]::GetTempPath()) "milestone-skip-report-$([guid]::NewGuid()).json"
+        try {
+            {
+                Set-StrictMode -Version Latest
+                Write-Report $report
+                Save-ReportJson $report $tempPath
+            } | Should -Not -Throw
+        } finally {
+            Remove-Item $tempPath -ErrorAction SilentlyContinue
+        }
     }
 }
 

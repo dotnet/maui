@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // Issue - https://github.com/dotnet/maui/issues/36299
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,9 +20,6 @@ public class Bugzilla42329 : _IssuesUITest
 	public override string Issue => "ListView in Frame and FormsAppCompatActivity Memory Leak";
 
 	[Test]
-#if ANDROID
-	[Ignore("Failing on net10 https://github.com/dotnet/maui/issues/27411")]
-#endif
 	[Category(UITestCategories.ListView)]
 	public async Task MemoryLeakB42329()
 	{
@@ -71,3 +69,4 @@ public class Bugzilla42329 : _IssuesUITest
 		await Task.Delay(100);
 	}
 }
+#endif

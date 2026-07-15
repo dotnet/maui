@@ -142,43 +142,125 @@ function ConvertFrom-ReviewCommand {
     }
 }
 
-function Test-ReviewCommandOptionsAllowed {
+# Per-run cache so a PR with many comments from the same author triggers at most
+# one collaborator-permission API call per distinct login.
+$script:ReviewOptionPermissionCache = @{}
+
+function Clear-ReviewOptionPermissionCache {
+    $script:ReviewOptionPermissionCache = @{}
+}
+
+function Get-CollaboratorPermissionResult {
+    # Thin, mockable wrapper around the gh permission lookup. Returns the exit
+    # code, the trimmed permission string, and stderr so the caller can tell a
+    # definitive 404 (not a collaborator) from a transient failure.
     param(
-        $Comment,
-        [AllowNull()][string[]]$AllowedAuthorLogins = $null
+        [string]$Login,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
     )
 
-    # The comment's own author_association is always required to be in the trusted set,
-    # so that a login which was trusted on an earlier comment cannot carry that trust
-    # forward to a later comment posted after access changed.
-    $association = if ($Comment.author_association) { [string]$Comment.author_association } else { '' }
-    if ($association -notin @('OWNER', 'MEMBER', 'COLLABORATOR')) {
+    $stdErrFile = New-TemporaryFile
+    try {
+        $permission = [string](gh api "repos/$Owner/$Repo/collaborators/$Login/permission" --jq '.permission' 2>$stdErrFile)
+        $exitCode = $LASTEXITCODE
+        $stdErr = [string](Get-Content -Raw -LiteralPath $stdErrFile -ErrorAction SilentlyContinue)
+    } finally {
+        Remove-Item -LiteralPath $stdErrFile -Force -ErrorAction SilentlyContinue
+    }
+
+    return [pscustomobject]@{
+        ExitCode   = $exitCode
+        Permission = $permission.Trim()
+        StdErr     = $stdErr
+    }
+}
+
+function Test-ReviewOptionLoginTrusted {
+    <#
+    .SYNOPSIS
+        Returns $true when the login currently has write/maintain/admin
+        collaborator permission — the SAME signal review-trigger.yml uses to
+        authorize a maintainer's /review command.
+
+    .DESCRIPTION
+        We deliberately do NOT use the comment's author_association. With the
+        Actions GITHUB_TOKEN that field reads as CONTRIBUTOR (not MEMBER) for
+        maintainers whose org membership is private, which caused /review
+        -b <branch> -p <platform> options to be silently dropped so reruns fell
+        back to the 'main' pipeline branch. The collaborators/<user>/permission
+        endpoint only needs metadata:read, is what /review itself calls, and
+        reflects the user's CURRENT access rather than a per-comment snapshot.
+
+        A definitive HTTP 404 (not a collaborator) is cached as untrusted. A
+        transient failure (5xx / rate-limit / network) is retried and NEVER
+        cached, so a momentary blip cannot silently downgrade a maintainer's
+        custom branch to 'main' — the exact symptom this trust model fixes.
+    #>
+    param(
+        [string]$Login,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui',
+        [int]$MaxAttempts = 3
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Login)) {
         return $false
     }
 
-    if ($null -ne $AllowedAuthorLogins) {
-        if (-not $Comment.user -or [string]::IsNullOrWhiteSpace($Comment.user.login)) {
+    # GitHub user logins are alphanumerics and single hyphens only. Anything else
+    # (e.g. an app/bot login like 'name[bot]') cannot be a maintainer setting
+    # /review options, and rejecting it here also hardens the API path below.
+    if ($Login -notmatch '^[A-Za-z0-9][A-Za-z0-9-]*$') {
+        return $false
+    }
+
+    $key = $Login.ToLowerInvariant()
+    if ($script:ReviewOptionPermissionCache.ContainsKey($key)) {
+        return $script:ReviewOptionPermissionCache[$key]
+    }
+
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        $result = Get-CollaboratorPermissionResult -Login $Login -Owner $Owner -Repo $Repo
+
+        if ($result.ExitCode -eq 0) {
+            $trusted = $result.Permission -in @('admin', 'maintain', 'write')
+            $script:ReviewOptionPermissionCache[$key] = $trusted
+            return $trusted
+        }
+
+        if ($result.StdErr -match '(?i)\bHTTP\s+(404|410)\b') {
+            # Definitive: the login is not (or no longer) a collaborator.
+            $script:ReviewOptionPermissionCache[$key] = $false
             return $false
         }
 
-        $login = ([string]$Comment.user.login).ToLowerInvariant()
-        $allowed = @($AllowedAuthorLogins | ForEach-Object { ([string]$_).ToLowerInvariant() })
-        return $allowed -contains $login
+        $detail = (([string]$result.StdErr) -replace '[\r\n]+', ' ').Trim()
+        Write-Host "::warning::collaborator-permission lookup for '$Login' failed (attempt $attempt/$MaxAttempts): $detail"
+        if ($attempt -lt $MaxAttempts) {
+            Start-Sleep -Seconds ([Math]::Min(5, $attempt * 2))
+        }
     }
 
-    return $true
+    # Persistent transient failure: untrusted for THIS lookup but NOT cached, so a
+    # later lookup in the same run can still recover instead of being downgraded.
+    Write-Host "::warning::Could not determine collaborator permission for '$Login' after $MaxAttempts attempts; treating its /review options as untrusted for now."
+    return $false
 }
 
 function Get-LatestReviewCommandOptions {
     param(
         [object[]]$Comments,
-        [AllowNull()][string[]]$AllowedAuthorLogins = $null
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
     )
 
     $reviewCommands = @($Comments | Where-Object {
         $_.kind -eq 'issue-comment' -and
-        (Test-ReviewCommandOptionsAllowed -Comment $_ -AllowedAuthorLogins $AllowedAuthorLogins) -and
-        (ConvertFrom-ReviewCommand $_.body)
+        $_.user -and
+        -not [string]::IsNullOrWhiteSpace($_.user.login) -and
+        (ConvertFrom-ReviewCommand $_.body) -and
+        (Test-ReviewOptionLoginTrusted -Login ([string]$_.user.login) -Owner $Owner -Repo $Repo)
     } | Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true })
 
     if ($reviewCommands.Count -eq 0) {

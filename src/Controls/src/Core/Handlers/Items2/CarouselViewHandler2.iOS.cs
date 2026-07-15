@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem,
 			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
+			[Controls.CarouselView.LoopProperty.PropertyName] = MapLoop,
 		};
 	}
 
@@ -86,15 +87,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				mauiCV.SetSwipeEnabled(carouselView.IsSwipeEnabled);
 			}
-			else
-			{
-				handler.Controller.CollectionView.ScrollEnabled = carouselView.IsSwipeEnabled;
-			}
 		}
 
 		public static void MapIsBounceEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
-			handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
+			if (handler.Controller.CollectionView is MauiCollectionView mauiCV)
+			{
+				mauiCV.SetBounceEnabled(carouselView.IsBounceEnabled);
+			}
 		}
 
 		// TODO: Change the modifier to public in .NET 10.

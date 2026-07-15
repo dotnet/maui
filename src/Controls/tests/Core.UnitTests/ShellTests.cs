@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using NSubstitute;
 using Xunit;
 
@@ -1556,6 +1559,94 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task PoppedShellPageDisconnectsHandlers()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ContentPage, HandlerStub>();
+					handlers.AddHandler<Button, HandlerStub>();
+				})
+				.Build();
+
+			var mauiContext = new MauiContext(mauiApp.Services);
+			var shellContent = CreateShellContent();
+			var shellSection = new ShellSection();
+			shellSection.Items.Add(shellContent);
+			var testShell = new TestShell(shellSection);
+
+			var button = new Button();
+			var pushedPage = new ContentPage
+			{
+				Content = button
+			};
+
+			pushedPage.ToHandler(mauiContext);
+			button.ToHandler(mauiContext);
+
+			await testShell.CurrentSection.Navigation.PushAsync(pushedPage);
+
+			Assert.NotNull(pushedPage.Handler);
+			Assert.NotNull(button.Handler);
+
+			await testShell.CurrentSection.Navigation.PopAsync();
+
+			Assert.Null(pushedPage.Handler);
+			Assert.Null(button.Handler);
+		}
+
+		[Fact]
+		public async Task PopToRootShellPagesDisconnectHandlers()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ContentPage, HandlerStub>();
+					handlers.AddHandler<Button, HandlerStub>();
+				})
+				.Build();
+
+			var mauiContext = new MauiContext(mauiApp.Services);
+			var shellContent = CreateShellContent();
+			var shellSection = new ShellSection();
+			shellSection.Items.Add(shellContent);
+			var testShell = new TestShell(shellSection);
+
+			var firstButton = new Button();
+			var firstPushedPage = new ContentPage
+			{
+				Content = firstButton
+			};
+			var secondButton = new Button();
+			var secondPushedPage = new ContentPage
+			{
+				Content = secondButton
+			};
+
+			firstPushedPage.ToHandler(mauiContext);
+			firstButton.ToHandler(mauiContext);
+			secondPushedPage.ToHandler(mauiContext);
+			secondButton.ToHandler(mauiContext);
+
+			await testShell.CurrentSection.Navigation.PushAsync(firstPushedPage);
+			await testShell.CurrentSection.Navigation.PushAsync(secondPushedPage);
+
+			Assert.NotNull(firstPushedPage.Handler);
+			Assert.NotNull(firstButton.Handler);
+			Assert.NotNull(secondPushedPage.Handler);
+			Assert.NotNull(secondButton.Handler);
+
+			await testShell.CurrentSection.Navigation.PopToRootAsync();
+
+			Assert.Null(firstPushedPage.Handler);
+			Assert.Null(firstButton.Handler);
+			Assert.Null(secondPushedPage.Handler);
+			Assert.Null(secondButton.Handler);
+		}
+
+		[Fact]
 		public void WindowTitleSetToShellTitle()
 		{
 			TestShell testShell = new TestShell(new ContentPage())
@@ -1575,6 +1666,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			window.Title = null;
 			Assert.Equal("Shell Title", (window as IWindow).Title);
+		}
+
+		// When a Shell page has a title but no TitleView, the page title must appear
+		// in the in-app navigation bar (Toolbar.Title) but must NOT propagate to
+		// Shell.Title — which would cause it to appear in the native window/status bar
+		// via Window.ITitledElement.Title (= Window.Title ?? Shell.Title).
+		[Fact]
+		public void ShellPageTitleDoesNotPropagateToWindowTitleBar()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Page Title";
+
+			TestShell testShell = new TestShell(shellContent);
+
+			Window window = new Window { Page = testShell };
+
+			// In-app navigation bar shows the page title
+			Assert.Equal("Page Title", testShell.Toolbar.Title);
+
+			// Shell.Title must NOT be updated by the renderer — keeps the
+			// native window title bar / status bar free of the page title
+			Assert.Null(testShell.Title);
+			Assert.Null((window as IWindow).Title);
+		}
+
+		// The same invariant must hold after navigating to a pushed page.
+		[Fact]
+		public async Task ShellPageTitleDoesNotPropagateToWindowTitleBarOnNavigation()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Page One";
+
+			TestShell testShell = new TestShell(shellContent);
+
+			Window window = new Window { Page = testShell };
+
+			Assert.Equal("Page One", testShell.Toolbar.Title);
+			Assert.Null(testShell.Title);
+			Assert.Null((window as IWindow).Title);
+
+			await testShell.Navigation.PushAsync(new ContentPage { Title = "Page Two" });
+
+			Assert.Equal("Page Two", testShell.Toolbar.Title);
+
+			// Shell.Title must still NOT be updated by the renderer after navigation
+			Assert.Null(testShell.Title);
+			Assert.Null((window as IWindow).Title);
 		}
 
 		[Fact]
