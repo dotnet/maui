@@ -17,5 +17,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var conv = new FontAttributesConverter();
 			Assert.Equal(conv.ConvertFromInvariantString(input), expected);
 		}
+
+		[Theory]
+		[InlineData(FontAttributes.None)]
+		[InlineData(FontAttributes.Bold)]
+		[InlineData(FontAttributes.Italic)]
+		[InlineData(FontAttributes.Bold | FontAttributes.Italic)]
+		public void FontAttributesRoundTripThroughString(FontAttributes attributes)
+		{
+			var conv = new FontAttributesConverter();
+			var converted = conv.ConvertToInvariantString(attributes);
+
+			Assert.Equal(attributes, conv.ConvertFromInvariantString(converted));
+		}
 	}
 }
