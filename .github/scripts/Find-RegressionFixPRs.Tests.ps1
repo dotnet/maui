@@ -15,6 +15,7 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
+            'ConvertTo-GitHubNumber',
             'Test-IsRegressionLabel',
             'Get-LinkedIssueNumbers',
             'Get-IntroducingPrReferences',
@@ -22,6 +23,8 @@ BeforeAll {
             'Test-CandidateIsNew',
             'Invoke-GhJson',
             'Get-MergedRegressionFixPRs',
+            'Get-IssueContext',
+            'Get-OpenRegressionCorpusPrTags',
             'New-RegressionCandidate')) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -29,6 +32,17 @@ BeforeAll {
             }, $true)
         if (-not $function) { throw "Function '$functionName' not found" }
         Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'ConvertTo-GitHubNumber' {
+    It 'returns a positive Int32 GitHub identifier' {
+        ConvertTo-GitHubNumber '35925' | Should -Be 35925
+    }
+    It 'ignores zero, negative, and out-of-range values' {
+        @(ConvertTo-GitHubNumber '0').Count | Should -Be 0
+        @(ConvertTo-GitHubNumber '-1').Count | Should -Be 0
+        @(ConvertTo-GitHubNumber '999999999999').Count | Should -Be 0
     }
 }
 
@@ -70,6 +84,9 @@ Describe 'Get-LinkedIssueNumbers' {
     It 'does not treat a bare mention as a closing reference' {
         @(Get-LinkedIssueNumbers 'see #999 for context') | Should -Not -Contain 999
     }
+    It 'ignores out-of-range references' {
+        @(Get-LinkedIssueNumbers 'Fixes #999999999999').Count | Should -Be 0
+    }
 }
 
 Describe 'Get-IntroducingPrReferences' {
@@ -97,6 +114,10 @@ Describe 'Get-IntroducingPrReferences' {
         $r = Get-IntroducingPrReferences 'regression from #10. Also introduced by #20. regression from #10 again.'
         @($r) | Should -Be @(10, 20)
     }
+    It 'uses source-text order when attribution phrases use different patterns' {
+        $r = Get-IntroducingPrReferences 'Introduced by #200. Regression from #100.'
+        @($r) | Should -Be @(200, 100)
+    }
     It 'does not match a plain "fixes #N" issue reference' {
         @(Get-IntroducingPrReferences 'Fixes #35280') | Should -Not -Contain 35280
         @(Get-IntroducingPrReferences 'Fixes #35280').Count | Should -Be 0
@@ -111,6 +132,9 @@ Describe 'Get-IntroducingPrReferences' {
     It 'returns empty for null/empty text' {
         @(Get-IntroducingPrReferences $null).Count | Should -Be 0
         @(Get-IntroducingPrReferences '').Count | Should -Be 0
+    }
+    It 'ignores out-of-range references' {
+        @(Get-IntroducingPrReferences 'introduced by #999999999999').Count | Should -Be 0
     }
 }
 
@@ -139,6 +163,9 @@ Describe 'Get-RegressionPrTagsFromText' {
     It 'returns empty for null/empty text' {
         @(Get-RegressionPrTagsFromText $null).Count | Should -Be 0
     }
+    It 'ignores out-of-range tag values' {
+        @(Get-RegressionPrTagsFromText 'regression_pr: "999999999999"').Count | Should -Be 0
+    }
 }
 
 Describe 'Test-CandidateIsNew' {
@@ -164,6 +191,47 @@ Describe 'Get-MergedRegressionFixPRs' {
         Mock Invoke-GhJson { $null }
 
         @(Get-MergedRegressionFixPRs -Owner 'dotnet' -Repo 'maui' -LookbackDays 14 -Limit 20).Count | Should -Be 0
+    }
+}
+
+Describe 'Get-IssueContext' {
+    It 'uses only maintainer-associated comments for attribution' {
+        Mock Invoke-GhJson {
+            param([string[]]$GhArgs)
+            if ($GhArgs[0] -eq 'issue') {
+                return [PSCustomObject]@{
+                    number = 35756
+                    body = 'Regression from #100'
+                    labels = @([PSCustomObject]@{ name = 'regressed-in-10.0.70' })
+                }
+            }
+            return @(
+                [PSCustomObject]@{ body = 'introduced by #200'; author_association = 'NONE' }
+                [PSCustomObject]@{ body = 'introduced by #300'; author_association = 'MEMBER' }
+            )
+        }
+
+        $context = Get-IssueContext -Owner 'dotnet' -Repo 'maui' -Number 35756
+
+        $context.CommentText | Should -Be 'introduced by #300'
+    }
+}
+
+Describe 'Get-OpenRegressionCorpusPrTags' {
+    It 'includes tags from pending scanner draft PRs' {
+        Mock Invoke-GhJson {
+            param([string[]]$GhArgs)
+            if ($GhArgs[0] -eq 'pr') {
+                return @([PSCustomObject]@{ headRefName = 'regression-corpus/pending-entry' })
+            }
+            return [PSCustomObject]@{
+                encoding = 'base64'
+                content = [Convert]::ToBase64String(
+                    [Text.Encoding]::UTF8.GetBytes('regression_pr: "31931"'))
+            }
+        }
+
+        Get-OpenRegressionCorpusPrTags -Owner 'dotnet' -Repo 'maui' | Should -Contain 31931
     }
 }
 
@@ -214,11 +282,12 @@ Describe 'New-RegressionCandidate' {
         $c.PSObject.Properties.Name | Should -Not -Contain 'introducingPrFiles'
     }
 
-    It 'emits regressionIssues as [] (not null) when there are no linked issues' {
+    It 'requires human attribution when there are no linked regression issues' {
         $c = New-RegressionCandidate -FixPr 1 -FixPrMergeCommit 'sha' `
             -RegressionIssues (New-Object System.Collections.Generic.List[object]) `
-            -IntroducingPr $null -IntroDetails $null -AttributionSource $null -NeedsHumanAttribution $true
+            -IntroducingPr 31931 -IntroDetails $script:intro -AttributionSource 'pr-body' -NeedsHumanAttribution $false
         ($c | ConvertTo-Json -Depth 8 -Compress) | Should -Match '"regressionIssues":\[\]'
+        $c.needsHumanAttribution | Should -BeTrue
     }
 
     It 'leaves introducing fields null when attribution is unresolved' {

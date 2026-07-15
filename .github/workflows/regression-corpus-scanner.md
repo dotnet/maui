@@ -56,12 +56,18 @@ on:
         MAX_PRS: ${{ inputs.max_prs || '3' }}
       run: |
         $lookback = 14
-        if ($env:LOOKBACK_DAYS -match '^\d+$') {
-          $lookback = [Math]::Max(1, [Math]::Min(60, [int]$env:LOOKBACK_DAYS))
+        [void]([int]$parsedLookback = 0)
+        if ($env:LOOKBACK_DAYS -match '^\d+$' -and
+            [int]::TryParse($env:LOOKBACK_DAYS, [Globalization.NumberStyles]::None,
+              [Globalization.CultureInfo]::InvariantCulture, [ref]$parsedLookback)) {
+          $lookback = [Math]::Max(1, [Math]::Min(60, $parsedLookback))
         }
         $max = 3
-        if ($env:MAX_PRS -match '^\d+$') {
-          $max = [Math]::Max(1, [Math]::Min(10, [int]$env:MAX_PRS))
+        [void]([int]$parsedMax = 0)
+        if ($env:MAX_PRS -match '^\d+$' -and
+            [int]::TryParse($env:MAX_PRS, [Globalization.NumberStyles]::None,
+              [Globalization.CultureInfo]::InvariantCulture, [ref]$parsedMax)) {
+          $max = [Math]::Max(1, [Math]::Min(10, $parsedMax))
         }
         $output = "CustomAgentLogsTmp/RegressionCorpusScanner/candidates.json"
         .github/scripts/Find-RegressionFixPRs.ps1 `
@@ -275,11 +281,12 @@ that is how you understand the regression. Hermeticity applies to the eval you
      see), do NOT invent a `SKILL.md` change. Note in the PR body why the eval
      is a guard-only entry.
    This scanner job is read-only and cannot run Vally itself, so it cannot
-   measure the heuristic here. The proposed `SKILL.md` change is **unvalidated**:
-   the downstream Vally eval infra (`skill-validation.yml` / the PR-reviewer
-   infra) runs the new stimulus red (base skill) vs green (with your change),
-   records the measured delta on the PR, and a human reviews the wording and the
-   numbers before the PR is marked ready. Author the heuristic as a well-reasoned
+   measure the heuristic here. The proposed `SKILL.md` change is **unvalidated**.
+   If downstream evaluation does not start automatically, a repository contributor
+   must post `/evaluate-skills` on the draft PR to run the red (base skill) vs
+   green (with your change) comparison. Do not claim a measured delta until the
+   eval result appears on the PR. A human reviews the wording and the numbers
+   before the PR is marked ready. Author the heuristic as a well-reasoned
    proposal, not a guess dressed as fact.
 
 4. **Hermeticity self-check before finishing:** re-read every line you added.
@@ -296,7 +303,8 @@ that is how you understand the regression. Hermeticity applies to the eval you
      issue) so a human can verify provenance.
    - If you proposed a `SKILL.md` change, describe the reviewer blind spot it
      targets and label it **proposed and unvalidated** — `skill-validation.yml`
-     / the eval infra will measure the red→green delta and a human reviews the
+     / the eval infra may measure the red→green delta. If it has not run, ask a
+     repository contributor to post `/evaluate-skills`; a human reviews the
      wording before the PR is marked ready.
    - If you did NOT change `SKILL.md`, say whether the entry is a guard-only
      corpus addition (the reviewer may already catch this) or a

@@ -21,9 +21,9 @@
          That introducing PR's merge commit is the frozen `ref:` a Vally
          regression stimulus pins to (the reviewer is tested on the bad diff cold).
       4. Resolve the introducing PR's merge SHA + changed files via `gh`.
-      5. Drop candidates already covered by the corpus (existing `regression_pr:`
-         tags in any eval.vally.yaml) and those whose introducing PR cannot be
-         resolved (flagged needsHumanAttribution — no SHA means no hermetic ref).
+      5. Drop candidates already covered by the corpus or pending scanner drafts
+         (existing `regression_pr:` tags), and those whose introducing PR cannot
+         be resolved (flagged needsHumanAttribution — no SHA means no hermetic ref).
       6. Emit a bounded candidates.json.
 
     Hermeticity note: this scanner reads LIVE PR/issue data — that is expected and
@@ -68,6 +68,21 @@ $ErrorActionPreference = 'Stop'
 
 # ─── Pure helpers (unit-tested via AST extraction; no network/side effects) ────
 
+function ConvertTo-GitHubNumber {
+    # GitHub issue and PR numbers are positive Int32 values. Treat malformed or
+    # out-of-range numeric-looking text as non-references rather than aborting a run.
+    param([string]$Value)
+    [void]([int]$number = 0)
+    if ([int]::TryParse(
+            $Value,
+            [Globalization.NumberStyles]::None,
+            [Globalization.CultureInfo]::InvariantCulture,
+            [ref]$number) -and $number -gt 0) {
+        return $number
+    }
+    return
+}
+
 function Test-IsRegressionLabel {
     # A label that marks a PR or issue as regression-related. `i/regression` is the
     # definitive fix-PR signal; `regressed-in-<version>` is the issue-side signal.
@@ -91,7 +106,10 @@ function Get-LinkedIssueNumbers {
     )
     foreach ($pat in $patterns) {
         foreach ($m in [regex]::Matches($normalized, $pat)) {
-            [void]$set.Add([int]$m.Groups[1].Value)
+            $number = ConvertTo-GitHubNumber $m.Groups[1].Value
+            if ($null -ne $number) {
+                [void]$set.Add($number)
+            }
         }
     }
     return @($set)
@@ -113,12 +131,23 @@ function Get-IntroducingPrReferences {
         '(?i)regress(?:ed|ion)\s+(?:by)\s+(?:PR\s*#?|#)(\d+)'
     )
 
+    $matches = New-Object System.Collections.Generic.List[object]
+    for ($patternIndex = 0; $patternIndex -lt $patterns.Count; $patternIndex++) {
+        foreach ($m in [regex]::Matches($Text, $patterns[$patternIndex])) {
+            $matches.Add([PSCustomObject]@{
+                    Index        = $m.Index
+                    PatternIndex = $patternIndex
+                    Value        = $m.Groups[1].Value
+                }) | Out-Null
+        }
+    }
+
     $ordered = New-Object System.Collections.Generic.List[int]
     $seen = New-Object 'System.Collections.Generic.HashSet[int]'
-    foreach ($pat in $patterns) {
-        foreach ($m in [regex]::Matches($Text, $pat)) {
-            $n = [int]$m.Groups[1].Value
-            if ($seen.Add($n)) { [void]$ordered.Add($n) }
+    foreach ($match in @($matches | Sort-Object Index, PatternIndex)) {
+        $number = ConvertTo-GitHubNumber $match.Value
+        if ($null -ne $number -and $seen.Add($number)) {
+            [void]$ordered.Add($number)
         }
     }
     return @($ordered)
@@ -132,7 +161,10 @@ function Get-RegressionPrTagsFromText {
     if ($Text -is [array]) { $Text = $Text -join "`n" }
     $set = New-Object 'System.Collections.Generic.HashSet[int]'
     foreach ($m in [regex]::Matches($Text, '(?im)^\s*regression_pr:\s*"?(\d+)"?')) {
-        [void]$set.Add([int]$m.Groups[1].Value)
+        $number = ConvertTo-GitHubNumber $m.Groups[1].Value
+        if ($null -ne $number) {
+            [void]$set.Add($number)
+        }
     }
     return @($set)
 }
@@ -182,16 +214,54 @@ function Get-IssueContext {
     if (-not $issue) { return $null }
     $commentText = ''
     $comments = Invoke-GhJson -GhArgs @(
-        'api', "repos/$Owner/$Repo/issues/$Number/comments?per_page=$MaxComments",
-        '--jq', '[.[].body]'
+        'api', "repos/$Owner/$Repo/issues/$Number/comments?per_page=$MaxComments"
     )
-    if ($comments) { $commentText = (@($comments) -join "`n") }
+    $trustedAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
+    $trustedCommentBodies = @(
+        $comments |
+            Where-Object {
+                $_ -and
+                ([string]$_.author_association).ToUpperInvariant() -in $trustedAssociations
+            } |
+            ForEach-Object { [string]$_.body } |
+            Where-Object { $_ }
+    )
+    if ($trustedCommentBodies) { $commentText = $trustedCommentBodies -join "`n" }
     return [PSCustomObject]@{
         Number      = $issue.number
         Labels      = @($issue.labels | ForEach-Object { $_.name } | Where-Object { $_ })
         Body        = [string]$issue.body
         CommentText = $commentText
     }
+}
+
+function Get-OpenRegressionCorpusPrTags {
+    # Draft corpus PRs are not in main yet, so include their tags in deduplication.
+    param([string]$Owner, [string]$Repo)
+    $openPrs = Invoke-GhJson -GhArgs @(
+        'pr', 'list', '--repo', "$Owner/$Repo",
+        '--state', 'open', '--label', 'agentic-workflows', '--limit', '100',
+        '--json', 'headRefName'
+    )
+
+    $tags = New-Object 'System.Collections.Generic.HashSet[int]'
+    foreach ($pr in @($openPrs | Where-Object { $_.headRefName -like 'regression-corpus/*' })) {
+        $ref = [uri]::EscapeDataString([string]$pr.headRefName)
+        $file = Invoke-GhJson -GhArgs @(
+            'api',
+            "repos/$Owner/$Repo/contents/.github/skills/code-review/tests/eval.vally.yaml?ref=$ref"
+        )
+        if (-not $file -or $file.encoding -ne 'base64' -or -not $file.content) {
+            continue
+        }
+
+        $text = [Text.Encoding]::UTF8.GetString(
+            [Convert]::FromBase64String(([string]$file.content -replace '\s', '')))
+        foreach ($number in (Get-RegressionPrTagsFromText $text)) {
+            [void]$tags.Add($number)
+        }
+    }
+    return @($tags)
 }
 
 function Get-IntroducingPrDetails {
@@ -232,7 +302,7 @@ function New-RegressionCandidate {
         introducingPr            = $IntroducingPr
         introducingPrMergeCommit = if ($IntroDetails) { $IntroDetails.MergeCommit } else { $null }
         attributionSource        = $AttributionSource
-        needsHumanAttribution    = $NeedsHumanAttribution
+        needsHumanAttribution    = $NeedsHumanAttribution -or $RegressionIssues.Count -eq 0
     }
 }
 
@@ -246,11 +316,14 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "Scanning $Owner/$Repo for regression-fix PRs merged in the last $LookbackDays day(s)..."
 
-# Dedup set: regression_pr tags already present in the corpus.
+# Dedup set: regression_pr tags already present in the corpus or pending scanner drafts.
 $existingNumbers = New-Object 'System.Collections.Generic.HashSet[int]'
 foreach ($file in (Get-ChildItem -Path $CorpusGlob -ErrorAction SilentlyContinue)) {
     $text = Get-Content -Raw -LiteralPath $file.FullName -ErrorAction SilentlyContinue
     foreach ($n in (Get-RegressionPrTagsFromText $text)) { [void]$existingNumbers.Add($n) }
+}
+foreach ($n in (Get-OpenRegressionCorpusPrTags -Owner $Owner -Repo $Repo)) {
+    [void]$existingNumbers.Add($n)
 }
 Write-Host "Corpus already covers regression_pr: $(@($existingNumbers) -join ', ')"
 
@@ -306,7 +379,7 @@ foreach ($pr in $fixPRs) {
         $introDetails = Get-IntroducingPrDetails -Owner $Owner -Repo $Repo -Number $introducingPr
     }
 
-    $needsHuman = (-not $introDetails) -or (-not $introDetails.MergeCommit)
+    $needsHuman = $regressionIssues.Count -eq 0 -or (-not $introDetails) -or (-not $introDetails.MergeCommit)
 
     $fixMergeOid = if ($pr.mergeCommit) { $pr.mergeCommit.oid } else { $null }
     $candidate = New-RegressionCandidate `
@@ -318,6 +391,9 @@ foreach ($pr in $fixPRs) {
         -AttributionSource $attributionSource `
         -NeedsHumanAttribution $needsHuman
     $candidates.Add($candidate) | Out-Null
+    if (-not $candidate.needsHumanAttribution -and $null -ne $candidate.introducingPr) {
+        [void]$existingNumbers.Add([int]$candidate.introducingPr)
+    }
 
     Write-Host "  ✅ Candidate: fix #$fixNumber → introducing #$introducingPr (ref $($introDetails.MergeCommit)) needsHuman=$needsHuman"
 }
