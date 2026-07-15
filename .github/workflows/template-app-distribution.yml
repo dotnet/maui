@@ -352,6 +352,7 @@ jobs:
           name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
           path: |
             ${{ steps.build.outputs.sideload_package_path }}
+            ${{ steps.build.outputs.additional_package_path }}
             ${{ steps.build.outputs.binlog_path }}
           retention-days: 14
 

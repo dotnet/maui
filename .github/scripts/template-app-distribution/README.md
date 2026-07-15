@@ -17,12 +17,14 @@ App Store / Play account. The build script therefore emits two things:
   Consumed only by the Google Play / TestFlight upload steps.
 - `sideload_package_path` — the **directly installable** artifact. This is what the dry-run
   job and the publish "artifact copy" step upload for testers.
+- `additional_package_path` — an optional extra file uploaded next to the sideload one. Used on
+  iOS to include the Simulator `.app` zip alongside the device `.ipa`.
 
 | Platform | Dry-run artifact (`publish=false`) | Publish store target | Sideloadable artifact on publish |
 | --- | --- | --- | --- |
 | **Android** | Debug-signed **APK** (installs via `adb install` / file manager) | `.aab` → Google Play | Release-signed **APK** |
 | **Windows** | **Self-contained** unpackaged zip (no runtime install needed) | same zip | same zip |
-| **iOS** | `.app` zip (Simulator) | App Store `.ipa` → TestFlight | ad-hoc `.ipa` *(only if the ad-hoc secret is set — see below)* |
+| **iOS** | unsigned device **`.ipa`** (AltStore/Sideloadly) + Simulator `.app` zip | App Store `.ipa` → TestFlight | ad-hoc `.ipa` *(only if the ad-hoc secret is set — see below)* |
 | **macOS (Mac Catalyst)** | Native **arm64** `.app` zip (Apple Silicon) | Mac App Store `.pkg` → TestFlight | notarized `.app` zip *(only if the Developer ID secrets are set — see below)* |
 
 ### Why the previous artifacts failed to install
@@ -38,7 +40,10 @@ App Store / Play account. The build script therefore emits two things:
   hardware (unsigned) and won't launch in the Simulator (device platform — launch is denied). Fixed by
   building an **arm64 iOS Simulator** app (`dotnet build -r iossimulator-arm64`; `dotnet publish`
   rejects simulator RIDs) and ad-hoc re-signing it so the Simulator (which enforces code signing on
-  macOS 15+/26) actually launches it.
+  macOS 15+/26) actually launches it. The dry-run **also** wraps an unsigned `ios-arm64` device
+  build as a `Payload/*.app` **`.ipa`** so testers who want to run on real hardware have an IPA to
+  sideload with AltStore/Sideloadly (which re-sign it with their own Apple ID). A *directly*
+  installable device build still needs the ad-hoc IPA (secret-gated) or TestFlight.
 - **macOS** — the `.pkg` was Mac App Store signed and defaulted to `maccatalyst-x64` (Rosetta),
   so launching it outside the store gave `SIGKILL (Code Signature Invalid)` /
   `Taskgated Invalid Signature`. Fixed by shipping a directly-launchable **arm64-native** `.app`
@@ -58,11 +63,20 @@ App Store / Play account. The build script therefore emits two things:
   device/emulator.
 - **Windows** — unzip and run the `.exe`. Because the app is self-contained no .NET runtime
   install is required. (SmartScreen may warn for an unsigned app — *More info → Run anyway*.)
-- **iOS** — unzip and run the `.app` in the iOS **Simulator**:
-  `xcrun simctl install booted MyApp.app && xcrun simctl launch booted <bundle-id>`. The dry-run
-  build targets the **arm64 Simulator** (Apple Silicon) and is ad-hoc re-signed so it launches;
-  the Simulator accepts ad-hoc signatures directly. Installing on a **physical device** requires the
-  ad-hoc IPA (secret-gated, below) with the device UDID registered in the ad-hoc profile.
+- **iOS** — the dry-run artifact contains two files:
+  - **`MyApp.ipa`** — an **unsigned device** build for a **physical iPhone/iPad**. iOS refuses to
+    run unsigned or ad-hoc code on a device, so install it with **[AltStore](https://altstore.io)**
+    or **[Sideloadly](https://sideloadly.io)**, which re-sign the app with your own Apple ID (a free
+    Apple ID works but must be refreshed every 7 days; a paid Developer account lasts a year). A
+    plain Finder drag / double-click will *not* install an unsigned IPA.
+  - **`MyApp.app.zip`** — an **arm64 iOS Simulator** build. Unzip and run it in the Simulator:
+    `xcrun simctl install booted MyApp.app && xcrun simctl launch booted <bundle-id>`. It is ad-hoc
+    re-signed so the Simulator (which enforces code signing on macOS 15+/26) launches it.
+
+  For a **directly installable** device build (no AltStore, no re-signing) use one of the
+  secret-gated publish paths: **TestFlight** (`publish=true`, the smoothest — testers install from
+  the TestFlight app, no UDID needed) or the **ad-hoc `.ipa`** (below) with each tester's device
+  UDID registered in the ad-hoc profile.
 - **macOS** — the dry-run `.app` is **ad-hoc signed** (not notarized), so Gatekeeper blocks it on
   first launch. Clear quarantine and open it:
   `xattr -dr com.apple.quarantine "MyApp.app"` then double-click — **or** double-click, dismiss the
