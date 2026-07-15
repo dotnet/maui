@@ -91,6 +91,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task CollectedBrushClearsGradientStopBindingContextPropertyBindingSource()
+		{
+			var inheritedContext = new GradientStop { Offset = 0.25f };
+			var stop = new GradientStop();
+			stop.SetBinding(BindableObject.BindingContextProperty, nameof(GradientStop.Offset));
+			var sharedStops = new GradientStopCollection { stop };
+			var weakBrush = CreateBrushWithSharedGradientStops(sharedStops, inheritedContext);
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.Equal(0.25f, stop.BindingContext);
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			Assert.Null(stop.Parent);
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(1, bindingContextChanged);
+
+			inheritedContext.Offset = 0.5f;
+			Assert.Null(stop.BindingContext);
+			GC.KeepAlive(inheritedContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
 		public async Task CollectedBrushDispatchesGradientStopInheritedBindingContextCleanup()
 		{
 			var dispatchedCleanup = new TaskCompletionSource<Action>(TaskCreationOptions.RunContinuationsAsynchronously);

@@ -404,8 +404,37 @@ namespace Microsoft.Maui.Controls
 		internal WeakReference MarkInheritedBindingContextForCleanup()
 		{
 			var inheritedContext = Volatile.Read(ref _inheritedContext);
-			if (inheritedContext is null || ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending))
+			if (ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending))
 				return null;
+
+			if (inheritedContext is null)
+			{
+				var binding = GetContext(BindingContextProperty)?.Bindings.GetValue();
+				if (binding is null || binding.Context is not { } bindingContext)
+					return null;
+
+				if (Interlocked.CompareExchange(
+					ref _inheritedContext,
+					s_inheritedContextCleanupPending,
+					null) is not null)
+				{
+					return null;
+				}
+
+				if (!ReferenceEquals(binding, GetContext(BindingContextProperty)?.Bindings.GetValue())
+					|| !ReferenceEquals(bindingContext, binding.Context))
+				{
+					Interlocked.CompareExchange(
+						ref _inheritedContext,
+						null,
+						s_inheritedContextCleanupPending);
+					return null;
+				}
+
+				// The pending marker also acts as a cancellation token for binding-held
+				// inherited context, where cancellation restores a null weak context.
+				return s_inheritedContextCleanupPending;
+			}
 
 			if (inheritedContext.Target is null)
 			{
@@ -425,11 +454,11 @@ namespace Microsoft.Maui.Controls
 			return inheritedContext;
 		}
 
-		internal void CancelInheritedBindingContextCleanup(WeakReference inheritedContext)
+		internal void CancelInheritedBindingContextCleanup(WeakReference cleanupToken)
 		{
 			Interlocked.CompareExchange(
 				ref _inheritedContext,
-				inheritedContext,
+				ReferenceEquals(cleanupToken, s_inheritedContextCleanupPending) ? null : cleanupToken,
 				s_inheritedContextCleanupPending);
 		}
 
