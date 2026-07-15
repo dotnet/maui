@@ -269,7 +269,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (carouselPosition >= count)
 				{
-					carouselPosition = count - 1;
+					// Clamp to 0 (not -1) when the unequal-count Replace leaves the collection
+					// empty; a negative position later reaches ScrollToPosition/UpdatePosition,
+					// and RecyclerView.ScrollToPosition(-1) can throw.
+					carouselPosition = count > 0 ? count - 1 : 0;
 				}
 			}
 
