@@ -12,6 +12,7 @@ There are several artifacts in the .NET MAUI "universe":
     * `Microsoft.Maui.Controls.Xaml` - The XAML parser
     * `Microsoft.Maui.Controls.Build.Tasks` - The real set of XAML[C|G] targets and globs
   * `Microsoft.Maui.Resizetizer` - The framework-and-platform-agnostic asset generator and integrator
+  * `Microsoft.Maui.ApplicationArtifacts.Windows` - Targets-only discovery of final Windows App SDK application outputs
   * `Microsoft.Maui.Core` - The base interfaces and handlers for all .NET MAUI things
   * `Microsoft.Maui.Essentials` - The core set of framework-agnostic, cross-platform APIs
   * `Microsoft.Maui.Controls.Compatibility` - The set of compatibility APIs for Xamarin.Forms
@@ -42,6 +43,7 @@ Most nugets do not contain or need targets and/or props files, but some do. Thes
     - Manifest - `Microsoft.NET.Sdk.Maui.Manifest`
     - SDK - `Microsoft.Maui.Sdk`
  - NuGet Packages
+    - Windows application artifacts - `Microsoft.Maui.ApplicationArtifacts.Windows`
     - Controls - `Microsoft.Maui.Controls.Build.Tasks`
     - Core - `Microsoft.Maui.Core`
     - Resizetizer - `Microsoft.Maui.Resizetizer`
@@ -104,11 +106,16 @@ The targets file can then import all the SDK:
 
 ### Targets in the Packs
 
-There are 3 packs today that need targets:
+There are 4 packs today that need targets:
 
+ - Windows application artifacts - `Microsoft.Maui.ApplicationArtifacts.Windows`
  - Controls - `Microsoft.Maui.Controls.Build.Tasks`
  - Core - `Microsoft.Maui.Core`
  - Resizetizer - `Microsoft.Maui.Resizetizer`
+
+#### Targets in Windows application artifacts
+
+`Microsoft.Maui.ApplicationArtifacts.Windows` is a neutral, targets-only package. Its `buildTransitive` target discovers final outputs from modern SDK-style Windows App SDK application projects and exposes them as `@(ApplicationArtifact)`. It has no dependency on MAUI runtime assemblies, Resizetizer, or MAUI build tasks, so non-MAUI Windows App SDK applications can reference it directly. Classic `.wapproj` packaging is not supported.
 
 #### Targets in Controls
 

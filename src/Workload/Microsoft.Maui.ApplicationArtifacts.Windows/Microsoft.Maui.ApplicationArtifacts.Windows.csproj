@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <Import Project="../Shared/Common.targets" />
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageType>Dependency</PackageType>
+    <PackageId>Microsoft.Maui.ApplicationArtifacts.Windows</PackageId>
+    <Title>Windows Application Artifacts</Title>
+    <Description>MSBuild targets that expose final Windows App SDK application outputs through the ApplicationArtifact item.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="buildTransitive\Microsoft.Maui.ApplicationArtifacts.Windows.targets"
+          Pack="true"
+          PackagePath=""
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

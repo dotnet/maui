@@ -89,6 +89,8 @@ installed:
 * `maui-windows`
 * `maui-tizen`
 
+The `maui-windows` workload also installs `Microsoft.Maui.ApplicationArtifacts.Windows`, a targets-only package that exposes final modern Windows App SDK build and publish outputs as `@(ApplicationArtifact)`. The package can be referenced directly by non-MAUI Windows App SDK applications; classic `.wapproj` projects are outside its scope.
+
 `maui-android` simply extends the `android` workload, adding the
 Android-specific platform implementation for MAUI.
 

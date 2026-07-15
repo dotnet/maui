@@ -269,6 +269,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Essentials.AI.DeviceTests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Essentials.AI.UnitTests", "src\AI\tests\Essentials.AI.UnitTests\Essentials.AI.UnitTests.csproj", "{BD5D52FA-CA8E-4236-979A-95B4CE4158D8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.ApplicationArtifacts.Windows", "src\Workload\Microsoft.Maui.ApplicationArtifacts.Windows\Microsoft.Maui.ApplicationArtifacts.Windows.csproj", "{3BC53DE7-90E7-47FB-9A70-D913782E07D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -686,6 +688,10 @@ Global
 		{BD5D52FA-CA8E-4236-979A-95B4CE4158D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD5D52FA-CA8E-4236-979A-95B4CE4158D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD5D52FA-CA8E-4236-979A-95B4CE4158D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -810,6 +816,7 @@ Global
 		{B578E852-193C-4F37-ACB1-2B9B1B32F6B6} = {BE0B3DF2-F37C-449D-F624-39E4FE56170C}
 		{90B0A751-82EA-4575-B22C-256EF3A4FEF1} = {BE0B3DF2-F37C-449D-F624-39E4FE56170C}
 		{BD5D52FA-CA8E-4236-979A-95B4CE4158D8} = {BE0B3DF2-F37C-449D-F624-39E4FE56170C}
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6} = {EC63FD88-5E12-46D7-B440-68F70241D987}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
