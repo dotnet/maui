@@ -61,6 +61,12 @@ $packageVersionMappings = @{
     'CommunityToolkit.Mvvm' = 'CommunityToolkitMvvmPackageVersion'
 }
 
+$n1PackageVersionMappings = @{
+    'Microsoft.Extensions.Logging.Debug' = 'MicrosoftExtensionsLoggingDebugN1Version'
+    'Microsoft.Extensions.Configuration' = 'MicrosoftExtensionsConfigurationN1Version'
+    'Microsoft.Extensions.DependencyInjection' = 'MicrosoftExtensionsDependencyInjectionN1Version'
+}
+
 # Initialize new registrations list
 $newRegistrations = New-Object System.Collections.ArrayList
 
@@ -81,6 +87,18 @@ function New-PackageEntry {
             }
         }
     }
+}
+
+function Get-VersionPropertyValue {
+    param([string]$PropertyName)
+
+    foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
+        if ($propertyGroup.$PropertyName) {
+            return $propertyGroup.$PropertyName.ToString().Trim()
+        }
+    }
+
+    return $null
 }
 
 # Handle CommunityToolkit.Maui versions first
@@ -115,24 +133,22 @@ foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
 # Process other packages
 foreach ($package in $packageVersionMappings.GetEnumerator()) {
     $packageName = $package.Key
-    $versionPropertyName = $package.Value
-    $version = $null
+    $currentVersionPropertyName = $package.Value
+    $currentVersion = Get-VersionPropertyValue $currentVersionPropertyName
+    $versionPropertyName = $currentVersionPropertyName
 
-    # Look for the version in PropertyGroups
-    foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
-        if ($propertyGroup.$versionPropertyName) {
-            $version = $propertyGroup.$versionPropertyName.ToString().Trim()
-            if (-not [string]::IsNullOrEmpty($version)) {
-                Write-Host "Found $packageName version: $version"
-                [void]$newRegistrations.Add((New-PackageEntry -PackageName $packageName -PackageVersion $version))
-                break
-            }
-        }
+    if ($n1PackageVersionMappings.ContainsKey($packageName) -and $currentVersion.Contains('-')) {
+        $versionPropertyName = $n1PackageVersionMappings[$packageName]
     }
 
+    $version = Get-VersionPropertyValue $versionPropertyName
     if ([string]::IsNullOrEmpty($version)) {
         Write-Warning "Could not find version for $packageName (property: $versionPropertyName)"
+        continue
     }
+
+    Write-Host "Found $packageName version: $version"
+    [void]$newRegistrations.Add((New-PackageEntry -PackageName $packageName -PackageVersion $version))
 }
 
 # Sort registrations by package name for consistent ordering

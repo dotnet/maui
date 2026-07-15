@@ -1,4 +1,48 @@
 <Project>
+  <PropertyGroup>
+    <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == '' and '$(MauiTestProject)' == 'true'">false</UseN1PackageVersions>
+    <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == ''">true</UseN1PackageVersions>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UseN1PackageVersions)' == 'true' and $(MicrosoftExtensionsConfigurationVersion.Contains('-'))">
+    <PackageReference Update="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsLoggingDebugN1Version)" />
+    <PackageReference Update="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesN1Version)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseN1PackageVersions)' == 'true' and $(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))">
+    <PackageReference Update="Microsoft.AspNetCore.Authorization" Version="$(MicrosoftAspNetCoreAuthorizationN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.Google" Version="$(MicrosoftAspNetCoreAuthenticationGoogleN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.Facebook" Version="$(MicrosoftAspNetCoreAuthenticationFacebookN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Components.Analyzers" Version="$(MicrosoftAspNetCoreComponentsAnalyzersN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Components.Forms" Version="$(MicrosoftAspNetCoreComponentsFormsN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Components" Version="$(MicrosoftAspNetCoreComponentsN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Components.WebView" Version="$(MicrosoftAspNetCoreComponentsWebViewN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerN1PackageVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Metadata" Version="$(MicrosoftAspNetCoreMetadataN1PackageVersion)" />
+    <PackageReference Update="Microsoft.JSInterop" Version="$(MicrosoftJSInteropN1PackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseN1PackageVersions)' == 'true' and $(MicrosoftNETCoreAppRefPackageVersion.Contains('-'))">
+    <PackageReference Update="System.Text.Json" Version="$(SystemTextJsonN1PackageVersion)" />
+    <PackageReference Update="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebN1PackageVersion)" />
+    <PackageReference Update="System.CodeDom" Version="$(SystemCodeDomN1PackageVersion)" />
+    <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesN1PackageVersion)" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference
         Update="HarfBuzzSharp"
@@ -99,54 +143,67 @@
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(MicrosoftExtensionsConfigurationVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Abstractions"
         Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Json"
         Version="$(MicrosoftExtensionsConfigurationJsonVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
         Version="$(MicrosoftExtensionsDependencyInjectionVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection.Abstractions"
         Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Abstractions"
         Version="$(MicrosoftExtensionsFileProvidersAbstractionsVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.Hosting.Abstractions"
         Version="$(MicrosoftExtensionsHostingAbstractionsVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.Http"
         Version="$(MicrosoftExtensionsHttpVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
         Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging"
         Version="$(MicrosoftExtensionsLoggingVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Console"
         Version="$(MicrosoftExtensionsLoggingConsoleVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Debug"
         Version="$(MicrosoftExtensionsLoggingDebugVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Extensions.Primitives"
         Version="$(MicrosoftExtensionsPrimitivesVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftExtensionsConfigurationVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.IO.RecyclableMemoryStream"
@@ -173,38 +230,67 @@
     <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
         Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authentication.Google"
         Version="$(MicrosoftAspNetCoreAuthenticationGooglePackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authentication.Facebook"
         Version="$(MicrosoftAspNetCoreAuthenticationFacebookPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authentication.MicrosoftAccount"
         Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Analyzers"
+        Version="$(MicrosoftAspNetCoreComponentsAnalyzersPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Forms"
+        Version="$(MicrosoftAspNetCoreComponentsFormsPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components"
+        Version="$(MicrosoftAspNetCoreComponentsPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
         Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.Web"
         Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.WebAssembly"
         Version="$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.WebAssembly.Server"
         Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Metadata"
+        Version="$(MicrosoftAspNetCoreMetadataPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(MicrosoftJSInteropPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftAspNetCoreAuthorizationPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
@@ -224,6 +310,21 @@
     <PackageReference
         Update="Microsoft.AspNetCore.Authentication.MicrosoftAccount"
         Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Analyzers"
+        Version="$(MicrosoftAspNetCoreComponentsAnalyzersPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Forms"
+        Version="$(MicrosoftAspNetCoreComponentsFormsPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components"
+        Version="$(MicrosoftAspNetCoreComponentsPreviousPackageVersion)"
         Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
     />
     <PackageReference
@@ -247,6 +348,11 @@
         Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
     />
     <PackageReference
+        Update="Microsoft.AspNetCore.Metadata"
+        Version="$(MicrosoftAspNetCoreMetadataPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(MicrosoftJSInteropPreviousPackageVersion)"
         Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
@@ -254,18 +360,22 @@
     <PackageReference
         Update="System.Text.Json"
         Version="$(SystemTextJsonPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftNETCoreAppRefPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="System.Text.Encodings.Web"
         Version="$(SystemTextEncodingsWebPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftNETCoreAppRefPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="System.CodeDom"
         Version="$(SystemCodeDomPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftNETCoreAppRefPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.Bcl.AsyncInterfaces"
         Version="$(MicrosoftBclAsyncInterfacesPackageVersion)"
+        Condition="'$(UseN1PackageVersions)' != 'true' or !$(MicrosoftNETCoreAppRefPackageVersion.Contains('-'))"
     />
     <PackageReference
         Update="Microsoft.CodeAnalysis.PublicApiAnalyzers"

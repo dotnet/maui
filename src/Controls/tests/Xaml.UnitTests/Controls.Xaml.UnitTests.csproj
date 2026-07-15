@@ -10,6 +10,7 @@
          XC0619 uses raw LogError (not warning-promotion), so WarningsNotAsErrors is defensive only. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0619;XC0022;XC0023;XC0025;XC0045;XC0067;MAUIG2045;MAUID1000;MAUIX2005;MAUIX2015</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
+    <UseN1PackageVersions>false</UseN1PackageVersions>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
     <DefineConstants>$(DefineConstants)</DefineConstants>
@@ -27,7 +28,7 @@
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
-    <PackageReference Include="System.CodeDom" Version="7.0.0" />
+    <PackageReference Include="System.CodeDom" />
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" Publish="true" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" Publish="true" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />

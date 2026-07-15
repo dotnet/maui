@@ -63,12 +63,36 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <BeforePack>_UpdateTemplateVersions</BeforePack>
+    <BeforePack>TestDotNetPackageVersionSelection;_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
-  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild"
-      Inputs="@(TemplateJsonInput)"
-      Outputs="%(TemplateJsonInput.IntermediateLocation)">
+  <Target Name="_GetTemplatePackageVersions">
+    <ItemGroup>
+      <_TemplatePackageVersion Include="MS_EXT_LOG_DEBUG_VERSION_VALUE">
+        <CurrentVersion>$(MicrosoftExtensionsLoggingDebugVersion)</CurrentVersion>
+        <ReplacementVersion>$(MicrosoftExtensionsLoggingDebugVersion)</ReplacementVersion>
+        <ReplacementVersion Condition="$(MicrosoftExtensionsLoggingDebugVersion.Contains('-'))">*</ReplacementVersion>
+      </_TemplatePackageVersion>
+      <_TemplatePackageVersion Include="MS_COMPONENTS_WEB_VERSION_VALUE">
+        <CurrentVersion>$(MicrosoftAspNetCoreComponentsWebPackageVersion)</CurrentVersion>
+        <ReplacementVersion>$(MicrosoftAspNetCoreComponentsWebPackageVersion)</ReplacementVersion>
+        <ReplacementVersion Condition="$(MicrosoftAspNetCoreComponentsWebPackageVersion.Contains('-'))">*</ReplacementVersion>
+      </_TemplatePackageVersion>
+      <_TemplatePackageVersion Include="MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE">
+        <CurrentVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)</CurrentVersion>
+        <ReplacementVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)</ReplacementVersion>
+        <ReplacementVersion Condition="$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion.Contains('-'))">*</ReplacementVersion>
+      </_TemplatePackageVersion>
+      <_TemplatePackageVersion Include="MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE">
+        <CurrentVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)</CurrentVersion>
+        <ReplacementVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)</ReplacementVersion>
+        <ReplacementVersion Condition="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion.Contains('-'))">*</ReplacementVersion>
+      </_TemplatePackageVersion>
+    </ItemGroup>
+  </Target>
+
+  <!-- Version-only dependency updates must refresh packed defaults even when template files are unchanged. -->
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild;_GetTemplatePackageVersions">
 
      <!-- Copy files to their output name -->
     <Copy
@@ -81,35 +105,155 @@
         DestinationFiles="%(TemplateJsonInput.RelativeDir)templatestrings.json"
         Condition="'%(TemplateJsonInput.Filename)%(TemplateJsonInput.Extension)' == 'templatestrings.en.json'" />
 
-    <!-- When not stabilized (preview builds), strip the build number and replace with a wildcard:
-         e.g. 11.0.0-preview.2.26103.111 -> 11.0.0-preview.2.*
-         MSBuild has no built-in API for semver parsing, so we use Regex to strip the trailing build segments. -->
-    <PropertyGroup Condition="'$(StabilizePackageVersion)' != 'true'">
-      <_PreviewWildcardPattern>(-[a-zA-Z][a-zA-Z0-9]*\.\d+)\.\d+\.\d+</_PreviewWildcardPattern>
-      <_TemplateLoggingDebugVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftExtensionsLoggingDebugVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateLoggingDebugVersion>
-      <_TemplateComponentsWebVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateComponentsWebVersion>
-      <_TemplateComponentsWebAssemblyVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateComponentsWebAssemblyVersion>
-      <_TemplateComponentsWebAssemblyServerVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateComponentsWebAssemblyServerVersion>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(StabilizePackageVersion)' == 'true'">
-      <_TemplateLoggingDebugVersion>$(MicrosoftExtensionsLoggingDebugVersion)</_TemplateLoggingDebugVersion>
-      <_TemplateComponentsWebVersion>$(MicrosoftAspNetCoreComponentsWebPackageVersion)</_TemplateComponentsWebVersion>
-      <_TemplateComponentsWebAssemblyVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)</_TemplateComponentsWebAssemblyVersion>
-      <_TemplateComponentsWebAssemblyServerVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)</_TemplateComponentsWebAssemblyServerVersion>
-    </PropertyGroup>
-
     <!-- Replace .NET TFM versions -->
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE;MS_COMPONENTS_WEB_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE"
-        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(_TemplateLoggingDebugVersion);$(_TemplateComponentsWebVersion);$(_TemplateComponentsWebAssemblyVersion);$(_TemplateComponentsWebAssemblyServerVersion)" />
+        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE"
+        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000" />
+    <ReplaceFileText
+        InputFilename="%(TemplateJsonInput.IntermediateLocation)"
+        OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
+        MatchExpression="@(_TemplatePackageVersion)"
+        ReplacementText="@(_TemplatePackageVersion->'%(ReplacementVersion)')" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
       <Content Include="%(TemplateJsonInput.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateJsonInput.PackageDestination)" Pack="true" />
     </ItemGroup>
 
+  </Target>
+
+  <ItemGroup Condition="'$(TestDotNetPackageVersionSelection)' == 'true'">
+    <PackageReference Include="Microsoft.Extensions.Configuration" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.Http" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.Logging" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Analyzers" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Forms" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.AspNetCore.Metadata" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.JSInterop" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="System.Text.Json" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="System.Text.Encodings.Web" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" TestDotNetPackageVersionSelection="true" />
+    <PackageReference Include="System.CodeDom" TestDotNetPackageVersionSelection="true" />
+  </ItemGroup>
+
+  <Target Name="_GetDotNetPackageVersionSelection" DependsOnTargets="_GetTemplatePackageVersions">
+    <Error
+        Condition="'%(PackageReference.TestDotNetPackageVersionSelection)' == 'true' and '%(PackageReference.Version)' != '$(ExpectedDotNetPackageVersion)'"
+        Text="Expected %(PackageReference.Identity) to use $(ExpectedDotNetPackageVersion), but it uses %(PackageReference.Version)." />
+    <Error
+        Condition="'%(_TemplatePackageVersion.ReplacementVersion)' != '$(ExpectedTemplatePackageVersion)'"
+        Text="Expected template placeholder %(_TemplatePackageVersion.Identity) to use $(ExpectedTemplatePackageVersion), but it uses %(_TemplatePackageVersion.ReplacementVersion)." />
+  </Target>
+
+  <Target Name="TestDotNetPackageVersionSelection">
+    <ItemGroup>
+      <_DotNetNVersionProperty Include="MicrosoftNETCoreAppRefPackageVersion" />
+      <_DotNetNVersionProperty Include="SystemTextJsonPackageVersion" />
+      <_DotNetNVersionProperty Include="SystemTextEncodingsWebPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftBclAsyncInterfacesPackageVersion" />
+      <_DotNetNVersionProperty Include="SystemCodeDomPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsConfigurationVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsConfigurationAbstractionsVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsConfigurationJsonVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsDependencyInjectionVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsDependencyInjectionAbstractionsVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsFileProvidersAbstractionsVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsHostingAbstractionsVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsHttpVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsLoggingAbstractionsVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsLoggingVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsLoggingConsoleVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsLoggingDebugVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftExtensionsPrimitivesVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreAuthorizationPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreAuthenticationFacebookPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreAuthenticationGooglePackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreComponentsAnalyzersPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreComponentsFormsPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreComponentsPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreComponentsWebPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreComponentsWebViewPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftAspNetCoreMetadataPackageVersion" />
+      <_DotNetNVersionProperty Include="MicrosoftJSInteropPackageVersion" />
+
+      <_DotNetN1VersionProperty Include="MicrosoftNETCoreAppRefN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="SystemTextJsonN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="SystemTextEncodingsWebN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftBclAsyncInterfacesN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="SystemCodeDomN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsConfigurationN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsConfigurationAbstractionsN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsConfigurationJsonN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsDependencyInjectionN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsDependencyInjectionAbstractionsN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsFileProvidersAbstractionsN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsHostingAbstractionsN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsHttpN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsLoggingAbstractionsN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsLoggingN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsLoggingConsoleN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsLoggingDebugN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftExtensionsPrimitivesN1Version" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreAuthorizationN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreAuthenticationFacebookN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreAuthenticationGoogleN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreAuthenticationMicrosoftAccountN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsAnalyzersN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsFormsN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsWebN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsWebAssemblyN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsWebAssemblyServerN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsWebViewN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreMetadataN1PackageVersion" />
+      <_DotNetN1VersionProperty Include="MicrosoftJSInteropN1PackageVersion" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_PreviewNProperties>@(_DotNetNVersionProperty->'%(Identity)=11.0.0-preview.6.26325.125', ';')</_PreviewNProperties>
+      <_StableNProperties>@(_DotNetNVersionProperty->'%(Identity)=11.0.0', ';')</_StableNProperties>
+      <_StableN1Properties>@(_DotNetN1VersionProperty->'%(Identity)=10.0.0', ';')</_StableN1Properties>
+    </PropertyGroup>
+
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="_GetDotNetPackageVersionSelection"
+        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_PreviewNProperties);ExpectedDotNetPackageVersion=$(MicrosoftExtensionsConfigurationN1Version);ExpectedTemplatePackageVersion=*" />
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="_GetDotNetPackageVersionSelection"
+        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=false;$(_PreviewNProperties);ExpectedDotNetPackageVersion=11.0.0-preview.6.26325.125;ExpectedTemplatePackageVersion=*" />
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="_GetDotNetPackageVersionSelection"
+        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_PreviewNProperties);$(_StableN1Properties);ExpectedDotNetPackageVersion=10.0.0;ExpectedTemplatePackageVersion=*" />
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="_GetDotNetPackageVersionSelection"
+        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_StableNProperties);ExpectedDotNetPackageVersion=11.0.0;ExpectedTemplatePackageVersion=11.0.0" />
   </Target>
 
   <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">

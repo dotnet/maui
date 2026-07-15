@@ -13,6 +13,7 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023;XC0618;XC0619</WarningsNotAsErrors>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
+    <UseN1PackageVersions>false</UseN1PackageVersions>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
     <!-- This project uses deprecated Frame controls - use Runtime inflation -->
     <MauiXamlInflator>Runtime</MauiXamlInflator>
@@ -27,7 +28,7 @@
     <PackageReference Include="xunit.runner.utility" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21558.2" />
     <PackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
   <ItemGroup>
