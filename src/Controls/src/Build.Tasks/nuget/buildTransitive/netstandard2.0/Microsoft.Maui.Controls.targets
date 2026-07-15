@@ -52,6 +52,8 @@
 		Set MauiEnableFullReadyToRunPublishing to true to use full R2R, which increases
 		app download size but can improve runtime performance.
 		Note: PublishReadyToRun and PublishReadyToRunComposite are already set by the Android workload.
+		_MauiUseDefaultReadyToRunPgoFiles is an internal property that controls inclusion
+		of the default PGO profiles.
 	-->
 	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
 		<MauiEnableFullReadyToRunPublishing Condition="'$(MauiEnableFullReadyToRunPublishing)' == ''">false</MauiEnableFullReadyToRunPublishing>

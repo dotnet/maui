@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		[InlineData(null, false)]
 		[InlineData("false", false)]
 		[InlineData("true", true)]
-		public void ReadyToRunPublishingCanBeConfigured(string enableFullReadyToRunPublishing, bool fullReadyToRunPublishingEnabled)
+		public void ReadyToRunPublishingCanBeConfigured(string mauiEnableFullReadyToRunPublishingValue, bool fullReadyToRunPublishingEnabled)
 		{
 			SetUp();
 			var project = NewProject();
@@ -299,11 +299,14 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
+			var fullReadyToRunProperty = mauiEnableFullReadyToRunPublishingValue is null
+				? string.Empty
+				: $"-p:MauiEnableFullReadyToRunPublishing={mauiEnableFullReadyToRunPublishingValue}";
 
 			var log = Build(
 				projectFile,
 				target: "TestReadyToRunPublishing",
-				additionalArgs: $"-p:TargetPlatformIdentifier=android -p:UseMonoRuntime=false -p:Configuration=Release -p:PublishReadyToRun=true {(enableFullReadyToRunPublishing is null ? string.Empty : $"-p:MauiEnableFullReadyToRunPublishing={enableFullReadyToRunPublishing}")}");
+				additionalArgs: $"-p:TargetPlatformIdentifier=android -p:UseMonoRuntime=false -p:Configuration=Release -p:PublishReadyToRun=true {fullReadyToRunProperty}");
 
 			Assert.Contains($"MauiEnableFullReadyToRunPublishing = {fullReadyToRunPublishingEnabled.ToString().ToLowerInvariant()}", log, StringComparison.Ordinal);
 			if (fullReadyToRunPublishingEnabled)
