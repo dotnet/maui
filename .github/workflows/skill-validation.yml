@@ -560,9 +560,11 @@ jobs:
       # and frozen fixtures are kept. Informational only — it never gates (the
       # gate uses the authoritative "after" run below). Skipped when there is no
       # base (manual dispatch), the skill is new on this branch, or its
-      # instructions are unchanged vs base (then before == after — no point).
+      # instructions are unchanged versus base, or non-Markdown reviewer assets
+      # changed (either case cannot produce a useful comparison).
       - name: Run Vally evaluation (baseline)
         id: eval-baseline
+        continue-on-error: true
         env:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
           RESULTS_PATH: eval-results-baseline/${{ matrix.entry.name }}
@@ -621,6 +623,25 @@ jobs:
             exit 0
           fi
 
+          # An invoked script or other non-Markdown asset changed with the
+          # instructions would make this a hybrid base/PR reviewer. Skip instead.
+          mapfile -t NON_MARKDOWN_ASSETS < <(
+            {
+              git ls-tree -r --name-only "$BASE_SHA" -- "$SKILL_DIR"
+              git ls-tree -r --name-only HEAD -- "$SKILL_DIR"
+            } | awk -v prefix="${SKILL_DIR}/" '
+              index($0, prefix) == 1 &&
+              index($0, prefix "tests/") != 1 &&
+              !/\.md$/ { print }
+            ' | sort -u
+          )
+          if [ ${#NON_MARKDOWN_ASSETS[@]} -gt 0 ] &&
+             ! git diff --quiet "$BASE_SHA" HEAD -- "${NON_MARKDOWN_ASSETS[@]}"; then
+            echo "Non-Markdown reviewer assets changed — skipping partial baseline."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           echo "Reverting ${#INSTR[@]} instruction file(s) under ${SKILL_DIR} to base ${BASE_SHA} for the baseline run"
           # Always restore PR content when this step exits, even on error, so the
           # authoritative "after" run below never sees base content.
@@ -664,9 +685,33 @@ jobs:
             "${RUNS_ARGS[@]}" \
             --workers 4 \
             --verbose
-          echo "baseline vally exit: $? (advisory)"
+          BASELINE_RC=$?
           set -e
-          echo "baseline_ran=true" >> "$GITHUB_OUTPUT"
+          echo "baseline vally exit: $BASELINE_RC (advisory)"
+
+          # A threshold miss is a valid before score. Execution errors or
+          # incomplete output are not comparable and must not produce a trend.
+          JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
+          if [ -z "$JUNIT" ]; then
+            echo "::warning::No baseline JUnit report under $RESULTS_PATH — skipping baseline."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+          else
+            ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
+            if [ -z "$ROOT" ]; then
+              echo "::warning::Baseline JUnit report contains no <testsuites> element — skipping baseline."
+              echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            else
+              FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
+              ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
+              echo "Baseline JUnit aggregate: failures=$FAILS errors=$ERRS"
+              if [ "$ERRS" -ne 0 ] || { [ "$BASELINE_RC" -ne 0 ] && [ "$FAILS" -eq 0 ]; }; then
+                echo "::warning::Baseline evaluation had execution errors or incomplete output — skipping baseline."
+                echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+              else
+                echo "baseline_ran=true" >> "$GITHUB_OUTPUT"
+              fi
+            fi
+          fi
 
       # Belt-and-suspenders: guarantee the PR's skill content is restored before
       # the authoritative run, regardless of how the baseline step exited.
