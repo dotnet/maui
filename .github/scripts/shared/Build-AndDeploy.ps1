@@ -95,7 +95,23 @@ if ($Platform -eq "android") {
     
     Write-Step "Building and deploying $projectName for Android..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run") + $hostAppBuildProps
+    # EmbedAssembliesIntoApk=true is REQUIRED for Appium-driven UI test runs. A Debug
+    # Android build defaults to Fast Deployment (EmbedAssembliesIntoApk=false), which keeps
+    # the managed assemblies OUTSIDE the .apk and pushes them to the app's private
+    # `.__override__/<abi>` directory during the MSBuild deploy. That works for a single
+    # `-t:Run` launch, but Appium (and UITestBase's crash-recovery) re-install / re-launch
+    # the app on its own — WITHOUT re-pushing the override assemblies — so monodroid finds
+    # `.__override__/x86_64` empty and hard-aborts on startup:
+    #   F monodroid: No assemblies found in '.../files/.__override__/x86_64'. Assuming this
+    #               is part of Fast Deployment. Exiting...
+    #   xamarin::android::Helpers::abort_application -> Force finishing MainActivity -> died
+    # The app never shows its home screen, UITestBase.OneTimeSetup times out "waiting for
+    # Go To Test button", and the WHOLE fixture is marked failed -> "setup failed; N marked
+    # failed" (observed on PR #34637 Shape 61/61 and PR #35640 Material3 338/338, and the
+    # root of many android "no UI test results" reports). Embedding the assemblies into the
+    # APK makes it self-contained so any install/relaunch works — this is exactly what the
+    # main maui-pr-uitests pipeline does (eng/devices/android.cake:168,329).
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run", "-p:EmbedAssembliesIntoApk=true") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
