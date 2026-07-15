@@ -11,19 +11,12 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// </summary>
 public class NodeIdHelperTests
 {
-	// -------------------------------------------------------------------------
-	// Helpers
-	// -------------------------------------------------------------------------
 
 	static SGRootNode Parse(string xaml) =>
 		GeneratorHelpers.ParseXaml(xaml, AssemblyAttributes.Empty)
 		?? throw new System.Exception("ParseXaml returned null");
 
 	const string Ns = "http://schemas.microsoft.com/dotnet/2021/maui";
-
-	// -------------------------------------------------------------------------
-	// Root ID
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void Root_AlwaysGetsEmptyId()
@@ -32,10 +25,6 @@ public class NodeIdHelperTests
 		var ids = NodeIdHelper.AssignIds(root);
 		Assert.Equal("", ids[root]);
 	}
-
-	// -------------------------------------------------------------------------
-	// Single child
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void SingleChild_GetsExpectedId()
@@ -53,10 +42,6 @@ public class NodeIdHelperTests
 		// Child of root — first node in DFS walk gets "0"
 		Assert.Equal("0", ids[label]);
 	}
-
-	// -------------------------------------------------------------------------
-	// Multiple siblings
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void MultipleChildren_IndexedCorrectly()
@@ -83,10 +68,6 @@ public class NodeIdHelperTests
 		Assert.Equal("2", ids[entry]);
 	}
 
-	// -------------------------------------------------------------------------
-	// Nested tree
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void NestedChildren_AssignDepthCorrectly()
 	{
@@ -108,10 +89,6 @@ public class NodeIdHelperTests
 		Assert.Equal("0", ids[vsl]);
 		Assert.Equal("1", ids[label]);
 	}
-
-	// -------------------------------------------------------------------------
-	// Structural stability: same XAML produces same IDs
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void SameXaml_ProducesSameIds()
@@ -135,10 +112,6 @@ public class NodeIdHelperTests
 		Assert.Equal(ids1[btn1!], ids2[btn2!]);
 	}
 
-	// -------------------------------------------------------------------------
-	// All nodes are present
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void AllElementNodes_AreInDictionary()
 	{
@@ -154,10 +127,6 @@ public class NodeIdHelperTests
 		Assert.Equal(3, ids.Count);
 	}
 
-	// -------------------------------------------------------------------------
-	// Empty root (no children)
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void EmptyRoot_OnlyContainsRoot()
 	{
@@ -166,10 +135,6 @@ public class NodeIdHelperTests
 		Assert.Single(ids);
 		Assert.Equal("", ids[root]);
 	}
-
-	// -------------------------------------------------------------------------
-	// Helper
-	// -------------------------------------------------------------------------
 
 	static ElementNode? FindByType(Dictionary<ElementNode, string> ids, string typeName)
 	{

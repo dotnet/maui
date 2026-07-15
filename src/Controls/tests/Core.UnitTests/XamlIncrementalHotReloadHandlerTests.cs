@@ -41,11 +41,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			base.Dispose(disposing);
 		}
 
-		// -----------------------------------------------------------------------
 		// Fakes. A source-generated XAML page carries a non-public parameterless UpdateComponent();
 		// that is exactly what XamlIncrementalHotReloadHandler reflects for, so these stand in for
 		// generated pages without needing the source generator.
-		// -----------------------------------------------------------------------
 #pragma warning disable IDE0051 // invoked by the handler via reflection, not directly
 		sealed class HotReloadablePage
 		{
@@ -71,9 +69,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 		}
 
-		// -----------------------------------------------------------------------
-		// Helpers
-		// -----------------------------------------------------------------------
 		static IDisposable IncrementalHotReloadEnabled()
 		{
 			var previous = AppContext.TryGetSwitch(IncrementalHotReloadSwitch, out var value) && value;
@@ -129,10 +124,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				HotReloadDiagnostics.UpdateSkipped -= _onSkipped;
 			}
 		}
-
-		// -----------------------------------------------------------------------
-		// Tests
-		// -----------------------------------------------------------------------
 
 		[Fact]
 		public void FeatureDisabled_RaisesNoEvents()

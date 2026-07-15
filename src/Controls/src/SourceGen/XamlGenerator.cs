@@ -298,7 +298,13 @@ public class XamlGenerator : IIncrementalGenerator
 							seedIds = NodeIdHelper.AssignIds(seedRoot, 0, out seedNextId);
 						}
 					}
-					catch { }
+					catch (Exception)
+					{
+						// Best-effort seed only: if the initial XAML can't be parsed, seed with a null
+						// tree so state still exists at version 0. IC generation below re-parses the same
+						// XAML and the outer catch surfaces the real parse-error diagnostic — swallowing
+						// here just avoids reporting it twice.
+					}
 					XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml, seedRoot, seedIds, seedNextId, 0);
 				}
 				// else: cache exists and XAML unchanged (or rootType lookup failed). Leave state untouched.

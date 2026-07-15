@@ -304,10 +304,6 @@ static class XamlNodeDiff
 		return ComputeDiff(oldRoot, newRoot, oldIds, newIds, out _);
 	}
 
-	// -------------------------------------------------------------------------
-	// Core recursive diff
-	// -------------------------------------------------------------------------
-
 	/// <summary>
 	/// Recursively diffs two <see cref="ElementNode"/>s at the same tree position.
 	/// Matched new nodes inherit their old counterpart's ID in <paramref name="effective"/>.
@@ -851,10 +847,6 @@ static class XamlNodeDiff
 			return true;
 		return !NodeValueEquals(oldDt, newDt);
 	}
-
-	// -------------------------------------------------------------------------
-	// Helpers
-	// -------------------------------------------------------------------------
 
 	/// <summary>
 	/// Compares the effective string values of two property nodes.

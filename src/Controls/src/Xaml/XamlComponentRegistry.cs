@@ -228,10 +228,6 @@ public static class XamlComponentRegistry
 		}
 	}
 
-	// -------------------------------------------------------------------------
-	// Resource key tracking
-	// -------------------------------------------------------------------------
-
 	static readonly ConditionalWeakTable<object, HashSet<string>> s_resourceKeys = new();
 	static readonly object s_resourceKeysLock = new();
 
@@ -309,10 +305,6 @@ public static class XamlComponentRegistry
 		return null;
 	}
 
-	// -------------------------------------------------------------------------
-	// Instance tracking helpers
-	// -------------------------------------------------------------------------
-
 	static void TrackInstance(object page)
 	{
 		var type = page.GetType();
@@ -354,10 +346,6 @@ public static class XamlComponentRegistry
 				s_instancesByType.Remove(type);
 		}
 	}
-
-	// -------------------------------------------------------------------------
-	// Inner type
-	// -------------------------------------------------------------------------
 
 	/// <summary>
 	/// Per-page map from nodeId → weak reference to component.

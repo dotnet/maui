@@ -39,10 +39,6 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 {
 	public void Dispose() => XamlHotReloadState.Reset();
 
-	// -----------------------------------------------------------------------
-	// Helpers
-	// -----------------------------------------------------------------------
-
 	const string PageRelativePath = "MainPage.xaml";
 	const string PageClass = "TestE2EApp.MainPage";
 	const string AssemblyName = "TestE2EApp";
@@ -204,10 +200,6 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		return (peStream.ToArray(), pdbStream.ToArray(), compilation);
 	}
 
-	// -----------------------------------------------------------------------
-	// Stub class that the generated partial class extends
-	// -----------------------------------------------------------------------
-
 	/// <summary>
 	/// Minimal partial class stub with InitializeComponentRuntime() to satisfy the generated code.
 	/// </summary>
@@ -229,10 +221,6 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 			}
 		}
 		""";
-
-	// -----------------------------------------------------------------------
-	// Tests
-	// -----------------------------------------------------------------------
 
 	[MetadataUpdateFact]
 	public void PropertyChange_AppliedViaHotReload()
@@ -873,10 +861,6 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 			alc.Unload();
 		}
 	}
-
-	// -----------------------------------------------------------------------
-	// OptionsProvider (same as in pipeline tests)
-	// -----------------------------------------------------------------------
 
 	sealed class OptionsProvider : Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider
 	{

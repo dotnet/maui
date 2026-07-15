@@ -48,10 +48,6 @@ public partial class TestPage : ContentPage
 }
 """;
 
-	// -------------------------------------------------------------------------
-	// IC with XIHR: C# expressions should emit __version and Registry calls
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void CSharpExpression_IC_EmitsVersionField()
 	{
@@ -94,10 +90,6 @@ public partial class TestPage : ContentPage
 		Assert.NotNull(text);
 		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
 	}
-
-	// -------------------------------------------------------------------------
-	// UC generation: property value change in C# expression
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void CSharpExpression_PropertyChange_GeneratesUC()
@@ -315,10 +307,6 @@ public partial class TestPage : ContentPage
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
 
-	// -------------------------------------------------------------------------
-	// No change → no UC
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void CSharpExpression_IdenticalXaml_NoUCGenerated()
 	{
@@ -339,10 +327,6 @@ public partial class TestPage : ContentPage
 		var ucSource = GetUCSource(result);
 		Assert.Null(ucSource);
 	}
-
-	// -------------------------------------------------------------------------
-	// Mixed: expression + plain property changes
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void CSharpExpression_MixedExpressionAndPlainProperty_GeneratesUC()
@@ -383,10 +367,6 @@ public partial class TestPage : ContentPage
 		Assert.Contains("LastName", ucSource, StringComparison.Ordinal);
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
-
-	// -------------------------------------------------------------------------
-	// Structural change: add a new element with expression
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void CSharpExpression_NewElementAdded_GeneratesUC()
@@ -429,10 +409,6 @@ public partial class TestPage : ContentPage
 			Assert.Contains("__version == 0", ucSource, StringComparison.Ordinal);
 		}
 	}
-
-	// -------------------------------------------------------------------------
-	// Lambda event handler change
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void CSharpExpression_LambdaEventChange_GeneratesUC()
@@ -479,10 +455,6 @@ public partial class TestPage : ContentPage
 		Assert.Contains("__version == 0", ucSource, StringComparison.Ordinal);
 	}
 
-	// -------------------------------------------------------------------------
-	// Expression with operator aliases (AND, OR, GT, LT)
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void CSharpExpression_OperatorAliasChange_GeneratesUC()
 	{
@@ -518,16 +490,9 @@ public partial class TestPage : ContentPage
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
 
-	// -------------------------------------------------------------------------
-	// Helpers
-	// -------------------------------------------------------------------------
-
 	/// <summary>
 	/// Extracts the UC (UpdateComponent) source from generator results, if any.
 	/// </summary>
-	// -------------------------------------------------------------------------
-	// DynamicResource
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void DynamicResource_Change_GeneratesSetDynamicResource()
@@ -559,10 +524,6 @@ public partial class TestPage : ContentPage
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
 
-	// -------------------------------------------------------------------------
-	// StaticResource
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void StaticResource_Change_GeneratesStaticResourceLookup()
 	{
@@ -592,10 +553,6 @@ public partial class TestPage : ContentPage
 		Assert.Contains("SetValue", ucSource, StringComparison.Ordinal);
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
-
-	// -------------------------------------------------------------------------
-	// {Binding Path} markup
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void Binding_PathChange_GeneratesSetBinding()

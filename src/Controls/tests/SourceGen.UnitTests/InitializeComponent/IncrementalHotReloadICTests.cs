@@ -37,10 +37,6 @@ partial class TestPage : ContentPage
 }
 """;
 
-	// -------------------------------------------------------------------------
-	// Default (opt-in off) — nothing new should appear
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void Default_NoVersionField()
 	{
@@ -59,10 +55,6 @@ partial class TestPage : ContentPage
 		Assert.DoesNotContain("__version", text, StringComparison.Ordinal);
 		Assert.DoesNotContain("XamlComponentRegistry.Register", text, StringComparison.Ordinal);
 	}
-
-	// -------------------------------------------------------------------------
-	// Opt-in on — __version and Register calls must appear
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void Enabled_VersionFieldEmitted()
@@ -209,10 +201,8 @@ partial class TestPage : ContentPage
 		Assert.DoesNotContain("Register(this, \"\",", text, StringComparison.Ordinal);
 	}
 
-	// -------------------------------------------------------------------------
 	// Interop: EnableDiagnostics path (hot-reload fallback) still works when
 	// EnableIncrementalHotReload=true AND EnableDiagnostics=true.
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void Enabled_DiagnosticsAndIHR_BothFeaturesPresent()

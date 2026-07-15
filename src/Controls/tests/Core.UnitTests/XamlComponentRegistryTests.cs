@@ -7,9 +7,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests;
 
 public class XamlComponentRegistryTests
 {
-	// -------------------------------------------------------------------------
-	// Register + TryGet round-trip
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void TryGet_AfterRegister_ReturnsComponent()
@@ -48,10 +45,6 @@ public class XamlComponentRegistryTests
 		Assert.Null(result);
 	}
 
-	// -------------------------------------------------------------------------
-	// Replace / update
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void Register_Twice_SameNodeId_ReplacesComponent()
 	{
@@ -65,10 +58,6 @@ public class XamlComponentRegistryTests
 		XamlComponentRegistry.TryGet(page, "label_0", out var result);
 		Assert.Same(label2, result);
 	}
-
-	// -------------------------------------------------------------------------
-	// Multiple nodes per page
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void Register_MultipleNodes_AllRetrievable()
@@ -92,10 +81,6 @@ public class XamlComponentRegistryTests
 		Assert.Same(entry, r3);
 	}
 
-	// -------------------------------------------------------------------------
-	// Multiple pages with same node IDs are independent
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void Register_TwoPagesWithSameNodeId_AreIndependent()
 	{
@@ -114,10 +99,6 @@ public class XamlComponentRegistryTests
 		Assert.Same(comp2, r2);
 		Assert.NotSame(r1, r2);
 	}
-
-	// -------------------------------------------------------------------------
-	// Unregister
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void Unregister_RemovesAllComponentsForPage()
@@ -156,10 +137,6 @@ public class XamlComponentRegistryTests
 		Assert.Same(comp, result);
 	}
 
-	// -------------------------------------------------------------------------
-	// GetInstances
-	// -------------------------------------------------------------------------
-
 	[Fact]
 	public void GetInstances_ReturnsAllLivePagesOfType()
 	{
@@ -194,10 +171,6 @@ public class XamlComponentRegistryTests
 	{
 		Assert.Throws<ArgumentNullException>(() => XamlComponentRegistry.GetInstances(null!));
 	}
-
-	// -------------------------------------------------------------------------
-	// Argument validation
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void Register_NullPage_Throws()
@@ -234,10 +207,6 @@ public class XamlComponentRegistryTests
 	{
 		Assert.Throws<ArgumentNullException>(() => XamlComponentRegistry.Unregister(null!));
 	}
-
-	// -------------------------------------------------------------------------
-	// ReRoot
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void ReRoot_RenamesMatchingEntries()
@@ -367,10 +336,6 @@ public class XamlComponentRegistryTests
 		Assert.Same(comp, XamlComponentRegistry.GetComponent(page, "Label_0"));
 		Assert.Null(XamlComponentRegistry.GetComponent(page, "NotRegistered"));
 	}
-
-	// -------------------------------------------------------------------------
-	// Helper types (nested to avoid collision with other tests)
-	// -------------------------------------------------------------------------
 
 	sealed class FakePage { }
 	sealed class UnrelatedPage { }

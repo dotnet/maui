@@ -669,10 +669,6 @@ static class UpdateComponentCodeWriter
 		}
 	}
 
-	// -----------------------------------------------------------------------
-	// Resource dictionary patching
-	// -----------------------------------------------------------------------
-
 	/// <summary>
 	/// Emits code to patch the page's <c>Resources</c> dictionary from the new XAML node.
 	/// Removes old resource keys not present in the new XAML, then adds/updates all new keyed resources.
@@ -1004,10 +1000,6 @@ static class UpdateComponentCodeWriter
 		codeWriter.WriteLine($"{castPrefix}{propName} = {valueExpr};");
 	}
 
-	// -----------------------------------------------------------------------
-	// Attached property handling
-	// -----------------------------------------------------------------------
-
 	/// <summary>
 	/// Emits code to clear an attached property (e.g., <c>Grid.Row</c> removed from XAML).
 	/// Resolves the declaring type (Grid) rather than the element type (Button).
@@ -1200,10 +1192,6 @@ static class UpdateComponentCodeWriter
 		// Last resort: TypeDescriptor
 		return BuildTypeDescriptorExpression(rawValue, fqType);
 	}
-
-	// -----------------------------------------------------------------------
-	// MarkupNode handling (expressions, DynamicResource, StaticResource)
-	// -----------------------------------------------------------------------
 
 	/// <summary>
 	/// Attempts to emit code for a MarkupNode property change.

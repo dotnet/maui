@@ -187,7 +187,7 @@ static class CSharpExpressionHelpers
 		}
 
 		// Check known extensions first (fast path)
-		if (IsKnownMarkupExtension(identifier))
+		if (IsKnownMarkupExtensionName(identifier))
 			return true;
 
 		// Check if the type can be resolved as a markup extension via semantic lookup
@@ -353,9 +353,6 @@ static class CSharpExpressionHelpers
 		return KnownMarkupExtensions.Contains(name)
 			|| KnownMarkupExtensions.Contains(name + "Extension");
 	}
-
-	// Keep backward compat for existing callers
-	static bool IsKnownMarkupExtension(string name) => IsKnownMarkupExtensionName(name);
 
 	/// <summary>
 	/// Extracts the C# code from an expression value and transforms quotes.
