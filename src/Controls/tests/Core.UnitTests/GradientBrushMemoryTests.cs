@@ -3,7 +3,9 @@ using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -224,6 +226,57 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				DispatcherProviderStubOptions.InvokeOnMainThread = null;
 			}
 
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			var cleanup = await dispatchedCleanup.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Equal(0, bindingContextChanged);
+			Assert.Equal(0.25f, stop.Offset);
+
+			cleanup();
+
+			Assert.Equal(1, bindingContextChanged);
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(0f, stop.Offset);
+			GC.KeepAlive(bindingContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
+		public async Task CollectedBrushUsesDispatcherAttachedAfterGradientStopCreation()
+		{
+			var dispatchedCleanup = new TaskCompletionSource<Action>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var dispatcher = new DispatcherStub(
+				() => true,
+				action => dispatchedCleanup.TrySetResult(action));
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IDispatcher)).Returns(dispatcher);
+			var mauiContext = Substitute.For<IMauiContext>();
+			mauiContext.Services.Returns(services);
+			var handler = Substitute.For<IElementHandler>();
+			handler.MauiContext.Returns(mauiContext);
+
+			GradientStop bindingContext;
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			DispatcherProviderStubOptions.SkipDispatcherCreation = true;
+			try
+			{
+				bindingContext = new GradientStop { Offset = 0.25f };
+				stop = new GradientStop();
+				stop.SetBinding(GradientStop.OffsetProperty, nameof(GradientStop.Offset));
+				sharedStops = new GradientStopCollection { stop };
+				weakBrush = CreateBrushWithSharedGradientStops(sharedStops, bindingContext);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.SkipDispatcherCreation = false;
+			}
+
+			stop.Handler = handler;
 			int bindingContextChanged = 0;
 			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
 

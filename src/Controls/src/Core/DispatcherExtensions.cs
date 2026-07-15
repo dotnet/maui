@@ -8,16 +8,28 @@ namespace Microsoft.Maui.Controls
 {
 	internal static class DispatcherExtensions
 	{
-		public static IDispatcher FindDispatcher(this BindableObject? bindableObject)
+		public static IDispatcher FindDispatcher(this BindableObject? bindableObject) =>
+			bindableObject.TryFindDispatcher(
+				includeParents: true)
+			?? throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
+
+		internal static IDispatcher? TryFindDispatcher(
+			this BindableObject? bindableObject,
+			bool includeParents)
 		{
 			// try find the dispatcher in the current hierarchy
 			// Exclude Application because we don't want to jump
 			// directly to the Application IDispatcher at this point
 			if (bindableObject is not Application &&
-				bindableObject is Element element &&
-				element.FindMauiContext() is IMauiContext context &&
-				context.Services.GetService<IDispatcher>() is IDispatcher handlerDispatcher)
-				return handlerDispatcher;
+				bindableObject is Element element)
+			{
+				var context = includeParents
+					? element.FindMauiContext()
+					: (element as Maui.IElement)?.Handler?.MauiContext;
+
+				if (context?.Services.GetService<IDispatcher>() is IDispatcher handlerDispatcher)
+					return handlerDispatcher;
+			}
 
 			// maybe this thread has a dispatcher
 			if (Dispatcher.GetForCurrentThread() is IDispatcher globalDispatcher)
@@ -25,26 +37,35 @@ namespace Microsoft.Maui.Controls
 
 			// If BO is of type Application then return the Dispatcher from ApplicationDispatcher
 			if (bindableObject is Application app &&
-				app.FindMauiContext() is IMauiContext appMauiContext)
-			{
-				if (appMauiContext.Services.GetOptionalApplicationDispatcher() is IDispatcher appDispatcherServiceDispatcher)
-					return appDispatcherServiceDispatcher;
-
-				// If BO is of type Application then check for its Dispatcher
-				if (appMauiContext.Services.GetService<IDispatcher>() is IDispatcher appHandlerDispatcher)
-					return appHandlerDispatcher;
-			}
+				TryFindApplicationDispatcher(app) is IDispatcher appDispatcher)
+				return appDispatcher;
 
 			// try looking on the static app
 			// We don't include Application because Application.Dispatcher will call
 			// `FindDispatcher` if it's _dispatcher property isn't initialized so this
 			// could cause a Stack Overflow Exception
-			if (bindableObject is not Application &&
-				Application.Current?.Dispatcher is IDispatcher appDispatcher)
-				return appDispatcher;
+			if (bindableObject is not Application && Application.Current is Application currentApp)
+			{
+				if (includeParents &&
+					currentApp.Dispatcher is IDispatcher currentAppDispatcher)
+				{
+					return currentAppDispatcher;
+				}
 
-			// no dispatchers found at all
-			throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
+				if (TryFindApplicationDispatcher(currentApp) is IDispatcher currentAppDispatcherService)
+					return currentAppDispatcherService;
+			}
+
+			return null;
+		}
+
+		static IDispatcher? TryFindApplicationDispatcher(Application app)
+		{
+			if (app.FindMauiContext() is not IMauiContext appMauiContext)
+				return null;
+
+			return appMauiContext.Services.GetOptionalApplicationDispatcher()
+				?? appMauiContext.Services.GetService<IDispatcher>();
 		}
 
 		public static void DispatchIfRequired(this IDispatcher? dispatcher, Action action)

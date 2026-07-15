@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -1137,6 +1138,9 @@ namespace Microsoft.Maui.Controls
 				OnHandlerChangingCore(new HandlerChangingEventArgs(_previousHandler, newHandler));
 
 				_handler = newHandler;
+				if (!HasDispatcher &&
+					_handler?.MauiContext?.Services.GetService<IDispatcher>() is IDispatcher handlerDispatcher)
+					SetDispatcherIfUnset(handlerDispatcher);
 
 				// Only call disconnect if the previous handler is still connected to this virtual view.
 				// If a handler is being reused for a different VirtualView then the virtual

@@ -39,6 +39,15 @@ namespace Microsoft.Maui.Controls
 			_dispatcher = Dispatching.Dispatcher.GetForCurrentThread();
 		}
 
+		internal void SetDispatcherIfUnset(IDispatcher dispatcher)
+		{
+			if (dispatcher is not null)
+				Interlocked.CompareExchange(ref _dispatcher, dispatcher, null);
+		}
+
+		internal bool HasDispatcher =>
+			_dispatcher is not null;
+
 		internal ushort _triggerCount = 0;
 		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity = new();
 		readonly Dictionary<int, BindablePropertyContext> _properties = new(4);
@@ -528,6 +537,17 @@ namespace Microsoft.Maui.Controls
 			// Finalizer callers only queue work here. Binding callbacks run on the dispatcher
 			// or remain pending for a normal access path to clear safely.
 			var dispatcher = _dispatcher;
+			if (dispatcher is null &&
+				clearIfDispatchNotRequired &&
+				this.TryFindDispatcher(
+					includeParents: false) is IDispatcher discoveredDispatcher)
+			{
+				// The parent reference has already been cleared, so walking the parent
+				// hierarchy here would re-enter this cleanup path.
+				SetDispatcherIfUnset(discoveredDispatcher);
+				dispatcher = _dispatcher;
+			}
+
 			if (dispatcher is not null
 				&& dispatcher.IsDispatchRequired)
 			{
