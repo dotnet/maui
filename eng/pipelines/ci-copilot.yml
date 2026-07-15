@@ -2842,6 +2842,26 @@ stages:
                     Write-Host "✅ Full AI summary review posted with deep results"
                   }
 
+                  # Post the deferred expert inline review (file:line findings) so it
+                  # lands together with the AI summary. Review-PR.ps1 wrote the
+                  # inline-findings.post.ok sentinel when the PR fix was the winner;
+                  # both it and inline-findings.json round-tripped via CopilotLogs and
+                  # were restored into $targetDir alongside the AI-summary content.
+                  $inlineFindings = Join-Path $targetDir "inline-findings.json"
+                  $inlineSentinel = Join-Path $targetDir "inline-findings.post.ok"
+                  $inlineScript   = ".github/scripts/post-inline-review.ps1"
+                  if ((Test-Path $inlineSentinel) -and (Test-Path $inlineFindings) -and (Test-Path $inlineScript)) {
+                    try {
+                      Write-Host "Posting deferred expert inline review (with AI summary)..."
+                      & $inlineScript -PRNumber $prNumber -FindingsFile $inlineFindings
+                      Write-Host "✅ Deferred inline review posted"
+                    } catch {
+                      Write-Host "⚠️ Deferred inline review posting failed (non-fatal): $_"
+                    }
+                  } else {
+                    Write-Host "ℹ️ No inline sentinel/findings — skipping deferred inline review"
+                  }
+
                   # Apply labels
                   $labelScript = ".github/scripts/shared/Update-AgentLabels.ps1"
                   if (Test-Path $labelScript) {

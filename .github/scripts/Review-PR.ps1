@@ -2688,25 +2688,34 @@ if (Get-Command Dismiss-StaleMauiBotTryFixReviews -ErrorAction SilentlyContinue)
 }
 
 if ($isPRWinner) {
-    # Post inline review comments (file:line findings from expert-reviewer agent)
-    $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
+    # Defer the inline expert review (file:line findings) to Stage 3 so it posts
+    # together with the AI Summary review. Rather than posting here — during the
+    # Review stage, before the deep UI tests have run — write a sentinel next to
+    # inline-findings.json. Both files round-trip to Stage 3 via the CopilotLogs
+    # artifact, where post-inline-review.ps1 posts them alongside the AI summary.
+    # This couples the two posts (per request) and, as a bonus, avoids duplicate
+    # inline posts across Review-stage infra retries (Stage 3 posts once).
     $findingsFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json"
-    if ((Test-Path $inlineScript) -and (Test-Path $findingsFile)) {
-        try {
-            Write-Host "  📝 Posting inline review comments..." -ForegroundColor Cyan
-            if ($DryRun) {
-                & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -DryRun
-            } else {
-                & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile
+    if (Test-Path $findingsFile) {
+        if ($DryRun) {
+            # Local preview only: show what Stage 3 would post (no sentinel needed).
+            $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
+            if (Test-Path $inlineScript) {
+                Write-Host "  📝 [DryRun] Previewing deferred inline review..." -ForegroundColor Cyan
+                try { & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -DryRun }
+                catch { Write-Host "  ⚠️ Inline preview failed (non-fatal): $_" -ForegroundColor Yellow }
             }
-            Write-Host "  ✅ Inline review comments posted" -ForegroundColor Green
-        } catch {
-            Write-Host "  ⚠️ Inline review posting failed (non-fatal): $_" -ForegroundColor Yellow
+        } else {
+            try {
+                $sentinelFile = Join-Path (Split-Path -Parent $findingsFile) "inline-findings.post.ok"
+                Set-Content -Path $sentinelFile -Value "defer-to-stage3" -Encoding UTF8 -NoNewline
+                Write-Host "  📝 Inline findings deferred to Stage 3 (posts with the AI summary)" -ForegroundColor Cyan
+            } catch {
+                Write-Host "  ⚠️ Failed to write inline-findings sentinel (non-fatal): $_" -ForegroundColor Yellow
+            }
         }
     } else {
-        if (-not (Test-Path $findingsFile)) {
-            Write-Host "  ℹ️ No inline findings file — agent may not have produced findings" -ForegroundColor Gray
-        }
+        Write-Host "  ℹ️ No inline findings file — agent may not have produced findings" -ForegroundColor Gray
     }
 } else {
     # Non-PR candidate details are now merged into the unified AI Summary
