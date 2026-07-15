@@ -90,6 +90,17 @@ function Test-IsRegressionLabel {
     return $Label -match '^(i/regression|regressed-in-[0-9][0-9A-Za-z.\-]*)$'
 }
 
+function Get-RegressedInLabels {
+    # Keep the only label text emitted to the agent within the version-label grammar.
+    param([string[]]$Labels)
+    return @(
+        $Labels |
+            Where-Object {
+                (Test-IsRegressionLabel $_) -and $_ -like 'regressed-in-*'
+            }
+    )
+}
+
 function Get-LinkedIssueNumbers {
     # Issues a PR closes (Fixes/Closes/Resolves #N or bullet-list references).
     # Regex mirrors Find-RegressionRisks.ps1 for consistency across the repo.
@@ -358,7 +369,7 @@ foreach ($pr in $fixPRs) {
     foreach ($issueNum in $linkedIssues) {
         $ctx = Get-IssueContext -Owner $Owner -Repo $Repo -Number $issueNum
         if (-not $ctx) { continue }
-        $regressedIn = @($ctx.Labels | Where-Object { $_ -match '^regressed-in-' })
+        $regressedIn = Get-RegressedInLabels $ctx.Labels
         $regressionIssues.Add([PSCustomObject]@{
             number            = $ctx.Number
             regressedInLabels = $regressedIn
