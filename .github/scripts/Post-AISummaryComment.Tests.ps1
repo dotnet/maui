@@ -183,6 +183,15 @@ Describe 'Get-GateStatus' {
             Should -Be 'Inconclusive'
     }
 
+    It 'maps a TIMEDOUT gate (synthesized section) to Timed Out' {
+        Get-GateStatus -GateContent "### Gate Result: TIMEDOUT — test verification did not finish`n`nThe automated test-verification gate did not complete on this run." |
+            Should -Be 'Timed Out'
+    }
+
+    It 'maps prose describing a timed-out gate to Timed Out' {
+        Get-GateStatus -GateContent 'The gate timed out before it could finish.' | Should -Be 'Timed Out'
+    }
+
     It 'returns Unknown for empty gate content' {
         Get-GateStatus -GateContent '' | Should -Be 'Unknown'
     }
@@ -268,6 +277,13 @@ Describe 'Get-AIReviewEventForRun' {
     It 'keeps APPROVE when the trusted gate verdict is INCONCLUSIVE (build/env error must not block)' {
         Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'INCONCLUSIVE' |
             Should -Be 'APPROVE'
+    }
+
+    It 'vetoes APPROVE to REQUEST_CHANGES when the trusted gate verdict is TIMEDOUT (fix unverified)' {
+        # A gate that never finished (hang-safety timeout / no verdict) leaves the fix unverified,
+        # so an APPROVE recommendation must be vetoed just like a FAILED gate.
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'TIMEDOUT' |
+            Should -Be 'REQUEST_CHANGES'
     }
 
     It 'softens APPROVE to COMMENT when the deep-UI run had no passing signal (all setup-failed)' {

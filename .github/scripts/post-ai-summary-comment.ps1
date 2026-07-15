@@ -48,7 +48,10 @@ param(
     # review over a FAILED gate. Empty/omitted (local/manual runs that never post
     # APPROVE) is treated as the non-blocking 'SKIPPED' sentinel.
     [Parameter(Mandatory = $false)]
-    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', '')]
+    # TIMEDOUT is a pipeline-supplied sentinel meaning the Gate task itself did not finish
+    # (stopped by its 120-min hang-safety timeout, or it produced no verdict). It renders an
+    # honest "gate did not complete" section and vetoes APPROVE (the fix was not verified).
+    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
     [string]$TrustedGateResult = ''
 )
 
@@ -229,19 +232,24 @@ function Get-GateStatus {
     # the bug" = passes with and without the fix). Surface those as 'Partial' rather than a
     # flat 'Failed'. A SKIPPED gate means no runnable tests were detected → 'No Tests'.
     # INCONCLUSIVE means the tests could not be built/run (build or env error) → 'Inconclusive'.
+    # TIMEDOUT means the gate task itself was stopped by its hang-safety timeout (or produced no
+    # verdict at all) → 'Timed Out': the fix was NOT verified, but this is an infra outcome, not a
+    # real test failure, so it renders teal like Inconclusive rather than red.
     $isPartial = ($GateContent -match '(?i)Regression in another test' -or
                   $GateContent -match '(?i)Test does not reproduce the bug')
 
-    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE)') {
+    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE|TIMEDOUT)') {
         switch ($Matches[1].ToUpperInvariant()) {
             'PASSED'       { return 'Passed' }
             'SKIPPED'      { return 'No Tests' }
             'INCONCLUSIVE' { return 'Inconclusive' }
+            'TIMEDOUT'     { return 'Timed Out' }
             'FAILED'       { if ($isPartial) { return 'Partial' } else { return 'Failed' } }
         }
     }
 
     if ($GateContent -match '(?i)\binconclusive\b') { return 'Inconclusive' }
+    if ($GateContent -match '(?i)\btimed[\s-]?out\b') { return 'Timed Out' }
     if ($isPartial) { return 'Partial' }
     if ($GateContent -match '(?i)\bfailed\b') { return 'Failed' }
     if ($GateContent -match '(?i)\bpassed\b') { return 'Passed' }
@@ -298,6 +306,7 @@ function New-StatusChipRow {
         'Passed'       { '1a7f37' }   # green
         'Partial'      { 'bf8700' }   # amber — mixed/inconclusive
         'Inconclusive' { '0e7490' }   # teal — could not build/run (infra), not a real fail (avoid purple ~ GitHub "merged")
+        'Timed Out'    { '0e7490' }   # teal — gate stopped by its hang-safety timeout (infra), fix unverified
         'No Tests'     { '57606a' }   # neutral gray — nothing to verify
         'Failed'       { 'd1242f' }   # red
         default        { 'd1242f' }
@@ -464,7 +473,9 @@ function Test-RunValidationFailed {
     # gate/gate-result.txt or gate/content.md from $PRAgentDir — both live in the agent-writable
     # worktree/artifact, so a prompt-injected review agent could overwrite a real FAILED gate
     # with "PASSED" before this trusted posting step and bypass the APPROVE veto.
-    if ($TrustedGateResult -match '(?im)^\s*FAILED\s*$') { return $true }
+    # FAILED = a real test regression; TIMEDOUT = the gate never finished (fix unverified) —
+    # both must veto an APPROVE. INCONCLUSIVE/SKIPPED stay non-blocking sentinels.
+    if ($TrustedGateResult -match '(?im)^\s*(FAILED|TIMEDOUT)\s*$') { return $true }
 
     # UI tests: the pipeline render writes "❌ **Deep UI tests** — N passed, M failed …" with no
     # "Result:" line, so detect the failure icon on a bold test header or a non-zero "N failed"
@@ -601,6 +612,36 @@ $gateContent
     }
 } else {
     Write-Host "  ⏭️  gate (not found)" -ForegroundColor Gray
+}
+
+# When the pipeline reports a timed-out / no-verdict gate (its 120-min hang-safety cap fired,
+# or the gate task crashed before writing a verdict), the agent-written gate/content.md is
+# usually absent. Synthesize an honest Gate section from the trusted TIMEDOUT verdict so the
+# AI Summary still renders normally (the rest of the review ran fine) and the Gate section
+# itself explains why test verification did not complete. Guarded to TIMEDOUT so normal runs
+# and local/manual runs (empty verdict → SKIPPED) are unaffected.
+if ([string]::IsNullOrWhiteSpace($gateContent) -and $TrustedGateResult -match '(?i)TIMEDOUT') {
+    $gateContent = @'
+### Gate Result: TIMEDOUT — test verification did not finish
+
+The automated **test-verification gate** did not complete on this run. It was stopped by the pipeline's **hang-safety timeout** (the gate is capped at 120 min to catch an emulator/simulator boot or an Appium hang that would otherwise run to the job limit), or it could not produce a verdict.
+
+- This is almost always a transient **infrastructure** issue on the CI agent — **not** a problem with your PR.
+- Because the gate could not finish, **the fix was not verified by tests** on this run, so this review is **not eligible for APPROVE**.
+- The rest of the review below (expert analysis and findings) ran as usual.
+
+**Next step:** re-comment `/review` to retry the gate on a fresh agent.
+'@
+    Write-Host "  ⏱️  gate (synthesized TIMEDOUT section — gate did not complete)" -ForegroundColor Yellow
+    $gateSection = @"
+<details open>
+<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
+<br/>
+
+$gateContent
+
+</details>
+"@
 }
 
 $phaseSections = @()

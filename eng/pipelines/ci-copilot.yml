@@ -1080,6 +1080,14 @@ stages:
               fi
             name: RunReview
             displayName: 'Task 3: Copilot Review (expert review + try-fix)'
+            # succeededOrFailed so the expert review STILL runs when the Gate (Task 2) was
+            # stopped by its 120-min hang-safety timeout — a killed gate step is marked FAILED,
+            # which the default succeeded() would treat as a reason to SKIP the review, leaving
+            # the PR with only a terse "could not complete" notice. Now the review runs "as
+            # usual" and the gate timeout is explained in the AI Summary's Gate section instead.
+            # (A genuine test FAILURE exits 0 → Task 2 succeeds, so this does not change that
+            # path. A true CANCEL — the 180-min review cap — is neither, so this still skips.)
+            condition: succeededOrFailed()
             timeoutInMinutes: 180
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
@@ -1145,6 +1153,13 @@ stages:
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
             name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryReviewId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId']). Note: detectedCategories comes from RunGate, not RunPost.
             displayName: 'Task 4: Post (comments + labels)'
+            # succeededOrFailed so Post STILL runs after a Gate hang-safety timeout (see Task 3).
+            # In defer mode this emits aiSummaryReviewId=DEFERRED, which is what lets the
+            # downstream UpdateAISummaryComment stage post the full AI Summary (with the
+            # synthesized TIMEDOUT Gate section) instead of the fallback "no review produced"
+            # notice. Without this, a gate timeout would skip Post → empty aiSummaryReviewId →
+            # the summary stage would not run.
+            condition: succeededOrFailed()
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
@@ -1207,24 +1222,19 @@ stages:
             condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
 
           # ─────────────────────────────────────────────────────────────────
-          #  FALLBACK — guarantee every /review yields visible feedback.
+          #  FALLBACK — last-resort notice when NO AI Summary could be produced.
           #
-          #  Task 3 (review) and Task 4 (RunPost) both default to condition
-          #  succeeded(), so when an EARLIER step is killed by its hang-safety
-          #  timeout — most commonly the Gate (Task 2, 120m) stalling on an
-          #  emulator/simulator boot — Task 3/4 are SKIPPED and the PR gets a
-          #  RED build with NO comment at all (observed: build 14651883 on
-          #  #35606: gate timed out at 120m → review + post skipped → silence).
-          #
-          #  In the pipeline RunPost ALWAYS defers, emitting
-          #  aiSummaryReviewId="DEFERRED"; an EMPTY value here therefore means
-          #  RunPost never ran → no review was produced (covers the gate-timeout
-          #  AND the review-timeout silence paths). succeededOrFailed() ensures
-          #  this step still runs after an earlier step-timeout (empirically a
-          #  gate timeout is treated as failed, not canceled, so later
-          #  succeededOrFailed() steps DO run). Post a concise, AI-attributed
-          #  notice so the maintainer always knows to re-trigger. Skips on every
-          #  normal run (aiSummaryReviewId is non-empty).
+          #  Task 3 (review) and Task 4 (RunPost) now use succeededOrFailed(), so a
+          #  Gate (Task 2) hang-safety timeout NO LONGER silences the review — the
+          #  review runs and the AI Summary posts with a synthesized "gate timed out"
+          #  Gate section (see the TIMEDOUT handling in Stage 3 / post-ai-summary-comment.ps1).
+          #  This fallback therefore only fires in the residual cases where RunPost never
+          #  emitted aiSummaryReviewId at all: the review/post stage was CANCELED by its own
+          #  180-min timeout, or ReviewPR crashed before Task 4 ran. RunPost defers with
+          #  aiSummaryReviewId="DEFERRED", so an EMPTY value here means no review was produced.
+          #  succeededOrFailed() lets this run after a failed earlier step (a bare cancel skips
+          #  it too). Post a concise, AI-attributed notice so the maintainer knows to re-trigger.
+          #  Skips on every normal run (aiSummaryReviewId is non-empty).
           # ─────────────────────────────────────────────────────────────────
           - bash: |
               echo "═══ FALLBACK: no review was posted → emitting review-incomplete notice ═══"
@@ -1242,7 +1252,7 @@ stages:
                 echo "> [!WARNING]"
                 echo "> ### 🔍 Automated review could not complete"
                 echo ">"
-                echo "> A stage of the reviewer pipeline was stopped by its hang-safety timeout — most often the test-verification **gate** stalling on an emulator/simulator boot or an Appium hang on the CI agent. This is almost always a transient **infrastructure** issue, **not** a problem with your PR. Because the pipeline could not finish, **no review was produced** for this run."
+                echo "> A stage of the reviewer pipeline could not finish, so **no review summary was produced** for this run — most often the review stage itself hanging, or the run being canceled by its overall timeout. This is almost always a transient **infrastructure** issue on the CI agent, **not** a problem with your PR. (Note: a test-verification **gate** timeout no longer lands here — it now posts a normal AI Summary whose Gate section explains the timeout.)"
                 echo ">"
                 echo "> Please re-comment \`/review\` to retry on a fresh agent."
                 echo ">"
@@ -2954,6 +2964,13 @@ stages:
                   if (Test-Path $postScript) {
                     Write-Host "Posting full AI summary review with deep results..."
                     $trustedGate = "$(trustedGateResult)"
+                    # An EMPTY trusted verdict here means RunGate produced no gateResult — the
+                    # Gate task was stopped by its 120-min hang-safety timeout (or crashed before
+                    # writing a verdict). Map it to the TIMEDOUT sentinel so the renderer shows an
+                    # honest "gate did not finish" Gate section AND vetoes APPROVE (the fix was not
+                    # verified). A gate that actually ran always sets PASSED/SKIPPED/INCONCLUSIVE/FAILED,
+                    # so this only ever fires on the timeout/crash path.
+                    if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
                     Write-Host "Trusted gate verdict for veto: '$trustedGate'"
                     $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate
                     $output | ForEach-Object { Write-Host $_ }
