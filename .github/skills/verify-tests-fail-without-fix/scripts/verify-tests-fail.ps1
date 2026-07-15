@@ -1578,10 +1578,13 @@ function Write-MarkdownReport {
     # non-blocking infra flake.
     $baselineBuildError = @($WithoutFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
 
-    # A baseline build error located in the PR's OWN test file is NOT pre-existing/infra — the
-    # PR broke its own test (test files are never reverted). Attribute it to the PR (FAILED),
-    # not INCONCLUSIVE.
-    $prTestBuildError = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $WithoutFixResultsList -Tests $Tests)
+    # A baseline (without-fix) build error located in the PR's OWN detected test file is only a
+    # genuine FAILED when the test ALSO fails to build WITH the fix (a truly broken test that
+    # breaks identically in both states). If the test build-errors WITHOUT the fix but compiles
+    # and PASSES WITH it, the error is compile-coupling — the PR adds new API AND a new test
+    # referencing it in the SAME project, so reverting the fix un-compiles the test through no
+    # fault of its own — which is UNVERIFIABLE (INCONCLUSIVE), not FAILED. (PR #36521.)
+    $prTestBuildError = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $WithoutFixResultsList -Tests $Tests) -and (Test-BuildErrorIsInDetectedTest -Results $WithFixResultsList -Tests $Tests)
 
     # A FILTER MISMATCH (0 tests matched the -filter) on a deciding test means nothing was
     # verified, so the headline must read INCONCLUSIVE to match the exit code ($gateInfraError).
@@ -1604,7 +1607,7 @@ function Write-MarkdownReport {
     $fixFilesForPlatform = @($ReportRevertableFiles) + @($ReportNewFiles)
     $fixPlatformMismatch = (-not $reportWithFixGenuineFail) -and (Test-FixIrrelevantToPlatform -FixFiles $fixFilesForPlatform -Platform $ReportPlatform)
 
-    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or $baselineBuildError -or ($hasFilterMismatch -and -not $reportWithFixGenuineFail) -or $fixPlatformMismatch) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or ($baselineBuildError -and -not $reportWithFixGenuineFail) -or ($hasFilterMismatch -and -not $reportWithFixGenuineFail) -or $fixPlatformMismatch) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     # When the gate PASSED under the relaxed "at least one test reproduces the bug, none
@@ -2472,16 +2475,22 @@ $anyEnvError        = (@($withoutFixResults) + @($withFixResults) | Where-Object
 # remaining with the fix ($withFixGenuineFailCount -eq 0), so a real FAIL→FAIL in another
 # detected test is never masked by an unrelated filter mismatch.
 $anyFilterMismatch  = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.FilterMismatch }).Count -gt 0
-# A baseline build error inside the PR's OWN test file is the PR's fault (test files are never
-# reverted, so it breaks identically in both states) — a real FAILED, not an infra flake. Keep
-# it OUT of $gateInfraError so it exits 1 (FAILED), matching the report status.
-$prTestBuildError   = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $withoutFixResults -Tests $AllDetectedTests)
+# A baseline (without-fix) build error inside the PR's OWN detected test file is only a real
+# FAILED when it is a GENUINELY BROKEN test — i.e. the test ALSO fails to build WITH the fix, so
+# it breaks identically in both states (the original assumption). When the test build-errors
+# WITHOUT the fix but compiles and PASSES WITH it, the error is compile-coupling: the PR adds
+# new API AND a new test referencing it in the SAME test project, so reverting the fix
+# un-compiles the test through no fault of its own. That leaves the without-fix RUNTIME
+# behaviour UNVERIFIABLE -> INCONCLUSIVE (exit 3), never FAILED. (build 14662715, PR #36521:
+# BindableObjectUnitTests referenced SetInheritedBindingContextForBinding, added by the fix ->
+# CS0117/CS1061 WITHOUT the fix but PASSED 94/94 WITH it; was wrongly reported FAILED.)
+$prTestBuildError   = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $withoutFixResults -Tests $AllDetectedTests) -and (Test-BuildErrorIsInDetectedTest -Results $withFixResults -Tests $AllDetectedTests)
 # A PLATFORM MISMATCH false-FAILED: every changed *code* file (fix files; test files excluded)
 # is platform-specific for a DIFFERENT platform than this gate, so the fix is a no-op here and
 # the repro test necessarily passes without it. Treat as INCONCLUSIVE (exit 3), like a filter
 # mismatch — guarded by $withFixGenuineFailCount -eq 0 so a real FAIL->FAIL is never masked.
 $fixPlatformMismatch = ($withFixGenuineFailCount -eq 0) -and (Test-FixIrrelevantToPlatform -FixFiles $FixFiles -Platform $Platform)
-$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError) -or $fixPlatformMismatch
+$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError -and $withFixGenuineFailCount -eq 0) -or $fixPlatformMismatch
 
 Write-Log ""
 Write-Log "Summary:"
