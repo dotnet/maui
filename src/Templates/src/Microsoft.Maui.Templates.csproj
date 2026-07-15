@@ -233,7 +233,7 @@
       <_DotNetN1VersionProperty Include="MicrosoftJSInteropN1PackageVersion" />
     </ItemGroup>
     <PropertyGroup>
-      <_PreviewNProperties>@(_DotNetNVersionProperty->'%(Identity)=11.0.0-preview.6.26325.125', ';')</_PreviewNProperties>
+      <_PreviewNProperties>@(_DotNetNVersionProperty->'%(Identity)=11.0.0-preview.7.26364.110', ';')</_PreviewNProperties>
       <_StableNProperties>@(_DotNetNVersionProperty->'%(Identity)=11.0.0', ';')</_StableNProperties>
       <_StableN1Properties>@(_DotNetN1VersionProperty->'%(Identity)=10.0.0', ';')</_StableN1Properties>
     </PropertyGroup>
@@ -245,7 +245,7 @@
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=false;$(_PreviewNProperties);ExpectedDotNetPackageVersion=11.0.0-preview.6.26325.125;ExpectedTemplatePackageVersion=*" />
+        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=false;$(_PreviewNProperties);ExpectedDotNetPackageVersion=11.0.0-preview.7.26364.110;ExpectedTemplatePackageVersion=*" />
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
