@@ -13,11 +13,12 @@
     Pipeline:
       1. List PRs merged in the last -LookbackDays that carry `i/regression`
          (the definitive "this fixed a regression" signal on the fix PR).
-      2. For each, gather the fix PR body + every linked issue (Fixes/Closes #N)
-         with that issue's labels (to capture `regressed-in-*`) and a bounded
-         number of issue comments.
-      3. Regex-extract the *introducing* PR number from that text — the PR that
-         shipped the regression ("regression from #N", "introduced by #N", etc.).
+      2. For each, gather its linked issues (Fixes/Closes #N), their
+         `regressed-in-*` labels, and a bounded number of comments. Only text
+         authored by a repository maintainer is eligible for attribution.
+      3. Regex-extract the *introducing* PR number from that trusted text — the
+         PR that shipped the regression ("regression from #N", "introduced by
+         #N", etc.).
          That introducing PR's merge commit is the frozen `ref:` a Vally
          regression stimulus pins to (the reviewer is tested on the bad diff cold).
       4. Resolve the introducing PR's merge SHA + changed files via `gh`.
@@ -90,6 +91,13 @@ function Test-IsRegressionLabel {
     return $Label -match '\A(?:i/regression|regressed-in-[0-9A-Za-z][0-9A-Za-z./\-]*)\z'
 }
 
+function Test-IsTrustedAssociation {
+    # Attribution from editable text must come from a repository maintainer.
+    param([string]$Association)
+    if (-not $Association) { return $false }
+    return $Association.Trim().ToUpperInvariant() -in @('OWNER', 'MEMBER', 'COLLABORATOR')
+}
+
 function Get-RegressedInLabels {
     # Keep the only label text emitted to the agent within the version-label grammar.
     param([string[]]$Labels)
@@ -134,12 +142,18 @@ function Get-IntroducingPrReferences {
     if (-not $Text) { return @() }
     if ($Text -is [array]) { $Text = $Text -join "`n" }
 
+    # Only canonical local pull URLs are attribution references. A Markdown PR
+    # link must target the local repository, and the boundary rejects malformed
+    # URLs before the number can be resolved locally.
+    $localPullUrl = 'https://github\.com/dotnet/maui/pull/(?<number>\d+)(?=$|[/?#\s)\]\}.,;:])'
+    $reference = '(?:(?:PR\s*#?|#)(?<number>\d+)|\[(?:PR\s*#?|#)\d+\]\(' +
+        $localPullUrl + '|\[?' + $localPullUrl + ')'
     $patterns = @(
-        '(?i)regress(?:ion|ed)?\s+(?:from|in|introduced\s+in|caused\s+by)\s+(?:PR\s*#?|#)(\d+)',
-        '(?i)introduced\s+(?:by|in)\s+(?:PR\s*#?|#)(\d+)',
-        '(?i)caused\s+by\s+(?:PR\s*#?|#)(\d+)',
-        '(?i)broke(?:n)?\s+(?:in|by)\s+(?:PR\s*#?|#)(\d+)',
-        '(?i)regress(?:ed|ion)\s+(?:by)\s+(?:PR\s*#?|#)(\d+)'
+        ('(?i)regress(?:ion|ed)?\s+(?:from|in|introduced\s+in|caused\s+by)\s+{0}' -f $reference),
+        ('(?i)introduced\s+(?:by|in)\s+{0}' -f $reference),
+        ('(?i)caused\s+by\s+{0}' -f $reference),
+        ('(?i)broke(?:n)?\s+(?:in|by)\s+{0}' -f $reference),
+        ('(?i)regress(?:ed|ion)\s+(?:by)\s+{0}' -f $reference)
     )
 
     $matches = New-Object System.Collections.Generic.List[object]
@@ -148,7 +162,7 @@ function Get-IntroducingPrReferences {
             $matches.Add([PSCustomObject]@{
                     Index        = $m.Index
                     PatternIndex = $patternIndex
-                    Value        = $m.Groups[1].Value
+                    Value        = $m.Groups['number'].Value
                 }) | Out-Null
         }
     }
@@ -227,23 +241,31 @@ function Get-MergedRegressionFixPRs {
     return @($prs | Where-Object { $null -ne $_ })
 }
 
+function Get-IssueAuthorAssociation {
+    # REST exposes author_association for both issues and PRs (which are issues).
+    param([string]$Owner, [string]$Repo, [int]$Number)
+    $issue = Invoke-GhJson -GhArgs @(
+        'api', "repos/$Owner/$Repo/issues/$Number"
+    )
+    if (-not $issue) { return $null }
+    return [string]$issue.author_association
+}
+
 function Get-IssueContext {
     param([string]$Owner, [string]$Repo, [int]$Number, [int]$MaxComments = 20)
     $issue = Invoke-GhJson -GhArgs @(
-        'issue', 'view', "$Number", '--repo', "$Owner/$Repo",
-        '--json', 'number,body,labels'
+        'api', "repos/$Owner/$Repo/issues/$Number"
     )
     if (-not $issue) { return $null }
     $commentText = ''
     $comments = Invoke-GhJson -GhArgs @(
         'api', "repos/$Owner/$Repo/issues/$Number/comments?per_page=$MaxComments"
     )
-    $trustedAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
     $trustedCommentBodies = @(
         $comments |
             Where-Object {
                 $_ -and
-                ([string]$_.author_association).ToUpperInvariant() -in $trustedAssociations
+                (Test-IsTrustedAssociation ([string]$_.author_association))
             } |
             ForEach-Object { [string]$_.body } |
             Where-Object { $_ }
@@ -254,6 +276,7 @@ function Get-IssueContext {
         Labels      = @($issue.labels | ForEach-Object { $_.name } | Where-Object { $_ })
         Body        = [string]$issue.body
         CommentText = $commentText
+        IsTrustedAttribution = Test-IsTrustedAssociation ([string]$issue.author_association)
     }
 }
 
@@ -359,11 +382,16 @@ foreach ($pr in $fixPRs) {
     if ($candidates.Count -ge $MaxPRs) { break }
 
     $fixNumber = [int]$pr.number
+    $fixPrAssociation = Get-IssueAuthorAssociation -Owner $Owner -Repo $Repo -Number $fixNumber
     $linkedIssues = Get-LinkedIssueNumbers $pr.body
 
-    # Accumulate attribution text: fix PR body + linked issue bodies/comments.
-    $attribSources = New-Object System.Collections.Generic.List[object]
-    $attribSources.Add([PSCustomObject]@{ Source = 'pr-body'; Text = [string]$pr.body }) | Out-Null
+    # Keep only maintainer-authored editable bodies as attribution. The fix body
+    # still drives linked-issue discovery above, regardless of author association.
+    $commentSources = New-Object System.Collections.Generic.List[object]
+    $bodySources = New-Object System.Collections.Generic.List[object]
+    if (Test-IsTrustedAssociation $fixPrAssociation) {
+        $bodySources.Add([PSCustomObject]@{ Source = 'pr-body'; Text = [string]$pr.body }) | Out-Null
+    }
 
     $regressionIssues = New-Object System.Collections.Generic.List[object]
     foreach ($issueNum in $linkedIssues) {
@@ -374,8 +402,21 @@ foreach ($pr in $fixPRs) {
             number            = $ctx.Number
             regressedInLabels = $regressedIn
         }) | Out-Null
-        $attribSources.Add([PSCustomObject]@{ Source = 'issue-body'; Text = $ctx.Body }) | Out-Null
-        $attribSources.Add([PSCustomObject]@{ Source = 'issue-comment'; Text = $ctx.CommentText }) | Out-Null
+        if ($ctx.CommentText) {
+            $commentSources.Add([PSCustomObject]@{ Source = 'issue-comment'; Text = $ctx.CommentText }) | Out-Null
+        }
+        if ($ctx.IsTrustedAttribution) {
+            $bodySources.Add([PSCustomObject]@{ Source = 'issue-body'; Text = $ctx.Body }) | Out-Null
+        }
+    }
+
+    # An explicit trusted maintainer comment takes precedence over editable bodies.
+    $attribSources = New-Object System.Collections.Generic.List[object]
+    foreach ($source in $commentSources) {
+        $attribSources.Add($source) | Out-Null
+    }
+    foreach ($source in $bodySources) {
+        $attribSources.Add($source) | Out-Null
     }
 
     # Find the introducing PR reference, excluding the fix PR and its linked issues.

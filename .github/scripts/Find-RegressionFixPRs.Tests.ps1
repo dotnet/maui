@@ -17,6 +17,7 @@ BeforeAll {
     foreach ($functionName in @(
             'ConvertTo-GitHubNumber',
             'Test-IsRegressionLabel',
+            'Test-IsTrustedAssociation',
             'Get-RegressedInLabels',
             'Get-LinkedIssueNumbers',
             'Get-IntroducingPrReferences',
@@ -25,6 +26,7 @@ BeforeAll {
             'Test-HumanAttributionCandidateIsNew',
             'Invoke-GhJson',
             'Get-MergedRegressionFixPRs',
+            'Get-IssueAuthorAssociation',
             'Get-IssueContext',
             'Get-OpenRegressionCorpusPrTags',
             'New-RegressionCandidate')) {
@@ -64,6 +66,19 @@ Describe 'Test-IsRegressionLabel' {
         Test-IsRegressionLabel 'i/regression-candidate' | Should -BeFalse
         Test-IsRegressionLabel 'area-regression' | Should -BeFalse
         Test-IsRegressionLabel '' | Should -BeFalse
+    }
+}
+
+Describe 'Test-IsTrustedAssociation' {
+    It 'accepts only maintainer associations' {
+        Test-IsTrustedAssociation 'OWNER' | Should -BeTrue
+        Test-IsTrustedAssociation 'member' | Should -BeTrue
+        Test-IsTrustedAssociation 'COLLABORATOR' | Should -BeTrue
+    }
+    It 'rejects external and missing associations' {
+        Test-IsTrustedAssociation 'CONTRIBUTOR' | Should -BeFalse
+        Test-IsTrustedAssociation 'NONE' | Should -BeFalse
+        Test-IsTrustedAssociation $null | Should -BeFalse
     }
 }
 
@@ -177,6 +192,24 @@ Describe 'Get-IntroducingPrReferences' {
     It 'accepts a PR prefix without a number sigil' {
         Get-IntroducingPrReferences 'introduced in PR 40000' | Should -Contain 40000
     }
+    It 'extracts canonical local pull URLs, including Markdown links' {
+        Get-IntroducingPrReferences 'Introduced in https://github.com/dotnet/maui/pull/27145' |
+            Should -Contain 27145
+        Get-IntroducingPrReferences 'Introduced by [PR #36271](https://github.com/dotnet/maui/pull/36271)' |
+            Should -Contain 36271
+        Get-IntroducingPrReferences 'Introduced by [https://github.com/dotnet/maui/pull/33958](https://github.com/dotnet/maui/pull/33958/)' |
+            Should -Contain 33958
+    }
+    It 'does not resolve a cross-repository pull URL as a local PR' {
+        @(Get-IntroducingPrReferences 'Introduced by https://github.com/other/repo/pull/123').Count |
+            Should -Be 0
+        @(Get-IntroducingPrReferences 'Introduced by [PR #123](https://github.com/other/repo/pull/123)').Count |
+            Should -Be 0
+    }
+    It 'requires a URL path boundary after the pull number' {
+        @(Get-IntroducingPrReferences 'Introduced by https://github.com/dotnet/maui/pull/123invalid').Count |
+            Should -Be 0
+    }
     It 'returns distinct values in first-seen order' {
         $r = Get-IntroducingPrReferences 'regression from #10. Also introduced by #20. regression from #10 again.'
         @($r) | Should -Be @(10, 20)
@@ -277,11 +310,12 @@ Describe 'Get-IssueContext' {
     It 'uses only maintainer-associated comments for attribution' {
         Mock Invoke-GhJson {
             param([string[]]$GhArgs)
-            if ($GhArgs[0] -eq 'issue') {
+            if ($GhArgs[1] -notlike '*/comments*') {
                 return [PSCustomObject]@{
                     number = 35756
                     body = 'Regression from #100'
                     labels = @([PSCustomObject]@{ name = 'regressed-in-10.0.70' })
+                    author_association = 'CONTRIBUTOR'
                 }
             }
             return @(
@@ -292,7 +326,42 @@ Describe 'Get-IssueContext' {
 
         $context = Get-IssueContext -Owner 'dotnet' -Repo 'maui' -Number 35756
 
+        $context.Body | Should -Be 'Regression from #100'
         $context.CommentText | Should -Be 'introduced by #300'
+        $context.IsTrustedAttribution | Should -BeFalse
+    }
+
+    It 'marks a maintainer-authored issue body as trusted attribution' {
+        Mock Invoke-GhJson {
+            param([string[]]$GhArgs)
+            if ($GhArgs[1] -notlike '*/comments*') {
+                return [PSCustomObject]@{
+                    number = 35756
+                    body = 'Regression from #100'
+                    labels = @()
+                    author_association = 'MEMBER'
+                }
+            }
+            return @()
+        }
+
+        $context = Get-IssueContext -Owner 'dotnet' -Repo 'maui' -Number 35756
+
+        $context.IsTrustedAttribution | Should -BeTrue
+    }
+}
+
+Describe 'Get-IssueAuthorAssociation' {
+    It 'reads the association from the issue REST resource' {
+        Mock Invoke-GhJson {
+            param([string[]]$GhArgs)
+            $script:authorAssociationGhArgs = $GhArgs
+            return [PSCustomObject]@{ author_association = 'MEMBER' }
+        }
+
+        Get-IssueAuthorAssociation -Owner 'dotnet' -Repo 'maui' -Number 35803 |
+            Should -Be 'MEMBER'
+        $script:authorAssociationGhArgs | Should -Be @('api', 'repos/dotnet/maui/issues/35803')
     }
 }
 
