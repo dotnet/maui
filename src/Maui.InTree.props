@@ -1,10 +1,15 @@
 <Project>
 
-  <ImportGroup Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">
+  <PropertyGroup>
+    <_MauiCoreBuildTasksProps>$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props</_MauiCoreBuildTasksProps>
+    <_MauiCoreBuildTasksProps Condition="'$(_MauiTargetPlatformIsWindows)' == 'true'">$(_MauiBuildTasksLocation)net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)\Microsoft.Maui.Core.props</_MauiCoreBuildTasksProps>
+    <_MauiBuildTasksPropsReady Condition="Exists('$(_MauiCoreBuildTasksProps)') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">true</_MauiBuildTasksPropsReady>
+  </PropertyGroup>
+
+  <ImportGroup Condition="'$(_MauiBuildTasksPropsReady)' == 'true'">
 
     <!-- Microsoft.Maui.Core.props -->
-    <Import Project="$(_MauiBuildTasksLocation)net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)\Microsoft.Maui.Core.props" Condition="'$(_MauiTargetPlatformIsWindows)' == 'true'" />
-    <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props" Condition="'$(_MauiTargetPlatformIsWindows)' != 'true'" />
+    <Import Project="$(_MauiCoreBuildTasksProps)" />
 
     <!-- Microsoft.Maui.Controls.Build.Tasks.props -->
     <Import Project="$(_MauiBuildTasksLocation)net6.0-ios10.0\Microsoft.Maui.Controls.Build.Tasks.props" Condition="'$(_MauiTargetPlatformIsiOS)' == 'true'" />
