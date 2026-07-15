@@ -461,7 +461,7 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 #     valid merged fix. Gate (d) stays fail-safe (it only CLOSES on a positive match, so a miss
 #     under-closes rather than wrongly closing), but close-coverage would be incomplete, so warn.
 gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' --limit 1000 \
-  --json number,title,body > /tmp/gh-aw/agent/merged-leakfix-all.json
+  --json number,title,body,mergedAt > /tmp/gh-aw/agent/merged-leakfix-all.json
 if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-all.json)" -ge 1000 ]; then
   echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older merged fixes may be TRUNCATED. Gate (d) stays fail-safe (under-closes) but close-coverage is incomplete — switch to date-windowed enumeration."
 fi
@@ -470,10 +470,35 @@ jq --arg n "$N" --arg apiplain "$API" --arg repo "$REPO_RE" \
     /tmp/gh-aw/agent/merged-leakfix-all.json \
   > /tmp/gh-aw/agent/merged-fix-prs.json
 jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent/merged-fix-prs.json
+# (d-override) MAINTAINER RE-OPEN GUARD: if this [leak-scan] issue was RE-OPENED *after* the
+#   newest matched merged [leak-fix] PR merged, a maintainer deliberately overrode the auto-close
+#   (the merged fix was incomplete / another retention edge remains). This workflow NEVER re-opens
+#   issues, so any 'reopened' event is an external human action. Respect it: never re-close (which
+#   would reverse the human decision every 6h and post a false "already fixed" comment) and never
+#   rebuild. Emit `skipped: scan issue re-opened after merged fix (maintainer override)` and stop.
+if [ "$(jq 'length' /tmp/gh-aw/agent/merged-fix-prs.json)" -ge 1 ]; then
+  FIX_MERGED_AT=$(jq -r '[.[].mergedAt] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/merged-fix-prs.json)
+  gh api "repos/$GITHUB_REPOSITORY/issues/$N/timeline" --paginate -H "Accept: application/vnd.github+json" \
+    > /tmp/gh-aw/agent/issue-timeline.json 2>/dev/null || echo '[]' > /tmp/gh-aw/agent/issue-timeline.json
+  REOPENED_AT=$(jq -r '[.[] | select(.event=="reopened") | .created_at] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/issue-timeline.json)
+  if [ "$(jq -n --arg r "$REOPENED_AT" --arg m "$FIX_MERGED_AT" '($r != "") and ($m != "") and ($r > $m)')" = "true" ]; then
+    echo "REOPEN OVERRIDE: issue #$N re-opened at $REOPENED_AT AFTER merged fix at $FIX_MERGED_AT — maintainer override; will NOT close or rebuild." \
+      > /tmp/gh-aw/agent/reopen-override.txt
+    cat /tmp/gh-aw/agent/reopen-override.txt
+  fi
+fi
 ```
 
+- **Re-open override (takes precedence over gate (d) and any rebuild):** if
+  `/tmp/gh-aw/agent/reopen-override.txt` exists — i.e. THIS `[leak-scan]` issue was **re-opened
+  after** the newest matched merged `[leak-fix]` PR merged — a maintainer has deliberately
+  overridden the auto-close. Do NOT emit `close-issue` and do NOT rebuild; emit
+  `skipped: scan issue re-opened after merged fix (maintainer override)` and stop. Never reverse a
+  deliberate human re-open (doing so would re-close it every 6h and post a false "already fixed"
+  comment).
 - If a **merged** `[leak-fix]` PR already fixes this issue number OR the same rooting
-  `Type.Member` (d) → the leak is **already on `main`**. Do NOT create a branch or rebuild.
+  `Type.Member` (d) **and the re-open override above did NOT fire** → the leak is **already on
+  `main`**. Do NOT create a branch or rebuild.
   Emit exactly one `close-issue` safe-output on THIS `[leak-scan]` issue `#<N>` with a closing
   comment (AI-attributed, linking the merged PR), e.g.:
   > 🔍 **AI-generated action** (Memory Leak Fixer) — this leak is already fixed on `main` by
