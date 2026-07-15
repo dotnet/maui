@@ -391,6 +391,20 @@ stages:
                 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
                 export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
 
+                # Pin a single, consistent AVD location. Modern cmdline-tools
+                # (avdmanager) default the Android user home to
+                # $XDG_CONFIG_HOME/.android (~/.config/.android) on the hosted
+                # agents, so `avdmanager create` wrote the AVD to
+                # ~/.config/.android/avd/Emulator_30.avd while the (older)
+                # `emulator` binary + our config.ini/adbkey/boot logic look in
+                # ~/.android/avd — a path mismatch that made `emulator -avd
+                # Emulator_30` report "Unknown AVD name" even though the AVD WAS
+                # created (build 14665001/14665465, PR #36130). ANDROID_AVD_HOME is
+                # honored FIRST by BOTH avdmanager and emulator, so exporting it
+                # pins create + boot + our guards to the same directory.
+                export ANDROID_AVD_HOME="$HOME/.android/avd"
+                mkdir -p "$ANDROID_AVD_HOME"
+
                 # Ensure the required system image is present before creating the
                 # AVD (idempotent — a fast no-op when already installed). The
                 # "Provision Android SDK - Emulator Images" step can report success
@@ -1395,6 +1409,14 @@ stages:
             - script: |
                 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
                 export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+                # Pin a single, consistent AVD location so `avdmanager create` and
+                # `emulator -avd` agree (see Review-stage note / build 14665001,
+                # PR #36130: avdmanager wrote to ~/.config/.android/avd but emulator
+                # looked in ~/.android/avd -> "Unknown AVD name"). ANDROID_AVD_HOME
+                # is honored FIRST by both tools.
+                export ANDROID_AVD_HOME="$HOME/.android/avd"
+                mkdir -p "$ANDROID_AVD_HOME"
 
                 # Ensure the required system image is present before creating the
                 # AVD. "Provision Android SDK - Emulator Images" normally installs
