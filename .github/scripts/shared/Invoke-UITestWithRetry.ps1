@@ -398,6 +398,21 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
             Write-Host "##[warning]Attempt $attempt hard-killed after exhausting the category time budget." -ForegroundColor Yellow
             $envHit = 'timeout'   # treat a hang as a retryable environment error
             if ($attempt -eq $MaxAttempts) { break }
+            # A hang that trips the idle-kill BEFORE the wall budget leaves a
+            # sliver of budget behind, and the current loop would spend it on a
+            # doomed retry: observed on #36448 Material3 — attempt 1 hung (idle
+            # climbed to 24 min) and was killed at 95 of 104 min, then attempt 2
+            # got the leftover 8 min and was killed again → pure waste that also
+            # starves the NEXT category. Only retry a timeout when a meaningful
+            # chunk (>= the idle-kill window, ~25 min) remains — enough for a real
+            # rebuild + test pass after the device reboot. Otherwise stop and let
+            # the loop move on so later categories keep their share.
+            $remainingAfterTimeout = if ($overallDeadline) { [int]($overallDeadline - (Get-Date)).TotalSeconds } else { [int]::MaxValue }
+            $minRetrySec = if ($IdleTimeoutMinutes -gt 0) { $IdleTimeoutMinutes * 60 } else { 1500 }
+            if ($remainingAfterTimeout -lt $minRetrySec) {
+                Write-Host "##[warning]Only $([int]($remainingAfterTimeout/60)) min left after the timeout — not retrying (too little for a real attempt); moving on to the next category." -ForegroundColor Yellow
+                break
+            }
             continue
         }
     } else {
