@@ -92,7 +92,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test, Order(11)]
+		[Test, Order(13)]
 		[Category(UITestCategories.Brush)]
 		public void ImageBrushOnCarouselViewAndStackLayout()
 		{
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test, Order(12)]
+		[Test, Order(11)]
 		[Category(UITestCategories.Brush)]
 		public void ImageBrushOnGridAndFlexLayout()
 		{
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test, Order(13)]
+		[Test, Order(12)]
 		[Category(UITestCategories.Brush)]
 		public void ImageBrushOnAbsoluteLayoutAndScrollView()
 		{
