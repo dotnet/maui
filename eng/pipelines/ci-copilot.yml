@@ -2448,6 +2448,7 @@ stages:
               # the surfaced message must be honest and NOT blame the author.
               $buildFailedCats = @()
               $interruptedCats = @()
+              $buildFailedSampleError = ''
               if (Test-Path $artDir) {
                 foreach ($d in @(Get-ChildItem -Path $artDir -Directory -Filter 'drop-*_ui_tests-*' -ErrorAction SilentlyContinue)) {
                   if (@(Get-ChildItem -Path $d.FullName -Filter '*.trx' -Recurse -ErrorAction SilentlyContinue).Count -gt 0) { continue }
@@ -2471,10 +2472,30 @@ stages:
                   if (-not (Test-Path $bo)) { continue }
                   $boText = Get-Content $bo -Raw -ErrorAction SilentlyContinue
                   if ([string]::IsNullOrEmpty($boText)) { continue }
+                  # A coded compiler/MSBuild error (RS#### PublicAPI nullability,
+                  # CS#### syntax, MSB####, …) means the test project or one of its
+                  # dependencies failed to COMPILE, so `dotnet test` exited without
+                  # writing a .trx — even when an earlier HostApp sub-build printed
+                  # "Build succeeded" and the runner reached "Executing: dotnet test".
+                  # That is a real, code-level build failure (frequently the PR's own
+                  # changed file — e.g. PR #36130's VisualElement.Mapper.cs RS0036),
+                  # NOT an infrastructure interruption, so it must take precedence
+                  # over the "interrupted → re-run, it's flaky" branch below. Device
+                  # logcat noise never carries a `: error <CODE>####:` token, so this
+                  # is safe against false positives.
+                  $compileErrMatch = [regex]::Match($boText, '(?m)^.*: ?error (?:RS|CS|MSB|NETSDK|CA|IL|APT|XA|NU|MT|AMM)\d{3,}:.*$')
                   if ($boText -match '(?m)^\s*Build FAILED\.' -or
                       $boText -match 'Build/deploy failed after \d+ attempt' -or
-                      $boText -match 'Build or deployment failed') {
+                      $boText -match 'Build or deployment failed' -or
+                      $compileErrMatch.Success) {
                     $buildFailedCats += $cat
+                    if ($compileErrMatch.Success -and [string]::IsNullOrEmpty($buildFailedSampleError)) {
+                      $e = $compileErrMatch.Value.Trim()
+                      $m2 = [regex]::Match($e, 'error (?:RS|CS|MSB|NETSDK|CA|IL|APT|XA|NU|MT|AMM)\d{3,}:.*')
+                      if ($m2.Success) { $e = $m2.Value.Trim() }
+                      if ($e.Length -gt 240) { $e = $e.Substring(0, 240) + '…' }
+                      $buildFailedSampleError = ($e -replace '`', "'")
+                    }
                   } elseif ($boText -match 'Build and deploy completed' -or
                             $boText -match 'Running UI tests with category' -or
                             $boText -match 'Executing: dotnet test') {
@@ -2493,7 +2514,8 @@ stages:
                 Write-Host "Detected $($buildFailedCats.Count) build-failed deep categor(y/ies): $($buildFailedCats -join ', ')"
                 $bfList = '`' + ($buildFailedCats -join '`, `') + '`'
                 $bfCatText = if ($buildFailedCats.Count -eq 1) { "1 category ($bfList)" } else { "$($buildFailedCats.Count) categories ($bfList)" }
-                $buildFailedNote = "The HostApp failed to **compile** for $bfCatText, so those deep UI tests could not run. A compile failure here is frequently a **base-branch build break** rather than this PR — check the ``build-output.log`` in the ``drop-deep-uitests`` artifact. Once the build is fixed, re-run the review to execute these tests."
+                $bfErr = if ($buildFailedSampleError) { " The compiler reported: ``$buildFailedSampleError``." } else { '' }
+                $buildFailedNote = "The build failed to **compile** for $bfCatText, so those deep UI tests could not run.$bfErr This may be a **base-branch build break** or a compile error introduced by this PR — check the ``build-output.log`` in the ``drop-deep-uitests`` artifact. Once the build is fixed, re-run the review to execute these tests."
               }
 
               $interruptedNote = ''
