@@ -372,6 +372,14 @@ $pathToCategoryMap = @(
     @{ Pattern = 'src/Core/src/Handlers/HybridWebView';       Category = 'WebView' }
     @{ Pattern = 'src/Core/src/Platform/';                    Category = 'ViewBaseTests' }
     @{ Pattern = 'src/Core/src/Handlers/';                    Category = 'ViewBaseTests' }
+    # The animation infrastructure (PlatformTicker, Animatable, AnimationExtensions,
+    # etc.) drives EVERY animation, so a change here has broad blast radius but no
+    # Controls-level file to key off — without this a PR that only touches
+    # src/Core/src/Animations (e.g. #35846 Reduce-Motion accessibility on the ticker)
+    # detects NO category and the deep stage is SKIPPED, leaving the reviewer with
+    # zero UI-test coverage. Map it to the Animation category (5 tagged tests) so such
+    # PRs at least verify animations still run end-to-end.
+    @{ Pattern = 'src/Core/src/Animations/';                  Category = 'Animation' }
     @{ Pattern = 'src/Essentials/';                           Category = 'Essentials' }
     @{ Pattern = 'src/Controls/src/Core/Handlers/FlyoutPage'; Category = 'FlyoutPage' }
     @{ Pattern = 'src/Controls/src/Core/Handlers/TabbedPage'; Category = 'TabbedPage' }
