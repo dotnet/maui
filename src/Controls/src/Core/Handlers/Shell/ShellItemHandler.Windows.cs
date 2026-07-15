@@ -204,8 +204,28 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (currentItem?.Title != shellContent.Title && currentItem != shellContent.Parent)
 				{
 					(parentShell.CurrentItem as IShellItemController)?.ProposeSection(shellContent);
+					parentShell.CurrentItem = shellContent;
 				}
-				parentShell.CurrentItem = shellContent;
+				else if (shellContent.Parent is ShellSection existingSection && existingSection.CurrentItem != shellContent && existingSection.IsVisibleSection)
+				{
+					// Fire OnNavigatingFrom before CurrentItem changes, so it captures the correct outgoing page.
+					parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
+						ShellNavigationSource.ShellContentChanged,
+						parentShell.CurrentItem,
+						existingSection,
+						shellContent,
+						existingSection.Stack,
+						canCancel: false,
+						isAnimated: true);
+
+					// Set ShellSection.CurrentItem directly (using SetValueFromRenderer) to avoid
+					// re-triggering the mistimed-navigation bug via CreateFromShellContent.
+					existingSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);
+				}
+				else
+				{
+					parentShell.CurrentItem = shellContent;
+				}
 			}
 		}
 
@@ -344,7 +364,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.UpdateSearchHandlerBackground(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerHorizontalTextAlignment(_currentSearchHandler);
-					
+
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
 
 					autoSuggestBox.Visibility = _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
