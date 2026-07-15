@@ -72,12 +72,30 @@ if (-not (Test-Path $ProjectPath)) {
 
 $projectName = (Get-Item $ProjectPath).BaseName
 
+# The deep/gate builds compile the MAUI product (Core, Controls, ...) FROM SOURCE via
+# project references — unlike the main maui-pr-uitests pipeline, which builds the
+# HostApp against pre-built product PACKAGES. Building from source re-runs the
+# product's analyzers, and Directory.Build.props sets TreatWarningsAsErrors=true
+# repo-wide, so ANY PublicAPI bookkeeping gap in the PR — a public symbol missing from
+# PublicAPI.Unshipped.txt, or even a trivial 'IView' vs 'IView!' nullability mismatch —
+# surfaces as RS0016/RS0017: a *warning* elevated to a build-breaking *error*. The
+# HostApp then never builds, the UI tests can't run, and the review reports "no UI test
+# results" (observed on PR #34883 net10.0-windows: WindowsLifecycle.OnAppInstanceActivated
+# not in Core's PublicAPI.Unshipped.txt; and PR #36130: IView vs IView!). Main maui-pr
+# passes on the same commit because it never recompiles the product with the analyzer.
+# A PublicAPI declaration gap is bookkeeping, not a functional/runtime defect, and it is
+# already enforced as a REQUIRED check by the main maui-pr build — so for a UI-test build
+# whose only job is to run the app, we stop treating warnings as errors. Genuine compile
+# ERRORS (CS-level, a truly broken app) still fail the build; only warnings (including
+# the PublicAPI analyzer) stop blocking the app from building and running.
+$hostAppBuildProps = @("-p:TreatWarningsAsErrors=false")
+
 if ($Platform -eq "android") {
     #region Android Build and Deploy
     
     Write-Step "Building and deploying $projectName for Android..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run")
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -190,7 +208,7 @@ if ($Platform -eq "android") {
     #    turning the linker off removes the dependency on the newer device SDK
     #    headers and lets the build finish on any agent Xcode. This script is
     #    shared by the gate and deep stages, so both iOS paths stay resilient.
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false", "-p:MtouchLink=None")
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false", "-p:MtouchLink=None") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -315,7 +333,7 @@ if ($Platform -eq "android") {
     # above — MacCatalyst also builds through the Microsoft.MacCatalyst SDK and can
     # hit MT0180/IL1012 when the workload outpaces the agent's Xcode. See the iOS
     # block for the full rationale (PR #35892 review 4685252040).
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-p:ValidateXcodeVersion=false")
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -347,7 +365,7 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for Windows..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration) + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
