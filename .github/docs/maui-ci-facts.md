@@ -420,8 +420,9 @@ device tests fail, so a green `maui-pr-devicetests` check is trusted only when a
 was positively observed all-zero; absent that, it caps to `Needs human investigation`), or
 when a failure can be
 attributed **neither** way — not a clean regression vs base, not pre-existing on base, not a
-known issue (`gate.unattributedFailures > 0`; e.g. the base leg outcome was ambiguous, the
-base build was missing/unreadable, or a device-test result fell outside the deterministic
+known issue (`gate.unattributedFailures > 0`; e.g. the base leg was flaky, green on too few
+base samples to confirm a regression (`succeeded-on-base-unconfirmed`), the base build was
+missing/unreadable, or a device-test result fell outside the deterministic
 build-error class). A `pre-existing-on-base` or exact-match `known-issue` dismissal is also
 **refused** (downgraded to `indeterminate`) when the PR actually edits the failing test file
 (`scopeGuardTripped` — the PR may have changed the test so it now fails for a new reason that
