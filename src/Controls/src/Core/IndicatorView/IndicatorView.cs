@@ -235,13 +235,23 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		WeakNotifyCollectionChangedProxy _collectionChangedProxy;
+		NotifyCollectionChangedEventHandler _collectionChangedHandler;
+
+		~IndicatorView() => _collectionChangedProxy?.Unsubscribe();
+
 		void ResetItemsSource(IEnumerable oldItemsSource)
 		{
-			if (oldItemsSource is INotifyCollectionChanged oldCollection)
-				oldCollection.CollectionChanged -= OnCollectionChanged;
-
 			if (ItemsSource is INotifyCollectionChanged collection)
-				collection.CollectionChanged += OnCollectionChanged;
+			{
+				_collectionChangedProxy ??= new WeakNotifyCollectionChangedProxy();
+				_collectionChangedHandler ??= OnCollectionChanged;
+				_collectionChangedProxy.Subscribe(collection, _collectionChangedHandler);
+			}
+			else
+			{
+				_collectionChangedProxy?.Unsubscribe();
+			}
 
 			OnCollectionChanged(ItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
