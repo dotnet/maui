@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -105,6 +106,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			page.Content = new Label();
 
 			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public async Task ReplacingVisualStateGroupsDoesNotLeakVisualElement()
+		{
+			// A long-lived window that stays alive for the duration of the test.
+			var page = new ContentPage();
+
+			WeakReference weakElement;
+			Window window;
+			{
+				var label = new Label();
+
+				// Attach a VisualStateGroupList whose trigger subscribes to Window.SizeChanged
+				// (a strong event) and holds the VisualElement strongly. The groups must be set
+				// before the element is attached to a window so the trigger gets attached.
+				VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+				{
+					new VisualStateGroup
+					{
+						States =
+						{
+							new VisualState
+							{
+								Name = "Large",
+								StateTriggers = { new AdaptiveTrigger { MinWindowWidth = 300 } },
+							},
+						}
+					}
+				});
+
+				page.Content = label;
+				window = new Window { Page = page };
+
+				// Replace the groups while the element is attached to the window. The old
+				// trigger must be detached, otherwise it stays subscribed to Window.SizeChanged
+				// and keeps the VisualElement alive.
+				VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList());
+
+				// Remove the element from the tree so nothing else roots it.
+				page.Content = new Label();
+
+				weakElement = new WeakReference(label);
+			}
+
+			Assert.False(await weakElement.WaitForCollect(), "VisualElement should not be alive!");
+			GC.KeepAlive(window);
 		}
 	}
 }

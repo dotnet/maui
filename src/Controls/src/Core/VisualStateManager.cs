@@ -51,6 +51,21 @@ namespace Microsoft.Maui.Controls
 						}
 					}
 				}
+
+				// Detach the old triggers so they release their subscriptions (e.g. an
+				// AdaptiveTrigger's Window.SizeChanged handler), otherwise the old triggers
+				// keep the VisualElement alive after the groups are replaced.
+				foreach (var group in oldVisualStateGroupList)
+				{
+					foreach (var state in group.States)
+					{
+						foreach (var stateTrigger in state.StateTriggers)
+						{
+							stateTrigger.SendDetached();
+						}
+					}
+				}
+
 				oldVisualStateGroupList.VisualElement = null;
 			}
 
