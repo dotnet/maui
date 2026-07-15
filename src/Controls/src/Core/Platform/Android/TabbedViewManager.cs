@@ -803,23 +803,20 @@ internal class TabbedViewManager
     {
         try
         {
-            if (tab.Icon is not ImageSource icon)
-            {
-                return;
-            }
-
-            var result = await icon.GetPlatformImageAsync(_context);
-            if (result?.Value is not null && menuItem.IsAlive())
-            {
-                menuItem.SetIcon(result.Value);
-
+            // Route through BottomNavigationViewUtils.SetMenuItemIcon instead of loading
+            // the icon directly here. SetMenuItemIcon guards against a reused IMenuItem
+            // being repurposed (by SetupMenu) for a different tab while this load is still
+            // in flight -- without that guard, this call could win a race against a newer
+            // SetupMenu-driven icon load and overwrite the wrong tab's icon.
+            await BottomNavigationViewUtils.SetMenuItemIcon(
+                menuItem,
+                tab.Icon as ImageSource,
+                _context,
                 // Apply per-item icon tint after loading so that:
                 // 1. FontImageSource with explicit Color shows its own color (tint cleared)
                 // 2. FontImageSource without Color gets SelectedTabColor/UnselectedTabColor tint
                 // Without this, the global ItemIconTintList overrides baked-in colors.
-                var tabIndex = menuItem.ItemId;
-                SetupBottomNavigationViewIconColor(tabIndex, menuItem);
-            }
+                onIconLoaded: loadedMenuItem => SetupBottomNavigationViewIconColor(loadedMenuItem.ItemId, loadedMenuItem));
         }
         catch (Exception ex)
         {
