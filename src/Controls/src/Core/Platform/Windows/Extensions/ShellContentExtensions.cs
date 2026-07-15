@@ -2,8 +2,8 @@
 
 namespace Microsoft.Maui.Controls.Platform
 {
-    internal static class ShellContentExtensions
-    {
+	internal static class ShellContentExtensions
+	{
 		internal static void UpdateTitle(this ShellContent shellContent)
 		{
 			if (shellContent.Parent is ShellSection shellSection && shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
@@ -11,5 +11,5 @@ namespace Microsoft.Maui.Controls.Platform
 				shellItemHandler.UpdateTitle();
 			}
 		}
-    }
+	}
 }
