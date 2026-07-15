@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					(parentShell.CurrentItem as IShellItemController)?.ProposeSection(shellContent);
 					parentShell.CurrentItem = shellContent;
 				}
-				else if (shellContent.Parent is ShellSection existingSection && existingSection.CurrentItem != shellContent)
+				else if (shellContent.Parent is ShellSection existingSection && existingSection.CurrentItem != shellContent && existingSection.IsVisibleSection)
 				{
 					// Fire OnNavigatingFrom before CurrentItem changes, so it captures the correct outgoing page.
 					parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
