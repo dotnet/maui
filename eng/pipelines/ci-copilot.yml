@@ -1474,12 +1474,43 @@ stages:
                 sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.4 2>&1 \
                   || sudo xcodebuild -downloadPlatform iOS -buildVersion 23E244 2>&1 || true
 
-                # Re-select the newest installed Xcode for the BUILD step (belt-and-suspenders;
-                # the download commands above do not change the selected Xcode).
-                BUILD_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                # Select the BUILD Xcode to MATCH an INSTALLED simulator runtime. actool
+                # (asset-catalog compilation, part of every HostApp build) needs a simulator
+                # runtime matching the build SDK. The agents now ship Xcode 26.5 — a net11
+                # PREVIEW whose iphonesimulator SDK (23F73) has NO installable simulator
+                # runtime (Apple offers no matching download; only iOS 26.4 / 23E244 installs).
+                # So blindly selecting the NEWEST Xcode makes EVERY iOS deep category fail at
+                # build time with:
+                #   actool error: No simulator runtime version from ["23E244"] available to use
+                #   with iphonesimulator SDK version 23F73        (build 14664046 -> 0 iOS results)
+                # Instead pick the newest Xcode whose iOS simulator runtime is actually present,
+                # so actool finds its match. This is safe on the version front: build 14657467
+                # built the same net11 iOS HostApp with Xcode 26.0.1 (an OLDER Xcode with a
+                # matching runtime) and ran 46 real tests with NO MT0180 — the 26.5 pin was the
+                # regression, not a requirement. ValidateXcodeVersion=false (in the build command)
+                # skips the SDK's Xcode-version gate; the app also renders on 26.4, the OS the
+                # ios-26 visual baselines were captured on (PR #35061). Self-correcting: once an
+                # installable runtime exists for the newest Xcode, this selects it automatically.
+                AVAIL_RT_VER=$(xcrun simctl list runtimes available --json 2>/dev/null | jq -r '
+                  [.runtimes[] | select(.name | test("iOS")) | .version] | sort_by(split(".")|map(tonumber)) | last // empty')
+                BUILD_XCODE=""
+                if [ -n "$AVAIL_RT_VER" ]; then
+                  echo "Newest available iOS simulator runtime: $AVAIL_RT_VER"
+                  RT_MAJMIN=$(echo "$AVAIL_RT_VER" | cut -d. -f1,2)
+                  # exact major.minor match first (e.g. Xcode_26.4.app for runtime 26.4);
+                  # sort -V + last picks the newest patch if several are present.
+                  for cand in $(ls -d /Applications/Xcode_${RT_MAJMIN}*.app 2>/dev/null | sort -V); do
+                    [ -d "$cand" ] && BUILD_XCODE="$cand"
+                  done
+                fi
+                # Fall back to the newest installed Xcode if no runtime-matched Xcode was found.
+                if [ -z "$BUILD_XCODE" ]; then
+                  BUILD_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                fi
                 if [ -n "$BUILD_XCODE" ]; then
-                  echo "Selecting build Xcode: $BUILD_XCODE"
+                  echo "Selecting build Xcode (matches installed sim runtime ${AVAIL_RT_VER:-none}): $BUILD_XCODE"
                   sudo xcode-select -s "$BUILD_XCODE/Contents/Developer"
+                  xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null | sed 's/^/  build iphonesimulator SDK now: /'
                 fi
 
                 echo "=== Final runtimes ==="
