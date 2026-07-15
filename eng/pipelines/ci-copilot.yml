@@ -581,10 +581,19 @@ stages:
           - bash: |
               echo "=== Booting iOS Simulator ==="
               
-              # Prefer iOS 26 (main pipeline default), fallback to 18.x then 17.x
+              # Pin the RUN to iOS 26.4 — the OS the ios-26 visual baselines were captured
+              # on (PR #35061). The build SDK is newer (26.5, required by the net11 workload)
+              # and its matching runtime is installed only so actool can compile; the app
+              # runs fine on 26.4, and rendering on the baseline OS avoids spurious
+              # VerifyScreenshot diffs. Fall back to the newest iOS 26, then 18.x/17.x.
               RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                [.runtimes[] | select(.name | test("iOS 26"))] | sort_by(.version) | last | .identifier // empty
+                [.runtimes[] | select(.name | test("iOS 26\\.4"))] | sort_by(.version) | last | .identifier // empty
               ')
+              if [ -z "$RUNTIME" ]; then
+                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                  [.runtimes[] | select(.name | test("iOS 26"))] | sort_by(.version) | last | .identifier // empty
+                ')
+              fi
               if [ -z "$RUNTIME" ]; then
                 RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
                   [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
@@ -1419,43 +1428,54 @@ stages:
               retryCountOnTaskFailure: 3
               timeoutInMinutes: 15
 
-          # ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
-          # Download the iOS 26.4 simulator runtime so visual tests render against
-          # the same OS the baselines were captured on. NOTE: the sim runtime (26.4)
-          # is independent of the BUILD SDK — see the "Selecting build Xcode" block
-          # below, which pins the build to the newest Xcode the net11 workload needs.
+          # Install the iOS simulator runtimes the deep stage needs. Two runtimes matter:
+          #  1. The runtime matching the BUILD SDK (newest Xcode = 26.5). actool
+          #     (asset-catalog compilation, part of every HostApp build) requires a
+          #     simulator runtime that matches the build SDK. Building with Xcode 26.5
+          #     (iphonesimulator SDK 26.5 / 23F73) while only 26.0 + 26.4 runtimes are
+          #     installed makes EVERY iOS deep category fail at build time with
+          #       actool error: No simulator runtime version from ["23A343","23E244"]
+          #       available to use with iphonesimulator SDK version 23F73
+          #     -> zero iOS deep results (build 14663650). So we MUST install the
+          #     runtime matching the selected Xcode's SDK.
+          #  2. The iOS 26.4 runtime — the OS the ios-26 snapshot baselines were captured
+          #     on (PR #35061). The "Boot iOS Simulator" step pins the RUN to 26.4 for
+          #     pixel-accurate visual comparisons, so 26.4 must also be present.
           - ${{ if eq(parameters.Platform, 'ios') }}:
             - script: |
                 set -x
                 echo "=== Current runtimes ==="
                 xcrun simctl list runtimes
 
-                echo "=== Trying to install iOS 26.4 ==="
+                # The net11 Microsoft.iOS workload requires the iOS 26.5 SDK, so the
+                # HostApp must build with the newest installed Xcode (an older Xcode fails
+                # with error MT0180). Select it up-front so the SDK-version probe below
+                # reflects the Xcode the build will actually use.
                 LATEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
                 if [ -n "$LATEST_XCODE" ]; then
                   echo "Using $LATEST_XCODE"
                   sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
                 fi
 
-                # Attempt 1: download latest iOS platform (no version specified)
-                echo "--- Attempt 1: latest iOS ---"
-                sudo xcodebuild -downloadPlatform iOS 2>&1 || true
+                # (1) Install the runtime that MATCHES the build SDK so actool can compile
+                # the asset catalog. Probe the selected Xcode's iphonesimulator SDK version
+                # (e.g. 26.5) and download exactly that runtime — this is future-proof as the
+                # agents move to newer Xcodes.
+                SDK_VER=$(xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null)
+                echo "--- Selected Xcode iphonesimulator SDK version: $SDK_VER ---"
+                if [ -n "$SDK_VER" ]; then
+                  echo "--- Installing iOS $SDK_VER simulator runtime (matches build SDK) ---"
+                  sudo xcodebuild -downloadPlatform iOS -buildVersion "$SDK_VER" 2>&1 \
+                    || sudo xcodebuild -downloadPlatform iOS 2>&1 || true
+                fi
 
-                # Attempt 2: with universal architecture variant
-                echo "--- Attempt 2: iOS 26.4 universal ---"
-                sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.4 2>&1 || true
+                # (2) Install the iOS 26.4 runtime (baseline render OS — see Boot step).
+                echo "--- Installing iOS 26.4 simulator runtime (baseline render OS) ---"
+                sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.4 2>&1 \
+                  || sudo xcodebuild -downloadPlatform iOS -buildVersion 23E244 2>&1 || true
 
-                # Attempt 3: exact Apple build number
-                echo "--- Attempt 3: build 23E244 ---"
-                sudo xcodebuild -downloadPlatform iOS -buildVersion 23E244 2>&1 || true
-
-                # Select the NEWEST installed Xcode for the BUILD step. The net11
-                # Microsoft.iOS workload requires the iOS 26.5 SDK; restoring to an
-                # older REQUIRED_XCODE (e.g. 26.0.1) made the HostApp build fail with
-                # `error MT0180: requires the iOS 26.5 SDK` (build 14663118) -> zero iOS
-                # deep results. The app built with the 26.5 SDK still runs on the iOS
-                # 26.4 simulator (deployment target is far below iOS 26), so visual
-                # baselines are unaffected (rendering is decided by the sim runtime).
+                # Re-select the newest installed Xcode for the BUILD step (belt-and-suspenders;
+                # the download commands above do not change the selected Xcode).
                 BUILD_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
                 if [ -n "$BUILD_XCODE" ]; then
                   echo "Selecting build Xcode: $BUILD_XCODE"
@@ -1464,7 +1484,7 @@ stages:
 
                 echo "=== Final runtimes ==="
                 xcrun simctl list runtimes
-              displayName: 'Install iOS 26.4 simulator'
+              displayName: 'Install iOS simulator runtimes (build SDK + 26.4 baseline)'
               continueOnError: true
 
           # Catalyst (MacCatalyst) runs directly on the Mac host — no device needed.
