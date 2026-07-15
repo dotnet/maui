@@ -315,7 +315,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 <details>
 <summary><strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
 
-**Overall verdict:** [one or two sentences summarizing the strongest evidence — how many distinct failures are genuine regressions vs the base branch, and how many are pre-existing or flaky-on-base. Name the base branch (`main` / `net11.0`) and that several recent base builds were sampled.]
+**Overall verdict:** [one or two sentences summarizing the strongest evidence — how many distinct failures are genuine regressions vs the base branch, and how many are pre-existing or flaky-on-base. Name the base branch (`main` / `net11.0`) and how many recent base builds were actually sampled — use the real `baseSampleCount` (say "N recent base builds", or "the single readable base build" when only one); do not hard-code "several".]
 
 - **✗ PR-related** — [root-cause group label] (~[N] tests): [one sentence tying the group to the PR's changed area or a shared failure pattern; name at most ONE representative test in `code`].
 - **ℹ Uncertain** — [root-cause group label] (~[N] legs): [one sentence — unexplained build legs, aborted/canceled checks, unattributed, leg-only flaky-on-base, or device-test-unverified].
@@ -323,7 +323,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 
 **Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [abortedFailingChecks] aborted failing checks · [canceledBuildChecks] canceled-build checks · [deviceTestUnverified] device-test unverified · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason from gate.ceilingReasons when present].
 
-**Builds (this PR):** [build definition + ID links]. **Base sampling ([base branch], several recent builds per definition):** [recent base build ID links].
+**Builds (this PR):** [build definition + ID links]. **Base sampling ([base branch], [N] recent build(s) per definition — the actual `baseSampleCount`):** [recent base build ID links].
 
 ### Recommended action
 
