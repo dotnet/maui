@@ -454,6 +454,13 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			if (!HasDispatcher && value is not null)
+			{
+				var parentDispatcher = value.GetDispatcherIfAvailable()
+					?? value.TryFindDispatcher(includeParents: true);
+				SetDispatcherIfUnset(parentDispatcher);
+			}
+
 			OnPropertyChanging(nameof(Parent));
 
 			if (_parentOverride == null)

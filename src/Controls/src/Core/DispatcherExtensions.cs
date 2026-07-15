@@ -8,10 +8,19 @@ namespace Microsoft.Maui.Controls
 {
 	internal static class DispatcherExtensions
 	{
-		public static IDispatcher FindDispatcher(this BindableObject? bindableObject) =>
-			bindableObject.TryFindDispatcher(
-				includeParents: true)
-			?? throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
+		public static IDispatcher FindDispatcher(this BindableObject? bindableObject)
+		{
+			if (bindableObject.TryFindDispatcher(includeParents: true) is IDispatcher dispatcher)
+				return dispatcher;
+
+			if (bindableObject is not Application &&
+				Application.Current?.Dispatcher is IDispatcher appDispatcher)
+			{
+				return appDispatcher;
+			}
+
+			throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
+		}
 
 		internal static IDispatcher? TryFindDispatcher(
 			this BindableObject? bindableObject,
@@ -40,18 +49,11 @@ namespace Microsoft.Maui.Controls
 				TryFindApplicationDispatcher(app) is IDispatcher appDispatcher)
 				return appDispatcher;
 
-			// try looking on the static app
-			// We don't include Application because Application.Dispatcher will call
-			// `FindDispatcher` if it's _dispatcher property isn't initialized so this
-			// could cause a Stack Overflow Exception
+			// Try the static app's registered dispatcher without calling its Dispatcher
+			// property, which may throw. The public FindDispatcher path preserves that
+			// fallback after this non-throwing lookup returns null.
 			if (bindableObject is not Application && Application.Current is Application currentApp)
 			{
-				if (includeParents &&
-					currentApp.Dispatcher is IDispatcher currentAppDispatcher)
-				{
-					return currentAppDispatcher;
-				}
-
 				if (TryFindApplicationDispatcher(currentApp) is IDispatcher currentAppDispatcherService)
 					return currentAppDispatcherService;
 			}
