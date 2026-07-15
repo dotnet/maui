@@ -137,7 +137,9 @@ foreach ($package in $packageVersionMappings.GetEnumerator()) {
     $currentVersion = Get-VersionPropertyValue $currentVersionPropertyName
     $versionPropertyName = $currentVersionPropertyName
 
-    if ($n1PackageVersionMappings.ContainsKey($packageName) -and $currentVersion.Contains('-')) {
+    if (-not [string]::IsNullOrEmpty($currentVersion) -and
+        $n1PackageVersionMappings.ContainsKey($packageName) -and
+        $currentVersion.Contains('-')) {
         $versionPropertyName = $n1PackageVersionMappings[$packageName]
     }
 
