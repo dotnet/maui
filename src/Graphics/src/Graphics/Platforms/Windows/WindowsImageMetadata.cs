@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			try
 			{
 				var orientationProps = await decoder.BitmapProperties.GetPropertiesAsync(new[] { OrientationKey });
-				if (orientationProps.TryGetValue(OrientationKey, out var value) && value?.Value is ushort o)
+				if (orientationProps.TryGetValue(OrientationKey, out var value) && value is not null && value.Value is ushort o)
 					orientation = o;
 			}
 			catch
@@ -94,11 +95,13 @@ namespace Microsoft.Maui.Graphics.Platform
 		/// </summary>
 		public async Task ApplyToAsync(BitmapProperties encoderProperties)
 		{
-			var orientationEntry = new KeyValuePair<string, BitmapTypedValue>(
-				OrientationKey, new BitmapTypedValue(Orientation, PropertyType.UInt16));
+			// Build a native WinRT BitmapPropertySet (rather than a managed generic collection) so it can
+			// be marshalled across the WinRT ABI without requiring AOT/unsafe code generation.
+			var orientationValue = new BitmapTypedValue(Orientation, PropertyType.UInt16);
 
-			var toSet = new List<KeyValuePair<string, BitmapTypedValue>>(_properties.Count + 1) { orientationEntry };
-			toSet.AddRange(_properties);
+			var toSet = new BitmapPropertySet { { OrientationKey, orientationValue } };
+			foreach (var property in _properties)
+				toSet[property.Key] = property.Value;
 
 			try
 			{
@@ -110,7 +113,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				// If the full set is rejected, at least preserve the orientation.
 				try
 				{
-					await encoderProperties.SetPropertiesAsync(new[] { orientationEntry });
+					var orientationOnly = new BitmapPropertySet { { OrientationKey, orientationValue } };
+					await encoderProperties.SetPropertiesAsync(orientationOnly);
 				}
 				catch
 				{
