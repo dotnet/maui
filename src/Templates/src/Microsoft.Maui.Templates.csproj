@@ -40,6 +40,10 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <!-- This project has no .NET assemblies, so disable the warning for that -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <MicrosoftExtensionsTemplatePackageVersion>$(MicrosoftExtensionsPreviousPublishedPackageVersion)</MicrosoftExtensionsTemplatePackageVersion>
+    <MicrosoftExtensionsTemplatePackageVersion Condition="$(MicrosoftExtensionsLoggingDebugVersion.Contains('-'))">*</MicrosoftExtensionsTemplatePackageVersion>
+    <MicrosoftAspNetCoreTemplatePackageVersion>$(MicrosoftAspNetCorePreviousPublishedPackageVersion)</MicrosoftAspNetCoreTemplatePackageVersion>
+    <MicrosoftAspNetCoreTemplatePackageVersion Condition="$(MicrosoftAspNetCoreComponentsWebPackageVersion.Contains('-'))">*</MicrosoftAspNetCoreTemplatePackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -67,12 +71,10 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <BeforePack>_UpdateTemplateVersions;_UpdateTemplateDotFiles</BeforePack>
+    <BeforePack>TestDotNetPackageVersionSelection;_UpdateTemplateVersions;_UpdateTemplateDotFiles</BeforePack>
   </PropertyGroup>
 
-  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild"
-      Inputs="@(TemplateJsonInput)"
-      Outputs="%(TemplateJsonInput.IntermediateLocation)">
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild">
 
      <!-- Copy files to their output name -->
     <Copy
@@ -90,13 +92,62 @@
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
         MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE;MS_COMPONENTS_WEB_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE"
-        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsLoggingDebugVersion);$(MicrosoftAspNetCoreComponentsWebPackageVersion);$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion);$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)" />
+        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsTemplatePackageVersion);$(MicrosoftAspNetCoreTemplatePackageVersion);$(MicrosoftAspNetCoreTemplatePackageVersion);$(MicrosoftAspNetCoreTemplatePackageVersion)" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
       <Content Include="%(TemplateJsonInput.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateJsonInput.PackageDestination)" Pack="true" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="_GetDotNetPackageVersionSelection" Returns="@(_DotNetPackageVersionSelection)">
+    <ItemGroup>
+      <_DotNetPackageVersionSelection Include="Extensions=$(_MicrosoftExtensionsLoggingDebugVersion)" />
+      <_DotNetPackageVersionSelection Include="AspNetCore=$(_MicrosoftAspNetCoreComponentsWebPackageVersion)" />
+      <_DotNetPackageVersionSelection Include="Runtime=$(_SystemTextJsonPackageVersion)" />
+      <_DotNetPackageVersionSelection Include="TemplateExtensions=$([MSBuild]::Escape('$(MicrosoftExtensionsTemplatePackageVersion)'))" />
+      <_DotNetPackageVersionSelection Include="TemplateAspNetCore=$([MSBuild]::Escape('$(MicrosoftAspNetCoreTemplatePackageVersion)'))" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="TestDotNetPackageVersionSelection">
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="_GetDotNetPackageVersionSelection"
+        Properties="MicrosoftExtensionsPreviousPublishedPackageVersion=11.0.0-preview.6.26301.12;MicrosoftAspNetCorePreviousPublishedPackageVersion=11.0.0-preview.6.26301.12;MicrosoftNETCoreAppRefPreviousPublishedPackageVersion=11.0.0-preview.6.26301.12;MicrosoftExtensionsLoggingDebugVersion=11.0.0-preview.7.26351.4;MicrosoftAspNetCoreComponentsWebPackageVersion=11.0.0-preview.7.26351.4;MicrosoftNETCoreAppRefPackageVersion=11.0.0-preview.7.26351.4">
+      <Output TaskParameter="TargetOutputs" ItemName="_PreviewShippingVersions" />
+    </MSBuild>
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="_GetDotNetPackageVersionSelection"
+        Properties="UseLatestDotNetPackageVersions=true;MicrosoftExtensionsPreviousPublishedPackageVersion=11.0.0-preview.6.26301.12;MicrosoftAspNetCorePreviousPublishedPackageVersion=11.0.0-preview.6.26301.12;MicrosoftNETCoreAppRefPreviousPublishedPackageVersion=11.0.0-preview.6.26301.12;MicrosoftExtensionsLoggingDebugVersion=11.0.0-preview.7.26351.4;MicrosoftAspNetCoreComponentsWebPackageVersion=11.0.0-preview.7.26351.4;MicrosoftNETCoreAppRefPackageVersion=11.0.0-preview.7.26351.4">
+      <Output TaskParameter="TargetOutputs" ItemName="_PreviewTestVersions" />
+    </MSBuild>
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="_GetDotNetPackageVersionSelection"
+        Properties="MicrosoftExtensionsPreviousPublishedPackageVersion=10.0.0;MicrosoftAspNetCorePreviousPublishedPackageVersion=10.0.0;MicrosoftNETCoreAppRefPreviousPublishedPackageVersion=10.0.0;MicrosoftExtensionsLoggingDebugVersion=11.0.0-preview.1.26104.118;MicrosoftAspNetCoreComponentsWebPackageVersion=11.0.0-preview.1.26104.118;MicrosoftNETCoreAppRefPackageVersion=11.0.0-preview.1.26104.118">
+      <Output TaskParameter="TargetOutputs" ItemName="_FirstPreviewShippingVersions" />
+    </MSBuild>
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="_GetDotNetPackageVersionSelection"
+        Properties="MicrosoftExtensionsPreviousPublishedPackageVersion=11.0.0;MicrosoftAspNetCorePreviousPublishedPackageVersion=11.0.0;MicrosoftNETCoreAppRefPreviousPublishedPackageVersion=11.0.0;MicrosoftExtensionsLoggingDebugVersion=11.0.0;MicrosoftAspNetCoreComponentsWebPackageVersion=11.0.0;MicrosoftNETCoreAppRefPackageVersion=11.0.0">
+      <Output TaskParameter="TargetOutputs" ItemName="_StableShippingVersions" />
+    </MSBuild>
+    <Error
+        Condition="'@(_PreviewShippingVersions)' != 'Extensions=11.0.0-preview.6.26301.12;AspNetCore=11.0.0-preview.6.26301.12;Runtime=11.0.0-preview.6.26301.12;TemplateExtensions=*;TemplateAspNetCore=*'"
+        Text="Preview shipping package version selection failed: @(_PreviewShippingVersions)" />
+    <Error
+        Condition="'@(_PreviewTestVersions)' != 'Extensions=11.0.0-preview.7.26351.4;AspNetCore=11.0.0-preview.7.26351.4;Runtime=11.0.0-preview.7.26351.4;TemplateExtensions=*;TemplateAspNetCore=*'"
+        Text="Preview test package version selection failed: @(_PreviewTestVersions)" />
+    <Error
+        Condition="'@(_FirstPreviewShippingVersions)' != 'Extensions=10.0.0;AspNetCore=10.0.0;Runtime=10.0.0;TemplateExtensions=*;TemplateAspNetCore=*'"
+        Text="First preview shipping package version selection failed: @(_FirstPreviewShippingVersions)" />
+    <Error
+        Condition="'@(_StableShippingVersions)' != 'Extensions=11.0.0;AspNetCore=11.0.0;Runtime=11.0.0;TemplateExtensions=11.0.0;TemplateAspNetCore=11.0.0'"
+        Text="Stable shipping package version selection failed: @(_StableShippingVersions)" />
   </Target>
 
   <Target Name="_UpdateTemplateDotFiles"

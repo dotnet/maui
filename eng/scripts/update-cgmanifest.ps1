@@ -45,9 +45,9 @@ $packageVersionMappings = @{
     'coverlet.collector' = 'CoverletCollectorPackageVersion'
     
     # Microsoft Extensions packages
-    'Microsoft.Extensions.Logging.Debug' = 'MicrosoftExtensionsLoggingDebugVersion'
-    'Microsoft.Extensions.Configuration' = 'MicrosoftExtensionsConfigurationVersion'
-    'Microsoft.Extensions.DependencyInjection' = 'MicrosoftExtensionsDependencyInjectionVersion'
+    'Microsoft.Extensions.Logging.Debug' = 'MicrosoftExtensionsPreviousPublishedPackageVersion'
+    'Microsoft.Extensions.Configuration' = 'MicrosoftExtensionsPreviousPublishedPackageVersion'
+    'Microsoft.Extensions.DependencyInjection' = 'MicrosoftExtensionsPreviousPublishedPackageVersion'
     
     # Other packages
     'Microsoft.WindowsAppSDK' = 'MicrosoftWindowsAppSDKPackageVersion'

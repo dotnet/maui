@@ -35,11 +35,14 @@
     <MonoPackageVersion>10.0.100</MonoPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0</MicrosoftNETCoreAppRefPackageVersion>
-    <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
-    <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
+    <!-- Keep shipping references on the latest version already published publicly. During previews this is N-1; at GA it matches the current stable version. -->
+    <MicrosoftNETCoreAppRefPreviousPublishedPackageVersion>10.0.0</MicrosoftNETCoreAppRefPreviousPublishedPackageVersion>
+    <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPreviousPublishedPackageVersion)</SystemTextJsonPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPreviousPublishedPackageVersion)</SystemTextEncodingsWebPackageVersion>
+    <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPreviousPublishedPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
     <!-- Microsoft/Extensions -->
-    <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
+    <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPreviousPublishedPackageVersion)</SystemCodeDomPackageVersion>
+    <MicrosoftExtensionsPreviousPublishedPackageVersion>10.0.0</MicrosoftExtensionsPreviousPublishedPackageVersion>
     <MicrosoftExtensionsConfigurationVersion>10.0.0</MicrosoftExtensionsConfigurationVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0</MicrosoftExtensionsConfigurationAbstractionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>10.0.0</MicrosoftExtensionsConfigurationJsonVersion>
@@ -75,6 +78,7 @@
     <MicrosoftGraphicsWin2DPackageVersion>1.3.2</MicrosoftGraphicsWin2DPackageVersion>
     <MicrosoftWindowsWebView2PackageVersion>1.0.3179.45</MicrosoftWindowsWebView2PackageVersion>
     <!-- Everything else -->
+    <MicrosoftAspNetCorePreviousPublishedPackageVersion>10.0.0</MicrosoftAspNetCorePreviousPublishedPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>10.0.0</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>10.0.0</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
     <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>10.0.0</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>

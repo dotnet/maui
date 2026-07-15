@@ -6,6 +6,7 @@
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <MauiTestProject>true</MauiTestProject>
+    <UseLatestDotNetPackageVersions>true</UseLatestDotNetPackageVersions>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- On CI, build universal binaries for iOS/MacCatalyst to support both x64 and arm64 test agents -->

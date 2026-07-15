@@ -45,14 +45,14 @@
       <_VersionsToReplace Include="DotNetMauiManifestVersionBand" />
       <_VersionsToReplace Include="DotNetAndroidManifestVersionBand" />
       <_VersionsToReplace Include="DotNetMaciOSManifestVersionBand" />
-      <_VersionsToReplace Include="MicrosoftAspNetCoreAuthorizationPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsAnalyzersPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsFormsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebViewPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftAspNetCoreMetadataPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftAspNetCoreAuthorizationPackageVersion" PropertyName="MicrosoftAspNetCorePreviousPublishedPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsAnalyzersPackageVersion" PropertyName="MicrosoftAspNetCorePreviousPublishedPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsFormsPackageVersion" PropertyName="MicrosoftAspNetCorePreviousPublishedPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsPackageVersion" PropertyName="MicrosoftAspNetCorePreviousPublishedPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebPackageVersion" PropertyName="MicrosoftAspNetCorePreviousPublishedPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebViewPackageVersion" PropertyName="MicrosoftAspNetCorePreviousPublishedPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftAspNetCoreMetadataPackageVersion" PropertyName="MicrosoftAspNetCorePreviousPublishedPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" PropertyName="MicrosoftAspNetCorePreviousPublishedPackageVersion" />
       <_VersionsToReplace Include="MicrosoftWindowsAppSDKPackageVersion" />
       <_VersionsToReplace Include="MicrosoftWindowsSDKBuildToolsPackageVersion" />
       <_VersionsToReplace Include="MicrosoftGraphicsWin2DPackageVersion" />
@@ -62,7 +62,9 @@
       <_VersionsToReplace Include="AppiumXCUITestDriverVersion" />
       <_VersionsToReplace Include="AppiumMac2DriverVersion" />
       <_VersionsToReplace Include="AppiumUIAutomator2DriverVersion" />
-      <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
+      <_VersionsToReplace Update="@(_VersionsToReplace)">
+        <PropertyName Condition="'%(_VersionsToReplace.PropertyName)' == ''">%(_VersionsToReplace.Identity)</PropertyName>
+      </_VersionsToReplace>
       <_VersionsToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
       <_VersionsToReplace Include="MAUI_DOTNET_VERSION_MAJOR" PropertyName="_MauiDotNetVersionMajor" />
       <_VersionsToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
