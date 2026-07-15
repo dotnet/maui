@@ -143,7 +143,7 @@ code — CI reuse is unaffected because any job can shell out to the core's CLI.
   workflow or privacy contract.
 - **Output contract.** The Markdown report and JSON contract apply redaction to
   all dynamic strings, including session metadata and tool/skill identifiers.
-  Redaction also covers AWS keys, Azure DevOps access tokens/PATs, Slack tokens,
+  Redaction also covers AWS keys, current-format Azure DevOps PATs, Slack tokens,
   JWTs, and private-key blocks.
 - **Minimal quotes over dumps.** Digests prefer structural metrics + event turn
   IDs (with a stable assistant-turn fallback) + short redacted snippets; raw

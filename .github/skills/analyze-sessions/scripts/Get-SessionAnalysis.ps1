@@ -101,6 +101,7 @@ function Protect-Text {
     $t = [regex]::Replace($t, '(?i)\b((?:[A-Za-z0-9]+_)+(?:password|passwd|pwd|secret|token|accesstoken|pat|apikey|api[_-]?key)(?:_[A-Za-z0-9]+)*)(\s*[=:]\s*)\S+', '$1$2<redacted>')
     $t = [regex]::Replace($t, '(?i)[A-Za-z]:\\Users\\[^\\\s"'']+', 'C:\Users\<user>')
     $t = [regex]::Replace($t, '(?i)\b(?:AKIA|ASIA)[A-Z0-9]{16}\b', '<token>')
+    $t = [regex]::Replace($t, '\b[A-Za-z0-9]{76}AZDO[A-Za-z0-9]{4}\b', '<token>')
     $t = [regex]::Replace($t, '(?i)\bxox[baprs]-[A-Za-z0-9-]{10,}\b', '<token>')
     $t = [regex]::Replace($t, '(?is)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----', '<private-key>')
     $t = [regex]::Replace($t, '\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b', '<token>')
@@ -332,7 +333,7 @@ function Measure-Session {
         assistant_turns   = $assistantTurns
         tool_calls        = $toolCalls
         tool_failures     = [int]$raw.tool_failures
-        tool_failure_rate = if ($toolCalls -gt 0) { [math]::Round($raw.tool_failures / $toolCalls, 3) } else { 0 }
+        tool_failure_rate = if ($raw.tool_calls -gt 0) { [math]::Round($raw.tool_failures / $raw.tool_calls, 3) } else { 0 }
         retries           = [int]$raw.retries
         errors            = [int]$raw.errors
         aborts            = [int]$raw.aborts
