@@ -21,7 +21,7 @@ public class Issue33307 : _IssuesUITest
 		App.Tap("SelectSecondItem");
 		App.TapBackArrow();
 		App.Tap("Page1");
-		App.Tap("Delete");
+		App.Tap("DeleteItem");
 		App.TapBackArrow();
 		App.Tap("Page2");
 		App.WaitForElement("StatusLabel");
