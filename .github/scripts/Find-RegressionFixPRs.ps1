@@ -110,18 +110,25 @@ function Get-RegressedInLabels {
 }
 
 function Get-LinkedIssueNumbers {
-    # Issues a PR closes (Fixes/Closes/Resolves #N or bullet-list references).
-    # Regex mirrors Find-RegressionRisks.ps1 for consistency across the repo.
-    param([string]$PRBody)
+    # Issues a PR closes in the scanned repository. Cap expansion before issue
+    # contexts are fetched to keep the deterministic pre-pass bounded.
+    param(
+        [string]$PRBody,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui',
+        [ValidateRange(1, 100)][int]$MaxIssues = 10
+    )
     if (-not $PRBody) { return @() }
     if ($PRBody -is [array]) { $PRBody = $PRBody -join "`n" }
     $normalized = $PRBody -replace "`r`n", "`n"
     $set = New-Object 'System.Collections.Generic.HashSet[int]'
+    $issueUrl = 'https://github\.com/{0}/{1}/issues/' -f
+        [regex]::Escape($Owner), [regex]::Escape($Repo)
 
     $patterns = @(
-        '(?i)(?:Fix(?:es|ed)?|Close[sd]?|Resolve[sd]?)\s+(?:https://github\.com/[^/]+/[^/]+/issues/)?#?(\d+)',
+        ('(?i)(?:Fix(?:es|ed)?|Close[sd]?|Resolve[sd]?)\s+(?:{0})?#?(\d+)' -f $issueUrl),
         '(?m)^\s*-\s+#(\d+)\s*$',
-        '(?m)^\s*-\s+https://github\.com/[^/]+/[^/]+/issues/(\d+)\s*$'
+        ('(?m)^\s*-\s+{0}(\d+)\s*$' -f $issueUrl)
     )
     foreach ($pat in $patterns) {
         foreach ($m in [regex]::Matches($normalized, $pat)) {
@@ -131,7 +138,7 @@ function Get-LinkedIssueNumbers {
             }
         }
     }
-    return @($set)
+    return @($set | Sort-Object | Select-Object -First $MaxIssues)
 }
 
 function Get-IntroducingPrReferences {
@@ -224,9 +231,18 @@ function Test-HumanAttributionCandidateIsNew {
 function Invoke-GhJson {
     param([Parameter(Mandatory = $true)][string[]]$GhArgs)
     $raw = & gh @GhArgs 2>$null
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0) {
+        throw "GitHub CLI command failed with exit code ${exitCode}: $($GhArgs[0])"
+    }
     if (-not $raw) { return $null }
     if ($raw -is [array]) { $raw = $raw -join "`n" }
-    try { return $raw | ConvertFrom-Json } catch { return $null }
+    try {
+        return $raw | ConvertFrom-Json
+    }
+    catch {
+        throw "GitHub CLI returned invalid JSON for $($GhArgs[0]): $($_.Exception.Message)"
+    }
 }
 
 function Get-MergedRegressionFixPRs {
@@ -383,7 +399,7 @@ foreach ($pr in $fixPRs) {
 
     $fixNumber = [int]$pr.number
     $fixPrAssociation = Get-IssueAuthorAssociation -Owner $Owner -Repo $Repo -Number $fixNumber
-    $linkedIssues = Get-LinkedIssueNumbers $pr.body
+    $linkedIssues = Get-LinkedIssueNumbers -PRBody $pr.body -Owner $Owner -Repo $Repo
 
     # Keep only maintainer-authored editable bodies as attribution. The fix body
     # still drives linked-issue discovery above, regardless of author association.

@@ -50,6 +50,49 @@ Describe 'ConvertTo-GitHubNumber' {
     }
 }
 
+Describe 'Invoke-GhJson' {
+    BeforeEach {
+        $global:mockGhExitCode = 0
+        $global:mockGhOutput = $null
+        function global:gh {
+            param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
+            $global:LASTEXITCODE = $global:mockGhExitCode
+            if ($null -ne $global:mockGhOutput) {
+                Write-Output $global:mockGhOutput
+            }
+        }
+    }
+
+    AfterAll {
+        Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
+        Remove-Variable mockGhExitCode, mockGhOutput -Scope Global -ErrorAction SilentlyContinue
+    }
+
+    It 'returns parsed JSON when gh succeeds' {
+        $global:mockGhOutput = '{"number":35925}'
+
+        (Invoke-GhJson -GhArgs @('api', 'repos/dotnet/maui/issues/35925')).number | Should -Be 35925
+    }
+
+    It 'returns no result for a successful empty response' {
+        @(Invoke-GhJson -GhArgs @('api', 'repos/dotnet/maui/issues')).Count | Should -Be 0
+    }
+
+    It 'throws when gh exits unsuccessfully' {
+        $global:mockGhExitCode = 1
+
+        { Invoke-GhJson -GhArgs @('api', 'repos/dotnet/maui/issues') } |
+            Should -Throw '*exit code 1*'
+    }
+
+    It 'throws when gh returns invalid JSON' {
+        $global:mockGhOutput = '{not-json}'
+
+        { Invoke-GhJson -GhArgs @('api', 'repos/dotnet/maui/issues') } |
+            Should -Throw '*invalid JSON*'
+    }
+}
+
 Describe 'Test-IsRegressionLabel' {
     It 'matches the definitive fix-PR label' {
         Test-IsRegressionLabel 'i/regression' | Should -BeTrue
@@ -155,6 +198,21 @@ Describe 'Get-LinkedIssueNumbers' {
     It 'extracts full-URL closing references' {
         $body = 'Fixes https://github.com/dotnet/maui/issues/34910'
         Get-LinkedIssueNumbers $body | Should -Contain 34910
+    }
+    It 'matches full issue URLs only from the configured repository' {
+        Get-LinkedIssueNumbers 'Fixes https://github.com/other/repo/issues/123' |
+            Should -Not -Contain 123
+        Get-LinkedIssueNumbers 'Fixes https://github.com/other/repo/issues/123' -Owner other -Repo repo |
+            Should -Contain 123
+    }
+    It 'ignores cross-repository bullet-list URLs' {
+        @(Get-LinkedIssueNumbers '- https://github.com/other/repo/issues/123').Count |
+            Should -Be 0
+    }
+    It 'bounds and orders linked issue expansion' {
+        $body = "- #5`n- #3`n- #4"
+
+        @(Get-LinkedIssueNumbers $body -MaxIssues 2) | Should -Be @(3, 4)
     }
     It 'deduplicates repeated references' {
         (Get-LinkedIssueNumbers "Fixes #5`nfixes #5").Count | Should -Be 1
