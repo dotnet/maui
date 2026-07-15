@@ -265,7 +265,7 @@ internal static class LayoutFactory2
 				horizontalItemSpacing,
 				hasHeader,
 				hasFooter,
-				mainAxisSpacing > 0);
+				groupingInfo.IsGrouped && mainAxisSpacing > 0);
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
