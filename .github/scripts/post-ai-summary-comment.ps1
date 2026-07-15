@@ -166,14 +166,39 @@ function Add-MissingUITestResultsNote {
         return $Content
     }
 
-    $note = @'
+    # Tailor the guidance to the ACTUAL gate outcome (already present in $Content)
+    # instead of always blaming "the PR build failed (see the Gate section)". Only a
+    # FAILED gate means the PR build is the likely blocker. A gate that PASSED, was
+    # SKIPPED (no tests), or was INCONCLUSIVE means the PR build itself was fine — so
+    # the deep UI stage produced nothing because it was skipped or died on
+    # INFRASTRUCTURE (the merge-for-testing step, emulator/simulator boot, or an
+    # Appium hang), NOT because of this PR's code. Pointing the author at "fix the
+    # build/gate" in that case sends them down the wrong path (e.g. PR #36544, whose
+    # gate was SKIPPED and whose deep stage failed at the Windows autocrlf merge step).
+    $gateState = ''
+    if ($Content -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE)') {
+        $gateState = $Matches[1].ToUpperInvariant()
+    }
+
+    if ($gateState -eq 'FAILED') {
+        $note = @'
 
 > [!WARNING]
-> **No UI test results were produced for the detected categories.** The platform-pool run
-> returned no results — most often because the PR build failed (see the **Gate** section) or
-> the deep UI test stage was skipped. Fix the build/gate issues and comment `/review rerun`
+> **No UI test results were produced for the detected categories.** The PR build failed —
+> see the **Gate** section above for the error. Fix the build error and comment `/review rerun`
 > to get UI test results.
 '@
+    } else {
+        # PASSED / SKIPPED / INCONCLUSIVE / unknown → the PR build was not the blocker.
+        $note = @'
+
+> [!WARNING]
+> **No UI test results were produced for the detected categories.** The PR build itself was
+> fine — the deep UI stage was skipped or interrupted on **infrastructure** (the
+> merge-for-testing step, emulator/simulator boot, or an Appium hang), not by this PR's code.
+> This is usually transient; comment `/review rerun` to try again.
+'@
+    }
     return ($Content.TrimEnd() + [Environment]::NewLine + $note)
 }
 

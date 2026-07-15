@@ -132,6 +132,34 @@ Describe 'Add-MissingUITestResultsNote' {
         $result | Should -Match 'Detected UI test categories'
     }
 
+    It 'blames the PR build only when the gate FAILED' {
+        $content = '### Gate Result: ❌ FAILED' + [Environment]::NewLine +
+            '**Detected UI test categories:** `Picker`'
+        $result = Add-MissingUITestResultsNote -Content $content
+        $result | Should -Match 'No UI test results were produced'
+        $result | Should -Match 'The PR build failed'
+        $result | Should -Match 'Fix the build'
+    }
+
+    It 'points at infrastructure (not the build) when the gate was SKIPPED' {
+        $content = '### Gate Result: ⚠️ SKIPPED' + [Environment]::NewLine +
+            '**Detected UI test categories:** `ViewBaseTests,WebView`'
+        $result = Add-MissingUITestResultsNote -Content $content
+        $result | Should -Match 'No UI test results were produced'
+        $result | Should -Match 'infrastructure'
+        $result | Should -Match '/review rerun'
+        # Must NOT mislead the author into "fixing the build" when the gate was skipped.
+        $result | Should -Not -Match 'Fix the build error'
+    }
+
+    It 'points at infrastructure (not the build) when the gate PASSED' {
+        $content = '### Gate Result: ✅ PASSED' + [Environment]::NewLine +
+            '**Detected UI test categories:** `Button`'
+        $result = Add-MissingUITestResultsNote -Content $content
+        $result | Should -Match 'infrastructure'
+        $result | Should -Not -Match 'The PR build failed'
+    }
+
     It 'does NOT annotate when deep results are present' {
         $content = "**Detected UI test categories:** ``Picker``" + [Environment]::NewLine +
             '✅ **Deep UI tests** — 12 passed, 0 failed across 1 category on platform-pool agent.'
