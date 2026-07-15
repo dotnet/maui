@@ -32,9 +32,10 @@ reader for Copilot CLI `events.jsonl` (also Claude Code sessions and `waza` eval
 transcripts). It is the **normalization layer** — we wrap it rather than maintain
 our own JSONL parser.
 
-- Zero-install: `dnx --yes dotnet-replay …`. Or `dotnet tool install -g
-  dotnet-replay` → `replay …`. The core auto-resolves whichever is available and
-  accepts a `-ReplayCommand` override.
+- Zero-install: `dnx --yes dotnet-replay@0.9.1 …`. Or `dotnet tool install -g
+  dotnet-replay` → `replay …`. The core uses the pinned fallback when it resolves
+  a download itself. A preinstalled tool or `-ReplayCommand` is intentionally
+  caller-controlled.
 - **Primary extraction:** `replay <events.jsonl> --summary --json` → clean
   per-session stats: `duration_seconds`, turn counts (`user`/`assistant`/
   `tool_calls`), a `tools_used` histogram, `skills_invoked`, and `errors`.
@@ -138,8 +139,12 @@ code — CI reuse is unaffected because any job can shell out to the core's CLI.
 - **Redaction on by default.** Home paths → `~`, tokens (`ghp_`/`gho_`/`Bearer`/
   `password=`/`key=`), and emails are stripped from the report **and** must stay
   stripped in any emitted eval. `-NoRedact` exists only for local debugging.
-- **Minimal quotes over dumps.** Digests prefer structural metrics + exact turn
-  indices + short redacted snippets; raw transcripts are not re-emitted.
+- **Output contract.** The Markdown report and JSON contract apply redaction to
+  all dynamic strings, including session metadata and tool/skill identifiers.
+  Redaction also covers AWS keys, Slack tokens, JWTs, and private-key blocks.
+- **Minimal quotes over dumps.** Digests prefer structural metrics + event turn
+  IDs (with a stable assistant-turn fallback) + short redacted snippets; raw
+  transcripts are not re-emitted.
 - **Cross-machine sharing is explicit, manual, opt-in.** Any gist / Kusto /
   dashboard path requires the user to ask, shares only the redacted report, and
   is never automated.

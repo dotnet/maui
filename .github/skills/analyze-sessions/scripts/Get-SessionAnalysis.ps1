@@ -27,8 +27,8 @@
 
     PRIVACY: local-only. Reads ~/.copilot/... and the paths you pass; writes a
     report to -OutputDir. It NEVER uploads, shares, or posts anything. All
-    free-text in the report is redacted (home paths, tokens, emails) unless
-    -NoRedact is passed.
+    dynamic strings in the Markdown report and JSON contract are redacted (home
+    paths, tokens, emails) unless -NoRedact is passed.
 
 .EXAMPLE
     ./Get-SessionAnalysis.ps1 -Last 10 -Top 5 -OutputDir ./out
@@ -96,6 +96,11 @@ function Protect-Text {
     if ($NoRedact) { return $Text }
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
     $t = $Text
+    $t = [regex]::Replace($t, '(?i)[A-Za-z]:\\Users\\[^\\\s"'']+', 'C:\Users\<user>')
+    $t = [regex]::Replace($t, '(?i)\b(?:AKIA|ASIA)[A-Z0-9]{16}\b', '<token>')
+    $t = [regex]::Replace($t, '(?i)\bxox[baprs]-[A-Za-z0-9-]{10,}\b', '<token>')
+    $t = [regex]::Replace($t, '(?is)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----', '<private-key>')
+    $t = [regex]::Replace($t, '\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b', '<token>')
     # Home directory and user home paths.
     if ($HOME) { $t = $t.Replace($HOME, '~') }
     $t = [regex]::Replace($t, '/Users/[^/\s"'']+', '/Users/<user>')
@@ -113,7 +118,7 @@ function Protect-Text {
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Resolve a dotnet-replay invoker. Prefer `replay` on PATH, then the global tool
-# location, then `dnx dotnet-replay`. Returns a scriptblock taking string args,
+# location, then a pinned `dnx dotnet-replay`. Returns a scriptblock taking string args,
 # or $null if none is available (the raw scan then computes equivalent fields).
 # ─────────────────────────────────────────────────────────────────────────────
 function Resolve-ReplayInvoker {
@@ -132,11 +137,19 @@ function Resolve-ReplayInvoker {
     $toolPath = Join-Path $HOME '.dotnet/tools/replay'
     if (Test-Path $toolPath) { return { param($CmdArgs) & $toolPath @CmdArgs } }
     if (Get-Command 'dnx' -ErrorAction SilentlyContinue) {
-        return { param($CmdArgs) & 'dnx' '--yes' 'dotnet-replay' @CmdArgs }
+        return { param($CmdArgs) & 'dnx' '--yes' 'dotnet-replay@0.9.1' @CmdArgs }
     }
     return $null
 }
 $script:ReplayInvoker = Resolve-ReplayInvoker
+
+function Get-TurnReference {
+    param($Event, $Data, [string]$Fallback)
+    $turn = Get-Prop $Data 'turnId'
+    if ([string]::IsNullOrWhiteSpace([string]$turn)) { $turn = Get-Prop $Event 'turnId' }
+    if ([string]::IsNullOrWhiteSpace([string]$turn)) { return $Fallback }
+    return [string]$turn
+}
 
 function Get-ReplaySummary {
     param([string]$File)
@@ -168,6 +181,7 @@ function Get-RawScan {
         first_user_prompt = $null
     }
     $callNames = @{}                 # toolCallId -> toolName
+    $callTurns = @{}                 # toolCallId -> event turn ID or assistant-turn fallback
     $seenInvocations = @{}           # "tool|argshash" -> count  (retry detection: bash/edit)
 
     foreach ($line in [System.IO.File]::ReadLines($File)) {
@@ -206,7 +220,10 @@ function Get-RawScan {
                     if ($r.tool_histogram.ContainsKey($name)) { $r.tool_histogram[$name]++ }
                     else { $r.tool_histogram[$name] = 1 }
                     $tcid = Get-Prop $d 'toolCallId'
-                    if ($tcid) { $callNames[[string]$tcid] = $name }
+                    if ($tcid) {
+                        $callNames[[string]$tcid] = $name
+                        $callTurns[[string]$tcid] = Get-TurnReference -Event $e -Data $d -Fallback ([string]$r.assistant_turns)
+                    }
                     $argsObj = Get-Prop $d 'arguments'
                     if ($name -in @('bash', 'edit')) {
                         $argsJson = if ($null -ne $argsObj) { ($argsObj | ConvertTo-Json -Depth 10 -Compress) } else { '' }
@@ -227,7 +244,9 @@ function Get-RawScan {
                     $r.tool_failures++
                     $tcid = Get-Prop $d 'toolCallId'
                     $nm = if ($tcid -and $callNames.ContainsKey([string]$tcid)) { $callNames[[string]$tcid] } else { '<tool>' }
-                    $r.failed_tool_events.Add([ordered]@{ turn = (Get-Prop $d 'turnId'); tool = $nm })
+                    $fallback = if ($tcid -and $callTurns.ContainsKey([string]$tcid)) { $callTurns[[string]$tcid] } else { [string]$r.assistant_turns }
+                    $turn = Get-TurnReference -Event $e -Data $d -Fallback $fallback
+                    $r.failed_tool_events.Add([ordered]@{ turn = $turn; tool = $nm })
                 }
             }
             'skill.invoked' {
@@ -371,12 +390,12 @@ function Select-Sessions {
 function New-Digest {
     param($M, [int]$Rank)
     $sb = [System.Text.StringBuilder]::new()
-    $shortId = if ($M.id) { ($M.id -split '-')[0] } else { 'unknown' }
+    $shortId = if ($M.id) { (Protect-Text ([string]($M.id -split '-')[0])) } else { 'unknown' }
     [void]$sb.AppendLine("### #$Rank · session ``$shortId`` · score $($M.score)")
     [void]$sb.AppendLine()
     [void]$sb.AppendLine("| metric | value |")
     [void]$sb.AppendLine("|---|---|")
-    [void]$sb.AppendLine("| model | $($M.model) |")
+    [void]$sb.AppendLine("| model | $(Protect-Text ([string]$M.model)) |")
     [void]$sb.AppendLine("| duration (s) | $($M.duration_seconds) |")
     [void]$sb.AppendLine("| turns (user/assistant) | $($M.user_turns) / $($M.assistant_turns) |")
     [void]$sb.AppendLine("| tool calls | $($M.tool_calls) |")
@@ -389,14 +408,15 @@ function New-Digest {
     [void]$sb.AppendLine()
 
     if ($M.skills_invoked -and @($M.skills_invoked).Count -gt 0) {
-        [void]$sb.AppendLine("**Skills:** $((@($M.skills_invoked)) -join ', ')")
+        $skills = @($M.skills_invoked | ForEach-Object { Protect-Text ([string]$_) }) -join ', '
+        [void]$sb.AppendLine("**Skills:** $skills")
         [void]$sb.AppendLine()
     }
 
     $th = $M.tool_histogram
     if ($th -and $th.Keys.Count -gt 0) {
         $top = $th.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 8 |
-            ForEach-Object { "$($_.Key)×$($_.Value)" }
+            ForEach-Object { "$(Protect-Text ([string]$_.Key))×$($_.Value)" }
         [void]$sb.AppendLine("**Tool mix:** $($top -join ' · ')")
         [void]$sb.AppendLine()
     }
@@ -418,7 +438,7 @@ function New-Digest {
     if ($M.failed_tool_events -and @($M.failed_tool_events).Count -gt 0) {
         [void]$sb.AppendLine("**Failed tool calls (first 15):**")
         foreach ($fe in (@($M.failed_tool_events) | Select-Object -First 15)) {
-            [void]$sb.AppendLine("- turn ``$($fe.turn)`` — ``$($fe.tool)`` failed")
+            [void]$sb.AppendLine("- turn ``$(Protect-Text ([string]$fe.turn))`` — ``$(Protect-Text ([string]$fe.tool))`` failed")
         }
         [void]$sb.AppendLine()
     }
@@ -444,13 +464,13 @@ foreach ($s in $sessions) {
 
 $ranked = @($measured | Sort-Object -Descending -Property @{ Expression = { [double]$_.score } })
 
-# Build the JSON contract (redact the free-text fields embedded in it).
+# Build the JSON contract. Any string derived from events or inputs is redacted.
 $jsonSessions = foreach ($m in $ranked) {
     [ordered]@{
-        id                = $m.id
-        repository        = $m.repository
-        branch            = $m.branch
-        model             = $m.model
+        id                = Protect-Text ([string]$m.id)
+        repository        = Protect-Text ([string]$m.repository)
+        branch            = Protect-Text ([string]$m.branch)
+        model             = Protect-Text ([string]$m.model)
         score             = $m.score
         duration_seconds  = $m.duration_seconds
         user_turns        = $m.user_turns
@@ -464,13 +484,13 @@ $jsonSessions = foreach ($m in $ranked) {
         truncations       = $m.truncations
         subagent_failures = $m.subagent_failures
         output_tokens     = $m.output_tokens
-        skills_invoked    = @($m.skills_invoked)
+        skills_invoked    = @($m.skills_invoked | ForEach-Object { Protect-Text ([string]$_) })
         replay_used       = $m.replay_used
     }
 }
 $contract = [ordered]@{
     generated_at  = (Get-Date).ToUniversalTime().ToString('o')
-    repository    = $Repository
+    repository    = Protect-Text $Repository
     redacted      = (-not $NoRedact)
     weights       = $script:Weights
     session_count = $ranked.Count
@@ -483,7 +503,7 @@ $reportPath = Join-Path $OutputDir 'session-analysis.md'
 $md = [System.Text.StringBuilder]::new()
 [void]$md.AppendLine('# Copilot CLI session analysis')
 [void]$md.AppendLine()
-[void]$md.AppendLine("Generated: $($contract.generated_at) · repository: ``$Repository`` · sessions analyzed: $($ranked.Count) · redacted: $(-not $NoRedact)")
+[void]$md.AppendLine("Generated: $($contract.generated_at) · repository: ``$($contract.repository)`` · sessions analyzed: $($ranked.Count) · redacted: $(-not $NoRedact)")
 [void]$md.AppendLine()
 [void]$md.AppendLine('## Ranking (worst / most expensive first)')
 [void]$md.AppendLine()
@@ -492,7 +512,7 @@ $md = [System.Text.StringBuilder]::new()
 $rank = 0
 foreach ($m in $ranked) {
     $rank++
-    $shortId = if ($m.id) { ($m.id -split '-')[0] } else { 'unknown' }
+    $shortId = if ($m.id) { (Protect-Text ([string]($m.id -split '-')[0])) } else { 'unknown' }
     [void]$md.AppendLine("| $rank | ``$shortId`` | $($m.score) | $($m.tool_failures) | $($m.retries) | $($m.errors)/$($m.aborts) | $($m.truncations) | $($m.output_tokens) | $($m.tool_calls) | $($m.assistant_turns) | $($m.duration_seconds) |")
 }
 [void]$md.AppendLine()

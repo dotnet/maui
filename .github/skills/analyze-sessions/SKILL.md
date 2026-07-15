@@ -15,7 +15,7 @@ description: >-
 metadata:
   author: dotnet-maui
   version: "1.0"
-compatibility: Requires pwsh 7+, sqlite3, and dotnet-replay (auto-resolved via dnx)
+compatibility: Requires pwsh 7+, sqlite3, and dotnet-replay (auto-resolved with pinned dnx v0.9.1 fallback)
 ---
 
 # Analyze Sessions
@@ -85,7 +85,8 @@ local DB select entirely. See `references/design-rationale.md`.
 
 1. **Ranked report** (`session-analysis.md`) — sessions ordered worst-first by a
    transparent cost/pain score, plus a redacted digest per worst session (intent
-   flow, tool histogram, failure events with **exact turn indices**).
+   flow, tool histogram, failure events with event turn IDs (or a stable
+   assistant-turn fallback).
 2. **JSON contract** (`session-analysis.json`) — machine-readable per-session
    metrics + ranking (also emitted to stdout with `-Json`).
 3. **Failure-mode analysis** — your rubric tags + clusters with frequency.
@@ -120,8 +121,10 @@ pwsh -NoProfile -File .github/skills/analyze-sessions/scripts/Get-SessionAnalysi
 ```
 
 > `dotnet-replay` is resolved automatically: if `replay` is on `PATH` it's used,
-> otherwise the core falls back to `dnx --yes dotnet-replay`. Override with
+> otherwise the core falls back to `dnx --yes dotnet-replay@0.9.1`. Override with
 > `-ReplayCommand` if needed.
+> A preinstalled `replay` command or explicit `-ReplayCommand` remains under the
+> caller's version control; only the automatic download fallback is pinned.
 
 **Scoring (transparent, in the core's `$Weights`):** higher = more pain/cost.
 `2·tool_failures + 1.5·retries + 5·(errors+aborts) + 3·truncations +
@@ -233,6 +236,9 @@ npx -y @microsoft/vally-cli@0.6.0 lint --eval-spec <path-to-eval> --strict
   `Bearer`/`password=`/`key=`), and emails are stripped from the report **and**
   must stay stripped in any emitted eval. `-NoRedact` exists only for local
   debugging — never use it for anything that leaves your machine.
+- **Output contract.** The Markdown report and JSON contract apply redaction to
+  all dynamic strings, including session metadata and tool/skill identifiers.
+  Redaction also covers AWS keys, Slack tokens, JWTs, and private-key blocks.
 - **The judge is you.** Tagging/clustering happen in your own Copilot session.
   Do not paste transcripts into any external tool.
 - **Cross-machine sharing is opt-in and manual.** If the user explicitly asks to
