@@ -106,11 +106,11 @@ function Get-IntroducingPrReferences {
     if ($Text -is [array]) { $Text = $Text -join "`n" }
 
     $patterns = @(
-        '(?i)regress(?:ion|ed)?\s+(?:from|in|introduced\s+in|caused\s+by)\s+(?:PR\s*)?#?(\d+)',
-        '(?i)introduced\s+(?:by|in)\s+(?:PR\s*)?#?(\d+)',
-        '(?i)caused\s+by\s+(?:PR\s*)?#?(\d+)',
-        '(?i)broke(?:n)?\s+(?:in|by)\s+(?:PR\s*)?#?(\d+)',
-        '(?i)regress(?:ed|ion)\s+(?:by)\s+(?:PR\s*)?#?(\d+)'
+        '(?i)regress(?:ion|ed)?\s+(?:from|in|introduced\s+in|caused\s+by)\s+(?:PR\s*#?|#)(\d+)',
+        '(?i)introduced\s+(?:by|in)\s+(?:PR\s*#?|#)(\d+)',
+        '(?i)caused\s+by\s+(?:PR\s*#?|#)(\d+)',
+        '(?i)broke(?:n)?\s+(?:in|by)\s+(?:PR\s*#?|#)(\d+)',
+        '(?i)regress(?:ed|ion)\s+(?:by)\s+(?:PR\s*#?|#)(\d+)'
     )
 
     $ordered = New-Object System.Collections.Generic.List[int]
@@ -165,18 +165,19 @@ function Get-MergedRegressionFixPRs {
     param([string]$Owner, [string]$Repo, [int]$LookbackDays, [int]$Limit)
     $since = (Get-Date).ToUniversalTime().AddDays(-[Math]::Abs($LookbackDays)).ToString('yyyy-MM-dd')
     $search = "is:merged label:i/regression merged:>=$since"
-    return Invoke-GhJson -GhArgs @(
+    $prs = Invoke-GhJson -GhArgs @(
         'pr', 'list', '--repo', "$Owner/$Repo",
         '--state', 'merged', '--search', $search, '--limit', "$Limit",
-        '--json', 'number,title,body,labels,mergedAt,mergeCommit'
+        '--json', 'number,body,mergeCommit'
     )
+    return @($prs | Where-Object { $null -ne $_ })
 }
 
 function Get-IssueContext {
     param([string]$Owner, [string]$Repo, [int]$Number, [int]$MaxComments = 20)
     $issue = Invoke-GhJson -GhArgs @(
         'issue', 'view', "$Number", '--repo', "$Owner/$Repo",
-        '--json', 'number,title,body,labels'
+        '--json', 'number,body,labels'
     )
     if (-not $issue) { return $null }
     $commentText = ''
@@ -197,29 +198,26 @@ function Get-IntroducingPrDetails {
     param([string]$Owner, [string]$Repo, [int]$Number)
     $pr = Invoke-GhJson -GhArgs @(
         'pr', 'view', "$Number", '--repo', "$Owner/$Repo",
-        '--json', 'number,title,mergeCommit,files'
+        '--json', 'number,mergeCommit'
     )
     if (-not $pr) { return $null }
     $sha = if ($pr.mergeCommit -and $pr.mergeCommit.oid) { $pr.mergeCommit.oid } else { $null }
-    $files = @($pr.files | ForEach-Object { $_.path } | Where-Object { $_ })
     return [PSCustomObject]@{
         Number      = $pr.number
-        Title       = [string]$pr.title
         MergeCommit = $sha
-        Files       = $files
     }
 }
 
 function New-RegressionCandidate {
-    # Assembles one candidate record for candidates.json. Extracted from the main
-    # loop so the exact emitted shape is unit-testable.
+    # Assembles normalized, structural candidate context for the agent. Fetched
+    # titles and file paths are deliberately excluded so the prompt never embeds
+    # untrusted prose or path text; the agent can inspect the introducing PR by ID.
     # IMPORTANT: regressionIssues is materialized with .ToArray(). Wrapping a generic
     # List[object] with @(...) inside a [PSCustomObject] literal throws "Argument
     # types do not match", so the naive @($regressionIssues) form is a trap — keep
     # .ToArray() here (see Find-RegressionFixPRs.Tests.ps1 for the regression test).
     param(
         [int]$FixPr,
-        [string]$FixPrTitle,
         $FixPrMergeCommit,
         [System.Collections.Generic.List[object]]$RegressionIssues = (New-Object 'System.Collections.Generic.List[object]'),
         $IntroducingPr,
@@ -229,13 +227,10 @@ function New-RegressionCandidate {
     )
     return [PSCustomObject]@{
         fixPr                    = $FixPr
-        fixPrTitle               = $FixPrTitle
         fixPrMergeCommit         = $FixPrMergeCommit
         regressionIssues         = $RegressionIssues.ToArray()
         introducingPr            = $IntroducingPr
-        introducingPrTitle       = if ($IntroDetails) { $IntroDetails.Title } else { $null }
         introducingPrMergeCommit = if ($IntroDetails) { $IntroDetails.MergeCommit } else { $null }
-        introducingPrFiles       = if ($IntroDetails) { @($IntroDetails.Files) } else { @() }
         attributionSource        = $AttributionSource
         needsHumanAttribution    = $NeedsHumanAttribution
     }
@@ -316,7 +311,6 @@ foreach ($pr in $fixPRs) {
     $fixMergeOid = if ($pr.mergeCommit) { $pr.mergeCommit.oid } else { $null }
     $candidate = New-RegressionCandidate `
         -FixPr $fixNumber `
-        -FixPrTitle ([string]$pr.title) `
         -FixPrMergeCommit $fixMergeOid `
         -RegressionIssues $regressionIssues `
         -IntroducingPr $introducingPr `
