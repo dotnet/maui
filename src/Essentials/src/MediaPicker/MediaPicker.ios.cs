@@ -380,13 +380,16 @@ namespace Microsoft.Maui.Media
 
 				if (img is not null)
 				{
-					// Apply rotation if needed for the UIImage
-					if (ImageProcessor.IsRotationNeeded(options) && img.Orientation != UIImageOrientation.Up)
-					{
-						img = img.NormalizeOrientation();
-					}
+					// A captured UIImage is processed entirely in memory through the shared Graphics
+					// pipeline (see CompressedUIImageFileResult); there is no source file to preserve.
+					var processingOptions = new ImageProcessingOptions(
+						options?.MaximumWidth,
+						options?.MaximumHeight,
+						options?.CompressionQuality ?? 100,
+						options?.RotateImage ?? false,
+						PreserveMetadata: false);
 
-					return new CompressedUIImageFileResult(img, null, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
+					return new CompressedUIImageFileResult(img, null, processingOptions);
 				}
 			}
 
@@ -619,104 +622,41 @@ namespace Microsoft.Maui.Media
 	class CompressedUIImageFileResult : FileResult
 	{
 		readonly UIImage uiImage;
-		readonly int? maximumWidth;
-		readonly int? maximumHeight;
-		readonly int compressionQuality;
-		readonly string originalFileName;
-		NSData data;
+		readonly ImageProcessingOptions options;
+		readonly Microsoft.Maui.Graphics.ImageFormat format;
+		byte[] data;
 
-		internal CompressedUIImageFileResult(UIImage image, string originalFileName = null, int? maximumWidth = null, int? maximumHeight = null, int compressionQuality = 100)
+		internal CompressedUIImageFileResult(UIImage image, string originalFileName, ImageProcessingOptions options)
 			: base()
 		{
 			uiImage = image;
-			this.originalFileName = originalFileName;
-			this.maximumWidth = maximumWidth;
-			this.maximumHeight = maximumHeight;
-			this.compressionQuality = Math.Max(0, Math.Min(100, compressionQuality));
+			this.options = options;
 
-			// Determine output format: preserve PNG when appropriate, otherwise use JPEG
-			var extension = ShouldUsePngFormat() ? FileExtensions.Png : FileExtensions.Jpg;
+			// Deterministic output container: PNG stays PNG, everything else becomes JPEG (matching the
+			// shared Graphics processor). A captured photo has no original name, so it becomes JPEG.
+			format = ImageProcessor.GetOutputFormat(originalFileName);
+			var extension = ImageProcessor.GetOutputExtension(format);
 			FullPath = Guid.NewGuid().ToString() + extension;
 			FileName = FullPath;
+			ContentType = format == Microsoft.Maui.Graphics.ImageFormat.Png ? "image/png" : "image/jpeg";
 		}
 
-		bool ShouldUsePngFormat()
+		internal override async Task<Stream> PlatformOpenReadAsync()
 		{
-			// Use PNG if:
-			// 1. Original file was PNG
-			// 2. High quality (>=90) and no resizing needed (preserves original format)
-
-			bool originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
-									Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
-
-			return originalWasPng || (compressionQuality >= 90 && !maximumWidth.HasValue && !maximumHeight.HasValue);
-		}
-
-		internal override Task<Stream> PlatformOpenReadAsync()
-		{
-			if (data == null)
+			if (data is null)
 			{
-				var normalizedImage = uiImage.NormalizeOrientation();
+				// UIImage.AsJPEG/AsPNG encode the raw CGImage and ignore imageOrientation, so the
+				// orientation must be baked into the pixels first. Unlike the file-based pick path there
+				// is no EXIF channel to carry orientation forward, so a capture is always normalized.
+				using var image = new Microsoft.Maui.Graphics.Platform.PlatformImage(uiImage.NormalizeOrientation());
 
-				// First, apply resizing if needed
-				var workingImage = normalizedImage;
-				var originalSize = normalizedImage.Size;
-				var newSize = CalculateResizedDimensions(originalSize.Width, originalSize.Height, maximumWidth, maximumHeight);
-
-				if (newSize.Width != originalSize.Width || newSize.Height != originalSize.Height)
-				{
-					// Resize the image
-					UIGraphics.BeginImageContextWithOptions(newSize, false, normalizedImage.CurrentScale);
-					normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize));
-					workingImage = UIGraphics.GetImageFromCurrentImageContext();
-					UIGraphics.EndImageContext();
-				}
-
-				// Then determine output format and apply compression
-				bool usePng = ShouldUsePngFormat();
-
-				if (usePng)
-				{
-					// Use PNG format - lossless compression, supports transparency
-					data = workingImage.AsPNG();
-				}
-				else
-				{
-					// Use JPEG with quality-based compression
-					if (compressionQuality < 90)
-					{
-						// Use JPEG compression with quality setting for aggressive compression
-						var qualityFloat = compressionQuality / 100.0f;
-						data = workingImage.AsJPEG(qualityFloat);
-					}
-					else if (compressionQuality < 100)
-					{
-						// Use JPEG with high quality
-						data = workingImage.AsJPEG(0.9f);
-					}
-					else
-					{
-						// Use JPEG with maximum quality
-						data = workingImage.AsJPEG(0.95f);
-					}
-				}
+				// Resize and encode entirely in memory through the shared Graphics pipeline — no file.
+				using var memory = new MemoryStream();
+				await ImageProcessor.SaveImageAsync(image, memory, format, options).ConfigureAwait(false);
+				data = memory.ToArray();
 			}
 
-			return Task.FromResult(data.AsStream());
-		}
-
-		static CoreGraphics.CGSize CalculateResizedDimensions(nfloat originalWidth, nfloat originalHeight, int? maxWidth, int? maxHeight)
-		{
-			if (!maxWidth.HasValue && !maxHeight.HasValue)
-				return new CoreGraphics.CGSize(originalWidth, originalHeight);
-
-			nfloat scaleWidth = maxWidth.HasValue ? (nfloat)maxWidth.Value / originalWidth : nfloat.MaxValue;
-			nfloat scaleHeight = maxHeight.HasValue ? (nfloat)maxHeight.Value / originalHeight : nfloat.MaxValue;
-
-			// Use the smaller scale to ensure both constraints are respected
-			nfloat scale = (nfloat)Math.Min(Math.Min((double)scaleWidth, (double)scaleHeight), 1.0); // Don't scale up
-
-			return new CoreGraphics.CGSize(originalWidth * scale, originalHeight * scale);
+			return new MemoryStream(data, writable: false);
 		}
 	}
 

@@ -236,32 +236,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			return new PlatformImage(image.NormalizeOrientation(disposeOriginal: true));
 		}
 
-		// Loading is exposed through IImageLoadingService; this internal helper backs the loading
-		// service's options-based FromStream and is not part of the public image surface.
-		internal static IImage FromStream(Stream stream, ImageLoadOptions options)
-		{
-			using var data = NSData.FromStream(stream);
-
-			var metadata = options.PreserveMetadata && data is not null
-				? AppleImageMetadata.Capture(data)
-				: null;
-
-			var image = UIImage.LoadFromData(data);
-
-			if (options.DisableRotationNormalization)
-			{
-				return new PlatformImage(image, metadata);
-			}
-
-			var normalized = image.NormalizeOrientation(disposeOriginal: true);
-
-			// Pixels are upright now, so any preserved metadata must report orientation = 1.
-			if (metadata is not null)
-			{
-				metadata.Orientation = 1;
-			}
-
-			return new PlatformImage(normalized, metadata);
-		}
+		// Loading is exposed through IImageLoadingService (PlatformImageLoadingService); the image
+		// class is not a loading factory for the options-based path.
 	}
 }

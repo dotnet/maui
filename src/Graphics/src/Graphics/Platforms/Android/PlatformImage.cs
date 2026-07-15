@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -289,71 +289,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			return new PlatformImage(bitmap);
 		}
 
-		// Loading is exposed through IImageLoadingService; this internal helper backs the loading
-		// service's options-based FromStream and is not part of the public image surface.
-		internal static IImage FromStream(Stream stream, ImageLoadOptions options)
-		{
-			// Use original stream if seekable, otherwise copy to memory stream
-			if (stream.CanSeek)
-			{
-				return CreateImageFromSeekableStream(stream, options);
-			}
-			else
-			{
-				using var memoryStream = new MemoryStream();
-				stream.CopyTo(memoryStream);
-				memoryStream.Position = 0;
-				return CreateImageFromSeekableStream(memoryStream, options);
-			}
-		}
 
-		private static IImage CreateImageFromSeekableStream(Stream seekableStream, ImageLoadOptions options)
-		{
-			// Older Android has no ExifInterface stream constructor, so there is no orientation/metadata
-			// to work with; just decode the pixels as-is.
-			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
-			{
-				return new PlatformImage(BitmapFactory.DecodeStream(seekableStream));
-			}
-
-			int orientation = 1;
-			AndroidImageMetadata metadata = null;
-			try
-			{
-				var exif = new ExifInterface(seekableStream);
-				orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
-				if (options.PreserveMetadata)
-				{
-					metadata = AndroidImageMetadata.Capture(exif, orientation);
-				}
-			}
-			catch (Exception)
-			{
-				// If EXIF can't be read there is nothing to normalize or preserve.
-				orientation = 1;
-				metadata = null;
-			}
-
-			seekableStream.Position = 0;
-			var bitmap = BitmapFactory.DecodeStream(seekableStream);
-
-			// Apply orientation normalization unless the caller opted out.
-			if (!options.DisableRotationNormalization && orientation != 1)
-			{
-				bitmap = RotateBitmap(bitmap, orientation);
-
-				// The pixels are now upright, so any preserved metadata must report orientation = 1
-				// to avoid a viewer rotating the already-corrected image a second time.
-				if (metadata is not null)
-				{
-					metadata.Orientation = 1;
-				}
-			}
-
-			return new PlatformImage(bitmap, metadata);
-		}
-
-		static Bitmap RotateBitmap(Bitmap bitmap, int orientation)
+		internal static Bitmap RotateBitmap(Bitmap bitmap, int orientation)
 		{
 			// EXIF orientation has 8 possible values. See: https://jdhao.github.io/2019/07/31/image_rotation_exif_info/#exif-orientation-flag
 			Matrix matrix = new Matrix();

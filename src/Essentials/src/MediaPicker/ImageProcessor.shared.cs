@@ -85,6 +85,21 @@ internal static class ImageProcessor
 		using var image = loadingService.FromStream(input, loadOptions)
 			?? throw new InvalidOperationException("Failed to load image from stream.");
 
+		await SaveImageAsync(image, output, format, options).ConfigureAwait(false);
+#else
+		await Task.CompletedTask.ConfigureAwait(false);
+		throw new PlatformNotSupportedException();
+#endif
+	}
+
+	/// <summary>
+	/// Applies any resize and writes the encoded result of an already-loaded <paramref name="image"/>
+	/// to <paramref name="output"/>. Shared by the stream-based entry point above and by platform code
+	/// that already holds a decoded image (for example an in-memory camera capture on iOS). The source
+	/// image is never disposed here.
+	/// </summary>
+	public static async Task SaveImageAsync(IImage image, Stream output, ImageFormat format, ImageProcessingOptions options)
+	{
 		var current = image;
 		if (options.MaximumWidth.HasValue || options.MaximumHeight.HasValue)
 		{
@@ -109,10 +124,6 @@ internal static class ImageProcessor
 				current.Dispose();
 			}
 		}
-#else
-		await Task.CompletedTask.ConfigureAwait(false);
-		throw new PlatformNotSupportedException();
-#endif
 	}
 
 	/// <summary>
