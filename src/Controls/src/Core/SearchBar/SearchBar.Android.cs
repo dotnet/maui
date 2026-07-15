@@ -23,5 +23,16 @@ namespace Microsoft.Maui.Controls
 
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView.EditText, searchBar);
 		}
+
+		internal static void MapTextTransform(SearchBarHandler2 handler, SearchBar searchBar)
+		{
+			if (searchBar.IsConnectingHandler())
+			{
+				// If we're connecting the handler, we don't want to map the text multiple times.
+				return;
+			}
+
+			MapText(handler, searchBar);
+		}
 	}
 }
