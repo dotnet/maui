@@ -220,16 +220,29 @@ namespace Microsoft.Maui.Controls.Platform
 			nint NSMaxRange(NSRange range) => range.Location + range.Length;
 
 			using var textStorage = new NSTextStorage();
-			using var layoutManager = new NSLayoutManager();
+			// On iOS 16+, NSLayoutManager's default UsesFontLeading=true causes it to include
+			// font leading (extra line spacing) from the OS/2 typographic metrics that CoreText
+			// uses when a font has an OpenType STAT table. This makes the layout manager compute
+			// line heights that don't match what CoreText uses to draw the glyphs, resulting in
+			// span tap hitboxes being vertically offset from the rendered text.
+			// Disabling UsesFontLeading on iOS 16+ makes NSLayoutManager match CoreText's metrics
+			// so the calculated span rects align with the actual rendered text positions.
+			// See: https://github.com/dotnet/maui/issues/36505
+			using var layoutManager = new NSLayoutManager
+			{
+				UsesFontLeading = !OperatingSystem.IsIOSVersionAtLeast(16)
+			};
 			using var textContainer = new NSTextContainer { LineFragmentPadding = 0 };
 
 			textStorage.AddLayoutManager(layoutManager);
 			layoutManager.AddTextContainer(textContainer);
 
-			// On iOS 26+ with NavigationPage, UILabel.Bounds may still be {0,0,0,0}
-			// during ArrangeOverride. Use finalSize (MAUI's computed size) as fallback.
-			var containerWidth = control.Bounds.Width > 0 ? control.Bounds.Width : (nfloat)finalSize.Width;
-			var containerHeight = control.Bounds.Height > 0 ? control.Bounds.Height : (nfloat)finalSize.Height;
+			// Always prefer finalSize from MAUI's layout system — it is the authoritative
+			// size for this arrange pass. On Mac Catalyst (and iOS 26+ with NavigationPage),
+			// control.Bounds may be stale or {0,0,0,0} during ArrangeOverride because UIKit
+			// frame updates can lag behind MAUI's layout.
+			var containerWidth = (nfloat)finalSize.Width > 0 ? (nfloat)finalSize.Width : control.Bounds.Width;
+			var containerHeight = (nfloat)finalSize.Height > 0 ? (nfloat)finalSize.Height : control.Bounds.Height;
 			textContainer.Size = new(containerWidth, control.Lines == 0 ? nfloat.MaxValue : containerHeight);
 
 			textStorage.SetString(attributedText);
