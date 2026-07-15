@@ -102,8 +102,11 @@ on:
         retention-days: 7
 
 # Only invoke the agent when the deterministic pre-pass found something to draft.
+# A manual dispatch can select any ref, but activation runtime-imports `.github`
+# configuration from its checkout. Restrict agent execution to trusted main.
 if: >-
   github.repository == 'dotnet/maui' &&
+  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main') &&
   (github.event_name == 'workflow_dispatch' ||
   needs.pre_activation.outputs.has_candidates == 'true')
 
