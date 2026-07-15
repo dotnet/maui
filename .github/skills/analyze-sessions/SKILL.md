@@ -76,7 +76,7 @@ local DB select entirely. See `references/design-rationale.md`.
 |-------|----------|---------|-------|
 | Repository | No | `dotnet/maui` | Filters `session-store.db` |
 | Last N | No | `10` | Most recently-updated sessions |
-| Session id(s) | No | — | One or more explicit GUIDs (`-SessionId`) |
+| Session id(s) | No | — | One or more GUIDs (`-SessionId`; comma-delimit multiple ids for `pwsh -File`) |
 | Since | No | — | ISO date; `updated_at >= Since` |
 | Top K | No | `5` | How many worst sessions get full digests |
 | Events path/dir | No | — | CI front door (`-EventsPath` / `-EventsDir`) |
@@ -86,8 +86,8 @@ local DB select entirely. See `references/design-rationale.md`.
 
 1. **Ranked report** (`session-analysis.md`) — sessions ordered worst-first by a
    transparent cost/pain score, plus a redacted digest per worst session (intent
-   flow, tool histogram, failure events with event turn IDs (or a stable
-   assistant-turn fallback).
+   flow, tool histogram, and bounded redacted failure details with event turn IDs
+   (or a stable assistant-turn fallback).
 2. **JSON contract** (`session-analysis.json`) — machine-readable per-session
    metrics + ranking (also emitted to stdout with `-Json`).
 3. **Failure-mode analysis** — your rubric tags + clusters with frequency.
@@ -112,7 +112,7 @@ pwsh -NoProfile -File .github/skills/analyze-sessions/scripts/Get-SessionAnalysi
 ```bash
 # Specific sessions:
 pwsh -NoProfile -File .github/skills/analyze-sessions/scripts/Get-SessionAnalysis.ps1 \
-  -SessionId <guid-a> -SessionId <guid-b> -Top 2 -OutputDir "$ARTIFACTS_DIR"
+  -SessionId <guid-a>,<guid-b> -Top 2 -OutputDir "$ARTIFACTS_DIR"
 ```
 
 ```bash

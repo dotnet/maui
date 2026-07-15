@@ -46,7 +46,7 @@ the signals we need to score *pain*. So the core adds a **thin supplemental raw
 
 | Signal | Source event / field |
 |--------|----------------------|
-| tool-failure rate | `tool.execution_complete.data.success == false`, paired to the tool by `toolCallId` |
+| tool-failure rate/detail | `tool.execution_complete.data.success == false`, paired to the tool by `toolCallId`; bounded redacted `error`/`message`/`result` detail |
 | output tokens | `assistant.message.data.outputTokens` |
 | context pressure | `session.truncation`, `session.compaction_start` |
 | errors / aborts | `session.error`, `abort` |

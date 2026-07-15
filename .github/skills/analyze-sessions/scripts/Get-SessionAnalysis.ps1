@@ -45,7 +45,7 @@ param(
     # ── Local selection (session-store.db) ──────────────────────────────────
     [string]$Repository = 'dotnet/maui',
     [int]$Last = 10,
-    [string[]]$SessionId,
+    [string[]]$SessionId,           # comma-delimit multiple ids for pwsh -File
     [string]$Since,                 # ISO date, e.g. 2026-06-01 — filter updated_at >= Since
     [string]$SessionStoreDb = (Join-Path $HOME '.copilot/session-store.db'),
     [string]$SessionStateDir = (Join-Path $HOME '.copilot/session-state'),
@@ -84,6 +84,7 @@ $script:Weights = [ordered]@{
 function Get-Prop {
     param($Obj, [string]$Name)
     if ($null -eq $Obj) { return $null }
+    if ($Obj -is [System.Collections.IDictionary] -and $Obj.Contains($Name)) { return $Obj[$Name] }
     $p = $Obj.PSObject.Properties[$Name]
     if ($p) { return $p.Value }
     return $null
@@ -138,7 +139,7 @@ function Resolve-ReplayInvoker {
     $cmd = Get-Command 'replay' -ErrorAction SilentlyContinue
     if ($cmd) { return { param($CmdArgs) & 'replay' @CmdArgs } }
     $toolPath = Join-Path $HOME '.dotnet/tools/replay'
-    if (Test-Path $toolPath) { return { param($CmdArgs) & $toolPath @CmdArgs } }
+    if (Test-Path $toolPath) { return ({ param($CmdArgs) & $toolPath @CmdArgs }).GetNewClosure() }
     if ($AllowDnxDownload -and (Get-Command 'dnx' -ErrorAction SilentlyContinue)) {
         return { param($CmdArgs) & 'dnx' '--yes' 'dotnet-replay@0.9.1' @CmdArgs }
     }
@@ -152,6 +153,30 @@ function Get-TurnReference {
     if ([string]::IsNullOrWhiteSpace([string]$turn)) { $turn = Get-Prop $Event 'turnId' }
     if ([string]::IsNullOrWhiteSpace([string]$turn)) { return $Fallback }
     return [string]$turn
+}
+
+function Get-FailureSummary {
+    param($Data)
+
+    foreach ($name in @('error', 'message', 'result')) {
+        $value = Get-Prop $Data $name
+        if ($null -eq $value) { continue }
+
+        $text = if ($value -is [string]) {
+            $value
+        } else {
+            $nested = Get-Prop $value 'message'
+            if ($null -eq $nested) { $nested = Get-Prop $value 'error' }
+            if ($null -eq $nested) { $nested = Get-Prop $value 'detail' }
+            if ($null -ne $nested) { [string]$nested } else { [string]$value }
+        }
+
+        $text = (Protect-Text $text) -replace "`r?`n", ' '
+        if ($text.Length -gt 240) { $text = $text.Substring(0, 240) + '…' }
+        if (-not [string]::IsNullOrWhiteSpace($text)) { return $text }
+    }
+
+    return $null
 }
 
 function Get-ReplaySummary {
@@ -249,7 +274,8 @@ function Get-RawScan {
                     $nm = if ($tcid -and $callNames.ContainsKey([string]$tcid)) { $callNames[[string]$tcid] } else { '<tool>' }
                     $fallback = if ($tcid -and $callTurns.ContainsKey([string]$tcid)) { $callTurns[[string]$tcid] } else { [string]$r.assistant_turns }
                     $turn = Get-TurnReference -Event $e -Data $d -Fallback $fallback
-                    $r.failed_tool_events.Add([ordered]@{ turn = $turn; tool = $nm })
+                    $detail = Get-FailureSummary $d
+                    $r.failed_tool_events.Add([ordered]@{ turn = $turn; tool = $nm; detail = $detail })
                 }
             }
             'skill.invoked' {
@@ -363,10 +389,14 @@ function Select-Sessions {
 
     # session-store.db selection.
     if ($SessionId) {
-        foreach ($sid in $SessionId) {
-            $f = Join-Path (Join-Path $SessionStateDir $sid) 'events.jsonl'
-            if (Test-Path $f) { $results.Add([pscustomobject]@{ id = $sid; path = $f }) }
-            else { Write-Warning "events.jsonl not found for session $sid" }
+        foreach ($sessionIdArgument in $SessionId) {
+            foreach ($sid in ($sessionIdArgument -split ',')) {
+                $sid = $sid.Trim()
+                if ([string]::IsNullOrWhiteSpace($sid)) { continue }
+                $f = Join-Path (Join-Path $SessionStateDir $sid) 'events.jsonl'
+                if (Test-Path $f) { $results.Add([pscustomobject]@{ id = $sid; path = $f }) }
+                else { Write-Warning "events.jsonl not found for session $sid" }
+            }
         }
         return $results
     }
@@ -449,7 +479,9 @@ function New-Digest {
     if ($M.failed_tool_events -and @($M.failed_tool_events).Count -gt 0) {
         [void]$sb.AppendLine("**Failed tool calls (first 15):**")
         foreach ($fe in (@($M.failed_tool_events) | Select-Object -First 15)) {
-            [void]$sb.AppendLine("- turn ``$(Protect-Text ([string]$fe.turn))`` — ``$(Protect-Text ([string]$fe.tool))`` failed")
+            $detail = Get-Prop $fe 'detail'
+            $suffix = if ($detail) { " — ``$((Protect-Text ([string]$detail)).Replace('`', '\`'))``" } else { '' }
+            [void]$sb.AppendLine("- turn ``$(Protect-Text ([string]$fe.turn))`` — ``$(Protect-Text ([string]$fe.tool))`` failed$suffix")
         }
         [void]$sb.AppendLine()
     }
