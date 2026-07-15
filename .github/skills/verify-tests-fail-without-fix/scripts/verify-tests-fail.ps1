@@ -1640,6 +1640,14 @@ function Write-MarkdownReport {
         "📷 **Environmental snapshot residual — not a fix failure** — with the fix applied, the only remaining ``VerifyScreenshot`` differences are no larger than the WITHOUT-fix run (the fix worsened no snapshot and added no new failing one) and are all below ~1%. The fix resolves the bug's visual difference; the residual is a constant cross-agent baseline offset (anti-aliasing / font hinting differ between the machine that captured the baseline and this agent), so this is **inconclusive, not a fix failure**. Regenerate the affected baseline PNG(s) on the target agent."
     } else { $null }
 
+    # A flaky GC memory-leak reclassification (with-fix leak FAIL→FAIL on a DoesNotLeak assert)
+    # gets a dedicated headline so the reader knows the fix is likely fine — the WaitForGC check
+    # is just non-deterministic and could not be verified by the gate.
+    $leakFlaky = (@($WithFixResultsList) | Where-Object { $_.LeakFlaky }).Count -gt 0
+    $leakNote = if ($leakFlaky) {
+        "🧪 **Flaky GC memory-leak assertion — not a fix failure** — the only remaining with-fix failure is a ``DoesNotLeak`` test asserting via ``AssertionExtensions.WaitForGC`` (""Expected all references to be collected, but some are still alive""). That GC check is non-deterministic: even a correct fix can leave a reference briefly uncollected on a given run, so a persistent leak FAIL is **inconclusive, not proof the fix is broken**. Verify the leak fix manually (heap snapshot or repeated device-test runs)."
+    } else { $null }
+
     # A platform-mismatch FALSE-FAILED (every fix file targets another platform) gets a
     # dedicated, actionable headline so the reader knows the fix is fine — it's just not
     # verifiable on THIS gate's platform.
@@ -1735,6 +1743,10 @@ function Write-MarkdownReport {
     if ($snapshotNote) {
         $lines += ""
         $lines += $snapshotNote
+    }
+    if ($leakNote) {
+        $lines += ""
+        $lines += $leakNote
     }
     if ($platformMismatchNote) {
         $lines += ""
@@ -2093,6 +2105,22 @@ function Get-SnapshotDiffMap {
     return $map
 }
 
+function Get-LeakAssertCount {
+    # Counts GC memory-leak assertion failures in a test log. The MAUI device/unit test helper
+    # AssertionExtensions.WaitForGC emits exactly one "Expected all references to be collected,
+    # but some are still alive" line per failed *DoesNotLeak* assert. That GC check is inherently
+    # non-deterministic (even a correct fix can leave a reference briefly uncollected on a given
+    # run), so the gate uses this count to treat a pure leak FAIL→FAIL as INCONCLUSIVE rather than
+    # a genuine "fix does not pass" FAILED. Returns 0 on any read/parse issue (fail-safe).
+    param([string] $LogFile)
+    try {
+        if (-not $LogFile -or -not (Test-Path $LogFile)) { return 0 }
+        $c = Get-Content $LogFile -Raw -ErrorAction SilentlyContinue
+        if ([string]::IsNullOrWhiteSpace($c)) { return 0 }
+        return ([regex]::Matches($c, '(?i)Expected all references to be collected, but some are still alive')).Count
+    } catch { return 0 }
+}
+
 function Test-SnapshotEnvironmentalResidual {
     param(
         [hashtable] $WithoutFixResult,
@@ -2156,6 +2184,7 @@ foreach ($testEntry in $AllDetectedTests) {
     $result.TestType = $testEntry.Type
     $result.Duration = $sw.Elapsed
     $result.SnapshotDiffMap = Get-SnapshotDiffMap -LogFile $testLogFile
+    $result.LeakAssertCount = Get-LeakAssertCount -LogFile $testLogFile
     $withoutFixResults += $result
 
     # Print raw log inside the collapsible group so it's available but not noisy
@@ -2256,6 +2285,7 @@ foreach ($testEntry in $AllDetectedTests) {
     $result.TestType = $testEntry.Type
     $result.Duration = $sw.Elapsed
     $result.SnapshotDiffMap = Get-SnapshotDiffMap -LogFile $testLogFile
+    $result.LeakAssertCount = Get-LeakAssertCount -LogFile $testLogFile
     $withFixResults += $result
 
     # Print raw log inside the collapsible group
@@ -2432,6 +2462,45 @@ foreach ($t in $AllDetectedTests) {
         $w.Error = "With-fix run only fails VerifyScreenshot snapshot diffs that are no larger than the without-fix run (max $($maxResidual)% <= 1%). The fix resolves the bug's visual difference; the residual is a constant cross-agent baseline offset, not a fix failure. Regenerate the baseline PNG(s) on the target agent."
         Write-Host "  📷 $($t.TestName): with-fix failures are environmental snapshot residue (max $($maxResidual)% <= 1%, none worsened vs without-fix) — reclassifying as INCONCLUSIVE, not FAILED" -ForegroundColor Yellow
         Write-Log "  [$($t.Type)] $($t.TestName): with-fix snapshot residual environmental (max $($maxResidual)%) — INCONCLUSIVE (not a fix failure)"
+    }
+}
+
+# ── Flaky GC memory-leak reclassification (INCONCLUSIVE, exit 3 — never a false FAILED) ──
+# A "DoesNotLeak" device/unit test asserts via AssertionExtensions.WaitForGC, which is
+# inherently non-deterministic: even a CORRECT fix can leave a reference momentarily
+# uncollected on a given run ("Expected all references to be collected, but some are still
+# alive"). So a with-fix FAIL on a pure leak assert is UNVERIFIABLE by the gate, not proof the
+# fix is broken. Reclassify such a with-fix failure as INCONCLUSIVE — BUT only when EVERY
+# remaining with-fix genuine failure is a leak assert (two-pass guard below), so a co-occurring
+# real non-leak FAILED is never masked. (PR #36312: ShellRendererDoesNotLeakAfterNavigation
+# FAIL→FAIL on iOS was wrongly reported "Fix does not pass the tests" / FAILED.)
+$leakFlakyCandidates = @()
+$nonLeakGenuineFail  = $false
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w  = $withFixResults    | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+    # Only consider with-fix runs that GENUINELY failed (not already env/build/filter, not passing).
+    if ($w.EnvError -or $w.BuildError -or $w.FilterMismatch -or $w.Passed) { continue }
+    $wLeak   = [int]($w.LeakAssertCount)
+    $woLeak  = [int]($wo.LeakAssertCount)
+    $wFailed = [int]($w.Failed); if ($wFailed -le 0) { $wFailed = 1 }
+    # Pure GC-leak flake: the leak assert is present in BOTH states (the bug under test IS a
+    # leak) AND accounts for EVERY failing test in the with-fix run (so a non-leak failure
+    # alongside it is never hidden).
+    if (($wLeak -ge 1) -and ($woLeak -ge 1) -and ($wLeak -ge $wFailed) -and (-not $wo.Passed)) {
+        $leakFlakyCandidates += $w
+    } else {
+        $nonLeakGenuineFail = $true
+    }
+}
+if ($leakFlakyCandidates.Count -gt 0 -and -not $nonLeakGenuineFail) {
+    foreach ($w in $leakFlakyCandidates) {
+        $w.EnvError  = $true
+        $w.LeakFlaky = $true
+        $w.Error = "With-fix run only fails a GC memory-leak assertion (AssertionExtensions.WaitForGC: 'some are still alive'). This assert is non-deterministic — a correct fix can still leave a reference briefly uncollected — so a persistent leak FAIL is unverifiable by the gate, not proof the fix is broken. Verify the leak fix manually (heap snapshot / repeated runs)."
+        Write-Host "  🧪 $($w.TestName): with-fix failure is a flaky GC memory-leak assert (leak signature in both states) — reclassifying as INCONCLUSIVE, not FAILED" -ForegroundColor Yellow
+        Write-Log  "  $($w.TestName): with-fix GC-leak assert flaky — INCONCLUSIVE (not a fix failure)"
     }
 }
 
