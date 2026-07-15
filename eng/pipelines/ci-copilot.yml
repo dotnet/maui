@@ -58,6 +58,21 @@ parameters:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
+  # Override the shared REQUIRED_XCODE/DEVICETESTS_REQUIRED_XCODE/XCODE pins (26.0.1 in
+  # variables.yml) for this pipeline only. The net11 Microsoft.iOS / Microsoft.MacCatalyst
+  # workloads require the iOS 26.5 SDK; building the HostApp with an older Xcode (26.0.1)
+  # fails hard with MT0180 ("requires the iOS 26.5 SDK"). The shared "Select Xcode Version"
+  # step (eng/pipelines/common/provision.yml) reads $(REQUIRED_XCODE) and — because it finds
+  # an exact 26.0.1 match — never reaches its "latest available Xcode" fallback, so it
+  # downgrades the agent from the newest installed Xcode (26.5) to 26.0.1 in BOTH the review
+  # and deep UI-test stages. Pinning to 26.5 here fixes provision.yml everywhere in ci-copilot;
+  # if 26.5 is ever removed from the agents, provision.yml's fallback selects the newest available.
+  - name: REQUIRED_XCODE
+    value: 26.5
+  - name: DEVICETESTS_REQUIRED_XCODE
+    value: 26.5
+  - name: XCODE
+    value: 26.5
   - name: Codeql.Enabled
     value: false
   - name: Codeql.SkipTaskAutoInjection
