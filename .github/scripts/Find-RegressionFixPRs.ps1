@@ -369,7 +369,7 @@ foreach ($pr in $fixPRs) {
     foreach ($issueNum in $linkedIssues) {
         $ctx = Get-IssueContext -Owner $Owner -Repo $Repo -Number $issueNum
         if (-not $ctx) { continue }
-        $regressedIn = Get-RegressedInLabels $ctx.Labels
+        $regressedIn = @(Get-RegressedInLabels $ctx.Labels)
         $regressionIssues.Add([PSCustomObject]@{
             number            = $ctx.Number
             regressedInLabels = $regressedIn

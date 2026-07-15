@@ -89,6 +89,39 @@ Describe 'Get-RegressedInLabels' {
     }
 }
 
+Describe 'Regression issue label serialization' {
+    It 'emits a matching regressed-in label as an array' {
+        $issues = New-Object System.Collections.Generic.List[object]
+        $labels = @(Get-RegressedInLabels @('regressed-in-10.0.60'))
+        $issues.Add([PSCustomObject]@{
+                number = 35756
+                regressedInLabels = $labels
+            }) | Out-Null
+
+        $candidate = New-RegressionCandidate -FixPr 35803 -FixPrMergeCommit 'def456' `
+            -RegressionIssues $issues -IntroducingPr 31931 -IntroDetails $null `
+            -AttributionSource 'pr-body' -NeedsHumanAttribution $true
+
+        ($candidate | ConvertTo-Json -Depth 8 -Compress) |
+            Should -Match '"regressedInLabels":\["regressed-in-10\.0\.60"\]'
+    }
+    It 'emits no matching regressed-in labels as an empty array' {
+        $issues = New-Object System.Collections.Generic.List[object]
+        $labels = @(Get-RegressedInLabels @('i/regression'))
+        $issues.Add([PSCustomObject]@{
+                number = 35756
+                regressedInLabels = $labels
+            }) | Out-Null
+
+        $candidate = New-RegressionCandidate -FixPr 35803 -FixPrMergeCommit 'def456' `
+            -RegressionIssues $issues -IntroducingPr 31931 -IntroDetails $null `
+            -AttributionSource 'pr-body' -NeedsHumanAttribution $true
+
+        ($candidate | ConvertTo-Json -Depth 8 -Compress) |
+            Should -Match '"regressedInLabels":\[\]'
+    }
+}
+
 Describe 'Get-LinkedIssueNumbers' {
     It 'extracts Fixes/Closes/Resolves references' {
         $body = "Fixes #35280`nAlso Closes #100 and resolves #200"
