@@ -2484,7 +2484,8 @@ stages:
               # than the PR (e.g. an android36 PublicAPI/RS0017 mismatch), so
               # the surfaced message must be honest and NOT blame the author.
               $buildFailedCats = @()
-              $interruptedCats = @()
+              $timedOutCats = @()
+              $crashedCats = @()
               $buildFailedSampleError = ''
               $buildFailedSampleFile = ''
               if (Test-Path $artDir) {
@@ -2502,7 +2503,7 @@ stages:
                   if (Test-Path $statusFile) {
                     $statusText = Get-Content $statusFile -Raw -ErrorAction SilentlyContinue
                     if ($statusText -match 'ExitCode=124' -or $statusText -match '(?im)EnvError=timeout') {
-                      $interruptedCats += $cat
+                      $timedOutCats += $cat
                       continue
                     }
                   }
@@ -2546,15 +2547,21 @@ stages:
                   } elseif ($boText -match 'Build and deploy completed' -or
                             $boText -match 'Running UI tests with category' -or
                             $boText -match 'Executing: dotnet test') {
-                    # Built OK and the test run STARTED, but no .trx was written
-                    # → the run was interrupted (per-category time-budget hard
-                    # kill, an emulator/Appium hang, or a crash). Surface it
-                    # honestly instead of silently omitting the category.
-                    $interruptedCats += $cat
+                    # Built OK and `dotnet test` STARTED, but no .trx was written
+                    # AND it did not time out (the ExitCode=124 / EnvError=timeout
+                    # case already `continue`d above). So the app failed to launch
+                    # or the test host crashed before writing results — an
+                    # app-launch/Appium failure or emulator flake, NOT a
+                    # time-budget problem. Surface it honestly (and DISTINCTLY
+                    # from a timeout) instead of silently omitting the category.
+                    $crashedCats += $cat
                   }
                 }
                 $buildFailedCats = @($buildFailedCats | Select-Object -Unique | Sort-Object)
-                $interruptedCats = @($interruptedCats | Select-Object -Unique | Sort-Object)
+                $timedOutCats = @($timedOutCats | Select-Object -Unique | Sort-Object)
+                # A timeout takes precedence over the generic crash bucket so a
+                # category is never counted (or messaged) as both.
+                $crashedCats = @($crashedCats | Where-Object { $timedOutCats -notcontains $_ } | Select-Object -Unique | Sort-Object)
               }
               $buildFailedNote = ''
               if ($buildFailedCats.Count -gt 0) {
@@ -2585,12 +2592,28 @@ stages:
                 $buildFailedNote = "The build failed to **compile** for $bfCatText, so those deep UI tests could not run.$bfErr$bfClass"
               }
 
-              $interruptedNote = ''
-              if ($interruptedCats.Count -gt 0) {
-                Write-Host "Detected $($interruptedCats.Count) interrupted deep categor(y/ies) (built OK, no TRX): $($interruptedCats -join ', ')"
-                $inList = '`' + ($interruptedCats -join '`, `') + '`'
-                $inCatText = if ($interruptedCats.Count -eq 1) { "1 category ($inList)" } else { "$($interruptedCats.Count) categories ($inList)" }
-                $interruptedNote = "The deep UI run for $inCatText was **interrupted** before producing results — most often the per-category time budget (a very long-running category) was exhausted, or an emulator/Appium hang. This is usually an **infrastructure/timeout issue** rather than a code problem; re-run the review to try again. See the ``build-output.log`` in the ``drop-deep-uitests`` artifact."
+              # Split the "no TRX" categories into two HONEST buckets with
+              # distinct, accurate messages. Lumping them together (and leading
+              # with "time budget exhausted") is misleading: an app that exits 1
+              # in ~5 min never hit its 50-min budget, so telling the reader to
+              # raise the budget sends them down the wrong path (exactly what
+              # happened on PR #36130's 07-15 run — all 12 categories exited 1,
+              # none timed out). The run-status.txt ExitCode already tells us
+              # which case we are in, so report each honestly.
+              $timedOutNote = ''
+              if ($timedOutCats.Count -gt 0) {
+                Write-Host "Detected $($timedOutCats.Count) timed-out deep categor(y/ies) (hit the per-category budget): $($timedOutCats -join ', ')"
+                $toList = '`' + ($timedOutCats -join '`, `') + '`'
+                $toCatText = if ($timedOutCats.Count -eq 1) { "1 category ($toList)" } else { "$($timedOutCats.Count) categories ($toList)" }
+                $timedOutNote = "The deep UI run for $toCatText **exceeded the per-category time budget** (a very long-running category or a slow build/deploy) and was stopped before finishing. This is an **infrastructure/timeout issue**, not a code problem; re-run the review, and if a category consistently needs more time the per-category budget can be raised (``DEEP_UITEST_CATEGORY_CAP_MIN`` / ``DEEP_UITEST_HARDSTOP_MIN``). See the ``build-output.log`` in the ``drop-deep-uitests`` artifact."
+              }
+
+              $crashedNote = ''
+              if ($crashedCats.Count -gt 0) {
+                Write-Host "Detected $($crashedCats.Count) crashed deep categor(y/ies) (built OK, test started, no TRX, did NOT time out): $($crashedCats -join ', ')"
+                $crList = '`' + ($crashedCats -join '`, `') + '`'
+                $crCatText = if ($crashedCats.Count -eq 1) { "1 category ($crList)" } else { "$($crashedCats.Count) categories ($crList)" }
+                $crashedNote = "The deep UI run for $crCatText **started** (the HostApp built and ``dotnet test`` launched) but produced **no results** — the app failed to launch or the test host crashed before a ``.trx`` was written (an app-launch/Appium failure or an emulator flake). These categories exited quickly, well under their time budget, so **raising the budget will not help** — re-run the review to try again. If it recurs, check the ``build-output.log`` + logcat in the ``drop-deep-uitests`` artifact for an app-startup crash."
               }
 
               if (-not $byCat -or $byCat.Count -eq 0) {
@@ -2892,11 +2915,17 @@ stages:
                 # with "didn't compile."
                 $headerLine = "$headerLine " + $buildFailedNote
               }
-              if ($interruptedCats.Count -gt 0) {
-                # Some categories ran; others started but produced no TRX
-                # (interrupted/hard-killed). Append the honest note so a
-                # missing category is never silently dropped from the count.
-                $headerLine = "$headerLine " + $interruptedNote
+              if ($timedOutCats.Count -gt 0) {
+                # Some categories ran; others hit their per-category time budget.
+                # Append the honest timeout note so a missing category is never
+                # silently dropped from the count.
+                $headerLine = "$headerLine " + $timedOutNote
+              }
+              if ($crashedCats.Count -gt 0) {
+                # Some categories ran; others started but produced no TRX because
+                # the app/test host crashed (NOT a timeout). Append the honest
+                # crash note so a missing category is never silently dropped.
+                $headerLine = "$headerLine " + $crashedNote
               }
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
@@ -2904,16 +2933,17 @@ stages:
               $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
               } # end if ($byCat.Count -gt 0)
 
-              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $interruptedCats.Count -gt 0)) {
+              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0)) {
                 # No TRX anywhere (nothing produced results), but we DID detect
-                # compile failures and/or interrupted (built-OK-but-killed) runs.
-                # Render an honest deep block explaining it instead of leaving
+                # compile failures, timeouts, and/or app-crash (built-OK-but-no-TRX)
+                # runs. Render an honest deep block explaining it instead of leaving
                 # the deep section silent/empty.
                 $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
                 $endMarker   = '<!-- DEEP_UITESTS_END -->'
                 $noteParts = @()
                 if ($buildFailedCats.Count -gt 0) { $noteParts += $buildFailedNote }
-                if ($interruptedCats.Count -gt 0) { $noteParts += $interruptedNote }
+                if ($timedOutCats.Count -gt 0) { $noteParts += $timedOutNote }
+                if ($crashedCats.Count -gt 0) { $noteParts += $crashedNote }
                 $headerLine  = "⚠️ **Deep UI tests** — " + ($noteParts -join ' ')
                 $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + "$endMarker"
               }
