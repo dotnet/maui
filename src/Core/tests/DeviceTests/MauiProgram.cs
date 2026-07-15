@@ -41,32 +41,9 @@ namespace Microsoft.Maui.DeviceTests
 			},
 			configureBuilder: builder =>
 			{
+#if WINDOWS
 				builder.ConfigureLifecycleEvents(life =>
 				{
-#if ANDROID
-					life.AddAndroid(android =>
-					{
-						android.OnCreate((a, b) =>
-							LifecycleEventLog.Add(nameof(AndroidLifecycle.OnCreate)));
-						android.OnStart(a =>
-							LifecycleEventLog.Add(nameof(AndroidLifecycle.OnStart)));
-						android.OnResume(a =>
-							LifecycleEventLog.Add(nameof(AndroidLifecycle.OnResume)));
-						android.OnPostResume(a =>
-							LifecycleEventLog.Add(nameof(AndroidLifecycle.OnPostResume)));
-					});
-#elif IOS || MACCATALYST
-					life.AddiOS(ios =>
-					{
-						ios.FinishedLaunching((app, options) =>
-						{
-							LifecycleEventLog.Add(nameof(iOSLifecycle.FinishedLaunching));
-							return true;
-						});
-						ios.OnActivated(app =>
-							LifecycleEventLog.Add(nameof(iOSLifecycle.OnActivated)));
-					});
-#elif WINDOWS
 					life.AddWindows(windows =>
 					{
 						windows.OnAppInstanceActivated((app, args) =>
@@ -81,8 +58,8 @@ namespace Microsoft.Maui.DeviceTests
 						windows.OnWindowCreated(w =>
 							LifecycleEventLog.Add(nameof(WindowsLifecycle.OnWindowCreated)));
 					});
-#endif
 				});
+#endif
 			});
 		}
 	}

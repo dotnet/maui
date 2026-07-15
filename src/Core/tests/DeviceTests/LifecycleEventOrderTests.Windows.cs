@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.LifecycleEvents;
 using Xunit;
@@ -23,10 +24,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var log = MauiProgram.LifecycleEventLog;
 
-			var activatedIndex = log.IndexOf(nameof(WindowsLifecycle.OnAppInstanceActivated));
-			var launchingIndex = log.IndexOf(nameof(WindowsLifecycle.OnLaunching));
-			var windowCreatedIndex = log.IndexOf(nameof(WindowsLifecycle.OnWindowCreated));
-			var launchedIndex = log.IndexOf(nameof(WindowsLifecycle.OnLaunched));
+			var activatedIndex = AssertEventIndex(log, nameof(WindowsLifecycle.OnAppInstanceActivated));
+			var launchingIndex = AssertEventIndex(log, nameof(WindowsLifecycle.OnLaunching));
+			var windowCreatedIndex = AssertEventIndex(log, nameof(WindowsLifecycle.OnWindowCreated));
+			var launchedIndex = AssertEventIndex(log, nameof(WindowsLifecycle.OnLaunched));
 
 			// Expected startup order: OnAppInstanceActivated → OnLaunching → OnWindowCreated → OnLaunched
 			Assert.True(activatedIndex < launchingIndex,
@@ -35,6 +36,16 @@ namespace Microsoft.Maui.DeviceTests
 				$"Expected OnLaunching before OnWindowCreated. Log: [{string.Join(", ", log)}]");
 			Assert.True(windowCreatedIndex < launchedIndex,
 				$"Expected OnWindowCreated before OnLaunched. Log: [{string.Join(", ", log)}]");
+
+			static int AssertEventIndex(IList<string> log, string eventName)
+			{
+				var index = log.IndexOf(eventName);
+
+				Assert.True(index >= 0,
+					$"Expected {eventName} in the lifecycle log. Log: [{string.Join(", ", log)}]");
+
+				return index;
+			}
 		}
 
 		[Fact(DisplayName = "OnAppInstanceActivated fires exactly once during startup")]
