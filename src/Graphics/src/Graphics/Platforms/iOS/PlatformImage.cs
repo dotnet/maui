@@ -2,19 +2,30 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Foundation;
+using ImageIO;
 using UIKit;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-	public class PlatformImage : IImage
+	public class PlatformImage : IImageWithMetadata
 	{
 		private UIImage _image;
+		private readonly AppleImageMetadata _metadata;
 
 		public PlatformImage(UIImage image)
+			: this(image, null)
+		{
+		}
+
+		internal PlatformImage(UIImage image, AppleImageMetadata metadata)
 		{
 			_image = image;
+			_metadata = metadata;
 		}
+
+		public IImageMetadata Metadata => _metadata;
 
 		public float Width => (float)(_image?.Size.Width ?? 0);
 
@@ -23,13 +34,13 @@ namespace Microsoft.Maui.Graphics.Platform
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
 			var scaledImage = _image.ScaleImage(maxWidthOrHeight, maxWidthOrHeight, disposeOriginal);
-			return new PlatformImage(scaledImage);
+			return new PlatformImage(scaledImage, _metadata);
 		}
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
 			var scaledImage = _image.ScaleImage(maxWidth, maxHeight, disposeOriginal);
-			return new PlatformImage(scaledImage);
+			return new PlatformImage(scaledImage, _metadata);
 		}
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
@@ -114,12 +125,68 @@ namespace Microsoft.Maui.Graphics.Platform
 			data.AsStream().CopyTo(stream);
 		}
 
-		/// <inheritdoc cref="Save" />
+		/// <inheritdoc cref="Save(System.IO.Stream, ImageFormat, float)" />
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			var data = CreateData(format, quality);
 			await data.AsStream().CopyToAsync(stream);
 		}
+
+		/// <inheritdoc/>
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+		{
+			using var data = CreateData(format, options);
+			data.AsStream().CopyTo(stream);
+		}
+
+		/// <inheritdoc/>
+		public async Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+		{
+			using var data = CreateData(format, options);
+			await data.AsStream().CopyToAsync(stream);
+		}
+
+		private NSData CreateData(ImageFormat format, ImageSaveOptions options)
+		{
+			// Metadata embedding is supported for JPEG and PNG via ImageIO.
+			if (options.PreserveMetadata && _metadata is not null &&
+				(format == ImageFormat.Jpeg || format == ImageFormat.Png))
+			{
+				var data = CreateDataWithMetadata(format, options.Quality);
+				if (data is not null)
+					return data;
+			}
+
+			return CreateData(format, ClampQuality(options.Quality));
+		}
+
+		private NSData CreateDataWithMetadata(ImageFormat format, float quality)
+		{
+			var cgImage = _image?.CGImage;
+			if (cgImage is null)
+				return null;
+
+			var uti = format == ImageFormat.Png ? "public.png" : "public.jpeg";
+			var outputData = new NSMutableData();
+			using var destination = CGImageDestination.Create(outputData, uti, 1);
+			if (destination is null)
+			{
+				outputData.Dispose();
+				return null;
+			}
+
+			using var properties = _metadata.BuildProperties(quality, includeQuality: format == ImageFormat.Jpeg);
+			destination.AddImage(cgImage, properties);
+			if (!destination.Close())
+			{
+				outputData.Dispose();
+				return null;
+			}
+
+			return outputData;
+		}
+
+		static float ClampQuality(float quality) => Math.Max(0f, Math.Min(1f, quality));
 
 		private NSData CreateData(ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
@@ -164,6 +231,32 @@ namespace Microsoft.Maui.Graphics.Platform
 			var data = NSData.FromStream(stream);
 			var image = UIImage.LoadFromData(data);
 			return new PlatformImage(image.NormalizeOrientation(disposeOriginal: true));
+		}
+
+		public static IImage FromStream(Stream stream, ImageLoadOptions options)
+		{
+			using var data = NSData.FromStream(stream);
+
+			var metadata = options.PreserveMetadata && data is not null
+				? AppleImageMetadata.Capture(data)
+				: null;
+
+			var image = UIImage.LoadFromData(data);
+
+			if (options.DisableRotationNormalization)
+			{
+				return new PlatformImage(image, metadata);
+			}
+
+			var normalized = image.NormalizeOrientation(disposeOriginal: true);
+
+			// Pixels are upright now, so any preserved metadata must report orientation = 1.
+			if (metadata is not null)
+			{
+				metadata.Orientation = 1;
+			}
+
+			return new PlatformImage(normalized, metadata);
 		}
 	}
 }
