@@ -22,9 +22,10 @@
 #       never to fetch a PR from the API.
 #
 # Brittleness reduction:
-#   Each scenario has exactly ONE structural-floor regex
-#   ('(❌|⚠️|NEEDS_CHANGES|NEEDS_DISCUSSION)' — silent LGTM is the failure
-#   mode under test). All other semantics — confidence calibration, file/
+#   Each scenario has a narrow structural floor that tests the failure mode
+#   it is designed to catch. The lifecycle-latch scenario uses complementary
+#   verdict checks because surfacing a risk and then delivering LGTM is its
+#   exact regression. All other semantics — confidence calibration, file/
 #   symbol identification, mechanism description, blast-radius / failure-
 #   mode reasoning — are scored by an LLM-judge `prompt` grader against
 #   the rubric. No regex AND-gate of "confidence value + diff symbol +
@@ -316,18 +317,23 @@ stimuli:
       hunks. Then deliver a code review using the skill's standard
       output format (Independent Assessment → Findings → Failure-Mode
       Probing → Verdict + Confidence). Mark each finding with a severity
-      emoji (❌ Error, ⚠️ Warning, or 💡 Info). End with a Verdict line:
-      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
+      emoji (❌ Error, ⚠️ Warning, or 💡 Info). End with a `### Verdict:`
+      line and a `**Confidence:**` rating.
     environment:
       git:
         type: worktree
         ref: af540589fc5a3b053cd8c08334d0ca5a0125451b
         source: .
     graders:
-      # ── Structural floor (only one hard regex per scenario) ──────────
+      # The failure under test is a reviewer that identifies the risk but
+      # still reaches LGTM. Require the standard non-LGTM verdict form
+      # before asking the judge to assess the reasoning behind it.
+      - type: output-not-contains
+        config:
+          substring: '### Verdict: LGTM'
       - type: output-matches
         config:
-          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+          pattern: '### Verdict:\s*(NEEDS_CHANGES|NEEDS_DISCUSSION)'
       - type: prompt
         name: regression-judge
         config:
@@ -369,11 +375,11 @@ stimuli:
       - >-
         The Blast Radius Assessment recognizes this as shared, cross-platform
         navigation-lifecycle dispatch that runs for ALL pages — not opt-in
-        feature code. Confidence is calibrated to medium or lower; because
+        feature code. It distinguishes certainty in the identified failure
+        mechanism from confidence that the change is safe to merge. The
+        structured `**Confidence:**` field is explicitly **low**, because
         the change modifies shared lifecycle infrastructure affecting every
-        page, low is the most defensible cap per the Step 6 "shared
-        infrastructure" row. The structured `**Confidence:**` field is
-        present and consistent with that calibration.
+        page and the failure mode remains unresolved.
     constraints:
       max_duration: 10m
       expect_skills:
@@ -389,11 +395,15 @@ scoring:
   # normalized) — rubric criteria are not individually AND-gated, which is
   # exactly the de-brittling we want.
   #
-  # We keep exactly two graders per stimulus (one structural floor +
-  # one LLM judge) so the judge carries ~50% of every score. With
-  # threshold 0.6 and a scale_1_5 judge (normalized = (raw-1)/4):
-  #   - correct review:  (floor 1.0 + judge ~0.75) / 2 = ~0.875  -> PASS
-  #   - silent LGTM:     (floor 0.0 + judge ~0.25) / 2 = ~0.125  -> FAIL
-  # which is the falsifiability property (acceptance criterion #4) the
-  # corpus exists to guarantee.
+  # Most stimuli use one structural floor plus one LLM judge. The lifecycle
+  # latch stimulus adds a complementary "not LGTM" floor because a reviewer
+  # that finds the failure mechanism but still ships an LGTM is the exact
+  # false-pass it must reject. With threshold 0.6 and a scale_1_5 judge
+  # (normalized = (raw-1)/4), that stimulus scores approximately:
+  #   - correct review: (not-LGTM 1.0 + verdict 1.0 + judge ~0.75) / 3
+  #                     = ~0.92  -> PASS
+  #   - silent LGTM:    (not-LGTM 0.0 + verdict 0.0 + judge ~0.25) / 3
+  #                     = ~0.08  -> FAIL
+  # This preserves semantic grading while making the tested verdict
+  # inconsistency falsifiable.
   threshold: 0.6
