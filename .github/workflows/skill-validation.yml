@@ -596,10 +596,18 @@ jobs:
             exit 0
           fi
 
-          # Instruction files = everything tracked under the skill dir EXCEPT
-          # tests/ (keep the PR's new stimulus + frozen fixtures).
-          mapfile -t INSTR < <(git ls-tree -r --name-only HEAD -- "$SKILL_DIR" \
-            | grep -v "^${SKILL_DIR}/tests/" || true)
+          # Compare the union of base and PR Markdown instructions. This catches
+          # deleted/renamed files while keeping the PR's eval specs and scripts.
+          mapfile -t INSTR < <(
+            {
+              git ls-tree -r --name-only "$BASE_SHA" -- "$SKILL_DIR"
+              git ls-tree -r --name-only HEAD -- "$SKILL_DIR"
+            } | awk -v prefix="${SKILL_DIR}/" '
+              index($0, prefix) == 1 &&
+              index($0, prefix "tests/") != 1 &&
+              /\.md$/ { print }
+            ' | sort -u
+          )
           if [ ${#INSTR[@]} -eq 0 ]; then
             echo "No instruction files under ${SKILL_DIR} — skipping baseline."
             echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
@@ -616,7 +624,7 @@ jobs:
           echo "Reverting ${#INSTR[@]} instruction file(s) under ${SKILL_DIR} to base ${BASE_SHA} for the baseline run"
           # Always restore PR content when this step exits, even on error, so the
           # authoritative "after" run below never sees base content.
-          restore() { git checkout HEAD -- "$SKILL_DIR" 2>/dev/null || true; }
+          restore() { git restore --staged --worktree --source=HEAD -- "$SKILL_DIR"; }
           trap restore EXIT
           for f in "${INSTR[@]}"; do
             if git cat-file -e "${BASE_SHA}:${f}" 2>/dev/null; then
@@ -664,7 +672,7 @@ jobs:
       # the authoritative run, regardless of how the baseline step exited.
       - name: Restore PR skill content
         if: always()
-        run: git checkout HEAD -- .github/skills 2>/dev/null || true
+        run: git restore --staged --worktree --source=HEAD -- .github/skills
 
       - name: Run Vally evaluation
         id: eval-run
@@ -1136,6 +1144,15 @@ jobs:
               const m = (tag || '').match(new RegExp(key + '="([^"]*)"'));
               return m ? xmlDecode(m[1]) : null;
             }
+            function artifactScope(file, root, artifactPrefix) {
+              const [artifact] = path.relative(root, file).split(path.sep);
+              return artifact && artifact.startsWith(artifactPrefix)
+                ? artifact.slice(artifactPrefix.length)
+                : '';
+            }
+            function suiteKey(scope, label) {
+              return `${scope}\u0000${label}`;
+            }
 
             const suites = [];
             let evalPassed = true;
@@ -1143,6 +1160,7 @@ jobs:
             if (fs.existsSync('eval-results')) {
               const junitFiles = findFilesByName('eval-results', 'eval-results.junit.xml');
               for (const jf of junitFiles) {
+                const scope = artifactScope(jf, 'eval-results', 'skill-eval-results-');
                 let xml = '';
                 try { xml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
                 const blocks = xml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
@@ -1170,7 +1188,7 @@ jobs:
                       if (!failures.has(tcName)) failures.set(tcName, { kind, msg });
                     }
                   }
-                  suites.push({ label, score, threshold, passed, failures: [...failures.entries()] });
+                  suites.push({ scope, label, score, threshold, passed, failures: [...failures.entries()] });
                 }
               }
             }
@@ -1197,19 +1215,20 @@ jobs:
               lines.push('');
 
               // ── Per-suite results table ─────────────────────────
-              // Baseline (pre-PR) suite scores, keyed by evalName, so the table
-              // can show before → after when this PR changed the reviewer.
+              // Baseline scores are keyed by skill artifact and eval name, so
+              // equal suite names in different skills remain distinct.
               const baselineScores = new Map();
               if (fs.existsSync('eval-results-baseline')) {
                 const bFiles = findFilesByName('eval-results-baseline', 'eval-results.junit.xml');
                 for (const jf of bFiles) {
+                  const bScope = artifactScope(jf, 'eval-results-baseline', 'skill-eval-baseline-');
                   let bxml = '';
                   try { bxml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
                   const bblocks = bxml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
                   for (const block of bblocks) {
                     const bOpen = (block.match(/<testsuite\b[^>]*>/) || [''])[0];
                     const bLabel = suiteProp(block, 'evalName') || tagAttr(bOpen, 'name') || '(unnamed)';
-                    baselineScores.set(bLabel, {
+                    baselineScores.set(suiteKey(bScope, bLabel), {
                       score: suiteProp(block, 'overallScore'),
                       passed: suiteProp(block, 'passed') === 'true',
                     });
@@ -1231,7 +1250,7 @@ jobs:
                 const v = s.passed ? '✅' : '❌';
                 const label = (s.label || '').replace(/\|/g, '\\|');
                 if (hasBaseline) {
-                  const b = baselineScores.get(s.label);
+                  const b = baselineScores.get(suiteKey(s.scope, s.label));
                   const bsc = b && b.score != null && b.score !== '' ? Number(b.score).toFixed(2) : '—';
                   let trend = '';
                   if (b && b.score != null && b.score !== '' && s.score != null && s.score !== '') {
