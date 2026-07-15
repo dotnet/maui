@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls
 		BindableObject _targetObject;
 		BindableObject _proxyObject;
 		BindableProperty[] _bpProxies;
+		SetterSpecificity _specificity;
 		bool _applying;
 
 		/// <summary>
@@ -114,7 +115,12 @@ namespace Microsoft.Maui.Controls
 						return;
 					}
 					// ManualValueSetter specificity ensures TwoWay bindings continue updating after ConvertBack.
-					_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity: SetterSpecificity.ManualValueSetter);
+					// BindingContext bindings retain binding specificity so inherited-context cleanup can distinguish
+					// them from explicit local values.
+					var specificity = ReferenceEquals(_targetProperty, BindableObject.BindingContextProperty)
+						? _specificity
+						: SetterSpecificity.ManualValueSetter;
+					_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
 					_applying = false;
 				}
 			}
@@ -151,6 +157,7 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException("Cannot apply MultiBinding because both Converter and StringFormat are null.");
 
 			base.Apply(context, targetObject, targetProperty, fromBindingContextChanged, specificity);
+			_specificity = specificity;
 
 			if (!ReferenceEquals(_targetObject, targetObject))
 			{
@@ -173,7 +180,7 @@ namespace Microsoft.Maui.Controls
 					_applying = false;
 				}
 			}
-			_proxyObject.BindingContext = context;
+			BindableObject.SetInheritedBindingContextForBinding(_proxyObject, context);
 
 			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
 				return;

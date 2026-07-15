@@ -41,10 +41,32 @@ namespace Microsoft.Maui.Controls
 
 		internal ushort _triggerCount = 0;
 		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity = new();
-		static readonly WeakReference s_inheritedContextCleanupPending = new(null);
 		readonly Dictionary<int, BindablePropertyContext> _properties = new(4);
 		bool _applying;
+		WeakReference _inheritedBindingContext;
 		WeakReference _inheritedContext;
+
+		internal sealed class InheritedBindingContextReference : WeakReference
+		{
+			internal InheritedBindingContextReference(object target)
+				: base(target)
+			{
+			}
+		}
+
+		sealed class PendingInheritedBindingContextCleanup : WeakReference
+		{
+			internal PendingInheritedBindingContextCleanup(WeakReference inheritedContext, bool isBindingContextBinding)
+				: base(null)
+			{
+				InheritedContext = inheritedContext;
+				IsBindingContextBinding = isBindingContextBinding;
+			}
+
+			internal WeakReference InheritedContext { get; }
+
+			internal bool IsBindingContextBinding { get; }
+		}
 
 		/// <summary>Bindable property for <see cref="BindingContext"/>.</summary>
 		public static readonly BindableProperty BindingContextProperty =
@@ -60,7 +82,8 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				var inheritedContext = Volatile.Read(ref _inheritedContext);
-				if (ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending))
+				if (inheritedContext is PendingInheritedBindingContextCleanup
+					|| Volatile.Read(ref _inheritedBindingContext) is PendingInheritedBindingContextCleanup)
 				{
 					DispatchInheritedBindingContextCleanup(clearIfDispatchNotRequired: true);
 					inheritedContext = Volatile.Read(ref _inheritedContext);
@@ -356,7 +379,7 @@ namespace Microsoft.Maui.Controls
 
 			targetProperty.BindingChanging?.Invoke(this, oldBinding, binding);
 
-			binding.Apply(BindingContext, this, targetProperty, false, specificity);
+			binding.Apply(GetBindingContextForBindingApplication(targetProperty), this, targetProperty, false, specificity);
 		}
 
 		/// <summary>
@@ -371,31 +394,44 @@ namespace Microsoft.Maui.Controls
 			SetInheritedBindingContextCore(bindable, value, force: false);
 		}
 
+		internal static void SetInheritedBindingContextForBinding(BindableObject bindable, object value)
+		{
+			SetInheritedBindingContextCore(bindable, value, force: true);
+		}
+
 		static void SetInheritedBindingContextCore(BindableObject bindable, object value, bool force)
 		{
 			// I wonder if we couldn't treat BindingContext with specificities
 			BindablePropertyContext bpContext = bindable.GetContext(BindingContextProperty);
-			if (bpContext != null && bpContext.Values.GetSpecificity() >= SetterSpecificity.ManualValueSetter)
+			var binding = bpContext?.Bindings.GetValue();
+			if (bpContext != null
+				&& bpContext.Values.GetSpecificity() >= SetterSpecificity.ManualValueSetter
+				&& (!force || binding is null))
+			{
 				return;
+			}
 
 			var inheritedContext = Volatile.Read(ref bindable._inheritedContext);
+			var inheritedBindingContext = Volatile.Read(ref bindable._inheritedBindingContext);
 			if (!force
-				&& !ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending)
-				&& ReferenceEquals(inheritedContext?.Target, value))
+				&& inheritedContext is not PendingInheritedBindingContextCleanup
+				&& inheritedBindingContext is not PendingInheritedBindingContextCleanup
+				&& ReferenceEquals((inheritedContext ?? inheritedBindingContext)?.Target, value))
 				return;
-
-			var binding = bpContext?.Bindings.GetValue();
 
 			if (binding != null)
 			{
-				binding.Context = value;
+				var bindingContext = new InheritedBindingContextReference(value);
+				binding.Context = bindingContext;
 				Volatile.Write(ref bindable._inheritedContext, null);
+				Volatile.Write(ref bindable._inheritedBindingContext, bindingContext);
 				// OnBindingContextChanged fires from within BindingContextProperty propertyChanged callback
 				bindable.ApplyBinding(bpContext, fromBindingContextChanged: true);
 			}
 			else
 			{
-				Volatile.Write(ref bindable._inheritedContext, new WeakReference(value));
+				Volatile.Write(ref bindable._inheritedBindingContext, null);
+				Volatile.Write(ref bindable._inheritedContext, new InheritedBindingContextReference(value));
 				bindable.ApplyBindings(fromBindingContextChanged: true);
 				bindable.OnBindingContextChanged();
 			}
@@ -404,86 +440,99 @@ namespace Microsoft.Maui.Controls
 		internal WeakReference MarkInheritedBindingContextForCleanup()
 		{
 			var inheritedContext = Volatile.Read(ref _inheritedContext);
-			if (ReferenceEquals(inheritedContext, s_inheritedContextCleanupPending))
-				return null;
-
-			if (inheritedContext is null)
+			if (inheritedContext is not null)
 			{
-				var binding = GetContext(BindingContextProperty)?.Bindings.GetValue();
-				if (binding is null || binding.Context is not { } bindingContext)
+				if (inheritedContext is PendingInheritedBindingContextCleanup)
 					return null;
 
-				if (Interlocked.CompareExchange(
+				if (inheritedContext.Target is null)
+				{
+					// The effective inherited context is already null, so no binding-context
+					// transition needs to be raised.
+					Interlocked.CompareExchange(ref _inheritedContext, null, inheritedContext);
+					return null;
+				}
+
+				return MarkInheritedBindingContextForCleanup(
 					ref _inheritedContext,
-					s_inheritedContextCleanupPending,
-					null) is not null)
-				{
-					return null;
-				}
-
-				if (!ReferenceEquals(binding, GetContext(BindingContextProperty)?.Bindings.GetValue())
-					|| !ReferenceEquals(bindingContext, binding.Context))
-				{
-					Interlocked.CompareExchange(
-						ref _inheritedContext,
-						null,
-						s_inheritedContextCleanupPending);
-					return null;
-				}
-
-				// The pending marker also acts as a cancellation token for binding-held
-				// inherited context, where cancellation restores a null weak context.
-				return s_inheritedContextCleanupPending;
+					inheritedContext,
+					isBindingContextBinding: false);
 			}
 
-			if (inheritedContext.Target is null)
-			{
-				// The effective inherited context is already null, so no binding-context
-				// transition needs to be raised.
-				Interlocked.CompareExchange(ref _inheritedContext, null, inheritedContext);
+			var inheritedBindingContext = Volatile.Read(ref _inheritedBindingContext);
+			if (inheritedBindingContext is null or PendingInheritedBindingContextCleanup)
 				return null;
-			}
 
-			if (!ReferenceEquals(
-				Interlocked.CompareExchange(ref _inheritedContext, s_inheritedContextCleanupPending, inheritedContext),
-				inheritedContext))
-			{
-				return null;
-			}
+			return MarkInheritedBindingContextForCleanup(
+				ref _inheritedBindingContext,
+				inheritedBindingContext,
+				isBindingContextBinding: true);
+		}
 
-			return inheritedContext;
+		static WeakReference MarkInheritedBindingContextForCleanup(
+			ref WeakReference inheritedContext,
+			WeakReference observedContext,
+			bool isBindingContextBinding)
+		{
+			var pendingCleanup = new PendingInheritedBindingContextCleanup(observedContext, isBindingContextBinding);
+			return ReferenceEquals(
+				Interlocked.CompareExchange(ref inheritedContext, pendingCleanup, observedContext),
+				observedContext)
+					? pendingCleanup
+					: null;
 		}
 
 		internal void CancelInheritedBindingContextCleanup(WeakReference cleanupToken)
 		{
-			Interlocked.CompareExchange(
-				ref _inheritedContext,
-				ReferenceEquals(cleanupToken, s_inheritedContextCleanupPending) ? null : cleanupToken,
-				s_inheritedContextCleanupPending);
+			if (cleanupToken is not PendingInheritedBindingContextCleanup pendingCleanup)
+				return;
+
+			if (pendingCleanup.IsBindingContextBinding)
+			{
+				Interlocked.CompareExchange(
+					ref _inheritedBindingContext,
+					pendingCleanup.InheritedContext,
+					pendingCleanup);
+			}
+			else
+			{
+				Interlocked.CompareExchange(
+					ref _inheritedContext,
+					pendingCleanup.InheritedContext,
+					pendingCleanup);
+			}
 		}
 
 		internal void DispatchInheritedBindingContextCleanup(bool clearIfDispatchNotRequired = false)
 		{
-			if (!ReferenceEquals(Volatile.Read(ref _inheritedContext), s_inheritedContextCleanupPending))
+			var pendingCleanup = Volatile.Read(ref _inheritedContext) as PendingInheritedBindingContextCleanup
+				?? Volatile.Read(ref _inheritedBindingContext) as PendingInheritedBindingContextCleanup;
+			if (pendingCleanup is null)
 				return;
 
 			// Finalizer callers only queue work here. Binding callbacks run on the dispatcher
 			// or remain pending for a normal access path to clear safely.
 			var dispatcher = _dispatcher;
 			if (dispatcher is not null
-				&& dispatcher.IsDispatchRequired
-				&& dispatcher.Dispatch(ClearPendingInheritedBindingContext))
+				&& dispatcher.IsDispatchRequired)
+			{
+				dispatcher.Dispatch(() => ClearPendingInheritedBindingContext(pendingCleanup));
 				return;
+			}
 
 			if (clearIfDispatchNotRequired)
-				ClearPendingInheritedBindingContext();
+				ClearPendingInheritedBindingContext(pendingCleanup);
 		}
 
-		void ClearPendingInheritedBindingContext()
+		void ClearPendingInheritedBindingContext(PendingInheritedBindingContextCleanup pendingCleanup)
 		{
+			ref WeakReference inheritedContext = ref (pendingCleanup.IsBindingContextBinding
+				? ref _inheritedBindingContext
+				: ref _inheritedContext);
+
 			if (!ReferenceEquals(
-				Interlocked.CompareExchange(ref _inheritedContext, null, s_inheritedContextCleanupPending),
-				s_inheritedContextCleanupPending))
+				Interlocked.CompareExchange(ref inheritedContext, null, pendingCleanup),
+				pendingCleanup))
 			{
 				return;
 			}
@@ -848,19 +897,61 @@ namespace Microsoft.Maui.Controls
 
 			var specificity = kvp.Key;
 			binding.Unapply(fromBindingContextChanged);
-			binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged, specificity);
+			binding.Apply(
+				GetBindingContextForBindingApplication(context.Property),
+				this,
+				context.Property,
+				fromBindingContextChanged,
+				specificity);
+		}
+
+		object GetBindingContextForBindingApplication(BindableProperty property)
+		{
+			if (!ReferenceEquals(property, BindingContextProperty))
+				return BindingContext;
+
+			var inheritedBindingContext = Volatile.Read(ref _inheritedBindingContext);
+			if (inheritedBindingContext is PendingInheritedBindingContextCleanup)
+				return null;
+
+			if (Volatile.Read(ref _inheritedContext) is PendingInheritedBindingContextCleanup)
+				return null;
+
+			return inheritedBindingContext is null
+				? BindingContext
+				: inheritedBindingContext.Target;
 		}
 
 		static void BindingContextPropertyBindingChanging(BindableObject bindable, BindingBase oldBindingBase, BindingBase newBindingBase)
 		{
-			object context = Volatile.Read(ref bindable._inheritedContext)?.Target;
-			var oldBinding = oldBindingBase as Binding;
-			var newBinding = newBindingBase as Binding;
+			var inheritedBindingContext = Volatile.Read(ref bindable._inheritedBindingContext);
+			var inheritedContext = Volatile.Read(ref bindable._inheritedContext);
 
-			if (context == null && oldBinding != null)
-				context = oldBinding.Context;
-			if (context != null && newBinding != null)
-				newBinding.Context = context;
+			if (newBindingBase is null)
+			{
+				if (inheritedBindingContext is not PendingInheritedBindingContextCleanup)
+					Volatile.Write(ref bindable._inheritedBindingContext, null);
+				return;
+			}
+
+			if (inheritedBindingContext is PendingInheritedBindingContextCleanup
+				|| inheritedContext is PendingInheritedBindingContextCleanup)
+			{
+				newBindingBase.Context = new InheritedBindingContextReference(null);
+				return;
+			}
+
+			if (inheritedContext is null)
+				inheritedContext = inheritedBindingContext;
+
+			if (inheritedContext is null)
+				return;
+
+			var bindingContext = inheritedContext as InheritedBindingContextReference
+				?? new InheritedBindingContextReference(inheritedContext.Target);
+			Volatile.Write(ref bindable._inheritedContext, null);
+			Volatile.Write(ref bindable._inheritedBindingContext, bindingContext);
+			newBindingBase.Context = bindingContext;
 		}
 
 		static void BindingContextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
@@ -916,6 +1007,10 @@ namespace Microsoft.Maui.Controls
 			var currentbinding = context.Bindings.GetValue();
 			var binding = context.Bindings[specificity];
 			var isCurrent = binding == currentbinding;
+			var pendingCleanup = isCurrent && ReferenceEquals(property, BindingContextProperty)
+				? Volatile.Read(ref _inheritedBindingContext) as PendingInheritedBindingContextCleanup
+					?? Volatile.Read(ref _inheritedContext) as PendingInheritedBindingContextCleanup
+				: null;
 
 			if (isCurrent)
 			{
@@ -927,10 +1022,55 @@ namespace Microsoft.Maui.Controls
 
 				property.BindingChanging?.Invoke(this, binding, currentbinding);
 
-				currentbinding?.Apply(BindingContext, this, property, false, context.Bindings.GetClearedSpecificity());
+				currentbinding?.Apply(
+					GetBindingContextForBindingApplication(property),
+					this,
+					property,
+					false,
+					context.Bindings.GetClearedSpecificity());
 			}
 
 			context.Bindings.Remove(specificity);
+			if (pendingCleanup is not null)
+				CompletePendingInheritedBindingContextCleanupAfterBindingRemoval(context, specificity, pendingCleanup);
+		}
+
+		void CompletePendingInheritedBindingContextCleanupAfterBindingRemoval(
+			BindablePropertyContext context,
+			SetterSpecificity removedSpecificity,
+			PendingInheritedBindingContextCleanup pendingCleanup)
+		{
+			bool hasBinding = context.Bindings.GetValue() is not null;
+			var clearedContext = new InheritedBindingContextReference(null);
+			bool claimedCleanup;
+
+			if (pendingCleanup.IsBindingContextBinding)
+			{
+				claimedCleanup = ReferenceEquals(
+					Interlocked.CompareExchange(
+						ref _inheritedBindingContext,
+						hasBinding ? clearedContext : null,
+						pendingCleanup),
+					pendingCleanup);
+			}
+			else
+			{
+				claimedCleanup = ReferenceEquals(
+					Interlocked.CompareExchange(ref _inheritedContext, null, pendingCleanup),
+					pendingCleanup);
+				if (claimedCleanup && hasBinding)
+					Volatile.Write(ref _inheritedBindingContext, clearedContext);
+			}
+
+			if (!claimedCleanup)
+				return;
+
+			ClearValueCore(BindingContextProperty, removedSpecificity);
+			if (!hasBinding)
+			{
+				Volatile.Write(ref _inheritedBindingContext, null);
+				Volatile.Write(ref _inheritedContext, clearedContext);
+			}
 		}
 
 		/// <summary>

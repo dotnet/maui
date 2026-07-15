@@ -100,7 +100,15 @@ namespace Microsoft.Maui.Controls
 
 		internal bool AllowChaining { get; set; }
 
-		internal object Context { get; set; }
+		object _context;
+
+		internal object Context
+		{
+			get => _context is BindableObject.InheritedBindingContextReference inheritedContext
+				? inheritedContext.Target
+				: _context;
+			set => _context = value;
+		}
 
 		internal bool IsApplied { get; private set; }
 

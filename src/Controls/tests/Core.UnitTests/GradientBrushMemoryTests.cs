@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				brush.BindingContext = bindingContext;
 
 			return new WeakReference(brush);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static (WeakReference Brush, WeakReference BindingContext) CreateBrushWithNewBindingContext(
+			GradientStopCollection sharedStops)
+		{
+			var bindingContext = new GradientStop { Offset = 0.25f };
+			var brush = new LinearGradientBrush
+			{
+				BindingContext = bindingContext,
+				GradientStops = sharedStops
+			};
+
+			return (new WeakReference(brush), new WeakReference(bindingContext));
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
@@ -110,6 +125,77 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			inheritedContext.Offset = 0.5f;
 			Assert.Null(stop.BindingContext);
 			GC.KeepAlive(inheritedContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
+		public async Task CollectedBrushWithoutDispatcherReleasesBindingContextPropertyBindingSource()
+		{
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			WeakReference weakBindingContext;
+			DispatcherProviderStubOptions.SkipDispatcherCreation = true;
+			try
+			{
+				stop = new GradientStop();
+				stop.SetBinding(BindableObject.BindingContextProperty, nameof(GradientStop.Offset));
+				sharedStops = new GradientStopCollection { stop };
+				(weakBrush, weakBindingContext) = CreateBrushWithNewBindingContext(sharedStops);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.SkipDispatcherCreation = false;
+			}
+
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			Assert.False(await weakBindingContext.WaitForCollect(), "Inherited binding context should not be alive!");
+			Assert.Equal(0, bindingContextChanged);
+
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(1, bindingContextChanged);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
+		public async Task CollectedBrushWithoutDispatcherReleasesMultiBindingContextPropertyBindingSource()
+		{
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			WeakReference weakBindingContext;
+			DispatcherProviderStubOptions.SkipDispatcherCreation = true;
+			try
+			{
+				stop = new GradientStop();
+				stop.SetBinding(BindableObject.BindingContextProperty, new MultiBinding
+				{
+					StringFormat = "{0}",
+					Bindings =
+					{
+						new Binding(nameof(GradientStop.Offset))
+					}
+				});
+				sharedStops = new GradientStopCollection { stop };
+				(weakBrush, weakBindingContext) = CreateBrushWithNewBindingContext(sharedStops);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.SkipDispatcherCreation = false;
+			}
+
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			Assert.False(await weakBindingContext.WaitForCollect(), "Inherited binding context should not be alive!");
+			Assert.Equal(0, bindingContextChanged);
+
+			Assert.Equal(string.Empty, stop.BindingContext);
+			Assert.Equal(1, bindingContextChanged);
 			GC.KeepAlive(sharedStops);
 		}
 
@@ -228,9 +314,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task ParentAccessAfterFailedDispatchClearsGradientStopInheritedBindingContext()
+		public async Task FailedDispatchLeavesGradientStopInheritedBindingContextCleanupPending()
 		{
-			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+			bool dispatchRequired = true;
+			DispatcherProviderStubOptions.IsInvokeRequired = () => dispatchRequired;
 			DispatcherProviderStubOptions.DispatchResult = () => false;
 
 			GradientStop bindingContext;
@@ -258,6 +345,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(0, bindingContextChanged);
 			Assert.Equal(0.25f, stop.Offset);
 
+			Assert.Null(stop.Parent);
+
+			Assert.Equal(0, bindingContextChanged);
+			Assert.Equal(0.25f, stop.Offset);
+
+			dispatchRequired = false;
 			Assert.Null(stop.Parent);
 
 			Assert.Equal(1, bindingContextChanged);
@@ -327,6 +420,205 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Same(secondBindingContext, stop.BindingContext);
 			GC.KeepAlive(firstStops);
 			GC.KeepAlive(secondBrush);
+		}
+
+		[Fact]
+		public async Task CollectingPreviousBrushPreservesCurrentGradientStopBindingContextPropertyBindingSource()
+		{
+			var stop = new GradientStop();
+			stop.SetBinding(BindableObject.BindingContextProperty, nameof(GradientStop.Offset));
+			var firstBindingContext = new GradientStop { Offset = 0.25f };
+			var firstStops = new GradientStopCollection { stop };
+			var weakFirstBrush = CreateBrushWithSharedGradientStops(firstStops, firstBindingContext);
+			var secondBindingContext = new GradientStop { Offset = 0.5f };
+			var secondBrush = new LinearGradientBrush
+			{
+				BindingContext = secondBindingContext,
+				GradientStops = new GradientStopCollection { stop }
+			};
+
+			Assert.Same(secondBrush, stop.Parent);
+			Assert.Equal(0.5f, stop.BindingContext);
+			Assert.False(await weakFirstBrush.WaitForCollect(), "Previous LinearGradientBrush should not be alive!");
+			Assert.Same(secondBrush, stop.Parent);
+			Assert.Equal(0.5f, stop.BindingContext);
+			GC.KeepAlive(firstStops);
+			GC.KeepAlive(firstBindingContext);
+			GC.KeepAlive(secondBrush);
+			GC.KeepAlive(secondBindingContext);
+		}
+
+		[Fact]
+		public async Task ClearingManualBindingContextAfterCollectedBrushDoesNotRestoreStaleBindingValue()
+		{
+			var inheritedContext = new GradientStop { Offset = 0.25f };
+			var stop = new GradientStop();
+			stop.SetBinding(BindableObject.BindingContextProperty, nameof(GradientStop.Offset));
+			var sharedStops = new GradientStopCollection { stop };
+			var weakBrush = CreateBrushWithSharedGradientStops(sharedStops, inheritedContext);
+			var manualBindingContext = stop.BindingContext;
+			stop.BindingContext = manualBindingContext;
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			Assert.Null(stop.Parent);
+			Assert.Same(manualBindingContext, stop.BindingContext);
+			Assert.Equal(0, bindingContextChanged);
+
+			stop.ClearValue(BindableObject.BindingContextProperty);
+
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(1, bindingContextChanged);
+			GC.KeepAlive(inheritedContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
+		public async Task ReplacingBindingContextBindingWhileCleanupIsPendingUsesNullInheritedSource()
+		{
+			var dispatchedCleanups = new ConcurrentQueue<Action>();
+			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+			DispatcherProviderStubOptions.InvokeOnMainThread = dispatchedCleanups.Enqueue;
+
+			GradientStop inheritedContext;
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			try
+			{
+				inheritedContext = new GradientStop { Offset = 0.25f };
+				stop = new GradientStop();
+				stop.SetBinding(BindableObject.BindingContextProperty, nameof(GradientStop.Offset));
+				sharedStops = new GradientStopCollection { stop };
+				weakBrush = CreateBrushWithSharedGradientStops(sharedStops, inheritedContext);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+			}
+
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			Assert.True(dispatchedCleanups.TryDequeue(out var cleanup));
+
+			stop.SetBinding(BindableObject.BindingContextProperty, nameof(GradientStop.Offset));
+
+			Assert.Null(stop.GetValue(BindableObject.BindingContextProperty));
+			Assert.Equal(1, bindingContextChanged);
+
+			cleanup();
+
+			Assert.Null(stop.GetValue(BindableObject.BindingContextProperty));
+			Assert.Equal(1, bindingContextChanged);
+			GC.KeepAlive(inheritedContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
+		public async Task RemovingBindingContextBindingWhileCleanupIsPendingClearsStoredBindingValue()
+		{
+			var dispatchedCleanups = new ConcurrentQueue<Action>();
+			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+			DispatcherProviderStubOptions.InvokeOnMainThread = dispatchedCleanups.Enqueue;
+
+			GradientStop inheritedContext;
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			try
+			{
+				inheritedContext = new GradientStop { Offset = 0.25f };
+				stop = new GradientStop();
+				stop.SetBinding(BindableObject.BindingContextProperty, nameof(GradientStop.Offset));
+				sharedStops = new GradientStopCollection { stop };
+				weakBrush = CreateBrushWithSharedGradientStops(sharedStops, inheritedContext);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+			}
+
+			var manualBindingContext = stop.BindingContext;
+			stop.BindingContext = manualBindingContext;
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			Assert.True(dispatchedCleanups.TryDequeue(out var cleanup));
+
+			stop.RemoveBinding(BindableObject.BindingContextProperty);
+
+			Assert.Same(manualBindingContext, stop.BindingContext);
+			Assert.Equal(0, bindingContextChanged);
+
+			cleanup();
+			stop.ClearValue(BindableObject.BindingContextProperty);
+
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(1, bindingContextChanged);
+			GC.KeepAlive(inheritedContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
+		public async Task StaleDispatchedCleanupDoesNotClearNewPendingBindingContextCleanup()
+		{
+			var dispatchedCleanups = new ConcurrentQueue<Action>();
+			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+			DispatcherProviderStubOptions.InvokeOnMainThread = dispatchedCleanups.Enqueue;
+
+			GradientStop stop;
+			GradientStop firstBindingContext;
+			GradientStopCollection firstStops;
+			WeakReference weakFirstBrush;
+			try
+			{
+				stop = new GradientStop();
+				stop.SetBinding(BindableObject.BindingContextProperty, nameof(GradientStop.Offset));
+				firstBindingContext = new GradientStop { Offset = 0.25f };
+				firstStops = new GradientStopCollection { stop };
+				weakFirstBrush = CreateBrushWithSharedGradientStops(firstStops, firstBindingContext);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+			}
+
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakFirstBrush.WaitForCollect(), "First LinearGradientBrush should not be alive!");
+			Assert.True(dispatchedCleanups.TryDequeue(out var firstCleanup));
+
+			var secondBindingContext = new GradientStop { Offset = 0.5f };
+			var secondStops = new GradientStopCollection { stop };
+			var weakSecondBrush = CreateBrushWithSharedGradientStops(secondStops, secondBindingContext);
+			while (dispatchedCleanups.TryDequeue(out var duplicateFirstCleanup))
+				duplicateFirstCleanup();
+			int changesAfterReparenting = bindingContextChanged;
+
+			Assert.False(await weakSecondBrush.WaitForCollect(), "Second LinearGradientBrush should not be alive!");
+			Assert.True(dispatchedCleanups.TryDequeue(out var secondCleanup));
+
+			firstCleanup();
+
+			Assert.Equal(changesAfterReparenting, bindingContextChanged);
+			Assert.Equal(0.5f, stop.GetValue(BindableObject.BindingContextProperty));
+
+			secondCleanup();
+
+			Assert.Equal(changesAfterReparenting + 1, bindingContextChanged);
+			Assert.Null(stop.GetValue(BindableObject.BindingContextProperty));
+			GC.KeepAlive(firstStops);
+			GC.KeepAlive(firstBindingContext);
+			GC.KeepAlive(secondStops);
+			GC.KeepAlive(secondBindingContext);
 		}
 
 		[Fact]
