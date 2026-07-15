@@ -55,8 +55,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IndicatorSizeProperty = BindableProperty.Create(nameof(IndicatorSize), typeof(double), typeof(IndicatorView), 6.0);
 
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
-		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(IndicatorView), null, propertyChanged: (bindable, oldValue, newValue)
-			=> ((IndicatorView)bindable).ResetItemsSource((IEnumerable)oldValue));
+		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(IndicatorView), null, propertyChanged: (bindable, _, _)
+			=> ((IndicatorView)bindable).ResetItemsSource());
 
 		static readonly BindableProperty IndicatorLayoutProperty = BindableProperty.Create(nameof(IndicatorLayout), typeof(IBindableLayout), typeof(IndicatorView), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
@@ -236,11 +236,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakNotifyCollectionChangedProxy _collectionChangedProxy;
+		// The proxy holds a weak reference to its handler, so the view must keep the delegate alive.
 		NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
 		~IndicatorView() => _collectionChangedProxy?.Unsubscribe();
 
-		void ResetItemsSource(IEnumerable oldItemsSource)
+		void ResetItemsSource()
 		{
 			if (ItemsSource is INotifyCollectionChanged collection)
 			{
