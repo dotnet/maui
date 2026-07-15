@@ -4,19 +4,39 @@
 
 - .NET for Android creates APK and AAB items.
 - .NET for iOS, Mac Catalyst, tvOS, and macOS creates `.app`, `.ipa`, `.pkg`, and `.xcarchive` items.
+- `Microsoft.Maui.ApplicationArtifacts.Windows` creates items for modern SDK-style Windows App SDK applications.
 - Other platforms should populate the same item group from their own build or publish pipeline.
 
-MAUI does not rediscover platform package files and does not create a parallel MAUI-specific artifact item group. Instead, it defines default MAUI metadata for the shared `ApplicationArtifact` item type. Platform SDKs create the items, and the defaults supplement their platform-specific metadata.
-
-MAUI supplies these metadata values when the matching project properties are set:
+MAUI does not rediscover platform package files and does not create a parallel MAUI-specific artifact item group. Each producer attaches common metadata from its final manifest or resolved build output:
 
 - `ApplicationId`
-- `ApplicationIdGuid`
-- `ApplicationName`, mapped from `ApplicationTitle`
+- `ApplicationName`
 - `ApplicationTitle`
 - `ApplicationDisplayVersion`
 - `ApplicationVersion`
 
-The defaults are declared with an MSBuild `ItemDefinitionGroup`, so explicit metadata from a platform SDK takes precedence. The defaults also apply when a platform recreates an item, as Android does when changing artifact identities to published paths.
+Platform-specific metadata remains available alongside the common values, such as Android `PackageId`, Apple `BundleIdentifier`, and Windows `PackageVersion`. `ApplicationIdGuid` is Windows-specific and is present only when the effective package identity is a GUID. Resource-backed names remain resource references when the build cannot resolve a single locale.
 
-`GetApplicationArtifacts` and `Publish` remain platform-owned result paths. MAUI only supplies shared metadata and does not change which artifacts those targets produce or return.
+Each platform owns `GetApplicationArtifacts`, retains `$(GetApplicationArtifactsDependsOn)` as the downstream extension point, and makes the collected items available during Publish.
+
+## Windows App SDK
+
+`Microsoft.Maui.ApplicationArtifacts.Windows` is a targets-only `buildTransitive` package with no MAUI runtime, Resizetizer, or MAUI build-task dependency. `Microsoft.Maui.Core` depends on it only for Windows target frameworks, and non-MAUI Windows App SDK applications can reference it directly. It activates for real, non-design-time Windows App SDK application builds with `Exe` or `WinExe` output. Set `EnableWindowsApplicationArtifacts` to `false` to disable it. Classic `.wapproj` packaging is not supported.
+
+The package defines `GetApplicationArtifacts`, retains `$(GetApplicationArtifactsDependsOn)` as the downstream extension point, and makes publish-path items available to `AfterTargets="Publish"` consumers in the same invocation. It reads final Windows App SDK output properties and item lists rather than searching output directories.
+
+Each Windows item has an `ArtifactRole`:
+
+- `Primary`
+- `PayloadDirectory`
+- `Bundle`
+- `StoreUpload`
+- `DeploymentManifest`
+- `Symbols`
+- `Certificate`
+- `InstallScript`
+- `DependencyPackage`
+- `LandingPage`
+- `Support`
+
+Windows items also provide `IsPrimary`, `PrimaryArtifact`, `PackageFormat`, `PackageType`, `PackageVersion`, `Architecture`, `RuntimeIdentifier`, `Signed`, `BundlePlatforms`, `EntryPoint`, and `DeploymentDirectory` when available. Packaged identity, display name, and version metadata comes from the final Appx manifest, including unchanged `ms-resource:` references.

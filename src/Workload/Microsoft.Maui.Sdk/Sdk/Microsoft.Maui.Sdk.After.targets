@@ -13,17 +13,6 @@
     <ProjectCapability Include="MauiEssentials" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
   </ItemGroup>
 
-  <ItemDefinitionGroup>
-    <ApplicationArtifact>
-      <ApplicationId Condition="'$(ApplicationId)' != ''">$(ApplicationId)</ApplicationId>
-      <ApplicationIdGuid Condition="'$(ApplicationIdGuid)' != ''">$(ApplicationIdGuid)</ApplicationIdGuid>
-      <ApplicationName Condition="'$(ApplicationTitle)' != ''">$(ApplicationTitle)</ApplicationName>
-      <ApplicationTitle Condition="'$(ApplicationTitle)' != ''">$(ApplicationTitle)</ApplicationTitle>
-      <ApplicationDisplayVersion Condition="'$(ApplicationDisplayVersion)' != ''">$(ApplicationDisplayVersion)</ApplicationDisplayVersion>
-      <ApplicationVersion Condition="'$(ApplicationVersion)' != ''">$(ApplicationVersion)</ApplicationVersion>
-    </ApplicationArtifact>
-  </ItemDefinitionGroup>
-
   <!-- SingleProject-specific features -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
     <ProjectCapability Include="Msix" />
