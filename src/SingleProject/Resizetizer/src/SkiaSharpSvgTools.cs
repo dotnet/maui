@@ -48,7 +48,9 @@ namespace Microsoft.Maui.Resizetizer
 			else
 			{
 				// Rasterize first so the final draw honors the selected sampling options.
-				var info = new SKImageInfo((int)size.Width, (int)size.Height);
+				var info = new SKImageInfo(
+					Math.Max(1, (int)Math.Ceiling(size.Width)),
+					Math.Max(1, (int)Math.Ceiling(size.Height)));
 				using var surface = SKSurface.Create(info);
 				var cvn = surface.Canvas;
 
@@ -59,7 +61,7 @@ namespace Microsoft.Maui.Resizetizer
 				using var img = surface.Snapshot();
 
 				// draw to the main canvas using the correct quality settings
-				canvas.DrawImage(img, 0, 0, SamplingOptions, Paint);
+				canvas.DrawImage(img, SKRect.Create(size.Width, size.Height), SamplingOptions, Paint);
 			}
 		}
 

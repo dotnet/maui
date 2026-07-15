@@ -611,6 +611,40 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				}
 			}
 
+			[Fact]
+			public void FastestQualityHandlesFractionalSvgSizeWhenUpscaling()
+			{
+				var sourceFilename = Path.GetTempFileName();
+
+				try
+				{
+					File.WriteAllText(sourceFilename,
+						"""
+						<svg xmlns="http://www.w3.org/2000/svg" width="16.5" height="16.5" viewBox="0 0 16.5 16.5">
+						  <rect width="16.5" height="16.5" fill="black"/>
+						</svg>
+						""");
+
+					var info = new ResizeImageInfo();
+					info.Filename = sourceFilename;
+					info.BaseSize = new SKSize(33, 33);
+					info.Quality = ResizeQuality.Fastest;
+					var tools = new SkiaSharpSvgTools(info, Logger);
+					var dpiPath = new DpiPath("", 1);
+
+					tools.Resize(dpiPath, DestinationFilename);
+
+					using var resultImage = SKBitmap.Decode(DestinationFilename);
+					Assert.Equal(33, resultImage.Width);
+					Assert.Equal(33, resultImage.Height);
+					Assert.True(resultImage.GetPixel(32, 32).Alpha > 0);
+				}
+				finally
+				{
+					File.Delete(sourceFilename);
+				}
+			}
+
 			[Theory]
 			[InlineData("Auto")]
 			[InlineData("Best")]
