@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Platform;
 using UIKit;
 using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using TabbedPageConfiguration = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TabbedPage;
@@ -65,6 +66,11 @@ namespace Microsoft.Maui.Controls
 			// Fix 2: Dispose UITabBarAppearance
 			_tabBarAppearance?.Dispose();
 			_tabBarAppearance = null;
+
+			// Reset native defaults so they're recaptured from the new tab bar on reconnect
+			_defaultBarColorSet = false;
+			_defaultBarTextColorSet = false;
+			_defaultBarTranslucent = null;
 
 			// Clean up gradient brush subscription
 			if (_currentBarBackground is GradientBrush gradientBrush)
@@ -134,6 +140,31 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return nvh.ViewController;
+		}
+
+		internal static void MapFlowDirection(ITabbedViewHandler handler, TabbedPage view)
+		{
+			var manager = GetManager(handler);
+
+			if (manager is null)
+			{
+				return;
+			}
+
+			// Apply FlowDirection to the controller's View (enables child MatchParent resolution)
+			manager.View.UpdateFlowDirection(view);
+
+			// Prevent tab item reversal — the handler's extracted view propagates
+			// SemanticContentAttribute to the TabBar unlike the renderer
+			manager.TabBar.SemanticContentAttribute = UISemanticContentAttribute.Unspecified;
+
+			foreach (var child in view.InternalChildren)
+			{
+				if (child is Page page && page.Handler?.PlatformView is UIView childView)
+				{
+					childView.UpdateFlowDirection(page);
+				}
+			}
 		}
 
 		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)
@@ -345,7 +376,15 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			// Full rebuild for Reset, Replace, Move, initial load, or Title/Icon changes
+			// No pending args + pages already set up = Title/Icon change only.
+			// Refresh tab bar items without full rebuild (matches renderer's UpdateTabBarItem approach).
+			if (args is null && view._previousPages is not null)
+			{
+				HandleTabBarItemRefresh(view, manager);
+				return;
+			}
+
+			// Full rebuild for Reset, Replace, Move, or initial load
 			HandleFullRebuild(handler, view, manager, mauiContext);
 		}
 
@@ -382,6 +421,9 @@ namespace Microsoft.Maui.Controls
 
 			manager.ViewControllers = list.ToArray();
 			manager.UpdateTabBarVisibility();
+
+			// Refresh Tags so UpdateChildrenOrderIndex maps to correct pages
+			RefreshTabBarItemTags(view);
 
 			// Re-apply appearance for new items
 			MapBarBackgroundColor(handler, view);
@@ -423,6 +465,9 @@ namespace Microsoft.Maui.Controls
 			var controllersArray = list.ToArray();
 			manager.ViewControllers = controllersArray;
 			manager.UpdateTabBarVisibility();
+
+			// Refresh Tags so UpdateChildrenOrderIndex maps to correct pages
+			RefreshTabBarItemTags(view);
 
 			// Ensure selected VC is still valid
 			UIViewController controller = null;
@@ -504,6 +549,18 @@ namespace Microsoft.Maui.Controls
 			MapBarTextColor(handler, view);
 			MapSelectedTabColor(handler, view);
 			MapUnselectedTabColor(handler, view);
+		}
+
+		static void HandleTabBarItemRefresh(TabbedPage view, TabBarControllerManager manager)
+		{
+			// Only update tab bar items (Title/Icon) without rebuilding the VC array
+			foreach (var child in view.InternalChildren)
+			{
+				if (child is Page page && page.Handler is IPlatformViewHandler pageHandler)
+				{
+					view.SetTabBarItem(pageHandler, manager);
+				}
+			}
 		}
 
 		internal static void MapItemTemplate(ITabbedViewHandler handler, TabbedPage view)
@@ -626,6 +683,17 @@ namespace Microsoft.Maui.Controls
 			manager.TabBarController?.SetNeedsStatusBarAppearanceUpdate();
 		}
 
+		internal static void MapPreferredStatusBarUpdateAnimation(ITabbedViewHandler handler, TabbedPage view)
+		{
+			var manager = GetManager(handler);
+			if (manager is null)
+				return;
+
+			PageUIStatusBarAnimation animation = view.OnThisPlatform().PreferredStatusBarUpdateAnimation();
+			view.CurrentPage?.OnThisPlatform().SetPreferredStatusBarUpdateAnimation(animation);
+			manager.TabBarController?.SetNeedsStatusBarAppearanceUpdate();
+		}
+
 		internal static void MapTranslucencyMode(ITabbedViewHandler handler, TabbedPage view)
 		{
 			var tabBar = GetTabBar(handler);
@@ -719,6 +787,18 @@ namespace Microsoft.Maui.Controls
 				{
 					var page = (Page)InternalChildren[originalIndex];
 					SetIndex(page, i);
+				}
+			}
+		}
+
+		static void RefreshTabBarItemTags(TabbedPage view)
+		{
+			foreach (var child in view.InternalChildren)
+			{
+				if (child is Page page && page.Handler is IPlatformViewHandler pvh
+					&& pvh.ViewController?.TabBarItem is UITabBarItem tabBarItem)
+				{
+					tabBarItem.Tag = view.Children.IndexOf(page);
 				}
 			}
 		}

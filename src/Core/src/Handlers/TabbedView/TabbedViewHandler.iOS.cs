@@ -77,8 +77,8 @@ namespace Microsoft.Maui.Handlers
 
         UIViewController ITabBarManagerDelegate.GetCurrentPageViewController()
         {
-            // Return the ViewController from the ITabbedView's current page
-            // The Core layer can access ITabbedView but not Controls.TabbedPage directly
+            // No-op fallback — the Controls layer provides the real lookup via
+            // GetCurrentPageViewControllerFunc which is always set before this is reachable.
             return null;
         }
 
