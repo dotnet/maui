@@ -15,16 +15,16 @@ description: >-
 metadata:
   author: dotnet-maui
   version: "1.0"
-compatibility: Requires pwsh 7+, sqlite3, and dotnet-replay (optional pinned dnx v0.9.1 download fallback)
+compatibility: Requires pwsh 7+; local database selection also requires sqlite3. dotnet-replay is optional (raw scan fallback; pinned dnx v0.9.1 download is opt-in).
 ---
 
 # Analyze Sessions
 
 Mines your local Copilot CLI session logs to find where agents waste effort or
 fail, then turns those findings into **concrete repo edits + regression evals**.
-It automates — for the whole fleet of your local sessions — the same loop the
-team ran by hand over 64 CI sessions (`CONSOLIDATED_FINDINGS.md`) and the
-guard-eval mechanism shipped in PR #36002.
+It automates — for the whole fleet of your local sessions — a manual
+select → extract → judge → improve loop and the guard-eval mechanism shipped in
+PR #36002.
 
 **Trigger phrases:** "analyze my recent maui sessions for agent improvements",
 "what's making my Copilot runs expensive / fail", "find recurring failure modes

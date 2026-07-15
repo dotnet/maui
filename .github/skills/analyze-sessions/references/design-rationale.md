@@ -1,28 +1,24 @@
 # Design rationale — `analyze-sessions`
 
-This document folds in the key findings from the research blueprint
-(`session-analysis-research.md`, 2026-06-18) that motivated this skill, records the
-concrete facts the implementation depends on, and states the privacy model. It is
-reference material for maintainers of the skill — not part of the runtime path.
+This document records the concrete facts the implementation depends on and states
+the privacy model. It is reference material for maintainers of the skill — not
+part of the runtime path.
 
 ## Why this skill exists
 
 Copilot CLI writes a complete, append-only event log per session at
-`~/.copilot/session-state/<id>/events.jsonl` — **35 distinct event types** covering
-prompts, assistant turns, tool calls (with arguments **and** success), intents,
-subagents, skills, errors, output tokens, mode changes, compaction, and task
-completion. It is the single richest signal about how our agents actually behave,
-and it needs **zero setup**. The blueprint's core recommendation was to turn that
+`~/.copilot/session-state/<id>/events.jsonl`, covering prompts, assistant turns,
+tool calls (with arguments and success), intents, subagents, skills, errors,
+output tokens, mode changes, compaction, and task completion. It is a rich signal
+about how agents actually behave and needs **zero setup**. This skill turns that
 latent signal into a repeatable improvement loop that any contributor can run in
-natural language — and to make recurring failures into **regression evals** so the
+natural language — and turns recurring failures into **regression evals** so the
 loop ratchets forward instead of re-discovering the same problems.
 
-The team already proved the loop works **by hand**: one iteration over 64
-`maui-copilot` CI sessions produced `CONSOLIDATED_FINDINGS.md` (8 ranked,
-clustered failure modes with concrete proposals). PR #36002 separately proved the
-**emit-eval** half: a hand-written `vally` guard-eval (`eval.gh-auth.vally.yaml`)
-froze a fixed failure as a regression test. This skill automates and joins those
-two halves over the *whole fleet* of a contributor's local sessions.
+PR #36002 established the **emit-eval** half: a hand-written `vally` guard-eval
+(`eval.gh-auth.vally.yaml`) froze a fixed failure as a regression test. This skill
+joins that guard-eval mechanism with analysis over the *whole fleet* of a
+contributor's local sessions.
 
 ## Build on `dotnet-replay`, don't re-implement a parser
 
@@ -169,10 +165,7 @@ regression test that fails if we regress tomorrow.
 
 ## References
 
-- `session-analysis-research.md` — the authoritative research blueprint
-  (events.jsonl schema census, `dotnet-replay` evaluation, phased proposal).
 - `dotnet-replay` — <https://github.com/lewing/dotnet-replay>, NuGet `dotnet-replay` v0.9.1.
-- `CONSOLIDATED_FINDINGS.md` — the hand-run proof-of-concept loop over 64 CI sessions.
 - PR #36002 — the guard-eval house pattern this skill emits
   (`eval.gh-auth.vally.yaml`, `eval.inline-findings.vally.yaml`).
 - Zheng et al., *Judging LLM-as-a-Judge* — arXiv:2306.05685.
