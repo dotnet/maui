@@ -92,7 +92,8 @@ Key fields to use:
     **Any value > 0 caps the ceiling at `Not ready`** — a `Ready to merge` / `No failures
     found` verdict is then forbidden. Sampling several base builds (not one) is what
     separates a real regression from a base-branch flake that merely happened to pass its
-    one sampled base run. This is the comparison that catches build-job breaks (crossgen/R2R,
+    one sampled base run — except a **deterministic** build break (crossgen/NativeAOT/linker/
+    MSBuild, which compiles or it doesn't), where a single green base build is proof enough. This is the comparison that catches build-job breaks (crossgen/R2R,
     NativeAOT) the test-level baseline cannot. A device-test BUILD break
     (`source = azdo-build-error`) IS counted here because it is deterministic; only device-test
     TEST results are excluded (XHarness exit-0 blind spot) — they are surfaced but never hard-capped.

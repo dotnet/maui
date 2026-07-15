@@ -3426,7 +3426,7 @@ else {
 # spot), so this fires only on trustworthy maui-pr build results -- exactly the crossgen/R2R class.
 if ($legsRegressedVsBase -gt 0 -and $verdictCeiling -in @('No failures found', 'Ready to merge', 'Needs human investigation')) {
     $verdictCeiling = "Not ready"
-    $ceilingReasons.Add("$legsRegressedVsBase leg/failure(s) are red on the PR but GREEN across several recent completed base builds and red on none (deterministic regression vs base): $((@($legsRegressedVsBaseNames) | Select-Object -First 8) -join ', '). A 'Ready to merge'/'No failures found' verdict is forbidden; the PR is at best 'Not ready'.")
+    $ceilingReasons.Add("$legsRegressedVsBase leg/failure(s) are red on the PR but GREEN on the sampled base builds and red on none (deterministic regression vs base): $((@($legsRegressedVsBaseNames) | Select-Object -First 8) -join ', '). A 'Ready to merge'/'No failures found' verdict is forbidden; the PR is at best 'Not ready'.")
 }
 if ($baselineInconclusiveRows -gt 0 -and $verdictCeiling -eq "Ready to merge") {
     $ceilingReasons.Add("$baselineInconclusiveRows baseline row(s) are inconclusive; do not subtract unmatched failures as pre-existing on baseline grounds alone.")
