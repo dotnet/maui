@@ -202,7 +202,17 @@ function Invoke-BuildScriptBounded {
         # When > 0, tree-kill the child if it emits no new stdout/stderr for this
         # many seconds (a hang), even if $TimeoutSeconds has not elapsed. Lets the
         # wall-clock budget stay generous for slow-but-progressing categories.
-        [int]       $IdleTimeoutSeconds = 0
+        [int]       $IdleTimeoutSeconds = 0,
+        # Extra files/dirs whose growth ALSO counts as progress for idle detection.
+        # VSTest's `dotnet test` console output is block-buffered when stdout is
+        # redirected to a file, so a healthy, actively-running category (especially
+        # Windows/WinAppDriver) can go far longer than $IdleTimeoutSeconds without
+        # the redirected stdout file growing — a FALSE "hang" that gets it killed
+        # mid-run with zero results. The Appium log and the TRX/screenshot output
+        # DO grow in real time (Appium writes its own log on every WinAppDriver
+        # request; screenshots/TRX land as tests advance), so watching them next to
+        # stdout keeps a genuinely-progressing run alive to the wall-clock budget.
+        [string[]]  $LivenessPaths = @()
     )
     $pwshExe = try { (Get-Process -Id $PID).Path } catch { $null }
     if (-not $pwshExe) { $pwshExe = 'pwsh' }
@@ -237,6 +247,22 @@ function Invoke-BuildScriptBounded {
             $curLen = 0L
             foreach ($f in @($outFile, $errFile)) {
                 try { if (Test-Path $f) { $curLen += [int64](Get-Item $f -ErrorAction SilentlyContinue).Length } } catch { }
+            }
+            # Count growth of the live UI-test artifacts (Appium log, screenshots,
+            # TRX) too, so a buffered-but-healthy `dotnet test` — whose console
+            # output the OS holds back because stdout is redirected to a file — is
+            # not mistaken for a hang. Appium appends to its log on every request,
+            # so this grows continuously while tests actually run.
+            foreach ($lp in $LivenessPaths) {
+                try {
+                    if (Test-Path -LiteralPath $lp -PathType Leaf) {
+                        $curLen += [int64](Get-Item -LiteralPath $lp -ErrorAction SilentlyContinue).Length
+                    } elseif (Test-Path -LiteralPath $lp -PathType Container) {
+                        foreach ($cf in (Get-ChildItem -LiteralPath $lp -File -ErrorAction SilentlyContinue)) {
+                            $curLen += [int64]$cf.Length
+                        }
+                    }
+                } catch { }
             }
             if ($curLen -gt $lastLen) { $lastLen = $curLen; $lastProgressAt = $now }
             if ($now -ge $deadline) { $killReason = 'budget'; break }
@@ -335,6 +361,16 @@ $envHit = $null
 $overallDeadline = if ($TimeoutMinutes -gt 0) { (Get-Date).AddMinutes($TimeoutMinutes) } else { $null }
 $idleTimeoutSec  = if ($IdleTimeoutMinutes -gt 0) { $IdleTimeoutMinutes * 60 } else { 0 }
 
+# Files/dirs (besides the child's redirected stdout/stderr) whose growth proves the
+# category is still making progress even when `dotnet test` console output is held
+# back by OS stdout buffering. The Appium log + screenshots live directly in the
+# UITests dir; TRX files land in its TestResults subdir. Watching these prevents a
+# false idle-kill of an actively-running run (observed on Windows/WinAppDriver:
+# #36561, #33007 — Appium logged requests up to the instant of the kill, yet the
+# redirected stdout file had not grown, so the run was killed with zero results).
+$uiLogsDir     = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests'
+$livenessPaths = @($uiLogsDir, (Join-Path $uiLogsDir 'TestResults'))
+
 for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     $attempts = $attempt
     if ($overallDeadline -and (Get-Date) -ge $overallDeadline) {
@@ -391,7 +427,7 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
             $envHit = 'timeout'; $lastExit = 124
             break
         }
-        $bounded = Invoke-BuildScriptBounded -ScriptPath $buildScript -Params $baseParams -TimeoutSeconds $remainingSec -IdleTimeoutSeconds $idleTimeoutSec
+        $bounded = Invoke-BuildScriptBounded -ScriptPath $buildScript -Params $baseParams -TimeoutSeconds $remainingSec -IdleTimeoutSeconds $idleTimeoutSec -LivenessPaths $livenessPaths
         $lastOutput = $bounded.Output
         $lastExit = $bounded.ExitCode
         if ($bounded.TimedOut) {
