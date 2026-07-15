@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Maps.Platform
 				// stays accurate even on an occasional lookup miss. Pin resolution itself is deferred
 				// to LazyMapPinList below - it only runs if GetClusterImage's ClusterImageProvider
 				// actually enumerates the pins.
-				var pins = new LazyMapPinList(clusterCount, () => ResolveMemberPins(members));
+				var pins = new LazyMapPinList(() => ResolveMemberPins(members));
 
 				var coordinate = clusterAnnotation.Coordinate;
 				var location = new Devices.Sensors.Location(coordinate.Latitude, coordinate.Longitude);
@@ -862,13 +862,8 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			Func<List<IMapPin>>? _factory;
 			List<IMapPin>? _pins;
-			readonly int _count;
 
-			public LazyMapPinList(int count, Func<List<IMapPin>> factory)
-			{
-				_count = count;
-				_factory = factory;
-			}
+			public LazyMapPinList(Func<List<IMapPin>> factory) => _factory = factory;
 
 			List<IMapPin> Pins
 			{
@@ -885,11 +880,10 @@ namespace Microsoft.Maui.Maps.Platform
 
 			public IMapPin this[int index] => Pins[index];
 
-			// Before materialization, report the MemberAnnotations count so count-only
-			// providers never pay for resolution. After materialization, report the
-			// resolved count (which can be lower on a lookup miss) to stay consistent
-			// with the indexer.
-			public int Count => _pins?.Count ?? _count;
+			// Materializes to stay consistent with the indexer/enumerator (IReadOnlyList
+			// contract). Count-only consumers should use GetClusterImage's count parameter /
+			// ClusterInfo.Count instead, which never touches this list.
+			public int Count => Pins.Count;
 			public IEnumerator<IMapPin> GetEnumerator() => Pins.GetEnumerator();
 			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 		}
