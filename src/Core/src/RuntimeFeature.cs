@@ -29,6 +29,7 @@ namespace Microsoft.Maui
 		const bool IsMaterial3EnabledByDefault = false;
 		const bool IsCssEnabledByDefault = true;
 		const bool IsWindowsCollectionView2HandlerEnabledByDefault = true;
+		const bool UseMauiAndroidSystemBarBackgroundsByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -154,6 +155,14 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsWindowsCollectionView2HandlerEnabled)}", out bool isEnabled)
 				? isEnabled
 				: IsWindowsCollectionView2HandlerEnabledByDefault;
+
+#if NET11_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(UseMauiAndroidSystemBarBackgrounds)}")]
+#endif
+		public static bool UseMauiAndroidSystemBarBackgrounds =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(UseMauiAndroidSystemBarBackgrounds)}", out bool isEnabled)
+				? isEnabled
+				: UseMauiAndroidSystemBarBackgroundsByDefault;
 
 #pragma warning restore IL4000
 

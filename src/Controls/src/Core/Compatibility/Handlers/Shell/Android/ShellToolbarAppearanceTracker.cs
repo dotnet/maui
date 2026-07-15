@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
 			SetColors(toolbar, toolbarTracker, ShellRenderer.DefaultForegroundColor, ShellRenderer.DefaultBackgroundColor, ShellRenderer.DefaultTitleColor);
+			AndroidSystemChrome.UpdateTopChrome(toolbar, null);
 		}
 
 		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
@@ -50,6 +51,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
 			shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
 			shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
+			AndroidSystemChrome.UpdateTopChrome(
+				toolbar,
+				background is null ? null : shellToolbar.BarBackground);
 		}
 
 		#region IDisposable

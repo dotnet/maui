@@ -37,6 +37,5 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(windowScopeField.GetValue(mauiContext));
 			});
 		}
-
 	}
 }

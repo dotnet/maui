@@ -4,14 +4,19 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Graphics.Drawables;
+using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
+using Google.Android.Material.Shape;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using Xunit.Sdk;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
@@ -95,7 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 				var currentPageField = typeof(StackNavigationManager).GetField("_currentPage", flags);
 				var fragmentContainerViewField = typeof(StackNavigationManager).GetField("_fragmentContainerView", flags);
 				var fragmentManagerField = typeof(StackNavigationManager).GetField("_fragmentManager", flags);
-				
+
 				Assert.NotNull(currentPageField);
 				Assert.NotNull(fragmentContainerViewField);
 				Assert.NotNull(fragmentManagerField);
@@ -109,6 +114,144 @@ namespace Microsoft.Maui.DeviceTests
 					fragmentManagerField.GetValue(tab2SnManager) == null,
 					message: "StackNavigationManager fields were not cleared after Disconnect()");
 			});
+		}
+
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors AppBar status bar area")]
+		public async Task BarBackgroundColorUpdatesAppBarStatusBarArea()
+		{
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = firstColor,
+				BarTextColor = Colors.Black
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+
+				AssertAppBarBackgroundColor(appBar, firstColor);
+
+				navPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors Android status bar on initial load")]
+		public async Task BarBackgroundColorUpdatesAndroidStatusBarOnInitialLoad()
+		{
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = firstColor,
+				BarTextColor = Colors.Black
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformWindow = handler.PlatformView.Window;
+				Assert.NotNull(platformWindow);
+
+#pragma warning disable CA1422 // System bar color APIs still apply to older Android versions and are harmless on newer versions.
+				await AssertEventually(() => platformWindow.StatusBarColor == firstColor.ToPlatform().ToArgb());
+
+				navPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() => platformWindow.StatusBarColor == secondColor.ToPlatform().ToArgb());
+#pragma warning restore CA1422
+			});
+		}
+
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor respects Android system chrome opt-out")]
+		public async Task BarBackgroundColorDoesNotUpdateAndroidSystemChromeWhenRuntimeFeatureDisabled()
+		{
+			SetupBuilder();
+
+			const string switchName = "Microsoft.Maui.RuntimeFeature.UseMauiAndroidSystemBarBackgrounds";
+			var hadOriginalSwitchValue = AppContext.TryGetSwitch(switchName, out var originalSwitchValue);
+
+			var expectedSystemBarColor = Colors.Purple;
+			var barBackgroundColor = Colors.Orange;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarTextColor = Colors.Black
+			};
+
+			try
+			{
+				AppContext.SetSwitch(switchName, false);
+
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+				{
+					await OnLoadedAsync(navPage.CurrentPage);
+
+					var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+					var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+					Assert.NotNull(appBar);
+
+					var platformWindow = handler.PlatformView.Window;
+					Assert.NotNull(platformWindow);
+
+#pragma warning disable CA1422 // System bar color APIs still apply to older Android versions and are harmless on newer versions.
+					var originalStatusBarColor = platformWindow.StatusBarColor;
+
+					try
+					{
+						var originalAppBarBackgroundColor = GetAppBarBackgroundColor(appBar);
+						platformWindow.SetStatusBarColor(expectedSystemBarColor.ToPlatform());
+
+						navPage.BarBackgroundColor = barBackgroundColor;
+
+						Assert.Equal(originalAppBarBackgroundColor, GetAppBarBackgroundColor(appBar));
+						Assert.Equal(expectedSystemBarColor.ToPlatform().ToArgb(), platformWindow.StatusBarColor);
+					}
+					finally
+					{
+						platformWindow.SetStatusBarColor(new global::Android.Graphics.Color(originalStatusBarColor));
+					}
+#pragma warning restore CA1422
+				});
+			}
+			finally
+			{
+				AppContext.SetSwitch(switchName, hadOriginalSwitchValue ? originalSwitchValue : true);
+			}
+		}
+
+		static int GetAppBarBackgroundColor(AppBarLayout appBar)
+		{
+			if (ViewCompat.GetBackgroundTintList(appBar) is { } backgroundTint)
+			{
+				return backgroundTint.GetColorForState(
+					appBar.GetDrawableState(),
+					new global::Android.Graphics.Color(backgroundTint.DefaultColor));
+			}
+
+			return appBar.Background switch
+			{
+				ColorDrawable colorDrawable => colorDrawable.Color.ToArgb(),
+				MaterialShapeDrawable materialShapeDrawable when materialShapeDrawable.FillColor is not null =>
+					materialShapeDrawable.FillColor.GetColorForState(
+						appBar.GetDrawableState(),
+						new global::Android.Graphics.Color(materialShapeDrawable.FillColor.DefaultColor)),
+				_ => throw new XunitException($"Expected AppBar background to be {nameof(ColorDrawable)} or {nameof(MaterialShapeDrawable)}, but was {appBar.Background?.GetType().FullName ?? "null"}.")
+			};
+		}
+
+		static void AssertAppBarBackgroundColor(AppBarLayout appBar, Color expectedColor)
+		{
+			Assert.Equal(expectedColor.ToPlatform().ToArgb(), GetAppBarBackgroundColor(appBar));
 		}
 	}
 }

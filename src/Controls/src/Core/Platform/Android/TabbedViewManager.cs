@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers;
 
 /// <summary>
 /// Manages tabbed view UI on Android — handles ViewPager2, BottomNavigationView, TabLayout,
-/// fragment placement, and tab appearance. Works against <see cref="ITabbedView"/> so it can be 
+/// fragment placement, and tab appearance. Works against <see cref="ITabbedView"/> so it can be
 /// used by TabbedPageManager, ShellItemHandler (bottom tabs), and ShellSectionHandler (top tabs).
 /// </summary>
 internal class TabbedViewManager
@@ -78,7 +78,7 @@ internal class TabbedViewManager
     IDisposable _pendingFragment;
 
     /// <summary>
-    /// Callback invoked when a tab is selected. The consumer (Shell, TabbedPageManager) 
+    /// Callback invoked when a tab is selected. The consumer (Shell, TabbedPageManager)
     /// handles the actual navigation/selection.
     /// </summary>
     public Action<int> OnTabSelected { get; set; }
@@ -94,7 +94,7 @@ internal class TabbedViewManager
     public Action<int, BottomSheetDialog> OnMoreItemSelected { get; set; }
 
     /// <summary>
-    /// Delegate for creating the ViewPager2 adapter. Consumers provide their own adapter 
+    /// Delegate for creating the ViewPager2 adapter. Consumers provide their own adapter
     /// (e.g., MultiPageFragmentStateAdapter for TabbedPage, ShellSectionFragmentAdapter for Shell).
     /// </summary>
     public Func<FragmentManager, IMauiContext, RecyclerView.Adapter> CreateAdapter { get; set; }
@@ -437,11 +437,17 @@ internal class TabbedViewManager
 
                         _tabplacementId = id;
 
-                        fm
+                        var transaction = fm
                             .BeginTransactionEx()
                             .ReplaceEx(id, _tabLayoutFragment)
-                            .SetReorderingAllowed(true)
-                            .Commit();
+                            .SetReorderingAllowed(true);
+
+                        if (!IsBottomTabPlacement)
+                        {
+                            transaction.RunOnCommit(new Java.Lang.Runnable(UpdateSystemChrome));
+                        }
+
+                        transaction.Commit();
                     });
         }
     }
@@ -918,6 +924,8 @@ internal class TabbedViewManager
                 _tabLayout.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
             }
         }
+
+        UpdateSystemChrome();
     }
 
     public virtual void UpdateBarBackground()
@@ -970,6 +978,36 @@ internal class TabbedViewManager
         {
             _tabLayout.UpdateBackground(_currentBarBackground);
         }
+
+        UpdateSystemChrome();
+    }
+
+    void UpdateSystemChrome()
+    {
+        if (Element is null)
+        {
+            return;
+        }
+
+        var background = GetEffectiveBarBackground();
+        if (IsBottomTabPlacement)
+        {
+            AndroidSystemChrome.UpdateBottomChrome(_bottomNavigationView, background);
+        }
+        else
+        {
+            AndroidSystemChrome.UpdateTopChrome(_tabLayout, background);
+        }
+    }
+
+    Brush GetEffectiveBarBackground()
+    {
+        if (Element.BarBackground is Brush barBackground)
+        {
+            return barBackground;
+        }
+
+        return Element.BarBackgroundColor is null ? null : new SolidColorBrush(Element.BarBackgroundColor);
     }
 
     internal virtual ColorStateList GetItemTextColorStates()
