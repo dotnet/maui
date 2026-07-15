@@ -39,7 +39,7 @@ public sealed class FontAttributesConverter : TypeConverter
 		if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
 		{
 			//Xaml
-			foreach (var part in strValue.Split(',', StringSplitOptions.RemoveEmptyEntries))
+			foreach (var part in strValue.Split([','], StringSplitOptions.RemoveEmptyEntries))
 			{
 				attributes |= ParseSingleAttribute(part, strValue);
 			}
@@ -47,7 +47,7 @@ public sealed class FontAttributesConverter : TypeConverter
 		else
 		{
 			//CSS or single value
-			foreach (var part in strValue.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+			foreach (var part in strValue.Split([' '], StringSplitOptions.RemoveEmptyEntries))
 			{
 				attributes |= ParseSingleAttribute(part, strValue);
 			}
