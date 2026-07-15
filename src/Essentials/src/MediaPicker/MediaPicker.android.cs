@@ -62,66 +62,18 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
-				var loadOptions = new MG.ImageLoadOptions
-				{
-					DisableRotationNormalization = !options.RotateImage,
-					PreserveMetadata = options.PreserveMetaData,
-				};
-
 				var loadingService = new MG.Platform.PlatformImageLoadingService();
 
-				MG.IImage image;
-				using (var inputStream = File.OpenRead(imagePath))
-				{
-					image = loadingService.FromStream(inputStream, loadOptions);
-				}
-
-				if (image is null)
-				{
-					return imagePath;
-				}
-
-				using (image)
-				{
-					var current = image;
-					if (options.MaximumWidth is not null || options.MaximumHeight is not null)
-					{
-						current = image.Downsize(
-							options.MaximumWidth ?? int.MaxValue,
-							options.MaximumHeight ?? int.MaxValue,
-							disposeOriginal: false);
-					}
-
-					try
-					{
-						// Preserve the original container (JPEG/PNG). Deterministic: no automatic format switching.
-						var originalExtension = System.IO.Path.GetExtension(imagePath);
-						var isPng = string.Equals(originalExtension, FileExtensions.Png, StringComparison.OrdinalIgnoreCase);
-						var format = isPng ? MG.ImageFormat.Png : MG.ImageFormat.Jpeg;
-						var outputExtension = isPng ? FileExtensions.Png : FileExtensions.Jpg;
-
-						var outputFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + outputExtension;
-						var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
-
-						var saveOptions = new MG.ImageSaveOptions
-						{
-							Quality = Math.Max(0, Math.Min(100, options.CompressionQuality)) / 100f,
-							PreserveMetadata = options.PreserveMetaData,
-						};
-
-						using var outputStream = File.Create(outputFile.AbsolutePath);
-						await current.SaveAsync(outputStream, format, saveOptions);
-
-						return outputFile.AbsolutePath;
-					}
-					finally
-					{
-						if (current != image)
-						{
-							current.Dispose();
-						}
-					}
-				}
+				using var input = File.OpenRead(imagePath);
+				return await ImageProcessor.ProcessImageToCacheFileAsync(
+					loadingService,
+					input,
+					System.IO.Path.GetFileName(imagePath),
+					options.MaximumWidth,
+					options.MaximumHeight,
+					options.CompressionQuality,
+					options.RotateImage,
+					options.PreserveMetaData);
 			}
 			catch
 			{

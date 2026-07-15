@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
+using MG = Microsoft.Maui.Graphics;
 using Windows.Foundation.Collections;
 using Windows.Media.Capture;
 using Windows.Storage;
@@ -67,53 +68,11 @@ namespace Microsoft.Maui.Media
 
 			var fileResult = new FileResult(result);
 
-			// Apply rotation if needed for photos
-			if (photo && ImageProcessor.IsRotationNeeded(options) && result != null)
+			// Apply EXIF rotation, resizing and/or recompression for photos, writing the result to a new
+			// cache file. The source is only ever read.
+			if (photo)
 			{
-				try
-				{
-					using var originalStream = await result.OpenStreamForReadAsync();
-					using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, result.Name);
-					
-					// Save rotated image to temporary file
-					var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(result.Name)}");
-					using (var fileStream = File.Create(tempFileName))
-					{
-						rotatedStream.Position = 0;
-						await rotatedStream.CopyToAsync(fileStream);
-					}
-					
-					fileResult = new FileResult(tempFileName);
-				}
-				catch (Exception ex)
-				{
-					System.Diagnostics.Debug.WriteLine($"Failed to rotate image: {ex.Message}");
-					// If rotation fails, continue with the original file
-				}
-			}
-
-			// Apply compression/resizing if specified for photos
-			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-			{
-				using var originalStream = await result.OpenStreamForReadAsync();
-				var processedStream = await ImageProcessor.ProcessImageAsync(
-					originalStream,
-					options?.MaximumWidth,
-					options?.MaximumHeight,
-					options?.CompressionQuality ?? 100,
-					result!.Name,
-					options?.RotateImage ?? false,
-					options?.PreserveMetaData ?? true);
-
-				if (processedStream != null)
-				{
-					// Convert to MemoryStream for ProcessedImageFileResult
-					var memoryStream = new MemoryStream();
-					await processedStream.CopyToAsync(memoryStream);
-					processedStream.Dispose();
-
-					return new ProcessedImageFileResult(memoryStream, result.Name);
-				}
+				fileResult = await ProcessPhotoAsync(result, fileResult, options);
 			}
 
 			return fileResult;
@@ -152,76 +111,18 @@ namespace Microsoft.Maui.Media
 				return [];
 			}
 
-			var fileResults = result.Select(file => new FileResult(file)).ToList();
-
-			// Apply rotation if needed for photos
-			if (photo && ImageProcessor.IsRotationNeeded(options))
+			var fileResults = new List<FileResult>();
+			for (int i = 0; i < result.Count; i++)
 			{
-				var rotatedResults = new List<FileResult>();
-				for (int i = 0; i < result.Count; i++)
+				var file = result[i];
+				FileResult fileResult = new FileResult(file);
+
+				if (photo)
 				{
-					var originalFile = result[i];
-					var fileResult = fileResults[i];
-					
-					try
-					{
-						using var originalStream = await originalFile.OpenStreamForReadAsync();
-						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, originalFile.Name);
-						
-						// Save rotated image to temporary file
-						var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(originalFile.Name)}");
-						using (var fileStream = File.Create(tempFileName))
-						{
-							rotatedStream.Position = 0;
-							await rotatedStream.CopyToAsync(fileStream);
-						}
-						
-						rotatedResults.Add(new FileResult(tempFileName));
-					}
-					catch (Exception ex)
-					{
-						System.Diagnostics.Debug.WriteLine($"Failed to rotate image: {ex.Message}");
-						// If rotation fails, use original file
-						rotatedResults.Add(fileResult);
-					}
+					fileResult = await ProcessPhotoAsync(file, fileResult, options);
 				}
-				fileResults = rotatedResults;
-			}
 
-			// Apply compression/resizing if specified for photos
-			if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-			{
-				var compressedResults = new List<FileResult>();
-				for (int i = 0; i < result.Count; i++)
-				{
-					var originalFile = result[i];
-					var fileResult = fileResults[i];
-
-					using var originalStream = await originalFile.OpenStreamForReadAsync();
-					var processedStream = await ImageProcessor.ProcessImageAsync(
-						originalStream,
-						options?.MaximumWidth,
-						options?.MaximumHeight,
-						options?.CompressionQuality ?? 100,
-						originalFile.Name,
-						options?.RotateImage ?? false,
-						options?.PreserveMetaData ?? true);
-
-					if (processedStream != null)
-					{
-						// Convert to MemoryStream for ProcessedImageFileResult
-						var memoryStream = new MemoryStream();
-						await processedStream.CopyToAsync(memoryStream);
-						processedStream.Dispose();
-
-						compressedResults.Add(new ProcessedImageFileResult(memoryStream, originalFile.Name));
-					}
-					else
-					{
-						compressedResults.Add(fileResult);
-					}
-				}
-				return compressedResults;
+				fileResults.Add(fileResult);
 			}
 
 			return fileResults;
@@ -252,59 +153,49 @@ namespace Microsoft.Maui.Media
 			{
 				var fileResult = new FileResult(file);
 
-				// Apply rotation if needed for photos
-				if (photo && ImageProcessor.IsRotationNeeded(options) && file is not null)
+				if (photo)
 				{
-					try
-					{
-						using var originalStream = await file.OpenStreamForReadAsync();
-						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, file.Name);
-						
-						// Save rotated image to temporary file
-						var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}");
-						using (var fileStream = File.Create(tempFileName))
-						{
-							rotatedStream.Position = 0;
-							await rotatedStream.CopyToAsync(fileStream);
-						}
-						
-						fileResult = new FileResult(tempFileName);
-					}
-					catch (Exception ex)
-					{
-						// If rotation fails, continue with the original file
-						System.Diagnostics.Debug.WriteLine($"Failed to rotate image: {ex.Message}");
-					}
-				}
-
-				// Apply compression/resizing if specified for photos
-				if (photo && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
-				{
-					using var originalStream = await file.OpenStreamForReadAsync();
-					var processedStream = await ImageProcessor.ProcessImageAsync(
-						originalStream,
-						options?.MaximumWidth,
-						options?.MaximumHeight,
-						options?.CompressionQuality ?? 100,
-						file!.Name,
-						options?.RotateImage ?? false,
-						options?.PreserveMetaData ?? true);
-
-					if (processedStream is not null)
-					{
-						// Convert to MemoryStream for ProcessedImageFileResult
-						var memoryStream = new MemoryStream();
-						await processedStream.CopyToAsync(memoryStream);
-						processedStream.Dispose();
-
-						return new ProcessedImageFileResult(memoryStream, file.Name);
-					}
+					fileResult = await ProcessPhotoAsync(file, fileResult, options);
 				}
 
 				return fileResult;
 			}
 
 			return null;
+		}
+
+		// Unified photo processing: loads the picked/captured file through MAUI Graphics (applying EXIF
+		// orientation and capturing metadata per the options), applies any resize, and writes the result
+		// to a new cache file. The source file is only ever read. Falls back to the original on failure.
+		static async Task<FileResult> ProcessPhotoAsync(StorageFile file, FileResult fallback, MediaPickerOptions? options)
+		{
+			if (file is null || !ImageProcessor.IsProcessingNeeded(options))
+			{
+				return fallback;
+			}
+
+			try
+			{
+				var loadingService = new MG.Platform.PlatformImageLoadingService();
+				using var input = await file.OpenStreamForReadAsync();
+
+				var outputPath = await ImageProcessor.ProcessImageToCacheFileAsync(
+					loadingService,
+					input,
+					file.Name,
+					options?.MaximumWidth,
+					options?.MaximumHeight,
+					options?.CompressionQuality ?? 100,
+					options?.RotateImage ?? false,
+					options?.PreserveMetaData ?? true);
+
+				return new FileResult(outputPath);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Failed to process image: {ex.Message}");
+				return fallback;
+			}
 		}
 
 		class WinUICameraCaptureUI
@@ -388,46 +279,6 @@ namespace Microsoft.Maui.Media
 					CameraCaptureUIVideoFormat.Wmv => ".wmv",
 					_ => ".mp4",
 				};
-		}
-	}
-	/// <summary>
-	/// FileResult implementation for processed images using MAUI Graphics
-	/// </summary>
-	internal class ProcessedImageFileResult : FileResult, IDisposable
-	{
-		readonly MemoryStream imageData;
-
-		internal ProcessedImageFileResult(MemoryStream imageData, string? originalFileName = null)
-			: base()
-		{
-			this.imageData = imageData;
-
-			// Determine output format extension using ImageProcessor's improved logic
-			var extension = ImageProcessor.DetermineOutputExtension(imageData, 75, originalFileName);
-			FullPath = Guid.NewGuid().ToString() + extension;
-			FileName = FullPath;
-		}
-
-		internal override Task<Stream> PlatformOpenReadAsync()
-		{
-			// Reset position and return a copy of the stream
-			imageData.Position = 0;
-			var copyStream = new MemoryStream(imageData.ToArray());
-			return Task.FromResult<Stream>(copyStream);
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				imageData?.Dispose();
-			}
-		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
 		}
 	}
 }
