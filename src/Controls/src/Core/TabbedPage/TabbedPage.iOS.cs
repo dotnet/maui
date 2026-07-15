@@ -42,12 +42,12 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
-			if (args.NewHandler is not null)
+			if (args.OldHandler is null)
 			{
 				return;
 			}
 
-			// Handler is being removed — clean up resources
+			// Handler is being removed or replaced — clean up old resources
 
 			// Unsubscribe manager events to prevent leaks
 			if (args.OldHandler is TabbedViewHandler oldHandler)
@@ -353,12 +353,14 @@ namespace Microsoft.Maui.Controls
 
 			if (manager is null)
 			{
+				view._pendingPagesChangedArgs = null;
 				return;
 			}
 
 			var mauiContext = handler.MauiContext;
 			if (mauiContext is null)
 			{
+				view._pendingPagesChangedArgs = null;
 				return;
 			}
 

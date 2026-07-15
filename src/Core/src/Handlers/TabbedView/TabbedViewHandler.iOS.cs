@@ -59,7 +59,8 @@ namespace Microsoft.Maui.Handlers
             NativeSelectionInProgress = true;
             try
             {
-                if (VirtualView is IElement element)
+                // Use interface property — typed VirtualView throws after DisconnectHandler
+                if (((IElementHandler)this).VirtualView is IElement element)
                 {
                     element.Handler?.UpdateValue("CurrentPage");
                 }
@@ -97,13 +98,15 @@ namespace Microsoft.Maui.Handlers
 
         void ITabBarManagerDelegate.OnViewDidLayoutSubviews()
         {
-            if (VirtualView is IView view && _manager?.View is UIView platformView)
+            // Use interface property — typed VirtualView throws after DisconnectHandler
+            if (((IElementHandler)this).VirtualView is IView view && _manager?.View is UIView platformView)
                 view.Arrange(platformView.Bounds.ToRectangle());
         }
 
         void ITabBarManagerDelegate.OnTraitCollectionDidChange(UITraitCollection previousTraitCollection)
         {
-            if (VirtualView is not IElement element || _manager is null)
+            // Use interface property — typed VirtualView throws after DisconnectHandler
+            if (((IElementHandler)this).VirtualView is not IElement element || _manager is null)
             {
                 return;
             }
@@ -125,7 +128,7 @@ namespace Microsoft.Maui.Handlers
 
         UIView IPlatformViewHandler.ContainerView => ContainerView;
 
-        UIViewController IPlatformViewHandler.ViewController => _manager?.TabBarController;
+        UIViewController IPlatformViewHandler.ViewController => ViewController;
 
         #endregion
     }

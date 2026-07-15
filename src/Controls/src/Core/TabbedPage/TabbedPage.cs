@@ -114,6 +114,17 @@ namespace Microsoft.Maui.Controls
 			void OnPagesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 			{
 				WireUnwireChanges(false);
+
+				// Unsubscribe removed pages — they're no longer in Children after mutation
+				if (e.OldItems is not null)
+				{
+					foreach (var item in e.OldItems)
+					{
+						if (item is Page page)
+							page.PropertyChanged -= OnPagePropertyChanged;
+					}
+				}
+
 				_pendingPagesChangedArgs = e;
 				Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
 				WireUnwireChanges(true);
