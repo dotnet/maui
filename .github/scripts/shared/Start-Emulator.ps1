@@ -366,7 +366,16 @@ if ($Platform -eq "android") {
         # Preferred iOS versions in order — match main CI ui-tests pipeline (defaultiOSVersion: '26.0')
         # iOS 26 snapshots live in src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26
         # and UITest.cs selects ios-26 environment when platformVersion starts with "26."
-        $preferredVersions = @("iOS-26", "iOS-18", "iOS-17")
+        #
+        # iOS-26-4 is pinned FIRST (ahead of the generic iOS-26): the deep stage's
+        # "Install iOS simulator runtimes" step installs the runtime matching the
+        # build SDK (26.5) so actool can compile — but that ALSO makes the generic
+        # "iOS-26" tier's descending sort prefer 26.5. The ios-26 visual baselines
+        # were captured on iOS 26.4 (PR #35061), so rendering on 26.5 would produce
+        # spurious pixel diffs. Selecting 26.4 explicitly keeps the RUN on the
+        # baseline OS while the build still uses the 26.5 SDK. Falls back to the
+        # newest iOS-26 (then 18/17) if 26.4 is ever absent.
+        $preferredVersions = @("iOS-26-4", "iOS-26", "iOS-18", "iOS-17")
         # Preferred devices per iOS version. Every iOS UI-test snapshot baseline
         # (both snapshots/ios and snapshots/ios-26) was captured at 1124x2286 —
         # a 375pt-wide device (iPhone Xs / iPhone 11 Pro, 1125x2436). The baselines
@@ -377,6 +386,7 @@ if ($Platform -eq "android") {
         # iPhone Xs. (Do NOT add larger devices — that reintroduces the run-wide
         # "actual 1206x2472 vs baseline 1124x2286" failure the deep UI-test stage hit.)
         $preferredDevicesPerVersion = @{
+            "iOS-26-4" = @("iPhone 11 Pro", "iPhone Xs")
             "iOS-26" = @("iPhone 11 Pro", "iPhone Xs")
             "iOS-18" = @("iPhone Xs", "iPhone 11 Pro")
             "iOS-17" = @("iPhone Xs", "iPhone 11 Pro")
