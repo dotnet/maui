@@ -3042,8 +3042,8 @@ foreach ($failure in $dedupedFailures) {
             }
         }
         elseif ($green -ge 1 -and -not $legAlsoFails) {
-            # Green on every sampled base build (failedCount == 0) AND no earlier occurrence saw this
-            # leg red on base. The `-not $legAlsoFails` guard makes the result order-independent: once
+            # Green on at least one sampled base build and red on none (failedCount == 0), and no
+            # earlier occurrence saw it red on base. The `-not $legAlsoFails` guard is order-independent: once
             # ANY occurrence observed the leg red on base, a later green occurrence can no longer
             # downgrade legBaselineResult to succeeded-on-base or re-arm legRegressed.
             # Candidate regression -- but
@@ -3398,7 +3398,7 @@ elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $u
         $ceilingReasons.Add("$($unaccountedFailingChecks.Count) failing check(s) are backed by an accessible build that produced NO extractable failure and NO unexplained-leg record (a build/infra break whose log was unreadable, had no log id, or fell past the per-build cap); a 'Ready to merge' verdict is forbidden until a human reads them: $((@($unaccountedFailingChecks) | Select-Object -First 8) -join ', ').")
     }
     if ($unattributedFailures -gt 0) {
-        $ceilingReasons.Add("$unattributedFailures failure(s) could not be attributed deterministically (base outcome ambiguous, base build missing/unreadable, or a device-test result outside the build-error class); they are neither provably PR-caused nor dismissible as pre-existing/known, so a 'Ready to merge' verdict is forbidden until a human classifies them: $((@($unattributedFailureNames) | Select-Object -First 8) -join ', ').")
+        $ceilingReasons.Add("$unattributedFailures failure(s) could not be attributed deterministically (flaky on base, green on too few base samples to confirm a regression, base build missing/unreadable, or a device-test result outside the build-error class); they are neither provably PR-caused nor dismissible as pre-existing/known, so a 'Ready to merge' verdict is forbidden until a human classifies them: $((@($unattributedFailureNames) | Select-Object -First 8) -join ', ').")
     }
     if ($abortedFailingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($abortedFailingChecks.Count) failing check(s) did not finish cleanly (cancelled/timed-out/startup-failure/stale/action-required); the result is not a trustworthy pass and the aborted legs may carry no extractable failure, so a 'Ready to merge' verdict is forbidden until a human reads them: $((@($abortedFailingChecks) | Select-Object -First 8) -join ', ').")
