@@ -41,7 +41,12 @@ BeforeAll {
             'Get-XUnitFailures',
             'Get-ConsoleFailureReason',
             'New-DeviceWorkItemFailureRecords',
-            'Get-AggregatedBaseLegMap'
+            'Get-AggregatedBaseLegMap',
+            'Get-PlatformFromText',
+            'Get-ErrorFingerprint',
+            'Get-BuildErrorSignature',
+            'Test-IsTransientBuildErrorCode',
+            'Get-BuildErrorsFromLog'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -556,5 +561,60 @@ Describe 'Get-AggregatedBaseLegMap (multi-build base leg diff — network-free v
         $agg.sampledBuilds | Should -Be 1
         $agg.baseBuildIds.Count | Should -Be 1
         $agg.baseBuildIds[0] | Should -Be 701
+    }
+}
+
+Describe 'Test-IsTransientBuildErrorCode (transient infra vs deterministic toolchain boundary)' {
+    It 'classifies restore/network + file-lock codes as transient' {
+        Test-IsTransientBuildErrorCode -Signature 'NU1301'  | Should -BeTrue
+        Test-IsTransientBuildErrorCode -Signature 'MSB3021' | Should -BeTrue
+        Test-IsTransientBuildErrorCode -Signature 'MSB3027' | Should -BeTrue
+    }
+
+    It 'classifies deterministic compiler/toolchain codes as NOT transient' {
+        Test-IsTransientBuildErrorCode -Signature 'CS0246'  | Should -BeFalse   # C# compile error
+        Test-IsTransientBuildErrorCode -Signature 'NU1101'  | Should -BeFalse   # package not found (deterministic)
+        Test-IsTransientBuildErrorCode -Signature 'MSB4018' | Should -BeFalse   # task failed unexpectedly (deterministic)
+        Test-IsTransientBuildErrorCode -Signature 'Failed to load assembly' | Should -BeFalse
+        Test-IsTransientBuildErrorCode -Signature 'CrossGen/R2R'            | Should -BeFalse
+    }
+
+    It 'treats an empty/whitespace signature as NOT transient' {
+        Test-IsTransientBuildErrorCode -Signature ''    | Should -BeFalse
+        Test-IsTransientBuildErrorCode -Signature '   ' | Should -BeFalse
+    }
+}
+
+Describe 'Get-BuildErrorsFromLog (deterministicBuildError boundary — one-green-base shortcut gate)' {
+    It 'flags a transient NuGet restore/network code (NU1301) as NON-deterministic' {
+        $r = @(Get-BuildErrorsFromLog -Lines @('##[error]error NU1301: Unable to load the service index for source https://pkgs.dev.azure.com/x/index.json') -LogId 10 -RecordName 'Build_iOS')
+        $r.Count | Should -Be 1
+        $r[0].deterministicBuildError | Should -BeFalse
+    }
+
+    It 'flags transient MSBuild file-lock codes (MSB3021 / MSB3027) as NON-deterministic' {
+        $r1 = @(Get-BuildErrorsFromLog -Lines @('error MSB3021: Unable to copy file "a.dll" to "b.dll". The process cannot access the file because it is being used by another process.') -LogId 11 -RecordName 'Build_Android')
+        $r1[0].deterministicBuildError | Should -BeFalse
+        $r2 = @(Get-BuildErrorsFromLog -Lines @('error MSB3027: Could not copy "a.dll" to "b.dll". Exceeded retry count of 10. Failed. The file is locked by: "dotnet".') -LogId 12 -RecordName 'Build_Android')
+        $r2[0].deterministicBuildError | Should -BeFalse
+    }
+
+    It 'keeps a genuine deterministic compile break (CS0246) as deterministic' {
+        $r = @(Get-BuildErrorsFromLog -Lines @('Foo.cs(12,5): error CS0246: The type or namespace name ''Bar'' could not be found') -LogId 13 -RecordName 'Build_Windows')
+        $r.Count | Should -Be 1
+        $r[0].deterministicBuildError | Should -BeTrue
+    }
+
+    It 'does NOT blanket-exclude the NU/MSB prefixes (NU1101, MSB4018 stay deterministic)' {
+        $rNu = @(Get-BuildErrorsFromLog -Lines @('error NU1101: Unable to find package Foo. No packages exist with this id.') -LogId 14 -RecordName 'Build_iOS')
+        $rNu[0].deterministicBuildError | Should -BeTrue
+        $rMsb = @(Get-BuildErrorsFromLog -Lines @('error MSB4018: The "GenerateResource" task failed unexpectedly.') -LogId 15 -RecordName 'Build_iOS')
+        $rMsb[0].deterministicBuildError | Should -BeTrue
+    }
+
+    It 'keeps a native crash NON-deterministic (unchanged behavior)' {
+        $r = @(Get-BuildErrorsFromLog -Lines @('Process terminated. Segmentation fault (core dumped)') -LogId 16 -RecordName 'Run_iOS')
+        $r.Count | Should -Be 1
+        $r[0].deterministicBuildError | Should -BeFalse
     }
 }

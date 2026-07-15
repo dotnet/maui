@@ -628,6 +628,27 @@ function Get-BuildErrorSignature {
     return $null
 }
 
+function Test-IsTransientBuildErrorCode {
+    # Returns $true when a coded build-error signature (from Get-BuildErrorSignature) denotes a
+    # TRANSIENT restore/network or file-lock break rather than a deterministic compile-or-it-doesn't
+    # toolchain error. This is the boundary for the single-green-base regression shortcut: a
+    # deterministic compiler/linker/SDK break reproduces build-to-build, so ONE green base sample is
+    # proof it is PR-introduced; a transient infra break does NOT reproduce, so one lucky green base
+    # sample must not flip it to 'regressed-vs-base' and hard-cap the verdict to 'Not ready' -- those
+    # stay subject to MinBaseGreenSamples (multi-sample flake protection), exactly like a crash/OOM.
+    #
+    # Conservative, explicit blocklist (unknown coded errors default to deterministic, since genuine
+    # compile breaks are the overwhelming majority and DO reproduce). Only whole-code, unambiguously
+    # non-deterministic infra codes are listed -- NOT whole prefixes: most NUxxxx (NU1101 package not
+    # found, NU1605 downgrade) and most MSBxxxx are deterministic and MUST keep the shortcut.
+    param([string]$Signature)
+    if ([string]::IsNullOrWhiteSpace($Signature)) { return $false }
+    # NU1301 : "Unable to load the service index for source" -- feed unreachable / restore network.
+    # MSB3021: "Unable to copy file ... The process cannot access the file" -- build-output file lock.
+    # MSB3027: "Could not copy ... exceeded retry count ... file is locked" -- build-output file lock.
+    return ($Signature -in @('NU1301', 'MSB3021', 'MSB3027'))
+}
+
 function Get-FailureReasonSignature {
     # Extracts a STABLE, low-cardinality "why did it fail" token from a failure's message(s) so two
     # failures of the SAME test that fail for DIFFERENT reasons (e.g. a PR-introduced
@@ -1190,11 +1211,15 @@ function Get-BuildErrorsFromLog {
         $message = ([string]$line).Trim()
         $platform = Get-PlatformFromText -Text "$RecordName $message"
         # Crash/OOM signatures (native-crash, test-host-crash, unhandled-exception, no-space-left) are
-        # NONDETERMINISTIC: a green base sample does not prove the PR caused them. Only deterministic
-        # compile/toolchain breaks (coded MSBuild/C# errors, 'Failed to load assembly', CrossGen/R2R)
-        # reproduce build-to-build, so only THOSE may later take the single-green-base regression
-        # shortcut; crashes stay subject to MinBaseGreenSamples.
-        $isDeterministicBuildBreak = ($signature -notin @('native-crash', 'unhandled-exception', 'test-host-crash', 'no-space-left'))
+        # NONDETERMINISTIC: a green base sample does not prove the PR caused them. So are TRANSIENT
+        # restore/network + file-lock coded breaks (NU1301, MSB3021, MSB3027 -- see
+        # Test-IsTransientBuildErrorCode): they emit a coded 'error XXnnnn:' line but vary run-to-run.
+        # Only deterministic compile/toolchain breaks (coded MSBuild/C#/SDK/linker errors,
+        # 'Failed to load assembly', CrossGen/R2R) reproduce build-to-build, so only THOSE may later
+        # take the single-green-base regression shortcut; crashes and transient infra breaks stay
+        # subject to MinBaseGreenSamples.
+        $isDeterministicBuildBreak = ($signature -notin @('native-crash', 'unhandled-exception', 'test-host-crash', 'no-space-left')) -and
+            (-not (Test-IsTransientBuildErrorCode -Signature $signature))
         $failures.Add([ordered]@{
             testName = "$RecordName - $signature"
             platform = $platform
