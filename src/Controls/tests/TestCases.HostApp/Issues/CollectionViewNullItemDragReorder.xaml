@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.CollectionViewNullItemDragReorder"
+             Title="CollectionView null-item drag reorder">
+    <VerticalStackLayout Padding="16"
+            Spacing="12">
+        <CollectionView x:Name="ReorderCollectionView"
+                        AutomationId="ReorderCollectionView"
+                        ItemsSource="{Binding Items}"
+                        CanReorderItems="True"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:CollectionViewNullItemDragReorder+ReorderItem">
+                    <Grid Padding="16"
+                          Margin="0,0,0,8"
+                          HeightRequest="40"
+                          BackgroundColor="#FFFFFF"
+                          AutomationId="{Binding ContainerAutomationId}">
+                        <Label Text="{Binding Text}"
+                               FontSize="18"
+                               HorizontalOptions="Center"
+                               AutomationId="{Binding LabelAutomationId}"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label x:Name="ReorderStatusLabel"
+               AutomationId="ReorderStatusLabel"
+               FontAttributes="Bold"/>
+    </VerticalStackLayout>
+</ContentPage>

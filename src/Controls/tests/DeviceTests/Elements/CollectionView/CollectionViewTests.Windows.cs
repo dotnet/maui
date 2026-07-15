@@ -540,58 +540,5 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(nullContainer.IsSelected);
 			});
 		}
-
-		[Fact]
-		public async Task NullItem_CollectionMove_DoesNotMoveWrongRow()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
-					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-				});
-			});
-
-			var data = new ObservableCollection<object> { "Item 1", null, null, "Item 4" };
-
-			var collectionView = new CollectionView
-			{
-				ItemTemplate = new Controls.DataTemplate(() =>
-				{
-					var label = new Label { HeightRequest = 40 };
-					label.SetBinding(Label.TextProperty, new Binding("."));
-					return label;
-				}),
-				ItemsSource = data,
-				CanReorderItems = true,
-				HeightRequest = 400,
-				WidthRequest = 300
-			};
-
-			var layout = new VerticalStackLayout
-			{
-				collectionView
-			};
-
-			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
-			{
-				await Task.Delay(500);
-
-				// Test ObservableCollection.Move() directly instead of drag/drop simulation.
-				// This exercises the code path where null items exist in the collection.
-				// NOTE: This tests data binding behavior, not actual drag-drop UI interaction.
-				// For real drag-drop testing, use actual pointer events (tap + drag).
-				data.Move(0, 2);
-				await Task.Delay(200);
-
-				// After the move, the order should be: null, null, "Item 1", "Item 4"
-				Assert.Null(data[0]);
-				Assert.Null(data[1]);
-				Assert.Equal("Item 1", data[2]);
-				Assert.Equal("Item 4", data[3]);
-			});
-		}
 	}
 }
