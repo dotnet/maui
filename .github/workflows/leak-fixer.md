@@ -478,11 +478,21 @@ jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent
 #   rebuild. Emit `skipped: scan issue re-opened after merged fix (maintainer override)` and stop.
 if [ "$(jq 'length' /tmp/gh-aw/agent/merged-fix-prs.json)" -ge 1 ]; then
   FIX_MERGED_AT=$(jq -r '[.[].mergedAt] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/merged-fix-prs.json)
-  gh api "repos/$GITHUB_REPOSITORY/issues/$N/timeline" --paginate -H "Accept: application/vnd.github+json" \
-    > /tmp/gh-aw/agent/issue-timeline.json 2>/dev/null || echo '[]' > /tmp/gh-aw/agent/issue-timeline.json
-  REOPENED_AT=$(jq -r '[.[] | select(.event=="reopened") | .created_at] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/issue-timeline.json)
-  if [ "$(jq -n --arg r "$REOPENED_AT" --arg m "$FIX_MERGED_AT" '($r != "") and ($m != "") and ($r > $m)')" = "true" ]; then
-    echo "REOPEN OVERRIDE: issue #$N re-opened at $REOPENED_AT AFTER merged fix at $FIX_MERGED_AT — maintainer override; will NOT close or rebuild." \
+  # Fail CLOSED on this DESTRUCTIVE path: auto-closing a possibly maintainer-reopened issue must
+  # never happen on an unverified timeline. If the timeline cannot be fetched AND parsed as a JSON
+  # array, we cannot rule out a maintainer re-open, so write the override sentinel (skip close/
+  # rebuild, leave the issue open) instead of treating a failed lookup as an empty timeline.
+  if gh api "repos/$GITHUB_REPOSITORY/issues/$N/timeline" --paginate -H "Accept: application/vnd.github+json" \
+       > /tmp/gh-aw/agent/issue-timeline.json 2>/dev/null \
+     && jq -e 'type == "array"' /tmp/gh-aw/agent/issue-timeline.json >/dev/null 2>&1; then
+    REOPENED_AT=$(jq -r '[.[] | select(.event=="reopened") | .created_at] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/issue-timeline.json)
+    if [ "$(jq -n --arg r "$REOPENED_AT" --arg m "$FIX_MERGED_AT" '($r != "") and ($m != "") and ($r > $m)')" = "true" ]; then
+      echo "REOPEN OVERRIDE: issue #$N re-opened at $REOPENED_AT AFTER merged fix at $FIX_MERGED_AT — maintainer override; will NOT close or rebuild." \
+        > /tmp/gh-aw/agent/reopen-override.txt
+      cat /tmp/gh-aw/agent/reopen-override.txt
+    fi
+  else
+    echo "REOPEN GUARD UNVERIFIED: timeline lookup for #$N failed or returned non-array JSON — failing closed; will NOT close or rebuild (cannot rule out a maintainer re-open)." \
       > /tmp/gh-aw/agent/reopen-override.txt
     cat /tmp/gh-aw/agent/reopen-override.txt
   fi
@@ -490,12 +500,14 @@ fi
 ```
 
 - **Re-open override (takes precedence over gate (d) and any rebuild):** if
-  `/tmp/gh-aw/agent/reopen-override.txt` exists — i.e. THIS `[leak-scan]` issue was **re-opened
-  after** the newest matched merged `[leak-fix]` PR merged — a maintainer has deliberately
-  overridden the auto-close. Do NOT emit `close-issue` and do NOT rebuild; emit
-  `skipped: scan issue re-opened after merged fix (maintainer override)` and stop. Never reverse a
-  deliberate human re-open (doing so would re-close it every 6h and post a false "already fixed"
-  comment).
+  `/tmp/gh-aw/agent/reopen-override.txt` exists — either THIS `[leak-scan]` issue was **re-opened
+  after** the newest matched merged `[leak-fix]` PR merged (a maintainer deliberately overrode the
+  auto-close), **or** the issue timeline could **not be fetched/parsed** so the re-open guard
+  failed closed — do NOT emit `close-issue` and do NOT rebuild. Read the sentinel and emit the
+  matching skip: `skipped: scan issue re-opened after merged fix (maintainer override)` for a real
+  re-open, or `skipped: re-open guard unverified (timeline lookup failed)` when the lookup failed;
+  then stop. Never reverse a deliberate human re-open, and never close on an unverified timeline
+  (either would re-close the issue every 6h and post a false "already fixed" comment).
 - If a **merged** `[leak-fix]` PR already fixes this issue number OR the same rooting
   `Type.Member` (d) **and the re-open override above did NOT fire** → the leak is **already on
   `main`**. Do NOT create a branch or rebuild.
