@@ -45,6 +45,14 @@ on:
       uses: actions/checkout@v4
       with:
         persist-credentials: false
+    # Scheduled runs use main, but a workflow_dispatch can select another ref.
+    # Always run the pre-pass from main so that ref cannot supply executable code.
+    - name: Restore scanner script from main for manual runs
+      if: github.event_name == 'workflow_dispatch'
+      shell: bash
+      run: |
+        git fetch --no-tags --depth=1 origin main
+        git checkout FETCH_HEAD -- .github/scripts/Find-RegressionFixPRs.ps1
     - name: Build regression-fix candidate context
       id: candidate_context
       shell: pwsh

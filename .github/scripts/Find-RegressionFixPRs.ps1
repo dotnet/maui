@@ -183,6 +183,17 @@ function Test-CandidateIsNew {
     return ($IntroducingPr -notin $existing)
 }
 
+function Test-HumanAttributionCandidateIsNew {
+    # Keep one human-attribution note per known introducing PR without preventing
+    # a later fully usable candidate from adding that regression to the corpus.
+    param(
+        [Nullable[int]]$IntroducingPr,
+        [int[]]$ExistingHumanAttributionNumbers
+    )
+    if ($null -eq $IntroducingPr) { return $true }
+    return ($IntroducingPr -notin @($ExistingHumanAttributionNumbers))
+}
+
 # ─── gh I/O wrappers (mocked in tests) ─────────────────────────────────────────
 
 function Invoke-GhJson {
@@ -331,6 +342,7 @@ $fixPRs = @(Get-MergedRegressionFixPRs -Owner $Owner -Repo $Repo -LookbackDays $
 Write-Host "Found $($fixPRs.Count) merged i/regression PR(s) in window."
 
 $candidates = New-Object System.Collections.Generic.List[object]
+$humanAttributionNumbers = New-Object 'System.Collections.Generic.HashSet[int]'
 
 foreach ($pr in $fixPRs) {
     if ($candidates.Count -ge $MaxPRs) { break }
@@ -380,6 +392,12 @@ foreach ($pr in $fixPRs) {
     }
 
     $needsHuman = $regressionIssues.Count -eq 0 -or (-not $introDetails) -or (-not $introDetails.MergeCommit)
+    if ($needsHuman -and -not (Test-HumanAttributionCandidateIsNew `
+                -IntroducingPr $introducingPr `
+                -ExistingHumanAttributionNumbers @($humanAttributionNumbers))) {
+        Write-Host "  ⏭️ PR #$fixNumber → introducing #$introducingPr already pending human attribution; skipping."
+        continue
+    }
 
     $fixMergeOid = if ($pr.mergeCommit) { $pr.mergeCommit.oid } else { $null }
     $candidate = New-RegressionCandidate `
@@ -393,6 +411,9 @@ foreach ($pr in $fixPRs) {
     $candidates.Add($candidate) | Out-Null
     if (-not $candidate.needsHumanAttribution -and $null -ne $candidate.introducingPr) {
         [void]$existingNumbers.Add([int]$candidate.introducingPr)
+    }
+    elseif ($null -ne $candidate.introducingPr) {
+        [void]$humanAttributionNumbers.Add([int]$candidate.introducingPr)
     }
 
     Write-Host "  ✅ Candidate: fix #$fixNumber → introducing #$introducingPr (ref $($introDetails.MergeCommit)) needsHuman=$needsHuman"

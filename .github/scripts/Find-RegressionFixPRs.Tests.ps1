@@ -21,6 +21,7 @@ BeforeAll {
             'Get-IntroducingPrReferences',
             'Get-RegressionPrTagsFromText',
             'Test-CandidateIsNew',
+            'Test-HumanAttributionCandidateIsNew',
             'Invoke-GhJson',
             'Get-MergedRegressionFixPRs',
             'Get-IssueContext',
@@ -183,6 +184,18 @@ Describe 'Test-CandidateIsNew' {
     }
     It 'handles an empty corpus' {
         Test-CandidateIsNew -IntroducingPr 1 -FixPr 2 -ExistingNumbers @() | Should -BeTrue
+    }
+}
+
+Describe 'Test-HumanAttributionCandidateIsNew' {
+    It 'allows a new known introducing PR for human attribution' {
+        Test-HumanAttributionCandidateIsNew -IntroducingPr 40000 -ExistingHumanAttributionNumbers @(31567) | Should -BeTrue
+    }
+    It 'skips a repeated known introducing PR awaiting human attribution' {
+        Test-HumanAttributionCandidateIsNew -IntroducingPr 31567 -ExistingHumanAttributionNumbers @(31567) | Should -BeFalse
+    }
+    It 'allows an unknown introducing PR because it cannot be deduplicated' {
+        Test-HumanAttributionCandidateIsNew -IntroducingPr $null -ExistingHumanAttributionNumbers @(31567) | Should -BeTrue
     }
 }
 
