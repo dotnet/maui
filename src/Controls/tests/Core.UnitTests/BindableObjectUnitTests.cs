@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.UnitTests;
 using Xunit;
@@ -76,6 +78,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class BindableObjectUnitTests : BaseTestFixture
 	{
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference SetParentWithBindingContext(Element child, object bindingContext)
+		{
+			var parent = new ContentView { BindingContext = bindingContext };
+			child.Parent = parent;
+			return new WeakReference(parent);
+		}
+
 		[Fact]
 		public void BindingContext()
 		{
@@ -722,13 +732,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void BoundBindingContextReturnsNullWhileInheritedCleanupIsPending()
+		public async Task BoundBindingContextReturnsNullWhileInheritedCleanupIsPending()
 		{
 			bool dispatchAccepted = false;
+			int dispatchAttempts = 0;
 			Action dispatchedCleanup = null;
 			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
 			DispatcherProviderStubOptions.InvokeOnMainThread = action => dispatchedCleanup = action;
-			DispatcherProviderStubOptions.DispatchResult = () => dispatchAccepted;
+			DispatcherProviderStubOptions.DispatchResult = () =>
+			{
+				dispatchAttempts++;
+				return dispatchAccepted;
+			};
 
 			MockBindable bindable;
 			try
@@ -744,26 +759,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var inheritedContext = new MockViewModel { Text = "FooBar" };
 			bindable.SetBinding(BindableObject.BindingContextProperty, nameof(MockViewModel.Text));
-			BindableObject.SetInheritedBindingContextForBinding(bindable, inheritedContext);
+			var weakParent = SetParentWithBindingContext(bindable, inheritedContext);
 			int bindingContextChanged = 0;
 			bindable.BindingContextChanged += (_, _) => bindingContextChanged++;
 
 			Assert.Equal("FooBar", bindable.BindingContext);
-			Assert.NotNull(bindable.MarkInheritedBindingContextForCleanup());
+			Assert.False(await weakParent.WaitForCollect(), "Parent should not be alive!");
 
+			Assert.Null(bindable.Parent);
 			Assert.Null(bindable.BindingContext);
 			Assert.Null(dispatchedCleanup);
+			Assert.True(dispatchAttempts > 0);
 			Assert.Equal(0, bindingContextChanged);
 
+			int attemptsBeforeAcceptedDispatch = dispatchAttempts;
 			dispatchAccepted = true;
 			Assert.Null(bindable.BindingContext);
 			Assert.NotNull(dispatchedCleanup);
+			Assert.Equal(attemptsBeforeAcceptedDispatch + 1, dispatchAttempts);
 			Assert.Equal(0, bindingContextChanged);
+
+			for (int i = 0; i < 10; i++)
+				Assert.Null(bindable.BindingContext);
+
+			Assert.Equal(attemptsBeforeAcceptedDispatch + 1, dispatchAttempts);
 
 			dispatchedCleanup();
 
 			Assert.Null(bindable.BindingContext);
 			Assert.Equal(1, bindingContextChanged);
+			GC.KeepAlive(inheritedContext);
 		}
 
 		[Fact]

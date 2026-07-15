@@ -56,6 +56,8 @@ namespace Microsoft.Maui.Controls
 
 		sealed class PendingInheritedBindingContextCleanup : WeakReference
 		{
+			int _dispatchScheduled;
+
 			internal PendingInheritedBindingContextCleanup(WeakReference inheritedContext, bool isBindingContextBinding)
 				: base(null)
 			{
@@ -66,6 +68,12 @@ namespace Microsoft.Maui.Controls
 			internal WeakReference InheritedContext { get; }
 
 			internal bool IsBindingContextBinding { get; }
+
+			internal bool TryScheduleDispatch() =>
+				Interlocked.CompareExchange(ref _dispatchScheduled, 1, 0) == 0;
+
+			internal void ResetScheduledDispatch() =>
+				Interlocked.Exchange(ref _dispatchScheduled, 0);
 		}
 
 		/// <summary>Bindable property for <see cref="BindingContext"/>.</summary>
@@ -523,7 +531,12 @@ namespace Microsoft.Maui.Controls
 			if (dispatcher is not null
 				&& dispatcher.IsDispatchRequired)
 			{
-				dispatcher.Dispatch(() => ClearPendingInheritedBindingContext(pendingCleanup));
+				if (!pendingCleanup.TryScheduleDispatch())
+					return;
+
+				if (!dispatcher.Dispatch(() => ClearPendingInheritedBindingContext(pendingCleanup)))
+					pendingCleanup.ResetScheduledDispatch();
+
 				return;
 			}
 
