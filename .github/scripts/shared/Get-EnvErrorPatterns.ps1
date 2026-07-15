@@ -22,6 +22,20 @@ function Get-EnvErrorPatterns {
         'device offline',
         'Could not connect to device',
         'Failed to launch the application',
-        'cmd: Failure'
+        'cmd: Failure',
+        # Wholesale HostApp launch/render failure. When the app installs but its
+        # first page never renders, EVERY test in a fixture fails at OneTimeSetup
+        # with "Timed out waiting for Go To Test button to appear (the app did not
+        # recover after crash-recovery attempts)" (UtilExtensions.NavigateToGallery
+        # -> WaitForGoToTestButtonWithRecovery). This is an intermittent infra flake
+        # (emulator/app cold-start slowness), NOT a code failure — proven by the same
+        # HostApp head passing on a different agent (e.g. #36575 IndicatorView 41/41
+        # while #34637 Shape / #30875 / #35640 Material3 hit all-setup-failed). The
+        # test's own crash-recovery only force-stops+relaunches the app; a pipeline
+        # retry additionally `adb reboot`s and rebuilds/reinstalls the app fresh,
+        # which clears the stuck emulator state. Without this pattern the category
+        # returned "N marked failed (setup failed)" after ONE attempt with no retry.
+        'did not recover after crash-recovery attempts',
+        'Timed out waiting for Go To Test button'
     )
 }
