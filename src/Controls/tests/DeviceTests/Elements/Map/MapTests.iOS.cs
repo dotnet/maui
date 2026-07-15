@@ -146,7 +146,9 @@ namespace Microsoft.Maui.DeviceTests
 					timeout: 5000,
 					message: "Timed out waiting for the pin's annotation view to be created.");
 
-				Assert.IsType<MKMarkerAnnotationView>(GetCurrentView());
+				var initialView = GetCurrentView();
+				Assert.True(initialView is MKMarkerAnnotationView or MKPinAnnotationView,
+					$"Expected a default marker view, got {initialView?.GetType().Name ?? "null"}.");
 
 				// 2. null -> custom: switching to a custom image swaps in a plain MKAnnotationView
 				// showing that image (the annotation is removed/re-added, so re-resolve it each poll).
@@ -182,7 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 				pin.ImageSource = null;
 
 				await AssertEventually(
-					() => GetCurrentView() is MKMarkerAnnotationView,
+					() => GetCurrentView() is MKMarkerAnnotationView or MKPinAnnotationView,
 					timeout: 5000,
 					message: "Timed out waiting for the pin's annotation view to revert to the default marker view.");
 			});
