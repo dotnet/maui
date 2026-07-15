@@ -1,12 +1,10 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # code-review Trim/AOT capability suite
 #
-# These scenarios test technical conclusions that their source PR descriptions
-# document explicitly. They therefore use frozen worktrees instead of the live
-# capability suite: the reviewer must derive its assessment from the commit
-# diff and surrounding source, not from a PR body or a squash-merge message.
-# Each rubric also requires the evaluator to reject runs that violate this
-# boundary, rather than relying on the prompt restriction alone.
+# These scenarios replay historical source trees into isolated two-commit
+# fixture repositories. The workflow creates those repositories with neutral
+# commit messages, so the reviewer must derive its assessment from the commit
+# diff and surrounding source, not a PR body or squash-merge message.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: code-review-trim-aot
@@ -43,10 +41,10 @@ stimuli:
       NativeAOT/full-trim builds, or whether the change is a justified
       toolchain-specific exception.
 
-      Use only the local worktree. Inspect `git diff HEAD^ HEAD` and full
+      Use only the local worktree. Inspect `git diff HEAD^ HEAD` and the full
       source files needed to trace the feature switch and registration path.
-      Do not fetch a pull request, issue, or external page. Do not run
-      `git log`, `git show`, `git blame`, or inspect commit-message text.
+      Do not fetch a pull request, issue, or external page, and do not use
+      commit-message text as evidence.
       Deliver a code review using the skill's standard output format
       (Independent Assessment, Findings, Blast Radius or Failure-Mode
       Probing, Verdict, and Confidence). Mark each finding with a severity
@@ -54,9 +52,23 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: e4a4140c34424eb980bcb616d9117425fd32a64c
-        source: .
+        ref: HEAD
+        source: ../../../../CustomAgentLogsTmp/vally-fixtures/trim-aot/scoped-suppression
     graders:
+      - type: output-matches
+        config:
+          pattern: '(LGTM|NEEDS_DISCUSSION)'
+      - type: tool-calls
+        config: &local-source-only
+          required:
+            - name: '^bash$'
+              command: '\bgit\s+diff\b.*HEAD(?:\^|~1)\s+HEAD\b'
+          disallowed:
+            - name: '^bash$'
+              command: '\bgit\s+(?:log|show|blame)\b'
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       - type: prompt
         name: scoped-suppression-judge
         config:
@@ -68,23 +80,22 @@ stimuli:
         guard and the narrowly scoped IL2026/IL3050 pragma around the
         HybridWebView handler registration, including the immediate restore.
       - >-
-        The agent traces the relevant publish configuration and explains that
-        Android NativeAOT ILC does not honor the feature guard for warning
-        suppression while iOS and MacCatalyst do. Equivalent descriptions of
-        the platform/toolchain limitation are acceptable.
+        The agent traces the FeatureGuard annotations in
+        src/Core/src/RuntimeFeature.cs and scopes the toolchain distinction
+        called out in the changed source to Android NativeAOT rather than
+        claiming that a feature guard universally suppresses every warning.
       - >-
         The agent does not reject the pragma merely because it suppresses
         IL2026/IL3050. It distinguishes this proven exception from a broad
         or unexplained suppression hiding a reachable dynamic-code path.
       - >-
-        The review applies the same standard prospectively: accepted pragmas
+        The review cites the changed
+        src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs path and
+        src/Core/src/RuntimeFeature.cs as the source evidence for its
+        assessment. It applies the same standard prospectively: accepted pragmas
         must be limited to the affected call and diagnostic, restored
         immediately, and accompanied by evidence that the code is
         unreachable for the affected configuration.
-      - >-
-        The agent derives its conclusion from the pinned diff and source
-        context. It does not use a GitHub/HTTP lookup, `git log`, `git show`,
-        `git blame`, or commit-message text to obtain the diagnosis.
     constraints:
       max_duration: 10m
       expect_skills:
@@ -106,20 +117,25 @@ stimuli:
       HybridWebView registration structurally isolates a dynamic-code path or
       merely hides a reachable warning.
 
-      Use only the local worktree. Inspect `git diff HEAD^ HEAD` and full
+      Use only the local worktree. Inspect `git diff HEAD^ HEAD` and the full
       source files needed to trace the registration and annotation path. Do
-      not fetch a pull request, issue, or external page. Do not run `git log`,
-      `git show`, `git blame`, or inspect commit-message text. Deliver a code
-      review using the skill's standard output format (Independent Assessment,
-      Findings, Blast Radius or Failure-Mode Probing, Verdict, and
-      Confidence). Mark each finding with a severity emoji and end with
-      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
+      not fetch a pull request, issue, or external page, and do not use
+      commit-message text as evidence. Deliver a code review using the skill's
+      standard output format (Independent Assessment, Findings, Blast Radius
+      or Failure-Mode Probing, Verdict, and Confidence). Mark each finding
+      with a severity emoji and end with NEEDS_CHANGES, NEEDS_DISCUSSION, or
+      LGTM.
     environment:
       git:
         type: worktree
-        ref: c223f8b45946131bafd3ce9022edc98b3cd7946f
-        source: .
+        ref: HEAD
+        source: ../../../../CustomAgentLogsTmp/vally-fixtures/trim-aot/annotated-helper
     graders:
+      - type: output-matches
+        config:
+          pattern: '(LGTM|NEEDS_DISCUSSION)'
+      - type: tool-calls
+        config: *local-source-only
       - type: prompt
         name: annotated-helper-judge
         config:
@@ -141,21 +157,91 @@ stimuli:
         broad suppression or an expected-warning baseline, and does not
         invent a claim that the helper applies to a different branch.
       - >-
-        The agent does not claim that reading a const string from another type
-        by itself creates a type or member metadata reference. It evaluates
-        the actual annotation and reachability behavior instead.
+        The agent cites the changed
+        src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs path and
+        src/Core/src/RuntimeFeature.cs as source evidence. It does not claim
+        that reading a const string from another type by itself creates a type
+        or member metadata reference; it evaluates the actual annotation and
+        reachability behavior instead.
       - >-
-        The agent derives its conclusion from the pinned diff and source
-        context. It does not use a GitHub/HTTP lookup, `git log`, `git show`,
-        `git blame`, or commit-message text to obtain the diagnosis.
+        The review reaches LGTM or NEEDS_DISCUSSION without rejecting the
+        annotated helper as an unexplained warning suppression.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 3 — The same narrowly scoped pragma is unsafe when its feature
+  # guard is changed to an unconditional path. This synthetic counterfactual
+  # prevents the suite from rewarding unconditional acceptance.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: reachable-suppression-must-be-rejected
+    tags:
+      kind: trim-aot
+    prompt: >-
+      You are reviewing a single commit before merge. The repository is
+      already checked out as a worktree pinned to the commit under review.
+
+      Determine whether the new diagnostic suppression around HybridWebView
+      handler registration still protects an unreachable dynamic-code path in
+      NativeAOT/full-trim builds, or instead hides a reachable warning.
+
+      Use only the local worktree. Inspect `git diff HEAD^ HEAD` and the full
+      source files needed to trace the registration and annotation path. Do
+      not fetch a pull request, issue, or external page, and do not use
+      commit-message text as evidence. Deliver a code review using the skill's
+      standard output format (Independent Assessment, Findings, Blast Radius
+      or Failure-Mode Probing, Verdict, and Confidence). Mark each finding
+      with a severity emoji and end with NEEDS_CHANGES, NEEDS_DISCUSSION, or
+      LGTM.
+    environment:
+      git:
+        type: worktree
+        ref: HEAD
+        source: ../../../../CustomAgentLogsTmp/vally-fixtures/trim-aot/reachable-suppression
+    graders:
+      - type: output-matches
+        config:
+          pattern: 'NEEDS_CHANGES'
+      - type: tool-calls
+        config: *local-source-only
+      - type: prompt
+        name: reachable-suppression-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent identifies that the changed
+        src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs path replaces
+        RuntimeFeature.IsHybridWebViewSupported with an unconditional
+        `if (true)` while adding the IL2026/IL3050 pragma.
+      - >-
+        The agent explains that the handler registration is therefore
+        reachable in NativeAOT/full-trim builds, so the pragma conceals a
+        reachable dynamic-code warning instead of documenting a valid
+        feature-guard/toolchain exception.
+      - >-
+        The agent cites src/Core/src/RuntimeFeature.cs to distinguish the
+        existing FeatureGuard annotations from the unconditional path now under
+        review, rather than trusting the nearby explanatory comment.
+      - >-
+        The review emits an error or warning and ends with NEEDS_CHANGES. It
+        recommends removing the suppression or restoring structural isolation
+        behind a real annotated feature guard; it does not accept an
+        expected-warning baseline as a substitute.
+      - >-
+        The assessment cites the changed registration path and the feature
+        guard source as diff/source evidence, rather than merely repeating a
+        generic rule against suppressions.
     constraints:
       max_duration: 10m
       expect_skills:
         - code-review
 
 scoring:
-  # A prompt judge is the sole grader because the required outcome is a
-  # semantic review judgment. There is intentionally no copyable token floor:
-  # the judge must reject a blanket suppression recommendation or unsupported
-  # annotation-chain claim.
+  # Prompt judges assess semantic review quality. Deterministic graders require
+  # the expected verdict and reject metadata/network access across the complete
+  # tool trajectory.
   threshold: 0.6
