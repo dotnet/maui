@@ -169,19 +169,28 @@ if ($Platform -eq "android") {
     $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
     Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
     
-    # ValidateXcodeVersion=false: skip the Microsoft.iOS SDK's Xcode-version gate
-    # (MT0180 "This version of Microsoft.iOS requires the iOS X SDK / Xcode Y").
-    # When a workload bump (e.g. net11.0-ios26.5, which wants Xcode 26.6) lands
-    # ahead of the agent's installed Xcode, that check crashes ILLink (IL1012)
-    # during the trim/AOT step, so the ENTIRE HostApp build fails and the gate
-    # falsely rules INCONCLUSIVE ("pre-existing build failure") — observed on
-    # PR #35892 review 4685252040 (2026-07-13): both without-fix and with-fix
-    # builds died with MT0180, so no test could be verified. A Debug SIMULATOR
-    # build does not need the exact device SDK headers, so skipping the check
-    # lets it proceed. Mirrors eng/Build.props (the repo's own Apple builds) and
-    # the deep stage's 'Disable Xcode version validation' step, keeping the gate
-    # and deep iOS builds equally resilient (this script is shared by both).
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false")
+    # Two properties keep the iOS HostApp build resilient when a Microsoft.iOS
+    # workload bump (e.g. net11.0-ios26.5, which wants Xcode 26.6) lands ahead of
+    # the agent's installed Xcode:
+    #
+    #  * ValidateXcodeVersion=false — skips the SDK's EARLY Xcode-version gate
+    #    (MT0180 "This version of Microsoft.iOS requires the iOS X SDK / Xcode Y").
+    #
+    #  * MtouchLink=None — disables the managed linker/trimmer. This is the part
+    #    that was MISSING: ValidateXcodeVersion=false only bypasses the up-front
+    #    check; because we pass an explicit -r <rid>, the ILLink trim step
+    #    ("Optimizing assemblies for size") still runs and RE-hits the same SDK
+    #    requirement, crashing with IL1012 -> MT0180 -> NETSDK1144 and failing
+    #    the ENTIRE HostApp build. Observed on PR #35892 review 4685252040 and
+    #    PR #36507 (2026-07-15, iOS deep): the C# compile SUCCEEDED (HostApp.dll
+    #    produced) but ILLink then died with MT0180, so every iOS gate/deep run
+    #    ruled INCONCLUSIVE / "failed to compile" and produced no test results.
+    #    A Debug SIMULATOR build does not need trimming at all (it runs on the
+    #    interpreter, un-trimmed, exactly like the local dev inner loop), so
+    #    turning the linker off removes the dependency on the newer device SDK
+    #    headers and lets the build finish on any agent Xcode. This script is
+    #    shared by the gate and deep stages, so both iOS paths stay resilient.
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false", "-p:MtouchLink=None")
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
