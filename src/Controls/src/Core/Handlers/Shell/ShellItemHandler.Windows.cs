@@ -329,9 +329,11 @@ namespace Microsoft.Maui.Controls.Handlers
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
+					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
+					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					_currentSearchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
 					_currentSearchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
-					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					UpdateShowsResults();
 					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.UpdateTextOnSelect = false;
 					autoSuggestBox.UpdateSearchHandlerText(_currentSearchHandler);
@@ -344,9 +346,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.UpdateSearchHandlerBackground(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerHorizontalTextAlignment(_currentSearchHandler);
-					
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
-
 					autoSuggestBox.Visibility = _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
 					if (_currentSearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 					{
@@ -471,6 +471,20 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
+		void UpdateShowsResults()
+		{
+			if (_currentSearchHandler is null)
+				return;
+
+			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is null)
+				return;
+
+			mauiNavView.AutoSuggestBox.ItemsSource =
+				_currentSearchHandler.ShowsResults
+					? CreateSearchHandlerItemsSource()
+					: null;
+		}
+
 		void OnShellItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (_mainLevelTabs == null || sender is not BaseShellItem shellItem)
@@ -520,7 +534,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.UpdateSearchHandlerIsEnabled(_currentSearchHandler);
 					break;
 				case nameof(SearchHandler.ItemsSource):
-					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					UpdateShowsResults();
 					break;
 				case nameof(SearchHandler.TextColor):
 					autoSuggestBox.UpdateSearchHandlerTextColor(_currentSearchHandler);
@@ -542,6 +556,9 @@ namespace Microsoft.Maui.Controls.Handlers
 					break;
 				case nameof(SearchHandler.VerticalTextAlignment):
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.ShowsResults):
+					UpdateShowsResults();
 					break;
 				case nameof(SearchHandler.QueryIcon):
 					UpdateQueryIcon();

@@ -606,7 +606,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(0, 1, true)]  // Remove John - Paul should be preserved
 		[InlineData(2, 1, true)]  // Remove Ringo - Paul should be preserved
 		[InlineData(2, 2, true)]  // Remove Ringo and George - Paul should be preserved
-								  // Cases where removed items include the selected item
+		// Cases where removed items include the selected item
 		[InlineData(1, 1, false)] // Remove Paul - selection changes
 		[InlineData(0, 2, false)] // Remove John and Paul - selection changes
 		[InlineData(1, 2, false)] // Remove Paul and Ringo - selection changes
