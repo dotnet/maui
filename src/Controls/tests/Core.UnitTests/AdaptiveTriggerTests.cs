@@ -171,6 +171,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Window window;
 			{
 				var label = new Label();
+				var trigger = new AdaptiveTrigger { MinWindowWidth = 300 };
 
 				// Attach a VisualStateGroupList whose trigger subscribes to Window.SizeChanged
 				// (a strong event) and holds the VisualElement strongly. The groups must be set
@@ -184,7 +185,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 							new VisualState
 							{
 								Name = "Large",
-								StateTriggers = { new AdaptiveTrigger { MinWindowWidth = 300 } },
+								StateTriggers = { trigger },
 							},
 						}
 					}
@@ -193,10 +194,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				page.Content = label;
 				window = new Window { Page = page };
 
+				Assert.True(trigger.IsAttached);
+
 				// Replace the groups while the element is attached to the window. The old
 				// trigger must be detached, otherwise it stays subscribed to Window.SizeChanged
 				// and keeps the VisualElement alive.
 				VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList());
+
+				Assert.False(trigger.IsAttached);
 
 				// Remove the element from the tree so nothing else roots it.
 				page.Content = new Label();
