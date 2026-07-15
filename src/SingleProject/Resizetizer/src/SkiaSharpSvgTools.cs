@@ -40,21 +40,20 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				throw new InvalidOperationException($"Cannot draw SVG file '{Filename}'. The SVG has no size. Ensure the SVG includes a viewBox attribute or both width and height attributes with valid dimensions.");
 			}
-			if (scale >= 1)
+			if (scale >= 1 && Quality != ResizeQuality.Fastest)
 			{
-				// draw using default scaling
+				// Draw vectors directly for Auto/back-compat and Best/highest fidelity.
 				canvas.DrawPicture(svg.Picture, Paint);
 			}
 			else
 			{
-				// vector scaling has rounding issues, so first draw as intended
+				// Rasterize first so the final draw honors the selected sampling options.
 				var info = new SKImageInfo((int)size.Width, (int)size.Height);
 				using var surface = SKSurface.Create(info);
 				var cvn = surface.Canvas;
 
-				// draw to a larger canvas first
 				cvn.Clear(SKColors.Transparent);
-				cvn.DrawPicture(svg.Picture, Paint);
+				cvn.DrawPicture(svg.Picture);
 
 				// convert it all into an image
 				using var img = surface.Snapshot();

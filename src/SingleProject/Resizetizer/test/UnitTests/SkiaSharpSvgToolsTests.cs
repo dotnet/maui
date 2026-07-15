@@ -484,18 +484,131 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(bmpFastest.Width, bmpAuto.Width);
 				Assert.Equal(bmpFastest.Height, bmpAuto.Height);
 
-				int differentPixels = 0;
-				for (int y = 0; y < bmpFastest.Height; y++)
-				{
-					for (int x = 0; x < bmpFastest.Width; x++)
-					{
-						if (bmpFastest.GetPixel(x, y) != bmpAuto.GetPixel(x, y))
-							differentPixels++;
-					}
-				}
-
-				Assert.True(differentPixels > 0,
+				BaseTest.AssertPixelsDiffer(bmpFastest.Pixels, bmpAuto.Pixels,
 					"SVG: Fastest and Auto should produce different pixel output when downscaling");
+			}
+
+			[Fact]
+			public void FastestQualityAffectsSvgUpscaling()
+			{
+				var sourceFilename = Path.GetTempFileName();
+
+				try
+				{
+					File.WriteAllText(sourceFilename,
+						"""
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+						  <rect width="16" height="16" fill="white"/>
+						  <circle cx="8" cy="8" r="5" fill="black"/>
+						</svg>
+						""");
+
+					var dpiPath = new DpiPath("", 1);
+
+					var infoFastest = new ResizeImageInfo();
+					infoFastest.Filename = sourceFilename;
+					infoFastest.BaseSize = new SKSize(64, 64);
+					infoFastest.Quality = ResizeQuality.Fastest;
+					var toolsFastest = new SkiaSharpSvgTools(infoFastest, Logger);
+					toolsFastest.Resize(dpiPath, DestinationFilename);
+
+					var infoAuto = new ResizeImageInfo();
+					infoAuto.Filename = sourceFilename;
+					infoAuto.BaseSize = new SKSize(64, 64);
+					infoAuto.Quality = ResizeQuality.Auto;
+					var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
+					toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+					using var bmpFastest = SKBitmap.Decode(DestinationFilename);
+					using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+					Assert.Equal(bmpFastest.Width, bmpAuto.Width);
+					Assert.Equal(bmpFastest.Height, bmpAuto.Height);
+					BaseTest.AssertPixelsDiffer(bmpFastest.Pixels, bmpAuto.Pixels,
+						"SVG: Fastest and Auto should produce different pixel output when upscaling.");
+				}
+				finally
+				{
+					File.Delete(sourceFilename);
+				}
+			}
+
+			[Fact]
+			public void BestQualityPreservesSvgVectorOutputWhenUpscaling()
+			{
+				var sourceFilename = Path.GetTempFileName();
+
+				try
+				{
+					File.WriteAllText(sourceFilename,
+						"""
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+						  <rect width="16" height="16" fill="white"/>
+						  <circle cx="8" cy="8" r="5" fill="black"/>
+						</svg>
+						""");
+
+					var dpiPath = new DpiPath("", 1);
+
+					var infoBest = new ResizeImageInfo();
+					infoBest.Filename = sourceFilename;
+					infoBest.BaseSize = new SKSize(64, 64);
+					infoBest.Quality = ResizeQuality.Best;
+					var toolsBest = new SkiaSharpSvgTools(infoBest, Logger);
+					toolsBest.Resize(dpiPath, DestinationFilename);
+
+					var infoAuto = new ResizeImageInfo();
+					infoAuto.Filename = sourceFilename;
+					infoAuto.BaseSize = new SKSize(64, 64);
+					infoAuto.Quality = ResizeQuality.Auto;
+					var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
+					toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+					using var bmpBest = SKBitmap.Decode(DestinationFilename);
+					using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+					Assert.Equal(bmpBest.Width, bmpAuto.Width);
+					Assert.Equal(bmpBest.Height, bmpAuto.Height);
+					Assert.Equal(bmpBest.Pixels, bmpAuto.Pixels);
+				}
+				finally
+				{
+					File.Delete(sourceFilename);
+				}
+			}
+
+			[Fact]
+			public void FastestQualityAppliesSvgTintOnceWhenUpscaling()
+			{
+				var sourceFilename = Path.GetTempFileName();
+
+				try
+				{
+					File.WriteAllText(sourceFilename,
+						"""
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+						  <rect width="16" height="16" fill="white"/>
+						</svg>
+						""");
+
+					var info = new ResizeImageInfo();
+					info.Filename = sourceFilename;
+					info.BaseSize = new SKSize(64, 64);
+					info.TintColor = SKColors.Red.WithAlpha(127);
+					info.Quality = ResizeQuality.Fastest;
+					var tools = new SkiaSharpSvgTools(info, Logger);
+					var dpiPath = new DpiPath("", 1);
+
+					tools.Resize(dpiPath, DestinationFilename);
+
+					using var resultImage = SKBitmap.Decode(DestinationFilename);
+					using var pixmap = resultImage.PeekPixels();
+					Assert.Equal(SKColors.Red.WithAlpha(127), pixmap.GetPixelColor(32, 32));
+				}
+				finally
+				{
+					File.Delete(sourceFilename);
+				}
 			}
 
 			[Theory]

@@ -91,9 +91,11 @@ namespace Microsoft.Maui.Resizetizer
 				Paint.ColorFilter = SKColorFilter.CreateBlendMode(tint, SKBlendMode.SrcIn);
 			}
 
+			Quality = Enum.IsDefined(typeof(ResizeQuality), quality) ? quality : ResizeQuality.Auto;
+
 			// Map ResizeQuality to SKSamplingOptions which controls actual resampling.
 			// Auto preserves the original bilinear+mipmaps behavior for backward compatibility.
-			SamplingOptions = quality switch
+			SamplingOptions = Quality switch
 			{
 				ResizeQuality.Best => new SKSamplingOptions(SKCubicResampler.Mitchell),
 				ResizeQuality.Fastest => new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
@@ -111,6 +113,8 @@ namespace Microsoft.Maui.Resizetizer
 		public ILogger Logger { get; }
 
 		public SKPaint Paint { get; }
+
+		public ResizeQuality Quality { get; }
 
 		public SKSamplingOptions SamplingOptions { get; }
 

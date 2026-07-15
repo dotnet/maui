@@ -69,10 +69,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			return bitmap.Pixels.ToArray();
 		}
 
-		protected static void AssertPixelsDiffer(SKColor[] expected, SKColor[] actual, string because)
+		protected internal static void AssertPixelsDiffer(SKColor[] expected, SKColor[] actual, string because)
 		{
 			Assert.Equal(expected.Length, actual.Length);
-			Assert.True(expected.Where((pixel, index) => pixel != actual[index]).Any(), because);
+
+			var differentPixels = expected.Where((pixel, index) => pixel != actual[index]).Count();
+			var minimumDifferentPixels = Math.Max(1, expected.Length / 100);
+
+			Assert.True(differentPixels > minimumDifferentPixels,
+				$"{because} Differing pixels: {differentPixels} of {expected.Length}; expected more than {minimumDifferentPixels}.");
 		}
 
 		protected void AssertFileNotExists(string file)

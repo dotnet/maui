@@ -419,17 +419,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(bmpFastest.Width, bmpAuto.Width);
 				Assert.Equal(bmpFastest.Height, bmpAuto.Height);
 
-				int differentPixels = 0;
-				for (int y = 0; y < bmpFastest.Height; y++)
-				{
-					for (int x = 0; x < bmpFastest.Width; x++)
-					{
-						if (bmpFastest.GetPixel(x, y) != bmpAuto.GetPixel(x, y))
-							differentPixels++;
-					}
-				}
-
-				Assert.True(differentPixels > 0,
+				BaseTest.AssertPixelsDiffer(bmpFastest.Pixels, bmpAuto.Pixels,
 					"Fastest and Auto should produce different pixel output when downscaling");
 			}
 
@@ -459,17 +449,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(bmpBest.Width, bmpAuto.Width);
 				Assert.Equal(bmpBest.Height, bmpAuto.Height);
 
-				int differentPixels = 0;
-				for (int y = 0; y < bmpBest.Height; y++)
-				{
-					for (int x = 0; x < bmpBest.Width; x++)
-					{
-						if (bmpBest.GetPixel(x, y) != bmpAuto.GetPixel(x, y))
-							differentPixels++;
-					}
-				}
-
-				Assert.True(differentPixels > 0,
+				BaseTest.AssertPixelsDiffer(bmpBest.Pixels, bmpAuto.Pixels,
 					"Best (Mitchell cubic) and Auto (bilinear) should produce different pixel output");
 			}
 

@@ -556,22 +556,32 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(successAuto, LogErrorEvents.FirstOrDefault()?.Message);
 				AssertFileSize("drawable-mdpi/camera_auto.png", 100, 100);
 
-				// Compare: Fastest vs Auto should differ when downscaling
+				var itemsBest = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["BaseSize"] = "100",
+						["Link"] = "camera_best",
+						["ResizeQuality"] = "Best",
+					}),
+				};
+
+				var taskBest = GetNewTask(itemsBest);
+				var successBest = taskBest.Execute();
+				Assert.True(successBest, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("drawable-mdpi/camera_best.png", 100, 100);
+
+				var bestPixels = ReadPixels("drawable-mdpi/camera_best.png");
+
+				// Compare: Fastest/Best vs Auto should differ when downscaling
 				var autoFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_auto.png");
 				using var bmpAuto = SKBitmap.Decode(autoFile);
 				var autoPixels = bmpAuto.Pixels.ToArray();
 
-				Assert.Equal(fastestPixels.Length, autoPixels.Length);
-
-				int differentPixels = 0;
-				for (int i = 0; i < fastestPixels.Length; i++)
-				{
-					if (fastestPixels[i] != autoPixels[i])
-						differentPixels++;
-				}
-
-				Assert.True(differentPixels > 0,
-					"End-to-end: Fastest and Auto must produce different pixel output");
+				AssertPixelsDiffer(fastestPixels, autoPixels,
+					"End-to-end: Fastest and Auto must produce different pixel output.");
+				AssertPixelsDiffer(bestPixels, autoPixels,
+					"End-to-end: Best and Auto must produce different pixel output.");
 			}
 
 			[Fact]
