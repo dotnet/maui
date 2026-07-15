@@ -340,6 +340,31 @@ stages:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
+          # Windows agents are reused across pipeline runs; a lingering .NET build
+          # server (dotnet.exe/VBCSCompiler/MSBuild) from a prior run keeps
+          # .dotnet\dotnet.exe locked, so the cake bootstrap's RemoveDir of .dotnet
+          # fails with MSB3231 "Access to the path 'dotnet.exe' is denied" and can
+          # leave .dotnet\sdk half-provisioned (later "hostpolicy.dll not found").
+          # Seen on builds 14665168 + 14665853; an immediate retryCountOnTaskFailure
+          # cannot release a held lock. Best-effort: shut build servers down and stop
+          # stray processes rooted in .dotnet so the RemoveDir can succeed.
+          - pwsh: |
+              $wd = (Get-Location).Path
+              $dn = Join-Path $wd ".dotnet/dotnet.exe"
+              if (Test-Path $dn) {
+                try { & $dn build-server shutdown 2>$null | Out-Null } catch {}
+              }
+              try {
+                Get-Process -ErrorAction SilentlyContinue |
+                  Where-Object { $_.Name -in @('dotnet','VBCSCompiler','MSBuild') -and $_.Path -and $_.Path.StartsWith($wd, [System.StringComparison]::OrdinalIgnoreCase) } |
+                  ForEach-Object { try { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue } catch {} }
+              } catch {}
+              Write-Host "Released .dotnet build-server locks (best-effort)."
+              exit 0
+            displayName: 'Release .dotnet locks (Windows, best-effort)'
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'windows'))
+            continueOnError: true
+
           # Build MSBuild tasks (required for MAUI builds)
           - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
             displayName: 'Build MSBuild Tasks'
@@ -1710,6 +1735,30 @@ stages:
                 exit 0
               displayName: 'Set screen resolution (1920x1080)'
               continueOnError: true
+
+          # Windows agents are reused across pipeline runs; a lingering .NET build
+          # server (dotnet.exe/VBCSCompiler/MSBuild) from a prior run keeps
+          # .dotnet\dotnet.exe locked, so the cake bootstrap's RemoveDir of .dotnet
+          # fails with MSB3231 "Access to the path 'dotnet.exe' is denied" and can
+          # leave .dotnet\sdk half-provisioned (later "hostpolicy.dll not found").
+          # Best-effort: shut build servers down and stop stray processes rooted in
+          # .dotnet so the RemoveDir in the .dotnet provisioning below can succeed.
+          - pwsh: |
+              $wd = (Get-Location).Path
+              $dn = Join-Path $wd ".dotnet/dotnet.exe"
+              if (Test-Path $dn) {
+                try { & $dn build-server shutdown 2>$null | Out-Null } catch {}
+              }
+              try {
+                Get-Process -ErrorAction SilentlyContinue |
+                  Where-Object { $_.Name -in @('dotnet','VBCSCompiler','MSBuild') -and $_.Path -and $_.Path.StartsWith($wd, [System.StringComparison]::OrdinalIgnoreCase) } |
+                  ForEach-Object { try { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue } catch {} }
+              } catch {}
+              Write-Host "Released .dotnet build-server locks (best-effort)."
+              exit 0
+            displayName: 'Release .dotnet locks (Windows, best-effort)'
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'windows'))
+            continueOnError: true
 
           # Install .NET workloads (same as ReviewPR stage) — without this,
           # dotnet build fails with NETSDK1147 because the ios/android workloads
