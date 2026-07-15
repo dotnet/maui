@@ -555,14 +555,35 @@ namespace Microsoft.Maui.Controls
 				dispatcher = GetDispatcherIfAvailable();
 			}
 
-			if (dispatcher is not null
-				&& dispatcher.IsDispatchRequired)
+			bool isDispatchRequired = false;
+			try
+			{
+				isDispatchRequired = dispatcher?.IsDispatchRequired == true;
+			}
+			catch (ObjectDisposedException) when (!clearIfDispatchNotRequired)
+			{
+				return;
+			}
+
+			if (isDispatchRequired)
 			{
 				if (!pendingCleanup.TryScheduleDispatch())
 					return;
 
-				if (!dispatcher.Dispatch(() => ClearPendingInheritedBindingContext(pendingCleanup)))
-					pendingCleanup.ResetScheduledDispatch();
+				bool dispatchAccepted = false;
+				try
+				{
+					dispatchAccepted = dispatcher.Dispatch(() => ClearPendingInheritedBindingContext(pendingCleanup));
+				}
+				catch (ObjectDisposedException) when (!clearIfDispatchNotRequired)
+				{
+					return;
+				}
+				finally
+				{
+					if (!dispatchAccepted)
+						pendingCleanup.ResetScheduledDispatch();
+				}
 
 				return;
 			}

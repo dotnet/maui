@@ -791,6 +791,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.KeepAlive(inheritedContext);
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task FinalizerCleanupLeavesPendingWhenDispatcherIsDisposed(bool throwFromIsDispatchRequired)
+		{
+			bool dispatcherDisposed = true;
+			bool dispatchRequired = true;
+			DispatcherProviderStubOptions.IsInvokeRequired = () =>
+			{
+				if (dispatcherDisposed && throwFromIsDispatchRequired)
+					throw new ObjectDisposedException("dispatcher");
+
+				return dispatchRequired;
+			};
+			DispatcherProviderStubOptions.DispatchResult = () =>
+			{
+				if (dispatcherDisposed && !throwFromIsDispatchRequired)
+					throw new ObjectDisposedException("dispatcher");
+
+				return true;
+			};
+
+			MockBindable bindable;
+			try
+			{
+				bindable = new MockBindable();
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+				DispatcherProviderStubOptions.DispatchResult = null;
+			}
+
+			var inheritedContext = new MockViewModel { Text = "FooBar" };
+			bindable.SetBinding(BindableObject.BindingContextProperty, nameof(MockViewModel.Text));
+			var weakParent = SetParentWithBindingContext(bindable, inheritedContext);
+			int bindingContextChanged = 0;
+			bindable.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.Equal("FooBar", bindable.BindingContext);
+			Assert.False(await weakParent.WaitForCollect(), "Parent should not be alive!");
+
+			var exception = Record.Exception(bindable.ClearRealParentAndInheritedContextIfCollected);
+
+			Assert.Null(exception);
+			Assert.Equal(0, bindingContextChanged);
+			Assert.Equal("FooBar", bindable.GetValue(BindableObject.BindingContextProperty));
+
+			dispatcherDisposed = false;
+			dispatchRequired = false;
+
+			Assert.Null(bindable.BindingContext);
+			Assert.Equal(1, bindingContextChanged);
+			GC.KeepAlive(inheritedContext);
+		}
+
 		[Fact]
 		public void BoundBindingContextUpdate()
 		{
