@@ -2456,6 +2456,7 @@ stages:
               $buildFailedCats = @()
               $interruptedCats = @()
               $buildFailedSampleError = ''
+              $buildFailedSampleFile = ''
               if (Test-Path $artDir) {
                 foreach ($d in @(Get-ChildItem -Path $artDir -Directory -Filter 'drop-*_ui_tests-*' -ErrorAction SilentlyContinue)) {
                   if (@(Get-ChildItem -Path $d.FullName -Filter '*.trx' -Recurse -ErrorAction SilentlyContinue).Count -gt 0) { continue }
@@ -2497,7 +2498,16 @@ stages:
                       $compileErrMatch.Success) {
                     $buildFailedCats += $cat
                     if ($compileErrMatch.Success -and [string]::IsNullOrEmpty($buildFailedSampleError)) {
-                      $e = $compileErrMatch.Value.Trim()
+                      $full = $compileErrMatch.Value.Trim()
+                      # Repo-relative path of the failing file (strip the AzDO
+                      # sources prefix + trailing (line,col)) so the note logic can
+                      # check it against the PR diff and DEFINITIVELY classify the
+                      # break as base-branch vs PR-introduced.
+                      $left = ($full -split ': ?error ', 2)[0]
+                      $left = (($left -replace '\(\d+,\d+\)\s*$', '').Trim()) -replace '\\', '/'
+                      $fm = [regex]::Match($left, '((?:src|eng|\.github|Directory|global)[^:]*)$')
+                      if ($fm.Success) { $buildFailedSampleFile = $fm.Groups[1].Value.Trim() }
+                      $e = $full
                       $m2 = [regex]::Match($e, 'error (?:RS|CS|MSB|NETSDK|CA|IL|APT|XA|NU|MT|AMM)\d{3,}:.*')
                       if ($m2.Success) { $e = $m2.Value.Trim() }
                       if ($e.Length -gt 240) { $e = $e.Substring(0, 240) + '…' }
@@ -2522,7 +2532,27 @@ stages:
                 $bfList = '`' + ($buildFailedCats -join '`, `') + '`'
                 $bfCatText = if ($buildFailedCats.Count -eq 1) { "1 category ($bfList)" } else { "$($buildFailedCats.Count) categories ($bfList)" }
                 $bfErr = if ($buildFailedSampleError) { " The compiler reported: ``$buildFailedSampleError``." } else { '' }
-                $buildFailedNote = "The build failed to **compile** for $bfCatText, so those deep UI tests could not run.$bfErr This may be a **base-branch build break** or a compile error introduced by this PR — check the ``build-output.log`` in the ``drop-deep-uitests`` artifact. Once the build is fixed, re-run the review to execute these tests."
+                # DEFINITIVELY classify the break instead of hedging with "this
+                # may be either". A PublicAPI/analyzer (RS####) or syntax (CS####)
+                # error fires in the file that declares it, which the PR modifies —
+                # so if the failing file is part of THIS PR's diff it is the PR's
+                # break; if it is not in the diff at all, the break is in base code
+                # this PR never touched. Show the file so the reasoning is visible.
+                $bfClass = ''
+                $prFilesForClass = @()
+                try { $prFilesForClass = @(gh api "repos/dotnet/maui/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null) } catch { $prFilesForClass = @() }
+                if ($buildFailedSampleFile -and $prFilesForClass.Count -gt 0) {
+                  $hit = $prFilesForClass | Where-Object { $_ -and ($_ -eq $buildFailedSampleFile -or $buildFailedSampleFile.EndsWith("/$_") -or $_.EndsWith("/$buildFailedSampleFile")) } | Select-Object -First 1
+                  if ($hit) {
+                    $bfClass = " This is a compile error **introduced by this PR** — ``$hit`` is one of the files this PR changes. Fix the build error, then re-comment ``/review`` to run the deep tests."
+                  } else {
+                    $bfClass = " This is a **base-branch build break** — the failing file (``$buildFailedSampleFile``) is not part of this PR. Verify ``main`` builds green, then re-comment ``/review``."
+                  }
+                }
+                if (-not $bfClass) {
+                  $bfClass = " Check the ``build-output.log`` in the ``drop-deep-uitests`` artifact to see whether ``main`` or this PR introduced it, then re-run once the build is fixed."
+                }
+                $buildFailedNote = "The build failed to **compile** for $bfCatText, so those deep UI tests could not run.$bfErr$bfClass"
               }
 
               $interruptedNote = ''
