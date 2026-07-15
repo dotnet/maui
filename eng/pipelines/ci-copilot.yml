@@ -1865,15 +1865,27 @@ stages:
               git checkout -- . 2>/dev/null || true
               # Merge the PR head commit so we run tests against the same
               # tree the Copilot reviewer saw. Mirror Review-PR.ps1 STEP 1
-              # logic (squash-merge, fall back to head checkout on
-              # conflict — but in the conflict case the ReviewPR stage
-              # would have already failed and we wouldn't reach here).
+              # logic (squash-merge, fall back to head checkout on conflict).
+              # The deep stage runs INDEPENDENTLY of the ReviewPR stage, so we
+              # DO reach this fallback when a PR conflicts with base even though
+              # ReviewPR also failed (build 14670203, #36274: 8 conflicting
+              # files incl. Picker.cs + PublicAPI.Unshipped.txt). Testing the PR
+              # head alone is the correct degradation there.
               git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}
               git checkout -b deep-uitests-pr-${{ parameters.PRNumber }}
               git merge --squash pr-${{ parameters.PRNumber }} || {
                 echo "Squash merge had conflicts — falling back to direct head checkout"
-                git merge --abort 2>/dev/null || true
-                git checkout pr-${{ parameters.PRNumber }}
+                # NOTE: `git merge --abort` does NOT work after a conflicted
+                # `git merge --squash` — squash merges never set MERGE_HEAD, so
+                # the abort fails silently and the conflicted index REMAINS,
+                # making the fallback `git checkout` die with "you need to
+                # resolve your current index first" (build 14670203, #36274:
+                # this exact failure blocked the entire android deep stage).
+                # `git reset --hard` is the correct cleanup for a squash-merge
+                # conflict; `-f` on the checkout then discards any residual
+                # untracked add/add conflict files so we land cleanly on PR head.
+                git reset --hard HEAD
+                git checkout -f pr-${{ parameters.PRNumber }}
               }
               git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
             displayName: 'Merge PR for testing'
