@@ -307,6 +307,95 @@ function New-IosAdHocSideload {
     }
 }
 
+function New-IosUnsignedDeviceIpa {
+    param(
+        [System.IO.FileInfo]$ProjectFile,
+        [string]$TargetFramework,
+        [string]$Configuration,
+        [string]$RuntimeIdentifier,
+        [string]$OutputPath,
+        [string]$AppDisplayVersion,
+        [string]$AppBuildNumber
+    )
+
+    # A dry-run has no Apple signing secrets, so we cannot produce an IPA that installs
+    # *directly* on a device (that needs an ad-hoc profile listing the device UDID, or
+    # TestFlight - both live on the secret-gated publish path). We can still build the
+    # unsigned device (iphoneos/arm64) .app and wrap it as a Payload/*.app IPA so a tester
+    # can install it with AltStore or Sideloadly, which re-signs the app with the tester's
+    # own Apple ID. Without this the iOS dry-run only produced a Simulator .app - i.e. there
+    # was no .ipa in the artifact at all, which is exactly what testers reported missing.
+    try {
+        if ([string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
+            $RuntimeIdentifier = "ios-arm64"
+        }
+
+        $deviceArgs = @(
+            "build", $ProjectFile.FullName,
+            "-f", $TargetFramework,
+            "-c", $Configuration,
+            "-r", $RuntimeIdentifier,
+            "-p:ApplicationDisplayVersion=$AppDisplayVersion",
+            "-p:ApplicationVersion=$AppBuildNumber",
+            "-p:ValidateXcodeVersion=false",
+            "-p:EnableCodeSigning=false",
+            "-p:_RequireCodeSigning=false",
+            "-p:CodesignKey=-",
+            "-p:BuildIpa=false"
+        )
+
+        if (Test-IsNet11OrLater $TargetFramework) {
+            # net11+ iOS can't build with Mono (NETSDK1242); use CoreCLR. NativeAOT is not
+            # needed for an unsigned, sideload-only artifact.
+            $deviceArgs += "-p:UseMonoRuntime=false"
+        }
+
+        Write-Host "Building unsigned iOS device app (for a sideloadable IPA) for $($ProjectFile.FullName)"
+        Invoke-DotNetPublish $deviceArgs "iOS unsigned device build"
+
+        $ridEscaped = [regex]::Escape($RuntimeIdentifier)
+        $deviceApp = Get-ChildItem -Path $ProjectFile.DirectoryName -Filter "*.app" -Recurse -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match "[\\/]$ridEscaped[\\/]" -and $_.FullName -notmatch "[\\/]obj[\\/]" } |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+
+        if (-not $deviceApp) {
+            Write-Warning "Unsigned iOS device build did not produce a device .app; skipping the sideloadable IPA."
+            return $null
+        }
+
+        $stageRoot = Join-Path $OutputPath "device-ipa"
+        Remove-Item -Path $stageRoot -Recurse -Force -ErrorAction SilentlyContinue
+        $payloadDir = Join-Path $stageRoot "Payload"
+        New-Item -ItemType Directory -Path $payloadDir -Force | Out-Null
+
+        $stagedApp = Join-Path $payloadDir $deviceApp.Name
+        if (Get-Command ditto -ErrorAction SilentlyContinue) {
+            & ditto $deviceApp.FullName $stagedApp
+            if ($LASTEXITCODE -ne 0) { throw "ditto failed to stage the device .app (exit $LASTEXITCODE)." }
+        } else {
+            Copy-Item -Path $deviceApp.FullName -Destination $stagedApp -Recurse -Force
+        }
+
+        # An IPA is a zip whose root contains Payload/<App>.app. --keepParent embeds the
+        # "Payload" directory as the top-level entry, giving a valid IPA layout.
+        $ipaPath = Join-Path $OutputPath "$($deviceApp.BaseName).ipa"
+        Remove-Item -Path $ipaPath -Force -ErrorAction SilentlyContinue
+        if (Get-Command ditto -ErrorAction SilentlyContinue) {
+            & ditto -c -k --keepParent $payloadDir $ipaPath
+            if ($LASTEXITCODE -ne 0) { throw "ditto failed to archive the IPA (exit $LASTEXITCODE)." }
+        } else {
+            Compress-Archive -Path $payloadDir -DestinationPath $ipaPath -Force
+        }
+
+        Write-Host "Unsigned iOS device IPA (install with AltStore/Sideloadly): $ipaPath"
+        return Get-Item $ipaPath
+    } catch {
+        Write-Warning "Unsigned iOS device IPA build failed: $($_.Exception.Message). The Simulator app artifact is unaffected."
+        return $null
+    }
+}
+
 $projectFile = Get-ChildItem -Path $ProjectPath -Filter "*.csproj" -Recurse | Select-Object -First 1
 if (-not $projectFile) {
     throw "No project file was found in '$ProjectPath'."
@@ -319,7 +408,10 @@ $binlogArguments = if ($CreateBinlog) { @("/bl:$binlogPath") } else { @() }
 # $package          => the "store" package (aab/ipa/pkg/zip) consumed by the Play/TestFlight steps.
 # $sideloadPackage  => a directly-installable artifact for testers (apk / ad-hoc ipa / notarized app).
 #                      When no distinct sideload artifact exists it falls back to $package on emit.
+# $additionalPackage => an optional extra artifact uploaded alongside the sideload one (e.g. the iOS
+#                      Simulator .app.zip that accompanies the device .ipa on a dry-run).
 $sideloadPackage = $null
+$additionalPackage = $null
 
 switch ($Platform) {
     "android" {
@@ -443,12 +535,16 @@ switch ($Platform) {
                 -AppDisplayVersion $AppDisplayVersion `
                 -AppBuildNumber $AppBuildNumber
         } else {
-            # A dry-run has no signing secrets, so an unsigned *device* (ios-arm64,
-            # iPhoneOS) .app can neither install on hardware nor launch in the Simulator.
-            # Build a Simulator app instead so testers can actually run it. `dotnet publish`
-            # rejects simulator RIDs, so use `dotnet build` + iossimulator-arm64 (macos-15
-            # runners and Apple Silicon testers are arm64). Physical-device installs require
-            # the secret-gated ad-hoc IPA path above.
+            # A dry-run has no signing secrets. We produce two complementary iOS artifacts:
+            #
+            #   1. A Simulator app (.app.zip) - runnable in the iOS Simulator on any Mac, so a
+            #      maintainer can smoke-test the build with no device. `dotnet publish` rejects
+            #      simulator RIDs, so use `dotnet build` + iossimulator-arm64 (macos-15 runners
+            #      and Apple Silicon testers are arm64).
+            #   2. An unsigned device IPA (.ipa) - what testers install on real hardware via
+            #      AltStore/Sideloadly (which re-signs with their own Apple ID). A *directly*
+            #      installable IPA needs an ad-hoc profile with the device UDID, or TestFlight,
+            #      both of which are on the secret-gated publish path.
             $simulatorRuntimeIdentifier = "iossimulator-arm64"
             $arguments = @(
                 "build", $projectFile.FullName,
@@ -479,6 +575,25 @@ switch ($Platform) {
                 Repair-AppleAdhocSignature $appBundle.FullName
                 Compress-AppBundle $appBundle.FullName $zipPath
                 $package = Get-Item $zipPath
+                $sideloadPackage = $package
+            }
+
+            # Best-effort: also build the unsigned device IPA testers asked for. If it fails,
+            # the Simulator app above is still uploaded, so the dry-run never regresses.
+            $deviceIpa = New-IosUnsignedDeviceIpa `
+                -ProjectFile $projectFile `
+                -TargetFramework $TargetFramework `
+                -Configuration $Configuration `
+                -RuntimeIdentifier $RuntimeIdentifier `
+                -OutputPath $OutputPath `
+                -AppDisplayVersion $AppDisplayVersion `
+                -AppBuildNumber $AppBuildNumber
+
+            if ($deviceIpa) {
+                # The installable IPA becomes the primary sideload artifact; keep the Simulator
+                # app as an additional upload for Mac-only smoke testing.
+                $additionalPackage = $package
+                $sideloadPackage = $deviceIpa
             }
         }
     }
@@ -604,6 +719,9 @@ if (-not $package) {
 Write-Host "Package artifact: $($package.FullName)"
 $sideloadResolved = if ($sideloadPackage) { $sideloadPackage.FullName } else { $package.FullName }
 Write-Host "Sideload artifact: $sideloadResolved"
+if ($additionalPackage) {
+    Write-Host "Additional artifact: $($additionalPackage.FullName)"
+}
 if ($CreateBinlog) {
     Write-Host "Build binlog: $binlogPath"
 }
@@ -611,6 +729,9 @@ if ($CreateBinlog) {
 if ($env:GITHUB_OUTPUT) {
     "package_path=$($package.FullName)" >> $env:GITHUB_OUTPUT
     "sideload_package_path=$sideloadResolved" >> $env:GITHUB_OUTPUT
+    if ($additionalPackage) {
+        "additional_package_path=$($additionalPackage.FullName)" >> $env:GITHUB_OUTPUT
+    }
     if ($CreateBinlog) {
         "binlog_path=$binlogPath" >> $env:GITHUB_OUTPUT
     }
