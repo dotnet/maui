@@ -103,14 +103,18 @@ namespace Microsoft.Maui.Handlers
 
         void ITabBarManagerDelegate.OnTraitCollectionDidChange(UITraitCollection previousTraitCollection)
         {
-            if (previousTraitCollection?.VerticalSizeClass == _manager?.TraitCollection.VerticalSizeClass)
+            if (VirtualView is not IElement element || _manager is null)
+            {
                 return;
+            }
+
+            if (previousTraitCollection?.VerticalSizeClass == _manager.TraitCollection?.VerticalSizeClass)
+            {
+                return;
+            }
 
             // Trigger icon resize by refreshing all tab bar items
-            if (VirtualView is IElement element)
-            {
-                element.Handler?.UpdateValue("ItemsSource");
-            }
+            element.Handler?.UpdateValue("ItemsSource");
         }
 
         #endregion

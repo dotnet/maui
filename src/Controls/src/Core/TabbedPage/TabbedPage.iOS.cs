@@ -735,16 +735,18 @@ namespace Microsoft.Maui.Controls
 
 			var icons = await GetIcon(page);
 
-			// Post-await guard: page may have been removed or handler disconnected during icon load
-			if (page.Handler is null || renderer.ViewController is null || Children.IndexOf(page) < 0)
+			// Post-await guard: page or TabbedPage handler may have been removed during icon load
+			if (page.Handler is null || renderer.ViewController is null || Children.IndexOf(page) < 0
+				|| Handler is not TabbedViewHandler tvh || tvh.Manager is not TabBarControllerManager currentManager
+				|| currentManager != manager)
 			{
 				icons?.Item1?.Dispose();
 				icons?.Item2?.Dispose();
 				return;
 			}
 
-			var resizedImage = TabbedViewExtensions.AutoResizeTabBarImage(manager.TraitCollection, icons?.Item1);
-			var resizedSelectedImage = TabbedViewExtensions.AutoResizeTabBarImage(manager.TraitCollection, icons?.Item2);
+			var resizedImage = TabbedViewExtensions.AutoResizeTabBarImage(currentManager.TraitCollection, icons?.Item1);
+			var resizedSelectedImage = TabbedViewExtensions.AutoResizeTabBarImage(currentManager.TraitCollection, icons?.Item2);
 
 			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, resizedImage, resizedSelectedImage)
 			{
