@@ -826,6 +826,7 @@ if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
         -IncludeLegacyGate `
         -IncludeMergeConflict `
         -IncludeTryFix `
+        -IncludeReviewIncomplete `
         -Reason "stale generated PR review artifact"
 }
 

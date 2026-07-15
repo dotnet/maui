@@ -1206,6 +1206,7 @@ stages:
               BUILD_URL="https://dev.azure.com/devdiv/DevDiv/_build/results?buildId=${BUILD_BUILDID}"
               BODY_FILE="$(mktemp)"
               {
+                echo "<!-- MAUI_BOT_REVIEW_INCOMPLETE -->"
                 echo "> [!WARNING]"
                 echo "> ### 🔍 Automated review could not complete"
                 echo ">"
