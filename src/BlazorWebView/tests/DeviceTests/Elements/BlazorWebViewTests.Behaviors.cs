@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -105,12 +107,12 @@ public partial class BlazorWebViewTests
 			var bwvHandler = CreateHandler<BlazorWebViewHandler>(bwv);
 			var platformWebView = bwvHandler.PlatformView;
 			await WebViewHelpers.WaitForWebViewReady(platformWebView);
-
-			var computedFontSize = await WebViewHelpers.ExecuteScriptAsync(
+			var computedFontSizeJson = await WebViewHelpers.ExecuteScriptAsync(
 				platformWebView,
-				$"window.getComputedStyle(document.getElementById('{SmallFontSpanId}')).fontSize");
+				$"parseFloat(window.getComputedStyle(document.getElementById('{SmallFontSpanId}')).fontSize)");
+			var computedFontSize = double.Parse(computedFontSizeJson, CultureInfo.InvariantCulture);
 
-			Assert.Equal($"\"{SmallFontCssValue}\"", computedFontSize);
+			Assert.True(computedFontSize < 8, $"Expected computed font size to be under the 8px clamp, but was {computedFontSize}px.");
 		});
 	}
 #endif

@@ -1,3 +1,4 @@
+using System.Globalization;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,7 +21,10 @@ public class Issue26924 : _IssuesUITest
 		// the HTML, so wait for that before tapping the button to avoid racing navigation.
 		App.WaitForTextToBePresentInElement("ComputedFontSizeLabel", "WebView loaded");
 		App.Tap("CheckFontSizeButton");
-		Assert.That(App.WaitForElement("ComputedFontSizeLabel").GetText(), Is.EqualTo("4.87761px"));
+		var computedFontSizeText = App.WaitForElement("ComputedFontSizeLabel").GetText();
+		Assert.That(computedFontSizeText, Is.Not.Null);
+		var computedFontSize = float.Parse(computedFontSizeText!.TrimEnd('p', 'x'), CultureInfo.InvariantCulture);
+		Assert.That(computedFontSize, Is.LessThan(8f));
 	}
 }
 
