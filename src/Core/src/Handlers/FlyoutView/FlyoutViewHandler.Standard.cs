@@ -6,7 +6,37 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView()
 		{
-			throw new System.NotImplementedException();
+			throw new NotImplementedException();
+		}
+
+		public static void MapFlyout(IFlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static void MapIsPresented(IFlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static void MapFlyoutBehavior(IFlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static void MapFlyoutWidth(IFlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static void MapIsGestureEnabled(IFlyoutViewHandler handler, IFlyoutView flyoutView)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

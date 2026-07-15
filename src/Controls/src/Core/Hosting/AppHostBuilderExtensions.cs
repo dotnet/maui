@@ -205,7 +205,7 @@ public static partial class AppHostBuilderExtensions
 #if IOS || MACCATALYST
 		handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 		handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
-		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
+		handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
 #endif
 
 #if ANDROID || IOS || MACCATALYST || TIZEN
