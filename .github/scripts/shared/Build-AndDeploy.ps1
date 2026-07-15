@@ -208,30 +208,37 @@ if ($Platform -eq "android") {
     # requirement of Xcode 26.6) landing ahead of the agent's installed Xcode:
     #
     #  1. ValidateXcodeVersion=false — skips the SDK's EARLY, up-front
-    #     Xcode-version gate (the eager MT0180 "requires the iOS X SDK / Xcode Y"
-    #     check that fires before any compilation).
+    #     Xcode-version gate (the eager check that fires before any compilation).
     #
-    #  2. PublishTrimmed=false — skips the ILLink trimmer ("Optimizing assemblies
-    #     for size"), whose LATE pass re-resolves the device SDK headers and
-    #     crashes IL1012 -> MT0180 -> NETSDK1144 when they are older than the
-    #     workload wants. ValidateXcodeVersion=false does NOT cover this later
-    #     pass, so BOTH guards are required.
+    #  2. _MustTrim=false — stops the ILLink trimmer from running at all, whose
+    #     Xamarin custom SetupStep re-validates the device SDK/Xcode version and
+    #     throws IL1012 -> MT0180 -> NETSDK1144 when the agent's Xcode is older
+    #     than the workload wants. ValidateXcodeVersion=false does NOT cover this
+    #     later pass, so BOTH guards are required.
     #
-    # ROOT CAUSE is AGENT HETEROGENEITY in the AcesShared iOS pool, proven by
-    # three identical-command builds that landed on different agents:
-    #   * AcesShared 6 (build 14657467) -> trimmer did NOT run -> 216 tests passed
-    #   * AcesShared 2 (build 14660995) -> trimmer ran         -> MT0180
-    #   * AcesShared 4 (build 14660232) -> trimmer ran         -> MT0180
-    # i.e. some agents run the ILLink trimmer for a Debug SIMULATOR build (and
-    # lack Xcode 26.6), others don't. PublishTrimmed=false forces the trimmer OFF
-    # on ALL agents, so the outcome no longer depends on which agent we land on.
+    # ROOT CAUSE (decoded from Microsoft.iOS Xamarin.Shared.Sdk.targets):
+    #   * Passing an explicit RID (-r iossimulator-arm64) sets the SDK's internal
+    #     _MustTrim=true  (RuntimeIdentifier != '' AND ExecutableProject AND
+    #     IsMacEnabled), which FORCES PublishTrimmed=true, which runs ILLink.
+    #   * ILLink's Xamarin SetupStep validates the SDK/Xcode version -> MT0180 on
+    #     agents lacking Xcode 26.6. This is why the failure looked like "agent
+    #     heterogeneity": the AcesShared pool mixes Xcode versions.
     #
-    # NOTE: MtouchLink (None/SdkOnly/Full) is the LEGACY Xamarin linker knob and
-    # is IGNORED by the modern .NET-for-iOS trimmer — build 14660232 ran the
-    # trimmer and MT0180'd *with* MtouchLink=None. Do NOT reach for it here;
-    # PublishTrimmed is the correct lever. This script is shared by the gate and
-    # deep stages, so both iOS paths stay resilient.
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false", "-p:PublishTrimmed=false") + $hostAppBuildProps
+    # WHY THE OBVIOUS LEVERS DON'T WORK (all empirically confirmed on AcesShared):
+    #   * MtouchLink=None/SdkOnly/Full only picks a TrimMode (copy/partial/full);
+    #     ILLink STILL RUNS in every mode, so the SetupStep still throws MT0180
+    #     (build 14660232 ran the trimmer and MT0180'd *with* MtouchLink=None).
+    #   * PublishTrimmed=false is HARD-REJECTED: "iOS projects do not support
+    #     setting 'PublishTrimmed' to any value" (build 14661796 -> Build FAILED).
+    #   * RunILLink=false skips ILLink but then the app's managed assemblies are
+    #     never bundled (they flow through ILLink when PublishTrimmed=true).
+    #
+    # THE FIX: _MustTrim=false keeps PublishTrimmed unset, so ILLink is skipped
+    # entirely (no MT0180) AND assemblies bundle via the normal untrimmed publish
+    # path — exactly what a Debug SIMULATOR app wants. RID is still passed so the
+    # .app is produced at the expected iossimulator-<arch> path. This script is
+    # shared by the gate and deep stages, so both iOS paths stay resilient.
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false", "-p:_MustTrim=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -352,13 +359,15 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for MacCatalyst..."
     
-    # ValidateXcodeVersion=false + PublishTrimmed=false: same two-guard resilience
-    # as the iOS build above — MacCatalyst also builds through the Microsoft.MacCatalyst
-    # SDK and can hit BOTH the early Xcode gate AND the late ILLink trimmer
-    # (MT0180/IL1012/NETSDK1144) when the workload outpaces the agent's Xcode. See
-    # the iOS block for the full agent-heterogeneity rationale (PR #35892 review
-    # 4685252040).
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-p:ValidateXcodeVersion=false", "-p:PublishTrimmed=false") + $hostAppBuildProps
+    # ValidateXcodeVersion=false + _MustTrim=false: same two-guard resilience as
+    # the iOS build above — MacCatalyst also builds through the Microsoft.iOS /
+    # Microsoft.MacCatalyst SDK and can hit BOTH the early Xcode gate AND the
+    # ILLink SetupStep (MT0180/IL1012/NETSDK1144) when the workload outpaces the
+    # agent's Xcode. _MustTrim=false keeps PublishTrimmed unset so ILLink is
+    # skipped and assemblies bundle untrimmed. PublishTrimmed=false itself is
+    # hard-rejected by the SDK, so do NOT reach for it. See the iOS block for the
+    # full SDK-targets decode (PR #35892 review 4685252040).
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-p:ValidateXcodeVersion=false", "-p:_MustTrim=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
