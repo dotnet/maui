@@ -232,10 +232,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (invalidatedIndexPaths is not null)
 			{
+				var indexPathsArray = invalidatedIndexPaths.ToArray();
+
+				// Workaround for layout issue observed on iPadOS 18+ with UICollectionViewCompositionalLayout
+				// where self-sizing cells can cause scroll position jumps during invalidation
+				if (ShouldApplyCellReConfiguration())
+				{
+					// Wrap in PerformWithoutAnimation to prevent ReconfigureItems from animating
+					// the scroll position adjustment that would otherwise occur during the layout pass.
+					UIView.PerformWithoutAnimation(() =>
+					{
+						// Use ReconfigureItems (iOS 15+) which is designed for size changes
+						// without full cell recreation - more efficient than ReloadItems
+						collectionView.ReconfigureItems(indexPathsArray);
+					});
+				}
+
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
-				layoutInvalidationContext.InvalidateItems(invalidatedIndexPaths.ToArray());
+				layoutInvalidationContext.InvalidateItems(indexPathsArray);
 				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
+		}
+
+		static bool ShouldApplyCellReConfiguration()
+		{
+			return OperatingSystem.IsIOSVersionAtLeast(15);
 		}
 
 		private void MovedToWindow(object sender, EventArgs e)
@@ -483,6 +504,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
+
+		// True when the CV has no items AND no EmptyView is showing.
+		// Uses _isEmpty field (defaults to true, updated in CheckForEmptySource) rather than
+		// ItemsSource?.ItemCount == 0 to correctly handle a null ItemsSource.
+		// Exposed so the handler can avoid the expansive-size fallback without
+		// reaching into _emptyViewDisplayed or ItemsSource directly.
+		internal bool IsEmpty => _isEmpty && !_emptyViewDisplayed;
 
 		internal UICollectionViewScrollDirection GetScrollDirection()
 		{

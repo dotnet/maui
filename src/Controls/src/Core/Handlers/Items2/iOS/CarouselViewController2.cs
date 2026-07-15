@@ -19,9 +19,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
 		bool _wasDetachedFromWindow = false;
+		int _gotoPosition = -1;
 		CarouselViewLoopManager _carouselViewLoopManager;
 		CancellationTokenSource _scrollDebounce;
 		NSObject _orientationObserver;
+
+		// Tracks the last position the controller synced with the CarouselView. This survives
+		// detach/re-attach (it is intentionally not reset in TearDown) so that when the view
+		// re-attaches we can tell whether Position was explicitly changed while we were detached.
+		int _lastSyncedPosition = -1;
 
 		// We need to keep track of the old views to update the visual states
 		// if this is null we are not attached to the window
@@ -134,6 +140,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 				carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 			}
+
+			// A new items source means a fresh baseline. Reset the tracked position so the next
+			// re-attach treats the source swap as a reset (Position 0) rather than a detached
+			// position change. This keeps a new ItemsSource/ViewModel resetting to the first item,
+			// matching Android behavior.
+			_lastSyncedPosition = 0;
 			_isUpdating = false;
 		}
 
@@ -201,6 +213,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			_oldViews = null;
 			InitialPositionSet = false;
+
+			// Cancel any pending iOS 26 scroll debounce so it can't fire after detach
+			_scrollDebounce?.Cancel();
+			_scrollDebounce?.Dispose();
+			_scrollDebounce = null;
 
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			// Remove the block-based observer using the stored token (RemoveObserver(this,...) does not remove block observers).
@@ -340,7 +357,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			//_gotoPosition = -1;
+			_gotoPosition = -1;
 
 			// We need to update the position while modifying the collection.
 			targetPosition = GetTargetPosition();
@@ -498,7 +515,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (goToPosition != carouselPosition || forceScroll)
+			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
 			{
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 				var goToIndexPath = GetScrollToIndexPath(goToPosition);
@@ -508,6 +525,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
+				_gotoPosition = goToPosition;
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
 			}
 		}
@@ -535,6 +553,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			if (_gotoPosition != -1)
+			{
+				if (position == _gotoPosition)
+				{
+					_gotoPosition = -1;
+				}
+				else
+				{
+					// Suppress intermediate positions while scrolling to target
+					return;
+				}
+			}
+
+      _lastSyncedPosition = position;
 			ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, position);
 			SetCurrentItem(position);
 			UpdateVisualStates();
@@ -576,6 +608,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (currentItemIndex.Row < 0)
 			{
 				return;
+			}
+
+			if (currentItemIndex.Row == _gotoPosition)
+			{
+				_gotoPosition = -1;
 			}
 
 			ScrollToPosition(currentItemIndex.Row, carousel.Position, carousel.AnimateCurrentItemChanges);
@@ -641,6 +678,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 							var updatedCurrentItemPosition = GetIndexForItem(currentCarousel.CurrentItem).Row;
 							var updatedCarouselPosition = currentCarousel.Position;
 
+							// CurrentItem can be null here (e.g. cleared by UpdateItemsSource during a ViewModel
+							// swap), giving -1. Bailing out avoids a spurious ScrollToPosition that would re-sync
+							// Position and corrupt _lastSyncedPosition, causing the position to drift each cycle.
+							if (updatedCurrentItemPosition < 0)
+							{
+								return;
+							}
+
 							ScrollToPosition(updatedCarouselPosition, updatedCurrentItemPosition, currentCarousel.AnimatePositionChanges);
 						});
 					}, token);
@@ -701,9 +746,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					int position = carousel.Position;
 					var currentItem = carousel.CurrentItem;
 
-					if (currentItem != null)
+					// Position and CurrentItem are only kept in sync while the handler is attached, so
+					// they can disagree once the view re-attaches (e.g. when navigating back from another
+					// page). Decide which one to honor:
+					//  - If Position changed while we were detached (the user/binding moved it), honor
+					//    Position so the explicit value isn't lost.
+					//  - Otherwise fall back to CurrentItem's current index, which keeps the same item
+					//    visible when the collection was mutated (e.g. items removed) while we were away.
+					bool positionChangedWhileDetached = _lastSyncedPosition != -1 && position != _lastSyncedPosition;
+
+					if (!positionChangedWhileDetached && currentItem != null)
 					{
-						// Sometimes the item could be just being removed while we navigate back to the CarouselView
 						var positionCurrentItem = ItemsSource.GetIndexForItem(currentItem).Row;
 						if (positionCurrentItem != -1)
 						{

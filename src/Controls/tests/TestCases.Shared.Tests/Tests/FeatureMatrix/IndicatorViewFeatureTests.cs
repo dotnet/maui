@@ -79,7 +79,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement(CountLabel).GetText(), Is.EqualTo("Count: 5"));
 	}
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29312, https://github.com/dotnet/maui/issues/15443
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29312
 	[Test, Order(4)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorView_Position()
@@ -93,7 +93,9 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		Assert.That(App.FindElement(PositionLabel).GetText(), Is.EqualTo("Position: 1"));
 	}
+#endif
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/15443
 	[Test, Order(13)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifySelectedIndicatorColorWhenItemsChanged()

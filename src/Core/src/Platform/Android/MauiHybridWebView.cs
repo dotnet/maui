@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Graphics;
+using Android.OS;
 using Android.Webkit;
 using AUri = Android.Net.Uri;
 using AWebView = Android.Webkit.WebView;
@@ -17,6 +18,13 @@ namespace Microsoft.Maui.Platform
 		private readonly WeakReference<HybridWebViewHandler> _handler;
 		private static readonly AUri AndroidAppOriginUri = AUri.Parse(HybridWebViewHandler.AppOrigin)!;
 		readonly Rect _clipRect;
+		volatile bool _detachPending;
+
+		// True after the first layout pass where exactly one dimension is positive and the other is zero.
+		// Auto-sizing layouts produce this intermediate state; a zero-area ClipBounds here
+		// causes RenderThread to crash on an incomplete Skia canvas (SIGSEGV).
+		// https://github.com/dotnet/maui/issues/35771
+		bool _isAutoSizing;
 
 		public MauiHybridWebView(HybridWebViewHandler handler, Context context) : base(context)
 		{
@@ -28,6 +36,14 @@ namespace Microsoft.Maui.Platform
 			// https://github.com/dotnet/maui/issues/31475
 			_clipRect = new Rect(0, 0, 0, 0);
 			ClipBounds = _clipRect;
+
+			// Pre-register the JS bridge BEFORE any page loads.
+			// Android WebView only exposes addJavascriptInterface bindings for pages that
+			// start loading AFTER the call is made. If Attach is deferred to
+			// OnAttachedToWindow, cold-start apps load their page before the view enters
+			// the window hierarchy, so the bridge is invisible to JS.
+			// Attach is idempotent, so later calls from OnAttachedToWindow are safe no-ops.
+			RefreshViewWebViewScrollCapture.Attach(this);
 		}
 
 		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
@@ -39,6 +55,8 @@ namespace Microsoft.Maui.Platform
 		// OnAttachedToWindow — calls Attach(this) when inside a SwipeRefreshLayout.
 		protected override void OnAttachedToWindow()
 		{
+			_detachPending = false;
+
 			base.OnAttachedToWindow();
 
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
@@ -54,17 +72,52 @@ namespace Microsoft.Maui.Platform
 					RefreshViewWebViewScrollCapture.InjectObserver(this);
 				}
 			}
+			else
+			{
+				// Not inside a RefreshView — remove the bridge that was pre-registered
+				// in the constructor so it is not exposed to untrusted page content
+				// loaded in standalone HybridWebViews.
+				RefreshViewWebViewScrollCapture.Detach(this);
+			}
 		}
 
 		// OnDetachedFromWindow — calls Detach().
 		protected override void OnDetachedFromWindow()
 		{
-			RefreshViewWebViewScrollCapture.Detach(this);
+			if (RefreshViewWebViewScrollCapture.IsAttached(this))
+			{
+				_detachPending = true;
+#pragma warning disable CA1422 // Validate platform compatibility
+				new Handler(Looper.MainLooper!).Post(() =>
+#pragma warning restore CA1422 // Validate platform compatibility
+				{
+					if (_detachPending)
+					{
+						_detachPending = false;
+						RefreshViewWebViewScrollCapture.Detach(this);
+					}
+				});
+			}
+
 			base.OnDetachedFromWindow();
 		}
 
 		void UpdateClipBounds(int width, int height)
 		{
+			// Auto-sizing layouts produce an intermediate layout pass where exactly one dimension
+			// is positive and the other is zero: vertical layouts give (w>0, h=0) first; horizontal
+			// layouts give (w=0, h>0) first. A zero-area ClipBounds in either state causes
+			// RenderThread to crash (SIGSEGV). Null disables clipping; the latch prevents later
+			// layout passes from re-enabling it before both dimensions are stable.
+			// https://github.com/dotnet/maui/issues/35771
+			if (_isAutoSizing || (width > 0 && height == 0) || (width == 0 && height > 0))
+			{
+				_isAutoSizing = true;
+				ClipBounds = null;
+				return;
+			}
+
+			// Normal (non-auto-sizing) WebView: apply flash prevention from issue #31475.
 			if (width > 0 && height > 0)
 			{
 				if (Parent is WrapperView)
@@ -84,7 +137,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// Re-apply empty clip bounds when the view becomes zero-sized or hidden.
+				// View has no area yet or is fully collapsed — keep a zero clip rect.
 				_clipRect.Set(0, 0, 0, 0);
 				ClipBounds = _clipRect;
 			}
@@ -102,6 +155,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (disposing)
 			{
+				_detachPending = false;
 				RefreshViewWebViewScrollCapture.Detach(this);
 			}
 

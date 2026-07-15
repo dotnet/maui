@@ -1,20 +1,19 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 
 namespace Maui.Controls.Sample;
 public class EditorViewModel : INotifyPropertyChanged
 {
 	private string _text = "Test Editor";
-	private Color _textColor = Colors.Black;
+	private Color _textColor = null;
 	private string _placeholder = "Enter text here";
-	private Color _placeholderColor = Colors.Gray;
+	private Color _placeholderColor = null;
 	private double _fontSize = 14;
 	private double _heightrequest = -1;
+	private double _widthRequest = -1;
 	private TextAlignment _horizontalTextAlignment = TextAlignment.Start;
 	private TextAlignment _verticalTextAlignment = TextAlignment.End;
 	private double _characterSpacing = 0;
-	private ReturnType _returnType = ReturnType.Default;
 	private int _maxLength = -1;
 	private int _cursorPosition = 0;
 	private int _selectionLength = 0;
@@ -23,11 +22,13 @@ public class EditorViewModel : INotifyPropertyChanged
 	private bool _isSpellCheckEnabled = false;
 	private Keyboard _keyboard = Keyboard.Default;
 	private string _fontFamily = null;
-	private bool isVisible = true;
+	private bool _isVisible = true;
 	private bool _isEnabled = true;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private bool _hasShadow = false;
 	private Shadow _editorShadow = null;
+	private Color _backgroundColor = null;
+	private double _opacity = 1.0;
 	private TextTransform _transform = TextTransform.Default;
 	private FontAttributes _fontAttributes = FontAttributes.None;
 	private EditorAutoSizeOption _autoSizeOption = EditorAutoSizeOption.Disabled;
@@ -38,19 +39,6 @@ public class EditorViewModel : INotifyPropertyChanged
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
-	public ICommand ReturnCommand { get; set; }
-	public EditorViewModel()
-	{
-		ReturnCommand = new Command<string>(
-			execute: (entryText) =>
-			{
-				if (entryText == "Test")
-				{
-					Text = "Command Executed with Parameter";
-				}
-			}
-		);
-	}
 	public string Text
 	{
 		get => _text;
@@ -86,6 +74,12 @@ public class EditorViewModel : INotifyPropertyChanged
 		set { _heightrequest = value; OnPropertyChanged(); }
 	}
 
+	public double WidthRequest
+	{
+		get => _widthRequest;
+		set { _widthRequest = value; OnPropertyChanged(); }
+	}
+
 	public TextAlignment HorizontalTextAlignment
 	{
 		get => _horizontalTextAlignment;
@@ -102,12 +96,6 @@ public class EditorViewModel : INotifyPropertyChanged
 	{
 		get => _characterSpacing;
 		set { _characterSpacing = value; OnPropertyChanged(); }
-	}
-
-	public ReturnType ReturnType
-	{
-		get => _returnType;
-		set { _returnType = value; OnPropertyChanged(); }
 	}
 
 	public int MaxLength
@@ -143,8 +131,8 @@ public class EditorViewModel : INotifyPropertyChanged
 
 	public bool IsVisible
 	{
-		get => isVisible;
-		set { isVisible = value; OnPropertyChanged(); }
+		get => _isVisible;
+		set { _isVisible = value; OnPropertyChanged(); }
 	}
 
 	public bool IsEnabled
@@ -230,6 +218,32 @@ public class EditorViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public Color BackgroundColor
+	{
+		get => _backgroundColor;
+		set
+		{
+			if (_backgroundColor != value)
+			{
+				_backgroundColor = value;
+				OnPropertyChanged(nameof(BackgroundColor));
+			}
+		}
+	}
+
+	public double Opacity
+	{
+		get => _opacity;
+		set
+		{
+			if (_opacity != value)
+			{
+				_opacity = value;
+				OnPropertyChanged(nameof(Opacity));
+			}
+		}
+	}
+
 	public TextTransform TextTransform
 	{
 		get => _transform;
@@ -269,8 +283,44 @@ public class EditorViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public void Reset()
+	{
+		TextColor = null;
+		PlaceholderColor = null;
+		FontSize = 14;
+		HorizontalTextAlignment = TextAlignment.Start;
+		VerticalTextAlignment = TextAlignment.End;
+		CharacterSpacing = 0;
+		MaxLength = -1;
+		IsReadOnly = false;
+		IsTextPredictionEnabled = false;
+		IsSpellCheckEnabled = false;
+		Keyboard = Keyboard.Default;
+		FontFamily = null;
+		IsVisible = true;
+		IsEnabled = true;
+		FlowDirection = FlowDirection.LeftToRight;
+		HasShadow = false;
+		BackgroundColor = null;
+		Opacity = 1.0;
+		TextTransform = TextTransform.Default;
+		FontAttributes = FontAttributes.None;
+		AutoSizeOption = EditorAutoSizeOption.Disabled;
+		TextChangedText = "TextChanged: Not triggered";
+		CompletedText = "Completed: Not triggered";
+		FocusedText = "Focused: Not triggered";
+		UnfocusedText = "Unfocused: Not triggered";
+		HeightRequest = -1;
+		WidthRequest = -1;
+		Placeholder = "Enter text here";
+		Text = "Test Editor";
+		CursorPosition = 0;
+		SelectionLength = 0;
+	}
+
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
+

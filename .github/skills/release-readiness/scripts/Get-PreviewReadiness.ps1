@@ -351,6 +351,89 @@ function Get-XcodeRequirements {
     }
 }
 
+function Get-BranchComponentPins {
+    <#
+    .SYNOPSIS
+        Reads the dotnet/dotnet (VMR), dotnet/android and dotnet/macios anchor
+        pins (version + commit SHA) from eng/Version.Details.xml at $Ref.
+    .DESCRIPTION
+        Public git source — reachable with the repo-scoped GITHUB_TOKEN the
+        GitHub Action runs under (no Maestro/BAR access required). These are the
+        components CURRENTLY BUNDLED on the branch, NOT a confirmed "blessed"
+        build. The authoritative blessed designation comes from the internal
+        .NET Release Tracker (private dotnet/release), which CI cannot reach.
+
+        Returns a PSCustomObject with Vmr/Android/Macios members (each with
+        Name/Version/Sha), or $null if the file can't be read or parsed.
+    .NOTES
+        eng/Version.Details.xml `<Dependency>` elements carry Name/Version as
+        XML *attributes* and Uri/Sha as child *elements*. On an XmlElement,
+        `$dep.Name` resolves to the element tag ("Dependency") — NOT the Name
+        attribute — so attributes are read with GetAttribute() and children via
+        the `$dep['Uri']` indexer.
+    #>
+    param(
+        [string]$Ref,
+        [int]$Major
+    )
+
+    $xmlText = $null
+    try {
+        $xmlText = Get-ContentFromRepo -Path "eng/Version.Details.xml" -Ref $Ref
+    } catch {
+        Write-Warning "Could not read eng/Version.Details.xml at ${Ref}: $($_.Exception.Message)"
+        return $null
+    }
+
+    $xml = $null
+    try {
+        $xml = [xml]$xmlText
+    } catch {
+        Write-Warning "Could not parse eng/Version.Details.xml at ${Ref}: $($_.Exception.Message)"
+        return $null
+    }
+
+    $deps = @($xml.SelectNodes("//Dependency"))
+    if ($deps.Count -eq 0) { return $null }
+
+    # Pick the anchor dependency for a repo: match by <Uri>, then prefer the
+    # most representative Name (falling back to the first dep for that repo).
+    $selectPin = {
+        param($UriMatch, $PreferredNamePatterns)
+        $cands = @($deps | Where-Object {
+            $u = ''
+            if ($_['Uri']) { $u = "$($_['Uri'].InnerText)".Trim().TrimEnd('/') }
+            $u -match $UriMatch
+        })
+        if ($cands.Count -eq 0) { return $null }
+        $pick = $null
+        foreach ($pat in $PreferredNamePatterns) {
+            $pick = $cands | Where-Object { "$($_.GetAttribute('Name'))" -match $pat } | Select-Object -First 1
+            if ($pick) { break }
+        }
+        if (-not $pick) { $pick = $cands[0] }
+        $sha = ''
+        if ($pick['Sha']) { $sha = "$($pick['Sha'].InnerText)".Trim() }
+        [PSCustomObject]@{
+            Name    = $pick.GetAttribute('Name')
+            Version = $pick.GetAttribute('Version')
+            Sha     = $sha
+        }
+    }
+
+    $vmr     = & $selectPin 'github\.com/dotnet/dotnet(?![\w-])'  @('^Microsoft\.NET\.Sdk$')
+    $android = & $selectPin 'github\.com/dotnet/android(?![\w-])' @('^Microsoft\.Android\.Sdk\.Windows$', '^Microsoft\.Android\.Sdk')
+    $macios  = & $selectPin 'github\.com/dotnet/macios(?![\w-])'  @("^Microsoft\.macOS\.Sdk\.net$Major\.0", '^Microsoft\.macOS\.Sdk', '^Microsoft\.iOS\.Sdk')
+
+    if (-not ($vmr -or $android -or $macios)) { return $null }
+
+    return [PSCustomObject]@{
+        Vmr     = $vmr
+        Android = $android
+        Macios  = $macios
+    }
+}
+
 function Get-BugTemplateVersions {
     <#
     .SYNOPSIS
@@ -455,6 +538,41 @@ function Get-OpenPullRequests {
         "--json",
         "number,title,author,url,createdAt,updatedAt,isDraft,reviewDecision,mergeStateStatus,labels,headRefName,baseRefName"
     ) -Description "list open PRs for $BaseBranch"
+
+    return ConvertFrom-JsonOrEmptyArray $json
+}
+
+function Get-MergedPullRequests {
+    <#
+    .SYNOPSIS
+        Fetches recently MERGED PRs into $BaseBranch (for dependency-flow /
+        subscription-health inference). Public data — readable in CI with the
+        repo-scoped GITHUB_TOKEN.
+    .NOTES
+        `mergedAt` is requested so callers can date each merge; an open PR (from
+        Get-OpenPullRequests) has no `mergedAt`, which is how Get-ComponentFlowSignal
+        tells "open (flowing now)" from "merged N days ago". Newest-first by default.
+    #>
+    param([string]$BaseBranch)
+
+    if (-not (Test-BranchExists -BranchName $BaseBranch)) {
+        return @()
+    }
+
+    $json = Invoke-GitHubWithRetry -Arguments @(
+        "pr",
+        "list",
+        "--repo",
+        $Repository,
+        "--state",
+        "merged",
+        "--base",
+        $BaseBranch,
+        "--limit",
+        "100",
+        "--json",
+        "number,title,author,url,createdAt,updatedAt,mergedAt,labels,headRefName,baseRefName"
+    ) -Description "list merged PRs for $BaseBranch"
 
     return ConvertFrom-JsonOrEmptyArray $json
 }
@@ -863,6 +981,346 @@ function Test-IsP0Pr {
     return (@($labels | ForEach-Object { $_.name }) -contains 'p/0')
 }
 
+function Test-IsDependencyFlowPr {
+    <#
+    .SYNOPSIS
+        True when a PR is a dependency-flow / component-bump PR — either an
+        automated darc PR (author dotnet-maestro) OR a human-authored component
+        bump that rolls upstream builds into a branch.
+    .DESCRIPTION
+        The dependency-flow bucket was originally author-only (`dotnet-maestro`).
+        But release owners also open MANUAL component-bump PRs — e.g.
+        "[release/11.0.1xx-preview6] Bump dotnet/dotnet (BAR 321614), dotnet/android
+        (BAR 321622) and dotnet/macios (BAR 321780)" (head `update-321614`, authored
+        by a human) — which land the blessed component set into the release branch
+        and are just as release-critical as a darc PR. Author-only detection buried
+        those in the generic "Release branch PRs" list instead of surfacing them in
+        the hoisted 🔴 High-priority items. Detect them by title / head-ref too.
+
+        Signals (ANY one is sufficient):
+          - author login matches `dotnet-maestro` (the automated darc flow);
+          - title has the word "Bump" plus a dotnet dependency repo
+            (dotnet/dotnet|android|macios|runtime|sdk|emsdk|wasm) or a "BAR <id>";
+          - head ref matches `update-<digits>` (the manual bump-PR branch scheme,
+            e.g. `update-321614`).
+
+        Deliberately NARROW so it doesn't swallow unrelated human PRs: a generic
+        "Fix Y" or a "[automated] Merge branch" merge-up PR matches none of the
+        signals. StrictMode-safe: tolerates a missing author/title/headRefName.
+        Accepts both PSCustomObject (the gh --json shape) and IDictionary
+        (the shape test mocks commonly use), mirroring Test-IsP0Pr.
+    #>
+    param($PR)
+
+    if (-not $PR) { return $false }
+
+    # --- author login (dual-shape, StrictMode-safe) ---
+    $author = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('author')) { $PR['author'] } else { $null }
+    } elseif ($PR.PSObject.Properties['author']) {
+        $PR.author
+    } else { $null }
+    if ($author) {
+        $login = if ($author -is [System.Collections.IDictionary]) {
+            if ($author.Contains('login')) { $author['login'] } else { $null }
+        } elseif ($author.PSObject.Properties['login']) {
+            $author.login
+        } else { $null }
+        if ($login -and $login -match 'dotnet-maestro') { return $true }
+    }
+
+    # --- title (component / BAR bump) ---
+    $title = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('title')) { $PR['title'] } else { $null }
+    } elseif ($PR.PSObject.Properties['title']) {
+        $PR.title
+    } else { $null }
+    if ($title -and $title -match '(?i)\bBump\b.*(dotnet/(dotnet|android|macios|runtime|sdk|emsdk|wasm)|\bBAR\s*\d+)') { return $true }
+
+    # --- head ref (manual bump-branch scheme `update-<barId>`) ---
+    $head = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('headRefName')) { $PR['headRefName'] } else { $null }
+    } elseif ($PR.PSObject.Properties['headRefName']) {
+        $PR.headRefName
+    } else { $null }
+    if ($head -and $head -match '(?i)^update-\d+$') { return $true }
+
+    return $false
+}
+
+function Test-IsSdkBumpPr {
+    <#
+    .SYNOPSIS
+        True when a PR bumps the .NET SDK/VMR (dotnet/dotnet or dotnet/sdk).
+    .DESCRIPTION
+        A narrow subset of Test-IsDependencyFlowPr: specifically the VMR/SDK bump,
+        whose landed pin advances the branch's SDK version. That new pin is only a
+        *candidate* until the blessed build is confirmed locally (the Action can't
+        reach the .NET Release Tracker), so callers add a "verify blessed locally"
+        emphasis for these. Matches on TITLE only ("Bump dotnet/dotnet …" /
+        "Bump dotnet/sdk …"); android / macios / runtime bumps are intentionally
+        NOT flagged as SDK bumps. StrictMode-safe, dual-shape (PSCustomObject /
+        IDictionary), mirroring Test-IsDependencyFlowPr.
+    #>
+    param($PR)
+
+    if (-not $PR) { return $false }
+
+    $title = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('title')) { $PR['title'] } else { $null }
+    } elseif ($PR.PSObject.Properties['title']) {
+        $PR.title
+    } else { $null }
+
+    return [bool]($title -and $title -match '(?i)\bBump\b.*dotnet/(dotnet|sdk)\b')
+}
+
+function Get-ComponentFlowSignal {
+    <#
+    .SYNOPSIS
+        Best-effort inference of one component's dependency-flow (subscription)
+        health from PUBLIC PR history — no Maestro/darc access required.
+    .DESCRIPTION
+        The GitHub Action cannot read Maestro subscription config (that lives in
+        the AzDO-internal maestro-configuration repo). But every *working*
+        subscription leaves a public trail: dependency-flow PRs into the branch
+        — darc "Update dependencies from dotnet/<repo> …" or human "Bump
+        dotnet/<repo> …". This scans that trail (open + merged dep-flow PRs) for
+        a single source repo and classifies:
+          * open    — an unmerged dep-flow PR for this repo is open right now
+                      (flow is actively happening) → healthy
+          * fresh   — newest dep-flow PR merged within $StaleDays → healthy
+          * stale   — newest dep-flow PR merged, but older than $StaleDays. This
+                      is the silent-decay case: the subscription exists but has
+                      stopped producing PRs ("it's been a while… 🤨") → suspicious
+          * missing — NO dep-flow PR for this repo into this branch at all: the
+                      subscription may never have been wired (or the branch is
+                      brand new) → suspicious
+        This is an INFERENCE from public signal, NOT the subscription itself; the
+        authoritative wiring is confirmed locally (darc get-subscriptions).
+    .NOTES
+        Feed ONLY open + merged dep-flow PRs (never closed-unmerged): a fed PR
+        with no `mergedAt` is treated as open. Repo match uses a trailing
+        negative lookahead so 'dotnet/dotnet' does not collide with
+        'dotnet/dotnet-optimization'. StrictMode-safe, dual-shape.
+    #>
+    param(
+        [string]$Repo,
+        [array]$DepFlowPRs,
+        [datetime]$Now = ([DateTime]::UtcNow),
+        [int]$StaleDays = 14
+    )
+
+    $none = [PSCustomObject]@{ Repo = $Repo; Status = 'missing'; Number = $null; Url = $null; AgeDays = $null }
+
+    if (-not $DepFlowPRs -or $DepFlowPRs.Count -eq 0) { return $none }
+
+    # dual-shape field reader (StrictMode-safe)
+    $field = {
+        param($obj, $name)
+        if ($null -eq $obj) { return $null }
+        if ($obj -is [System.Collections.IDictionary]) {
+            if ($obj.Contains($name)) { return $obj[$name] } else { return $null }
+        } elseif ($obj.PSObject.Properties[$name]) { return $obj.$name } else { return $null }
+    }
+
+    $pattern = "(?i)$([regex]::Escape($Repo))(?![\w-])"
+
+    $hits = @()
+    foreach ($pr in $DepFlowPRs) {
+        if (-not $pr) { continue }
+        $title = & $field $pr 'title'
+        if ($title -and ($title -match $pattern)) { $hits += $pr }
+    }
+    if ($hits.Count -eq 0) { return $none }
+
+    # Prefer an OPEN dep-flow PR (flow is happening right now) — no mergedAt.
+    $openHits = @($hits | Where-Object { -not (& $field $_ 'mergedAt') })
+    if ($openHits.Count -gt 0) {
+        $pick = $openHits |
+            Sort-Object -Descending { ConvertTo-UtcDateTime (& $field $_ 'createdAt') } |
+            Select-Object -First 1
+        return [PSCustomObject]@{
+            Repo    = $Repo
+            Status  = 'open'
+            Number  = (& $field $pick 'number')
+            Url     = (& $field $pick 'url')
+            AgeDays = $null
+        }
+    }
+
+    # Otherwise the newest MERGED dep-flow PR decides fresh vs stale.
+    $pick = $hits |
+        Sort-Object -Descending { ConvertTo-UtcDateTime (& $field $_ 'mergedAt') } |
+        Select-Object -First 1
+    $mergedUtc = ConvertTo-UtcDateTime (& $field $pick 'mergedAt')
+    $ageDays = if ($mergedUtc) { [Math]::Round(($Now - $mergedUtc).TotalDays) } else { $null }
+    $status = if ($null -ne $ageDays -and $ageDays -gt $StaleDays) { 'stale' } else { 'fresh' }
+
+    return [PSCustomObject]@{
+        Repo    = $Repo
+        Status  = $status
+        Number  = (& $field $pick 'number')
+        Url     = (& $field $pick 'url')
+        AgeDays = $ageDays
+    }
+}
+
+function Format-FlowSignalCell {
+    <#
+    .SYNOPSIS
+        Render the Flow-signal table cell for one component from a
+        Get-ComponentFlowSignal result. Pure/string-only so it is unit-testable.
+    .DESCRIPTION
+        The 'missing' status normally renders as "❌ none seen — sub may be
+        missing" (we looked at the public PR trail and found nothing → the sub may
+        never have been wired). But when the merged-PR history could NOT be fetched
+        (transient gh failure caught upstream), 'missing' is NOT a trustworthy
+        "none seen" — we simply couldn't look. In that case -HistoryUnavailable
+        renders an honest "couldn't check" cell instead of a false absence claim.
+    #>
+    param(
+        [Parameter(Mandatory)] $Flow,
+        [switch]$HistoryUnavailable
+    )
+    $ageTxt = ''
+    if ($null -ne $Flow.AgeDays) {
+        $ageTxt = if ($Flow.AgeDays -le 0) { 'today' } elseif ($Flow.AgeDays -eq 1) { '1 day ago' } else { "$($Flow.AgeDays) days ago" }
+    }
+    switch ($Flow.Status) {
+        'open'  { "🔄 [#$($Flow.Number)]($($Flow.Url)) open — flowing" }
+        'fresh' { "✅ [#$($Flow.Number)]($($Flow.Url)) merged $ageTxt" }
+        'stale' { "⚠️ stale — newest [#$($Flow.Number)]($($Flow.Url)) merged $ageTxt" }
+        default {
+            if ($HistoryUnavailable) { "— _merged-PR history unavailable (transient); re-run to confirm sub health_" }
+            else { "❌ none seen — sub may be missing" }
+        }
+    }
+}
+
+function Get-UpstreamDriftSignal {
+    <#
+    .SYNOPSIS
+        Best-effort detection of whether an upstream component repo's same-named
+        branch has advanced past the commit maui currently pins — a public,
+        CI-reachable "the source moved, you may want to pull it in" FYI.
+    .DESCRIPTION
+        maui pins a specific SHA of each component (dotnet/dotnet, dotnet/android,
+        dotnet/macios) in eng/Version.Details.xml. Those repos are PUBLIC, so the
+        GitHub Action can — with only GITHUB_TOKEN — ask GitHub's *compare* API
+        whether that repo's branch has newer commits than our pin. This is a hard
+        git fact, complementary to Get-ComponentFlowSignal (which infers whether a
+        subscription is *producing PRs into maui*): a sub can be healthy and quiet
+        while upstream just landed a fix we haven't pulled — only THIS check sees it.
+
+        Branch is DERIVED, never hardcoded: we look up $BranchName (the survey ref,
+        e.g. release/11.0.1xx-preview6) on the component repo via git/matching-refs.
+        All three components mirror maui's branch naming today; if a future one
+        doesn't, we degrade to 'unknown' rather than false-alarm.
+
+        Compares base=our pin, head=branch tip. GitHub returns ahead_by (commits the
+        branch has beyond our pin) and behind_by (commits our pin has the branch
+        lacks). Classifies:
+          * current   — ahead_by 0 & behind_by 0: our pin IS the branch tip.
+          * ahead     — ahead_by N & behind_by 0: N newer upstream commits we don't
+                        bundle yet. FYI only — maui pins BLESSED builds deliberately,
+                        so these may be post-preview churn or not-yet-blessed work.
+          * diverged  — behind_by > 0: our pin isn't a clean ancestor of the branch
+                        tip (build tag / different line) — can't cleanly count "ahead".
+          * unknown   — no pin SHA, no same-named upstream branch, or an API error.
+    .NOTES
+        Soft-fail: any lookup/parse failure returns 'unknown' with a Reason and
+        never throws (must not break report generation). ~2 gh calls per component.
+        dotnet/dotnet (VMR) moves constantly and flows on manual trigger, so a large
+        ahead_by there is expected churn, rarely actionable — the caller labels it.
+    #>
+    param(
+        [string]$Repo,        # e.g. 'dotnet/macios'
+        [string]$Sha,         # our pinned SHA (base of the compare)
+        [string]$BranchName,  # survey ref, e.g. 'release/11.0.1xx-preview6'
+        [scriptblock]$Fetcher # optional seam: (ApiPath) -> parsed JSON. Defaults to live gh.
+    )
+
+    # Default fetcher hits the public GitHub REST API via the retrying gh wrapper
+    # and returns parsed JSON. Tests inject a mock that returns fixtures instead.
+    if (-not $Fetcher) {
+        $Fetcher = {
+            param($ApiPath)
+            $json = Invoke-GitHubWithRetry -Arguments @("api", $ApiPath) -Description "gh api $ApiPath" -MaxRetries 2
+            if ([string]::IsNullOrWhiteSpace($json)) { return $null }
+            return ($json | ConvertFrom-Json)
+        }
+    }
+
+    $result = [PSCustomObject]@{
+        Repo     = $Repo
+        Status   = 'unknown'
+        AheadBy  = $null
+        BehindBy = $null
+        Branch   = $BranchName
+        Url      = $null
+        Reason   = $null
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Sha)) {
+        $result.Reason = 'no pin SHA'
+        return $result
+    }
+    if ([string]::IsNullOrWhiteSpace($BranchName)) {
+        $result.Reason = 'no branch to compare'
+        return $result
+    }
+
+    # 1) Confirm the component repo actually has a branch of this name (derive,
+    #    don't assume). matching-refs is an exact-PREFIX match, so require an exact
+    #    full-ref hit — otherwise 'release/11.0.1xx-preview6' would also match a
+    #    hypothetical 'release/11.0.1xx-preview60'.
+    try {
+        $refs = & $Fetcher "repos/$Repo/git/matching-refs/heads/$BranchName"
+        $branchFound = @($refs | Where-Object { $_.ref -eq "refs/heads/$BranchName" }).Count -gt 0
+    } catch {
+        $result.Reason = 'branch lookup failed'
+        return $result
+    }
+    if (-not $branchFound) {
+        $result.Reason = 'no same-named upstream branch'
+        return $result
+    }
+
+    # 2) Compare our pin (base) against the branch tip (head). The '/' in the
+    #    branch name is passed through literally — GitHub's compare endpoint
+    #    accepts slashed branch names as the head ref.
+    try {
+        $cmp = & $Fetcher "repos/$Repo/compare/$Sha...$BranchName"
+    } catch {
+        $result.Reason = 'compare failed'
+        return $result
+    }
+
+    if ($null -eq $cmp -or
+        -not $cmp.PSObject.Properties['ahead_by'] -or $null -eq $cmp.ahead_by -or
+        -not $cmp.PSObject.Properties['behind_by'] -or $null -eq $cmp.behind_by) {
+        $result.Reason = 'compare returned no counts'
+        return $result
+    }
+
+    $aheadBy  = [int]$cmp.ahead_by
+    $behindBy = [int]$cmp.behind_by
+    $result.AheadBy  = $aheadBy
+    $result.BehindBy = $behindBy
+    $result.Url      = "https://github.com/$Repo/compare/$Sha...$BranchName"
+
+    if ($behindBy -gt 0) {
+        $result.Status = 'diverged'
+    } elseif ($aheadBy -gt 0) {
+        $result.Status = 'ahead'
+    } else {
+        $result.Status = 'current'
+    }
+    $result.Reason = $null
+    return $result
+}
+
 function Get-CategorizedPullRequests {
     <#
     .SYNOPSIS
@@ -880,7 +1338,10 @@ function Get-CategorizedPullRequests {
                     the P/0 blocker category (trips its dedicated BLOCKED check +
                     renders once as a 🔥 P/0 PR row) and is never silently
                     downgraded to a 📦 Maestro / merge-up row.
-          2. Maestro  — non-P/0 PRs authored by dotnet-maestro (target OR inflight).
+          2. Maestro  — non-P/0 PRs authored by dotnet-maestro on the TARGET
+                    branch only (the survey ref). net<major>.0 (inflight) Maestro
+                    bumps are intentionally NOT reported by a branched preview
+                    tracker — they belong to the inflight branch's own readiness.
           3. Merge-up — non-P/0, non-Maestro target PRs that are automated
                     main → survey-ref merges (head `merge/<x>-to-<y>` or title
                     "[automated] Merge branch ...").
@@ -888,11 +1349,14 @@ function Get-CategorizedPullRequests {
           5. Inflight-human — non-Maestro PRs on the inflight (net<major>.0) branch.
 
         Buckets are mutually exclusive by PR number. Inflight PRs never escalate
-        to P/0 (only survey-ref PRs block), matching the engine's release scope:
-        $p0PrNumbers is computed from $TargetPRs only, and PR numbers are globally
-        unique, so excluding them from the target+inflight Maestro set cannot drop
-        an inflight PR. StrictMode-safe on two fronts: (1) inputs are normalized to
-        drop $null elements up front, so an AutomationNull list (what
+        to P/0 (only survey-ref PRs block), and Maestro is scoped to $TargetPRs
+        only — a branched preview reports dependency-flow bumps against its own
+        branch, so net<major>.0 (inflight) Maestro PRs are intentionally dropped
+        from this tracker (only non-Maestro inflight PRs surface, in the
+        Inflight-human bucket). $p0PrNumbers is computed from $TargetPRs only, and
+        PR numbers are globally unique. StrictMode-safe on two fronts: (1) inputs
+        are normalized to drop $null elements up front, so an AutomationNull list
+        (what
         Get-OpenPullRequests returns for a zero-PR branch) can't seed a `@($null)`
         whose null element would throw "property 'author' cannot be found"; and
         (2) for genuine PR objects every property accessed is guaranteed present by
@@ -921,18 +1385,29 @@ function Get-CategorizedPullRequests {
     $TargetPRs   = @($TargetPRs   | Where-Object { $null -ne $_ })
     $InflightPRs = @($InflightPRs | Where-Object { $null -ne $_ })
 
-    $allReleasePRs = @($TargetPRs) + @($InflightPRs)
-
     # 1. P/0 first (highest precedence), from survey-ref PRs only.
     $p0Prs = @($TargetPRs | Where-Object { Test-IsP0Pr $_ })
     $p0PrNumbers = @($p0Prs | ForEach-Object { $_.number })
 
-    # 2. Maestro (non-P/0), across target + inflight.
-    $maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" -and ($p0PrNumbers -notcontains $_.number) })
+    # 2. Dependency-flow (non-P/0), TARGET branch only. Once a preview is branched,
+    #    this tracker must only surface dependency-flow bumps against its OWN branch
+    #    (the survey ref). Detection is NOT author-only: it covers both automated
+    #    darc PRs (author dotnet-maestro) AND human-authored component-bump PRs
+    #    (e.g. a "[release/...] Bump dotnet/dotnet (BAR ...)" PR on head `update-<id>`
+    #    that lands the blessed component set) via Test-IsDependencyFlowPr. Bumps
+    #    targeting net<major>.0 (the inflight branch) belong to the inflight branch's
+    #    own readiness, not this preview tracker — so they are intentionally NOT
+    #    reported here. (In candidate mode the survey ref IS net<major>.0 and
+    #    $InflightPRs is empty, so target-only is correct there too.)
+    $maestroPRs = @($TargetPRs | Where-Object { (Test-IsDependencyFlowPr $_) -and ($p0PrNumbers -notcontains $_.number) })
 
-    # Non-P/0, non-Maestro humans, split by scope.
-    $targetHumanPRsRaw   = @($TargetPRs   | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") -and ($p0PrNumbers -notcontains $_.number) })
-    $inflightHumanPRsRaw = @($InflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
+    # Non-P/0, non-dependency-flow humans, split by scope. Both slots keep a
+    #    Raw stage so the two-hop merge-up filter below can strip hoisted merge-up
+    #    PRs from target AND inflight. Detection uses Test-IsDependencyFlowPr so
+    #    human-authored component bumps (not just author dotnet-maestro) are
+    #    excluded from the human buckets and routed to the dependency-flow bucket.
+    $targetHumanPRsRaw   = @($TargetPRs   | Where-Object { -not (Test-IsDependencyFlowPr $_) -and ($p0PrNumbers -notcontains $_.number) })
+    $inflightHumanPRsRaw = @($InflightPRs | Where-Object { -not (Test-IsDependencyFlowPr $_) })
 
     # 3. Merge-up: non-P/0, non-Maestro PRs from BOTH hops of the daily-flow chain
     #    that feeds the survey ref. The preview lane chains main → net<N>.0 →
@@ -1165,7 +1640,10 @@ function Add-CiScanTable {
 # Guard: skip the main driver when dot-sourced so tests can load the helper
 # functions (e.g. Test-IsP0Pr) without invoking the full report flow, which
 # requires git + gh + network. Mirrors Find-ReleaseReadinessTrackers.ps1.
-if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') { return }
+# `InvocationName -eq '.'` alone reliably detects dot-sourcing; matching
+# `$MyInvocation.Line` against a leading dot is avoided because that text can be
+# the whole command line and would wrongly skip a later `&`/`-File` call.
+if ($MyInvocation.InvocationName -eq '.') { return }
 
 $checks = @()
 
@@ -1321,11 +1799,20 @@ $targetHumanPRs   = $prBuckets.TargetHumanPRs
 $inflightHumanPRs = $prBuckets.InflightHumanPRs
 
 if ($maestroPRs.Count -eq 0) {
-    $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details "No open Maestro PRs target ``$SurveyRef`` or ``$mainBranch``." -NextAction "Continue monitoring for new dependency-flow PRs."
+    # Maestro is scoped to the survey ref (target) only. When the preview is
+    # branched ($SurveyRef differs from the inflight $mainBranch), don't claim
+    # anything about net<major>.0 Maestro PRs — they exist but are intentionally
+    # tracked by the inflight branch's own readiness, not this preview tracker.
+    $maestroReadyDetails = if ($SurveyRef -ne $mainBranch) {
+        "No open Maestro PRs target ``$SurveyRef``. (Dependency-flow PRs targeting the inflight ``$mainBranch`` branch are tracked by ``$mainBranch``'s own readiness, not this branched preview.)"
+    } else {
+        "No open Maestro PRs target ``$SurveyRef``."
+    }
+    $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details $maestroReadyDetails -NextAction "Continue monitoring for new dependency-flow PRs."
 } elseif (@($maestroPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count -gt 0) {
-    $checks += New-Check -Area "Maestro PRs" -Status "BLOCKED" -Details "$($maestroPRs.Count) open Maestro PR(s), including blocked/conflicted PRs." -NextAction "Resolve blocked Maestro PRs before release."
+    $checks += New-Check -Area "Maestro PRs" -Status "BLOCKED" -Details "$($maestroPRs.Count) open dependency-flow PR(s) (darc + manual component bumps), including blocked/conflicted PRs." -NextAction "Resolve blocked dependency-flow PRs before release."
 } else {
-    $checks += New-Check -Area "Maestro PRs" -Status "WATCH" -Details "$($maestroPRs.Count) open Maestro PR(s) need review/merge triage." -NextAction "Review dependency PRs and merge expected updates."
+    $checks += New-Check -Area "Maestro PRs" -Status "WATCH" -Details "$($maestroPRs.Count) open dependency-flow PR(s) (darc + manual component bumps) need review/merge triage." -NextAction "Review dependency PRs and merge expected updates."
 }
 
 if ($targetHumanPRs.Count -eq 0) {
@@ -1628,12 +2115,18 @@ foreach ($pr in $p0Prs) {
 }
 foreach ($pr in $maestroPRs) {
     $action = Get-PRAction -PR $pr
+    # A dependency-flow PR that bumps the VMR/SDK (dotnet/dotnet or dotnet/sdk)
+    # advances the branch's SDK pin — but the landed pin is only a *candidate*
+    # until the blessed build is confirmed locally (the Action can't reach the
+    # .NET Release Tracker). Flag it so the captain runs the local check.
+    $isSdkBump = Test-IsSdkBumpPr $pr
+    $paNote = if ($isSdkBump) { " ⚠️ bumps the SDK/VMR — confirm the blessed build locally (see 🏷️ component build) before treating the new pin as final." } else { "" }
     [void]$highPriorityRows.Add(@{
-        kind = '📦 Maestro PR'
+        kind = '📦 Dependency-flow PR'
         link = "[#$($pr.number)]($($pr.url))"
         title = $pr.title
         actor = "base ``$($pr.baseRefName)``, $($action.Age)d old"
-        nextAction = $action.Action
+        nextAction = "$($action.Action)$paNote"
     })
 }
 foreach ($pr in $mergeUpPRs) {
@@ -1661,7 +2154,7 @@ foreach ($pr in $mergeUpPRs) {
 if ($highPriorityRows.Count -gt 0) {
     [void]$md.AppendLine("## 🔴 High-priority items — $($highPriorityRows.Count) item(s)")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_P/0 issues, P/0 PRs, Maestro PRs, and merge-up PRs in the ``$mergeUpChainLabel`` daily-flow chain. Resolve these before treating the release as ready._")
+    [void]$md.AppendLine("_P/0 issues, P/0 PRs, dependency-flow PRs (darc + manual component bumps), and merge-up PRs in the ``$mergeUpChainLabel`` daily-flow chain. Resolve these before treating the release as ready._")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("| Kind | Item | Title | Context | Next action |")
     [void]$md.AppendLine("|------|------|-------|---------|-------------|")
@@ -1671,12 +2164,142 @@ if ($highPriorityRows.Count -gt 0) {
     [void]$md.AppendLine("")
 }
 
+# Human-editable section, preserved across re-runs by workflow body merge.
+# Positioned directly under the "🔴 High-priority items" section so the
+# agent-orchestrated, release-critical content that gets spliced in here (the
+# official/blessed build, subscription wiring, component-pin coherence) renders
+# near the TOP of the tracker — right below the blockers — while still living
+# inside the preserved human-notes markers so it survives automated re-runs.
+#
+# Built as a reusable block (like the SR engine) so the body-size cap below can
+# strip it, truncate the remaining content, then re-append it — guaranteeing the
+# begin/end markers always survive truncation regardless of section order. The
+# "🔴 High-priority items" section above is itemized and uncapped, so a naive
+# byte-prefix cut could otherwise drop these markers.
+$notesSb = [System.Text.StringBuilder]::new()
+[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:begin -->")
+[void]$notesSb.AppendLine("## Release Captain Notes")
+[void]$notesSb.AppendLine("")
+[void]$notesSb.AppendLine("_Add manual notes here. Anything between these begin/end markers is preserved across automated re-runs._")
+[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:end -->")
+$notesBlockText = $notesSb.ToString()
+[void]$md.Append($notesBlockText)
+[void]$md.AppendLine("")
+
+# === Action-owned component build (git-pin sourced) — blessed & subs are LOCAL-only ===
+# The GitHub Action runs with only contents:read + GITHUB_TOKEN. It CANNOT reach:
+#   * the internal .NET Release Tracker (which names the authoritative "blessed"
+#     preview build), nor
+#   * Maestro/BAR or the AzDO-internal maestro-configuration repo (which hold the
+#     android/macios/dotnet preview *subscription* wiring).
+# So the Action reports only what PUBLIC git can prove: the component builds
+# CURRENTLY BUNDLED on the branch (eng/Version.Details.xml). These are branch pins,
+# NOT a confirmed blessed build. Confirming the blessed build AND verifying the
+# preview subscriptions are both LOCAL tasks — the callout below points the captain
+# at the exact local prompt to run. Rendered OUTSIDE the human-notes markers so it
+# self-refreshes on every automated re-run.
+$componentPins = Get-BranchComponentPins -Ref $SurveyRef -Major $majorVersion
+if ($componentPins) {
+    # --- Inferred subscription health (public PR trail) ---
+    # We can't read Maestro subscription config from CI, but a *working* sub
+    # leaves a public trail of dependency-flow PRs into the branch. Gather that
+    # trail (open $targetPRs + recently merged) so each component row can show
+    # whether flow is alive, silently stalled, or apparently never wired.
+    $flowStaleDays   = 14
+    $flowNow         = [DateTime]::UtcNow
+    # Best-effort: the flow signal is inferred from the public dep-flow PR trail.
+    # Get-MergedPullRequests re-throws non-retryable gh failures (e.g. a 403
+    # secondary-rate-limit or a 500), so a transient outage here must degrade the
+    # signal to open-PR-only inference, NEVER abort the whole readiness report
+    # (every other data section in this driver degrades rather than throws).
+    $mergedPRsForFlow = @()
+    $mergedHistoryUnavailable = $false
+    try {
+        $mergedPRsForFlow = @(Get-MergedPullRequests -BaseBranch $SurveyRef)
+    } catch {
+        $mergedHistoryUnavailable = $true
+        Write-Warning "Flow-signal merged-PR fetch failed (non-fatal): $($_.Exception.Message)" -WarningAction Continue
+    }
+    $allPRsForFlow   = @($targetPRs) + @($mergedPRsForFlow)
+    $depFlowPRs      = @($allPRsForFlow | Where-Object { Test-IsDependencyFlowPr $_ })
+
+    [void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins + inferred sub health")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("> [!IMPORTANT]")
+    [void]$md.AppendLine("> **Branch pins** below are the component builds **currently bundled** on ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT the confirmed official/blessed build** — that designation lives in the internal **.NET Release Tracker**, which this Action can't reach (``contents:read`` + ``GITHUB_TOKEN`` only). The **Flow signal** column *infers* each component's subscription health from the **public dependency-flow PR trail** (the Action can't read Maestro subscription config directly). It surfaces both a **never-wired** sub (❌ none seen) and a **silently stalled** one (⚠️ stale — the `"we stopped getting Maestro PRs a month ago`" decay case). The blessed build AND the authoritative subscription wiring are both confirmed **locally** — run the release-readiness skill:")
+    [void]$md.AppendLine(">")
+    [void]$md.AppendLine("> The **Upstream** column is a hard git fact (not an inference): it compares our pinned SHA against the tip of each component's same-named branch (``$SurveyRef`` — derived, never hardcoded) via the public compare API. ⬆️ *N ahead* means the source moved past what we bundle — an FYI you *may* want to pull in, **not** a required bump (maui pins blessed builds deliberately, so those commits may be post-preview churn or not yet blessed).")
+    [void]$md.AppendLine(">")
+    [void]$md.AppendLine("> ``````")
+    [void]$md.AppendLine("> Run release readiness for ${Branch}: report the blessed/official preview build (SDK + runtime) from the .NET Release Tracker, and verify the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel.")
+    [void]$md.AppendLine("> ``````")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit | Flow signal (inferred sub health) | Upstream (vs our pin) |")
+    [void]$md.AppendLine("|-----------|----------------------|--------|-----------------------------------|-----------------------|")
+
+    $pinRows = @(
+        @{ Label = 'dotnet/dotnet (VMR / SDK)'; Repo = 'dotnet/dotnet'; Pin = $componentPins.Vmr;     Noisy = $true  }
+        @{ Label = 'dotnet/android';            Repo = 'dotnet/android'; Pin = $componentPins.Android; Noisy = $false }
+        @{ Label = 'dotnet/macios';             Repo = 'dotnet/macios';  Pin = $componentPins.Macios;  Noisy = $false }
+    )
+    foreach ($r in $pinRows) {
+        $flow = Get-ComponentFlowSignal -Repo $r.Repo -DepFlowPRs $depFlowPRs -Now $flowNow -StaleDays $flowStaleDays
+        $flowCell = Format-FlowSignalCell -Flow $flow -HistoryUnavailable:$mergedHistoryUnavailable
+        $pin = $r.Pin
+        if (-not $pin) {
+            [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — | $flowCell | — |")
+            continue
+        }
+
+        # Upstream drift (public compare API) — has the component's same-named
+        # branch advanced past the SHA we pin? Needs the pin SHA; soft-fails to '—'.
+        $driftCell = '—'
+        if (-not [string]::IsNullOrWhiteSpace($pin.Sha)) {
+            $drift = Get-UpstreamDriftSignal -Repo $r.Repo -Sha $pin.Sha -BranchName $SurveyRef
+            $driftCell = switch ($drift.Status) {
+                'current'  { '✅ current' }
+                'ahead'    {
+                    $n = $drift.AheadBy
+                    $unit = if ($n -eq 1) { 'commit' } else { 'commits' }
+                    if ($r.Noisy) { "⬆️ [$n $unit ahead]($($drift.Url)) — VMR churn (expected)" }
+                    else          { "⬆️ [$n $unit ahead]($($drift.Url)) — FYI" }
+                }
+                'diverged' { "⚠️ [diverged]($($drift.Url)) — compare manually" }
+                default    { if ($drift.Reason) { "— _$($drift.Reason)_" } else { '—' } }
+            }
+        }
+
+        $commitCell = '—'
+        if (-not [string]::IsNullOrWhiteSpace($pin.Sha)) {
+            $shortSha = $pin.Sha.Substring(0, [Math]::Min(7, $pin.Sha.Length))
+            $commitCell = "[``$shortSha``](https://github.com/$($r.Repo)/commit/$($pin.Sha))"
+        }
+        [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell | $flowCell | $driftCell |")
+    }
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("_Flow-signal legend: 🔄 open dep-flow PR (flowing now) · ✅ merged ≤ $flowStaleDays d · ⚠️ newest merge > $flowStaleDays d (sub may have stalled) · ❌ no dep-flow PR into ``$SurveyRef`` seen (sub may be missing — or the branch is brand new). Inferred from the **public** PR trail; confirm authoritative wiring locally with ``darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch $SurveyRef``. dotnet/dotnet (VMR) typically flows on manual trigger, so a quiet VMR is less alarming than a quiet android/macios._")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("_Upstream legend: ✅ current = our pin **is** the tip of the component's ``$SurveyRef`` branch · ⬆️ N ahead = that branch has N newer commit(s) than we bundle (**FYI** — may be post-preview churn or not-yet-blessed work; not necessarily a bump you need) · ⚠️ diverged = our pin isn't a clean ancestor of the branch tip (build tag / different line) — compare manually · — = couldn't determine (no same-named upstream branch, or the compare API was unavailable). Branch is **derived** from the survey ref, never hardcoded. dotnet/dotnet (VMR) advances constantly on manual trigger, so 'N ahead' there is expected churn and rarely actionable._")
+
+    # If a manual/darc component-bump PR is open against the branch, it names the
+    # pending target BAR builds in its title — surface it so readers see the pins
+    # above will advance once it merges. Reuses the already-computed dependency-flow set.
+    $bumpPr = @($maestroPRs | Where-Object { $_.title -match 'Bump\s+dotnet/dotnet' }) | Select-Object -First 1
+    if ($bumpPr) {
+        $bars = @([regex]::Matches($bumpPr.title, 'BAR\s+(\d+)') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
+        $barText = if ($bars.Count -gt 0) { " (target BAR $([string]::Join('/', $bars)))" } else { "" }
+        [void]$md.AppendLine("⏳ **Pending component bump:** [#$($bumpPr.number)]($($bumpPr.url))$barText will advance these branch pins — see 🔴 High-priority items above.")
+        [void]$md.AppendLine("")
+    }
+}
+
+
 # === BLOCKING SUMMARY (hoisted to top) ===
 # Surface aggregate BLOCKED checks (e.g. CI red, versions.props not bumped).
 # The high-priority categories above already enumerate individual items,
 # so exclude them here to avoid duplicate rows under two separate headings.
 # Every Area whose items are hoisted into 🔴 High-priority items must be listed
-# here (Maestro PRs are hoisted as '📦 Maestro PR' rows, so they belong too).
+# here (dependency-flow PRs are hoisted as '📦 Dependency-flow PR' rows, so they belong too).
 $highPriorityCheckAreas = @(
     'P/0 priority blockers',
     'P/0 release-branch PRs',
@@ -1738,6 +2361,17 @@ if ($ciScanIssues.Count -eq 0) {
 
 [void]$md.AppendLine("Generated at $generatedAt for ``$Repository``.")
 [void]$md.AppendLine("")
+# Report freshness banner — DERIVED-AT-RENDER note of how long ago this report was generated,
+# with a ⏳ "may be stale" flag past the threshold. Pure presentation only. (The preview engine
+# emits no semantic hash and refreshes every run, so there is no no-op to protect here; the
+# banner still gives a viewer an at-a-glance staleness cue.) Fail-open if the helper is absent.
+if ($generatedAt -and (Get-Command Format-ReportFreshnessBanner -ErrorAction SilentlyContinue)) {
+    $previewFreshnessBanner = Format-ReportFreshnessBanner -GeneratedAt $generatedAt -Now ([DateTime]::UtcNow)
+    if ($previewFreshnessBanner) {
+        [void]$md.AppendLine($previewFreshnessBanner)
+        [void]$md.AppendLine("")
+    }
+}
 [void]$md.AppendLine("**Tracker:** ``$TrackerKey`` · mode=``$Mode`` · branch=``$Branch`` · survey=``$SurveyRef``")
 [void]$md.AppendLine("")
 if ($Mode -eq 'candidate') {
@@ -1755,28 +2389,21 @@ if ($Mode -eq 'candidate') {
 [void]$md.AppendLine("| Expected PreReleaseVersionIteration | ``$previewNumber`` |")
 [void]$md.AppendLine("")
 
-# Human-editable section, preserved across re-runs by workflow body merge.
-# Built as a reusable block (like the SR engine) so the body-size cap below can
-# strip it, truncate the remaining content, then re-append it — guaranteeing the
-# begin/end markers always survive truncation regardless of section order. The
-# "🔴 High-priority items" table above this block is itemized and uncapped, so a
-# naive byte-prefix cut could otherwise drop these markers.
-$notesSb = [System.Text.StringBuilder]::new()
-[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:begin -->")
-[void]$notesSb.AppendLine("## Release Captain Notes")
-[void]$notesSb.AppendLine("")
-[void]$notesSb.AppendLine("_Add manual notes here. Anything between these begin/end markers is preserved across automated re-runs._")
-[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:end -->")
-$notesBlockText = $notesSb.ToString()
-[void]$md.Append($notesBlockText)
-[void]$md.AppendLine("")
-
 [void]$md.AppendLine("## Readiness checklist")
 [void]$md.AppendLine("")
 Add-CheckTable -Builder $md -Checks $checks
 
 [void]$md.AppendLine("## Maestro / dependency-flow PRs")
 [void]$md.AppendLine("")
+# Highlight any open SDK/VMR bump: its landed pin is only a candidate until the
+# blessed build is confirmed locally (the Action can't reach the .NET Release Tracker).
+$sdkBumpPrs = @($maestroPRs | Where-Object { Test-IsSdkBumpPr $_ })
+if ($sdkBumpPrs.Count -gt 0) {
+    $sdkBumpLinks = ($sdkBumpPrs | ForEach-Object { "[#$($_.number)]($($_.url))" }) -join ', '
+    [void]$md.AppendLine("> [!WARNING]")
+    [void]$md.AppendLine("> $($sdkBumpPrs.Count) open PR(s) bump the **SDK/VMR** ($sdkBumpLinks). The new SDK pin they land is only a **candidate** — the official/blessed build is designated in the internal .NET Release Tracker, which this Action can't reach. **Confirm the blessed SDK build locally** (see 🏷️ Preview $previewNumber component build above) before treating the bumped pin as final.")
+    [void]$md.AppendLine("")
+}
 Add-PRTable -Builder $md -PRs $maestroPRs
 
 [void]$md.AppendLine("## Release branch PRs")
