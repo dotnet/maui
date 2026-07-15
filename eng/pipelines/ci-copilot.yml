@@ -1345,7 +1345,7 @@ stages:
     # the Tier 3 AI refresh actually changed the categories; otherwise it's empty.
     # ALL-mode (detectedCategories == 'ALL') is intentionally excluded: running
     # the entire UI suite with no category filter cannot complete within this
-    # stage's time budget and empirically always hits the 220-min task timeout,
+    # stage's time budget and empirically always hits the 320-min task timeout,
     # producing zero usable TRX, a red build, and a 3.5h-orphaned agent. The
     # in-process Stage-1 per-category results already posted in the AI summary
     # remain the deliverable, and UpdateAISummaryComment handles a Skipped deep
@@ -1376,7 +1376,7 @@ stages:
           pool: ${{ parameters.windowsPool }}
         ${{ else }}:
           pool: ${{ parameters.windowsPool }}
-        timeoutInMinutes: 240
+        timeoutInMinutes: 360
         steps:
           - checkout: self
             fetchDepth: 0
@@ -1940,7 +1940,7 @@ stages:
               if ($isRunAll) {
                 # Defense in depth: the RunDeepUITests stage condition already
                 # skips ALL-mode because the full no-filter suite cannot finish
-                # within this stage's budget and would hit the 220-min task
+                # within this stage's budget and would hit the 320-min task
                 # timeout. If we somehow still reach here, do NOT run the
                 # unbounded full suite — keep the in-process Stage-1 results and
                 # exit cleanly so the build stays green.
@@ -1962,20 +1962,25 @@ stages:
 
               # Overall wall-clock budget for the per-category loop. A slow or
               # hung category can otherwise push the task into the AzDO task
-              # timeout (220 min), which fails the build for an infra reason
+              # timeout (320 min), which fails the build for an infra reason
               # rather than a test reason. Stop STARTING new categories once the
               # budget is exhausted (an already-running category finishes within
-              # the remaining 220-min headroom) and report the remainder as
+              # the remaining headroom) and report the remainder as
               # not-run. Tunable via DEEP_UITEST_BUDGET_MIN.
-              $budgetMin = 185
+              $budgetMin = 270
               if ($env:DEEP_UITEST_BUDGET_MIN -and ($env:DEEP_UITEST_BUDGET_MIN -as [int])) { $budgetMin = [int]$env:DEEP_UITEST_BUDGET_MIN }
               # Hard stop for the WHOLE loop, kept safely under this task's
-              # timeoutInMinutes (220). Every per-category wrapper call is bounded
+              # timeoutInMinutes (320). Every per-category wrapper call is bounded
               # (-TimeoutMinutes below) so that it MUST return before this instant
-              # — that is the actual guarantee the task never hits the 220-min
+              # — that is the actual guarantee the task never hits the 320-min
               # AzDO task timeout, which would fail the stage for an infra reason
-              # and drop all partial results. Tunable via DEEP_UITEST_HARDSTOP_MIN.
-              $hardStopMin = 210
+              # and drop all partial results. The ~20-min gap to the task timeout,
+              # plus the ~40-min gap from the task timeout to the 360-min job
+              # ceiling (the Microsoft-hosted-agent maximum), leaves room for the
+              # pre-loop workload install / PR-merge and the post-loop artifact
+              # publish so results always flush before any hard cancel. Tunable
+              # via DEEP_UITEST_HARDSTOP_MIN.
+              $hardStopMin = 300
               if ($env:DEEP_UITEST_HARDSTOP_MIN -and ($env:DEEP_UITEST_HARDSTOP_MIN -as [int])) { $hardStopMin = [int]$env:DEEP_UITEST_HARDSTOP_MIN }
               # Per-category WALL-CLOCK ceiling (build + deploy + run + retries).
               # A genuinely hung category (a `dotnet build`/`adb` that never
@@ -1983,10 +1988,12 @@ stages:
               # by the IDLE timeout below (no stdout progress ⇒ tree-kill), so
               # this ceiling only bounds a category that is *actively* producing
               # test output. That lets a large-but-healthy category (e.g. the
-              # ~391-test CollectionView on the slow mac pool, which cannot finish
-              # in 50 min) run to completion instead of being cut off mid-run and
-              # mis-reported as an infra timeout. Tunable via DEEP_UITEST_CATEGORY_CAP_MIN.
-              $perCatCapMin = 150
+              # ~391-test CollectionView or the heavy CarouselView on the slow
+              # pool, which cannot finish in 50–100 min) run to completion — up to
+              # ~4.8 h for a lone dominant category — instead of being cut off
+              # mid-run and mis-reported as an infra timeout. Tunable via
+              # DEEP_UITEST_CATEGORY_CAP_MIN.
+              $perCatCapMin = 290
               if ($env:DEEP_UITEST_CATEGORY_CAP_MIN -and ($env:DEEP_UITEST_CATEGORY_CAP_MIN -as [int])) { $perCatCapMin = [int]$env:DEEP_UITEST_CATEGORY_CAP_MIN }
               # Idle (no-progress) timeout: tree-kill a category whose build/run
               # has emitted NO new stdout for this many minutes. This is the real
@@ -2022,17 +2029,17 @@ stages:
                 $catStart = Get-Date
                 if ($catStart -gt $loopDeadline) {
                   $skippedCats += $cat
-                  Write-Host "##[warning]Deep UI test time budget ($budgetMin min) exhausted — not starting category '$cat' (avoids the 220-min task timeout)."
+                  Write-Host "##[warning]Deep UI test time budget ($budgetMin min) exhausted — not starting category '$cat' (avoids the 320-min task timeout)."
                   $hadFailure = $true
                   continue
                 }
                 # Bound this category so it is tree-killed and returns before the
                 # loop hard stop — this is what actually prevents the task-level
-                # 220-min timeout when a build/run hangs.
+                # 320-min timeout when a build/run hangs.
                 $remainToHardStopMin = [int][math]::Floor(($taskHardStop - $catStart).TotalMinutes)
                 if ($remainToHardStopMin -lt 3) {
                   $skippedCats += $cat
-                  Write-Host "##[warning]Only $remainToHardStopMin min left before the hard stop — not starting category '$cat' (avoids the 220-min task timeout)."
+                  Write-Host "##[warning]Only $remainToHardStopMin min left before the hard stop — not starting category '$cat' (avoids the 320-min task timeout)."
                   $hadFailure = $true
                   continue
                 }
@@ -2256,7 +2263,7 @@ stages:
               }
               exit 0
             displayName: 'Run deep UI tests (per-category loop)'
-            timeoutInMinutes: 220
+            timeoutInMinutes: 320
 
           # Re-enable Notification Center after Catalyst tests (mirrors main CI cleanup)
           - ${{ if eq(parameters.Platform, 'catalyst') }}:
