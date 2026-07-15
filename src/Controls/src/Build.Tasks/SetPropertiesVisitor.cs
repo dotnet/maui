@@ -532,7 +532,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			TypeReference tSourceRef = null;
-			if (HasRelativeOrReferenceSource(node) && !xDataTypeIsOnBindingNode)
+			if (HasRelativeOrReferenceSource(node) && xDataTypeIsInOuterScope)
 			{
 				if (!TryGetRelativeSourceAncestorTypeReference(node, context, module, out tSourceRef))
 				{
