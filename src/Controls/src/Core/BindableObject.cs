@@ -542,6 +542,8 @@ namespace Microsoft.Maui.Controls
 			// Finalizer callers only queue work here. Binding callbacks run on the dispatcher
 			// or remain pending for a normal access path to clear safely.
 			var dispatcher = GetDispatcherIfAvailable();
+			// Only normal access paths may resolve dispatchers because discovery can read
+			// handler or application service providers that are already disposed at finalization.
 			if (dispatcher is null &&
 				clearIfDispatchNotRequired &&
 				this.TryFindDispatcher(

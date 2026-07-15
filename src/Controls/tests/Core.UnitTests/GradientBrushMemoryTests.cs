@@ -381,6 +381,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task CollectedBrushFinalizerDoesNotResolveLateHandlerDispatcher()
+		{
+			var dispatchedCleanup = new TaskCompletionSource<Action>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var dispatcher = new DispatcherStub(
+				() => true,
+				action => dispatchedCleanup.TrySetResult(action));
+			int dispatcherAvailable = 0;
+			int dispatcherResolutionCount = 0;
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IDispatcher)).Returns(_ =>
+			{
+				if (Volatile.Read(ref dispatcherAvailable) == 0)
+					return null;
+
+				Interlocked.Increment(ref dispatcherResolutionCount);
+				return dispatcher;
+			});
+			var mauiContext = Substitute.For<IMauiContext>();
+			mauiContext.Services.Returns(services);
+			var handler = Substitute.For<IElementHandler>();
+			handler.MauiContext.Returns(mauiContext);
+
+			GradientStop bindingContext;
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			DispatcherProviderStubOptions.SkipDispatcherCreation = true;
+			try
+			{
+				bindingContext = new GradientStop { Offset = 0.25f };
+				stop = new GradientStop();
+				stop.SetBinding(GradientStop.OffsetProperty, nameof(GradientStop.Offset));
+				sharedStops = new GradientStopCollection { stop };
+				weakBrush = CreateBrushWithSharedGradientStops(sharedStops, bindingContext);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.SkipDispatcherCreation = false;
+			}
+
+			stop.Handler = handler;
+			Volatile.Write(ref dispatcherAvailable, 1);
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			Assert.False(await weakBrush.WaitForCollect(), "LinearGradientBrush should not be alive!");
+			Assert.Equal(0, Volatile.Read(ref dispatcherResolutionCount));
+			Assert.False(dispatchedCleanup.Task.IsCompleted);
+			Assert.Equal(0, bindingContextChanged);
+			Assert.Equal(0.25f, stop.Offset);
+
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(1, Volatile.Read(ref dispatcherResolutionCount));
+			var cleanup = await dispatchedCleanup.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Equal(0, bindingContextChanged);
+			cleanup();
+
+			Assert.Equal(1, bindingContextChanged);
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(0f, stop.Offset);
+			GC.KeepAlive(bindingContext);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
 		public async Task CollectedBrushUsesDispatcherAvailableWhenParentIsAssigned()
 		{
 			var dispatchedCleanup = new TaskCompletionSource<Action>(TaskCreationOptions.RunContinuationsAsynchronously);
