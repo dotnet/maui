@@ -12,7 +12,7 @@ public class Issue36543 : _IssuesUITest
 	public override string Issue => "[Android] RTL CollectionView content is truncated / shifted into the display cutout after landscape rotation";
 
 	[Test]
-	[Category(UITestCategories.SafeAreaEdges)]
+	// TODO: Remove [Material3] once dotnet/maui#31631 merges. That PR adds a dedicated SafeAreaEdges stage on Pixel 3 XL API 36; until then, [Material3] is the only category that routes this test to a notched device (required to reproduce this bug).
 	[Category(UITestCategories.Material3)]
 	public void RtlCollectionViewShouldNotBeTruncatedAfterLandscapeRotation()
 	{
