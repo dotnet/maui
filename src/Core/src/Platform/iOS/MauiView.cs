@@ -1008,27 +1008,51 @@ namespace Microsoft.Maui.Platform
 		/// <summary>Hint for the phantom element. See <see cref="AccessibilityContainerLabel"/>.</summary>
 		internal string? AccessibilityContainerHint { get; set; }
 
-		// Informal protocol member, not a virtual property on UIView; override via selector export.
-		// Returning null matches UIKit's own default (VoiceOver infers elements from subviews).
+		WeakReference<UIAccessibilityElement>? _accessibilityContainerElementRef;
+
+		public override CGRect Bounds
+		{
+			get => base.Bounds;
+			set
+			{
+				var sizeChanged = base.Bounds.Size != value.Size;
+				base.Bounds = value;
+
+				if (sizeChanged
+					&& _accessibilityContainerElementRef is not null
+					&& _accessibilityContainerElementRef.TryGetTarget(out var element))
+				{
+					element.AccessibilityFrameInContainerSpace = new CGRect(0, 0, value.Width, value.Height);
+					UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, null);
+				}
+			}
+		}
+
 		[Export("accessibilityElements")]
-		internal virtual NSObject[]? AccessibilityElements
+		public virtual NSObject[]? AccessibilityElements
 		{
 			get
 			{
 				if (string.IsNullOrEmpty(AccessibilityContainerLabel) && string.IsNullOrEmpty(AccessibilityContainerHint))
 				{
+					_accessibilityContainerElementRef = null;
 					return null;
 				}
 
-				// UIKit recurses into each entry's own accessibility rules, so children stay reachable.
-				// Created fresh each call (not cached) to avoid holding an NSObject field on this view.
-				var containerLabelElement = new UIAccessibilityElement(this)
+				UIAccessibilityElement? containerLabelElement = null;
+				if (_accessibilityContainerElementRef?.TryGetTarget(out containerLabelElement) != true
+					|| containerLabelElement is null)
 				{
-					IsAccessibilityElement = true,
-					AccessibilityLabel = AccessibilityContainerLabel,
-					AccessibilityHint = AccessibilityContainerHint,
-					AccessibilityFrameInContainerSpace = Bounds,
-				};
+					containerLabelElement = new UIAccessibilityElement(this)
+					{
+						IsAccessibilityElement = true,
+						AccessibilityFrameInContainerSpace = new CGRect(0, 0, Bounds.Width, Bounds.Height),
+					};
+					_accessibilityContainerElementRef = new WeakReference<UIAccessibilityElement>(containerLabelElement);
+				}
+
+				containerLabelElement.AccessibilityLabel = AccessibilityContainerLabel;
+				containerLabelElement.AccessibilityHint = AccessibilityContainerHint;
 
 				var elements = new NSObject[Subviews.Length + 1];
 				elements[0] = containerLabelElement;
