@@ -373,12 +373,12 @@ function Select-Sessions {
     $results = [System.Collections.Generic.List[object]]::new()
 
     if ($EventsPath -or $EventsDir) {
-        $files = [System.Collections.Generic.List[string]]::new()
-        if ($EventsPath) { foreach ($p in $EventsPath) { if (Test-Path $p) { $files.Add((Resolve-Path $p).Path) } else { Write-Warning "events file not found: $p" } } }
+        $files = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+        if ($EventsPath) { foreach ($p in $EventsPath) { if (Test-Path $p) { [void]$files.Add((Resolve-Path $p).Path) } else { Write-Warning "events file not found: $p" } } }
         if ($EventsDir) {
             if (Test-Path $EventsDir) {
                 Get-ChildItem -Path $EventsDir -Recurse -Filter 'events.jsonl' -File -ErrorAction SilentlyContinue |
-                    ForEach-Object { $files.Add($_.FullName) }
+                    ForEach-Object { [void]$files.Add($_.FullName) }
             } else { Write-Warning "events dir not found: $EventsDir" }
         }
         foreach ($f in $files) {
@@ -494,9 +494,7 @@ function New-Digest {
 # ─────────────────────────────────────────────────────────────────────────────
 $sessions = Select-Sessions
 if (-not $sessions -or @($sessions).Count -eq 0) {
-    Write-Warning 'No sessions selected.'
-    if ($Json) { '{ "session_count": 0, "sessions": [] }' }
-    return
+    throw 'No sessions selected.'
 }
 
 $measured = [System.Collections.Generic.List[object]]::new()
