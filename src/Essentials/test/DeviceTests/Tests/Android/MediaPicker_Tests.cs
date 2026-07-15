@@ -40,6 +40,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		static string CanonicalCacheRoot()
 			=> new Java.IO.File(FileSystem.CacheDirectory).CanonicalPath;
 
+		// Resolves symlinks (e.g. /data/user/0 -> /data/data) so cache-root prefix checks are stable.
+		static string Canonical(string path)
+			=> new Java.IO.File(path).CanonicalPath;
+
 		static void CleanUp(params string[] paths)
 		{
 			foreach (var path in paths)
@@ -68,7 +72,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				// The processed output must be a NEW file inside the app's own cache directory...
 				Assert.NotEqual(sourcePath, resultPath);
 				Assert.True(File.Exists(resultPath));
-				Assert.StartsWith(CanonicalCacheRoot(), resultPath, System.StringComparison.Ordinal);
+				Assert.StartsWith(CanonicalCacheRoot(), Canonical(resultPath), System.StringComparison.Ordinal);
 
 				// ...while preserving the original file name (issue #33258).
 				Assert.Equal(Path.GetFileName(sourcePath), Path.GetFileName(resultPath));
@@ -95,7 +99,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				Assert.Equal(originalBytes, File.ReadAllBytes(sourcePath));
 				Assert.NotEqual(sourcePath, resultPath);
 				Assert.True(File.Exists(resultPath));
-				Assert.StartsWith(CanonicalCacheRoot(), resultPath, System.StringComparison.Ordinal);
+				Assert.StartsWith(CanonicalCacheRoot(), Canonical(resultPath), System.StringComparison.Ordinal);
 			}
 			finally
 			{
