@@ -281,6 +281,38 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Theory]
+		[InlineData(null, false)]
+		[InlineData("false", false)]
+		[InlineData("true", true)]
+		public void ReadyToRunPublishingCanBeConfigured(string enableFullReadyToRunPublishing, bool fullReadyToRunPublishingEnabled)
+		{
+			SetUp();
+			var project = NewProject();
+			var target = NewElement("Target").WithAttribute("Name", "TestReadyToRunPublishing");
+			target.Add(NewElement("Message")
+				.WithAttribute("Text", "MauiEnableFullReadyToRunPublishing = $(MauiEnableFullReadyToRunPublishing)")
+				.WithAttribute("Importance", "high"));
+			target.Add(NewElement("Message")
+				.WithAttribute("Text", "PublishReadyToRunCrossgen2ExtraArgs = $(PublishReadyToRunCrossgen2ExtraArgs)")
+				.WithAttribute("Importance", "high"));
+			project.Add(target);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(
+				projectFile,
+				target: "TestReadyToRunPublishing",
+				additionalArgs: $"-p:TargetPlatformIdentifier=android -p:UseMonoRuntime=false -p:Configuration=Release -p:PublishReadyToRun=true {(enableFullReadyToRunPublishing is null ? string.Empty : $"-p:MauiEnableFullReadyToRunPublishing={enableFullReadyToRunPublishing}")}");
+
+			Assert.Contains($"MauiEnableFullReadyToRunPublishing = {fullReadyToRunPublishingEnabled.ToString().ToLowerInvariant()}", log, StringComparison.Ordinal);
+			if (fullReadyToRunPublishingEnabled)
+				Assert.DoesNotContain("--partial", log, StringComparison.Ordinal);
+			else
+				Assert.Contains("PublishReadyToRunCrossgen2ExtraArgs = ;--partial", log, StringComparison.Ordinal);
+		}
+
+		[Theory]
 		[InlineData("Debug")]
 		[InlineData("Release")]
 		public void HotReloadSupportForXSG(string configuration)
