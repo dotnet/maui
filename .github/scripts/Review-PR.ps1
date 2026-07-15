@@ -2456,23 +2456,46 @@ if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFi
 
             # Re-emit the AzDO output variable so Stage 2 (RunDeepUITests)
             # picks up the AI-refreshed category list, not the pre-AI one.
-            if ($refreshedCategories -ne $uitestCategories) {
-                $refreshedForOutput = if ($refreshedCategories -eq 'NONE') { 'NONE' }
-                                      elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) { 'ALL' }
-                                      else { $refreshedCategories }
-                Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$refreshedForOutput"
+            #
+            # CRITICAL (do not simplify back to blank -> 'ALL'): a blank/whitespace
+            # AI-refresh result must NEVER clobber a good file-based gate detection
+            # with 'ALL'. The RunDeepUITests stage condition SKIPS on 'ALL' (running
+            # the full matrix reliably hits the 240-min timeout and yields zero TRX),
+            # so downgrading to 'ALL' surfaces the "No UI test results were produced"
+            # warning on PRs that DID have specific, runnable categories. The AI tier
+            # often returns nothing usable; when it does, fall back to the SPECIFIC
+            # gate-detected categories ($uitestCategories) and only emit 'ALL' as a
+            # last resort when the gate itself found no specific categories.
+            # (Observed on PR #36448: gate detected 'Material3,ViewBaseTests' but the
+            # blank AI refresh downgraded it to 'ALL' -> deep stage skipped -> warning.)
+            $refreshedForOutput =
+                if ($refreshedCategories -eq 'NONE') { 'NONE' }
+                elseif (-not [string]::IsNullOrWhiteSpace($refreshedCategories) -and $refreshedCategories -ne 'ALL') { $refreshedCategories }
+                elseif (-not [string]::IsNullOrWhiteSpace($uitestCategories) -and $uitestCategories -notin @('ALL', 'NONE')) { $uitestCategories }
+                else { 'ALL' }
+            # Always emit so RunReview.detectedCategories is authoritative (the stage
+            # coalesce prefers RunReview over RunGate); never leave a downgrade in place.
+            Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$refreshedForOutput"
+            if ($refreshedForOutput -ne $uitestCategories) {
                 Write-Host "  🔁 Updated detectedCategories output: $refreshedForOutput" -ForegroundColor Green
+            } elseif ([string]::IsNullOrWhiteSpace($refreshedCategories) -or $refreshedCategories -eq 'ALL') {
+                Write-Host "  🔁 AI refresh returned no usable categories — preserving gate-detected categories: $refreshedForOutput" -ForegroundColor Green
+            } else {
+                Write-Host "  🔁 Categories unchanged after AI refresh: $refreshedForOutput" -ForegroundColor DarkGray
             }
 
             $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
             $uitestContentFile = Join-Path $uitestOutputDir "content.md"
 
-            if ($refreshedCategories -eq 'NONE') {
+            # Use $refreshedForOutput (the resolved value Stage 2 will actually act
+            # on), not the raw $refreshedCategories, so the posted comment matches
+            # what runs (a blank AI refresh now keeps the specific gate categories).
+            if ($refreshedForOutput -eq 'NONE') {
                 "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content $uitestContentFile -Encoding UTF8
-            } elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) {
+            } elseif ($refreshedForOutput -eq 'ALL' -or [string]::IsNullOrWhiteSpace($refreshedForOutput)) {
                 "Full UI test matrix will run (no specific categories detected from PR changes)." | Set-Content $uitestContentFile -Encoding UTF8
             } else {
-                "**Detected UI test categories:** ``$refreshedCategories``" | Set-Content $uitestContentFile -Encoding UTF8
+                "**Detected UI test categories:** ``$refreshedForOutput``" | Set-Content $uitestContentFile -Encoding UTF8
             }
         }
     } catch {
