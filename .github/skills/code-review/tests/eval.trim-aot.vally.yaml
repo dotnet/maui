@@ -1,0 +1,151 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# code-review Trim/AOT capability suite
+#
+# These scenarios test technical conclusions that their source PR descriptions
+# document explicitly. They therefore use frozen worktrees instead of the live
+# capability suite: the reviewer must derive its assessment from the commit
+# diff and surrounding source, not from a PR body or a squash-merge message.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: code-review-trim-aot
+description: >-
+  Hermetic capability suite for code-review Trim and NativeAOT guidance.
+  The reviewer must trace annotation chains and distinguish a documented
+  analyzer limitation from a reachable dynamic-code path.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 10m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 1 — A documented Android ILC limitation permits a narrowly
+  # scoped suppression only after the reviewer verifies the guard and publish
+  # configuration. Source: PR #34868.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: scoped-suppression-requires-annotation-chain-proof
+    tags:
+      source_pr: "34868"
+      kind: trim-aot
+    prompt: >-
+      You are reviewing a single commit before merge. The repository is
+      already checked out as a worktree pinned to the commit under review.
+
+      Determine whether the new diagnostic suppression around HybridWebView
+      handler registration conceals a reachable dynamic-code path in
+      NativeAOT/full-trim builds, or whether the change is a justified
+      toolchain-specific exception.
+
+      Use only the local worktree. Inspect `git diff HEAD^ HEAD` and full
+      source files needed to trace the feature switch and registration path.
+      Do not fetch a pull request, issue, or external page. Do not run
+      `git log`, `git show`, `git blame`, or inspect commit-message text.
+      Deliver a code review using the skill's standard output format
+      (Independent Assessment, Findings, Blast Radius or Failure-Mode
+      Probing, Verdict, and Confidence). Mark each finding with a severity
+      emoji and end with NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
+    environment:
+      git:
+        type: worktree
+        ref: e4a4140c34424eb980bcb616d9117425fd32a64c
+        source: .
+    graders:
+      - type: prompt
+        name: scoped-suppression-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent identifies the RuntimeFeature.IsHybridWebViewSupported
+        guard and the narrowly scoped IL2026/IL3050 pragma around the
+        HybridWebView handler registration, including the immediate restore.
+      - >-
+        The agent traces the relevant publish configuration and explains that
+        Android NativeAOT ILC does not honor the feature guard for warning
+        suppression while iOS and MacCatalyst do. Equivalent descriptions of
+        the platform/toolchain limitation are acceptable.
+      - >-
+        The agent does not reject the pragma merely because it suppresses
+        IL2026/IL3050. It distinguishes this proven exception from a broad
+        or unexplained suppression hiding a reachable dynamic-code path.
+      - >-
+        The review applies the same standard prospectively: accepted pragmas
+        must be limited to the affected call and diagnostic, restored
+        immediately, and accompanied by evidence that the code is
+        unreachable for the affected configuration.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 2 — An annotated helper structurally isolates dynamic
+  # registration from the default path. Source: PR #34958.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: annotated-helper-structurally-isolates-dynamic-registration
+    tags:
+      source_pr: "34958"
+      kind: trim-aot
+    prompt: >-
+      You are reviewing a single commit before merge. The repository is
+      already checked out as a worktree pinned to the commit under review.
+
+      Determine whether the NativeAOT/full-trim warning fix around
+      HybridWebView registration structurally isolates a dynamic-code path or
+      merely hides a reachable warning.
+
+      Use only the local worktree. Inspect `git diff HEAD^ HEAD` and full
+      source files needed to trace the registration and annotation path. Do
+      not fetch a pull request, issue, or external page. Do not run `git log`,
+      `git show`, `git blame`, or inspect commit-message text. Deliver a code
+      review using the skill's standard output format (Independent Assessment,
+      Findings, Blast Radius or Failure-Mode Probing, Verdict, and
+      Confidence). Mark each finding with a severity emoji and end with
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
+    environment:
+      git:
+        type: worktree
+        ref: c223f8b45946131bafd3ce9022edc98b3cd7946f
+        source: .
+    graders:
+      - type: prompt
+        name: annotated-helper-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent identifies that the change moves HybridWebView registration
+        into a helper with RequiresDynamicCode and
+        RequiresUnreferencedCode annotations that match the dynamic handler
+        path, allowing the existing feature guard to cover a direct annotated
+        call.
+      - >-
+        The agent traces the generic handler registration or equivalent
+        annotation-chain shape that motivated the structural separation,
+        rather than treating the warning as automatically false-positive.
+      - >-
+        The agent recognizes the structural solution as an alternative to
+        broad suppression or an expected-warning baseline, and does not
+        invent a claim that the helper applies to a different branch.
+      - >-
+        The agent does not claim that reading a const string from another type
+        by itself creates a type or member metadata reference. It evaluates
+        the actual annotation and reachability behavior instead.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - code-review
+
+scoring:
+  # A prompt judge is the sole grader because the required outcome is a
+  # semantic review judgment. There is intentionally no copyable token floor:
+  # the judge must reject a blanket suppression recommendation or unsupported
+  # annotation-chain claim.
+  threshold: 0.6
