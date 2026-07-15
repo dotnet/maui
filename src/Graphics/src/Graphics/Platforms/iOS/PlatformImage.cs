@@ -140,10 +140,13 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 
 		/// <inheritdoc/>
-		public async Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
 		{
-			using var data = CreateData(format, options);
-			await data.AsStream().CopyToAsync(stream);
+			// NSData-backed streams don't reliably support async reads on CoreCLR (CopyToAsync throws
+			// inside UnmanagedMemoryStream.ReadAsync), so copy synchronously — this streams the encoded
+			// bytes straight to the destination without an extra managed buffer.
+			Save(stream, format, options);
+			return Task.CompletedTask;
 		}
 
 		private NSData CreateData(ImageFormat format, ImageSaveOptions options)
