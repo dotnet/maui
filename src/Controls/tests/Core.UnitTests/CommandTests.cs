@@ -256,6 +256,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(executions == 0, "the command should not have executed");
 		}
 
+		[Fact]
+		public void BackButtonBehaviorAppliesBoundCommandParameterBeforeCanExecute()
+		{
+			var expectedParameter = new object();
+			var observedParameters = new List<object>();
+			var command = new Command<object>(
+				_ => { },
+				parameter =>
+				{
+					observedParameters.Add(parameter);
+					return ReferenceEquals(expectedParameter, parameter);
+				});
+			var viewModel = new
+			{
+				Command = command,
+				CommandParameter = expectedParameter
+			};
+			var behavior = new BackButtonBehavior();
+			behavior.SetBinding(BackButtonBehavior.CommandProperty, nameof(viewModel.Command));
+			behavior.SetBinding(BackButtonBehavior.CommandParameterProperty, nameof(viewModel.CommandParameter));
+
+			behavior.BindingContext = viewModel;
+
+			Assert.True(behavior.IsEnabled);
+			Assert.NotEmpty(observedParameters);
+			Assert.All(observedParameters, parameter => Assert.Same(expectedParameter, parameter));
+		}
+
 		[Theory]
 		[InlineData(typeof(Button), true)]
 		[InlineData(typeof(Button), false)]

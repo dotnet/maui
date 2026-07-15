@@ -21,6 +21,12 @@ namespace Microsoft.Maui.Controls
 				propertyChanging: CommandElement.OnCommandChanging,
 				propertyChanged: CommandElement.OnCommandChanged);
 
+		static BackButtonBehavior()
+		{
+			// Register dependency so CanExecute sees a pending bound parameter.
+			CommandProperty.DependsOn(CommandParameterProperty);
+		}
+
 		/// <summary>Bindable property for <see cref="IconOverride"/>.</summary>
 		public static readonly BindableProperty IconOverrideProperty =
 			BindableProperty.Create(nameof(IconOverride), typeof(ImageSource), typeof(BackButtonBehavior), null, BindingMode.OneTime);
@@ -111,7 +117,7 @@ namespace Microsoft.Maui.Controls
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
-			IsEnabledCore = CommandElement.GetCanExecute(this);
+			IsEnabledCore = CommandElement.GetCanExecute(this, CommandProperty);
 		}
 
 		WeakCommandSubscription ICommandElement.CleanupTracker { get; set; }
