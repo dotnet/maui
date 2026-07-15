@@ -94,5 +94,45 @@ namespace Microsoft.Maui.Graphics
 		/// </summary>
 		/// <returns>A platform-specific <see cref="IImage"/> representation.</returns>
 		IImage ToPlatformImage();
+
+		/// <summary>
+		/// Gets the metadata (such as EXIF) captured when the image was loaded, or <see langword="null"/>
+		/// if the image was not loaded with <see cref="ImageLoadOptions.PreserveMetadata"/> enabled or has
+		/// no metadata.
+		/// </summary>
+#if NETSTANDARD2_0
+		IImageMetadata Metadata { get; }
+#else
+		IImageMetadata Metadata => null;
+#endif
+
+		/// <summary>
+		/// Saves the image to a stream in the specified format using the supplied options, optionally
+		/// re-embedding the captured <see cref="Metadata"/>.
+		/// </summary>
+		/// <param name="stream">The stream to save the image to.</param>
+		/// <param name="format">The format to save the image in.</param>
+		/// <param name="options">The options controlling quality and metadata preservation.</param>
+#if NETSTANDARD2_0
+		void Save(Stream stream, ImageFormat format, ImageSaveOptions options);
+#else
+		void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+			=> Save(stream, format, options.Quality);
+#endif
+
+		/// <summary>
+		/// Asynchronously saves the image to a stream in the specified format using the supplied options,
+		/// optionally re-embedding the captured <see cref="Metadata"/>.
+		/// </summary>
+		/// <param name="stream">The stream to save the image to.</param>
+		/// <param name="format">The format to save the image in.</param>
+		/// <param name="options">The options controlling quality and metadata preservation.</param>
+		/// <returns>A task representing the asynchronous save operation.</returns>
+#if NETSTANDARD2_0
+		Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options);
+#else
+		Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+			=> SaveAsync(stream, format, options.Quality);
+#endif
 	}
 }

@@ -9,7 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-	public class PlatformImage : IImageWithMetadata
+	public class PlatformImage : IImage
 	{
 		private UIImage _image;
 		private readonly AppleImageMetadata _metadata;

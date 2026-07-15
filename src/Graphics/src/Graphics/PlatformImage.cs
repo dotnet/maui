@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		/// <inheritdoc cref="Save"/>
+		/// <inheritdoc cref="Save(System.IO.Stream, ImageFormat, float)"/>
 		public Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
@@ -237,6 +237,17 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage ToPlatformImage()
 			=> this;
+
+		/// <inheritdoc/>
+		public IImageMetadata Metadata => null;
+
+		/// <inheritdoc/>
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+			=> Save(stream, format, options.Quality);
+
+		/// <inheritdoc/>
+		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+			=> SaveAsync(stream, format, options.Quality);
 	}
 #endif
 }

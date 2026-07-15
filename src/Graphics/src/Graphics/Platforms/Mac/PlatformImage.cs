@@ -8,7 +8,7 @@ using Foundation;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-	public class PlatformImage : IImageWithMetadata
+	public class PlatformImage : IImage
 	{
 		private NSImage _image;
 

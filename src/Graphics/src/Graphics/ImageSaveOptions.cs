@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Graphics
 {
 	/// <summary>
 	/// Options that control how an image is saved via
-	/// <see cref="IImageWithMetadata.SaveAsync(System.IO.Stream, ImageFormat, ImageSaveOptions)"/>.
+	/// <see cref="IImage.SaveAsync(System.IO.Stream, ImageFormat, ImageSaveOptions)"/>.
 	/// </summary>
 	public readonly record struct ImageSaveOptions
 	{

@@ -8,7 +8,7 @@ using Stream = System.IO.Stream;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-	public class PlatformImage : IImageWithMetadata
+	public class PlatformImage : IImage
 	{
 		private Bitmap _bitmap;
 		private readonly AndroidImageMetadata _metadata;

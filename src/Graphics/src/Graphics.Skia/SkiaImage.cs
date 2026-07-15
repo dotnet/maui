@@ -221,6 +221,17 @@ namespace Microsoft.Maui.Graphics.Skia
 			throw new NotSupportedException();
 		}
 
+		/// <inheritdoc/>
+		public IImageMetadata Metadata => null;
+
+		/// <inheritdoc/>
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+			=> Save(stream, format, options.Quality);
+
+		/// <inheritdoc/>
+		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+			=> SaveAsync(stream, format, options.Quality);
+
 		/// <summary>
 		/// Creates a new image from a stream.
 		/// </summary>

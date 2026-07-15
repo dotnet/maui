@@ -110,14 +110,7 @@ namespace Microsoft.Maui.Media
 						};
 
 						using var outputStream = File.Create(outputFile.AbsolutePath);
-						if (current is MG.IImageWithMetadata imageWithMetadata)
-						{
-							await imageWithMetadata.SaveAsync(outputStream, format, saveOptions);
-						}
-						else
-						{
-							await current.SaveAsync(outputStream, format, saveOptions.Quality);
-						}
+						await current.SaveAsync(outputStream, format, saveOptions);
 
 						return outputFile.AbsolutePath;
 					}

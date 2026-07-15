@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-	public class PlatformImageLoadingService : IMetadataImageLoadingService
+	public class PlatformImageLoadingService : IImageLoadingService
 	{
 		public IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
