@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				if (foregroundExists)
 				{
-					// resize the forground
+					// resize the foreground
 					var tools = SkiaSharpTools.Create(Info.ForegroundIsVector, Info.ForegroundFilename, dpi.Size, null, Info.TintColor, Info.Quality, Logger);
 					tools.Resize(dpi, destination, Info.ForegroundScale, dpiSizeIsAbsolute: true);
 				}
