@@ -187,31 +187,35 @@ if ($Platform -eq "android") {
     $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
     Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
     
-    # ValidateXcodeVersion=false keeps the iOS HostApp build resilient when a
-    # Microsoft.iOS workload bump (e.g. net11.0-ios26.5, which advertises a
-    # requirement of Xcode 26.6) lands ahead of the agent's installed Xcode: it
-    # skips the SDK's EARLY Xcode-version gate (the up-front MT0180 "This version
-    # of Microsoft.iOS requires the iOS X SDK / Xcode Y" check).
+    # Two INDEPENDENT guards keep the iOS HostApp build resilient to a
+    # Microsoft.iOS workload (e.g. net11.0-ios 26.5, which advertises a
+    # requirement of Xcode 26.6) landing ahead of the agent's installed Xcode:
     #
-    # Do NOT add -p:MtouchLink=None here. It is tempting ("a Debug simulator
-    # build doesn't need trimming, so turn the linker off"), but on the modern
-    # .NET-for-iOS CoreCLR SDK it does the OPPOSITE of what you'd expect:
-    #   * A Debug SIMULATOR `dotnet build -r iossimulator-arm64` already does NOT
-    #     run the managed linker/trimmer (the app runs un-trimmed on the
-    #     interpreter, like the local dev inner loop), so nothing re-checks the
-    #     device SDK headers and the build finishes on any agent Xcode.
-    #   * Explicitly passing MtouchLink=None re-activates the LEGACY mtouch/ILLink
-    #     compatibility path, which runs ILLink, which re-validates the SDK
-    #     version and crashes with IL1012 -> MT0180 -> NETSDK1144 — failing the
-    #     ENTIRE HostApp build and producing no test results.
-    # Proven by A/B on identical agents/Xcode (both provision-selected 26.0.1):
-    #   commit 00c941392dc (ValidateXcodeVersion=false, NO MtouchLink) -> iOS deep
-    #   BUILT and ran 216 tests on PR #36427; commit 57ff98c5fc8 (same args +
-    #   MtouchLink=None) -> iOS deep died with MT0180 on every category (PR #36507,
-    #   PR #36448). ValidateXcodeVersion=false alone is sufficient and correct.
-    # This script is shared by the gate and deep stages, so both iOS paths stay
-    # resilient.
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
+    #  1. ValidateXcodeVersion=false — skips the SDK's EARLY, up-front
+    #     Xcode-version gate (the eager MT0180 "requires the iOS X SDK / Xcode Y"
+    #     check that fires before any compilation).
+    #
+    #  2. PublishTrimmed=false — skips the ILLink trimmer ("Optimizing assemblies
+    #     for size"), whose LATE pass re-resolves the device SDK headers and
+    #     crashes IL1012 -> MT0180 -> NETSDK1144 when they are older than the
+    #     workload wants. ValidateXcodeVersion=false does NOT cover this later
+    #     pass, so BOTH guards are required.
+    #
+    # ROOT CAUSE is AGENT HETEROGENEITY in the AcesShared iOS pool, proven by
+    # three identical-command builds that landed on different agents:
+    #   * AcesShared 6 (build 14657467) -> trimmer did NOT run -> 216 tests passed
+    #   * AcesShared 2 (build 14660995) -> trimmer ran         -> MT0180
+    #   * AcesShared 4 (build 14660232) -> trimmer ran         -> MT0180
+    # i.e. some agents run the ILLink trimmer for a Debug SIMULATOR build (and
+    # lack Xcode 26.6), others don't. PublishTrimmed=false forces the trimmer OFF
+    # on ALL agents, so the outcome no longer depends on which agent we land on.
+    #
+    # NOTE: MtouchLink (None/SdkOnly/Full) is the LEGACY Xamarin linker knob and
+    # is IGNORED by the modern .NET-for-iOS trimmer — build 14660232 ran the
+    # trimmer and MT0180'd *with* MtouchLink=None. Do NOT reach for it here;
+    # PublishTrimmed is the correct lever. This script is shared by the gate and
+    # deep stages, so both iOS paths stay resilient.
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:ValidateXcodeVersion=false", "-p:PublishTrimmed=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -332,11 +336,13 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for MacCatalyst..."
     
-    # ValidateXcodeVersion=false: same Xcode-version-gate bypass as the iOS build
-    # above — MacCatalyst also builds through the Microsoft.MacCatalyst SDK and can
-    # hit MT0180/IL1012 when the workload outpaces the agent's Xcode. See the iOS
-    # block for the full rationale (PR #35892 review 4685252040).
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
+    # ValidateXcodeVersion=false + PublishTrimmed=false: same two-guard resilience
+    # as the iOS build above — MacCatalyst also builds through the Microsoft.MacCatalyst
+    # SDK and can hit BOTH the early Xcode gate AND the late ILLink trimmer
+    # (MT0180/IL1012/NETSDK1144) when the workload outpaces the agent's Xcode. See
+    # the iOS block for the full agent-heterogeneity rationale (PR #35892 review
+    # 4685252040).
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-p:ValidateXcodeVersion=false", "-p:PublishTrimmed=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
