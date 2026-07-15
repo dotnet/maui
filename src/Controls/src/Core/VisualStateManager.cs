@@ -78,6 +78,10 @@ namespace Microsoft.Maui.Controls
 			visualElement.ChangeVisualState();
 
 			UpdateStateTriggers(visualElement);
+
+			// Replacing the groups does not change Window, so apply the trigger lifecycle
+			// explicitly after the new groups have been associated with the element.
+			visualElement.InvalidateStateTriggers(visualElement.Window is not null);
 		}
 
 		static bool ContainsStateTrigger(VisualStateGroupList visualStateGroupList, StateTriggerBase stateTrigger)
