@@ -27,8 +27,18 @@ namespace Microsoft.Maui.Controls
 		/// Gets the dispatcher that was available when this bindable object was created,
 		/// otherwise tries to find the nearest available dispatcher (probably the window's/app's).
 		/// </summary>
-		public IDispatcher Dispatcher =>
-			_dispatcher ??= this.FindDispatcher();
+		public IDispatcher Dispatcher
+		{
+			get
+			{
+				var dispatcher = GetDispatcherIfAvailable();
+				if (dispatcher is not null)
+					return dispatcher;
+
+				SetDispatcherIfUnset(this.FindDispatcher());
+				return GetDispatcherIfAvailable();
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BindableObject"/> class.
@@ -471,14 +481,6 @@ namespace Microsoft.Maui.Controls
 			{
 				if (inheritedContext is PendingInheritedBindingContextCleanup)
 					return null;
-
-				if (inheritedContext.Target is null)
-				{
-					// The effective inherited context is already null, so no binding-context
-					// transition needs to be raised.
-					Interlocked.CompareExchange(ref _inheritedContext, null, inheritedContext);
-					return null;
-				}
 
 				return MarkInheritedBindingContextForCleanup(
 					ref _inheritedContext,

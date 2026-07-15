@@ -230,6 +230,66 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void CollectedInheritedContextStillClearsAppliedBindingValues()
+		{
+			using var finalizerEntered = new ManualResetEventSlim();
+			using var releaseFinalizer = new ManualResetEventSlim();
+			CreateFinalizerBlocker(finalizerEntered, releaseFinalizer);
+			GC.Collect();
+
+			Assert.True(finalizerEntered.Wait(TimeSpan.FromSeconds(5)), "Finalizer blocker did not start.");
+
+			GradientStop stop;
+			GradientStopCollection sharedStops;
+			WeakReference weakBrush;
+			WeakReference weakBindingContext;
+			DispatcherProviderStubOptions.SkipDispatcherCreation = true;
+			try
+			{
+				stop = new GradientStop();
+				stop.SetBinding(GradientStop.OffsetProperty, nameof(GradientStop.Offset));
+				sharedStops = new GradientStopCollection { stop };
+				(weakBrush, weakBindingContext) = CreateBrushWithNewBindingContext(sharedStops);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.SkipDispatcherCreation = false;
+			}
+
+			int bindingContextChanged = 0;
+			stop.BindingContextChanged += (_, _) => bindingContextChanged++;
+
+			try
+			{
+				for (int attempt = 0;
+					attempt < 20 && (weakBrush.IsAlive || weakBindingContext.IsAlive);
+					attempt++)
+				{
+					GC.Collect();
+					Thread.Sleep(10);
+				}
+
+				Assert.False(weakBrush.IsAlive, "LinearGradientBrush should not be alive!");
+				Assert.False(weakBindingContext.IsAlive, "Inherited binding context should not be alive!");
+				Assert.Equal(0.25f, stop.GetValue(GradientStop.OffsetProperty));
+				Assert.Equal(0, bindingContextChanged);
+			}
+			finally
+			{
+				releaseFinalizer.Set();
+				GC.WaitForPendingFinalizers();
+			}
+
+			Assert.Equal(0, bindingContextChanged);
+			Assert.Equal(0.25f, stop.GetValue(GradientStop.OffsetProperty));
+
+			Assert.Null(stop.BindingContext);
+			Assert.Equal(1, bindingContextChanged);
+			Assert.Equal(0f, stop.Offset);
+			GC.KeepAlive(sharedStops);
+		}
+
+		[Fact]
 		public async Task CollectedBrushDispatchesGradientStopInheritedBindingContextCleanup()
 		{
 			var dispatchedCleanup = new TaskCompletionSource<Action>(TaskCreationOptions.RunContinuationsAsynchronously);
