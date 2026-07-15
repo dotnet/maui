@@ -29,6 +29,8 @@ BeforeAll {
             'Get-IssueAuthorAssociation',
             'Get-IssueContext',
             'Get-OpenRegressionCorpusPrTags',
+            'Get-ExistingRegressionPrTags',
+            'Get-IntroducingPrDetails',
             'New-RegressionCandidate')) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -75,7 +77,9 @@ Describe 'Invoke-GhJson' {
     }
 
     It 'returns no result for a successful empty response' {
-        @(Invoke-GhJson -GhArgs @('api', 'repos/dotnet/maui/issues')).Count | Should -Be 0
+        $result = Invoke-GhJson -GhArgs @('api', 'repos/dotnet/maui/issues')
+
+        ($null -eq $result) | Should -BeTrue
     }
 
     It 'throws when gh exits unsuccessfully' {
@@ -83,6 +87,14 @@ Describe 'Invoke-GhJson' {
 
         { Invoke-GhJson -GhArgs @('api', 'repos/dotnet/maui/issues') } |
             Should -Throw '*exit code 1*'
+    }
+
+    It 'returns no result with a warning for an allowed failure' {
+        $global:mockGhExitCode = 1
+
+        $result = Invoke-GhJson -GhArgs @('pr', 'view', '123') -AllowFailure 3>$null
+
+        ($null -eq $result) | Should -BeTrue
     }
 
     It 'throws when gh returns invalid JSON' {
@@ -198,6 +210,10 @@ Describe 'Get-LinkedIssueNumbers' {
     It 'extracts full-URL closing references' {
         $body = 'Fixes https://github.com/dotnet/maui/issues/34910'
         Get-LinkedIssueNumbers $body | Should -Contain 34910
+    }
+    It 'does not treat bare prose numbers as closing references' {
+        @(Get-LinkedIssueNumbers 'Fixes 500 test failures').Count | Should -Be 0
+        @(Get-LinkedIssueNumbers 'Fixed 3 flaky tests').Count | Should -Be 0
     }
     It 'matches full issue URLs only from the configured repository' {
         Get-LinkedIssueNumbers 'Fixes https://github.com/other/repo/issues/123' |
@@ -438,6 +454,39 @@ Describe 'Get-OpenRegressionCorpusPrTags' {
         }
 
         Get-OpenRegressionCorpusPrTags -Owner 'dotnet' -Repo 'maui' | Should -Contain 31931
+    }
+}
+
+Describe 'Get-ExistingRegressionPrTags' {
+    It 'collects tags from existing corpus files' {
+        $file = Join-Path $TestDrive 'eval.vally.yaml'
+        Set-Content -LiteralPath $file -Value 'regression_pr: "31931"'
+
+        Get-ExistingRegressionPrTags -CorpusGlob $file | Should -Contain 31931
+    }
+
+    It 'does not ignore a read failure for an existing corpus file' {
+        $file = Join-Path $TestDrive 'unreadable.vally.yaml'
+        Set-Content -LiteralPath $file -Value 'regression_pr: "31931"'
+        Mock Get-Content { throw 'Cannot read corpus file' } -ParameterFilter {
+            $LiteralPath -eq $file
+        }
+
+        { Get-ExistingRegressionPrTags -CorpusGlob $file } |
+            Should -Throw '*Cannot read corpus file*'
+    }
+}
+
+Describe 'Get-IntroducingPrDetails' {
+    It 'treats an unavailable introducing PR as unresolved' {
+        Mock Invoke-GhJson { $null }
+
+        $details = Get-IntroducingPrDetails -Owner dotnet -Repo maui -Number 123
+
+        ($null -eq $details) | Should -BeTrue
+        Assert-MockCalled Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
+            $AllowFailure -and $GhArgs[0] -eq 'pr'
+        }
     }
 }
 

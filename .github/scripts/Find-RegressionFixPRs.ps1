@@ -126,7 +126,7 @@ function Get-LinkedIssueNumbers {
         [regex]::Escape($Owner), [regex]::Escape($Repo)
 
     $patterns = @(
-        ('(?i)(?:Fix(?:es|ed)?|Close[sd]?|Resolve[sd]?)\s+(?:{0})?#?(\d+)' -f $issueUrl),
+        ('(?i)(?:Fix(?:es|ed)?|Close[sd]?|Resolve[sd]?)\s+(?:(?:{0})|#)(\d+)' -f $issueUrl),
         '(?m)^\s*-\s+#(\d+)\s*$',
         ('(?m)^\s*-\s+{0}(\d+)\s*$' -f $issueUrl)
     )
@@ -229,11 +229,19 @@ function Test-HumanAttributionCandidateIsNew {
 # ─── gh I/O wrappers (mocked in tests) ─────────────────────────────────────────
 
 function Invoke-GhJson {
-    param([Parameter(Mandatory = $true)][string[]]$GhArgs)
+    param(
+        [Parameter(Mandatory = $true)][string[]]$GhArgs,
+        [switch]$AllowFailure
+    )
     $raw = & gh @GhArgs 2>$null
     $exitCode = $LASTEXITCODE
     if ($exitCode -ne 0) {
-        throw "GitHub CLI command failed with exit code ${exitCode}: $($GhArgs[0])"
+        $message = "GitHub CLI command failed with exit code ${exitCode}: $($GhArgs[0])"
+        if ($AllowFailure) {
+            Write-Warning "$message; treating the introducing PR as unresolved."
+            return $null
+        }
+        throw $message
     }
     if (-not $raw) { return $null }
     if ($raw -is [array]) { $raw = $raw -join "`n" }
@@ -241,7 +249,12 @@ function Invoke-GhJson {
         return $raw | ConvertFrom-Json
     }
     catch {
-        throw "GitHub CLI returned invalid JSON for $($GhArgs[0]): $($_.Exception.Message)"
+        $message = "GitHub CLI returned invalid JSON for $($GhArgs[0]): $($_.Exception.Message)"
+        if ($AllowFailure) {
+            Write-Warning "$message; treating the introducing PR as unresolved."
+            return $null
+        }
+        throw $message
     }
 }
 
@@ -325,12 +338,26 @@ function Get-OpenRegressionCorpusPrTags {
     return @($tags)
 }
 
+function Get-ExistingRegressionPrTags {
+    # An unreadable existing corpus file must abort rather than silently allow a
+    # duplicate draft. A glob with no matches remains a valid empty corpus.
+    param([string]$CorpusGlob)
+    $tags = New-Object 'System.Collections.Generic.HashSet[int]'
+    foreach ($file in (Get-ChildItem -Path $CorpusGlob -ErrorAction SilentlyContinue)) {
+        $text = Get-Content -Raw -LiteralPath $file.FullName -ErrorAction Stop
+        foreach ($number in (Get-RegressionPrTagsFromText $text)) {
+            [void]$tags.Add($number)
+        }
+    }
+    return @($tags)
+}
+
 function Get-IntroducingPrDetails {
     param([string]$Owner, [string]$Repo, [int]$Number)
     $pr = Invoke-GhJson -GhArgs @(
         'pr', 'view', "$Number", '--repo', "$Owner/$Repo",
         '--json', 'number,mergeCommit'
-    )
+    ) -AllowFailure
     if (-not $pr) { return $null }
     $sha = if ($pr.mergeCommit -and $pr.mergeCommit.oid) { $pr.mergeCommit.oid } else { $null }
     return [PSCustomObject]@{
@@ -379,9 +406,8 @@ Write-Host "Scanning $Owner/$Repo for regression-fix PRs merged in the last $Loo
 
 # Dedup set: regression_pr tags already present in the corpus or pending scanner drafts.
 $existingNumbers = New-Object 'System.Collections.Generic.HashSet[int]'
-foreach ($file in (Get-ChildItem -Path $CorpusGlob -ErrorAction SilentlyContinue)) {
-    $text = Get-Content -Raw -LiteralPath $file.FullName -ErrorAction SilentlyContinue
-    foreach ($n in (Get-RegressionPrTagsFromText $text)) { [void]$existingNumbers.Add($n) }
+foreach ($n in (Get-ExistingRegressionPrTags -CorpusGlob $CorpusGlob)) {
+    [void]$existingNumbers.Add($n)
 }
 foreach ($n in (Get-OpenRegressionCorpusPrTags -Owner $Owner -Repo $Repo)) {
     [void]$existingNumbers.Add($n)
