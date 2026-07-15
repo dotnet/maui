@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var textBlockInlines = textBlock.Inlines;
 			textBlockInlines.Clear();
+			textBlock.TextHighlighters.Clear();
 
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
