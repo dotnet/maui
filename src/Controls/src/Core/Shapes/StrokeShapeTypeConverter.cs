@@ -143,7 +143,7 @@ public class StrokeShapeTypeConverter : TypeConverter
 			}
 
 			// Support for providing a double. This handles Border CSS support.
-			if (double.TryParse(strValue, out double radius))
+			if (double.TryParse(strValue, NumberStyles.Number, culture, out double radius))
 			{
 				return new RoundRectangle { CornerRadius = new CornerRadius(radius) };
 			}
