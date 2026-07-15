@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (oldReplaceCount > 0 && oldReplaceCount == newReplaceCount)
 				{
-					HandleReplaceAction(e, carouselPosition, count, savedScrollToCounter);
+					HandleReplaceAction(e, carouselPosition, count, savedScrollToCounter, observableItemsSource);
 					return;
 				}
 
@@ -507,7 +507,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			System.Collections.Specialized.NotifyCollectionChangedEventArgs e,
 			int carouselPosition,
 			int count,
-			int savedScrollToCounter)
+			int savedScrollToCounter,
+			IItemsViewSource observableItemsSource)
 		{
 			_noNeedForScroll = true;
 			_gotoPosition = -1;
@@ -524,9 +525,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Iterate over the full replaced range in case the Replace event covers more
 				// than one item (e.g. from a custom INotifyCollectionChanged source).
 				var replaceCount = e.OldItems?.Count ?? 1;
+
+				// Some custom INotifyCollectionChanged sources raise an indexless Replace
+				// (OldStartingIndex == -1). Since Replace preserves position for an equal-count
+				// swap, the replaced item's current index can be recovered from the items source
+				// itself. This only resolves a single-item indexless Replace (the common case);
+				// a multi-item indexless Replace falls back to a full adapter refresh below.
+				var startIndex = e.OldStartingIndex;
+				if (startIndex < 0)
+				{
+					if (replaceCount == 1 && e.NewItems?.Count > 0)
+					{
+						startIndex = observableItemsSource.GetPosition(e.NewItems[0]);
+					}
+
+					if (startIndex < 0)
+					{
+						GetAdapter()?.NotifyDataSetChanged();
+						replaceCount = 0;
+					}
+				}
+
 				for (int i = 0; i < replaceCount; i++)
 				{
-					RebindVisibleLoopItem(e.OldStartingIndex + i, count);
+					RebindVisibleLoopItem(startIndex + i, count);
 				}
 
 				var dispatched = Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
