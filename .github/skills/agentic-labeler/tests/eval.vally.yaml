@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # agentic-labeler capability suite — Vally migration
 #
-# Port of the legacy eval.yaml (21 scenarios) for the dotnet/maui
+# Port of the legacy eval.yaml scenarios for the dotnet/maui
 # agentic-labeler skill, which applies ONLY `area-*` and `platform/*`
 # labels, derived from changed-file path conventions (PRs) or explicit
 # platform mentions (issues).
@@ -63,9 +63,11 @@ description: >-
   iOS/MacCatalyst extension-vs-directory distinction, prefers
   area-infrastructure for CI/agent-infra files, noops automated-merge and
   already-labeled dependency PRs, resists label instructions injected into
-  issue bodies, and never applies out-of-scope (t/* i/* s/* p/* partner/*
-  perf/*) labels.
-version: "1.0.0"
+  issue bodies, prefers a specific area over its parent, distinguishes explicit
+  affected-platform lists from generic platform claims, excludes Tizen platform
+  labels, and never applies out-of-scope (t/* i/* s/* p/* partner/* perf/*)
+  labels.
+version: "1.1.0"
 type: capability
 
 defaults:
@@ -717,6 +719,143 @@ stimuli:
         identify Maps as the dominant subject).
       - The agent does NOT invent a shorter alias like area-maps.
       - platform/android is applied (MapHandler.Android.cs).
+    constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 22 — ISSUE: specific control beats generic navigation (source: issue #35490)
+  # ───────────────────────────────────────────────────────────────────────
+  - name: issue-tabbedpage-over-navigation
+    tags: { source_issue: "35490", kind: area-tiebreak }
+    prompt: |
+      A GitHub issue reads:
+
+        Title: TabbedPage does not render correctly with iOS Glass UI
+
+        Description: TabbedPage navigation is visually incorrect when iOS Glass UI is enabled.
+
+        Affected platforms: iOS
+
+      You do NOT have GitHub label-list API access. Based only on the issue content and the
+      agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
+      labels only, without an explanation.
+    graders:
+      - type: output-contains
+        config: { substring: "area-controls-tabbedpage" }
+      - type: output-contains
+        config: { substring: "platform/ios" }
+      - type: output-not-contains
+        config: { substring: "area-navigation" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - >-
+        The final label set includes exactly one area label, area-controls-tabbedpage. The
+        specific-control tie-breaker wins over generic navigation.
+      - platform/ios is applied because iOS is explicitly listed as affected.
+      - No other platform label or out-of-scope label is applied.
+    constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 23 — ISSUE: named affected-platform list wins over "all platforms"
+  # ───────────────────────────────────────────────────────────────────────
+  - name: issue-safearea-named-platform-subset
+    tags: { source_issue: "35501", kind: issue-platform-and-area-tiebreak }
+    prompt: |
+      A GitHub issue reads:
+
+        Title: SafeAreaEdges.Container is hard to discover
+
+        Description: The SafeAreaEdges.Container API needs better discoverability. This occurs
+        on all platforms where the API is used.
+
+        Affected platforms: iOS, Android
+
+      You do NOT have GitHub label-list API access. Based only on the issue content and the
+      agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
+      labels only, without an explanation.
+    graders:
+      - type: output-contains
+        config: { substring: "area-safearea" }
+      - type: output-contains
+        config: { substring: "platform/ios" }
+      - type: output-contains
+        config: { substring: "platform/android" }
+      - type: output-not-contains
+        config: { substring: "platform/windows" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - >-
+        The final label set includes exactly one area label, area-safearea. The sub-area
+        tie-breaker wins over area-layout.
+      - >-
+        platform/ios and platform/android are applied because they are explicitly named in
+        the affected-platform list, despite the generic "all platforms" phrase.
+      - No platform/macos or platform/windows label is applied; they are not named affected.
+    constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 24 — ISSUE: a generic platform claim alone does not infer platform labels
+  # ───────────────────────────────────────────────────────────────────────
+  - name: issue-generic-platform-claim-no-inference
+    tags: { kind: issue-platform }
+    prompt: |
+      A GitHub issue reads:
+
+        Title: SafeAreaEdges.Container is hard to discover
+
+        Description: The SafeAreaEdges.Container API needs better discoverability on all
+        platforms. The report does not name any affected platform.
+
+      You do NOT have GitHub label-list API access. Based only on the issue content and the
+      agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
+      labels only, without an explanation.
+    graders:
+      - type: output-contains
+        config: { substring: "area-safearea" }
+      - type: output-not-contains
+        config: { substring: "platform/android" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The final label set includes exactly one area label, area-safearea.
+      - >-
+        No platform/* label is applied: "all platforms" is a generic claim, not an explicit
+        affected-platform list.
+      - No out-of-scope label is applied.
+    constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 25 — ISSUE: Tizen is excluded, but its area is still labeled (source: #31806)
+  # ───────────────────────────────────────────────────────────────────────
+  - name: issue-tizen-platform-excluded
+    tags: { source_issue: "31806", kind: tizen-exclusion }
+    prompt: |
+      A GitHub issue reads:
+
+        Title: Unable to set a Tizen target framework
+
+        Description: The .NET MAUI workload and SDK project setup cannot configure a Tizen
+        target framework.
+
+        Affected platforms: Tizen
+
+      You do NOT have GitHub label-list API access. Based only on the issue content and the
+      agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
+      labels only, without an explanation.
+    graders:
+      - type: output-contains
+        config: { substring: "area-tooling" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - >-
+        The final label set includes exactly one area label, area-tooling, for the MAUI
+        workload/SDK target-framework setup surface.
+      - >-
+        The final label set includes no platform/* label. The explicit Tizen platform is
+        intentionally excluded by the labeler.
+      - No out-of-scope label is applied.
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
 scoring:
