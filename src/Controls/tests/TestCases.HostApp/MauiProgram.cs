@@ -33,6 +33,7 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("FontAwesome.ttf", "FA");
 					fonts.AddFont("ionicons.ttf", "Ion");
 					fonts.AddFont("Montserrat-Bold.otf", "MontserratBold");
+					fonts.AddFont("MyCustomFont.ttf", "MyCustomFont");
 				})
 				.RenderingPerformanceAddMappers()
 				.Issue21109AddMappers()
