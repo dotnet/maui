@@ -352,12 +352,25 @@ stages:
           - bash: dotnet tool restore
             displayName: 'Restore .NET Tools'
 
-          # Set screen resolution on Windows (same as ui-tests-steps.yml)
+          # Set screen resolution on Windows (same as ui-tests-steps.yml).
+          # BEST-EFFORT ONLY: a hosted agent that cannot enumerate its display
+          # (EnumDisplaySettings → "Value cannot be null") must NOT abort the
+          # whole Review stage — screen resolution only affects screenshot
+          # dimensions, never the review itself. Observed failing the entire
+          # review (no review posted) on build 14665196. try/catch turns the
+          # error into a warning; continueOnError is the backstop.
           - ${{ if eq(parameters.Platform, 'windows') }}:
             - pwsh: |
                 $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
-                & $scriptPath -Width 1920 -Height 1080
+                if (Test-Path $scriptPath) {
+                  $ErrorActionPreference = 'Stop'
+                  try { & $scriptPath -Width 1920 -Height 1080 }
+                  catch { Write-Host "##[warning]Set-ScreenResolution failed (non-fatal): $($_.Exception.Message)" }
+                } else {
+                  Write-Host "##[warning]Set-ScreenResolution.ps1 not found — using default resolution"
+                }
               displayName: 'Set screen resolution'
+              continueOnError: true
 
           # Create AVD and boot Android Emulator
           - ${{ if eq(parameters.Platform, 'android') }}:
