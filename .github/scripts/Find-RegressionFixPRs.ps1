@@ -85,9 +85,9 @@ function ConvertTo-GitHubNumber {
 
 function Test-IsRegressionLabel {
     # A label that marks a PR or issue as regression-related. `i/regression` is the
-    # definitive fix-PR signal; `regressed-in-<version>` is the issue-side signal.
+    # definitive fix-PR signal; `regressed-in-*` carries issue-side release context.
     param([string]$Label)
-    return $Label -match '^(i/regression|regressed-in-[0-9][0-9A-Za-z.\-]*)$'
+    return $Label -match '\A(?:i/regression|regressed-in-[0-9A-Za-z][0-9A-Za-z./\-]*)\z'
 }
 
 function Get-RegressedInLabels {
