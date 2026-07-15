@@ -2094,7 +2094,14 @@ stages:
                     # FAILED" and be wrongly reported as a compile break.
                     try {
                       $catEnvErr = if ($runResult) { "$($runResult.EnvErrorHit)" } else { '' }
-                      Set-Content -Path (Join-Path $catDir 'run-status.txt') -Value "ExitCode=$exitCode`r`nEnvError=$catEnvErr" -Encoding utf8 -ErrorAction SilentlyContinue
+                      # Full ordered env-error history across attempts (e.g.
+                      # "did not recover after crash-recovery attempts | did not
+                      # recover after crash-recovery attempts | timeout"). Lets the
+                      # Post stage tell a CRASH-DRIVEN timeout (the app kept
+                      # crashing → raising the budget won't help) from a genuinely
+                      # long-running one.
+                      $catEnvHist = if ($runResult -and $runResult.EnvErrorHistory) { (@($runResult.EnvErrorHistory) -join ' | ') } else { '' }
+                      Set-Content -Path (Join-Path $catDir 'run-status.txt') -Value "ExitCode=$exitCode`r`nEnvError=$catEnvErr`r`nEnvErrorHistory=$catEnvHist" -Encoding utf8 -ErrorAction SilentlyContinue
                     } catch { }
 
                     # Copy the specific TRX file from the result into the category dir
@@ -2485,6 +2492,7 @@ stages:
               # the surfaced message must be honest and NOT blame the author.
               $buildFailedCats = @()
               $timedOutCats = @()
+              $crashTimedOutCats = @()
               $crashedCats = @()
               $buildFailedSampleError = ''
               $buildFailedSampleFile = ''
@@ -2503,7 +2511,22 @@ stages:
                   if (Test-Path $statusFile) {
                     $statusText = Get-Content $statusFile -Raw -ErrorAction SilentlyContinue
                     if ($statusText -match 'ExitCode=124' -or $statusText -match '(?im)EnvError=timeout') {
-                      $timedOutCats += $cat
+                      # A timeout is one of two very different things:
+                      #  (a) a genuinely long-running category that needs more
+                      #      wall-clock — raising the budget helps; or
+                      #  (b) a CRASH-DRIVEN timeout: the app/emulator kept crashing
+                      #      (e.g. "did not recover after crash-recovery attempts"),
+                      #      each attempt burned its whole slice, and the last one
+                      #      hit the deadline — raising the budget just lets it spin
+                      #      longer. Distinguish via EnvErrorHistory: if ANY attempt
+                      #      failed with a non-'timeout' env error, it is crash-driven
+                      #      (observed on PR #36521's Brush: 2 crash-recovery failures
+                      #      then a final timeout, exit 124).
+                      $histLine = ''
+                      $hm = [regex]::Match($statusText, '(?im)^EnvErrorHistory=(.*)$')
+                      if ($hm.Success) { $histLine = $hm.Groups[1].Value.Trim() }
+                      $histTokens = @($histLine -split '\s*\|\s*' | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -ne 'timeout' })
+                      if ($histTokens.Count -gt 0) { $crashTimedOutCats += $cat } else { $timedOutCats += $cat }
                       continue
                     }
                   }
@@ -2558,10 +2581,13 @@ stages:
                   }
                 }
                 $buildFailedCats = @($buildFailedCats | Select-Object -Unique | Sort-Object)
-                $timedOutCats = @($timedOutCats | Select-Object -Unique | Sort-Object)
-                # A timeout takes precedence over the generic crash bucket so a
-                # category is never counted (or messaged) as both.
-                $crashedCats = @($crashedCats | Where-Object { $timedOutCats -notcontains $_ } | Select-Object -Unique | Sort-Object)
+                $crashTimedOutCats = @($crashTimedOutCats | Select-Object -Unique | Sort-Object)
+                # A crash-driven timeout is reported in its own bucket; make sure
+                # it is never also counted as a generic (long-running) timeout.
+                $timedOutCats = @($timedOutCats | Where-Object { $crashTimedOutCats -notcontains $_ } | Select-Object -Unique | Sort-Object)
+                # A timeout (of either kind) takes precedence over the generic
+                # crash bucket so a category is never counted (or messaged) twice.
+                $crashedCats = @($crashedCats | Where-Object { $timedOutCats -notcontains $_ -and $crashTimedOutCats -notcontains $_ } | Select-Object -Unique | Sort-Object)
               }
               $buildFailedNote = ''
               if ($buildFailedCats.Count -gt 0) {
@@ -2606,6 +2632,18 @@ stages:
                 $toList = '`' + ($timedOutCats -join '`, `') + '`'
                 $toCatText = if ($timedOutCats.Count -eq 1) { "1 category ($toList)" } else { "$($timedOutCats.Count) categories ($toList)" }
                 $timedOutNote = "The deep UI run for $toCatText **exceeded the per-category time budget** (a very long-running category or a slow build/deploy) and was stopped before finishing. This is an **infrastructure/timeout issue**, not a code problem; re-run the review, and if a category consistently needs more time the per-category budget can be raised (``DEEP_UITEST_CATEGORY_CAP_MIN`` / ``DEEP_UITEST_HARDSTOP_MIN``). See the ``build-output.log`` in the ``drop-deep-uitests`` artifact."
+              }
+
+              # A CRASH-DRIVEN timeout (exit 124, but the retry history shows the
+              # app kept crashing) is NOT a time shortfall — raising the budget
+              # would only let it spin longer. Report it distinctly from a genuine
+              # long-running timeout (observed on PR #36521's Brush category).
+              $crashTimedOutNote = ''
+              if ($crashTimedOutCats.Count -gt 0) {
+                Write-Host "Detected $($crashTimedOutCats.Count) crash-driven-timeout deep categor(y/ies) (app kept crashing until the budget ran out): $($crashTimedOutCats -join ', ')"
+                $ctList = '`' + ($crashTimedOutCats -join '`, `') + '`'
+                $ctCatText = if ($crashTimedOutCats.Count -eq 1) { "1 category ($ctList)" } else { "$($crashTimedOutCats.Count) categories ($ctList)" }
+                $crashTimedOutNote = "The deep UI run for $ctCatText hit the per-category time budget, but **because the app/emulator kept crashing** — each retry failed to recover from an app crash (e.g. ``did not recover after crash-recovery attempts``) and burned its whole slice until the deadline. This is an **app-stability/infrastructure issue, not a time shortfall**, so **raising the budget will not help** (it would just spin longer). Re-run the review to try again; if it recurs, check the ``build-output.log`` + logcat in the ``drop-deep-uitests`` artifact for the app-startup crash."
               }
 
               $crashedNote = ''
@@ -2921,6 +2959,12 @@ stages:
                 # silently dropped from the count.
                 $headerLine = "$headerLine " + $timedOutNote
               }
+              if ($crashTimedOutCats.Count -gt 0) {
+                # Some categories ran; others hit the budget only because the app
+                # kept crashing (crash-driven timeout). Append the honest note so
+                # the reader is not told to raise a budget that won't help.
+                $headerLine = "$headerLine " + $crashTimedOutNote
+              }
               if ($crashedCats.Count -gt 0) {
                 # Some categories ran; others started but produced no TRX because
                 # the app/test host crashed (NOT a timeout). Append the honest
@@ -2933,7 +2977,7 @@ stages:
               $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
               } # end if ($byCat.Count -gt 0)
 
-              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0)) {
+              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashTimedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0)) {
                 # No TRX anywhere (nothing produced results), but we DID detect
                 # compile failures, timeouts, and/or app-crash (built-OK-but-no-TRX)
                 # runs. Render an honest deep block explaining it instead of leaving
@@ -2943,6 +2987,7 @@ stages:
                 $noteParts = @()
                 if ($buildFailedCats.Count -gt 0) { $noteParts += $buildFailedNote }
                 if ($timedOutCats.Count -gt 0) { $noteParts += $timedOutNote }
+                if ($crashTimedOutCats.Count -gt 0) { $noteParts += $crashTimedOutNote }
                 if ($crashedCats.Count -gt 0) { $noteParts += $crashedNote }
                 $headerLine  = "⚠️ **Deep UI tests** — " + ($noteParts -join ' ')
                 $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + "$endMarker"

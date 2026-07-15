@@ -58,6 +58,9 @@
       ExitCode    : final attempt's $LASTEXITCODE
       Attempts    : number of attempts made
       EnvErrorHit : last env-error pattern matched (or $null if none)
+      EnvErrorHistory : ordered list of every attempt's env-error (lets a caller
+                    tell a crash-driven timeout — e.g. repeated app crashes then a
+                    final 'timeout' — from a genuinely long-running one)
       DeviceUdid  : the device UDID used (caller may want to share/reset)
 #>
 
@@ -358,6 +361,7 @@ $attempts = 0
 $lastOutput = @()
 $lastExit = -1
 $envHit = $null
+$envErrorHistory = [System.Collections.Generic.List[string]]::new()
 $overallDeadline = if ($TimeoutMinutes -gt 0) { (Get-Date).AddMinutes($TimeoutMinutes) } else { $null }
 $idleTimeoutSec  = if ($IdleTimeoutMinutes -gt 0) { $IdleTimeoutMinutes * 60 } else { 0 }
 
@@ -373,9 +377,21 @@ $livenessPaths = @($uiLogsDir, (Join-Path $uiLogsDir 'TestResults'))
 
 for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     $attempts = $attempt
+    # Record the PREVIOUS attempt's env-error before it is reset below, so the
+    # caller sees the full ORDERED history (e.g. two "did not recover after
+    # crash-recovery attempts" app-crashes followed by a final 'timeout') and
+    # not just the last one. This lets the deep classifier tell a crash-driven
+    # timeout (raising the budget won't help — the app keeps crashing) from a
+    # genuinely long-running one (where a bigger budget would).
+    if ($attempt -gt 1 -and $envHit) { [void]$envErrorHistory.Add($envHit) }
     if ($overallDeadline -and (Get-Date) -ge $overallDeadline) {
         Write-Host "##[warning]Category time budget ($TimeoutMinutes min) exhausted — stopping before attempt $attempt." -ForegroundColor Yellow
-        if (-not $envHit) { $envHit = 'timeout' }
+        # The terminal reason for stopping here is the budget/timeout. Set it
+        # unconditionally (the just-captured prior env-error is already in
+        # $envErrorHistory) so the final EnvErrorHit is 'timeout' and the
+        # post-loop capture below records 'timeout' — never a duplicate of the
+        # prior attempt's error.
+        $envHit = 'timeout'
         if ($lastExit -eq -1) { $lastExit = 124 }
         break
     }
@@ -478,6 +494,10 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     }
 }
 
+# Capture the FINAL attempt's env-error (the loop-top capture only records
+# prior attempts). Together these give the caller the full ordered history.
+if ($envHit) { [void]$envErrorHistory.Add($envHit) }
+
 # ── Normalize the captured output: PowerShell's `& cmd 2>&1` wraps multi-line
 #    stderr blocks as single ErrorRecord/string elements with embedded \n.
 #    The downstream Get-DotNetTestResults regex is anchored ^...$ (start/end
@@ -526,6 +546,7 @@ return @{
     ExitCode      = $lastExit
     Attempts      = $attempts
     EnvErrorHit   = $envHit
+    EnvErrorHistory = @($envErrorHistory)
     DeviceUdid    = $bootedUdid
     TrxResultFile = $trxResultFile
 }
