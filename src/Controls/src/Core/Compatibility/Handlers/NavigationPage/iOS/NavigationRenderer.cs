@@ -1424,6 +1424,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (child is not null)
 					{
 						RestoreLargeTitleSafeArea();
+						child.DescendantAdded -= HandleChildDescendantChanged;
+						child.DescendantRemoved -= HandleChildDescendantChanged;
 						child.PropertyChanged -= HandleChildPropertyChanged;
 					}
 
@@ -1431,6 +1433,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					{
 						_child = new(value);
 						value.PropertyChanged += HandleChildPropertyChanged;
+						if (NeedsLargeTitleSafeAreaTracking())
+						{
+							value.DescendantAdded += HandleChildDescendantChanged;
+							value.DescendantRemoved += HandleChildDescendantChanged;
+						}
 					}
 					else
 					{
@@ -1580,6 +1587,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Child is Page child)
 				{
 					child.SendDisappearing();
+					child.DescendantAdded -= HandleChildDescendantChanged;
+					child.DescendantRemoved -= HandleChildDescendantChanged;
 					child.PropertyChanged -= HandleChildPropertyChanged;
 					Child = null;
 				}
@@ -1672,6 +1681,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdateIconColor();
 				else if (e.PropertyName == ContentPage.ContentProperty.PropertyName)
 					UpdateLargeTitleSafeArea();
+			}
+
+			void HandleChildDescendantChanged(object sender, ElementEventArgs e)
+			{
+				UpdateLargeTitleSafeArea();
+			}
+
+			static bool NeedsLargeTitleSafeAreaTracking()
+			{
+				return OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
 			}
 
 			internal void SetupDefaultNavigationBarAppearance()
@@ -2216,7 +2235,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			bool ShouldExtendRootLayoutUnderNavigationBar(MauiLayout rootLayout)
 			{
-				if (!(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+				if (!NeedsLargeTitleSafeAreaTracking())
 					return false;
 
 				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))

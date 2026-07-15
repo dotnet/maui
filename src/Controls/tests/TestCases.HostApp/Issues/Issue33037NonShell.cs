@@ -34,6 +34,7 @@ public class Issue33037NonShellRootPage : ContentPage
 				CreateButton("Issue33037ScrollViewButton", "Direct ScrollView", () => new Issue33037NonShellScrollViewPage()),
 				CreateButton("Issue33037GridScrollViewButton", "Grid wrapping ScrollView", () => new Issue33037NonShellGridScrollViewPage()),
 				CreateButton("Issue33037ContentViewGridScrollViewButton", "ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellContentViewGridScrollViewPage()),
+				CreateButton("Issue33037DynamicContentViewGridScrollViewButton", "Late ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellDynamicContentViewGridScrollViewPage()),
 				CreateButton("Issue33037ListViewButton", "ListView", () => new Issue33037NonShellListViewPage()),
 				CreateButton("Issue33037CollectionViewButton", "CollectionView", () => new Issue33037NonShellCollectionViewPage())
 			}
@@ -154,6 +155,38 @@ class Issue33037NonShellContentViewGridScrollViewPage : Issue33037NonShellScenar
 						AutomationId = "Issue33037ContentViewGridScrollViewScroller",
 						Content = CreateStackContent("Issue33037Wrapped")
 					}
+				}
+			}
+		};
+	}
+}
+
+class Issue33037NonShellDynamicContentViewGridScrollViewPage : Issue33037NonShellScenarioPage
+{
+	readonly ContentView _contentView = new();
+	bool _contentCreated;
+
+	public Issue33037NonShellDynamicContentViewGridScrollViewPage() : base("Issue33037 Dynamic")
+	{
+		Content = _contentView;
+	}
+
+	protected override void OnAppearing()
+	{
+		base.OnAppearing();
+
+		if (_contentCreated)
+			return;
+
+		_contentCreated = true;
+		_contentView.Content = new Grid
+		{
+			Children =
+			{
+				new ScrollView
+				{
+					AutomationId = "Issue33037DynamicContentViewGridScrollViewScroller",
+					Content = CreateStackContent("Issue33037Dynamic")
 				}
 			}
 		};
