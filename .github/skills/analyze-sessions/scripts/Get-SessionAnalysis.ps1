@@ -59,6 +59,7 @@ param(
     [string]$OutputDir = (Join-Path (Get-Location) 'session-analysis-report'),
     [switch]$Json,                  # emit the machine-readable contract to stdout
     [switch]$NoRedact,              # opt OUT of redaction (default: redact)
+    [switch]$AllowDnxDownload,      # opt IN to the pinned dnx download fallback
     [string]$ReplayCommand          # override how dotnet-replay is invoked
 )
 
@@ -96,6 +97,7 @@ function Protect-Text {
     if ($NoRedact) { return $Text }
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
     $t = $Text
+    $t = [regex]::Replace($t, '(?i)\b((?:[A-Za-z0-9]+_)+(?:password|passwd|pwd|secret|token|apikey|api[_-]?key)(?:_[A-Za-z0-9]+)*)(\s*[=:]\s*)\S+', '$1$2<redacted>')
     $t = [regex]::Replace($t, '(?i)[A-Za-z]:\\Users\\[^\\\s"'']+', 'C:\Users\<user>')
     $t = [regex]::Replace($t, '(?i)\b(?:AKIA|ASIA)[A-Z0-9]{16}\b', '<token>')
     $t = [regex]::Replace($t, '(?i)\bxox[baprs]-[A-Za-z0-9-]{10,}\b', '<token>')
@@ -118,8 +120,9 @@ function Protect-Text {
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Resolve a dotnet-replay invoker. Prefer `replay` on PATH, then the global tool
-# location, then a pinned `dnx dotnet-replay`. Returns a scriptblock taking string args,
-# or $null if none is available (the raw scan then computes equivalent fields).
+# location, then an explicitly-enabled pinned `dnx dotnet-replay` download. Returns
+# a scriptblock taking string args, or $null if none is available (the raw scan then
+# computes equivalent fields without network access).
 # ─────────────────────────────────────────────────────────────────────────────
 function Resolve-ReplayInvoker {
     if ($ReplayCommand) {
@@ -136,7 +139,7 @@ function Resolve-ReplayInvoker {
     if ($cmd) { return { param($CmdArgs) & 'replay' @CmdArgs } }
     $toolPath = Join-Path $HOME '.dotnet/tools/replay'
     if (Test-Path $toolPath) { return { param($CmdArgs) & $toolPath @CmdArgs } }
-    if (Get-Command 'dnx' -ErrorAction SilentlyContinue) {
+    if ($AllowDnxDownload -and (Get-Command 'dnx' -ErrorAction SilentlyContinue)) {
         return { param($CmdArgs) & 'dnx' '--yes' 'dotnet-replay@0.9.1' @CmdArgs }
     }
     return $null

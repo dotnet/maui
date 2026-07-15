@@ -32,10 +32,10 @@ reader for Copilot CLI `events.jsonl` (also Claude Code sessions and `waza` eval
 transcripts). It is the **normalization layer** — we wrap it rather than maintain
 our own JSONL parser.
 
-- Zero-install: `dnx --yes dotnet-replay@0.9.1 …`. Or `dotnet tool install -g
-  dotnet-replay` → `replay …`. The core uses the pinned fallback when it resolves
-  a download itself. A preinstalled tool or `-ReplayCommand` is intentionally
-  caller-controlled.
+- Zero-install (explicit opt-in): `dnx --yes dotnet-replay@0.9.1 …`. Or `dotnet
+  tool install -g dotnet-replay` → `replay …`. The core uses the pinned download
+  fallback only with `-AllowDnxDownload`; a preinstalled tool or
+  `-ReplayCommand` is intentionally caller-controlled.
 - **Primary extraction:** `replay <events.jsonl> --summary --json` → clean
   per-session stats: `duration_seconds`, turn counts (`user`/`assistant`/
   `tool_calls`), a `tools_used` histogram, `skills_invoked`, and `errors`.
@@ -133,7 +133,9 @@ code — CI reuse is unaffected because any job can shell out to the core's CLI.
 ## Privacy model (enforced + documented)
 
 - **Local-only by default.** The core reads `~/.copilot/...` and writes a report
-  to `-OutputDir`. It has **no** network egress and **no** share flag.
+  to `-OutputDir`. It has **no** network egress, automatic downloads, or share
+  flag. `-AllowDnxDownload` is explicit opt-in for the pinned public tool
+  download and never uploads session data.
 - **No exfiltration.** It NEVER opens a gist, NEVER POSTs a transcript, and NEVER
   ships session data to a third-party endpoint — including the judge step.
 - **Redaction on by default.** Home paths → `~`, tokens (`ghp_`/`gho_`/`Bearer`/

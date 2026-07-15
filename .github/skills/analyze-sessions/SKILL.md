@@ -15,7 +15,7 @@ description: >-
 metadata:
   author: dotnet-maui
   version: "1.0"
-compatibility: Requires pwsh 7+, sqlite3, and dotnet-replay (auto-resolved with pinned dnx v0.9.1 fallback)
+compatibility: Requires pwsh 7+, sqlite3, and dotnet-replay (optional pinned dnx v0.9.1 download fallback)
 ---
 
 # Analyze Sessions
@@ -80,6 +80,7 @@ local DB select entirely. See `references/design-rationale.md`.
 | Since | No | — | ISO date; `updated_at >= Since` |
 | Top K | No | `5` | How many worst sessions get full digests |
 | Events path/dir | No | — | CI front door (`-EventsPath` / `-EventsDir`) |
+| Allow dnx download | No | `false` | Explicitly permit the pinned `dnx` fallback to download `dotnet-replay` |
 
 ## Outputs
 
@@ -120,11 +121,11 @@ pwsh -NoProfile -File .github/skills/analyze-sessions/scripts/Get-SessionAnalysi
   -EventsDir ./downloaded-sessions -Top 8 -Json
 ```
 
-> `dotnet-replay` is resolved automatically: if `replay` is on `PATH` it's used,
-> otherwise the core falls back to `dnx --yes dotnet-replay@0.9.1`. Override with
-> `-ReplayCommand` if needed.
-> A preinstalled `replay` command or explicit `-ReplayCommand` remains under the
-> caller's version control; only the automatic download fallback is pinned.
+> `dotnet-replay` is resolved automatically only from a preinstalled `replay`
+> command or an explicit `-ReplayCommand`. To opt into the pinned
+> `dnx --yes dotnet-replay@0.9.1` download fallback, pass `-AllowDnxDownload`;
+> otherwise the core uses its local raw scan. A preinstalled command or explicit
+> override remains under the caller's version control.
 
 **Scoring (transparent, in the core's `$Weights`):** higher = more pain/cost.
 `2·tool_failures + 1.5·retries + 5·(errors+aborts) + 3·truncations +
@@ -213,11 +214,14 @@ stimuli:
       End your response with exactly one line: `<TOKEN>: <value>`
     graders:
       - type: output-matches
-        pattern: '<TOKEN>:\s*<expected>'
+        config:
+          pattern: '<TOKEN>:\s*<expected>'
       - type: prompt
-        scoring: scale_1_5
-        rubric:
-          - <what a correct, non-regressing answer must do>
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - <what a correct, non-regressing answer must do>
 scoring:
   threshold: 0.6
 ```
@@ -231,7 +235,9 @@ npx -y @microsoft/vally-cli@0.6.0 lint --eval-spec <path-to-eval> --strict
 ## Privacy & safety
 
 - **Local-only by default.** The core reads `~/.copilot/...` and writes to
-  `-OutputDir`. It has **no** network egress and **no** share flag.
+  `-OutputDir`. It has **no** network egress, automatic downloads, or share flag.
+  `-AllowDnxDownload` is an explicit opt-in that permits only the pinned public
+  tool download; it never uploads session data.
 - **Redaction is on by default.** Home paths → `~`, tokens (`ghp_`/`gho_`/
   `Bearer`/`password=`/`key=`), and emails are stripped from the report **and**
   must stay stripped in any emitted eval. `-NoRedact` exists only for local

@@ -95,7 +95,7 @@ stimuli:
       max_duration: 5m
 
   # ───────────────────────────────────────────────────────────────────────
-  # S2 — Capability. Turn a redacted worst-session digest into a ranked
+  # S2 — Capability. Turn redacted worst-session digests into a ranked
   # finding + a concrete, real-file proposal + intent to emit a guard-eval.
   # ───────────────────────────────────────────────────────────────────────
   - name: digest-to-proposal-and-eval
@@ -103,8 +103,8 @@ stimuli:
       kind: workflow
     prompt: |
       You are using the .NET MAUI `analyze-sessions` skill. The deterministic core
-      has already run and produced this REDACTED digest of the worst-scoring
-      session (do not try to open any other files — work only from this digest):
+      has already run and produced these REDACTED digests of the worst-scoring
+      sessions (do not try to open any other files — work only from these digests):
 
       ---
       ### #1 · session `befbd872` · score 421.3
@@ -131,10 +131,29 @@ stimuli:
 
       **Intent flow:** Exploring codebase → Running build → Pushing branch →
       Retrying push → Pushing branch → Retrying push → Fixing edit conflict
+
+      ### #2 · session `ac32f184` · score 213.8
+
+      | metric | value |
+      |---|---|
+      | model | claude-opus-4.8 |
+      | tool calls | 1290 |
+      | tool failures (rate) | 12 (0.9%) |
+      | retries (repeated bash/edit) | 4 |
+      | errors / aborts | 0 / 1 |
+      | truncations / compactions | 9 |
+      | output tokens | 812441 |
+
+      **Failed tool calls (first 3):**
+      - turn `201` — `bash` failed (git push rejected: authentication required)
+      - turn `314` — `bash` failed (git push rejected: authentication required)
+      - turn `455` — `bash` failed (git push rejected: authentication required)
+
+      **Intent flow:** Inspecting diff → Pushing branch → Retrying push → Retrying push
       ---
 
-      Do the judge → cluster → propose → emit-eval phases for THIS session only.
-      Identify the dominant recurring failure mode, cite the exact turns, write a
+      Do the judge → cluster → propose → emit-eval phases across these sessions.
+      Identify the dominant recurring failure mode, cite exact turns from both, write a
       concrete proposal using the learn-from-pr taxonomy (Category / Priority /
       Location / Specific Change / Why It Helps) that names a REAL repository file
       to edit, and state the guard-eval you would emit and where it would live.
@@ -159,7 +178,8 @@ stimuli:
         The agent identifies the dominant failure mode from the evidence —
         repeated failed `git push` (authentication-required) retries, i.e. a
         repeated-failure / poor-recovery pattern — and cites the specific
-        turns (e.g. 812 / 1340 / 1602) rather than describing it vaguely.
+        turns from both sessions (e.g. 812 / 1340 / 1602 and 201 / 314 / 455)
+        rather than describing it vaguely.
       - >-
         The proposal follows the learn-from-pr taxonomy and names a REAL,
         plausible repository target — e.g. a .github/instructions/*.md file or a
