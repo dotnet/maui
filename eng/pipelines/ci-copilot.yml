@@ -1988,21 +1988,25 @@ stages:
           # Trusted gate verdict from the Gate task (frozen pre-agent). Passed to the post script
           # so the APPROVE veto does not trust the agent-writable gate-result.txt in the artifact.
           trustedGateResult: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.gateResult'] ]
-          # Built-in stage RESULT of the deep stage — populated (Succeeded/
-          # SucceededWithIssues/Failed/Skipped) and frozen before this job inits
-          # (this stage dependsOn RunDeepUITests). Used to skip the deep-artifact
-          # download cleanly when deep was Skipped (see the download task below).
-          # ⚠️ At JOB scope this MUST use stageDependencies (cross-stage context),
-          # NOT dependencies (which resolves SAME-STAGE jobs). With the wrong
-          # `dependencies.RunDeepUITests.result` the value silently resolved to
-          # EMPTY, so the download condition's in() was ALWAYS false → the deep
-          # artifact was NEVER downloaded → the aggregator saw no categories → the
-          # summary falsely reported "No UI test results were produced" even when
-          # deep ran fine and published its artifact. Regression observed on build
-          # 14651727 / PR #36564: the Label deep category ran 18 min and published
-          # drop-ios_ui_tests-controls-Label, yet the summary claimed no results.
-          # (The other two vars above already correctly use stageDependencies.)
-          runDeepUITestsResult: $[ stageDependencies.RunDeepUITests.result ]
+          # Categories the deep stage would run — the SAME coalesce the
+          # RunDeepUITests stage condition uses (RunReview refined, else RunGate).
+          # We gate the deep-artifact download on THIS (below), not on the deep
+          # stage RESULT, because the cross-stage stage RESULT is unreliable here.
+          # ⚠️ HISTORY: the download used to gate on the deep stage's own result.
+          #   1) `dependencies.RunDeepUITests.result` resolved EMPTY (wrong scope) →
+          #      an in()-allowlist was always false → artifact NEVER downloaded →
+          #      summary falsely said "No UI test results were produced" even when
+          #      deep ran (build 14651727 / PR #36564: Label ran 18 min, published).
+          #   2) Switching to `stageDependencies.RunDeepUITests.result` fixed #36564
+          #      but STILL mis-resolved: on build 14652616 / PR #35156 (9 categories
+          #      ran + published drop-deep-uitests) the value came back 'Skipped',
+          #      so `ne(...,'Skipped')` was false → download skipped → same false
+          #      "no results" warning. The conditionally-run deep stage's RESULT is
+          #      simply not dependable across the stage boundary.
+          # ReviewPR ALWAYS runs, so its detectedCategories output IS reliable, and
+          # it is the exact signal the deep stage itself gates on — download when
+          # (and only when) the deep stage actually ran and published an artifact.
+          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories']) ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -2041,32 +2045,33 @@ stages:
               buildType: 'current'
               artifactName: 'drop-deep-uitests'
               targetPath: '$(Pipeline.Workspace)/drop-deep-uitests'
-            # Only attempt the download when the deep stage actually RAN and thus
-            # published the artifact. When RunDeepUITests was Skipped the artifact
-            # never exists, and an unconditional download fails — with
-            # continueOnError that failure surfaces as succeededWithIssues, turning
-            # a fully healthy gate-passed/deep-skipped build YELLOW
-            # (partiallySucceeded). We gate on the built-in STAGE RESULT
-            # (stageDependencies.RunDeepUITests.result via the runDeepUITestsResult
-            # job var — stageDependencies because this is a JOB-scoped var reaching
-            # a sibling STAGE), which is populated and frozen before this job inits
-            # (this stage dependsOn RunDeepUITests) — unlike the earlier
-            # deepTestsRan OUTPUT variable, which was empty/undefined when the deep
-            # job was skipped and made $[ in() ] unreliable. The downstream render
-            # step Test-Paths the artDir and posts the summary WITHOUT a deep block
-            # when it is absent, so skipping the download is behaviourally
-            # identical minus the yellow. continueOnError stays as
-            # defense-in-depth for the rare case where deep ran but publish failed.
+            # Download the deep-test artifact when — and only when — the deep stage
+            # actually ran and published it. We MIRROR the RunDeepUITests stage's
+            # OWN run condition (categories present and not NONE/ALL), reading the
+            # same reliable ReviewPR `detectedCategories` output via the
+            # $(detectedCategories) job var above. ReviewPR always runs, so that
+            # output is dependable across the stage boundary.
             #
-            # DEFENSIVE by design: we skip the download ONLY when the deep stage is
-            # DEFINITIVELY 'Skipped'. For every other value (Succeeded / *WithIssues
-            # / Failed / Canceled / or — should the var ever resolve empty again —
-            # unknown) we DO download, erring toward SHOWING results. Hiding real
-            # results (the 14651727/#36564 regression, where an empty var made an
-            # in()-allowlist silently false) is far worse than a cosmetic yellow on
-            # the rare skipped-but-mis-resolved edge; continueOnError absorbs a
-            # missing artifact in that case.
-            condition: and(succeeded(), ne(variables['runDeepUITestsResult'], 'Skipped'))
+            # Do NOT gate this on the deep stage's RESULT: that cross-stage value is
+            # unreliable and has hidden real results twice —
+            #   • empty via `dependencies.RunDeepUITests.result` (14651727/#36564), and
+            #   • spuriously 'Skipped' via `stageDependencies.RunDeepUITests.result`
+            #     (14652616/#35156: 9 categories ran + published, yet the summary
+            #     said "No UI test results were produced").
+            # Gating on the input categories instead avoids both: it is true exactly
+            # when the deep stage ran, so healthy deep results are always downloaded,
+            # and a genuinely-skipped deep stage (no/NONE/ALL categories) skips the
+            # download cleanly — no spurious YELLOW. continueOnError stays as
+            # defense-in-depth for the rare case where deep ran but publish failed;
+            # the renderer Test-Paths the artDir and posts a review-only summary when
+            # the artifact is absent.
+            condition: >-
+              and(
+                succeeded(),
+                ne(variables['detectedCategories'], ''),
+                ne(variables['detectedCategories'], 'NONE'),
+                ne(variables['detectedCategories'], 'ALL')
+              )
             continueOnError: true
 
           # ── AI analysis of deep UI test failures (PR-related vs unrelated) ──
