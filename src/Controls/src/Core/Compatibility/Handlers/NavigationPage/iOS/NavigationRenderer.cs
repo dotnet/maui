@@ -1397,6 +1397,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			WeakReference<Page> _child;
 			WeakReference<MauiLayout> _largeTitleSafeAreaRootLayout;
 			bool _largeTitleSafeAreaApplied;
+			bool _updatingLargeTitleSafeArea;
 			static readonly SafeAreaEdges LargeTitleRootLayoutSafeAreaEdges = new(SafeAreaRegions.Container, SafeAreaRegions.None, SafeAreaRegions.Container, SafeAreaRegions.Container);
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
@@ -1685,12 +1686,38 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void HandleChildDescendantChanged(object sender, ElementEventArgs e)
 			{
+				if (!CanAffectLargeTitleSafeArea(e.Element))
+					return;
+
 				UpdateLargeTitleSafeArea();
 			}
 
 			static bool NeedsLargeTitleSafeAreaTracking()
 			{
 				return OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
+			}
+
+			static bool CanAffectLargeTitleSafeArea(Element element)
+			{
+				if (element is null || HasScrollableAncestor(element))
+					return false;
+
+#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
+				return element is MauiLayout or IContentView or ScrollView or ListView or ItemsView;
+#pragma warning restore CS0618
+			}
+
+			static bool HasScrollableAncestor(Element element)
+			{
+				for (var parent = element.RealParent; parent is not null; parent = parent.RealParent)
+				{
+#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
+					if (parent is ScrollView or ListView or ItemsView)
+						return true;
+#pragma warning restore CS0618
+				}
+
+				return false;
 			}
 
 			internal void SetupDefaultNavigationBarAppearance()
@@ -2166,6 +2193,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void UpdateLargeTitleSafeArea()
 			{
+				if (_updatingLargeTitleSafeArea)
+					return;
+
+				_updatingLargeTitleSafeArea = true;
+				try
+				{
+					UpdateLargeTitleSafeAreaCore();
+				}
+				finally
+				{
+					_updatingLargeTitleSafeArea = false;
+				}
+			}
+
+			void UpdateLargeTitleSafeAreaCore()
+			{
 				var rootLayout = GetRootLayout();
 
 				if (!IsTrackedRootLayout(rootLayout))
@@ -2180,26 +2223,71 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
+				TrackLargeTitleSafeAreaRootLayout(rootLayout);
+
+				if (HasUserSafeAreaEdges(rootLayout))
+				{
+					ClearLargeTitleSafeAreaOverride(rootLayout);
+					return;
+				}
+
+				if (_largeTitleSafeAreaApplied && rootLayout.SafeAreaEdges != LargeTitleRootLayoutSafeAreaEdges)
+					_largeTitleSafeAreaApplied = false;
+
 				if (!_largeTitleSafeAreaApplied)
 				{
 					rootLayout.SetValueFromRenderer(MauiLayout.SafeAreaEdgesProperty, LargeTitleRootLayoutSafeAreaEdges);
 					InvalidateSafeArea(rootLayout);
+					_largeTitleSafeAreaApplied = true;
 				}
-
-				_largeTitleSafeAreaRootLayout = new(rootLayout);
-				_largeTitleSafeAreaApplied = true;
 			}
 
 			void RestoreLargeTitleSafeArea()
 			{
 				if (_largeTitleSafeAreaRootLayout?.TryGetTarget(out var rootLayout) == true)
 				{
-					rootLayout.ClearValue(MauiLayout.SafeAreaEdgesProperty, SetterSpecificity.FromHandler);
-					InvalidateSafeArea(rootLayout);
+					rootLayout.PropertyChanged -= HandleLargeTitleRootLayoutPropertyChanged;
+					ClearLargeTitleSafeAreaOverride(rootLayout);
 				}
 
 				_largeTitleSafeAreaRootLayout = null;
 				_largeTitleSafeAreaApplied = false;
+			}
+
+			void TrackLargeTitleSafeAreaRootLayout(MauiLayout rootLayout)
+			{
+				if (IsTrackedRootLayout(rootLayout))
+					return;
+
+				rootLayout.PropertyChanged += HandleLargeTitleRootLayoutPropertyChanged;
+				_largeTitleSafeAreaRootLayout = new(rootLayout);
+			}
+
+			void ClearLargeTitleSafeAreaOverride(MauiLayout rootLayout)
+			{
+				if (!_largeTitleSafeAreaApplied)
+					return;
+
+				rootLayout.ClearValue(MauiLayout.SafeAreaEdgesProperty, SetterSpecificity.FromHandler);
+				InvalidateSafeArea(rootLayout);
+				_largeTitleSafeAreaApplied = false;
+			}
+
+			void HandleLargeTitleRootLayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == MauiLayout.SafeAreaEdgesProperty.PropertyName)
+					UpdateLargeTitleSafeArea();
+			}
+
+			bool HasUserSafeAreaEdges(MauiLayout rootLayout)
+			{
+				if (rootLayout is not ISafeAreaView2 safeAreaView || !safeAreaView.HasExplicitSafeAreaEdges)
+					return false;
+
+				if (_largeTitleSafeAreaApplied && rootLayout.SafeAreaEdges == LargeTitleRootLayoutSafeAreaEdges)
+					return false;
+
+				return true;
 			}
 
 			bool IsTrackedRootLayout(MauiLayout rootLayout)
@@ -2248,9 +2336,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return false;
 
 				if (rootLayout is not ISafeAreaView2 safeAreaView)
-					return false;
-
-				if (!_largeTitleSafeAreaApplied && safeAreaView.HasExplicitSafeAreaEdges)
 					return false;
 
 				if (!HasScrollableContent(rootLayout))
