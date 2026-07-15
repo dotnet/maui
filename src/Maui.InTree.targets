@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectCapability Include="MauiRepository" />
-    <ProjectCapability Include="MauiRepositorySampleProject" Contition="'$(SampleProject)' == 'true'" />
+    <ProjectCapability Include="MauiRepositorySampleProject" Condition="'$(SampleProject)' == 'true'" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -19,7 +19,7 @@
     <_MauiBuildTasksTargetsReady Condition="Exists('$(_MauiCoreBuildTasksTargets)') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Core.After.targets') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">true</_MauiBuildTasksTargetsReady>
   </PropertyGroup>
 
-  <ImportGroup Condition="'$(_MauiBuildTasksTargetsReady)' == 'true'">
+  <ImportGroup Condition="'$(_MauiBuildTasksPropsReady)' == 'true' and '$(_MauiBuildTasksTargetsReady)' == 'true'">
 
     <!-- Microsoft.Maui.Core.targets -->
     <Import Project="$(_MauiCoreBuildTasksTargets)" />

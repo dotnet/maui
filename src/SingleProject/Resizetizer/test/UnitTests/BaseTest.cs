@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		{
 			file = Path.Combine(DestinationDirectory, file);
 			using var bitmap = SKBitmap.Decode(file);
+			Assert.NotNull(bitmap);
 			return bitmap.Pixels.ToArray();
 		}
 

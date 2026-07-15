@@ -55,7 +55,10 @@ namespace Microsoft.Maui.Resizetizer
 				var cvn = surface.Canvas;
 
 				cvn.Clear(SKColors.Transparent);
-				cvn.DrawPicture(svg.Picture);
+				if (Quality == ResizeQuality.Auto)
+					cvn.DrawPicture(svg.Picture, Paint);
+				else
+					cvn.DrawPicture(svg.Picture);
 
 				// convert it all into an image
 				using var img = surface.Snapshot();
