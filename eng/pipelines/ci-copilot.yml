@@ -306,11 +306,23 @@ stages:
           #  then RunDetect (this early fallback).
           # ─────────────────────────────────────────────────────────
           - pwsh: |
-              $detect = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "detect-ui-test-categories.ps1"
-              if (-not (Test-Path $detect)) {
-                Write-Host "##[warning]detect-ui-test-categories.ps1 not found at $detect — Deep will fall back to RunGate detection"
+              # Prefer the TRUSTED copy captured from the pipeline branch (improved-reviewer)
+              # by 'Resolve PR base branch' BEFORE it switches the worktree to the PR's base
+              # branch. This step runs AFTER that switch, so reading the script from the
+              # worktree ($(System.DefaultWorkingDirectory)) would execute the BASE branch's
+              # OLDER detect-ui-test-categories.ps1 — missing newer category mappings / the
+              # smoke-set fallback — and emit a stale result. (Build 14665002: worktree was at
+              # origin/net11.0 HEAD 7f139ed4 (#36288); RunDetect wrongly emitted 'ALL' from the
+              # base-branch script instead of the mapped 'Animation'.) Fall back to the worktree
+              # copy only if the trusted capture is unavailable (e.g. base-branch resolve failed).
+              $trusted = Join-Path "$(Build.ArtifactStagingDirectory)" "trusted-github" "eng-scripts" "detect-ui-test-categories.ps1"
+              $local   = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "detect-ui-test-categories.ps1"
+              $detect  = if (Test-Path $trusted) { $trusted } elseif (Test-Path $local) { $local } else { $null }
+              if (-not $detect) {
+                Write-Host "##[warning]detect-ui-test-categories.ps1 not found (trusted=$trusted, local=$local) — Deep will fall back to RunGate detection"
                 return
               }
+              Write-Host "RunDetect using script: $detect"
               $cats = ""
               $out = & pwsh -NoProfile -File $detect -PrNumber "$env:PARAM_PR_NUMBER" 2>&1
               $out | ForEach-Object { Write-Host "  $_" }
