@@ -1189,10 +1189,17 @@ function Get-BuildErrorsFromLog {
 
         $message = ([string]$line).Trim()
         $platform = Get-PlatformFromText -Text "$RecordName $message"
+        # Crash/OOM signatures (native-crash, test-host-crash, unhandled-exception, no-space-left) are
+        # NONDETERMINISTIC: a green base sample does not prove the PR caused them. Only deterministic
+        # compile/toolchain breaks (coded MSBuild/C# errors, 'Failed to load assembly', CrossGen/R2R)
+        # reproduce build-to-build, so only THOSE may later take the single-green-base regression
+        # shortcut; crashes stay subject to MinBaseGreenSamples.
+        $isDeterministicBuildBreak = ($signature -notin @('native-crash', 'unhandled-exception', 'test-host-crash', 'no-space-left'))
         $failures.Add([ordered]@{
             testName = "$RecordName - $signature"
             platform = $platform
             source = "azdo-build-error"
+            deterministicBuildError = $isDeterministicBuildBreak
             logId = $LogId
             recordName = $RecordName
             errorFingerprint = $fingerprint
@@ -1211,6 +1218,7 @@ function Get-BuildErrorsFromLog {
             testName = "$RecordName - build error"
             platform = $platform
             source = "azdo-build-error"
+            deterministicBuildError = $false
             logId = $LogId
             recordName = $RecordName
             errorFingerprint = Get-ErrorFingerprint -Text $fallbackErrorLine
@@ -2670,7 +2678,12 @@ foreach ($buildRef in $buildRefsById.Values) {
     if ($build.definition -and $build.definition.id) {
         $definitionId = [int]$build.definition.id
     }
-    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildRef.org -Project $buildRef.project -DefinitionId $definitionId -BaseBranch $pr.baseRefName -Top $LookbackBuilds)
+    # Fetch enough recent base builds to satisfy BOTH the baseline lookback AND the regression-diff
+    # sampling window: RegressionBaseBuilds only trims an already-fetched list, so fetching just
+    # $LookbackBuilds would silently cap the leg diff (e.g. -RegressionBaseBuilds 10 with the default
+    # -LookbackBuilds 5 could sample at most 5 and miss a base failure in an omitted build).
+    $baseFetchTop = [Math]::Max($LookbackBuilds, $RegressionBaseBuilds)
+    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildRef.org -Project $buildRef.project -DefinitionId $definitionId -BaseBranch $pr.baseRefName -Top $baseFetchTop)
 
     $builds.Add($buildSummary)
 }
@@ -2729,7 +2742,11 @@ if ($BaselineBuildsPerDefinition -gt 0) {
         # can tell a real regression from a base-branch flake. $baseRecordMapCache memoizes
         # each build's single-build timeline map so PR builds sharing a base window don't
         # re-fetch it (and so the tip build fetched here is reused below).
-        $legSampleBuilds = @($completed | Select-Object -First $RegressionBaseBuilds)
+        # Exclude canceled base builds from the regression-diff window: a canceled build has an
+        # incomplete timeline, so its missing legs count as neither green nor red and can make a leg
+        # look "all-green on base" -> a false regressed-vs-base signal. (The most-recent-tip baseline
+        # above is unaffected: it only early-returns on result -eq 'succeeded'.)
+        $legSampleBuilds = @($completed | Where-Object { $_.result -ne 'canceled' } | Select-Object -First $RegressionBaseBuilds)
         $baseAgg = Get-AggregatedBaseLegMap -Org $build.org -Project $build.project -BaseBuilds $legSampleBuilds -Cache $baseRecordMapCache
         if ($baseAgg.accessible) {
             $prBuildToBaseMap[[string]$build.id] = [ordered]@{
@@ -3024,8 +3041,12 @@ foreach ($failure in $dedupedFailures) {
                 $legBaselineResult = 'flaky-on-base'
             }
         }
-        elseif ($green -ge 1) {
-            # Green on every sampled base build (failedCount == 0). Candidate regression -- but
+        elseif ($green -ge 1 -and -not $legAlsoFails) {
+            # Green on every sampled base build (failedCount == 0) AND no earlier occurrence saw this
+            # leg red on base. The `-not $legAlsoFails` guard makes the result order-independent: once
+            # ANY occurrence observed the leg red on base, a later green occurrence can no longer
+            # downgrade legBaselineResult to succeeded-on-base or re-arm legRegressed.
+            # Candidate regression -- but
             # only CONFIRM it with enough base samples. A single green base build cannot
             # distinguish a real regression from a UI test that merely happened to pass its one
             # sampled base run; requiring several green base builds (MinBaseGreenSamples) removes
@@ -3034,7 +3055,12 @@ foreach ($failure in $dedupedFailures) {
             $legBaselineResult = 'succeeded-on-base'
             $legSource = [string](Get-ObjectValue -Object $occ -Names @("source"))
             $eligible = (((-not $baseInfo.isDeviceTests) -or ($legSource -eq 'azdo-build-error')) -and (-not $isInfraProvisioning))
-            $requiredGreen = if ($legSource -eq 'azdo-build-error') { 1 } else { $MinBaseGreenSamples }
+            $legIsDeterministicBuild = [bool](Get-ObjectValue -Object $occ -Names @("deterministicBuildError"))
+            # Only a DETERMINISTIC compile/toolchain break earns the single-green-base shortcut. A
+            # crash/OOM also carries source 'azdo-build-error' but is flaky, so it stays subject to
+            # MinBaseGreenSamples -- one lucky green base sample must not flip a flaky device-test crash
+            # to 'regressed-vs-base'.
+            $requiredGreen = if ($legSource -eq 'azdo-build-error' -and $legIsDeterministicBuild) { 1 } else { $MinBaseGreenSamples }
             if ($eligible -and $green -ge $requiredGreen) {
                 $legRegressed = $true
             }
@@ -3047,24 +3073,30 @@ foreach ($failure in $dedupedFailures) {
         }
     }
     # Cross-leg conflict veto: a failure that regressed cleanly in ONE leg (green across base)
-    # but was flaky on base in ANOTHER leg (flaky-on-base: red on some sampled base builds) is
-    # NOT a trustworthy deterministic regression. The same failure text landing on a leg that is
-    # demonstrably flaky on base means the PR-red occurrence is most likely that same
-    # nondeterministic flake sprayed onto a different leg -- not a PR break. Suppress the
+    # but was ALSO red on base in ANOTHER leg (or in an earlier occurrence of the same leg) is
+    # NOT a trustworthy deterministic regression. Firing on $legAlsoFails (not just the flaky
+    # $legInconclusive) also closes the iteration-order hole where a later green occurrence set
+    # legRegressed=true after an earlier occurrence already saw the leg red on base. The same
+    # failure text landing on a leg that is red on base means the PR-red occurrence is most likely
+    # that same nondeterministic flake sprayed onto a different leg -- not a PR break. Suppress the
     # clean-regression claim and defer to a human (-> indeterminate / NHI). This never yields a
     # false green (the failure still forbids 'Ready to merge' via the indeterminate path); it
     # only stops over-claiming "regressed vs base" on flaky/environmental failures (e.g. an
     # Android 'platform-tools' provisioning flake that sprays across several legs at once).
-    if ($legInconclusive -and $legRegressed) {
+    # ($legInconclusive implies $legAlsoFails, so this subsumes the old flaky-only veto.)
+    if ($legAlsoFails -and $legRegressed) {
         $legRegressed = $false
-        $legBaselineResult = 'flaky-on-base'
+        $legBaselineResult = if ($legInconclusive) { 'flaky-on-base' } else { 'failed-on-base' }
     }
     $failure['legBaselineResult'] = $legBaselineResult
     $failure['legRegressedVsBase'] = [bool]$legRegressed
     $failure['legAlsoFailsOnBase'] = [bool]$legAlsoFails
-    # Base-sampling evidence for the report: how many recent base builds were read, and on how
-    # many the failing leg was green vs red. A confident 'regressed-vs-base' should show
-    # baseGreenCount >= MinBaseGreenSamples and baseFailedCount == 0.
+    # Base-sampling evidence for the report. baseSampleCount = how many recent base builds were read.
+    # baseGreenCount / baseFailedCount are the PER-LEG MAXIMA across this failure's occurrences (so on
+    # a multi-leg failure they may come from different legs and need not sum to baseSampleCount); the
+    # report labels them "per-leg max" for that reason. A confident 'regressed-vs-base' comes from a
+    # single clean leg, where the maxima equal that leg's counts: baseGreenCount >= MinBaseGreenSamples
+    # and baseFailedCount == 0 (any red on base trips the $legAlsoFails veto above).
     $failure['baseSampleCount'] = [int]$baseSampleCount
     $failure['baseGreenCount'] = [int]$baseGreenCount
     $failure['baseFailedCount'] = [int]$baseFailedCount
@@ -3661,9 +3693,9 @@ else {
             $tag = if ($failure.ciScanDemoted) { " ⤵︎demoted" } else { "" }
             "[#$($failure.matchesCiScan.number)]($($failure.matchesCiScan.url)) ($($failure.matchesCiScan.class)/$($failure.matchesCiScan.matchKind))$tag"
         } else { "no" }
-        $legLabel = if ($failure.legRegressedVsBase) { "REGRESSED" } elseif ($failure.legAlsoFailsOnBase) { "also-red" } elseif ($failure.legBaselineResult) { [string]$failure.legBaselineResult } else { "-" }
+        $legLabel = if ($failure.legRegressedVsBase) { "REGRESSED" } elseif ([string]$failure.legBaselineResult -eq 'flaky-on-base') { "flaky-on-base" } elseif ($failure.legAlsoFailsOnBase) { "also-red" } elseif ($failure.legBaselineResult) { [string]$failure.legBaselineResult } else { "-" }
         $legCell = if ([int]$failure.baseSampleCount -gt 0) {
-            "$legLabel (base green $([int]$failure.baseGreenCount), red $([int]$failure.baseFailedCount), sampled $([int]$failure.baseSampleCount))"
+            "$legLabel (per-leg max green $([int]$failure.baseGreenCount), max red $([int]$failure.baseFailedCount) across $([int]$failure.baseSampleCount) sampled base builds)"
         } else { $legLabel }
         $attrCell = if ($failure.deterministicAttribution) { [string]$failure.deterministicAttribution } else { "indeterminate" }
         $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $baseFlag | $legCell | $attrCell | $retryFlag | $knownIssueCell | $ciScanCell | $messages |")
