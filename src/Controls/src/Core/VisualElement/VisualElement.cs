@@ -316,6 +316,7 @@ namespace Microsoft.Maui.Controls
 			_clipProxy?.Unsubscribe();
 			_backgroundProxy?.Unsubscribe();
 			_shadowProxy?.Unsubscribe();
+			_resourcesChangedProxy?.Unsubscribe();
 		}
 
 		void NotifyBackgroundChanges()
@@ -1163,6 +1164,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		ResourceDictionary _resources;
+		WeakResourcesChangedProxy _resourcesChangedProxy;
+		EventHandler<ResourcesChangedEventArgs> _resourcesChangedHandler;
+
+		void SubscribeResourcesChanged(IResourceDictionary resources)
+		{
+			_resourcesChangedProxy ??= new WeakResourcesChangedProxy();
+			// The proxy stores the handler weakly, so keep the delegate alive with the element.
+			_resourcesChangedProxy.Subscribe(resources, _resourcesChangedHandler ??= OnResourcesChanged);
+		}
+
+		void UnsubscribeResourcesChanged() => _resourcesChangedProxy?.Unsubscribe();
+
 		bool IResourcesProvider.IsResourcesCreated => _resources != null;
 
 		/// <summary>
@@ -1180,7 +1193,7 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					return _resources;
 				_resources = new ResourceDictionary();
-				((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
+				SubscribeResourcesChanged(_resources);
 				return _resources;
 			}
 			set
@@ -1189,11 +1202,11 @@ namespace Microsoft.Maui.Controls
 					return;
 				OnPropertyChanging();
 				if (_resources != null)
-					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
+					UnsubscribeResourcesChanged();
 				_resources = value;
 				OnResourcesChanged(value);
 				if (_resources != null)
-					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
+					SubscribeResourcesChanged(_resources);
 				OnPropertyChanged();
 			}
 		}

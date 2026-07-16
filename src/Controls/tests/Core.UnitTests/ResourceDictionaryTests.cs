@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Xunit;
@@ -621,6 +622,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			rd0.Add("foo", "Foo");
 			Assert.Equal("Foo", label.Text);
+		}
+
+		[Fact]
+		public async Task SharedResourcesAssignedToResourcesDoesNotLeakElement()
+		{
+			// A single, long-lived/shared ResourceDictionary instance assigned directly to a
+			// transient element's Resources must not keep that element alive after it is dropped.
+			// VisualElement subscribed its OnResourcesChanged handler to the shared dictionary's
+			// non-weak ValuesChanged event, which rooted the element for the shared dictionary's lifetime.
+			var sharedResources = new ResourceDictionary { { "Key", "Value" } };
+
+			WeakReference weakElement;
+			{
+				var element = new ContentView
+				{
+					Resources = sharedResources,
+				};
+				weakElement = new WeakReference(element);
+			}
+
+			Assert.False(await weakElement.WaitForCollect(), "ContentView should not be alive!");
+			GC.KeepAlive(sharedResources);
 		}
 	}
 }
