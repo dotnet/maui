@@ -51,16 +51,6 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-#if ANDROID
-			// Ensure the Material3 EntryHandler2 uses its own MapText overload so
-			// it updates PlatformView.EditText rather than the legacy EditText view.
-			if (handler is EntryHandler2 handler2)
-			{
-				MapText(handler2, entry);
-				return;
-			}
-#endif
-
 			MapText(handler, entry);
 		}
 	}
