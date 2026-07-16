@@ -111,7 +111,10 @@ public class BlazorTemplateTest : BaseTemplateTests
 		const string templateShortName = "maui-blazor-web";
 
 		var projectDir = TestDirectory;
-		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: projectDir, framework: DotNetCurrent, output: _output),
+		// Pin the interactivity platform (Server) so the test stays focused on the *location*
+		// behavior and is robust if the template's default platform ever changes. The per-page
+		// location itself is intentionally left to the template default (which this PR guards).
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: projectDir, framework: DotNetCurrent, additionalDotNetNewParams: "--interactivity Server", output: _output),
 			$"Unable to create {templateShortName}. Check test output for errors.");
 
 		var name = Path.GetFileName(projectDir);
@@ -137,7 +140,9 @@ public class BlazorTemplateTest : BaseTemplateTests
 		const string templateShortName = "maui-blazor-web";
 
 		var projectDir = TestDirectory;
-		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: projectDir, framework: DotNetCurrent, additionalDotNetNewParams: "--all-interactive", output: _output),
+		// Pin the interactivity platform (Server) alongside --all-interactive so the test stays
+		// focused on the *location* behavior and is robust to future default-platform changes.
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: projectDir, framework: DotNetCurrent, additionalDotNetNewParams: "--interactivity Server --all-interactive", output: _output),
 			$"Unable to create {templateShortName} with --all-interactive. Check test output for errors.");
 
 		var name = Path.GetFileName(projectDir);
