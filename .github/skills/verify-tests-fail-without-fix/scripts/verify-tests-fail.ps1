@@ -464,10 +464,20 @@ function Invoke-TestRun {
                 New-Item -ItemType Directory -Force -Path $testOutputDir | Out-Null
             }
 
+            # The gate recompiles the MAUI product (Controls.Core, ...) FROM SOURCE via the
+            # test project's P2P references, which re-runs the PublicAPI analyzer under the
+            # repo-wide TreatWarningsAsErrors=true. A leak-fix PR that adds a finalizer (e.g.
+            # #36605 ~SwipeView()) can surface RS0016/RS0017 as a build-breaking ERROR during
+            # the revert→build→restore→build cycle even though the PR's own maui-pr build (a
+            # REQUIRED check that separately enforces PublicAPI bookkeeping) is green — a false
+            # FAILED. The gate verifies TEST BEHAVIOR, not API bookkeeping, so drop
+            # warnings-as-errors here (matches Build-AndDeploy.ps1's deep-stage rationale).
+            # Genuine CS-level compile ERRORS still fail the build.
             $testArgs = @(
                 "test", $projectPath,
                 "--configuration", "Debug",
-                "--logger", "console;verbosity=normal"
+                "--logger", "console;verbosity=normal",
+                "-p:TreatWarningsAsErrors=false"
             )
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
@@ -502,10 +512,14 @@ function Invoke-TestRun {
                 New-Item -ItemType Directory -Force -Path $testOutputDir | Out-Null
             }
 
+            # Drop warnings-as-errors so the product recompile's PublicAPI analyzer
+            # bookkeeping (RS0016/RS0017 on a PR-added finalizer/public symbol) can't
+            # false-FAIL the gate — see the XAML block above and Build-AndDeploy.ps1.
             $testArgs = @(
                 "test", $projectPath,
                 "--configuration", "Debug",
-                "--logger", "console;verbosity=normal"
+                "--logger", "console;verbosity=normal",
+                "-p:TreatWarningsAsErrors=false"
             )
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
@@ -2537,11 +2551,11 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
     $rsan = ($retryEntry.TestName -replace '[^a-zA-Z0-9_\-\.]', '_'); if ($rsan.Length -gt 60) { $rsan = $rsan.Substring(0, 60) }
     $cleanLog = Join-Path $OutputPath "test-with-fix-cleanrebuild-$rsan.log"
     $rsw = [System.Diagnostics.Stopwatch]::StartNew()
-    $buildOut = Invoke-WithoutGhTokens { & dotnet build $projFull -c Debug -t:Rebuild 2>&1 }
+    $buildOut = Invoke-WithoutGhTokens { & dotnet build $projFull -c Debug -t:Rebuild -p:TreatWarningsAsErrors=false 2>&1 }
     $buildExit = $LASTEXITCODE
     $combined = @($buildOut)
     if ($buildExit -eq 0) {
-        $testOut = Invoke-WithoutGhTokens { & dotnet test $projFull -c Debug --logger "console;verbosity=normal" --filter $retryEntry.Filter 2>&1 }
+        $testOut = Invoke-WithoutGhTokens { & dotnet test $projFull -c Debug --logger "console;verbosity=normal" -p:TreatWarningsAsErrors=false --filter $retryEntry.Filter 2>&1 }
         $combined += @($testOut)
     }
     $combined | Out-File -FilePath $cleanLog -Force -Encoding utf8
