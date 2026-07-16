@@ -215,18 +215,12 @@ namespace Microsoft.Maui.Platform
 					return error;
 				}
 
-				try
-				{
-					Handler.MessageReceived(messageBody);
-				}
-				catch (Exception ex)
-				{
-					// ShouldInterceptRequest runs on a native WebView thread; letting an exception
-					// unwind across the JNI boundary crashes the app (and breaks in the debugger).
-					// Log it and return an error response instead.
-					logger?.LogError(ex, "SendMessage handler threw while processing a JS -> .NET message.");
-					return new WebResourceResponse(null, "UTF-8", 500, "Internal Server Error", null, new MemoryStream());
-				}
+				// Do not wrap this in a try/catch. MessageReceived raises the app-facing message
+				// handlers (e.g. RawMessageReceived); an exception thrown by app code must be allowed
+				// to propagate rather than be swallowed, matching how MAUI treats event handlers such
+				// as Button.Click. Developers who want to handle these exceptions can catch them in
+				// their own handler.
+				Handler.MessageReceived(messageBody);
 
 				return new WebResourceResponse(null, "UTF-8", 204, "No Content", null, new MemoryStream());
 			}
