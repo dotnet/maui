@@ -391,6 +391,9 @@ static class SetPropertyHelpers
 			// Transform quotes with semantic context
 			var transformedCode = CSharpExpressionHelpers.TransformQuotesWithSemantics(
 				expression.Code, context.Compilation, context.RootType);
+			// CS8622: the generated += line does a method-group / lambda conversion to a delegate whose
+			// parameters have nullability annotations the user cannot control (e.g. EventHandler's `object? sender`).
+			using (PrePost.NewDisableWarning(writer, "CS8622"))
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
 			{
 				writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += {transformedCode};");
@@ -427,6 +430,9 @@ static class SetPropertyHelpers
 			writer = icWriter;
 			parentVar = inflatorVar;
 		}
+		// CS8622: the generated += line does a method-group conversion to a delegate whose
+		// parameters have nullability annotations the user cannot control (e.g. EventHandler's `object? sender`).
+		using (PrePost.NewDisableWarning(writer, "CS8622"))
 		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
 		{
 			writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += {handler};");
