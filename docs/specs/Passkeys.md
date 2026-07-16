@@ -146,31 +146,15 @@ public interface IPasskeys
 }
 
 /// <summary>
-/// Opaque carrier for a WebAuthn JSON payload. The underlying JSON is always available via
-/// <see cref="Json"/> (or <see cref="ToString"/>); strongly-typed fields are exposed selectively
-/// through extension methods rather than fully decoding the schema. This keeps the type stable as
-/// the WebAuthn spec evolves — unknown/new fields simply flow through the JSON untouched.
-/// See spec §6.3 for the naming rationale (the WebAuthn `...JSON` serialization types).
-/// </summary>
-public abstract class PasskeyJsonObject
-{
-    private protected PasskeyJsonObject(string json) =>
-        Json = json ?? throw new ArgumentNullException(nameof(json));
-
-    /// <summary>The raw underlying WebAuthn JSON.</summary>
-    public string Json { get; }
-
-    /// <summary>Returns the raw underlying WebAuthn JSON (same as <see cref="Json"/>).</summary>
-    public override string ToString() => Json;
-}
-
-/// <summary>
 /// The relying party's <c>PublicKeyCredentialCreationOptions</c>, for <see cref="IPasskeys.CreateAsync"/>.
 /// </summary>
-public sealed class PasskeyCreationOptions : PasskeyJsonObject
+public sealed class PasskeyCreationOptions
 {
     /// <param name="creationOptionsJson">The server's <c>PublicKeyCredentialCreationOptions</c> JSON.</param>
-    public PasskeyCreationOptions(string creationOptionsJson) : base(creationOptionsJson) { }
+    public PasskeyCreationOptions(string creationOptionsJson) =>
+        _json = creationOptionsJson ?? throw new ArgumentNullException(nameof(creationOptionsJson));
+
+    readonly string _json;
 
     /// <summary>
     /// When <see langword="true"/>, only offer credentials already available on-device without a
@@ -178,38 +162,74 @@ public sealed class PasskeyCreationOptions : PasskeyJsonObject
     /// where unsupported. (App-side behavior knob — not part of the server JSON.)
     /// </summary>
     public bool PreferImmediatelyAvailable { get; set; }
+
+    /// <summary>Returns the underlying <c>PublicKeyCredentialCreationOptions</c> JSON.</summary>
+    public override string ToString() => _json;
 }
 
 /// <summary>
 /// The relying party's <c>PublicKeyCredentialRequestOptions</c>, for <see cref="IPasskeys.AssertAsync"/>.
 /// </summary>
-public sealed class PasskeyRequestOptions : PasskeyJsonObject
+public sealed class PasskeyRequestOptions
 {
     /// <param name="requestOptionsJson">The server's <c>PublicKeyCredentialRequestOptions</c> JSON.</param>
-    public PasskeyRequestOptions(string requestOptionsJson) : base(requestOptionsJson) { }
+    public PasskeyRequestOptions(string requestOptionsJson) =>
+        _json = requestOptionsJson ?? throw new ArgumentNullException(nameof(requestOptionsJson));
+
+    readonly string _json;
 
     /// <inheritdoc cref="PasskeyCreationOptions.PreferImmediatelyAvailable"/>
     public bool PreferImmediatelyAvailable { get; set; }
+
+    /// <summary>Returns the underlying <c>PublicKeyCredentialRequestOptions</c> JSON.</summary>
+    public override string ToString() => _json;
 }
 
 /// <summary>
-/// Result of a passkey registration. <see cref="PasskeyJsonObject.Json"/> is the full WebAuthn
-/// registration response (shape of <c>PublicKeyCredential</c> with an
-/// <c>AuthenticatorAttestationResponse</c>) — POST it to the RP server to finish registration.
+/// Result of a passkey registration. <see cref="ToString"/> returns the full WebAuthn registration
+/// response (shape of <c>PublicKeyCredential</c> with an <c>AuthenticatorAttestationResponse</c>) —
+/// POST it to the RP server to finish registration. A couple of commonly-needed fields are decoded
+/// and cached as properties; everything else stays in the JSON for the server to verify.
 /// </summary>
-public sealed class PasskeyCreationResponse : PasskeyJsonObject
+public sealed class PasskeyCreationResponse
 {
-    internal PasskeyCreationResponse(string registrationResponseJson) : base(registrationResponseJson) { }
+    internal PasskeyCreationResponse(string registrationResponseJson) { /* parses lazily; caches */ }
+
+    /// <summary>
+    /// The credential id (base64url), i.e. the WebAuthn <c>PublicKeyCredential.id</c>. This is the
+    /// single, primary identifier of the created passkey; store it to look the credential up later.
+    /// </summary>
+    public string Id { get; }
+
+    /// <summary>Returns the full WebAuthn registration response JSON.</summary>
+    public override string ToString();
 }
 
 /// <summary>
-/// Result of a passkey authentication. <see cref="PasskeyJsonObject.Json"/> is the full WebAuthn
-/// authentication response (shape of <c>PublicKeyCredential</c> with an
-/// <c>AuthenticatorAssertionResponse</c>) — POST it to the RP server to finish sign-in.
+/// Result of a passkey authentication. <see cref="ToString"/> returns the full WebAuthn authentication
+/// response (shape of <c>PublicKeyCredential</c> with an <c>AuthenticatorAssertionResponse</c>) —
+/// POST it to the RP server to finish sign-in. A couple of commonly-needed fields are decoded and
+/// cached as properties; everything else stays in the JSON for the server to verify.
 /// </summary>
-public sealed class PasskeyAssertionResponse : PasskeyJsonObject
+public sealed class PasskeyAssertionResponse
 {
-    internal PasskeyAssertionResponse(string authenticationResponseJson) : base(authenticationResponseJson) { }
+    internal PasskeyAssertionResponse(string authenticationResponseJson) { /* parses lazily; caches */ }
+
+    /// <summary>
+    /// The credential id (base64url), i.e. the WebAuthn <c>PublicKeyCredential.id</c> — identifies which
+    /// passkey was used.
+    /// </summary>
+    public string Id { get; }
+
+    /// <summary>
+    /// The user handle (base64url) the RP set as <c>user.id</c> at registration, i.e. the WebAuthn
+    /// <c>response.userHandle</c>. Present for discoverable-credential ("username-less") sign-in; may be
+    /// <see langword="null"/> when the authenticator does not return one.
+    /// </summary>
+    public string? UserHandle { get; }
+
+    /// <summary>Returns the full WebAuthn authentication response JSON.</summary>
+    public override string ToString();
 }
 
 /// <summary>Static facade, mirroring <see cref="WebAuthenticator"/>.</summary>
@@ -223,50 +243,29 @@ public static class Passkeys
     public static Task<PasskeyAssertionResponse> AssertAsync(PasskeyRequestOptions options, CancellationToken cancellationToken = default)
         => Default.AssertAsync(options, cancellationToken);
 
+    // Convenience string overloads on the facade (construct the options object from raw server JSON).
+    public static Task<PasskeyCreationResponse> CreateAsync(string creationOptionsJson, CancellationToken cancellationToken = default)
+        => Default.CreateAsync(new PasskeyCreationOptions(creationOptionsJson), cancellationToken);
+
+    public static Task<PasskeyAssertionResponse> AssertAsync(string requestOptionsJson, CancellationToken cancellationToken = default)
+        => Default.AssertAsync(new PasskeyRequestOptions(requestOptionsJson), cancellationToken);
+
     static IPasskeys? defaultImplementation;
     public static IPasskeys Default => defaultImplementation ??= new PasskeysImplementation();
     internal static void SetDefault(IPasskeys? implementation) => defaultImplementation = implementation;
 }
 ```
 
-#### Extension methods (selective strongly-typed access)
+**On the response properties (the 80/20).** Rather than extension methods, the two or three fields most
+apps actually read on-device are exposed as **real, cached properties** directly on the response types.
+Everything else (attestation object, authenticator data, signature, client-data JSON) stays inside the
+JSON returned by `ToString()` — those are consumed by the RP server, not the client. The responses parse
+their JSON lazily on first property access and cache the results.
 
-Rather than decoding the entire WebAuthn schema onto the types, a small set of extension methods pull out
-the handful of fields apps commonly need on-device. Everything else stays in `Json` for the server. This
-set is deliberately small and can grow based on feedback.
-
-```csharp
-public static class PasskeysExtensions
-{
-    // --- Convenience string overloads (construct the opaque options from raw JSON) ---
-    public static Task<PasskeyCreationResponse> CreateAsync(this IPasskeys passkeys, string creationOptionsJson, CancellationToken ct = default)
-        => passkeys.CreateAsync(new PasskeyCreationOptions(creationOptionsJson), ct);
-
-    public static Task<PasskeyAssertionResponse> AssertAsync(this IPasskeys passkeys, string requestOptionsJson, CancellationToken ct = default)
-        => passkeys.AssertAsync(new PasskeyRequestOptions(requestOptionsJson), ct);
-
-    // --- A couple of decoded fields on the responses (not the whole schema) ---
-
-    /// <summary>The base64url credential id (<c>id</c>) of the created/used passkey.</summary>
-    public static string GetId(this PasskeyCreationResponse response);
-    public static string GetId(this PasskeyAssertionResponse response);
-
-    /// <summary>The credential id decoded to bytes (<c>rawId</c>).</summary>
-    public static byte[] GetRawId(this PasskeyCreationResponse response);
-    public static byte[] GetRawId(this PasskeyAssertionResponse response);
-
-    /// <summary>
-    /// The user handle returned by the assertion (<c>response.userHandle</c>), i.e. the RP's user id,
-    /// or <see langword="null"/> when the authenticator did not return one.
-    /// </summary>
-    public static byte[]? GetUserHandle(this PasskeyAssertionResponse response);
-}
-```
-
-> Only three extraction helpers are proposed for v1 (`GetId`, `GetRawId`, `GetUserHandle`) — the fields
-> most often needed client-side. Attestation object, authenticator data, signature, and client-data JSON
-> remain accessible through `response.Json` (they're what the server verifies anyway). See Open Question
-> #4 for which helpers, if any, are worth including.
+- **`Id` (both responses)** — the credential id, base64url. See §6.3 for why it's `Id` (matches the W3C
+  JSON member `id`) and not `CredentialId`, and why raw bytes are deferred.
+- **`UserHandle` (assertion only)** — base64url, nullable; the RP's `user.id`, useful for username-less
+  sign-in.
 
 ### 5.1 Usage examples
 
@@ -290,8 +289,11 @@ string creationOptionsJson = await httpClient.GetStringAsync("/passkey/register/
 PasskeyCreationResponse created = await Passkeys.CreateAsync(creationOptionsJson);
 
 // 3. Send the raw response JSON back to the server to verify + store the public key.
-//    `created.Json` (or created.ToString()) is the full WebAuthn registration response.
-await httpClient.PostAsJsonAsync("/passkey/register/finish", created.Json);
+//    `created.ToString()` is the full WebAuthn registration response JSON.
+await httpClient.PostAsJsonAsync("/passkey/register/finish", created.ToString());
+
+// Optional: store the credential id so you can reference this passkey later.
+string credentialId = created.Id;   // base64url
 ```
 
 #### Login (authenticating with a passkey)
@@ -314,38 +316,41 @@ string requestOptionsJson = await httpClient.GetStringAsync("/passkey/login/begi
 PasskeyAssertionResponse asserted = await Passkeys.AssertAsync(requestOptionsJson);
 
 // 3. Send the raw response JSON back to the server to verify the signature and finish sign-in.
-await httpClient.PostAsJsonAsync("/passkey/login/finish", asserted.Json);
+await httpClient.PostAsJsonAsync("/passkey/login/finish", asserted.ToString());
 
-// Optional: a couple of decoded fields are available client-side via extension methods.
-string credentialId = asserted.GetId();          // base64url credential id
-byte[]? userHandle = asserted.GetUserHandle();   // the RP's user id, if returned
+// Optional: a couple of commonly-needed fields are available directly as (cached) properties.
+string credentialId = asserted.Id;          // base64url — which passkey was used
+string? userHandle = asserted.UserHandle;   // base64url RP user id, if returned
 ```
 
 ## 6. Design decisions
 
-### 6.1 Why JSON in / JSON out (wrapped in opaque objects)
+### 6.1 Why JSON in / JSON out
 - **Zero translation on Android** — Credential Manager consumes/produces exactly this JSON.
 - **1:1 with server libraries** — Fido2NetLib etc. already emit `CreationOptions`/`RequestOptions` JSON
   and consume the response JSON. No impedance mismatch.
-- **Smallest public surface** — two options types + two response types, all sharing the
-  `PasskeyJsonObject` base.
+- **Smallest public surface** — two options types + two response types.
 - **Forward-compatible** — new WebAuthn fields (e.g. `hints`, PRF extension) require no API change; they
   flow through the JSON. On Apple/Windows we map the subset the OS supports and ignore the rest.
 
-### 6.2 Opaque objects + selective extensions (not raw strings, not a full typed model)
-The payloads are wrapped in **opaque objects** (`PasskeyJsonObject` with `Json` / `ToString()`) rather
-than passed as bare `string`s. This is the deliberate middle ground:
+### 6.2 Thin wrapper types (not raw strings, not a full typed model)
+Each payload is a small dedicated type whose **`ToString()` returns the underlying WebAuthn JSON** — there
+is deliberately **no shared base class** and **no `Json` property**; the JSON is simply what the object
+stringifies to. This is the middle ground:
 
-- **vs. raw strings:** stronger typing (can't accidentally pass a request where a response is expected),
-  a natural home for app-side behavior knobs (e.g. `PreferImmediatelyAvailable`), and a discoverable
-  surface for the extension helpers — while still exposing the underlying JSON verbatim.
+- **vs. raw strings:** stronger typing (can't pass a request where a response is expected, or an options
+  object where a response goes), and a natural home for the app-side behavior knob
+  (`PreferImmediatelyAvailable`) and the decoded properties — while still surfacing the JSON verbatim via
+  `ToString()`.
 - **vs. a fully-typed WebAuthn model:** a complete model (`Rp`, `User`, `PubKeyCredParams`,
   `AllowCredentials`, `AuthenticatorSelection`, extensions…) is a **large** public surface that must
   track ongoing WebAuthn spec churn, still needs JSON serialization for Android, and duplicates types in
-  server libraries. Instead we decode **only a couple** of high-value fields via extension methods
-  (`GetId`, `GetRawId`, `GetUserHandle`); everything else stays in `Json`.
-- Typed builders/decoders for more fields can be added later as extension methods **without breaking**
-  the core API — the opaque object is the stable anchor.
+  server libraries.
+- **Decoded fields are real, cached properties — not extension methods, and not the whole schema.** We
+  start with the 80/20 the client actually reads (`Id`, and `UserHandle` on the assertion) as ordinary
+  properties. No `PasskeysExtensions` class ships initially; more fields (or the raw bytes) can be added
+  as **new properties/methods later without breaking** the core API. Responses parse their JSON lazily and
+  cache the decoded values.
 
 ### 6.3 Naming decisions
 
@@ -374,25 +379,40 @@ is called "JSON"** — not "payload", not "request"/"response body". That direct
 | `PasskeyRequestOptions` | [`PublicKeyCredentialRequestOptionsJSON`](https://w3c.github.io/webauthn/#dictdef-publickeycredentialrequestoptionsjson) | Authentication **input** → "request options". Matches W3C "request options" and Android's `GetPublicKeyCredentialOption(requestJson)`. (WebAuthn overloads "request" to mean the *get* options — hence `RequestOptions`, not `AssertionOptions`.) |
 | `PasskeyCreationResponse` | [`RegistrationResponseJSON`](https://w3c.github.io/webauthn/#dictdef-registrationresponsejson) | Registration **output**. W3C/Android both call this the "registration response". |
 | `PasskeyAssertionResponse` | [`AuthenticationResponseJSON`](https://w3c.github.io/webauthn/#dictdef-authenticationresponsejson) | Authentication **output**. W3C JSON type is "authentication response"; the underlying object is `AuthenticatorAssertionResponse` and Apple calls it an *assertion*. See Open Question #5 on `Assertion` vs `Authentication`. |
-| `.Json` property (+ `ToString()`) | `...JSON` suffix / Android `...Json` members | The raw serialized value. Named `Json` to match the W3C `JSON` suffix and Android's `requestJson`/`registrationResponseJson` members exactly. |
+| `ToString()` (each type) | `...JSON` suffix / Android `...Json` members | Returns the raw serialized value. There is no separate `Json` property or shared base — the object simply stringifies to its WebAuthn JSON. (The W3C `JSON` suffix / Android `requestJson` naming is why the JSON is the object's canonical string form.) |
+| `Id` (both responses) | [`PublicKeyCredential.id`](https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-id) | The credential id, base64url. See "Id naming" below. |
+| `UserHandle` (assertion) | [`AuthenticatorAssertionResponse.userHandle`](https://www.w3.org/TR/webauthn-3/#dom-authenticatorassertionresponse-userhandle) → JSON [`userHandle`](https://w3c.github.io/webauthn/#dom-authenticationresponsejson) | "User handle" is the W3C term of art (the RP's `user.id`). `string?` base64url, nullable. Apple exposes it as `UserId`; we prefer the W3C name. |
 | `Passkeys` / `IPasskeys` | — | User-facing term everyone uses ([FIDO Alliance "passkeys"](https://fidoalliance.org/passkeys/)), rather than the spec-internal `WebAuthn`/`PublicKeyCredential` or the older `FIDO2`. |
 | `CreateAsync` | `navigator.credentials.create()` | W3C registration verb is *create*; Android is `createCredential`. |
 | `AssertAsync` | `navigator.credentials.get()` | W3C authentication verb is *get*, but a bare `GetAsync` is meaningless here and collides with the many `Get*` APIs; the ceremony's output is an [*assertion*](https://www.w3.org/TR/webauthn-3/#authentication-assertion), so `Assert` is precise. See Open Question #5. |
 
-**Base type — decision:** the shared abstract base is named **`PasskeyJsonObject`**. There is no W3C term
-for an *abstract* base (browsers just pass `string`/`object`), so this is a descriptive .NET name whose
-role is "an opaque object that carries a WebAuthn JSON serialization." It anchors on `Json` (the industry
-suffix) and reads naturally with the `.Json` property and `ToString()` override.
+**No shared base type — decision.** Earlier drafts had an abstract `PasskeyJsonObject` base. It's dropped:
+there is no W3C concept for it, and its only job (hold + stringify JSON) is fully served by a `ToString()`
+override on each concrete type. Each of the four types is small and self-contained, which also keeps the
+public surface honest (an options type and a response type genuinely have nothing in common but "wraps
+JSON"). "Payload" was considered and rejected — WebAuthn/Android never use it, and it would blur the
+options-vs-response distinction the spec makes explicit.
 
-- **Why not `...Payload`?** "Payload" is generic transport jargon; WebAuthn/Android never use it for
-  these values. It would obscure the options-vs-response distinction that the spec makes explicit.
-- **Why not name the concrete types `...Json` (e.g. `PasskeyCreationOptionsJson`)?** The `Json` suffix on
-  the *type* is a W3C serialization-marker that only makes sense next to the non-JSON variants
-  (`PublicKeyCredentialCreationOptions` vs `...OptionsJSON`). MAUI only ships the JSON-backed form, so the
-  suffix would be redundant noise; we surface `Json` on the **member** instead.
-- **Open point:** .NET Framework Design Guidelines mildly discourage an `Object` suffix. `PasskeyJsonObject`
-  is proposed for clarity, but is flagged in Open Question #7 in case reviewers prefer an alternative
-  (e.g. `PasskeyJson`).
+**`Id` naming — decision.** In WebAuthn the value is the [**Credential ID**](https://www.w3.org/TR/webauthn-3/#credential-id):
+a probabilistically-unique byte sequence that identifies the public key credential. It surfaces on
+`PublicKeyCredential` in two forms of the *same* value —
+[`id`](https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-id) (base64url string) and
+[`rawId`](https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-rawid) (the bytes). So "credential"
+does carry meaning, **but within a single passkey response there is exactly one identifier and it is the
+primary one.** We therefore expose it as **`Id`** (`string`, base64url):
+
+- Matches the W3C/Android JSON member name `id` verbatim — the exact token the customer sees in the
+  payload and stores in their DB, so comparisons are direct.
+- Unambiguous in context (a `PasskeyAssertionResponse.Id` can only be the credential id).
+- Shortest correct name. Apple's binding calls the byte form `CredentialId`; `CredentialId` is offered as
+  the alternative in Open Question #7 for reviewers who prefer the explicit term.
+
+**Raw id bytes — decision (defer).** `rawId` is the same Credential ID as bytes. Credential IDs are
+[spec-capped at 1023 bytes](https://www.w3.org/TR/webauthn-3/#credential-id) but for passkeys are typically
+small (~16–64 bytes). We **do not** expose them in v1: the base64url `Id` is what apps forward and compare,
+and the full `rawId` remains in the `ToString()` JSON. If demand appears, the .NET guideline against
+array-typed properties argues for a **method** (`byte[] GetRawId()`) rather than a `byte[] RawId` property;
+tracked in Open Question #7.
 
 ### 6.4 Placement
 - Lives in Essentials alongside `WebAuthenticator`, namespace `Microsoft.Maui.Authentication`.
@@ -434,7 +454,7 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
 
   ```csharp
   var manager = CredentialManager.Create(Platform.CurrentActivity!);
-  var request = new CreatePublicKeyCredentialRequest(options.Json);
+  var request = new CreatePublicKeyCredentialRequest(options.ToString());
   var response = (CreatePublicKeyCredentialResponse)await manager.CreateCredentialAsync(
       Platform.CurrentActivity!, request /*, cancellationSignal, executor */);
   var registrationResponseJson = response.RegistrationResponseJson;
@@ -626,20 +646,19 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
    flows within the single call?
 3. **Conditional UI / autofill** passkey sign-in (Android `preferImmediatelyAvailable`, iOS
    `ASAuthorizationController.performAutoFillAssistedRequests`, Windows silent) — v1 or follow-up?
-4. **Extraction helpers**: the current proposal wraps payloads in opaque `PasskeyJsonObject`s (raw JSON via
-   `Json`/`ToString()`) plus **three** decode helpers (`GetId`, `GetRawId`, `GetUserHandle`). Are those the
-   right ones? Should we add/remove any (e.g. `GetClientDataJson`, `GetTransports`), or ship with **none**
-   and let callers parse `Json` themselves?
-5. **Method naming**: `AssertAsync` vs `GetAsync` vs `AuthenticateAsync` (the last collides
+4. **Decoded properties (the 80/20)**: v1 exposes the raw JSON via `ToString()` plus `Id` (both
+   responses) and `UserHandle` (assertion) as cached properties. Is that the right minimal set? Candidates
+   to add later as **properties/methods** (not extension methods): raw id bytes (`byte[] GetRawId()`),
+   `AuthenticatorAttachment`, transports, client-data JSON. Anything here that's 80/20 enough for v1?
+5. **Method / response naming**: `AssertAsync` vs `GetAsync` vs `AuthenticateAsync` (the last collides
    conceptually with `WebAuthenticator.AuthenticateAsync`). Relatedly, `PasskeyAssertionResponse` vs
-   `PasskeyAuthenticationResponse` (W3C JSON type is `AuthenticationResponseJSON`, but Apple/`Authenticator­
-   AssertionResponse` use "assertion").
+   `PasskeyAuthenticationResponse` (W3C JSON type is `AuthenticationResponseJSON`, but Apple and
+   `AuthenticatorAssertionResponse` use "assertion").
 6. **BlazorWebView bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)): should we also ship
    a JS-interop shim so `navigator.credentials` in BlazorWebView routes to this native API? Likely a
    separate proposal, but worth acknowledging.
-7. **Base type name**: is `PasskeyJsonObject` the right name for the shared opaque base (see §6.3), or
-   would reviewers prefer `PasskeyJson` (avoids the `Object` suffix the .NET design guidelines mildly
-   discourage) or dropping the public base entirely and repeating `Json`/`ToString()` on each type?
+7. **`Id` naming**: keep `Id` (matches the W3C JSON `id` member) or use the explicit `CredentialId`
+   (matches Apple's binding and the "Credential ID" term of art)? See §6.3.
 
 ## 13. References
 - W3C WebAuthn Level 3 — https://www.w3.org/TR/webauthn-3/
