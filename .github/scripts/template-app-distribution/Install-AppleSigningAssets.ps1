@@ -57,7 +57,7 @@ function Get-VariantProvisioningProfile([string]$VariantName) {
         return $env:IOS_PROVISIONING_PROFILE_BASE64
     }
 
-    throw "No Apple provisioning profile was provided for variant '$VariantName' on '$Platform'. Set APPLE_PROVISIONING_PROFILES_JSON or APPLE_PROVISIONING_PROFILE_BASE64."
+    throw "No Apple provisioning profile was provided for variant '$VariantName' on '$Platform'. Set APPLE_PROVISIONING_PROFILES_JSON or APPLE_PROVISIONING_PROFILE_BASE64 (or the IOS_PROVISIONING_PROFILES_JSON / IOS_PROVISIONING_PROFILE_BASE64 fallbacks)."
 }
 
 function Write-Base64File([string]$Base64Value, [string]$Path) {
