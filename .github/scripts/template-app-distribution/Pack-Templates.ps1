@@ -33,9 +33,15 @@ $env:NUGET_PACKAGES = $NuGetPackages
 
 Write-Host "Building MAUI templates from $templatesProject"
 dotnet build -t:Rebuild $templatesProject -p:PackageVersion=$PackageVersion -p:GenerateCgManifest=false
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet build of the MAUI templates failed with exit code $LASTEXITCODE."
+}
 
 Write-Host "Packing MAUI templates with PackageVersion=$PackageVersion"
 dotnet pack $templatesProject -p:PackageVersion=$PackageVersion -p:GenerateCgManifest=false -o $OutputPath
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet pack of the MAUI templates failed with exit code $LASTEXITCODE."
+}
 
 $package = Get-ChildItem -Path $OutputPath -Filter "*.nupkg" -Recurse |
     Sort-Object LastWriteTimeUtc -Descending |

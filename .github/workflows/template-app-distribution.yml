@@ -351,7 +351,7 @@ jobs:
             -CreateBinlog
 
       - name: Upload dry-run artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
           path: |
@@ -667,7 +667,7 @@ jobs:
 
       - name: Upload artifact copy
         if: ${{ always() && steps.build.outputs.sideload_package_path != '' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: template-app-publish-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
           path: ${{ steps.build.outputs.sideload_package_path }}
