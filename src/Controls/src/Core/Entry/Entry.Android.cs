@@ -56,5 +56,17 @@ namespace Microsoft.Maui.Controls
 
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView.EditText, entry);
 		}
+
+		// Material3 specific overload for EntryHandler2
+		internal static void MapTextTransform(EntryHandler2 handler, Entry entry)
+		{
+			if (entry.IsConnectingHandler())
+			{
+				// If we're connecting the handler, we don't want to map the text multiple times.
+				return;
+			}
+
+			MapText(handler, entry);
+		}
 	}
 }
