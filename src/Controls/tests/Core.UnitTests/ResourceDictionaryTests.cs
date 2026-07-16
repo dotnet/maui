@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Xunit;
@@ -47,6 +49,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				throw new XunitException("Changing the value in the dictionary did not fire the changed event.");
 			}
 		}
+
 
 		[Fact]
 		public void ResourceDictionaryTriggersValueChangedOnChange()
@@ -621,6 +624,224 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			rd0.Add("foo", "Foo");
 			Assert.Equal("Foo", label.Text);
+		}
+
+		[Fact]
+		public void ReimplementedResourceDictionaryInterfaceStillPropagatesValueChanges()
+		{
+			var merged = new ReimplementedResourceDictionary();
+			var resources = new ResourceDictionary
+			{
+				MergedDictionaries = { merged }
+			};
+			var label = new Label
+			{
+				Resources = resources,
+			};
+			label.SetDynamicResource(Label.TextProperty, "foo");
+
+			merged.Add("foo", "Foo");
+
+			Assert.Equal("Foo", label.Text);
+		}
+
+		[Fact]
+		public async Task RootedMergedResourceDictionaryDoesNotLeakElement()
+		{
+			// A long-lived / shared ResourceDictionary rooted beyond the element, as in
+			// the runtime-theming pattern (a static field, a singleton, or one instance
+			// reused across pages via MergedDictionaries.Add). Merging it into a transient
+			// element must not keep that element (and its subtree) alive for the lifetime
+			// of the shared dictionary.
+			var sharedRoot = new ResourceDictionary { { "primary", "#FF0000" } };
+
+			var reference = CreateElementWithMergedDictionaryReference(sharedRoot);
+
+			Assert.False(await reference.WaitForCollect(), "VisualElement should not be alive!");
+			GC.KeepAlive(sharedRoot);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateElementWithMergedDictionaryReference(ResourceDictionary sharedRoot)
+		{
+			var element = new VisualElement();
+			element.Resources.MergedDictionaries.Add(sharedRoot);
+			return new WeakReference(element);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateReaddedMergedDictionaryProxyReference(ResourceDictionary sharedRoot)
+		{
+			var resources = new ResourceDictionary();
+			resources.MergedDictionaries.Add(new ResourceDictionary());
+			resources.MergedDictionaries.Clear();
+			resources.MergedDictionaries.Add(sharedRoot);
+
+			var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+			var subscriptionsField = typeof(ResourceDictionary).GetField("_mergedDictionarySubscriptions", flags);
+			Assert.NotNull(subscriptionsField);
+
+			var subscriptions = subscriptionsField.GetValue(resources);
+			Assert.NotNull(subscriptions);
+
+			var mergedSubscriptionsField = subscriptions.GetType().GetField("_subscriptions", flags);
+			Assert.NotNull(mergedSubscriptionsField);
+
+			var mergedSubscriptions = Assert.IsAssignableFrom<System.Collections.IEnumerable>(
+				mergedSubscriptionsField.GetValue(subscriptions));
+			var subscription = Assert.Single(mergedSubscriptions.Cast<object>());
+
+			return new WeakReference(subscription);
+		}
+
+		[Fact]
+		public async Task ClearingThenReaddingMergedDictionaryRestoresFinalizerCleanup()
+		{
+			var sharedRoot = new ResourceDictionary();
+			var proxyReference = CreateReaddedMergedDictionaryProxyReference(sharedRoot);
+
+			Assert.False(
+				await proxyReference.WaitForCollect(),
+				"WeakResourcesChangedProxy should be collected after its owner is dropped.");
+
+			GC.KeepAlive(sharedRoot);
+		}
+
+		[Fact]
+		public async Task RootedMergedResourceDictionaryStillPropagatesToLiveElementAfterGc()
+		{
+			// The weak subscription must not sever change propagation for elements that are
+			// still alive: after a GC (which could run the subscriptions helper's finalizer if
+			// it were ever mistakenly collected while the owner lives), updating the shared
+			// merged dictionary must still flow through to a live element.
+			var sharedRoot = new ResourceDictionary { { "primary", "#FF0000" } };
+
+			var element = new VisualElement();
+			element.Resources.MergedDictionaries.Add(sharedRoot);
+
+			bool changed = false;
+			((IResourceDictionary)element.Resources).ValuesChanged += (_, __) => changed = true;
+
+			// Force finalization to run; the live element (and therefore its subscriptions
+			// helper) must survive and keep the weak-owner subscriptions wired up.
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			await Task.Yield();
+
+			sharedRoot["secondary"] = "#00FF00";
+
+			Assert.True(changed, "Live element should still receive merged dictionary changes after GC.");
+			GC.KeepAlive(element);
+		}
+
+		[Fact]
+		public void ClearingMergedDictionariesUnsubscribesChildren()
+		{
+			var removed = new ResourceDictionary();
+			var resources = new ResourceDictionary
+			{
+				MergedDictionaries = { removed }
+			};
+
+			bool changed = false;
+			((IResourceDictionary)resources).ValuesChanged += (_, __) => changed = true;
+
+			resources.MergedDictionaries.Clear();
+			changed = false;
+
+			removed.Add("removed", "value");
+
+			Assert.False(changed);
+		}
+
+		[Fact]
+		public void RemovingMergedDictionaryOnlyUnsubscribesRemovedChild()
+		{
+			var removed = new ResourceDictionary();
+			var retained = new ResourceDictionary();
+			var resources = new ResourceDictionary
+			{
+				MergedDictionaries = { removed, retained }
+			};
+
+			bool changed = false;
+			((IResourceDictionary)resources).ValuesChanged += (_, __) => changed = true;
+
+			resources.MergedDictionaries.Remove(removed);
+			changed = false;
+
+			removed.Add("removed", "value");
+			Assert.False(changed);
+
+			retained.Add("retained", "value");
+			Assert.True(changed);
+		}
+
+		[Fact]
+		public void RemovingDuplicateMergedDictionariesBalancesSubscriptions()
+		{
+			var shared = new ResourceDictionary();
+			var resources = new ResourceDictionary
+			{
+				MergedDictionaries = { shared, shared }
+			};
+
+			int changeCount = 0;
+			((IResourceDictionary)resources).ValuesChanged += (_, __) => changeCount++;
+
+			shared.Add("duplicate", "value");
+			Assert.Equal(2, changeCount);
+
+			resources.MergedDictionaries.Remove(shared);
+			changeCount = 0;
+
+			shared.Add("remaining", "value");
+			Assert.Equal(1, changeCount);
+
+			resources.MergedDictionaries.Remove(shared);
+			changeCount = 0;
+
+			shared.Add("removed", "value");
+			Assert.Equal(0, changeCount);
+		}
+
+		[Fact]
+		public void ReplacingMergedDictionaryMovesSubscriptionToReplacement()
+		{
+			var replaced = new ResourceDictionary();
+			var retained = new ResourceDictionary();
+			var replacement = new ResourceDictionary();
+			var resources = new ResourceDictionary
+			{
+				MergedDictionaries = { replaced, retained }
+			};
+			var mergedDictionaries = Assert.IsAssignableFrom<IList<ResourceDictionary>>(resources.MergedDictionaries);
+
+			bool changed = false;
+			((IResourceDictionary)resources).ValuesChanged += (_, __) => changed = true;
+
+			mergedDictionaries[0] = replacement;
+			changed = false;
+
+			replaced.Add("replaced", "value");
+			Assert.False(changed);
+
+			retained.Add("retained", "value");
+			Assert.True(changed);
+
+			changed = false;
+			replacement.Add("replacement", "value");
+			Assert.True(changed);
+		}
+
+		sealed class ReimplementedResourceDictionary : ResourceDictionary, IResourceDictionary
+		{
+			event EventHandler<ResourcesChangedEventArgs> IResourceDictionary.ValuesChanged
+			{
+				add { }
+				remove { }
+			}
 		}
 	}
 }

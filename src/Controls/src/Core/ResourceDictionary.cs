@@ -132,7 +132,13 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 		}
-		IList<ResourceDictionary> _collectionTrack;
+		EventHandler<ResourcesChangedEventArgs> _itemValuesChangedHandler;
+
+		// Lazily allocated only once a merged dictionary is actually subscribed to.
+		// The helper (not this ResourceDictionary) owns the finalizer, so the public
+		// ResourceDictionary type stays finalizer-free and instances are not placed on
+		// the finalization queue unless they hold weak-owner merged-dictionary subscriptions.
+		MergedDictionarySubscriptions _mergedDictionarySubscriptions;
 
 		void MergedDictionaries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -140,38 +146,140 @@ namespace Microsoft.Maui.Controls
 			if (e.Action == NotifyCollectionChangedAction.Move)
 				return;
 
-			_collectionTrack = _collectionTrack ?? new List<ResourceDictionary>();
 			// Collection has been cleared
 			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
-				foreach (var dictionary in _collectionTrack)
-					dictionary.ValuesChanged -= Item_ValuesChanged;
-
-				_collectionTrack.Clear();
+				_mergedDictionarySubscriptions?.UnsubscribeAll();
 				return;
 			}
 
 			// New Items
 			if (e.NewItems != null)
 			{
+				var subscriptions = _mergedDictionarySubscriptions ??= new MergedDictionarySubscriptions();
+				var handler = _itemValuesChangedHandler ??= Item_ValuesChanged;
 				foreach (var item in e.NewItems)
 				{
 					var rd = (ResourceDictionary)item;
-					_collectionTrack.Add(rd);
-					rd.ValuesChanged += Item_ValuesChanged;
+					// Subscribe weakly so a merged dictionary that outlives this one
+					// (for example a shared or static dictionary) does not root it.
+					subscriptions.Add(new WeakResourcesChangedProxy(rd, handler));
 					OnValuesChanged(rd.ToArray());
 				}
 			}
 
 			// Old Items
-			if (e.OldItems != null)
+			if (e.OldItems != null && _mergedDictionarySubscriptions is { } existingSubscriptions)
 			{
 				foreach (var item in e.OldItems)
 				{
 					var rd = (ResourceDictionary)item;
-					rd.ValuesChanged -= Item_ValuesChanged;
-					_collectionTrack.Remove(rd);
+					existingSubscriptions.Remove(rd);
 				}
+			}
+		}
+
+		sealed class WeakResourcesChangedProxy : WeakEventProxy<ResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+		{
+			public WeakResourcesChangedProxy(ResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				Subscribe(source, handler);
+			}
+
+			void OnValuesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+				{
+					handler(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			public bool IsSubscribedTo(ResourceDictionary source) =>
+				TryGetSource(out var s) && ReferenceEquals(s, source);
+
+			public override void Subscribe(ResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				if (TryGetSource(out var s))
+				{
+					s.ValuesChanged -= OnValuesChanged;
+				}
+
+				source.ValuesChanged += OnValuesChanged;
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var s))
+				{
+					s.ValuesChanged -= OnValuesChanged;
+				}
+
+				base.Unsubscribe();
+			}
+		}
+
+		// Owns merged-dictionary proxies and their teardown. Each proxy weakly references the
+		// source and owner handler, so a long-lived merged child cannot retain the owning
+		// ResourceDictionary. This helper's finalizer removes subscriptions even when the child
+		// never changes again.
+		sealed class MergedDictionarySubscriptions
+		{
+			readonly List<WeakResourcesChangedProxy> _subscriptions = new();
+			bool _isFinalizationSuppressed;
+
+			~MergedDictionarySubscriptions() => UnsubscribeAll();
+
+			public void Add(WeakResourcesChangedProxy subscription)
+			{
+				if (_isFinalizationSuppressed)
+				{
+					// Reuse after becoming empty must restore cleanup for newly added subscriptions.
+					GC.ReRegisterForFinalize(this);
+					_isFinalizationSuppressed = false;
+				}
+
+				_subscriptions.Add(subscription);
+			}
+
+			public void Remove(ResourceDictionary source)
+			{
+				for (int i = _subscriptions.Count - 1; i >= 0; i--)
+				{
+					var subscription = _subscriptions[i];
+					if (subscription.IsSubscribedTo(source))
+					{
+						subscription.Unsubscribe();
+						_subscriptions.RemoveAt(i);
+
+						if (_subscriptions.Count == 0)
+							SuppressFinalization();
+
+						break;
+					}
+				}
+			}
+
+			public void UnsubscribeAll()
+			{
+				for (int i = 0; i < _subscriptions.Count; i++)
+					_subscriptions[i].Unsubscribe();
+
+				_subscriptions.Clear();
+				SuppressFinalization();
+			}
+
+			void SuppressFinalization()
+			{
+				if (_isFinalizationSuppressed)
+					return;
+
+				GC.SuppressFinalize(this);
+				_isFinalizationSuppressed = true;
 			}
 		}
 
