@@ -756,8 +756,20 @@ stages:
               if [ -z "$RUNTIME" ]; then
                 echo "Available runtimes (diagnostic):"
                 xcrun simctl list runtimes || true
-                echo "##vso[task.logissue type=error]No usable iOS simulator runtime available"
-                exit 1
+                # GRACEFUL DEGRADE (build 14669117, #34559 ios): this AcesShared agent has NO
+                # iOS simulator runtime at all — 'simctl list runtimes' is empty even unfiltered
+                # (not the transient 'available'-empty case the retry above handles). A hard
+                # 'exit 1' here fails the whole ReviewPR job, which cascades to SKIP the Gate +
+                # expert Review + Post tasks AND the Deep stage AND Post AI Summary — so the PR
+                # gets NO review at all, purely from an agent-provisioning gap unrelated to the
+                # PR. Instead, warn and continue WITHOUT a booted simulator: the expert AI
+                # review (Task 3, succeededOrFailed) reads the diff and posts findings with no
+                # device, and the Gate self-degrades to INCONCLUSIVE (its verify-tests-fail
+                # retry loop reports exit 3 when it cannot boot a device) rather than a false
+                # FAILED. Leave DEVICE_UDID empty so the gate/agent knows there is no sim.
+                echo "##vso[task.logissue type=warning]No usable iOS simulator runtime on this agent — continuing review WITHOUT a booted simulator (Gate iOS device-test verification will be INCONCLUSIVE; expert review + deep stage still run)."
+                echo "##vso[task.setvariable variable=DEVICE_UDID]"
+                exit 0
               fi
               
               # Look for iPhone Xs (matches UI test baselines - required for snapshot tests)
@@ -809,8 +821,13 @@ stages:
               fi
               
               if [ -z "$UDID" ]; then
-                echo "##vso[task.logissue type=error]No iOS simulator found"
-                exit 1
+                # GRACEFUL DEGRADE (see the no-runtime branch above): a runtime exists but no
+                # iPhone device could be found or created. Don't nuke the whole review — warn
+                # and continue without a simulator; the Gate self-degrades to INCONCLUSIVE and
+                # the expert review (Task 3) still runs.
+                echo "##vso[task.logissue type=warning]No iOS simulator could be found or created — continuing review WITHOUT a booted simulator (Gate iOS verification INCONCLUSIVE; expert review + deep stage still run)."
+                echo "##vso[task.setvariable variable=DEVICE_UDID]"
+                exit 0
               fi
               
               # Shutdown any other booted simulators to avoid Appium connecting to wrong device
