@@ -876,9 +876,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (PlatformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				for (int i = PlatformView.Interactions.Length - 1; i >= 0; i--)
+				// Cache Interactions; each access marshals the whole native array (see #34396).
+				var interactions = PlatformView.Interactions;
+				for (int i = interactions.Length - 1; i >= 0; i--)
 				{
-					var interaction = (IUIInteraction)PlatformView.Interactions[i];
+					var interaction = (IUIInteraction)interactions[i];
 					if (interaction is FakeRightClickContextMenuInteraction && !_interactions.Contains(interaction))
 					{
 						PlatformView.RemoveInteraction(interaction);
