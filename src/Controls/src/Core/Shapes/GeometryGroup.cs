@@ -12,8 +12,6 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public class GeometryGroup : Geometry
 	{
-		readonly Dictionary<Geometry, int> _subscriptionRefCounts = new();
-
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
 			BindableProperty.Create(nameof(Children), typeof(GeometryCollection), typeof(GeometryGroup), null,
@@ -56,148 +54,116 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public event EventHandler InvalidateGeometryRequested;
 
+		ChildrenSubscriptions _childrenSubscriptions;
+		NotifyCollectionChangedEventHandler _childrenCollectionChanged;
+		PropertyChangedEventHandler _childrenPropertyChanged;
+
 		void UpdateChildren(GeometryCollection oldCollection, GeometryCollection newCollection)
 		{
-			DetachCollection(oldCollection);
-			AttachCollection(newCollection);
-
-			Invalidate();
-		}
-
-		void AttachCollection(GeometryCollection collection)
-		{
-			if (collection == null)
-				return;
-
-			collection.CollectionChanged += OnChildrenCollectionChanged;
-
-			foreach (var geometry in collection)
+			if (oldCollection != null)
 			{
-				SubscribeToGeometry(geometry);
+				_childrenSubscriptions?.UnsubscribeAll();
 			}
-		}
 
-		void DetachCollection(GeometryCollection collection)
-		{
-			if (collection == null)
+			if (newCollection == null)
 				return;
 
-			collection.CollectionChanged -= OnChildrenCollectionChanged;
+			_childrenCollectionChanged ??= OnChildrenCollectionChanged;
+			_childrenPropertyChanged ??= OnChildrenPropertyChanged;
 
-			foreach (var geometry in collection)
+			var subscriptions = _childrenSubscriptions ??= new ChildrenSubscriptions();
+			subscriptions.Subscribe(newCollection, _childrenCollectionChanged);
+
+			foreach (var newChildren in newCollection)
 			{
-				UnsubscribeFromGeometry(geometry);
+				if (newChildren is not null)
+				{
+					subscriptions.Add(newChildren, _childrenPropertyChanged);
+				}
 			}
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			switch (e.Action)
+			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
-				case NotifyCollectionChangedAction.Add:
-					if (e.NewItems != null)
-					{
-						foreach (Geometry geometry in e.NewItems)
-						{
-							SubscribeToGeometry(geometry);
-						}
-					}
-					break;
+				// GeometryCollection is sealed, so Reset follows Clear after the collection is empty.
+				_childrenSubscriptions?.ResetChildren();
+			}
+			else if (e.OldItems != null)
+			{
+				foreach (var oldItem in e.OldItems)
+				{
+					if (!(oldItem is Geometry oldGeometry))
+						continue;
 
-				case NotifyCollectionChangedAction.Remove:
-					if (e.OldItems != null)
-					{
-						foreach (Geometry geometry in e.OldItems)
-						{
-							UnsubscribeFromGeometry(geometry);
-						}
-					}
-					break;
+					_childrenSubscriptions?.Remove(oldGeometry);
+				}
+			}
 
-				case NotifyCollectionChangedAction.Replace:
-					if (e.OldItems != null)
-					{
-						foreach (Geometry geometry in e.OldItems)
-						{
-							UnsubscribeFromGeometry(geometry);
-						}
-					}
+			if (e.NewItems != null)
+			{
+				foreach (var newItem in e.NewItems)
+				{
+					if (!(newItem is Geometry newGeometry))
+						continue;
 
-					if (e.NewItems != null)
-					{
-						foreach (Geometry geometry in e.NewItems)
-						{
-							SubscribeToGeometry(geometry);
-						}
-					}
-					break;
-
-				case NotifyCollectionChangedAction.Move:
-					// No subscription changes required.
-					break;
-
-				case NotifyCollectionChangedAction.Reset:
-					ResubscribeCollection(sender as GeometryCollection);
-					break;
+					_childrenSubscriptions?.Add(newGeometry, _childrenPropertyChanged);
+				}
 			}
 
 			Invalidate();
 		}
 
-		void ResubscribeCollection(GeometryCollection collection)
+		sealed class ChildrenSubscriptions
 		{
-			UnsubscribeFromAllChildren();
+			readonly WeakNotifyCollectionChangedProxy _collectionProxy = new();
+			readonly List<WeakNotifyPropertyChangedProxy> _childProxies = new();
 
-			if (collection == null)
-				return;
+			~ChildrenSubscriptions() => UnsubscribeAll();
 
-			foreach (var geometry in collection)
+			public void Subscribe(GeometryCollection source, NotifyCollectionChangedEventHandler handler)
 			{
-				SubscribeToGeometry(geometry);
-			}
-		}
-
-		void SubscribeToGeometry(Geometry geometry)
-		{
-			if (geometry == null)
-				return;
-
-			if (_subscriptionRefCounts.TryGetValue(geometry, out var count))
-			{
-				_subscriptionRefCounts[geometry] = count + 1;
-				return;
+				_collectionProxy.Subscribe(source, handler);
 			}
 
-			_subscriptionRefCounts[geometry] = 1;
-			geometry.PropertyChanged += OnChildrenPropertyChanged;
-		}
-
-		void UnsubscribeFromGeometry(Geometry geometry)
-		{
-			if (geometry == null)
-				return;
-
-			if (!_subscriptionRefCounts.TryGetValue(geometry, out var count))
-				return;
-
-			if (count > 1)
+			public void Add(Geometry source, PropertyChangedEventHandler handler)
 			{
-				_subscriptionRefCounts[geometry] = count - 1;
-				return;
+				_childProxies.Add(new WeakNotifyPropertyChangedProxy(source, handler));
 			}
 
-			_subscriptionRefCounts.Remove(geometry);
-			geometry.PropertyChanged -= OnChildrenPropertyChanged;
-		}
-
-		void UnsubscribeFromAllChildren()
-		{
-			foreach (var geometry in _subscriptionRefCounts.Keys)
+			public void Remove(Geometry source)
 			{
-				geometry.PropertyChanged -= OnChildrenPropertyChanged;
+				for (int i = _childProxies.Count - 1; i >= 0; i--)
+				{
+					var proxy = _childProxies[i];
+					if (proxy.TryGetSource(out var proxySource) && ReferenceEquals(proxySource, source))
+					{
+						proxy.Unsubscribe();
+						_childProxies.RemoveAt(i);
+						break;
+					}
+				}
 			}
 
-			_subscriptionRefCounts.Clear();
+			public void ResetChildren()
+			{
+				UnsubscribeChildren();
+			}
+
+			public void UnsubscribeAll()
+			{
+				_collectionProxy.Unsubscribe();
+				UnsubscribeChildren();
+			}
+
+			void UnsubscribeChildren()
+			{
+				for (int i = 0; i < _childProxies.Count; i++)
+					_childProxies[i].Unsubscribe();
+
+				_childProxies.Clear();
+			}
 		}
 
 		void OnChildrenPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -212,9 +178,13 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public override void AppendPath(Graphics.PathF path)
 		{
-			foreach (var c in Children)
+			var children = Children;
+			if (children is null)
+				return;
+
+			foreach (var c in children)
 			{
-				c.AppendPath(path);
+				c?.AppendPath(path);
 			}
 		}
 	}
