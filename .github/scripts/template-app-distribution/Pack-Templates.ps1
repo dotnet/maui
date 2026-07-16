@@ -38,7 +38,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Packing MAUI templates with PackageVersion=$PackageVersion"
-dotnet pack $templatesProject -p:PackageVersion=$PackageVersion -p:GenerateCgManifest=false -o $OutputPath
+# --no-build: the -t:Rebuild above already produced the outputs, and the template content is
+# assembled by the project's BeforePack target (runs during pack regardless of --no-build), so
+# this avoids a redundant second build without dropping any packaged content.
+dotnet pack $templatesProject --no-build -p:PackageVersion=$PackageVersion -p:GenerateCgManifest=false -o $OutputPath
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet pack of the MAUI templates failed with exit code $LASTEXITCODE."
 }
