@@ -97,43 +97,58 @@ public class BlazorTemplateTest : BaseTemplateTests
 	}
 
 	/// <summary>
-	/// Regression guard for the net11 removal of the InteractivityLocation workaround.
-	/// The default template uses per-page interactivity, so the SHARED components that the Hybrid
-	/// app consumes must carry an @rendermode directive (a no-op in the MAUI BlazorWebView thanks
-	/// to https://github.com/dotnet/aspnetcore/pull/65876). With --all-interactive the render mode
-	/// moves to the app root instead. A plain build cannot catch this (the old workaround built
-	/// fine — it failed at runtime), so we assert the generated content directly.
+	/// Regression guard for the net11 removal of the InteractivityLocation workaround: with the
+	/// default (per-page) interactivity, the SHARED component that the Hybrid app consumes must
+	/// carry an @rendermode directive (a no-op in the MAUI BlazorWebView thanks to
+	/// https://github.com/dotnet/aspnetcore/pull/65876), and the Web app root must stay static.
+	/// A plain build cannot catch this — the old constant-based workaround built fine and only
+	/// failed at runtime — so we assert the generated content directly.
 	/// </summary>
 	[Fact]
-	public void MauiBlazorWebEmitsInteractivityAtCorrectLocation()
+	public void MauiBlazorWebPerPageEmitsRenderModeOnSharedComponent()
 	{
-		SetTestIdentifier("MauiBlazorWeb_InteractivityLocation");
+		SetTestIdentifier("MauiBlazorWeb_PerPageInteractivity");
 		const string templateShortName = "maui-blazor-web";
 
-		// Default: per-page interactivity — the shared Counter carries @rendermode, the root is static.
-		var perPageDir = Path.Combine(TestDirectory, "PerPage");
-		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: perPageDir, framework: DotNetCurrent, output: _output),
-			$"Unable to create per-page {templateShortName}. Check test output for errors.");
+		var projectDir = TestDirectory;
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: projectDir, framework: DotNetCurrent, output: _output),
+			$"Unable to create {templateShortName}. Check test output for errors.");
 
-		var perPageName = Path.GetFileName(perPageDir);
-		var perPageCounter = File.ReadAllText(Path.Combine(perPageDir, $"{perPageName}.Shared", "Pages", "Counter.razor"));
-		var perPageApp = File.ReadAllText(Path.Combine(perPageDir, $"{perPageName}.Web", "Components", "App.razor"));
-		Assert.Contains("@rendermode InteractiveServer", perPageCounter, StringComparison.Ordinal);
-		Assert.DoesNotContain("<Routes @rendermode", perPageApp, StringComparison.Ordinal);
+		var name = Path.GetFileName(projectDir);
+		var counter = File.ReadAllText(Path.Combine(projectDir, $"{name}.Shared", "Pages", "Counter.razor"));
+		var app = File.ReadAllText(Path.Combine(projectDir, $"{name}.Web", "Components", "App.razor"));
 
-		// --all-interactive: global interactivity — the render mode moves to the root <Routes>,
-		// and the shared Counter no longer carries a per-page directive.
-		var globalDir = Path.Combine(TestDirectory, "GlobalInteractive");
-		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: globalDir, framework: DotNetCurrent, additionalDotNetNewParams: "--all-interactive", output: _output),
-			$"Unable to create global {templateShortName}. Check test output for errors.");
+		// The shared Counter carries a per-page render mode; the Web app root stays static.
+		Assert.Contains("@rendermode InteractiveServer", counter, StringComparison.Ordinal);
+		Assert.DoesNotContain("<Routes @rendermode", app, StringComparison.Ordinal);
 
-		var globalName = Path.GetFileName(globalDir);
-		var globalCounter = File.ReadAllText(Path.Combine(globalDir, $"{globalName}.Shared", "Pages", "Counter.razor"));
-		var globalApp = File.ReadAllText(Path.Combine(globalDir, $"{globalName}.Web", "Components", "App.razor"));
-		Assert.DoesNotContain("@rendermode", globalCounter, StringComparison.Ordinal);
-		Assert.Contains("<Routes @rendermode=\"InteractiveServer\" />", globalApp, StringComparison.Ordinal);
+		_output.WriteLine("✅ Per-page emits @rendermode on the shared Counter; the Web app root is static.");
+	}
 
-		_output.WriteLine("✅ Per-page emits @rendermode on the shared Counter; --all-interactive emits it at the app root.");
+	/// <summary>
+	/// Complementary guard to <see cref="MauiBlazorWebPerPageEmitsRenderModeOnSharedComponent"/>:
+	/// with --all-interactive (global), the interactive render mode is applied at the Web app root
+	/// (&lt;Routes&gt;) and the shared component no longer carries a per-page @rendermode directive.
+	/// </summary>
+	[Fact]
+	public void MauiBlazorWebGlobalEmitsRenderModeAtRoot()
+	{
+		SetTestIdentifier("MauiBlazorWeb_GlobalInteractivity");
+		const string templateShortName = "maui-blazor-web";
+
+		var projectDir = TestDirectory;
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: projectDir, framework: DotNetCurrent, additionalDotNetNewParams: "--all-interactive", output: _output),
+			$"Unable to create {templateShortName} with --all-interactive. Check test output for errors.");
+
+		var name = Path.GetFileName(projectDir);
+		var counter = File.ReadAllText(Path.Combine(projectDir, $"{name}.Shared", "Pages", "Counter.razor"));
+		var app = File.ReadAllText(Path.Combine(projectDir, $"{name}.Web", "Components", "App.razor"));
+
+		// The render mode moves to the app root; the shared Counter has no per-page directive.
+		Assert.DoesNotContain("@rendermode", counter, StringComparison.Ordinal);
+		Assert.Contains("<Routes @rendermode=\"InteractiveServer\" />", app, StringComparison.Ordinal);
+
+		_output.WriteLine("✅ --all-interactive emits @rendermode at the Web app root; the shared Counter is static.");
 	}
 
 	/// <summary>
