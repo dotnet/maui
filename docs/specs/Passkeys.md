@@ -698,16 +698,17 @@ point of the JSON contract, and it stays forward-compatible as new fields land.
 
 | Behavior | Why it's not in the JSON | Platform mapping | Decision for v1 |
 |---|---|---|---|
-| **Conditional / immediately-available UI** | It's a *presentation mode*, not credential data | Android `preferImmediatelyAvailableCredentials`; iOS `PerformRequests` with `.preferImmediatelyAvailableCredentials` / `PerformAutoFillAssistedRequests`; Windows silent | **Design now** — modeled as `PreferImmediatelyAvailable` on the options (already in §5). Full conditional-UI/autofill sign-in is a follow-up. |
-| **Presentation anchor / parent window** | A live UI object, can't be serialized | iOS/macOS `presentationContextProvider`; Windows top-level `HWND` | **Handle internally** via MAUI's active window; consider an *optional* override later (non-breaking to add). |
-| **Request origin override** | Only for privileged/browser apps acting for a web origin | Android `GetCredentialRequest.origin`; Windows `pCredentialList`/origin | **Defer** — niche; can be added as an options property without breaking. |
-| **Cancellation** | Runtime signal | `CancellationToken` → Android `CancellationSignal`, Apple `Cancel()`, Windows cancel | **Design now** — `CancellationToken` on both methods (already in §5). |
+| **1a — Immediately-available UI** | It's a *presentation mode*, not credential data | Android `setPreferImmediatelyAvailableCredentials(true)`; Apple `.preferImmediatelyAvailableCredentials` via `PerformRequests`; **Windows: no equivalent (no-op)** | **v1** — modeled as `PreferImmediatelyAvailable` on the options (§5). A `bool` on the same request; local-only, fail-fast, no hybrid/QR. |
+| **1b — Conditional UI / autofill** | It's a *separate UI-priming call*, not a ceremony | Apple `PerformAutoFillAssistedRequests()`; Android view/autofill association; Windows: none | **Follow-up** — a distinct view-oriented, event-based, assertion-only API. See **Appendix A**. |
+| **Presentation anchor / parent window** | A live UI object, can't be serialized | iOS/macOS `presentationContextProvider`; Windows top-level `HWND`; Android current `Activity` | **Handle internally** via MAUI's active window; consider an *optional* override later (non-breaking to add). |
+| **Request origin override** | Only for privileged/browser apps acting for a web origin | Android privileged `setOrigin`; Apple/Windows not exposed | **Defer** — niche; can be added as an options property without breaking. |
+| **Cancellation** | Runtime signal | `CancellationToken` → Android `CancellationSignal`, Apple `Cancel()`, Windows `WebAuthNGetCancellationId` + `WebAuthNCancelCurrentOperation` | **v1** — `CancellationToken` on both methods (§5). |
 
-**Take-away:** the JSON absorbs virtually all per-platform configuration, so the public API only needs the
-two behavioral knobs we already have (`PreferImmediatelyAvailable`, `CancellationToken`). The
-presentation-anchor and origin overrides are the only realistic *future* additions, and both can be added
-as new optional members **without breaking** the v1 surface — so there's nothing we must add now to avoid a
-retrofit.
+**Take-away:** the JSON absorbs virtually all per-platform configuration, so the v1 public API needs only the
+two behavioral knobs we already have — **`PreferImmediatelyAvailable`** (1a) and **`CancellationToken`**.
+Conditional UI (1b, Appendix A), the presentation-anchor override, and the origin override are the realistic
+*future* additions, and all can be added as new optional members / a new method **without breaking** the v1
+surface — so there's nothing we must add now to avoid a retrofit.
 
 ## 8. Error handling
 
@@ -824,4 +825,53 @@ These are intentionally **out of scope for this spec/PR** and tracked to be file
 - **Android API 28–33 support** via an opt-in `credentials-play-services-auth` recipe (without bundling
   GMS in Essentials) — if there's demand beyond the OS-native Android 14+ path.
 - **Standalone macOS** support once Essentials enables a `net-macos` target (§7.2).
-- **Conditional UI / autofill** passkey sign-in (§7.5) and a possible **presentation-anchor override**.
+- **Conditional UI / autofill** passkey sign-in — see the detailed design notes in **Appendix A**.
+- A possible **presentation-anchor override** (§7.5).
+
+## Appendix A — Conditional UI / autofill (deferred design notes)
+
+> Captured for a future follow-up. **Not part of v1.** The v1 API ships only the imperative
+> `CreateAsync`/`AssertAsync` ceremonies plus the `PreferImmediatelyAvailable` option (see below); conditional
+> UI is a separate, view-oriented feature that can be added later **without breaking** the v1 surface.
+
+### Two different features, often conflated
+| | 1a — Immediately-available | 1b — Conditional UI / autofill |
+|---|---|---|
+| **Shape** | A **flag on the normal request** | A **separate API entry point + UI coupling** |
+| **UI** | Still a modal, but local-only (fail fast, no hybrid/QR) | **No modal** — inline suggestions in the autofill/QuickType bar |
+| **In v1?** | ✅ Yes — `PreferImmediatelyAvailable` on the options | ❌ Deferred (this appendix) |
+
+### Why 1b is not a request flag — it *primes the UI*
+`CreateAsync`/`AssertAsync` are **imperative**: call → modal now → `await` one result. Conditional UI is
+**declarative arming**: you tell the OS "this field *can* accept a passkey," then walk away; the OS drives
+it when the user focuses the field. Key differences:
+
+- **Input:** a UI field/view **+** the server's `PasskeyRequestOptions` (the challenge). It still needs the
+  challenge, because when the user taps a suggestion the OS signs *that* challenge — so it's "prime the UI
+  **with** a pending request," not pure UI.
+- **Output:** delivered later as an **event/callback** — whenever the user taps a passkey suggestion, or
+  **never** (they type a password instead). Not a value you `await` once.
+- **Assertion-only** — you cannot autofill a *registration*.
+- **Lifecycle-bound** — armed when the login screen appears, disarmed when it disappears.
+
+### Native APIs (assertion only)
+| Platform | API | Notes |
+|---|---|---|
+| **Apple** | `ASAuthorizationController.PerformAutoFillAssistedRequests()` (iOS 16+) | Separate method from `PerformRequests`. Arms the QuickType bar; fires when the user focuses a `UITextField` marked with the username content type. Result via the same delegate. |
+| **Android** | Associate a `GetCredentialRequest` with a view/field (androidx.credentials autofill integration / pending-get-credential, 1.3+, API 34+); optionally pre-warm via `CredentialManager.prepareGetCredential(...)` | Suggestions appear in the keyboard/autofill bar on field focus. |
+| **Windows** | *(none)* | Native-app conditional UI is not offered by `webauthn.dll`; browser-only. |
+
+### Sketch of a possible future MAUI API (illustrative, not proposed for v1)
+```csharp
+// View-oriented, event-based, disposable to disarm — NOT shaped like AssertAsync.
+IDisposable Passkeys.EnableConditionalUI(
+    View loginField,                 // a MAUI Entry/control
+    PasskeyRequestOptions options,   // the server challenge
+    Action<PasskeyAssertionResponse> onCredentialSelected);
+```
+Under the hood it would resolve the MAUI control to its native field (`Entry.Handler.PlatformView` →
+`UITextField` / Android `View`), set the platform autofill/content-type hints, call
+`PerformAutoFillAssistedRequests()` (Apple) or associate the pending request with the view (Android), and
+route the callback back — disposing to disarm on page disappearance. Because it takes a `View`, is
+event-based, and is assertion-only, it belongs as its own feature rather than a knob on the ceremony
+methods.
