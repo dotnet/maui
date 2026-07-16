@@ -408,6 +408,9 @@ Describe 'Get-IssueContext' {
         $context.Body | Should -Be 'Regression from #100'
         $context.CommentText | Should -Be 'introduced by #300'
         $context.IsTrustedAttribution | Should -BeFalse
+        Should -Invoke -CommandName Invoke-GhJson -Times 2 -Exactly -ParameterFilter {
+            $AllowFailure
+        }
     }
 
     It 'marks a maintainer-authored issue body as trusted attribution' {
@@ -428,6 +431,16 @@ Describe 'Get-IssueContext' {
 
         $context.IsTrustedAttribution | Should -BeTrue
     }
+    It 'treats an unavailable linked issue as unresolved' {
+        Mock Invoke-GhJson { $null }
+
+        $context = Get-IssueContext -Owner 'dotnet' -Repo 'maui' -Number 35756
+
+        ($null -eq $context) | Should -BeTrue
+        Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
+            $AllowFailure -and $GhArgs[0] -eq 'api'
+        }
+    }
 }
 
 Describe 'Get-IssueAuthorAssociation' {
@@ -441,6 +454,19 @@ Describe 'Get-IssueAuthorAssociation' {
         Get-IssueAuthorAssociation -Owner 'dotnet' -Repo 'maui' -Number 35803 |
             Should -Be 'MEMBER'
         $script:authorAssociationGhArgs | Should -Be @('api', 'repos/dotnet/maui/issues/35803')
+        Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
+            $AllowFailure -and $GhArgs[0] -eq 'api'
+        }
+    }
+    It 'treats an unavailable fix PR as untrusted' {
+        Mock Invoke-GhJson { $null }
+
+        $association = Get-IssueAuthorAssociation -Owner 'dotnet' -Repo 'maui' -Number 35803
+
+        ($null -eq $association) | Should -BeTrue
+        Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
+            $AllowFailure -and $GhArgs[0] -eq 'api'
+        }
     }
 }
 

@@ -238,7 +238,7 @@ function Invoke-GhJson {
     if ($exitCode -ne 0) {
         $message = "GitHub CLI command failed with exit code ${exitCode}: $($GhArgs[0])"
         if ($AllowFailure) {
-            Write-Warning "$message; treating the introducing PR as unresolved."
+            Write-Warning "$message; treating the requested GitHub data as unavailable."
             return $null
         }
         throw $message
@@ -251,7 +251,7 @@ function Invoke-GhJson {
     catch {
         $message = "GitHub CLI returned invalid JSON for $($GhArgs[0]): $($_.Exception.Message)"
         if ($AllowFailure) {
-            Write-Warning "$message; treating the introducing PR as unresolved."
+            Write-Warning "$message; treating the requested GitHub data as unavailable."
             return $null
         }
         throw $message
@@ -275,7 +275,7 @@ function Get-IssueAuthorAssociation {
     param([string]$Owner, [string]$Repo, [int]$Number)
     $issue = Invoke-GhJson -GhArgs @(
         'api', "repos/$Owner/$Repo/issues/$Number"
-    )
+    ) -AllowFailure
     if (-not $issue) { return $null }
     return [string]$issue.author_association
 }
@@ -284,12 +284,12 @@ function Get-IssueContext {
     param([string]$Owner, [string]$Repo, [int]$Number, [int]$MaxComments = 20)
     $issue = Invoke-GhJson -GhArgs @(
         'api', "repos/$Owner/$Repo/issues/$Number"
-    )
+    ) -AllowFailure
     if (-not $issue) { return $null }
     $commentText = ''
     $comments = Invoke-GhJson -GhArgs @(
         'api', "repos/$Owner/$Repo/issues/$Number/comments?per_page=$MaxComments"
-    )
+    ) -AllowFailure
     $trustedCommentBodies = @(
         $comments |
             Where-Object {
