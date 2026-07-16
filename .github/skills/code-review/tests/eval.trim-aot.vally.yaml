@@ -62,7 +62,7 @@ stimuli:
         config: &local-source-only
           required:
             - name: '^bash$'
-              command: '\bgit\s+diff\b.*HEAD(?:\^|~1)\s+HEAD\b'
+              command: '\bgit\b.*\bdiff\b.*HEAD(?:\^|~1)(?:\s+|\.\.)HEAD\b'
           disallowed:
             - name: '^bash$'
               command: '\bgit\s+(?:log|show|blame)\b'
@@ -241,7 +241,7 @@ stimuli:
         - code-review
 
 scoring:
-  # Prompt judges assess semantic review quality. Deterministic graders require
-  # the expected verdict and reject metadata/network access across the complete
-  # tool trajectory.
-  threshold: 0.6
+  # Each scenario has one expected-verdict grader plus a tool-call and prompt
+  # grader. A missing verdict can score at most 2/3 for that scenario; 0.9
+  # therefore prevents the other two scenarios from masking its failure.
+  threshold: 0.9

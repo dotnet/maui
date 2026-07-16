@@ -572,6 +572,23 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Reject executable Vally test hooks
+        env:
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+        run: |
+          set -euo pipefail
+
+          # Eval specs come from the checked-out PR. Vally executes these hooks
+          # directly on the runner, so they must not run after a pool PAT is
+          # materialized for model authentication.
+          for spec in "$TESTS_PATH"/eval*.vally.yaml; do
+            [ -e "$spec" ] || continue
+            if grep -nE '^[[:space:]]*(commands|mcpServers):' "$spec"; then
+              echo "::error file=$spec::Vally specs evaluated with a Copilot PAT cannot define executable commands or MCP servers"
+              exit 1
+            fi
+          done
+
       # ── Select Copilot token (from the copilot-pat-pool PAT pool) ──
       - name: Select Copilot token
         id: select-token
@@ -757,6 +774,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Reject executable hermeticity hooks
+        run: |
+          set -euo pipefail
+          SPEC=.github/skills/code-review/tests/hermeticity.vally.yaml
+
+          # The hermeticity spec also comes from the checked-out PR and runs in
+          # the same runner process as model authentication.
+          if [ -f "$SPEC" ] &&
+            grep -nE '^[[:space:]]*(commands|mcpServers):' "$SPEC"; then
+            echo "::error file=$SPEC::Vally specs evaluated with a Copilot PAT cannot define executable commands or MCP servers"
+            exit 1
+          fi
 
       - name: Select Copilot token
         id: select-token
