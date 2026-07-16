@@ -86,7 +86,7 @@ public class Issue17389 : TestContentPage
 
     Grid CreateBackgroundTestGrid(Color bgColor, bool inputTransparent, string labelText, out Label label)
     {
-        label = new Label { Text = $"{labelText} (InputTransparent=False)", HorizontalOptions = LayoutOptions.Center, AutomationId = $"{labelText}" };
+        label = new Label { Text = $"{labelText} (InputTransparent={inputTransparent})", HorizontalOptions = LayoutOptions.Center, AutomationId = $"{labelText}" };
 
         Grid childGrid = new Grid
         {
