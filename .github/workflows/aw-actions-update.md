@@ -133,18 +133,10 @@ so an unrelated user-opened PR with a colliding title cannot suppress the refres
 ## Step 1 — Ensure the gh-aw CLI is available at the committed lock version
 
 The `gh aw` command comes from the `github/gh-aw` gh extension, which may not be preinstalled on
-<<<<<<< HEAD
-the runner. **Pin the install to the `github/gh-aw-actions/setup-cli` version recorded in
-`.github/aw/actions-lock.json`** — the same version all committed `.github/workflows/*.lock.yml`
-files were built with. `gh aw update` caps native action-pin resolution at the CLI's own version,
-so a newer CLI would refresh `actions-lock.json` in a way that no longer matches the compiled
-locks (version skew). Bumping gh-aw is a deliberate, coordinated change handled by the separate
-=======
 the runner. Read this workflow's required version from the `compiler_version` metadata in its
 committed lock file. `gh aw update` caps native action-pin resolution at the CLI's own version, so
 a newer CLI would refresh `actions-lock.json` in a way that no longer matches the compiled lock
 (version skew). Bumping gh-aw is a deliberate, coordinated change handled by the separate
->>>>>>> origin/main
 `aw-version-update` runbook — not something this weekly pin-refresher should do implicitly.
 
 Remove any pre-installed copy, then install the pinned tag. **Fail closed** (log and exit without
@@ -154,23 +146,6 @@ read-only GitHub Actions token so the GitHub CLI can remove a preinstalled exten
 the lock-pinned release without using the Copilot inference PAT.
 
 ```bash
-<<<<<<< HEAD
-GH_AW_PINNED_VERSION="$(
-  jq -r '
-    [.entries
-      | to_entries[]
-      | select(.key | startswith("github/gh-aw-actions/setup-cli@"))
-      | .value.version
-      | select(type == "string" and length > 0)
-    ] as $matches
-    | if ($matches | length) == 1 then $matches[0] else empty end
-  ' .github/aw/actions-lock.json
-)"
-if [ -z "$GH_AW_PINNED_VERSION" ]; then
-  echo "Unable to determine exactly one gh-aw pinned version from .github/aw/actions-lock.json; not creating a PR."
-  exit 0
-fi
-=======
 GH_AW_LOCK_FILE=".github/workflows/aw-actions-update.lock.yml"
 GH_AW_PINNED_VERSION="$(sed -nE '1s/^# gh-aw-metadata: .*"compiler_version":"([^"]+)".*$/\1/p' "$GH_AW_LOCK_FILE")"
 if ! printf '%s\n' "$GH_AW_PINNED_VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -178,7 +153,6 @@ if ! printf '%s\n' "$GH_AW_PINNED_VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$
   exit 0
 fi
 
->>>>>>> origin/main
 gh extension remove gh-aw 2>/dev/null || true
 if ! gh extension install github/gh-aw --pin "$GH_AW_PINNED_VERSION"; then
   echo "Failed to install gh-aw $GH_AW_PINNED_VERSION; not creating a PR."
