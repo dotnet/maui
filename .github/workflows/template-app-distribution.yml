@@ -290,10 +290,13 @@ jobs:
 
       - name: Install MAUI workload
         shell: pwsh
+        env:
+          MATRIX_WORKLOAD: ${{ matrix.workload }}
+          MATRIX_PLATFORM: ${{ matrix.platform }}
         run: |
           $nugetConfig = Join-Path "${{ github.workspace }}" "source/NuGet.config"
-          $installArgs = @("workload", "install", "${{ matrix.workload }}", "--configfile", $nugetConfig)
-          if ("${{ matrix.platform }}" -eq "ios" -or "${{ matrix.platform }}" -eq "maccatalyst") {
+          $installArgs = @("workload", "install", $env:MATRIX_WORKLOAD, "--configfile", $nugetConfig)
+          if ($env:MATRIX_PLATFORM -eq "ios" -or $env:MATRIX_PLATFORM -eq "maccatalyst") {
             $installArgs += "--skip-manifest-update"
           }
 
@@ -305,33 +308,43 @@ jobs:
       - name: Pack local templates
         id: pack
         shell: pwsh
+        env:
+          MATRIX_VARIANT: ${{ matrix.variant }}
+          MATRIX_PLATFORM: ${{ matrix.platform }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Pack-Templates.ps1" `
             -RepositoryPath "${{ github.workspace }}/source" `
             -PackageVersion "99.0.0-templateapp.${{ github.run_id }}.${{ github.run_attempt }}" `
-            -OutputPath "${{ runner.temp }}/template-packages/${{ matrix.variant }}-${{ matrix.platform }}" `
-            -DotNetCliHome "${{ runner.temp }}/dotnet-cli-home/${{ matrix.variant }}-${{ matrix.platform }}" `
-            -NuGetPackages "${{ runner.temp }}/nuget-packages/${{ matrix.variant }}-${{ matrix.platform }}"
+            -OutputPath "${{ runner.temp }}/template-packages/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
+            -DotNetCliHome "${{ runner.temp }}/dotnet-cli-home/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
+            -NuGetPackages "${{ runner.temp }}/nuget-packages/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}"
 
       - name: Create generated app
         id: app
         shell: pwsh
         env:
-          # Pass the (matrix-controlled) template args via env so the JSON is never
-          # interpolated into the PowerShell command text; avoids quoting/injection issues.
+          # Pass every matrix-controlled value via env so it is never interpolated into the
+          # PowerShell command text; avoids quoting/injection issues for repo-variable-derived values.
           TEMPLATE_ARGS_JSON: ${{ matrix.templateArgsJson }}
+          MATRIX_VARIANT: ${{ matrix.variant }}
+          MATRIX_PLATFORM: ${{ matrix.platform }}
+          MATRIX_PROJECT_NAME: ${{ matrix.projectName }}
+          MATRIX_TEMPLATE: ${{ matrix.template }}
+          MATRIX_TARGET_FRAMEWORK: ${{ matrix.targetFramework }}
+          MATRIX_APPLICATION_ID: ${{ matrix.applicationId }}
+          MATRIX_DISPLAY_NAME: ${{ matrix.displayName }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/New-TemplateApp.ps1" `
             -TemplatePackagePath "${{ steps.pack.outputs.template_package_path }}" `
             -BuildRoot "${{ runner.temp }}/template-app-build" `
-            -Variant "${{ matrix.variant }}-${{ matrix.platform }}" `
-            -ProjectName "${{ matrix.projectName }}" `
-            -Template "${{ matrix.template }}" `
+            -Variant "${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
+            -ProjectName "$env:MATRIX_PROJECT_NAME" `
+            -Template "$env:MATRIX_TEMPLATE" `
             -TemplateArgsJson $env:TEMPLATE_ARGS_JSON `
             -DotNetTfm "${{ needs.prepare.outputs.dotnet_tfm }}" `
-            -TargetFramework "${{ matrix.targetFramework }}" `
-            -ApplicationId "${{ matrix.applicationId }}" `
-            -DisplayName "${{ matrix.displayName }}" `
+            -TargetFramework "$env:MATRIX_TARGET_FRAMEWORK" `
+            -ApplicationId "$env:MATRIX_APPLICATION_ID" `
+            -DisplayName "$env:MATRIX_DISPLAY_NAME" `
             -DotNetSdk "${{ needs.prepare.outputs.dotnet_sdk }}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
@@ -340,13 +353,18 @@ jobs:
       - name: Build generated app
         id: build
         shell: pwsh
+        env:
+          MATRIX_VARIANT: ${{ matrix.variant }}
+          MATRIX_PLATFORM: ${{ matrix.platform }}
+          MATRIX_TARGET_FRAMEWORK: ${{ matrix.targetFramework }}
+          MATRIX_RUNTIME_IDENTIFIER: ${{ matrix.runtimeIdentifier }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Build-TemplateApp.ps1" `
             -ProjectPath "${{ steps.app.outputs.project_path }}" `
-            -Platform "${{ matrix.platform }}" `
-            -TargetFramework "${{ matrix.targetFramework }}" `
-            -RuntimeIdentifier "${{ matrix.runtimeIdentifier }}" `
-            -OutputPath "${{ runner.temp }}/template-app-output/${{ matrix.variant }}-${{ matrix.platform }}" `
+            -Platform "$env:MATRIX_PLATFORM" `
+            -TargetFramework "$env:MATRIX_TARGET_FRAMEWORK" `
+            -RuntimeIdentifier "$env:MATRIX_RUNTIME_IDENTIFIER" `
+            -OutputPath "${{ runner.temp }}/template-app-output/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
             -CreateBinlog
@@ -564,10 +582,13 @@ jobs:
 
       - name: Install MAUI workload
         shell: pwsh
+        env:
+          MATRIX_WORKLOAD: ${{ matrix.workload }}
+          MATRIX_PLATFORM: ${{ matrix.platform }}
         run: |
           $nugetConfig = Join-Path "${{ github.workspace }}" "source/NuGet.config"
-          $installArgs = @("workload", "install", "${{ matrix.workload }}", "--configfile", $nugetConfig)
-          if ("${{ matrix.platform }}" -eq "ios" -or "${{ matrix.platform }}" -eq "maccatalyst") {
+          $installArgs = @("workload", "install", $env:MATRIX_WORKLOAD, "--configfile", $nugetConfig)
+          if ($env:MATRIX_PLATFORM -eq "ios" -or $env:MATRIX_PLATFORM -eq "maccatalyst") {
             $installArgs += "--skip-manifest-update"
           }
 
@@ -593,33 +614,43 @@ jobs:
       - name: Pack local templates
         id: pack
         shell: pwsh
+        env:
+          MATRIX_VARIANT: ${{ matrix.variant }}
+          MATRIX_PLATFORM: ${{ matrix.platform }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Pack-Templates.ps1" `
             -RepositoryPath "${{ github.workspace }}/source" `
             -PackageVersion "99.0.0-templateapp.${{ github.run_id }}.${{ github.run_attempt }}" `
-            -OutputPath "${{ runner.temp }}/template-packages/${{ matrix.variant }}-${{ matrix.platform }}" `
-            -DotNetCliHome "${{ runner.temp }}/dotnet-cli-home/${{ matrix.variant }}-${{ matrix.platform }}" `
-            -NuGetPackages "${{ runner.temp }}/nuget-packages/${{ matrix.variant }}-${{ matrix.platform }}"
+            -OutputPath "${{ runner.temp }}/template-packages/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
+            -DotNetCliHome "${{ runner.temp }}/dotnet-cli-home/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
+            -NuGetPackages "${{ runner.temp }}/nuget-packages/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}"
 
       - name: Create generated app
         id: app
         shell: pwsh
         env:
-          # Pass the (matrix-controlled) template args via env so the JSON is never
-          # interpolated into the PowerShell command text; avoids quoting/injection issues.
+          # Pass every matrix-controlled value via env so it is never interpolated into the
+          # PowerShell command text; avoids quoting/injection issues for repo-variable-derived values.
           TEMPLATE_ARGS_JSON: ${{ matrix.templateArgsJson }}
+          MATRIX_VARIANT: ${{ matrix.variant }}
+          MATRIX_PLATFORM: ${{ matrix.platform }}
+          MATRIX_PROJECT_NAME: ${{ matrix.projectName }}
+          MATRIX_TEMPLATE: ${{ matrix.template }}
+          MATRIX_TARGET_FRAMEWORK: ${{ matrix.targetFramework }}
+          MATRIX_APPLICATION_ID: ${{ matrix.applicationId }}
+          MATRIX_DISPLAY_NAME: ${{ matrix.displayName }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/New-TemplateApp.ps1" `
             -TemplatePackagePath "${{ steps.pack.outputs.template_package_path }}" `
             -BuildRoot "${{ runner.temp }}/template-app-build" `
-            -Variant "${{ matrix.variant }}-${{ matrix.platform }}" `
-            -ProjectName "${{ matrix.projectName }}" `
-            -Template "${{ matrix.template }}" `
+            -Variant "${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
+            -ProjectName "$env:MATRIX_PROJECT_NAME" `
+            -Template "$env:MATRIX_TEMPLATE" `
             -TemplateArgsJson $env:TEMPLATE_ARGS_JSON `
             -DotNetTfm "${{ needs.prepare.outputs.dotnet_tfm }}" `
-            -TargetFramework "${{ matrix.targetFramework }}" `
-            -ApplicationId "${{ matrix.applicationId }}" `
-            -DisplayName "${{ matrix.displayName }}" `
+            -TargetFramework "$env:MATRIX_TARGET_FRAMEWORK" `
+            -ApplicationId "$env:MATRIX_APPLICATION_ID" `
+            -DisplayName "$env:MATRIX_DISPLAY_NAME" `
             -DotNetSdk "${{ needs.prepare.outputs.dotnet_sdk }}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
@@ -629,6 +660,8 @@ jobs:
         if: ${{ matrix.platform == 'ios' || matrix.platform == 'maccatalyst' }}
         shell: pwsh
         env:
+          MATRIX_VARIANT: ${{ matrix.variant }}
+          MATRIX_PLATFORM: ${{ matrix.platform }}
           IOS_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD }}
           APPLE_PROVISIONING_PROFILE_BASE64: ${{ matrix.platform == 'ios' && matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'ios' && matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'maccatalyst' && matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_MACCATALYST_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'maccatalyst' && matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_MACCATALYST_PROVISIONING_PROFILE_BASE64 || '' }}
@@ -641,8 +674,8 @@ jobs:
           APPLE_ADHOC_PROVISIONING_PROFILE_BASE64: ${{ matrix.platform == 'ios' && matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_ADHOC_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'ios' && matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_ADHOC_PROVISIONING_PROFILE_BASE64 || '' }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Install-AppleSigningAssets.ps1" `
-            -Variant "${{ matrix.variant }}" `
-            -Platform "${{ matrix.platform }}"
+            -Variant "$env:MATRIX_VARIANT" `
+            -Platform "$env:MATRIX_PLATFORM"
 
       - name: Build generated app
         id: build
@@ -656,15 +689,20 @@ jobs:
           APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID }}
           APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
           APPSTORE_CONNECT_PRIVATE_KEY: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY }}
+          MATRIX_VARIANT: ${{ matrix.variant }}
+          MATRIX_PLATFORM: ${{ matrix.platform }}
+          MATRIX_TARGET_FRAMEWORK: ${{ matrix.targetFramework }}
+          MATRIX_RUNTIME_IDENTIFIER: ${{ matrix.runtimeIdentifier }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Build-TemplateApp.ps1" `
             -ProjectPath "${{ steps.app.outputs.project_path }}" `
-            -Platform "${{ matrix.platform }}" `
-            -TargetFramework "${{ matrix.targetFramework }}" `
-            -RuntimeIdentifier "${{ matrix.runtimeIdentifier }}" `
-            -OutputPath "${{ runner.temp }}/template-app-output/${{ matrix.variant }}-${{ matrix.platform }}" `
+            -Platform "$env:MATRIX_PLATFORM" `
+            -TargetFramework "$env:MATRIX_TARGET_FRAMEWORK" `
+            -RuntimeIdentifier "$env:MATRIX_RUNTIME_IDENTIFIER" `
+            -OutputPath "${{ runner.temp }}/template-app-output/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
+            -CreateBinlog `
             -Publish
 
       - name: Upload artifact copy
@@ -673,6 +711,14 @@ jobs:
         with:
           name: template-app-publish-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
           path: ${{ steps.build.outputs.sideload_package_path }}
+          retention-days: 14
+
+      - name: Upload publish binlog
+        if: ${{ always() && steps.build.outputs.binlog_path != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-app-publish-binlog-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
+          path: ${{ steps.build.outputs.binlog_path }}
           retention-days: 14
 
       - name: Write Google Play credentials
@@ -699,10 +745,13 @@ jobs:
         if: ${{ matrix.platform == 'android' }}
         shell: pwsh
         working-directory: trusted/.github/scripts/template-app-distribution/fastlane
+        env:
+          MATRIX_ANDROID_APPLICATION_ID: ${{ matrix.androidApplicationId }}
+          BUILD_PACKAGE_PATH: ${{ steps.build.outputs.package_path }}
         run: |
           & bundle exec fastlane android template_app_play `
-            "package_name:${{ matrix.androidApplicationId }}" `
-            "aab:${{ steps.build.outputs.package_path }}" `
+            "package_name:$env:MATRIX_ANDROID_APPLICATION_ID" `
+            "aab:$env:BUILD_PACKAGE_PATH" `
             "track:$env:TEMPLATE_APP_PLAY_TRACK" `
             "json_key:$env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_PATH" `
             "release_status:$env:TEMPLATE_APP_PLAY_RELEASE_STATUS" `
@@ -735,10 +784,12 @@ jobs:
         env:
           APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID }}
           APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
+          MATRIX_IOS_BUNDLE_ID: ${{ matrix.iosBundleId }}
+          BUILD_PACKAGE_PATH: ${{ steps.build.outputs.package_path }}
         run: |
           & bundle exec fastlane ios template_app_testflight `
-            "ipa:${{ steps.build.outputs.package_path }}" `
-            "app_identifier:${{ matrix.iosBundleId }}" `
+            "ipa:$env:BUILD_PACKAGE_PATH" `
+            "app_identifier:$env:MATRIX_IOS_BUNDLE_ID" `
             "issuer_id:$env:APPSTORE_CONNECT_ISSUER_ID" `
             "api_key_id:$env:APPSTORE_CONNECT_KEY_ID" `
             "api_private_key_path:$env:APPSTORE_CONNECT_PRIVATE_KEY_PATH" `
@@ -751,10 +802,12 @@ jobs:
         env:
           APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID }}
           APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
+          MATRIX_MACCATALYST_BUNDLE_ID: ${{ matrix.maccatalystBundleId }}
+          BUILD_PACKAGE_PATH: ${{ steps.build.outputs.package_path }}
         run: |
           & bundle exec fastlane ios template_app_testflight `
-            "pkg:${{ steps.build.outputs.package_path }}" `
-            "app_identifier:${{ matrix.maccatalystBundleId }}" `
+            "pkg:$env:BUILD_PACKAGE_PATH" `
+            "app_identifier:$env:MATRIX_MACCATALYST_BUNDLE_ID" `
             "app_platform:osx" `
             "issuer_id:$env:APPSTORE_CONNECT_ISSUER_ID" `
             "api_key_id:$env:APPSTORE_CONNECT_KEY_ID" `
