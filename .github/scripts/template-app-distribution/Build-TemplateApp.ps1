@@ -437,12 +437,12 @@ switch ($Platform) {
             "-p:ApplicationVersion=$AppBuildNumber"
         )
 
-        # Honor the matrix RID (e.g. android-arm64) so the APK/AAB actually target the intended
-        # ABI, consistent with the iOS/Windows paths. Applied to $commonArgs so both the APK and
-        # AAB builds inherit it.
-        if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
-            $commonArgs += @("-r", $RuntimeIdentifier)
-        }
+        # The matrix RID (e.g. android-arm64) is intentionally NOT added to $commonArgs. Unlike
+        # iOS/Windows, an Android build is multi-ABI by nature: pinning a single RID makes the APK
+        # ABI-specific, which breaks the "installs on any device/emulator" promise for the sideload
+        # APK (x86_64 emulators cannot run an arm64-only APK). The sideload APK is therefore built
+        # universal (all ABIs from the project's RuntimeIdentifiers); the RID is applied only to the
+        # Google Play AAB below.
 
         # Signing arguments shared by the APK (sideload) and AAB (Play) builds.
         if ($Publish) {
@@ -496,10 +496,14 @@ switch ($Platform) {
         $sideloadPackage = $apkPackage
 
         if ($Publish) {
-            # 2) Also build an .aab for the Google Play upload step.
+            # 2) Also build an .aab for the Google Play upload step. The matrix RID is applied here
+            #    (not to the universal sideload APK) so Play gets the intended ABI target.
             $aabOutput = Join-Path $OutputPath "aab"
             New-Item -ItemType Directory -Path $aabOutput -Force | Out-Null
             $aabArgs = $commonArgs + @("-p:AndroidPackageFormat=aab", "-o", $aabOutput) + $signingArgs
+            if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
+                $aabArgs += @("-r", $RuntimeIdentifier)
+            }
 
             Write-Host "Building Android App Bundle (Google Play) for $($projectFile.FullName)"
             Invoke-DotNetPublish $aabArgs "Android AAB publish"
