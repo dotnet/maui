@@ -25,9 +25,10 @@ implement any server-side WebAuthn verification, attestation validation, or chal
 
 ## 2. Motivation
 
-- Passwordless / phishing-resistant sign-in via passkeys is now a first-class capability on **all**
-  MAUI target platforms (Android, iOS, iPadOS, macOS/Mac Catalyst, Windows). Today MAUI exposes **none**
-  of it natively.
+- Passwordless / phishing-resistant sign-in via passkeys is now a first-class capability on the primary
+  MAUI app platforms — Android, iOS/iPadOS, Mac Catalyst, and Windows — yet MAUI exposes **none** of it
+  natively. (Support is per-platform; see §7 for exactly which targets are covered and which fall back to
+  `IsSupported == false`.)
 - The existing `WebAuthenticator` Essentials API is **OAuth web-redirect** auth — despite the similar
   name it is unrelated to WebAuthn/passkeys.
 - BlazorWebView cannot use the browser WebAuthn JS API ([#32020](https://github.com/dotnet/maui/issues/32020)),
@@ -106,6 +107,10 @@ pass-through; Apple and Windows translate JSON ⇄ native structures internally.
 tiny and forward-compatible with new WebAuthn fields.
 
 ## 5. Proposed public API
+
+> The C# below is **illustrative shape, not compilable code** — get-only properties, elided bodies, and
+> `internal` constructors show the intended public surface, not the implementation. Types are sketched to
+> convey names, signatures, and relationships for review.
 
 ```csharp
 namespace Microsoft.Maui.Authentication;
@@ -277,6 +282,7 @@ biometric). The resulting registration response JSON is posted back to the serve
 stores the new public key.
 
 ```csharp
+using System.Text; // for StringContent / Encoding
 using Microsoft.Maui.Authentication;
 
 if (!Passkeys.IsSupported)
@@ -289,8 +295,10 @@ string creationOptionsJson = await httpClient.GetStringAsync("/passkey/register/
 PasskeyCreationResponse created = await Passkeys.CreateAsync(creationOptionsJson);
 
 // 3. Send the raw response JSON back to the server to verify + store the public key.
-//    `created.ToString()` is the full WebAuthn registration response JSON.
-await httpClient.PostAsJsonAsync("/passkey/register/finish", created.ToString());
+//    `created.ToString()` is *already* WebAuthn JSON, so post it as a raw application/json
+//    body — do NOT use PostAsJsonAsync, which would re-encode the string as a quoted JSON literal.
+using var body = new StringContent(created.ToString(), Encoding.UTF8, "application/json");
+await httpClient.PostAsync("/passkey/register/finish", body);
 
 // Optional: store the credential id so you can reference this passkey later.
 string credentialId = created.Id;   // base64url
@@ -304,6 +312,7 @@ The resulting assertion response JSON is posted back to the server, which verifi
 complete sign-in.
 
 ```csharp
+using System.Text; // for StringContent / Encoding
 using Microsoft.Maui.Authentication;
 
 if (!Passkeys.IsSupported)
@@ -316,7 +325,9 @@ string requestOptionsJson = await httpClient.GetStringAsync("/passkey/login/begi
 PasskeyAssertionResponse asserted = await Passkeys.AssertAsync(requestOptionsJson);
 
 // 3. Send the raw response JSON back to the server to verify the signature and finish sign-in.
-await httpClient.PostAsJsonAsync("/passkey/login/finish", asserted.ToString());
+//    Post the already-serialized WebAuthn JSON as a raw application/json body (not PostAsJsonAsync).
+using var body = new StringContent(asserted.ToString(), Encoding.UTF8, "application/json");
+await httpClient.PostAsync("/passkey/login/finish", body);
 
 // Optional: a couple of commonly-needed fields are available directly as (cached) properties.
 string credentialId = asserted.Id;          // base64url — which passkey was used
@@ -419,8 +430,13 @@ tracked in Open Question #7.
 
 ## 7. Platform implementation design
 
-Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `Passkeys.ios.macos.cs`,
-`Passkeys.windows.cs`, `Passkeys.netstandard.tizen.tvos.watchos.cs`).
+Each platform gets a `PasskeysImplementation` partial, following the existing `WebAuthenticator` file
+convention (see `src/Essentials/src/WebAuthenticator/`): `Passkeys.android.cs`, `Passkeys.ios.cs`
+(compiles for **both** iOS and Mac Catalyst), `Passkeys.windows.cs`, and a not-supported stub
+`Passkeys.netstandard.tvos.tizen.cs`. A `Passkeys.maccatalyst.cs` would be added only if Mac Catalyst
+needs behavior that differs from iOS. Note Essentials does **not** currently build a standalone `net-macos`
+target (the `macos` compile group in `Essentials.csproj` is commented out), so there is no
+`Passkeys.macos.cs` in v1 — see §7.2.
 
 ### 7.1 Android — Jetpack Credential Manager
 
@@ -469,22 +485,27 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
 - Exceptions map from `CreateCredentialException` / `GetCredentialException` subclasses (e.g.
   `*CancellationException` → `TaskCanceledException`, `NoCredentialException` → no-credential result).
 
-### 7.2 Apple — AuthenticationServices (iOS / iPadOS / Mac Catalyst / macOS)
+### 7.2 Apple — AuthenticationServices (iOS / iPadOS / Mac Catalyst)
 
+- **Scope note (macOS).** The `AuthenticationServices` passkey API exists on standalone macOS 13+ too,
+  but **Essentials does not currently build a `net-macos` target** (the `macos` compile group in
+  `Essentials.csproj` is commented out). So v1 covers **iOS, iPadOS, and Mac Catalyst**. Standalone
+  macOS support is a near-free follow-up once/if Essentials enables the macOS TFM — the implementation
+  code would be effectively identical.
 - Docs: [`ASAuthorizationPlatformPublicKeyCredentialProvider`](https://developer.apple.com/documentation/authenticationservices/asauthorizationplatformpublickeycredentialprovider) ·
   [Supporting passkeys](https://developer.apple.com/documentation/authenticationservices/public-private_key_authentication/supporting_passkeys) ·
   [.NET binding](https://learn.microsoft.com/dotnet/api/authenticationservices.asauthorizationplatformpublickeycredentialprovider)
 - **No new dependency** — `AuthenticationServices` is already bound in `Microsoft.iOS` /
-  `Microsoft.MacCatalyst` / `Microsoft.macOS`.
+  `Microsoft.MacCatalyst` (and `Microsoft.macOS`, if a macOS target is later enabled).
 - **Structured, not JSON.** We parse the incoming options JSON, extract `challenge`, `user.id`,
   `user.name`, `rp.id`, `pubKeyCredParams`, `allowCredentials`, `userVerification`, then build the
   native request; on completion we read the raw `NSData` and **assemble the WebAuthn response JSON**
   ourselves (base64url-encoding the binary fields).
-- **Binding note (Obj-C, not Swift).** `Microsoft.iOS` / `Microsoft.MacCatalyst` / `Microsoft.macOS`
-  bind the **Objective-C** `AuthenticationServices` framework and project it to C#. There is no Swift
-  interop involved — the "native" API we actually call from the MAUI implementation is the bound
-  Obj-C surface. The Swift snippet below is the canonical Apple-docs reference; the C# snippet is the
-  equivalent bound API the implementation would use. Both are provided for reviewers.
+- **Binding note (Obj-C, not Swift).** `Microsoft.iOS` / `Microsoft.MacCatalyst` bind the **Objective-C**
+  `AuthenticationServices` framework and project it to C#. There is no Swift interop involved — the
+  "native" API we actually call from the MAUI implementation is the bound Obj-C surface. The Swift
+  snippet below is the canonical Apple-docs reference; the C# snippet is the equivalent bound API the
+  implementation would use. Both are provided for reviewers.
 
 - Reference — Apple's native model (Swift, from the Apple docs):
 
@@ -546,8 +567,8 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
   window/presentation-anchor plumbing already used by other Essentials APIs.
 - **App setup (documented)**: [Associated Domains](https://developer.apple.com/documentation/xcode/supporting-associated-domains)
   entitlement with `webcredentials:<rp-id>` and a hosted `apple-app-site-association` file.
-- **Min OS**: iOS 16 / iPadOS 16 / Mac Catalyst 16 / macOS 13 (Ventura). Gate `IsSupported` via
-  `OperatingSystem.IsIOSVersionAtLeast(16)` etc.
+- **Min OS**: iOS 16 / iPadOS 16 / Mac Catalyst 16 (and macOS 13 Ventura if a macOS target is later
+  enabled). Gate `IsSupported` via `OperatingSystem.IsIOSVersionAtLeast(16)` etc.
 
 ### 7.3 Windows — Win32 WebAuthn API (`webauthn.dll`)
 
@@ -596,8 +617,12 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
   branching). Recommend implementing this platform **last**.
 
 ### 7.4 Unsupported platforms
-- `netstandard`, Tizen, tvOS, watchOS: `IsSupported == false`; `CreateAsync`/`AssertAsync` throw
-  `FeatureNotSupportedException` (consistent with other Essentials APIs).
+- **Built by Essentials but no passkey support in v1** — `netstandard`, tvOS, Tizen: `IsSupported == false`;
+  `CreateAsync`/`AssertAsync` throw `FeatureNotSupportedException` (consistent with other Essentials APIs).
+  Covered by the `Passkeys.netstandard.tvos.tizen.cs` stub. (tvOS *does* have an
+  `AuthenticationServices` passkey API and could be added later; it is out of scope for v1.)
+- **Not built by Essentials today** — standalone macOS and watchOS compile groups are commented out in
+  `Essentials.csproj`, so they need no stub until those targets are enabled.
 
 ## 8. Error handling
 
