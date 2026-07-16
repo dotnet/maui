@@ -333,8 +333,9 @@ function New-StatusChipRow {
         'Inconclusive' { '0e7490' }   # teal — could not build/run (infra), not a real fail (avoid purple ~ GitHub "merged")
         'Timed Out'    { '0e7490' }   # teal — gate stopped by its hang-safety timeout (infra), fix unverified
         'No Tests'     { '57606a' }   # neutral gray — nothing to verify
+        'Unknown'      { '57606a' }   # neutral gray — gate did not run / no verdict (deep-only rerun); absence of data, NOT a failure
         'Failed'       { 'd1242f' }   # red
-        default        { 'd1242f' }
+        default        { '57606a' }   # any unrecognized status renders neutral gray — red is reserved for a confirmed Failed gate only
     }
     $confidenceColor = switch ($Confidence) {
         'High' { '0969da' }
