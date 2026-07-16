@@ -1657,10 +1657,13 @@ function Write-MarkdownReport {
     # missing.
     $snapshotBaselineMissing = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.SnapshotBaselineMissing }).Count -gt 0
     $snapshotEnvResidual = (@($WithFixResultsList) | Where-Object { $_.SnapshotEnvResidual }).Count -gt 0
+    $snapshotBaselineUnresolved = (@($WithFixResultsList) | Where-Object { $_.SnapshotBaselineUnresolved }).Count -gt 0
     $snapshotNote = if ($snapshotBaselineMissing) {
         "📷 **New snapshot test — no baseline yet** — the test calls ``VerifyScreenshot`` but its baseline image is not committed (brand-new snapshot tests get their baseline added separately). The gate cannot validate a snapshot with nothing to compare against, so this is **inconclusive, not a fix failure**. Download the ``snapshots-diff`` artifact, confirm the rendering, and commit the baseline PNG."
     } elseif ($snapshotEnvResidual) {
         "📷 **Environmental snapshot residual — not a fix failure** — with the fix applied, the only remaining ``VerifyScreenshot`` differences are no larger than the WITHOUT-fix run (the fix worsened no snapshot and added no new failing one) and are all below ~1%. The fix resolves the bug's visual difference; the residual is a constant cross-agent baseline offset (anti-aliasing / font hinting differ between the machine that captured the baseline and this agent), so this is **inconclusive, not a fix failure**. Regenerate the affected baseline PNG(s) on the target agent."
+    } elseif ($snapshotBaselineUnresolved) {
+        "📷 **Snapshot baseline not reproducible on this agent — inconclusive** — with the fix applied, the only remaining ``VerifyScreenshot`` failure is a LARGE diff (tens of percent) that is essentially UNCHANGED from the WITHOUT-fix run — the fix moved the pixel difference by under 1 percentage point. That is the signature of a cross-machine baseline mismatch: the committed baseline PNG was captured on a different machine and this CI agent renders the control (commonly the macOS TitleBar / window chrome) differently, swamping any fix effect. The gate cannot tell an environmental mismatch from an ineffective fix, so this is **inconclusive, not a confirmed fix failure** — inspect the ``snapshots-diff`` artifact manually and, if the render is correct, regenerate the baseline PNG on the target agent."
     } else { $null }
 
     # A flaky GC memory-leak reclassification (with-fix leak FAIL→FAIL on a DoesNotLeak assert)
@@ -2266,6 +2269,66 @@ function Test-SnapshotEnvironmentalResidual {
     } catch { return $false }
 }
 
+# ── Large-diff cross-machine baseline mismatch (VerifyScreenshot false-FAILED guard #2) ──
+# DISTINCT from Test-SnapshotEnvironmentalResidual (which catches a SUB-1% constant offset on
+# a fix that clearly WORKED): this catches the case where a committed baseline PNG simply
+# CANNOT be reproduced by the gate agent, so the SAME snapshot test fails by a LARGE amount in
+# BOTH runs and the fix moves the diff by essentially nothing. macOS TitleBar / window-chrome
+# snapshots are the classic offender — a baseline captured on the PR author's machine renders
+# tens-of-percent differently on the CI agent (window size, screen scale, traffic-light
+# buttons, menu bar), swamping any fix effect. Observed on catalyst PR #36541
+# (TitleBarTrailingContentShouldRenderProperly: without-fix 42.91% ≈ with-fix 43.06%, Δ 0.15pp;
+# the PR commits its own baseline PNG, which the gate keeps as a test asset while reverting the
+# fix — so both runs compare the CI render against an author-machine baseline).
+#
+# In THIS state the gate CANNOT distinguish an environmental baseline mismatch from a genuine
+# no-op fix — both look like "the fix changed the snapshot by ~nothing" — so a confident FAILED
+# risks a false accusation against a correct fix. The honest verdict is INCONCLUSIVE (defer to a
+# human who inspects the snapshot), NEVER PASS. Fires ONLY when every with-fix failure is a
+# snapshot that (a) also failed WITHOUT the fix (not a new regression the fix introduced),
+# (b) the fix changed by less than a tolerance (|with-without| <= max(AbsTol, RelTol*without) —
+# essentially no effect), and (c) is well ABOVE the sub-1% offset zone owned by
+# Test-SnapshotEnvironmentalResidual (> LargeDiffFloor, so a fix that shrank the diff toward the
+# baseline is left as a genuine FAILED). Any parsing issue → $false (fail-safe to today's
+# genuine-FAILED behavior).
+function Test-SnapshotBaselineUnresolvable {
+    param(
+        [hashtable] $WithoutFixResult,
+        [hashtable] $WithFixResult,
+        [double]    $LargeDiffFloorPercent = 5.0,
+        [double]    $AbsTolPercent = 1.0,
+        [double]    $RelTol = 0.05
+    )
+    try {
+        if (-not $WithoutFixResult -or -not $WithFixResult) { return $false }
+        $woMap = $WithoutFixResult.SnapshotDiffMap
+        $wMap  = $WithFixResult.SnapshotDiffMap
+        if ($null -eq $woMap -or $null -eq $wMap) { return $false }
+        if ($wMap.Count -eq 0) { return $false }
+        # Every with-fix failure must be a snapshot diff (guard against a non-visual failure
+        # hiding among the snapshot diffs): #snapshot files >= reported FailCount.
+        $wFail  = [int]($WithFixResult.FailCount)
+        $woFail = [int]($WithoutFixResult.FailCount)
+        if ($wFail  -le 0 -or $wMap.Count  -lt $wFail)  { return $false }
+        if ($woFail -le 0 -or $woMap.Count -lt $woFail) { return $false }
+        foreach ($file in $wMap.Keys) {
+            # A snapshot the fix NEWLY breaks (absent without the fix) is a real regression.
+            if (-not $woMap.ContainsKey($file)) { return $false }
+            $with    = [double]$wMap[$file]
+            $without = [double]$woMap[$file]
+            # Must be a LARGE diff — at/below this floor is the sub-1% AA zone owned by
+            # Test-SnapshotEnvironmentalResidual (a fix that worked with a tiny residual).
+            if ($with -le $LargeDiffFloorPercent) { return $false }
+            # The fix must have changed the diff by essentially NOTHING (the environmental
+            # mismatch dominates). A meaningful shrink means the fix DID move the render toward
+            # the baseline — leave that as a genuine FAILED (partial/incomplete fix), not env.
+            $tol = [math]::Max($AbsTolPercent, $RelTol * $without)
+            if ([math]::Abs($with - $without) -gt $tol) { return $false }
+        }
+        return $true
+    } catch { return $false }
+}
+
 # Step 2: Run ALL tests WITHOUT fix
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
@@ -2594,6 +2657,15 @@ foreach ($t in $AllDetectedTests) {
         $w.Error = "With-fix run only fails VerifyScreenshot snapshot diffs that are no larger than the without-fix run (max $($maxResidual)% <= 1%). The fix resolves the bug's visual difference; the residual is a constant cross-agent baseline offset, not a fix failure. Regenerate the baseline PNG(s) on the target agent."
         Write-Host "  📷 $($t.TestName): with-fix failures are environmental snapshot residue (max $($maxResidual)% <= 1%, none worsened vs without-fix) — reclassifying as INCONCLUSIVE, not FAILED" -ForegroundColor Yellow
         Write-Log "  [$($t.Type)] $($t.TestName): with-fix snapshot residual environmental (max $($maxResidual)%) — INCONCLUSIVE (not a fix failure)"
+    }
+    elseif (Test-SnapshotBaselineUnresolvable -WithoutFixResult $wo -WithFixResult $w) {
+        $maxDiff = 0.0
+        foreach ($v in $w.SnapshotDiffMap.Values) { if ($v -gt $maxDiff) { $maxDiff = $v } }
+        $w.EnvError = $true
+        $w.SnapshotBaselineUnresolved = $true
+        $w.Error = "With-fix run fails only VerifyScreenshot snapshot diff(s) that are LARGE (max $($maxDiff)%) and essentially UNCHANGED from the without-fix run — the fix moved the pixel difference by under ~1 percentage point. The committed baseline PNG cannot be reproduced on this gate agent (a cross-machine rendering mismatch, e.g. macOS TitleBar / window chrome), which swamps any fix effect, so the gate cannot distinguish an environmental mismatch from an ineffective fix. INCONCLUSIVE — a human should inspect the snapshots-diff artifact; if the render is correct, regenerate the baseline on the target agent."
+        Write-Host "  📷 $($t.TestName): with-fix snapshot diff is LARGE and unchanged vs without-fix (max $($maxDiff)%) — cross-machine baseline mismatch, reclassifying as INCONCLUSIVE, not FAILED" -ForegroundColor Yellow
+        Write-Log "  [$($t.Type)] $($t.TestName): large unchanged snapshot diff (max $($maxDiff)%) — INCONCLUSIVE (cross-machine baseline mismatch, not a verifiable fix failure)"
     }
 }
 
