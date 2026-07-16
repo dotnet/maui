@@ -205,6 +205,7 @@ safe-outputs:
     # so no protected-files blocklist is needed (a prior protected-files
     # exclude of .github/ was dead config and contradicted this allowlist).
     allowed-files:
+      - "src/AI/**"
       - "src/Core/**"
       - "src/Controls/**"
       - "src/Essentials/**"
@@ -237,6 +238,7 @@ safe-outputs:
     # Mirror create-pull-request's enforced allowlist so a follow-up attempt can
     # never touch files outside the fix surface (.github/** stays excluded).
     allowed-files:
+      - "src/AI/**"
       - "src/Core/**"
       - "src/Controls/**"
       - "src/Essentials/**"
