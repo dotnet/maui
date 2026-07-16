@@ -559,9 +559,10 @@ namespace Microsoft.Maui.Media
 		// options), applies any resize, and writes the result to a new MAUI-owned cache file that
 		// preserves the original file name. The source file is only ever read, never modified.
 		//
-		// The recovery infrastructure requires this to ALWAYS return a separate file (never the source),
+		// When processing is performed this ALWAYS returns a separate MAUI-owned file (never the source),
 		// so on a processing failure we copy the source bytes to the new file rather than handing back the
-		// source path. Also used directly by MediaPickerRecoveryManager.
+		// source path. The source path is only returned unchanged in the early-out cases below (nothing to
+		// do, or the source no longer exists). Also used directly by MediaPickerRecoveryManager.
 		internal static async Task<string> ProcessPhotoPreservingSourceAsync(string imagePath, PersistedPhotoProcessingOptions options)
 		{
 			if (imagePath is null)

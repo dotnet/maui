@@ -1,7 +1,6 @@
 #nullable enable
 
 using System;
-using CoreGraphics;
 using Foundation;
 using ImageIO;
 
