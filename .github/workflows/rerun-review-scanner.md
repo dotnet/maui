@@ -327,14 +327,17 @@ such limit. Volume is instead bounded structurally:
    path) it posts a fresh AI Summary that advances the checkpoint, so the identical
    PR state cannot re-qualify and autonomous re-entry cannot loop.
 
-   > **Known limitation (deferred):** this advance-the-checkpoint guarantee holds only
-   > for the `trigger` path. On a `skip` decision the scanner removes
-   > `s/agent-ready-for-rerun` but posts **no** new AI Summary, so the checkpoint does
-   > not advance. A PR the scanner keeps skipping is therefore re-labelled by
-   > `Query-AutoRerunCandidates.ps1` on the next daily run — a harmless applied→removed
-   > flap (no review actually runs), but a flap nonetheless. For the `new-head-commit`
-   > reason this repeats every cycle until trigger-worthy activity posts a fresh summary.
-   > Closing this fully needs a scanner-side checkpoint on `skip`; tracked as a follow-up.
+   > **Skip-path checkpoint (anti-flap):** the `trigger` path advances the checkpoint by
+   > posting a fresh AI Summary, but a `skip` decision removes `s/agent-ready-for-rerun`
+   > without posting one. To stop the daily queue from re-labelling that same declined
+   > state forever, `Query-AutoRerunCandidates.ps1` reads the most recent time the label
+   > was **removed** (`Get-LastDeclinedAt`, from the issue events API) and passes it to
+   > `Resolve-AutonomousRerunEligibility -LastDeclinedAt`. When that removal is newer than
+   > the latest AI Summary it becomes the eligibility checkpoint, so re-labelling requires
+   > genuinely new activity **after the decline** (a fresh push or a new author comment) —
+   > not merely a head that still differs from the summary's SHA. A removal that preceded a
+   > completed review is naturally superseded by that review's newer AI Summary, so the
+   > `trigger` path is unaffected.
 3. The per-PR in-progress lock prevents overlapping reviews of the same PR.
 
 This is an accepted, documented cost trade-off: it matches manual `/review`

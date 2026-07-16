@@ -647,7 +647,14 @@ function Resolve-AutonomousRerunEligibility {
         [object[]]$Commits,
         [string]$CurrentHeadSha,
         [string]$PRAuthorLogin,
-        [object[]]$CurrentLabels = @()
+        [object[]]$CurrentLabels = @(),
+        # ISO-8601 timestamp of the most recent time s/agent-ready-for-rerun was
+        # REMOVED from this PR (a scanner `skip`, or a manual removal). When it is
+        # newer than the latest AI Summary it advances the eligibility checkpoint so
+        # the same declined state is not re-labelled on every daily run (anti-flap).
+        # A removal that preceded a completed review is naturally superseded by that
+        # review's newer AI Summary, so it has no effect in the trigger path.
+        [string]$LastDeclinedAt
     )
 
     if (@($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0) {
@@ -666,20 +673,47 @@ function Resolve-AutonomousRerunEligibility {
     $summaryCreatedAt = Get-ObjectDate $latestSummary 'created_at'
     $latestReviewedSha = Get-LatestReviewedSha -AISummaryBody $latestSummary.body
 
-    if (Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $latestReviewedSha) {
+    # Anti-flap checkpoint: if the ready label was removed (a scanner `skip`) more
+    # recently than the latest AI Summary, the scanner already declined the current
+    # state. Re-labelling must then require genuinely NEW activity AFTER that decline,
+    # not merely activity after the summary — otherwise the daily queue re-applies the
+    # label on the same unchanged state the scanner just declined and it flaps on/off
+    # forever without a review ever running.
+    $effectiveCheckpoint = $summaryCreatedAt
+    $declinedAt = $null
+    if (-not [string]::IsNullOrWhiteSpace($LastDeclinedAt)) {
+        try { $declinedAt = ConvertTo-DateTimeOffset $LastDeclinedAt } catch { $declinedAt = $null }
+        if ($declinedAt -and $declinedAt -gt $effectiveCheckpoint) {
+            $effectiveCheckpoint = $declinedAt
+        }
+    }
+    $isDeclineGated = [bool]($declinedAt -and $declinedAt -gt $summaryCreatedAt)
+
+    $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    $hasNewComment = Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $effectiveCheckpoint -CurrentCommentId 0 -PRAuthorLogin $normalizedPRAuthorLogin
+    $hasNewCommit = Test-HasCommitAfter -Commits $Commits -Checkpoint $effectiveCheckpoint
+    $headDiffers = Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $latestReviewedSha
+
+    # A head SHA that differs from the last-reviewed SHA only re-qualifies when it is
+    # backed by a commit that landed after the checkpoint. Absent a decline this is
+    # always true (the differing head IS that post-summary push), so behaviour is
+    # unchanged; once a decline advances the checkpoint, a head that merely still
+    # differs from the summary's SHA (the exact state the scanner declined) no longer
+    # counts — only a fresh push after the decline does.
+    if ($headDiffers -and (-not $isDeclineGated -or $hasNewCommit)) {
         return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
     }
 
-    $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
-    if (Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $summaryCreatedAt -CurrentCommentId 0 -PRAuthorLogin $normalizedPRAuthorLogin) {
+    if ($hasNewComment) {
         return [pscustomobject]@{ Eligible = $true; Reason = 'new-author-comment-after-ai-summary'; Label = $ReadyForRerunLabel }
     }
 
-    if (Test-HasCommitAfter -Commits $Commits -Checkpoint $summaryCreatedAt) {
+    if ($hasNewCommit) {
         return [pscustomobject]@{ Eligible = $true; Reason = 'new-commit-after-ai-summary'; Label = $ReadyForRerunLabel }
     }
 
-    return [pscustomobject]@{ Eligible = $false; Reason = 'no-new-comments-or-commits'; Label = $ReadyForRerunLabel }
+    $noNewReason = if ($isDeclineGated) { 'declined-state-unchanged' } else { 'no-new-comments-or-commits' }
+    return [pscustomobject]@{ Eligible = $false; Reason = $noNewReason; Label = $ReadyForRerunLabel }
 }
 
 function Resolve-RerunEligibility {

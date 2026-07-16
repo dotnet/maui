@@ -106,6 +106,26 @@ function Get-CommitsForPR {
     return @($commitsRaw | ForEach-Object { $_ | ConvertFrom-Json })
 }
 
+function Get-LastDeclinedAt {
+    param([int]$Number)
+
+    # The most recent time s/agent-ready-for-rerun was REMOVED from this PR. Used as an
+    # anti-flap checkpoint: when the rerun scanner `skip`s a PR it strips the label
+    # WITHOUT posting a fresh AI Summary, so without this the daily scan would re-apply
+    # the label on the same unchanged (already-declined) state forever. A removal that
+    # preceded a completed review is superseded by that review's newer AI Summary, so it
+    # is harmless in the trigger path. Fail loud on API errors (see Get-ActivityForPR) so
+    # a transient failure is recorded as an error rather than silently resurrecting the flap.
+    $timestampsRaw = gh api "repos/$Owner/$Repo/issues/$Number/events?per_page=100" --paginate `
+        --jq ".[] | select(.event == `"unlabeled`" and .label.name == `"$ReadyForRerunLabel`") | .created_at"
+    if ($LASTEXITCODE -ne 0) { throw "Failed to fetch label events for #$Number (gh api exited $LASTEXITCODE)." }
+    $timestamps = @($timestampsRaw | Where-Object { $_ })
+    if ($timestamps.Count -eq 0) { return $null }
+    return @($timestamps | Sort-Object {
+        [datetimeoffset]::Parse($_, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
+    } -Descending)[0]
+}
+
 $searchJson = gh pr list `
     --repo "$Owner/$Repo" `
     --state open `
@@ -166,6 +186,26 @@ foreach ($pr in $openPRs) {
         -CurrentLabels $effectiveLabels
 
     $alreadyPresent = @($labels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+
+    # Anti-flap: only when we would otherwise APPLY a fresh label, consult the last time
+    # the label was removed (a scanner `skip`). If the scanner already declined this exact
+    # state and nothing new has happened since, re-evaluating with that checkpoint drops
+    # the PR back to ineligible, so the label doesn't flap on/off every daily run. Scoped
+    # to this branch to avoid the extra events API call for the common ineligible /
+    # already-present PRs.
+    if ($result.Eligible -and -not $alreadyPresent) {
+        $lastDeclinedAt = Get-LastDeclinedAt -Number $number
+        if ($lastDeclinedAt) {
+            $result = Resolve-AutonomousRerunEligibility `
+                -Comments $activity `
+                -Commits $commits `
+                -CurrentHeadSha $pr.headRefOid `
+                -PRAuthorLogin $authorLogin `
+                -CurrentLabels $effectiveLabels `
+                -LastDeclinedAt $lastDeclinedAt
+        }
+    }
+
     $applied = $false
 
     if ($result.Eligible -and -not $alreadyPresent) {
