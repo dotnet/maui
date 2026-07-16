@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 #if !MAUI_GRAPHICS_WIN2D
 		IImage IImageLoadingService.FromStream(Stream stream, ImageLoadOptions options)
-			=> PlatformImage.FromStreamWithOptions(stream, options);
+			=> PlatformImage.FromStream(stream, options);
 #endif
 	}
 

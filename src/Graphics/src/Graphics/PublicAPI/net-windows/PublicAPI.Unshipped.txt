@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.Maui.Graphics.Color.Color(Microsoft.Maui.Graphics.Color! original) -> void
 override Microsoft.Maui.Graphics.Color.Equals(object? obj) -> bool
 static Microsoft.Maui.Graphics.Color.operator !=(Microsoft.Maui.Graphics.Color? left, Microsoft.Maui.Graphics.Color? right) -> bool
@@ -47,6 +47,7 @@ static Microsoft.Maui.Graphics.Color.FromHex(string! colorAsArgbHex) -> Microsof
 ~Microsoft.Maui.Graphics.IImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
 ~Microsoft.Maui.Graphics.IImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Graphics.IImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
+~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
 Microsoft.Maui.Graphics.IImageMetadata
 Microsoft.Maui.Graphics.ImageLoadOptions
 Microsoft.Maui.Graphics.ImageLoadOptions.DisableRotationNormalization.get -> bool

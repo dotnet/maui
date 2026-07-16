@@ -200,9 +200,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 
 		// macOS decodes with orientation handled by NSImage and does not capture metadata; the options
-		// are accepted for API parity but only the decode is performed. Loading is exposed through
-		// IImageLoadingService; this internal helper backs the loading service's options-based FromStream.
-		internal static IImage FromStream(Stream stream, ImageLoadOptions options)
+		// are accepted for API parity but only the decode is performed. The loading service forwards here.
+		public static IImage FromStream(Stream stream, ImageLoadOptions options)
 			=> FromStream(stream, ImageFormat.Png);
 
 	}

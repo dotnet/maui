@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		// Loads the image applying the supplied options (EXIF orientation normalization and metadata
 		// capture). Unlike the plain FromStream overload, this normalizes orientation by default so the
 		// returned pixels are upright, matching the behavior of the other platforms.
-		internal static IImage FromStreamWithOptions(Stream stream, ImageLoadOptions options)
+		public static IImage FromStream(Stream stream, ImageLoadOptions options)
 			=> AsyncPump.Run(() => FromStreamWithOptionsAsync(stream, options));
 
 		static async Task<IImage> FromStreamWithOptionsAsync(Stream stream, ImageLoadOptions options)

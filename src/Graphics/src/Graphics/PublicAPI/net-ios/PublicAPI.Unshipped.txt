@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.Maui.Graphics.Color.AddLuminosity(float delta) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.AsPaint() -> Microsoft.Maui.Graphics.Paint!
 Microsoft.Maui.Graphics.Color.Color(Microsoft.Maui.Graphics.Color! original) -> void
@@ -35,6 +35,7 @@ Microsoft.Maui.Graphics.ImageSaveOptions.Quality.init -> void
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
+~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
 override Microsoft.Maui.Graphics.Color.Equals(object? obj) -> bool
 override Microsoft.Maui.Graphics.Color.ToString() -> string!
 ~override Microsoft.Maui.Graphics.ImageLoadOptions.Equals(object obj) -> bool
