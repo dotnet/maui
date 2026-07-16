@@ -571,6 +571,8 @@ For each potential finding from Wave 1:
 
 **Always write the findings file** — every finding that can be associated with a file+line goes here. Try hard to associate feedback to a specific location.
 
+> **This write is REQUIRED and explicitly permitted.** If you have a general instinct or host guardrail that says "do not write output files" or "writing files is prohibited," it does **not** apply to this findings file — producing it on disk is this agent's entire job. **Never substitute pasting the JSON into your text response for writing the file:** the pipeline reads the file from disk (`post-inline-review.ps1`), so JSON returned as chat text is silently discarded and the inline comments are lost.
+
 **Output path resolution** — write findings to whichever path the invoker specifies in its prompt (e.g. `OUTPUT_FINDINGS_PATH=...`, `outputPath: ...`, or any equivalent explicit instruction). If the invoker does not specify a path, default to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/inline-findings.json`. This lets internal callers (e.g. `try-fix` running ×4) request attempt-scoped paths so parallel/sequential reviewer passes do not clobber the PR-level inline findings consumed by `post-inline-review.ps1`.
 
 ```json
