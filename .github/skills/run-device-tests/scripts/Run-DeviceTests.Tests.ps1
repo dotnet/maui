@@ -13,6 +13,7 @@ BeforeAll {
     foreach ($functionName in @(
         'Get-CategoryFiltersFromTestFilter',
         'Select-WindowsDeviceTestCategories',
+        'ConvertTo-DeviceTestCount',
         'Get-WindowsDeviceTestResultSummary'
     )) {
         $function = $ast.Find({
@@ -82,5 +83,21 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
         $summary.Failed | Should -Be 1
         $summary.Skipped | Should -Be 1
         $summary.Errors | Should -Be 0
+    }
+
+    It 'throws a descriptive error (not a null-ref) when a result file is empty' {
+        $emptyFile = Join-Path $script:testDir 'TestResults-Empty.xml'
+        New-Item -ItemType File -Path $emptyFile -Force | Out-Null
+
+        { Get-WindowsDeviceTestResultSummary -ResultFiles @($emptyFile) } |
+            Should -Throw -ExpectedMessage '*empty or not valid XML*'
+    }
+
+    It 'throws a descriptive error (not a null-ref) when a result file is malformed' {
+        $badFile = Join-Path $script:testDir 'TestResults-Bad.xml'
+        '<assemblies><assembly total="1"' | Set-Content $badFile -Encoding UTF8
+
+        { Get-WindowsDeviceTestResultSummary -ResultFiles @($badFile) } |
+            Should -Throw -ExpectedMessage '*empty or not valid XML*'
     }
 }

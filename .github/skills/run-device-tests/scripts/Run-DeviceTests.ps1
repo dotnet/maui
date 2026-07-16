@@ -275,7 +275,36 @@ function Get-WindowsDeviceTestResultSummary {
             continue
         }
 
-        [xml]$xml = Get-Content $file -Raw
+        # The result file can be observed on disk (Test-Path true) a moment
+        # before the device-test app has finished flushing its XML, so a naive
+        # `Get-Content` can read empty or partial content. Casting null/blank
+        # content to [xml] yields $null, and the subsequent .SelectNodes() call
+        # throws the cryptic "You cannot call a method on a null-valued
+        # expression" — which the gate surfaces as an opaque ENV ERROR with no
+        # results (observed on Windows Controls device-test gates). Retry the
+        # read briefly to absorb that write race (recovering the REAL results,
+        # so a transient race no longer collapses to an inconclusive verdict),
+        # then fail with a descriptive message if the file is genuinely empty or
+        # malformed (e.g. the app crashed before writing results).
+        $xml = $null
+        for ($attempt = 1; $attempt -le 5; $attempt++) {
+            $raw = Get-Content $file -Raw -ErrorAction SilentlyContinue
+            if (-not [string]::IsNullOrWhiteSpace($raw)) {
+                try {
+                    $xml = [xml]$raw
+                    break
+                } catch {
+                    # Partial/malformed XML — may still be mid-write; retry.
+                    $xml = $null
+                }
+            }
+            Start-Sleep -Milliseconds 500
+        }
+
+        if ($null -eq $xml) {
+            throw "Windows device test result file '$file' is empty or not valid XML (the device-test app likely crashed or exited before writing results)."
+        }
+
         $assemblies = @($xml.SelectNodes('/assemblies/assembly'))
         foreach ($assembly in $assemblies) {
             $summary.Total += ConvertTo-DeviceTestCount $assembly.total
