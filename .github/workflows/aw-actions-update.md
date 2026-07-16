@@ -52,6 +52,9 @@ tracker-id: aw-actions-update
 engine:
   id: copilot
   env:
+    # Authenticate the agent's `gh` CLI commands with this workflow's read-only
+    # GitHub Actions token, not the Copilot inference PAT.
+    GH_TOKEN: ${{ github.token }}
     COPILOT_GITHUB_TOKEN: |
       ${{ case(
         needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
@@ -129,19 +132,26 @@ so an unrelated user-opened PR with a colliding title cannot suppress the refres
 ## Step 1 — Ensure the gh-aw CLI is available at the pinned version
 
 The `gh aw` command comes from the `github/gh-aw` gh extension, which may not be preinstalled on
-the runner. **Pin the install to `v0.80.9`** — the same `compiler_version` all committed
-`.github/workflows/*.lock.yml` files were built with. `gh aw update` caps native action-pin
-resolution at the CLI's own version, so a newer CLI would refresh `actions-lock.json` in a way
-that no longer matches the v0.80.9-compiled locks (version skew). Bumping gh-aw is a deliberate,
-coordinated change handled by the separate `aw-version-update` runbook — not something this
-weekly pin-refresher should do implicitly.
+the runner. Read this workflow's required version from the `compiler_version` metadata in its
+committed lock file. `gh aw update` caps native action-pin resolution at the CLI's own version, so
+a newer CLI would refresh `actions-lock.json` in a way that no longer matches the compiled lock
+(version skew). Bumping gh-aw is a deliberate, coordinated change handled by the separate
+`aw-version-update` runbook — not something this weekly pin-refresher should do implicitly.
 
 Remove any pre-installed copy, then install the pinned tag. **Fail closed** (log and exit without
-creating a PR) if the pinned install does not succeed — never silently continue on a stale or
-wrong-version CLI.
+creating a PR) if the lock metadata is invalid or the pinned install does not succeed — never
+silently continue on a stale or wrong-version CLI. The workflow sets `GH_TOKEN` from its
+read-only GitHub Actions token so the GitHub CLI can remove a preinstalled extension and install
+the lock-pinned release without using the Copilot inference PAT.
 
 ```bash
-GH_AW_PINNED_VERSION="v0.80.9"   # keep in sync with the committed *.lock.yml compiler_version
+GH_AW_LOCK_FILE=".github/workflows/aw-actions-update.lock.yml"
+GH_AW_PINNED_VERSION="$(sed -nE '1s/^# gh-aw-metadata: .*"compiler_version":"([^"]+)".*$/\1/p' "$GH_AW_LOCK_FILE")"
+if ! printf '%s\n' "$GH_AW_PINNED_VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+  echo "Could not read a valid gh-aw compiler_version from $GH_AW_LOCK_FILE; not creating a PR."
+  exit 0
+fi
+
 gh extension remove gh-aw 2>/dev/null || true
 if ! gh extension install github/gh-aw --pin "$GH_AW_PINNED_VERSION"; then
   echo "Failed to install gh-aw $GH_AW_PINNED_VERSION; not creating a PR."
