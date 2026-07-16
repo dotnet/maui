@@ -41,6 +41,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				platformView.UpdateBackground(image);
 			}
+
+			// After the container transition (wrapper added or removed), re-apply opacity
+			// to whichever view is now active. Without this, clearing a non-null Background
+			// removes the WrapperView that stored the alpha, leaving the UIImageView at alpha 1.
+			platformView.UpdateOpacity(image);
 		}
 
 		public static void MapAspect(IImageHandler handler, IImage image) =>
