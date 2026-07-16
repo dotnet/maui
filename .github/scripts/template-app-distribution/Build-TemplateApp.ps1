@@ -431,6 +431,13 @@ switch ($Platform) {
             "-p:ApplicationVersion=$AppBuildNumber"
         )
 
+        # Honor the matrix RID (e.g. android-arm64) so the APK/AAB actually target the intended
+        # ABI, consistent with the iOS/Windows paths. Applied to $commonArgs so both the APK and
+        # AAB builds inherit it.
+        if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
+            $commonArgs += @("-r", $RuntimeIdentifier)
+        }
+
         # Signing arguments shared by the APK (sideload) and AAB (Play) builds.
         if ($Publish) {
             $keystorePath = $env:ANDROID_KEYSTORE_PATH
