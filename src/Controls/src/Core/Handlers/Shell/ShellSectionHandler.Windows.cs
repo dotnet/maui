@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (e.PropertyName == nameof(ShellContent.Title))
 			{
-				shellContent.UpdateTitle();
+				shellContent.UpdateParentShellItemTitle();
 				return;
 			}
 

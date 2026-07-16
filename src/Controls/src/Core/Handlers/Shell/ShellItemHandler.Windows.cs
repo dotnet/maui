@@ -213,8 +213,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void MapMenuItems()
 		{
-			// Unsubscribe from previously tracked sections to prevent duplicate handler accumulation
-			// when MapMenuItems is called multiple times (e.g. on every ShellContent.Title change).
+			// Unsubscribe from previously tracked sections to prevent duplicate PropertyChanged subscriptions
+			// when MapMenuItems is called multiple times (e.g. after ShellContent.Title changes).
 			foreach (var tracked in _trackedShellSections)
 			{
 				tracked.PropertyChanged -= OnShellItemPropertyChanged;
