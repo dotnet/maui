@@ -43,7 +43,9 @@ function Assert-EnvironmentValue([string]$Name) {
 }
 
 function Write-Base64File([string]$Base64Value, [string]$Path) {
-    $bytes = [Convert]::FromBase64String($Base64Value)
+    # Secrets (and env values derived from them) commonly carry a trailing newline;
+    # FromBase64String throws on any surrounding whitespace, so trim before decoding.
+    $bytes = [Convert]::FromBase64String($Base64Value.Trim())
     [System.IO.File]::WriteAllBytes($Path, $bytes)
 }
 
