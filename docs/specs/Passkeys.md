@@ -229,12 +229,18 @@ public static class PasskeysExtensions
 }
 ```
 
-### 5.1 Usage example
+### 5.1 Usage examples
+
+#### Registration (creating a passkey)
+
+The app asks its server to begin registration, hands the returned `PublicKeyCredentialCreationOptions`
+JSON to `CreateAsync`, which drives the native "create credential" UI (Face ID / Windows Hello / Android
+biometric). The resulting registration response JSON is posted back to the server, which verifies it and
+stores the new public key.
 
 ```csharp
 using Microsoft.Maui.Authentication;
 
-// --- Registration ---
 if (!Passkeys.IsSupported)
     return; // fall back to password UI
 
@@ -246,10 +252,28 @@ PasskeyCreationResponse created = await Passkeys.CreateAsync(creationOptionsJson
 
 // 3. Send the response JSON back to the server to verify + store the public key.
 await httpClient.PostAsJsonAsync("/passkey/register/finish", created.RegistrationResponseJson);
+```
 
-// --- Authentication ---
+#### Login (authenticating with a passkey)
+
+The app asks its server to begin sign-in, hands the returned `PublicKeyCredentialRequestOptions` JSON to
+`AssertAsync`, which drives the native "get credential" UI so the user picks a passkey and authenticates.
+The resulting assertion response JSON is posted back to the server, which verifies the signature to
+complete sign-in.
+
+```csharp
+using Microsoft.Maui.Authentication;
+
+if (!Passkeys.IsSupported)
+    return; // fall back to password UI
+
+// 1. Ask your server to begin sign-in; it returns PublicKeyCredentialRequestOptions JSON.
 string requestOptionsJson = await httpClient.GetStringAsync("/passkey/login/begin");
+
+// 2. Drive the native get-credential UI so the user selects a passkey and authenticates.
 PasskeyAssertionResponse asserted = await Passkeys.AssertAsync(requestOptionsJson);
+
+// 3. Send the response JSON back to the server to verify the signature and finish sign-in.
 await httpClient.PostAsJsonAsync("/passkey/login/finish", asserted.AuthenticationResponseJson);
 ```
 
