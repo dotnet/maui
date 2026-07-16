@@ -11,11 +11,10 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public sealed class TransformGroup : Transform
 	{
-		readonly Dictionary<INotifyPropertyChanged, int> _subscribedTransforms = new();
-
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
-			BindableProperty.Create(nameof(Children), typeof(TransformCollection), typeof(TransformGroup), null, propertyChanged: OnChildrenChanged);
+			BindableProperty.Create(nameof(Children), typeof(TransformCollection), typeof(TransformGroup), null,
+				propertyChanged: OnTransformGroupChanged);
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TransformGroup"/> class.
@@ -34,123 +33,69 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (TransformCollection)GetValue(ChildrenProperty); }
 		}
 
-		static void OnChildrenChanged(BindableObject bindable, object oldValue, object newValue)
+		static void OnTransformGroupChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var transformGroup = (TransformGroup)bindable;
-			transformGroup.UpdateChildren(
-			 oldValue as TransformCollection,
-			 newValue as TransformCollection);
+			(bindable as TransformGroup)?.UpdateChildren(oldValue as TransformCollection, newValue as TransformCollection);
 		}
+
+		ChildrenSubscriptions _childrenSubscriptions;
+		NotifyCollectionChangedEventHandler _childrenCollectionChanged;
+		PropertyChangedEventHandler _childPropertyChanged;
 
 		void UpdateChildren(TransformCollection oldCollection, TransformCollection newCollection)
 		{
-			DetachCollection(oldCollection);
-			AttachCollection(newCollection);
+			if (oldCollection != null)
+			{
+				_childrenSubscriptions?.UnsubscribeAll();
+				// Keep the empty helper for reuse; UnsubscribeAll releases every source and child proxy.
+			}
+
+			if (newCollection != null)
+			{
+				_childrenCollectionChanged ??= OnChildrenCollectionChanged;
+				_childPropertyChanged ??= OnTransformPropertyChanged;
+
+				var subscriptions = _childrenSubscriptions ??= new ChildrenSubscriptions();
+				subscriptions.Subscribe(newCollection, _childrenCollectionChanged, _childPropertyChanged);
+			}
 
 			UpdateTransformMatrix();
-		}
-
-		void AttachCollection(TransformCollection collection)
-		{
-			if (collection is null)
-			{
-				return;
-			}
-
-			collection.CollectionChanged += OnChildrenCollectionChanged;
-
-			foreach (var transform in collection)
-			{
-				SubscribeToTransformPropertyChanged(transform);
-			}
-		}
-
-		void DetachCollection(TransformCollection collection)
-		{
-			if (collection is null)
-			{
-				return;
-			}
-
-			collection.CollectionChanged -= OnChildrenCollectionChanged;
-
-			ClearAllTransformSubscriptions();
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
 			if (args.Action == NotifyCollectionChangedAction.Reset)
 			{
-				ClearAllTransformSubscriptions();
-
-				if (sender is TransformCollection collection)
-				{
-					foreach (INotifyPropertyChanged item in collection)
-					{
-						SubscribeToTransformPropertyChanged(item);
-					}
-				}
+				_childrenSubscriptions?.ResetChildren();
 			}
-			else
+			else if (args.Action != NotifyCollectionChangedAction.Move)
 			{
-				if (args.OldItems is not null)
+				if (args.OldItems != null)
 				{
-					foreach (INotifyPropertyChanged item in args.OldItems)
+					foreach (var oldItem in args.OldItems)
 					{
-						UnsubscribeFromTransformPropertyChanged(item);
+						if (oldItem is Transform oldTransform)
+						{
+							_childrenSubscriptions?.Remove(oldTransform);
+						}
 					}
 				}
 
-				if (args.NewItems is not null)
+				if (args.NewItems != null)
 				{
-					foreach (INotifyPropertyChanged item in args.NewItems)
+					_childPropertyChanged ??= OnTransformPropertyChanged;
+
+					foreach (var newItem in args.NewItems)
 					{
-						SubscribeToTransformPropertyChanged(item);
+						if (newItem is Transform newTransform)
+						{
+							_childrenSubscriptions?.Add(newTransform, _childPropertyChanged);
+						}
 					}
 				}
 			}
 
 			UpdateTransformMatrix();
-		}
-
-		void SubscribeToTransformPropertyChanged(INotifyPropertyChanged item)
-		{
-			if (_subscribedTransforms.TryGetValue(item, out int count))
-			{
-				_subscribedTransforms[item] = count + 1;
-				return;
-			}
-
-			item.PropertyChanged += OnTransformPropertyChanged;
-			_subscribedTransforms[item] = 1;
-		}
-
-		void UnsubscribeFromTransformPropertyChanged(INotifyPropertyChanged item)
-		{
-			if (!_subscribedTransforms.TryGetValue(item, out int count))
-			{
-				return;
-			}
-
-			if (count > 1)
-			{
-				_subscribedTransforms[item] = count - 1;
-				return;
-			}
-
-			item.PropertyChanged -= OnTransformPropertyChanged;
-			_subscribedTransforms.Remove(item);
-		}
-
-		// Unsubscribes all tracked transforms from PropertyChanged and clears the dictionary.
-		void ClearAllTransformSubscriptions()
-		{
-			foreach (var item in _subscribedTransforms)
-			{
-				item.Key.PropertyChanged -= OnTransformPropertyChanged;
-			}
-
-			_subscribedTransforms.Clear();
 		}
 
 		void OnTransformPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -162,10 +107,82 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			var matrix = new Matrix();
 
-			foreach (Transform child in Children)
-				matrix = Matrix.Multiply(matrix, child.Value);
+			if (Children is not null)
+			{
+				foreach (var child in Children)
+				{
+					if (child is not null)
+						matrix = Matrix.Multiply(matrix, child.Value);
+				}
+			}
 
 			Value = matrix;
+		}
+
+		// Keeps the CollectionChanged and per-child PropertyChanged subscriptions weak so a shared
+		// or long-lived TransformCollection cannot root the TransformGroup. The finalizer tears the
+		// subscriptions down, mirroring the pattern used by other WeakEventProxy owners.
+		sealed class ChildrenSubscriptions
+		{
+			readonly WeakNotifyCollectionChangedProxy _collectionProxy = new();
+			readonly List<WeakNotifyPropertyChangedProxy> _childProxies = new();
+
+			~ChildrenSubscriptions() => UnsubscribeAll();
+
+			public void Subscribe(
+				TransformCollection source,
+				NotifyCollectionChangedEventHandler collectionChangedHandler,
+				PropertyChangedEventHandler childPropertyChangedHandler)
+			{
+				_collectionProxy.Subscribe(source, collectionChangedHandler);
+
+				foreach (var child in source)
+				{
+					if (child is not null)
+					{
+						Add(child, childPropertyChangedHandler);
+					}
+				}
+			}
+
+			public void Add(Transform source, PropertyChangedEventHandler handler)
+			{
+				_childProxies.Add(new WeakNotifyPropertyChangedProxy(source, handler));
+			}
+
+			public void Remove(Transform source)
+			{
+				for (int i = _childProxies.Count - 1; i >= 0; i--)
+				{
+					var proxy = _childProxies[i];
+					if (proxy.TryGetSource(out var proxySource) && ReferenceEquals(proxySource, source))
+					{
+						proxy.Unsubscribe();
+						_childProxies.RemoveAt(i);
+						break;
+					}
+				}
+			}
+
+			public void ResetChildren()
+			{
+				// TransformCollection is sealed, so Reset means the current children were cleared.
+				UnsubscribeChildren();
+			}
+
+			public void UnsubscribeAll()
+			{
+				_collectionProxy.Unsubscribe();
+				UnsubscribeChildren();
+			}
+
+			void UnsubscribeChildren()
+			{
+				for (int i = 0; i < _childProxies.Count; i++)
+					_childProxies[i].Unsubscribe();
+
+				_childProxies.Clear();
+			}
 		}
 	}
 }
