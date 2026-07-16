@@ -126,7 +126,7 @@ public interface IPasskeys
     /// Registers a new passkey. Drives the native "create credential" UI.
     /// </summary>
     /// <param name="options">
-    /// The relying party's <c>PublicKeyCredentialCreationOptions</c> as JSON (server-provided).
+    /// The relying party's <c>PublicKeyCredentialCreationOptions</c> (server-provided).
     /// </param>
     /// <returns>The WebAuthn registration response to send back to the RP server.</returns>
     Task<PasskeyCreationResponse> CreateAsync(
@@ -137,69 +137,78 @@ public interface IPasskeys
     /// Authenticates with an existing passkey. Drives the native "get credential" UI.
     /// </summary>
     /// <param name="options">
-    /// The relying party's <c>PublicKeyCredentialRequestOptions</c> as JSON (server-provided).
+    /// The relying party's <c>PublicKeyCredentialRequestOptions</c> (server-provided).
     /// </param>
     /// <returns>The WebAuthn assertion response to send back to the RP server.</returns>
     Task<PasskeyAssertionResponse> AssertAsync(
-        PasskeyAssertionOptions options,
+        PasskeyRequestOptions options,
         CancellationToken cancellationToken = default);
 }
 
-/// <summary>Options for <see cref="IPasskeys.CreateAsync"/>.</summary>
-public class PasskeyCreationOptions
+/// <summary>
+/// Opaque carrier for a WebAuthn JSON payload. The underlying JSON is always available via
+/// <see cref="Json"/> (or <see cref="ToString"/>); strongly-typed fields are exposed selectively
+/// through extension methods rather than fully decoding the schema. This keeps the type stable as
+/// the WebAuthn spec evolves — unknown/new fields simply flow through the JSON untouched.
+/// </summary>
+public abstract class PasskeyJsonObject
 {
-    /// <summary>The server's <c>PublicKeyCredentialCreationOptions</c> JSON.</summary>
-    public string CreationOptionsJson { get; set; } = string.Empty;
+    private protected PasskeyJsonObject(string json) =>
+        Json = json ?? throw new ArgumentNullException(nameof(json));
+
+    /// <summary>The raw underlying WebAuthn JSON.</summary>
+    public string Json { get; }
+
+    /// <summary>Returns the raw underlying WebAuthn JSON (same as <see cref="Json"/>).</summary>
+    public override string ToString() => Json;
+}
+
+/// <summary>
+/// The relying party's <c>PublicKeyCredentialCreationOptions</c>, for <see cref="IPasskeys.CreateAsync"/>.
+/// </summary>
+public sealed class PasskeyCreationOptions : PasskeyJsonObject
+{
+    /// <param name="creationOptionsJson">The server's <c>PublicKeyCredentialCreationOptions</c> JSON.</param>
+    public PasskeyCreationOptions(string creationOptionsJson) : base(creationOptionsJson) { }
 
     /// <summary>
     /// When <see langword="true"/>, only offer credentials already available on-device without a
     /// network/hybrid step. Maps to Android <c>preferImmediatelyAvailableCredentials</c>; ignored
-    /// where unsupported.
+    /// where unsupported. (App-side behavior knob — not part of the server JSON.)
     /// </summary>
     public bool PreferImmediatelyAvailable { get; set; }
 }
 
-/// <summary>Options for <see cref="IPasskeys.AssertAsync"/>.</summary>
-public class PasskeyAssertionOptions
+/// <summary>
+/// The relying party's <c>PublicKeyCredentialRequestOptions</c>, for <see cref="IPasskeys.AssertAsync"/>.
+/// </summary>
+public sealed class PasskeyRequestOptions : PasskeyJsonObject
 {
-    /// <summary>The server's <c>PublicKeyCredentialRequestOptions</c> JSON.</summary>
-    public string RequestOptionsJson { get; set; } = string.Empty;
+    /// <param name="requestOptionsJson">The server's <c>PublicKeyCredentialRequestOptions</c> JSON.</param>
+    public PasskeyRequestOptions(string requestOptionsJson) : base(requestOptionsJson) { }
 
     /// <inheritdoc cref="PasskeyCreationOptions.PreferImmediatelyAvailable"/>
     public bool PreferImmediatelyAvailable { get; set; }
 }
 
-/// <summary>Result of a passkey registration.</summary>
-public class PasskeyCreationResponse
+/// <summary>
+/// Result of a passkey registration. <see cref="PasskeyJsonObject.Json"/> is the full WebAuthn
+/// registration response (shape of <c>PublicKeyCredential</c> with an
+/// <c>AuthenticatorAttestationResponse</c>) — POST it to the RP server to finish registration.
+/// </summary>
+public sealed class PasskeyCreationResponse : PasskeyJsonObject
 {
-    /// <summary>
-    /// The full WebAuthn registration response JSON (shape of <c>PublicKeyCredential</c> with an
-    /// <c>AuthenticatorAttestationResponse</c>). POST this to the RP server to finish registration.
-    /// </summary>
-    public string RegistrationResponseJson { get; }
-
-    // Convenience decoded members (parsed from the JSON), mirroring WebAuthenticatorResult ergonomics:
-    public string Id { get; }                 // base64url credential id
-    public byte[] RawId { get; }
-    public byte[] AttestationObject { get; }
-    public byte[] ClientDataJson { get; }
+    internal PasskeyCreationResponse(string registrationResponseJson) : base(registrationResponseJson) { }
 }
 
-/// <summary>Result of a passkey authentication (assertion).</summary>
-public class PasskeyAssertionResponse
+/// <summary>
+/// Result of a passkey authentication. <see cref="PasskeyJsonObject.Json"/> is the full WebAuthn
+/// authentication response (shape of <c>PublicKeyCredential</c> with an
+/// <c>AuthenticatorAssertionResponse</c>) — POST it to the RP server to finish sign-in.
+/// </summary>
+public sealed class PasskeyAssertionResponse : PasskeyJsonObject
 {
-    /// <summary>
-    /// The full WebAuthn authentication response JSON (shape of <c>PublicKeyCredential</c> with an
-    /// <c>AuthenticatorAssertionResponse</c>). POST this to the RP server to finish sign-in.
-    /// </summary>
-    public string AuthenticationResponseJson { get; }
-
-    public string Id { get; }                 // base64url credential id
-    public byte[] RawId { get; }
-    public byte[] AuthenticatorData { get; }
-    public byte[] ClientDataJson { get; }
-    public byte[] Signature { get; }
-    public byte[]? UserHandle { get; }
+    internal PasskeyAssertionResponse(string authenticationResponseJson) : base(authenticationResponseJson) { }
 }
 
 /// <summary>Static facade, mirroring <see cref="WebAuthenticator"/>.</summary>
@@ -210,24 +219,53 @@ public static class Passkeys
     public static Task<PasskeyCreationResponse> CreateAsync(PasskeyCreationOptions options, CancellationToken cancellationToken = default)
         => Default.CreateAsync(options, cancellationToken);
 
-    public static Task<PasskeyAssertionResponse> AssertAsync(PasskeyAssertionOptions options, CancellationToken cancellationToken = default)
+    public static Task<PasskeyAssertionResponse> AssertAsync(PasskeyRequestOptions options, CancellationToken cancellationToken = default)
         => Default.AssertAsync(options, cancellationToken);
 
     static IPasskeys? defaultImplementation;
     public static IPasskeys Default => defaultImplementation ??= new PasskeysImplementation();
     internal static void SetDefault(IPasskeys? implementation) => defaultImplementation = implementation;
 }
+```
 
-// Convenience string overloads (extension methods), matching WebAuthenticator style:
+#### Extension methods (selective strongly-typed access)
+
+Rather than decoding the entire WebAuthn schema onto the types, a small set of extension methods pull out
+the handful of fields apps commonly need on-device. Everything else stays in `Json` for the server. This
+set is deliberately small and can grow based on feedback.
+
+```csharp
 public static class PasskeysExtensions
 {
+    // --- Convenience string overloads (construct the opaque options from raw JSON) ---
     public static Task<PasskeyCreationResponse> CreateAsync(this IPasskeys passkeys, string creationOptionsJson, CancellationToken ct = default)
-        => passkeys.CreateAsync(new PasskeyCreationOptions { CreationOptionsJson = creationOptionsJson }, ct);
+        => passkeys.CreateAsync(new PasskeyCreationOptions(creationOptionsJson), ct);
 
     public static Task<PasskeyAssertionResponse> AssertAsync(this IPasskeys passkeys, string requestOptionsJson, CancellationToken ct = default)
-        => passkeys.AssertAsync(new PasskeyAssertionOptions { RequestOptionsJson = requestOptionsJson }, ct);
+        => passkeys.AssertAsync(new PasskeyRequestOptions(requestOptionsJson), ct);
+
+    // --- A couple of decoded fields on the responses (not the whole schema) ---
+
+    /// <summary>The base64url credential id (<c>id</c>) of the created/used passkey.</summary>
+    public static string GetId(this PasskeyCreationResponse response);
+    public static string GetId(this PasskeyAssertionResponse response);
+
+    /// <summary>The credential id decoded to bytes (<c>rawId</c>).</summary>
+    public static byte[] GetRawId(this PasskeyCreationResponse response);
+    public static byte[] GetRawId(this PasskeyAssertionResponse response);
+
+    /// <summary>
+    /// The user handle returned by the assertion (<c>response.userHandle</c>), i.e. the RP's user id,
+    /// or <see langword="null"/> when the authenticator did not return one.
+    /// </summary>
+    public static byte[]? GetUserHandle(this PasskeyAssertionResponse response);
 }
 ```
+
+> Only three extraction helpers are proposed for v1 (`GetId`, `GetRawId`, `GetUserHandle`) — the fields
+> most often needed client-side. Attestation object, authenticator data, signature, and client-data JSON
+> remain accessible through `response.Json` (they're what the server verifies anyway). See Open Question
+> #4 for which helpers, if any, are worth including.
 
 ### 5.1 Usage examples
 
@@ -250,8 +288,9 @@ string creationOptionsJson = await httpClient.GetStringAsync("/passkey/register/
 // 2. Drive the native create-credential UI (Face ID / Windows Hello / Android biometric).
 PasskeyCreationResponse created = await Passkeys.CreateAsync(creationOptionsJson);
 
-// 3. Send the response JSON back to the server to verify + store the public key.
-await httpClient.PostAsJsonAsync("/passkey/register/finish", created.RegistrationResponseJson);
+// 3. Send the raw response JSON back to the server to verify + store the public key.
+//    `created.Json` (or created.ToString()) is the full WebAuthn registration response.
+await httpClient.PostAsJsonAsync("/passkey/register/finish", created.Json);
 ```
 
 #### Login (authenticating with a passkey)
@@ -273,25 +312,39 @@ string requestOptionsJson = await httpClient.GetStringAsync("/passkey/login/begi
 // 2. Drive the native get-credential UI so the user selects a passkey and authenticates.
 PasskeyAssertionResponse asserted = await Passkeys.AssertAsync(requestOptionsJson);
 
-// 3. Send the response JSON back to the server to verify the signature and finish sign-in.
-await httpClient.PostAsJsonAsync("/passkey/login/finish", asserted.AuthenticationResponseJson);
+// 3. Send the raw response JSON back to the server to verify the signature and finish sign-in.
+await httpClient.PostAsJsonAsync("/passkey/login/finish", asserted.Json);
+
+// Optional: a couple of decoded fields are available client-side via extension methods.
+string credentialId = asserted.GetId();          // base64url credential id
+byte[]? userHandle = asserted.GetUserHandle();   // the RP's user id, if returned
 ```
 
 ## 6. Design decisions
 
-### 6.1 Why JSON in / JSON out
+### 6.1 Why JSON in / JSON out (wrapped in opaque objects)
 - **Zero translation on Android** — Credential Manager consumes/produces exactly this JSON.
 - **1:1 with server libraries** — Fido2NetLib etc. already emit `CreationOptions`/`RequestOptions` JSON
   and consume the response JSON. No impedance mismatch.
-- **Smallest public surface** — two options types + two response types.
+- **Smallest public surface** — two options types + two response types, all sharing the
+  `PasskeyJsonObject` base.
 - **Forward-compatible** — new WebAuthn fields (e.g. `hints`, PRF extension) require no API change; they
   flow through the JSON. On Apple/Windows we map the subset the OS supports and ignore the rest.
 
-### 6.2 Why not a strongly-typed WebAuthn model (for v1)
-A fully-typed model (`Rp`, `User`, `PubKeyCredParams`, `AllowCredentials`, `AuthenticatorSelection`,
-extensions…) is a **large** public surface that must track ongoing WebAuthn spec churn, still needs JSON
-serialization for Android, and duplicates types already present in server libraries. We propose
-JSON-first for v1 and can add optional typed builders later without breaking the core API.
+### 6.2 Opaque objects + selective extensions (not raw strings, not a full typed model)
+The payloads are wrapped in **opaque objects** (`PasskeyJsonObject` with `Json` / `ToString()`) rather
+than passed as bare `string`s. This is the deliberate middle ground:
+
+- **vs. raw strings:** stronger typing (can't accidentally pass a request where a response is expected),
+  a natural home for app-side behavior knobs (e.g. `PreferImmediatelyAvailable`), and a discoverable
+  surface for the extension helpers — while still exposing the underlying JSON verbatim.
+- **vs. a fully-typed WebAuthn model:** a complete model (`Rp`, `User`, `PubKeyCredParams`,
+  `AllowCredentials`, `AuthenticatorSelection`, extensions…) is a **large** public surface that must
+  track ongoing WebAuthn spec churn, still needs JSON serialization for Android, and duplicates types in
+  server libraries. Instead we decode **only a couple** of high-value fields via extension methods
+  (`GetId`, `GetRawId`, `GetUserHandle`); everything else stays in `Json`.
+- Typed builders/decoders for more fields can be added later as extension methods **without breaking**
+  the core API — the opaque object is the stable anchor.
 
 ### 6.3 Naming / placement
 - Lives in Essentials alongside `WebAuthenticator`, namespace `Microsoft.Maui.Authentication`.
@@ -336,7 +389,7 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
 
   ```csharp
   var manager = CredentialManager.Create(Platform.CurrentActivity!);
-  var request = new CreatePublicKeyCredentialRequest(options.CreationOptionsJson);
+  var request = new CreatePublicKeyCredentialRequest(options.Json);
   var response = (CreatePublicKeyCredentialResponse)await manager.CreateCredentialAsync(
       Platform.CurrentActivity!, request /*, cancellationSignal, executor */);
   var registrationResponseJson = response.RegistrationResponseJson;
@@ -494,8 +547,10 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
    flows within the single call?
 3. **Conditional UI / autofill** passkey sign-in (Android `preferImmediatelyAvailable`, iOS
    `ASAuthorizationController.performAutoFillAssistedRequests`, Windows silent) — v1 or follow-up?
-4. **Response shape**: JSON-only, or JSON + decoded convenience members as proposed in §5? Do consumers
-   actually want the decoded fields, or only the JSON to forward?
+4. **Extraction helpers**: the current proposal wraps payloads in opaque `PasskeyJsonObject`s (raw JSON via
+   `Json`/`ToString()`) plus **three** decode helpers (`GetId`, `GetRawId`, `GetUserHandle`). Are those the
+   right ones? Should we add/remove any (e.g. `GetClientDataJson`, `GetTransports`), or ship with **none**
+   and let callers parse `Json` themselves?
 5. **Method naming**: `AssertAsync` vs `GetAsync` vs `AuthenticateAsync` (the last collides
    conceptually with `WebAuthenticator.AuthenticateAsync`).
 6. **BlazorWebView bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)): should we also ship
