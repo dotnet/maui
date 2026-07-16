@@ -147,6 +147,9 @@ Copy-Item -Path $NuGetConfigPath -Destination (Join-Path $projectRoot "NuGet.con
 
 Write-Host "Installing template package $TemplatePackagePath"
 dotnet new install $TemplatePackagePath
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet new install of '$TemplatePackagePath' failed with exit code $LASTEXITCODE."
+}
 
 $templateArgs = @()
 if (-not [string]::IsNullOrWhiteSpace($TemplateArgsJson)) {
@@ -156,6 +159,9 @@ if (-not [string]::IsNullOrWhiteSpace($TemplateArgsJson)) {
 $dotnetNewArgs = @("new", $Template, "-n", $ProjectName, "-o", $projectDir, "--framework", $DotNetTfm, "--no-restore") + $templateArgs
 Write-Host "Creating project: dotnet $($dotnetNewArgs -join ' ')"
 & dotnet @dotnetNewArgs
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet new $Template failed with exit code $LASTEXITCODE."
+}
 
 $projectFile = Get-ChildItem -Path $projectDir -Filter "*.csproj" -Recurse | Select-Object -First 1
 if (-not $projectFile) {
