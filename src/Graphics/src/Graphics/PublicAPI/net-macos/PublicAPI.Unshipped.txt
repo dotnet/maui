@@ -12,26 +12,24 @@ Microsoft.Maui.Graphics.Color.WithAlpha(float alpha) -> Microsoft.Maui.Graphics.
 Microsoft.Maui.Graphics.Color.WithHue(float hue) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.WithLuminosity(float luminosity) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.WithSaturation(float saturation) -> Microsoft.Maui.Graphics.Color!
-~Microsoft.Maui.Graphics.IImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata
+Microsoft.Maui.Graphics.IImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata?
 ~Microsoft.Maui.Graphics.IImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
 ~Microsoft.Maui.Graphics.IImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Graphics.IImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
 Microsoft.Maui.Graphics.IImageMetadata
 Microsoft.Maui.Graphics.ImageLoadOptions
 Microsoft.Maui.Graphics.ImageLoadOptions.DisableRotationNormalization.get -> bool
-Microsoft.Maui.Graphics.ImageLoadOptions.DisableRotationNormalization.init -> void
 Microsoft.Maui.Graphics.ImageLoadOptions.Equals(Microsoft.Maui.Graphics.ImageLoadOptions other) -> bool
 Microsoft.Maui.Graphics.ImageLoadOptions.ImageLoadOptions() -> void
+Microsoft.Maui.Graphics.ImageLoadOptions.ImageLoadOptions(bool disableRotationNormalization = false, bool preserveMetadata = false) -> void
 Microsoft.Maui.Graphics.ImageLoadOptions.PreserveMetadata.get -> bool
-Microsoft.Maui.Graphics.ImageLoadOptions.PreserveMetadata.init -> void
 Microsoft.Maui.Graphics.ImageSaveOptions
 Microsoft.Maui.Graphics.ImageSaveOptions.Equals(Microsoft.Maui.Graphics.ImageSaveOptions other) -> bool
 Microsoft.Maui.Graphics.ImageSaveOptions.ImageSaveOptions() -> void
+Microsoft.Maui.Graphics.ImageSaveOptions.ImageSaveOptions(float quality, bool preserveMetadata = false) -> void
 Microsoft.Maui.Graphics.ImageSaveOptions.PreserveMetadata.get -> bool
-Microsoft.Maui.Graphics.ImageSaveOptions.PreserveMetadata.init -> void
 Microsoft.Maui.Graphics.ImageSaveOptions.Quality.get -> float
-Microsoft.Maui.Graphics.ImageSaveOptions.Quality.init -> void
-~Microsoft.Maui.Graphics.Platform.PlatformImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata
+Microsoft.Maui.Graphics.Platform.PlatformImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata?
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage

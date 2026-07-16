@@ -15,19 +15,31 @@ namespace Microsoft.Maui.Graphics
 		/// </summary>
 		public ImageSaveOptions()
 		{
+			Quality = 1f;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ImageSaveOptions"/> struct.
+		/// </summary>
+		/// <param name="quality">The quality level (from <c>0.0</c> to <c>1.0</c>) for lossy formats.</param>
+		/// <param name="preserveMetadata">Whether to re-embed metadata captured at load time.</param>
+		public ImageSaveOptions(float quality, bool preserveMetadata = false)
+		{
+			Quality = quality;
+			PreserveMetadata = preserveMetadata;
 		}
 
 		/// <summary>
 		/// Gets the quality level (from <c>0.0</c> to <c>1.0</c>) used for lossy formats such as JPEG.
 		/// Defaults to <c>1.0</c> when created with <c>new ImageSaveOptions()</c>.
 		/// </summary>
-		public float Quality { get; init; } = 1f;
+		public float Quality { get; }
 
 		/// <summary>
 		/// When <see langword="true"/>, metadata that was captured at load time (see
 		/// <see cref="ImageLoadOptions.PreserveMetadata"/>) is re-embedded into the saved image. When
 		/// <see langword="false"/> (the default), metadata is not written.
 		/// </summary>
-		public bool PreserveMetadata { get; init; }
+		public bool PreserveMetadata { get; }
 	}
 }

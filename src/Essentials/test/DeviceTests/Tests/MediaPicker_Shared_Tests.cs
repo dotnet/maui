@@ -33,11 +33,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					input,
 					"picked.jpg",
 					new ImageProcessingOptions(
-						MaximumWidth: 40,
-						MaximumHeight: 40,
-						CompressionQuality: 80,
-						RotateImage: false,
-						PreserveMetadata: true));
+						maximumWidth: 40,
+						maximumHeight: 40,
+						compressionQuality: 80,
+						rotateImage: false,
+						preserveMetadata: true));
 
 				// A brand new file is written to the app cache, preserving the original file name.
 				Assert.True(File.Exists(outputPath), "Processed output file was not created.");
@@ -72,11 +72,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					input,
 					"picked.jpg",
 					new ImageProcessingOptions(
-						MaximumWidth: null,
-						MaximumHeight: null,
-						CompressionQuality: 60,
-						RotateImage: false,
-						PreserveMetadata: true));
+						maximumWidth: null,
+						maximumHeight: null,
+						compressionQuality: 60,
+						rotateImage: false,
+						preserveMetadata: true));
 
 				// Deterministic container preservation: a JPEG source stays a JPEG.
 				Assert.Equal(".jpg", Path.GetExtension(outputPath));

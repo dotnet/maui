@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			_metadata = metadata;
 		}
 
-		public IImageMetadata Metadata => _metadata;
+#nullable enable
+		public IImageMetadata? Metadata => _metadata;
+#nullable restore
 
 		public float Width => _bitmap?.Width ?? 0;
 

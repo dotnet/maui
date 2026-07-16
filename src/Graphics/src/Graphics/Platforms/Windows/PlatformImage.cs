@@ -240,7 +240,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 
 #if !MAUI_GRAPHICS_WIN2D
-		IImageMetadata IImage.Metadata => _metadata;
+#nullable enable
+		IImageMetadata? IImage.Metadata => _metadata;
+#nullable restore
 
 		void IImage.Save(Stream stream, ImageFormat format, ImageSaveOptions options)
 			=> AsyncPump.Run(() => SaveWithOptionsAsync(stream, format, options));

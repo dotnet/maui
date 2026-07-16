@@ -100,11 +100,13 @@ namespace Microsoft.Maui.Graphics
 		/// if the image was not loaded with <see cref="ImageLoadOptions.PreserveMetadata"/> enabled or has
 		/// no metadata.
 		/// </summary>
+#nullable enable
 #if NETSTANDARD2_0
-		IImageMetadata Metadata { get; }
+		IImageMetadata? Metadata { get; }
 #else
-		IImageMetadata Metadata => null;
+		IImageMetadata? Metadata => null;
 #endif
+#nullable restore
 
 		/// <summary>
 		/// Saves the image to a stream in the specified format using the supplied options, optionally

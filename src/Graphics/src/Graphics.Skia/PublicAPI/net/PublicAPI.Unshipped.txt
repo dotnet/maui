@@ -1,5 +1,5 @@
-﻿#nullable enable
-~Microsoft.Maui.Graphics.Skia.SkiaImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata
+#nullable enable
+Microsoft.Maui.Graphics.Skia.SkiaImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata?
 ~Microsoft.Maui.Graphics.Skia.SkiaImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
 ~Microsoft.Maui.Graphics.Skia.SkiaImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Graphics.Skia.SkiaImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage

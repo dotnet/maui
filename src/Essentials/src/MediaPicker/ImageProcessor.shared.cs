@@ -12,12 +12,28 @@ namespace Microsoft.Maui.Essentials;
 /// The resolved set of image transformations the <see cref="IMediaPicker"/> applies to a picked or
 /// captured photo.
 /// </summary>
-internal readonly record struct ImageProcessingOptions(
-	int? MaximumWidth,
-	int? MaximumHeight,
-	int CompressionQuality,
-	bool RotateImage,
-	bool PreserveMetadata);
+internal readonly record struct ImageProcessingOptions
+{
+	public ImageProcessingOptions(
+		int? maximumWidth,
+		int? maximumHeight,
+		int compressionQuality,
+		bool rotateImage,
+		bool preserveMetadata)
+	{
+		MaximumWidth = maximumWidth;
+		MaximumHeight = maximumHeight;
+		CompressionQuality = compressionQuality;
+		RotateImage = rotateImage;
+		PreserveMetadata = preserveMetadata;
+	}
+
+	public int? MaximumWidth { get; }
+	public int? MaximumHeight { get; }
+	public int CompressionQuality { get; }
+	public bool RotateImage { get; }
+	public bool PreserveMetadata { get; }
+}
 
 /// <summary>
 /// Cross-platform image processing for the <see cref="IMediaPicker"/>, built entirely on the
@@ -75,12 +91,10 @@ internal static class ImageProcessor
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 		var loadingService = new Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService();
 
-		var loadOptions = new ImageLoadOptions
-		{
+		var loadOptions = new ImageLoadOptions(
 			// RotateImage == true means "normalize the EXIF orientation into the pixels".
-			DisableRotationNormalization = !options.RotateImage,
-			PreserveMetadata = options.PreserveMetadata,
-		};
+			disableRotationNormalization: !options.RotateImage,
+			preserveMetadata: options.PreserveMetadata);
 
 		using var image = loadingService.FromStream(input, loadOptions)
 			?? throw new InvalidOperationException("Failed to load image from stream.");
@@ -109,11 +123,9 @@ internal static class ImageProcessor
 
 		try
 		{
-			var saveOptions = new ImageSaveOptions
-			{
-				Quality = Math.Max(0, Math.Min(100, options.CompressionQuality)) / 100f,
-				PreserveMetadata = options.PreserveMetadata,
-			};
+			var saveOptions = new ImageSaveOptions(
+				quality: Math.Max(0, Math.Min(100, options.CompressionQuality)) / 100f,
+				preserveMetadata: options.PreserveMetadata);
 
 			await current.SaveAsync(output, format, saveOptions).ConfigureAwait(false);
 		}

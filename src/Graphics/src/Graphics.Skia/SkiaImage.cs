@@ -222,7 +222,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		}
 
 		/// <inheritdoc/>
-		public IImageMetadata Metadata => null;
+#nullable enable
+		public IImageMetadata? Metadata => null;
+#nullable restore
 
 		/// <inheritdoc/>
 		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)

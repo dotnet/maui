@@ -387,7 +387,7 @@ namespace Microsoft.Maui.Media
 						options?.MaximumHeight,
 						options?.CompressionQuality ?? 100,
 						options?.RotateImage ?? false,
-						PreserveMetadata: false);
+						preserveMetadata: false);
 
 					return new CompressedUIImageFileResult(img, null, processingOptions);
 				}
@@ -443,11 +443,11 @@ namespace Microsoft.Maui.Media
 					originalStream,
 					original.FileName,
 					new ImageProcessingOptions(
-						MaximumWidth: null,
-						MaximumHeight: null,
-						CompressionQuality: 100,
-						RotateImage: true,
-						PreserveMetadata: true));
+						maximumWidth: null,
+						maximumHeight: null,
+						compressionQuality: 100,
+						rotateImage: true,
+						preserveMetadata: true));
 
 				return new FileResult(outputPath, original.FileName);
 			}

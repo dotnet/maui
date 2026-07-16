@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			_image = image;
 		}
 
-		public IImageMetadata Metadata => null;
+#nullable enable
+		public IImageMetadata? Metadata => null;
+#nullable restore
 
 		public float Width => (float)_image.Size.Width;
 
