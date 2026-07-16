@@ -382,6 +382,9 @@ Describe 'Get-MergedRegressionFixPRs' {
         Mock Invoke-GhJson { $null }
 
         @(Get-MergedRegressionFixPRs -Owner 'dotnet' -Repo 'maui' -LookbackDays 14 -Limit 20).Count | Should -Be 0
+        Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
+            -not $AllowFailure
+        }
     }
 }
 
@@ -485,6 +488,9 @@ Describe 'Get-OpenRegressionCorpusPrTags' {
         }
 
         Get-OpenRegressionCorpusPrTags -Owner 'dotnet' -Repo 'maui' | Should -Contain 31931
+        Should -Invoke -CommandName Invoke-GhJson -Times 2 -Exactly -ParameterFilter {
+            -not $AllowFailure
+        }
     }
 }
 
