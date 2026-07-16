@@ -558,6 +558,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					try
 					{
+						// Carousel can become null if TearDownOldElement runs between the
+						// Dispatch call above and this callback's execution (e.g. the user
+						// navigates away while a live collection change is in flight).
+						if (Carousel is null)
+						{
+							return;
+						}
+
 						if (_scrollToCounter == savedScrollToCounter)
 						{
 							// Position and the virtual scroll offset are unchanged, so we
@@ -598,6 +606,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				try
 				{
+					// Carousel can become null if TearDownOldElement runs between the
+					// Dispatch call above and this callback's execution (e.g. the user
+					// navigates away while a live collection change is in flight).
+					if (Carousel is null)
+					{
+						return;
+					}
+
 					// If someone called explicit ScrollTo before the dispatched
 					// callback was delivered then don't override it.
 					if (_scrollToCounter == savedScrollToCounter)
