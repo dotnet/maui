@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Issues
 				<html>
 					<head></head>
 					<body>
-					<p>Hii this is Para </p>
+					<p>Hi, this is a paragraph.</p>
 						<span id=""{SmallFontSpanId}"" style=""font-size:{SmallFontCssValue};"">tiny span text</span>
 					</body>
 				</html>";

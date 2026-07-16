@@ -21,10 +21,10 @@ public class Issue26924 : _IssuesUITest
 		// the HTML, so wait for that before tapping the button to avoid racing navigation.
 		App.WaitForTextToBePresentInElement("ComputedFontSizeLabel", "WebView loaded");
 		App.Tap("CheckFontSizeButton");
+		App.WaitForTextToBePresentInElement("ComputedFontSizeLabel", "px");
 		var computedFontSizeText = App.WaitForElement("ComputedFontSizeLabel").GetText();
 		Assert.That(computedFontSizeText, Is.Not.Null);
-		var computedFontSize = float.Parse(computedFontSizeText!.TrimEnd('p', 'x'), CultureInfo.InvariantCulture);
-		Assert.That(computedFontSize, Is.LessThan(8f));
+		Assert.That(float.Parse(computedFontSizeText!.Trim().TrimEnd('p', 'x'), CultureInfo.InvariantCulture), Is.LessThan(8f));
 	}
 }
 
