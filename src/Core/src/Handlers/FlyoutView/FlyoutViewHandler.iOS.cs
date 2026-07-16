@@ -43,9 +43,6 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		// ═══════════════════════════════════════════════
-		// Mapper Implementations
-		// ═══════════════════════════════════════════════
 
 		public static void MapFlyout(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
@@ -97,9 +94,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		// ═══════════════════════════════════════════════
-		// IFlyoutContainerDelegate
-		// ═══════════════════════════════════════════════
 
 		void IFlyoutContainerDelegate.OnPresentedChangedByGesture(bool isPresented)
 		{
