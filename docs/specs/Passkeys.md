@@ -2,15 +2,16 @@
 
 | | |
 |---|---|
-| **Status** | Draft / Proposal (spec-first, open for discussion) |
+| **Status** | Proposed — finalized design, pending implementation |
 | **Area** | `area-essentials` |
 | **Namespace** | `Microsoft.Maui.Authentication` |
 | **Target** | `net11.0` feature branch (adds public API) |
 | **Related** | Discussion [#21498](https://github.com/dotnet/maui/discussions/21498) "FIDO2 Passkeys support?", Issue [#32020](https://github.com/dotnet/maui/issues/32020) "Cannot use passkey/fido/webauthn in BlazorWebView" |
 
-> **This is a spec-first proposal.** The intent is to agree on the public API shape and per-platform
-> implementation strategy *before* writing the implementation. Please leave feedback on the PR. The API
-> surface, type names, and design decisions in this document are all open for refinement.
+> This document describes the **finalized design** of the Passkeys Essentials API to be implemented on the
+> `net11.0` branch. It is the end-state specification: the public surface, naming, platform strategy, and
+> per-platform behavior are all settled. Items intentionally left for later are listed under
+> [§14 Planned follow-ups](#14-planned-follow-ups).
 
 ## 1. Summary
 
@@ -57,10 +58,11 @@ implement any server-side WebAuthn verification, attestation validation, or chal
   AutoFill credential provider extension). This is "use passkeys in my app", not "be a passkey vault".
 - Bundling **Google Play Services** to back-fill passkeys on Android 9–13. We ship the OS-native path
   only (Android 14+); apps that need the older range can add the Play adapter themselves (§7.1).
-- Conditional UI / autofill-driven passkey sign-in (may be a follow-up; see §7.5 and Open Questions).
-- A **BlazorWebView passkey bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)). Explicitly
-  deferred — see "Planned follow-ups" (§14). We'll file a detailed follow-up issue once the native API is
-  implemented and working.
+- Conditional UI / autofill-driven passkey sign-in — a separate view-oriented feature, deferred (§7.5,
+  Appendix A).
+- A **BlazorWebView passkey bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)), deferred —
+  see [§14 Planned follow-ups](#14-planned-follow-ups). A detailed follow-up issue is filed once the native
+  API is implemented and working.
 - Cross-device / security-key–only flows as a distinct API. On platforms where the OS offers this
   automatically (Apple, Windows) it is available through the same call; a dedicated security-key API is
   out of scope for v1.
@@ -114,7 +116,7 @@ server library emits/consumes, the cross-platform contract is **JSON-in / JSON-o
 pass-through; Apple and Windows translate JSON ⇄ native structures internally. This keeps the public API
 tiny and forward-compatible with new WebAuthn fields.
 
-## 5. Proposed public API
+## 5. Public API
 
 > The C# below is **illustrative shape, not compilable code** — get-only properties, elided bodies, and
 > `internal` constructors show the intended public surface, not the implementation. Types are sketched to
@@ -342,34 +344,35 @@ string credentialId = asserted.Id;          // base64url — which passkey was u
 string? userHandle = asserted.UserHandle;   // base64url RP user id, if returned
 ```
 
-## 6. Design decisions
+## 6. Design
 
-### 6.1 Why JSON in / JSON out
-- **Zero translation on Android** — Credential Manager consumes/produces exactly this JSON.
-- **1:1 with server libraries** — Fido2NetLib etc. already emit `CreationOptions`/`RequestOptions` JSON
-  and consume the response JSON. No impedance mismatch.
-- **Smallest public surface** — two options types + two response types.
-- **Forward-compatible** — new WebAuthn fields (e.g. `hints`, PRF extension) require no API change; they
-  flow through the JSON. On Apple/Windows we map the subset the OS supports and ignore the rest.
+### 6.1 JSON-in / JSON-out contract
+The API passes the server's WebAuthn options JSON through to the OS and returns the OS's WebAuthn response
+JSON back. This contract:
+- **Requires zero translation on Android** — Credential Manager consumes/produces exactly this JSON.
+- **Interoperates 1:1 with server libraries** — Fido2NetLib, SimpleWebAuthn, and ASP.NET Core Identity
+  already emit `CreationOptions`/`RequestOptions` JSON and consume the response JSON.
+- **Keeps the public surface small** — two options types + two response types.
+- **Is forward-compatible** — new WebAuthn fields (e.g. `hints`, the PRF extension) flow through the JSON
+  with no API change. On Apple/Windows the implementation maps the subset the OS supports and passes the
+  rest through.
 
-### 6.2 Thin wrapper types (not raw strings, not a full typed model)
-Each payload is a small dedicated type whose **`ToString()` returns the underlying WebAuthn JSON** — there
-is deliberately **no shared base class** and **no `Json` property**; the JSON is simply what the object
-stringifies to. This is the middle ground:
+### 6.2 Thin wrapper types
+Each payload is a small dedicated type whose **`ToString()` returns the underlying WebAuthn JSON**. There is
+no shared base class and no `Json` property — the JSON is simply what the object stringifies to. The options
+types add the one app-side behavior knob (`PreferImmediatelyAvailable`); the response types add the couple
+of decoded properties apps read on-device (`Id`, and `UserHandle` on the assertion).
 
-- **vs. raw strings:** stronger typing (can't pass a request where a response is expected, or an options
-  object where a response goes), and a natural home for the app-side behavior knob
-  (`PreferImmediatelyAvailable`) and the decoded properties — while still surfacing the JSON verbatim via
-  `ToString()`.
-- **vs. a fully-typed WebAuthn model:** a complete model (`Rp`, `User`, `PubKeyCredParams`,
-  `AllowCredentials`, `AuthenticatorSelection`, extensions…) is a **large** public surface that must
-  track ongoing WebAuthn spec churn, still needs JSON serialization for Android, and duplicates types in
-  server libraries.
-- **Decoded fields are real, cached properties — not extension methods, and not the whole schema.** We
-  start with the 80/20 the client actually reads (`Id`, and `UserHandle` on the assertion) as ordinary
-  properties. No `PasskeysExtensions` class ships initially; more fields (or the raw bytes) can be added
-  as **new properties/methods later without breaking** the core API. Responses parse their JSON lazily and
-  cache the decoded values.
+- Wrapper types (rather than bare `string`s) give **compile-time safety** — an options object can't be
+  passed where a response is expected — and a natural home for the behavior knob and decoded properties,
+  while still surfacing the raw JSON verbatim via `ToString()`.
+- The API deliberately does **not** model the full WebAuthn schema (`Rp`, `User`, `PubKeyCredParams`,
+  `AllowCredentials`, `AuthenticatorSelection`, extensions…). That would be a large public surface tracking
+  ongoing WebAuthn spec churn, still require JSON serialization for Android, and duplicate types already in
+  server libraries. All of it stays in the JSON.
+- Decoded fields are **real, cached properties** on the response types. Responses parse their JSON lazily on
+  first access and cache the result. Additional properties/methods can be added later without breaking the
+  API.
 
 ### 6.3 Naming decisions
 
@@ -397,70 +400,66 @@ is called "JSON"** — not "payload", not "request"/"response body". That direct
 | `PasskeyCreationOptions` | [`PublicKeyCredentialCreationOptionsJSON`](https://w3c.github.io/webauthn/#dictdef-publickeycredentialcreationoptionsjson) | Registration **input** → "creation options". Matches W3C "creation options" and Android's `CreatePublicKeyCredentialRequest(requestJson)`. |
 | `PasskeyRequestOptions` | [`PublicKeyCredentialRequestOptionsJSON`](https://w3c.github.io/webauthn/#dictdef-publickeycredentialrequestoptionsjson) | Authentication **input** → "request options". Matches W3C "request options" and Android's `GetPublicKeyCredentialOption(requestJson)`. (WebAuthn overloads "request" to mean the *get* options — hence `RequestOptions`, not `AssertionOptions`.) |
 | `PasskeyCreationResponse` | [`RegistrationResponseJSON`](https://w3c.github.io/webauthn/#dictdef-registrationresponsejson) | Registration **output**. W3C/Android both call this the "registration response". |
-| `PasskeyAssertionResponse` | [`AuthenticationResponseJSON`](https://w3c.github.io/webauthn/#dictdef-authenticationresponsejson) | Authentication **output**. W3C JSON type is "authentication response"; the underlying object is `AuthenticatorAssertionResponse` and Apple calls it an *assertion*. See Open Question #5 on `Assertion` vs `Authentication`. |
-| `ToString()` (each type) | `...JSON` suffix / Android `...Json` members | Returns the raw serialized value. There is no separate `Json` property or shared base — the object simply stringifies to its WebAuthn JSON. (The W3C `JSON` suffix / Android `requestJson` naming is why the JSON is the object's canonical string form.) |
-| `Id` (both responses) | [`PublicKeyCredential.id`](https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-id) | The credential id, base64url. See "Id naming" below. |
-| `UserHandle` (assertion) | [`AuthenticatorAssertionResponse.userHandle`](https://www.w3.org/TR/webauthn-3/#dom-authenticatorassertionresponse-userhandle) → JSON [`userHandle`](https://w3c.github.io/webauthn/#dom-authenticationresponsejson) | "User handle" is the W3C term of art (the RP's `user.id`). `string?` base64url, nullable. Apple exposes it as `UserId`; we prefer the W3C name. |
+| `PasskeyAssertionResponse` | [`AuthenticationResponseJSON`](https://w3c.github.io/webauthn/#dictdef-authenticationresponsejson) | Authentication **output**. The W3C JSON type is "authentication response"; the underlying object is `AuthenticatorAssertionResponse` and Apple calls it an *assertion* — `Assertion` names the response after that ceremony output. |
+| `ToString()` (each type) | `...JSON` suffix / Android `...Json` members | Returns the raw serialized value. There is no separate `Json` property or shared base — the object simply stringifies to its WebAuthn JSON. |
+| `Id` (both responses) | [`PublicKeyCredential.id`](https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-id) | The credential id, base64url. See "Id" below. |
+| `UserHandle` (assertion) | [`AuthenticatorAssertionResponse.userHandle`](https://www.w3.org/TR/webauthn-3/#dom-authenticatorassertionresponse-userhandle) → JSON [`userHandle`](https://w3c.github.io/webauthn/#dom-authenticationresponsejson) | "User handle" is the W3C term of art (the RP's `user.id`). `string?` base64url, nullable. Apple exposes it as `UserId`; the API uses the W3C name. |
 | `Passkeys` / `IPasskeys` | — | User-facing term everyone uses ([FIDO Alliance "passkeys"](https://fidoalliance.org/passkeys/)), rather than the spec-internal `WebAuthn`/`PublicKeyCredential` or the older `FIDO2`. |
 | `CreateAsync` | `navigator.credentials.create()` | W3C registration verb is *create*; Android is `createCredential`. |
-| `AssertAsync` | `navigator.credentials.get()` | W3C authentication verb is *get*, but a bare `GetAsync` is meaningless here and collides with the many `Get*` APIs; the ceremony's output is an [*assertion*](https://www.w3.org/TR/webauthn-3/#authentication-assertion), so `Assert` is precise. See Open Question #5. |
+| `AssertAsync` | `navigator.credentials.get()` | The W3C authentication verb is *get*, but a bare `GetAsync` is meaningless here and collides with the many `Get*` APIs; the ceremony's output is an [*assertion*](https://www.w3.org/TR/webauthn-3/#authentication-assertion), so `Assert` is precise. |
 
-**No shared base type — decision.** Earlier drafts had an abstract `PasskeyJsonObject` base. It's dropped:
-there is no W3C concept for it, and its only job (hold + stringify JSON) is fully served by a `ToString()`
-override on each concrete type. Each of the four types is small and self-contained, which also keeps the
-public surface honest (an options type and a response type genuinely have nothing in common but "wraps
-JSON"). "Payload" was considered and rejected — WebAuthn/Android never use it, and it would blur the
-options-vs-response distinction the spec makes explicit.
+**No shared base type.** The four wrapper types have no public base class. Holding and stringifying JSON is
+fully served by a `ToString()` override on each concrete type, and an options type and a response type share
+nothing else. ("Payload" is not used as a name — WebAuthn/Android never use it, and it would blur the
+options-vs-response distinction.)
 
-**`Id` naming — decision.** In WebAuthn the value is the [**Credential ID**](https://www.w3.org/TR/webauthn-3/#credential-id):
-a probabilistically-unique byte sequence that identifies the public key credential. It surfaces on
+**`Id`.** In WebAuthn the value is the [**Credential ID**](https://www.w3.org/TR/webauthn-3/#credential-id):
+a probabilistically-unique byte sequence identifying the public key credential. It surfaces on
 `PublicKeyCredential` in two forms of the *same* value —
 [`id`](https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-id) (base64url string) and
-[`rawId`](https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-rawid) (the bytes). So "credential"
-does carry meaning, **but within a single passkey response there is exactly one identifier and it is the
-primary one.** We therefore expose it as **`Id`** (`string`, base64url):
+[`rawId`](https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-rawid) (the bytes). Within a single
+passkey response there is exactly one identifier and it is the primary one, so it is exposed as **`Id`**
+(`string`, base64url):
 
-- Matches the W3C/Android JSON member name `id` verbatim — the exact token the customer sees in the
-  payload and stores in their DB, so comparisons are direct.
+- Matches the W3C/Android JSON member name `id` verbatim — the exact token stored in the RP's database, so
+  comparisons are direct.
 - Unambiguous in context (a `PasskeyAssertionResponse.Id` can only be the credential id).
-- Shortest correct name. Apple's binding calls the byte form `CredentialId`; `CredentialId` is offered as
-  the alternative in Open Question #7 for reviewers who prefer the explicit term.
+- Shortest correct name.
 
-**Raw id bytes — decision (defer).** `rawId` is the same Credential ID as bytes. Credential IDs are
+**Raw id bytes are not surfaced.** `rawId` is the same Credential ID as bytes. Credential IDs are
 [spec-capped at 1023 bytes](https://www.w3.org/TR/webauthn-3/#credential-id) but for passkeys are typically
-small (~16–64 bytes). We **do not** expose them in v1: the base64url `Id` is what apps forward and compare,
-and the full `rawId` remains in the `ToString()` JSON. If demand appears, the .NET guideline against
-array-typed properties argues for a **method** (`byte[] GetRawId()`) rather than a `byte[] RawId` property;
-tracked in Open Question #7.
+small (~16–64 bytes). The base64url `Id` is what apps forward and compare, and the full `rawId` remains in
+the `ToString()` JSON. If bytes are ever needed, the .NET guideline against array-typed properties means
+they would be added as a **method** (`byte[] GetRawId()`) — additive and non-breaking.
 
 ### 6.4 Placement
 - Lives in Essentials alongside `WebAuthenticator`, namespace `Microsoft.Maui.Authentication`.
 
-### 6.5 Candidate decoded properties (what to surface vs. leave in JSON)
+### 6.5 Decoded properties (surfaced vs. left in JSON)
 
 Everything in the response is reachable via `ToString()` (the raw WebAuthn JSON). The question is only
 *which* fields are common enough to also decode into first-class properties. The test is: **does a typical
 client app read this on-device, or does it only forward it to the server?** Fields that only the RP server
 consumes stay in the JSON.
 
-| Field (WebAuthn) | On | What it is / used for | Typical app needs it client-side? | Proposal |
+| Field (WebAuthn) | On | What it is / used for | Typical app needs it client-side? | Surfacing |
 |---|---|---|---|---|
-| `id` | both | Credential ID (base64url) — which passkey; store/reference it | **Yes** — store per user, dedupe, display | **`Id`** ✅ (v1) |
-| `response.userHandle` | assert | RP `user.id` — identifies the account in username-less sign-in *before* server round-trip | **Yes** for discoverable-credential UX | **`UserHandle`** ✅ (v1) |
-| `authenticatorAttachment` | both | `"platform"` (this device) vs `"cross-platform"` (security key / phone) | **Sometimes** — UX copy ("passkey saved on this device" vs "on your security key"); decide whether to offer device-bound only | **Consider** — `AuthenticatorAttachment` (nullable enum). Cheap, genuinely client-facing. Open Q #4 |
-| `rawId` | both | Same Credential ID as bytes | Rarely — apps forward/compare the base64url `id` | Leave in JSON; if added, a `byte[] GetRawId()` **method** (Open Q #4) |
-| `response.transports` | reg | Authenticator transports (`usb`/`nfc`/`ble`/`internal`/`hybrid`); server stores to optimize future `allowCredentials` | **No** — server-side optimization | Leave in JSON |
-| `response.publicKey` / `publicKeyAlgorithm` | reg | The credential public key + COSE alg | **No** — server verifies/stores | Leave in JSON |
-| `response.attestationObject` | reg | Attestation + public key | **No** — server verifies | Leave in JSON |
-| `response.authenticatorData` | assert | Signed authenticator data (RP ID hash, counter, flags) | **No** — server verifies | Leave in JSON |
-| `response.signature` | assert | Assertion signature | **No** — server verifies | Leave in JSON |
-| `response.clientDataJSON` | both | Challenge/origin/type the client signed | **No** — server verifies | Leave in JSON |
-| `clientExtensionResults` (e.g. `credProps.rk`, `prf`) | both | Extension outputs; `credProps.rk` = whether the passkey is discoverable | **Rarely** — advanced UX only, and unreliable across authenticators | Leave in JSON |
-| `type` | both | Always `"public-key"` | No | Leave in JSON |
+| `id` | both | Credential ID (base64url) — which passkey; store/reference it | **Yes** — store per user, dedupe, display | **`Id`** ✅ surfaced |
+| `response.userHandle` | assert | RP `user.id` — identifies the account in username-less sign-in *before* server round-trip | **Yes** for discoverable-credential UX | **`UserHandle`** ✅ surfaced |
+| `authenticatorAttachment` | both | `"platform"` (this device) vs `"cross-platform"` (security key / phone) | **Sometimes** — UX copy ("passkey saved on this device" vs "on your security key") | In JSON. Natural future addition as `AuthenticatorAttachment` (nullable enum) — non-breaking |
+| `rawId` | both | Same Credential ID as bytes | Rarely — apps forward/compare the base64url `id` | In JSON; if ever added, a `byte[] GetRawId()` **method** |
+| `response.transports` | reg | Authenticator transports (`usb`/`nfc`/`ble`/`internal`/`hybrid`); server stores to optimize future `allowCredentials` | **No** — server-side optimization | In JSON |
+| `response.publicKey` / `publicKeyAlgorithm` | reg | The credential public key + COSE alg | **No** — server verifies/stores | In JSON |
+| `response.attestationObject` | reg | Attestation + public key | **No** — server verifies | In JSON |
+| `response.authenticatorData` | assert | Signed authenticator data (RP ID hash, counter, flags) | **No** — server verifies | In JSON |
+| `response.signature` | assert | Assertion signature | **No** — server verifies | In JSON |
+| `response.clientDataJSON` | both | Challenge/origin/type the client signed | **No** — server verifies | In JSON |
+| `clientExtensionResults` (e.g. `credProps.rk`, `prf`) | both | Extension outputs; `credProps.rk` = whether the passkey is discoverable | **Rarely** — advanced UX only, and unreliable across authenticators | In JSON |
+| `type` | both | Always `"public-key"` | No | In JSON |
 
-**Summary:** ship `Id` (+ `UserHandle` on the assertion) in v1; the only serious *additional* candidate is
-`AuthenticatorAttachment` for UX messaging. Everything else is server-verification material and belongs in
-the JSON, keeping the surface small and honest. New properties can be added later without breaking the API.
+**Surfaced in v1:** `Id` (both responses) and `UserHandle` (the assertion). Everything else is
+server-verification material and stays in the JSON, keeping the surface small. New properties (the most
+likely being `AuthenticatorAttachment` for UX messaging) can be added later without breaking the API.
 
 ## 7. Platform implementation design
 
@@ -550,9 +549,8 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   ourselves (base64url-encoding the binary fields).
 - **Binding note (Obj-C, not Swift).** `Microsoft.iOS` / `Microsoft.MacCatalyst` bind the **Objective-C**
   `AuthenticationServices` framework and project it to C#. There is no Swift interop involved — the
-  "native" API we actually call from the MAUI implementation is the bound Obj-C surface. The Swift
-  snippet below is the canonical Apple-docs reference; the C# snippet is the equivalent bound API the
-  implementation would use. Both are provided for reviewers.
+  "native" API called from the MAUI implementation is the bound Obj-C surface. The Swift snippet below is
+  the canonical Apple-docs reference; the C# snippet is the equivalent bound API the implementation uses.
 
 - Reference — Apple's native model (Swift, from the Apple docs):
 
@@ -671,14 +669,13 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
 - **Not built by Essentials today** — standalone macOS and watchOS compile groups are commented out in
   `Essentials.csproj`, so they need no stub until those targets are enabled.
 
-### 7.5 Platform-specific behavior — what to design now vs. retrofit later
+### 7.5 Platform behavior & runtime knobs
 
-A deliberate consequence of the **JSON-in / JSON-out** contract is that *most* per-platform passkey
-configuration is **already carried inside the WebAuthn options JSON** and needs **no** cross-platform API
-knob. Only a small set of things are true *runtime behaviors* (not describable in the options JSON) and
-are the ones worth designing up front so we don't have to break API later.
+Because of the **JSON-in / JSON-out** contract, most per-platform passkey configuration is **already carried
+inside the WebAuthn options JSON** and needs no cross-platform API knob. A small set of things are true
+*runtime behaviors* — not describable in the options JSON — and those are what the API surfaces as knobs.
 
-**Carried by the WebAuthn options JSON (no API surface needed — set these server-side):**
+**Carried by the WebAuthn options JSON (no API surface — set these server-side):**
 
 | WebAuthn field | Controls | Android | Apple | Windows |
 |---|---|---|---|---|
@@ -694,23 +691,21 @@ are the ones worth designing up front so we don't have to break API later.
 Because all of the above flow through the JSON, we do **not** add typed knobs for them — that's the whole
 point of the JSON contract, and it stays forward-compatible as new fields land.
 
-**Genuine runtime behaviors (NOT in the JSON) — the only candidates for cross-platform knobs:**
+**Runtime behaviors (NOT in the JSON) — the API's knobs:**
 
-| Behavior | Why it's not in the JSON | Platform mapping | Decision for v1 |
+| Behavior | Why it's not in the JSON | Platform mapping | Status |
 |---|---|---|---|
-| **1a — Immediately-available UI** | It's a *presentation mode*, not credential data | Android `setPreferImmediatelyAvailableCredentials(true)`; Apple `.preferImmediatelyAvailableCredentials` via `PerformRequests`; **Windows: no equivalent (no-op)** | **v1** — modeled as `PreferImmediatelyAvailable` on the options (§5). A `bool` on the same request; local-only, fail-fast, no hybrid/QR. |
+| **1a — Immediately-available UI** | It's a *presentation mode*, not credential data | Android `setPreferImmediatelyAvailableCredentials(true)`; Apple `.preferImmediatelyAvailableCredentials` via `PerformRequests`; **Windows: no equivalent (no-op)** | **v1** — `PreferImmediatelyAvailable` on the options (§5). A `bool` on the same request; local-only, fail-fast, no hybrid/QR. |
 | **1b — Conditional UI / autofill** | It's a *separate UI-priming call*, not a ceremony | Apple `PerformAutoFillAssistedRequests()`; Android view/autofill association; Windows: none | **Follow-up** — a distinct view-oriented, event-based, assertion-only API. See **Appendix A**. |
-| **Presentation anchor / parent window** | A live UI object, can't be serialized | iOS/macOS `presentationContextProvider`; Windows top-level `HWND`; Android current `Activity` | **Handle internally** via MAUI's active window; consider an *optional* override later (non-breaking to add). |
-| **Request origin override** | Only for privileged/browser apps acting for a web origin | Android privileged `setOrigin`; Apple/Windows not exposed | **Defer** — niche; can be added as an options property without breaking. |
+| **Presentation anchor / parent window** | A live UI object, can't be serialized | iOS/macOS `presentationContextProvider`; Windows top-level `HWND`; Android current `Activity` | **v1, internal** — resolved via MAUI's active window; no public surface. An optional override is a non-breaking future addition. |
+| **Request origin override** | Only for privileged/browser apps acting for a web origin | Android privileged `setOrigin`; Apple/Windows not exposed | **Not exposed** — privileged/niche; addable later as an options property without breaking. |
 | **Cancellation** | Runtime signal | `CancellationToken` → Android `CancellationSignal`, Apple `Cancel()`, Windows `WebAuthNGetCancellationId` + `WebAuthNCancelCurrentOperation` | **v1** — `CancellationToken` on both methods (§5). |
 
-**Take-away:** the JSON absorbs virtually all per-platform configuration, so the v1 public API needs only the
-two behavioral knobs we already have — **`PreferImmediatelyAvailable`** (1a) and **`CancellationToken`**.
-Conditional UI (1b, Appendix A), the presentation-anchor override, and the origin override are the realistic
-*future* additions, and all can be added as new optional members / a new method **without breaking** the v1
-surface — so there's nothing we must add now to avoid a retrofit.
+The v1 public API therefore exposes exactly two behavioral knobs — **`PreferImmediatelyAvailable`** (1a) and
+**`CancellationToken`** — plus internal presentation-anchor resolution. Conditional UI (1b, Appendix A), an
+explicit presentation-anchor override, and the origin override are all additive, non-breaking future work.
 
-The rest of this section drills into each knob: the native API on each OS, and a behavior matrix.
+The subsections below give the native API on each OS and a behavior matrix for each knob.
 
 #### 7.5.1 Immediately-available UI — `PreferImmediatelyAvailable` (v1)
 
@@ -754,10 +749,10 @@ a lifetime, so it can never be serialized into the JSON. Purely presentation —
 | **Multi-window (iPad / desktop)** | foreground Activity | returned anchor (wrong one → wrong window) | modal parented to resolved `HWND` |
 | **Explicit override (future)** | pass a specific `Activity` | return a specific `UIWindow` | pass a specific `HWND` |
 
-*Decision:* handle internally; throw a clear `InvalidOperationException` if no foreground window/activity
-exists. An optional per-call window/anchor override can be added later — additive, non-breaking.
+*Design:* resolved internally; if no foreground window/activity exists, the call throws a clear
+`InvalidOperationException`. An optional per-call window/anchor override is a non-breaking future addition.
 
-#### 7.5.3 Request origin override — defer (not exposed in v1)
+#### 7.5.3 Request origin override — not exposed (v1)
 
 *What it is:* overriding the **origin** the ceremony binds to (part of the signed `clientDataJSON`), i.e.
 running WebAuthn *on behalf of* a web origin rather than the app's own verified identity. The classic
@@ -776,10 +771,10 @@ enable phishing, so every platform gates it hard.
 | **set, app NOT privileged** | `SecurityException` | no-op / unsupported | no-op / unsupported |
 | **set, app IS privileged (browser)** | honored | n/a via this API | n/a via this API |
 
-*Decision:* **defer / do not expose.** MAUI Essentials targets normal apps authenticating for their own RP;
-the default automatic-origin behavior is correct for them, and exposing an override would "work" only for
-system apps on Android and silently no-op elsewhere. Addable later as an optional `Origin` property with
-platform caveats — non-breaking.
+*Design:* **not exposed.** MAUI Essentials targets normal apps authenticating for their own RP, for which
+the default automatic-origin behavior is correct; an override would work only for privileged system apps on
+Android and no-op elsewhere. It can be added later as an optional `Origin` property with platform caveats —
+non-breaking.
 
 #### 7.5.4 Cancellation — `CancellationToken` (v1)
 
@@ -810,7 +805,7 @@ cancel must come from a different thread than the blocking call, using the pre-a
 |---|---|
 | OS/version without passkey support | `IsSupported == false`; calls throw `FeatureNotSupportedException` |
 | User cancels the native UI | `TaskCanceledException` (matches `WebAuthenticator`) |
-| No matching credential (authenticate) | `TaskCanceledException` or a dedicated `PasskeyException` (Open Question) |
+| No matching credential (authenticate) | `PasskeyException` — no passkey available (distinct from user cancellation) |
 | Malformed options JSON | `ArgumentException` |
 | Domain association not configured | Platform error surfaced as `PasskeyException` with the native message |
 | Any other native failure | `PasskeyException` wrapping the platform exception/HRESULT |
@@ -819,8 +814,8 @@ cancel must come from a different thread than the blocking call, using the pre-a
 - **Android**: adds **`Xamarin.AndroidX.Credentials` only** (version pinned via `eng/Versions.props`). We
   deliberately **do not** add `Xamarin.AndroidX.Credentials.PlayServicesAuth`, so **no Google Play
   Services** enters the `Microsoft.Maui.Essentials` dependency closure (it has none today). Trade-off: the
-  OS-native passkey path is Android 14+; API 28–33 back-fill is the app's opt-in (§7.1). Still needs
-  sign-off on the new AndroidX dependency (size/servicing, `NuGets.md`).
+  OS-native passkey path is Android 14+; API 28–33 back-fill is the app's opt-in (§7.1). This new AndroidX
+  dependency is recorded in `NuGets.md` (size/servicing tracked there).
 - **Apple / Windows**: no new NuGet packages (in-box frameworks / P/Invoke).
 - **Public API**: new types in `Microsoft.Maui.Authentication` → `PublicAPI.Unshipped.txt` entries per
   TFM. Because this adds public API, implementation targets the **`net11.0`** feature branch.
@@ -840,9 +835,9 @@ cancel must come from a different thread than the blocking call, using the pre-a
   `IsSupported` gating, `SetDefault` substitution, exception mapping. Platform calls mocked via
   `IPasskeys`.
 - **Device tests**: passkey ceremonies require real authenticators/biometrics and hosted domain
-  association, so full end-to-end is hard to automate in CI. Propose: verify `IsSupported`, request
-  construction, and JSON translation on-device; gate the interactive ceremony behind a manual/sample
-  test with a reference RP server.
+  association, so full end-to-end is hard to automate in CI. On-device tests verify `IsSupported`, request
+  construction, and JSON translation; the interactive ceremony runs behind a manual/sample test with a
+  reference RP server.
 - **Reference RP server (test backend)**: stand up an **ASP.NET Core Identity** app using the built-in
   passkey support (available since .NET 10) as the relying party. The **Blazor Web App template with
   "Individual Accounts"** scaffolds passkey registration/sign-in endpoints and UI out of the box, so we
@@ -858,7 +853,7 @@ cancel must come from a different thread than the blocking call, using the pre-a
   });
   ```
 
-  Proposed layout: a small test/sample web project (e.g. `src/Essentials/samples/…` or an integration
+  Layout: a small test/sample web project (e.g. `src/Essentials/samples/…` or an integration
   fixture) that the MAUI sample points at. Its `/begin` + `/finish` endpoints feed the `CreateAsync` /
   `AssertAsync` calls directly, so the same backend validates all platforms. Because it's the *official*
   ASP.NET Core Identity implementation, it doubles as an interop conformance check.
@@ -866,27 +861,20 @@ cancel must come from a different thread than the blocking call, using the pre-a
   [Blazor Web App passkeys](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/blazor).
 - **Sample**: add a Passkeys page to `Essentials.Sample` wired to the reference RP above.
 
-## 12. Open questions
-1. **Package size / dependency**: is adding **AndroidX Credentials** (Play-free) to Essentials acceptable,
-   or should passkeys ship as a **separate opt-in NuGet** (e.g. `Microsoft.Maui.Authentication.Passkeys`)
-   to avoid growing the Essentials closure for apps that don't use it? (Note: the no-Play decision in §7.1
-   already keeps GMS out of Essentials; this question is about the AndroidX Credentials dep itself.)
-2. **Android floor**: is **API 34 (Android 14)** an acceptable minimum for the OS-native path, or do we
-   need a documented recipe / opt-in hook for apps that add `credentials-play-services-auth` to reach
-   API 28–33? (We do not bundle it — §7.1.)
-3. **Conditional UI / autofill** passkey sign-in (Android `preferImmediatelyAvailable`, iOS
-   `PerformAutoFillAssistedRequests`, Windows silent) — v1 or follow-up? See §7.5.
-4. **Decoded properties (the 80/20)**: v1 exposes the raw JSON via `ToString()` plus `Id` (both
-   responses) and `UserHandle` (assertion). Should we also add **`AuthenticatorAttachment`**
-   (`"platform"`/`"cross-platform"`) for UX messaging — the one serious additional candidate from §6.5?
-   Everything else (attestation, transports, signatures, client-data) stays in the JSON; raw id bytes, if
-   ever needed, as a `byte[] GetRawId()` method.
-5. **Method / response naming**: `AssertAsync` vs `GetAsync` vs `AuthenticateAsync` (the last collides
-   conceptually with `WebAuthenticator.AuthenticateAsync`). Relatedly, `PasskeyAssertionResponse` vs
-   `PasskeyAuthenticationResponse` (W3C JSON type is `AuthenticationResponseJSON`, but Apple and
-   `AuthenticatorAssertionResponse` use "assertion").
-6. **`Id` naming**: keep `Id` (matches the W3C JSON `id` member) or use the explicit `CredentialId`
-   (matches Apple's binding and the "Credential ID" term of art)? See §6.3.
+## 12. Summary of key decisions
+
+| Topic | Decision |
+|---|---|
+| Interop contract | **JSON-in / JSON-out** (§6.1) — the server's WebAuthn options JSON in, the OS's response JSON out. |
+| Type shape | **Thin wrapper types** with `ToString()` returning the JSON; no shared base, no `Json` property (§6.2, §6.3). |
+| Decoded properties | Surface **`Id`** (both responses) and **`UserHandle`** (assertion); everything else stays in the JSON (§6.5). |
+| Naming | `Passkeys`/`IPasskeys`, `CreateAsync`/`AssertAsync`, `PasskeyCreationOptions`/`PasskeyRequestOptions`, `PasskeyCreationResponse`/`PasskeyAssertionResponse`, credential id as **`Id`** — all anchored to W3C/Android terms (§6.3). |
+| Packaging | Ships **in `Microsoft.Maui.Essentials`**, namespace `Microsoft.Maui.Authentication` (§6.4, §9). |
+| Android provider | **`Xamarin.AndroidX.Credentials` only — no Google Play Services** (§7.1, §9). |
+| Android minimum | **API 34 (Android 14)** for the OS-native path; API 28–33 is the app's own opt-in (§7.1). |
+| Apple scope | **iOS / iPadOS / Mac Catalyst** (iOS 16+); standalone macOS deferred until Essentials enables a `net-macos` target (§7.2). |
+| Windows minimum | **Windows 11** for passkeys, via `webauthn.dll` P/Invoke (§7.3). |
+| Runtime knobs | v1 exposes **`PreferImmediatelyAvailable`** and **`CancellationToken`**; presentation anchor is internal; origin override and conditional UI are deferred (§7.5). |
 
 ## 13. References
 - W3C WebAuthn Level 3 — https://www.w3.org/TR/webauthn-3/
