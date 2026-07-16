@@ -154,11 +154,14 @@ code — CI reuse is unaffected because any job can shell out to the core's CLI.
 
 ## Closing the loop — emit-eval
 
-For each recurring failure mode, the skill emits a `vally` guard-eval under the
-relevant `<skill>/tests/` directory, using the PR #36002 house pattern: a
-refutation-proof **structural floor** (`output-matches` on a forced token line)
-paired with **one LLM judge** (`scale_1_5`, `threshold: 0.6`) so the judge carries
-~half the weight. Each emitted file must pass
+For each recurring failure mode, the skill emits a `vally` guard-eval using the
+PR #36002 house pattern. An eval guarding this skill's own analysis workflow
+belongs at `.github/skills/analyze-sessions/tests/eval.<short-mode>.vally.yaml`;
+generic `.github/evals/` paths are not valid targets. A different skill's
+`tests/` directory is appropriate only when that skill owns the guarded behavior.
+Each eval pairs a refutation-proof **structural floor** (`output-matches` on a
+forced token line) with **one LLM judge** (`scale_1_5`, `threshold: 0.6`) so the
+judge carries ~half the weight. Each emitted file must pass
 `npx -y @microsoft/vally-cli@0.6.0 lint --eval-spec <f> --strict`. This is the
 mechanism that makes the analysis *iterative*: a failure found today becomes a
 regression test that fails if we regress tomorrow.

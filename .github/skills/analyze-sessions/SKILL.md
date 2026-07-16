@@ -93,8 +93,11 @@ local DB select entirely. See `references/design-rationale.md`.
 3. **Failure-mode analysis** — your rubric tags + clusters with frequency.
 4. **Proposals** — concrete edits to `.github/instructions/*`, `.github/skills/*`,
    and agent files (learn-from-pr taxonomy).
-5. **Guard evals** — one `vally` eval per recurring failure mode, under the
-   relevant `<skill>/tests/`, so the failure becomes a regression test.
+5. **Guard evals** — one `vally` eval per recurring failure mode. An eval that
+   guards this skill's judge → cluster → propose workflow belongs under
+   `.github/skills/analyze-sessions/tests/eval.<short-mode>.vally.yaml`, so the
+   failure becomes a regression test. Do not invent a generic `.github/evals/`
+   location.
 
 ## The loop — 6 phases
 
@@ -192,8 +195,12 @@ what the user approves (mirrors `learn-from-pr`'s analysis-vs-apply split).
 ### Phase 6 — Emit-eval (close the loop)
 
 This is what makes the loop *iterative*. For each recurring failure mode, emit a
-`vally` guard-eval under the **relevant skill's** `tests/` directory, named
-`eval.<short-mode>.vally.yaml`, using the PR #36002 house pattern:
+`vally` guard-eval named `eval.<short-mode>.vally.yaml`. An eval that guards the
+analyze-sessions workflow itself belongs at
+`.github/skills/analyze-sessions/tests/eval.<short-mode>.vally.yaml`; do not use
+a generic `.github/evals/` location. Use another skill's `tests/` directory only
+when that skill owns the behavior the eval guards. Use the PR #36002 house
+pattern:
 
 - A **refutation-proof structural floor**: force the agent to end with a
   structured token line (e.g. `BRANCH_TARGET: main`) and assert it via
