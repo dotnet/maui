@@ -237,6 +237,12 @@ namespace Microsoft.Maui.Controls
 		View? _scrollParent;
 		Element? _templateParent;
 		SwipeDirection? _swipeDirection;
+		WeakScrollParentProxy? _scrolledProxy;
+
+		~SwipeView()
+		{
+			_scrolledProxy?.Unsubscribe();
+		}
 
 		ISwipeItems ISwipeView.LeftItems => new HandlerSwipeItems(LeftItems);
 
@@ -323,20 +329,7 @@ namespace Microsoft.Maui.Controls
 
 		void UnsubscribeFromParentScrolledEvents()
 		{
-			if (_scrollParent is ScrollView scrollView)
-			{
-				scrollView.Scrolled -= OnParentScrolled;
-			}
-#pragma warning disable CS0618 // Type or member is obsolete
-			else if (_scrollParent is ListView listView)
-			{
-				listView.Scrolled -= OnParentScrolled;
-			}
-#pragma warning restore CS0618 // Type or member is obsolete
-			else if (_scrollParent is CollectionView collectionView)
-			{
-				collectionView.Scrolled -= OnParentScrolled;
-			}
+			_scrolledProxy?.Unsubscribe();
 			_scrollParent = null;
 		}
 
@@ -356,7 +349,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_scrollParent is ScrollView scrollView)
 			{
-				scrollView.Scrolled += OnParentScrolled;
+				EnsureScrolledProxy().Subscribe(this, scrollView);
 				return true;
 			}
 
@@ -365,7 +358,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_scrollParent is ListView listView)
 			{
-				listView.Scrolled += OnParentScrolled;
+				EnsureScrolledProxy().Subscribe(this, listView);
 				return true;
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -374,12 +367,14 @@ namespace Microsoft.Maui.Controls
 
 			if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
 			{
-				collectionView.Scrolled += OnParentScrolled;
+				EnsureScrolledProxy().Subscribe(this, collectionView);
 				return true;
 			}
 
 			return false;
 		}
+
+		WeakScrollParentProxy EnsureScrolledProxy() => _scrolledProxy ??= new WeakScrollParentProxy();
 
 		void UpdateMargin()
 		{
@@ -406,6 +401,75 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Math.Abs(e.HorizontalDelta) > SwipeMinimumDelta || Math.Abs(e.VerticalDelta) > SwipeMinimumDelta)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
+		}
+
+		// Subscribes to an ancestor scroll container's Scrolled event via a WeakReference back to the
+		// SwipeView, so a long-lived scroll parent does not root a SwipeView that has been detached from
+		// the visual tree without its direct Parent changing (see issue #36481).
+		sealed class WeakScrollParentProxy
+		{
+			WeakReference<SwipeView>? _swipeView;
+			View? _source;
+
+			public void Subscribe(SwipeView swipeView, View source)
+			{
+				Unsubscribe();
+
+				_swipeView = new WeakReference<SwipeView>(swipeView);
+				_source = source;
+
+				switch (source)
+				{
+					case ScrollView scrollView:
+						scrollView.Scrolled += OnScrolled;
+						break;
+#pragma warning disable CS0618 // Type or member is obsolete
+					case ListView listView:
+						listView.Scrolled += OnScrolled;
+						break;
+#pragma warning restore CS0618 // Type or member is obsolete
+					case CollectionView collectionView:
+						collectionView.Scrolled += OnItemsViewScrolled;
+						break;
+				}
+			}
+
+			public void Unsubscribe()
+			{
+				switch (_source)
+				{
+					case ScrollView scrollView:
+						scrollView.Scrolled -= OnScrolled;
+						break;
+#pragma warning disable CS0618 // Type or member is obsolete
+					case ListView listView:
+						listView.Scrolled -= OnScrolled;
+						break;
+#pragma warning restore CS0618 // Type or member is obsolete
+					case CollectionView collectionView:
+						collectionView.Scrolled -= OnItemsViewScrolled;
+						break;
+				}
+
+				_source = null;
+				_swipeView = null;
+			}
+
+			void OnScrolled(object? sender, ScrolledEventArgs e)
+			{
+				if (_swipeView is not null && _swipeView.TryGetTarget(out var swipeView))
+					swipeView.OnParentScrolled(sender, e);
+				else
+					Unsubscribe();
+			}
+
+			void OnItemsViewScrolled(object? sender, ItemsViewScrolledEventArgs e)
+			{
+				if (_swipeView is not null && _swipeView.TryGetTarget(out var swipeView))
+					swipeView.OnParentScrolled(sender, e);
+				else
+					Unsubscribe();
+			}
 		}
 
 		void ISwipeView.SwipeStarted(SwipeViewSwipeStarted swipeStarted)

@@ -26,3 +26,4 @@ override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnH
 override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnSizeChanged(int w, int h, int oldw, int oldh) -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
