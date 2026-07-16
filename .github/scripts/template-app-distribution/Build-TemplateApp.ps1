@@ -223,8 +223,14 @@ function New-MacCatalystDeveloperIdSideload {
         }
 
         # Hardened runtime is required for notarization. Re-sign deeply, preserving entitlements.
+        # Extract the current entitlements as XML (--xml avoids codesign's deprecated ':' path
+        # syntax) and only re-apply them when the bundle actually declares some.
         $entitlementsPath = Join-Path $devIdOutput "developerid-entitlements.plist"
-        & codesign -d "--entitlements" ":$entitlementsPath" $devIdApp.FullName 2>$null
+        Remove-Item -Path $entitlementsPath -Force -ErrorAction SilentlyContinue
+        $capturedEntitlements = & codesign -d --xml --entitlements - $devIdApp.FullName 2>$null
+        if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($capturedEntitlements)) {
+            Set-Content -Path $entitlementsPath -Value $capturedEntitlements -Encoding utf8
+        }
         $signArgs = @("--force", "--deep", "--options", "runtime", "--timestamp", "--sign", $devIdKey)
         if (Test-Path $entitlementsPath) { $signArgs += @("--entitlements", $entitlementsPath) }
         & codesign @signArgs $devIdApp.FullName
