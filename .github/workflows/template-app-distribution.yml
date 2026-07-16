@@ -4,7 +4,6 @@
 # - TEMPLATE_APP_ANDROID_KEYSTORE_BASE64
 # - TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD
 # - TEMPLATE_APP_ANDROID_KEY_ALIAS
-# - TEMPLATE_APP_ANDROID_KEY_PASSWORD
 # - TEMPLATE_APP_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
 # - TEMPLATE_APP_IOS_CERTIFICATE_BASE64
 # - TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD
@@ -15,6 +14,7 @@
 # - TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY (raw .p8 content or base64)
 #
 # Optional variables/secrets:
+# - TEMPLATE_APP_ANDROID_KEY_PASSWORD (secret): the signing key password; defaults to the keystore password when unset.
 # - TEMPLATE_APP_IDENTIFIER_PREFIX (variable): defaults to com.<repository-owner>.maui.template.
 # - TEMPLATE_APP_VARIANTS_JSON (variable): adds or overrides variant definitions.
 # - TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON (secret): maps variant names to base64 provisioning profiles.
@@ -435,8 +435,10 @@ jobs:
               $variantSecretName = $env:VARIANT.ToUpperInvariant()
               $missing.Add("TEMPLATE_APP_${variantSecretName}_MACCATALYST_PROVISIONING_PROFILE_BASE64 or TEMPLATE_APP_MACCATALYST_PROVISIONING_PROFILES_JSON")
             }
-            Test-RequiredEnvironment "MAC_INSTALLER_CERTIFICATE_BASE64" "TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_BASE64"
-            Test-RequiredEnvironment "MAC_INSTALLER_CERTIFICATE_PASSWORD" "TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_PASSWORD"
+            # MAC_INSTALLER_CERTIFICATE_* is intentionally NOT required here: Install-AppleSigningAssets.ps1
+            # accepts a "3rd Party Mac Developer Installer" identity from ANY imported cert (the main
+            # IOS_CERTIFICATE p12 can already contain one) and only throws if no installer identity is
+            # present after import. Hard-requiring the dedicated secret would be a false-negative failure.
             Test-RequiredEnvironment "APPSTORE_CONNECT_ISSUER_ID" "TEMPLATE_APPSTORE_CONNECT_ISSUER_ID"
             Test-RequiredEnvironment "APPSTORE_CONNECT_KEY_ID" "TEMPLATE_APPSTORE_CONNECT_KEY_ID"
             Test-RequiredEnvironment "APPSTORE_CONNECT_PRIVATE_KEY" "TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY"
@@ -711,7 +713,7 @@ jobs:
           APPSTORE_CONNECT_PRIVATE_KEY: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:APPSTORE_CONNECT_PRIVATE_KEY)) {
-            throw "TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY is required for iOS publishing."
+            throw "TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY is required for iOS/Mac Catalyst publishing."
           }
 
           $keyPath = Join-Path $env:RUNNER_TEMP "appstore-connect-key.p8"
