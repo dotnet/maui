@@ -243,6 +243,11 @@ Describe 'Get-LinkedIssueNumbers' {
     It 'ignores out-of-range references' {
         @(Get-LinkedIssueNumbers 'Fixes #999999999999').Count | Should -Be 0
     }
+    It 'rejects malformed closing-reference number suffixes' {
+        @(Get-LinkedIssueNumbers 'Fixes #123invalid').Count | Should -Be 0
+        @(Get-LinkedIssueNumbers 'Fixes https://github.com/dotnet/maui/issues/123invalid').Count |
+            Should -Be 0
+    }
 }
 
 Describe 'Get-IntroducingPrReferences' {
@@ -474,6 +479,9 @@ Describe 'Get-ExistingRegressionPrTags' {
 
         { Get-ExistingRegressionPrTags -CorpusGlob $file } |
             Should -Throw '*Cannot read corpus file*'
+        Should -Invoke -CommandName Get-Content -Times 1 -Exactly -ParameterFilter {
+            $LiteralPath -eq $file -and $ErrorAction -eq 'Stop'
+        }
     }
 }
 
@@ -484,17 +492,15 @@ Describe 'Get-IntroducingPrDetails' {
         $details = Get-IntroducingPrDetails -Owner dotnet -Repo maui -Number 123
 
         ($null -eq $details) | Should -BeTrue
-        Assert-MockCalled Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
+        Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
             $AllowFailure -and $GhArgs[0] -eq 'pr'
         }
     }
 }
 
 Describe 'New-RegressionCandidate' {
-    # Regression guard: the original main-loop form wrapped the regressionIssues
-    # List[object] with @(...) inside a [PSCustomObject] literal, which throws
-    # "Argument types do not match" on real (populated) data. These tests exercise
-    # the candidate-building path the mocked helper tests never reached.
+    # Regression guard: the main loop passes a populated List[object]. These tests
+    # keep candidate construction and its serialized array shape stable.
     BeforeAll {
         $script:issues = New-Object System.Collections.Generic.List[object]
         $script:issues.Add([PSCustomObject]@{ number = 35756; regressedInLabels = @('regressed-in-10.0.70') }) | Out-Null

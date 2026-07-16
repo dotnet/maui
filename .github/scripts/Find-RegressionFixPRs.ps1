@@ -126,7 +126,7 @@ function Get-LinkedIssueNumbers {
         [regex]::Escape($Owner), [regex]::Escape($Repo)
 
     $patterns = @(
-        ('(?i)(?:Fix(?:es|ed)?|Close[sd]?|Resolve[sd]?)\s+(?:(?:{0})|#)(\d+)' -f $issueUrl),
+        ('(?i)(?:Fix(?:es|ed)?|Close[sd]?|Resolve[sd]?)\s+(?:(?:{0})|#)(\d+)(?=$|[\s)\]\x7D.,;:!?#])' -f $issueUrl),
         '(?m)^\s*-\s+#(\d+)\s*$',
         ('(?m)^\s*-\s+{0}(\d+)\s*$' -f $issueUrl)
     )
@@ -370,10 +370,8 @@ function New-RegressionCandidate {
     # Assembles normalized, structural candidate context for the agent. Fetched
     # titles and file paths are deliberately excluded so the prompt never embeds
     # untrusted prose or path text; the agent can inspect the introducing PR by ID.
-    # IMPORTANT: regressionIssues is materialized with .ToArray(). Wrapping a generic
-    # List[object] with @(...) inside a [PSCustomObject] literal throws "Argument
-    # types do not match", so the naive @($regressionIssues) form is a trap — keep
-    # .ToArray() here (see Find-RegressionFixPRs.Tests.ps1 for the regression test).
+    # Materialize the typed list to an array so the candidate has a stable, immutable
+    # collection shape for JSON serialization.
     param(
         [int]$FixPr,
         $FixPrMergeCommit,
