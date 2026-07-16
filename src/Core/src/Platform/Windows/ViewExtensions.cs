@@ -439,7 +439,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
 		{
-			// Nothing to do yet, but we might need to adjust the wrapper view 
+			// Nothing to do yet, but we might need to adjust the wrapper view
 		}
 	}
 }
