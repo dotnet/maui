@@ -65,7 +65,7 @@ function Set-PlistBooleanFalse([string]$Path, [string]$Key) {
     }
 
     $entry = "`t<key>$Key</key>`r`n`t<false/>`r`n"
-    $plistContent = $plistContent -replace "(?m)^</dict>", "$entry</dict>"
+    $plistContent = [regex]::Replace($plistContent, "(?s)</dict>(\s*</plist>)", "$entry</dict>`$1", 1)
     Set-Content -Path $Path -Value $plistContent -Encoding utf8
 }
 
