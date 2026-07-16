@@ -1,0 +1,492 @@
+# Passkeys (WebAuthn / FIDO2) — Cross-platform Essentials API
+
+| | |
+|---|---|
+| **Status** | Draft / Proposal (spec-first, open for discussion) |
+| **Area** | `area-essentials` |
+| **Namespace** | `Microsoft.Maui.Authentication` |
+| **Target** | Next `netN.0` feature branch (adds public API) |
+| **Related** | Discussion [#21498](https://github.com/dotnet/maui/discussions/21498) "FIDO2 Passkeys support?", Issue [#32020](https://github.com/dotnet/maui/issues/32020) "Cannot use passkey/fido/webauthn in BlazorWebView" |
+
+> **This is a spec-first proposal.** The intent is to agree on the public API shape and per-platform
+> implementation strategy *before* writing the implementation. Please leave feedback on the PR. The API
+> surface, type names, and design decisions in this document are all open for refinement.
+
+## 1. Summary
+
+Add a cross-platform Essentials API that lets a .NET MAUI app create and use **passkeys** (WebAuthn /
+FIDO2 public-key credentials) using the native platform authenticator UI (Face ID / Touch ID / Windows
+Hello / Android biometric + Google Password Manager / iCloud Keychain).
+
+The API is intentionally **thin**: it brokers between the app's relying-party (RP) server and the OS
+authenticator. The server produces standard WebAuthn options JSON; the API drives the native UI and
+returns the standard WebAuthn response JSON to send back to the server for verification. It does **not**
+implement any server-side WebAuthn verification, attestation validation, or challenge generation.
+
+## 2. Motivation
+
+- Passwordless / phishing-resistant sign-in via passkeys is now a first-class capability on **all**
+  MAUI target platforms (Android, iOS, iPadOS, macOS/Mac Catalyst, Windows). Today MAUI exposes **none**
+  of it natively.
+- The existing `WebAuthenticator` Essentials API is **OAuth web-redirect** auth — despite the similar
+  name it is unrelated to WebAuthn/passkeys.
+- BlazorWebView cannot use the browser WebAuthn JS API ([#32020](https://github.com/dotnet/maui/issues/32020)),
+  so even hybrid apps need a native bridge.
+- Each platform's native passkey API is non-trivial (delegate/callback bridges on Apple, coroutine
+  interop on Android, raw Win32 struct marshaling on Windows). Centralizing this in Essentials removes a
+  large amount of per-app boilerplate and platform expertise.
+
+## 3. Goals / Non-goals
+
+### Goals
+- One cross-platform API to **create** (register) and **get** (authenticate / assert) a passkey.
+- Use the **standard WebAuthn JSON** contract so it interoperates 1:1 with existing server libraries
+  (e.g. [Fido2NetLib](https://github.com/passwordless-lib/fido2-net-lib), SimpleWebAuthn, etc.).
+- Follow existing Essentials conventions (`interface` + static facade + per-platform partial
+  implementation + `Default`/`SetDefault` testability), mirroring `WebAuthenticator`.
+- Graceful capability detection (`IsSupported`) and clear exceptions on unsupported OS/versions.
+
+### Non-goals (for v1)
+- Server-side WebAuthn (challenge issuance, attestation/assertion verification). That stays on the RP
+  server, as the spec intends.
+- Acting as a **credential provider** / password manager (Android `CredentialProviderService`, iOS
+  AutoFill credential provider extension). This is "use passkeys in my app", not "be a passkey vault".
+- Conditional UI / autofill-driven passkey sign-in (may be a follow-up; see Open Questions).
+- Cross-device / security-key–only flows as a distinct API. On platforms where the OS offers this
+  automatically (Apple, Windows) it is available through the same call; a dedicated security-key API is
+  out of scope for v1.
+- A strongly-typed C# model of the entire WebAuthn options/response schema (see §6.2 for rationale).
+
+## 4. Background: passkeys & the cross-platform insight
+
+A passkey ceremony has two operations, both defined by the [W3C WebAuthn spec](https://www.w3.org/TR/webauthn-3/):
+
+1. **Registration** (`navigator.credentials.create`): server sends `PublicKeyCredentialCreationOptions`
+   → authenticator creates a key pair → returns an attestation response → server stores the public key.
+2. **Authentication** (`navigator.credentials.get`): server sends `PublicKeyCredentialRequestOptions`
+   → authenticator signs the challenge → returns an assertion → server verifies the signature.
+
+```mermaid
+sequenceDiagram
+    participant App as MAUI App
+    participant RP as RP Server
+    participant API as Passkeys (Essentials)
+    participant OS as Platform Authenticator
+
+    Note over App,OS: Registration
+    App->>RP: begin register (userId)
+    RP-->>App: PublicKeyCredentialCreationOptions (JSON)
+    App->>API: CreateAsync(creationOptionsJson)
+    API->>OS: native make-credential + biometric UI
+    OS-->>API: attestation
+    API-->>App: RegistrationResponseJson
+    App->>RP: finish register (RegistrationResponseJson)
+
+    Note over App,OS: Authentication
+    App->>RP: begin login
+    RP-->>App: PublicKeyCredentialRequestOptions (JSON)
+    App->>API: AssertAsync(requestOptionsJson)
+    API->>OS: native get-assertion + biometric UI
+    OS-->>API: assertion (signature)
+    API-->>App: AuthenticationResponseJson
+    App->>RP: finish login (AuthenticationResponseJson)
+```
+
+**Key design driver — the interop format:**
+
+| Platform | Native contract |
+|---|---|
+| **Android** (Credential Manager) | **WebAuthn JSON in / JSON out** — native |
+| **Apple** (AuthenticationServices) | Structured `NSData` objects |
+| **Windows** (Win32 `webauthn.dll`) | Structured C structs |
+
+Because Android already speaks the exact browser WebAuthn JSON, and because that JSON is what every
+server library emits/consumes, the cross-platform contract is **JSON-in / JSON-out**. Android is a
+pass-through; Apple and Windows translate JSON ⇄ native structures internally. This keeps the public API
+tiny and forward-compatible with new WebAuthn fields.
+
+## 5. Proposed public API
+
+```csharp
+namespace Microsoft.Maui.Authentication;
+
+/// <summary>
+/// Create and use passkeys (WebAuthn / FIDO2 public-key credentials) with the native
+/// platform authenticator. Brokers standard WebAuthn JSON between a relying-party server
+/// and the OS; does not perform server-side verification.
+/// </summary>
+public interface IPasskeys
+{
+    /// <summary>
+    /// Whether this platform (and OS version) can create and use passkeys.
+    /// </summary>
+    bool IsSupported { get; }
+
+    /// <summary>
+    /// Registers a new passkey. Drives the native "create credential" UI.
+    /// </summary>
+    /// <param name="options">
+    /// The relying party's <c>PublicKeyCredentialCreationOptions</c> as JSON (server-provided).
+    /// </param>
+    /// <returns>The WebAuthn registration response to send back to the RP server.</returns>
+    Task<PasskeyCreationResponse> CreateAsync(
+        PasskeyCreationOptions options,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Authenticates with an existing passkey. Drives the native "get credential" UI.
+    /// </summary>
+    /// <param name="options">
+    /// The relying party's <c>PublicKeyCredentialRequestOptions</c> as JSON (server-provided).
+    /// </param>
+    /// <returns>The WebAuthn assertion response to send back to the RP server.</returns>
+    Task<PasskeyAssertionResponse> AssertAsync(
+        PasskeyAssertionOptions options,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>Options for <see cref="IPasskeys.CreateAsync"/>.</summary>
+public class PasskeyCreationOptions
+{
+    /// <summary>The server's <c>PublicKeyCredentialCreationOptions</c> JSON.</summary>
+    public string CreationOptionsJson { get; set; } = string.Empty;
+
+    /// <summary>
+    /// When <see langword="true"/>, only offer credentials already available on-device without a
+    /// network/hybrid step. Maps to Android <c>preferImmediatelyAvailableCredentials</c>; ignored
+    /// where unsupported.
+    /// </summary>
+    public bool PreferImmediatelyAvailable { get; set; }
+}
+
+/// <summary>Options for <see cref="IPasskeys.AssertAsync"/>.</summary>
+public class PasskeyAssertionOptions
+{
+    /// <summary>The server's <c>PublicKeyCredentialRequestOptions</c> JSON.</summary>
+    public string RequestOptionsJson { get; set; } = string.Empty;
+
+    /// <inheritdoc cref="PasskeyCreationOptions.PreferImmediatelyAvailable"/>
+    public bool PreferImmediatelyAvailable { get; set; }
+}
+
+/// <summary>Result of a passkey registration.</summary>
+public class PasskeyCreationResponse
+{
+    /// <summary>
+    /// The full WebAuthn registration response JSON (shape of <c>PublicKeyCredential</c> with an
+    /// <c>AuthenticatorAttestationResponse</c>). POST this to the RP server to finish registration.
+    /// </summary>
+    public string RegistrationResponseJson { get; }
+
+    // Convenience decoded members (parsed from the JSON), mirroring WebAuthenticatorResult ergonomics:
+    public string Id { get; }                 // base64url credential id
+    public byte[] RawId { get; }
+    public byte[] AttestationObject { get; }
+    public byte[] ClientDataJson { get; }
+}
+
+/// <summary>Result of a passkey authentication (assertion).</summary>
+public class PasskeyAssertionResponse
+{
+    /// <summary>
+    /// The full WebAuthn authentication response JSON (shape of <c>PublicKeyCredential</c> with an
+    /// <c>AuthenticatorAssertionResponse</c>). POST this to the RP server to finish sign-in.
+    /// </summary>
+    public string AuthenticationResponseJson { get; }
+
+    public string Id { get; }                 // base64url credential id
+    public byte[] RawId { get; }
+    public byte[] AuthenticatorData { get; }
+    public byte[] ClientDataJson { get; }
+    public byte[] Signature { get; }
+    public byte[]? UserHandle { get; }
+}
+
+/// <summary>Static facade, mirroring <see cref="WebAuthenticator"/>.</summary>
+public static class Passkeys
+{
+    public static bool IsSupported => Default.IsSupported;
+
+    public static Task<PasskeyCreationResponse> CreateAsync(PasskeyCreationOptions options, CancellationToken cancellationToken = default)
+        => Default.CreateAsync(options, cancellationToken);
+
+    public static Task<PasskeyAssertionResponse> AssertAsync(PasskeyAssertionOptions options, CancellationToken cancellationToken = default)
+        => Default.AssertAsync(options, cancellationToken);
+
+    static IPasskeys? defaultImplementation;
+    public static IPasskeys Default => defaultImplementation ??= new PasskeysImplementation();
+    internal static void SetDefault(IPasskeys? implementation) => defaultImplementation = implementation;
+}
+
+// Convenience string overloads (extension methods), matching WebAuthenticator style:
+public static class PasskeysExtensions
+{
+    public static Task<PasskeyCreationResponse> CreateAsync(this IPasskeys passkeys, string creationOptionsJson, CancellationToken ct = default)
+        => passkeys.CreateAsync(new PasskeyCreationOptions { CreationOptionsJson = creationOptionsJson }, ct);
+
+    public static Task<PasskeyAssertionResponse> AssertAsync(this IPasskeys passkeys, string requestOptionsJson, CancellationToken ct = default)
+        => passkeys.AssertAsync(new PasskeyAssertionOptions { RequestOptionsJson = requestOptionsJson }, ct);
+}
+```
+
+### 5.1 Usage example
+
+```csharp
+using Microsoft.Maui.Authentication;
+
+// --- Registration ---
+if (!Passkeys.IsSupported)
+    return; // fall back to password UI
+
+// 1. Ask your server to begin registration; it returns PublicKeyCredentialCreationOptions JSON.
+string creationOptionsJson = await httpClient.GetStringAsync("/passkey/register/begin");
+
+// 2. Drive the native create-credential UI (Face ID / Windows Hello / Android biometric).
+PasskeyCreationResponse created = await Passkeys.CreateAsync(creationOptionsJson);
+
+// 3. Send the response JSON back to the server to verify + store the public key.
+await httpClient.PostAsJsonAsync("/passkey/register/finish", created.RegistrationResponseJson);
+
+// --- Authentication ---
+string requestOptionsJson = await httpClient.GetStringAsync("/passkey/login/begin");
+PasskeyAssertionResponse asserted = await Passkeys.AssertAsync(requestOptionsJson);
+await httpClient.PostAsJsonAsync("/passkey/login/finish", asserted.AuthenticationResponseJson);
+```
+
+## 6. Design decisions
+
+### 6.1 Why JSON in / JSON out
+- **Zero translation on Android** — Credential Manager consumes/produces exactly this JSON.
+- **1:1 with server libraries** — Fido2NetLib etc. already emit `CreationOptions`/`RequestOptions` JSON
+  and consume the response JSON. No impedance mismatch.
+- **Smallest public surface** — two options types + two response types.
+- **Forward-compatible** — new WebAuthn fields (e.g. `hints`, PRF extension) require no API change; they
+  flow through the JSON. On Apple/Windows we map the subset the OS supports and ignore the rest.
+
+### 6.2 Why not a strongly-typed WebAuthn model (for v1)
+A fully-typed model (`Rp`, `User`, `PubKeyCredParams`, `AllowCredentials`, `AuthenticatorSelection`,
+extensions…) is a **large** public surface that must track ongoing WebAuthn spec churn, still needs JSON
+serialization for Android, and duplicates types already present in server libraries. We propose
+JSON-first for v1 and can add optional typed builders later without breaking the core API.
+
+### 6.3 Naming / placement
+- Lives in Essentials alongside `WebAuthenticator`, namespace `Microsoft.Maui.Authentication`.
+- `Passkeys` (not `WebAuthn`/`Fido2`) as the user-facing term the platforms and users actually use.
+- `CreateAsync` / `AssertAsync` mirror the WebAuthn verbs (`create` / `get`; "assert" disambiguates from
+  the many `GetAsync` methods and matches the "assertion" terminology).
+
+## 7. Platform implementation design
+
+Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `Passkeys.ios.macos.cs`,
+`Passkeys.windows.cs`, `Passkeys.netstandard.tizen.tvos.watchos.cs`).
+
+### 7.1 Android — Jetpack Credential Manager
+
+- Docs: [Credential Manager](https://developer.android.com/identity/credential-manager) ·
+  [Sign in with passkeys](https://developer.android.com/identity/sign-in/credential-manager) ·
+  [`androidx.credentials` reference](https://developer.android.com/reference/androidx/credentials/package-summary)
+- **New NuGet dependencies**: `Xamarin.AndroidX.Credentials` and
+  `Xamarin.AndroidX.Credentials.PlayServicesAuth` (Essentials currently references AndroidX Activity,
+  Browser, Security.SecurityCrypto — not Credentials).
+- Native model (Kotlin, from the official guide):
+
+  ```kotlin
+  // Registration
+  val credentialManager = CredentialManager.create(context)
+  val request = CreatePublicKeyCredentialRequest(requestJson = creationOptionsJson)
+  val result = credentialManager.createCredential(context, request)
+        as CreatePublicKeyCredentialResponse
+  val registrationResponseJson = result.registrationResponseJson
+
+  // Authentication
+  val option = GetPublicKeyCredentialOption(requestJson = requestOptionsJson)
+  val getRequest = GetCredentialRequest(listOf(option))
+  val getResult = credentialManager.getCredential(context, getRequest)
+  val publicKeyCredential = getResult.credential as PublicKeyCredential
+  val authenticationResponseJson = publicKeyCredential.authenticationResponseJson
+  ```
+
+- Projected .NET usage (`AndroidX.Credentials`, exact async-interop shape to be confirmed during
+  implementation — the underlying API is Kotlin-suspend/callback and will be wrapped in a
+  `TaskCompletionSource`):
+
+  ```csharp
+  var manager = CredentialManager.Create(Platform.CurrentActivity!);
+  var request = new CreatePublicKeyCredentialRequest(options.CreationOptionsJson);
+  var response = (CreatePublicKeyCredentialResponse)await manager.CreateCredentialAsync(
+      Platform.CurrentActivity!, request /*, cancellationSignal, executor */);
+  var registrationResponseJson = response.RegistrationResponseJson;
+  ```
+
+- **Context**: requires the current `Activity` (via `Platform.CurrentActivity`). Passkey UI is a bottom
+  sheet on that activity.
+- **App setup (documented, not code)**: host a [Digital Asset Links](https://developer.android.com/identity/sign-in/credential-manager#add-support-dal)
+  file at `https://<rp-id>/.well-known/assetlinks.json` binding the app's signing certificate.
+- **Min API**: Credential Manager is API 23+, but passkeys realistically need **API 28+ (Android 9)**
+  with Google Play services. `IsSupported` gates on this.
+- Exceptions map from `CreateCredentialException` / `GetCredentialException` subclasses (e.g.
+  `*CancellationException` → `TaskCanceledException`, `NoCredentialException` → no-credential result).
+
+### 7.2 Apple — AuthenticationServices (iOS / iPadOS / Mac Catalyst / macOS)
+
+- Docs: [`ASAuthorizationPlatformPublicKeyCredentialProvider`](https://developer.apple.com/documentation/authenticationservices/asauthorizationplatformpublickeycredentialprovider) ·
+  [Supporting passkeys](https://developer.apple.com/documentation/authenticationservices/public-private_key_authentication/supporting_passkeys) ·
+  [.NET binding](https://learn.microsoft.com/dotnet/api/authenticationservices.asauthorizationplatformpublickeycredentialprovider)
+- **No new dependency** — `AuthenticationServices` is already bound in `Microsoft.iOS` /
+  `Microsoft.MacCatalyst` / `Microsoft.macOS`.
+- **Structured, not JSON.** We parse the incoming options JSON, extract `challenge`, `user.id`,
+  `user.name`, `rp.id`, `pubKeyCredParams`, `allowCredentials`, `userVerification`, then build the
+  native request; on completion we read the raw `NSData` and **assemble the WebAuthn response JSON**
+  ourselves (base64url-encoding the binary fields).
+- Native model (Swift):
+
+  ```swift
+  let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: rpId)
+
+  // Registration
+  let reg = provider.createCredentialRegistrationRequest(
+      challenge: challenge, name: userName, userID: userId)
+  // Authentication
+  let asr = provider.createCredentialAssertionRequest(challenge: challenge)
+
+  let controller = ASAuthorizationController(authorizationRequests: [reg]) // or [asr]
+  controller.delegate = self
+  controller.presentationContextProvider = self
+  controller.performRequests()
+  ```
+
+- Verified .NET binding members we build on (`net-ios` `AuthenticationServices`):
+  - `ASAuthorizationPlatformPublicKeyCredentialProvider(string relyingPartyIdentifier)`,
+    `.CreateCredentialRegistrationRequest(NSData challenge, string name, NSData userId)`,
+    `.CreateCredentialAssertionRequest(NSData challenge)`.
+  - Request props: `Challenge`, `Name`, `UserId`, `DisplayName`, `UserVerificationPreference`,
+    `AttestationPreference`.
+  - Registration result `ASAuthorizationPlatformPublicKeyCredentialRegistration`:
+    `RawAttestationObject`, `RawClientDataJson`, `CredentialId`.
+  - Assertion result `ASAuthorizationPlatformPublicKeyCredentialAssertion`:
+    `RawAuthenticatorData`, `Signature`, `UserId`, `RawClientDataJson`, `CredentialId`.
+- Async bridge: wrap the `ASAuthorizationControllerDelegate` callbacks
+  (`didCompleteWithAuthorization` / `didCompleteWithError`) in a `TaskCompletionSource`. Reuse the
+  window/presentation-anchor plumbing already used by other Essentials APIs.
+- **App setup (documented)**: [Associated Domains](https://developer.apple.com/documentation/xcode/supporting-associated-domains)
+  entitlement with `webcredentials:<rp-id>` and a hosted `apple-app-site-association` file.
+- **Min OS**: iOS 16 / iPadOS 16 / Mac Catalyst 16 / macOS 13 (Ventura). Gate `IsSupported` via
+  `OperatingSystem.IsIOSVersionAtLeast(16)` etc.
+
+### 7.3 Windows — Win32 WebAuthn API (`webauthn.dll`)
+
+- Docs: [`WebAuthNAuthenticatorMakeCredential`](https://learn.microsoft.com/windows/win32/api/webauthn/nf-webauthn-webauthnauthenticatormakecredential) ·
+  [`WebAuthNAuthenticatorGetAssertion`](https://learn.microsoft.com/windows/win32/api/webauthn/nf-webauthn-webauthnauthenticatorgetassertion) ·
+  [webauthn.h header](https://learn.microsoft.com/windows/win32/api/webauthn/) ·
+  [Microsoft `webauthn` reference implementation](https://github.com/microsoft/webauthn)
+- **No NuGet dependency** — direct P/Invoke into the in-box `webauthn.dll`. `AllowUnsafeBlocks` is
+  already enabled for the Windows TFM in `Essentials.csproj`.
+- **Structured, not JSON.** Same JSON ⇄ struct translation as Apple, plus manual marshaling.
+- Native signatures:
+
+  ```cpp
+  HRESULT WebAuthNAuthenticatorMakeCredential(
+      HWND hWnd,
+      PCWEBAUTHN_RP_ENTITY_INFORMATION                 pRpInformation,
+      PCWEBAUTHN_USER_ENTITY_INFORMATION               pUserInformation,
+      PCWEBAUTHN_COSE_CREDENTIAL_PARAMETERS            pPubKeyCredParams,
+      PCWEBAUTHN_CLIENT_DATA                           pWebAuthNClientData,
+      PCWEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS pWebAuthNMakeCredentialOptions,
+      PWEBAUTHN_CREDENTIAL_ATTESTATION                *ppWebAuthNCredentialAttestation);
+
+  HRESULT WebAuthNAuthenticatorGetAssertion(
+      HWND hWnd,
+      LPCWSTR                                          pwszRpId,
+      PCWEBAUTHN_CLIENT_DATA                           pWebAuthNClientData,
+      PCWEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS  pWebAuthNGetAssertionOptions,
+      PWEBAUTHN_ASSERTION                             *ppWebAuthNAssertion);
+
+  DWORD WebAuthNGetApiVersionNumber();
+  HRESULT WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable(BOOL *pbIsUserVerifyingPlatformAuthenticatorAvailable);
+  void   WebAuthNFreeCredentialAttestation(PWEBAUTHN_CREDENTIAL_ATTESTATION);
+  void   WebAuthNFreeAssertion(PWEBAUTHN_ASSERTION);
+  ```
+
+- **HWND**: the API is modal on a top-level window. Acquire the current window handle from the MAUI
+  window (`WinRT.Interop.WindowNative.GetWindowHandle(...)`).
+- **`ClientDataJson`**: on Windows we must supply the `WEBAUTHN_CLIENT_DATA` (challenge + origin +
+  type). We build client data JSON from the options and pass it through; the OS returns
+  `pbAttestationObject` / `pbCredentialId` (make) and `pbAuthenticatorData` / `pbSignature` /
+  `pbUserId` (get), which we base64url-encode into the response JSON.
+- **Version gating**: `WebAuthNGetApiVersionNumber()` for capability, and
+  `WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable` for Hello availability. Passkeys need
+  **Windows 11**; older `webauthn.dll` (Win10 1903+) supports FIDO2 security keys but not full passkeys.
+- **Highest implementation cost** of the three (struct marshaling, memory ownership/free, version
+  branching). Recommend implementing this platform **last**.
+
+### 7.4 Unsupported platforms
+- `netstandard`, Tizen, tvOS, watchOS: `IsSupported == false`; `CreateAsync`/`AssertAsync` throw
+  `FeatureNotSupportedException` (consistent with other Essentials APIs).
+
+## 8. Error handling
+
+| Situation | Behavior |
+|---|---|
+| OS/version without passkey support | `IsSupported == false`; calls throw `FeatureNotSupportedException` |
+| User cancels the native UI | `TaskCanceledException` (matches `WebAuthenticator`) |
+| No matching credential (authenticate) | `TaskCanceledException` or a dedicated `PasskeyException` (Open Question) |
+| Malformed options JSON | `ArgumentException` |
+| Domain association not configured | Platform error surfaced as `PasskeyException` with the native message |
+| Any other native failure | `PasskeyException` wrapping the platform exception/HRESULT |
+
+## 9. Dependencies & packaging impact
+- **Android**: adds `Xamarin.AndroidX.Credentials` + `Xamarin.AndroidX.Credentials.PlayServicesAuth`
+  package references (version pinned via `eng/Versions.props`). This increases the Android dependency
+  closure of `Microsoft.Maui.Essentials` — needs sign-off (size/servicing considerations, `NuGets.md`).
+- **Apple / Windows**: no new NuGet packages (in-box frameworks / P/Invoke).
+- **Public API**: new types in `Microsoft.Maui.Authentication` → `PublicAPI.Unshipped.txt` entries per
+  TFM. Because this adds public API, implementation targets the current `netN.0` feature branch.
+
+## 10. Security considerations
+- The API never sees or stores private keys — those remain in the platform authenticator / secure
+  hardware. It only relays the public attestation/assertion material.
+- Challenges must be generated and verified **server-side**; the API does not validate them. Doc must
+  make this explicit to avoid misuse.
+- RP ID / origin binding is enforced by the OS via domain association (asset links / associated
+  domains). Misconfiguration fails closed at the OS layer.
+- No secrets are logged; binary fields are surfaced only as part of the response the caller already
+  must send to their server.
+
+## 11. Testing strategy
+- **Unit tests** (`Essentials.UnitTests`): options/response JSON (de)serialization, base64url handling,
+  `IsSupported` gating, `SetDefault` substitution, exception mapping. Platform calls mocked via
+  `IPasskeys`.
+- **Device tests**: passkey ceremonies require real authenticators/biometrics and hosted domain
+  association, so full end-to-end is hard to automate in CI. Propose: verify `IsSupported`, request
+  construction, and JSON translation on-device; gate the interactive ceremony behind a manual/sample
+  test with a reference RP server.
+- **Sample**: add a Passkeys page to `Essentials.Sample` wired to a small reference RP endpoint.
+
+## 12. Open questions
+1. **Package size / dependency**: is adding AndroidX Credentials to Essentials acceptable, or should
+   passkeys ship as a **separate opt-in NuGet** (e.g. `Microsoft.Maui.Authentication.Passkeys`) to avoid
+   growing the Essentials closure for apps that don't use it?
+2. **Security keys / cross-device**: expose any explicit control, or rely entirely on the OS-offered
+   flows within the single call?
+3. **Conditional UI / autofill** passkey sign-in (Android `preferImmediatelyAvailable`, iOS
+   `ASAuthorizationController.performAutoFillAssistedRequests`, Windows silent) — v1 or follow-up?
+4. **Response shape**: JSON-only, or JSON + decoded convenience members as proposed in §5? Do consumers
+   actually want the decoded fields, or only the JSON to forward?
+5. **Method naming**: `AssertAsync` vs `GetAsync` vs `AuthenticateAsync` (the last collides
+   conceptually with `WebAuthenticator.AuthenticateAsync`).
+6. **BlazorWebView bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)): should we also ship
+   a JS-interop shim so `navigator.credentials` in BlazorWebView routes to this native API? Likely a
+   separate proposal, but worth acknowledging.
+
+## 13. References
+- W3C WebAuthn Level 3 — https://www.w3.org/TR/webauthn-3/
+- FIDO Alliance passkeys — https://fidoalliance.org/passkeys/
+- Android Credential Manager — https://developer.android.com/identity/credential-manager
+- Android passkeys guide — https://developer.android.com/identity/sign-in/credential-manager
+- `androidx.credentials` API — https://developer.android.com/reference/androidx/credentials/package-summary
+- Apple `ASAuthorizationPlatformPublicKeyCredentialProvider` — https://developer.apple.com/documentation/authenticationservices/asauthorizationplatformpublickeycredentialprovider
+- Apple "Supporting passkeys" — https://developer.apple.com/documentation/authenticationservices/public-private_key_authentication/supporting_passkeys
+- Windows `WebAuthNAuthenticatorMakeCredential` — https://learn.microsoft.com/windows/win32/api/webauthn/nf-webauthn-webauthnauthenticatormakecredential
+- Windows `WebAuthNAuthenticatorGetAssertion` — https://learn.microsoft.com/windows/win32/api/webauthn/nf-webauthn-webauthnauthenticatorgetassertion
+- Microsoft `webauthn` reference — https://github.com/microsoft/webauthn
+- Fido2NetLib (server-side .NET) — https://github.com/passwordless-lib/fido2-net-lib
