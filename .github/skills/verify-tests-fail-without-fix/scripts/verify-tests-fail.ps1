@@ -1127,6 +1127,29 @@ function Get-TestResultFromLog {
 Write-Host ""
 Write-Host "🔍 Detecting base branch and merge point..." -ForegroundColor Cyan
 
+# Resolve the PR's ACTUAL base branch from its number before falling back to the
+# closest-merge-base heuristic. Find-MergeBase's step-2 auto-detect calls
+# `gh pr view` with NO number, which returns nothing in CI (the gate runs on a
+# synthetic review branch that isn't PR-linked), so it drops to step 3 and picks
+# whichever common branch is FEWEST commits away — almost always `main`, even for
+# PRs that target `inflight/current`. Diffing against main's merge-base then makes
+# the "fix files" set span ALL of inflight/current's divergence (200+ files) and
+# flags files that exist on the real base as "new in PR", removing them and
+# breaking the WITHOUT-fix build (build 14670709, #36274: BooleanBoxes.cs removed
+# -> BooleanBoxesTests.cs CS0103 -> gate INCONCLUSIVE instead of a real verdict).
+# Passing the explicit PR number makes `gh pr view` reliable; force-fetch the
+# tracking ref so Find-MergeBase step 1 (origin/<base>) resolves it directly.
+if (-not $BaseBranch -and $PRNumber) {
+    $detectedBase = gh pr view $PRNumber --json baseRefName -q .baseRefName 2>$null
+    if ($detectedBase) {
+        git fetch origin "+$($detectedBase):refs/remotes/origin/$detectedBase" --no-tags 2>$null | Out-Null
+        $BaseBranch = $detectedBase
+        Write-Host "✅ Resolved PR #$PRNumber base branch: $BaseBranch (fetched origin/$BaseBranch)" -ForegroundColor Green
+    } else {
+        Write-Host "⚠️  Could not resolve base branch for PR #$PRNumber; falling back to auto-detect" -ForegroundColor Yellow
+    }
+}
+
 $baseInfo = Find-MergeBase -ExplicitBaseBranch $BaseBranch
 
 if (-not $baseInfo) {
