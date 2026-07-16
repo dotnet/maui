@@ -443,11 +443,20 @@ if ($Platform -eq "android") {
                 if (-not $selectedDevice) {
                     $createDevice = $null
                     $createDeviceTypeId = $null
-                    if ($version -eq "iOS-26") {
+                    # Match by version PREFIX, not exact equality: the
+                    # $preferredVersions list leads with a minor-qualified entry
+                    # ("iOS-26-4") so the highest installed runtime wins. An exact
+                    # `-eq "iOS-26"` test never matches "iOS-26-4", which skipped
+                    # the create step and fell back to a wrong-size device (e.g.
+                    # iPhone 17 Pro -> 1206x2472 screenshots, breaking every visual
+                    # snapshot test with "size differs"). Prefix-match so every
+                    # iOS-26* runtime maps to iPhone 11 Pro and iOS-18*/iOS-17* to
+                    # iPhone Xs.
+                    if ($version -match '^iOS-26') {
                         $createDevice = "iPhone 11 Pro"
                         $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"
                     }
-                    elseif ($version -eq "iOS-18" -or $version -eq "iOS-17") {
+                    elseif ($version -match '^iOS-18' -or $version -match '^iOS-17') {
                         $createDevice = "iPhone Xs"
                         $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-Xs"
                     }
@@ -523,34 +532,23 @@ if ($Platform -eq "android") {
                 # device exists do we take an arbitrary iPhone (visual tests will
                 # then report 'size differs', but non-visual tests can still run).
                 if (-not $selectedDevice) {
+                    # Correct-size existing device matching the baselines (375pt-wide
+                    # @3x = 1125x2436 -> 1124x2286 screenshots). Do NOT fall back to a
+                    # wrong-size iPhone in this per-version block — doing so would lock
+                    # in e.g. iPhone 17 Pro during the FIRST (highest) runtime
+                    # iteration and `break` out before the create step runs for the
+                    # remaining preferred versions. The outer last-resort block (after
+                    # this foreach) takes an arbitrary iPhone only once every preferred
+                    # version's create attempt has been exhausted.
                     $preferredSizeNames = @("iPhone 11 Pro", "iPhone Xs", "iPhone X", "iPhone 13 mini", "iPhone 12 mini")
-                    $anyiPhone = $null
-                    $iphoneRuntime = $null
-                    # First pass: a correct-size device matching the baselines.
                     foreach ($rt in $matchingRuntimes) {
                         $found = $rt.Value | Where-Object { $_.isAvailable -eq $true -and $preferredSizeNames -contains $_.name } | Select-Object -First 1
                         if ($found) {
-                            $anyiPhone = $found
-                            $iphoneRuntime = $rt.Name
+                            $selectedDevice = $found
+                            $selectedVersion = $rt.Name
+                            Write-Info "Using correct-size iPhone matching baselines: $($found.name) on $selectedVersion"
                             break
                         }
-                    }
-                    # Second pass: any available iPhone (wrong size, last resort).
-                    if (-not $anyiPhone) {
-                        foreach ($rt in $matchingRuntimes) {
-                            $found = $rt.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | Select-Object -First 1
-                            if ($found) {
-                                $anyiPhone = $found
-                                $iphoneRuntime = $rt.Name
-                                break
-                            }
-                        }
-                    }
-
-                    if ($anyiPhone) {
-                        $selectedDevice = $anyiPhone
-                        $selectedVersion = $iphoneRuntime
-                        Write-Info "Using available iPhone (resolution may not match snapshot baselines): $($anyiPhone.name) on $selectedVersion"
                     }
                 }
             }
