@@ -413,6 +413,12 @@ New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
 $binlogPath = if ($CreateBinlog) { Join-Path $OutputPath "build.binlog" } else { $null }
 $binlogArguments = if ($CreateBinlog) { @("/bl:$binlogPath") } else { @() }
 
+if ($CreateBinlog -and $env:GITHUB_OUTPUT) {
+    # Emit the binlog path up-front so a failed build still exposes the (partial) binlog to the
+    # upload step for diagnosis, even though the script throws before reaching the final emit below.
+    "binlog_path=$binlogPath" >> $env:GITHUB_OUTPUT
+}
+
 # $package          => the "store" package (aab/ipa/pkg/zip) consumed by the Play/TestFlight steps.
 # $sideloadPackage  => a directly-installable artifact for testers (apk / ad-hoc ipa / notarized app).
 #                      When no distinct sideload artifact exists it falls back to $package on emit.
@@ -746,8 +752,5 @@ if ($env:GITHUB_OUTPUT) {
     "sideload_package_path=$sideloadResolved" >> $env:GITHUB_OUTPUT
     if ($additionalPackage) {
         "additional_package_path=$($additionalPackage.FullName)" >> $env:GITHUB_OUTPUT
-    }
-    if ($CreateBinlog) {
-        "binlog_path=$binlogPath" >> $env:GITHUB_OUTPUT
     }
 }

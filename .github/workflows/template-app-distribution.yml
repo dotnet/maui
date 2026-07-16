@@ -352,6 +352,7 @@ jobs:
             -CreateBinlog
 
       - name: Upload dry-run artifact
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
