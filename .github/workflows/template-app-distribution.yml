@@ -106,6 +106,7 @@ jobs:
           ref: ${{ inputs.source_ref }}
           path: source
           fetch-depth: 0
+          fetch-tags: true
           persist-credentials: false
 
       - name: Resolve source ref trust
