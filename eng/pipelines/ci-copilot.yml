@@ -1112,15 +1112,19 @@ stages:
               echo "##vso[task.setvariable variable=gateResult;isOutput=true]$GATE_VERDICT"
             name: RunGate
             displayName: 'Task 2: Gate (test verification)'
-            # timeoutInMinutes: 120 — SAFETY NET. The gate runs UI tests via
+            # timeoutInMinutes: 150 — SAFETY NET. The gate runs UI tests via
             # BuildAndRunHostApp.ps1 which has no internal overall timeout, and the
             # env-error retry loop only triggers when a run RETURNS an error — a run
             # that HANGS (emulator boot / Appium / dotnet test never returns) is
             # unbounded and would otherwise run to the 360m job limit (observed:
-            # build 14649450 gate stuck at 120m on a boot hang). 120m is generous
-            # over the typical 5-25m gate (even retry-heavy multi-test gates stay
-            # well under) while catching true hangs ~3h earlier than the job cap.
-            timeoutInMinutes: 120
+            # build 14649450 gate stuck at 120m on a boot hang). The gate now caps
+            # the number of expensive device/UI tests it verifies per run
+            # (Limit-ExpensiveGateTests, default 2 device + 2 UI) so a PR touching
+            # many device-test files can no longer explode into a 120-min timeout
+            # (observed: build 14676353 / PR #36109, 11 device tests). 150m gives
+            # the capped A/B set headroom (each device test builds+runs TWICE)
+            # while still catching true hangs ~3.5h earlier than the job cap.
+            timeoutInMinutes: 150
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}

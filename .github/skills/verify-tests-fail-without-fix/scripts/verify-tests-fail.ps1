@@ -1046,6 +1046,63 @@ function Get-TestResultFromOutput {
 # ============================================================
 # Auto-detect tests from changed files using shared detection
 # ============================================================
+function Limit-ExpensiveGateTests {
+    <#
+    .SYNOPSIS
+        Caps the number of expensive (DeviceTest/UITest) entries the gate will
+        verify so the two-phase A/B run stays within the AzDO task timeout.
+    .DESCRIPTION
+        Each DeviceTest/UITest is a full build+deploy+run, and the gate runs
+        every detected test TWICE (STEP 2 without-fix + STEP 4 with-fix). A PR
+        that touches many device-test files (e.g. a broad refactor) enumerates
+        10+ expensive tests → the serial A/B runs blow past the task timeout →
+        AzDO hard-kills the task → a "The task has timed out" FAILED verdict
+        with no analysis (observed on build 14676353 / PR #36109: 11 device
+        tests → 120-min timeout). This caps the expensive tests, prioritising
+        the PR's own newly-added (fix-authored) regression tests. The Deep UI
+        Tests stage still exercises the full category matrix. Cheap unit/XAML
+        tests are never capped (they are fast). Caps are env-overridable via
+        GATE_MAX_DEVICE_TESTS / GATE_MAX_UI_TESTS.
+    #>
+    param(
+        [object[]]$Tests,
+        [string[]]$AddedFiles = @()
+    )
+    if (-not $Tests -or @($Tests).Count -le 1) { return $Tests }
+
+    $maxDevice = if ($env:GATE_MAX_DEVICE_TESTS) { [int]$env:GATE_MAX_DEVICE_TESTS } else { 2 }
+    $maxUi     = if ($env:GATE_MAX_UI_TESTS)     { [int]$env:GATE_MAX_UI_TESTS }     else { 2 }
+
+    $addedSet = @{}
+    foreach ($f in @($AddedFiles)) { if ($f) { $addedSet[$f] = $true } }
+
+    # Rank 0 = the test references a file newly added in this PR (very likely
+    # the fix's own regression test); rank 1 = everything else. All rank-0
+    # tests sort ahead of rank-1 tests, so fix-authored tests survive the cap.
+    foreach ($t in $Tests) {
+        $rank = 1
+        foreach ($f in @($t.Files)) {
+            if ($f -and $addedSet.ContainsKey($f)) { $rank = 0; break }
+        }
+        $t.GateRank = $rank
+    }
+
+    $cheap  = @($Tests | Where-Object { $_.Type -in @('UnitTest','XamlUnitTest') })
+    $device = @($Tests | Where-Object { $_.Type -eq 'DeviceTest' } | Sort-Object { $_.GateRank })
+    $ui     = @($Tests | Where-Object { $_.Type -eq 'UITest' }     | Sort-Object { $_.GateRank })
+
+    $keptDevice = @($device | Select-Object -First $maxDevice)
+    $keptUi     = @($ui     | Select-Object -First $maxUi)
+
+    $dropped = (@($device).Count - @($keptDevice).Count) + (@($ui).Count - @($keptUi).Count)
+    if ($dropped -gt 0) {
+        Write-Host "⚠️  Gate work-cap: PR touches $(@($device).Count) device + $(@($ui).Count) UI test(s); the gate verifies the first $(@($keptDevice).Count) device + $(@($keptUi).Count) UI test(s) (fix-authored/newly-added tests prioritised) to stay within the task timeout. The remaining $dropped expensive test(s) are exercised by the Deep UI Tests stage." -ForegroundColor Yellow
+    }
+
+    # Cheap tests first (fast red/green signal), then the capped expensive set.
+    return @($cheap + $keptDevice + $keptUi)
+}
+
 function Get-AutoDetectedTests {
     <#
     .SYNOPSIS
@@ -1079,6 +1136,15 @@ function Get-AutoDetectedTests {
     }
 
     $results = & $DetectTestsScript @params 6>$null
+
+    # Bound the gate's workload to avoid the AzDO task hard-timeout on PRs that
+    # touch many device-test files (see Limit-ExpensiveGateTests for details).
+    # Newly-added files are the fix's own regression tests → prioritise them.
+    $addedFiles = @()
+    if ($MergeBase) {
+        $addedFiles = @(git diff "$MergeBase" HEAD --diff-filter=A --name-only 2>$null | Where-Object { $_ })
+    }
+    $results = Limit-ExpensiveGateTests -Tests $results -AddedFiles $addedFiles
     return $results
 }
 
