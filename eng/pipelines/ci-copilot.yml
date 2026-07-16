@@ -340,28 +340,82 @@ stages:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
-          # Windows agents are reused across pipeline runs; a lingering .NET build
-          # server (dotnet.exe/VBCSCompiler/MSBuild) from a prior run keeps
-          # .dotnet\dotnet.exe locked, so the cake bootstrap's RemoveDir of .dotnet
-          # fails with MSB3231 "Access to the path 'dotnet.exe' is denied" and can
-          # leave .dotnet\sdk half-provisioned (later "hostpolicy.dll not found").
-          # Seen on builds 14665168 + 14665853; an immediate retryCountOnTaskFailure
-          # cannot release a held lock. Best-effort: shut build servers down and stop
-          # stray processes rooted in .dotnet so the RemoveDir can succeed.
+          # On Windows, common/provision.yml (above) installs the local .NET SDK
+          # into ./.dotnet and prepends it to PATH. The cake "dotnet" target (a
+          # prerequisite of dotnet-buildtasks) then runs
+          #   dotnet build src/DotNet/DotNet.csproj
+          # USING ./.dotnet/dotnet.exe, and that project's _InstallDotNet target
+          # does <RemoveDir ./.dotnet> — i.e. it tries to delete the very
+          # dotnet.exe that is running it. On Windows a running executable cannot
+          # be deleted, so RemoveDir fails with MSB3231 "Access to the path
+          # 'dotnet.exe' is denied" and leaves ./.dotnet/sdk half-removed (later
+          # "hostpolicy.dll not found"), which aborts the whole Review stage and
+          # produces the "review could not complete" warning. Seen repeatedly on
+          # PR #35998 (builds 14665168 + 14676303). This is Windows-only: on
+          # Linux/macOS a running exe's file CAN be unlinked, so RemoveDir works.
+          # Fix: if provision.yml already put a healthy ./.dotnet in place, write
+          # its _InstallDotNet incremental stamp (./.dotnet/.stamp, newer than
+          # eng/Versions.props + DotNet.csproj) so cake SKIPS the self-deleting
+          # RemoveDir/reinstall and just reuses that SDK (the workload targets,
+          # which have their own stamps, still run). If ./.dotnet is already
+          # broken from a prior attempt, remove it so cake reinstalls cleanly.
           - pwsh: |
+              $ErrorActionPreference = 'Continue'
               $wd = (Get-Location).Path
-              $dn = Join-Path $wd ".dotnet/dotnet.exe"
-              if (Test-Path $dn) {
-                try { & $dn build-server shutdown 2>$null | Out-Null } catch {}
+              $dotnetDir = Join-Path $wd ".dotnet"
+              $dotnetExe = Join-Path $dotnetDir "dotnet.exe"
+
+              # Best-effort: stop build servers / stray processes rooted in .dotnet
+              # (or with an unreadable path) so a reinstall isn't blocked by a
+              # stale handle. Not the primary fix, but cheap insurance.
+              if (Test-Path $dotnetExe) {
+                try { & $dotnetExe build-server shutdown 2>$null | Out-Null } catch {}
               }
               try {
                 Get-Process -ErrorAction SilentlyContinue |
-                  Where-Object { $_.Name -in @('dotnet','VBCSCompiler','MSBuild') -and $_.Path -and $_.Path.StartsWith($wd, [System.StringComparison]::OrdinalIgnoreCase) } |
+                  Where-Object {
+                    $_.Name -in @('dotnet','VBCSCompiler','MSBuild','testhost') -and
+                    ((-not $_.Path) -or $_.Path.StartsWith($dotnetDir, [System.StringComparison]::OrdinalIgnoreCase))
+                  } |
                   ForEach-Object { try { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue } catch {} }
               } catch {}
-              Write-Host "Released .dotnet build-server locks (best-effort)."
+
+              if (-not (Test-Path $dotnetExe)) {
+                Write-Host "No ./.dotnet present — cake will install it fresh. Nothing to do."
+                exit 0
+              }
+
+              # A half-removed SDK makes 'dotnet --version' fail with
+              # 'hostpolicy.dll not found'; use that as the health probe.
+              $healthy = $false
+              try {
+                & $dotnetExe --version *> $null
+                if ($LASTEXITCODE -eq 0) { $healthy = $true }
+              } catch { $healthy = $false }
+
+              if ($healthy) {
+                $stamp = Join-Path $dotnetDir ".stamp"
+                try {
+                  Set-Content -Path $stamp -Value "provisioned by ci-copilot pre-step" -NoNewline -ErrorAction Stop
+                  (Get-Item $stamp -Force).LastWriteTimeUtc = (Get-Date).ToUniversalTime()
+                  Write-Host "Healthy ./.dotnet detected — wrote $stamp so cake skips the self-deleting reinstall."
+                } catch {
+                  Write-Host "WARNING: could not write $stamp ($($_.Exception.Message)); cake may attempt a reinstall."
+                }
+              } else {
+                Write-Host "./.dotnet is present but unhealthy (dotnet --version failed) — removing so cake can reinstall."
+                for ($i = 0; $i -lt 6 -and (Test-Path $dotnetDir); $i++) {
+                  try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop }
+                  catch { Start-Sleep -Seconds 2 }
+                }
+                if (Test-Path $dotnetDir) {
+                  Write-Host "WARNING: ./.dotnet could not be fully removed; cake's RemoveDir may still fail."
+                } else {
+                  Write-Host "Removed ./.dotnet; cake will reinstall it cleanly."
+                }
+              }
               exit 0
-            displayName: 'Release .dotnet locks (Windows, best-effort)'
+            displayName: 'Prepare .dotnet for cake (Windows)'
             condition: and(succeeded(), eq('${{ parameters.Platform }}', 'windows'))
             continueOnError: true
 
@@ -1790,27 +1844,81 @@ stages:
               displayName: 'Set screen resolution (1920x1080)'
               continueOnError: true
 
-          # Windows agents are reused across pipeline runs; a lingering .NET build
-          # server (dotnet.exe/VBCSCompiler/MSBuild) from a prior run keeps
-          # .dotnet\dotnet.exe locked, so the cake bootstrap's RemoveDir of .dotnet
-          # fails with MSB3231 "Access to the path 'dotnet.exe' is denied" and can
-          # leave .dotnet\sdk half-provisioned (later "hostpolicy.dll not found").
-          # Best-effort: shut build servers down and stop stray processes rooted in
-          # .dotnet so the RemoveDir in the .dotnet provisioning below can succeed.
+          # On Windows, common/provision.yml (above) installs the local .NET SDK
+          # into ./.dotnet and prepends it to PATH. The cake "dotnet" target (run
+          # by the "Install .NET and workloads" / dotnet-buildtasks steps below)
+          # then runs
+          #   dotnet build src/DotNet/DotNet.csproj
+          # USING ./.dotnet/dotnet.exe, and that project's _InstallDotNet target
+          # does <RemoveDir ./.dotnet> — i.e. it tries to delete the very
+          # dotnet.exe that is running it. On Windows a running executable cannot
+          # be deleted, so RemoveDir fails with MSB3231 "Access to the path
+          # 'dotnet.exe' is denied" and leaves ./.dotnet/sdk half-removed (later
+          # "hostpolicy.dll not found"). This is Windows-only: on Linux/macOS a
+          # running exe's file CAN be unlinked, so RemoveDir works. Fix: if
+          # provision.yml already put a healthy ./.dotnet in place, write its
+          # _InstallDotNet incremental stamp (./.dotnet/.stamp, newer than
+          # eng/Versions.props + DotNet.csproj) so cake SKIPS the self-deleting
+          # RemoveDir/reinstall and just reuses that SDK (workload targets, which
+          # have their own stamps, still run). If ./.dotnet is already broken from
+          # a prior attempt, remove it so cake reinstalls cleanly.
           - pwsh: |
+              $ErrorActionPreference = 'Continue'
               $wd = (Get-Location).Path
-              $dn = Join-Path $wd ".dotnet/dotnet.exe"
-              if (Test-Path $dn) {
-                try { & $dn build-server shutdown 2>$null | Out-Null } catch {}
+              $dotnetDir = Join-Path $wd ".dotnet"
+              $dotnetExe = Join-Path $dotnetDir "dotnet.exe"
+
+              # Best-effort: stop build servers / stray processes rooted in .dotnet
+              # (or with an unreadable path) so a reinstall isn't blocked by a
+              # stale handle. Not the primary fix, but cheap insurance.
+              if (Test-Path $dotnetExe) {
+                try { & $dotnetExe build-server shutdown 2>$null | Out-Null } catch {}
               }
               try {
                 Get-Process -ErrorAction SilentlyContinue |
-                  Where-Object { $_.Name -in @('dotnet','VBCSCompiler','MSBuild') -and $_.Path -and $_.Path.StartsWith($wd, [System.StringComparison]::OrdinalIgnoreCase) } |
+                  Where-Object {
+                    $_.Name -in @('dotnet','VBCSCompiler','MSBuild','testhost') -and
+                    ((-not $_.Path) -or $_.Path.StartsWith($dotnetDir, [System.StringComparison]::OrdinalIgnoreCase))
+                  } |
                   ForEach-Object { try { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue } catch {} }
               } catch {}
-              Write-Host "Released .dotnet build-server locks (best-effort)."
+
+              if (-not (Test-Path $dotnetExe)) {
+                Write-Host "No ./.dotnet present — cake will install it fresh. Nothing to do."
+                exit 0
+              }
+
+              # A half-removed SDK makes 'dotnet --version' fail with
+              # 'hostpolicy.dll not found'; use that as the health probe.
+              $healthy = $false
+              try {
+                & $dotnetExe --version *> $null
+                if ($LASTEXITCODE -eq 0) { $healthy = $true }
+              } catch { $healthy = $false }
+
+              if ($healthy) {
+                $stamp = Join-Path $dotnetDir ".stamp"
+                try {
+                  Set-Content -Path $stamp -Value "provisioned by ci-copilot pre-step" -NoNewline -ErrorAction Stop
+                  (Get-Item $stamp -Force).LastWriteTimeUtc = (Get-Date).ToUniversalTime()
+                  Write-Host "Healthy ./.dotnet detected — wrote $stamp so cake skips the self-deleting reinstall."
+                } catch {
+                  Write-Host "WARNING: could not write $stamp ($($_.Exception.Message)); cake may attempt a reinstall."
+                }
+              } else {
+                Write-Host "./.dotnet is present but unhealthy (dotnet --version failed) — removing so cake can reinstall."
+                for ($i = 0; $i -lt 6 -and (Test-Path $dotnetDir); $i++) {
+                  try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop }
+                  catch { Start-Sleep -Seconds 2 }
+                }
+                if (Test-Path $dotnetDir) {
+                  Write-Host "WARNING: ./.dotnet could not be fully removed; cake's RemoveDir may still fail."
+                } else {
+                  Write-Host "Removed ./.dotnet; cake will reinstall it cleanly."
+                }
+              }
               exit 0
-            displayName: 'Release .dotnet locks (Windows, best-effort)'
+            displayName: 'Prepare .dotnet for cake (Windows)'
             condition: and(succeeded(), eq('${{ parameters.Platform }}', 'windows'))
             continueOnError: true
 
