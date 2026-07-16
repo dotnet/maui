@@ -11,7 +11,7 @@
 > This document describes the **finalized design** of the Passkeys Essentials API to be implemented on the
 > `net11.0` branch. It is the end-state specification: the public surface, naming, platform strategy, and
 > per-platform behavior are all settled. Items intentionally left for later are listed under
-> [§14 Planned follow-ups](#14-planned-follow-ups).
+> [§13 Planned follow-ups](#13-planned-follow-ups).
 
 ## 1. Summary
 
@@ -61,7 +61,7 @@ implement any server-side WebAuthn verification, attestation validation, or chal
 - Conditional UI / autofill-driven passkey sign-in — a separate view-oriented feature, deferred (§7.5,
   Appendix A).
 - A **BlazorWebView passkey bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)), deferred —
-  see [§14 Planned follow-ups](#14-planned-follow-ups). A detailed follow-up issue is filed once the native
+  see [§13 Planned follow-ups](#13-planned-follow-ups). A detailed follow-up issue is filed once the native
   API is implemented and working.
 - Cross-device / security-key–only flows as a distinct API. On platforms where the OS offers this
   automatically (Apple, Windows) it is available through the same call; a dedicated security-key API is
@@ -861,7 +861,7 @@ cancel must come from a different thread than the blocking call, using the pre-a
   [Blazor Web App passkeys](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/blazor).
 - **Sample**: add a Passkeys page to `Essentials.Sample` wired to the reference RP above.
 
-## 12. Summary of key decisions
+## 12. Key decisions
 
 | Topic | Decision |
 |---|---|
@@ -876,7 +876,22 @@ cancel must come from a different thread than the blocking call, using the pre-a
 | Windows minimum | **Windows 11** for passkeys, via `webauthn.dll` P/Invoke (§7.3). |
 | Runtime knobs | v1 exposes **`PreferImmediatelyAvailable`** and **`CancellationToken`**; presentation anchor is internal; origin override and conditional UI are deferred (§7.5). |
 
-## 13. References
+## 13. Planned follow-ups
+
+These are intentionally **out of scope for this spec/PR** and tracked to be filed as their own issues
+**after the native API is implemented and shown working**:
+
+- **BlazorWebView passkey bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)) — a JS-interop
+  shim so `navigator.credentials.create()/get()` inside a `BlazorWebView` routes to the native `Passkeys`
+  API (WebViews can't invoke platform WebAuthn directly). We will file a detailed follow-up issue with the
+  bridging design once `Passkeys` is implemented and validated end-to-end.
+- **Android API 28–33 support** via an opt-in `credentials-play-services-auth` recipe (without bundling
+  GMS in Essentials) — if there's demand beyond the OS-native Android 14+ path.
+- **Standalone macOS** support once Essentials enables a `net-macos` target (§7.2).
+- **Conditional UI / autofill** passkey sign-in — see the detailed design notes in **Appendix A**.
+- A possible **presentation-anchor override** (§7.5).
+
+## 14. References
 - W3C WebAuthn Level 3 — https://www.w3.org/TR/webauthn-3/
 - W3C WebAuthn L3 §JSON serialization (`...JSON` types, `toJSON()`) — https://w3c.github.io/webauthn/#sctn-parseCreationOptionsFromJSON
 - FIDO Alliance passkeys — https://fidoalliance.org/passkeys/
@@ -894,21 +909,6 @@ cancel must come from a different thread than the blocking call, using the pre-a
 - Passkeys in ASP.NET Core (test RP) — https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/
 - Passkeys in ASP.NET Core Blazor Web Apps — https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/blazor
 - Android passkey integration (platform vs Play adapter) — https://developer.android.com/identity/sign-in/credential-manager
-
-## 14. Planned follow-ups (post-implementation)
-
-These are intentionally **out of scope for this spec/PR** and tracked to be filed as their own issues
-**after the native API is implemented and shown working**:
-
-- **BlazorWebView passkey bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)) — a JS-interop
-  shim so `navigator.credentials.create()/get()` inside a `BlazorWebView` routes to the native `Passkeys`
-  API (WebViews can't invoke platform WebAuthn directly). We will file a detailed follow-up issue with the
-  bridging design once `Passkeys` is implemented and validated end-to-end.
-- **Android API 28–33 support** via an opt-in `credentials-play-services-auth` recipe (without bundling
-  GMS in Essentials) — if there's demand beyond the OS-native Android 14+ path.
-- **Standalone macOS** support once Essentials enables a `net-macos` target (§7.2).
-- **Conditional UI / autofill** passkey sign-in — see the detailed design notes in **Appendix A**.
-- A possible **presentation-anchor override** (§7.5).
 
 ## Appendix A — Conditional UI / autofill (deferred design notes)
 
