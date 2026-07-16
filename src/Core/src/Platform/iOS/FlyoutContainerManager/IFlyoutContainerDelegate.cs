@@ -29,14 +29,12 @@ internal interface IFlyoutContainerDelegate
     /// <summary>
     /// Called when the container VC's view has appeared (ViewDidAppear).
     /// Currently unused — the framework handles Appearing automatically.
-    /// Kept for future-proofing if manual lifecycle notification is needed.
     /// </summary>
     void OnViewDidAppear();
 
     /// <summary>
     /// Called when the container VC's view is about to disappear (ViewWillDisappear).
     /// Currently unused — the framework handles Disappearing automatically.
-    /// Kept for future-proofing if manual lifecycle notification is needed.
     /// </summary>
     void OnViewWillDisappear();
 

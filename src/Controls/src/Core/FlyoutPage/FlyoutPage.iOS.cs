@@ -21,19 +21,14 @@ namespace Microsoft.Maui.Controls
         // we subscribed with.
         PropertyChangedEventHandler? _flyoutPropertyChangedHandler;
 
-        // ═══════════════════════════════════════════════
-        // Write-Back Callbacks (IFlyoutContainerDelegate → Controls)
-        // ═══════════════════════════════════════════════
 
         internal static void OnPresentedChangedByGesture(IFlyoutView view, bool isPresented)
         {
             if (view is FlyoutPage fp)
             {
-                // Guard: don't write IsPresented=false when ShouldShowSplitMode is active.
-                // During rotation (ViewWillTransitionToSize), the orientation hasn't actually
-                // changed yet, so ShouldShowSplitMode may still return true. Writing false
-                // at this point triggers OnIsPresentedPropertyChanging validation which throws
-                // InvalidOperationException. The old renderer had the same guard in UpdatePresented.
+                // Guard: during rotation, ShouldShowSplitMode may still return true while
+                // orientation hasn't settled. Writing false triggers InvalidOperationException
+                // in OnIsPresentedPropertyChanging validation.
                 if (!isPresented && ((IFlyoutPageController)fp).ShouldShowSplitMode)
                 {
                     return;
@@ -63,10 +58,8 @@ namespace Microsoft.Maui.Controls
                 return;
             }
 
-            // Subscribe to Flyout's property changes for icon/title updates
             fp.SubscribeToFlyoutPropertyChanges();
 
-            // Get the detail's ViewController via its handler
             if (fp.Detail?.Handler is not IPlatformViewHandler detailHandler)
             {
                 return;
@@ -78,7 +71,7 @@ namespace Microsoft.Maui.Controls
                 return;
             }
 
-            // If detail VC is a UINavigationController, use its root VC (same as renderer)
+            // If detail VC is a UINavigationController, use its root VC
             var targetVC = detailVC is UINavigationController nav
                 ? nav.ViewControllers?.FirstOrDefault() ?? detailVC
                 : detailVC;
@@ -167,7 +160,6 @@ namespace Microsoft.Maui.Controls
                 flyoutPage.IsPresented = !flyoutPage.IsPresented;
             };
 
-            // Load icon asynchronously (same pattern as renderer)
             var mauiContext = flyoutPage.FindMauiContext();
             if (mauiContext is null)
             {
@@ -180,7 +172,7 @@ namespace Microsoft.Maui.Controls
 
                 if (icon is not null)
                 {
-                    // Scale icon to fit nav bar (max 44pt height) — same as renderer
+                    // Scale icon to fit nav bar (max 44pt height)
                     var originalSize = icon.Size;
                     if (originalSize.Height > 44)
                     {
@@ -198,7 +190,7 @@ namespace Microsoft.Maui.Controls
                     }
                     catch (Exception)
                     {
-                        // Match renderer: catch potential exception from UIBarButtonItem creation
+                        // UIBarButtonItem creation can throw
                     }
                 }
 
@@ -209,8 +201,7 @@ namespace Microsoft.Maui.Controls
                         new UIBarButtonItem(flyoutPage.Flyout?.Title ?? string.Empty, UIBarButtonItemStyle.Plain, onItemTapped);
                 }
 
-                // Give the hamburger button an AutomationId and VoiceOver label/hint,
-                // like the legacy renderer did (NavigationRenderer.SetFlyoutLeftBarButton).
+                // Set AutomationId and VoiceOver label/hint on the hamburger button.
                 if (!string.IsNullOrEmpty(flyoutPage.AutomationId))
                 {
                     targetVC.NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = $"btn_{flyoutPage.AutomationId}";
@@ -225,9 +216,6 @@ namespace Microsoft.Maui.Controls
             });
         }
 
-        // ═══════════════════════════════════════════════
-        // iOS-Specific Mappers
-        // ═══════════════════════════════════════════════
 
         internal static void MapApplyShadow(IFlyoutViewHandler handler, IFlyoutView view)
         {

@@ -7,17 +7,12 @@ using PointF = CoreGraphics.CGPoint;
 namespace Microsoft.Maui.Platform;
 
 /// <summary>
-/// Manages a flyout/detail split layout with pan gesture, tap-to-close, and animated
-/// show/hide. Pure UIKit — no Controls references.
-/// This is a plain C# class (not a UIViewController subclass) that operates on
-/// a parent VC provided by the handler.
+/// Manages flyout/detail split layout with pan gesture, tap-to-close, and animated show/hide.
+/// Pure UIKit — no Controls references.
 /// Communicates state changes back through <see cref="IFlyoutContainerDelegate"/>.
 /// </summary>
 internal class FlyoutContainerManager
 {
-	// ═══════════════════════════════════════════════
-	// Fields
-	// ═══════════════════════════════════════════════
 
 	readonly WeakReference<IFlyoutContainerDelegate> _delegateRef;
 	WeakReference<UIViewController>? _parentVCRef;
@@ -44,18 +39,12 @@ internal class FlyoutContainerManager
 	FlowDirection _flowDirection = FlowDirection.MatchParent;
 	double _flyoutWidth = -1; // -1 means platform default
 
-	// ═══════════════════════════════════════════════
-	// Constructor
-	// ═══════════════════════════════════════════════
 
 	internal FlyoutContainerManager(IFlyoutContainerDelegate containerDelegate)
 	{
 		_delegateRef = new WeakReference<IFlyoutContainerDelegate>(containerDelegate);
 	}
 
-	// ═══════════════════════════════════════════════
-	// Properties
-	// ═══════════════════════════════════════════════
 
 	/// <summary>
 	/// On iPad, the flyout overlaps the detail (slides over from left).
@@ -84,18 +73,13 @@ internal class FlyoutContainerManager
 				return false; // iPhone never splits
 			}
 
-			// Controls (FlyoutPage.cs) already decides split vs. non-split based on
-			// FlyoutLayoutBehavior + orientation, and passes us the result as
-			// Locked (split) or Flyout (not split). Trust it as-is — don't
-			// recompute split mode from raw bounds, or Popover/SplitOnPortrait
-			// will be split incorrectly.
+			// FlyoutBehavior is already resolved by Controls: Locked = split, Flyout = not-split.
+			// Trust it — don't recompute from raw bounds,
+			// or Popover/SplitOnPortrait will split incorrectly.
 			return _flyoutBehavior == FlyoutBehavior.Locked;
 		}
 	}
 
-	// ═══════════════════════════════════════════════
-	// Lifecycle (called by handler)
-	// ═══════════════════════════════════════════════
 
 	/// <summary>
 	/// Called from the container VC's ViewDidLoad. Sets up the view hierarchy
@@ -193,9 +177,6 @@ internal class FlyoutContainerManager
 		}
 	}
 
-	// ═══════════════════════════════════════════════
-	// Public API — Content
-	// ═══════════════════════════════════════════════
 
 	internal void SetFlyoutViewController(UIViewController? flyoutVC)
 	{
@@ -204,7 +185,6 @@ internal class FlyoutContainerManager
 			return;
 		}
 
-		// Remove old
 		if (_flyoutVC is not null)
 		{
 			_flyoutVC.WillMoveToParentViewController(null);
@@ -214,7 +194,6 @@ internal class FlyoutContainerManager
 
 		_flyoutVC = flyoutVC;
 
-		// Add new
 		if (_flyoutVC is not null && _flyoutContainerView is not null)
 		{
 			parentVC.AddChildViewController(_flyoutVC);
@@ -236,7 +215,6 @@ internal class FlyoutContainerManager
 			return;
 		}
 
-		// Remove old
 		if (_detailVC is not null)
 		{
 			_detailVC.WillMoveToParentViewController(null);
@@ -246,7 +224,6 @@ internal class FlyoutContainerManager
 
 		_detailVC = detailVC;
 
-		// Add new
 		if (_detailVC is not null && _detailContainerView is not null)
 		{
 			parentVC.AddChildViewController(_detailVC);
@@ -266,9 +243,6 @@ internal class FlyoutContainerManager
 		NotifyLeftBarButtonNeedsUpdate();
 	}
 
-	// ═══════════════════════════════════════════════
-	// Public API — State Updates
-	// ═══════════════════════════════════════════════
 
 	internal void UpdateIsPresented(bool isPresented, bool animated)
 	{
@@ -355,9 +329,6 @@ internal class FlyoutContainerManager
 		_applyShadow = applyShadow;
 	}
 
-	// ═══════════════════════════════════════════════
-	// Public API — Lifecycle
-	// ═══════════════════════════════════════════════
 
 	internal void TearDown()
 	{
@@ -392,9 +363,6 @@ internal class FlyoutContainerManager
 		_detailContainerView = null;
 	}
 
-	// ═══════════════════════════════════════════════
-	// Layout
-	// ═══════════════════════════════════════════════
 
 	void LayoutPanes(bool animated)
 	{
@@ -574,9 +542,6 @@ internal class FlyoutContainerManager
 		return (nfloat)(int)(Math.Min(containerFrame.Width, containerFrame.Height) * 0.8);
 	}
 
-	// ═══════════════════════════════════════════════
-	// Presented State
-	// ═══════════════════════════════════════════════
 
 	void SetPresented(bool value, bool animated, bool notifyDelegate)
 	{
@@ -600,9 +565,6 @@ internal class FlyoutContainerManager
 		}
 	}
 
-	// ═══════════════════════════════════════════════
-	// Click-Off View (tap overlay to dismiss)
-	// ═══════════════════════════════════════════════
 
 	void UpdateClickOffView()
 	{
@@ -679,9 +641,6 @@ internal class FlyoutContainerManager
 		_clickOffView?.RemoveFromSuperview();
 	}
 
-	// ═══════════════════════════════════════════════
-	// Container Setup
-	// ═══════════════════════════════════════════════
 
 	void PackContainers(UIView parentView)
 	{
@@ -704,9 +663,6 @@ internal class FlyoutContainerManager
 		}
 	}
 
-	// ═══════════════════════════════════════════════
-	// Gesture — Tap to Close
-	// ═══════════════════════════════════════════════
 
 	void SetupTapGesture()
 	{
@@ -729,9 +685,6 @@ internal class FlyoutContainerManager
 		_clickOffView.AddGestureRecognizer(_tapGesture);
 	}
 
-	// ═══════════════════════════════════════════════
-	// Gesture — Pan
-	// ═══════════════════════════════════════════════
 
 	void UpdatePanGesture()
 	{
@@ -947,9 +900,6 @@ internal class FlyoutContainerManager
 		detailChildView.Layer.Opacity = opacity;
 	}
 
-	// ═══════════════════════════════════════════════
-	// Accessibility
-	// ═══════════════════════════════════════════════
 
 	void ToggleAccessibilityElementsHidden()
 	{
@@ -964,9 +914,6 @@ internal class FlyoutContainerManager
 		}
 	}
 
-	// ═══════════════════════════════════════════════
-	// Helpers
-	// ═══════════════════════════════════════════════
 
 	static bool IsSwipeView(UIView? view)
 	{
