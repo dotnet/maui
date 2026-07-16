@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		ShellItem? _shellItem;
 		SearchHandler? _currentSearchHandler;
 		IShellAppearanceElement? _shellAppearanceElement;
+		readonly HashSet<ShellSection> _trackedShellSections = new();
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
@@ -127,13 +128,14 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					shell.Navigated -= OnShellNavigated;
 				}
-
-				foreach (var item in shellItemController.GetItems())
-				{
-					item.PropertyChanged -= OnShellItemPropertyChanged;
-				}
-
 			}
+
+			foreach (var item in _trackedShellSections)
+			{
+				item.PropertyChanged -= OnShellItemPropertyChanged;
+			}
+
+			_trackedShellSections.Clear();
 		}
 
 		public override void SetVirtualView(Maui.IElement view)
@@ -211,12 +213,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void MapMenuItems()
 		{
+			// Unsubscribe from previously tracked sections to prevent duplicate PropertyChanged subscriptions
+			// when MapMenuItems is called multiple times (e.g. after ShellContent.Title changes).
+			foreach (var tracked in _trackedShellSections)
+			{
+				tracked.PropertyChanged -= OnShellItemPropertyChanged;
+			}
+			
+			_trackedShellSections.Clear();
+
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
 
 			foreach (var item in shellItemController.GetItems())
 			{
 				item.PropertyChanged += OnShellItemPropertyChanged;
+				_trackedShellSections.Add(item);
 				if (Routing.IsImplicit(item))
 					items.Add(item.CurrentItem);
 				else
