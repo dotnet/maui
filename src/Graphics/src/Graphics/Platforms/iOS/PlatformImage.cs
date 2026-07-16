@@ -34,14 +34,20 @@ namespace Microsoft.Maui.Graphics.Platform
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
 			var scaledImage = _image.ScaleImage(maxWidthOrHeight, maxWidthOrHeight, disposeOriginal);
-			return new PlatformImage(scaledImage, _metadata);
+			return new PlatformImage(scaledImage, NormalizedMetadata());
 		}
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
 			var scaledImage = _image.ScaleImage(maxWidth, maxHeight, disposeOriginal);
-			return new PlatformImage(scaledImage, _metadata);
+			return new PlatformImage(scaledImage, NormalizedMetadata());
 		}
+
+		// ScaleImage renders through UIImage.Draw, which bakes the source imageOrientation into the
+		// pixels, so the downsized image is always upright. Carry the metadata forward with its
+		// orientation reset to 1 (Up); otherwise a preserved EXIF orientation tag would cause a viewer
+		// to rotate the already-upright pixels a second time when the result is saved.
+		private AppleImageMetadata NormalizedMetadata() => _metadata?.WithOrientation(1);
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
 		{

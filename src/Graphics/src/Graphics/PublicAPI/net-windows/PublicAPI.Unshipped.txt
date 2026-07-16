@@ -42,11 +42,11 @@ Microsoft.Maui.Graphics.Color.MultiplyAlpha(float multiplyBy) -> Microsoft.Maui.
 Microsoft.Maui.Graphics.Color.WithAlpha(float alpha) -> Microsoft.Maui.Graphics.Color!
 override Microsoft.Maui.Graphics.Color.ToString() -> string!
 static Microsoft.Maui.Graphics.Color.FromHex(string! colorAsArgbHex) -> Microsoft.Maui.Graphics.Color!
-
 ~Microsoft.Maui.Graphics.IImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata
 ~Microsoft.Maui.Graphics.IImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
 ~Microsoft.Maui.Graphics.IImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Graphics.IImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
 ~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
 Microsoft.Maui.Graphics.IImageMetadata
 Microsoft.Maui.Graphics.ImageLoadOptions

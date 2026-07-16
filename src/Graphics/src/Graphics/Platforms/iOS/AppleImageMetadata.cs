@@ -34,6 +34,14 @@ namespace Microsoft.Maui.Graphics.Platform
 		/// </summary>
 		public int Orientation { get; set; }
 
+		/// <summary>
+		/// Returns a copy that shares this instance's captured properties but reports a different EXIF
+		/// <see cref="Orientation"/>. Used after a transform bakes the orientation into the pixels, so the
+		/// saved metadata reflects the upright pixels instead of the original orientation.
+		/// </summary>
+		public AppleImageMetadata WithOrientation(int orientation) =>
+			new AppleImageMetadata(_properties, orientation);
+
 		public static AppleImageMetadata? Capture(NSData data)
 		{
 			using var source = CGImageSource.FromData(data);
