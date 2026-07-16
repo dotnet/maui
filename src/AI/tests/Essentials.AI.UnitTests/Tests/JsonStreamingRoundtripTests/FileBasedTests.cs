@@ -19,7 +19,7 @@ public partial class JsonStreamingRoundtripTests
 			_ = fileName; // We are not using the parameter here
 
 			// Arrange
-			var lines = File.ReadAllLines(filePath);
+			var lines = DataStreamsHelper.ReadAllLinesShared(filePath);
 			var finalLine = lines[^1];
 
 			// Act - pass each line through chunker and deserializer
@@ -48,7 +48,7 @@ public partial class JsonStreamingRoundtripTests
 			_ = fileName; // We are not using the parameter here
 
 			// This test validates that each intermediate line produces a valid partial object
-			var lines = File.ReadAllLines(filePath);
+			var lines = DataStreamsHelper.ReadAllLinesShared(filePath);
 
 			var models = ProcessLines<Itinerary>(lines);
 
