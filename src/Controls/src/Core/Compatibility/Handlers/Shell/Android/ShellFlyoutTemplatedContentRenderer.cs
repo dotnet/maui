@@ -101,6 +101,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
 					var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
 					var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
+
+					// Only apply bottom padding if the view's bottom actually extends into
+					// the bottom safe area zone. If the view is fully above the safe area
+					// boundary, there is no overlap and no padding is needed.
+					if (bottomInset > 0 && v.Height > 0)
+					{
+						var location = new int[2];
+						v.GetLocationOnScreen(location);
+						var viewBottom = location[1] + v.Height;
+
+						var windowManager = v.Context?.GetSystemService(Context.WindowService) as IWindowManager;
+						if (windowManager?.DefaultDisplay is not null)
+						{
+							var realMetrics = new global::Android.Util.DisplayMetrics();
+							windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
+							var screenHeight = realMetrics.HeightPixels;
+
+							// View does not reach the bottom safe area zone — no bottom padding needed
+							if (viewBottom <= screenHeight - bottomInset)
+								bottomInset = 0;
+						}
+					}
+
 					v.SetPadding(leftInset, topInset, rightInset, bottomInset);
 					return WindowInsetsCompat.Consumed;
 				}
