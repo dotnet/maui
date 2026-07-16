@@ -1059,8 +1059,11 @@ function Test-IsSdkBumpPr {
         reach the .NET Release Tracker), so callers add a "verify blessed locally"
         emphasis for these. Matches on TITLE only ("Bump dotnet/dotnet …" /
         "Bump dotnet/sdk …"); android / macios / runtime bumps are intentionally
-        NOT flagged as SDK bumps. StrictMode-safe, dual-shape (PSCustomObject /
-        IDictionary), mirroring Test-IsDependencyFlowPr.
+        NOT flagged as SDK bumps. The repo segment is bounded by a negative
+        look-ahead `(?![\w-])` (not a bare `\b`) so a hyphenated sibling such as
+        `dotnet/dotnet-optimization` is NOT misclassified as an SDK bump — `\b`
+        sits between `t` and `-` and would have matched it. StrictMode-safe,
+        dual-shape (PSCustomObject / IDictionary), mirroring Test-IsDependencyFlowPr.
     #>
     param($PR)
 
@@ -1072,7 +1075,7 @@ function Test-IsSdkBumpPr {
         $PR.title
     } else { $null }
 
-    return [bool]($title -and $title -match '(?i)\bBump\b.*dotnet/(dotnet|sdk)\b')
+    return [bool]($title -and $title -match '(?i)\bBump\b.*dotnet/(dotnet|sdk)(?![\w-])')
 }
 
 function Get-ComponentFlowSignal {
