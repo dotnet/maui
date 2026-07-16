@@ -710,6 +710,100 @@ Conditional UI (1b, Appendix A), the presentation-anchor override, and the origi
 *future* additions, and all can be added as new optional members / a new method **without breaking** the v1
 surface — so there's nothing we must add now to avoid a retrofit.
 
+The rest of this section drills into each knob: the native API on each OS, and a behavior matrix.
+
+#### 7.5.1 Immediately-available UI — `PreferImmediatelyAvailable` (v1)
+
+*What it is:* a presentation-mode choice — "only offer a passkey already on this device; don't launch the
+cross-device/hybrid flow (QR, 'use another device', phone-as-authenticator)." Still a modal, but local-only
+and fail-fast. (The separate, deferred "no modal at all / inline autofill" mode is **1b** — see Appendix A.)
+
+| Platform | Native API | What it does |
+|---|---|---|
+| **Android** | `GetCredentialRequest.Builder.setPreferImmediatelyAvailableCredentials(true)` | If nothing is instantly available, fail fast with `NoCredentialException` instead of launching the hybrid/QR flow. |
+| **Apple** | `ASAuthorizationController.PerformRequests(ASAuthorizationController.RequestOptions.PreferImmediatelyAvailableCredentials)` (iOS 16+) | Presents only if a local platform passkey exists; otherwise errors — no QR/nearby-device sheet. |
+| **Windows** | *(no equivalent)* | The `webauthn.dll` native path always shows the Windows Security modal. |
+
+| `PreferImmediatelyAvailable` | Android | Apple (iOS / iPadOS / Mac Catalyst) | Windows |
+|---|---|---|---|
+| **`false`** (default) | Full UI incl. hybrid/QR "use another device" | Full sheet incl. nearby-device / QR | Full Windows Security modal |
+| **`true`** | Silent/local if present; else fails fast (`NoCredentialException`) — no hybrid | Presents only if a local passkey exists; else errors — no QR | **Ignored (no-op)** — modal still shown |
+
+*Notes:* best-effort (Windows no-op must be documented). "No credential available" (`NoCredentialException`)
+is a distinct outcome, **not** a user-cancel, so it maps to a no-credential result rather than
+`TaskCanceledException`. Mostly relevant for *authentication*.
+
+#### 7.5.2 Presentation anchor / parent window — internal (v1)
+
+*What it is:* the live window/view/activity the OS attaches the passkey sheet to. A process-local object with
+a lifetime, so it can never be serialized into the JSON. Purely presentation — no effect on the credential.
+
+**Already solved by existing Essentials plumbing** (the same helpers `WebAuthenticator` /
+`AppleSignInAuthenticator` use), so v1 resolves it internally with **no public API**:
+
+| Platform | Native API | Existing Essentials helper |
+|---|---|---|
+| **Android** | The `Activity` passed to `CredentialManager.CreateCredentialAsync(activity, …)` / `GetCredentialAsync(activity, …)` hosts the bottom sheet | `Platform.CurrentActivity` |
+| **Apple** | `ASAuthorizationController.PresentationContextProvider` → `GetPresentationAnchor(controller)` returns the `UIWindow` (iOS/Catalyst) | `WindowStateManager.Default.GetKeyWindow()` (provider pattern already in `AppleSignInAuthenticator.ios.cs`) |
+| **Windows** | The `HWND` parameter of `WebAuthNAuthenticatorMakeCredential` / `GetAssertion` (modal on that window) | `WindowStateManager.Default.GetActiveWindowHandle(true)` |
+
+| Scenario | Android | Apple | Windows |
+|---|---|---|---|
+| **Default (active window)** | `Platform.CurrentActivity` | key `UIWindow` | active `HWND` |
+| **No active window / background** | throws (no Activity) → `InvalidOperationException` | no anchor → controller errors | null `HWND` → detached/fails |
+| **Multi-window (iPad / desktop)** | foreground Activity | returned anchor (wrong one → wrong window) | modal parented to resolved `HWND` |
+| **Explicit override (future)** | pass a specific `Activity` | return a specific `UIWindow` | pass a specific `HWND` |
+
+*Decision:* handle internally; throw a clear `InvalidOperationException` if no foreground window/activity
+exists. An optional per-call window/anchor override can be added later — additive, non-breaking.
+
+#### 7.5.3 Request origin override — defer (not exposed in v1)
+
+*What it is:* overriding the **origin** the ceremony binds to (part of the signed `clientDataJSON`), i.e.
+running WebAuthn *on behalf of* a web origin rather than the app's own verified identity. The classic
+consumer is a **browser**. It is **privileged and security-critical** — arbitrary origin override would
+enable phishing, so every platform gates it hard.
+
+| Platform | Native API | Gating |
+|---|---|---|
+| **Android** | `GetCredentialRequest.Builder.setOrigin(String)` | Requires privileged permission **`CREDENTIAL_MANAGER_SET_ORIGIN`** (system-signed / OEM-allowlisted apps only). Unprivileged callers get a **`SecurityException`**. |
+| **Apple** | *(not exposed)* | Origin comes from the Associated Domains entitlement; no "act as another origin" knob on the platform provider. |
+| **Windows** | *(not in scope)* | Origin is embedded in the `clientDataJSON` we build; no general impersonation parameter on the native path we use. |
+
+| `Origin` value | Android | Apple | Windows |
+|---|---|---|---|
+| **unset** (default, normal app) | app package (via DAL) | associated domain | app/RP-ID context |
+| **set, app NOT privileged** | `SecurityException` | no-op / unsupported | no-op / unsupported |
+| **set, app IS privileged (browser)** | honored | n/a via this API | n/a via this API |
+
+*Decision:* **defer / do not expose.** MAUI Essentials targets normal apps authenticating for their own RP;
+the default automatic-origin behavior is correct for them, and exposing an override would "work" only for
+system apps on Android and silently no-op elsewhere. Addable later as an optional `Origin` property with
+platform caveats — non-breaking.
+
+#### 7.5.4 Cancellation — `CancellationToken` (v1)
+
+*What it is:* a transient signal to abort an in-flight ceremony (user navigated away, your timeout fired,
+screen dismissed). Tied to the call's lifetime — nothing to serialize.
+
+| Platform | Native API | What it does |
+|---|---|---|
+| **Android** | `android.os.CancellationSignal` passed to `getCredentialAsync` / `createCredentialAsync`; `signal.cancel()` | Aborts the request → `*CancellationException` (an `OperationCanceledException`). |
+| **Apple** | `ASAuthorizationController.Cancel()` (iOS 16+) | Dismisses the sheet; delegate error is `ASAuthorizationError.Canceled`. |
+| **Windows** | `WebAuthNGetCancellationId(out Guid)` → set the options struct's `pCancellationId` → from another thread `WebAuthNCancelCurrentOperation(in Guid)` | Terminates the in-progress operation. **GUID-based, not `HWND`-based** — distinct from the presentation `HWND`. |
+
+| Scenario | Android | Apple | Windows |
+|---|---|---|---|
+| **`CancellationToken.None`** | runs to completion / OS timeout | runs to completion | runs to completion |
+| **Already-cancelled token** | short-circuit → `TaskCanceledException` | short-circuit | short-circuit |
+| **Cancelled mid-ceremony** | `CancellationSignal.cancel()` → `TaskCanceledException` | `Cancel()` → `TaskCanceledException` | `WebAuthNCancelCurrentOperation(id)` → `TaskCanceledException` |
+| **User taps ✕ / dismisses** | `*CancellationException` → `TaskCanceledException` | `.Canceled` → `TaskCanceledException` | cancel `HRESULT` → `TaskCanceledException` |
+| **Cancel after completion** | no-op | no-op | no-op (no current operation for that ID) |
+
+*Notes:* both programmatic and user cancellation normalize to **`TaskCanceledException`** (consistent with
+`WebAuthenticator`). Implementation registers `token.Register(...)` to fire the native cancel; on Windows the
+cancel must come from a different thread than the blocking call, using the pre-allocated GUID.
+
 ## 8. Error handling
 
 | Situation | Behavior |
