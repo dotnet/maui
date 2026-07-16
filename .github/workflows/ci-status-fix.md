@@ -1123,19 +1123,30 @@ N=<pr-number>
 # back to "defer to human". Fully paginate to a short (< 100) page, bounded to 20 pages as
 # a safety stop, then collapse the slurped stream with the SAME per-reviewer-latest-decision
 # jq as before (`jq -s` reads the .jsonl into the array `.[]` consumes unchanged).
+# A transport/HTTP/JSON failure is NOT an empty review set. Track C is the explicit
+# maintainer-instruction path, so fail closed and wait rather than advancing past a
+# review that could not be read.
+set -o pipefail
 cat /dev/null > /tmp/gh-aw/agent/tcreviews_${N}.jsonl
+tcReviewsAvailable=true
 tcpage=1
 while [ "$tcpage" -le 20 ]; do
   # Pre-bind the URL and pipe through `| tee` (never inline `?`/`&` or `-o` of a fetched
   # body — both are physically rejected by the sandbox; see Environment constraints).
   url="https://api.github.com/repos/dotnet/maui/pulls/$N/reviews?per_page=100&page=$tcpage"
-  tccnt=$(curl -s "$url" | tee /tmp/gh-aw/agent/tcpage_${N}.json | jq 'if type=="array" then length else 0 end')
+  if ! curl -fsS "$url" | tee /tmp/gh-aw/agent/tcpage_${N}.json > /dev/null ||
+     ! jq -e 'type == "array"' /tmp/gh-aw/agent/tcpage_${N}.json > /dev/null; then
+    tcReviewsAvailable=false
+    break
+  fi
+  tccnt=$(jq 'length' /tmp/gh-aw/agent/tcpage_${N}.json)
   jq -c 'if type=="array" then .[] else empty end' /tmp/gh-aw/agent/tcpage_${N}.json \
     >> /tmp/gh-aw/agent/tcreviews_${N}.jsonl
   [ "$tccnt" -lt 100 ] && break
   tcpage=$((tcpage + 1))
 done
-jq -s '[ .[] | select((.state | IN("CHANGES_REQUESTED","APPROVED","DISMISSED"))
+if [ "$tcReviewsAvailable" = true ]; then
+  jq -s '[ .[] | select((.state | IN("CHANGES_REQUESTED","APPROVED","DISMISSED"))
             and (.user.type == "User")
             and (.author_association | IN("OWNER","MEMBER","COLLABORATOR"))
             and (( .user.login | ascii_downcase ) as $l
@@ -1148,13 +1159,27 @@ jq -s '[ .[] | select((.state | IN("CHANGES_REQUESTED","APPROVED","DISMISSED"))
       | group_by(.user.login) | map(max_by(.submitted_at))
       | map(select(.state == "CHANGES_REQUESTED"))
       | sort_by(.submitted_at) | last' \
-  /tmp/gh-aw/agent/tcreviews_${N}.jsonl \
-  > /tmp/gh-aw/agent/tcreview_${N}.json
+    /tmp/gh-aw/agent/tcreviews_${N}.jsonl \
+    > /tmp/gh-aw/agent/tcreview_${N}.json
+else
+  printf 'null\n' > /tmp/gh-aw/agent/tcreview_${N}.json
+fi
 RID=$(jq -r '.id // empty' /tmp/gh-aw/agent/tcreview_${N}.json)
 url="https://api.github.com/repos/dotnet/maui/pulls/$N/commits?per_page=100"
-curl -s "$url" | tee /tmp/gh-aw/agent/tccommits_${N}.json \
-  | jq -r '.[-1].commit.committer.date // empty' \
-  > /tmp/gh-aw/agent/tclastcommit_${N}.txt
+tcCommitsAvailable=true
+if ! curl -fsS "$url" | tee /tmp/gh-aw/agent/tccommits_${N}.json > /dev/null ||
+   ! jq -e 'type == "array"' /tmp/gh-aw/agent/tccommits_${N}.json > /dev/null; then
+  tcCommitsAvailable=false
+  : > /tmp/gh-aw/agent/tclastcommit_${N}.txt
+else
+  jq -r '.[-1].commit.committer.date // empty' /tmp/gh-aw/agent/tccommits_${N}.json \
+    > /tmp/gh-aw/agent/tclastcommit_${N}.txt
+fi
+if [ "$tcReviewsAvailable" = true ] && [ "$tcCommitsAvailable" = true ]; then
+  echo true > /tmp/gh-aw/agent/tcinputs_${N}.txt
+else
+  echo false > /tmp/gh-aw/agent/tcinputs_${N}.txt
+fi
 # Per-review idempotency (authoritative Track C dedup) comes from the PREFETCH, not a
 # re-fetch here: `C.respondedTrackCReviewIds` is the set of review ids we have already
 # answered, computed in Query-CiFixPRs.ps1 from the FULLY-PAGINATED issue-comment
@@ -1168,7 +1193,11 @@ curl -s "$url" | tee /tmp/gh-aw/agent/tccommits_${N}.json \
 echo "$RID" > /tmp/gh-aw/agent/tcrid_${N}.txt
 ```
 
-The review is **actionable** only if ALL hold: `C.dataComplete == true` (a partial prefetch
+Before evaluating actionability, read `/tmp/gh-aw/agent/tcinputs_${N}.txt`. If it is
+`false`, record `skipped: PR #<P> Track C review inputs unavailable; waiting` and stop this
+candidate. Do NOT fall through to the CI-state gates and do not emit a safe output.
+
+Otherwise, the review is **actionable** only if ALL hold: `C.dataComplete == true` (a partial prefetch
 read empties `C.respondedTrackCReviewIds`, so the dedup set below is authoritative ONLY on a
 complete read — otherwise defer through the CI-state gates, so an incomplete prefetch can never
 re-ping a maintainer with a duplicate decline); `tcreview` is non-null; `RID` is NOT an
@@ -1749,6 +1778,7 @@ can aggregate them stably):
 - `visual-regression issue, not auto-fixable`
 - `tracking issue missing required fields, scanner needs prompt update`
 - `PR #<P> awaiting review`
+- `PR #<P> Track C review inputs unavailable; waiting`
 - `fix PR #<P> already merged (issue may be stale)`
 - `human PR #<P> already addressing`
 - `PR #<P> CI pending on <sha>; waiting`
