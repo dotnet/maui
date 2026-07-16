@@ -24,6 +24,12 @@ namespace Microsoft.Maui.Graphics
 		/// <param name="stream">The stream containing the image data.</param>
 		/// <param name="options">The options controlling orientation normalization and metadata capture.</param>
 		/// <returns>An <see cref="IImage"/> created from the stream.</returns>
+		/// <remarks>
+		/// On non-<c>NETSTANDARD2_0</c> targets this has a default interface implementation that ignores
+		/// <paramref name="options"/> and falls back to <see cref="FromStream(System.IO.Stream, ImageFormat)"/>.
+		/// The platform loading services all override it to honor the options; a custom implementer that
+		/// needs the options respected should likewise override it.
+		/// </remarks>
 #if NETSTANDARD2_0
 		IImage FromStream(Stream stream, ImageLoadOptions options);
 #else

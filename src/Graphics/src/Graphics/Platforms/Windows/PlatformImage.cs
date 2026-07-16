@@ -133,8 +133,9 @@ namespace Microsoft.Maui.Graphics.Platform
 				var newImage = FromStream(resizedStream.AsStreamForRead());
 
 #if !MAUI_GRAPHICS_WIN2D
-				// The resized pixels are already upright (orientation was normalized on load), so the
-				// captured metadata carries over unchanged.
+				// The resized pixels are upright whenever orientation was normalized on load (the
+				// default); if the caller loaded with DisableRotationNormalization, the metadata's
+				// orientation still describes the pixels, so it carries over unchanged either way.
 				if (newImage is PlatformImage resized)
 					resized._metadata = _metadata;
 #endif
