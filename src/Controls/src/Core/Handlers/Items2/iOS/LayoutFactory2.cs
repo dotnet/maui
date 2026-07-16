@@ -256,15 +256,13 @@ internal static class LayoutFactory2
 				section.InterGroupSpacing = new NFloat(horizontalItemSpacing);
 			}
 
-			var hasHeader = groupingInfo.IsGrouped ? groupingInfo.HasHeader : headerFooterInfo.HasHeader;
-			var hasFooter = groupingInfo.IsGrouped ? groupingInfo.HasFooter : headerFooterInfo.HasFooter;
 			ApplyHeaderFooterBoundarySpacing(
 				section,
 				scrollDirection,
 				verticalItemSpacing,
 				horizontalItemSpacing,
-				hasHeader,
-				hasFooter,
+				groupingInfo.HasHeader,
+				groupingInfo.HasFooter,
 				groupingInfo.IsGrouped && mainAxisSpacing > 0);
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
