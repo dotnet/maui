@@ -5,7 +5,7 @@
 | **Status** | Draft / Proposal (spec-first, open for discussion) |
 | **Area** | `area-essentials` |
 | **Namespace** | `Microsoft.Maui.Authentication` |
-| **Target** | Next `netN.0` feature branch (adds public API) |
+| **Target** | `net11.0` feature branch (adds public API) |
 | **Related** | Discussion [#21498](https://github.com/dotnet/maui/discussions/21498) "FIDO2 Passkeys support?", Issue [#32020](https://github.com/dotnet/maui/issues/32020) "Cannot use passkey/fido/webauthn in BlazorWebView" |
 
 > **This is a spec-first proposal.** The intent is to agree on the public API shape and per-platform
@@ -42,9 +42,12 @@ implement any server-side WebAuthn verification, attestation validation, or chal
 ### Goals
 - One cross-platform API to **create** (register) and **get** (authenticate / assert) a passkey.
 - Use the **standard WebAuthn JSON** contract so it interoperates 1:1 with existing server libraries
-  (e.g. [Fido2NetLib](https://github.com/passwordless-lib/fido2-net-lib), SimpleWebAuthn, etc.).
+  (e.g. [Fido2NetLib](https://github.com/passwordless-lib/fido2-net-lib), SimpleWebAuthn, and
+  **ASP.NET Core Identity's built-in passkeys**, .NET 10+).
 - Follow existing Essentials conventions (`interface` + static facade + per-platform partial
   implementation + `Default`/`SetDefault` testability), mirroring `WebAuthenticator`.
+- **Use only the OS-official credential provider on each platform** — AndroidX Credential Manager, Apple
+  AuthenticationServices, Windows WebAuthn — with **no Google Play Services dependency** (see §7.1/§9).
 - Graceful capability detection (`IsSupported`) and clear exceptions on unsupported OS/versions.
 
 ### Non-goals (for v1)
@@ -52,7 +55,12 @@ implement any server-side WebAuthn verification, attestation validation, or chal
   server, as the spec intends.
 - Acting as a **credential provider** / password manager (Android `CredentialProviderService`, iOS
   AutoFill credential provider extension). This is "use passkeys in my app", not "be a passkey vault".
-- Conditional UI / autofill-driven passkey sign-in (may be a follow-up; see Open Questions).
+- Bundling **Google Play Services** to back-fill passkeys on Android 9–13. We ship the OS-native path
+  only (Android 14+); apps that need the older range can add the Play adapter themselves (§7.1).
+- Conditional UI / autofill-driven passkey sign-in (may be a follow-up; see §7.5 and Open Questions).
+- A **BlazorWebView passkey bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)). Explicitly
+  deferred — see "Planned follow-ups" (§14). We'll file a detailed follow-up issue once the native API is
+  implemented and working.
 - Cross-device / security-key–only flows as a distinct API. On platforms where the OS offers this
   automatically (Apple, Windows) it is available through the same call; a dedicated security-key API is
   out of scope for v1.
@@ -428,6 +436,32 @@ tracked in Open Question #7.
 ### 6.4 Placement
 - Lives in Essentials alongside `WebAuthenticator`, namespace `Microsoft.Maui.Authentication`.
 
+### 6.5 Candidate decoded properties (what to surface vs. leave in JSON)
+
+Everything in the response is reachable via `ToString()` (the raw WebAuthn JSON). The question is only
+*which* fields are common enough to also decode into first-class properties. The test is: **does a typical
+client app read this on-device, or does it only forward it to the server?** Fields that only the RP server
+consumes stay in the JSON.
+
+| Field (WebAuthn) | On | What it is / used for | Typical app needs it client-side? | Proposal |
+|---|---|---|---|---|
+| `id` | both | Credential ID (base64url) — which passkey; store/reference it | **Yes** — store per user, dedupe, display | **`Id`** ✅ (v1) |
+| `response.userHandle` | assert | RP `user.id` — identifies the account in username-less sign-in *before* server round-trip | **Yes** for discoverable-credential UX | **`UserHandle`** ✅ (v1) |
+| `authenticatorAttachment` | both | `"platform"` (this device) vs `"cross-platform"` (security key / phone) | **Sometimes** — UX copy ("passkey saved on this device" vs "on your security key"); decide whether to offer device-bound only | **Consider** — `AuthenticatorAttachment` (nullable enum). Cheap, genuinely client-facing. Open Q #4 |
+| `rawId` | both | Same Credential ID as bytes | Rarely — apps forward/compare the base64url `id` | Leave in JSON; if added, a `byte[] GetRawId()` **method** (Open Q #4) |
+| `response.transports` | reg | Authenticator transports (`usb`/`nfc`/`ble`/`internal`/`hybrid`); server stores to optimize future `allowCredentials` | **No** — server-side optimization | Leave in JSON |
+| `response.publicKey` / `publicKeyAlgorithm` | reg | The credential public key + COSE alg | **No** — server verifies/stores | Leave in JSON |
+| `response.attestationObject` | reg | Attestation + public key | **No** — server verifies | Leave in JSON |
+| `response.authenticatorData` | assert | Signed authenticator data (RP ID hash, counter, flags) | **No** — server verifies | Leave in JSON |
+| `response.signature` | assert | Assertion signature | **No** — server verifies | Leave in JSON |
+| `response.clientDataJSON` | both | Challenge/origin/type the client signed | **No** — server verifies | Leave in JSON |
+| `clientExtensionResults` (e.g. `credProps.rk`, `prf`) | both | Extension outputs; `credProps.rk` = whether the passkey is discoverable | **Rarely** — advanced UX only, and unreliable across authenticators | Leave in JSON |
+| `type` | both | Always `"public-key"` | No | Leave in JSON |
+
+**Summary:** ship `Id` (+ `UserHandle` on the assertion) in v1; the only serious *additional* candidate is
+`AuthenticatorAttachment` for UX messaging. Everything else is server-verification material and belongs in
+the JSON, keeping the surface small and honest. New properties can be added later without breaking the API.
+
 ## 7. Platform implementation design
 
 Each platform gets a `PasskeysImplementation` partial, following the existing `WebAuthenticator` file
@@ -443,9 +477,20 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
 - Docs: [Credential Manager](https://developer.android.com/identity/credential-manager) ·
   [Sign in with passkeys](https://developer.android.com/identity/sign-in/credential-manager) ·
   [`androidx.credentials` reference](https://developer.android.com/reference/androidx/credentials/package-summary)
-- **New NuGet dependencies**: `Xamarin.AndroidX.Credentials` and
-  `Xamarin.AndroidX.Credentials.PlayServicesAuth` (Essentials currently references AndroidX Activity,
-  Browser, Security.SecurityCrypto — not Credentials).
+- **New NuGet dependency**: `Xamarin.AndroidX.Credentials` **only**. We deliberately do **not** add
+  `Xamarin.AndroidX.Credentials.PlayServicesAuth`.
+  - **Why no Play Services?** `androidx.credentials:credentials` is the OS API surface; the separate
+    `credentials-play-services-auth` artifact is just an *adapter* that routes to Google Play Services
+    (Google Password Manager) to back-fill passkeys on **Android 9–13 (API 28–33)**. On **Android 14+
+    (API 34)** the platform's own `CredentialManager` handles passkeys **natively, with no Play Services**.
+  - This matches the spec's OS-official principle (same posture as Apple/Windows: use only what the OS
+    provides) and — importantly — **Essentials has zero Google Play Services dependencies today** (its
+    Android deps are AndroidX Activity/Browser/Security.SecurityCrypto + Tink). Bundling
+    `credentials-play-services-auth` would introduce the *first* GMS dependency into `Microsoft.Maui.Essentials`,
+    which we want to avoid.
+  - **Consequence:** the built-in passkey path is **Android 14+ (API 34)**. Apps that must also support
+    API 28–33 can opt in by adding the `credentials-play-services-auth` provider to *their own* app; the
+    same `CredentialManager` calls then light up on older devices. MAUI does not force that cost on everyone.
 - Native model (Kotlin, from the official guide):
 
   ```kotlin
@@ -480,8 +525,10 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   sheet on that activity.
 - **App setup (documented, not code)**: host a [Digital Asset Links](https://developer.android.com/identity/sign-in/credential-manager#add-support-dal)
   file at `https://<rp-id>/.well-known/assetlinks.json` binding the app's signing certificate.
-- **Min API**: Credential Manager is API 23+, but passkeys realistically need **API 28+ (Android 9)**
-  with Google Play services. `IsSupported` gates on this.
+- **Min API**: with the no-Play (OS-native) path, passkeys require **API 34 (Android 14)**. `IsSupported`
+  returns `false` below that (unless a Play-backed provider has been added by the app). Note the Jetpack
+  `androidx.credentials` API itself is callable from API 23+, but passkey *credentials* are only
+  OS-native from 34.
 - Exceptions map from `CreateCredentialException` / `GetCredentialException` subclasses (e.g.
   `*CancellationException` → `TaskCanceledException`, `NoCredentialException` → no-credential result).
 
@@ -624,6 +671,44 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
 - **Not built by Essentials today** — standalone macOS and watchOS compile groups are commented out in
   `Essentials.csproj`, so they need no stub until those targets are enabled.
 
+### 7.5 Platform-specific behavior — what to design now vs. retrofit later
+
+A deliberate consequence of the **JSON-in / JSON-out** contract is that *most* per-platform passkey
+configuration is **already carried inside the WebAuthn options JSON** and needs **no** cross-platform API
+knob. Only a small set of things are true *runtime behaviors* (not describable in the options JSON) and
+are the ones worth designing up front so we don't have to break API later.
+
+**Carried by the WebAuthn options JSON (no API surface needed — set these server-side):**
+
+| WebAuthn field | Controls | Android | Apple | Windows |
+|---|---|---|---|---|
+| `authenticatorSelection.userVerification` | Require/prefer biometric/PIN | via `requestJson` | `UserVerificationPreference` | `dwUserVerificationRequirement` |
+| `authenticatorSelection.authenticatorAttachment` | platform (device passkey) vs cross-platform (security key/phone) | via `requestJson` | request subclass | `dwAuthenticatorAttachment` |
+| `authenticatorSelection.residentKey` / `requireResidentKey` | Discoverable ("username-less") credential | via `requestJson` | implicit (passkeys are discoverable) | `bRequireResidentKey` |
+| `timeout` | Ceremony timeout | via `requestJson` | — (OS-managed) | `dwTimeoutMilliseconds` |
+| `excludeCredentials` / `allowCredentials` | Prevent re-reg / scope sign-in | via `requestJson` | `ExcludedCredentials` / `AllowedCredentials` | exclude / allow list |
+| `attestation` | Attestation conveyance | via `requestJson` | `AttestationPreference` | `dwAttestationConveyancePreference` |
+| `extensions` (e.g. `credProps`, `prf`, `largeBlob`) | WebAuthn extensions | via `requestJson` | per-extension API | `Extensions` |
+| `hints` | UI hint (security-key/hybrid/client-device) | via `requestJson` | — | — |
+
+Because all of the above flow through the JSON, we do **not** add typed knobs for them — that's the whole
+point of the JSON contract, and it stays forward-compatible as new fields land.
+
+**Genuine runtime behaviors (NOT in the JSON) — the only candidates for cross-platform knobs:**
+
+| Behavior | Why it's not in the JSON | Platform mapping | Decision for v1 |
+|---|---|---|---|
+| **Conditional / immediately-available UI** | It's a *presentation mode*, not credential data | Android `preferImmediatelyAvailableCredentials`; iOS `PerformRequests` with `.preferImmediatelyAvailableCredentials` / `PerformAutoFillAssistedRequests`; Windows silent | **Design now** — modeled as `PreferImmediatelyAvailable` on the options (already in §5). Full conditional-UI/autofill sign-in is a follow-up. |
+| **Presentation anchor / parent window** | A live UI object, can't be serialized | iOS/macOS `presentationContextProvider`; Windows top-level `HWND` | **Handle internally** via MAUI's active window; consider an *optional* override later (non-breaking to add). |
+| **Request origin override** | Only for privileged/browser apps acting for a web origin | Android `GetCredentialRequest.origin`; Windows `pCredentialList`/origin | **Defer** — niche; can be added as an options property without breaking. |
+| **Cancellation** | Runtime signal | `CancellationToken` → Android `CancellationSignal`, Apple `Cancel()`, Windows cancel | **Design now** — `CancellationToken` on both methods (already in §5). |
+
+**Take-away:** the JSON absorbs virtually all per-platform configuration, so the public API only needs the
+two behavioral knobs we already have (`PreferImmediatelyAvailable`, `CancellationToken`). The
+presentation-anchor and origin overrides are the only realistic *future* additions, and both can be added
+as new optional members **without breaking** the v1 surface — so there's nothing we must add now to avoid a
+retrofit.
+
 ## 8. Error handling
 
 | Situation | Behavior |
@@ -636,12 +721,14 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
 | Any other native failure | `PasskeyException` wrapping the platform exception/HRESULT |
 
 ## 9. Dependencies & packaging impact
-- **Android**: adds `Xamarin.AndroidX.Credentials` + `Xamarin.AndroidX.Credentials.PlayServicesAuth`
-  package references (version pinned via `eng/Versions.props`). This increases the Android dependency
-  closure of `Microsoft.Maui.Essentials` — needs sign-off (size/servicing considerations, `NuGets.md`).
+- **Android**: adds **`Xamarin.AndroidX.Credentials` only** (version pinned via `eng/Versions.props`). We
+  deliberately **do not** add `Xamarin.AndroidX.Credentials.PlayServicesAuth`, so **no Google Play
+  Services** enters the `Microsoft.Maui.Essentials` dependency closure (it has none today). Trade-off: the
+  OS-native passkey path is Android 14+; API 28–33 back-fill is the app's opt-in (§7.1). Still needs
+  sign-off on the new AndroidX dependency (size/servicing, `NuGets.md`).
 - **Apple / Windows**: no new NuGet packages (in-box frameworks / P/Invoke).
 - **Public API**: new types in `Microsoft.Maui.Authentication` → `PublicAPI.Unshipped.txt` entries per
-  TFM. Because this adds public API, implementation targets the current `netN.0` feature branch.
+  TFM. Because this adds public API, implementation targets the **`net11.0`** feature branch.
 
 ## 10. Security considerations
 - The API never sees or stores private keys — those remain in the platform authenticator / secure
@@ -661,28 +748,49 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   association, so full end-to-end is hard to automate in CI. Propose: verify `IsSupported`, request
   construction, and JSON translation on-device; gate the interactive ceremony behind a manual/sample
   test with a reference RP server.
-- **Sample**: add a Passkeys page to `Essentials.Sample` wired to a small reference RP endpoint.
+- **Reference RP server (test backend)**: stand up an **ASP.NET Core Identity** app using the built-in
+  passkey support (available since .NET 10) as the relying party. The **Blazor Web App template with
+  "Individual Accounts"** scaffolds passkey registration/sign-in endpoints and UI out of the box, so we
+  get a spec-conformant `PublicKeyCredentialCreationOptions` / `RequestOptions` producer and response
+  verifier for free. Configuration is minimal:
+
+  ```csharp
+  builder.Services.Configure<IdentityPasskeyOptions>(options =>
+  {
+      options.ServerDomain = "<rp-id>";                     // must match the app's domain association
+      options.AuthenticatorTimeout = TimeSpan.FromMinutes(3);
+      options.ChallengeSize = 32;
+  });
+  ```
+
+  Proposed layout: a small test/sample web project (e.g. `src/Essentials/samples/…` or an integration
+  fixture) that the MAUI sample points at. Its `/begin` + `/finish` endpoints feed the `CreateAsync` /
+  `AssertAsync` calls directly, so the same backend validates all platforms. Because it's the *official*
+  ASP.NET Core Identity implementation, it doubles as an interop conformance check.
+  Docs: [Passkeys in ASP.NET Core](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/) ·
+  [Blazor Web App passkeys](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/blazor).
+- **Sample**: add a Passkeys page to `Essentials.Sample` wired to the reference RP above.
 
 ## 12. Open questions
-1. **Package size / dependency**: is adding AndroidX Credentials to Essentials acceptable, or should
-   passkeys ship as a **separate opt-in NuGet** (e.g. `Microsoft.Maui.Authentication.Passkeys`) to avoid
-   growing the Essentials closure for apps that don't use it?
-2. **Security keys / cross-device**: expose any explicit control, or rely entirely on the OS-offered
-   flows within the single call?
+1. **Package size / dependency**: is adding **AndroidX Credentials** (Play-free) to Essentials acceptable,
+   or should passkeys ship as a **separate opt-in NuGet** (e.g. `Microsoft.Maui.Authentication.Passkeys`)
+   to avoid growing the Essentials closure for apps that don't use it? (Note: the no-Play decision in §7.1
+   already keeps GMS out of Essentials; this question is about the AndroidX Credentials dep itself.)
+2. **Android floor**: is **API 34 (Android 14)** an acceptable minimum for the OS-native path, or do we
+   need a documented recipe / opt-in hook for apps that add `credentials-play-services-auth` to reach
+   API 28–33? (We do not bundle it — §7.1.)
 3. **Conditional UI / autofill** passkey sign-in (Android `preferImmediatelyAvailable`, iOS
-   `ASAuthorizationController.performAutoFillAssistedRequests`, Windows silent) — v1 or follow-up?
+   `PerformAutoFillAssistedRequests`, Windows silent) — v1 or follow-up? See §7.5.
 4. **Decoded properties (the 80/20)**: v1 exposes the raw JSON via `ToString()` plus `Id` (both
-   responses) and `UserHandle` (assertion) as cached properties. Is that the right minimal set? Candidates
-   to add later as **properties/methods** (not extension methods): raw id bytes (`byte[] GetRawId()`),
-   `AuthenticatorAttachment`, transports, client-data JSON. Anything here that's 80/20 enough for v1?
+   responses) and `UserHandle` (assertion). Should we also add **`AuthenticatorAttachment`**
+   (`"platform"`/`"cross-platform"`) for UX messaging — the one serious additional candidate from §6.5?
+   Everything else (attestation, transports, signatures, client-data) stays in the JSON; raw id bytes, if
+   ever needed, as a `byte[] GetRawId()` method.
 5. **Method / response naming**: `AssertAsync` vs `GetAsync` vs `AuthenticateAsync` (the last collides
    conceptually with `WebAuthenticator.AuthenticateAsync`). Relatedly, `PasskeyAssertionResponse` vs
    `PasskeyAuthenticationResponse` (W3C JSON type is `AuthenticationResponseJSON`, but Apple and
    `AuthenticatorAssertionResponse` use "assertion").
-6. **BlazorWebView bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)): should we also ship
-   a JS-interop shim so `navigator.credentials` in BlazorWebView routes to this native API? Likely a
-   separate proposal, but worth acknowledging.
-7. **`Id` naming**: keep `Id` (matches the W3C JSON `id` member) or use the explicit `CredentialId`
+6. **`Id` naming**: keep `Id` (matches the W3C JSON `id` member) or use the explicit `CredentialId`
    (matches Apple's binding and the "Credential ID" term of art)? See §6.3.
 
 ## 13. References
@@ -700,3 +808,20 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
 - Windows `WebAuthNAuthenticatorGetAssertion` — https://learn.microsoft.com/windows/win32/api/webauthn/nf-webauthn-webauthnauthenticatorgetassertion
 - Microsoft `webauthn` reference — https://github.com/microsoft/webauthn
 - Fido2NetLib (server-side .NET) — https://github.com/passwordless-lib/fido2-net-lib
+- Passkeys in ASP.NET Core (test RP) — https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/
+- Passkeys in ASP.NET Core Blazor Web Apps — https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/blazor
+- Android passkey integration (platform vs Play adapter) — https://developer.android.com/identity/sign-in/credential-manager
+
+## 14. Planned follow-ups (post-implementation)
+
+These are intentionally **out of scope for this spec/PR** and tracked to be filed as their own issues
+**after the native API is implemented and shown working**:
+
+- **BlazorWebView passkey bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)) — a JS-interop
+  shim so `navigator.credentials.create()/get()` inside a `BlazorWebView` routes to the native `Passkeys`
+  API (WebViews can't invoke platform WebAuthn directly). We will file a detailed follow-up issue with the
+  bridging design once `Passkeys` is implemented and validated end-to-end.
+- **Android API 28–33 support** via an opt-in `credentials-play-services-auth` recipe (without bundling
+  GMS in Essentials) — if there's demand beyond the OS-native Android 14+ path.
+- **Standalone macOS** support once Essentials enables a `net-macos` target (§7.2).
+- **Conditional UI / autofill** passkey sign-in (§7.5) and a possible **presentation-anchor override**.
