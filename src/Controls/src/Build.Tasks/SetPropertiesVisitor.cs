@@ -847,7 +847,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic && !pd.GetMethod.IsStatic, out var propDeclTypeRef);
 					if (property is null)
 					{
-						context.LoggingHelper.LogWarningOrError(BindingPropertyNotFound, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, p, previousPartTypeRef);
 						// When the source type was inferred from RelativeSource AncestorType (rather
 						// than an explicit x:DataType), a missing property doesn't necessarily mean the
 						// binding is invalid - the actual runtime ancestor may be a subtype that declares
