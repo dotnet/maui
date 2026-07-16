@@ -864,10 +864,17 @@ if ($ApplyLabel -and $result.Eligible) {
         Write-Host "  ✅ Already present: $ReadyForRerunLabel" -ForegroundColor Green
     } else {
         $addSucceeded = Add-Label -PRNumber $PRNumber -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo
-        $updatedLabels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>$null)
-        $labelIsPresent = @($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+        # Best-effort re-read to confirm. Surface gh's stderr (no 2>$null) and check the exit
+        # code so a rate-limited/unauthorized/transient verification failure isn't misread as
+        # "label absent" — that would throw a misleading "Failed to apply label" even though
+        # Add-Label may have succeeded.
+        $updatedLabels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name')
+        $verificationSucceeded = ($LASTEXITCODE -eq 0)
+        $labelIsPresent = $verificationSucceeded -and (@($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0)
         if ($addSucceeded -or $labelIsPresent) {
             Write-Host "  ✅ Applied: $ReadyForRerunLabel" -ForegroundColor Green
+        } elseif (-not $verificationSucceeded) {
+            throw "Could not verify label '$ReadyForRerunLabel' after applying it (gh api re-read exited $LASTEXITCODE)."
         } else {
             throw "Failed to apply label: $ReadyForRerunLabel"
         }
