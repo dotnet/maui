@@ -1663,7 +1663,7 @@ Flake class: test-quality
 - Latest verified-failing build: https://dev.azure.com/dnceng-public/public/_build/results?buildId=<latest-from-step-4>
 
 ---
-Filed by [`ci-status-fix`](https://github.com/dotnet/maui/blob/main/.github/workflows/ci-status-fix.md). This is the single PR for dotnet/maui#<N>: the workflow watches its own CI and pushes up to **10 attempts on this same PR** (it never opens a second PR). It advances only when the fix's own build settles red and that red is caused by the fix; it pauses as soon as a human reviews, pushes, or leaves a substantive comment on this PR (a bare `/azp run` CI trigger does not count). After 10 attempts it stops and defers to humans. In round 1 a maintainer still needs to comment `/azp run maui-pr` (plus the gated uitests/devicetests legs when relevant) to exercise each new commit.
+Filed by [`ci-status-fix`](https://github.com/dotnet/maui/blob/main/.github/workflows/ci-status-fix.md). This is the single PR for dotnet/maui#<N>: the workflow watches its own CI and pushes up to **10 attempts on this same PR** (it never opens a second PR). It advances only when the fix's own build settles red and that red is caused by the fix. Comments, reviews, and commits do not transfer ownership; the loop remains autonomous until this PR is closed. Eligible `CHANGES_REQUESTED` reviews are handled through Track C. After 10 attempts it stops and defers to humans. In round 1 a maintainer still needs to comment `/azp run maui-pr` (plus the gated uitests/devicetests legs when relevant) to exercise each new commit.
 ````
 
 `Fixes #<N>` is intentionally NOT in the body. The tracking issue is locked
@@ -1836,9 +1836,10 @@ These look like permission errors but are physical:
   PR in place (ADVANCE, Step 3.5). Never open a second PR for an issue that
   already has an open `[ci-fix]` PR.
 - The bot **watches its own open PR** and pushes a new attempt only when the
-  fix's own CI has settled red and the red is caused by the fix; it **pauses the
-  moment a human engages** (review, comment, or push) and it does not burn an
-  attempt on unrelated flake.
+  fix's own CI has settled red and the red is caused by the fix; it does not
+  burn an attempt on unrelated flake. Comments, reviews, and commits do not
+  transfer ownership; the loop remains autonomous until the PR is closed.
+  Eligible `CHANGES_REQUESTED` reviews are handled through Track C.
 - At most one `[ci-fix][needs-human]` hand-off per tracking issue, ever — that
   hand-off is currently deferred (Step 6), so today reaching 10/10 simply stops
   further attempts and defers to the open PR + tracking issue (Step 3.5).
