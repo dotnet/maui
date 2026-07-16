@@ -316,8 +316,9 @@ so the scanner path behaves exactly like a maintainer `/review`, which has no
 such limit. Volume is instead bounded structurally:
 
 1. A PR only becomes a candidate when `Resolve-RerunEligibility.ps1` finds
-   genuinely *new* author activity (a new commit or a new non-command comment)
-   since the last AI Summary / rerun checkpoint — the same deterministic gate the
+   genuinely *new* author activity (a new commit, a new non-command comment, or a
+   head commit SHA that differs from the last reviewed SHA) since the last AI Summary /
+   rerun checkpoint — the same deterministic gate the
    `/review rerun` command uses. The identical PR state cannot be re-queued.
 2. Re-entry requires genuinely new activity each cycle. The queue label is applied
    either by a maintainer's `/review rerun` or autonomously by the PR Review Queue
