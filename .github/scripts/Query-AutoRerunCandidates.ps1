@@ -67,8 +67,9 @@ function Get-IssueLabels {
 
     # Don't silently treat an API failure as "no labels" — that would drop a real
     # s/agent-ready-for-rerun / in-progress label and cause a spurious re-label or
-    # skip. Surface the failure so the per-PR try/catch records it as an error.
-    $names = gh api "repos/$Owner/$Repo/issues/$Number/labels" --jq '.[].name' 2>$null
+    # skip. Surface the failure (including gh's stderr, which we no longer suppress)
+    # so the per-PR try/catch records it as an error with actionable detail.
+    $names = gh api "repos/$Owner/$Repo/issues/$Number/labels" --jq '.[].name'
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to fetch labels for #$Number (gh api exited $LASTEXITCODE)."
     }
