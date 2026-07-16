@@ -559,10 +559,10 @@ search:
    `skipped: watch candidate PR #<P> references an out-of-scope issue` and continue.
 3. If a prior candidate in this pass already claimed the same `refsIssue`, append
    `skipped: duplicate open CI-fix PR #<P> for issue #<N>; no mutation` and continue.
-   Otherwise, for each in-scope issue apply Step 2.3 and then run **Step 3.5 directly**
-   using `C`. Do NOT repeat Step 3.1's open-PR search: `C` already proves that this is
-   a watch cycle. Append exactly one terminal Step 8 coverage outcome before moving to
-   the next candidate.
+   Otherwise, immediately add `C.refsIssue` to `processed_watch_issues`, then apply
+   Step 2.3 and run **Step 3.5 directly** using `C`. Do NOT repeat Step 3.1's open-PR
+   search: `C` already proves that this is a watch cycle. Append exactly one terminal
+   Step 8 coverage outcome before moving to the next candidate.
 4. A candidate whose `refsIssue` is missing or malformed cannot safely be matched to
    a tracking issue. Append `skipped: watch candidate PR #<P> missing Refs marker;
    body repair required`; never treat it as a fresh issue or create a second PR.
