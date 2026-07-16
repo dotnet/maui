@@ -263,6 +263,14 @@ if ($Platform -eq "android") {
         Write-Warn "Settings service may not be ready — tests might fail"
     }
 
+    # Re-assert ANR/crash-dialog suppression right before dotnet test. The emulator-setup
+    # step sets `hide_error_dialogs` at boot, but the deep stage runs many categories on one
+    # emulator and a mid-run "System UI isn't responding" ANR overlaying the HostApp is the
+    # top "produced no results" cause — this global flag is idempotent, so re-assert it here.
+    if ($settingsReady) {
+        & adb -s $DeviceUdid shell settings put global hide_error_dialogs 1 2>$null
+    }
+
     # Warm up the emulator / SystemUI right before launching the app for tests.
     # On the deep-UI-test (platform-pool) stage the emulator may have sat idle
     # for ~15-20 min during workload install + the app build, after which SystemUI

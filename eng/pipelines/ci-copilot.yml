@@ -693,6 +693,12 @@ stages:
                 timeout 20 adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
                 timeout 20 adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
                 timeout 20 adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+                # Suppress ANR / "isn't responding" and crash dialogs system-wide for the whole
+                # session. A SystemUI ANR dialog can pop up mid-run (after the one-shot pre-test
+                # warmup) and overlay the HostApp, so Appium never finds "Go To Test" and the test
+                # reports "produced no results". This global flag prevents the dialog from ever
+                # being shown, so a transiently-starved emulator can't block the UI automation.
+                timeout 20 adb -s $DEVICE_ID shell settings put global hide_error_dialogs 1 || true
                 # Prevent screen from turning off (emulator simulates AC charging)
                 timeout 20 adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
                 timeout 20 adb -s $DEVICE_ID shell svc power stayon true || true
@@ -1688,6 +1694,10 @@ stages:
                 timeout 20 adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
                 timeout 20 adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
                 timeout 20 adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+                # Suppress ANR / "isn't responding" and crash dialogs system-wide (see gate stage
+                # for rationale): a mid-run SystemUI ANR must not overlay the HostApp and block
+                # Appium from finding "Go To Test" — the top deep "produced no results" cause.
+                timeout 20 adb -s $DEVICE_ID shell settings put global hide_error_dialogs 1 || true
                 timeout 20 adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
                 timeout 20 adb -s $DEVICE_ID shell svc power stayon true || true
                 timeout 20 adb -s $DEVICE_ID shell input keyevent 82 || true
