@@ -87,8 +87,6 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_tableModel.Root != null)
 				{
-					_tableModel.Root.SectionCollectionChanged -= OnSectionCollectionChanged;
-					_tableModel.Root.PropertyChanged -= OnTableModelRootPropertyChanged;
 					VisualDiagnostics.OnChildRemoved(this, _tableModel.Root, 0);
 				}
 				_tableModel.Root = value ?? new TableRoot();
@@ -96,8 +94,6 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(_tableModel.Root, BindingContext);
 
 				Root.SelectMany(r => r).ForEach(cell => cell.Parent = this);
-				_tableModel.Root.SectionCollectionChanged += OnSectionCollectionChanged;
-				_tableModel.Root.PropertyChanged += OnTableModelRootPropertyChanged;
 				OnModelChanged();
 			}
 		}
@@ -263,8 +259,9 @@ namespace Microsoft.Maui.Controls
 
 			void ApplyEvents(TableRoot tableRoot)
 			{
-				tableRoot.CollectionChanged += _parent.CollectionChanged;
-				tableRoot.SectionCollectionChanged += _parent.OnSectionCollectionChanged;
+				tableRoot.WeakCollectionChanged += _parent.CollectionChanged;
+				tableRoot.WeakSectionCollectionChanged += _parent.OnSectionCollectionChanged;
+				tableRoot.WeakPropertyChanged += _parent.OnTableModelRootPropertyChanged;
 			}
 
 			void RemoveEvents(TableRoot tableRoot)
@@ -272,8 +269,9 @@ namespace Microsoft.Maui.Controls
 				if (tableRoot == null)
 					return;
 
-				tableRoot.CollectionChanged -= _parent.CollectionChanged;
-				tableRoot.SectionCollectionChanged -= _parent.OnSectionCollectionChanged;
+				tableRoot.WeakCollectionChanged -= _parent.CollectionChanged;
+				tableRoot.WeakSectionCollectionChanged -= _parent.OnSectionCollectionChanged;
+				tableRoot.WeakPropertyChanged -= _parent.OnTableModelRootPropertyChanged;
 			}
 
 			static void SetPath(Cell item, Tuple<int, int> index)
