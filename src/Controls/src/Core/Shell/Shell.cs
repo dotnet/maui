@@ -2136,6 +2136,24 @@ namespace Microsoft.Maui.Controls
 			return currentPage;
 		}
 
+		// Returns true when Shell.Title holds a value the developer explicitly set
+		// (a direct value or a binding), as opposed to a title mirrored in from the
+		// current page by the toolbar renderer (SetterSpecificity.FromHandler).
+		// Used to keep renderer-generated titles from leaking into platform chrome
+		// such as the Window title while still exposing them for XAML bindings.
+		internal bool IsTitleSetByUser()
+		{
+			var titleContext = GetContext(TitleProperty);
+			if (titleContext == null)
+				return false;
+
+			if (titleContext.Bindings.Count > 0)
+				return true;
+
+			var specificity = titleContext.Values.GetSpecificity();
+			return specificity != SetterSpecificity.DefaultValue && specificity != SetterSpecificity.FromHandler;
+		}
+
 		Element WalkToPage(Element element)
 		{
 			switch (element)

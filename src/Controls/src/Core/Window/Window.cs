@@ -131,7 +131,15 @@ namespace Microsoft.Maui.Controls
 			private set => SetValue(IsActivatedPropertyKey, value);
 		}
 
-		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
+		string? ITitledElement.Title => Title ?? GetUserSetShellTitle();
+
+		// Only fall back to Shell.Title for the platform Window title when the developer
+		// explicitly set it. The toolbar renderer mirrors the current page title into
+		// Shell.Title (with SetterSpecificity.FromHandler) so it can be used for bindings
+		// inside a custom TitleView; that renderer-generated value must not leak into the
+		// Window title/native chrome.
+		string? GetUserSetShellTitle() =>
+			Page is Shell shell && shell.IsTitleSetByUser() ? shell.Title : null;
 
 		public Page? Page
 		{

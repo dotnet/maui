@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls
 				Shell.GetTitleView(_shell));
 
 			var title = GetCurrentTitle();
-			if (!IsShellTitleSetByUser())
+			if (!_shell.IsTitleSetByUser())
 				_shell.SetValueFromRenderer(Shell.TitleProperty, title);
 
 			if (TitleView != null)
@@ -197,19 +197,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return String.Empty;
-		}
-
-		bool IsShellTitleSetByUser()
-		{
-			var titleContext = _shell.GetContext(Shell.TitleProperty);
-			if (titleContext == null)
-				return false;
-
-			if (titleContext.Bindings.Count > 0)
-				return true;
-
-			var specificity = titleContext.Values.GetSpecificity();
-			return specificity != SetterSpecificity.DefaultValue && specificity != SetterSpecificity.FromHandler;
 		}
 	}
 }
