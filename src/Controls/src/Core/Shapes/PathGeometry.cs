@@ -14,11 +14,6 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Figures")]
 	public sealed class PathGeometry : Geometry
 	{
-		// Tracks figures whose PropertyChanged and InvalidatePathSegmentRequested events are
-		// subscribed so we can unsubscribe them even when the collection is cleared (Reset
-		// action does not populate OldItems).
-		readonly List<PathFigure> _subscribedFigures = new List<PathFigure>();
-
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PathGeometry"/> class.
 		/// </summary>
@@ -203,75 +198,181 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		void SubscribeFigure(PathFigure figure)
-		{
-			figure.PropertyChanged += OnPathFigurePropertyChanged;
-			figure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
-			_subscribedFigures.Add(figure);
-		}
-
-		void UnsubscribeFigure(PathFigure figure)
-		{
-			figure.PropertyChanged -= OnPathFigurePropertyChanged;
-			figure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
-			_subscribedFigures.Remove(figure);
-		}
-
-		void UnsubscribeAllFigures()
-		{
-			foreach (var figure in _subscribedFigures)
-			{
-				figure.PropertyChanged -= OnPathFigurePropertyChanged;
-				figure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
-			}
-			_subscribedFigures.Clear();
-		}
+		FiguresSubscription _figuresSubscription;
+		NotifyCollectionChangedEventHandler _figuresCollectionChanged;
+		PropertyChangedEventHandler _pathFigurePropertyChanged;
+		EventHandler _pathSegmentInvalidated;
 
 		void UpdatePathFigureCollection(PathFigureCollection oldCollection, PathFigureCollection newCollection)
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnPathFigureCollectionChanged;
-				UnsubscribeAllFigures();
+				if (newCollection == null)
+					_figuresSubscription?.Unsubscribe();
+				else
+					_figuresSubscription?.UnsubscribeAll();
 			}
 
 			if (newCollection == null)
+			{
+				_figuresSubscription = null;
 				return;
+			}
 
-			newCollection.CollectionChanged += OnPathFigureCollectionChanged;
+			_figuresCollectionChanged ??= OnPathFigureCollectionChanged;
+			_pathFigurePropertyChanged ??= OnPathFigurePropertyChanged;
+			_pathSegmentInvalidated ??= OnInvalidatePathSegmentRequested;
+
+			// Subscribe via a weak proxy so a long-lived/shared PathFigureCollection (e.g. a reused
+			// vector-icon path) does not keep this PathGeometry - and through it the owning Path,
+			// page, and BindingContext - rooted in memory. See issue #36366.
+			var subscriptions = _figuresSubscription ??= new FiguresSubscription();
+			subscriptions.Subscribe(newCollection, _figuresCollectionChanged);
 
 			foreach (var newPathFigure in newCollection)
+				subscriptions.Add(newPathFigure, _pathFigurePropertyChanged, _pathSegmentInvalidated);
+		}
+
+		sealed class FiguresSubscription
+		{
+			readonly WeakNotifyCollectionChangedProxy _collectionProxy = new();
+			readonly List<PathFigureSubscription> _figureSubscriptions = new();
+
+			~FiguresSubscription() => UnsubscribeAll();
+
+			public void Subscribe(PathFigureCollection source, NotifyCollectionChangedEventHandler handler)
 			{
-				SubscribeFigure(newPathFigure);
+				_collectionProxy.Subscribe(source, handler);
+			}
+
+			public void Add(PathFigure source, PropertyChangedEventHandler propertyChangedHandler, EventHandler segmentInvalidatedHandler)
+			{
+				_figureSubscriptions.Add(new PathFigureSubscription(source, propertyChangedHandler, segmentInvalidatedHandler));
+			}
+
+			public void Remove(PathFigure source)
+			{
+				for (int i = _figureSubscriptions.Count - 1; i >= 0; i--)
+				{
+					var subscription = _figureSubscriptions[i];
+					if (subscription.IsSubscribedTo(source))
+					{
+						subscription.Unsubscribe();
+						_figureSubscriptions.RemoveAt(i);
+						break;
+					}
+				}
+			}
+
+			public void ResetFigures()
+			{
+				UnsubscribeFigures();
+			}
+
+			public void UnsubscribeAll()
+			{
+				_collectionProxy.Unsubscribe();
+				UnsubscribeFigures();
+			}
+
+			public void Unsubscribe()
+			{
+				UnsubscribeAll();
+				GC.SuppressFinalize(this);
+			}
+
+			void UnsubscribeFigures()
+			{
+				for (int i = 0; i < _figureSubscriptions.Count; i++)
+					_figureSubscriptions[i].Unsubscribe();
+
+				_figureSubscriptions.Clear();
+			}
+		}
+
+		sealed class PathFigureSubscription
+		{
+			readonly WeakNotifyPropertyChangedProxy _propertyChangedProxy;
+			readonly WeakInvalidatePathSegmentRequestedProxy _segmentInvalidatedProxy;
+
+			public PathFigureSubscription(PathFigure source, PropertyChangedEventHandler propertyChangedHandler, EventHandler segmentInvalidatedHandler)
+			{
+				_propertyChangedProxy = new WeakNotifyPropertyChangedProxy(source, propertyChangedHandler);
+				_segmentInvalidatedProxy = new WeakInvalidatePathSegmentRequestedProxy(source, segmentInvalidatedHandler);
+			}
+
+			public bool IsSubscribedTo(PathFigure source)
+			{
+				return _propertyChangedProxy.TryGetSource(out var proxySource) && ReferenceEquals(proxySource, source);
+			}
+
+			public void Unsubscribe()
+			{
+				_propertyChangedProxy.Unsubscribe();
+				_segmentInvalidatedProxy.Unsubscribe();
+			}
+		}
+
+		sealed class WeakInvalidatePathSegmentRequestedProxy : WeakEventProxy<PathFigure, EventHandler>
+		{
+			public WeakInvalidatePathSegmentRequestedProxy(PathFigure source, EventHandler handler)
+			{
+				Subscribe(source, handler);
+			}
+
+			void OnInvalidatePathSegmentRequested(object sender, EventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+					handler(sender, e);
+				else
+					Unsubscribe();
+			}
+
+			public override void Subscribe(PathFigure source, EventHandler handler)
+			{
+				if (TryGetSource(out var oldSource))
+					oldSource.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+
+				source.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var source))
+					source.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+
+				base.Unsubscribe();
 			}
 		}
 
 		void OnPathFigureCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.OldItems != null && e.Action != NotifyCollectionChangedAction.Move)
-			{
-				foreach (var oldItem in e.OldItems)
-				{
-					if (oldItem is PathFigure oldPathFigure)
-					{
-						UnsubscribeFigure(oldPathFigure);
-					}
-				}
-			}
 			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
-				// Clear() raises Reset with OldItems = null; unsubscribe all tracked figures
-				// to prevent the cleared figures from retaining this PathGeometry alive.
-				UnsubscribeAllFigures();
+				_figuresSubscription?.ResetFigures();
 			}
-
-			if (e.NewItems != null && e.Action != NotifyCollectionChangedAction.Move)
+			else if (e.Action != NotifyCollectionChangedAction.Move)
 			{
-				foreach (var newItem in e.NewItems)
+				if (e.OldItems != null)
 				{
-					if (newItem is PathFigure newPathFigure)
+					foreach (var oldItem in e.OldItems)
 					{
-						SubscribeFigure(newPathFigure);
+						if (!(oldItem is PathFigure oldPathFigure))
+							continue;
+
+						_figuresSubscription?.Remove(oldPathFigure);
+					}
+				}
+
+				if (e.NewItems != null)
+				{
+					foreach (var newItem in e.NewItems)
+					{
+						if (!(newItem is PathFigure newPathFigure))
+							continue;
+
+						_figuresSubscription?.Add(newPathFigure, _pathFigurePropertyChanged, _pathSegmentInvalidated);
 					}
 				}
 			}
