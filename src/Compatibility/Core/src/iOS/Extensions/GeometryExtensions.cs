@@ -57,8 +57,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 				pathData.IsNonzeroFillRule = geometryGroup.FillRule == FillRule.Nonzero;
 
-				foreach (Geometry child in geometryGroup.Children)
+				var children = geometryGroup.Children;
+				if (children is null)
+					return pathData;
+
+				foreach (Geometry child in children)
 				{
+					if (child is null)
+						continue;
+
 					PathData pathChild = child.ToCGPath(renderTransform);
 					pathData.Data.AddPath(pathChild.Data);
 				}
