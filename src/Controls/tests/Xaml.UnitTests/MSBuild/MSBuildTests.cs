@@ -288,6 +288,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			SetUp();
 			var project = NewProject();
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetPlatformIdentifier").WithValue("android"));
+			propertyGroup.Add(NewElement("UseMonoRuntime").WithValue("false"));
+			propertyGroup.Add(NewElement("Configuration").WithValue("Release"));
+			propertyGroup.Add(NewElement("PublishReadyToRun").WithValue("true"));
+			project.Add(propertyGroup);
 			var target = NewElement("Target").WithAttribute("Name", "TestReadyToRunPublishing");
 			target.Add(NewElement("Message")
 				.WithAttribute("Text", "MauiEnableFullReadyToRunPublishing = $(MauiEnableFullReadyToRunPublishing)")
@@ -306,7 +312,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var log = Build(
 				projectFile,
 				target: "TestReadyToRunPublishing",
-				additionalArgs: $"-p:TargetPlatformIdentifier=android -p:UseMonoRuntime=false -p:Configuration=Release -p:PublishReadyToRun=true {fullReadyToRunMSBuildArg}");
+				additionalArgs: fullReadyToRunMSBuildArg);
 
 			Assert.Contains($"MauiEnableFullReadyToRunPublishing = {fullReadyToRunPublishingEnabled.ToString().ToLowerInvariant()}", log, StringComparison.Ordinal);
 			if (fullReadyToRunPublishingEnabled)
