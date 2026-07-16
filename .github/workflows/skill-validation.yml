@@ -514,9 +514,14 @@ jobs:
           fi
 
       - name: Create isolated Trim/AOT fixtures
-        if: matrix.entry.name == 'code-review' && hashFiles('.github/skills/code-review/tests/eval.trim-aot.vally.yaml') != ''
+        if: matrix.entry.name == 'code-review'
         run: |
           set -euo pipefail
+
+          if [[ ! -f .github/skills/code-review/tests/eval.trim-aot.vally.yaml ]]; then
+            echo "Trim/AOT eval spec not present; skipping fixture creation."
+            exit 0
+          fi
 
           SOURCE_ROOT="$PWD"
           FIXTURE_ROOT="CustomAgentLogsTmp/vally-fixtures/trim-aot"
@@ -581,9 +586,10 @@ jobs:
           # Eval specs come from the checked-out PR. Vally executes these hooks
           # directly on the runner, so they must not run after a pool PAT is
           # materialized for model authentication.
+          EXECUTABLE_HOOK_KEY="^[[:space:]]*(['\"]?(commands|mcpServers)['\"]?[[:space:]]*:|\\?[[:space:]]*['\"]?(commands|mcpServers)['\"]?[[:space:]]*$)"
           for spec in "$TESTS_PATH"/eval*.vally.yaml; do
             [ -e "$spec" ] || continue
-            if grep -nE '^[[:space:]]*(commands|mcpServers):' "$spec"; then
+            if grep -nE "$EXECUTABLE_HOOK_KEY" "$spec"; then
               echo "::error file=$spec::Vally specs evaluated with a Copilot PAT cannot define executable commands or MCP servers"
               exit 1
             fi
@@ -782,8 +788,9 @@ jobs:
 
           # The hermeticity spec also comes from the checked-out PR and runs in
           # the same runner process as model authentication.
+          EXECUTABLE_HOOK_KEY="^[[:space:]]*(['\"]?(commands|mcpServers)['\"]?[[:space:]]*:|\\?[[:space:]]*['\"]?(commands|mcpServers)['\"]?[[:space:]]*$)"
           if [ -f "$SPEC" ] &&
-            grep -nE '^[[:space:]]*(commands|mcpServers):' "$SPEC"; then
+            grep -nE "$EXECUTABLE_HOOK_KEY" "$SPEC"; then
             echo "::error file=$SPEC::Vally specs evaluated with a Copilot PAT cannot define executable commands or MCP servers"
             exit 1
           fi
