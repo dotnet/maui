@@ -150,6 +150,7 @@ public interface IPasskeys
 /// <see cref="Json"/> (or <see cref="ToString"/>); strongly-typed fields are exposed selectively
 /// through extension methods rather than fully decoding the schema. This keeps the type stable as
 /// the WebAuthn spec evolves — unknown/new fields simply flow through the JSON untouched.
+/// See spec §6.3 for the naming rationale (the WebAuthn `...JSON` serialization types).
 /// </summary>
 public abstract class PasskeyJsonObject
 {
@@ -346,11 +347,55 @@ than passed as bare `string`s. This is the deliberate middle ground:
 - Typed builders/decoders for more fields can be added later as extension methods **without breaking**
   the core API — the opaque object is the stable anchor.
 
-### 6.3 Naming / placement
+### 6.3 Naming decisions
+
+Naming is anchored to the terms the W3C WebAuthn spec and the platform SDKs already use, so the API is
+familiar to anyone who has touched passkeys and searchable against existing docs.
+
+**Industry background.** The [W3C WebAuthn Level 3](https://www.w3.org/TR/webauthn-3/) spec defines
+dedicated *JSON serialization* types whose names all carry a **`JSON` suffix**:
+[`PublicKeyCredentialCreationOptionsJSON`](https://w3c.github.io/webauthn/#dictdef-publickeycredentialcreationoptionsjson),
+[`PublicKeyCredentialRequestOptionsJSON`](https://w3c.github.io/webauthn/#dictdef-publickeycredentialrequestoptionsjson),
+[`RegistrationResponseJSON`](https://w3c.github.io/webauthn/#dictdef-registrationresponsejson), and
+[`AuthenticationResponseJSON`](https://w3c.github.io/webauthn/#dictdef-authenticationresponsejson),
+produced/consumed via [`PublicKeyCredential.toJSON()`](https://w3c.github.io/webauthn/#dom-publickeycredential-tojson)
+and `parseCreationOptionsFromJSON()` / `parseRequestOptionsFromJSON()`. Android's Credential Manager
+mirrors this with string members named
+[`requestJson`](https://developer.android.com/reference/androidx/credentials/CreatePublicKeyCredentialRequest),
+[`registrationResponseJson`](https://developer.android.com/reference/androidx/credentials/CreatePublicKeyCredentialResponse),
+and [`authenticationResponseJson`](https://developer.android.com/reference/androidx/credentials/PublicKeyCredential).
+
+So the industry vocabulary is: **inputs are "options", outputs are "responses", and the serialized form
+is called "JSON"** — not "payload", not "request"/"response body". That directly informs the names below.
+
+| MAUI type / member | Wraps (industry type) | Reasoning & source |
+|---|---|---|
+| `PasskeyCreationOptions` | [`PublicKeyCredentialCreationOptionsJSON`](https://w3c.github.io/webauthn/#dictdef-publickeycredentialcreationoptionsjson) | Registration **input** → "creation options". Matches W3C "creation options" and Android's `CreatePublicKeyCredentialRequest(requestJson)`. |
+| `PasskeyRequestOptions` | [`PublicKeyCredentialRequestOptionsJSON`](https://w3c.github.io/webauthn/#dictdef-publickeycredentialrequestoptionsjson) | Authentication **input** → "request options". Matches W3C "request options" and Android's `GetPublicKeyCredentialOption(requestJson)`. (WebAuthn overloads "request" to mean the *get* options — hence `RequestOptions`, not `AssertionOptions`.) |
+| `PasskeyCreationResponse` | [`RegistrationResponseJSON`](https://w3c.github.io/webauthn/#dictdef-registrationresponsejson) | Registration **output**. W3C/Android both call this the "registration response". |
+| `PasskeyAssertionResponse` | [`AuthenticationResponseJSON`](https://w3c.github.io/webauthn/#dictdef-authenticationresponsejson) | Authentication **output**. W3C JSON type is "authentication response"; the underlying object is `AuthenticatorAssertionResponse` and Apple calls it an *assertion*. See Open Question #5 on `Assertion` vs `Authentication`. |
+| `.Json` property (+ `ToString()`) | `...JSON` suffix / Android `...Json` members | The raw serialized value. Named `Json` to match the W3C `JSON` suffix and Android's `requestJson`/`registrationResponseJson` members exactly. |
+| `Passkeys` / `IPasskeys` | — | User-facing term everyone uses ([FIDO Alliance "passkeys"](https://fidoalliance.org/passkeys/)), rather than the spec-internal `WebAuthn`/`PublicKeyCredential` or the older `FIDO2`. |
+| `CreateAsync` | `navigator.credentials.create()` | W3C registration verb is *create*; Android is `createCredential`. |
+| `AssertAsync` | `navigator.credentials.get()` | W3C authentication verb is *get*, but a bare `GetAsync` is meaningless here and collides with the many `Get*` APIs; the ceremony's output is an [*assertion*](https://www.w3.org/TR/webauthn-3/#authentication-assertion), so `Assert` is precise. See Open Question #5. |
+
+**Base type — decision:** the shared abstract base is named **`PasskeyJsonObject`**. There is no W3C term
+for an *abstract* base (browsers just pass `string`/`object`), so this is a descriptive .NET name whose
+role is "an opaque object that carries a WebAuthn JSON serialization." It anchors on `Json` (the industry
+suffix) and reads naturally with the `.Json` property and `ToString()` override.
+
+- **Why not `...Payload`?** "Payload" is generic transport jargon; WebAuthn/Android never use it for
+  these values. It would obscure the options-vs-response distinction that the spec makes explicit.
+- **Why not name the concrete types `...Json` (e.g. `PasskeyCreationOptionsJson`)?** The `Json` suffix on
+  the *type* is a W3C serialization-marker that only makes sense next to the non-JSON variants
+  (`PublicKeyCredentialCreationOptions` vs `...OptionsJSON`). MAUI only ships the JSON-backed form, so the
+  suffix would be redundant noise; we surface `Json` on the **member** instead.
+- **Open point:** .NET Framework Design Guidelines mildly discourage an `Object` suffix. `PasskeyJsonObject`
+  is proposed for clarity, but is flagged in Open Question #7 in case reviewers prefer an alternative
+  (e.g. `PasskeyJson`).
+
+### 6.4 Placement
 - Lives in Essentials alongside `WebAuthenticator`, namespace `Microsoft.Maui.Authentication`.
-- `Passkeys` (not `WebAuthn`/`Fido2`) as the user-facing term the platforms and users actually use.
-- `CreateAsync` / `AssertAsync` mirror the WebAuthn verbs (`create` / `get`; "assert" disambiguates from
-  the many `GetAsync` methods and matches the "assertion" terminology).
 
 ## 7. Platform implementation design
 
@@ -415,7 +460,13 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
   `user.name`, `rp.id`, `pubKeyCredParams`, `allowCredentials`, `userVerification`, then build the
   native request; on completion we read the raw `NSData` and **assemble the WebAuthn response JSON**
   ourselves (base64url-encoding the binary fields).
-- Native model (Swift):
+- **Binding note (Obj-C, not Swift).** `Microsoft.iOS` / `Microsoft.MacCatalyst` / `Microsoft.macOS`
+  bind the **Objective-C** `AuthenticationServices` framework and project it to C#. There is no Swift
+  interop involved — the "native" API we actually call from the MAUI implementation is the bound
+  Obj-C surface. The Swift snippet below is the canonical Apple-docs reference; the C# snippet is the
+  equivalent bound API the implementation would use. Both are provided for reviewers.
+
+- Reference — Apple's native model (Swift, from the Apple docs):
 
   ```swift
   let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: rpId)
@@ -432,7 +483,35 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
   controller.performRequests()
   ```
 
-- Verified .NET binding members we build on (`net-ios` `AuthenticationServices`):
+- Bound API — the equivalent in C# (Objective-C projection via `Microsoft.iOS` etc.), which is what the
+  MAUI implementation actually writes:
+
+  ```csharp
+  using AuthenticationServices;
+  using Foundation;
+
+  var provider = new ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: rpId);
+
+  // Registration (challenge/userId are NSData parsed from the options JSON)
+  ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest reg =
+      provider.CreateCredentialRegistrationRequest(challenge, userName, userId);
+  // Authentication
+  ASAuthorizationPlatformPublicKeyCredentialAssertionRequest asr =
+      provider.CreateCredentialAssertionRequest(challenge);
+
+  var controller = new ASAuthorizationController(new ASAuthorizationRequest[] { reg }) // or { asr }
+  {
+      Delegate = this,                     // ASAuthorizationControllerDelegate
+      PresentationContextProvider = this,  // IASAuthorizationControllerPresentationContextProviding
+  };
+  controller.PerformRequests();
+
+  // Delegate callbacks (bridged to a TaskCompletionSource):
+  //   DidComplete(ASAuthorizationController, ASAuthorization)  -> success
+  //   DidComplete(ASAuthorizationController, NSError)          -> failure/cancel
+  ```
+
+- Verified .NET binding members we build on (`net-ios` `AuthenticationServices`, `Microsoft.iOS.dll`):
   - `ASAuthorizationPlatformPublicKeyCredentialProvider(string relyingPartyIdentifier)`,
     `.CreateCredentialRegistrationRequest(NSData challenge, string name, NSData userId)`,
     `.CreateCredentialAssertionRequest(NSData challenge)`.
@@ -443,7 +522,7 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
   - Assertion result `ASAuthorizationPlatformPublicKeyCredentialAssertion`:
     `RawAuthenticatorData`, `Signature`, `UserId`, `RawClientDataJson`, `CredentialId`.
 - Async bridge: wrap the `ASAuthorizationControllerDelegate` callbacks
-  (`didCompleteWithAuthorization` / `didCompleteWithError`) in a `TaskCompletionSource`. Reuse the
+  (`DidComplete(...ASAuthorization)` / `DidComplete(...NSError)`) in a `TaskCompletionSource`. Reuse the
   window/presentation-anchor plumbing already used by other Essentials APIs.
 - **App setup (documented)**: [Associated Domains](https://developer.apple.com/documentation/xcode/supporting-associated-domains)
   entitlement with `webcredentials:<rp-id>` and a hosted `apple-app-site-association` file.
@@ -552,19 +631,27 @@ Each platform gets a `PasskeysImplementation` partial (`Passkeys.android.cs`, `P
    right ones? Should we add/remove any (e.g. `GetClientDataJson`, `GetTransports`), or ship with **none**
    and let callers parse `Json` themselves?
 5. **Method naming**: `AssertAsync` vs `GetAsync` vs `AuthenticateAsync` (the last collides
-   conceptually with `WebAuthenticator.AuthenticateAsync`).
+   conceptually with `WebAuthenticator.AuthenticateAsync`). Relatedly, `PasskeyAssertionResponse` vs
+   `PasskeyAuthenticationResponse` (W3C JSON type is `AuthenticationResponseJSON`, but Apple/`Authenticator­
+   AssertionResponse` use "assertion").
 6. **BlazorWebView bridge** ([#32020](https://github.com/dotnet/maui/issues/32020)): should we also ship
    a JS-interop shim so `navigator.credentials` in BlazorWebView routes to this native API? Likely a
    separate proposal, but worth acknowledging.
+7. **Base type name**: is `PasskeyJsonObject` the right name for the shared opaque base (see §6.3), or
+   would reviewers prefer `PasskeyJson` (avoids the `Object` suffix the .NET design guidelines mildly
+   discourage) or dropping the public base entirely and repeating `Json`/`ToString()` on each type?
 
 ## 13. References
 - W3C WebAuthn Level 3 — https://www.w3.org/TR/webauthn-3/
+- W3C WebAuthn L3 §JSON serialization (`...JSON` types, `toJSON()`) — https://w3c.github.io/webauthn/#sctn-parseCreationOptionsFromJSON
 - FIDO Alliance passkeys — https://fidoalliance.org/passkeys/
 - Android Credential Manager — https://developer.android.com/identity/credential-manager
 - Android passkeys guide — https://developer.android.com/identity/sign-in/credential-manager
 - `androidx.credentials` API — https://developer.android.com/reference/androidx/credentials/package-summary
+- Android `CreatePublicKeyCredentialRequest` (`requestJson`) — https://developer.android.com/reference/androidx/credentials/CreatePublicKeyCredentialRequest
 - Apple `ASAuthorizationPlatformPublicKeyCredentialProvider` — https://developer.apple.com/documentation/authenticationservices/asauthorizationplatformpublickeycredentialprovider
 - Apple "Supporting passkeys" — https://developer.apple.com/documentation/authenticationservices/public-private_key_authentication/supporting_passkeys
+- .NET binding: `ASAuthorizationPlatformPublicKeyCredentialProvider` — https://learn.microsoft.com/dotnet/api/authenticationservices.asauthorizationplatformpublickeycredentialprovider
 - Windows `WebAuthNAuthenticatorMakeCredential` — https://learn.microsoft.com/windows/win32/api/webauthn/nf-webauthn-webauthnauthenticatormakecredential
 - Windows `WebAuthNAuthenticatorGetAssertion` — https://learn.microsoft.com/windows/win32/api/webauthn/nf-webauthn-webauthnauthenticatorgetassertion
 - Microsoft `webauthn` reference — https://github.com/microsoft/webauthn
