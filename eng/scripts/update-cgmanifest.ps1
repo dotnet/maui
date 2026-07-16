@@ -136,14 +136,18 @@ foreach ($package in $packageVersionMappings.GetEnumerator()) {
     $currentVersionPropertyName = $package.Value
     $currentVersion = Get-VersionPropertyValue $currentVersionPropertyName
     $versionPropertyName = $currentVersionPropertyName
+    $version = $currentVersion
 
     if (-not [string]::IsNullOrEmpty($currentVersion) -and
         $n1PackageVersionMappings.ContainsKey($packageName) -and
         $currentVersion.Contains('-')) {
         $versionPropertyName = $n1PackageVersionMappings[$packageName]
+        $version = Get-VersionPropertyValue $versionPropertyName
+        if ([string]::IsNullOrEmpty($version)) {
+            throw "Could not find required N-1 version for $packageName (property: $versionPropertyName)"
+        }
     }
 
-    $version = Get-VersionPropertyValue $versionPropertyName
     if ([string]::IsNullOrEmpty($version)) {
         Write-Warning "Could not find version for $packageName (property: $versionPropertyName)"
         continue
