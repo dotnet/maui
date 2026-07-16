@@ -124,6 +124,10 @@ jobs:
       issues: read  # Query-AutoRerunCandidates reads issue labels (gh api repos/.../issues/N/labels)
     steps:
       - uses: actions/checkout@v4
+        with:
+          # This job runs on pull_request (untrusted PR code); it only reads and dry-runs the
+          # scripts, so it never needs the workflow token in .git/config. Match review-trigger.yml.
+          persist-credentials: false
 
       - name: Validate PR review queue script
         env:

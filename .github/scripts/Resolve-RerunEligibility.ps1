@@ -812,10 +812,16 @@ if ($env:GITHUB_OUTPUT) {
 
 if ($ApplyLabel -and $result.Eligible) {
     . "$PSScriptRoot/shared/Update-AgentLabels.ps1"
+    # Derive the label description/color from the shared canonical definition (same pattern as
+    # Query-AutoRerunCandidates.ps1) so this script and Update-AgentLabels.ps1 can't drift and
+    # repeatedly re-PATCH each other's metadata back and forth depending on which ran last.
+    $rerunLabelDef = $AllLabelDefs[$ReadyForRerunLabel]
+    $rerunLabelDescription = if ($rerunLabelDef) { $rerunLabelDef.Description } else { $ReadyForRerunLabelDescription }
+    $rerunLabelColor = if ($rerunLabelDef) { $rerunLabelDef.Color } else { $ReadyForRerunLabelColor }
     Ensure-LabelExists `
         -LabelName $ReadyForRerunLabel `
-        -Description $ReadyForRerunLabelDescription `
-        -Color $ReadyForRerunLabelColor `
+        -Description $rerunLabelDescription `
+        -Color $rerunLabelColor `
         -Owner $Owner `
         -Repo $Repo
 

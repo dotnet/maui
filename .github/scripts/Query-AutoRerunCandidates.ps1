@@ -141,7 +141,10 @@ foreach ($pr in $openPRs) {
     # error) must not abort the whole daily scan. Record it as an error decision and
     # continue with the remaining PRs.
     try {
-    $labels = @(Get-IssueLabels -Number $number)
+    # gh pr list (above) already fetched each PR's labels via --json labels, so derive the initial
+    # label set from that search snapshot instead of an extra Issues-API call per PR. Get-IssueLabels
+    # is reserved for the post-apply verification path below (and only when the add reports failure).
+    $labels = @(@($pr.labels) | Where-Object { $_ } | ForEach-Object { $_.name })
 
     # Treat a stale in-progress label as absent so a wedged review can still be
     # re-detected — the same staleness rule the rerun scanner uses.
@@ -180,10 +183,19 @@ foreach ($pr in $openPRs) {
             }
 
             $addSucceeded = Add-Label -PRNumber $number -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo
-            # Re-read via Get-IssueLabels (fail-loud) rather than a raw stderr-suppressed gh api, so a
-            # failed verification surfaces as a per-PR error instead of a false "label not present".
-            $updatedLabels = @(Get-IssueLabels -Number $number)
-            $labelIsPresent = @($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+            $labelIsPresent = $false
+            if (-not $addSucceeded) {
+                # Safety net only when the POST reported failure (eventual consistency / already-present).
+                # A verify-read failure must not discard a known-successful apply, so don't let it throw
+                # here — otherwise a transient 502 on this second /labels call (plausible across up to
+                # 300 PRs/run) would record a live label as applied=false and undercount $appliedCount.
+                try {
+                    $updatedLabels = @(Get-IssueLabels -Number $number)
+                    $labelIsPresent = @($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+                } catch {
+                    Write-Host "  ⚠️  Could not verify label state for #$($number): $($_.Exception.Message)" -ForegroundColor Yellow
+                }
+            }
             if ($addSucceeded -or $labelIsPresent) {
                 $applied = $true
                 $appliedCount++
