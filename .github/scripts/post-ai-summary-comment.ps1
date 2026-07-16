@@ -49,7 +49,7 @@ param(
     # APPROVE) is treated as the non-blocking 'SKIPPED' sentinel.
     [Parameter(Mandatory = $false)]
     # TIMEDOUT is a pipeline-supplied sentinel meaning the Gate task itself did not finish
-    # (stopped by its 120-min hang-safety timeout, or it produced no verdict). It renders an
+    # (stopped by its 150-min hang-safety timeout, or it produced no verdict). It renders an
     # honest "gate did not complete" section and vetoes APPROVE (the fix was not verified).
     [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
     [string]$TrustedGateResult = ''
@@ -639,7 +639,7 @@ $gateContent
     Write-Host "  ⏭️  gate (not found)" -ForegroundColor Gray
 }
 
-# When the pipeline reports a timed-out / no-verdict gate (its 120-min hang-safety cap fired,
+# When the pipeline reports a timed-out / no-verdict gate (its 150-min hang-safety cap fired,
 # or the gate task crashed before writing a verdict), the agent-written gate/content.md is
 # usually absent. Synthesize an honest Gate section from the trusted TIMEDOUT verdict so the
 # AI Summary still renders normally (the rest of the review ran fine) and the Gate section
@@ -649,7 +649,7 @@ if ([string]::IsNullOrWhiteSpace($gateContent) -and $TrustedGateResult -match '(
     $gateContent = @'
 ### Gate Result: TIMEDOUT — test verification did not finish
 
-The automated **test-verification gate** did not complete on this run. It was stopped by the pipeline's **hang-safety timeout** (the gate is capped at 120 min to catch an emulator/simulator boot or an Appium hang that would otherwise run to the job limit), or it could not produce a verdict.
+The automated **test-verification gate** did not complete on this run. It was stopped by the pipeline's **hang-safety timeout** (the gate is capped at 150 min to catch an emulator/simulator boot or an Appium hang that would otherwise run to the job limit), or it could not produce a verdict.
 
 - This is almost always a transient **infrastructure** issue on the CI agent — **not** a problem with your PR.
 - Because the gate could not finish, **the fix was not verified by tests** on this run, so this review is **not eligible for APPROVE**.

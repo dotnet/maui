@@ -1176,7 +1176,7 @@ stages:
             name: RunReview
             displayName: 'Task 3: Copilot Review (expert review + try-fix)'
             # succeededOrFailed so the expert review STILL runs when the Gate (Task 2) was
-            # stopped by its 120-min hang-safety timeout — a killed gate step is marked FAILED,
+            # stopped by its 150-min hang-safety timeout — a killed gate step is marked FAILED,
             # which the default succeeded() would treat as a reason to SKIP the review, leaving
             # the PR with only a terse "could not complete" notice. Now the review runs "as
             # usual" and the gate timeout is explained in the AI Summary's Gate section instead.
@@ -3251,7 +3251,7 @@ stages:
                     Write-Host "Posting full AI summary review with deep results..."
                     $trustedGate = "$(trustedGateResult)"
                     # An EMPTY trusted verdict here means RunGate produced no gateResult — the
-                    # Gate task was stopped by its 120-min hang-safety timeout (or crashed before
+                    # Gate task was stopped by its 150-min hang-safety timeout (or crashed before
                     # writing a verdict). Map it to the TIMEDOUT sentinel so the renderer shows an
                     # honest "gate did not finish" Gate section AND vetoes APPROVE (the fix was not
                     # verified). A gate that actually ran always sets PASSED/SKIPPED/INCONCLUSIVE/FAILED,
