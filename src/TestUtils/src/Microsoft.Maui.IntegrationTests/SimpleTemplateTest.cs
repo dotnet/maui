@@ -360,7 +360,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 			"Project file should contain UseMauiCore property.");
 
 		// Verify the project actually builds
-		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(expectedProjectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }
