@@ -2540,6 +2540,8 @@ stages:
               $timedOutCats = @()
               $crashTimedOutCats = @()
               $crashedCats = @()
+              $xcodeMismatchCats = @()
+              $xcodeMismatchReqXcode = ''
               $buildFailedSampleError = ''
               $buildFailedSampleFile = ''
               if (Test-Path $artDir) {
@@ -2580,6 +2582,27 @@ stages:
                   if (-not (Test-Path $bo)) { continue }
                   $boText = Get-Content $bo -Raw -ErrorAction SilentlyContinue
                   if ([string]::IsNullOrEmpty($boText)) { continue }
+                  # An MT0180 ("This version of Microsoft.iOS requires the iOS <N>
+                  # SDK (shipped with Xcode <M>)") is NEVER a code compile break and
+                  # NEVER the PR's fault: it means the mac agent's selected Xcode is
+                  # OLDER than the .NET iOS workload's SDK needs, so the managed
+                  # linker (ILLink) can't find the new SDK headers and crashes for
+                  # EVERY iOS category (observed on build 14665693 / PR #35892: the
+                  # agent had Xcode 26.5 but Microsoft.iOS 26.5.11717 needs Xcode
+                  # 26.6 → MT0180 → IL1012 → NETSDK1144 for all 7 categories). The
+                  # generic coded-error match below treats `error MT0180` like any
+                  # other build break and wrongly attributes it to a base-branch
+                  # break, so detect it FIRST and route it to its own honest infra
+                  # bucket. Keyed on MT0180 alone (always environmental), so a real
+                  # PR-introduced trimmer/IL error is unaffected.
+                  if ($boText -match '(?im)error MT0180:') {
+                    $xcodeMismatchCats += $cat
+                    if ([string]::IsNullOrEmpty($xcodeMismatchReqXcode)) {
+                      $xrm = [regex]::Match($boText, '(?im)error MT0180:.*?shipped with Xcode\s*([0-9][0-9.]*)')
+                      if ($xrm.Success) { $xcodeMismatchReqXcode = $xrm.Groups[1].Value.Trim() }
+                    }
+                    continue
+                  }
                   # A coded compiler/MSBuild error (RS#### PublicAPI nullability,
                   # CS#### syntax, MSB####, …) means the test project or one of its
                   # dependencies failed to COMPILE, so `dotnet test` exited without
@@ -2662,6 +2685,19 @@ stages:
                   $bfClass = " Check the ``build-output.log`` in the ``drop-deep-uitests`` artifact to see whether ``main`` or this PR introduced it, then re-run once the build is fixed."
                 }
                 $buildFailedNote = "The build failed to **compile** for $bfCatText, so those deep UI tests could not run.$bfErr$bfClass"
+              }
+
+              # An MT0180 Xcode/SDK mismatch is CI infrastructure, not the PR and
+              # not a base-branch code break, so it gets its own honest note that
+              # does NOT tell the author to fix a build or check `main`.
+              $xcodeMismatchNote = ''
+              if ($xcodeMismatchCats.Count -gt 0) {
+                $xcodeMismatchCats = @($xcodeMismatchCats | Select-Object -Unique | Sort-Object)
+                Write-Host "Detected $($xcodeMismatchCats.Count) Xcode/SDK-mismatch deep categor(y/ies) (MT0180): $($xcodeMismatchCats -join ', ')"
+                $xmList = '`' + ($xcodeMismatchCats -join '`, `') + '`'
+                $xmCatText = if ($xcodeMismatchCats.Count -eq 1) { "1 category ($xmList)" } else { "$($xcodeMismatchCats.Count) categories ($xmList)" }
+                $xmReq = if ($xcodeMismatchReqXcode) { " the .NET iOS workload needs **Xcode $xcodeMismatchReqXcode**, which is newer than the Xcode installed on the mac build agent" } else { " the .NET iOS workload needs a newer Xcode than is installed on the mac build agent" }
+                $xcodeMismatchNote = "The iOS HostApp could not be linked for $xmCatText because$xmReq (``error MT0180`` — the IL trimmer can't find the newer SDK headers). This is a **CI infrastructure / Xcode-SDK version mismatch on the build agent — not this PR, and not a base-branch build break**. It clears once the mac pool is updated to the required Xcode; re-comment ``/review`` to try again on a fresh agent. See the ``build-output.log`` in the ``drop-deep-uitests`` artifact."
               }
 
               # Split the "no TRX" categories into two HONEST buckets with
@@ -2999,6 +3035,12 @@ stages:
                 # with "didn't compile."
                 $headerLine = "$headerLine " + $buildFailedNote
               }
+              if ($xcodeMismatchCats.Count -gt 0) {
+                # Some categories ran; others hit an MT0180 Xcode/SDK mismatch.
+                # Append the honest infra note so it is never conflated with a
+                # base-branch build break.
+                $headerLine = "$headerLine " + $xcodeMismatchNote
+              }
               if ($timedOutCats.Count -gt 0) {
                 # Some categories ran; others hit their per-category time budget.
                 # Append the honest timeout note so a missing category is never
@@ -3023,15 +3065,16 @@ stages:
               $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
               } # end if ($byCat.Count -gt 0)
 
-              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashTimedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0)) {
+              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashTimedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0 -or $xcodeMismatchCats.Count -gt 0)) {
                 # No TRX anywhere (nothing produced results), but we DID detect
-                # compile failures, timeouts, and/or app-crash (built-OK-but-no-TRX)
-                # runs. Render an honest deep block explaining it instead of leaving
-                # the deep section silent/empty.
+                # compile failures, timeouts, app-crash (built-OK-but-no-TRX)
+                # runs, and/or an MT0180 Xcode/SDK mismatch. Render an honest deep
+                # block explaining it instead of leaving the deep section silent.
                 $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
                 $endMarker   = '<!-- DEEP_UITESTS_END -->'
                 $noteParts = @()
                 if ($buildFailedCats.Count -gt 0) { $noteParts += $buildFailedNote }
+                if ($xcodeMismatchCats.Count -gt 0) { $noteParts += $xcodeMismatchNote }
                 if ($timedOutCats.Count -gt 0) { $noteParts += $timedOutNote }
                 if ($crashTimedOutCats.Count -gt 0) { $noteParts += $crashTimedOutNote }
                 if ($crashedCats.Count -gt 0) { $noteParts += $crashedNote }
