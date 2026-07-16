@@ -3258,7 +3258,7 @@ stages:
                     # so this only ever fires on the timeout/crash path.
                     if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
                     Write-Host "Trusted gate verdict for veto: '$trustedGate'"
-                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate
+                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform '${{ parameters.Platform }}'
                     $output | ForEach-Object { Write-Host $_ }
                     Write-Host "✅ Full AI summary review posted with deep results"
                   }

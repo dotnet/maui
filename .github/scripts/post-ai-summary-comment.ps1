@@ -52,7 +52,16 @@ param(
     # (stopped by its 150-min hang-safety timeout, or it produced no verdict). It renders an
     # honest "gate did not complete" section and vetoes APPROVE (the fix was not verified).
     [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
-    [string]$TrustedGateResult = ''
+    [string]$TrustedGateResult = '',
+
+    # Optional review/deep-run platform supplied by the pipeline (${{ parameters.Platform }}).
+    # Used ONLY as a fallback for the Platform status chip when the summary content carries no
+    # "**Platform:**" line — e.g. a deep-only '/review rerun' with no code-review phase, where the
+    # deep clearly ran on a platform but nothing in the text names it (dotnet/maui#35606 rendered
+    # "Platform Unknown"). A full review still prefers the code-review-derived platform. Empty for
+    # local/manual runs → behaves exactly as before.
+    [Parameter(Mandatory = $false)]
+    [string]$Platform = ''
 )
 
 $ErrorActionPreference = "Stop"
@@ -216,7 +225,7 @@ function ConvertTo-TitleCase {
     switch -Regex ($trimmed) {
         '(?i)^android$' { return 'Android' }
         '(?i)^ios$' { return 'iOS' }
-        '(?i)^maccatalyst$' { return 'MacCatalyst' }
+        '(?i)^(mac)?catalyst$' { return 'MacCatalyst' }
         '(?i)^windows$' { return 'Windows' }
         '(?i)^all$' { return 'All' }
     }
@@ -840,10 +849,17 @@ if ($prAuthor) {
 }
 
 $summaryContent = @($gateContent) + @($phaseContentByKey.Values)
+$resolvedPlatform = Get-PlatformStatus -Contents $summaryContent
+# Fall back to the pipeline-supplied review/deep platform when the content names none
+# (e.g. a deep-only rerun with no code-review phase) so the chip shows the real platform
+# instead of a misleading "Unknown" (dotnet/maui#35606).
+if ($resolvedPlatform -eq 'Unknown' -and -not [string]::IsNullOrWhiteSpace($Platform)) {
+    $resolvedPlatform = ConvertTo-TitleCase $Platform
+}
 $statusChipRow = New-StatusChipRow `
     -GateStatus (Get-GateStatus -GateContent $gateContent) `
     -Confidence (Get-ConfidenceStatus -Contents $summaryContent) `
-    -Platform (Get-PlatformStatus -Contents $summaryContent)
+    -Platform $resolvedPlatform
 $futureActionSection = New-FutureActionSection -PRAgentDir $PRAgentDir
 
 $commentBody = @"
