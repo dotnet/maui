@@ -63,7 +63,7 @@ App Store / Play account. The build script therefore emits two things:
   device/emulator.
 - **Windows** — unzip and run the `.exe`. Because the app is self-contained no .NET runtime
   install is required. (SmartScreen may warn for an unsigned app — *More info → Run anyway*.)
-- **iOS** — the dry-run artifact contains two files:
+- **iOS** — the dry-run artifact contains one or two files (the unsigned device `.ipa` is built on a best-effort basis, so it may be absent — leaving only the Simulator `.app.zip`):
   - **`MyApp.ipa`** — an **unsigned device** build for a **physical iPhone/iPad**. iOS refuses to
     run unsigned or ad-hoc code on a device, so install it with **[AltStore](https://altstore.io)**
     or **[Sideloadly](https://sideloadly.io)**, which re-sign the app with your own Apple ID (a free
