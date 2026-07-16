@@ -49,6 +49,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.KeyUp -= OnPlatformKeyUp;
 			platformView.TextChanged -= OnPlatformTextChanged;
 
+			_enterKeyDownSeen = false;
+
 			if (_set)
 				platformView.SelectionChanged -= OnPlatformSelectionChanged;
 

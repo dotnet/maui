@@ -204,6 +204,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var injector = InputInjector.TryCreate();
 
+			if (injector is null)
+			{
+				return;
+			}
+
 			// Inject ONLY KeyUp(Enter) with no preceding KeyDown(Enter).
 			// This is the exact sequence the TextBox receives during IME candidate confirmation —
 			// the IME swallows the KeyDown entirely; only the physical key-release (KeyUp) leaks.
@@ -215,6 +220,31 @@ namespace Microsoft.Maui.DeviceTests
 					KeyOptions = InjectedInputKeyOptions.KeyUp
 				}
 			});
+		}
+
+		// Simulates a real Enter key press (KeyDown + KeyUp).
+		static void SimulateRealEnter(TextBox platformView)
+		{
+			var injector = InputInjector.TryCreate();
+
+			if (injector is null)
+			{
+				return;
+			}
+
+			injector.InjectKeyboardInput(new[]
+			{
+				new InjectedInputKeyboardInfo
+				{
+					VirtualKey = (ushort)VirtualKey.Enter,
+					KeyOptions = InjectedInputKeyOptions.None // KeyDown
+				},
+				new InjectedInputKeyboardInfo
+				{
+					VirtualKey = (ushort)VirtualKey.Enter,
+					KeyOptions = InjectedInputKeyOptions.KeyUp
+				}
+		   });
 		}
 
 		[Fact(DisplayName = "Completed does not fire on IME candidate confirmation Enter")]
@@ -234,6 +264,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(0, completedCount);
+		}
+
+		[Fact(DisplayName = "Completed fires on real Enter key press")]
+		public async Task CompletedFiresOnRealEnterKeyPress()
+		{
+			var entry = new EntryStub();
+			int completedCount = 0;
+			entry.Completed += (s, e) => completedCount++;
+
+			await AttachAndRun(entry, async (handler) =>
+			{
+				handler.PlatformView.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+				await Task.Delay(100);
+
+				SimulateRealEnter(handler.PlatformView);
+				await Task.Delay(100);
+			});
+
+			Assert.Equal(1, completedCount);
 		}
 	}
 }
