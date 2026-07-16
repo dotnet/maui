@@ -215,7 +215,21 @@ function Invoke-BuildScriptBounded {
         # DO grow in real time (Appium writes its own log on every WinAppDriver
         # request; screenshots/TRX land as tests advance), so watching them next to
         # stdout keeps a genuinely-progressing run alive to the wall-clock budget.
-        [string[]]  $LivenessPaths = @()
+        [string[]]  $LivenessPaths = @(),
+        # When > 0, abort the child EARLY (before the wall/idle budget) once its
+        # stdout shows this many "did not recover after crash-recovery attempts"
+        # app-crash messages. A crash-looping app keeps emitting output (every
+        # doomed fixture writes logcat + a screenshot every ~4 min), so the idle
+        # detector never fires and a single `dotnet test` invocation grinds through
+        # every remaining fixture — 48-157 identical env-failures — until the whole
+        # category budget is spent (observed #36553: Button/Label/Layout each ate
+        # ~99 min producing zero usable results). The app's own crash-recovery
+        # (force-stop + relaunch) can NOT clear a wedged emulator; only the
+        # per-attempt device reboot in the retry loop below can. Aborting early lets
+        # that reboot actually run (attempt 1 no longer consumes the entire budget)
+        # and frees the remaining time for the next category. A healthy run emits
+        # ZERO of these, so any run reaching the threshold is unambiguously wedged.
+        [int]       $CrashLoopAbortThreshold = 0
     )
     $pwshExe = try { (Get-Process -Id $PID).Path } catch { $null }
     if (-not $pwshExe) { $pwshExe = 'pwsh' }
@@ -244,6 +258,12 @@ function Invoke-BuildScriptBounded {
         $lastProgressAt = $start
         $lastLen = -1L
         $killReason = $null
+        # Crash-loop early-abort tracking (see $CrashLoopAbortThreshold above). The
+        # signature is emitted by UtilExtensions.WaitForGoToTestButtonWithRecovery
+        # once a fixture's OneTimeSetup exhausts the app's internal crash-recovery.
+        $crashLoopSig    = 'did not recover after crash-recovery attempts'
+        $crashLoopHits   = 0
+        $lastCrashScanLen = -1L
         while (-not $proc.HasExited) {
             Start-Sleep -Seconds 5
             $now = Get-Date
@@ -268,6 +288,27 @@ function Invoke-BuildScriptBounded {
                 } catch { }
             }
             if ($curLen -gt $lastLen) { $lastLen = $curLen; $lastProgressAt = $now }
+            # Early-abort a wedged app: rescan stdout for the crash-recovery
+            # signature only when the streams grew (cheap, and we stop the instant
+            # the threshold is met). $outFile holds the child's dotnet-test stdout,
+            # where each failed-fixture recovery prints the signature.
+            if ($CrashLoopAbortThreshold -gt 0 -and $curLen -gt $lastCrashScanLen) {
+                $lastCrashScanLen = $curLen
+                try {
+                    $so = ''
+                    if (Test-Path $outFile) {
+                        # Open share-read/write so we never contend with the child's
+                        # redirected-stdout writer (matters on Windows; a no-op on the
+                        # Linux android agents where this crash-loop actually occurs).
+                        $fs = [IO.File]::Open($outFile, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+                        try { $sr = New-Object IO.StreamReader($fs); $so = $sr.ReadToEnd(); $sr.Dispose() } finally { $fs.Dispose() }
+                    }
+                    if ($so) {
+                        $crashLoopHits = ([regex]::Matches($so, [regex]::Escape($crashLoopSig))).Count
+                        if ($crashLoopHits -ge $CrashLoopAbortThreshold) { $killReason = 'crashloop'; break }
+                    }
+                } catch { }
+            }
             if ($now -ge $deadline) { $killReason = 'budget'; break }
             if ($IdleTimeoutSeconds -gt 0 -and (($now - $lastProgressAt).TotalSeconds -ge $IdleTimeoutSeconds)) { $killReason = 'idle'; break }
             if (($now - $lastBeat).TotalSeconds -ge 120) {
@@ -281,14 +322,26 @@ function Invoke-BuildScriptBounded {
         if (-not $proc.HasExited) {
             if ($killReason -eq 'idle') {
                 Write-Host "##[warning]No test progress for $([int]($IdleTimeoutSeconds/60)) min — killing hung BuildAndRunHostApp process tree (pid $($proc.Id)) [stalled $([int]((Get-Date) - $start).TotalMinutes) min in]" -ForegroundColor Yellow
+            } elseif ($killReason -eq 'crashloop') {
+                Write-Host "##[warning]App crash-loop detected ($crashLoopHits× '$crashLoopSig') after $([int]((Get-Date) - $start).TotalMinutes) min — aborting this category early so the retry loop can reboot the device and reclaim the budget for the remaining categories. This is an ENVIRONMENT error (wedged emulator), NOT a PR-code failure." -ForegroundColor Yellow
             } else {
                 Write-Host "##[warning]Hard timeout ($([int]($TimeoutSeconds/60)) min) reached — killing BuildAndRunHostApp process tree (pid $($proc.Id))" -ForegroundColor Yellow
             }
             Save-AndroidHangDiagnostics -RepoRoot $RepoRoot
             Stop-ProcessTree -ProcessId $proc.Id
-            $timedOut = $true
             for ($i = 0; $i -lt 8 -and -not $proc.HasExited; $i++) { Start-Sleep -Seconds 2 }
-            $exit = 124
+            if ($killReason -eq 'crashloop') {
+                # Leave $timedOut = $false so the caller runs its env-error scan over
+                # the captured output — which already contains the crash signature —
+                # and classifies this as the 'did not recover…' env-error → device
+                # reboot + retry (the designed recovery), instead of the generic
+                # 'timeout' path. A non-124, non-zero exit keeps it off both the
+                # "success" (0) and the "hang/timeout" (124) branches.
+                $exit = 1
+            } else {
+                $timedOut = $true
+                $exit = 124
+            }
         } else {
             $exit = $proc.ExitCode
         }
@@ -443,7 +496,7 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
             $envHit = 'timeout'; $lastExit = 124
             break
         }
-        $bounded = Invoke-BuildScriptBounded -ScriptPath $buildScript -Params $baseParams -TimeoutSeconds $remainingSec -IdleTimeoutSeconds $idleTimeoutSec -LivenessPaths $livenessPaths
+        $bounded = Invoke-BuildScriptBounded -ScriptPath $buildScript -Params $baseParams -TimeoutSeconds $remainingSec -IdleTimeoutSeconds $idleTimeoutSec -LivenessPaths $livenessPaths -CrashLoopAbortThreshold 10
         $lastOutput = $bounded.Output
         $lastExit = $bounded.ExitCode
         if ($bounded.TimedOut) {
