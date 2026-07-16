@@ -403,9 +403,26 @@ foreach ($key in @($testGroups.Keys)) {
 
     # Try to find added [Fact] or [Test] methods from the diff
     $addedMethods = @()
-    # Cache PR files API response once before the inner loop
+    # Cache PR files API response once before the inner loop.
+    # This block is display-only (it extracts added test-method names for nicer output);
+    # a failure here must NEVER abort the gate. The script runs under
+    # $ErrorActionPreference='Stop', so an unguarded parse error is terminating: `gh api`
+    # can return an HTML error page (rate-limit / transient 5xx) — as seen on PR #36572,
+    # where "ConvertFrom-Json: parsing value: <" crashed the gate to exit 3 / INCONCLUSIVE —
+    # and `--paginate` alone emits multiple concatenated JSON arrays for >30-file PRs, which
+    # also breaks ConvertFrom-Json. Fetch defensively: --slurp yields one well-formed array
+    # of pages, validate it's JSON, flatten one level, and swallow any error (degrading to
+    # no method-name display; the category-based filter is unaffected).
     if ($PRNumber -and -not $script:_cachedPRFiles) {
-        $script:_cachedPRFiles = gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate 2>$null | ConvertFrom-Json
+        try {
+            $rawPRFiles = (gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --slurp 2>$null | Out-String).Trim()
+            if ($rawPRFiles.StartsWith('[')) {
+                # --slurp wraps each page as one element ([[file,...],[file,...]]) — flatten a level.
+                $script:_cachedPRFiles = @(($rawPRFiles | ConvertFrom-Json) | ForEach-Object { $_ })
+            }
+        } catch {
+            Write-Host "  ℹ️  PR files fetch failed (non-fatal; skipping method-name display): $($_.Exception.Message)"
+        }
         if (-not $script:_cachedPRFiles) { $script:_cachedPRFiles = @() }
     }
     $effectiveMergeBase = if ($mergeBase) { $mergeBase } else { "HEAD~1" }
