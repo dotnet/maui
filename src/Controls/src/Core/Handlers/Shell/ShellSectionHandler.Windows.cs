@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 
 
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		StackNavigationManager? _navigationManager;
 		WeakReference? _lastShell;
-		List<ShellContent>? _subscribedItems;
+		readonly HashSet<ShellContent> _trackedShellContents = new();
 
 		public ShellSectionHandler() : base(Mapper, CommandMapper)
 		{
@@ -58,19 +59,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				((IShellSectionController)_shellSection).ItemsCollectionChanged -= OnItemsCollectionChanged;
 
-				if (_subscribedItems != null)
-				{
-					foreach (var item in _subscribedItems)
-					{
-						item.PropertyChanged -= OnShellContentPropertyChanged;
-					}
-					_subscribedItems.Clear();
-				}
-
 				if (_lastShell?.Target is IShellController shell)
 				{
 					shell.RemoveAppearanceObserver(this);
 				}
+
+				UnsubscribeAllShellContent();
 				_lastShell = null;
 			}
 
@@ -93,23 +87,19 @@ namespace Microsoft.Maui.Controls.Handlers
 			_shellSection = (ShellSection)view;
 			if (_shellSection != null)
 			{
-				_subscribedItems ??= new List<ShellContent>();
-				_subscribedItems.Clear();
-
 				((IShellSectionController)_shellSection).NavigationRequested += OnNavigationRequested;
 				((IShellSectionController)_shellSection).ItemsCollectionChanged += OnItemsCollectionChanged;
-
-				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
-				{
-					item.PropertyChanged += OnShellContentPropertyChanged;
-					_subscribedItems.Add(item);
-				}
 
 				var shell = _shellSection.FindParentOfType<Shell>() as IShellController;
 				if (shell != null)
 				{
 					_lastShell = new WeakReference(shell);
 					shell.AddAppearanceObserver(this, _shellSection);
+				}
+
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					SubscribeToShellContent(item);
 				}
 			}
 		}
@@ -128,12 +118,18 @@ namespace Microsoft.Maui.Controls.Handlers
 				return;
 			}
 
-			if (e.PropertyName != ShellContent.ContentProperty.PropertyName)
+			if (sender is not ShellContent shellContent)
 			{
 				return;
 			}
 
-			if (sender is not ShellContent shellContent)
+			if (e.PropertyName == nameof(ShellContent.Title))
+			{
+				shellContent.UpdateParentShellItemTitle();
+				return;
+			}
+
+			if (e.PropertyName != ShellContent.ContentProperty.PropertyName)
 			{
 				return;
 			}
@@ -164,55 +160,69 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (_shellSection is null || _subscribedItems is null)
+			if (_shellSection is null)
 			{
 				return;
-			}
-
-			// Handle Reset action - collection has been completely cleared and refilled
-			if (e.Action == NotifyCollectionChangedAction.Reset)
-			{
-				// Unsubscribe from all previously subscribed items
-				foreach (var item in _subscribedItems)
-				{
-					item.PropertyChanged -= OnShellContentPropertyChanged;
-				}
-				_subscribedItems.Clear();
-
-				// Subscribe to all items currently in the section
-				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
-				{
-					item.PropertyChanged += OnShellContentPropertyChanged;
-					_subscribedItems.Add(item);
-				}
-			}
-			else
-			{
-				// Handle Remove action
-				if (e.OldItems != null)
-				{
-					foreach (ShellContent item in e.OldItems)
-					{
-						item.PropertyChanged -= OnShellContentPropertyChanged;
-						_subscribedItems.Remove(item);
-					}
-				}
-
-				// Handle Add action
-				if (e.NewItems != null)
-				{
-					foreach (ShellContent item in e.NewItems)
-					{
-						item.PropertyChanged += OnShellContentPropertyChanged;
-						_subscribedItems.Add(item);
-					}
-				}
 			}
 
 			if (_shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
 			{
 				shellItemHandler.MapMenuItems();
 			}
+
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				UnsubscribeAllShellContent();
+
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					SubscribeToShellContent(item);
+				}
+
+				return;
+			}
+
+			if (e.OldItems is not null)
+			{
+				foreach (var item in e.OldItems)
+				{
+					UnsubscribeFromShellContent(item);
+				}
+			}
+
+			if (e.NewItems is not null)
+			{
+				foreach (var item in e.NewItems)
+				{
+					SubscribeToShellContent(item);
+				}
+			}
+		}
+
+		void SubscribeToShellContent(object? item)
+		{
+			if (item is ShellContent shellContent && _trackedShellContents.Add(shellContent))
+			{
+				shellContent.PropertyChanged += OnShellContentPropertyChanged;
+			}
+		}
+
+		void UnsubscribeFromShellContent(object? item)
+		{
+			if (item is ShellContent shellContent && _trackedShellContents.Remove(shellContent))
+			{
+				shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+			}
+		}
+
+		void UnsubscribeAllShellContent()
+		{
+			foreach (var shellContent in _trackedShellContents)
+			{
+				shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+			}
+
+			_trackedShellContents.Clear();
 		}
 
 		void SyncNavigationStack(bool animated, NavigationRequestedEventArgs? e)
@@ -262,15 +272,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override void DisconnectHandler(WFrame platformView)
 		{
-			if (_shellSection != null)
-			{
-				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
-				{
-					item.PropertyChanged -= OnShellContentPropertyChanged;
-				}
-				_subscribedItems?.Clear();
-			}
-				
+			UnsubscribeAllShellContent();
 			_navigationManager?.Disconnect(VirtualView, platformView);
 			base.DisconnectHandler(platformView);
 		}
