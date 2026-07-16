@@ -9,11 +9,13 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
-		// Regression test for DevDiv 3032719: an implicit "Style TargetType=Label" that sets TextColor
-		// was ignored by Shell flyout items on Android (it worked on iOS/Windows). The Android default
-		// flyout item text color used to be applied through the "Default_FlyoutItemLabelStyle" class
-		// (StyleLocal specificity), which outranked the user's implicit style. It is now applied at the
-		// lowest specificity so any user style overrides it.
+		// Regression tests for:
+		//  - https://github.com/dotnet/maui/issues/18994 (class style "FlyoutItemLabelStyle" TextColor ignored on Android)
+		//  - DevDiv 3032719 (implicit "Style TargetType=Label" TextColor ignored on Android)
+		// The Android default flyout item text color used to be applied through the
+		// "Default_FlyoutItemLabelStyle" class (StyleLocal specificity), which outranked the user's
+		// implicit style and tied with the user's flyout class style. It is now applied at the lowest
+		// specificity so any user style overrides it (matching iOS/Windows, which set no default color).
 		[Fact]
 		public async Task ImplicitLabelStyleOverridesDefaultFlyoutItemTextColor()
 		{
@@ -25,6 +27,35 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						new Style(typeof(Label))
 						{
+							Setters =
+							{
+								new Setter { Property = Label.TextColorProperty, Value = Colors.Red }
+							}
+						}
+					}
+				};
+
+				var flyoutItem = new FlyoutItem { Title = "Item", Items = { new ContentPage() } };
+				shell.Items.Add(flyoutItem);
+
+				var label = GetDefaultFlyoutItemLabel(shell, flyoutItem);
+
+				Assert.Equal(Colors.Red, label.TextColor);
+			});
+		}
+
+		[Fact]
+		public async Task FlyoutItemLabelClassStyleOverridesDefaultFlyoutItemTextColor()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var shell = new Shell
+				{
+					Resources = new ResourceDictionary
+					{
+						new Style(typeof(Label))
+						{
+							Class = FlyoutItem.LabelStyle,
 							Setters =
 							{
 								new Setter { Property = Label.TextColorProperty, Value = Colors.Red }
