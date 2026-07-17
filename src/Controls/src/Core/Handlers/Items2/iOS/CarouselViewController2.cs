@@ -482,7 +482,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return;
 			}
-			
+
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -542,7 +542,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				_gotoPosition = goToPosition;
+
+				// This scroll (Position/CurrentItem changes, loop toggles) bypasses ScrollToRequested,
+				// so it must clear/arm the MacCatalyst pending restore itself; otherwise it is not
+				// protected from the silent contentOffset clamp.
+#if MACCATALYST
+				if (CollectionView is Items.MauiCollectionView mauiCV)
+				{
+					mauiCV.ClearPendingScrollRestore();
+				}
+#endif
+
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
+
+#if MACCATALYST
+				if (!animate && CollectionView is Items.MauiCollectionView mauiCVAfter)
+				{
+					mauiCVAfter.SetPendingScrollRestore((int)goToIndexPath.Section, (int)goToIndexPath.Item, uICollectionViewScrollPosition);
+				}
+#endif
 			}
 		}
 
@@ -582,7 +600,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
-      _lastSyncedPosition = position;
+			_lastSyncedPosition = position;
 			ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, position);
 			SetCurrentItem(position);
 			UpdateVisualStates();
@@ -791,7 +809,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						return;
 					}
 
+					// This scroll bypasses ScrollToRequested, so it must clear/arm the MacCatalyst
+					// pending restore itself; otherwise it is not protected from the silent
+					// contentOffset clamp.
+#if MACCATALYST
+					if (CollectionView is Items.MauiCollectionView mauiCV)
+					{
+						mauiCV.ClearPendingScrollRestore();
+					}
+#endif
+
 					CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
+
+#if MACCATALYST
+					if (CollectionView is Items.MauiCollectionView mauiCVAfter)
+					{
+						mauiCVAfter.SetPendingScrollRestore((int)projectedPosition.Section, (int)projectedPosition.Item, uICollectionViewScrollPosition);
+					}
+#endif
 
 					//Set the position on VirtualView to update the CurrentItem also
 					SetPosition(position);
