@@ -78,6 +78,20 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// When NavigationPage.Title changes, refresh the current top VC's
+		/// NavigationItem.Title if the child page's own Title is null (R7-4).
+		/// </summary>
+		static void MapTitle(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			if (handler is IPlatformViewHandler nvh &&
+				nvh.ViewController is UINavigationController navController &&
+				navController.TopViewController is NavigationHandlerParentingViewController topVC)
+			{
+				topVC.RefreshTitleFromNavigationPage();
+			}
+		}
+
 		static void MapBarBackground(NavigationViewHandler handler, NavigationPage navigationPage)
 		{
 			var navBar = handler.NavigationController?.NavigationBar;

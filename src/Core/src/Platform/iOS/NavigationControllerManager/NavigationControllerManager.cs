@@ -234,6 +234,11 @@ namespace Microsoft.Maui.Platform
 
                 if (_managerRef.TryGetTarget(out var manager))
                 {
+                    if (manager._disposed)
+                    {
+                        return;
+                    }
+
                     manager._delegate.OnNavigationControllerDidAppear();
                 }
             }
@@ -244,6 +249,11 @@ namespace Microsoft.Maui.Platform
 
                 if (_managerRef.TryGetTarget(out var manager))
                 {
+                    if (manager._disposed)
+                    {
+                        return;
+                    }
+
                     manager._delegate.OnNavigationControllerDidDisappear();
                 }
             }
@@ -254,6 +264,11 @@ namespace Microsoft.Maui.Platform
 
                 if (_managerRef.TryGetTarget(out var manager) && View is not null)
                 {
+                    if (manager._disposed)
+                    {
+                        return;
+                    }
+
                     manager._delegate.OnViewDidLayoutSubviews(View.Bounds);
                 }
             }
