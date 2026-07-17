@@ -728,6 +728,8 @@ stimuli:
   - name: issue-tabbedpage-over-navigation
     tags: { source_issue: "35490", kind: area-tiebreak }
     prompt: |
+      Use the `agentic-labeler` skill.
+
       A GitHub issue reads:
 
         Title: TabbedPage does not render correctly with iOS Glass UI
@@ -762,6 +764,8 @@ stimuli:
   - name: issue-safearea-named-platform-subset
     tags: { source_issue: "35501", kind: issue-platform-and-area-tiebreak }
     prompt: |
+      Use the `agentic-labeler` skill.
+
       A GitHub issue reads:
 
         Title: SafeAreaEdges.Container is hard to discover
@@ -801,6 +805,8 @@ stimuli:
   - name: issue-generic-platform-claim-no-inference
     tags: { kind: issue-platform }
     prompt: |
+      Use the `agentic-labeler` skill.
+
       A GitHub issue reads:
 
         Title: SafeAreaEdges.Container is hard to discover
@@ -832,6 +838,8 @@ stimuli:
   - name: issue-tizen-platform-excluded
     tags: { source_issue: "31806", kind: tizen-exclusion }
     prompt: |
+      Use the `agentic-labeler` skill.
+
       A GitHub issue reads:
 
         Title: Unable to set a Tizen target framework
