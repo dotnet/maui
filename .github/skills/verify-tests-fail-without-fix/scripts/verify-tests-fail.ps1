@@ -213,7 +213,6 @@ $script:UnitTestProjectMap = @{
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
     "Compatibility.Core.UnitTests"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
-    "Essentials.AI.UnitTests"          = "src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj"
 }
 
 # Maps device test project keys to the -Project parameter of Run-DeviceTests.ps1
@@ -223,7 +222,6 @@ $script:DeviceTestProjectMap = @{
     "Essentials.DeviceTests"           = "Essentials"
     "Graphics.DeviceTests"             = "Graphics"
     "MauiBlazorWebView.DeviceTests"    = "BlazorWebView"
-    "Essentials.AI.DeviceTests"        = "AI"
 }
 
 function Get-TestTypeFromFiles {

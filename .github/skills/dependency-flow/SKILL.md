@@ -381,6 +381,198 @@ Exemplar: [PR 61033](https://dev.azure.com/dnceng/internal/_git/maestro-configur
 
 When standing up a new preview, **confirm the new preview's subs are in place before removing the old preview's** to avoid a flow gap.
 
+## Preview release readiness (authoritative source + access tiers)
+
+Use this when asked things like *"is .NET MAUI Preview N release-ready?"*, *"which
+build is the official Preview N?"*, or *"are we good to ship Preview N?"* **while
+assessing a preview** (not GA or servicing).
+
+**Why a special source:** the build that releases.dot.net has *blessed* as the
+official preview is designated in an internal **.NET Release Tracker** plugin.
+Public BAR/Maestro data can enumerate candidate builds but **cannot, on its own,
+tell you which staged build is the blessed one**. This is exactly the trap from
+[PR #35364](https://github.com/dotnet/maui/pull/35364) / the Preview 6 cycle: two
+same-band VMR builds (e.g. `…26325.125` vs `…26326.122`) look interchangeable
+until you know which BAR id the release designates.
+
+The plugin lives in a **private** marketplace repo and is **double-gated** — you
+need (1) GitHub read access to that repo to load it, and (2) an authorized Azure
+AD identity for it to return data. So referencing it from this public repo is
+safe: a user without access simply can't load it or pull embargoed data.
+
+### Step 1 — classify access (deterministic)
+
+```bash
+pwsh ./.github/skills/dependency-flow/scripts/Get-PreviewReleaseReadiness.ps1
+# -> RELEASE_TRACKER_STATUS=NO_ACCESS | ACCESS_ON_INACTIVE_ACCOUNT | AVAILABLE_NOT_ENABLED | AVAILABLE_ENABLED
+```
+
+The script only *classifies* the environment (GitHub read access + whether the
+plugin is locally enabled). It fetches **no** release data and always exits 0.
+
+### Step 2 — branch on the status token
+
+| `RELEASE_TRACKER_STATUS` | What it means | What to do |
+|--------------------------|---------------|------------|
+| `AVAILABLE_ENABLED` | Caller has access **and** the `dotnet-release-tracker` plugin is enabled | **Invoke the `dotnet-release-tracker` skill** — it is a Copilot **skill/plugin, NOT an MCP server tool**, so do **not** search the MCP tool list for a `release-tracker` tool and conclude it's unavailable. Run it the normal skill way (it self-documents a PowerShell script — e.g. `pwsh scripts/Get-DotNetReleaseStatus.ps1`) for the authoritative SDK/runtime + BAR id, then cross-reference with BAR/Maestro for asset/feed details. If the gate says `AVAILABLE_ENABLED` but the skill isn't loaded in this session yet, **reload extensions / restart the session and retry** — enabled-but-not-yet-loaded is **not** a `NO_ACCESS` condition. |
+| `AVAILABLE_NOT_ENABLED` | Caller has access but the plugin is **not** enabled locally | Tell the user they have access and offer the **user-scope opt-in** below. After they opt in and reload, re-run Step 1 → `AVAILABLE_ENABLED`. |
+| `ACCESS_ON_INACTIVE_ACCOUNT` | The **active** `gh` identity can't read the repo, but a logged-in but **inactive** `gh` account (named in `reason`/`inactiveAccount`) can — the plugin loads under the *active* identity, so it still can't be used as-is | Tell the user access exists under `<account>` and to run `gh auth switch --user <account>`, then re-run Step 1. **Do not** invoke the plugin or claim availability under the current identity. (Only appears when access is confirmed on some account, so it never leaks to a true no-access user.) |
+| `NO_ACCESS` | Access can't be confirmed on **any** logged-in account (no access, or `gh` missing/unauthenticated) | Fall back to PUBLIC data only. For the official-build line, report the **latest build promoted to the public `.NET 11.0.1xx SDK Preview N` channel** (public BAR/Maestro) as the *best-available candidate*, and **label it**: "source: public preview feed — may not be the final official (blessed) build." **Do not** name or hint at the private plugin/tracker tool, and don't imply the user is missing a tool — see privacy guardrail. |
+
+> **Source labels (avoid the per-component over-claim):** the tracker is
+> **SDK/runtime-level only**. When you present a blessed build, label each field
+> with where it came from: **SDK / runtime version → .NET Release Tracker**;
+> **per-component `dotnet/android` / `dotnet/macios` / `dotnet/dotnet` (VMR) builds
+> → BAR/Maestro** (the blessed channel's promoted builds — the tracker has **no**
+> android/macios build field). Never imply the tracker "blessed" a specific
+> android/macios build; that number is a BAR/Maestro fact, not a tracker one.
+
+### User-scope opt-in (Tier B) — do NOT commit this
+
+Add to the user's **personal** `~/.copilot/settings.json` (merge with existing
+keys; this is intentionally *not* committed to the repo so forks and no-access
+users are unaffected):
+
+```jsonc
+{
+  "extraKnownMarketplaces": {
+    "dotnet-release": { "source": { "source": "github", "repo": "dotnet/release" } }
+  },
+  "enabledPlugins": {
+    "dotnet-release-tracker@dotnet-release": true
+  }
+}
+```
+
+Then reload extensions (or restart the session) so the plugin loads.
+
+### 🛡️ Guardrails
+
+- **Privacy default:** when the status is `NO_ACCESS`, never reveal, hint at, or
+  apologize for the private plugin/tracker **tool**, and never surface embargoed
+  data (unreleased blessed BAR ids, internal coordinates). This guardrail protects
+  the *tool and its private data* — it does **not** forbid the honest, publicly-true
+  statement that the public feed's newest build may not be the final official
+  build (see *Honest limitation* below). So: answer from public data, label your
+  source, and caveat its limits — but don't say "there's a gated tracker I can't
+  reach." The gate script enforces the tier by treating *any* unconfirmed-access
+  case as `NO_ACCESS`.
+- **Never** copy internal coordinates (Azure AD resource IDs / `api://…`
+  audiences, backend service hostnames, internal endpoint paths) from the plugin
+  into this public repo. The only sanctioned reference is the *marketplace
+  pointer* (repo name + plugin name) used above.
+- **No fetch-and-exec.** Do not download and run remote scripts to obtain release
+  data; use the installed plugin through normal skill invocation.
+- **Comment-only on GitHub.** As everywhere in this skill, never approve, merge, or
+  request changes on PRs — only post comments.
+- **Honest limitation (public-feed fallback):** on the public fallback path,
+  report the **latest build promoted to the public `.NET 11.0.1xx SDK Preview N`
+  channel** as the best-available *candidate* official build — but present it
+  **explicitly labeled** as feed-sourced, e.g. "🔎 Candidate from the **public
+  Preview N feed** (BAR #NNNNNN @ `<sha>`) — this is the newest build promoted to
+  the public channel, **not** a confirmed official (blessed) build; the final
+  official build is designated at release time and may differ." Give the concrete
+  candidate + caveat rather than either silently omitting the line or guessing a
+  single blessed build.
+
+### Wiring checks: is Preview N actually plumbed? (subscriptions + feed drift + component pins)
+
+The blessed-build lookup above answers *"which build is official?"*. These three
+mechanical checks answer *"is the preview branch actually receiving flow, is its
+promoted feed current, and are the component builds it bundles coherent?"* — a preview
+can have a blessed build yet still be mis-plumbed (branch cut, build exists, but nothing
+flows in; the feed lags the branch; or its android/macios pins diverged from the inflight
+branch). All three run off **public** BAR/Maestro + git, so they work regardless of the
+release-tracker access tier.
+
+#### Check A — are the subscriptions wired for `release/11.0.1xx-previewN`?
+
+Three prerequisites must **all** hold for the preview to receive dependency flow:
+
+1. **Branch exists:** `git ls-remote origin refs/heads/release/11.0.1xx-previewN` returns a sha.
+2. **Default-channel mapping exists:** MCP `maestro_default_channels(repository="https://github.com/dotnet/maui")` (or `darc get-default-channels --repo https://github.com/dotnet/maui`) has a row `release/11.0.1xx-previewN → .NET 11.0.1xx SDK Preview N`.
+3. **Subscriptions exist:** MCP `maestro_subscriptions(targetRepository="https://github.com/dotnet/maui", targetBranch="release/11.0.1xx-previewN")` returns the baseline **three** rows — android + macios (`everyDay`, batchable) and dotnet (`none`, batchable), all on channel `.NET 11.0.1xx SDK Preview N` (see the baseline table above).
+
+Interpretation:
+
+| Observed | Meaning | Report |
+|----------|---------|--------|
+| Branch + default-channel + 3 subs | Fully wired | ✅ OK |
+| Branch + default-channel present, **0 subs** (or missing android/macios/dotnet) | Start-of-preview gap: branch cut (possibly with a promoted build already) but the prior preview's subs were never rolled forward — no upstream flow into the branch | ℹ️ **FYI note** (not a ship blocker) — name the missing source repos |
+| Sub on wrong channel/band/stage/frequency | The [PR #35364](https://github.com/dotnet/maui/pull/35364) mis-wire class (see "Channel-name casing gotcha") | ⚠️ Flag the specific sub |
+
+**Remediation (only when the user asks to fix it):** stand the missing subs up with **the combined-PR pattern** above — copy it verbatim, swapping `preview5`→`previewN` and `Preview 5`→`Preview N` throughout; do **not** invent new commands, and honor its explicit-confirmation + draft-PR review gate. If the default-channel mapping is also missing, add it first (lifecycle table, row 1). Subs are **inert until the `maestro-configuration` config PR merges to `production`**.
+
+**Worked example (net11 Preview 6, live 2026-07-07):** branch `release/11.0.1xx-preview6` cut, default-channel mapping present, build #321033 already promoted to `.NET 11.0.1xx SDK Preview 6` — **yet `maestro_subscriptions(targetBranch="release/11.0.1xx-preview6")` returns zero rows.** Preview 5 has the full android/macios/dotnet set; Preview 6's were never authored → **FYI**: nothing flows into preview6 yet (Preview 5's subs weren't rolled forward) — worth noting, not a ship blocker.
+
+#### Check B — does the promoted feed match the branch? (feed-vs-branch drift)
+
+"Latest version on the Preview N feed" = the newest MAUI build promoted to the
+`.NET 11.0.1xx SDK Preview N` channel; "what's in .NET MAUI" = the current HEAD of
+`release/11.0.1xx-previewN`.
+
+```bash
+# feed side (BAR) — the latest build promoted to the preview channel:
+#   MCP maestro_latest_build(repository="https://github.com/dotnet/maui",
+#                            channelName=".NET 11.0.1xx SDK Preview N")  -> .commit
+# branch side (git):
+git rev-parse origin/release/11.0.1xx-previewN
+```
+
+Compare the feed build's commit to the branch HEAD:
+
+| Comparison | Meaning | Report |
+|------------|---------|--------|
+| Equal | The promoted build **is** the branch HEAD — feed current | ✅ OK |
+| Feed commit is an ancestor of the branch HEAD (`git merge-base --is-ancestor <feedCommit> origin/release/11.0.1xx-previewN` → exit 0, and they differ) | Branch has moved **ahead** of the last promoted build — feed stale | ⚠️ Flag; report how many commits ahead (`git rev-list --count <feedCommit>..origin/release/11.0.1xx-previewN`) |
+| Feed commit not on the branch | Build promoted from a different ref — investigate, don't guess | ⚠️ Flag |
+
+**Version cross-check (optional, human-readable):** the branch produces
+`11.0.0-preview.N.<date>.<rev>` (from `eng/Versions.props`: `MajorVersion.MinorVersion.PatchVersion` + `preview` + `PreReleaseVersionIteration=N`); the feed's latest build should carry the same `preview.N` stamp. A band/stage mismatch (feed shows `preview.5` on a `-preview6` branch) is the same mis-wire signal as Check A.
+
+**Worked example (net11 Preview 6, live 2026-07-07):** `maestro_latest_build(".NET 11.0.1xx SDK Preview 6")` → build #321033 @ `6e35dc58d0…`; `git rev-parse origin/release/11.0.1xx-preview6` → `6e35dc58d0…` — **equal, feed current** (produced version `11.0.0-preview.6.*`).
+
+#### Check C — are the upstream component pins coherent? (android / macios / dotnet)
+
+MAUI bundles specific **dotnet/android**, **dotnet/macios**, and **dotnet/dotnet** (VMR runtime/SDK) builds, pinned in `eng/Version.Details.xml`. A natural question for a preview is *"which android/macios builds is MAUI shipping — are they the right ones?"*
+
+> **Why not the .NET Release Tracker for this?** The `dotnet-release-tracker` plugin exposes **only SDK/runtime-level** release data (`RuntimeVersion`, `SdkVersion`, `Stage`, …) — it has **no per-component (android/macios) build field**. So there is **no tracker-"blessed" android/macios build** to look up. This check therefore runs entirely off **public** git + BAR/Maestro.
+
+> **Why not "is it behind the latest component build?"** For a **cut** preview branch the component pins are deliberately **frozen** at what the inflight branch (`netN.0`) carried at cut time; the component repos have already moved on to the *next* preview band (e.g. `dotnet/android` is publishing `preview.7`-band builds while `preview6` is out). "Behind latest" is therefore the **expected, correct** state for a cut branch — chasing latest would be wrong. The meaningful signal is **coherence with the inflight branch it was cut from**, plus a band-stamp sanity check.
+
+Read the three anchor dependencies from both the preview branch **and** the inflight branch it was cut from, then diff version+SHA:
+
+```bash
+# dotnet/dotnet (VMR runtime/SDK)  -> Microsoft.NETCore.App.Ref   (11.0.0-preview.N.<date>.<rev>)
+# dotnet/android                   -> Microsoft.Android.Sdk.Windows (android's own scheme, e.g. 37.0.0-ci.main.NN on net11)
+# dotnet/macios                    -> Microsoft.iOS.Sdk.net11.0_26.5 (+ MacCatalyst/macOS/tvOS; 26.5.<build>-net11-pN)
+for ref in release/11.0.1xx-previewN netN.0; do
+  git show origin/$ref:eng/Version.Details.xml
+done
+# extract <Version> + <Sha> for the three anchors and compare the preview branch to the inflight branch
+```
+
+Interpretation:
+
+| Observed | Meaning | Report |
+|----------|---------|--------|
+| previewN pins **==** `netN.0` pins (version **and** SHA) for all three | Clean cut — the preview inherited the inflight component state with no divergence | ✅ OK |
+| previewN pin **diverges** from `netN.0` for a component | Preview was cut around a bump, or was patched/forward-ported after cut — decide which side is newer; a preview *behind* inflight may be missing a component fix, a preview *ahead* is an out-of-band bump | ⚠️ Flag the component + both version/SHA pairs |
+| macios/dotnet pin **missing** the `-net11-pN` / `preview.N` stamp | Off-band pin (e.g. a `preview.5` macios build on a `-preview6` branch) — same mis-wire class as Check A/B | ⚠️ Flag |
+| android on `-ci.main.NN` | **Normal** for the net11 android train — android versions its net11 flow as CI-off-main, *not* with a `-pN` moniker. Validate by matching `netN.0`; do **not** alarm on the `ci.main` scheme itself | ✅ if it matches inflight |
+
+**Worked example (net11 Preview 6, live 2026-07-07):**
+
+| Component | Anchor dependency | preview6 pin | SHA | vs `net11.0` |
+|-----------|-------------------|--------------|-----|--------------|
+| dotnet/dotnet (VMR) | `Microsoft.NETCore.App.Ref` | `11.0.0-preview.6.26325.125` (✅ `preview.6`) | `a512c3ad` | **identical** |
+| dotnet/macios | `Microsoft.iOS.Sdk.net11.0_26.5` | `26.5.11717-net11-p6` (✅ `-net11-p6`) | `5bf7d00b` | **identical** |
+| dotnet/android | `Microsoft.Android.Sdk.Windows` | `37.0.0-ci.main.51` (android net11 CI-main scheme) | `7ab8bac5` | **identical** |
+
+All three anchors are byte-identical to `net11.0` HEAD → **clean cut, component pins coherent** ✅. The android `-ci.main.51` moniker is **not** a preview6 anomaly — `net11.0` carries the same pin, so it's the net11 android train's current state, not a mis-wire. (For contrast, `main` is a different band entirely — android `36.1.2`, runtime `10.0.0`.)
+
+> **Anchor note:** the automated 🏷️ pins table in the generated tracker issue anchors the VMR on **`Microsoft.NET.Sdk`** (SDK band, e.g. `11.0.100-preview.6.*`), whereas this manual check reads **`Microsoft.NETCore.App.Ref`** (runtime band, e.g. `11.0.0-preview.6.*`). Same repo, same commit — different package, so the version *strings* differ by design. Compare coherence by **SHA**, not by the version string, when reconciling the two views.
+
 ## Quick reference: lifecycle commands by phase
 
 | Phase | Action | Command sketch |

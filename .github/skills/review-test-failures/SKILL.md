@@ -87,20 +87,25 @@ Key fields to use:
     investigation`**. A **SKIPPED** device-test check does not cap (tests did not run); a
     **RED** one is handled as an ordinary failing check.
   - `gate.legsRegressedVsBase` (+ `legsRegressedVsBaseNames[]`) — distinct failures that
-    are **red on the PR but GREEN on the same leg of the most recent completed base
-    build** (a deterministic, computed job-level regression). **Any value > 0 caps the
-    ceiling at `Not ready`** — a `Ready to merge` / `No failures found` verdict is then
-    forbidden. This is the comparison that catches build-job breaks (crossgen/R2R,
+    are **red on the PR but GREEN on the same leg across several recent completed base
+    builds and red on none of them** (a deterministic, computed job-level regression).
+    **Any value > 0 caps the ceiling at `Not ready`** — a `Ready to merge` / `No failures
+    found` verdict is then forbidden. Sampling several base builds (not one) is what
+    separates a real regression from a base-branch flake that merely happened to pass its
+    one sampled base run — except a **deterministic** build break (crossgen/NativeAOT/linker/
+    MSBuild, which compiles or it doesn't), where a single green base build is proof enough. This is the comparison that catches build-job breaks (crossgen/R2R,
     NativeAOT) the test-level baseline cannot. A device-test BUILD break
     (`source = azdo-build-error`) IS counted here because it is deterministic; only device-test
     TEST results are excluded (XHarness exit-0 blind spot) — they are surfaced but never hard-capped.
   - `gate.unattributedFailures` (+ `unattributedFailureNames[]`) — distinct failures the
     deterministic prior could attribute **neither** way: not a clean regression vs base, not
     pre-existing on base, not a known issue (`deterministicAttribution = indeterminate`).
-    Causes: the base leg outcome was ambiguous (a duplicate/retried leaf name →
-    `inconclusive-on-base`), the base build was missing/unreadable, or a device-test TEST
-    result outside the build-error class. They are neither provably PR-caused nor dismissible
-    as pre-existing/known, so **any value > 0 caps the ceiling at `Needs human investigation`**.
+    Causes: the leg was flaky on base (red on some sampled base builds, green on others →
+    `flaky-on-base`), the leg was green on base but on too few samples to confirm a regression
+    (`succeeded-on-base-unconfirmed`), the base build was missing/unreadable, or a device-test
+    TEST result outside the build-error class. They are neither provably PR-caused nor
+    dismissible as pre-existing/known, so **any value > 0 caps the ceiling at `Needs human
+    investigation`**.
   - Evidence counts: `failuresAlsoOnBaseline`, `failuresMatchingKnownIssue`,
     `failuresRetriedStillFailing`, `baselineInconclusiveRows`.
 - `failures.unique[]` — distinct PR failures (deduped by test name + OS platform). This
@@ -113,20 +118,28 @@ Key fields to use:
     recent base-branch build — scoped to the **same pipeline definition**, so a failure in
     one pipeline is never dismissed by a same-named failure that only occurred in another),
   - `legBaselineResult` / `legRegressedVsBase` / `legAlsoFailsOnBase` — the **computed
-    job-level baseline diff** for this failure's leg: `succeeded-on-base` +
-    `legRegressedVsBase = true` means the SAME leg passed on base and is now red on the
-    PR (strongest PR-caused signal); `failed-on-base` + `legAlsoFailsOnBase = true` means
-    the same **leg** was already red on base — but note this is only **leg-level**
-    corroboration, NOT proof that *this specific test* is pre-existing (the leg can fail
-    on base at a **different** test), so on its own it does **not** dismiss the failure;
-    `absent-on-base` means the leg name did not exist on the base build (indeterminate —
-    do not treat as a regression); `inconclusive-on-base` means the leg both failed and
-    passed on base (flaky on base / retried) — also indeterminate, never a regression. The
-    computed `regressed-vs-base` set is pre-filtered to stay trustworthy: a
+    job-level baseline diff** for this failure's leg, computed over the **last few completed
+    base builds** (not a single base build) so a base-branch flake is not mistaken for a
+    regression: `succeeded-on-base` + `legRegressedVsBase = true` means the SAME leg was
+    GREEN across several recent base builds and red on **none** of them, and is now red on
+    the PR (strongest PR-caused signal); `failed-on-base` + `legAlsoFailsOnBase = true` means
+    the same **leg** was already red on at least one sampled base build — but note this is
+    only **leg-level** corroboration, NOT proof that *this specific test* is pre-existing (the
+    leg can fail on base at a **different** test), so on its own it does **not** dismiss the
+    failure; `flaky-on-base` means the leg was red on some sampled base builds and green on
+    others (demonstrably flaky on base) — indeterminate, never a regression;
+    `succeeded-on-base-unconfirmed` means the leg was green on base but on too few samples
+    (fewer than `MinBaseGreenSamples`, e.g. only one readable base build) to rule out
+    flakiness — indeterminate, **not** a confident regression; `absent-on-base` means the leg
+    name did not exist on the sampled base builds (indeterminate — do not treat as a
+    regression). The computed `regressed-vs-base` set is pre-filtered to stay trustworthy: a
     provisioning/infrastructure failure (Android SDK `Failed to find package`, avdmanager,
     disk-full — environmental and nondeterministic) and any failure that was flaky on base
     in **another** leg are both held to `legRegressedVsBase = false` so they fall to
-    `indeterminate` rather than masquerading as a deterministic regression,
+    `indeterminate` rather than masquerading as a deterministic regression. Each failure also
+    carries `baseSampleCount` / `baseGreenCount` / `baseFailedCount` (how many recent base
+    builds were read, and on how many the leg was green vs red) as regression-confidence
+    evidence,
   - `deterministicAttribution` — a **computed prior** you MUST start from, one of
     `regressed-vs-base` (treat as **Likely PR-caused** unless you can cite why the base
     comparison is invalid, e.g. a known-flaky base leg), `pre-existing-on-base` (treat as
@@ -153,9 +166,9 @@ Key fields to use:
     family**; `null` otherwise) — the `[ci-scan]` issues are the MAUI **CI Failure Scanner**
     (an agentic `ci-status-*` workflow) tracking `recurring` flakes, `regression`s, and
     `build break`s on the `main` / `net11.0` base branches across **many** builds — i.e.
-    multi-build base-branch history, strictly broader than the single most-recent base build
-    the leg diff can see. It is used in **one direction only**: when the leg diff computed a
-    single-base `regressed-vs-base` and ci-scan documents that exact test (`matchKind=test`)
+    multi-build base-branch history, strictly broader than the few recent base builds
+    the leg diff samples. It is used in **one direction only**: when the leg diff computed a
+    few-build `regressed-vs-base` and ci-scan documents that exact test (`matchKind=test`)
     or its whole leg (`matchKind=leg`, only for OneTimeSetUp/mass/env/build-break **leg-wide**
     issues) as failing on the base branch, the regression is **demoted to `indeterminate`**
     (NHI) and `ciScanDemoted=true` is set. This is a **false-RED reduction only** — a ci-scan
@@ -221,7 +234,7 @@ Classify each distinct failure as exactly one of:
 
 | Verdict | Use when |
 | --- | --- |
-| `Likely PR-caused` | The failure directly references changed files, changed tests, changed APIs, affected platform code, or a newly added/modified test; or it only appears in a path/platform this PR changes and does **not** match a baseline failure or a known issue. **A `deterministicAttribution = regressed-vs-base` failure** (its leg is red on the PR but GREEN on the same leg of the most recent base build) is **computed, decisive** PR-caused evidence — default to this verdict unless you can cite why the base comparison is invalid (e.g. a known-flaky base leg). A `retriedStillFailing = true` failure in the PR's area is **stronger** PR-caused evidence (CI retried it and it still failed — it is not a one-off flake). |
+| `Likely PR-caused` | The failure directly references changed files, changed tests, changed APIs, affected platform code, or a newly added/modified test; or it only appears in a path/platform this PR changes and does **not** match a baseline failure or a known issue. **A `deterministicAttribution = regressed-vs-base` failure** (its leg is red on the PR but GREEN across several recent base builds and red on none of them) is **computed, decisive** PR-caused evidence — default to this verdict unless you can cite why the base comparison is invalid (e.g. a known-flaky base leg, or `baseGreenCount` is small). A `retriedStillFailing = true` failure in the PR's area is **stronger** PR-caused evidence (CI retried it and it still failed — it is not a one-off flake). |
 | `Likely unrelated` | Evidence points to infrastructure, missing baselines, known flaky tests, unrelated platforms/areas, base/main failures, or the **exact same test+platform also fails on the baseline** (`alsoFailsOnBaseline = true` / `deterministicAttribution = pre-existing-on-base` — the only base signal strong enough to dismiss on its own). A known issue **corroborated by an exact base match** (`deterministicAttribution = known-issue`) is also unrelated — cite the issue number/link. **Caution:** `legAlsoFailsOnBase = true` *alone* (the leg was red on base but this exact test was not matched), a `matchesKnownIssue` hit whose `deterministicAttribution` is **`indeterminate`** (text match not corroborated by an **exact** base match), or a `baselineReasonConflict = true` failure (exact name match but a different known failure reason), is **NOT** sufficient to dismiss — those are `Needs human investigation`, not `Likely unrelated`. |
 | `Needs human investigation` | Evidence is mixed: the failure overlaps the PR area or platform but no direct causal link is clear, or the data suggests multiple plausible causes. |
 | `Insufficient data` | Build records, test results, or logs are missing/inaccessible/expired, or there is not enough evidence to make a responsible claim. |
@@ -340,7 +353,7 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |
-| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no — use the leg diff: `regressed` when `legRegressedVsBase`, `also-red` when `legAlsoFailsOnBase`, else the test-level `alsoFailsOnBaseline`] | [specific evidence — lead with `deterministicAttribution` when it is `regressed-vs-base`/`pre-existing-on-base`, cite a known-issue link when `matchesKnownIssue` is set, cite the `[ci-scan]` issue + occurrence count when `matchesCiScan` is set (and note it as `Needs human investigation` when `ciScanDemoted` — a single-base regression contradicted by multi-build base-branch history), note `retried still failing` when true, link build/test IDs] |
+| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no — use the leg diff: `regressed` when `legRegressedVsBase`, `also-red` when `legAlsoFailsOnBase`, else the test-level `alsoFailsOnBaseline`] | [specific evidence — lead with `deterministicAttribution` when it is `regressed-vs-base`/`pre-existing-on-base`, cite the base sampling (`baseGreenCount` green / `baseFailedCount` red of `baseSampleCount` base builds) for a regression, cite a known-issue link when `matchesKnownIssue` is set, cite the `[ci-scan]` issue + occurrence count when `matchesCiScan` is set (and note it as `Needs human investigation` when `ciScanDemoted` — a few-build regression contradicted by multi-build base-branch history), note `retried still failing` when true, link build/test IDs] |
 
 ### Recommended action
 

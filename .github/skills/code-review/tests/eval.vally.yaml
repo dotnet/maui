@@ -262,10 +262,9 @@ stimuli:
         - code-review
 
 scoring:
-  # NOTE: @microsoft/vally@0.6.0 does NOT consume `scoring.weights` — the
-  # scorer ignores it (verified in dist/scoring/scorer.js +
-  # dist/pipeline/grading.js). Only `scoring.threshold` is active. A trial's
-  # score is the UNWEIGHTED mean of its graders' [0,1] scores; the stimulus
+  # Vally 0.10 supports scoring.weights, but this suite deliberately omits
+  # them so a trial's score is the unweighted mean of its graders' [0,1]
+  # scores; the stimulus
   # score is the mean across runs; the skill passes when that mean >=
   # threshold. The `prompt` grader contributes ONE holistic score (its rubric
   # criteria are aggregated by the judge into a single overall_score, then
