@@ -24,6 +24,7 @@ BeforeAll {
             'Get-RegressionPrTagsFromText',
             'Test-CandidateIsNew',
             'Test-HumanAttributionCandidateIsNew',
+            'Get-UsableCandidateCount',
             'Invoke-GhJson',
             'Get-MergedRegressionFixPRs',
             'Get-IssueAuthorAssociation',
@@ -377,6 +378,18 @@ Describe 'Test-HumanAttributionCandidateIsNew' {
     }
 }
 
+Describe 'Get-UsableCandidateCount' {
+    It 'does not count candidates that require human attribution toward the usable limit' {
+        $candidates = New-Object System.Collections.Generic.List[object]
+        $candidates.Add([PSCustomObject]@{ needsHumanAttribution = $true }) | Out-Null
+        $candidates.Add([PSCustomObject]@{ needsHumanAttribution = $false }) | Out-Null
+        $candidates.Add([PSCustomObject]@{ needsHumanAttribution = $true }) | Out-Null
+        $candidates.Add([PSCustomObject]@{ needsHumanAttribution = $false }) | Out-Null
+
+        Get-UsableCandidateCount -Candidates $candidates | Should -Be 2
+    }
+}
+
 Describe 'Get-MergedRegressionFixPRs' {
     It 'returns an empty collection when GitHub returns no data' {
         Mock Invoke-GhJson { $null }
@@ -384,6 +397,23 @@ Describe 'Get-MergedRegressionFixPRs' {
         @(Get-MergedRegressionFixPRs -Owner 'dotnet' -Repo 'maui' -LookbackDays 14 -Limit 20).Count | Should -Be 0
         Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
             -not $AllowFailure
+        }
+    }
+
+    It 'uses immutable search ordering and returns PRs in merge order' {
+        Mock Invoke-GhJson {
+            @(
+                [PSCustomObject]@{ number = 20; mergedAt = '2026-07-16T00:00:00Z' }
+                [PSCustomObject]@{ number = 10; mergedAt = '2026-07-15T00:00:00Z' }
+            )
+        }
+
+        @(Get-MergedRegressionFixPRs -Owner 'dotnet' -Repo 'maui' -LookbackDays 14 -Limit 20).number |
+            Should -Be @(10, 20)
+        Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
+            -not $AllowFailure -and
+            ($GhArgs -join ' ') -match 'sort:created-asc' -and
+            ($GhArgs -join ' ') -match 'number,body,mergeCommit,mergedAt'
         }
     }
 }

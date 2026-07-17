@@ -23,9 +23,10 @@
          regression stimulus pins to (the reviewer is tested on the bad diff cold).
       4. Resolve the introducing PR's merge SHA + changed files via `gh`.
       5. Drop candidates already covered by the corpus or pending scanner drafts
-         (existing `regression_pr:` tags), and those whose introducing PR cannot
-         be resolved (flagged needsHumanAttribution — no SHA means no hermetic ref).
-      6. Emit a bounded candidates.json.
+         (existing `regression_pr:` tags). Candidates whose introducing PR cannot
+         be resolved are flagged needsHumanAttribution — no SHA means no hermetic ref.
+      6. Emit bounded candidate context. Unresolved candidates do not consume the
+         usable-candidate limit.
 
     Hermeticity note: this scanner reads LIVE PR/issue data — that is expected and
     fine. Hermeticity applies to the eval it ultimately emits (frozen worktree, no
@@ -41,7 +42,9 @@
     How many days back to scan for merged regression-fix PRs. Default 14.
 
 .PARAMETER MaxPRs
-    Cap on candidates emitted (rate-limit / blast-radius guard). Default 5.
+    Cap on usable candidates emitted (rate-limit / blast-radius guard). Unresolved
+    candidates remain bounded by the source-query limit but do not consume this cap.
+    Default 5.
 
 .PARAMETER CorpusGlob
     Glob for existing Vally eval specs used for dedup. Default
@@ -226,6 +229,17 @@ function Test-HumanAttributionCandidateIsNew {
     return ($IntroducingPr -notin @($ExistingHumanAttributionNumbers))
 }
 
+function Get-UsableCandidateCount {
+    param([System.Collections.IEnumerable]$Candidates)
+    $count = 0
+    foreach ($candidate in $Candidates) {
+        if ($candidate -and -not $candidate.needsHumanAttribution) {
+            $count++
+        }
+    }
+    return $count
+}
+
 # ─── gh I/O wrappers (mocked in tests) ─────────────────────────────────────────
 
 function Invoke-GhJson {
@@ -261,13 +275,13 @@ function Invoke-GhJson {
 function Get-MergedRegressionFixPRs {
     param([string]$Owner, [string]$Repo, [int]$LookbackDays, [int]$Limit)
     $since = (Get-Date).ToUniversalTime().AddDays(-[Math]::Abs($LookbackDays)).ToString('yyyy-MM-dd')
-    $search = "is:merged label:i/regression merged:>=$since"
+    $search = "is:merged label:i/regression merged:>=$since sort:created-asc"
     $prs = Invoke-GhJson -GhArgs @(
         'pr', 'list', '--repo', "$Owner/$Repo",
         '--state', 'merged', '--search', $search, '--limit', "$Limit",
-        '--json', 'number,body,mergeCommit'
+        '--json', 'number,body,mergeCommit,mergedAt'
     )
-    return @($prs | Where-Object { $null -ne $_ })
+    return @($prs | Where-Object { $null -ne $_ } | Sort-Object mergedAt, number)
 }
 
 function Get-IssueAuthorAssociation {
@@ -419,7 +433,7 @@ $candidates = New-Object System.Collections.Generic.List[object]
 $humanAttributionNumbers = New-Object 'System.Collections.Generic.HashSet[int]'
 
 foreach ($pr in $fixPRs) {
-    if ($candidates.Count -ge $MaxPRs) { break }
+    if ((Get-UsableCandidateCount -Candidates $candidates) -ge $MaxPRs) { break }
 
     $fixNumber = [int]$pr.number
     $fixPrAssociation = Get-IssueAuthorAssociation -Owner $Owner -Repo $Repo -Number $fixNumber
@@ -511,12 +525,14 @@ foreach ($pr in $fixPRs) {
     Write-Host "  ✅ Candidate: fix #$fixNumber → introducing #$introducingPr (ref $($introDetails.MergeCommit)) needsHuman=$needsHuman"
 }
 
+$usableCandidateCount = Get-UsableCandidateCount -Candidates $candidates
 $payload = [PSCustomObject]@{
     generatedAt  = (Get-Date).ToUniversalTime().ToString('o')
     owner        = $Owner
     repo         = $Repo
     lookbackDays = $LookbackDays
     count        = $candidates.Count
+    usableCount  = $usableCandidateCount
     candidates   = $candidates.ToArray()
 }
 

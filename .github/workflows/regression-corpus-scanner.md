@@ -30,7 +30,7 @@ on:
         type: number
         default: 14
       max_prs:
-        description: "Maximum candidate regressions to draft into the corpus this run"
+        description: "Maximum usable candidate regressions to draft into the corpus this run"
         required: false
         type: number
         default: 3
@@ -86,8 +86,9 @@ on:
           -OutputPath $output | Out-Null
 
         $json = Get-Content -Raw -LiteralPath $output
-        $count = ([int]((($json | ConvertFrom-Json).count)))
-        "has_candidates=$([string]($count -gt 0).ToString().ToLower())" >> $env:GITHUB_OUTPUT
+        $candidateContext = $json | ConvertFrom-Json
+        $usableCount = [int]$candidateContext.usableCount
+        "has_candidates=$([string]($usableCount -gt 0).ToString().ToLower())" >> $env:GITHUB_OUTPUT
 
         $delimiter = "EOF_$([Guid]::NewGuid().ToString('N'))"
         "candidates<<$delimiter" >> $env:GITHUB_OUTPUT
@@ -155,8 +156,8 @@ tools:
     toolsets: [pull_requests, repos]
     min-integrity: approved
   edit:
-  # Read-only shell utilities so the agent can inspect the existing corpus file
-  # and confirm the SHA it pins. No `gh`/`git` write commands are allow-listed.
+  # Shell utilities plus `git` for local diff/SHA inspection. The executable
+  # allowlist cannot restrict Git subcommands; safe-outputs is the write boundary.
   bash: ["cat", "ls", "grep", "head", "tail", "sed", "awk", "jq", "echo", "wc", "test", "find", "git"]
 
 safe-outputs:
