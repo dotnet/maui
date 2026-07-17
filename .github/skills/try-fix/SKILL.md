@@ -25,6 +25,7 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
 4. **Empirical** - Actually implement and test, don't just theorize
 5. **Context-driven** - Work with what's provided and git history; don't search external sources
+6. **Documented outcome** - Every run ends in exactly one of `Pass` / `Fail` / `Blocked` with written reasoning. Never stop silently, never claim `Pass` without a test that actually passed, and when attempts are exhausted report `Fail` with a root-cause analysis rather than continuing to propose fixes
 
 **Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`.
 
@@ -160,6 +161,11 @@ The skill is complete when:
 3. Alternative fixes would require completely different strategy
 
 **Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
+
+**When you reach the iteration limit, STOP and produce a documented Fail — do NOT keep proposing new approaches:**
+1. Set `result` to `Fail` (a fix that never made the test pass is a `Fail` — never a `Pass`, never a silent stop)
+2. Write a root-cause analysis of *why this class of approach cannot resolve the issue* — e.g. the true root cause lives outside the code under test (a platform or framework component you did not change), so no edit at your target site would move the assertion
+3. One invocation tests ONE approach; deciding whether to try a different approach is the orchestrator's call, not something you loop on inside this run
 
 > **Session limits:** Each try-fix *invocation* allows up to 3 compile/test iterations. The *calling orchestrator* controls how many invocations (attempts) to run per session (typically 4-5 as part of pr-review Phase 3).
 
@@ -373,7 +379,7 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <proje
    - ❌ **Compile errors** → Fix compilation issues (see below), go to step 1
    - ❌ **Tests FAIL (runtime)** → Analyze failure, fix code, go to step 1
 3. **Maximum 3 iterations** - If still failing after 3 attempts, analyze if approach is fundamentally flawed
-4. **Document why** - If exhausted, explain what you learned and why the approach won't work
+4. **Document why (documented Fail)** - If exhausted, STOP proposing further approaches. Report `result` = `Fail` and write a root-cause analysis: what you learned and *why this class of approach cannot fix the issue* (e.g. the real root cause is in a platform or framework component outside the code you can change here). A silent stop, or a `Pass` claim without a passing test, is never acceptable.
 
 **Behavioral constraints:**
 - ⚠️ **NEVER blame "test infrastructure"** - assume YOUR fix has a bug
