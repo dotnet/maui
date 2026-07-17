@@ -204,7 +204,7 @@ if ($Platform -eq "android") {
                 $existingAvdProc = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue |
                     Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id -join "`n"
             } else {
-                $existingAvdProc = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*-avd[= ]$selectedAvd' || true" 2>&1
+                $existingAvdProc = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*$selectedAvd' || true" 2>&1
             }
             $reuseExistingEmulator = -not [string]::IsNullOrWhiteSpace($existingAvdProc)
 
