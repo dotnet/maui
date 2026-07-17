@@ -35,3 +35,34 @@ Microsoft.Maui.Media.IViewScreenshot
 Microsoft.Maui.Media.IViewScreenshot.CaptureViewAsync(object! platformView) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
 Microsoft.Maui.Media.MediaPickerOptions.SaveToGallery.get -> bool
 Microsoft.Maui.Media.MediaPickerOptions.SaveToGallery.set -> void
+Microsoft.Maui.Authentication.IPasskeys
+Microsoft.Maui.Authentication.IPasskeys.AssertAsync(Microsoft.Maui.Authentication.PasskeyRequestOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyAssertionResponse!>!
+Microsoft.Maui.Authentication.IPasskeys.CreateAsync(Microsoft.Maui.Authentication.PasskeyCreationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyCreationResponse!>!
+Microsoft.Maui.Authentication.IPasskeys.IsSupported.get -> bool
+Microsoft.Maui.Authentication.PasskeyAssertionResponse
+Microsoft.Maui.Authentication.PasskeyAssertionResponse.Id.get -> string!
+Microsoft.Maui.Authentication.PasskeyAssertionResponse.UserHandle.get -> string?
+Microsoft.Maui.Authentication.PasskeyCreationOptions
+Microsoft.Maui.Authentication.PasskeyCreationOptions.PasskeyCreationOptions(string! creationOptionsJson) -> void
+Microsoft.Maui.Authentication.PasskeyCreationOptions.PreferImmediatelyAvailable.get -> bool
+Microsoft.Maui.Authentication.PasskeyCreationOptions.PreferImmediatelyAvailable.set -> void
+Microsoft.Maui.Authentication.PasskeyCreationResponse
+Microsoft.Maui.Authentication.PasskeyCreationResponse.Id.get -> string!
+Microsoft.Maui.Authentication.PasskeyException
+Microsoft.Maui.Authentication.PasskeyException.PasskeyException(string! message) -> void
+Microsoft.Maui.Authentication.PasskeyException.PasskeyException(string! message, System.Exception? innerException) -> void
+Microsoft.Maui.Authentication.PasskeyRequestOptions
+Microsoft.Maui.Authentication.PasskeyRequestOptions.PasskeyRequestOptions(string! requestOptionsJson) -> void
+Microsoft.Maui.Authentication.PasskeyRequestOptions.PreferImmediatelyAvailable.get -> bool
+Microsoft.Maui.Authentication.PasskeyRequestOptions.PreferImmediatelyAvailable.set -> void
+Microsoft.Maui.Authentication.Passkeys
+override Microsoft.Maui.Authentication.PasskeyAssertionResponse.ToString() -> string!
+override Microsoft.Maui.Authentication.PasskeyCreationOptions.ToString() -> string!
+override Microsoft.Maui.Authentication.PasskeyCreationResponse.ToString() -> string!
+override Microsoft.Maui.Authentication.PasskeyRequestOptions.ToString() -> string!
+static Microsoft.Maui.Authentication.Passkeys.AssertAsync(Microsoft.Maui.Authentication.PasskeyRequestOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyAssertionResponse!>!
+static Microsoft.Maui.Authentication.Passkeys.AssertAsync(string! requestOptionsJson, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyAssertionResponse!>!
+static Microsoft.Maui.Authentication.Passkeys.CreateAsync(Microsoft.Maui.Authentication.PasskeyCreationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyCreationResponse!>!
+static Microsoft.Maui.Authentication.Passkeys.CreateAsync(string! creationOptionsJson, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyCreationResponse!>!
+static Microsoft.Maui.Authentication.Passkeys.Default.get -> Microsoft.Maui.Authentication.IPasskeys!
+static Microsoft.Maui.Authentication.Passkeys.IsSupported.get -> bool
