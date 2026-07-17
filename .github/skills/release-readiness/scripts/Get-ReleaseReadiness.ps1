@@ -734,14 +734,31 @@ function Get-ReleaseShipChecks {
             $mainBumpedThisCycle = ($vpMain.Major -eq $major -and $vpMain.Minor -eq $minor `
                                     -and $vpMain.Patch -ge $expectedNextPatchPrefix)
 
+            # A bumped PatchVersion alone is not enough: main must also still be on
+            # the dev-main config (PreReleaseVersionLabel=ci.main,
+            # StabilizePackageVersion=false). If main is misconfigured as a
+            # servicing/stable build while its patch is bumped, PRs merging to main
+            # would emit packages that misrepresent their ship vehicle — so that is
+            # BLOCKED, not READY. Unset elements default to the dev-main values.
+            $mainLabelOk     = [string]::IsNullOrEmpty($vpMain.PreReleaseVersionLabel) -or ($vpMain.PreReleaseVersionLabel -eq 'ci.main')
+            $mainStabilizeOk = [string]::IsNullOrEmpty($vpMain.StabilizePackageVersion) -or ($vpMain.StabilizePackageVersion -eq 'false')
+            $mainMainlineOk  = $mainLabelOk -and $mainStabilizeOk
+
             if ($mainPastMajor) {
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
                     -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main has moved past the $major.$minor train entirely (no bump needed for SR$targetSr stabilization)." `
                     -NextAction "No bump needed."
-            } elseif ($mainBumpedThisCycle) {
+            } elseif ($mainBumpedThisCycle -and $mainMainlineOk) {
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
                     -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main is at or past ``$major.$minor.$expectedNextPatchPrefix`` so PRs merging during SR$targetSr stabilization target SR$nextSr correctly." `
                     -NextAction "No bump needed."
+            } elseif ($mainBumpedThisCycle) {
+                $mainOffenders = @()
+                if (-not $mainLabelOk)     { $mainOffenders += "``PreReleaseVersionLabel=$($vpMain.PreReleaseVersionLabel)`` (expected ``ci.main``)" }
+                if (-not $mainStabilizeOk) { $mainOffenders += "``StabilizePackageVersion=$($vpMain.StabilizePackageVersion)`` (expected ``false``)" }
+                $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` with $($mainOffenders -join ' and ') — main's PatchVersion is bumped to the SR$nextSr cycle but its mainline settings are configured for a stable/servicing build, not dev main. PRs merging to ``$($Ctx.mainBranch)`` would emit packages that misrepresent their ship vehicle." `
+                    -NextAction "On ``$($Ctx.mainBranch)`` restore the dev-main settings in ``eng/Versions.props``: set ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false``. Only the SR branch flips to ``servicing``/``true``; main must stay on ci.main/false throughout SR$targetSr stabilization."
             } else {
                 $mainBumpTitle = "Update PatchVersion from $($vpMain.Patch) to $expectedNextPatchPrefix"
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
@@ -931,19 +948,56 @@ function Get-MaestroOperationalChecks {
         $checks += New-ReadinessCheck -Area $buildArea -Status 'UNKNOWN' `
             -Details "``darc`` CLI not available — cannot verify BAR has a build for SR HEAD." `
             -NextAction "Locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``"
+        # darc is also required to tell whether the build is promoted (and thus
+        # whether its per-build validation feed exists for the ship Assessment).
+        # Emit the feed row here too so the scheduled/CI run — where darc is not
+        # installed — still surfaces the Assessment-feed guidance instead of
+        # silently dropping it.
+        $feedSha8Unknown = $Ctx.srHeadSha.Substring(0, [Math]::Min(8, $Ctx.srHeadSha.Length))
+        $feedUrlUnknown = "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-$feedSha8Unknown/nuget/v3/index.json"
+        $checks += New-ReadinessCheck -Area 'Ship Assessment validation feed' -Status 'UNKNOWN' `
+            -Details "``darc`` CLI not available — cannot confirm whether SR HEAD's build is promoted or whether its per-build validation feed exists to link in the ship Assessment. If promoted, the feed will be ``$feedUrlUnknown``." `
+            -NextAction "Locally, once the build is confirmed: ``darc get-asset --name Microsoft.Maui.Controls --build <id>`` to get the NugetFeed URL, then link it in the ship Assessment."
     } else {
         $builds = Invoke-DarcJson -DarcArgs @('get-build', '--repo', $repoUrl, '--commit', $Ctx.srHeadSha)
         if (-not $builds.Success) {
             $checks += New-ReadinessCheck -Area $buildArea -Status 'UNKNOWN' `
                 -Details "``darc get-build`` failed for SR HEAD ``$headShort``." `
                 -NextAction "Run locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``"
+            $feedSha8Fail = $Ctx.srHeadSha.Substring(0, [Math]::Min(8, $Ctx.srHeadSha.Length))
+            $feedUrlFail = "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-$feedSha8Fail/nuget/v3/index.json"
+            $checks += New-ReadinessCheck -Area 'Ship Assessment validation feed' -Status 'UNKNOWN' `
+                -Details "``darc get-build`` failed for SR HEAD ``$headShort`` — cannot confirm promotion or whether the per-build validation feed exists for the ship Assessment. If promoted, the feed will be ``$feedUrlFail``." `
+                -NextAction "Re-run ``darc get-build`` locally; once the build is confirmed, ``darc get-asset --name Microsoft.Maui.Controls --build <id>`` gives the NugetFeed URL to link in the ship Assessment."
         } elseif ($builds.Data.Count -eq 0) {
             $checks += New-ReadinessCheck -Area $buildArea -Status 'WATCH' `
                 -Details "No BAR build found for SR HEAD ``$headShort``. May be normal if CI is still running, OR a symptom of the default-channel mapping being absent (see prior check)." `
                 -NextAction "Wait for CI to complete on SR HEAD; re-run readiness report. If mapping is also missing (above), fix that first."
         } else {
+            # darc get-build --commit is branch-agnostic: right after the SR is
+            # cut from main both branches share the SR HEAD SHA, so a promoted
+            # *main* build for the same commit can otherwise be picked and make
+            # the SR look ready. Keep only builds actually produced on the SR
+            # branch (matched across the darc/BAR branch field names). A build
+            # carrying no branch metadata at all is left in rather than dropped.
+            $srBranchBuilds = @($builds.Data | Where-Object {
+                $branchNames = @()
+                foreach ($prop in 'branch', 'gitHubBranch', 'githubBranch') {
+                    $bv = Get-AzdoProp $_ $prop
+                    if ($bv) { $branchNames += [string]$bv }
+                }
+                $azdoBranch = Get-AzdoProp $_ 'azureDevOpsBranch'
+                if ($azdoBranch) { $branchNames += (([string]$azdoBranch) -replace '^refs/heads/', '') }
+                ($branchNames.Count -eq 0) -or ($branchNames -contains $Ctx.srBranch)
+            })
+            if ($srBranchBuilds.Count -eq 0) {
+                $checks += New-ReadinessCheck -Area $buildArea -Status 'WATCH' `
+                    -Details "BAR has build(s) for SR HEAD ``$headShort`` but none produced on ``$($Ctx.srBranch)`` — a same-commit build on another branch (e.g. ``$($Ctx.mainBranch)`` right after the branch cut) does not count as the SR's own build." `
+                    -NextAction "Wait for CI to complete on ``$($Ctx.srBranch)`` at SR HEAD, then re-run the readiness report."
+                return $checks
+            }
             # Sort by BAR build id (monotonic, locale-independent) to pick the latest.
-            $latest = @($builds.Data | Sort-Object id -Descending)[0]
+            $latest = @($srBranchBuilds | Sort-Object id -Descending)[0]
             $hasChans = @($latest.channels).Count -gt 0
             $chans = if ($hasChans) { ($latest.channels -join ', ') } else { '_none_' }
             $buildLink = if ($latest.buildLink) { " ([build $($latest.id)]($($latest.buildLink)))" } else { " (build $($latest.id))" }

@@ -3262,6 +3262,31 @@ $checks4 = Invoke-ShipChecksWithMockedVersions `
 $mainBumpCheck4 = Get-CheckByAreaPrefix -Checks $checks4 -Prefix 'Main bumped to SR9 cycle'
 Assert-Eq -Label "Main-way-ahead (patch=110): status READY"  -Expected 'READY' -Actual $mainBumpCheck4.Status
 
+# Scenario 4a: main patch bumped to 90 AND still on dev-main config (ci.main / false) — READY.
+# Guards against the new mainline-config gate false-BLOCKING a correctly-configured main.
+$checks4a = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck4a = Get-CheckByAreaPrefix -Checks $checks4a -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-bumped + ci.main/false: status READY" -Expected 'READY' -Actual $mainBumpCheck4a.Status
+
+# Scenario 4b: main patch bumped to 90 but MISCONFIGURED as a servicing/stable build
+# (PreReleaseVersionLabel=servicing, StabilizePackageVersion=true) — BLOCKED. A bumped
+# PatchVersion alone must not read READY when main is flipped to servicing output.
+$checks4b = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck4b = Get-CheckByAreaPrefix -Checks $checks4b -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-bumped-but-servicing-configured: status BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck4b.Status
+Assert-Eq -Label "Main-bumped-but-servicing: details name PreReleaseVersionLabel offender" -Expected $true `
+    -Actual ([bool]($mainBumpCheck4b.Details -match 'PreReleaseVersionLabel=servicing'))
+Assert-Eq -Label "Main-bumped-but-servicing: details name StabilizePackageVersion offender" -Expected $true `
+    -Actual ([bool]($mainBumpCheck4b.Details -match 'StabilizePackageVersion=true'))
+Assert-Eq -Label "Main-bumped-but-servicing: next action restores ci.main + false" -Expected $true `
+    -Actual ([bool]($mainBumpCheck4b.NextAction -match 'ci\.main' -and $mainBumpCheck4b.NextAction -match 'false'))
+
 # Scenario 5: Candidate mode → the new check is SKIPPED (no double-counting with the
 # existing 'Versions.props bump (main → SRn)' check that already targets main)
 $checks5 = Invoke-ShipChecksWithMockedVersions `
@@ -3698,13 +3723,21 @@ $mockBuildForHead = @(
 
 # ── Scenario 1: darc unavailable (CI) — both checks UNKNOWN with hints ──
 $s1 = Invoke-MaestroChecksWithMocks -DarcAvailable $false
-Assert-Eq -Label "darc-unavailable: emits exactly 2 checks" -Expected 2 -Actual @($s1).Count
+Assert-Eq -Label "darc-unavailable: emits exactly 3 checks" -Expected 3 -Actual @($s1).Count
 $s1Map = Get-MaestroCheckByPrefix -Checks $s1 -Prefix 'BAR default-channel'
 Assert-Eq -Label "darc-unavailable: mapping check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s1Map.Status
 Assert-Eq -Label "darc-unavailable: mapping NextAction mentions add-default-channel" -Expected $true `
     -Actual ($s1Map.NextAction -match 'add-default-channel')
 $s1Build = Get-MaestroCheckByPrefix -Checks $s1 -Prefix 'BAR build for SR HEAD'
 Assert-Eq -Label "darc-unavailable: build check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s1Build.Status
+# The Assessment-feed guidance must survive the darc-less CI/scheduled run too,
+# not be silently dropped (the gap that left the SR9 assessment incomplete).
+$s1Feed = Get-MaestroCheckByPrefix -Checks $s1 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "darc-unavailable: feed check is emitted (not silently dropped)" -Expected $true `
+    -Actual ($null -ne $s1Feed)
+Assert-Eq -Label "darc-unavailable: feed check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s1Feed.Status
+Assert-Eq -Label "darc-unavailable: feed details derive the eventual URL from SR HEAD sha8" -Expected $true `
+    -Actual ($s1Feed.Details -match 'darc-pub-dotnet-maui-a11840bf/nuget/v3/index\.json')
 
 # ── Scenario 2: SR mapped + promoted build for HEAD → mapping/build/feed all READY ──
 $s2 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead
@@ -3804,6 +3837,42 @@ Assert-Eq -Label "build-not-promoted: feed details derive the eventual URL from 
 $s14Build = Get-MaestroCheckByPrefix -Checks $s14 -Prefix 'BAR build for SR HEAD'
 Assert-Eq -Label "build-not-promoted: build check still READY, channels shown as '_none_'" -Expected $true `
     -Actual ($s14Build.Details -match '_none_')
+
+# ── Scenario 15: only a same-SHA build on ANOTHER branch (main) → WATCH ──
+# darc get-build --commit is branch-agnostic; right after the SR is cut, main and
+# the SR branch share the SR HEAD SHA. A promoted *main* build for that commit must
+# NOT be mistaken for the SR branch's own build.
+$mainOnlyBuild = @(
+    [PSCustomObject]@{ id = 400500; branch = 'main'; buildNumber = '20260715.9'
+        buildLink = 'https://example/main'; commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'
+        channels = @('.NET 10.0.1xx SDK') }
+)
+$s15 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mainOnlyBuild
+$s15Build = Get-MaestroCheckByPrefix -Checks $s15 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "same-sha-main-build-only: build check is WATCH (not the SR branch's build)" -Expected 'WATCH' -Actual $s15Build.Status
+Assert-Eq -Label "same-sha-main-build-only: details say none produced on the SR branch" -Expected $true `
+    -Actual ($s15Build.Details -match 'none produced on')
+$s15Feed = Get-MaestroCheckByPrefix -Checks $s15 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "same-sha-main-build-only: no feed READY/WATCH row emitted (no SR build)" -Expected $true `
+    -Actual ($null -eq $s15Feed)
+
+# ── Scenario 16: BOTH a higher-id main build and a lower-id SR build for HEAD →
+#    picks the SR branch build, not the highest id across all branches. ──
+$mainAndSrBuilds = @(
+    [PSCustomObject]@{ id = 400500; branch = 'main'; buildNumber = '20260715.9'
+        buildLink = 'https://example/main'; commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'
+        channels = @('.NET 10.0.1xx SDK') }
+    [PSCustomObject]@{ id = 318278; branch = 'release/10.0.1xx-sr8'; buildNumber = '20260610.5'
+        buildLink = 'https://example/sr8'; commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'
+        channels = @('.NET 10.0.1xx SDK') }
+)
+$s16 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mainAndSrBuilds
+$s16Build = Get-MaestroCheckByPrefix -Checks $s16 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "main+sr-builds: build check is READY (SR branch build found)" -Expected 'READY' -Actual $s16Build.Status
+Assert-Eq -Label "main+sr-builds: picks the SR-branch build (20260610.5)" -Expected $true `
+    -Actual ($s16Build.Details -match '20260610\.5')
+Assert-Eq -Label "main+sr-builds: does NOT pick the higher-id main build (20260715.9)" -Expected $true `
+    -Actual (-not ($s16Build.Details -match '20260715\.9'))
 
 # =========================================================================
 # Get-MilestoneHygieneChecks — current/next milestone existence + stale detection
