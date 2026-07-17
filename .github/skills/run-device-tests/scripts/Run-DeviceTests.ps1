@@ -364,16 +364,42 @@ function Invoke-WindowsDeviceTestApp {
     Remove-Item -Path "$resultBase*.xml" -Force -ErrorAction SilentlyContinue
 
     $resultFiles = @()
-    if ($Project -eq "Controls") {
+
+    # Decide whether to drive the app via per-category discovery/index runs instead of a
+    # single full-suite launch:
+    #   - Controls: ALWAYS. Its Windows app registers only the discovery/index runner, so
+    #     a plain full launch has no runner and exits without results.
+    #   - Core/Essentials/Graphics/BlazorWebView: only when a filter is supplied. Their
+    #     apps gained the discovery/index runner once AppHostBuilderExtensions
+    #     .UseHeadlessRunner registers it on Windows, so we can now run ONLY the changed
+    #     category instead of launching the entire app — which, for large suites like
+    #     Core, can crash/exit before writing results and collapse the gate to an
+    #     inconclusive "empty results" verdict (see PR #36577).
+    #
+    # For non-Controls, discovery is best-effort: if the app doesn't produce a categories
+    # file (an older app build that predates the runner registration), fall back to a full
+    # run so we never regress to a hard failure. Controls keeps its original strict
+    # behavior (throw) because it has no full-suite runner to fall back to.
+    $requireDiscovery = ($Project -eq "Controls")
+    $attemptDiscovery = $requireDiscovery -or [bool]$TestFilter
+    $useCategoryFiltering = $false
+    if ($attemptDiscovery) {
         Write-Host "Discovering Windows device test categories..." -ForegroundColor Gray
         $discoveryProcess = Start-Process -FilePath $AppPath -ArgumentList @($resultFile, "-1") -PassThru
-        if (-not (Wait-ForPath -Path $categoriesFile -TimeoutSeconds 120 -Process $discoveryProcess)) {
+        if (Wait-ForPath -Path $categoriesFile -TimeoutSeconds 120 -Process $discoveryProcess) {
+            $useCategoryFiltering = $true
+        } else {
             if ($discoveryProcess -and -not $discoveryProcess.HasExited) {
                 Stop-Process -Id $discoveryProcess.Id -Force -ErrorAction SilentlyContinue
             }
-            throw "Windows device test category discovery did not create $categoriesFile"
+            if ($requireDiscovery) {
+                throw "Windows device test category discovery did not create $categoriesFile"
+            }
+            Write-Warning "Windows '$Project' device test app did not produce a category list within 120s; falling back to a full device-test run."
         }
+    }
 
+    if ($useCategoryFiltering) {
         $allCategories = @(Get-Content $categoriesFile | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
         $selectedCategories = @(Select-WindowsDeviceTestCategories -AllCategories $allCategories -Filter $TestFilter)
         if ($selectedCategories.Count -eq 0) {
@@ -402,9 +428,10 @@ function Invoke-WindowsDeviceTestApp {
             $resultFiles += $categoryResultFile
         }
     } else {
-        if ($TestFilter) {
-            Write-Warning "Windows non-Controls device tests do not support dynamic category filtering; running the full $Project device test app."
-        }
+        # Full-suite run: either no filter was requested, or category discovery was not
+        # available for this app. Remove any partial result file a failed discovery
+        # attempt may have left behind so the summary reflects only this run.
+        Remove-Item -LiteralPath $resultFile -Force -ErrorAction SilentlyContinue
 
         Write-Host "Running Windows device test app directly..." -ForegroundColor Gray
         $process = Start-Process -FilePath $AppPath -ArgumentList @($resultFile) -PassThru
