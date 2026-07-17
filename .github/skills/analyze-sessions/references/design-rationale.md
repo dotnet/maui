@@ -162,7 +162,7 @@ generic `.github/evals/` paths are not valid targets. A different skill's
 Each eval pairs a refutation-proof **structural floor** (`output-matches` on a
 forced token line) with **one LLM judge** (`scale_1_5`, `threshold: 0.6`) so the
 judge carries ~half the weight. Each emitted file must pass
-`npx -y @microsoft/vally-cli@0.6.0 lint --eval-spec <f> --strict`. This is the
+`npx -y @microsoft/vally-cli@0.10.0 lint --eval-spec <f> --strict`. This is the
 mechanism that makes the analysis *iterative*: a failure found today becomes a
 regression test that fails if we regress tomorrow.
 

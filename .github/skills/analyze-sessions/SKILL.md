@@ -242,7 +242,7 @@ scoring:
 Then validate every emitted file:
 
 ```bash
-npx -y @microsoft/vally-cli@0.6.0 lint --eval-spec <path-to-eval> --strict
+npx -y @microsoft/vally-cli@0.10.0 lint --eval-spec <path-to-eval> --strict
 ```
 
 ## Privacy & safety

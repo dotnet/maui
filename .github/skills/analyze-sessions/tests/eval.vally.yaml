@@ -19,7 +19,7 @@
 # line — immune to "mentions the word" false-fails) with ONE LLM JUDGE
 # (scale_1_5, threshold 0.6) so the judge carries ~50% of every score.
 #
-# Scoring: @microsoft/vally-cli@0.6.0 ignores scoring.weights; trial score =
+# Scoring: this suite deliberately omits scoring.weights, so Vally 0.10 uses the
 # unweighted mean of grader [0,1] scores; a stimulus passes when the mean across
 # runs >= scoring.threshold (0.6). With a scale_1_5 judge (normalized =
 # (raw-1)/4):
@@ -295,8 +295,8 @@ stimuli:
       reject_skills: [analyze-sessions]
 
 scoring:
-  # @microsoft/vally-cli@0.6.0 ignores scoring.weights — only scoring.threshold
-  # is active. Trial score = unweighted mean of each stimulus's two graders
+  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # unweighted mean of each stimulus's two graders
   # (one refutation-proof structural floor + one LLM judge), keeping the judge
   # at ~50% of every score per the house convention.
   threshold: 0.6
