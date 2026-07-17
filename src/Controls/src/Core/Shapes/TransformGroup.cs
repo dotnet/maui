@@ -15,13 +15,19 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(Children), typeof(TransformCollection), typeof(TransformGroup), null,
 				propertyChanged: OnTransformGroupChanged);
 
+		readonly WeakNotifyCollectionChangedProxy _childrenProxy = new();
+		readonly NotifyCollectionChangedEventHandler _childrenCollectionChangedHandler;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TransformGroup"/> class.
 		/// </summary>
 		public TransformGroup()
 		{
+			_childrenCollectionChangedHandler = OnChildrenCollectionChanged;
 			Children = new TransformCollection();
 		}
+
+		~TransformGroup() => _childrenProxy.Unsubscribe();
 
 		/// <summary>
 		/// Gets or sets the collection of child <see cref="Transform"/> objects. This is a bindable property.
@@ -34,14 +40,16 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		static void OnTransformGroupChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			var transformGroup = bindable as TransformGroup;
+
 			if (oldValue != null)
 			{
-				(oldValue as TransformCollection).CollectionChanged -= (bindable as TransformGroup).OnChildrenCollectionChanged;
+				transformGroup._childrenProxy.Unsubscribe();
 			}
 
-			if (newValue != null)
+			if (newValue is TransformCollection newCollection)
 			{
-				(newValue as TransformCollection).CollectionChanged += (bindable as TransformGroup).OnChildrenCollectionChanged;
+				transformGroup._childrenProxy.Subscribe(newCollection, transformGroup._childrenCollectionChangedHandler);
 			}
 
 			(bindable as TransformGroup).UpdateTransformMatrix();
