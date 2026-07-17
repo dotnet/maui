@@ -3287,7 +3287,7 @@ stages:
                     # so this only ever fires on the timeout/crash path.
                     if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
                     Write-Host "Trusted gate verdict for veto: '$trustedGate'"
-                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform '${{ parameters.Platform }}'
+                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM"
                     $output | ForEach-Object { Write-Host $_ }
                     Write-Host "✅ Full AI summary review posted with deep results"
                   }
@@ -3365,6 +3365,7 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
 
 
   - stage: CleanupReviewLock
