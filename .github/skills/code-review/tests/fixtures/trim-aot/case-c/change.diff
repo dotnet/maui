@@ -1,0 +1,23 @@
+diff --git a/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs b/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
+index 545ce838ca..10ebbc207c 100644
+--- a/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
++++ b/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
+@@ -126,10 +126,16 @@ public static partial class AppHostBuilderExtensions
+ 		handlersCollection.AddHandler<Stepper, StepperHandler>();
+ 		handlersCollection.AddHandler<Page, PageHandler>();
+ 		handlersCollection.AddHandler<WebView, WebViewHandler>();
+-		if (RuntimeFeature.IsHybridWebViewSupported)
++		if (true)
+ 		{
+-			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
++			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios.
++			// IL2026/IL3050 are suppressed because the RuntimeFeature.IsHybridWebViewSupported guard
++			// has [FeatureGuard(RequiresUnreferencedCodeAttribute)] and [FeatureGuard(RequiresDynamicCodeAttribute)]
++			// annotations that should suppress these warnings. The Android NativeAOT ILC does not honor
++			// [FeatureGuard] for warning suppression (unlike the iOS/macCatalyst ILC), so we suppress explicitly.
++#pragma warning disable IL2026, IL3050
+ 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
++#pragma warning restore IL2026, IL3050
+ 		}
+ 
+ 		handlersCollection.AddHandler<Border, BorderHandler>();

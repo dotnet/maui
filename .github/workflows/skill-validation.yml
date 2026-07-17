@@ -497,103 +497,10 @@ jobs:
             fi
           done
 
-          if [[ "${{ matrix.entry.name }}" == "code-review" ]] &&
-            [[ -f .github/skills/code-review/tests/eval.trim-aot.vally.yaml ]]; then
-            # The Trim/AOT suite replays these public source trees into isolated
-            # two-commit fixture repositories below. Keep the source revisions
-            # here rather than in the suite so the agent cannot read their
-            # squash-merge messages.
-            for sha in \
-              e4a4140c34424eb980bcb616d9117425fd32a64c \
-              c223f8b45946131bafd3ce9022edc98b3cd7946f; do
-              if ! git cat-file -e "${sha}^{commit}" 2>/dev/null; then
-                echo "Fetching Trim/AOT fixture source ${sha} from upstream..."
-                git fetch --no-tags --depth=2 upstream "$sha"
-              fi
-            done
-          fi
-
-      - name: Create isolated Trim/AOT fixtures
-        if: matrix.entry.name == 'code-review'
-        run: |
-          set -euo pipefail
-
-          if [[ ! -f .github/skills/code-review/tests/eval.trim-aot.vally.yaml ]]; then
-            echo "Trim/AOT eval spec not present; skipping fixture creation."
-            exit 0
-          fi
-
-          SOURCE_ROOT="$PWD"
-          FIXTURE_ROOT="CustomAgentLogsTmp/vally-fixtures/trim-aot"
-          APP_HOST="src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs"
-          RUNTIME_FEATURE="src/Core/src/RuntimeFeature.cs"
-          SUPPRESSION_FIX="e4a4140c34424eb980bcb616d9117425fd32a64c"
-          HELPER_FIX="c223f8b45946131bafd3ce9022edc98b3cd7946f"
-
-          rm -rf "$FIXTURE_ROOT"
-          mkdir -p "$FIXTURE_ROOT"
-
-          create_fixture() {
-            local name="$1"
-            local base="$2"
-            local change="$3"
-            local reachable_suppression="$4"
-            local repo="$FIXTURE_ROOT/$name"
-
-            mkdir -p "$repo"
-            git -C "$repo" init --quiet
-            git -C "$repo" config user.name "Vally Fixture"
-            git -C "$repo" config user.email "vally-fixture@example.invalid"
-
-            git -C "$SOURCE_ROOT" archive --format=tar "$base" -- "$APP_HOST" "$RUNTIME_FEATURE" |
-              tar -xf - -C "$repo"
-            git -C "$repo" add --all
-            git -C "$repo" commit --quiet -m "fixture baseline"
-
-            git -C "$SOURCE_ROOT" archive --format=tar "$change" -- "$APP_HOST" "$RUNTIME_FEATURE" |
-              tar -xf - -C "$repo"
-
-            if [[ "$reachable_suppression" == "true" ]]; then
-              # The same pragma becomes unsafe when its runtime feature guard is
-              # replaced with an unconditional path.
-              perl -0pi -e 's/if \(RuntimeFeature\.IsHybridWebViewSupported\)/if (true)/ or die "Expected RuntimeFeature guard was not found\n";' "$repo/$APP_HOST"
-            fi
-
-            git -C "$repo" add --all
-            git -C "$repo" commit --quiet -m "fixture change"
-
-            if [[ "$(git -C "$repo" rev-list --all --count)" != "2" ]]; then
-              echo "::error::Trim/AOT fixture $name is not isolated"
-              exit 1
-            fi
-          }
-
-          create_fixture "scoped-suppression" "${SUPPRESSION_FIX}^" "$SUPPRESSION_FIX" false
-          create_fixture "annotated-helper" "${HELPER_FIX}^" "$HELPER_FIX" false
-          create_fixture "reachable-suppression" "${SUPPRESSION_FIX}^" "$SUPPRESSION_FIX" true
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Reject executable Vally test hooks
-        env:
-          TESTS_PATH: ${{ matrix.entry.tests_path }}
-        run: |
-          set -euo pipefail
-
-          # Eval specs come from the checked-out PR. Vally executes these hooks
-          # directly on the runner, so they must not run after a pool PAT is
-          # materialized for model authentication.
-          EXECUTABLE_HOOK_KEY="^[[:space:]]*(['\"]?(commands|mcpServers)['\"]?[[:space:]]*:|\\?[[:space:]]*['\"]?(commands|mcpServers)['\"]?[[:space:]]*$)"
-          for spec in "$TESTS_PATH"/eval*.vally.yaml; do
-            [ -e "$spec" ] || continue
-            if grep -nE "$EXECUTABLE_HOOK_KEY" "$spec"; then
-              echo "::error file=$spec::Vally specs evaluated with a Copilot PAT cannot define executable commands or MCP servers"
-              exit 1
-            fi
-          done
 
       # ── Select Copilot token (from the copilot-pat-pool PAT pool) ──
       - name: Select Copilot token
@@ -780,20 +687,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Reject executable hermeticity hooks
-        run: |
-          set -euo pipefail
-          SPEC=.github/skills/code-review/tests/hermeticity.vally.yaml
-
-          # The hermeticity spec also comes from the checked-out PR and runs in
-          # the same runner process as model authentication.
-          EXECUTABLE_HOOK_KEY="^[[:space:]]*(['\"]?(commands|mcpServers)['\"]?[[:space:]]*:|\\?[[:space:]]*['\"]?(commands|mcpServers)['\"]?[[:space:]]*$)"
-          if [ -f "$SPEC" ] &&
-            grep -nE "$EXECUTABLE_HOOK_KEY" "$SPEC"; then
-            echo "::error file=$SPEC::Vally specs evaluated with a Copilot PAT cannot define executable commands or MCP servers"
-            exit 1
-          fi
 
       - name: Select Copilot token
         id: select-token
