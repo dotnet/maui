@@ -1352,8 +1352,12 @@ stages:
           #  emitted aiSummaryReviewId at all: the review/post stage was CANCELED by its own
           #  180-min timeout, or ReviewPR crashed before Task 4 ran. RunPost defers with
           #  aiSummaryReviewId="DEFERRED", so an EMPTY value here means no review was produced.
-          #  succeededOrFailed() lets this run after a failed earlier step (a bare cancel skips
-          #  it too). Post a concise, AI-attributed notice so the maintainer knows to re-trigger.
+          #  MUST be always() (not succeededOrFailed()): the 180-min review-step timeout marks
+          #  Task 3 CANCELED, and succeededOrFailed() would SKIP after a cancel — silencing the
+          #  PR entirely (no AI Summary AND no notice) for exactly the timeout case this is meant
+          #  to cover. always() + the empty-aiSummaryReviewId guard fires only when no review was
+          #  produced (failure OR timeout-cancel) and still skips every normal run. Post a
+          #  concise, AI-attributed notice so the maintainer knows to re-trigger.
           #  Skips on every normal run (aiSummaryReviewId is non-empty).
           # ─────────────────────────────────────────────────────────────────
           - bash: |
@@ -1385,7 +1389,7 @@ stages:
               fi
               rm -f "$BODY_FILE"
             displayName: 'Post review-incomplete notice (no review produced)'
-            condition: and(succeededOrFailed(), eq(variables['RunPost.aiSummaryReviewId'], ''))
+            condition: and(always(), eq(variables['RunPost.aiSummaryReviewId'], ''))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
