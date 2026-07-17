@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		private static readonly IPropertyMapper<IEntry, IEntryHandler> TextMapper = new PropertyMapper<IEntry, IEntryHandler>
 		{
+			// Ensure IsPassword is mapped before Text so the native field is secured before
+			// text (and any TextTransform) is applied on initial attachment
+			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			// Ensure Text is mapped before LineHeight/Decorations/CharacterSpacing/HorizontalTextAlignment/TextColor/Font
 			// due to them being applied to the native object (i.e. AttributedText on iOS) created by mapping Text
 			[nameof(IEntry.Text)] = MapText,
@@ -34,7 +37,6 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(TextMapper, ViewHandler.ViewMapper)
 		{
 			[nameof(IEntry.Background)] = MapBackground,
-			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.IsSpellCheckEnabled)] = MapIsSpellCheckEnabled,
