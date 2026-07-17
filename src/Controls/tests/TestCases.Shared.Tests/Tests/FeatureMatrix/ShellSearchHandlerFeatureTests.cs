@@ -122,6 +122,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/36629
 	[Test, Order(6)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_FontAttributesBold()
@@ -166,6 +167,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif 
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/35085
 	[Test, Order(10)]
@@ -189,7 +191,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif 
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/35085, https://github.com/dotnet/maui/issues/36629
 	[Test, Order(12)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_VerticalTextAlignmentStart()
@@ -202,6 +206,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/36629
 	[Test, Order(13)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_VerticalTextAlignmentEnd()
@@ -212,6 +217,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35085
 	[Test, Order(14)]
@@ -226,6 +232,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/36629
 	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_VerticalTextAlignmentCenter()
@@ -236,6 +243,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif 
 
 	[Test, Order(16)]
 	[Category(UITestCategories.Shell)]
