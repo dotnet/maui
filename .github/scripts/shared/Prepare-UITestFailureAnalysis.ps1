@@ -169,3 +169,13 @@ Write-Host "Wrote analysis input ($((Get-Item $OutputFile).Length) bytes) to $Ou
 # Signal the (conditional) install + Copilot analysis tasks to run. This
 # literal is fully controlled by us; no untrusted text reaches stdout above.
 Write-Host "##vso[task.setvariable variable=hasUIFailures]true"
+
+# Explicit success exit. The two `gh pr diff` calls above are NATIVE commands
+# whose non-zero exit codes do NOT trigger the surrounding try/catch (that only
+# traps PowerShell terminating errors), so a benign gh warning leaves
+# $LASTEXITCODE = 1 and — with no final `exit` — pwsh reports "exited with code
+# 1", flagging this non-fatal prep task withIssues even though it wrote the
+# analysis input fine (build 14682463, #36608: "Wrote analysis input (2916
+# bytes)" then "##[error]PowerShell exited with code '1'"). Writing the file IS
+# this task's success; pin the exit code so a lingering gh code can't leak.
+exit 0
