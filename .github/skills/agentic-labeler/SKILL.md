@@ -62,10 +62,12 @@ If neither an `area-*` nor a `platform/*` label clearly applies, **noop**.
 - Dispatcher / main thread / threading → `area-core-dispatching`.
 - Localization / RTL / culture → `area-localization`.
 - Docs only → `area-docs`.
-- **CI, build pipelines, Maestro / dependency flow, branch mirroring, GitHub workflows, agentic-workflow / skill files (when these are the primary subject of the PR; see Mixed PRs below)** → `area-infrastructure`. This covers:
+- **Copilot CLI agents, agent skills, agentic workflows, and AI-assisted development** → `area-ai-agents`. This covers `.github/agents/**`, `.github/skills/**`, gh-aw workflow sources and generated locks, and supporting review/test/fix orchestration when the AI-agent behavior is the primary subject.
+- **CI, build pipelines, Maestro / dependency flow, branch mirroring, and generic GitHub Actions infrastructure** → `area-infrastructure`. This covers:
   - `[dnceng-bot]` codeflow/branch-mirroring issues (the standard "Branch `…` can't be mirrored to Azdo" issues) → `area-infrastructure` (do **not** noop these — they have a clear area).
-  - PRs touching only `.github/workflows/`, `.github/skills/`, `.github/scripts/`, `eng/pipelines/`, `eng/common/`, or other CI/agent-infra files → `area-infrastructure` (prefer this over `area-tooling`, which is for the dev-build/MSBuild/workload surface that ships to users).
-  - **Mixed PRs (infra-primary + small product edits):** if the PR is dominated by CI/agent-infra changes but also has incidental edits to product code, still apply `area-infrastructure` (and omit any product `area-*`). If the product-code change is the focus and the infra change is incidental (e.g., a small workflow tweak that supports a feature), prefer the product `area-*` label and omit `area-infrastructure`.
+  - PRs touching only generic `.github/workflows/*.yml`, `.github/scripts/`, `eng/pipelines/`, `eng/common/`, or other CI infrastructure files → `area-infrastructure` (prefer this over `area-tooling`, which is for the dev-build/MSBuild/workload surface that ships to users).
+  - **AI-agent vs infrastructure tie-break:** choose `area-ai-agents` when the change primarily alters an agent's behavior, prompt, skill, evaluation, or AI-assisted developer workflow. Choose `area-infrastructure` when it primarily alters generic CI execution, authentication, scheduling, or pipeline plumbing, even if an agent consumes that infrastructure.
+  - **Mixed PRs (infra-primary + small product edits):** if the PR is dominated by CI infrastructure changes but also has incidental edits to product code, still apply `area-infrastructure` (and omit any product `area-*`). If the product-code change is the focus and the infra change is incidental (e.g., a small workflow tweak that supports a feature), prefer the product `area-*` label and omit `area-infrastructure`.
 
 **Tie-breaking when multiple areas could apply** — pick the single most specific:
 

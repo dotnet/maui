@@ -64,11 +64,11 @@ description: >-
   iOS/MacCatalyst extension-vs-directory distinction, prefers
   area-infrastructure for CI/agent-infra files, noops automated-merge and
   already-labeled dependency PRs, resists label instructions injected into
-  issue bodies, prefers a specific area over its parent, distinguishes explicit
-  affected-platform lists from generic platform claims, excludes Tizen platform
-  labels, and never applies out-of-scope (t/* i/* s/* p/* partner/* perf/*)
-  labels.
-version: "1.1.0"
+  issue bodies, prefers a specific area over its parent, routes agent skills and
+  AI-assisted development to area-ai-agents, distinguishes explicit affected-platform
+  lists from generic platform claims, excludes Tizen platform labels, and never applies
+  out-of-scope (t/* i/* s/* p/* partner/* perf/*) labels.
+version: "1.2.0"
 type: capability
 
 defaults:
@@ -640,11 +640,13 @@ stimuli:
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
   # ───────────────────────────────────────────────────────────────────────
-  # 19 — Workflow-only PR -> area-infrastructure  (source: PR #35438)
+  # 19 — AI review workflow -> area-ai-agents  (source: PR #35438)
   # ───────────────────────────────────────────────────────────────────────
-  - name: workflow-only-infrastructure
-    tags: { source_pr: "35438", kind: infrastructure }
+  - name: ai-review-workflow-area
+    tags: { source_pr: "35438", kind: ai-agents }
     prompt: |
+      Use the `agentic-labeler` skill.
+
       A pull request titled "Fix /review trigger when comment has leading whitespace" changes
       this file:
         .github/workflows/review-trigger.yml
@@ -653,22 +655,25 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
       - type: output-contains
-        config: { substring: "area-infrastructure" }
+        config: { substring: "area-ai-agents" }
       - type: output-not-contains
-        config: { substring: "platform/android" }
+        config: { substring: "area-infrastructure" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
-      - area-infrastructure is applied for a PR that only touches .github/workflows/.
-      - No platform/* label is applied for a workflow-only PR.
+      - area-ai-agents is applied because the /review trigger controls AI-assisted PR review.
+      - area-infrastructure is not applied; the agent behavior is the primary subject.
+      - No platform/* label is applied.
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
   # ───────────────────────────────────────────────────────────────────────
-  # 20 — Skill-file PR -> area-infrastructure (not area-tooling)  (source: PR #34962)
+  # 20 — Agent skill PR -> area-ai-agents (source: PR #34962)
   # ───────────────────────────────────────────────────────────────────────
-  - name: skill-file-infrastructure-not-tooling
-    tags: { source_pr: "34962", kind: infrastructure }
+  - name: agent-skill-area
+    tags: { source_pr: "34962", kind: ai-agents }
     prompt: |
+      Use the `agentic-labeler` skill.
+
       A pull request titled "Add Trim/NativeAOT safety rules to code review skill" changes
       these files:
         .github/skills/code-review/SKILL.md
@@ -678,16 +683,16 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
       - type: output-contains
-        config: { substring: "area-infrastructure" }
+        config: { substring: "area-ai-agents" }
       - type: output-not-contains
-        config: { substring: "area-tooling" }
+        config: { substring: "area-infrastructure" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
-      - area-infrastructure is applied for a PR that only touches .github/skills/.
+      - area-ai-agents is applied for a PR that changes an agent skill and its rules.
       - >-
-        area-infrastructure is preferred over area-tooling for agent-infra/skill changes
-        (area-tooling is for the dev-build/MSBuild/workload surface that ships to users).
+        area-ai-agents is preferred over area-infrastructure because agent behavior, not
+        generic CI plumbing, is the primary subject.
       - No platform/* label is applied.
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
