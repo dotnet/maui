@@ -255,6 +255,19 @@ namespace Microsoft.Maui.Controls
                 ClearTitleViewContainer();
                 CleanToolbarItems();
 
+                // Properly detach child view controllers added via AddChildViewController
+                // in CreateForPage. The renderer's ParentingViewController.Disconnect
+                // explicitly removed each child VC before disposal. 
+                if (ChildViewControllers is UIViewController[] children)
+                {
+                    foreach (var childVC in children)
+                    {
+                        childVC.WillMoveToParentViewController(null);
+                        childVC.View?.RemoveFromSuperview();
+                        childVC.RemoveFromParentViewController();
+                    }
+                }
+
                 if (Child is Page child)
                 {
                     child.PropertyChanged -= HandleChildPropertyChanged;
@@ -270,6 +283,18 @@ namespace Microsoft.Maui.Controls
             }
 
             base.Dispose(disposing);
+        }
+
+        /// <summary>
+        /// Called by the NavigationPage Title mapper when NavigationPage.Title changes.
+        /// Updates the nav bar title if child.Title is null (uses NavigationPage.Title as fallback).
+        /// </summary>
+        internal void RefreshTitleFromNavigationPage()
+        {
+            if (Child is Page child && child.Title is null)
+            {
+                NavigationItem.Title = GetNavigationPageTitle(child);
+            }
         }
 
         void HandleChildPropertyChanged(object? sender, PropertyChangedEventArgs e)
