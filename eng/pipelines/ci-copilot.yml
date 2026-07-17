@@ -872,30 +872,45 @@ stages:
                 echo "Found existing iPhone Xs: $UDID"
               fi
               
-              # If neither exists, try to create them
+              # If neither exists, try to create the right-size device. The selected
+              # $RUNTIME can be a Ready-on-disk-but-unenrolled runtime that 'simctl create'
+              # rejects with "Invalid runtime" (build 14686795, #36507 ios: create iPhone 11
+              # Pro on iOS-26-5 -> "Invalid runtime: ...iOS-26-5" -> UDID null -> gate degraded
+              # to INCONCLUSIVE even though iOS-26-4 was createable). So try the selected
+              # runtime FIRST, then fall through to every other available (installed) iOS
+              # runtime, highest version first, until a create succeeds — mirroring
+              # Start-Emulator.ps1's deep-stage boot. Only after ALL runtimes fail do we take
+              # an arbitrary existing iPhone.
               if [ -z "$UDID" ]; then
-                echo "No matching device found - attempting to create one for runtime $RUNTIME..."
-                
-                # Try iPhone Xs first
-                UDID=$(xcrun simctl create "iPhone Xs" com.apple.CoreSimulator.SimDeviceType.iPhone-Xs "$RUNTIME" 2>&1)
-                if [ $? -ne 0 ]; then
-                  echo "iPhone Xs device type unavailable: $UDID"
-                  # Try iPhone 11 Pro (same 1125×2436 resolution)
-                  UDID=$(xcrun simctl create "iPhone 11 Pro" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro "$RUNTIME" 2>&1)
-                  if [ $? -ne 0 ]; then
-                    echo "##vso[task.logissue type=warning]Failed to create iPhone 11 Pro: $UDID"
-                    # Last resort: first available iPhone
-                    UDID=$(xcrun simctl list devices available --json | jq -r '
-                      .devices | to_entries |
-                      map(.value) | flatten |
-                      map(select(.name | test("iPhone"))) |
-                      .[0].udid
-                    ')
-                  else
-                    echo "Created iPhone 11 Pro simulator: $UDID"
+                echo "No matching device found - attempting to create one (preferred runtime $RUNTIME first)..."
+                ALL_IOS_RUNTIMES=$(xcrun simctl list runtimes available --json 2>/dev/null | jq -r '
+                  [.runtimes[] | select((.identifier // "") | test("iOS")) | {id: .identifier, v: (.version // "0")}]
+                  | sort_by(.v) | reverse | .[].id
+                ' 2>/dev/null)
+                # Selected runtime first, then the rest — dedup, preserve order, drop blanks.
+                CANDIDATE_RUNTIMES=$(printf '%s\n%s\n' "$RUNTIME" "$ALL_IOS_RUNTIMES" | awk 'NF && !seen[$0]++')
+                for RT in $CANDIDATE_RUNTIMES; do
+                  # Try iPhone Xs then iPhone 11 Pro (both 1125×2436 -> baseline size) on this runtime.
+                  CREATED=$(xcrun simctl create "iPhone Xs" com.apple.CoreSimulator.SimDeviceType.iPhone-Xs "$RT" 2>&1)
+                  if [ $? -eq 0 ] && echo "$CREATED" | grep -qiE '^[0-9A-F-]{36}$'; then
+                    UDID="$CREATED"; echo "Created iPhone Xs on $RT: $UDID"; break
                   fi
-                else
-                  echo "Created iPhone Xs simulator: $UDID"
+                  CREATED=$(xcrun simctl create "iPhone 11 Pro" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro "$RT" 2>&1)
+                  if [ $? -eq 0 ] && echo "$CREATED" | grep -qiE '^[0-9A-F-]{36}$'; then
+                    UDID="$CREATED"; echo "Created iPhone 11 Pro on $RT: $UDID"; break
+                  fi
+                  echo "Could not create iPhone Xs / 11 Pro on $RT (trying next runtime if any): $CREATED"
+                done
+                # Last resort: any already-created iPhone on any runtime (wrong size → visual
+                # tests may report 'size differs', but non-visual tests can still run).
+                if [ -z "$UDID" ]; then
+                  echo "##vso[task.logissue type=warning]Could not create an iPhone Xs / 11 Pro on any available runtime — falling back to first existing iPhone."
+                  UDID=$(xcrun simctl list devices available --json | jq -r '
+                    .devices | to_entries |
+                    map(.value) | flatten |
+                    map(select(.name | test("iPhone"))) |
+                    .[0].udid // empty
+                  ')
                 fi
               fi
               
