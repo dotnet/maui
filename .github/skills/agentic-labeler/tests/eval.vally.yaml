@@ -37,7 +37,8 @@
 # Legacy scenarios AND-gated up to ~15 `output_not_contains` assertions
 # (every triage/partner/kind label spelled out) plus, for noop scenarios,
 # a fragile ~10-branch alternation regex matching phrasings of "no labels."
-# Under @microsoft/vally@0.6.0 the trial score is the UNWEIGHTED MEAN of
+# With scoring.weights omitted, Vally 0.10 computes the trial score as the
+# UNWEIGHTED MEAN of
 # grader scores, so piling on 12 floors drowns the judge (1/13 weight) and
 # a single wrong label can't move the aggregate. This port keeps, per
 # scenario, only:
@@ -51,8 +52,8 @@
 # wrong/missing label fails BOTH the floor and the judge and the mean
 # drops below threshold — falsifiable without the brittleness.
 #
-# Scoring: scoring.weights is ignored by 0.6.0; only scoring.threshold is
-# active (0.6). See the scoring block.
+# Scoring: scoring.weights is deliberately omitted, so the equal-weight
+# aggregate and threshold are active (0.6). See the scoring block.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: agentic-labeler-capabilities
@@ -720,8 +721,8 @@ stimuli:
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
 scoring:
-  # @microsoft/vally@0.6.0 ignores scoring.weights; only scoring.threshold is
-  # active. Trial score = unweighted mean of grader [0,1] scores; stimulus
+  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # unweighted mean of grader [0,1] scores; stimulus
   # passes when the mean across runs >= threshold. Threshold set to 0.85 so
   # the LLM judge is decisive even for multi-floor stimuli: with N floors,
   # the minimum trial score (judge=0) is N/(N+1). At threshold 0.85 the
