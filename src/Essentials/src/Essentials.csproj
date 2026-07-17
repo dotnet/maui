@@ -47,6 +47,7 @@
     <AndroidResource Include="Resources\xml\*.xml" />
     <PackageReference Include="Xamarin.AndroidX.Activity" />
     <PackageReference Include="Xamarin.AndroidX.Browser" />
+    <PackageReference Include="Xamarin.AndroidX.Credentials" />
     <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
     <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" />
   </ItemGroup>
