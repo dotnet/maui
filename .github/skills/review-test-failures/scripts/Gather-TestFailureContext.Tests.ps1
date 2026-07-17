@@ -40,7 +40,13 @@ BeforeAll {
             'Get-HelixWorkItemCounts',
             'Get-XUnitFailures',
             'Get-ConsoleFailureReason',
-            'New-DeviceWorkItemFailureRecords'
+            'New-DeviceWorkItemFailureRecords',
+            'Get-AggregatedBaseLegMap',
+            'Get-PlatformFromText',
+            'Get-ErrorFingerprint',
+            'Get-BuildErrorSignature',
+            'Test-IsTransientBuildErrorCode',
+            'Get-BuildErrorsFromLog'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -472,5 +478,143 @@ Describe 'New-DeviceWorkItemFailureRecords (classify ONE failed work item — ne
         $recs = @(New-DeviceWorkItemFailureRecords -Trx $script:trxFail -Console $script:conOk -HasDump $false -AnyResultFile $true -Context $script:ctx)
         $recs.Count | Should -Be 1
         $recs[0]['source'] | Should -Be 'helix-trx'
+    }
+}
+
+Describe 'Get-AggregatedBaseLegMap (multi-build base leg diff — network-free via pre-seeded cache)' {
+    # The aggregator only calls Get-TimelineRecordResultMap on a CACHE MISS, so pre-seeding $Cache with
+    # entries keyed "org|project|buildId" is a fully network-free seam: each case supplies its own base
+    # single-build leg maps and asserts the green/red tallies that decide whether a PR leg is a clean
+    # 'regressed-vs-base' or a base flake. A cache MISS would call the (here-undefined)
+    # Get-TimelineRecordResultMap and throw, so a clean return also proves no network was attempted.
+    # Single-build cache entry shape mirrors Get-TimelineRecordResultMap: { accessible; records:
+    # normName -> { name; hasFailed; hasSucceeded } }.
+
+    It 'counts a leg GREEN across all sampled base builds (all-green -> greenCount=N, failedCount=0)' {
+        $cache = @{
+            'o|p|101' = [ordered]@{ accessible = $true; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $false; hasSucceeded = $true } } }
+            'o|p|102' = [ordered]@{ accessible = $true; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $false; hasSucceeded = $true } } }
+        }
+        $agg = Get-AggregatedBaseLegMap -Org 'o' -Project 'p' -BaseBuilds @([ordered]@{ id = 101 }, [ordered]@{ id = 102 }) -Cache $cache
+        $agg.accessible | Should -BeTrue
+        $agg.sampledBuilds | Should -Be 2
+        $agg.records['leg a'].greenCount | Should -Be 2
+        $agg.records['leg a'].failedCount | Should -Be 0
+    }
+
+    It 'tallies a leg red on some base builds and green on others (green-plus-red)' {
+        $cache = @{
+            'o|p|201' = [ordered]@{ accessible = $true; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $true; hasSucceeded = $false } } }
+            'o|p|202' = [ordered]@{ accessible = $true; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $false; hasSucceeded = $true } } }
+            'o|p|203' = [ordered]@{ accessible = $true; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $false; hasSucceeded = $true } } }
+        }
+        $agg = Get-AggregatedBaseLegMap -Org 'o' -Project 'p' -BaseBuilds @([ordered]@{ id = 201 }, [ordered]@{ id = 202 }, [ordered]@{ id = 203 }) -Cache $cache
+        $agg.sampledBuilds | Should -Be 3
+        $agg.records['leg a'].greenCount | Should -Be 2
+        $agg.records['leg a'].failedCount | Should -Be 1
+    }
+
+    It 'counts a retry-then-pass base build as RED for that build (hasFailed wins over hasSucceeded)' {
+        # A base build where the leg failed one attempt but a retry later passed still carries a
+        # base-branch flake -> it must count RED, never GREEN, so it cannot mask a base flake and let a
+        # matching PR-red occurrence be read as a clean regression.
+        $cache = @{ 'o|p|301' = [ordered]@{ accessible = $true; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $true; hasSucceeded = $true } } } }
+        $agg = Get-AggregatedBaseLegMap -Org 'o' -Project 'p' -BaseBuilds @([ordered]@{ id = 301 }) -Cache $cache
+        $agg.records['leg a'].failedCount | Should -Be 1
+        $agg.records['leg a'].greenCount | Should -Be 0
+    }
+
+    It 'skips an INACCESSIBLE base build (not counted, not sampled)' {
+        $cache = @{
+            'o|p|401' = [ordered]@{ accessible = $false; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $false; hasSucceeded = $true } } }
+            'o|p|402' = [ordered]@{ accessible = $true; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $false; hasSucceeded = $true } } }
+        }
+        $agg = Get-AggregatedBaseLegMap -Org 'o' -Project 'p' -BaseBuilds @([ordered]@{ id = 401 }, [ordered]@{ id = 402 }) -Cache $cache
+        $agg.sampledBuilds | Should -Be 1
+        $agg.records['leg a'].greenCount | Should -Be 1
+        $agg.baseBuildIds.Count | Should -Be 1
+        $agg.baseBuildIds[0] | Should -Be 402
+    }
+
+    It 'returns accessible=$false when NO base build was readable' {
+        $cache = @{ 'o|p|501' = [ordered]@{ accessible = $false; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $false; hasSucceeded = $true } } } }
+        $agg = Get-AggregatedBaseLegMap -Org 'o' -Project 'p' -BaseBuilds @([ordered]@{ id = 501 }) -Cache $cache
+        $agg.accessible | Should -BeFalse
+        $agg.sampledBuilds | Should -Be 0
+    }
+
+    It 'REUSES the shared cache across calls (a base id fetched once serves later PR builds — network-free)' {
+        # The outer loop shares ONE $baseRecordMapCache across PR builds; a base id read for one PR
+        # build must be reused for the next without a second fetch (a cache MISS would call the
+        # undefined Get-TimelineRecordResultMap and throw).
+        $cache = @{ 'o|p|601' = [ordered]@{ accessible = $true; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $false; hasSucceeded = $true } } } }
+        $agg1 = Get-AggregatedBaseLegMap -Org 'o' -Project 'p' -BaseBuilds @([ordered]@{ id = 601 }) -Cache $cache
+        $agg2 = Get-AggregatedBaseLegMap -Org 'o' -Project 'p' -BaseBuilds @([ordered]@{ id = 601 }) -Cache $cache
+        $agg1.records['leg a'].greenCount | Should -Be 1
+        $agg2.records['leg a'].greenCount | Should -Be 1
+        $cache.Keys.Count | Should -Be 1
+    }
+
+    It 'ignores base builds with a non-positive id' {
+        $cache = @{ 'o|p|701' = [ordered]@{ accessible = $true; records = @{ 'leg a' = [ordered]@{ name = 'Leg A'; hasFailed = $false; hasSucceeded = $true } } } }
+        $agg = Get-AggregatedBaseLegMap -Org 'o' -Project 'p' -BaseBuilds @([ordered]@{ id = 0 }, [ordered]@{ id = 701 }) -Cache $cache
+        $agg.sampledBuilds | Should -Be 1
+        $agg.baseBuildIds.Count | Should -Be 1
+        $agg.baseBuildIds[0] | Should -Be 701
+    }
+}
+
+Describe 'Test-IsTransientBuildErrorCode (transient infra vs deterministic toolchain boundary)' {
+    It 'classifies restore/network + file-lock codes as transient' {
+        Test-IsTransientBuildErrorCode -Signature 'NU1301'  | Should -BeTrue
+        Test-IsTransientBuildErrorCode -Signature 'MSB3021' | Should -BeTrue
+        Test-IsTransientBuildErrorCode -Signature 'MSB3027' | Should -BeTrue
+    }
+
+    It 'classifies deterministic compiler/toolchain codes as NOT transient' {
+        Test-IsTransientBuildErrorCode -Signature 'CS0246'  | Should -BeFalse   # C# compile error
+        Test-IsTransientBuildErrorCode -Signature 'NU1101'  | Should -BeFalse   # package not found (deterministic)
+        Test-IsTransientBuildErrorCode -Signature 'MSB4018' | Should -BeFalse   # task failed unexpectedly (deterministic)
+        Test-IsTransientBuildErrorCode -Signature 'Failed to load assembly' | Should -BeFalse
+        Test-IsTransientBuildErrorCode -Signature 'CrossGen/R2R'            | Should -BeFalse
+    }
+
+    It 'treats an empty/whitespace signature as NOT transient' {
+        Test-IsTransientBuildErrorCode -Signature ''    | Should -BeFalse
+        Test-IsTransientBuildErrorCode -Signature '   ' | Should -BeFalse
+    }
+}
+
+Describe 'Get-BuildErrorsFromLog (deterministicBuildError boundary — one-green-base shortcut gate)' {
+    It 'flags a transient NuGet restore/network code (NU1301) as NON-deterministic' {
+        $r = @(Get-BuildErrorsFromLog -Lines @('##[error]error NU1301: Unable to load the service index for source https://pkgs.dev.azure.com/x/index.json') -LogId 10 -RecordName 'Build_iOS')
+        $r.Count | Should -Be 1
+        $r[0].deterministicBuildError | Should -BeFalse
+    }
+
+    It 'flags transient MSBuild file-lock codes (MSB3021 / MSB3027) as NON-deterministic' {
+        $r1 = @(Get-BuildErrorsFromLog -Lines @('error MSB3021: Unable to copy file "a.dll" to "b.dll". The process cannot access the file because it is being used by another process.') -LogId 11 -RecordName 'Build_Android')
+        $r1[0].deterministicBuildError | Should -BeFalse
+        $r2 = @(Get-BuildErrorsFromLog -Lines @('error MSB3027: Could not copy "a.dll" to "b.dll". Exceeded retry count of 10. Failed. The file is locked by: "dotnet".') -LogId 12 -RecordName 'Build_Android')
+        $r2[0].deterministicBuildError | Should -BeFalse
+    }
+
+    It 'keeps a genuine deterministic compile break (CS0246) as deterministic' {
+        $r = @(Get-BuildErrorsFromLog -Lines @('Foo.cs(12,5): error CS0246: The type or namespace name ''Bar'' could not be found') -LogId 13 -RecordName 'Build_Windows')
+        $r.Count | Should -Be 1
+        $r[0].deterministicBuildError | Should -BeTrue
+    }
+
+    It 'does NOT blanket-exclude the NU/MSB prefixes (NU1101, MSB4018 stay deterministic)' {
+        $rNu = @(Get-BuildErrorsFromLog -Lines @('error NU1101: Unable to find package Foo. No packages exist with this id.') -LogId 14 -RecordName 'Build_iOS')
+        $rNu[0].deterministicBuildError | Should -BeTrue
+        $rMsb = @(Get-BuildErrorsFromLog -Lines @('error MSB4018: The "GenerateResource" task failed unexpectedly.') -LogId 15 -RecordName 'Build_iOS')
+        $rMsb[0].deterministicBuildError | Should -BeTrue
+    }
+
+    It 'keeps a native crash NON-deterministic (unchanged behavior)' {
+        $r = @(Get-BuildErrorsFromLog -Lines @('Process terminated. Segmentation fault (core dumped)') -LogId 16 -RecordName 'Run_iOS')
+        $r.Count | Should -Be 1
+        $r[0].deterministicBuildError | Should -BeFalse
     }
 }
