@@ -2,15 +2,15 @@
 
 | | |
 |---|---|
-| **Status** | Proposed — finalized design, pending implementation |
+| **Status** | Proposed (spec-first) — design complete, under review |
 | **Area** | `area-essentials` |
 | **Namespace** | `Microsoft.Maui.Authentication` |
 | **Target** | `net11.0` feature branch (adds public API) |
 | **Related** | Discussion [#21498](https://github.com/dotnet/maui/discussions/21498) "FIDO2 Passkeys support?", Issue [#32020](https://github.com/dotnet/maui/issues/32020) "Cannot use passkey/fido/webauthn in BlazorWebView" |
 
-> This document describes the **finalized design** of the Passkeys Essentials API to be implemented on the
-> `net11.0` branch. It is the end-state specification: the public surface, naming, platform strategy, and
-> per-platform behavior are all settled. Items intentionally left for later are listed under
+> This document presents the **complete proposed design** of the Passkeys Essentials API for the `net11.0`
+> branch — written as a definitive design rather than a running decision log. It is a spec-first proposal
+> and **under review**; feedback on the PR is welcome. Items intentionally left for later are listed under
 > [§13 Planned follow-ups](#13-planned-follow-ups).
 
 ## 1. Summary
@@ -90,8 +90,8 @@ sequenceDiagram
     App->>API: CreateAsync(creationOptionsJson)
     API->>OS: native make-credential + biometric UI
     OS-->>API: attestation
-    API-->>App: RegistrationResponseJson
-    App->>RP: finish register (RegistrationResponseJson)
+    API-->>App: PasskeyCreationResponse
+    App->>RP: finish register (response JSON)
 
     Note over App,OS: Authentication
     App->>RP: begin login
@@ -99,8 +99,8 @@ sequenceDiagram
     App->>API: AssertAsync(requestOptionsJson)
     API->>OS: native get-assertion + biometric UI
     OS-->>API: assertion (signature)
-    API-->>App: AuthenticationResponseJson
-    App->>RP: finish login (AuthenticationResponseJson)
+    API-->>App: PasskeyAssertionResponse
+    App->>RP: finish login (response JSON)
 ```
 
 **Key design driver — the interop format:**
@@ -172,9 +172,12 @@ public sealed class PasskeyCreationOptions
     readonly string _json;
 
     /// <summary>
-    /// When <see langword="true"/>, only offer credentials already available on-device without a
-    /// network/hybrid step. Maps to Android <c>preferImmediatelyAvailableCredentials</c>; ignored
-    /// where unsupported. (App-side behavior knob — not part of the server JSON.)
+    /// When <see langword="true"/>, keep the ceremony **on this device** and skip any cross-device /
+    /// hybrid step (QR code, "use another device", phone-as-authenticator). For registration this means
+    /// only create a passkey if the local authenticator can do so directly; for authentication it means
+    /// only offer a passkey already present on this device. Maps to Android
+    /// <c>preferImmediatelyAvailableCredentials</c> and Apple's <c>preferImmediatelyAvailableCredentials</c>;
+    /// ignored on Windows. (App-side behavior knob — not part of the server JSON.)
     /// </summary>
     public bool PreferImmediatelyAvailable { get; set; }
 
@@ -268,6 +271,17 @@ public static class Passkeys
     static IPasskeys? defaultImplementation;
     public static IPasskeys Default => defaultImplementation ??= new PasskeysImplementation();
     internal static void SetDefault(IPasskeys? implementation) => defaultImplementation = implementation;
+}
+
+/// <summary>
+/// Thrown when a passkey ceremony fails for a reason other than user cancellation
+/// (<see cref="TaskCanceledException"/>) — e.g. no matching credential, a misconfigured domain
+/// association, or an underlying platform error. See §8 for the full mapping.
+/// </summary>
+public class PasskeyException : Exception
+{
+    public PasskeyException(string message, Exception? innerException = null)
+        : base(message, innerException) { }
 }
 ```
 
@@ -651,10 +665,14 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
 
 - **HWND**: the API is modal on a top-level window. Acquire the current window handle from the MAUI
   window (`WinRT.Interop.WindowNative.GetWindowHandle(...)`).
-- **`ClientDataJson`**: on Windows we must supply the `WEBAUTHN_CLIENT_DATA` (challenge + origin +
-  type). We build client data JSON from the options and pass it through; the OS returns
-  `pbAttestationObject` / `pbCredentialId` (make) and `pbAuthenticatorData` / `pbSignature` /
-  `pbUserId` (get), which we base64url-encode into the response JSON.
+- **`ClientDataJson` & origin**: the WebAuthn options JSON does **not** contain an `origin` (in a browser
+  the user agent supplies it from the current page). For a native app there is no page, so the platform
+  determines the origin from the app's verified identity, and the RP server must be configured to accept
+  that native origin (see "Origin derivation" below). On Windows specifically, our P/Invoke layer
+  constructs the `WEBAUTHN_CLIENT_DATA` (challenge + type + origin) — we build client data JSON using the
+  challenge from the options and an origin of `https://<rpId>`. The OS returns `pbAttestationObject` /
+  `pbCredentialId` (make) and `pbAuthenticatorData` / `pbSignature` / `pbUserId` (get), which we
+  base64url-encode into the response JSON.
 - **Version gating**: `WebAuthNGetApiVersionNumber()` for capability, and
   `WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable` for Hello availability. Passkeys need
   **Windows 11**; older `webauthn.dll` (Win10 1903+) supports FIDO2 security keys but not full passkeys.
@@ -739,7 +757,7 @@ a lifetime, so it can never be serialized into the JSON. Purely presentation —
 | Platform | Native API | Existing Essentials helper |
 |---|---|---|
 | **Android** | The `Activity` passed to `CredentialManager.CreateCredentialAsync(activity, …)` / `GetCredentialAsync(activity, …)` hosts the bottom sheet | `Platform.CurrentActivity` |
-| **Apple** | `ASAuthorizationController.PresentationContextProvider` → `GetPresentationAnchor(controller)` returns the `UIWindow` (iOS/Catalyst) | `WindowStateManager.Default.GetKeyWindow()` (provider pattern already in `AppleSignInAuthenticator.ios.cs`) |
+| **Apple** | `ASAuthorizationController.PresentationContextProvider` → `GetPresentationAnchor(controller)` returns the `UIWindow` (iOS/Catalyst) | `WindowStateManager.Default.GetCurrentUIWindow(true)` (the same call `AppleSignInAuthenticator.ios.cs` uses) |
 | **Windows** | The `HWND` parameter of `WebAuthNAuthenticatorMakeCredential` / `GetAssertion` (modal on that window) | `WindowStateManager.Default.GetActiveWindowHandle(true)` |
 
 | Scenario | Android | Apple | Windows |
@@ -752,29 +770,43 @@ a lifetime, so it can never be serialized into the JSON. Purely presentation —
 *Design:* resolved internally; if no foreground window/activity exists, the call throws a clear
 `InvalidOperationException`. An optional per-call window/anchor override is a non-breaking future addition.
 
-#### 7.5.3 Request origin override — not exposed (v1)
+#### 7.5.3 Request origin — derivation & override
 
-*What it is:* overriding the **origin** the ceremony binds to (part of the signed `clientDataJSON`), i.e.
-running WebAuthn *on behalf of* a web origin rather than the app's own verified identity. The classic
-consumer is a **browser**. It is **privileged and security-critical** — arbitrary origin override would
-enable phishing, so every platform gates it hard.
+*Origin derivation (native apps).* The WebAuthn options JSON carries no `origin`; in a browser the user
+agent fills it in from the current page. A native app has no page, so the platform derives the origin from
+the app's **verified identity**, and it is written into the `clientDataJSON` the server ultimately validates:
+
+| Platform | Origin the OS uses | How it's verified |
+|---|---|---|
+| **Android** | `android:apk-key-hash:<base64url-sha256(signing cert)>` | Digital Asset Links (`assetlinks.json`) binds the package + cert to the RP domain |
+| **Apple** | `https://<associated-domain>` | Associated Domains entitlement (`webcredentials:`) + `apple-app-site-association` |
+| **Windows** | `https://<rpId>` (our P/Invoke layer constructs it) | RP ID; no separate app-identity origin |
+
+**RP-server implication:** because native origins differ from a plain web origin (Android's is an
+`android:apk-key-hash:` string), the relying-party server must be configured to **accept the app's native
+origin(s)** in addition to any web origin. This is a common cause of "origin mismatch" verification failures
+and must be documented for the test RP (§11).
+
+*Origin override (not exposed in v1).* Separately, some callers want to override the origin to run WebAuthn
+*on behalf of* a different web origin — the classic consumer being a **browser**. This is **privileged and
+security-critical** (arbitrary override enables phishing), so every platform gates it hard:
 
 | Platform | Native API | Gating |
 |---|---|---|
 | **Android** | `GetCredentialRequest.Builder.setOrigin(String)` | Requires privileged permission **`CREDENTIAL_MANAGER_SET_ORIGIN`** (system-signed / OEM-allowlisted apps only). Unprivileged callers get a **`SecurityException`**. |
 | **Apple** | *(not exposed)* | Origin comes from the Associated Domains entitlement; no "act as another origin" knob on the platform provider. |
-| **Windows** | *(not in scope)* | Origin is embedded in the `clientDataJSON` we build; no general impersonation parameter on the native path we use. |
+| **Windows** | *(not in scope)* | We construct the origin as `https://<rpId>`; no general impersonation parameter on the native path we use. |
 
 | `Origin` value | Android | Apple | Windows |
 |---|---|---|---|
-| **unset** (default, normal app) | app package (via DAL) | associated domain | app/RP-ID context |
+| **unset** (default, normal app) | `android:apk-key-hash:…` (via DAL) | associated-domain https origin | `https://<rpId>` |
 | **set, app NOT privileged** | `SecurityException` | no-op / unsupported | no-op / unsupported |
 | **set, app IS privileged (browser)** | honored | n/a via this API | n/a via this API |
 
-*Design:* **not exposed.** MAUI Essentials targets normal apps authenticating for their own RP, for which
-the default automatic-origin behavior is correct; an override would work only for privileged system apps on
-Android and no-op elsewhere. It can be added later as an optional `Origin` property with platform caveats —
-non-breaking.
+*Design:* the override is **not exposed.** MAUI Essentials targets normal apps authenticating for their own
+RP, for which the default automatic-origin behavior is correct; an override would work only for privileged
+system apps on Android and no-op elsewhere. It can be added later as an optional `Origin` property with
+platform caveats — non-breaking.
 
 #### 7.5.4 Cancellation — `CancellationToken` (v1)
 
@@ -826,7 +858,8 @@ cancel must come from a different thread than the blocking call, using the pre-a
 - Challenges must be generated and verified **server-side**; the API does not validate them. Doc must
   make this explicit to avoid misuse.
 - RP ID / origin binding is enforced by the OS via domain association (asset links / associated
-  domains). Misconfiguration fails closed at the OS layer.
+  domains); the origin is derived from the app's verified identity, not caller-supplied (§7.5.3).
+  Misconfiguration fails closed at the OS layer.
 - No secrets are logged; binary fields are surfaced only as part of the response the caller already
   must send to their server.
 
@@ -859,6 +892,10 @@ cancel must come from a different thread than the blocking call, using the pre-a
   ASP.NET Core Identity implementation, it doubles as an interop conformance check.
   Docs: [Passkeys in ASP.NET Core](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/) ·
   [Blazor Web App passkeys](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/blazor).
+- **Native origins on the server**: the RP must accept the app's **native origin** — Android's
+  `android:apk-key-hash:<hash>` and Apple's associated-domain `https://` origin — not just a web origin
+  (see §7.5.3). Origin/RP-ID validation must be configured accordingly, or ceremonies fail with an
+  origin-mismatch error.
 - **Sample**: add a Passkeys page to `Essentials.Sample` wired to the reference RP above.
 
 ## 12. Key decisions
