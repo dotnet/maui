@@ -588,6 +588,11 @@ stages:
                   echo "Emulator PID: $EMULATOR_PID"
                   
                   echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
+                  # Intentionally UNGUARDED (no `|| true`): this step has no `set -e`, so a non-zero
+                  # exit (124 on timeout) does NOT abort — the `if [ $? -eq 0 ]` below drives the
+                  # retry + device-detection. Adding `|| true`/`|| echo` here would force $?=0 and
+                  # silently break the retry loop. (Contrast the warmup step which DOES set -e and so
+                  # must guard its wait-for-device.) Keep this unguarded.
                   timeout 120 adb wait-for-device
                   if [ $? -eq 0 ]; then
                     # Capture device ID immediately while it's responsive
