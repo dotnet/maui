@@ -266,7 +266,19 @@ function ConvertTo-DeviceTestCount {
 }
 
 function Get-WindowsDeviceTestResultSummary {
-    param([Parameter(Mandatory = $true)][string[]]$ResultFiles)
+    param(
+        [Parameter(Mandatory = $true)][string[]]$ResultFiles,
+
+        # When set, the pass/fail tallies count ONLY tests whose fully-qualified name
+        # belongs to one of these classes (comma/semicolon separated). Used to scope a
+        # full-suite result file down to the class(es) under test — see the call site.
+        [string]$IncludeClasses
+    )
+
+    $classList = @()
+    if (-not [string]::IsNullOrWhiteSpace($IncludeClasses)) {
+        $classList = @($IncludeClasses -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    }
 
     $summary = @{
         Total = 0
@@ -311,14 +323,49 @@ function Get-WindowsDeviceTestResultSummary {
             throw "Windows device test result file '$file' is empty or not valid XML (the device-test app likely crashed or exited before writing results)."
         }
 
-        $assemblies = @($xml.SelectNodes('/assemblies/assembly'))
-        foreach ($assembly in $assemblies) {
-            $summary.Total += ConvertTo-DeviceTestCount $assembly.total
-            $summary.Passed += ConvertTo-DeviceTestCount $assembly.passed
-            $summary.Failed += ConvertTo-DeviceTestCount $assembly.failed
-            $summary.Skipped += ConvertTo-DeviceTestCount $assembly.skipped
-            $summary.Errors += ConvertTo-DeviceTestCount $assembly.errors
+        if ($classList.Count -gt 0) {
+            # Per-test counting, filtered to the class(es) under test. A full-suite result
+            # file contains every test in the suite; counting only the requested classes
+            # keeps the gate's A/B verdict focused on what the PR changed and immune to
+            # unrelated/flaky suite failures.
+            foreach ($test in @($xml.SelectNodes('//test'))) {
+                $name = [string]$test.name
+                if ([string]::IsNullOrWhiteSpace($name)) { continue }
+                $isMatch = $false
+                foreach ($cls in $classList) {
+                    if ($name -eq $cls -or $name.StartsWith("$cls.", [System.StringComparison]::Ordinal)) {
+                        $isMatch = $true
+                        break
+                    }
+                }
+                if (-not $isMatch) { continue }
+
+                $summary.Total++
+                switch ([string]$test.result) {
+                    'Pass' { $summary.Passed++ }
+                    'Fail' { $summary.Failed++ }
+                    'Skip' { $summary.Skipped++ }
+                    default { }
+                }
+            }
         }
+        else {
+            $assemblies = @($xml.SelectNodes('/assemblies/assembly'))
+            foreach ($assembly in $assemblies) {
+                $summary.Total += ConvertTo-DeviceTestCount $assembly.total
+                $summary.Passed += ConvertTo-DeviceTestCount $assembly.passed
+                $summary.Failed += ConvertTo-DeviceTestCount $assembly.failed
+                $summary.Skipped += ConvertTo-DeviceTestCount $assembly.skipped
+                $summary.Errors += ConvertTo-DeviceTestCount $assembly.errors
+            }
+        }
+    }
+
+    if ($classList.Count -gt 0 -and $summary.Total -eq 0) {
+        # The class(es) under test produced no results in the suite output — treat this as
+        # an environment/harness error (INCONCLUSIVE) rather than silently reporting a
+        # false pass (0 failed) for tests that never actually ran.
+        throw "Windows device test result file(s) contained no tests for class(es) '$IncludeClasses' (the target tests did not run)."
     }
 
     return $summary
@@ -339,6 +386,8 @@ function Invoke-WindowsDeviceTestApp {
         [string]$OutputDirectory,
 
         [string]$TestFilter,
+
+        [string]$IncludeClasses,
 
         [string]$Timeout = "01:00:00"
     )
@@ -435,17 +484,37 @@ function Invoke-WindowsDeviceTestApp {
 
         Write-Host "Running Windows device test app directly..." -ForegroundColor Gray
         $process = Start-Process -FilePath $AppPath -ArgumentList @($resultFile) -PassThru
-        if (-not (Wait-ForPath -Path $resultFile -TimeoutSeconds $timeoutSeconds -Process $process)) {
-            if ($process -and -not $process.HasExited) {
+
+        # A full-suite app creates its single results file and finalizes it only when the
+        # whole run completes, so waiting for the file to merely APPEAR (as the per-category
+        # path can, because each category file is written at that category's completion)
+        # races the writer and reads an empty/partial XML — surfacing as a false
+        # "empty or not valid XML" ENV ERROR even though the run is healthy (PR #36577: the
+        # Core Windows full run was read at 247s while it was still executing). Wait for the
+        # process to EXIT instead, mirroring how eng/devices/windows.cake launches the
+        # unpackaged app with a blocking StartProcess and only then checks the result file.
+        if (-not $process.WaitForExit($timeoutSeconds * 1000)) {
+            if (-not $process.HasExited) {
                 Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
             }
-            throw "Windows device test app did not create $resultFile"
+            throw "Windows device test app did not exit within ${timeoutSeconds}s while running the full suite."
+        }
+        if (-not (Test-Path $resultFile)) {
+            throw "Windows device test app exited without creating $resultFile"
         }
 
         $resultFiles += $resultFile
     }
 
-    $summary = Get-WindowsDeviceTestResultSummary -ResultFiles $resultFiles
+    # When a full-suite fallback ran (no per-category isolation available for this app —
+    # e.g. a Core/Essentials/Graphics app built from a PR tree that predates the
+    # discovery-runner registration), the result file holds EVERY test in the suite, not
+    # just the changed area. Narrow the pass/fail summary to the class(es) under test so
+    # the gate's A/B verdict reflects only the tests the PR actually changed instead of
+    # being polluted (or falsely reddened) by unrelated/flaky suite tests. Category-
+    # isolated runs already scope the result file, so they keep the whole-file aggregate.
+    $summaryClassFilter = if (-not $useCategoryFiltering) { $IncludeClasses } else { $null }
+    $summary = Get-WindowsDeviceTestResultSummary -ResultFiles $resultFiles -IncludeClasses $summaryClassFilter
     $script:WindowsDeviceTestSummary = $summary
     $script:WindowsDeviceTestResultFiles = $resultFiles
 
@@ -922,6 +991,7 @@ try {
             -AppName $appName `
             -OutputDirectory $OutputDirectory `
             -TestFilter $TestFilter `
+            -IncludeClasses $IncludeClasses `
             -Timeout $Timeout
 
         if ($script:WindowsDeviceTestSummary) {

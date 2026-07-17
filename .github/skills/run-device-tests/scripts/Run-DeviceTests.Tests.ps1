@@ -100,4 +100,96 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
         { Get-WindowsDeviceTestResultSummary -ResultFiles @($badFile) } |
             Should -Throw -ExpectedMessage '*empty or not valid XML*'
     }
+
+    It 'counts only tests of the requested class when -IncludeClasses is set (full-suite scoping)' {
+        $file = Join-Path $script:testDir 'TestResults-Suite.xml'
+
+        @'
+<assemblies>
+  <assembly total="5" passed="3" failed="1" skipped="1" errors="0">
+    <collection>
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneA" result="Pass" />
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneB" result="Fail" />
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneC" result="Skip" />
+      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoA" result="Pass" />
+      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoB" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
+
+        $summary.Total | Should -Be 3
+        $summary.Passed | Should -Be 1
+        $summary.Failed | Should -Be 1
+        $summary.Skipped | Should -Be 1
+    }
+
+    It 'does not treat a class name as a prefix substring of another class' {
+        $file = Join-Path $script:testDir 'TestResults-Prefix.xml'
+
+        @'
+<assemblies>
+  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneA" result="Pass" />
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTestsExtra.OneB" result="Fail" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
+
+        $summary.Total | Should -Be 1
+        $summary.Passed | Should -Be 1
+        $summary.Failed | Should -Be 0
+    }
+
+    It 'supports multiple comma/semicolon-separated classes in -IncludeClasses' {
+        $file = Join-Path $script:testDir 'TestResults-Multi.xml'
+
+        @'
+<assemblies>
+  <assembly total="3" passed="3" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneA" result="Pass" />
+      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoA" result="Pass" />
+      <test name="Microsoft.Maui.DeviceTests.ButtonHandlerTests.ThreeA" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests;Microsoft.Maui.DeviceTests.LabelHandlerTests'
+
+        $summary.Total | Should -Be 2
+        $summary.Passed | Should -Be 2
+    }
+
+    It 'throws (not a false pass) when the requested class produced no tests' {
+        $file = Join-Path $script:testDir 'TestResults-Missing.xml'
+
+        @'
+<assemblies>
+  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoA" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        { Get-WindowsDeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' } |
+            Should -Throw -ExpectedMessage '*did not run*'
+    }
 }
