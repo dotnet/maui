@@ -64,10 +64,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				bool IsHorizontal = VirtualView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
 				UICollectionViewScrollDirection scrollDirection = IsHorizontal ? UICollectionViewScrollDirection.Horizontal : UICollectionViewScrollDirection.Vertical;
+				var loopScrollPosition = args.ScrollToPosition.ToCollectionViewScrollPosition(scrollDirection);
+
+				// This looping path bypasses the base ScrollToRequested, so it must clear/arm
+				// the MacCatalyst pending restore itself; otherwise this scroll is not protected from
+				// the silent contentOffset clamp.
+#if MACCATALYST
+				if (Controller?.CollectionView is MauiCollectionView mauiCV)
+				{
+					mauiCV.ClearPendingScrollRestore();
+				}
+#endif
 
 				Controller.CollectionView.ScrollToItem(goToIndexPath,
-					args.ScrollToPosition.ToCollectionViewScrollPosition(scrollDirection), // TODO: Fix _layout.ScrollDirection),
+					loopScrollPosition,
 					args.IsAnimated);
+
+#if MACCATALYST
+				if (!args.IsAnimated && Controller?.CollectionView is MauiCollectionView mauiCVAfter)
+				{
+					mauiCVAfter.SetPendingScrollRestore((int)goToIndexPath.Section, (int)goToIndexPath.Item, loopScrollPosition);
+				}
+#endif
 			}
 			else
 			{
