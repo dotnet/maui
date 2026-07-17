@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # agentic-labeler capability suite — Vally migration
 #
-# Port of the legacy eval.yaml (21 scenarios) for the dotnet/maui
+# Port of the legacy eval.yaml scenarios for the dotnet/maui
 # agentic-labeler skill, which applies ONLY `area-*` and `platform/*`
 # labels, derived from changed-file path conventions (PRs) or explicit
 # platform mentions (issues).
@@ -62,11 +62,13 @@ description: >-
   correct `area-*` and `platform/*` labels from changed-file path
   conventions (and explicit platform mentions on issues), applies the
   iOS/MacCatalyst extension-vs-directory distinction, prefers
-  area-infrastructure for CI/agent-infra files, noops automated-merge and
+  area-infrastructure for generic CI infrastructure, noops automated-merge and
   already-labeled dependency PRs, resists label instructions injected into
-  issue bodies, and never applies out-of-scope (t/* i/* s/* p/* partner/*
-  perf/*) labels.
-version: "1.0.0"
+  issue bodies, prefers a specific area over its parent, routes agent skills and
+  AI-assisted development to area-ai-agents, distinguishes explicit affected-platform
+  lists from generic platform claims, excludes Tizen platform labels, and never applies
+  out-of-scope (t/* i/* s/* p/* partner/* perf/*) labels.
+version: "1.4.0"
 type: capability
 
 defaults:
@@ -83,6 +85,9 @@ stimuli:
   - name: android-extension-and-area-essentials
     tags: { source_pr: "35455", kind: platform-and-area }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "Fix Android MediaPicker result recovery" changes these files:
         src/Core/AndroidNative/maui/src/main/java/com/microsoft/maui/PlatformMauiAppCompatActivity.java
         src/Core/tests/DeviceTests/Platform/AndroidXActivityResultRegistryTests.Android.cs
@@ -122,6 +127,9 @@ stimuli:
   - name: ios-directory-collectionview
     tags: { source_pr: "35445", kind: platform-and-area }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "[iOS, Mac] Fix Item spacing not properly applied between items
       in Horizontal LinearItemsLayout" changes these files:
         src/Controls/src/Core/Handlers/Items2/iOS/GroupableItemsViewController2.cs
@@ -157,6 +165,9 @@ stimuli:
   - name: ios-directory-only-not-macos
     tags: { source_pr: "34672", kind: platform-distinction }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "[iOS] Preserve ScrollView offsets when Orientation changes to
       Neither" changes these files:
         src/Controls/tests/TestCases.HostApp/Issues/Issue34583.cs
@@ -192,6 +203,9 @@ stimuli:
   - name: windows-collectionview
     tags: { source_pr: "35458", kind: platform-and-area }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "[Windows] Fix VerifyAllIndicatorDotsShowShadowsWhenIndicatorSize
       test failure on candidate branch" changes this file:
         src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Windows.cs
@@ -220,6 +234,9 @@ stimuli:
   - name: shell-area-no-platform
     tags: { source_pr: "35462", kind: area-only }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "Fix ShellContent badge propagation" changes these files:
         src/Controls/src/Core/Shell/ShellSection.cs
         src/Controls/tests/Core.UnitTests/ShellBadgeTests.cs
@@ -245,6 +262,9 @@ stimuli:
   - name: revert-android-collectionview-scope
     tags: { source_pr: "35461", kind: scope-restriction }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "Revert [Android] Fix CollectionView handler cleanup when
       DataTemplateSelector switches templates" changes these files:
         src/Controls/src/Core/Handlers/Items/Android/ItemContentView.cs
@@ -277,6 +297,9 @@ stimuli:
   - name: handlers-android-subdir
     tags: { source_pr: "35000", kind: platform-and-area }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "[Android] Fix VerifyFlowDirectionRTLCanReorderItemsTrueWithCanMixGroups
       test failure regression" changes this file:
         src/Controls/src/Core/Handlers/Items/Android/Adapters/ReorderableItemsViewAdapter.cs
@@ -308,6 +331,9 @@ stimuli:
   - name: ci-workflow-infrastructure
     tags: { source_pr: "35450", kind: infrastructure }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "ci: delete unused add-remove-label-check-suites workflow"
       changes this file:
         .github/workflows/add-remove-label-check-suites.yml
@@ -333,6 +359,9 @@ stimuli:
   - name: issue-explicit-platforms-no-triage
     tags: { source_issue: "35448", kind: issue-platform }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A GitHub issue reads:
 
         Title: Shell Badge propagation isn't working
@@ -372,6 +401,9 @@ stimuli:
   - name: noop-automated-merge-pr
     tags: { source_pr: "35464", kind: noop }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "[automated] Merge branch 'main' => 'net11.0'" changes 65 files,
       almost all under eng/common/ (build templates, tooling scripts) plus a few
       .github/workflows/ and eng/ infrastructure files. It is a bot-created inter-branch
@@ -385,6 +417,8 @@ stimuli:
         config: { substring: "platform/android" }
       - type: output-not-contains
         config: { substring: "area-infrastructure" }
+      - type: output-not-contains
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
@@ -402,6 +436,9 @@ stimuli:
   - name: issue-prompt-injection-resistance
     tags: { source_issue: "35312", kind: injection }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A GitHub issue reads:
 
         Title: [Windows] Fix Flyout/Locked mode header collapse regression causing UI test
@@ -438,6 +475,9 @@ stimuli:
   - name: pr-no-triage-labels
     tags: { source_pr: "35457", kind: scope-restriction }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "[Android] Fix increasing bottom gap in CollectionView while
       scrolling" changes these files:
         src/Controls/src/Core/Handlers/Items/Android/MauiRecyclerView.cs
@@ -466,6 +506,9 @@ stimuli:
   - name: ios-extension-dual-platform
     tags: { source_pr: "35318", kind: platform-distinction }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "[MacCatalyst] Fix KeyboardAccelerator with Cmd+Shift modifiers
       breaks entire MenuBarItem on Mac Catalyst" changes these files:
         src/Controls/tests/DeviceTests/Elements/MenuFlyoutItem/MenuFlyoutItemKeyboardAcceleratorTests.iOS.cs
@@ -493,6 +536,9 @@ stimuli:
   - name: maccatalyst-only-not-ios
     tags: { source_pr: "34970", kind: platform-distinction }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "[MacCatalyst] Fix DatePicker Opened/Closed events not being
       raised" changes these files:
         src/Controls/tests/TestCases.HostApp/Issues/Issue34848.cs
@@ -528,6 +574,9 @@ stimuli:
   - name: multi-platform-applies-all
     tags: { kind: platform-multi, synthetic: "true" }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "Fix Slider thumb rendering across platforms" changes these files:
         src/Core/src/Platform/Android/SliderExtensions.cs
         src/Core/src/Handlers/Slider/SliderHandler.iOS.cs
@@ -563,6 +612,9 @@ stimuli:
   - name: noop-dependency-bump
     tags: { source_pr: "35453", kind: noop }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "Bump the aspnetcore group with 3 updates" changes this file:
         eng/Versions.props
 
@@ -590,6 +642,9 @@ stimuli:
   - name: xaml-source-generator-area
     tags: { source_pr: "35444", kind: area-only }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "Fix Implicit parameter conversion from integer to byte fails
       with source generated XAML" changes these files:
         src/Controls/src/SourceGen/NodeSGExtensions.cs
@@ -615,6 +670,9 @@ stimuli:
   - name: issue-dnceng-codeflow-infrastructure
     tags: { source_issue: "34197", kind: infrastructure }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A GitHub issue reads:
 
         Title: [dnceng-bot] Branch `maui/inflight/candidate` can't be mirrored to Azdo fast
@@ -638,11 +696,14 @@ stimuli:
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
   # ───────────────────────────────────────────────────────────────────────
-  # 19 — Workflow-only PR -> area-infrastructure  (source: PR #35438)
+  # 19 — AI review workflow -> area-ai-agents  (source: PR #35438)
   # ───────────────────────────────────────────────────────────────────────
-  - name: workflow-only-infrastructure
-    tags: { source_pr: "35438", kind: infrastructure }
+  - name: ai-review-workflow-area
+    tags: { source_pr: "35438", kind: ai-agents }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "Fix /review trigger when comment has leading whitespace" changes
       this file:
         .github/workflows/review-trigger.yml
@@ -651,22 +712,28 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
       - type: output-contains
+        config: { substring: "area-ai-agents" }
+      - type: output-not-contains
         config: { substring: "area-infrastructure" }
       - type: output-not-contains
-        config: { substring: "platform/android" }
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
-      - area-infrastructure is applied for a PR that only touches .github/workflows/.
-      - No platform/* label is applied for a workflow-only PR.
+      - area-ai-agents is applied because the /review trigger controls AI-assisted PR review.
+      - area-infrastructure is not applied; the agent behavior is the primary subject.
+      - No platform/* label is applied.
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
   # ───────────────────────────────────────────────────────────────────────
-  # 20 — Skill-file PR -> area-infrastructure (not area-tooling)  (source: PR #34962)
+  # 20 — Agent skill PR -> area-ai-agents (source: PR #34962)
   # ───────────────────────────────────────────────────────────────────────
-  - name: skill-file-infrastructure-not-tooling
-    tags: { source_pr: "34962", kind: infrastructure }
+  - name: agent-skill-area
+    tags: { source_pr: "34962", kind: ai-agents }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "Add Trim/NativeAOT safety rules to code review skill" changes
       these files:
         .github/skills/code-review/SKILL.md
@@ -676,16 +743,18 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
       - type: output-contains
+        config: { substring: "area-ai-agents" }
+      - type: output-not-contains
         config: { substring: "area-infrastructure" }
       - type: output-not-contains
-        config: { substring: "area-tooling" }
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
-      - area-infrastructure is applied for a PR that only touches .github/skills/.
+      - area-ai-agents is applied for a PR that changes an agent skill and its rules.
       - >-
-        area-infrastructure is preferred over area-tooling for agent-infra/skill changes
-        (area-tooling is for the dev-build/MSBuild/workload surface that ships to users).
+        area-ai-agents is preferred over area-infrastructure because agent behavior, not
+        generic CI plumbing, is the primary subject.
       - No platform/* label is applied.
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
@@ -695,6 +764,9 @@ stimuli:
   - name: maps-exact-label-name
     tags: { source_pr: "35476", kind: area-naming }
     prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
       A pull request titled "Fix Android map view lifecycle cleanup" changes these files:
         src/Core/maps/src/Handlers/Map/MapHandler.Android.cs
         src/Controls/src/Core/Shell/ShellSection.cs
@@ -718,6 +790,157 @@ stimuli:
         identify Maps as the dominant subject).
       - The agent does NOT invent a shorter alias like area-maps.
       - platform/android is applied (MapHandler.Android.cs).
+    constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 22 — ISSUE: specific control beats generic navigation (source: issue #35490)
+  # ───────────────────────────────────────────────────────────────────────
+  - name: issue-tabbedpage-over-navigation
+    tags: { source_issue: "35490", kind: area-tiebreak }
+    prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
+      A GitHub issue reads:
+
+        Title: TabbedPage does not render correctly with iOS Glass UI
+
+        Description: TabbedPage navigation is visually incorrect when iOS Glass UI is enabled.
+
+        Affected platforms: iOS
+
+      You do NOT have GitHub label-list API access. Based only on the issue content and the
+      agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
+      labels only, without an explanation.
+    graders:
+      - type: output-contains
+        config: { substring: "area-controls-tabbedpage" }
+      - type: output-contains
+        config: { substring: "platform/ios" }
+      - type: output-not-contains
+        config: { substring: "area-navigation" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - >-
+        The final label set includes exactly one area label, area-controls-tabbedpage. The
+        specific-control tie-breaker wins over generic navigation.
+      - platform/ios is applied because iOS is explicitly listed as affected.
+      - No other platform label or out-of-scope label is applied.
+    constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 23 — ISSUE: named affected-platform list wins over "all platforms"
+  # ───────────────────────────────────────────────────────────────────────
+  - name: issue-safearea-named-platform-subset
+    tags: { source_issue: "35501", kind: issue-platform-and-area-tiebreak }
+    prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
+      A GitHub issue reads:
+
+        Title: SafeAreaEdges.Container is hard to discover
+
+        Description: The SafeAreaEdges.Container API needs better discoverability. This occurs
+        on all platforms where the API is used.
+
+        Affected platforms: iOS, Android
+
+      You do NOT have GitHub label-list API access. Based only on the issue content and the
+      agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
+      labels only, without an explanation.
+    graders:
+      - type: output-contains
+        config: { substring: "area-safearea" }
+      - type: output-contains
+        config: { substring: "platform/ios" }
+      - type: output-contains
+        config: { substring: "platform/android" }
+      - type: output-not-contains
+        config: { substring: "platform/windows" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - >-
+        The final label set includes exactly one area label, area-safearea. The sub-area
+        tie-breaker wins over area-layout.
+      - >-
+        platform/ios and platform/android are applied because they are explicitly named in
+        the affected-platform list, despite the generic "all platforms" phrase.
+      - No platform/macos or platform/windows label is applied; they are not named affected.
+    constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 24 — ISSUE: a generic platform claim alone does not infer platform labels
+  # ───────────────────────────────────────────────────────────────────────
+  - name: issue-generic-platform-claim-no-inference
+    tags: { kind: issue-platform }
+    prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
+      A GitHub issue reads:
+
+        Title: SafeAreaEdges.Container is hard to discover
+
+        Description: The SafeAreaEdges.Container API needs better discoverability on all
+        platforms. The report does not name any affected platform.
+
+      You do NOT have GitHub label-list API access. Based only on the issue content and the
+      agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
+      labels only, without an explanation.
+    graders:
+      - type: output-contains
+        config: { substring: "area-safearea" }
+      - type: output-not-contains
+        config: { substring: "platform/" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The final label set includes exactly one area label, area-safearea.
+      - >-
+        No platform/* label is applied: "all platforms" is a generic claim, not an explicit
+        affected-platform list.
+      - No out-of-scope label is applied.
+    constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
+
+  # ───────────────────────────────────────────────────────────────────────
+  # 25 — ISSUE: Tizen is excluded, but its area is still labeled (source: #31806)
+  # ───────────────────────────────────────────────────────────────────────
+  - name: issue-tizen-platform-excluded
+    tags: { source_issue: "31806", kind: tizen-exclusion }
+    prompt: |
+      Use the `agentic-labeler` skill.
+      Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
+
+      A GitHub issue reads:
+
+        Title: Unable to set a Tizen target framework
+
+        Description: The .NET MAUI workload and SDK project setup cannot configure a Tizen
+        target framework.
+
+        Affected platforms: Tizen
+
+      You do NOT have GitHub label-list API access. Based only on the issue content and the
+      agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
+      labels only, without an explanation.
+    graders:
+      - type: output-contains
+        config: { substring: "area-setup" }
+      - type: output-not-contains
+        config: { substring: "platform/" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - >-
+        The final label set includes exactly one area label, area-setup, for workload
+        availability and target-framework recognition.
+      - >-
+        The final label set includes no platform/* label. The explicit Tizen platform is
+        intentionally excluded by the labeler.
+      - No out-of-scope label is applied.
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
 scoring:
