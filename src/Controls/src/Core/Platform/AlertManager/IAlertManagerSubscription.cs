@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 	/// its own subscription management.
 	/// </para>
 	/// </summary>
-	internal interface IAlertManagerSubscription
+	public interface IAlertManagerSubscription
 	{
 		/// <summary>
 		/// Called when an action sheet is requested.

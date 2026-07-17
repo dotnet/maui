@@ -112,3 +112,20 @@ Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Contr
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
 static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
+Microsoft.Maui.Controls.Platform.IAlertManager
+Microsoft.Maui.Controls.Platform.IAlertManager.RequestActionSheet(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Internals.ActionSheetArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.RequestAlert(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Internals.AlertArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.RequestPageBusy(Microsoft.Maui.Controls.Page! page, bool isBusy) -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.RequestPrompt(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.Subscribe() -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.Unsubscribe() -> void
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnActionSheetRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.ActionSheetArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnAlertRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.AlertArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPageBusy(Microsoft.Maui.Controls.Page! sender, bool enabled) -> void
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPromptRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IGesturePlatformManager
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory.CreateGesturePlatformManager(Microsoft.Maui.IViewHandler! handler) -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider.CreateGesturePlatformManager() -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!

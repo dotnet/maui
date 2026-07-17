@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Platform
 	/// Custom platform backends can implement this interface and register it via dependency injection
 	/// to replace the default alert management behavior.
 	/// </summary>
-	internal interface IAlertManager
+	public interface IAlertManager
 	{
 		/// <summary>
 		/// Subscribes to alert requests from the associated window's pages.

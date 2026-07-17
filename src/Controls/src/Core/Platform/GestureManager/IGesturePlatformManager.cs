@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Platform
 	/// <summary>
 	/// Interface for platform-specific gesture management.
 	/// </summary>
-	internal interface IGesturePlatformManager : IDisposable
+	public interface IGesturePlatformManager : IDisposable
 	{
 	}
 }
