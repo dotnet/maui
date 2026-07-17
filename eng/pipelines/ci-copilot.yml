@@ -1845,6 +1845,38 @@ stages:
                 sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.4 2>&1 \
                   || sudo xcodebuild -downloadPlatform iOS -buildVersion 23E244 2>&1 || true
 
+                # ENROLLMENT RECOVERY (builds 14691165 + 14689412, #36507 ios). 'xcodebuild
+                # -downloadPlatform' can leave a NEWER iOS runtime (e.g. 26.5) as a "Ready" disk
+                # image that CoreSimulator has NOT enrolled into its active registry, so
+                # 'simctl list runtimes available' reports only the OLDER 26.4 baseline. Two
+                # downstream failures follow from that stale "available" view:
+                #   (a) the BUILD_XCODE picker below sees newest-available=26.4 and selects the
+                #       older Xcode_26.4, whose SDK is too old for the Microsoft.iOS workload, so
+                #       the deep build dies "error MT0180: requires the iOS 26.5 SDK" (build
+                #       14689412 -> 0 iOS deep results); and
+                #   (b) the gate/deep Boot step's 'simctl create' rejects the Ready-but-unenrolled
+                #       runtime with "Invalid runtime" (build 14691165) and gives up.
+                # Restarting CoreSimulatorService forces a re-scan that ENROLLS the Ready image, so
+                # the newer runtime becomes 'available' — the picker then naturally selects the
+                # matching newer Xcode (honouring this step's own "newest Xcode whose runtime is
+                # present" rule) and 'create' works. Only fires when a Ready iOS runtime is
+                # strictly NEWER than the newest enrolled one (the exact broken state); healthy
+                # agents (newest already enrolled) are untouched. Non-destructive — the daemon
+                # auto-relaunches on the next simctl call — and if enrollment fails, BUILD_XCODE
+                # falls back to the older runtime exactly as before (no regression).
+                NEWEST_AVAIL_RT=$(xcrun simctl list runtimes available --json 2>/dev/null | jq -r '[.runtimes[] | select((.name // "") | test("iOS")) | (.version // "0")] | sort_by(split(".")|map(tonumber)) | last // "0"')
+                NEWEST_READY_RT=$(xcrun simctl runtime list --json 2>/dev/null | jq -r '[to_entries[] | .value | select((.state == "Ready") and (((.runtimeIdentifier // "") | test("iOS")))) | (.version // "0")] | sort_by(split(".")|map(tonumber)) | last // "0"')
+                echo "iOS runtimes: newest enrolled(available)=$NEWEST_AVAIL_RT newest ready(on-disk)=$NEWEST_READY_RT"
+                if [ "$NEWEST_READY_RT" != "$NEWEST_AVAIL_RT" ] && [ "$(printf '%s\n%s\n' "$NEWEST_AVAIL_RT" "$NEWEST_READY_RT" | sort -V | tail -1)" = "$NEWEST_READY_RT" ]; then
+                  echo "Ready iOS runtime $NEWEST_READY_RT is newer than newest enrolled $NEWEST_AVAIL_RT — restarting CoreSimulatorService to enroll…"
+                  sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+                  sleep 8
+                  xcrun simctl list runtimes >/dev/null 2>&1 || true   # relaunch daemon + re-scan Ready images
+                  sleep 4
+                  NEWEST_AVAIL_RT=$(xcrun simctl list runtimes available --json 2>/dev/null | jq -r '[.runtimes[] | select((.name // "") | test("iOS")) | (.version // "0")] | sort_by(split(".")|map(tonumber)) | last // "0"')
+                  echo "After CoreSimulatorService restart: newest enrolled(available) iOS runtime=$NEWEST_AVAIL_RT"
+                fi
+
                 # Select the BUILD Xcode to MATCH an INSTALLED simulator runtime. actool
                 # (asset-catalog compilation, part of every HostApp build) needs a simulator
                 # runtime matching the build SDK. The agents now ship Xcode 26.5 — a net11
@@ -1882,28 +1914,6 @@ stages:
                   echo "Selecting build Xcode (matches installed sim runtime ${AVAIL_RT_VER:-none}): $BUILD_XCODE"
                   sudo xcode-select -s "$BUILD_XCODE/Contents/Developer"
                   xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null | sed 's/^/  build iphonesimulator SDK now: /'
-                fi
-
-                # ENROLLMENT RECOVERY (build 14691165, #36507 ios): 'xcodebuild -downloadPlatform'
-                # can leave an iOS runtime as a "Ready" disk image that CoreSimulator has NOT
-                # enrolled into its active registry — 'simctl list runtimes available' is EMPTY
-                # while 'simctl runtime list' shows it Ready, and 'simctl create <that-id>' then
-                # fails "Invalid runtime" for EVERY Ready runtime, so the Boot step gives up and
-                # the gate degrades to INCONCLUSIVE with usable images sitting on disk. Restarting
-                # CoreSimulatorService forces a re-scan that enrolls the Ready disk images. Only
-                # fires in that exact broken state (enrolled=0 AND ready>0) so healthy agents are
-                # untouched; non-destructive — the daemon auto-relaunches on the next simctl call.
-                AVAIL_IOS=$(xcrun simctl list runtimes available --json 2>/dev/null | jq '[.runtimes[] | select(((.identifier // "") | test("iOS")))] | length' 2>/dev/null || echo 0)
-                READY_IOS=$(xcrun simctl runtime list --json 2>/dev/null | jq '[to_entries[] | .value | select((.state == "Ready") and (((.runtimeIdentifier // "") | test("iOS"))))] | length' 2>/dev/null || echo 0)
-                echo "iOS runtimes: enrolled(available)=${AVAIL_IOS:-0} ready(on-disk)=${READY_IOS:-0}"
-                if [ "${AVAIL_IOS:-0}" -eq 0 ] && [ "${READY_IOS:-0}" -gt 0 ]; then
-                  echo "Ready-but-unenrolled iOS runtime(s) detected — restarting CoreSimulatorService to enroll…"
-                  sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
-                  sleep 8
-                  xcrun simctl list runtimes >/dev/null 2>&1 || true   # relaunch daemon + re-scan Ready images
-                  sleep 4
-                  AVAIL_IOS=$(xcrun simctl list runtimes available --json 2>/dev/null | jq '[.runtimes[] | select(((.identifier // "") | test("iOS")))] | length' 2>/dev/null || echo 0)
-                  echo "After CoreSimulatorService restart: enrolled(available) iOS runtimes=${AVAIL_IOS:-0}"
                 fi
 
                 echo "=== Final runtimes ==="
