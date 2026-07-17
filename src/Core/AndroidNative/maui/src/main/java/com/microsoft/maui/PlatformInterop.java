@@ -359,7 +359,16 @@ public class PlatformInterop {
     }
 
     private static RequestBuilder<Drawable> limitToTargetSize(RequestBuilder<Drawable> builder, ImageView imageView) {
-        return builder.downsample(DownsampleStrategy.CENTER_INSIDE);
+        // Cap the decode near the ImageView's measured size (Glide's view-target negotiation) while
+        // choosing a downsample strategy that matches the view's ScaleType. CenterCrop (Aspect.AspectFill,
+        // see AspectExtensions.cs) must COVER the view, which needs max(view/src) scaling -> CENTER_OUTSIDE.
+        // Using CENTER_INSIDE there under-decodes an extreme-aspect source and the CenterCrop matrix then
+        // upscales that low-res bitmap to fill the view (blurry). Other (fit-inside) scale types only need
+        // to fit WITHIN the view -> CENTER_INSIDE.
+        DownsampleStrategy strategy = imageView.getScaleType() == ImageView.ScaleType.CENTER_CROP
+            ? DownsampleStrategy.CENTER_OUTSIDE
+            : DownsampleStrategy.CENTER_INSIDE;
+        return builder.downsample(strategy);
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
