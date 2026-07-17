@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// match the new presenter mode.
 		void OnAppWindowPresenterChanged(AppWindow sender, AppWindowChangedEventArgs args)
 		{
-			if (!args.DidPresenterChange || _platformModalPages.Count == 0)
+			if (!args.DidPresenterChange)
 			{
 				return;
 			}
