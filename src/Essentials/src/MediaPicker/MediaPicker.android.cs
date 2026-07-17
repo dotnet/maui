@@ -29,10 +29,10 @@ namespace Microsoft.Maui.Media
 			=> ProcessImage(imagePath, options);
 
 		// Recovery-sensitive MediaPicker paths must leave the original file intact until the
-		// active recovery record has been cleared or promoted. ProcessImage never mutates its
-		// input, so this is simply the single-pass processor.
+		// active recovery record has been cleared or promoted, so they opt out of the
+		// MAUI-owned input cleanup that ProcessImage otherwise performs.
 		internal static Task<string> ProcessPhotoPreservingSourceAsync(string imagePath, PersistedPhotoProcessingOptions options)
-			=> ProcessImage(imagePath, options);
+			=> ProcessImage(imagePath, options, preserveSource: true);
 
 		internal static PersistedPhotoProcessingOptions GetPhotoProcessingOptions(MediaPickerOptions options)
 			=> new(
@@ -596,7 +596,7 @@ namespace Microsoft.Maui.Media
 		internal static Task<string> ProcessImage(string imagePath, MediaPickerOptions options)
 			=> ProcessImage(imagePath, GetPhotoProcessingOptions(options));
 
-		internal static async Task<string> ProcessImage(string imagePath, PersistedPhotoProcessingOptions options)
+		internal static async Task<string> ProcessImage(string imagePath, PersistedPhotoProcessingOptions options, bool preserveSource = false)
 		{
 			if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath))
 				return imagePath;
@@ -616,8 +616,11 @@ namespace Microsoft.Maui.Media
 				// chained through in-memory streams and only the final result is written - once - to
 				// a new MAUI-owned cache file (GetTemporaryFile preserves the original filename, see
 				// #33258). External/user-owned sources (the gallery original, an SD card, another
-				// app's storage) are therefore never deleted or overwritten, and recovery-sensitive
-				// callers keep their original file until the recovery record is cleared or promoted.
+				// app's storage) are therefore never deleted or overwritten. If the input was itself
+				// a MAUI-owned temporary cache file (a camera capture, or a content:// URI that
+				// EnsurePhysicalPath copied into our cache), it is removed after the output is written
+				// (below) so we don't leave an orphaned duplicate behind - unless the caller opted
+				// into preserving it because a recovery record still points at it.
 				Stream currentStream = File.OpenRead(imagePath);
 				try
 				{
@@ -665,6 +668,19 @@ namespace Microsoft.Maui.Media
 					{
 						currentStream.Position = 0;
 						await currentStream.CopyToAsync(outputStream);
+					}
+
+					// The output is now fully written and closed. If the input was a MAUI-owned
+					// temporary cache file, delete it so we don't accumulate an orphaned duplicate.
+					// External/user-owned sources are never under our cache folder, so they are left
+					// untouched. Deleting only after the output is written avoids any data-loss window.
+					if (!preserveSource &&
+						FileSystemUtils.IsMauiOwnedTemporaryFile(imagePath) &&
+						!string.Equals(imagePath, outputPath, StringComparison.Ordinal))
+					{
+						try
+						{ File.Delete(imagePath); }
+						catch { }
 					}
 
 					return outputPath;

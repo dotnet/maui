@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Graphics;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
@@ -56,6 +57,48 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			}
 		}
 
+		[Fact]
+		public async Task ProcessImage_MauiOwnedCacheInput_IsReplaced_NotOrphaned()
+		{
+			var baseName = "mp_owned_" + Guid.NewGuid().ToString("N");
+
+			// Create a MAUI-owned temporary cache file, exactly like a camera capture
+			// (CapturePhotoAsync) or a content:// URI that EnsurePhysicalPath copied into cache.
+			var ownedFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, baseName + ".jpg");
+			var inputPath = ownedFile.AbsolutePath;
+			WriteJpeg(inputPath);
+
+			string outputPath = null;
+			try
+			{
+				var options = new MediaPickerOptions { CompressionQuality = 50 };
+
+				outputPath = await MediaPickerImplementation.ProcessImage(inputPath, options);
+
+				// A new terminal cache file is produced under the app cache dir.
+				Assert.NotEqual(inputPath, outputPath);
+				Assert.True(File.Exists(outputPath));
+				Assert.StartsWith(FileSystem.CacheDirectory, outputPath, StringComparison.Ordinal);
+
+				// The MAUI-owned input is deleted - not left orphaned alongside the output.
+				Assert.False(File.Exists(inputPath));
+
+				// Exactly one terminal cache file remains for this image (the output).
+				var cacheCopies = FindCacheFiles(baseName);
+				Assert.Single(cacheCopies);
+				Assert.Equal(Path.GetFullPath(outputPath), Path.GetFullPath(cacheCopies[0]));
+
+				// The original base filename is preserved (#33258).
+				Assert.Equal(baseName, Path.GetFileNameWithoutExtension(outputPath));
+			}
+			finally
+			{
+				SafeDelete(inputPath);
+				SafeDelete(outputPath);
+				DeleteCacheFiles(baseName);
+			}
+		}
+
 		static async Task AssertProcessedToCacheWithoutTouchingSource(MediaPickerOptions options)
 		{
 			var baseName = "mp_src_" + Guid.NewGuid().ToString("N");
@@ -99,14 +142,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Directory.CreateDirectory(dir);
 
 			var filePath = Path.Combine(dir, fileName);
-
-			using (var bitmap = Bitmap.CreateBitmap(64, 64, Bitmap.Config.Argb8888))
-			using (var stream = File.Create(filePath))
-			{
-				bitmap.Compress(Bitmap.CompressFormat.Jpeg, 100, stream);
-			}
-
+			WriteJpeg(filePath);
 			return filePath;
+		}
+
+		static void WriteJpeg(string filePath)
+		{
+			using var bitmap = Bitmap.CreateBitmap(64, 64, Bitmap.Config.Argb8888);
+			using var stream = File.Create(filePath);
+			bitmap.Compress(Bitmap.CompressFormat.Jpeg, 100, stream);
 		}
 
 		static string[] FindCacheFiles(string baseName)
