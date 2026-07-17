@@ -279,13 +279,27 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			var topModal = _platformModalPages[_platformModalPages.Count - 1];
-			var rootManager = topModal.FindMauiContext()?.GetNavigationRootManager();
-			// AppWindow.Changed is not guaranteed to fire on the UI thread, so marshal the
-			// WinUI FrameworkElement mutation (min height, margins, visibility) onto the
-			// dispatcher — the same pattern used by MauiWinUIWindow.ViewSettingsColorValuesChanged.
-			bool showTitleBar = sender.Presenter?.Kind != AppWindowPresenterKind.FullScreen;
-			sender.DispatcherQueue?.TryEnqueue(() => rootManager?.SetTitleBarVisibility(showTitleBar));
+			// AppWindow.Changed is not guaranteed to fire on the UI thread, so marshal ALL
+			// MAUI/WinUI state reads (modal list, MauiContext, Presenter) onto the dispatcher.
+			// This avoids races with modal pop/disconnect and COM apartment violations.
+			// Re-check that a modal is still present at dispatch time before acting.
+			sender.DispatcherQueue?.TryEnqueue(() =>
+			{
+				if (_platformModalPages.Count == 0)
+				{
+					return;
+				}
+
+				var topModal = _platformModalPages[_platformModalPages.Count - 1];
+				var rootManager = topModal.FindMauiContext()?.GetNavigationRootManager();
+				if (rootManager is null)
+				{
+					return;
+				}
+
+				bool showTitleBar = sender.Presenter?.Kind != AppWindowPresenterKind.FullScreen;
+				rootManager.SetTitleBarVisibility(showTitleBar);
+			});
 		}
 	}
 }
