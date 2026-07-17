@@ -812,6 +812,25 @@ stages:
                   RUNTIME=$(pick_runtime "$RE"); [ -n "$RUNTIME" ] && break
                 done
               fi
+              # THIRD RECOVERY (build 14680947, #35846 ios): the classic
+              # 'simctl list runtimes' used by pick_runtime can be EMPTY even unfiltered
+              # while the NEWER 'simctl runtime list' shows an iOS runtime whose disk image
+              # is Ready — CoreSimulator has the image on disk but has not enrolled it into
+              # the legacy simruntime registry yet (seen right after the Install step's
+              # exit-70 delete+reinstall recovery: 'Install Simulator Runtimes' reported
+              # iOS 26.5/26.3.1 Ready, yet this boot found "== Runtimes ==" empty and went
+              # INCONCLUSIVE while a perfectly usable runtime sat on disk). 'simctl create'
+              # accepts the runtimeIdentifier of a Ready disk image and mounts it on demand,
+              # so grab that identifier directly instead of degrading. If none is Ready this
+              # yields empty and the graceful-degrade below still fires (no behavior change).
+              if [ -z "$RUNTIME" ]; then
+                RUNTIME=$(xcrun simctl runtime list --json 2>/dev/null | jq -r '
+                  [to_entries[] | .value
+                   | select((.state == "Ready") and (((.runtimeIdentifier // "") | test("iOS"))))]
+                  | sort_by(.version // "0") | last | .runtimeIdentifier // empty
+                ')
+                [ -n "$RUNTIME" ] && echo "Recovered Ready (unenrolled) iOS runtime disk image: $RUNTIME"
+              fi
               echo "Selected iOS runtime: $RUNTIME"
               if [ -z "$RUNTIME" ]; then
                 echo "Available runtimes (diagnostic):"
