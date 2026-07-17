@@ -391,6 +391,7 @@ function Invoke-TestRun {
     param(
         [string]$DetectedTestType,
         [string]$Filter,
+        [string]$ClassFilter,
         [string]$DetectedProject,
         [string]$DetectedProjectPath,
         [string]$LogFile
@@ -571,6 +572,15 @@ function Invoke-TestRun {
                 $deviceParams.TestFilter = $Filter
             }
 
+            # Additive class-level include narrowing (Android/iOS/MacCatalyst). When the gate
+            # knows the PR's specific test class, run only that class instead of the whole
+            # Category — so an unrelated crashing sibling test in the same category can't turn
+            # the verdict INCONCLUSIVE. Empty on the main pipeline, so behaviour is unchanged.
+            if ($ClassFilter) {
+                $deviceParams.IncludeClasses = $ClassFilter
+                Write-Host "   Include class: $ClassFilter" -ForegroundColor Gray
+            }
+
             if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
                 $deviceParams.DeviceUdid = $script:BootedDeviceUdid
             }
@@ -614,6 +624,7 @@ function Invoke-TestRunWithRetry {
         $testOutputLog = Invoke-TestRun `
             -DetectedTestType $TestEntry.Type `
             -Filter $TestEntry.Filter `
+            -ClassFilter $TestEntry.ClassFilter `
             -DetectedProject $TestEntry.Project `
             -DetectedProjectPath $TestEntry.ProjectPath `
             -LogFile $logFileAttempt

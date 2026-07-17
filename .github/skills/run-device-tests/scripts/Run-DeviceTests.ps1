@@ -82,6 +82,12 @@ param(
     [string]$TestFilter,
 
     [Parameter(Mandatory = $false)]
+    # Comma/semicolon-separated fully-qualified test class names to run exclusively
+    # (Android/iOS/MacCatalyst only). Additive include filter used by the Copilot review
+    # gate to narrow a run to a PR's specific test class instead of its whole Category.
+    [string]$IncludeClasses,
+
+    [Parameter(Mandatory = $false)]
     [switch]$BuildOnly,
 
     [Parameter(Mandatory = $false)]
@@ -545,6 +551,9 @@ try {
     if ($TestFilter) {
         Write-Host "Test Filter:   $TestFilter" -ForegroundColor Yellow
     }
+    if ($IncludeClasses) {
+        Write-Host "Include Class: $IncludeClasses" -ForegroundColor Yellow
+    }
     Write-Host ""
 
     # ═══════════════════════════════════════════════════════════
@@ -839,6 +848,14 @@ try {
             } else {
                 # iOS/MacCatalyst uses --set-env
                 $xharnessArgs += "--set-env=TestFilter=$TestFilter"
+            }
+        }
+
+        if ($IncludeClasses) {
+            if ($Platform -eq "android") {
+                $xharnessArgs += "--arg", "IncludeClasses=$IncludeClasses"
+            } else {
+                $xharnessArgs += "--set-env=IncludeClasses=$IncludeClasses"
             }
         }
 

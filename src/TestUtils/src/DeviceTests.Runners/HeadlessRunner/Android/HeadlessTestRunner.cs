@@ -55,6 +55,11 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			var testRunner = base.GetTestRunner(logWriter);
 			if (_options.SkipCategories?.Count > 0)
 				testRunner.SkipCategories(_options.SkipCategories);
+			if (_options.IncludeClassNames?.Count > 0)
+			{
+				foreach (var className in _options.IncludeClassNames)
+					testRunner.SkipClass(className, isExcluded: false);
+			}
 			return testRunner;
 		}
 

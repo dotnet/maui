@@ -457,44 +457,57 @@ foreach ($key in @($testGroups.Keys)) {
         $group.TestName = "$($group.TestName) ($($addedMethods -join ', '))"
         $group.Methods = $addedMethods
 
-        # Find [Category] attribute from the main (non-platform) test class file
+        # Find [Category] attribute (and the namespace, for a fully-qualified class filter)
+        # from the main (non-platform) test class file.
         $baseClassName = ($group.TestName -split ' \(')[0]
         $repoRoot = git rev-parse --show-toplevel 2>$null
         $categoryFilter = $null
+        $classNamespace = $null
 
         foreach ($file in $group.Files) {
-            if ($file -match "\.cs$") {
-                # Try the main class file (without platform suffix)
-                $testDir = [System.IO.Path]::GetDirectoryName($file)
-                $mainFile = if ($repoRoot) { Join-Path $repoRoot "$testDir/$baseClassName.cs" } else { $null }
-                if ($mainFile -and (Test-Path $mainFile)) {
-                    $content = Get-Content $mainFile -Raw -ErrorAction SilentlyContinue
-                    # Match [Category(TestCategory.X)] or [Category("X")]
-                    if ($content -match '\[Category\(TestCategory\.(\w+)\)\]') {
-                        $categoryFilter = "Category=$($matches[1])"
-                        break
-                    } elseif ($content -match '\[Category\("([^"]+)"\)\]') {
-                        $categoryFilter = "Category=$($matches[1])"
-                        break
-                    }
+            if ($file -notmatch "\.cs$") { continue }
+
+            # Probe the main class file (without platform suffix) first, then the changed file.
+            $testDir = [System.IO.Path]::GetDirectoryName($file)
+            $candidates = @()
+            if ($repoRoot) { $candidates += (Join-Path $repoRoot "$testDir/$baseClassName.cs") }
+            $candidates += $(if ($repoRoot) { Join-Path $repoRoot $file } else { $file })
+
+            foreach ($candidate in $candidates) {
+                if (-not ($candidate -and (Test-Path $candidate))) { continue }
+                $content = Get-Content $candidate -Raw -ErrorAction SilentlyContinue
+                if (-not $content) { continue }
+
+                # Capture the namespace (block-scoped or file-scoped) once. $matches is read
+                # immediately, before the [Category] match below can overwrite it.
+                if (-not $classNamespace -and $content -match '(?m)^\s*namespace\s+([A-Za-z_][\w.]*)') {
+                    $classNamespace = $matches[1]
                 }
-                # Also check the changed file itself
-                $fullPath = if ($repoRoot) { Join-Path $repoRoot $file } else { $file }
-                if (Test-Path $fullPath) {
-                    $content = Get-Content $fullPath -Raw -ErrorAction SilentlyContinue
+
+                # Match [Category(TestCategory.X)] or [Category("X")] once.
+                if (-not $categoryFilter) {
                     if ($content -match '\[Category\(TestCategory\.(\w+)\)\]') {
                         $categoryFilter = "Category=$($matches[1])"
-                        break
                     } elseif ($content -match '\[Category\("([^"]+)"\)\]') {
                         $categoryFilter = "Category=$($matches[1])"
-                        break
                     }
                 }
             }
+
+            if ($categoryFilter -and $classNamespace) { break }
         }
 
-        # Use Category filter if found, otherwise fall back to class name
+        # Use Category filter if found, otherwise fall back to class name.
         $group.Filter = if ($categoryFilter) { $categoryFilter } else { $baseClassName }
+
+        # For device tests, also emit a fully-qualified class name so the gate can run ONLY the
+        # PR's test class (XHarness SkipClass include filter) instead of the whole Category. A
+        # single unrelated crashing test in the same category otherwise APP_CRASHes the run and
+        # turns the verdict INCONCLUSIVE (e.g. dotnet/maui#36616). Additive: $group.Filter still
+        # carries the whole-Category value for Windows + fallback, so existing behaviour is kept.
+        if ($group.Type -eq "DeviceTest" -and $baseClassName) {
+            $group.ClassFilter = if ($classNamespace) { "$classNamespace.$baseClassName" } else { $baseClassName }
+        }
     }
 }
 
