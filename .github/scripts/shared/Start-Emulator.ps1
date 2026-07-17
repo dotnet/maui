@@ -670,42 +670,56 @@ if ($Platform -eq "android") {
         # the existing fatal below still fires — strictly additive, no happy-path change.
         # (PR #35706 build 14680958: all runtimes "Invalid", gate went INCONCLUSIVE.)
         if (-not $selectedDevice) {
-            $readyRuntimeId = $null
+            # Enumerate ALL Ready iOS runtime disk images (newest first), not just the
+            # newest one. Observed in CI (PR #35706 build 14689719): the agent has iOS
+            # 26.3.1 (23D8133) AND iOS 26.5 (23F77) both "Ready", but `simctl create` on
+            # the NEWEST (iOS-26-5) fails "Invalid runtime" — it is a preview runtime whose
+            # build (23F77) does not match the selected Xcode's iphonesimulator SDK (23F73),
+            # so CoreSimulator rejects it. The OLDER, stable iOS-26-3-1 is far more likely
+            # to be create-usable, but the previous `Select-Object -First 1` never tried it
+            # and the gate dead-ended at INCONCLUSIVE. Try every Ready runtime (highest
+            # version first, to keep the iOS-26 snapshot-baseline size when possible) until
+            # one accepts `simctl create`. Strictly additive — worst case is the same
+            # INCONCLUSIVE as before.
+            $readyRuntimeIds = @()
             try {
                 $rtImages = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
-                $readyRuntimeId = @(
+                $readyRuntimeIds = @(
                     $rtImages.PSObject.Properties.Value |
                         Where-Object { $_.state -eq 'Ready' -and $_.runtimeIdentifier -match 'iOS' } |
                         Sort-Object { $_.version } -Descending |
                         ForEach-Object { $_.runtimeIdentifier }
-                ) | Select-Object -First 1
+                )
             } catch {
                 Write-Info "Could not enumerate runtime disk images: $_"
             }
-            if ($readyRuntimeId) {
-                Write-Info "Recovered Ready (unenrolled) iOS runtime disk image: $readyRuntimeId - attempting to create a device on it..."
-                foreach ($rescueType in @(
-                    @{ Name = 'iPhone 11 Pro'; Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro' },
-                    @{ Name = 'iPhone Xs';     Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-Xs' })) {
+            if ($readyRuntimeIds.Count -gt 0) {
+                Write-Info "Recovered $($readyRuntimeIds.Count) Ready (unenrolled) iOS runtime disk image(s): $($readyRuntimeIds -join ', ') - attempting to create a device on each (newest first) until one succeeds..."
+                foreach ($readyRuntimeId in $readyRuntimeIds) {
                     if ($selectedDevice) { break }
-                    $createOutput = & xcrun simctl create $rescueType.Name $rescueType.Id $readyRuntimeId 2>&1
-                    $udidLine = ("$createOutput" -split "`n" |
-                        Where-Object { $_ -match '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$' } |
-                        Select-Object -Last 1)
-                    if ($LASTEXITCODE -eq 0 -and $udidLine) {
-                        $newUdid = $udidLine.Trim()
-                        Write-Info "Created $($rescueType.Name) : $newUdid on $readyRuntimeId"
-                        # The device may not surface under `list devices available` until its
-                        # runtime is enrolled, but `simctl boot <udid>` mounts it on demand, so
-                        # use the UDID directly (re-query only for a nicer display object).
-                        $reList = xcrun simctl list devices --json 2>$null | ConvertFrom-Json
-                        $found = $reList.devices.PSObject.Properties.Value | ForEach-Object { $_ } |
-                            Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
-                        $selectedDevice = if ($found) { $found } else { [PSCustomObject]@{ udid = $newUdid; name = $rescueType.Name } }
-                        $selectedVersion = $readyRuntimeId
-                    }
-                    else {
-                        Write-Info "Failed to create $($rescueType.Name) on $readyRuntimeId`: $createOutput"
+                    foreach ($rescueType in @(
+                        @{ Name = 'iPhone 11 Pro'; Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro' },
+                        @{ Name = 'iPhone Xs';     Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-Xs' })) {
+                        if ($selectedDevice) { break }
+                        $createOutput = & xcrun simctl create $rescueType.Name $rescueType.Id $readyRuntimeId 2>&1
+                        $udidLine = ("$createOutput" -split "`n" |
+                            Where-Object { $_ -match '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$' } |
+                            Select-Object -Last 1)
+                        if ($LASTEXITCODE -eq 0 -and $udidLine) {
+                            $newUdid = $udidLine.Trim()
+                            Write-Info "Created $($rescueType.Name) : $newUdid on $readyRuntimeId"
+                            # The device may not surface under `list devices available` until its
+                            # runtime is enrolled, but `simctl boot <udid>` mounts it on demand, so
+                            # use the UDID directly (re-query only for a nicer display object).
+                            $reList = xcrun simctl list devices --json 2>$null | ConvertFrom-Json
+                            $found = $reList.devices.PSObject.Properties.Value | ForEach-Object { $_ } |
+                                Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
+                            $selectedDevice = if ($found) { $found } else { [PSCustomObject]@{ udid = $newUdid; name = $rescueType.Name } }
+                            $selectedVersion = $readyRuntimeId
+                        }
+                        else {
+                            Write-Info "Failed to create $($rescueType.Name) on $readyRuntimeId`: $createOutput"
+                        }
                     }
                 }
             }
