@@ -414,7 +414,9 @@ stimuli:
         The agent does not silently drop or contradict a prior ❌ Error
         finding.
     constraints:
-      max_duration: 5m
+      # This live case traverses several GitHub review surfaces and routinely
+      # approaches the suite's five-minute default even when it succeeds.
+      max_duration: 10m
       expect_skills:
         - code-review
 
