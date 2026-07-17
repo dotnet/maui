@@ -744,21 +744,26 @@ function Get-ReleaseShipChecks {
             $mainStabilizeOk = [string]::IsNullOrEmpty($vpMain.StabilizePackageVersion) -or ($vpMain.StabilizePackageVersion -eq 'false')
             $mainMainlineOk  = $mainLabelOk -and $mainStabilizeOk
 
-            if ($mainPastMajor) {
-                $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
-                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main has moved past the $major.$minor train entirely (no bump needed for SR$targetSr stabilization)." `
-                    -NextAction "No bump needed."
-            } elseif ($mainBumpedThisCycle -and $mainMainlineOk) {
-                $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
-                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main is at or past ``$major.$minor.$expectedNextPatchPrefix`` so PRs merging during SR$targetSr stabilization target SR$nextSr correctly." `
-                    -NextAction "No bump needed."
-            } elseif ($mainBumpedThisCycle) {
+            if (($mainPastMajor -or $mainBumpedThisCycle) -and (-not $mainMainlineOk)) {
+                # The version state (past-major OR patch bumped to the next cycle)
+                # says "no bump needed", but main is misconfigured as a servicing/
+                # stable build. Gate BOTH READY states on the mainline settings: a
+                # dev branch emitting servicing/stable packages misrepresents its
+                # ship vehicle regardless of its version number.
                 $mainOffenders = @()
                 if (-not $mainLabelOk)     { $mainOffenders += "``PreReleaseVersionLabel=$($vpMain.PreReleaseVersionLabel)`` (expected ``ci.main``)" }
                 if (-not $mainStabilizeOk) { $mainOffenders += "``StabilizePackageVersion=$($vpMain.StabilizePackageVersion)`` (expected ``false``)" }
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
-                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` with $($mainOffenders -join ' and ') — main's PatchVersion is bumped to the SR$nextSr cycle but its mainline settings are configured for a stable/servicing build, not dev main. PRs merging to ``$($Ctx.mainBranch)`` would emit packages that misrepresent their ship vehicle." `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` with $($mainOffenders -join ' and ') — main's version is already clear of the SR$targetSr cycle (no PatchVersion bump needed), but its mainline settings are configured for a stable/servicing build, not dev main. PRs merging to ``$($Ctx.mainBranch)`` would emit packages that misrepresent their ship vehicle." `
                     -NextAction "On ``$($Ctx.mainBranch)`` restore the dev-main settings in ``eng/Versions.props``: set ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false``. Only the SR branch flips to ``servicing``/``true``; main must stay on ci.main/false throughout SR$targetSr stabilization."
+            } elseif ($mainPastMajor) {
+                $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main has moved past the $major.$minor train entirely (no bump needed for SR$targetSr stabilization)." `
+                    -NextAction "No bump needed."
+            } elseif ($mainBumpedThisCycle) {
+                $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main is at or past ``$major.$minor.$expectedNextPatchPrefix`` so PRs merging during SR$targetSr stabilization target SR$nextSr correctly." `
+                    -NextAction "No bump needed."
             } else {
                 $mainBumpTitle = "Update PatchVersion from $($vpMain.Patch) to $expectedNextPatchPrefix"
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
@@ -998,8 +1003,13 @@ function Get-MaestroOperationalChecks {
             }
             # Sort by BAR build id (monotonic, locale-independent) to pick the latest.
             $latest = @($srBranchBuilds | Sort-Object id -Descending)[0]
-            $hasChans = @($latest.channels).Count -gt 0
-            $chans = if ($hasChans) { ($latest.channels -join ', ') } else { '_none_' }
+            # Filter null/empty channel entries: @($null).Count is 1, which would
+            # otherwise false-mark a build with a missing/null `channels` property as
+            # promoted and emit a bogus READY Assessment-feed row. Reuse the filtered
+            # list for the join so display and promotion state stay consistent.
+            $realChans = @((Get-AzdoProp $latest 'channels') | Where-Object { $_ })
+            $hasChans = $realChans.Count -gt 0
+            $chans = if ($hasChans) { ($realChans -join ', ') } else { '_none_' }
             $buildLink = if ($latest.buildLink) { " ([build $($latest.id)]($($latest.buildLink)))" } else { " (build $($latest.id))" }
             $checks += New-ReadinessCheck -Area $buildArea -Status 'READY' `
                 -Details "Build **$($latest.buildNumber)**$buildLink for SR HEAD ``$headShort`` is in BAR; channels: $chans." `

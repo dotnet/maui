@@ -3253,6 +3253,28 @@ Assert-Eq -Label "Main-past-major (11.0): status READY"  -Expected 'READY' -Actu
 Assert-Eq -Label "Main-past-major: details mention moved past train" -Expected $true `
     -Actual ([bool]($mainBumpCheck3.Details -match 'moved past'))
 
+# Scenario 3a: main past-major (11.0) but MISCONFIGURED as servicing/stable — BLOCKED.
+# The mainline-settings gate must apply to the past-major state too, not only the
+# same-cycle bump; a dev branch on 11.0 emitting servicing packages is still wrong.
+$checks3a = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=11; Minor=0; Patch=10; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck3a = Get-CheckByAreaPrefix -Checks $checks3a -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-past-major but servicing-configured: status BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck3a.Status
+Assert-Eq -Label "Main-past-major servicing: details name PreReleaseVersionLabel offender" -Expected $true `
+    -Actual ([bool]($mainBumpCheck3a.Details -match 'PreReleaseVersionLabel=servicing'))
+Assert-Eq -Label "Main-past-major servicing: next action restores ci.main + false" -Expected $true `
+    -Actual ([bool]($mainBumpCheck3a.NextAction -match 'ci\.main' -and $mainBumpCheck3a.NextAction -match 'false'))
+
+# Scenario 3b: main past-major (11.0) WITH correct dev-main settings — READY (control).
+$checks3b = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=11; Minor=0; Patch=10; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck3b = Get-CheckByAreaPrefix -Checks $checks3b -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-past-major + ci.main/false: status READY" -Expected 'READY' -Actual $mainBumpCheck3b.Status
+
 # Scenario 4: SR8 in-flight, main bumped multiple cycles ahead (10.0.110 for hypothetical SR11) — READY
 $checks4 = Invoke-ShipChecksWithMockedVersions `
     -SrVersion @{ Major=10; Minor=0; Patch=80 } `
@@ -3873,6 +3895,22 @@ Assert-Eq -Label "main+sr-builds: picks the SR-branch build (20260610.5)" -Expec
     -Actual ($s16Build.Details -match '20260610\.5')
 Assert-Eq -Label "main+sr-builds: does NOT pick the higher-id main build (20260715.9)" -Expected $true `
     -Actual (-not ($s16Build.Details -match '20260715\.9'))
+
+# ── Scenario 17: SR build present but channels is $null (not []) → NOT promoted ──
+# @($null).Count is 1, which previously false-marked a null-channels build as
+# promoted and emitted a bogus READY Assessment-feed row. Null/empty channels must
+# read as unpromoted (build READY with '_none_', feed WATCH).
+$nullChansBuild = @(
+    [PSCustomObject]@{ id = 333000; branch = 'release/10.0.1xx-sr8'; buildNumber = '20260716.2'
+        buildLink = 'https://example/nullchans'; commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'
+        channels = $null }
+)
+$s17 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $nullChansBuild
+$s17Build = Get-MaestroCheckByPrefix -Checks $s17 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "null-channels build: build check shows channels as '_none_'" -Expected $true `
+    -Actual ($s17Build.Details -match '_none_')
+$s17Feed = Get-MaestroCheckByPrefix -Checks $s17 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "null-channels build: feed check is WATCH (null channels != promoted)" -Expected 'WATCH' -Actual $s17Feed.Status
 
 # =========================================================================
 # Get-MilestoneHygieneChecks — current/next milestone existence + stale detection

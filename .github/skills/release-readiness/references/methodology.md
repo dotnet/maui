@@ -1,6 +1,6 @@
 # Release Readiness — Methodology
 
-This document captures the algorithms used by `Get-ReleaseReadiness.ps1` and **the five gotchas** discovered through real SR analysis that the algorithms exist to prevent.
+This document captures the algorithms used by `Get-ReleaseReadiness.ps1` and **the seven gotchas** discovered through real SR analysis that the algorithms exist to prevent.
 
 ## Gotcha #1: Cherry-Pick Number Swap
 
