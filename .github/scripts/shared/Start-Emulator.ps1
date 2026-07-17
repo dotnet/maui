@@ -284,6 +284,15 @@ if ($Platform -eq "android") {
                 $offlineDevices = adb devices | Select-String "^emulator-\d+\s+offline"
                 if ($offlineDevices.Count -gt 0) {
                     Write-Info "Device found but offline, waiting..."
+                    # A booted emulator can drop to 'offline' when the ADB channel
+                    # stalls under CPU pressure (2-core agents building the app).
+                    # This is the exact state that used to trip the duplicate-AVD
+                    # FATAL. Actively nudge adb to reconnect the offline transport
+                    # (cheap, non-destructive) instead of only waiting — this often
+                    # recovers the existing emulator without a kill+reboot cycle.
+                    if ($deviceWaited % 30 -eq 0) {
+                        adb reconnect offline 2>&1 | ForEach-Object { Write-Info "  adb reconnect: $_" }
+                    }
                 }
                 
                 Start-Sleep -Seconds 5
