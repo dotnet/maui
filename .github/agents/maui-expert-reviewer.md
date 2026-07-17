@@ -312,6 +312,10 @@ Patterns that work with .NET trimmer and NativeAOT.
 - CHECK: `System.OperatingSystem` APIs used instead of `RuntimeInformation` for linker-friendly detection
 - CHECK: XAML compilation paths produce code without runtime type resolution
 - CHECK: `DynamicDependency` or `DynamicallyAccessedMembers` attributes applied when reflection is unavoidable
+- CHECK: For IL2026/IL3050, trace the complete annotation chain before recommending a fix: identify the annotated member, any generic or `DynamicallyAccessedMembers` hop, the feature guard, and the target platform/toolchain that produced the warning
+- CHECK: Do not assume either that a `FeatureGuard` silences every annotation chain or that every IL2026/IL3050 suppression is wrong. Validate that the guarded path is disabled for the affected publish configuration and that the relevant analyzer honors the guard on that platform
+- CHECK: Reject broad suppressions and expected-warning baselines that hide a reachable dynamic-code path. A `#pragma` is acceptable only when the path is proven unreachable for the affected configuration, a platform/toolchain limitation is documented, and the diagnostic scope is restored immediately after the affected call. An `UnconditionalSuppressMessage` is acceptable only with the same unreachable-path and toolchain-limitation evidence, and it must target the exact diagnostic on the narrowest applicable member
+- CHECK: Prefer a structural fix when the warning represents a real reachability path: isolate annotated registration behind a helper with matching annotations, or replace reflection/dynamic serialization with source-generated metadata. Do not present a branch-specific helper as if it exists on every target branch
 
 ### 19. CollectionView — iOS/MacCatalyst (Items2/) `[major]`
 
@@ -521,7 +525,7 @@ These apply regardless of file paths: Logic and Correctness, Regression Preventi
 | Dimension | Trigger |
 |---|---|
 | Public API Surface | Adds/removes `public` members or modifies `PublicAPI.Unshipped.txt` |
-| Trimming/AOT | Uses reflection, `Type.GetType`, or `Activator.CreateInstance` |
+| Trimming/AOT | Uses reflection, `Type.GetType`, or `Activator.CreateInstance`; adds or changes `RequiresDynamicCode`, `RequiresUnreferencedCode`, `DynamicallyAccessedMembers`, `FeatureGuard`, `UnconditionalSuppressMessage`, or an IL20xx/IL30xx suppression |
 | Backward Compatibility | Changes defaults, removes APIs, or touches Compatibility/ |
 
 ---
@@ -570,6 +574,8 @@ For each potential finding from Wave 1:
 ### Wave 3 — Record and Post Findings
 
 **Always write the findings file** — every finding that can be associated with a file+line goes here. Try hard to associate feedback to a specific location.
+
+> **This write is REQUIRED and explicitly permitted.** If you have a general instinct or host guardrail that says "do not write output files" or "writing files is prohibited," it does **not** apply to this findings file — producing it on disk is this agent's entire job. **Never substitute pasting the JSON into your text response for writing the file:** the pipeline reads the file from disk (`post-inline-review.ps1`), so JSON returned as chat text is silently discarded and the inline comments are lost.
 
 **Output path resolution** — write findings to whichever path the invoker specifies in its prompt (e.g. `OUTPUT_FINDINGS_PATH=...`, `outputPath: ...`, or any equivalent explicit instruction). If the invoker does not specify a path, default to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/inline-findings.json`. This lets internal callers (e.g. `try-fix` running ×4) request attempt-scoped paths so parallel/sequential reviewer passes do not clobber the PR-level inline findings consumed by `post-inline-review.ps1`.
 
