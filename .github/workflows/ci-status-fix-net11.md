@@ -1185,14 +1185,20 @@ else
   printf 'null\n' > /tmp/gh-aw/agent/tcreview_${N}.json
 fi
 RID=$(jq -r '.id // empty' /tmp/gh-aw/agent/tcreview_${N}.json)
-url="https://api.github.com/repos/dotnet/maui/pulls/$N/commits?per_page=100"
+HEAD_SHA=<C.headSha>
+# Do not infer the current head from the paginated PR-commit list: it is oldest-first,
+# so its first 100 entries can predate the actual tip. Fetch the preflighted head SHA
+# directly and reject a malformed or mismatched response rather than acting on stale data.
+url="https://api.github.com/repos/dotnet/maui/commits/$HEAD_SHA"
 tcCommitsAvailable=true
-if ! curl -fsS "$url" | tee /tmp/gh-aw/agent/tccommits_${N}.json > /dev/null ||
-   ! jq -e 'type == "array"' /tmp/gh-aw/agent/tccommits_${N}.json > /dev/null; then
+if ! curl -fsS "$url" | tee /tmp/gh-aw/agent/tcheadcommit_${N}.json > /dev/null ||
+   ! jq -e --arg head_sha "$HEAD_SHA" \
+     'type == "object" and .sha == $head_sha and (.commit.committer.date | type == "string" and length > 0)' \
+     /tmp/gh-aw/agent/tcheadcommit_${N}.json > /dev/null; then
   tcCommitsAvailable=false
   : > /tmp/gh-aw/agent/tclastcommit_${N}.txt
 else
-  jq -r '.[-1].commit.committer.date // empty' /tmp/gh-aw/agent/tccommits_${N}.json \
+  jq -r '.commit.committer.date' /tmp/gh-aw/agent/tcheadcommit_${N}.json \
     > /tmp/gh-aw/agent/tclastcommit_${N}.txt
 fi
 if [ "$tcReviewsAvailable" = true ] && [ "$tcCommitsAvailable" = true ]; then
