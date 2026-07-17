@@ -556,7 +556,7 @@ jobs:
             if [[ "$reachable_suppression" == "true" ]]; then
               # The same pragma becomes unsafe when its runtime feature guard is
               # replaced with an unconditional path.
-              perl -0pi -e 's/if \(RuntimeFeature\.IsHybridWebViewSupported\)/if (true)/' "$repo/$APP_HOST"
+              perl -0pi -e 's/if \(RuntimeFeature\.IsHybridWebViewSupported\)/if (true)/ or die "Expected RuntimeFeature guard was not found\n";' "$repo/$APP_HOST"
             fi
 
             git -C "$repo" add --all
