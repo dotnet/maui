@@ -6,6 +6,7 @@
     <PackageReference Update="Xamarin.Android.Glide" Version="5.0.7.1" />
     <PackageReference Update="Xamarin.AndroidX.Activity" Version="1.13.0.1" />
     <PackageReference Update="Xamarin.AndroidX.Browser" Version="1.10.0.1" />
+    <PackageReference Update="Xamarin.AndroidX.Credentials" Version="1.6.0.1" />
     <PackageReference Update="Xamarin.AndroidX.DynamicAnimation" Version="1.1.0.6" />
     <PackageReference Update="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.11.0.1" />
     <PackageReference Update="Xamarin.AndroidX.Navigation.Common" Version="2.9.8.1" />
