@@ -270,6 +270,8 @@ if ($Platform -eq "android") {
             Write-Info "Waiting for emulator device to appear..."
             $deviceTimeout = 240
             $deviceWaited = 0
+            $offlineStreak = 0
+            $wedgedRecoveryDone = $false
             
             while ($deviceWaited -lt $deviceTimeout) {
                 # Match any emulator device line
@@ -284,6 +286,7 @@ if ($Platform -eq "android") {
                 $offlineDevices = adb devices | Select-String "^emulator-\d+\s+offline"
                 if ($offlineDevices.Count -gt 0) {
                     Write-Info "Device found but offline, waiting..."
+                    $offlineStreak += 5
                     # A booted emulator can drop to 'offline' when the ADB channel
                     # stalls under CPU pressure (2-core agents building the app).
                     # This is the exact state that used to trip the duplicate-AVD
@@ -293,6 +296,50 @@ if ($Platform -eq "android") {
                     if ($deviceWaited % 30 -eq 0) {
                         adb reconnect offline 2>&1 | ForEach-Object { Write-Info "  adb reconnect: $_" }
                     }
+                    # WEDGED-EMULATOR RECOVERY (build 14689943, #36586 android: a prior
+                    # 'Warm Up' step launched Emulator_30 but the process wedged
+                    # 'offline' permanently — adb only ever saw it reconnecting. The
+                    # reuse path above trusted the live process and waited the full
+                    # 240s on ALL 3 gate retries -> false INCONCLUSIVE). adb reconnect
+                    # cannot revive a truly wedged emulator, so ONCE, after a long
+                    # *continuous* offline streak on a REUSED emulator (which already
+                    # had the warmup's head-start to boot, so a 150s+ offline streak
+                    # means wedged, not merely slow), hard-kill it by PID and cold-boot
+                    # a fresh instance, then restart the wait clock. Single-shot
+                    # (guarded) so it can never loop; if the fresh boot also fails we
+                    # fall through to the same timeout/exit 1 as before -> never worse
+                    # than today. Gated on $reuseExistingEmulator so a fresh (possibly
+                    # just-slow) cold boot is never killed prematurely.
+                    if ((-not $wedgedRecoveryDone) -and $reuseExistingEmulator -and ($offlineStreak -ge 150)) {
+                        Write-Info "Reused emulator '$selectedAvd' stuck offline ${offlineStreak}s despite adb reconnect — killing it by PID and cold-booting a fresh instance (one-time recovery)."
+                        if ($IsWindows) {
+                            $wedgedPids = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue |
+                                Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id
+                            foreach ($wp in $wedgedPids) { Stop-Process -Id $wp -Force -ErrorAction SilentlyContinue }
+                        } else {
+                            bash -c "pgrep -f 'qemu.*$selectedAvd' | xargs -r kill -9; pgrep -f 'emulator.*$selectedAvd' | xargs -r kill -9; true" 2>&1 | Out-Null
+                        }
+                        Start-Sleep -Seconds 5
+                        adb kill-server 2>&1 | Out-Null
+                        adb start-server 2>&1 | Out-Null
+                        $useHeadless = $Headless -or $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS
+                        if ($IsWindows) {
+                            $windowStyle = if ($useHeadless) { "Hidden" } else { "Normal" }
+                            Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle $windowStyle
+                        } else {
+                            $windowFlag = if ($useHeadless) { "-no-window" } else { "" }
+                            bash -c "nohup '$emulatorBin' -avd '$selectedAvd' $windowFlag -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
+                        }
+                        Write-Info "Fresh emulator cold-boot issued after wedged recovery; resetting wait clock (up to $deviceTimeout s)."
+                        $wedgedRecoveryDone = $true
+                        $offlineStreak = 0
+                        $deviceWaited = 0
+                        Start-Sleep -Seconds 5
+                        continue
+                    }
+                }
+                else {
+                    $offlineStreak = 0
                 }
                 
                 Start-Sleep -Seconds 5
