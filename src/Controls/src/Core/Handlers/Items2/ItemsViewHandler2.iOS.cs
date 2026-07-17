@@ -125,6 +125,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal static void MapIsEnabled(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			(handler.Controller as SelectableItemsViewController2<ReorderableItemsView>)?.UpdateSelectionMode();
+
+			// Funnel through the base handler's IsEnabled mapping so UserInteractionEnabled
+			// stays correctly derived from both IsEnabled and InputTransparent.
+			ViewHandler.MapIsEnabled(handler, itemsView);
 		}
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
