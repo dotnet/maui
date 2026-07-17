@@ -73,6 +73,14 @@ namespace Microsoft.Maui
 								return null;
 							}
 
+							// The async Glide callback is not itself cancelable, so recheck the token before
+							// returning: a superseded (canceled) resource load must not overwrite a newer source
+							// that a non-ImageView consumer already applied (ImageSourcePartExtensions.UpdateSourceAsync).
+							if (cancellationToken.IsCancellationRequested)
+							{
+								return null;
+							}
+
 							return result;
 						}
 					}
@@ -81,7 +89,16 @@ namespace Microsoft.Maui
 
 					PlatformInterop.LoadImageFromFile(context, file, callback);
 
-					return await callback.Result.ConfigureAwait(false);
+					var fileResult = await callback.Result.ConfigureAwait(false);
+
+					// Same cancellation recheck as the resource path above: don't apply a stale drawable from a
+					// superseded load after a newer source has been requested on this same context consumer.
+					if (cancellationToken.IsCancellationRequested)
+					{
+						return null;
+					}
+
+					return fileResult;
 				}
 				catch (Exception ex)
 				{
