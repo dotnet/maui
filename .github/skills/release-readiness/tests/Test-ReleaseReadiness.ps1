@@ -1543,8 +1543,9 @@ $cls2 = Classify-RegressionCandidate `
 Assert-Eq -Label "Partial SrContents (no commits/fixedIssues) does not throw" `
     -Expected 'no-fix-yet' -Actual $cls2.classification
 
-# An open PR against a non-main branch must not be described as ready to
-# backport after merging; it needs a mainline PR first.
+# An open PR against inflight/current must not be told to retarget main;
+# its content reaches main via normal Candidate promotion. The guidance
+# must wait for merge + promotion (retargeting is optional/expedited only).
 function Get-PrInfo {
     param($Repo, $PrNumber)
     return [pscustomobject]@{
@@ -1568,10 +1569,13 @@ $nonMainOpen = Classify-RegressionCandidate `
     -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
     -SrContents @{ sourcePrs = @(); reverts = @() }
 
-Assert-Eq -Label "open non-main PR requires review instead of open-on-main" `
+Assert-Eq -Label "open inflight PR requires review instead of open-on-main" `
     -Expected 'needs-human-review' -Actual $nonMainOpen.classification
-Assert-Eq -Label "open non-main PR evidence requires main targeting" `
-    -Expected $true -Actual (($nonMainOpen.evidence -join "`n") -match 'must target main')
+# Guidance must mention Candidate promotion (not demand retargeting)
+Assert-Eq -Label "open inflight PR evidence mentions Candidate promotion path" `
+    -Expected $true -Actual (($nonMainOpen.evidence -join "`n") -match 'Candidate promotion')
+Assert-Eq -Label "open inflight PR evidence does NOT demand retargeting as required" `
+    -Expected $false -Actual (($nonMainOpen.evidence -join "`n") -match 'must target main')
 
 # ───── Get-IssueCommentPrs (negation guard on fix-phrase scoring) ─────
 # A maintainer comment that NEGATES a fix ("not fixed by #X", "won't fix #Y") must

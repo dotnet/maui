@@ -2427,7 +2427,13 @@ function Classify-RegressionCandidate {
                 } else {
                     $verdict = 'needs-human-review'
                     $confidence = 'medium'
-                    $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef), not main — it must target main before it can be backported"
+                    if ($pr.baseRef -like 'inflight/*') {
+                        # inflight/* PRs reach main via normal Candidate promotion — do NOT
+                        # instruct a captain to retarget. Wait for the merge + promotion flow.
+                        $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef) — wait for it to merge and flow to main via Candidate promotion, then rerun readiness. (Retargeting to main directly is an optional expedited path, not required.)"
+                    } else {
+                        $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef), not main — wait for its content to reach main (via merge + forward-flow), then rerun readiness"
+                    }
                 }
             }
             else {
