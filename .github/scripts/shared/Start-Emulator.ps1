@@ -610,6 +610,60 @@ if ($Platform -eq "android") {
             }
         }
         
+        # LAST-RESORT recovery — parity with the deep stage's "THIRD RECOVERY" in
+        # eng/pipelines/ci-copilot.yml. When every runtime from `simctl list runtimes
+        # available` rejected `simctl create` with "Invalid runtime" and no usable device
+        # exists, the agent may still have a runtime DISK IMAGE that is "Ready" but not yet
+        # enrolled in the legacy simruntime registry. The newer `simctl runtime list` shows
+        # it, and `simctl create` accepts its runtimeIdentifier and mounts it on demand — so
+        # recover a bootable sim here instead of dead-ending at "No iPhone simulator found"
+        # and degrading the gate to INCONCLUSIVE. Without this, the GATE iOS boot fails while
+        # the DEEP stage boots fine on the SAME agent (the gate boots via this script; the
+        # deep stage had its own recovery). If no runtime image is Ready this yields empty and
+        # the existing fatal below still fires — strictly additive, no happy-path change.
+        # (PR #35706 build 14680958: all runtimes "Invalid", gate went INCONCLUSIVE.)
+        if (-not $selectedDevice) {
+            $readyRuntimeId = $null
+            try {
+                $rtImages = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
+                $readyRuntimeId = @(
+                    $rtImages.PSObject.Properties.Value |
+                        Where-Object { $_.state -eq 'Ready' -and $_.runtimeIdentifier -match 'iOS' } |
+                        Sort-Object { $_.version } -Descending |
+                        ForEach-Object { $_.runtimeIdentifier }
+                ) | Select-Object -First 1
+            } catch {
+                Write-Info "Could not enumerate runtime disk images: $_"
+            }
+            if ($readyRuntimeId) {
+                Write-Info "Recovered Ready (unenrolled) iOS runtime disk image: $readyRuntimeId - attempting to create a device on it..."
+                foreach ($rescueType in @(
+                    @{ Name = 'iPhone 11 Pro'; Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro' },
+                    @{ Name = 'iPhone Xs';     Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-Xs' })) {
+                    if ($selectedDevice) { break }
+                    $createOutput = & xcrun simctl create $rescueType.Name $rescueType.Id $readyRuntimeId 2>&1
+                    $udidLine = ("$createOutput" -split "`n" |
+                        Where-Object { $_ -match '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$' } |
+                        Select-Object -Last 1)
+                    if ($LASTEXITCODE -eq 0 -and $udidLine) {
+                        $newUdid = $udidLine.Trim()
+                        Write-Info "Created $($rescueType.Name) : $newUdid on $readyRuntimeId"
+                        # The device may not surface under `list devices available` until its
+                        # runtime is enrolled, but `simctl boot <udid>` mounts it on demand, so
+                        # use the UDID directly (re-query only for a nicer display object).
+                        $reList = xcrun simctl list devices --json 2>$null | ConvertFrom-Json
+                        $found = $reList.devices.PSObject.Properties.Value | ForEach-Object { $_ } |
+                            Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
+                        $selectedDevice = if ($found) { $found } else { [PSCustomObject]@{ udid = $newUdid; name = $rescueType.Name } }
+                        $selectedVersion = $readyRuntimeId
+                    }
+                    else {
+                        Write-Info "Failed to create $($rescueType.Name) on $readyRuntimeId`: $createOutput"
+                    }
+                }
+            }
+        }
+
         if (-not $selectedDevice) {
             Write-Error "No iPhone simulator found. Please create one in Xcode."
             Write-Info "Available simulators:"

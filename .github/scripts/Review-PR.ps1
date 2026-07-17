@@ -2024,7 +2024,16 @@ function Get-GateFallbackDetails {
     if ($Tail -match '(?i)build failed|\berror\s+[A-Z]{2,}\d+\b') {
         $likely += "Build error before any test could run."
     }
-    if ($Tail -match '(?i)emulator.*(?:timeout|failed|not.found)|adb.*(?:server|crashed)|xharness.*(?:failed|timeout)') {
+    # Device/simulator BOOT failure — the pool agent could not start a usable device (e.g. an
+    # iOS agent whose every SimRuntime is "Invalid" / "Failed to boot device" / "No iPhone
+    # simulator found", or an Android emulator/xharness install that never came online). The
+    # gate never ran a single test, so this is transient infra, NOT a problem with the PR.
+    # (PR #35706 iOS: agent had zero usable runtimes; PR #36572 Android: xharness install failure.)
+    $platLabel = if ($ReviewedPlatform) { $ReviewedPlatform } else { "device" }
+    if ($Tail -match '(?i)Failed to boot device|No (?:iPhone|iPad|iOS|Android)\b[^\n]*simulator found|Invalid runtime:|Failed to create (?:iPhone|iPad)|No (?:preferred )?device (?:pre-installed|found)') {
+        $likely += "Could not boot the $platLabel simulator/emulator on the CI agent — the pool machine had no usable device runtime, so no test could run. Transient infra, not a problem with the PR; re-running the review (``/review rerun``) usually resolves it."
+    }
+    elseif ($Tail -match '(?i)emulator.*(?:timeout|failed|not.found)|adb.*(?:server|crashed)|xharness.*(?:failed|timeout)|Install failure|Test command cannot continue') {
         $likely += "Device/emulator setup failed (env error class)."
     }
     if ($Tail -match '(?i)merge.conflict|conflict.*merge.base') {
@@ -2092,12 +2101,20 @@ No tests were detected in this PR.
     } else {
         $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "INCONCLUSIVE" { "⚠️" } default { "❌" } }
         $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
+        # When the report is missing because the CI agent could not boot a device (infra), say
+        # so plainly instead of the alarming "exited before writing a report" — the INCONCLUSIVE
+        # verdict is correct and the PR itself is fine. (PRs #35706 iOS, #36572 Android.)
+        $gateLeadIn = if ($gateLogTail -match '(?i)Failed to boot device|No (?:iPhone|iPad|iOS|Android)\b[^\n]*simulator found|Invalid runtime:|Failed to create (?:iPhone|iPad)') {
+            "> ⚠️ The gate could not run: the $($gatePlatform.ToUpper()) simulator/emulator failed to boot on the CI agent (transient infra). This is **not** a problem with the PR — comment ``/review rerun`` to try again."
+        } else {
+            "> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report. Diagnostics below."
+        }
         @"
 ### Gate Result: $resultIcon $gateResult
 
 **Platform:** $($gatePlatform.ToUpper())
 
-> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report. Diagnostics below.
+$gateLeadIn
 
 $fallbackDetails
 
