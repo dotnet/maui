@@ -318,7 +318,7 @@ stimuli:
       output format (Independent Assessment → Findings → Failure-Mode
       Probing → Verdict + Confidence). Mark each finding with a severity
       emoji (❌ Error, ⚠️ Warning, or 💡 Info). End with a `### Verdict:`
-      line and a `**Confidence:**` rating.
+      section and a `**Confidence:**` rating.
     environment:
       git:
         type: worktree
@@ -326,11 +326,13 @@ stimuli:
         source: .
     graders:
       # The failure under test is a reviewer that identifies the risk but
-      # still reaches LGTM. Match the required final verdict heading while
-      # accepting benign Markdown emphasis around the verdict token.
-      - type: output-matches
+      # still delivers an explicit LGTM. The skill's standard output format
+      # allows explanatory prose after the heading, so do not require a
+      # verdict token immediately after `### Verdict:`. The LLM judge below
+      # verifies that the prose still reaches the required non-LGTM result.
+      - type: output-not-contains
         config:
-          pattern: '### Verdict:[^A-Za-z]*(NEEDS_CHANGES|NEEDS_DISCUSSION)'
+          substring: 'Verdict: LGTM'
       - type: prompt
         name: regression-judge
         config:
@@ -393,13 +395,12 @@ scoring:
   # exactly the de-brittling we want.
   #
   # Each stimulus uses one structural floor plus one LLM judge. The lifecycle
-  # latch floor is anchored to the final verdict heading, so it rejects a
-  # reviewer that finds the failure mechanism but still ships an LGTM while
-  # accepting benign Markdown emphasis around a non-LGTM verdict. With
-  # threshold 0.6 and a scale_1_5 judge (normalized = (raw-1)/4), that
-  # stimulus scores approximately:
-  #   - correct review: (verdict 1.0 + judge ~0.75) / 2 = ~0.875  -> PASS
-  #   - silent LGTM:    (verdict 0.0 + judge ~0.25) / 2 = ~0.125  -> FAIL
+  # latch floor rejects an explicit `Verdict: LGTM`; the judge verifies the
+  # required regression conclusion without assuming the verdict token is
+  # inline with the heading. With threshold 0.6 and a scale_1_5 judge
+  # (normalized = (raw-1)/4), that stimulus scores approximately:
+  #   - correct review: (floor 1.0 + judge ~0.75) / 2 = ~0.875  -> PASS
+  #   - explicit LGTM:  (floor 0.0 + judge ~0.25) / 2 = ~0.125  -> FAIL
   # This preserves semantic grading while making the tested verdict
   # inconsistency falsifiable.
   threshold: 0.6
