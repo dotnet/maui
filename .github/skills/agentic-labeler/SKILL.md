@@ -53,7 +53,9 @@ If neither an `area-*` nor a `platform/*` label clearly applies, **noop**.
 - Layout, measure/arrange, sizing issues → `area-layout`.
 - Navigation, Shell routing, page navigation → `area-navigation` (or `area-controls-shell` when Shell-specific).
 - XAML parsing, markup extensions, XamlC, source generators → `area-xaml`.
-- Hot reload, build, MSBuild, workload, project templates, tooling → `area-tooling`, `area-templates`, or `area-setup` as appropriate.
+- Installation, workload availability, target-framework recognition, requirements, and platform support → `area-setup`.
+- Hot reload, debugging, editor experiences, build tasks, and MSBuild/tooling behavior → `area-tooling`.
+- Project templates → `area-templates`.
 - BlazorWebView / Blazor hybrid → `area-blazor`.
 - Essentials APIs (non-UI: connectivity, sensors, preferences, etc.) → `area-essentials`.
 - Drawing / Microsoft.Maui.Graphics → `area-drawing`.
