@@ -204,10 +204,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var injector = InputInjector.TryCreate();
 
-			if (injector is null)
-			{
-				return;
-			}
+			Assert.NotNull(injector);
 
 			// Inject ONLY KeyUp(Enter) with no preceding KeyDown(Enter).
 			// This is the exact sequence the TextBox receives during IME candidate confirmation —
@@ -227,11 +224,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var injector = InputInjector.TryCreate();
 
-			if (injector is null)
-			{
-				return;
-			}
+			Assert.NotNull(injector);
 
+			
 			injector.InjectKeyboardInput(new[]
 			{
 				new InjectedInputKeyboardInfo

@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.KeyDown += OnPlatformKeyDown;
 			platformView.KeyUp += OnPlatformKeyUp;
+			platformView.LostFocus += OnPlatformLostFocus;
 			platformView.TextChanged += OnPlatformTextChanged;
 			platformView.SizeChanged += OnPlatformViewSizeChanged;
 		}
@@ -47,6 +48,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.SizeChanged -= OnPlatformViewSizeChanged;
 			platformView.KeyDown -= OnPlatformKeyDown;
 			platformView.KeyUp -= OnPlatformKeyUp;
+			platformView.LostFocus -= OnPlatformLostFocus;
 			platformView.TextChanged -= OnPlatformTextChanged;
 
 			_enterKeyDownSeen = false;
@@ -120,6 +122,11 @@ namespace Microsoft.Maui.Handlers
 				VirtualView?.UpdateText(passwordBox.Password);
 			else
 				VirtualView?.UpdateText(PlatformView.Text);
+		}
+
+		void OnPlatformLostFocus(object sender, RoutedEventArgs args)
+		{
+			_enterKeyDownSeen = false;
 		}
 
 		void OnPlatformKeyDown(object? sender, KeyRoutedEventArgs args)
