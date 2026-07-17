@@ -45,7 +45,7 @@ public class Issue6784 : _IssuesUITest
 	[Test]
 	public void TwoMoreControllerDoesNotShowEditButton()
 	{
-		App.WaitForElement("More");
+		App.WaitForElementTillPageNavigationSettled("More");
 		App.Tap("More");
 		App.WaitForElement("Tab 11");
 

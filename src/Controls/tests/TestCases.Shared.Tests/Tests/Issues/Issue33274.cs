@@ -16,7 +16,7 @@ public class Issue33274 : _IssuesUITest
 	[Category(UITestCategories.Stepper)]
 	public void Issue33274CheckInAndDeCrementation()
 	{
-		App.WaitForElement("Maximumlabel");
+		App.WaitForElementTillPageNavigationSettled("Maximumlabel");
 
 		// We are already at maximum and the increment schould not increase the internal value
 		App.IncreaseStepper("Maximumstepper");

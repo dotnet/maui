@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Stepper)]
 		public void ChangeIncrementValue()
 		{
-			App.WaitForElement("entry");
+			App.WaitForElementTillPageNavigationSettled("entry");
 			// check the current value.
 			var initialValue = App.FindElement("entry").GetText();
 			Assert.That("0", Is.EqualTo(initialValue));

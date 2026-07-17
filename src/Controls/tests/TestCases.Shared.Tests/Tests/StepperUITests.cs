@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			const string stepperAutomationId = "DefaultStepper";
 			const string valueAutomationId = "DefaultLabelValue";
 
-			App.WaitForElement(titleAutomationId);
+			App.WaitForElementTillPageNavigationSettled(titleAutomationId);
 
 			// 1. Check the current value.
 			var step1Value = App.FindElement(valueAutomationId).GetText();
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			const string stepperAutomationId = "DefaultStepper";
 			const string valueAutomationId = "DefaultLabelValue";
 
-			App.WaitForElement(titleAutomationId);
+			App.WaitForElementTillPageNavigationSettled(titleAutomationId);
 
 			// 1. Check the current value.
 			var step1Value = App.FindElement(valueAutomationId).GetText();

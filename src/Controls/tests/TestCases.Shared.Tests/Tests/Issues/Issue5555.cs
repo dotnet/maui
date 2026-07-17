@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("PushPage");
 			App.Tap("PushPage");
-			App.WaitForElement("PushPage");
+			App.WaitForElementTillPageNavigationSettled("PushPage");
 			App.Tap("PushPage");
 			App.WaitForElement("PushPage");
 
