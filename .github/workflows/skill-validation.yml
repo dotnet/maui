@@ -79,9 +79,8 @@ permissions:
 
 env:
   # Vally CLI is run via npx from npm. Pinned for reproducibility.
-  # @github/copilot-sdk (vally's executor) requires Node ^20.19 || >=22.12,
-  # so we pin Node 22 on the runners.
-  VALLY_VERSION: "0.6.0"
+  # Vally 0.10 requires Node >=22, so we pin Node 22 on the runners.
+  VALLY_VERSION: "0.10.0"
   NODE_VERSION: "22"
 
 jobs:
@@ -246,8 +245,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       # ── Lint eval specs with Vally ────────────────────────────────
-      # Lint ONLY the *.vally.yaml eval specs. `vally lint --eval-spec <file>`
-      # validates the spec and SKIPS SKILL.md structural linting. We do NOT
+      # Lint ONLY the explicitly enumerated *.vally.yaml eval specs. Vally's
+      # directory discovery only recognizes eval.yaml/eval.yml, so pass each
+      # nonstandard filename with --eval-spec. This also SKIPS SKILL.md structural
+      # linting. We do NOT
       # lint SKILL.md / *.agent.md here on purpose: vally's skill linter flags
       # two PRE-EXISTING repo issues unrelated to this migration (try-fix
       # SKILL.md exceeds the 500-line limit; find-regression-risk is missing
@@ -561,8 +562,10 @@ jobs:
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
         run: |
-          # Collect this skill's capability specs. The eval*.vally.yaml glob
-          # EXCLUDES hermeticity.vally.yaml (run by its own gate job).
+          # Collect this skill's capability specs. Pass every nonstandard
+          # eval*.vally.yaml filename explicitly because Vally directory discovery
+          # only recognizes eval.yaml/eval.yml. This EXCLUDES hermeticity.vally.yaml
+          # (run by its own gate job).
           SPECS=()
           for f in "$TESTS_PATH"/eval*.vally.yaml; do
             [ -e "$f" ] || continue

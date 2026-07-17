@@ -20,9 +20,9 @@
 #   phrasings. Only crisp, unambiguous failure-mode strings stay as
 #   structural floors (e.g. "claims PASS when no device was available").
 #
-# Scoring (see scoring block): @microsoft/vally@0.6.0 ignores
-# scoring.weights; trial score is the unweighted mean of grader [0,1]
-# scores; skill passes when the mean >= scoring.threshold (0.6). Several
+# Scoring (see scoring block): this suite deliberately omits scoring.weights,
+# so Vally 0.10 uses the unweighted mean of grader [0,1] scores; skill passes
+# when the mean >= scoring.threshold (0.6). Several
 # scenarios are judge-only — a single prompt grader means the trial score
 # IS the judge's normalized rubric score, which is the cleanest possible
 # de-brittled signal.
@@ -381,9 +381,8 @@ stimuli:
         - try-fix
 
 scoring:
-  # @microsoft/vally@0.6.0 ignores scoring.weights — only scoring.threshold
-  # is active (verified in dist/scoring/scorer.js). Trial score = unweighted
-  # mean of grader [0,1] scores; skill passes when the mean across runs >=
+  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # unweighted mean of grader [0,1] scores; skill passes when the mean across runs >=
   # threshold. Judge-only scenarios reduce to "judge normalized score >=
   # 0.6" (raw >= 3.4/5); two-grader scenarios average a crisp floor with
   # the judge. Threshold DEFAULTS to 1.0 when omitted, so it is set here.
