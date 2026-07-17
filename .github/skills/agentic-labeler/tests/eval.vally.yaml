@@ -814,7 +814,7 @@ stimuli:
       - type: output-contains
         config: { substring: "area-safearea" }
       - type: output-not-contains
-        config: { substring: "platform/android" }
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
@@ -846,6 +846,8 @@ stimuli:
     graders:
       - type: output-contains
         config: { substring: "area-tooling" }
+      - type: output-not-contains
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
