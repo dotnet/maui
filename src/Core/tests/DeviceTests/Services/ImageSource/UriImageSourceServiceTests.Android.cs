@@ -49,9 +49,13 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(ExtremeAspectRatioMultiplier, 1)]
-		[InlineData(1, ExtremeAspectRatioMultiplier)]
-		public async Task LoadDrawableAsyncLimitsExtremeAspectLargeFileUrisToDisplaySize(int widthMultiplier, int heightMultiplier)
+		[InlineData(ExtremeAspectRatioMultiplier, 1, "CenterCrop")]
+		[InlineData(1, ExtremeAspectRatioMultiplier, "CenterCrop")]
+		[InlineData(ExtremeAspectRatioMultiplier, 1, "FitXy")]
+		[InlineData(1, ExtremeAspectRatioMultiplier, "FitXy")]
+		[InlineData(ExtremeAspectRatioMultiplier, 1, "Center")]
+		[InlineData(1, ExtremeAspectRatioMultiplier, "Center")]
+		public async Task LoadDrawableAsyncLimitsExtremeAspectLargeFileUrisToDisplaySize(int widthMultiplier, int heightMultiplier, string scaleTypeName)
 		{
 			var metrics = MauiProgram.DefaultContext?.Resources?.DisplayMetrics;
 			Assert.NotNull(metrics);
@@ -62,7 +66,12 @@ namespace Microsoft.Maui.DeviceTests
 			var filename = BaseImageSourceServiceTests.CreateBitmapFile(sourceWidth, sourceHeight, expectedColor);
 			var imageSource = new UriImageSourceStub(new Uri(filename));
 			var imageView = new ImageView(MauiProgram.DefaultContext);
-			imageView.SetScaleType(ImageView.ScaleType.CenterCrop);
+			imageView.SetScaleType(scaleTypeName switch
+			{
+				"FitXy" => ImageView.ScaleType.FitXy,
+				"Center" => ImageView.ScaleType.Center,
+				_ => ImageView.ScaleType.CenterCrop,
+			});
 
 			var service = new UriImageSourceService();
 			await imageView.AttachAndRun(async () =>
@@ -72,8 +81,8 @@ namespace Microsoft.Maui.DeviceTests
 				var bitmap = bitmapDrawable.Bitmap;
 
 				Assert.NotNull(result);
-				Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels}.");
-				Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels}.");
+				Assert.True(bitmap.Width <= metrics.WidthPixels, $"Expected bitmap width {bitmap.Width} to be <= display width {metrics.WidthPixels} for scale type {scaleTypeName}.");
+				Assert.True(bitmap.Height <= metrics.HeightPixels, $"Expected bitmap height {bitmap.Height} to be <= display height {metrics.HeightPixels} for scale type {scaleTypeName}.");
 			});
 		}
 	}

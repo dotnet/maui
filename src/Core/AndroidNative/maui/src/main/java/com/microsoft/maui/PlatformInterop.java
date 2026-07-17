@@ -360,14 +360,26 @@ public class PlatformInterop {
 
     private static RequestBuilder<Drawable> limitToTargetSize(RequestBuilder<Drawable> builder, ImageView imageView) {
         // Cap the decode near the ImageView's measured size (Glide's view-target negotiation) while
-        // choosing a downsample strategy that matches the view's ScaleType. CenterCrop (Aspect.AspectFill,
-        // see AspectExtensions.cs) must COVER the view, which needs max(view/src) scaling -> CENTER_OUTSIDE.
-        // Using CENTER_INSIDE there under-decodes an extreme-aspect source and the CenterCrop matrix then
-        // upscales that low-res bitmap to fill the view (blurry). Other (fit-inside) scale types only need
-        // to fit WITHIN the view -> CENTER_INSIDE.
-        DownsampleStrategy strategy = imageView.getScaleType() == ImageView.ScaleType.CENTER_CROP
-            ? DownsampleStrategy.CENTER_OUTSIDE
-            : DownsampleStrategy.CENTER_INSIDE;
+        // choosing a downsample strategy that matches the view's ScaleType (see AspectExtensions.cs for
+        // the Aspect -> ScaleType mapping):
+        //   * CENTER_CROP (Aspect.AspectFill) and FIT_XY (Aspect.Fill) both fill the view on every axis,
+        //     so the source must COVER the view -> max(view/src) scaling -> CENTER_OUTSIDE. Using
+        //     CENTER_INSIDE there under-decodes an extreme-aspect source and the ImageView matrix then
+        //     upscales that low-res bitmap to fill the view (blurry).
+        //   * CENTER (Aspect.Center) draws the source 1:1 without scaling, so decoding it down to the view
+        //     size would visibly change the result for any image larger than its view. Preserve native
+        //     resolution but still guard against oversized bitmaps by capping the decode at the display
+        //     size (via limitToDisplaySize) instead of the much smaller view size.
+        //   * FitCenter (Aspect.AspectFit) and the default only need to fit WITHIN the view -> CENTER_INSIDE.
+        ImageView.ScaleType scaleType = imageView.getScaleType();
+        if (scaleType == ImageView.ScaleType.CENTER) {
+            return limitToDisplaySize(builder, imageView.getContext());
+        }
+
+        DownsampleStrategy strategy =
+            (scaleType == ImageView.ScaleType.CENTER_CROP || scaleType == ImageView.ScaleType.FIT_XY)
+                ? DownsampleStrategy.CENTER_OUTSIDE
+                : DownsampleStrategy.CENTER_INSIDE;
         return builder.downsample(strategy);
     }
 
