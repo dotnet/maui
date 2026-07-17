@@ -919,6 +919,40 @@ stages:
                   fi
                   echo "Could not create iPhone Xs / 11 Pro on $RT (trying next runtime if any): $CREATED"
                 done
+                # ENROLLMENT RECOVERY (build 14691165, #36507 ios): if EVERY create above failed
+                # "Invalid runtime", the Ready iOS images are on disk but not enrolled into
+                # CoreSimulator's registry. Restart CoreSimulatorService to force a re-scan/enroll,
+                # then retry the create loop once. Only runs when the first pass produced no UDID,
+                # so the healthy path is untouched; non-destructive (daemon auto-relaunches).
+                if [ -z "$UDID" ]; then
+                  echo "All runtime create attempts failed — restarting CoreSimulatorService to enroll Ready-but-unenrolled runtimes and retrying…"
+                  sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+                  sleep 8
+                  xcrun simctl list runtimes >/dev/null 2>&1 || true
+                  sleep 4
+                  ALL_IOS_RUNTIMES=$(xcrun simctl list runtimes available --json 2>/dev/null | jq -r '
+                    [.runtimes[] | select((.identifier // "") | test("iOS")) | {id: .identifier, v: (.version // "0")}]
+                    | sort_by(.v) | reverse | .[].id
+                  ' 2>/dev/null)
+                  READY_IOS_RUNTIMES=$(xcrun simctl runtime list --json 2>/dev/null | jq -r '
+                    [to_entries[] | .value
+                     | select((.state == "Ready") and (((.runtimeIdentifier // "") | test("iOS"))))
+                     | {id: .runtimeIdentifier, v: (.version // "0")}]
+                    | sort_by(.v) | reverse | .[].id
+                  ' 2>/dev/null)
+                  CANDIDATE_RUNTIMES=$(printf '%s\n%s\n%s\n' "$RUNTIME" "$ALL_IOS_RUNTIMES" "$READY_IOS_RUNTIMES" | awk 'NF && !seen[$0]++')
+                  for RT in $CANDIDATE_RUNTIMES; do
+                    CREATED=$(xcrun simctl create "iPhone Xs" com.apple.CoreSimulator.SimDeviceType.iPhone-Xs "$RT" 2>&1)
+                    if [ $? -eq 0 ] && echo "$CREATED" | grep -qiE '^[0-9A-F-]{36}$'; then
+                      UDID="$CREATED"; echo "Created iPhone Xs on $RT after service restart: $UDID"; break
+                    fi
+                    CREATED=$(xcrun simctl create "iPhone 11 Pro" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro "$RT" 2>&1)
+                    if [ $? -eq 0 ] && echo "$CREATED" | grep -qiE '^[0-9A-F-]{36}$'; then
+                      UDID="$CREATED"; echo "Created iPhone 11 Pro on $RT after service restart: $UDID"; break
+                    fi
+                    echo "Still could not create on $RT after service restart: $CREATED"
+                  done
+                fi
                 # Last resort: any already-created iPhone on any runtime (wrong size → visual
                 # tests may report 'size differs', but non-visual tests can still run).
                 if [ -z "$UDID" ]; then
@@ -1848,6 +1882,28 @@ stages:
                   echo "Selecting build Xcode (matches installed sim runtime ${AVAIL_RT_VER:-none}): $BUILD_XCODE"
                   sudo xcode-select -s "$BUILD_XCODE/Contents/Developer"
                   xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null | sed 's/^/  build iphonesimulator SDK now: /'
+                fi
+
+                # ENROLLMENT RECOVERY (build 14691165, #36507 ios): 'xcodebuild -downloadPlatform'
+                # can leave an iOS runtime as a "Ready" disk image that CoreSimulator has NOT
+                # enrolled into its active registry — 'simctl list runtimes available' is EMPTY
+                # while 'simctl runtime list' shows it Ready, and 'simctl create <that-id>' then
+                # fails "Invalid runtime" for EVERY Ready runtime, so the Boot step gives up and
+                # the gate degrades to INCONCLUSIVE with usable images sitting on disk. Restarting
+                # CoreSimulatorService forces a re-scan that enrolls the Ready disk images. Only
+                # fires in that exact broken state (enrolled=0 AND ready>0) so healthy agents are
+                # untouched; non-destructive — the daemon auto-relaunches on the next simctl call.
+                AVAIL_IOS=$(xcrun simctl list runtimes available --json 2>/dev/null | jq '[.runtimes[] | select(((.identifier // "") | test("iOS")))] | length' 2>/dev/null || echo 0)
+                READY_IOS=$(xcrun simctl runtime list --json 2>/dev/null | jq '[to_entries[] | .value | select((.state == "Ready") and (((.runtimeIdentifier // "") | test("iOS"))))] | length' 2>/dev/null || echo 0)
+                echo "iOS runtimes: enrolled(available)=${AVAIL_IOS:-0} ready(on-disk)=${READY_IOS:-0}"
+                if [ "${AVAIL_IOS:-0}" -eq 0 ] && [ "${READY_IOS:-0}" -gt 0 ]; then
+                  echo "Ready-but-unenrolled iOS runtime(s) detected — restarting CoreSimulatorService to enroll…"
+                  sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+                  sleep 8
+                  xcrun simctl list runtimes >/dev/null 2>&1 || true   # relaunch daemon + re-scan Ready images
+                  sleep 4
+                  AVAIL_IOS=$(xcrun simctl list runtimes available --json 2>/dev/null | jq '[.runtimes[] | select(((.identifier // "") | test("iOS")))] | length' 2>/dev/null || echo 0)
+                  echo "After CoreSimulatorService restart: enrolled(available) iOS runtimes=${AVAIL_IOS:-0}"
                 fi
 
                 echo "=== Final runtimes ==="
