@@ -430,10 +430,11 @@ static class SetPropertyHelpers
 			writer = icWriter;
 			parentVar = inflatorVar;
 		}
-		// CS8622: the generated += line does a method-group conversion to a delegate whose
-		// parameters have nullability annotations the user cannot control (e.g. EventHandler's `object? sender`).
-		using (PrePost.NewDisableWarning(writer, "CS8622"))
-		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
+		// Remap the emitted `+= handler;` line to the user's handler declaration so any diagnostic
+		// Roslyn produces for the method-group / delegate conversion (e.g. CS8622 for `object` vs
+		// `object?` sender) points to the user's method in the code-behind file, not to the generated
+		// .xsg.cs file which is not on disk and cannot be navigated to.
+		using (PrePost.NewLineInfoForSymbol(writer, handlerSymbol))
 		{
 			writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += {handler};");
 		}
