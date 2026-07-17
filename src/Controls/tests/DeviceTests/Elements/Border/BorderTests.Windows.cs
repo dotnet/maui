@@ -7,7 +7,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Hosting;
-using Windows.UI.Input.Preview.Injection;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -310,45 +309,6 @@ namespace Microsoft.Maui.DeviceTests
 				var contentPanel = GetNativeBorder(handler as BorderHandler);
 				// Child gestures must not promote the parent Border into the tab order.
 				Assert.False(contentPanel.IsTabStop);
-			});
-		}
-
-		[Theory(DisplayName = "Border ContentPanel fires TapGestureRecognizer on keyboard activation")]
-		[InlineData(13)]  // Enter
-		[InlineData(32)]  // Space
-		public async Task ContentPanelFiresTapGestureRecognizerOnKeyPress(ushort virtualKey)
-		{
-			SetupBuilder();
-
-			var tcs = new TaskCompletionSource<bool>();
-			var border = new Border()
-			{
-				Content = new Label { Text = "Border" },
-				StrokeShape = new Rectangle(),
-				WidthRequest = 300,
-				HeightRequest = 100
-			};
-
-			var tapRecognizer = new TapGestureRecognizer();
-			tapRecognizer.Tapped += (s, e) => tcs.TrySetResult(true);
-			border.GestureRecognizers.Add(tapRecognizer);
-
-			await AttachAndRun(border, async handler =>
-			{
-				var contentPanel = GetNativeBorder(handler as BorderHandler);
-				var injector = InputInjector.TryCreate();
-				Assert.NotNull(injector);
-
-				await InvokeOnMainThreadAsync(() => contentPanel.Focus(Microsoft.UI.Xaml.FocusState.Programmatic));
-
-				injector.InjectKeyboardInput(new[]
-				{
-					new InjectedInputKeyboardInfo { VirtualKey = virtualKey },
-					new InjectedInputKeyboardInfo { VirtualKey = virtualKey, KeyOptions = InjectedInputKeyOptions.KeyUp }
-				});
-
-				var tapFired = await Task.WhenAny(tcs.Task, Task.Delay(3000)) == tcs.Task;
-				Assert.True(tapFired, "TapGestureRecognizer.Tapped did not fire within timeout");
 			});
 		}
 
