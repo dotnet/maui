@@ -202,7 +202,7 @@ Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`) **
 
 **Confidence is confidence in the safety recommendation, not confidence that an individual finding exists.** Apply the most restrictive applicable cap to the required `**Confidence:**` field. A reviewer can be certain that a failure mechanism exists while remaining low-confidence that the change is safe to merge.
 
-**Do not rationalize away a failure mode you surfaced.** If Failure-Mode Probing produces a concrete scenario where the change misbehaves and you cannot *disprove* it by tracing exact state transitions, you may not downgrade it to 💡 Info or post `LGTM`. An un-disproven failure mode is an unresolved risk: it caps the required `**Confidence:**` field at **low** and the verdict at **NEEDS_DISCUSSION** (or **NEEDS_CHANGES** when the scenario is plausible). High confidence requires the *absence* of un-disproven failure modes — not a narrative explaining why the one you found is probably fine.
+**Do not rationalize away a failure mode you surfaced.** If Failure-Mode Probing produces a concrete scenario where the change misbehaves and you cannot *disprove* it by tracing exact state transitions, you may not downgrade it to 💡 Info or post `LGTM`. An un-disproven failure mode is an unresolved risk: it caps the required `**Confidence:**` field at **low** and the verdict at **NEEDS_DISCUSSION**. Escalate to **NEEDS_CHANGES** only when exact state transitions verify a concrete ❌ Error finding; mere plausibility does not establish a defect. High confidence requires the *absence* of un-disproven failure modes — not a narrative explaining why the one you found is probably fine.
 
 #### Deliver Verdict
 

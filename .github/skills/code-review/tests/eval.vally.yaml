@@ -318,7 +318,9 @@ stimuli:
       output format (Independent Assessment → Findings → Failure-Mode
       Probing → Verdict + Confidence). Mark each finding with a severity
       emoji (❌ Error, ⚠️ Warning, or 💡 Info). End with a `### Verdict:`
-      section and a `**Confidence:**` rating.
+      section and a `**Confidence:**` rating. After the review, make the
+      final non-empty line exactly one of `FINAL_VERDICT: NEEDS_CHANGES`,
+      `FINAL_VERDICT: NEEDS_DISCUSSION`, or `FINAL_VERDICT: LGTM`.
     environment:
       git:
         type: worktree
@@ -326,13 +328,12 @@ stimuli:
         source: .
     graders:
       # The failure under test is a reviewer that identifies the risk but
-      # still delivers an explicit LGTM. The skill's standard output format
-      # allows explanatory prose after the heading, so do not require a
-      # verdict token immediately after `### Verdict:`. The LLM judge below
-      # verifies that the prose still reaches the required non-LGTM result.
-      - type: output-not-contains
+      # still delivers LGTM. The standard verdict section allows explanatory
+      # prose, so the eval prompt adds a terminal, machine-readable marker
+      # instead of inferring the conclusion from free-form prose.
+      - type: output-matches
         config:
-          substring: 'Verdict: LGTM'
+          pattern: '(^|\n)FINAL_VERDICT: (NEEDS_CHANGES|NEEDS_DISCUSSION)\s*$'
       - type: prompt
         name: regression-judge
         config:
@@ -365,6 +366,11 @@ stimuli:
         regression risk (❌ Error or ⚠️ Warning). The verdict is
         NEEDS_CHANGES or NEEDS_DISCUSSION, not LGTM.
       - >-
+        The final non-empty line is exactly `FINAL_VERDICT: NEEDS_CHANGES`
+        or `FINAL_VERDICT: NEEDS_DISCUSSION`. This machine-readable marker
+        records the review conclusion without constraining the prose inside
+        the standard Verdict section.
+      - >-
         The Failure-Mode Probing section actually traces what the second
         SendNavigatedTo call does once HasNavigatedTo is already true,
         per SKILL.md Step 6 ("What happens during handler disconnect/
@@ -395,12 +401,12 @@ scoring:
   # exactly the de-brittling we want.
   #
   # Each stimulus uses one structural floor plus one LLM judge. The lifecycle
-  # latch floor rejects an explicit `Verdict: LGTM`; the judge verifies the
-  # required regression conclusion without assuming the verdict token is
-  # inline with the heading. With threshold 0.6 and a scale_1_5 judge
+  # latch floor requires the terminal non-LGTM marker; the judge verifies the
+  # required regression conclusion without constraining the prose in the
+  # standard Verdict section. With threshold 0.6 and a scale_1_5 judge
   # (normalized = (raw-1)/4), that stimulus scores approximately:
   #   - correct review: (floor 1.0 + judge ~0.75) / 2 = ~0.875  -> PASS
-  #   - explicit LGTM:  (floor 0.0 + judge ~0.25) / 2 = ~0.125  -> FAIL
+  #   - final LGTM:     (floor 0.0 + judge ~0.25) / 2 = ~0.125  -> FAIL
   # This preserves semantic grading while making the tested verdict
   # inconsistency falsifiable.
   threshold: 0.6
