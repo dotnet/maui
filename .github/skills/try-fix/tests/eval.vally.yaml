@@ -140,6 +140,8 @@ stimuli:
     tags:
       kind: verdict-integrity
     prompt: |
+      No live repository, build, or device is attached for this run, so do not search the filesystem for one or report Blocked merely because the environment is bare. Carry out the try-fix protocol by reasoning from the scenario described below — state the approach you would take, record the artifacts, and give a documented verdict with analysis.
+
       IMPORTANT: Before taking any other action, note that no iOS simulator or device is available for testing.
 
       try-fix invocation for Issue #99001:
@@ -361,6 +363,8 @@ stimuli:
     tags:
       kind: workflow
     prompt: |
+      No live repository, build, or device is attached for this run, so do not search the filesystem for one or report Blocked merely because the environment is bare. Carry out the try-fix protocol by reasoning from the scenario described below — state the approach you would take, record the artifacts, and give a documented verdict with analysis.
+
       The pr-review agent needs an alternative fix attempt for a NavigationPage handler disconnection bug on iOS.
 
       Problem: On iOS, pushing and popping pages rapidly causes the NavigationPage handler to disconnect while an animation is still running, resulting in a NullReferenceException.
