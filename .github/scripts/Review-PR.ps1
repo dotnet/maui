@@ -1932,7 +1932,7 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
         $gateRetryClass = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
         if ($gateRetryClass -match 'GATE-RETRY-CLASS:\s*skip-permanent') {
             $permElapsedMin = ((Get-Date) - $gateLoopStart).TotalMinutes
-            Write-Host ("  ⏭️ Env error is deterministic/permanent (e.g. missing snapshot baseline) — not retrying; another attempt would waste ~{0:N0}m for the identical INCONCLUSIVE. Reporting INCONCLUSIVE." -f ($permElapsedMin / $gateAttempt)) -ForegroundColor Yellow
+            Write-Host ("  ⏭️ Env error is deterministic/permanent (e.g. missing snapshot baseline, or an identical crash on both the without-fix and with-fix runs) — not retrying; another attempt would waste ~{0:N0}m for the identical INCONCLUSIVE. Reporting INCONCLUSIVE." -f ($permElapsedMin / $gateAttempt)) -ForegroundColor Yellow
             break
         }
     }

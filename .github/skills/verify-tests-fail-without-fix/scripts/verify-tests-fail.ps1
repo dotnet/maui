@@ -2065,7 +2065,26 @@ function Write-MarkdownReport {
     $abEnv = @(@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.EnvError })
     $abTransient = @($abEnv | Where-Object { -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved) })
     $abPermanentSignal = $snapshotBaselineMissing -or $snapshotEnvResidual -or $snapshotBaselineUnresolved -or $fixPlatformMismatch
-    $abClass = if ($abPermanentSignal -and $abTransient.Count -eq 0) { 'skip-permanent' } else { 'retryable' }
+    # NON-DIFFERENTIAL env failure: when the SAME test env-errors on BOTH the without-fix AND
+    # with-fix runs (e.g. a device-test APP_CRASH that recurs identically on each side), the fix
+    # cannot change the outcome — the gate is INCONCLUSIVE no matter what. Each side already
+    # exhausted its per-test retry loop (3× with device reboots), so a whole-gate retry just
+    # re-runs the identical both-sides crash for the identical INCONCLUSIVE. android #36616/
+    # 14688269 burned ~92min running a persistent Category=Shell APP_CRASH through 3 full A/B
+    # retries (6 runs × 13-20min) for the same verdict. Treat as permanent ONLY when EVERY
+    # env-errored gate test is two-sided — a ONE-SIDED env error may be a transient flake that a
+    # retry can clear, so those still fall through to the retry path.
+    $abBothSidesEnv = $false; $abOneSidedEnv = $false
+    foreach ($gt in $Tests) {
+        $woG = $WithoutFixResultsList | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
+        $wG  = $WithFixResultsList    | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
+        if (-not $woG -or -not $wG) { continue }
+        $woE = [bool]$woG.EnvError; $wE = [bool]$wG.EnvError
+        if ($woE -and $wE) { $abBothSidesEnv = $true }
+        elseif ($woE -or $wE) { $abOneSidedEnv = $true }
+    }
+    $abNonDifferential = $abBothSidesEnv -and (-not $abOneSidedEnv)
+    $abClass = if (($abPermanentSignal -and $abTransient.Count -eq 0) -or $abNonDifferential) { 'skip-permanent' } else { 'retryable' }
     $lines += ""
     $lines += "<!-- GATE-RETRY-CLASS: $abClass -->"
 
