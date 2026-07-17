@@ -1919,6 +1919,23 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     if ($gateExitCode -eq 0 -or -not $isEnvError) {
         break  # Real pass or real failure — don't retry
     }
+    # A PERMANENT env error is deterministic across retries on the same agent — a missing
+    # snapshot baseline (added separately by a maintainer), a cross-machine baseline residual,
+    # or a fix that only touches a different platform will produce the IDENTICAL INCONCLUSIVE
+    # on every attempt. verify-tests-fail.ps1 tags these in the report with the machine token
+    # `GATE-RETRY-CLASS: skip-permanent`. Retrying them just burns ~16min/attempt of agent time
+    # for no new information (Windows #36561/14687382 spent ~48min retrying a "Baseline snapshot
+    # not yet created" 3× before the same verdict). Stop now, still reporting INCONCLUSIVE
+    # ($isEnvError stays true → $gateExitCode = 3 below). Only TRANSIENT infra flakes fall
+    # through to the retry path.
+    if (Test-Path $gateContentFile) {
+        $gateRetryClass = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
+        if ($gateRetryClass -match 'GATE-RETRY-CLASS:\s*skip-permanent') {
+            $permElapsedMin = ((Get-Date) - $gateLoopStart).TotalMinutes
+            Write-Host ("  ⏭️ Env error is deterministic/permanent (e.g. missing snapshot baseline) — not retrying; another attempt would waste ~{0:N0}m for the identical INCONCLUSIVE. Reporting INCONCLUSIVE." -f ($permElapsedMin / $gateAttempt)) -ForegroundColor Yellow
+            break
+        }
+    }
     # Wall-clock budget guard (see $gateRetryBudgetMin above). Each attempt can be
     # very slow when device tests crash — XHarness APP_CRASH is only detected after
     # the per-test timeout and the device-test runner retries internally — so 3 full

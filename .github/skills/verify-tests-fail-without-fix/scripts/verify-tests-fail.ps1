@@ -1399,6 +1399,17 @@ if ($DetectedFixFiles.Count -eq 0) {
             $lines += ""
             $lines += "</details>"
         }
+        # Machine-readable retry class (consumed by Review-PR.ps1's gate retry loop). A
+        # missing snapshot baseline is DETERMINISTIC across retries on the same agent — the
+        # baseline PNG is added separately by a maintainer, so re-running it can never flip
+        # the outcome. Only TRANSIENT infra flakes (emulator/sim boot, ADB, Appium, XHarness
+        # crash, install/timeout) are worth retrying. Emit skip-permanent ONLY when there is
+        # at least one env error AND none of them are transient.
+        $foEnv = @($Results | Where-Object { $_.EnvError })
+        $foTransient = @($foEnv | Where-Object { -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved) })
+        $foClass = if ($foEnv.Count -gt 0 -and $foTransient.Count -eq 0) { 'skip-permanent' } else { 'retryable' }
+        $lines += ""
+        $lines += "<!-- GATE-RETRY-CLASS: $foClass -->"
         ($lines -join "`n") | Set-Content -Path $FailureOnlyReport -Encoding UTF8
         Write-Host ""
         Write-Host "📄 Markdown report saved to: $FailureOnlyReport" -ForegroundColor Cyan
@@ -2042,6 +2053,21 @@ function Write-MarkdownReport {
     }
     $lines += ""
     $lines += "</details>"
+
+    # Machine-readable retry class (consumed by Review-PR.ps1's gate retry loop). A PERMANENT
+    # env error — missing snapshot baseline, cross-machine baseline residual/mismatch, or a fix
+    # that only touches a different platform — is DETERMINISTIC across retries on the same agent,
+    # so re-running it up to 3× just burns ~16min/attempt for the identical INCONCLUSIVE (Windows
+    # #36561/14687382 wasted ~48min retrying a "Baseline snapshot not yet created" 3×). Only
+    # TRANSIENT infra flakes (emulator/sim boot, ADB, Appium, XHarness crash, install/timeout) are
+    # worth retrying. Emit skip-permanent ONLY when there is a permanent signal AND no transient
+    # infra env error remains to retry.
+    $abEnv = @(@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.EnvError })
+    $abTransient = @($abEnv | Where-Object { -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved) })
+    $abPermanentSignal = $snapshotBaselineMissing -or $snapshotEnvResidual -or $snapshotBaselineUnresolved -or $fixPlatformMismatch
+    $abClass = if ($abPermanentSignal -and $abTransient.Count -eq 0) { 'skip-permanent' } else { 'retryable' }
+    $lines += ""
+    $lines += "<!-- GATE-RETRY-CLASS: $abClass -->"
 
     ($lines -join "`n") | Set-Content -Path $MarkdownReport -Encoding UTF8
     Write-Host ""
