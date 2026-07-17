@@ -289,11 +289,12 @@ function Get-WindowsDeviceTestResultSummary {
     }
 
     # Diagnostics for the class-filtered path: how many <test> nodes the file(s) held in
-    # total (regardless of class) and a small sample of their names. When the class filter
-    # matches nothing, these disambiguate "the app produced no results at all" from "the
-    # results are there but under names we didn't expect" — see the throw below.
+    # total (regardless of class) and a small sample of the DISTINCT classes they belong
+    # to. When the class filter matches nothing, these disambiguate "the app produced no
+    # results at all" from "the results are there but under classes we didn't expect" —
+    # see the throw below.
     $diagTotalTests = 0
-    $diagSampleNames = [System.Collections.Generic.List[string]]::new()
+    $diagSampleClasses = [System.Collections.Generic.List[string]]::new()
 
     foreach ($file in $ResultFiles) {
         if (-not (Test-Path $file)) {
@@ -336,13 +337,31 @@ function Get-WindowsDeviceTestResultSummary {
             # keeps the gate's A/B verdict focused on what the PR changed and immune to
             # unrelated/flaky suite failures.
             foreach ($test in @($xml.SelectNodes('//test'))) {
-                $name = [string]$test.name
-                if ([string]::IsNullOrWhiteSpace($name)) { continue }
+                # xUnit v2 records the fully-qualified CLASS in the `type` attribute and a
+                # display/theory name in `name` (e.g. "PlatformView Transforms are not
+                # empty(size: 1)"), so the class filter MUST match on `type`. Matching on
+                # `name` misses every MAUI test that uses theory data or a [Fact]/[Theory]
+                # DisplayName — which produced a false INCONCLUSIVE when the Core Windows
+                # full run of 2090 tests reported 0 EntryHandlerTests even though they ran
+                # (build 14695285, #36577). GetAttribute is used so the lookup is
+                # unambiguous (avoids XmlElement's CLR .Name shadowing the `name` attribute)
+                # and yields '' when the attribute is absent.
+                $testType = $test.GetAttribute('type')
+                $testName = $test.GetAttribute('name')
+                if ([string]::IsNullOrWhiteSpace($testType) -and [string]::IsNullOrWhiteSpace($testName)) { continue }
                 $diagTotalTests++
-                if ($diagSampleNames.Count -lt 8) { $diagSampleNames.Add($name) }
+                # Sample DISTINCT class names (fall back to the raw name when a runner omits
+                # `type`) so a no-match throw shows which classes the suite actually ran.
+                $diagLabel = if (-not [string]::IsNullOrWhiteSpace($testType)) { $testType } else { $testName }
+                if ($diagLabel -and $diagSampleClasses.Count -lt 8 -and -not $diagSampleClasses.Contains($diagLabel)) {
+                    $diagSampleClasses.Add($diagLabel)
+                }
                 $isMatch = $false
                 foreach ($cls in $classList) {
-                    if ($name -eq $cls -or $name.StartsWith("$cls.", [System.StringComparison]::Ordinal)) {
+                    if ($testType -eq $cls -or
+                        $testName -eq $cls -or
+                        (-not [string]::IsNullOrWhiteSpace($testType) -and $testType.StartsWith("$cls.", [System.StringComparison]::Ordinal)) -or
+                        (-not [string]::IsNullOrWhiteSpace($testName) -and $testName.StartsWith("$cls.", [System.StringComparison]::Ordinal))) {
                         $isMatch = $true
                         break
                     }
@@ -350,7 +369,7 @@ function Get-WindowsDeviceTestResultSummary {
                 if (-not $isMatch) { continue }
 
                 $summary.Total++
-                switch ([string]$test.result) {
+                switch ([string]$test.GetAttribute('result')) {
                     'Pass' { $summary.Passed++ }
                     'Fail' { $summary.Failed++ }
                     'Skip' { $summary.Skipped++ }
@@ -376,9 +395,9 @@ function Get-WindowsDeviceTestResultSummary {
         # false pass (0 failed) for tests that never actually ran. Include diagnostics so
         # the two distinct causes are distinguishable from the gate log:
         #   * total <test> nodes = 0  -> the app produced no results (crash/early exit)
-        #   * total > 0 but no match  -> results exist under names we didn't expect
+        #   * total > 0 but no match  -> results exist under classes we didn't expect
         #     (namespace/name-format mismatch, or the target class was not in this suite).
-        $sample = if ($diagSampleNames.Count -gt 0) { " Sample test names: " + ($diagSampleNames -join '; ') + '.' } else { '' }
+        $sample = if ($diagSampleClasses.Count -gt 0) { " Sample classes present: " + ($diagSampleClasses -join '; ') + '.' } else { '' }
         throw "Windows device test result file(s) contained no tests for class(es) '$IncludeClasses' (the target tests did not run). Total tests found in result file(s): $diagTotalTests.$sample"
     }
 

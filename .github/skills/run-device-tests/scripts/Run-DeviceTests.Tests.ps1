@@ -101,18 +101,20 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
             Should -Throw -ExpectedMessage '*empty or not valid XML*'
     }
 
-    It 'counts only tests of the requested class when -IncludeClasses is set (full-suite scoping)' {
+    It 'counts only tests of the requested class when -IncludeClasses is set (matches on the xUnit type attribute)' {
         $file = Join-Path $script:testDir 'TestResults-Suite.xml'
 
+        # Real xUnit v2 shape: the fully-qualified class is in `type`; `name` is the
+        # (often theory/DisplayName) label, NOT the FQN.
         @'
 <assemblies>
   <assembly total="5" passed="3" failed="1" skipped="1" errors="0">
     <collection>
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneA" result="Pass" />
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneB" result="Fail" />
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneC" result="Skip" />
-      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoA" result="Pass" />
-      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoB" result="Pass" />
+      <test name="OneA" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneA" result="Pass" />
+      <test name="OneB" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneB" result="Fail" />
+      <test name="OneC" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneC" result="Skip" />
+      <test name="TwoA" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="TwoA" result="Pass" />
+      <test name="TwoB" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="TwoB" result="Pass" />
     </collection>
   </assembly>
 </assemblies>
@@ -128,6 +130,33 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
         $summary.Skipped | Should -Be 1
     }
 
+    It 'matches the class even when the test name is a theory/DisplayName string (regression: false INCONCLUSIVE #36577)' {
+        $file = Join-Path $script:testDir 'TestResults-Theory.xml'
+
+        # These `name` values never start with the FQN — the original name-based matcher
+        # counted 0 here and forced a false INCONCLUSIVE even though the tests ran.
+        @'
+<assemblies>
+  <assembly total="3" passed="2" failed="1" skipped="0" errors="0">
+    <collection>
+      <test name="PlatformView Transforms are not empty(size: 1)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Transforms" result="Pass" />
+      <test name="CompletedFiresOnRealEnterKeyPress" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
+      <test name="Updating Font Does Not Affect Alignment(initialSize: 10, newSize: 20)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Font" result="Fail" />
+      <test name="Unrelated" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="Unrelated" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
+
+        $summary.Total | Should -Be 3
+        $summary.Passed | Should -Be 2
+        $summary.Failed | Should -Be 1
+    }
+
     It 'does not treat a class name as a prefix substring of another class' {
         $file = Join-Path $script:testDir 'TestResults-Prefix.xml'
 
@@ -135,8 +164,8 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 <assemblies>
   <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
     <collection>
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneA" result="Pass" />
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTestsExtra.OneB" result="Fail" />
+      <test name="OneA" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneA" result="Pass" />
+      <test name="OneB" type="Microsoft.Maui.DeviceTests.EntryHandlerTestsExtra" method="OneB" result="Fail" />
     </collection>
   </assembly>
 </assemblies>
@@ -151,6 +180,28 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
         $summary.Failed | Should -Be 0
     }
 
+    It 'falls back to the fully-qualified name when a runner omits the type attribute' {
+        $file = Join-Path $script:testDir 'TestResults-NoType.xml'
+
+        @'
+<assemblies>
+  <assembly total="2" passed="1" failed="1" skipped="0" errors="0">
+    <collection>
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneA" result="Pass" />
+      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoA" result="Fail" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
+
+        $summary.Total | Should -Be 1
+        $summary.Passed | Should -Be 1
+    }
+
     It 'supports multiple comma/semicolon-separated classes in -IncludeClasses' {
         $file = Join-Path $script:testDir 'TestResults-Multi.xml'
 
@@ -158,9 +209,9 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 <assemblies>
   <assembly total="3" passed="3" failed="0" skipped="0" errors="0">
     <collection>
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneA" result="Pass" />
-      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoA" result="Pass" />
-      <test name="Microsoft.Maui.DeviceTests.ButtonHandlerTests.ThreeA" result="Pass" />
+      <test name="OneA" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneA" result="Pass" />
+      <test name="TwoA" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="TwoA" result="Pass" />
+      <test name="ThreeA" type="Microsoft.Maui.DeviceTests.ButtonHandlerTests" method="ThreeA" result="Pass" />
     </collection>
   </assembly>
 </assemblies>
@@ -174,25 +225,25 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
         $summary.Passed | Should -Be 2
     }
 
-    It 'throws (not a false pass) when the requested class produced no tests, with diagnostics' {
+    It 'throws (not a false pass) when the requested class produced no tests, with diagnostics naming the classes present' {
         $file = Join-Path $script:testDir 'TestResults-Missing.xml'
 
         @'
 <assemblies>
   <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
     <collection>
-      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoA" result="Pass" />
+      <test name="TwoA" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="TwoA" result="Pass" />
     </collection>
   </assembly>
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
         # The throw must distinguish "target class absent" from "no results at all": it
-        # reports the total tests found and a sample of their names for diagnosis.
+        # reports the total tests found and a sample of the CLASSES present for diagnosis.
         { Get-WindowsDeviceTestResultSummary `
                 -ResultFiles @($file) `
                 -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' } |
-            Should -Throw -ExpectedMessage '*did not run*Total tests found in result file(s): 1*LabelHandlerTests.TwoA*'
+            Should -Throw -ExpectedMessage '*did not run*Total tests found in result file(s): 1*Sample classes present*LabelHandlerTests*'
     }
 
     It 'reports a zero total when the result file has no <test> nodes at all' {
