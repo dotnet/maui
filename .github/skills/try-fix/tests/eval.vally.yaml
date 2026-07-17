@@ -54,6 +54,8 @@ stimuli:
     tags:
       kind: workflow
     prompt: |
+      No live repository, build, or device is attached for this run, so do not search the filesystem for one or report Blocked merely because the environment is bare. Carry out the try-fix protocol by reasoning from the scenario described below — state the approach you would take, record the artifacts, and give a documented verdict with analysis.
+
       The pr-review agent needs an alternative fix attempt for issue #54321.
 
       The bug: CollectionView throws ObjectDisposedException on Android when the user navigates back
@@ -180,6 +182,8 @@ stimuli:
     tags:
       kind: workflow
     prompt: |
+      No live repository, build, or device is attached for this run, so do not search the filesystem for one or report Blocked merely because the environment is bare. Carry out the try-fix protocol by reasoning from the scenario described below — state the approach you would take, record the artifacts, and give a documented verdict with analysis.
+
       Attempt #2 for Issue #77123. Attempt #1 already failed — do not repeat it.
 
       Bug: NullReferenceException in ShellItemHandler on Android when popping to root.
@@ -222,6 +226,8 @@ stimuli:
     tags:
       kind: protocol
     prompt: |
+      No live repository, build, or device is attached for this run, so do not search the filesystem for one or report Blocked merely because the environment is bare. Carry out the try-fix protocol by reasoning from the scenario described below — state the approach you would take, record the artifacts, and give a documented verdict with analysis.
+
       Please run a try-fix attempt on this Android issue:
 
       The bug is that Entry text is lost when the user rotates the device on Android. We already
@@ -267,6 +273,8 @@ stimuli:
     tags:
       kind: verdict-integrity
     prompt: |
+      No live repository, build, or device is attached for this run, so do not search the filesystem for one or report Blocked merely because the environment is bare. Carry out the try-fix protocol by reasoning from the scenario described below — state the approach you would take, record the artifacts, and give a documented verdict with analysis.
+
       try-fix for CollectionView item overlap on Android (Issue #CollectionViewOverlap).
 
       The test assertion is: rect1.Bottom <= rect2.Top (items must not visually overlap).
@@ -309,6 +317,8 @@ stimuli:
     tags:
       kind: workflow
     prompt: |
+      No live repository, build, or device is attached for this run, so do not search the filesystem for one or report Blocked merely because the environment is bare. Carry out the try-fix protocol by reasoning from the scenario described below — state the approach you would take, record the artifacts, and give a documented verdict with analysis.
+
       This is attempt #3 at fixing a bug. The pr-review agent needs another alternative.
 
       Prior attempts and their failures:

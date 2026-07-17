@@ -155,6 +155,8 @@ The skill is complete when:
 
 **If device/emulator is unavailable:** Report `result.txt` = `Blocked` with explanation. Do NOT manufacture a Pass.
 
+**`Blocked` is a last resort, not a default.** Reserve it for when you genuinely cannot determine *any* outcome — e.g. the code compiled but there is no device/emulator to run the test, so no Pass/Fail is knowable. It is NOT the right result when you were handed the bug, the prior failed attempts, and root-cause evidence: that is enough to reason to a conclusion. An unfamiliar or bare working directory is not by itself `Blocked` — work from the problem context you were given, and report a documented `Fail` (with analysis) rather than stopping at `Blocked` when the evidence already points to one.
+
 **Exhaustion criteria:** Stop after 3 iterations if:
 1. Code compiles but tests consistently fail for same reason
 2. Root cause analysis reveals fundamental flaw in approach
