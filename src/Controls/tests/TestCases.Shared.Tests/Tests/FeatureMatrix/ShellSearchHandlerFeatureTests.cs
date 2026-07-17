@@ -24,16 +24,22 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	private const int CropBottomValue = 1450;
 #elif ANDROID
 	private const int CropBottomValue = 1050;
-#elif WINDOWS
-	private const int CropBottomValue = 100;
-#else
-	private const int CropBottomValue = 100;
 #endif
-
 
 	public ShellSearchHandlerFeatureTests(TestDevice device)
 		: base(device)
 	{
+	}
+
+	// Android and iOS require cropping the bottom of the screenshot (e.g. to exclude the keyboard);
+	// Windows and Mac Catalyst do not need this adjustment.
+	void VerifyShellSearchScreenshot()
+	{
+#if ANDROID || IOS
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
+#else
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 	}
 
 	void OpenOptions()
@@ -568,7 +574,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
+		VerifyShellSearchScreenshot();
 	}
 
 	[Test, Order(35)]
@@ -590,7 +596,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
+		VerifyShellSearchScreenshot();
 	}
 
 	[Test, Order(36)]
@@ -612,7 +618,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
+		VerifyShellSearchScreenshot();
 	}
 #endif
 
@@ -637,7 +643,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
+		VerifyShellSearchScreenshot();
 	}
 #endif
 
@@ -661,7 +667,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), cropBottom: CropBottomValue);
+		VerifyShellSearchScreenshot();
 	}
 #endif
 
