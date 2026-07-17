@@ -892,8 +892,21 @@ stages:
                   [.runtimes[] | select((.identifier // "") | test("iOS")) | {id: .identifier, v: (.version // "0")}]
                   | sort_by(.v) | reverse | .[].id
                 ' 2>/dev/null)
-                # Selected runtime first, then the rest — dedup, preserve order, drop blanks.
-                CANDIDATE_RUNTIMES=$(printf '%s\n%s\n' "$RUNTIME" "$ALL_IOS_RUNTIMES" | awk 'NF && !seen[$0]++')
+                # ALSO pull Ready disk images from the newer 'simctl runtime list' (build
+                # 14689719, #35706 ios: 'simctl list runtimes available' was transiently EMPTY,
+                # so CANDIDATE_RUNTIMES held ONLY the unenrolled iOS-26-5 — create rejected it
+                # with "Invalid runtime" and the equally-Ready iOS-26-3-1 was NEVER tried, so the
+                # gate degraded to INCONCLUSIVE with a usable runtime sitting on disk). Merging
+                # both sources means every Ready iOS runtime gets a create attempt, highest first.
+                READY_IOS_RUNTIMES=$(xcrun simctl runtime list --json 2>/dev/null | jq -r '
+                  [to_entries[] | .value
+                   | select((.state == "Ready") and (((.runtimeIdentifier // "") | test("iOS"))))
+                   | {id: .runtimeIdentifier, v: (.version // "0")}]
+                  | sort_by(.v) | reverse | .[].id
+                ' 2>/dev/null)
+                # Selected runtime first, then every other available/Ready runtime — dedup,
+                # preserve order, drop blanks.
+                CANDIDATE_RUNTIMES=$(printf '%s\n%s\n%s\n' "$RUNTIME" "$ALL_IOS_RUNTIMES" "$READY_IOS_RUNTIMES" | awk 'NF && !seen[$0]++')
                 for RT in $CANDIDATE_RUNTIMES; do
                   # Try iPhone Xs then iPhone 11 Pro (both 1125×2436 -> baseline size) on this runtime.
                   CREATED=$(xcrun simctl create "iPhone Xs" com.apple.CoreSimulator.SimDeviceType.iPhone-Xs "$RT" 2>&1)
