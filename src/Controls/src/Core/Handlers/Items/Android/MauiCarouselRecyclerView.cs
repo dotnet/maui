@@ -316,10 +316,48 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Set flag to disable animation during collection changes
 			_isInternalPositionUpdate = true;
 
+			// Guard: Carousel, Handler, or MauiContext may be null during a teardown race (a
+			// background-thread collection change firing after TearDownOldElement begins, which
+			// clears ItemsView and makes Carousel null). Reset the flag before bailing out so
+			// future scroll interactions are not permanently blocked. All code paths below assume
+			// Carousel, Handler, and MauiContext are non-null; a single guard here is preferable
+			// to inconsistent null-checks scattered across individual paths.
+			if (Carousel?.Handler?.MauiContext is null)
+			{
+				_isInternalPositionUpdate = false;
+				return;
+			}
+
 			var carouselPosition = Carousel.Position;
 			var currentItemPosition = observableItemsSource.GetPosition(Carousel.CurrentItem);
 			var count = observableItemsSource.Count;
 			var savedScrollToCounter = _scrollToCounter;
+
+			// Equal-count Replace keeps the item count unchanged, so the position is preserved
+			// explicitly instead of relying on GetPosition(CurrentItem), which returns -1 for the
+			// replaced item and would otherwise be misread as a removal. Unequal-count Replace
+			// (Android's ObservableItemsSource falls back to a full refresh for these) can change
+			// the total count, so it falls through to the existing count-changing logic below,
+			// after clamping the position to avoid going out of range.
+			if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Replace)
+			{
+				var oldReplaceCount = e.OldItems?.Count ?? 0;
+				var newReplaceCount = e.NewItems?.Count ?? 0;
+
+				if (oldReplaceCount > 0 && oldReplaceCount == newReplaceCount)
+				{
+					HandleReplaceAction(e, carouselPosition, count, savedScrollToCounter, observableItemsSource);
+					return;
+				}
+
+				if (carouselPosition >= count)
+				{
+					// Clamp to 0 (not -1) when the unequal-count Replace leaves the collection
+					// empty; a negative position later reaches ScrollToPosition/UpdatePosition,
+					// and RecyclerView.ScrollToPosition(-1) can throw.
+					carouselPosition = count > 0 ? count - 1 : 0;
+				}
+			}
 
 			bool removingCurrentElement = currentItemPosition == -1;
 			bool removingLastElement = e.OldStartingIndex == count;
@@ -579,6 +617,187 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				UpdateHorizontalScrollBarVisibility();
 				UpdateVerticalScrollBarVisibility();
+			}
+		}
+
+		void HandleReplaceAction(
+			System.Collections.Specialized.NotifyCollectionChangedEventArgs e,
+			int carouselPosition,
+			int count,
+			int savedScrollToCounter,
+			IItemsViewSource observableItemsSource)
+		{
+			_noNeedForScroll = true;
+			_gotoPosition = -1;
+
+			if (Carousel.Loop)
+			{
+				// In Loop mode the on-screen cells live at virtual positions
+				// (virtualPosition % itemCount), so the NotifyItemChanged(realIndex) that the
+				// items source already raised never reaches the visible virtual cell. Rebind
+				// just the visible virtual cells that map to the replaced index so the new
+				// value is shown, WITHOUT rebuilding the adapter (UpdateAdapter resets
+				// Position/CurrentItem, which caused a visible flash to position 0 and a
+				// cascade of PositionChanged/CurrentItemChanged events).
+				// Iterate over the full replaced range in case the Replace event covers more
+				// than one item (e.g. from a custom INotifyCollectionChanged source).
+				var replaceCount = e.OldItems?.Count ?? 1;
+
+				// Some custom INotifyCollectionChanged sources raise an indexless Replace
+				// (OldStartingIndex == -1). Since Replace preserves position for an equal-count
+				// swap, the replaced item's current index can be recovered from the items source
+				// itself. This only resolves a single-item indexless Replace (the common case);
+				// a multi-item indexless Replace falls back to a full adapter refresh below.
+				var startIndex = e.OldStartingIndex;
+				if (startIndex < 0)
+				{
+					if (replaceCount == 1 && e.NewItems?.Count > 0)
+					{
+						startIndex = observableItemsSource.GetPosition(e.NewItems[0]);
+					}
+
+					if (startIndex < 0)
+					{
+						GetAdapter()?.NotifyDataSetChanged();
+						replaceCount = 0;
+					}
+				}
+
+				for (int i = 0; i < replaceCount; i++)
+				{
+					RebindVisibleLoopItem(startIndex + i, count);
+				}
+
+				var dispatched = Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
+				{
+					try
+					{
+						// Carousel can become null if TearDownOldElement runs between the
+						// Dispatch call above and this callback's execution (e.g. the user
+						// navigates away while a live collection change is in flight).
+						if (Carousel is null)
+						{
+							return;
+						}
+
+						if (_scrollToCounter == savedScrollToCounter)
+						{
+							// Position and the virtual scroll offset are unchanged, so we
+							// only refresh CurrentItem to the new value at the same position
+							// and update visual states. We must NOT ScrollToPosition here:
+							// the logical index maps to the start of the virtual range, which
+							// would jump the loop carousel away from its current location.
+							SetCurrentItem(carouselPosition);
+							UpdateVisualStates();
+						}
+					}
+					finally
+					{
+						_isInternalPositionUpdate = false;
+
+						// Replace doesn't change Position, so no PositionChanged-driven
+						// UpdateFromPosition call arrives to consume the flag. Reset it here
+						// so the next legitimate programmatic Position update isn't ignored.
+						_noNeedForScroll = false;
+					}
+				});
+
+				// Dispatch can refuse to queue work (e.g. during a teardown race). In that case the
+				// callback above (and its finally block) never runs, so reset the flags here to avoid
+				// leaving future position updates permanently blocked.
+				if (!dispatched)
+				{
+					_isInternalPositionUpdate = false;
+					_noNeedForScroll = false;
+				}
+
+				return;
+			}
+
+			// Handler and MauiContext are guaranteed non-null here — CollectionItemsSourceChanged
+			// guards for null at its entry point and returns early.
+			var replaceDispatched = Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
+			{
+				try
+				{
+					// Carousel can become null if TearDownOldElement runs between the
+					// Dispatch call above and this callback's execution (e.g. the user
+					// navigates away while a live collection change is in flight).
+					if (Carousel is null)
+					{
+						return;
+					}
+
+					// If someone called explicit ScrollTo before the dispatched
+					// callback was delivered then don't override it.
+					if (_scrollToCounter == savedScrollToCounter)
+					{
+						// Replace preserves the current position — no scroll needed.
+						SetCurrentItem(carouselPosition);
+						UpdatePosition(carouselPosition);
+						UpdateVisualStates();
+					}
+				}
+				finally
+				{
+					_isInternalPositionUpdate = false;
+
+					// Replace doesn't change Position, so no PositionChanged-driven
+					// UpdateFromPosition call arrives to consume the flag. Reset it here
+					// so the next legitimate programmatic Position update isn't ignored.
+					_noNeedForScroll = false;
+				}
+			});
+
+			// Dispatch can refuse to queue work (e.g. during a teardown race). In that case the
+			// callback above (and its finally block) never runs, so reset the flags here to avoid
+			// leaving future position updates permanently blocked.
+			if (!replaceDispatched)
+			{
+				_isInternalPositionUpdate = false;
+				_noNeedForScroll = false;
+			}
+		}
+
+		// Rebinds the visible virtual cells that currently display the replaced item so a Replace
+		// is reflected on screen without rebuilding the adapter. In Loop mode the visible cells
+		// live at virtual positions where (virtualPosition % itemCount) == changedIndex, so a plain
+		// NotifyItemChanged(changedIndex) never reaches them. Off-screen cells are not touched;
+		// they pick up the new value from the live items source when scrolled into view.
+		void RebindVisibleLoopItem(int changedIndex, int itemCount)
+		{
+			if (itemCount <= 0 || changedIndex < 0)
+			{
+				return;
+			}
+
+			var adapter = GetAdapter();
+			if (adapter is null)
+			{
+				return;
+			}
+
+			if (!(GetLayoutManager() is LinearLayoutManager layoutManager))
+			{
+				adapter.NotifyDataSetChanged();
+				return;
+			}
+
+			var firstVisibleItemPosition = layoutManager.FindFirstVisibleItemPosition();
+			var lastVisibleItemPosition = layoutManager.FindLastVisibleItemPosition();
+
+			if (firstVisibleItemPosition == RecyclerView.NoPosition || lastVisibleItemPosition == RecyclerView.NoPosition)
+			{
+				adapter.NotifyDataSetChanged();
+				return;
+			}
+
+			for (int virtualPosition = firstVisibleItemPosition; virtualPosition <= lastVisibleItemPosition; virtualPosition++)
+			{
+				if (virtualPosition % itemCount == changedIndex)
+				{
+					adapter.NotifyItemChanged(virtualPosition);
+				}
 			}
 		}
 
