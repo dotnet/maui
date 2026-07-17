@@ -189,6 +189,19 @@ steps:
         sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
         if [[ "$RC" != "0" ]]; then
           echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
+          # Exit code 70 ("Unable to connect to simulator") means CoreSimulatorService is
+          # WEDGED. Deleting + re-downloading against a wedged daemon leaves the runtimes
+          # "Ready" on disk but NOT create-usable — `simctl create` then fails "Invalid
+          # runtime" for every runtime, which later dead-ends the iOS sim boot and (for the
+          # maui-copilot gate) degrades iOS verification to INCONCLUSIVE on a perfectly
+          # provisioned agent (PR #35706 build 14694271). Restart the daemon FIRST so the
+          # delete + retry run against a HEALTHY CoreSimulator and the re-downloaded runtimes
+          # enroll properly. Only runs in the already-failing retry branch (healthy agents
+          # succeed on the first download and never reach here); non-destructive — the daemon
+          # auto-relaunches on the next simctl call.
+          echo "Restarting CoreSimulatorService before retry to clear the wedged daemon..."
+          sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+          sleep 5
           sudo xcrun simctl runtime delete all
           # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
           for i in $(seq 1 60); do
