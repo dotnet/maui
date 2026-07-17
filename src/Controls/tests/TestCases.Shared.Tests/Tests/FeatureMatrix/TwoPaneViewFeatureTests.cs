@@ -68,15 +68,8 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            // Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
-            // See https://github.com/appium/appium/issues/22272
-#if MACCATALYST
-            App.DecreaseStepper("WideModeStepper");
-            App.DecreaseStepper("WideModeStepper");
-#else
             App.IncreaseStepper("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
-#endif
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -114,15 +107,8 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            // Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
-            // See https://github.com/appium/appium/issues/22272
-#if MACCATALYST
-            App.IncreaseStepper("WideModeStepper");
-            App.IncreaseStepper("WideModeStepper");
-#else
             App.DecreaseStepper("WideModeStepper");
             App.DecreaseStepper("WideModeStepper");
-#endif
 
             App.WaitForElement("FlowDirectionRTLCheckBox");
             App.Tap("FlowDirectionRTLCheckBox");
@@ -145,15 +131,8 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            // Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
-            // See https://github.com/appium/appium/issues/22272
-#if MACCATALYST
-            App.DecreaseStepper("WideModeStepper");
-            App.DecreaseStepper("WideModeStepper");
-#else
             App.IncreaseStepper("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
-#endif
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -209,21 +188,11 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            // Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
-            // See https://github.com/appium/appium/issues/22272
-#if MACCATALYST
-            App.DecreaseStepper("Pane1LengthStepper");
-            App.DecreaseStepper("Pane1LengthStepper");
-
-            App.DecreaseStepper("WideModeStepper");
-            App.DecreaseStepper("WideModeStepper");
-#else
             App.IncreaseStepper("Pane1LengthStepper");
             App.IncreaseStepper("Pane1LengthStepper");
 
             App.IncreaseStepper("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
-#endif
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -238,21 +207,11 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            // Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
-            // See https://github.com/appium/appium/issues/22272
-#if MACCATALYST
-            App.DecreaseStepper("Pane2LengthStepper");
-            App.DecreaseStepper("Pane2LengthStepper");
-
-            App.DecreaseStepper("WideModeStepper");
-            App.DecreaseStepper("WideModeStepper");
-#else
             App.IncreaseStepper("Pane2LengthStepper");
             App.IncreaseStepper("Pane2LengthStepper");
 
             App.IncreaseStepper("WideModeStepper");
             App.IncreaseStepper("WideModeStepper");
-#endif
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -301,17 +260,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("Pane1LengthLabel");
-			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
-			// See https://github.com/appium/appium/issues/22272
-#if MACCATALYST
-			App.DecreaseStepper("Pane1LengthStepper");
-			App.WaitForElement("Pane1LengthLabel");
-			App.DecreaseStepper("Pane1LengthStepper");
-#else
 			App.IncreaseStepper("Pane1LengthStepper");
 			App.WaitForElement("Pane1LengthLabel");
 			App.IncreaseStepper("Pane1LengthStepper");
-#endif
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -327,17 +278,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("Pane2LengthLabel");
-			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
-			// See https://github.com/appium/appium/issues/22272
-#if MACCATALYST
-			App.DecreaseStepper("Pane2LengthStepper");
-			App.WaitForElement("Pane2LengthLabel");
-			App.DecreaseStepper("Pane2LengthStepper");
-#else
 			App.IncreaseStepper("Pane2LengthStepper");
 			App.WaitForElement("Pane2LengthLabel");
 			App.IncreaseStepper("Pane2LengthStepper");
-#endif
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");

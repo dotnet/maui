@@ -53,7 +53,13 @@ class AppiumAppleStepperActions : ICommandExecutionGroup
 
 		if (buttons is not null && buttons.Count > 1)
 		{
-			var increaseButton = buttons.LastOrDefault();
+			// On Mac Catalyst, Appium can report the stepper's buttons in reversed order,
+			// so match by identifier instead of relying on LastOrDefault().
+			var increaseButton = _appiumApp is AppiumCatalystApp
+				? buttons.FirstOrDefault(b =>
+					b.GetAttribute<string>("identifier")?.EndsWith("-Increment", StringComparison.OrdinalIgnoreCase) == true)
+				: buttons.LastOrDefault();
+
 			increaseButton?.Tap();
 		}
 
@@ -77,7 +83,13 @@ class AppiumAppleStepperActions : ICommandExecutionGroup
 
 		if (buttons is not null && buttons.Count > 1)
 		{
-			var decreaseButton = buttons.FirstOrDefault();
+			// On Mac Catalyst, Appium can report the stepper's buttons in reversed order,
+			// so match by identifier instead of relying on FirstOrDefault().
+			var decreaseButton = _appiumApp is AppiumCatalystApp
+				? buttons.FirstOrDefault(b =>
+					b.GetAttribute<string>("identifier")?.EndsWith("-Decrement", StringComparison.OrdinalIgnoreCase) == true)
+				: buttons.FirstOrDefault();
+
 			decreaseButton?.Tap();
 		}
 

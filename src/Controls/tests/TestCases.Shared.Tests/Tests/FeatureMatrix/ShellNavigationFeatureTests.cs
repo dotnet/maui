@@ -969,7 +969,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("IsEnabledButton").GetText(), Is.EqualTo("IsEnabled: True"));
 		NavigateToDetail1AndWait();
 		TapShellBackArrow("ShellNavigation");
-		App.WaitForElement("MainPageIdentityLabel");
+		App.WaitForElementTillPageNavigationSettled("MainPageIdentityLabel");
 		App.Tap("Reset");
 	}
 
