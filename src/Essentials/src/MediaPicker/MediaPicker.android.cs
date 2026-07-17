@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -582,6 +583,7 @@ namespace Microsoft.Maui.Media
 			SaveToExternalStorageAndScan(context, filePath, fileName, mimeType, isPhoto);
 		}
 
+		[SupportedOSPlatform("android29.0")]
 		static async Task SaveToMediaStoreAsync(Context context, string filePath, string fileName, string mimeType, bool isPhoto)
 		{
 			var contentResolver = context.ContentResolver ?? throw new InvalidOperationException("An Android content resolver is required to save media to the gallery.");
@@ -682,7 +684,7 @@ namespace Microsoft.Maui.Media
 				intent.PutExtra(Intent.ExtraAllowMultiple, options.SelectionLimit > 1 || options.SelectionLimit == 0);
 
 				// Set a maximum when 2 or more. When the limit is 1 we only allow a single one and 0 should allow unlimited.
-				if (options.SelectionLimit >= 2)
+				if (options.SelectionLimit >= 2 && OperatingSystem.IsAndroidVersionAtLeast(33))
 				{
 					intent.PutExtra(MediaStore.ExtraPickImagesMax, options.SelectionLimit);
 				}
