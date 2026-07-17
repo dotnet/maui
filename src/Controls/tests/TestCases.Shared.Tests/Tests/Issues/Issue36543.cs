@@ -20,10 +20,11 @@ public class Issue36543 : _IssuesUITest
 		{
 			App.WaitForElement("Issue36543CollectionView");
 			App.SetOrientationLandscape();
-			// Allow orientation change + safe-area inset dispatch to settle before capturing.
-			Thread.Sleep(2000);
+			// Re-wait for the CollectionView after rotation, then let VerifyScreenshot's built-in
+			// retry absorb orientation + safe-area inset settling (no fixed Thread.Sleep, which is
+			// flaky on slow/notched emulators and always pays the full delay on fast runs).
 			App.WaitForElement("Issue36543CollectionView");
-			VerifyScreenshot();
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(5));
 		}
 		finally
 		{
