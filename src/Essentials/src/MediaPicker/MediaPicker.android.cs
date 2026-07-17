@@ -385,12 +385,14 @@ namespace Microsoft.Maui.Media
 			{
 				var inputFileName = System.IO.Path.GetFileName(imagePath);
 
-				// Treat the picked source as read-only. It is resolved verbatim from the picker
-				// URI and is not a file we own (it may be the user's original on an SD card, in
-				// shared storage, or a file owned by another app), so we never delete or overwrite
-				// it. Rotation and compression are composed through in-memory streams and only the
-				// final result is written - once - to a new MAUI-owned cache file. GetTemporaryFile
-				// preserves the original filename (see #33258).
+				// Compose the transforms without mutating the input: rotation and compression are
+				// chained through in-memory streams and only the final result is written - once - to
+				// a new MAUI-owned cache file (GetTemporaryFile preserves the original filename, see
+				// #33258). External/user-owned sources (the gallery original, an SD card, another
+				// app's storage) are therefore never deleted or overwritten. If the input was itself
+				// a MAUI-owned temporary cache file (a camera capture, or a content:// URI that
+				// EnsurePhysicalPath copied into our cache), it is removed after the output is written
+				// (below) so we don't leave an orphaned duplicate behind.
 				Stream currentStream = File.OpenRead(imagePath);
 				try
 				{
@@ -432,11 +434,27 @@ namespace Microsoft.Maui.Media
 					}
 
 					var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
-					using var outputStream = File.Create(outputFile.AbsolutePath);
-					currentStream.Position = 0;
-					await currentStream.CopyToAsync(outputStream);
+					var outputPath = outputFile.AbsolutePath;
 
-					return outputFile.AbsolutePath;
+					using (var outputStream = File.Create(outputPath))
+					{
+						currentStream.Position = 0;
+						await currentStream.CopyToAsync(outputStream);
+					}
+
+					// The output is now fully written and closed. If the input was a MAUI-owned
+					// temporary cache file, delete it so we don't accumulate an orphaned duplicate.
+					// External/user-owned sources are never under our cache folder, so they are left
+					// untouched. Deleting only after the output is written avoids any data-loss window.
+					if (FileSystemUtils.IsMauiOwnedTemporaryFile(imagePath) &&
+						!string.Equals(imagePath, outputPath, StringComparison.Ordinal))
+					{
+						try
+						{ File.Delete(imagePath); }
+						catch { }
+					}
+
+					return outputPath;
 				}
 				finally
 				{
