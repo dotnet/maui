@@ -669,18 +669,17 @@ if ($Platform -eq "android") {
         # deep stage had its own recovery). If no runtime image is Ready this yields empty and
         # the existing fatal below still fires — strictly additive, no happy-path change.
         # (PR #35706 build 14680958: all runtimes "Invalid", gate went INCONCLUSIVE.)
-        if (-not $selectedDevice) {
-            # Enumerate ALL Ready iOS runtime disk images (newest first), not just the
-            # newest one. Observed in CI (PR #35706 build 14689719): the agent has iOS
-            # 26.3.1 (23D8133) AND iOS 26.5 (23F77) both "Ready", but `simctl create` on
-            # the NEWEST (iOS-26-5) fails "Invalid runtime" — it is a preview runtime whose
-            # build (23F77) does not match the selected Xcode's iphonesimulator SDK (23F73),
-            # so CoreSimulator rejects it. The OLDER, stable iOS-26-3-1 is far more likely
-            # to be create-usable, but the previous `Select-Object -First 1` never tried it
-            # and the gate dead-ended at INCONCLUSIVE. Try every Ready runtime (highest
-            # version first, to keep the iOS-26 snapshot-baseline size when possible) until
-            # one accepts `simctl create`. Strictly additive — worst case is the same
-            # INCONCLUSIVE as before.
+        #
+        # Enumerate ALL Ready iOS runtime disk images (newest first), not just the newest
+        # one, and try `simctl create` on each until one succeeds. Observed in CI (PR #35706
+        # build 14689719): the agent has iOS 26.3.1 (23D8133) AND iOS 26.5 (23F77) both
+        # "Ready", but `simctl create` on the NEWEST (iOS-26-5) can fail "Invalid runtime"
+        # while the OLDER, stable iOS-26-3-1 is create-usable. Try every Ready runtime
+        # (highest version first, to keep the iOS-26 snapshot-baseline size when possible).
+        # Factored into a function so the ENROLLMENT-RECOVERY retry below can re-run the
+        # exact same logic after a CoreSimulatorService restart without duplicating it.
+        # Returns [PSCustomObject]@{ Device; Version } on success, or $null.
+        function Invoke-IosReadyRuntimeRescue {
             $readyRuntimeIds = @()
             try {
                 $rtImages = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
@@ -693,35 +692,65 @@ if ($Platform -eq "android") {
             } catch {
                 Write-Info "Could not enumerate runtime disk images: $_"
             }
-            if ($readyRuntimeIds.Count -gt 0) {
-                Write-Info "Recovered $($readyRuntimeIds.Count) Ready (unenrolled) iOS runtime disk image(s): $($readyRuntimeIds -join ', ') - attempting to create a device on each (newest first) until one succeeds..."
-                foreach ($readyRuntimeId in $readyRuntimeIds) {
-                    if ($selectedDevice) { break }
-                    foreach ($rescueType in @(
-                        @{ Name = 'iPhone 11 Pro'; Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro' },
-                        @{ Name = 'iPhone Xs';     Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-Xs' })) {
-                        if ($selectedDevice) { break }
-                        $createOutput = & xcrun simctl create $rescueType.Name $rescueType.Id $readyRuntimeId 2>&1
-                        $udidLine = ("$createOutput" -split "`n" |
-                            Where-Object { $_ -match '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$' } |
-                            Select-Object -Last 1)
-                        if ($LASTEXITCODE -eq 0 -and $udidLine) {
-                            $newUdid = $udidLine.Trim()
-                            Write-Info "Created $($rescueType.Name) : $newUdid on $readyRuntimeId"
-                            # The device may not surface under `list devices available` until its
-                            # runtime is enrolled, but `simctl boot <udid>` mounts it on demand, so
-                            # use the UDID directly (re-query only for a nicer display object).
-                            $reList = xcrun simctl list devices --json 2>$null | ConvertFrom-Json
-                            $found = $reList.devices.PSObject.Properties.Value | ForEach-Object { $_ } |
-                                Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
-                            $selectedDevice = if ($found) { $found } else { [PSCustomObject]@{ udid = $newUdid; name = $rescueType.Name } }
-                            $selectedVersion = $readyRuntimeId
-                        }
-                        else {
-                            Write-Info "Failed to create $($rescueType.Name) on $readyRuntimeId`: $createOutput"
-                        }
+            if ($readyRuntimeIds.Count -eq 0) { return $null }
+            Write-Info "Recovered $($readyRuntimeIds.Count) Ready (unenrolled) iOS runtime disk image(s): $($readyRuntimeIds -join ', ') - attempting to create a device on each (newest first) until one succeeds..."
+            foreach ($readyRuntimeId in $readyRuntimeIds) {
+                foreach ($rescueType in @(
+                    @{ Name = 'iPhone 11 Pro'; Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro' },
+                    @{ Name = 'iPhone Xs';     Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-Xs' })) {
+                    $createOutput = & xcrun simctl create $rescueType.Name $rescueType.Id $readyRuntimeId 2>&1
+                    $udidLine = ("$createOutput" -split "`n" |
+                        Where-Object { $_ -match '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$' } |
+                        Select-Object -Last 1)
+                    if ($LASTEXITCODE -eq 0 -and $udidLine) {
+                        $newUdid = $udidLine.Trim()
+                        Write-Info "Created $($rescueType.Name) : $newUdid on $readyRuntimeId"
+                        # The device may not surface under `list devices available` until its
+                        # runtime is enrolled, but `simctl boot <udid>` mounts it on demand, so
+                        # use the UDID directly (re-query only for a nicer display object).
+                        $reList = xcrun simctl list devices --json 2>$null | ConvertFrom-Json
+                        $found = $reList.devices.PSObject.Properties.Value | ForEach-Object { $_ } |
+                            Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
+                        $dev = if ($found) { $found } else { [PSCustomObject]@{ udid = $newUdid; name = $rescueType.Name } }
+                        return [PSCustomObject]@{ Device = $dev; Version = $readyRuntimeId }
+                    }
+                    else {
+                        Write-Info "Failed to create $($rescueType.Name) on $readyRuntimeId`: $createOutput"
                     }
                 }
+            }
+            return $null
+        }
+
+        if (-not $selectedDevice) {
+            # First pass: try to create on any Ready runtime as-is.
+            $rescueResult = Invoke-IosReadyRuntimeRescue
+
+            # ENROLLMENT RECOVERY (parity with eng/pipelines/ci-copilot.yml ed34ffa; PR
+            # #35706 build 14694271): the GATE boots iOS via THIS script, but the
+            # CoreSimulatorService-restart enrollment fix only landed in ci-copilot.yml (the
+            # deep stage's boot), so the gate kept dead-ending at INCONCLUSIVE while the deep
+            # stage recovered on the SAME agent. When every create above failed "Invalid
+            # runtime", the Ready iOS images are on disk but NOT enrolled in CoreSimulator's
+            # registry (`simctl list runtimes available` is empty); restarting
+            # CoreSimulatorService forces a re-scan that enrolls them. Retry the create loop
+            # once afterward. Only runs when the first pass produced no device, so the healthy
+            # path is untouched; non-destructive (the daemon auto-relaunches on the next
+            # simctl call). sudo -n avoids any password prompt hang; falls back to non-sudo.
+            if (-not $rescueResult) {
+                Write-Info "All Ready-runtime create attempts failed 'Invalid runtime' - restarting CoreSimulatorService to enroll Ready-but-unenrolled runtimes and retrying once..."
+                & sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>$null
+                if ($LASTEXITCODE -ne 0) { & killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>$null }
+                Start-Sleep -Seconds 8
+                # Nudge CoreSimulator to relaunch and re-scan the on-disk runtime images.
+                xcrun simctl list runtimes *> $null
+                Start-Sleep -Seconds 4
+                $rescueResult = Invoke-IosReadyRuntimeRescue
+            }
+
+            if ($rescueResult) {
+                $selectedDevice = $rescueResult.Device
+                $selectedVersion = $rescueResult.Version
             }
         }
 
