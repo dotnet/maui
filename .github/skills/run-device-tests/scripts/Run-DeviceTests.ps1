@@ -288,6 +288,13 @@ function Get-WindowsDeviceTestResultSummary {
         Errors = 0
     }
 
+    # Diagnostics for the class-filtered path: how many <test> nodes the file(s) held in
+    # total (regardless of class) and a small sample of their names. When the class filter
+    # matches nothing, these disambiguate "the app produced no results at all" from "the
+    # results are there but under names we didn't expect" — see the throw below.
+    $diagTotalTests = 0
+    $diagSampleNames = [System.Collections.Generic.List[string]]::new()
+
     foreach ($file in $ResultFiles) {
         if (-not (Test-Path $file)) {
             continue
@@ -331,6 +338,8 @@ function Get-WindowsDeviceTestResultSummary {
             foreach ($test in @($xml.SelectNodes('//test'))) {
                 $name = [string]$test.name
                 if ([string]::IsNullOrWhiteSpace($name)) { continue }
+                $diagTotalTests++
+                if ($diagSampleNames.Count -lt 8) { $diagSampleNames.Add($name) }
                 $isMatch = $false
                 foreach ($cls in $classList) {
                     if ($name -eq $cls -or $name.StartsWith("$cls.", [System.StringComparison]::Ordinal)) {
@@ -364,8 +373,13 @@ function Get-WindowsDeviceTestResultSummary {
     if ($classList.Count -gt 0 -and $summary.Total -eq 0) {
         # The class(es) under test produced no results in the suite output — treat this as
         # an environment/harness error (INCONCLUSIVE) rather than silently reporting a
-        # false pass (0 failed) for tests that never actually ran.
-        throw "Windows device test result file(s) contained no tests for class(es) '$IncludeClasses' (the target tests did not run)."
+        # false pass (0 failed) for tests that never actually ran. Include diagnostics so
+        # the two distinct causes are distinguishable from the gate log:
+        #   * total <test> nodes = 0  -> the app produced no results (crash/early exit)
+        #   * total > 0 but no match  -> results exist under names we didn't expect
+        #     (namespace/name-format mismatch, or the target class was not in this suite).
+        $sample = if ($diagSampleNames.Count -gt 0) { " Sample test names: " + ($diagSampleNames -join '; ') + '.' } else { '' }
+        throw "Windows device test result file(s) contained no tests for class(es) '$IncludeClasses' (the target tests did not run). Total tests found in result file(s): $diagTotalTests.$sample"
     }
 
     return $summary
@@ -425,12 +439,17 @@ function Invoke-WindowsDeviceTestApp {
     #     Core, can crash/exit before writing results and collapse the gate to an
     #     inconclusive "empty results" verdict (see PR #36577).
     #
-    # For non-Controls, discovery is best-effort: if the app doesn't produce a categories
-    # file (an older app build that predates the runner registration), fall back to a full
-    # run so we never regress to a hard failure. Controls keeps its original strict
-    # behavior (throw) because it has no full-suite runner to fall back to.
+    # Only the Controls device-test app registers the discovery-capable
+    # ControlsHeadlessTestRunner (MauiProgramDefaults.cs gates UseControlsHeadlessRunner on
+    # the Controls.DeviceTests assembly). Core/Essentials/Graphics/etc. use the generic
+    # HeadlessTestRunner, which has NO category discovery — so a discovery attempt there is
+    # guaranteed to time out after 120s AND leaves a half-written result file from the
+    # killed discovery process, before the inevitable full-suite fallback. Skip discovery
+    # entirely for those apps: go straight to a clean full run and scope the summary to the
+    # class(es) under test. Controls keeps strict discovery (throw on failure) because it
+    # has no full-suite runner to fall back to.
     $requireDiscovery = ($Project -eq "Controls")
-    $attemptDiscovery = $requireDiscovery -or [bool]$TestFilter
+    $attemptDiscovery = $requireDiscovery
     $useCategoryFiltering = $false
     if ($attemptDiscovery) {
         Write-Host "Discovering Windows device test categories..." -ForegroundColor Gray
@@ -446,6 +465,8 @@ function Invoke-WindowsDeviceTestApp {
             }
             Write-Warning "Windows '$Project' device test app did not produce a category list within 120s; falling back to a full device-test run."
         }
+    } elseif ($TestFilter) {
+        Write-Host "Windows '$Project' device test app has no category discovery; running the full suite and scoping results to the class(es) under test." -ForegroundColor Gray
     }
 
     if ($useCategoryFiltering) {

@@ -174,7 +174,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
         $summary.Passed | Should -Be 2
     }
 
-    It 'throws (not a false pass) when the requested class produced no tests' {
+    It 'throws (not a false pass) when the requested class produced no tests, with diagnostics' {
         $file = Join-Path $script:testDir 'TestResults-Missing.xml'
 
         @'
@@ -187,9 +187,28 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
+        # The throw must distinguish "target class absent" from "no results at all": it
+        # reports the total tests found and a sample of their names for diagnosis.
         { Get-WindowsDeviceTestResultSummary `
                 -ResultFiles @($file) `
                 -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' } |
-            Should -Throw -ExpectedMessage '*did not run*'
+            Should -Throw -ExpectedMessage '*did not run*Total tests found in result file(s): 1*LabelHandlerTests.TwoA*'
+    }
+
+    It 'reports a zero total when the result file has no <test> nodes at all' {
+        $file = Join-Path $script:testDir 'TestResults-NoTests.xml'
+
+        @'
+<assemblies>
+  <assembly total="0" passed="0" failed="0" skipped="0" errors="0">
+    <collection />
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        { Get-WindowsDeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' } |
+            Should -Throw -ExpectedMessage '*Total tests found in result file(s): 0*'
     }
 }
