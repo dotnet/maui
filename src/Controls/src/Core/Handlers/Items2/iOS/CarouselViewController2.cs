@@ -139,13 +139,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 				carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
+
+				// A new items source means a fresh baseline. Reset the tracked position so the next
+				// re-attach treats a subsequent source swap as a reset (Position 0) rather than a
+				// detached position change. This keeps a new ItemsSource/ViewModel resetting to the
+				// first item, matching Android behavior.
+				_lastSyncedPosition = 0;
 			}
 
-			// A new items source means a fresh baseline. Reset the tracked position so the next
-			// re-attach treats the source swap as a reset (Position 0) rather than a detached
-			// position change. This keeps a new ItemsSource/ViewModel resetting to the first item,
-			// matching Android behavior.
-			_lastSyncedPosition = 0;
 			_isUpdating = false;
 		}
 
