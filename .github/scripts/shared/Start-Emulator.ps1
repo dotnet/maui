@@ -190,6 +190,28 @@ if ($Platform -eq "android") {
                 }
             }
             
+            # Guard against launching a SECOND emulator for an AVD that is already
+            # booting. The stage-level "Create AVD and Boot Android Emulator" task
+            # (or a prior gate test run in the same job) may have already started
+            # $selectedAvd while it is still *offline* mid cold-boot — a state the
+            # online-only "adb devices ... device" probe above does not match. Two
+            # emulators sharing one AVD abort with FATAL "Running multiple emulators
+            # with the same AVD", leaving every instance offline until the timeout
+            # and failing the gate with a false INCONCLUSIVE. If a process for this
+            # AVD already exists, reuse it and skip straight to the wait loop.
+            $emulatorLog = Join-Path ([System.IO.Path]::GetTempPath()) "emulator-$selectedAvd.log"
+            if ($IsWindows) {
+                $existingAvdProc = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue |
+                    Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id -join "`n"
+            } else {
+                $existingAvdProc = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*-avd[= ]$selectedAvd' || true" 2>&1
+            }
+            $reuseExistingEmulator = -not [string]::IsNullOrWhiteSpace($existingAvdProc)
+
+            if ($reuseExistingEmulator) {
+                Write-Info "Emulator for AVD '$selectedAvd' is already running (PIDs: $existingAvdProc). Reusing it instead of starting a duplicate (avoids the same-AVD FATAL conflict)."
+            }
+            else {
             Write-Info "Starting emulator: $selectedAvd"
             Write-Info "This may take 1-2 minutes..."
             
@@ -237,11 +259,16 @@ if ($Platform -eq "android") {
                 exit 1
             }
             Write-Info "Emulator process started (PIDs: $emulatorProcs)"
+            }
             
             # Wait for device to appear with timeout
-            # Timeout of 120s (2 min) - if the emulator hasn't registered an ADB device by then, it's not going to
+            # 240s (4 min): CI agents here have only 2 CPU cores (the emulator log
+            # warns "will run more smoothly with 4 CPU cores"), so a cold
+            # -no-snapshot boot can take well over 2 minutes to register an ADB
+            # device. A too-short timeout turns a slow-but-healthy boot into a
+            # false gate INCONCLUSIVE.
             Write-Info "Waiting for emulator device to appear..."
-            $deviceTimeout = 120
+            $deviceTimeout = 240
             $deviceWaited = 0
             
             while ($deviceWaited -lt $deviceTimeout) {
