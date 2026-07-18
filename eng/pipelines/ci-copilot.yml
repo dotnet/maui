@@ -1237,7 +1237,6 @@ stages:
 
               if [ $GATE_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=warning]Gate phase exited with code $GATE_EXIT"
-                echo "##vso[task.setvariable variable=GateFailed]true"
               fi
 
               # Publish the TRUSTED gate verdict for the cross-stage APPROVE veto. The Gate phase
@@ -1255,10 +1254,32 @@ stages:
                   *) GATE_VERDICT="INCONCLUSIVE" ;;
                 esac
               fi
-              # The process exit code is authoritative for FAILED (only a genuine FAILED gate exits
+              # The process exit code is authoritative for FAILED (a genuine FAILED gate exits
               # non-zero — PASSED/SKIPPED/INCONCLUSIVE all exit 0), so it overrides the file read.
-              if [ $GATE_EXIT -ne 0 ]; then GATE_VERDICT="FAILED"; fi
+              # EXCEPTION: the Gate phase ALSO exits non-zero when it cannot start because the
+              # Setup phase did not complete — e.g. the PR has merge conflicts with its base branch,
+              # so Setup posts a conflict comment and bails BEFORE writing the setup-complete
+              # sentinel (Review-PR.ps1 sentinel check). In that case the A/B verification never
+              # ran, so the correct result is INCONCLUSIVE, not a test FAILED (which would read as
+              # "the fix is broken"). Distinguish the two via the setup-complete sentinel:
+              #   present => Setup ran; a non-zero gate exit is a genuine test-verification FAILED.
+              #   absent  => the gate could not even start (setup incomplete) => INCONCLUSIVE.
+              if [ $GATE_EXIT -ne 0 ]; then
+                if [ -f "$(Build.ArtifactStagingDirectory)/setup-complete" ]; then
+                  GATE_VERDICT="FAILED"
+                else
+                  echo "##vso[task.logissue type=warning]Gate could not run: Setup phase did not complete (setup-complete sentinel missing — likely PR merge conflict with base). Classifying gate as INCONCLUSIVE, not FAILED."
+                  GATE_VERDICT="INCONCLUSIVE"
+                fi
+              fi
               echo "Trusted gate verdict: $GATE_VERDICT"
+              # Flip GateFailed ONLY on a genuine test-verification FAILED. A gate that could not
+              # start (setup incomplete / merge conflict => INCONCLUSIVE above) or that self-degraded
+              # (SKIPPED / INCONCLUSIVE) must NOT set GateFailed, so the "Check Review Result" step
+              # doesn't red-X the stage with the misleading "test verification did not pass".
+              if [ "$GATE_VERDICT" = "FAILED" ]; then
+                echo "##vso[task.setvariable variable=GateFailed]true"
+              fi
               echo "##vso[task.setvariable variable=gateResult;isOutput=true]$GATE_VERDICT"
             name: RunGate
             displayName: 'Task 2: Gate (test verification)'
