@@ -1,11 +1,14 @@
 #nullable disable
-using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Internals
 {
 	/// <summary>Arguments for a prompt dialog.</summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
+	/// <remarks>
+	/// This type is part of the stable public API contract for <see cref="Microsoft.Maui.Controls.Platform.IAlertManager"/>
+	/// and <see cref="Microsoft.Maui.Controls.Platform.IAlertManagerSubscription"/>, despite residing in the
+	/// <c>Microsoft.Maui.Controls.Internals</c> namespace.
+	/// </remarks>
 	public class PromptArguments
 	{
 		/// <summary>Creates a new <see cref="PromptArguments"/> with the specified parameters.</summary>
