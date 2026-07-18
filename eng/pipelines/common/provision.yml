@@ -216,6 +216,37 @@ steps:
               sudo diskutil unmount force "$v" 2>/dev/null || sudo umount -f "$v" 2>/dev/null || true
             done
           }
+          # NUCLEAR recovery for a CoreSimulatorService that is so wedged that
+          # `simctl runtime delete all` can NOT drain the images: they get stuck in
+          # "(Deleting)" FOREVER, and because the ghost records survive in the on-disk image
+          # store (images.plist manifest + bundle dirs), every subsequent
+          # `xcodebuild -downloadPlatform iOS` collides with the same-UUID "(Deleting)" image
+          # and fails "Invalid runtime: null" — so the agent ends with 0 create-usable
+          # runtimes and the maui-copilot gate degrades to INCONCLUSIVE on a boot that finds
+          # NO runtimes at all (PR #27153 build 14699070: exit-70 wedge -> delete never
+          # drained -> two re-downloads both "Invalid runtime: null" -> "Found 1 runtime(s)
+          # (0 Ready/create-usable)"). `simctl` can't fix this because the daemon itself is
+          # wedged, so purge the CoreSimulator image store OUT-OF-BAND (bypassing the daemon)
+          # to remove the stuck ghosts, letting the next download land on a clean slate.
+          # ONLY ever runs inside the already-failed exit-70 retry path after a drain has
+          # provably NOT worked, so a healthy agent (first download succeeds) never reaches
+          # it. Agents are ephemeral/single-use, so nuking the shared image store is safe.
+          purge_wedged_sim_image_store() {
+            echo "Purging the wedged CoreSimulator image store on disk (stuck '(Deleting)' ghosts block re-download)..."
+            sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+            sleep 3
+            force_unmount_sim_runtime_volumes
+            # Remove the downloaded disk-image runtimes + their manifest, plus any cryptex
+            # runtime bundles staged for mount. These are exactly the records that carry the
+            # stuck "(Deleting)" state and the same-UUID collision on re-download.
+            sudo rm -rf /Library/Developer/CoreSimulator/Images/* 2>/dev/null || true
+            sudo rm -rf /Library/Developer/CoreSimulator/Cryptex/Images/bundle/SimRuntimeBundle-* 2>/dev/null || true
+            sudo rm -rf ~/Library/Developer/CoreSimulator/Caches/dyld/* 2>/dev/null || true
+            sleep 3
+            # First simctl call relaunches the daemon against the now-empty store.
+            xcrun simctl runtime list >/dev/null 2>&1 || true
+            sleep 2
+          }
           echo "Restarting CoreSimulatorService before retry to clear the wedged daemon..."
           sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
           sleep 5
@@ -244,6 +275,14 @@ steps:
                 break
               fi
             done
+            # Still stuck after two drains -> the image store itself is wedged with
+            # "(Deleting)" ghosts (PR #27153 build 14699070). Physically purge it so the
+            # re-download below starts from an empty store instead of colliding "Invalid
+            # runtime: null" with the same-UUID ghost.
+            if [[ "$C" != "0" ]]; then
+              echo "Runtime delete STILL did not drain ($C left) — escalating to on-disk image-store purge..."
+              purge_wedged_sim_image_store
+            fi
           fi
           echo "Re-trying simulator runtime installation..."
           sudo xcodebuild $DOWNLOAD_ARGS
@@ -287,6 +326,12 @@ steps:
                 force_unmount_sim_runtime_volumes
                 sudo xcrun simctl runtime delete all 2>/dev/null || true
                 sleep 3
+                # Still stuck -> purge the on-disk image store so this re-download starts
+                # clean (same wedge as PR #27153 build 14699070).
+                C=$(xcrun simctl runtime list -j | jq '. | length' 2>/dev/null || echo 0)
+                if [[ "$C" != "0" ]]; then
+                  purge_wedged_sim_image_store
+                fi
               fi
               sudo xcodebuild $DOWNLOAD_ARGS
             else
