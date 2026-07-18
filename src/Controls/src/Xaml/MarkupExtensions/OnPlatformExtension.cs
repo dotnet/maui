@@ -198,74 +198,60 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		bool TryGetValueForPlatform(out object value)
 		{
-			// Resolve the value by comparing the current platform string against the
-			// per-platform values, the same string-based approach the data-driven element
-			// form (OnPlatform<T>/On) uses. This lets custom backends (e.g. GTK/Linux) resolve
-			// a value as long as DeviceInfo.Platform.ToString() matches one of the keys below.
-			// Ordinal (case-sensitive), matching DevicePlatform equality and the compile-time
-			// SimplifyOnPlatformVisitor, so runtime and compiled XAML resolve identically.
-			var platform = DeviceInfo.Platform.ToString();
-
-			if (Matches(platform, nameof(DevicePlatform.Android)) && Android != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.Android && Android != s_notset)
 			{
 				value = Android;
 				return true;
 			}
-			if (Matches(platform, "GTK") && GTK != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.Create("GTK") && GTK != s_notset)
 			{
 				value = GTK;
 				return true;
 			}
-			if (Matches(platform, nameof(DevicePlatform.iOS)) && iOS != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.iOS && iOS != s_notset)
 			{
 				value = iOS;
 				return true;
 			}
-			if (Matches(platform, nameof(DevicePlatform.macOS)) && macOS != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.macOS && macOS != s_notset)
 			{
 				value = macOS;
 				return true;
 			}
-			if (Matches(platform, nameof(DevicePlatform.MacCatalyst)) && MacCatalyst != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.MacCatalyst && MacCatalyst != s_notset)
 			{
 				value = MacCatalyst;
 				return true;
 			}
-			if (Matches(platform, nameof(DevicePlatform.Tizen)) && Tizen != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.Tizen && Tizen != s_notset)
 			{
 				value = Tizen;
 				return true;
 			}
-			if (Matches(platform, nameof(DevicePlatform.WinUI)) && WinUI != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI && WinUI != s_notset)
 			{
 				value = WinUI;
 				return true;
 			}
 #pragma warning disable CS0618 // Type or member is obsolete
-			// UWP is a backwards-compatible alias for WinUI: fall back to it for the WinUI
-			// platform only when no explicit WinUI value was provided (WinUI takes precedence).
-			if (Matches(platform, nameof(DevicePlatform.WinUI)) && UWP != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI && UWP != s_notset)
 			{
 				value = UWP;
 				return true;
 			}
-			// "UWP" still matches a custom backend reporting the legacy "UWP" platform string.
-			if (Matches(platform, "UWP") && UWP != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.Create("UWP") && UWP != s_notset)
 			{
 				value = UWP;
 				return true;
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
-			if (Matches(platform, "WPF") && WPF != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.Create("WPF") && WPF != s_notset)
 			{
 				value = WPF;
 				return true;
 			}
-
 			value = Default;
 			return value != s_notset;
-
-			static bool Matches(string platform, string key) => string.Equals(platform, key, StringComparison.Ordinal);
 		}
 	}
 }

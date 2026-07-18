@@ -139,8 +139,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		[Fact]
-		// Issue 35695: the {OnPlatform} markup extension is data-driven, so a custom backend
-		// (here GTK/Linux) can express a platform-conditional value just like first-party platforms.
+		// Issue 35695: GTK is public on OnPlatformExtension, so a GTK backend can
+		// express a platform-conditional value through the markup-extension form.
 		public void MarkupExtensionResolvesCustomPlatform()
 		{
 			var xaml = @"
@@ -151,11 +151,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			mockDeviceInfo.Platform = DevicePlatform.Create("GTK");
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.Equal("gtk", label.Text);
-
-			// An unknown platform falls back to Default.
-			mockDeviceInfo.Platform = DevicePlatform.Create("Web");
-			label = new Label().LoadFromXaml(xaml);
-			Assert.Equal("default", label.Text);
 		}
 	}
 

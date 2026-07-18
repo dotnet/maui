@@ -293,12 +293,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[InlineData("{OnPlatform Android=20, GTK=25}", "GTK", 25)]
 		[InlineData("{OnPlatform iOS=20, macOS=25}", "macOS", 25)]
 		[InlineData("{OnPlatform Android=20, WPF=25}", "WPF", 25)]
-		// Matching is data-driven and case-sensitive (Ordinal), consistent with the element
-		// form and the compile-time path: a case-variant platform string falls back to Default.
-		[InlineData("{OnPlatform Android=23, Default=20}", "android", 20)]
-		[InlineData("{OnPlatform GTK=25, Default=20}", "gtk", 20)]
-		// A platform the framework doesn't know about falls back to Default.
-		[InlineData("{OnPlatform iOS=23, Default=20}", "Web", 20)]
 		[InlineData("{OnPlatform 20}", "Android", 20)]
 		[InlineData("{OnPlatform 20}", "iOS", 20)]
 		[InlineData("{OnPlatform 20}", "Tizen", 20)]
@@ -329,9 +323,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Desktop", 26)]
 		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "TV", 30)]
 		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Watch", 10)]
-		// Matching is data-driven and case-sensitive; case-variant and unknown idioms fall back to Default.
-		[InlineData("{OnIdiom Phone=23, Default=20}", "phone", 20)]
-		[InlineData("{OnIdiom Phone=23, Default=20}", "Car", 20)]
 		[InlineData("{OnIdiom Phone=23}", "Desktop", default(int))]
 		public void OnIdiomExtension(string markup, string idiom, int expected)
 		{

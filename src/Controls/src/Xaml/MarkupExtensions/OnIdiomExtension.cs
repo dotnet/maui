@@ -162,28 +162,17 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		object GetValue()
 		{
-			// Resolve the value by comparing the current idiom string (ordinal, case-sensitive,
-			// matching DeviceIdiom's own equality) against the five built-in idiom names below.
-			// Unlike OnPlatform, OnIdiom has no data-driven <On Idiom="..."/> element form, so a
-			// genuinely custom idiom name (e.g. "Car") has no matching property here and always
-			// falls back to Default.
-			// null is the "not set" sentinel, matching the previous "Idiom ?? Default" behavior.
-			var idiom = DeviceInfo.Idiom.ToString();
-
-			if (Matches(idiom, nameof(DeviceIdiom.Phone)) && Phone != null)
-				return Phone;
-			if (Matches(idiom, nameof(DeviceIdiom.Tablet)) && Tablet != null)
-				return Tablet;
-			if (Matches(idiom, nameof(DeviceIdiom.Desktop)) && Desktop != null)
-				return Desktop;
-			if (Matches(idiom, nameof(DeviceIdiom.TV)) && TV != null)
-				return TV;
-			if (Matches(idiom, nameof(DeviceIdiom.Watch)) && Watch != null)
-				return Watch;
-
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				return Phone ?? Default;
+			if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
+				return Tablet ?? Default;
+			if (DeviceInfo.Idiom == DeviceIdiom.Desktop)
+				return Desktop ?? Default;
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
+				return TV ?? Default;
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
+				return Watch ?? Default;
 			return Default;
-
-			static bool Matches(string idiom, string key) => string.Equals(idiom, key, StringComparison.Ordinal);
 		}
 	}
 }
