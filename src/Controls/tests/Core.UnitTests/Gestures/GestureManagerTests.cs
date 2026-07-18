@@ -352,7 +352,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		/// When a DI factory is registered and the handler is not an
 		/// <see cref="IPlatformViewHandler"/> (custom/third-party backend), the factory is still
 		/// invoked and the returned manager is used — factory registration fully decouples
-		/// gesture setup from the built-in platform view contract (covers #35044).
+		/// gesture setup from the built-in platform view contract.
+		/// <para>
+		/// Note: this only covers the <em>factory-present</em> path. The core #35044 regression —
+		/// where no factory/provider is registered and the built-in
+		/// <see cref="GesturePlatformManager"/> must be skipped for a non-<see cref="IPlatformViewHandler"/>
+		/// handler — lives behind <c>#if PLATFORM</c> and cannot be compiled here (netstandard).
+		/// That scenario is covered by
+		/// <c>Controls.DeviceTests</c>' <c>GestureManagerTests</c>.
+		/// </para>
 		/// </summary>
 		[Fact]
 		public void FactoryUsedEvenWhenHandlerIsNotIPlatformViewHandler()
