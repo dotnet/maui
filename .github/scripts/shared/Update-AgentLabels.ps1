@@ -484,6 +484,41 @@ function Update-AgentReviewedLabel {
 }
 
 # ============================================================
+# Get-OutcomeFromCodeReviewVerdict — fallback outcome source
+# ============================================================
+function Get-OutcomeFromCodeReviewVerdict {
+    <#
+    .SYNOPSIS
+        Derive an outcome label from the code-review Verdict when the Report phase
+        completed but omitted its canonical "Final Recommendation:" line.
+
+    .DESCRIPTION
+        The pre-flight phase writes the code-review Verdict
+        (LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION / SKIPPED) to pre-flight/code-review.md
+        (rendered as the "🔬 Code Review — Deep Analysis" section) and, as a summary,
+        to pre-flight/content.md. Map that verdict to an outcome label so a completed
+        review whose Report omitted the recommendation line is not mislabeled
+        review-incomplete. Returns 'review-incomplete' only when no usable verdict is
+        present. Matches both "**Verdict:** LGTM" and "### Verdict: NEEDS_CHANGES".
+    #>
+    param([Parameter(Mandatory)] [string]$BaseDir)
+
+    foreach ($rel in @('pre-flight/code-review.md', 'pre-flight/content.md')) {
+        $f = Join-Path $BaseDir $rel
+        if (-not (Test-Path $f)) { continue }
+        $c = Get-Content $f -Raw -ErrorAction SilentlyContinue
+        if (-not $c) { continue }
+        if ($c -match '(?im)Verdict:\s*\**\s*(LGTM|APPROVE|NEEDS[ _]?CHANGES|NEEDS[ _]?DISCUSSION|REQUEST[ _]?CHANGES)') {
+            switch -Regex ($matches[1]) {
+                '(?i)^(LGTM|APPROVE)' { return 'approved' }
+                default               { return 'changes-requested' }
+            }
+        }
+    }
+    return 'review-incomplete'
+}
+
+# ============================================================
 # Parse-PhaseOutcomes — read content.md files to determine labels
 # ============================================================
 function Parse-PhaseOutcomes {
@@ -574,7 +609,14 @@ function Parse-PhaseOutcomes {
                 $result.Outcome = 'changes-requested'
             }
             else {
-                $result.Outcome = 'review-incomplete'
+                # The Report phase ran to completion (report/content.md exists) but the
+                # LLM omitted the canonical "Final Recommendation: {APPROVE|REQUEST CHANGES}"
+                # line — it sometimes emits only a "Winning candidate" comparative section
+                # (observed on PR #36541, build 14698057, which mislabeled a NEEDS_CHANGES
+                # review as review-incomplete). A completed report is NOT review-incomplete:
+                # fall back to the pre-flight code-review Verdict before giving up. Mirrors
+                # the Gate parser's authoritative-then-fallback approach above.
+                $result.Outcome = Get-OutcomeFromCodeReviewVerdict -BaseDir $baseDir
             }
         } else {
             $result.Outcome = 'review-incomplete'

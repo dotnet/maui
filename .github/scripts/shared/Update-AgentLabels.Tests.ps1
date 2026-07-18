@@ -20,13 +20,16 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    # Extract only the pure-function we are testing (it reads files, makes no gh/network calls).
-    $function = $ast.Find({
-        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-        $args[0].Name -eq 'Parse-PhaseOutcomes'
-    }, $true)
-    if (-not $function) { throw "Function 'Parse-PhaseOutcomes' not found" }
-    Invoke-Expression $function.Extent.Text
+    # Extract only the pure functions under test (they read files, make no gh/network
+    # calls): Parse-PhaseOutcomes and its fallback helper Get-OutcomeFromCodeReviewVerdict.
+    foreach ($fnName in @('Get-OutcomeFromCodeReviewVerdict', 'Parse-PhaseOutcomes')) {
+        $fn = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $fnName
+        }, $true)
+        if (-not $fn) { throw "Function '$fnName' not found" }
+        Invoke-Expression $fn.Extent.Text
+    }
 
     # Helper: build a fake repo root with a PRAgent artifact dir and optional files.
     function New-FixtureRoot {
@@ -35,7 +38,8 @@ BeforeAll {
             [string]$WinnerJson,
             [string]$GateResultTxt,
             [string]$GateContentMd,
-            [string]$ReportMd
+            [string]$ReportMd,
+            [string]$CodeReviewMd
         )
         $root = Join-Path ([System.IO.Path]::GetTempPath()) ("agentlabels-" + [Guid]::NewGuid().ToString('N'))
         $agentDir = Join-Path $root "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
@@ -45,6 +49,7 @@ BeforeAll {
         if ($PSBoundParameters.ContainsKey('GateResultTxt')) { $GateResultTxt | Set-Content (Join-Path $gateDir 'gate-result.txt') -Encoding UTF8 }
         if ($PSBoundParameters.ContainsKey('GateContentMd')) { $GateContentMd | Set-Content (Join-Path $gateDir 'content.md') -Encoding UTF8 }
         if ($PSBoundParameters.ContainsKey('ReportMd'))      { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'report') | Out-Null; $ReportMd | Set-Content (Join-Path $agentDir 'report/content.md') -Encoding UTF8 }
+        if ($PSBoundParameters.ContainsKey('CodeReviewMd'))  { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'pre-flight') | Out-Null; $CodeReviewMd | Set-Content (Join-Path $agentDir 'pre-flight/code-review.md') -Encoding UTF8 }
         return $root
     }
 }
@@ -155,6 +160,40 @@ Describe 'Parse-PhaseOutcomes — Outcome from report' {
     It 'maps a missing report to review-incomplete' {
         $root = New-FixtureRoot
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'review-incomplete'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'falls back to code-review Verdict (NEEDS_CHANGES) when a completed report omits Final Recommendation' {
+        # Report ran to completion (a "Winning candidate" comparative section) but the
+        # LLM omitted the canonical Final Recommendation line — PR #36541 / build 14698057.
+        $root = New-FixtureRoot `
+            -ReportMd "## Comparative Report`n### Winning candidate`n**Winner:** ``pr-plus-reviewer``" `
+            -CodeReviewMd '### Verdict: NEEDS_CHANGES'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'changes-requested'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'falls back to code-review Verdict (LGTM) when a completed report omits Final Recommendation' {
+        $root = New-FixtureRoot `
+            -ReportMd "## Comparative Report`n### Winning candidate`n**Winner:** ``pr``" `
+            -CodeReviewMd '**Verdict:** LGTM'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'approved'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'stays review-incomplete when a report omits Final Recommendation and no code-review Verdict exists' {
+        $root = New-FixtureRoot -ReportMd '## Comparative Report (no recommendation, no verdict)'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'review-incomplete'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'prefers the report Final Recommendation over the code-review Verdict when both exist' {
+        # The Report's own recommendation is authoritative (it weighs the fix comparison);
+        # the code-review Verdict is only a fallback. APPROVE must win over NEEDS_CHANGES.
+        $root = New-FixtureRoot `
+            -ReportMd '✅ Final Recommendation: APPROVE' `
+            -CodeReviewMd '### Verdict: NEEDS_CHANGES'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'approved'
         Remove-Item -Recurse -Force $root
     }
 }
