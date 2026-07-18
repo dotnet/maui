@@ -124,7 +124,7 @@ public class ResizetizerTests : BaseBuildTest
 			  <Target Name="VerifyCustomBackendImages">
 			    <Error Condition="'@(MauiProcessedImage)' == ''" Text="Custom backends must receive processed images." />
 			    <Error Condition="'@(ContentWithTargetPath)' != ''" Text="Custom backends must not receive built-in output injection." />
-			    <WriteLinesToFile File="$(_MauiIntermediateImages)custom-backend.items" Lines="@(MauiProcessedImage)" />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)custom-backend.items" Lines="@(MauiProcessedImage)" Overwrite="true" />
 			  </Target>
 			  <Target Name="VerifyCustomBackendResources" DependsOnTargets="ResizetizeImages" />
 			</Project>

@@ -432,7 +432,7 @@
     <Target Name="ResizetizerAfterAssetProcessing"
         AfterTargets="ProcessMauiAssets"
         DependsOnTargets="$(ResizetizerAfterAssetProcessingTargets)"
-        Condition="'$(EnableMauiAssetProcessing)' == 'true'" />
+        Condition="'$(EnableMauiAssetProcessing)' == 'true' And '$(ResizetizerAfterAssetProcessingTargets)' != ''" />
 
     <Target Name="ProcessMauiSplashScreens"
         Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
@@ -648,7 +648,7 @@
     <Target Name="ResizetizerAfterFontProcessing"
         AfterTargets="ProcessMauiFonts"
         DependsOnTargets="$(ResizetizerAfterFontProcessingTargets)"
-        Condition="'$(EnableMauiFontProcessing)' == 'true'" />
+        Condition="'$(EnableMauiFontProcessing)' == 'true' And '$(ResizetizerAfterFontProcessingTargets)' != ''" />
 
     <Target Name="_ReadResizetizeImagesOutputs">
         <ReadLinesFromFile File="$(_ResizetizerOutputsFile)" Condition="Exists ('$(_ResizetizerOutputsFile)')">
@@ -727,7 +727,7 @@
         AfterTargets="ResizetizeImages"
         BeforeTargets="_ResizetizeInjectPlatformItems"
         DependsOnTargets="$(ResizetizerAfterImageProcessingTargets)"
-        Condition="'$(EnableMauiImageProcessing)' == 'true'" />
+        Condition="'$(EnableMauiImageProcessing)' == 'true' And '$(ResizetizerAfterImageProcessingTargets)' != ''" />
 
     <Target Name="_ResizetizeInjectPlatformItems"
         AfterTargets="ResizetizeImages"
