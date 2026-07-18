@@ -15,9 +15,10 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// (the <see cref="Microsoft.Maui.Devices.DevicePlatform"/> struct's <c>ToString()</c> value)
 	/// against the per-platform values, so a custom backend whose platform string matches one of the named
 	/// properties below (for example <c>GTK</c>) resolves correctly at runtime. Note that the compile-time
-	/// optimization (<c>SimplifyOnPlatformVisitor</c>) only recognizes the built-in
-	/// <c>-android</c>/<c>-ios</c>/<c>-macos</c>/<c>-maccatalyst</c> target frameworks; for any other backend
-	/// the extension falls back to runtime resolution.
+	/// optimization (<c>SimplifyOnPlatformVisitor</c>) currently recognizes only the
+	/// <c>-android</c>/<c>-ios</c>/<c>-macos</c>/<c>-maccatalyst</c> target frameworks; every other target
+	/// framework (including <c>-windows</c> and <c>-tizen</c>) and any custom backend falls back to runtime
+	/// resolution.
 	/// <para>
 	/// Because a XAML markup extension maps each named argument to a CLR property, the inline
 	/// <c>{OnPlatform iOS=…, Android=…}</c> form can only express the platforms exposed as properties here.
