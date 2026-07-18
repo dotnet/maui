@@ -1,6 +1,6 @@
 # Passkeys (WebAuthn / FIDO2) — Cross-platform Essentials API
 
-| | |
+| Property | Value |
 |---|---|
 | **Status** | Proposed (spec-first) — design complete, under review |
 | **Area** | `area-essentials` |
@@ -543,7 +543,8 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   `androidx.credentials` API itself is callable from API 23+, but passkey *credentials* are only
   OS-native from 34.
 - Exceptions map from `CreateCredentialException` / `GetCredentialException` subclasses (e.g.
-  `*CancellationException` → `TaskCanceledException`, `NoCredentialException` → no-credential result).
+  `*CancellationException` → `TaskCanceledException`; all other failures, including `NoCredentialException`,
+  → `PasskeyException`, matching §8).
 
 ### 7.2 Apple — AuthenticationServices (iOS / iPadOS / Mac Catalyst)
 
@@ -743,7 +744,7 @@ and fail-fast. (The separate, deferred "no modal at all / inline autofill" mode 
 | **`true`** | Silent/local if present; else fails fast (`NoCredentialException`) — no hybrid | Presents only if a local passkey exists; else errors — no QR | **Ignored (no-op)** — modal still shown |
 
 *Notes:* best-effort (Windows no-op must be documented). "No credential available" (`NoCredentialException`)
-is a distinct outcome, **not** a user-cancel, so it maps to a no-credential result rather than
+is a distinct outcome, **not** a user-cancel, so it surfaces as a `PasskeyException` (per §8) rather than
 `TaskCanceledException`. Mostly relevant for *authentication*.
 
 #### 7.5.2 Presentation anchor / parent window — internal (v1)
