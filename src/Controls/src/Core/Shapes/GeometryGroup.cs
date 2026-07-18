@@ -53,11 +53,21 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public event EventHandler InvalidateGeometryRequested;
 
+		// Subscribe to the Children collection via a weak proxy so a long-lived / shared
+		// GeometryCollection does not root this GeometryGroup (and any Path using it). See issue #36365.
+		WeakNotifyCollectionChangedProxy _childrenProxy;
+		NotifyCollectionChangedEventHandler _childrenCollectionChanged;
+
+		~GeometryGroup()
+		{
+			_childrenProxy?.Unsubscribe();
+		}
+
 		void UpdateChildren(GeometryCollection oldCollection, GeometryCollection newCollection)
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnChildrenCollectionChanged;
+				_childrenProxy?.Unsubscribe();
 
 				foreach (var oldChildren in oldCollection)
 				{
@@ -68,7 +78,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnChildrenCollectionChanged;
+			_childrenCollectionChanged ??= OnChildrenCollectionChanged;
+			_childrenProxy ??= new WeakNotifyCollectionChangedProxy();
+			_childrenProxy.Subscribe(newCollection, _childrenCollectionChanged);
 
 			foreach (var newChildren in newCollection)
 			{
