@@ -279,5 +279,104 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => new GestureManager(view));
 			factory.Received(1).CreateGesturePlatformManager(handler);
 		}
+
+		// ── IGesturePlatformManagerFactory public-API extensibility tests ──────────────────
+
+		/// <summary>
+		/// When a DI-registered <see cref="IGesturePlatformManagerFactory"/> is present the
+		/// factory-supplied manager must be used and the built-in <see cref="GesturePlatformManager"/>
+		/// must never be constructed (covers issue #33364).
+		/// </summary>
+		[Fact]
+		public void FactoryManagerIsNotBuiltInGesturePlatformManagerType()
+		{
+			var customManager = Substitute.For<IGesturePlatformManager>();
+			var factory = Substitute.For<IGesturePlatformManagerFactory>();
+
+			var handler = Substitute.For<IViewHandler>();
+			var mauiContext = Substitute.For<IMauiContext>();
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IGesturePlatformManagerFactory)).Returns(factory);
+			mauiContext.Services.Returns(services);
+			handler.MauiContext.Returns(mauiContext);
+			factory.CreateGesturePlatformManager(handler).Returns(customManager);
+
+			var view = Substitute.For<IControlsView>();
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+
+			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
+			// The factory's instance must not be the built-in concrete type.
+			Assert.IsNotType<GesturePlatformManager>(gestureManager.GesturePlatformManager);
+			factory.Received(1).CreateGesturePlatformManager(handler);
+		}
+
+		/// <summary>
+		/// When a DI factory is registered and the handler also implements
+		/// <see cref="IGesturePlatformManagerProvider"/>, only the factory is invoked — the
+		/// handler-scoped provider is never called and the default <see cref="GesturePlatformManager"/>
+		/// is never constructed (covers precedence guarantee in #33364).
+		/// </summary>
+		[Fact]
+		public void FactoryWinsOverProviderAndDefaultManagerIsNotConstructed()
+		{
+			var factoryManager = Substitute.For<IGesturePlatformManager>();
+			var factory = Substitute.For<IGesturePlatformManagerFactory>();
+
+			var handler = Substitute.For<IViewHandler, IGesturePlatformManagerProvider>();
+			var provider = (IGesturePlatformManagerProvider)handler;
+			var providerManager = Substitute.For<IGesturePlatformManager>();
+			provider.CreateGesturePlatformManager().Returns(providerManager);
+
+			var mauiContext = Substitute.For<IMauiContext>();
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IGesturePlatformManagerFactory)).Returns(factory);
+			mauiContext.Services.Returns(services);
+			((IViewHandler)handler).MauiContext.Returns(mauiContext);
+			factory.CreateGesturePlatformManager((IViewHandler)handler).Returns(factoryManager);
+
+			var view = Substitute.For<IControlsView>();
+			view.Handler.Returns((IViewHandler)handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+
+			Assert.Equal(factoryManager, gestureManager.GesturePlatformManager);
+			Assert.IsNotType<GesturePlatformManager>(gestureManager.GesturePlatformManager);
+			// Handler-scoped provider must be completely bypassed when the factory is registered.
+			provider.DidNotReceive().CreateGesturePlatformManager();
+			factory.Received(1).CreateGesturePlatformManager((IViewHandler)handler);
+		}
+
+		/// <summary>
+		/// When a DI factory is registered and the handler is not an
+		/// <see cref="IPlatformViewHandler"/> (custom/third-party backend), the factory is still
+		/// invoked and the returned manager is used — factory registration fully decouples
+		/// gesture setup from the built-in platform view contract (covers #35044).
+		/// </summary>
+		[Fact]
+		public void FactoryUsedEvenWhenHandlerIsNotIPlatformViewHandler()
+		{
+			var customManager = Substitute.For<IGesturePlatformManager>();
+			var factory = Substitute.For<IGesturePlatformManagerFactory>();
+
+			// Plain IViewHandler — does NOT implement IPlatformViewHandler.
+			var handler = Substitute.For<IViewHandler>();
+			var mauiContext = Substitute.For<IMauiContext>();
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IGesturePlatformManagerFactory)).Returns(factory);
+			mauiContext.Services.Returns(services);
+			handler.MauiContext.Returns(mauiContext);
+			factory.CreateGesturePlatformManager(handler).Returns(customManager);
+
+			var view = Substitute.For<IControlsView>();
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+
+			Assert.True(gestureManager.IsConnected);
+			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
+			factory.Received(1).CreateGesturePlatformManager(handler);
+		}
 	}
 }

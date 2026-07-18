@@ -202,3 +202,6 @@ override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreate(A
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnResume() -> void
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnViewCreated(Android.Views.View! view, Android.OS.Bundle? savedInstanceState) -> void
+Microsoft.Maui.Controls.Platform.IGesturePlatformManager
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory.CreateGesturePlatformManager(Microsoft.Maui.IViewHandler! handler) -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!

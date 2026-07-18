@@ -72,8 +72,8 @@ namespace Microsoft.Maui.Controls.Platform
 				DisconnectGestures();
 			}
 
-			// The connected Gesture Manager is already setup and watching the correct view
-			if (GesturePlatformManager != null)
+			// Already set up (or no-op attempted) for the current handler/view tuple.
+			if (_handler is not null)
 				return;
 
 			GesturePlatformManager = CreateGesturePlatformManager(handler);
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_didHaveWindow = _view.Window != null;
 		}
 
-		IGesturePlatformManager CreateGesturePlatformManager(IViewHandler handler)
+		IGesturePlatformManager? CreateGesturePlatformManager(IViewHandler handler)
 		{
 			// Prefer an application-registered factory (issue #33364: resolve via Services),
 			// then a handler-scoped provider, then the default platform manager.
@@ -100,6 +100,14 @@ namespace Microsoft.Maui.Controls.Platform
 				return provider.CreateGesturePlatformManager()
 					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerProvider)}.{nameof(IGesturePlatformManagerProvider.CreateGesturePlatformManager)} cannot return null.");
 			}
+
+#if PLATFORM
+			// The built-in GesturePlatformManager requires an IPlatformViewHandler to access the
+			// platform view. Skip it for custom/third-party backends that don't implement
+			// IPlatformViewHandler — they provide their own gesture handling. (#35044)
+			if (handler is not IPlatformViewHandler)
+				return null;
+#endif
 
 			return new GesturePlatformManager(handler);
 		}

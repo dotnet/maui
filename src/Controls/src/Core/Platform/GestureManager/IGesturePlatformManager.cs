@@ -3,9 +3,22 @@ using System;
 namespace Microsoft.Maui.Controls.Platform
 {
 	/// <summary>
-	/// Interface for platform-specific gesture management.
+	/// Manages the platform-specific gesture infrastructure for a single handler connection.
 	/// </summary>
-	internal interface IGesturePlatformManager : IDisposable
+	/// <remarks>
+	/// <para>
+	/// An instance is created by <see cref="GestureManager"/> whenever a handler connects to a view,
+	/// and is disposed when the handler disconnects or changes. A new instance is created for every
+	/// connection, so implementations must be prepared for multiple connect/disconnect cycles.
+	/// </para>
+	/// <para>
+	/// To replace the built-in gesture handling for all views in an application, register a custom
+	/// <see cref="IGesturePlatformManagerFactory"/> in the application's service collection. Handlers
+	/// that need per-handler customization can implement <see cref="IGesturePlatformManagerProvider"/>
+	/// (internal API).
+	/// </para>
+	/// </remarks>
+	public interface IGesturePlatformManager : IDisposable
 	{
 	}
 }

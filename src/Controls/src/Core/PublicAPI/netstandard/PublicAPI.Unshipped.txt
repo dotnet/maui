@@ -103,3 +103,6 @@ Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Contr
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
 static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
+Microsoft.Maui.Controls.Platform.IGesturePlatformManager
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory.CreateGesturePlatformManager(Microsoft.Maui.IViewHandler! handler) -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!
