@@ -284,8 +284,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		/// <summary>
 		/// When a DI-registered <see cref="IGesturePlatformManagerFactory"/> is present the
-		/// factory-supplied manager must be used and the built-in <see cref="GesturePlatformManager"/>
-		/// must never be constructed (covers issue #33364).
+		/// factory-supplied manager is returned instead of the built-in
+		/// <see cref="GesturePlatformManager"/> type (covers issue #33364).
 		/// </summary>
 		[Fact]
 		public void FactoryManagerIsNotBuiltInGesturePlatformManagerType()
@@ -314,12 +314,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		/// <summary>
 		/// When a DI factory is registered and the handler also implements
-		/// <see cref="IGesturePlatformManagerProvider"/>, only the factory is invoked — the
-		/// handler-scoped provider is never called and the default <see cref="GesturePlatformManager"/>
-		/// is never constructed (covers precedence guarantee in #33364).
+		/// <see cref="IGesturePlatformManagerProvider"/>, the factory manager is returned and
+		/// the handler-scoped provider is not called (covers the precedence guarantee in #33364).
 		/// </summary>
 		[Fact]
-		public void FactoryWinsOverProviderAndDefaultManagerIsNotConstructed()
+		public void FactoryTakesPrecedenceOverProvider()
 		{
 			var factoryManager = Substitute.For<IGesturePlatformManager>();
 			var factory = Substitute.For<IGesturePlatformManagerFactory>();
