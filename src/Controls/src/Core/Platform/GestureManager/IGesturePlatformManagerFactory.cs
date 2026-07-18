@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 	/// <see cref="Microsoft.Maui.IMauiContext.Services"/>, <see cref="GestureManager"/> calls
 	/// <see cref="CreateGesturePlatformManager"/> instead of constructing the default
 	/// <c>GesturePlatformManager</c>. This lets alternative platform backends (for example,
-	/// community-maintained backends that do not use <see cref="Microsoft.Maui.IPlatformViewHandler"/>)
+	/// community-maintained backends that do not use <c>IPlatformViewHandler</c>)
 	/// supply their own gesture infrastructure without subclassing or forking the built-in types.
 	/// </para>
 	/// <para>
