@@ -751,8 +751,6 @@
                 <TargetPath>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</TargetPath>
                 <Link>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</Link>
             </ImageAsset>
-
-            <FileWrites Include="@(_ResizetizerCollectedBundleResourceImages)" />
         </ItemGroup>
 
         <!-- Android -->
@@ -761,8 +759,6 @@
             <LibraryResourceDirectories Condition="Exists ('$(_MauiIntermediateImages)')" Include="$(_MauiIntermediateImages)">
                 <StampFile>$(_ResizetizerStampFile)</StampFile>
             </LibraryResourceDirectories>
-
-            <FileWrites Include="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
         <!-- Windows App SDK -->
@@ -771,9 +767,6 @@
                 <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
                 <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
-
-            <FileWrites Include="@(_ResizetizerCollectedImages)" />
-
             <_MauiAppIconFile Include="@(_ResizetizerCollectedImages)"
                               Condition="'%(Extension)' == '.ico'" />
         </ItemGroup>
@@ -788,7 +781,6 @@
                 <LogicalName>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</LogicalName>
                 <Link>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</Link>
             </Resource>
-            <FileWrites Include="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
         <!-- Tizen -->
@@ -802,7 +794,6 @@
             <TizenTpkUserIncludeFiles Include="@(_ResizetizerCollectedImages)">
                 <TizenTpkSubDir>$([MSBuild]::MakeRelative($(ResizetizerIntermediateOutputAbsolutePath), $([System.IO.Path]::GetFullPath('%(_ResizetizerCollectedImages.RelativeDir)'))))</TizenTpkSubDir>
             </TizenTpkUserIncludeFiles>
-            <FileWrites Include="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
     </Target>
