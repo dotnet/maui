@@ -15,8 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 	/// supply their own gesture infrastructure without subclassing or forking the built-in types.
 	/// </para>
 	/// <para>
-	/// The factory takes precedence over a handler-scoped <see cref="IGesturePlatformManagerProvider"/>.
-	/// When both are present, the factory wins.
+	/// The factory takes precedence over the framework's internal handler-scoped customization path.
 	/// </para>
 	/// <example>
 	/// Registering a custom factory:
@@ -36,9 +35,6 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <see cref="GestureManager"/>. A new instance must be returned for each call because
 		/// <see cref="GestureManager"/> disposes and recreates the manager on every connect or handler change.
 		/// </returns>
-		/// <exception cref="System.ArgumentNullException">
-		/// Thrown when <paramref name="handler"/> is <see langword="null"/>.
-		/// </exception>
 		IGesturePlatformManager CreateGesturePlatformManager(IViewHandler handler);
 	}
 }

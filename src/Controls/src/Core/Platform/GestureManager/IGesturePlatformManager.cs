@@ -13,9 +13,8 @@ namespace Microsoft.Maui.Controls.Platform
 	/// </para>
 	/// <para>
 	/// To replace the built-in gesture handling for all views in an application, register a custom
-	/// <see cref="IGesturePlatformManagerFactory"/> in the application's service collection. Handlers
-	/// that need per-handler customization can implement <see cref="IGesturePlatformManagerProvider"/>
-	/// (internal API).
+	/// <see cref="IGesturePlatformManagerFactory"/> in the application's service collection. The
+	/// framework also supports an internal handler-scoped customization path.
 	/// </para>
 	/// </remarks>
 	public interface IGesturePlatformManager : IDisposable
