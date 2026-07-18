@@ -91,10 +91,12 @@ internal static class ImageProcessor
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 		var loadingService = new Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService();
 
-		var loadOptions = new ImageLoadOptions(
+		var loadOptions = new ImageLoadOptions
+		{
 			// RotateImage == true means "normalize the EXIF orientation into the pixels".
-			disableRotationNormalization: !options.RotateImage,
-			preserveMetadata: options.PreserveMetadata);
+			DisableRotationNormalization = !options.RotateImage,
+			PreserveMetadata = options.PreserveMetadata,
+		};
 
 		using var image = loadingService.FromStream(input, loadOptions)
 			?? throw new InvalidOperationException("Failed to load image from stream.");
@@ -123,9 +125,11 @@ internal static class ImageProcessor
 
 		try
 		{
-			var saveOptions = new ImageSaveOptions(
-				quality: Math.Max(0, Math.Min(100, options.CompressionQuality)) / 100f,
-				preserveMetadata: options.PreserveMetadata);
+			var saveOptions = new ImageSaveOptions
+			{
+				Quality = Math.Max(0, Math.Min(100, options.CompressionQuality)) / 100f,
+				PreserveMetadata = options.PreserveMetadata,
+			};
 
 			await current.SaveAsync(output, format, saveOptions).ConfigureAwait(false);
 		}
