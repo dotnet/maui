@@ -279,6 +279,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => new GestureManager(view));
 			factory.Received(1).CreateGesturePlatformManager(handler);
 		}
-
 	}
 }
