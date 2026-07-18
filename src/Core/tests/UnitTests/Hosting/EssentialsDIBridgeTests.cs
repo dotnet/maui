@@ -305,6 +305,25 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Same(mock, Preferences.Default);
 		}
 
+		[Fact]
+		public void LaterMauiAppCanReplaceStaticFacade()
+		{
+			var firstMock = new StubPreferences();
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IPreferences>(firstMock);
+
+			using var firstApp = firstBuilder.Build();
+			Assert.Same(firstMock, Preferences.Default);
+
+			var secondMock = new StubPreferences();
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IPreferences>(secondMock);
+
+			using var secondApp = secondBuilder.Build();
+
+			Assert.Same(secondMock, Preferences.Default);
+		}
+
 #if WINDOWS || TIZEN
 		[Fact]
 		public void ConfiguredMapServiceToken_IsForwardedToPlatform()
