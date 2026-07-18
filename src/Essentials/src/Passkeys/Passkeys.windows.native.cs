@@ -84,6 +84,26 @@ namespace Microsoft.Maui.Authentication
 			public string? pwszCredentialType;
 		}
 
+		public const uint WEBAUTHN_CREDENTIAL_EX_CURRENT_VERSION = 1;
+		public const uint WEBAUTHN_CTAP_TRANSPORT_ANY = 0;
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		public struct WEBAUTHN_CREDENTIAL_EX
+		{
+			public uint dwVersion;
+			public uint cbId;
+			public IntPtr pbId;
+			public string? pwszCredentialType;
+			public uint dwTransports;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct WEBAUTHN_CREDENTIAL_LIST
+		{
+			public uint cCredentials;
+			public IntPtr ppCredentials; // pointer to an array of PWEBAUTHN_CREDENTIAL_EX
+		}
+
 		[StructLayout(LayoutKind.Sequential)]
 		public struct WEBAUTHN_CREDENTIALS
 		{
@@ -208,6 +228,7 @@ namespace Microsoft.Maui.Authentication
 	sealed class WindowsNativeBuffers : IDisposable
 	{
 		readonly List<IntPtr> _allocations = new();
+		readonly List<(IntPtr Ptr, Type Type)> _structs = new();
 
 		public IntPtr Pin(byte[] data)
 		{
@@ -226,6 +247,18 @@ namespace Microsoft.Maui.Authentication
 			return Pin(bytes);
 		}
 
+		// Marshals a single struct into its own unmanaged allocation and tracks it so both the embedded
+		// string allocations (via DestroyStructure) and the struct buffer itself (via FreeHGlobal) are
+		// released on Dispose.
+		IntPtr PinStruct<T>(T value) where T : struct
+		{
+			var ptr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
+			Marshal.StructureToPtr(value, ptr, false);
+			_structs.Add((ptr, typeof(T)));
+			_allocations.Add(ptr);
+			return ptr;
+		}
+
 		public NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETERS PinCoseParameters(NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER[] parameters)
 		{
 			var elementSize = Marshal.SizeOf<NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER>();
@@ -233,7 +266,12 @@ namespace Microsoft.Maui.Authentication
 			_allocations.Add(array);
 
 			for (var i = 0; i < parameters.Length; i++)
-				Marshal.StructureToPtr(parameters[i], array + (elementSize * i), false);
+			{
+				var elementPtr = array + (elementSize * i);
+				Marshal.StructureToPtr(parameters[i], elementPtr, false);
+				// Track for DestroyStructure so the embedded pwszCredentialType string is freed.
+				_structs.Add((elementPtr, typeof(NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER)));
+			}
 
 			return new NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETERS
 			{
@@ -242,8 +280,50 @@ namespace Microsoft.Maui.Authentication
 			};
 		}
 
+		// Builds a WEBAUTHN_CREDENTIAL_LIST from a set of credential ids and returns a pointer to it, or
+		// IntPtr.Zero when the list is empty. Used for allowCredentials / excludeCredentials.
+		public IntPtr PinCredentialList(byte[][] credentialIds)
+		{
+			if (credentialIds.Length == 0)
+				return IntPtr.Zero;
+
+			// One pointer per credential, pointing at a marshaled WEBAUTHN_CREDENTIAL_EX.
+			var pointerArray = Marshal.AllocHGlobal(IntPtr.Size * credentialIds.Length);
+			_allocations.Add(pointerArray);
+
+			for (var i = 0; i < credentialIds.Length; i++)
+			{
+				var id = credentialIds[i];
+				var credential = new NativeMethods.WEBAUTHN_CREDENTIAL_EX
+				{
+					dwVersion = NativeMethods.WEBAUTHN_CREDENTIAL_EX_CURRENT_VERSION,
+					cbId = (uint)id.Length,
+					pbId = Pin(id),
+					pwszCredentialType = "public-key",
+					dwTransports = NativeMethods.WEBAUTHN_CTAP_TRANSPORT_ANY,
+				};
+
+				var credentialPtr = PinStruct(credential);
+				Marshal.WriteIntPtr(pointerArray, IntPtr.Size * i, credentialPtr);
+			}
+
+			var list = new NativeMethods.WEBAUTHN_CREDENTIAL_LIST
+			{
+				cCredentials = (uint)credentialIds.Length,
+				ppCredentials = pointerArray,
+			};
+
+			return PinStruct(list);
+		}
+
 		public void Dispose()
 		{
+			// Release embedded string allocations first, then the raw buffers.
+			foreach (var (ptr, type) in _structs)
+				Marshal.DestroyStructure(ptr, type);
+
+			_structs.Clear();
+
 			foreach (var ptr in _allocations)
 				Marshal.FreeHGlobal(ptr);
 

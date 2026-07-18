@@ -119,20 +119,30 @@ namespace Microsoft.Maui.Authentication
 		{
 			preference = null!;
 
+			// userVerification lives under authenticatorSelection for creation options, but is a top-level
+			// field for request (assertion) options — check both.
+			string? value = null;
 			if (root.TryGetProperty("authenticatorSelection", out var selection) &&
-				selection.TryGetProperty("userVerification", out var uv) &&
-				uv.ValueKind == JsonValueKind.String)
+				selection.TryGetProperty("userVerification", out var nested) &&
+				nested.ValueKind == JsonValueKind.String)
 			{
-				preference = uv.GetString() switch
-				{
-					"required" => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Required,
-					"discouraged" => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Discouraged,
-					_ => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Preferred,
-				};
-				return true;
+				value = nested.GetString();
+			}
+			else if (root.TryGetProperty("userVerification", out var top) && top.ValueKind == JsonValueKind.String)
+			{
+				value = top.GetString();
 			}
 
-			return false;
+			if (value is null)
+				return false;
+
+			preference = value switch
+			{
+				"required" => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Required,
+				"discouraged" => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Discouraged,
+				_ => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Preferred,
+			};
+			return true;
 		}
 
 		static bool TryGetAttestation(JsonElement root, out NSString attestation)
@@ -211,7 +221,6 @@ namespace Microsoft.Maui.Authentication
 				writer.WriteString("id", Base64Url.Encode(credentialId));
 				writer.WriteString("rawId", Base64Url.Encode(credentialId));
 				writer.WriteString("type", "public-key");
-				writer.WriteString("authenticatorAttachment", "platform");
 				writer.WriteStartObject("response");
 				writer.WriteString("clientDataJSON", Base64Url.Encode(clientDataJson));
 				writer.WriteString("attestationObject", Base64Url.Encode(attestationObject));
@@ -242,7 +251,6 @@ namespace Microsoft.Maui.Authentication
 				writer.WriteString("id", Base64Url.Encode(credentialId));
 				writer.WriteString("rawId", Base64Url.Encode(credentialId));
 				writer.WriteString("type", "public-key");
-				writer.WriteString("authenticatorAttachment", "platform");
 				writer.WriteStartObject("response");
 				writer.WriteString("clientDataJSON", Base64Url.Encode(clientDataJson));
 				writer.WriteString("authenticatorData", Base64Url.Encode(authenticatorData));

@@ -11,12 +11,16 @@ namespace Microsoft.Maui.Authentication
 {
 	partial class PasskeysImplementation : IPasskeys
 	{
-		// webauthn.dll ships in-box on Windows 10 1903+; full passkey (platform authenticator)
-		// support requires Windows 11. IsSupported gates on the API being present.
+		// webauthn.dll ships in-box on Windows 10 1903+, but full passkey (platform authenticator /
+		// discoverable credential) support requires Windows 11. Gate on both the API being present and the
+		// OS being Windows 11 (build 22000+).
 		public bool IsSupported
 		{
 			get
 			{
+				if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+					return false;
+
 				try
 				{
 					return NativeMethods.WebAuthNGetApiVersionNumber() > 0;
@@ -65,16 +69,16 @@ namespace Microsoft.Maui.Authentication
 		{
 			var root = JsonDocument.Parse(options.ToString()).RootElement;
 
-			var rp = root.GetProperty("rp");
-			var rpId = rp.GetProperty("id").GetString() ?? throw new PasskeyException("Missing rp.id.");
+			var rp = GetRequiredObject(root, "rp");
+			var rpId = GetRequiredString(rp, "id");
 			var rpName = rp.TryGetProperty("name", out var rn) ? rn.GetString() ?? rpId : rpId;
 
-			var user = root.GetProperty("user");
-			var userId = Base64Url.Decode(user.GetProperty("id").GetString()!);
-			var userName = user.GetProperty("name").GetString() ?? string.Empty;
+			var user = GetRequiredObject(root, "user");
+			var userId = GetRequiredBytes(user, "id");
+			var userName = user.TryGetProperty("name", out var un) ? un.GetString() ?? string.Empty : string.Empty;
 			var userDisplayName = user.TryGetProperty("displayName", out var dn) ? dn.GetString() ?? userName : userName;
 
-			var challenge = Base64Url.Decode(root.GetProperty("challenge").GetString()!);
+			var challenge = GetRequiredBytes(root, "challenge");
 			var clientDataJson = BuildClientDataJson("webauthn.create", challenge, rpId);
 
 			var coseParams = ReadCoseParameters(root);
@@ -83,8 +87,8 @@ namespace Microsoft.Maui.Authentication
 			var attachment = ReadAuthenticatorAttachment(root);
 			var attestation = ReadAttestation(root);
 
-			var cancellationId = RegisterCancellation(cancellationToken);
 			var native = new WindowsNativeBuffers();
+			var (cancellationId, cancellationRegistration) = RegisterCancellation(cancellationToken);
 
 			try
 			{
@@ -128,7 +132,7 @@ namespace Microsoft.Maui.Authentication
 					dwAttestationConveyancePreference = attestation,
 					dwFlags = 0,
 					pCancellationId = native.PinCancellationId(cancellationId),
-					pExcludeCredentialList = IntPtr.Zero,
+					pExcludeCredentialList = native.PinCredentialList(ReadCredentialIds(root, "excludeCredentials")),
 				};
 
 				var hr = NativeMethods.WebAuthNAuthenticatorMakeCredential(
@@ -158,6 +162,7 @@ namespace Microsoft.Maui.Authentication
 			}
 			finally
 			{
+				cancellationRegistration.Dispose();
 				native.Dispose();
 			}
 		}
@@ -166,15 +171,15 @@ namespace Microsoft.Maui.Authentication
 		{
 			var root = JsonDocument.Parse(options.ToString()).RootElement;
 
-			var rpId = root.GetProperty("rpId").GetString() ?? throw new PasskeyException("Missing rpId.");
-			var challenge = Base64Url.Decode(root.GetProperty("challenge").GetString()!);
+			var rpId = GetRequiredString(root, "rpId");
+			var challenge = GetRequiredBytes(root, "challenge");
 			var clientDataJson = BuildClientDataJson("webauthn.get", challenge, rpId);
 
 			var timeout = root.TryGetProperty("timeout", out var to) && to.TryGetInt32(out var toMs) ? (uint)toMs : 60000u;
 			var uv = ReadUserVerification(root);
 
-			var cancellationId = RegisterCancellation(cancellationToken);
 			var native = new WindowsNativeBuffers();
+			var (cancellationId, cancellationRegistration) = RegisterCancellation(cancellationToken);
 
 			try
 			{
@@ -198,7 +203,7 @@ namespace Microsoft.Maui.Authentication
 					pwszU2fAppId = null,
 					pbU2fAppId = IntPtr.Zero,
 					pCancellationId = native.PinCancellationId(cancellationId),
-					pAllowCredentialList = IntPtr.Zero,
+					pAllowCredentialList = native.PinCredentialList(ReadCredentialIds(root, "allowCredentials")),
 				};
 
 				var hr = NativeMethods.WebAuthNAuthenticatorGetAssertion(
@@ -228,28 +233,63 @@ namespace Microsoft.Maui.Authentication
 			}
 			finally
 			{
+				cancellationRegistration.Dispose();
 				native.Dispose();
 			}
 		}
 
-		static Guid RegisterCancellation(CancellationToken cancellationToken)
+		static (Guid Id, CancellationTokenRegistration Registration) RegisterCancellation(CancellationToken cancellationToken)
 		{
-			if (NativeMethods.WebAuthNGetCancellationId(out var id) == 0)
+			if (NativeMethods.WebAuthNGetCancellationId(out var id) != 0)
+				return (Guid.Empty, default);
+
+			var registration = cancellationToken.Register(() =>
 			{
-				cancellationToken.Register(() =>
+				try
 				{
-					try
-					{
-						NativeMethods.WebAuthNCancelCurrentOperation(ref id);
-					}
-					catch
-					{
-						// Best-effort cancellation.
-					}
-				});
+					NativeMethods.WebAuthNCancelCurrentOperation(ref id);
+				}
+				catch
+				{
+					// Best-effort cancellation.
+				}
+			});
+
+			return (id, registration);
+		}
+
+		static JsonElement GetRequiredObject(JsonElement root, string propertyName)
+		{
+			if (root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Object)
+				return value;
+
+			throw new PasskeyException($"The options are missing the '{propertyName}' object.");
+		}
+
+		static string GetRequiredString(JsonElement root, string propertyName)
+		{
+			if (root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String)
+				return value.GetString()!;
+
+			throw new PasskeyException($"The options are missing the '{propertyName}' string.");
+		}
+
+		static byte[] GetRequiredBytes(JsonElement root, string propertyName)
+			=> Base64Url.Decode(GetRequiredString(root, propertyName));
+
+		static byte[][] ReadCredentialIds(JsonElement root, string propertyName)
+		{
+			if (!root.TryGetProperty(propertyName, out var arr) || arr.ValueKind != JsonValueKind.Array)
+				return Array.Empty<byte[]>();
+
+			var list = new System.Collections.Generic.List<byte[]>();
+			foreach (var item in arr.EnumerateArray())
+			{
+				if (item.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String)
+					list.Add(Base64Url.Decode(id.GetString()!));
 			}
 
-			return id;
+			return list.ToArray();
 		}
 
 		static void ThrowIfFailed(int hr, CancellationToken cancellationToken)
@@ -303,7 +343,6 @@ namespace Microsoft.Maui.Authentication
 				writer.WriteString("id", Base64Url.Encode(credentialId));
 				writer.WriteString("rawId", Base64Url.Encode(credentialId));
 				writer.WriteString("type", "public-key");
-				writer.WriteString("authenticatorAttachment", "platform");
 				writer.WriteStartObject("response");
 				writer.WriteString("clientDataJSON", Base64Url.Encode(clientDataJson));
 				writer.WriteString("attestationObject", Base64Url.Encode(attestationObject));
@@ -325,7 +364,6 @@ namespace Microsoft.Maui.Authentication
 				writer.WriteString("id", Base64Url.Encode(credentialId));
 				writer.WriteString("rawId", Base64Url.Encode(credentialId));
 				writer.WriteString("type", "public-key");
-				writer.WriteString("authenticatorAttachment", "platform");
 				writer.WriteStartObject("response");
 				writer.WriteString("clientDataJSON", Base64Url.Encode(clientDataJson));
 				writer.WriteString("authenticatorData", Base64Url.Encode(authenticatorData));

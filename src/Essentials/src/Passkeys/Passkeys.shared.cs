@@ -104,30 +104,21 @@ namespace Microsoft.Maui.Authentication
 	public sealed class PasskeyCreationResponse
 	{
 		readonly string _json;
-		string? _id;
-		bool _parsed;
+		readonly string _id;
 
-		internal PasskeyCreationResponse(string registrationResponseJson) =>
+		internal PasskeyCreationResponse(string registrationResponseJson)
+		{
 			_json = registrationResponseJson ?? throw new ArgumentNullException(nameof(registrationResponseJson));
+			_id = PasskeyResponseParser.GetString(_json, "id")
+				?? throw new PasskeyException("The registration response JSON did not contain a credential 'id'.");
+		}
 
 		/// <summary>
 		/// Gets the credential id (base64url) of the created passkey, i.e. the WebAuthn
 		/// <c>PublicKeyCredential.id</c>. This is the single, primary identifier of the passkey; store it to
 		/// look the credential up later.
 		/// </summary>
-		public string Id
-		{
-			get
-			{
-				if (!_parsed)
-				{
-					_id = PasskeyResponseParser.GetString(_json, "id") ?? string.Empty;
-					_parsed = true;
-				}
-
-				return _id!;
-			}
-		}
+		public string Id => _id;
 
 		/// <summary>Returns the full WebAuthn registration response JSON.</summary>
 		public override string ToString() => _json;
@@ -140,49 +131,29 @@ namespace Microsoft.Maui.Authentication
 	public sealed class PasskeyAssertionResponse
 	{
 		readonly string _json;
-		string? _id;
-		string? _userHandle;
-		bool _parsed;
+		readonly string _id;
+		readonly string? _userHandle;
 
-		internal PasskeyAssertionResponse(string authenticationResponseJson) =>
+		internal PasskeyAssertionResponse(string authenticationResponseJson)
+		{
 			_json = authenticationResponseJson ?? throw new ArgumentNullException(nameof(authenticationResponseJson));
+			_id = PasskeyResponseParser.GetString(_json, "id")
+				?? throw new PasskeyException("The authentication response JSON did not contain a credential 'id'.");
+			_userHandle = PasskeyResponseParser.GetString(_json, "userHandle");
+		}
 
 		/// <summary>
 		/// Gets the credential id (base64url) of the passkey used, i.e. the WebAuthn
 		/// <c>PublicKeyCredential.id</c>.
 		/// </summary>
-		public string Id
-		{
-			get
-			{
-				EnsureParsed();
-				return _id!;
-			}
-		}
+		public string Id => _id;
 
 		/// <summary>
 		/// Gets the user handle (base64url) the relying party set as <c>user.id</c> at registration, i.e. the
 		/// WebAuthn <c>response.userHandle</c>. Present for discoverable-credential ("username-less") sign-in;
 		/// may be <see langword="null"/> when the authenticator does not return one.
 		/// </summary>
-		public string? UserHandle
-		{
-			get
-			{
-				EnsureParsed();
-				return _userHandle;
-			}
-		}
-
-		void EnsureParsed()
-		{
-			if (_parsed)
-				return;
-
-			_id = PasskeyResponseParser.GetString(_json, "id") ?? string.Empty;
-			_userHandle = PasskeyResponseParser.GetString(_json, "userHandle");
-			_parsed = true;
-		}
+		public string? UserHandle => _userHandle;
 
 		/// <summary>Returns the full WebAuthn authentication response JSON.</summary>
 		public override string ToString() => _json;
@@ -320,7 +291,8 @@ namespace Microsoft.Maui.Authentication
 					while (i < json.Length && json[i] != '"')
 						i++;
 
-					if (i > json.Length)
+					// Unterminated string (no closing quote before end of input).
+					if (i >= json.Length)
 						return null;
 
 					return json.Substring(start, i - start);
