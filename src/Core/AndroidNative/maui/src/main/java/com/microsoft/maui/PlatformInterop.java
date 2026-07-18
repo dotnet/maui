@@ -359,28 +359,29 @@ public class PlatformInterop {
     }
 
     private static RequestBuilder<Drawable> limitToTargetSize(RequestBuilder<Drawable> builder, ImageView imageView) {
-        // Cap the decode near the ImageView's measured size (Glide's view-target negotiation) while
+        // Cap the decode so an oversized bitmap can never reach the canvas draw (the crash this fixes),
         // choosing a downsample strategy that matches the view's ScaleType (see AspectExtensions.cs for
         // the Aspect -> ScaleType mapping):
-        //   * CENTER_CROP (Aspect.AspectFill) and FIT_XY (Aspect.Fill) both fill the view on every axis,
-        //     so the source must COVER the view -> max(view/src) scaling -> CENTER_OUTSIDE. Using
-        //     CENTER_INSIDE there under-decodes an extreme-aspect source and the ImageView matrix then
-        //     upscales that low-res bitmap to fill the view (blurry).
+        //   * CENTER_CROP (Aspect.AspectFill) and FIT_XY (Aspect.Fill) fill the view on every axis, so a
+        //     COVER decode (CENTER_OUTSIDE) would keep the long axis of an extreme-aspect source above the
+        //     display bounds (e.g. a 4*displayWidth x displayHeight source still "covers" a display-sized
+        //     view at ~4*displayWidth). Cover quality cannot take priority over the safety invariant for a
+        //     crash fix, so cap these at the display size too; the ImageView matrix still crops/scales the
+        //     bounded bitmap to fill the view.
         //   * CENTER (Aspect.Center) draws the source 1:1 without scaling, so decoding it down to the view
         //     size would visibly change the result for any image larger than its view. Preserve native
         //     resolution but still guard against oversized bitmaps by capping the decode at the display
-        //     size (via limitToDisplaySize) instead of the much smaller view size.
-        //   * FitCenter (Aspect.AspectFit) and the default only need to fit WITHIN the view -> CENTER_INSIDE.
+        //     size instead of the much smaller view size.
+        //   * FitCenter (Aspect.AspectFit) and the default only need to fit WITHIN the view -> CENTER_INSIDE
+        //     at the view-negotiated size, which is already display-bounded.
         ImageView.ScaleType scaleType = imageView.getScaleType();
-        if (scaleType == ImageView.ScaleType.CENTER) {
+        if (scaleType == ImageView.ScaleType.CENTER
+                || scaleType == ImageView.ScaleType.CENTER_CROP
+                || scaleType == ImageView.ScaleType.FIT_XY) {
             return limitToDisplaySize(builder, imageView.getContext());
         }
 
-        DownsampleStrategy strategy =
-            (scaleType == ImageView.ScaleType.CENTER_CROP || scaleType == ImageView.ScaleType.FIT_XY)
-                ? DownsampleStrategy.CENTER_OUTSIDE
-                : DownsampleStrategy.CENTER_INSIDE;
-        return builder.downsample(strategy);
+        return builder.downsample(DownsampleStrategy.CENTER_INSIDE);
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
