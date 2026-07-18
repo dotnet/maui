@@ -1513,7 +1513,13 @@ stages:
               # posted below supersedes them. Reuses the tested shared cleanup logic
               # (matches the hidden marker AND the stable header text, MauiBot-authored
               # only). Best-effort: never let cleanup failure block the new notice.
-              pwsh -NoProfile -Command '. .github/scripts/shared/Remove-StaleMauiBotComments.ps1; Hide-StaleMauiBotIssueComments -PRNumber ([int]$env:PARAM_PR_NUMBER) -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"' \
+              #  MUST dot-source from $TRUSTED (pipeline-ref copy captured in Setup
+              #  BEFORE branch switching), NOT the relative .github path: on a
+              #  merge-CONFLICTED PR the working tree is the PR HEAD checkout, whose
+              #  Remove-StaleMauiBotComments.ps1 can predate -IncludeReviewIncomplete
+              #  → "A parameter cannot be found that matches parameter name
+              #  'IncludeReviewIncomplete'" and the stale notices never collapse.
+              pwsh -NoProfile -Command '. "$(Build.ArtifactStagingDirectory)/trusted-github/scripts/shared/Remove-StaleMauiBotComments.ps1"; Hide-StaleMauiBotIssueComments -PRNumber ([int]$env:PARAM_PR_NUMBER) -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"' \
                 || echo "ℹ️ prior review-incomplete collapse best-effort failed (continuing)"
               BUILD_URL="https://dev.azure.com/devdiv/DevDiv/_build/results?buildId=${BUILD_BUILDID}"
               BODY_FILE="$(mktemp)"
