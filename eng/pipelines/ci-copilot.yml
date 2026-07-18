@@ -838,19 +838,53 @@ stages:
               fi
               echo "Selected iOS runtime: $RUNTIME"
               if [ -z "$RUNTIME" ]; then
-                echo "Available runtimes (diagnostic):"
-                xcrun simctl list runtimes || true
-                # GRACEFUL DEGRADE (build 14669117, #34559 ios): this AcesShared agent has NO
-                # iOS simulator runtime at all — 'simctl list runtimes' is empty even unfiltered
-                # (not the transient 'available'-empty case the retry above handles). A hard
-                # 'exit 1' here fails the whole ReviewPR job, which cascades to SKIP the Gate +
-                # expert Review + Post tasks AND the Deep stage AND Post AI Summary — so the PR
-                # gets NO review at all, purely from an agent-provisioning gap unrelated to the
-                # PR. Instead, warn and continue WITHOUT a booted simulator: the expert AI
-                # review (Task 3, succeededOrFailed) reads the diff and posts findings with no
-                # device, and the Gate self-degrades to INCONCLUSIVE (its verify-tests-fail
-                # retry loop reports exit 3 when it cannot boot a device) rather than a false
-                # FAILED. Leave DEVICE_UDID empty so the gate/agent knows there is no sim.
+                # LAST-RESORT DIAGNOSTICS + ENROLLMENT (build 14696636, #35706): the runtime
+                # disk images can be "Ready" on disk yet UNENROLLED in CoreSimulator, so
+                # 'simctl list runtimes' is EMPTY and 'simctl create' -> "Invalid runtime". The
+                # step used to degrade to INCONCLUSIVE right here without ever capturing WHY or
+                # attempting a fix. Capture the exact reason (availabilityError / image
+                # state+path / xcode-select) and try to enroll before degrading.
+                echo "=== iOS runtime diagnostics (before graceful degrade) ==="
+                echo "xcode-select -p: $(xcode-select -p 2>&1)"
+                echo "-- simctl runtime list (human; shows (unavailable/invalid) reasons) --"
+                xcrun simctl runtime list 2>&1 | grep -i ios || echo "(none)"
+                echo "-- simctl list runtimes -j (availabilityError) --"
+                xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "(none enrolled)"
+                echo "-- simctl runtime list --json (image state/sig/mount/path) --"
+                xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select((.runtimeIdentifier//"")|test("iOS")) | "  \(.runtimeIdentifier) state=\(.state) sig=\(.signatureState) mounted=\(.mountPath != null) path=\(.path // "null")"' 2>/dev/null || echo "(no images)"
+                # CoreSimulator is Xcode-specific: point xcode-select at the newest Xcode (the
+                # runtimes may have been enrolled under it) then 'simctl runtime add <path>' each
+                # Ready-but-unavailable image (stages/verifies/mounts). Best-effort; ignore errors.
+                NEWEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                [ -n "$NEWEST_XCODE" ] && { echo "Switching xcode-select to newest Xcode: $NEWEST_XCODE"; sudo xcode-select -s "$NEWEST_XCODE/Contents/Developer" 2>/dev/null || true; }
+                AVAIL_IDS=$(xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select(.isAvailable==true) | .identifier' 2>/dev/null)
+                while IFS=$'\t' read -r IMG_ID IMG_PATH; do
+                  [ -z "$IMG_ID" ] && continue
+                  printf '%s\n' "$AVAIL_IDS" | grep -qxF "$IMG_ID" && continue
+                  if [ -z "$IMG_PATH" ] || [ "$IMG_PATH" = "null" ]; then echo "  $IMG_ID: no .path field — cannot 'runtime add'"; continue; fi
+                  echo "  Enrolling $IMG_ID via 'simctl runtime add' ($IMG_PATH)..."
+                  sudo -n xcrun simctl runtime add "$IMG_PATH" 2>&1 || xcrun simctl runtime add "$IMG_PATH" 2>&1 || true
+                done < <(xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select(((.runtimeIdentifier//"")|test("iOS")) and .state=="Ready") | "\(.runtimeIdentifier)\t\(.path)"' 2>/dev/null)
+                sleep 5
+                xcrun simctl list runtimes >/dev/null 2>&1 || true
+                # Re-pick a runtime now that enrollment may have made one usable.
+                for RE in "iOS 26\\.4" "iOS 26" "iOS "; do RUNTIME=$(pick_runtime "$RE" available); [ -n "$RUNTIME" ] && break; done
+                if [ -z "$RUNTIME" ]; then
+                  RUNTIME=$(xcrun simctl runtime list --json 2>/dev/null | jq -r '[to_entries[] | .value | select((.state=="Ready") and (((.runtimeIdentifier//"")|test("iOS"))))] | sort_by(.version // "0") | last | .runtimeIdentifier // empty')
+                fi
+                echo "Runtime after enrollment attempt: ${RUNTIME:-<none>}"
+              fi
+              if [ -z "$RUNTIME" ]; then
+                # GRACEFUL DEGRADE (build 14669117, #34559 ios): this agent has NO usable iOS
+                # simulator runtime even after the enrollment attempt above. A hard 'exit 1'
+                # here fails the whole ReviewPR job, which cascades to SKIP the Gate + expert
+                # Review + Post tasks AND the Deep stage AND Post AI Summary — so the PR gets NO
+                # review at all, purely from an agent-provisioning gap unrelated to the PR.
+                # Instead, warn and continue WITHOUT a booted simulator: the expert AI review
+                # (Task 3, succeededOrFailed) reads the diff and posts findings with no device,
+                # and the Gate self-degrades to INCONCLUSIVE (its verify-tests-fail retry loop
+                # reports exit 3 when it cannot boot a device) rather than a false FAILED. Leave
+                # DEVICE_UDID empty so the gate/agent knows there is no sim.
                 echo "##vso[task.logissue type=warning]No usable iOS simulator runtime on this agent — continuing review WITHOUT a booted simulator (Gate iOS device-test verification will be INCONCLUSIVE; expert review + deep stage still run)."
                 echo "##vso[task.setvariable variable=DEVICE_UDID]"
                 exit 0

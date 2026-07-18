@@ -730,20 +730,37 @@ if ($Platform -eq "android") {
         # does NOT enroll them. Logging availabilityError + signature/mount state pinpoints the
         # real reason (not mounted vs signature vs incompatible Xcode) instead of guessing.
         function Write-IosRuntimeDiag([string]$Label) {
-            Write-Info "iOS runtime availability ($Label):"
+            Write-Info "==== iOS runtime diagnostics ($Label) ===="
+            Write-Info ("  xcode-select -p: " + ((& xcode-select -p 2>&1) -join ' '))
+            Write-Info ("  xcrun -f simctl:  " + ((& xcrun -f simctl 2>&1) -join ' '))
+            # Human-readable runtime list annotates the exact reason a runtime is unusable
+            # e.g. "(unavailable, runtime not mounted)" / "(invalid)" — the single most useful
+            # signal, and it prints even when the JSON enumeration is empty.
+            $rtText = (& xcrun simctl runtime list 2>&1) -join "`n"
+            $rtLines = @(($rtText -split "`n") | Where-Object { $_ -match 'iOS' })
+            Write-Info ("  simctl runtime list: {0} iOS line(s)" -f $rtLines.Count)
+            foreach ($ln in ($rtLines | Select-Object -First 12)) { Write-Info "    $($ln.Trim())" }
+            # CoreSimulator's enrolled runtimes + per-runtime availabilityError.
             try {
                 $rts = xcrun simctl list runtimes -j 2>$null | ConvertFrom-Json
-                foreach ($rt in @($rts.runtimes | Where-Object { $_.identifier -match 'iOS' })) {
+                $iosRts = @($rts.runtimes | Where-Object { $_.identifier -match 'iOS' })
+                Write-Info ("  simctl list runtimes -j: {0} iOS runtime(s) enrolled" -f $iosRts.Count)
+                foreach ($rt in $iosRts) {
                     $err = if ($rt.availabilityError) { $rt.availabilityError } else { 'none' }
-                    Write-Info ("  {0} v{1} isAvailable={2} err={3}" -f $rt.identifier, $rt.version, $rt.isAvailable, $err)
+                    Write-Info ("    {0} v{1} isAvailable={2} err={3}" -f $rt.identifier, $rt.version, $rt.isAvailable, $err)
                 }
-            } catch { Write-Info "  (could not read runtimes: $_)" }
+            } catch { Write-Info "    (could not parse simctl list runtimes -j: $_)" }
+            # Runtime disk images (Xcode 15+ subsystem): state / signature / mount / path.
+            # A null .path explains why 'simctl runtime add' below would be a no-op.
             try {
                 $imgs = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
-                foreach ($img in @($imgs.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' })) {
-                    Write-Info ("  [image] {0} state={1} sig={2} mounted={3}" -f $img.runtimeIdentifier, $img.state, $img.signatureState, [bool]$img.mountPath)
+                $iosImgs = @($imgs.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' })
+                Write-Info ("  simctl runtime list --json: {0} iOS image(s) on disk" -f $iosImgs.Count)
+                foreach ($img in $iosImgs) {
+                    Write-Info ("    {0} state={1} sig={2} mounted={3} path={4}" -f $img.runtimeIdentifier, $img.state, $img.signatureState, [bool]$img.mountPath, $img.path)
                 }
-            } catch { Write-Info "  (could not read runtime images: $_)" }
+            } catch { Write-Info "    (could not parse simctl runtime list --json: $_)" }
+            Write-Info "==== end diagnostics ($Label) ===="
         }
         # ENROLL Ready-but-unavailable runtimes: `simctl runtime add <path>` stages, verifies,
         # and mounts a runtime disk image — the step CoreSimulator skips when the image is
@@ -753,12 +770,29 @@ if ($Platform -eq "android") {
         function Invoke-IosRuntimeEnroll {
             $attempted = $false
             try {
+                # MULTI-XCODE HYPOTHESIS: CoreSimulator is Xcode-version-specific. If a NEWER
+                # Xcode downloaded/enrolled the runtimes but `simctl` here runs under an OLDER
+                # xcode-select path, the runtimes look "Ready" on disk yet "Invalid" to create.
+                # Point xcode-select at the newest installed Xcode before enrolling (best-effort).
+                $newestXcode = & bash -c 'ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1'
+                if ($newestXcode) {
+                    $curDev = (& xcode-select -p 2>$null)
+                    if ($curDev -notlike "$newestXcode*") {
+                        Write-Info "Enroll: switching xcode-select to newest Xcode ($newestXcode) before enrolling..."
+                        & sudo -n xcode-select -s "$newestXcode/Contents/Developer" 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    }
+                }
                 $rts = xcrun simctl list runtimes -j 2>$null | ConvertFrom-Json
                 $availableIds = @($rts.runtimes | Where-Object { $_.isAvailable -eq $true } | ForEach-Object { $_.identifier })
                 $imgs = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
-                foreach ($img in @($imgs.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' -and $_.state -eq 'Ready' })) {
+                $readyImgs = @($imgs.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' -and $_.state -eq 'Ready' })
+                Write-Info ("Enroll: {0} Ready iOS image(s) on disk, {1} already available/enrolled" -f $readyImgs.Count, $availableIds.Count)
+                foreach ($img in $readyImgs) {
                     if ($availableIds -contains $img.runtimeIdentifier) { continue }
-                    if (-not $img.path) { continue }
+                    if (-not $img.path) {
+                        Write-Info "  $($img.runtimeIdentifier): no .path field on this Xcode - cannot 'simctl runtime add'; skipping"
+                        continue
+                    }
                     Write-Info "Re-staging Ready-but-unavailable runtime $($img.runtimeIdentifier) via 'simctl runtime add' ($($img.path))..."
                     & sudo -n xcrun simctl runtime add "$($img.path)" 2>&1 | ForEach-Object { Write-Info "  $_" }
                     if ($LASTEXITCODE -ne 0) { & xcrun simctl runtime add "$($img.path)" 2>&1 | ForEach-Object { Write-Info "  $_" } }
