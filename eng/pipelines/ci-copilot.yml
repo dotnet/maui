@@ -3181,6 +3181,32 @@ stages:
                 }
               }
 
+              # Surface the AI triage of the deep failures FIRST — before the
+              # (often long) per-category raw-failure dumps below — so the
+              # PR-related-vs-unrelated verdict is the first thing a reader sees.
+              # Without this, a snapshot-heavy category hit by a cross-machine
+              # baseline mismatch renders hundreds of ❌ entries and the reader
+              # never scrolls down to the "these are run-wide / environmental,
+              # not PR-caused" conclusion (e.g. #36541: 175 Layout snapshot diffs
+              # the triage correctly called run-wide, buried 750 lines below the
+              # ❌ headline). Best-effort — absent when there were no regular
+              # failures or the analysis task didn't run. Built into $sb so BOTH
+              # the DEFERRED and PATCH posting paths (which share $deepBlock) get it.
+              $uiFailAnalysisFile = Join-Path "$(Agent.TempDirectory)" "uifail-analysis.md"
+              if ((Test-Path $uiFailAnalysisFile) -and -not [string]::IsNullOrWhiteSpace((Get-Content $uiFailAnalysisFile -Raw))) {
+                $analysisMd = ((Get-Content $uiFailAnalysisFile -Raw) -replace '##vso\[[^]]*\]', '').Trim()
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine("<details open><summary>🔍 <b>AI analysis of failures — PR-related vs unrelated</b></summary>")
+                [void]$sb.AppendLine("<br/>")
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine("> 🔍 _AI-generated triage (GitHub Copilot CLI) — a heuristic judgement of whether each deep UI test failure is connected to this PR's changes. Verify before relying on it._")
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine($analysisMd)
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine("</details>")
+                [void]$sb.AppendLine()
+              }
+
               # Fixture setup failures usually mark every test in the fixture as
               # failed even though no individual test body ran. Render one
               # representative setup error instead of dozens of duplicate tests.
@@ -3283,26 +3309,6 @@ stages:
                   [void]$sb.AppendLine("</details>")
                   [void]$sb.AppendLine()
                 }
-              }
-
-              # Fold in the AI classification of the deep UI test failures
-              # (PR-related vs unrelated) produced by the token-less Copilot
-              # analysis task. Best-effort — absent when there were no regular
-              # failures or the analysis didn't run. Built into $sb so BOTH the
-              # DEFERRED and PATCH posting paths (which share $deepBlock) get it.
-              $uiFailAnalysisFile = Join-Path "$(Agent.TempDirectory)" "uifail-analysis.md"
-              if ((Test-Path $uiFailAnalysisFile) -and -not [string]::IsNullOrWhiteSpace((Get-Content $uiFailAnalysisFile -Raw))) {
-                $analysisMd = ((Get-Content $uiFailAnalysisFile -Raw) -replace '##vso\[[^]]*\]', '').Trim()
-                [void]$sb.AppendLine()
-                [void]$sb.AppendLine("<details open><summary>🔍 <b>AI analysis of failures — PR-related vs unrelated</b></summary>")
-                [void]$sb.AppendLine("<br/>")
-                [void]$sb.AppendLine()
-                [void]$sb.AppendLine("> 🔍 _AI-generated triage (GitHub Copilot CLI) — a heuristic judgement of whether each deep UI test failure is connected to this PR's changes. Verify before relying on it._")
-                [void]$sb.AppendLine()
-                [void]$sb.AppendLine($analysisMd)
-                [void]$sb.AppendLine()
-                [void]$sb.AppendLine("</details>")
-                [void]$sb.AppendLine()
               }
 
               # Link to the published artifact so reviewers can download the
