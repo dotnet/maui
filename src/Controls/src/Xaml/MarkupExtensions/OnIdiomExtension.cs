@@ -162,10 +162,12 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		object GetValue()
 		{
-			// Resolve the value by comparing the current idiom string against the per-idiom
-			// values, so custom idioms registered through DeviceIdiom.Create(...) can resolve
-			// a value the same string-based way the data-driven element form does. Ordinal
-			// (case-sensitive), matching DeviceIdiom equality. Falls back to Default.
+			// Resolve the value by comparing the current idiom string (ordinal, case-sensitive,
+			// matching DeviceIdiom equality) against the five built-in idiom names below. This lets
+			// a custom idiom instance created with a built-in name - e.g. DeviceIdiom.Create("Tablet")
+			// - resolve by string equality rather than reference equality. Unlike OnPlatform, OnIdiom
+			// has no data-driven <On Idiom="..."/> element form, so a genuinely custom idiom name
+			// (e.g. "Car") has no matching property here and always falls back to Default.
 			// null is the "not set" sentinel, matching the previous "Idiom ?? Default" behavior.
 			var idiom = DeviceInfo.Idiom.ToString();
 
