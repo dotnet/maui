@@ -722,6 +722,52 @@ if ($Platform -eq "android") {
             return $null
         }
 
+        # DIAGNOSE why a "Ready" runtime is not create-usable. A freshly downloaded iOS
+        # runtime can be "Ready" on disk yet isAvailable=false (not staged/verified/mounted
+        # into CoreSimulator), so `simctl create` rejects it "Invalid runtime" and `simctl
+        # list runtimes available` is empty (PR #35706 build 14695557: gate INCONCLUSIVE with
+        # iOS-26-5/26-3 both "Ready" on disk). The existing CoreSimulatorService restart alone
+        # does NOT enroll them. Logging availabilityError + signature/mount state pinpoints the
+        # real reason (not mounted vs signature vs incompatible Xcode) instead of guessing.
+        function Write-IosRuntimeDiag([string]$Label) {
+            Write-Info "iOS runtime availability ($Label):"
+            try {
+                $rts = xcrun simctl list runtimes -j 2>$null | ConvertFrom-Json
+                foreach ($rt in @($rts.runtimes | Where-Object { $_.identifier -match 'iOS' })) {
+                    $err = if ($rt.availabilityError) { $rt.availabilityError } else { 'none' }
+                    Write-Info ("  {0} v{1} isAvailable={2} err={3}" -f $rt.identifier, $rt.version, $rt.isAvailable, $err)
+                }
+            } catch { Write-Info "  (could not read runtimes: $_)" }
+            try {
+                $imgs = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
+                foreach ($img in @($imgs.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' })) {
+                    Write-Info ("  [image] {0} state={1} sig={2} mounted={3}" -f $img.runtimeIdentifier, $img.state, $img.signatureState, [bool]$img.mountPath)
+                }
+            } catch { Write-Info "  (could not read runtime images: $_)" }
+        }
+        # ENROLL Ready-but-unavailable runtimes: `simctl runtime add <path>` stages, verifies,
+        # and mounts a runtime disk image — the step CoreSimulator skips when the image is
+        # "Ready" on disk but unenrolled. Best-effort and only over runtimes NOT already in the
+        # available list, so healthy runtimes are never re-added. Returns $true if it attempted
+        # any enrollment (so the caller can re-scan + retry create).
+        function Invoke-IosRuntimeEnroll {
+            $attempted = $false
+            try {
+                $rts = xcrun simctl list runtimes -j 2>$null | ConvertFrom-Json
+                $availableIds = @($rts.runtimes | Where-Object { $_.isAvailable -eq $true } | ForEach-Object { $_.identifier })
+                $imgs = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
+                foreach ($img in @($imgs.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' -and $_.state -eq 'Ready' })) {
+                    if ($availableIds -contains $img.runtimeIdentifier) { continue }
+                    if (-not $img.path) { continue }
+                    Write-Info "Re-staging Ready-but-unavailable runtime $($img.runtimeIdentifier) via 'simctl runtime add' ($($img.path))..."
+                    & sudo -n xcrun simctl runtime add "$($img.path)" 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    if ($LASTEXITCODE -ne 0) { & xcrun simctl runtime add "$($img.path)" 2>&1 | ForEach-Object { Write-Info "  $_" } }
+                    $attempted = $true
+                }
+            } catch { Write-Info "Runtime enroll attempt error: $_" }
+            return $attempted
+        }
+
         if (-not $selectedDevice) {
             # First pass: try to create on any Ready runtime as-is.
             $rescueResult = Invoke-IosReadyRuntimeRescue
@@ -739,12 +785,22 @@ if ($Platform -eq "android") {
             # simctl call). sudo -n avoids any password prompt hang; falls back to non-sudo.
             if (-not $rescueResult) {
                 Write-Info "All Ready-runtime create attempts failed 'Invalid runtime' - restarting CoreSimulatorService to enroll Ready-but-unenrolled runtimes and retrying once..."
+                Write-IosRuntimeDiag "before restart/enroll"
                 & sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>$null
                 if ($LASTEXITCODE -ne 0) { & killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>$null }
                 Start-Sleep -Seconds 8
                 # Nudge CoreSimulator to relaunch and re-scan the on-disk runtime images.
                 xcrun simctl list runtimes *> $null
                 Start-Sleep -Seconds 4
+                # A restart alone often does NOT make Ready images create-usable (PR #35706
+                # build 14695557: still "Invalid runtime" after restart). Explicitly re-stage /
+                # verify / mount each unavailable Ready runtime via `simctl runtime add`, then
+                # re-scan before the final create retry.
+                if (Invoke-IosRuntimeEnroll) {
+                    xcrun simctl list runtimes *> $null
+                    Start-Sleep -Seconds 4
+                }
+                Write-IosRuntimeDiag "after restart/enroll"
                 $rescueResult = Invoke-IosReadyRuntimeRescue
             }
 

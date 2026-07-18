@@ -926,10 +926,34 @@ stages:
                 # so the healthy path is untouched; non-destructive (daemon auto-relaunches).
                 if [ -z "$UDID" ]; then
                   echo "All runtime create attempts failed — restarting CoreSimulatorService to enroll Ready-but-unenrolled runtimes and retrying…"
+                  # Diagnose WHY each Ready iOS runtime is unavailable (build 14695557, #35706:
+                  # gate INCONCLUSIVE with iOS-26-5/26-3 both "Ready" yet `simctl create` ->
+                  # "Invalid runtime"). availabilityError + signature/mount state pinpoint the
+                  # real reason (not mounted vs signature vs Xcode mismatch) instead of guessing.
+                  echo "iOS runtime availability (before restart/enroll):"
+                  xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "  (could not read runtimes)"
+                  xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select((.runtimeIdentifier//"")|test("iOS")) | "  [image] \(.runtimeIdentifier) state=\(.state) sig=\(.signatureState) mounted=\(.mountPath != null)"' 2>/dev/null || echo "  (could not read images)"
                   sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
                   sleep 8
                   xcrun simctl list runtimes >/dev/null 2>&1 || true
                   sleep 4
+                  # A restart alone often does NOT make Ready images create-usable. Explicitly
+                  # re-stage / verify / mount each Ready runtime that is NOT in the available
+                  # list via `simctl runtime add <path>` (which "stages, verifies, and mounts"),
+                  # then re-scan before retrying create. Only touches unavailable runtimes, so
+                  # healthy ones are never re-added; best-effort (errors ignored).
+                  AVAIL_IDS=$(xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select(.isAvailable==true) | .identifier' 2>/dev/null)
+                  while IFS=$'\t' read -r IMG_ID IMG_PATH; do
+                    [ -z "$IMG_ID" ] && continue
+                    printf '%s\n' "$AVAIL_IDS" | grep -qxF "$IMG_ID" && continue
+                    [ -z "$IMG_PATH" ] && continue
+                    echo "Re-staging Ready-but-unavailable runtime $IMG_ID via 'simctl runtime add' ($IMG_PATH)..."
+                    sudo -n xcrun simctl runtime add "$IMG_PATH" 2>&1 || xcrun simctl runtime add "$IMG_PATH" 2>&1 || true
+                  done < <(xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select(((.runtimeIdentifier//"")|test("iOS")) and .state=="Ready") | "\(.runtimeIdentifier)\t\(.path)"' 2>/dev/null)
+                  xcrun simctl list runtimes >/dev/null 2>&1 || true
+                  sleep 4
+                  echo "iOS runtime availability (after restart/enroll):"
+                  xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "  (could not read runtimes)"
                   ALL_IOS_RUNTIMES=$(xcrun simctl list runtimes available --json 2>/dev/null | jq -r '
                     [.runtimes[] | select((.identifier // "") | test("iOS")) | {id: .identifier, v: (.version // "0")}]
                     | sort_by(.v) | reverse | .[].id
