@@ -214,6 +214,46 @@ steps:
           done
           echo "Re-trying simulator runtime installation..."
           sudo xcodebuild $DOWNLOAD_ARGS
+
+          # A wedged CoreSimulatorService can leave runtimes "Ready" on disk yet NOT
+          # create-usable (`simctl create` -> "Invalid runtime"), which silently dead-ends
+          # the later iOS sim boot and degrades the maui-copilot gate to INCONCLUSIVE on a
+          # perfectly provisioned agent. Prove create-usability HERE — only inside this
+          # already-failed retry branch, so the healthy first-download path is untouched —
+          # and, if a runtime is still not usable, restart the daemon and re-download once
+          # more. A throwaway device is created then immediately deleted; nothing persists.
+          for smokeAttempt in 1 2; do
+            SMOKE_RT=$(xcrun simctl list runtimes -j | jq -r '[.runtimes[] | select(.platform=="iOS" and .isAvailable)] | sort_by(.version) | last | .identifier')
+            SMOKE_DT=$(xcrun simctl list devicetypes -j | jq -r '[.devicetypes[] | select(.productFamily=="iPhone")] | .[0].identifier')
+            if [[ -n "$SMOKE_RT" && -n "$SMOKE_DT" ]]; then
+              SMOKE_UDID=$(xcrun simctl create "copilot-runtime-smoketest" "$SMOKE_DT" "$SMOKE_RT" 2>&1)
+              SMOKE_RC=$?
+              if [[ "$SMOKE_RC" == "0" ]]; then
+                echo "Simulator runtime is create-usable (smoke device $SMOKE_UDID); cleaning up."
+                xcrun simctl delete "$SMOKE_UDID" 2>/dev/null || true
+                break
+              fi
+              echo "Runtime NOT create-usable after download ('$SMOKE_UDID'); CoreSimulatorService still wedged."
+            else
+              echo "Could not resolve an iOS runtime/devicetype to smoke-test (rt='$SMOKE_RT' dt='$SMOKE_DT')."
+            fi
+            if [[ "$smokeAttempt" == "1" ]]; then
+              echo "Restarting CoreSimulatorService and re-downloading runtimes once more..."
+              sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+              sleep 5
+              sudo xcrun simctl runtime delete all
+              for i in $(seq 1 60); do
+                sleep 1
+                C=$(xcrun simctl runtime list -j | jq '. | length')
+                if [[ $C == 0 ]]; then
+                  break
+                fi
+              done
+              sudo xcodebuild $DOWNLOAD_ARGS
+            else
+              echo "##vso[task.logissue type=warning]Simulator runtimes still not create-usable after restart+re-download; iOS sim boot may fail and self-degrade to INCONCLUSIVE."
+            fi
+          done
         fi
 
         # Verify the simulator runtime was actually installed
