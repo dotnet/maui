@@ -27,9 +27,9 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[DebuggerTypeProxy(typeof(ShellDebugView))]
-#if ANDROID || IOS || MACCATALYST
+#if IOS || MACCATALYST
 	[ElementHandler(typeof(Handlers.Compatibility.ShellRenderer))]
-#elif WINDOWS || TIZEN
+#elif ANDROID || WINDOWS || TIZEN
 	[ElementHandler(typeof(Handlers.ShellHandler))]
 #endif
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
@@ -1740,8 +1740,7 @@ namespace Microsoft.Maui.Controls
 			Navigated?.Invoke(this, args);
 			OnNavigated(args);
 
-			if (_previousPage != null)
-				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			_previousPage?.PropertyChanged -= OnCurrentPagePropertyChanged;
 
 			_navigationType = NavigationType.Replace;
 
@@ -1774,8 +1773,7 @@ namespace Microsoft.Maui.Controls
 			PropagateSendNavigatedTo();
 			_previousPage = null;
 
-			if (CurrentPage != null)
-				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			CurrentPage?.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}

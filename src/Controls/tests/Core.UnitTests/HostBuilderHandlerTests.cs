@@ -126,13 +126,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{ typeof(TabbedPage), typeof(TabbedViewHandler) },
 			{ typeof(Toolbar), typeof(ToolbarHandler) },
 #endif
-#if ANDROID || IOS || MACCATALYST
+#if IOS || MACCATALYST
 			{ typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer) },
-#elif WINDOWS || TIZEN
+#elif ANDROID || WINDOWS || TIZEN
 			{ typeof(Shell), typeof(Handlers.ShellHandler) },
 #endif
 #if WINDOWS
 			{ typeof(ShellContent), typeof(Handlers.ShellContentHandler) },
+#endif
+#if ANDROID || WINDOWS || TIZEN
 			{ typeof(ShellItem), typeof(Handlers.ShellItemHandler) },
 			{ typeof(ShellSection), typeof(Handlers.ShellSectionHandler) },
 #endif
