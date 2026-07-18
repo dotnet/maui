@@ -99,4 +99,43 @@ public class ResizetizerTests : BaseBuildTest
 			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\the_image.scale-100.png")),
 				"Windows was missing the image file.");
 	}
+
+	[Fact]
+	public void CustomBackendProcessesImagesWithoutBuiltInOutputInjection()
+	{
+		SetTestIdentifier("custom-backend");
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, "CustomBackend.csproj");
+		var imageFile = Path.Combine(projectDir, "image.svg");
+
+		File.WriteAllText(imageFile, BlankSvgContents);
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			    <ResizetizerPlatformType>custom-backend</ResizetizerPlatformType>
+			    <ResizetizerAfterImageProcessingTargets>VerifyCustomBackendImages</ResizetizerAfterImageProcessingTargets>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <MauiImage Include="image.svg" />
+			  </ItemGroup>
+			  <Target Name="VerifyCustomBackendImages">
+			    <Error Condition="'@(MauiProcessedImage)' == ''" Text="Custom backends must receive processed images." />
+			    <Error Condition="'@(ContentWithTargetPath)' != ''" Text="Custom backends must not receive built-in output injection." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)custom-backend.items" Lines="@(MauiProcessedImage)" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendResources" DependsOnTargets="ResizetizeImages" />
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			$"Custom backend project failed to process images. Check test output for errors.");
+
+		var outputsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "resizetizer", "r", "custom-backend.items");
+		var processedImages = File.ReadAllLines(outputsFile);
+		Assert.Equal(2, processedImages.Length);
+		Assert.All(processedImages, path => Assert.True(File.Exists(path), $"Processed image does not exist: {path}"));
+	}
 }
