@@ -139,4 +139,102 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.Equal(2, processedImages.Length);
 		Assert.All(processedImages, path => Assert.True(File.Exists(path), $"Processed image does not exist: {path}"));
 	}
+
+	[Fact]
+	public void CustomBackendLateImportCollectsReferencedResourcesWithoutBuiltInOutputInjection()
+	{
+		SetTestIdentifier("custom-backend-late-import");
+		var projectDir = TestDirectory;
+
+		// A referenced library provides the MauiImage/MauiFont/MauiAsset items. These are only
+		// surfaced to the app through the ResizetizeCollectItems prerequisite, so the custom
+		// backend gets nothing unless the collection/input-output wiring runs.
+		var libDir = Path.Combine(projectDir, "ResLib");
+		Directory.CreateDirectory(libDir);
+		File.WriteAllText(Path.Combine(libDir, "lib_image.svg"), BlankSvgContents);
+		File.WriteAllText(Path.Combine(libDir, "lib_font.ttf"), "not-a-real-font");
+		File.WriteAllText(Path.Combine(libDir, "lib_asset.txt"), "asset-contents");
+		File.WriteAllText(Path.Combine(libDir, "ResLib.csproj"),
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <MauiImage Include="lib_image.svg" />
+			    <MauiFont Include="lib_font.ttf" />
+			    <MauiAsset Include="lib_asset.txt" LogicalName="lib_asset.txt" />
+			  </ItemGroup>
+			</Project>
+			""");
+
+		// The backend opts in by setting ResizetizerPlatformType from a targets file that is
+		// imported *after* the Resizetizer targets. At that point the evaluation-time
+		// dependency properties were already skipped, so processing relies on the
+		// execution-time _PrepareExternalMaui* fallback targets to run the prerequisites.
+		File.WriteAllText(Path.Combine(projectDir, "custom-backend.targets"),
+			"""
+			<Project>
+			  <PropertyGroup>
+			    <ResizetizerPlatformType>custom-backend</ResizetizerPlatformType>
+			    <ResizetizerAfterImageProcessingTargets>VerifyCustomBackendImages</ResizetizerAfterImageProcessingTargets>
+			    <ResizetizerAfterFontProcessingTargets>VerifyCustomBackendFonts</ResizetizerAfterFontProcessingTargets>
+			    <ResizetizerAfterAssetProcessingTargets>VerifyCustomBackendAssets</ResizetizerAfterAssetProcessingTargets>
+			  </PropertyGroup>
+			  <Target Name="VerifyCustomBackendImages">
+			    <Error Condition="'@(MauiProcessedImage)' == ''" Text="Custom backends must receive processed images collected from references." />
+			    <Error Condition="'@(ContentWithTargetPath)' != ''" Text="Custom backends must not receive built-in output injection." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)late-import.images" Lines="@(MauiProcessedImage)" Overwrite="true" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendFonts">
+			    <Error Condition="'@(MauiProcessedFont)' == ''" Text="Custom backends must receive processed fonts collected from references." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)late-import.fonts" Lines="@(MauiProcessedFont)" Overwrite="true" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendAssets">
+			    <Error Condition="'@(MauiProcessedAsset)' == ''" Text="Custom backends must receive processed assets collected from references." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)late-import.assets" Lines="@(MauiProcessedAsset)" Overwrite="true" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendResources" DependsOnTargets="ResizetizeImages;ProcessMauiFonts;ProcessMauiAssets" />
+			</Project>
+			""");
+
+		// Use explicit SDK imports so the backend targets can be imported *after* the
+		// Resizetizer targets (a plain trailing <Import> still evaluates before the SDK's
+		// implicit package imports, which would opt in at evaluation time instead).
+		var projectFile = Path.Combine(projectDir, "CustomBackend.csproj");
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project>
+			  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			    <EnableDefaultItems>false</EnableDefaultItems>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <ProjectReference Include="ResLib\ResLib.csproj" />
+			  </ItemGroup>
+			  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+			  <!-- Late import: this runs after the Resizetizer targets from the package. -->
+			  <Import Project="custom-backend.targets" />
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			$"Custom backend project failed to process late-imported resources. Check test output for errors.");
+
+		var intermediateDir = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "resizetizer", "r");
+
+		var imagesFile = Path.Combine(intermediateDir, "late-import.images");
+		Assert.True(File.Exists(imagesFile), $"Custom backend image output list was not created: {imagesFile}");
+		var processedImages = File.ReadAllLines(imagesFile);
+		Assert.NotEmpty(processedImages);
+		Assert.All(processedImages, path => Assert.True(File.Exists(path), $"Processed image does not exist: {path}"));
+
+		Assert.True(File.Exists(Path.Combine(intermediateDir, "late-import.fonts")),
+			"Custom backend font output list was not created; referenced fonts were not collected.");
+		Assert.True(File.Exists(Path.Combine(intermediateDir, "late-import.assets")),
+			"Custom backend asset output list was not created; referenced assets were not collected.");
+	}
 }

@@ -366,6 +366,38 @@
         </ItemGroup>
     </Target>
 
+    <!--
+      A backend may set ResizetizerPlatformType in a .targets file imported after
+      this file. In that case the evaluation-time dependency properties above were
+      not populated, so wire the required prerequisites at execution time.
+    -->
+    <Target Name="_PrepareExternalMauiAssets"
+        BeforeTargets="ProcessMauiAssets"
+        DependsOnTargets="ResizetizeCollectItems"
+        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''">
+        <PropertyGroup>
+            <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="_PrepareExternalMauiFonts"
+        BeforeTargets="ProcessMauiFonts"
+        DependsOnTargets="ResizetizeCollectItems;ProcessMauiAssets;ProcessMauiSplashScreens"
+        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''">
+        <PropertyGroup>
+            <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="_PrepareExternalMauiImages"
+        BeforeTargets="ResizetizeImages"
+        DependsOnTargets="ResizetizeCollectItems;ProcessMauiSplashScreens;_ReadResizetizeImagesOutputs"
+        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''">
+        <PropertyGroup>
+            <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
+        </PropertyGroup>
+    </Target>
+
     <Target Name="ProcessMauiAssets"
         Condition="'$(EnableMauiAssetProcessing)' == 'true'">
         <ItemGroup>
