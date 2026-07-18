@@ -134,6 +134,7 @@ public class ResizetizerTests : BaseBuildTest
 			$"Custom backend project failed to process images. Check test output for errors.");
 
 		var outputsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "resizetizer", "r", "custom-backend.items");
+		Assert.True(File.Exists(outputsFile), $"Custom backend output list was not created: {outputsFile}");
 		var processedImages = File.ReadAllLines(outputsFile);
 		Assert.Equal(2, processedImages.Length);
 		Assert.All(processedImages, path => Assert.True(File.Exists(path), $"Processed image does not exist: {path}"));
