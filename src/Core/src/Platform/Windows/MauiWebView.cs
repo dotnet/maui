@@ -133,22 +133,24 @@ namespace Microsoft.Maui.Platform
 				return false;
 
 			// Relative URLs stay local and are later rebased onto the appdir host.
-			return !uri.IsAbsoluteUri || IsUriWithLocalScheme(uri.AbsoluteUri);
+			// Absolute URLs reuse the already-parsed Uri (no second parse).
+			return !uri.IsAbsoluteUri || IsUriWithLocalScheme(uri);
 		}
 
-		// Returns true only when the string parses as an absolute URL whose scheme is
-		// https and whose host is exactly "appdir". Comparing the parsed host (rather
-		// than a raw string prefix) prevents unrelated hosts such as
-		// "appdir.example.com" or "appdir@host.example.com" from being treated as
-		// local content.
-		internal static bool IsUriWithLocalScheme(string? uri)
-		{
-			if (!Uri.TryCreate(uri, UriKind.Absolute, out var parsed))
-				return false;
+		// String entry point used by the NavigationStarting handler (args.Uri is a
+		// string) and by tests. Parses once, then delegates to the Uri-based check.
+		internal static bool IsUriWithLocalScheme(string? uri) =>
+			Uri.TryCreate(uri, UriKind.Absolute, out var parsed) && IsUriWithLocalScheme(parsed);
 
-			return parsed.Scheme == Uri.UriSchemeHttps &&
-				string.Equals(parsed.Host, LocalHostName, StringComparison.OrdinalIgnoreCase);
-		}
+		// Core check on an already-parsed Uri. Returns true only when the URI is
+		// absolute, its scheme is https, and its host is exactly "appdir" (ordinal,
+		// case-insensitive). Matching the parsed host - rather than a raw string
+		// prefix - prevents unrelated hosts such as "appdir.example.com" or
+		// "appdir@host.example.com" from being treated as local content.
+		static bool IsUriWithLocalScheme(Uri uri) =>
+			uri.IsAbsoluteUri &&
+			uri.Scheme == Uri.UriSchemeHttps &&
+			string.Equals(uri.Host, LocalHostName, StringComparison.OrdinalIgnoreCase);
 
 		static bool IsWebView2DataUriWithBaseUrl(string? uri)
 		{
