@@ -2246,8 +2246,18 @@ Write-Log ""
 Write-Log "Checking for uncommitted changes on revertable files..."
 $uncommittedFiles = @()
 foreach ($file in $RevertableFiles) {
-    # Check if file has uncommitted changes (staged or unstaged)
-    $status = git status --porcelain -- $file 2>$null
+    # Check if file has uncommitted changes (staged or unstaged).
+    # Use core.fileMode=false so an executable-bit-only change (100644->100755)
+    # is NOT treated as an uncommitted change. On mac agents a prior setup step
+    # chmod +x's committed shell scripts (e.g. eng/scripts/*.sh), which makes a
+    # plain 'git status --porcelain' report them as ' M' (mode-only) even though
+    # their CONTENT is fully committed and reverts cleanly via 'git checkout HEAD'.
+    # That spuriously aborted the A/B gate with "Uncommitted changes detected in
+    # fix files" -> a false INCONCLUSIVE (observed build 14699093, #35156 catalyst:
+    # disable-/enable-notification-center.sh flagged mode-only on all 3 retries).
+    # core.fileMode=false ignores the exec-bit diff but STILL catches any real
+    # content change (verified), so genuine uncommitted edits are still blocked.
+    $status = git -c core.fileMode=false status --porcelain -- $file 2>$null
     if ($status) {
         $uncommittedFiles += $file
     }
