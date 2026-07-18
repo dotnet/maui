@@ -3,7 +3,6 @@
 // Ideally users would use behavior that's more accessible forward and consistent with platform expectations.
 #if ANDROID || IOS
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
@@ -11,39 +10,44 @@ namespace Microsoft.Maui.Controls
 	{
 		IDisposable? _watchingForTaps;
 		WeakReference<IView>? _focusedView;
+		WeakReference<ContentPage>? _focusedViewEnclosingPage;
+
+		static ContentPage? GetEnclosingPage(IView? view)
+		{
+			Element? element = view as Element;
+			while (element is not null)
+			{
+				if (element is ContentPage contentPage)
+					return contentPage;
+				element = element.Parent;
+			}
+			return null;
+		}
+
+		bool FeatureEnabled
+		{
+			get
+			{
+				// Walk the live tree first. If FocusedView has been detached from the
+				// logical tree its Parent chain returns null, so fall back to the page
+				// that was cached when the view became focused. This preserves the
+				// original behavior where the feature remains enabled until the view
+				// explicitly loses focus.
+				var page = GetEnclosingPage(FocusedView) ?? FocusedEnclosingPage;
+				return page is not null && page.HideSoftInputOnTapped && page.HasNavigatedTo;
+			}
+		}
+
+		ContentPage? FocusedEnclosingPage =>
+			_focusedViewEnclosingPage?.TryGetTarget(out var p) == true ? p : null;
 
 		internal void UpdatePage(ContentPage page)
 		{
-			if (page.HideSoftInputOnTapped && page.HasNavigatedTo)
-			{
-				if (!_contentPages.Contains(page))
-				{
-					_contentPages.Add(page);
-					page.NavigatedFrom += OnPageNavigatedFrom;
-					SetupHideSoftInputOnTapped();
-				}
-			}
-			else
-			{
-				RemovePage(page);
-			}
-
-			void RemovePage(ContentPage pageToRemove)
-			{
-				page.NavigatedFrom -= OnPageNavigatedFrom;
-				if (_contentPages.Contains(pageToRemove))
-					_contentPages.Remove(pageToRemove);
-
-				SetupHideSoftInputOnTapped();
-			}
-
-			void OnPageNavigatedFrom(object? sender, NavigatedFromEventArgs e)
-			{
-				if (sender is ContentPage pageNavigatedFrom)
-				{
-					RemovePage(pageNavigatedFrom);
-				}
-			}
+			// HideSoftInputOnTapped (or HasNavigatedTo) changed on this page.
+			// FeatureEnabled is computed on-demand from the currently focused view's
+			// enclosing page, so we just need to re-evaluate the tap watcher in case
+			// the change flips FeatureEnabled for the focused view.
+			SetupHideSoftInputOnTapped();
 		}
 
 		internal IDisposable? UpdateFocusForView(IView _view)
@@ -53,12 +57,20 @@ namespace Microsoft.Maui.Controls
 			{
 				DisconnectFromPlatform();
 				_focusedView = new WeakReference<IView>(_view);
+				// Cache the enclosing page now, while the view is still in the logical
+				// tree, so that FeatureEnabled can fall back to it if the view is later
+				// detached before a focus-lost event fires.
+				var enclosingPage = GetEnclosingPage(_view);
+				_focusedViewEnclosingPage = enclosingPage is not null
+					? new WeakReference<ContentPage>(enclosingPage)
+					: null;
 			}
 			// If currently tracked view became unfocused then disconnect from it
 			else if (_view == FocusedView)
 			{
 				DisconnectFromPlatform();
 				_focusedView = null;
+				_focusedViewEnclosingPage = null;
 			}
 
 			if (!FeatureEnabled)
