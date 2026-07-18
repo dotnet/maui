@@ -1552,7 +1552,21 @@ stages:
           - bash: |
               FAILED=0
               if [ "$COPILOT_FAILED" = "true" ]; then
-                echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
+                # CopilotFailed is set when Setup (Task 1) and/or CopilotReview (Task 3) exit
+                # non-zero. A common NON-Copilot cause is a PR that will not squash-merge onto
+                # its base branch: Setup posts a merge-conflict comment and bails BEFORE writing
+                # the setup-complete sentinel, so every later phase (Gate, CopilotReview) also
+                # bails on the missing sentinel and flips CopilotFailed. That is NOT a Copilot or
+                # harness failure — the review simply cannot run on un-mergeable code. Detect it
+                # via the setup-complete sentinel (same signal the Gate uses to classify itself
+                # INCONCLUSIVE) and surface an accurate reason instead of the misleading
+                # "Copilot PR review failed / check CopilotLogs artifact". Outcome is unchanged
+                # (still fails the stage — a conflicted PR is not reviewable) — only the message.
+                if [ ! -f "$(Build.ArtifactStagingDirectory)/setup-complete" ]; then
+                  echo "##vso[task.logissue type=error]Review could not run: Setup did not complete (setup-complete sentinel missing — most commonly a PR merge conflict with the base branch). Resolve conflicts (or check the Setup log) and re-run /review. This is NOT a Copilot review failure."
+                else
+                  echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
+                fi
                 FAILED=1
               fi
               if [ "$GATE_FAILED" = "true" ]; then
