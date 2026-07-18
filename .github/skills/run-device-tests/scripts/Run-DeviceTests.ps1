@@ -88,6 +88,14 @@ param(
     [string]$IncludeClasses,
 
     [Parameter(Mandatory = $false)]
+    # Comma/semicolon-separated test METHOD names (e.g. "CompletedFiresOnRealEnterKeyPress").
+    # Windows-only, additive: when the gate full-runs a no-discovery app (Core/Essentials/
+    # Graphics) it scopes the post-hoc pass/fail tally to these specific methods within
+    # -IncludeClasses, so an unrelated pre-existing/flaky failure elsewhere in the same
+    # class cannot falsely redden the A/B verdict. Empty = fall back to whole-class scoping.
+    [string]$IncludeMethods,
+
+    [Parameter(Mandatory = $false)]
     [switch]$BuildOnly,
 
     [Parameter(Mandatory = $false)]
@@ -272,12 +280,25 @@ function Get-WindowsDeviceTestResultSummary {
         # When set, the pass/fail tallies count ONLY tests whose fully-qualified name
         # belongs to one of these classes (comma/semicolon separated). Used to scope a
         # full-suite result file down to the class(es) under test — see the call site.
-        [string]$IncludeClasses
+        [string]$IncludeClasses,
+
+        # When set (in addition to -IncludeClasses), narrows the tally further to ONLY these
+        # method names (comma/semicolon separated). This is the precise scope the gate wants:
+        # a full-suite run of a no-discovery app contains every method of the target class,
+        # but the PR only added/changed specific methods — counting the whole class lets an
+        # unrelated pre-existing/flaky failure in a sibling method falsely redden the verdict.
+        # Empty = fall back to whole-class scoping.
+        [string]$IncludeMethods
     )
 
     $classList = @()
     if (-not [string]::IsNullOrWhiteSpace($IncludeClasses)) {
         $classList = @($IncludeClasses -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    }
+
+    $methodList = @()
+    if (-not [string]::IsNullOrWhiteSpace($IncludeMethods)) {
+        $methodList = @($IncludeMethods -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
     }
 
     $summary = @{
@@ -286,14 +307,18 @@ function Get-WindowsDeviceTestResultSummary {
         Failed = 0
         Skipped = 0
         Errors = 0
+        FailedTests = [System.Collections.Generic.List[string]]::new()
     }
 
     # Diagnostics for the class-filtered path: how many <test> nodes the file(s) held in
     # total (regardless of class) and a small sample of the DISTINCT classes they belong
     # to. When the class filter matches nothing, these disambiguate "the app produced no
     # results at all" from "the results are there but under classes we didn't expect" —
-    # see the throw below.
+    # see the throw below. $diagClassMatchCount counts tests whose CLASS matched (before
+    # any method narrowing) so we can further distinguish "class present but none of the
+    # target methods ran" when method-scoping is active.
     $diagTotalTests = 0
+    $diagClassMatchCount = 0
     $diagSampleClasses = [System.Collections.Generic.List[string]]::new()
 
     foreach ($file in $ResultFiles) {
@@ -367,11 +392,40 @@ function Get-WindowsDeviceTestResultSummary {
                     }
                 }
                 if (-not $isMatch) { continue }
+                $diagClassMatchCount++
+
+                # Optional method-level narrowing: when the gate knows the PR's specific
+                # methods, count ONLY those (matched on the xUnit `method` attribute, which
+                # is the real C# method name — for a [Theory] every data-case <test> row
+                # shares the same `method`, so all cases of a target method are counted).
+                # This keeps an unrelated pre-existing/flaky failure in a sibling method of
+                # the same class from falsely reddening the A/B verdict.
+                if ($methodList.Count -gt 0) {
+                    $testMethod = $test.GetAttribute('method')
+                    if ([string]::IsNullOrWhiteSpace($testMethod)) {
+                        # Runner omitted `method` — recover it from the FQN tail of `type.method`
+                        # or a "Class.Method" display name so method-scoping still works.
+                        $probe = if (-not [string]::IsNullOrWhiteSpace($testName)) { $testName } else { $testType }
+                        if ($probe -and $probe.Contains('.')) { $testMethod = $probe.Substring($probe.LastIndexOf('.') + 1) }
+                    }
+                    if ($methodList -notcontains $testMethod) { continue }
+                }
 
                 $summary.Total++
                 switch ([string]$test.GetAttribute('result')) {
                     'Pass' { $summary.Passed++ }
-                    'Fail' { $summary.Failed++ }
+                    'Fail' {
+                        $summary.Failed++
+                        # Capture the identity of each failing test so a FAILED verdict is
+                        # auditable from the gate log (target-method failure vs unrelated).
+                        $failId = if (-not [string]::IsNullOrWhiteSpace($testType)) {
+                            $m = $test.GetAttribute('method')
+                            if (-not [string]::IsNullOrWhiteSpace($m)) { "$testType.$m" } else { $testType }
+                        } elseif (-not [string]::IsNullOrWhiteSpace($testName)) { $testName } else { '(unnamed)' }
+                        if ($summary.FailedTests.Count -lt 20 -and -not $summary.FailedTests.Contains($failId)) {
+                            $summary.FailedTests.Add($failId)
+                        }
+                    }
                     'Skip' { $summary.Skipped++ }
                     default { }
                 }
@@ -397,6 +451,12 @@ function Get-WindowsDeviceTestResultSummary {
         #   * total <test> nodes = 0  -> the app produced no results (crash/early exit)
         #   * total > 0 but no match  -> results exist under classes we didn't expect
         #     (namespace/name-format mismatch, or the target class was not in this suite).
+        if ($methodList.Count -gt 0 -and $diagClassMatchCount -gt 0) {
+            # The class WAS present, but none of the target methods ran — the PR's specific
+            # methods didn't execute (renamed/removed method, or a method-name mismatch),
+            # which the gate cannot verify. Distinct from "class absent".
+            throw "Windows device test result file(s) contained the class(es) '$IncludeClasses' ($diagClassMatchCount test(s)) but none of the target method(s) '$IncludeMethods' ran (the target tests did not run)."
+        }
         $sample = if ($diagSampleClasses.Count -gt 0) { " Sample classes present: " + ($diagSampleClasses -join '; ') + '.' } else { '' }
         throw "Windows device test result file(s) contained no tests for class(es) '$IncludeClasses' (the target tests did not run). Total tests found in result file(s): $diagTotalTests.$sample"
     }
@@ -421,6 +481,8 @@ function Invoke-WindowsDeviceTestApp {
         [string]$TestFilter,
 
         [string]$IncludeClasses,
+
+        [string]$IncludeMethods,
 
         [string]$Timeout = "01:00:00"
     )
@@ -554,7 +616,8 @@ function Invoke-WindowsDeviceTestApp {
     # being polluted (or falsely reddened) by unrelated/flaky suite tests. Category-
     # isolated runs already scope the result file, so they keep the whole-file aggregate.
     $summaryClassFilter = if (-not $useCategoryFiltering) { $IncludeClasses } else { $null }
-    $summary = Get-WindowsDeviceTestResultSummary -ResultFiles $resultFiles -IncludeClasses $summaryClassFilter
+    $summaryMethodFilter = if (-not $useCategoryFiltering) { $IncludeMethods } else { $null }
+    $summary = Get-WindowsDeviceTestResultSummary -ResultFiles $resultFiles -IncludeClasses $summaryClassFilter -IncludeMethods $summaryMethodFilter
     $script:WindowsDeviceTestSummary = $summary
     $script:WindowsDeviceTestResultFiles = $resultFiles
 
@@ -1032,6 +1095,7 @@ try {
             -OutputDirectory $OutputDirectory `
             -TestFilter $TestFilter `
             -IncludeClasses $IncludeClasses `
+            -IncludeMethods $IncludeMethods `
             -Timeout $Timeout
 
         if ($script:WindowsDeviceTestSummary) {
@@ -1040,6 +1104,14 @@ try {
             Write-Output "  Failed: $($script:WindowsDeviceTestSummary.Failed + $script:WindowsDeviceTestSummary.Errors)"
             Write-Output "  Skipped: $($script:WindowsDeviceTestSummary.Skipped)"
             Write-Output "  Total: $($script:WindowsDeviceTestSummary.Total)"
+            if ($IncludeMethods) {
+                Write-Host "  Scoped to method(s): $IncludeMethods" -ForegroundColor Gray
+            }
+            # Naming the failing tests makes a FAILED verdict auditable from the gate log
+            # (distinguishes a genuine target-method failure from an unrelated one).
+            if ($script:WindowsDeviceTestSummary.FailedTests -and $script:WindowsDeviceTestSummary.FailedTests.Count -gt 0) {
+                Write-Host "  Failed test(s): $($script:WindowsDeviceTestSummary.FailedTests -join '; ')" -ForegroundColor Gray
+            }
             Write-Host "  Result file(s): $($script:WindowsDeviceTestResultFiles -join ', ')" -ForegroundColor Gray
         }
     }

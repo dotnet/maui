@@ -392,6 +392,7 @@ function Invoke-TestRun {
         [string]$DetectedTestType,
         [string]$Filter,
         [string]$ClassFilter,
+        [string[]]$Methods,
         [string]$DetectedProject,
         [string]$DetectedProjectPath,
         [string]$LogFile
@@ -581,6 +582,16 @@ function Invoke-TestRun {
                 Write-Host "   Include class: $ClassFilter" -ForegroundColor Gray
             }
 
+            # Additive method-level narrowing (Windows full-suite scoping). When the gate
+            # knows the PR's specific methods, scope the post-hoc Windows pass/fail tally to
+            # exactly those methods within the class — so a pre-existing/flaky failure in an
+            # unrelated sibling method of the same class cannot falsely redden the A/B
+            # verdict. Empty (or on category-isolated runs) leaves behaviour unchanged.
+            if ($Methods -and $Methods.Count -gt 0) {
+                $deviceParams.IncludeMethods = ($Methods -join ';')
+                Write-Host "   Include method(s): $($Methods -join ', ')" -ForegroundColor Gray
+            }
+
             if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
                 $deviceParams.DeviceUdid = $script:BootedDeviceUdid
             }
@@ -625,6 +636,7 @@ function Invoke-TestRunWithRetry {
             -DetectedTestType $TestEntry.Type `
             -Filter $TestEntry.Filter `
             -ClassFilter $TestEntry.ClassFilter `
+            -Methods $TestEntry.Methods `
             -DetectedProject $TestEntry.Project `
             -DetectedProjectPath $TestEntry.ProjectPath `
             -LogFile $logFileAttempt

@@ -262,4 +262,170 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
                 -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' } |
             Should -Throw -ExpectedMessage '*Total tests found in result file(s): 0*'
     }
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # Method-level scoping: when the gate knows the PR's specific methods, the tally
+    # counts ONLY those methods within the class — so a pre-existing/flaky failure in
+    # an unrelated sibling method of the same class cannot falsely redden the verdict.
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    It 'counts only the requested methods within the class when -IncludeMethods is set' {
+        $file = Join-Path $script:testDir 'TestResults-Methods.xml'
+
+        @'
+<assemblies>
+  <assembly total="4" passed="3" failed="1" skipped="0" errors="0">
+    <collection>
+      <test name="Completed fires on real Enter key press" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
+      <test name="Completed does not fire on IME candidate confirmation Enter" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedDoesNotFireOnIMECandidateEnter" result="Pass" />
+      <test name="Unrelated sibling A" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SomeOtherEntryTest" result="Pass" />
+      <test name="Unrelated sibling B" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="AnotherEntryTest" result="Fail" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+            -IncludeMethods 'CompletedFiresOnRealEnterKeyPress;CompletedDoesNotFireOnIMECandidateEnter'
+
+        $summary.Total | Should -Be 2
+        $summary.Passed | Should -Be 2
+        $summary.Failed | Should -Be 0
+    }
+
+    It 'excludes an unrelated sibling failure in the same class (regression: no false FAILED from method-scoping)' {
+        $file = Join-Path $script:testDir 'TestResults-Sibling.xml'
+
+        # The target method passes; a DIFFERENT method in the same class fails. Class-only
+        # scoping would report Failed=1 -> false FAILED. Method-scoping must report PASSED.
+        @'
+<assemblies>
+  <assembly total="2" passed="1" failed="1" skipped="0" errors="0">
+    <collection>
+      <test name="Completed fires on real Enter key press" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
+      <test name="Pre-existing flaky Windows test" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="UnrelatedFlakyTest" result="Fail" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        # Sanity: class-only scoping DOES see the sibling failure (the false FAILED we fix).
+        $classOnly = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
+        $classOnly.Failed | Should -Be 1
+
+        # Method-scoping ignores the unrelated sibling -> clean PASSED.
+        $scoped = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+            -IncludeMethods 'CompletedFiresOnRealEnterKeyPress'
+        $scoped.Total | Should -Be 1
+        $scoped.Passed | Should -Be 1
+        $scoped.Failed | Should -Be 0
+    }
+
+    It 'preserves a GENUINE target-method failure under method-scoping (does not mask fix-incomplete)' {
+        $file = Join-Path $script:testDir 'TestResults-Genuine.xml'
+
+        # Mirrors build 14695686 (#36577): the PR added two methods; with the fix applied
+        # one target method still fails. Method-scoping must STILL report that failure.
+        @'
+<assemblies>
+  <assembly total="3" passed="2" failed="1" skipped="0" errors="0">
+    <collection>
+      <test name="Completed fires on real Enter key press" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
+      <test name="Completed does not fire on IME candidate confirmation Enter" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedDoesNotFireOnIMECandidateEnter" result="Fail" />
+      <test name="Unrelated sibling" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SomeOtherEntryTest" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+            -IncludeMethods 'CompletedFiresOnRealEnterKeyPress;CompletedDoesNotFireOnIMECandidateEnter'
+
+        $summary.Total | Should -Be 2
+        $summary.Passed | Should -Be 1
+        $summary.Failed | Should -Be 1
+        # The failing test must be named (type.method) so the verdict is auditable.
+        ($summary.FailedTests -join ';') | Should -BeLike '*EntryHandlerTests.CompletedDoesNotFireOnIMECandidateEnter*'
+    }
+
+    It 'counts every data-case of a target [Theory] method (same method attribute, different display names)' {
+        $file = Join-Path $script:testDir 'TestResults-Theory-Method.xml'
+
+        @'
+<assemblies>
+  <assembly total="4" passed="3" failed="1" skipped="0" errors="0">
+    <collection>
+      <test name="Updating Font(initialSize: 10, newSize: 20)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="UpdatingFont" result="Pass" />
+      <test name="Updating Font(initialSize: 12, newSize: 24)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="UpdatingFont" result="Pass" />
+      <test name="Updating Font(initialSize: 14, newSize: 28)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="UpdatingFont" result="Fail" />
+      <test name="Unrelated" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Unrelated" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+            -IncludeMethods 'UpdatingFont'
+
+        $summary.Total | Should -Be 3
+        $summary.Passed | Should -Be 2
+        $summary.Failed | Should -Be 1
+    }
+
+    It 'recovers the method from the FQN name when a runner omits the method attribute' {
+        $file = Join-Path $script:testDir 'TestResults-Method-NoAttr.xml'
+
+        @'
+<assemblies>
+  <assembly total="2" passed="1" failed="1" skipped="0" errors="0">
+    <collection>
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.CompletedFiresOnRealEnterKeyPress" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" result="Pass" />
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.UnrelatedFlakyTest" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" result="Fail" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-WindowsDeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+            -IncludeMethods 'CompletedFiresOnRealEnterKeyPress'
+
+        $summary.Total | Should -Be 1
+        $summary.Passed | Should -Be 1
+        $summary.Failed | Should -Be 0
+    }
+
+    It 'throws a method-aware error when the class ran but none of the target methods did' {
+        $file = Join-Path $script:testDir 'TestResults-Method-Missing.xml'
+
+        # The class IS present (2 tests) but neither is a target method -> distinct from
+        # "class absent"; the throw must name the methods, not just the class.
+        @'
+<assemblies>
+  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="Sibling one" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SiblingOne" result="Pass" />
+      <test name="Sibling two" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SiblingTwo" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        { Get-WindowsDeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+                -IncludeMethods 'CompletedFiresOnRealEnterKeyPress' } |
+            Should -Throw -ExpectedMessage '*contained the class(es)*but none of the target method(s)*CompletedFiresOnRealEnterKeyPress*did not run*'
+    }
 }
