@@ -159,6 +159,47 @@ OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : An unknown server-side err
         $r.SnapshotBaselineMissing | Should -BeTrue
         Remove-Item -LiteralPath $log -Force
     }
+
+    # A native shared-library load failure (DllNotFoundException / "Unable to load shared
+    # library") means the test process could not load a required NATIVE dependency (e.g.
+    # libSkiaSharp on a Linux/android gate agent). The test COULD NOT RUN, so nothing about
+    # the fix was verified -> EnvError (INCONCLUSIVE), never a plain FAIL that blocks. Guards
+    # real build 14699033 (#36653 [Build] Resizetizer external backend): the gate detected
+    # ResizetizeImagesTests at CLASS level and ran the whole class on an android agent with no
+    # SkiaSharp runtime, so image-rasterization tests threw DllNotFoundException in BOTH the
+    # without-fix and with-fix runs -> false FAILED, even though the PR's logic tests passed
+    # and real maui-pr CI (Windows Helix Unit Tests) passes these.
+    It 'flags a libSkiaSharp DllNotFoundException as env/NativeLibLoadFailure (real #36653 build 14699033)' {
+        $log = New-LogFile @'
+  Failed BasicImageProcessingWorks [1 s]
+  Error Message:
+   System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider setting the LD_DEBUG environment variable: liblibSkiaSharp: cannot open shared object file: No such file or directory
+Test Run Failed.
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.NativeLibLoadFailure | Should -BeTrue
+        $r.Passed   | Should -BeFalse
+        $r.Error    | Should -Match 'libSkiaSharp'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'flags a Windows "Unable to load DLL" native-load failure as an env error' {
+        $log = New-LogFile "System.DllNotFoundException : Unable to load DLL 'libHarfBuzzSharp': The specified module could not be found. (0x8007007E)`nTest Run Failed."
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.NativeLibLoadFailure | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does NOT flag a genuine ran-and-failed assertion as a native-lib env error' {
+        $log = New-LogFile "Build succeeded.`n    0 Error(s)`n  Failed:  2`n  Passed:  3`nAssert.Equal() Failure: Expected 5 but got 4"
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.NativeLibLoadFailure | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
 }
 
 Describe 'Get-SnapshotDiffMap — snapshot diff extraction' {

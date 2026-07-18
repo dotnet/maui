@@ -424,8 +424,20 @@ function Invoke-TestRun {
                 $emulatorParams = @{ Platform = $emulatorPlatform }
                 $script:BootedDeviceUdid = & $startEmulatorScript @emulatorParams
                 if ($LASTEXITCODE -ne 0) {
-                    Write-Host "❌ Failed to boot device" -ForegroundColor Red
-                    exit 1
+                    # A device/simulator that will not boot is a GATE-AGENT infrastructure
+                    # failure: it happens BEFORE the PR's code is built or run, so it can NEVER
+                    # be caused by the fix. Exit 3 (INCONCLUSIVE), NOT 1 (FAILED) — every other
+                    # environment failure in this script exits 3, and Review-PR.ps1 maps 3 →
+                    # INCONCLUSIVE deterministically. Relying on the caller's "missing report
+                    # after a non-zero exit" heuristic (or a log-tail regex) to reclassify an
+                    # exit-1 boot failure is fragile: a partial/prior report without the
+                    # `ENV ERROR` marker would break the heuristic and surface a FALSE FAILED.
+                    # Keep the literal "Failed to boot device" phrase so the caller's fallback
+                    # diagnostics still recognise it. (PR #35668 iOS build 14719xxx: agent
+                    # CoreSimulatorService wedge — "No iPhone simulator found" after the full
+                    # create/enroll recovery — must be a non-blocking INCONCLUSIVE, not FAILED.)
+                    Write-Host "❌ ENV ERROR: Failed to boot device — the $Platform simulator/emulator did not come up on the gate agent, so the PR's tests could not run (agent infrastructure, not a fix problem). Reporting INCONCLUSIVE." -ForegroundColor Yellow
+                    exit 3
                 }
             }
             Write-Host "✅ Device ready: $($script:BootedDeviceUdid)" -ForegroundColor Green
@@ -876,6 +888,31 @@ function Get-TestResultFromOutput {
     foreach ($envErr in $envErrorPatterns) {
         if ($content -match $envErr.Pattern) {
             return @{ Passed = $false; EnvError = $true; Error = $envErr.Message; FailCount = 0; Failed = 0; Total = 0; Skipped = 0 }
+        }
+    }
+
+    # ── Native shared-library load failure (gate agent is missing a native dependency) ──
+    # A test process that throws DllNotFoundException / "Unable to load shared library" could
+    # not load a required NATIVE library (e.g. libSkiaSharp, libHarfBuzzSharp) because the GATE
+    # AGENT lacks it — NOT because the fix is wrong. This is common for Resizetizer/Graphics
+    # image-rasterization unit tests when the gate detects the test at CLASS level and runs the
+    # whole class on a Linux (android) gate agent that has no SkiaSharp native runtime: EVERY
+    # image test then fails with the SAME load error in BOTH the without-fix AND with-fix runs,
+    # so the gate would misreport a false FAILED even though the PR's own logic tests pass and
+    # real maui-pr CI (Windows Helix Unit Tests) passes these tests. A native-load failure means
+    # the test COULD NOT RUN, so nothing about the fix was verified → INCONCLUSIVE (env-class,
+    # non-blocking). SAFE: a genuine "fix does not work" surfaces as an assertion diff, never as
+    # a missing native library, so this can never mask a real regression (build 14699033,
+    # PR #36653 [Build] Resizetizer external backend: libSkiaSharp DllNotFoundException).
+    if ($content -match '(?i)Unable to load (?:shared library|DLL)' -or
+        $content -match '(?is)DllNotFoundException.{0,120}Unable to load') {
+        $nativeLib = $null
+        $libMatch = [regex]::Match($content, "(?i)Unable to load (?:shared library|DLL) '([^']+)'")
+        if ($libMatch.Success) { $nativeLib = $libMatch.Groups[1].Value }
+        return @{
+            Passed = $false; EnvError = $true; NativeLibLoadFailure = $true
+            Error = if ($nativeLib) { "Native library '$nativeLib' could not be loaded on the gate agent (DllNotFoundException) — the test could not run, so the fix is unverifiable here" } else { "A native shared library could not be loaded on the gate agent (DllNotFoundException) — the test could not run" }
+            FailCount = 0; Failed = 0; Total = 0; Skipped = 0
         }
     }
 
