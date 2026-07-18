@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellItemConverter))]
 	[DebuggerTypeProxy(typeof(ShellItemDebugView))]
-#if WINDOWS || TIZEN
+#if ANDROID || WINDOWS || TIZEN
 	[ElementHandler(typeof(Handlers.ShellItemHandler))]
 #endif
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement
