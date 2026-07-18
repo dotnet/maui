@@ -259,7 +259,7 @@
     </Target>
 
 
-    <!-- Collect images from referenced projects -->
+    <!-- Collect MAUI resources from referenced projects -->
     <Target Name="ResizetizeCollectItems"
         Condition="'$(DisableResizetizer)' != 'true'"
         BeforeTargets="$(ResizetizeCollectItemsBeforeTargets)"
@@ -271,7 +271,7 @@
                 ItemName="_ImportedMauiItem" />
         </CallTarget>
 
-        <!-- Invoke the GetMauiItems target on all project references. This will accumulate images into our MauiImage group -->
+        <!-- Invoke GetMauiItems on all project references to accumulate supported MAUI resource items. -->
         <ItemGroup>
             <!-- Filter out the items missing the OriginalProjectReferenceItemSpec because this is essential -->
             <_ResizetizeCollectItemsProjectWithOIS Include="@(_ResolvedProjectReferencePaths->HasMetadata('OriginalProjectReferenceItemSpec'))" />
@@ -374,29 +374,17 @@
     <Target Name="_PrepareExternalMauiAssets"
         BeforeTargets="ProcessMauiAssets"
         DependsOnTargets="ResizetizeCollectItems"
-        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''">
-        <PropertyGroup>
-            <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
-        </PropertyGroup>
-    </Target>
+        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''" />
 
     <Target Name="_PrepareExternalMauiFonts"
         BeforeTargets="ProcessMauiFonts"
         DependsOnTargets="ResizetizeCollectItems;ProcessMauiAssets;ProcessMauiSplashScreens"
-        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''">
-        <PropertyGroup>
-            <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
-        </PropertyGroup>
-    </Target>
+        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''" />
 
     <Target Name="_PrepareExternalMauiImages"
         BeforeTargets="ResizetizeImages"
         DependsOnTargets="ResizetizeCollectItems;ProcessMauiSplashScreens;_ReadResizetizeImagesOutputs"
-        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''">
-        <PropertyGroup>
-            <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
-        </PropertyGroup>
-    </Target>
+        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''" />
 
     <Target Name="ProcessMauiAssets"
         Condition="'$(EnableMauiAssetProcessing)' == 'true'">
@@ -422,7 +410,7 @@
             Input="@(_MauiAssetWithLinkMetadata)">
             <Output ItemName="_MauiAssetItemWithMetadata" TaskParameter="Output" />
         </GetMauiAssetPath>
-        <!-- add the processed assets to the correct itme groups and add any additional properties -->
+        <!-- add the processed assets to the correct item groups and add any additional properties -->
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
             <AndroidAsset Include="@(_MauiAssetItemWithMetadata)" />
         </ItemGroup>
@@ -747,7 +735,7 @@
 
         <!-- iOS -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
-            <!-- Batch the collectd items into BundleResource which iOS expects -->
+            <!-- Batch the collected items into BundleResource which iOS expects -->
             <_ResizetizerCollectedBundleResourceImages Include="@(_ResizetizerCollectedImages->'%(FullPath)')">
                 <LogicalName>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</LogicalName>
                 <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
