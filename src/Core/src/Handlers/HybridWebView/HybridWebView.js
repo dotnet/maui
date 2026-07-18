@@ -23,8 +23,10 @@
         // Determine the mechanism to receive messages from the host application.
         if (window.chrome && window.chrome.webview && window.chrome.webview.addEventListener) {
             // Windows WebView2
+            // The .NET side URL-encodes messages (see MauiHybridWebView.SendRawMessage) so embedded
+            // NUL characters survive WebView2's null-terminated string marshalling. Decode here.
             window.chrome.webview.addEventListener('message', (arg) => {
-                dispatchHybridWebViewMessage(arg.data);
+                dispatchHybridWebViewMessage(decodeURIComponent(arg.data));
             });
         }
         else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
@@ -56,7 +58,10 @@
         // Determine the function to use to send messages to the host application.
         if (window.chrome && window.chrome.webview) {
             // Windows WebView2
-            sendMessageFunction = msg => window.chrome.webview.postMessage(msg);
+            // URL-encode so embedded NUL characters survive WebView2's null-terminated string
+            // marshalling (TryGetWebMessageAsString returns an LPWSTR); the .NET side decodes it
+            // in HybridWebViewHandler.OnWebMessageReceived.
+            sendMessageFunction = msg => window.chrome.webview.postMessage(encodeURIComponent(msg));
         }
         else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
             // iOS and MacCatalyst WKWebView

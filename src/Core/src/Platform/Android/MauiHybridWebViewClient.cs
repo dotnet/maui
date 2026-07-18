@@ -69,14 +69,36 @@ namespace Microsoft.Maui.Platform
 
 			if (view is not null && request is not null && !string.IsNullOrEmpty(url))
 			{
-				// 1. Check if the app wants to modify or override the request
+				// 1. Framework-internal bridge requests must be handled by the framework and
+				//    never exposed to app-level WebResourceRequested interception. See
+				//    IsFrameworkInternalRequest: each reserved endpoint is bound to BOTH its
+				//    well-known path and (for the message/invoke channels) the protocol marker
+				//    header, so the header alone is never a trust boundary. Before JS -> .NET
+				//    messages were routed over HTTP they were invisible to app interception, and
+				//    this preserves that invariant.
+				if (IsFrameworkInternalRequest(url, request))
+				{
+					// A framework-internal request must be handled by the framework. If it
+					// cannot be resolved, fail fast with a 400 rather than forwarding it to the
+					// app handler.
+					return GetResponse(url, request, logger)
+						?? new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, new MemoryStream());
+				}
+
+				// 2. Check if the app wants to modify or override the request. This path is
+				//    intentionally left unwrapped: if a user WebResourceRequested handler throws
+				//    for a legitimate app-origin request, the exception propagates exactly as it
+				//    did before bridge traffic was routed over HTTP. Only the framework's own
+				//    .NET dispatch (Handler.MessageReceived in GetResponse) is exception-isolated,
+				//    because it runs under a JNI stack where an unhandled throw crashes the
+				//    native WebView thread.
 				var response = WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, view, request, url, logger);
 				if (response is not null)
 				{
 					return response;
 				}
 
-				// 2. Check if the request is for a local resource
+				// 3. Check if the request is for a local resource
 				response = GetResponse(url, request, logger);
 				if (response is not null)
 				{
@@ -90,6 +112,52 @@ namespace Microsoft.Maui.Platform
 			return base.ShouldInterceptRequest(view, request);
 		}
 
+		// Resolves the app-origin-relative path for a request URL. Returns false when the URL is
+		// not under the HybridWebView app origin; returns true otherwise, with relativePath set to
+		// the resolved path (which may itself be null if the path could not be resolved). Shared by
+		// IsFrameworkInternalRequest and GetResponse to keep the URI parsing in one place.
+		static bool TryGetAppRelativePath(string fullUrl, out string? relativePath)
+		{
+			relativePath = null;
+
+			var requestUri = WebUtils.RemovePossibleQueryString(fullUrl);
+			if (new Uri(requestUri) is not Uri uri || !HybridWebViewHandler.AppOriginUri.IsBaseOf(uri))
+			{
+				return false;
+			}
+
+			relativePath = WebUtils.ResolveRelativePath(HybridWebViewHandler.AppOriginUri, uri);
+			return true;
+		}
+
+		// Returns true when the request targets a reserved HybridWebView bridge endpoint and must
+		// therefore be handled by the framework instead of being exposed to app-level
+		// WebResourceRequested interception. Each endpoint is bound to its well-known path:
+		//  - the bridge bootstrap script is a plain <script> load with no header, matched by path;
+		//  - the message/invoke channels must ALSO carry the protocol marker header, because the
+		//    header name/value are public and a same-origin script could otherwise set it on an
+		//    arbitrary URL to bypass interception.
+		static bool IsFrameworkInternalRequest(string fullUrl, IWebResourceRequest request)
+		{
+			if (!TryGetAppRelativePath(fullUrl, out var relativePath) || relativePath is null)
+			{
+				return false;
+			}
+
+			if (relativePath == HybridWebViewHandler.HybridWebViewDotJsPath)
+			{
+				return true;
+			}
+
+			if (relativePath == HybridWebViewHandler.InvokeDotNetPath ||
+				relativePath == HybridWebViewHandler.SendMessagePath)
+			{
+				return HybridWebViewHandler.HasExpectedHeaders(request.RequestHeaders);
+			}
+
+			return false;
+		}
+
 		private WebResourceResponse? GetResponse(string fullUrl, IWebResourceRequest request, ILogger? logger)
 		{
 			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
@@ -97,15 +165,14 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
-			var requestUri = WebUtils.RemovePossibleQueryString(fullUrl);
-			if (new Uri(requestUri) is not Uri uri || !HybridWebViewHandler.AppOriginUri.IsBaseOf(uri))
+			if (!TryGetAppRelativePath(fullUrl, out var relativePath))
 			{
+				// Not an app-origin request; let it proceed unmodified.
 				return null;
 			}
 
 			logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", fullUrl);
 
-			var relativePath = WebUtils.ResolveRelativePath(HybridWebViewHandler.AppOriginUri, uri);
 			if (relativePath is null)
 			{
 				logger?.LogDebug("Request for {Url} resolved to an invalid path.", fullUrl);
@@ -148,7 +215,13 @@ namespace Microsoft.Maui.Platform
 					return error;
 				}
 
+				// Do not wrap this in a try/catch. MessageReceived raises the app-facing message
+				// handlers (e.g. RawMessageReceived); an exception thrown by app code must be allowed
+				// to propagate rather than be swallowed, matching how MAUI treats event handlers such
+				// as Button.Click. Developers who want to handle these exceptions can catch them in
+				// their own handler.
 				Handler.MessageReceived(messageBody);
+
 				return new WebResourceResponse(null, "UTF-8", 204, "No Content", null, new MemoryStream());
 			}
 
