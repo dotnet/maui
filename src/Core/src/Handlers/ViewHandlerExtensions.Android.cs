@@ -122,9 +122,9 @@ namespace Microsoft.Maui
 			var viewParent = platformView.Parent;
 			if (viewParent?.LayoutDirection == LayoutDirection.Rtl && viewParent is View parentView)
 			{
-				// Determine the flipped left/right edges for the RTL layout
+				// Mirror within the parent's padded content box so asymmetric padding (e.g. landscape display-cutout insets) doesn't shift the child (dotnet/maui#36543).
 				var width = right - left;
-				left = parentView.Width - left - width;
+				left = parentView.Width - parentView.PaddingRight - (left - parentView.PaddingLeft) - width;
 				right = left + width;
 			}
 
