@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Platform
 	/// <remarks>
 	/// <para>
 	/// When an <see cref="IGesturePlatformManagerFactory"/> is present in
-	/// <see cref="Microsoft.Maui.IMauiContext.Services"/>, <see cref="GestureManager"/> calls
+	/// <see cref="Microsoft.Maui.IMauiContext.Services"/>, the framework calls
 	/// <see cref="CreateGesturePlatformManager"/> instead of constructing the default
 	/// <c>GesturePlatformManager</c>. This lets alternative platform backends (for example,
 	/// community-maintained backends that do not use <c>IPlatformViewHandler</c>)
@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Controls.Platform
 		/// </summary>
 		/// <param name="handler">The handler whose platform view the gestures are attached to.</param>
 		/// <returns>
-		/// A new <see cref="IGesturePlatformManager"/> instance. This instance is owned and disposed by
-		/// <see cref="GestureManager"/>. A new instance must be returned for each call because
-		/// <see cref="GestureManager"/> disposes and recreates the manager on every connect or handler change.
+		/// A new <see cref="IGesturePlatformManager"/> instance. The framework owns and disposes this
+		/// instance. Return a new instance for each call because the manager is disposed and recreated
+		/// on every connect or handler change.
 		/// </returns>
 		IGesturePlatformManager CreateGesturePlatformManager(IViewHandler handler);
 	}
