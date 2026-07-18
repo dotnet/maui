@@ -916,12 +916,15 @@ public static class AppleXMarker
 
 		// Non-platform builds (TargetPlatformIdentifier empty, e.g. design-time
 		// or netstandard TFM) must keep removing platform folders that declare a
-		// non-empty TargetPlatformIdentifiers. Condition-gated folders with empty
-		// TargetPlatformIdentifiers must still participate when their condition
-		// evaluates to true — locks in the "empty TPI + empty ActivationValue =
-		// always include" branch.
+		// non-empty TargetPlatformIdentifiers. An unconditioned shared folder with
+		// empty TargetPlatformIdentifiers and empty ActivationValue must still
+		// participate — locks in the "empty TPI + empty ActivationValue = always
+		// include" branch of _MauiCollectPlatformSpecificCompileItems. (Genuine
+		// item-Condition gating — where the mapping carries its own Condition — is
+		// covered separately by
+		// SingleProject_ConditionGatedFolderParticipatesOnlyWhenConditionIsTrue.)
 		[Fact]
-		public void SingleProject_NonPlatformBuildExcludesPlatformSpecificFoldersButKeepsConditionGated()
+		public void SingleProject_NonPlatformBuildExcludesPlatformSpecificFoldersButKeepsSharedFolder()
 		{
 			SetUp();
 			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
@@ -977,6 +980,163 @@ public static class SharedMarker
 			AssertExists(testDll, nonEmpty: true);
 			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
 			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
+		}
+
+		// Genuine item-Condition gating: a MauiPlatformSpecificFolder mapping may
+		// carry its own MSBuild item Condition that decides participation at
+		// evaluation time. When the Condition is true the item materializes and —
+		// declaring neither TargetPlatformIdentifiers nor an ActivationValue — is
+		// kept via the "always include" branch of
+		// _MauiCollectPlatformSpecificCompileItems, so its Platforms/<Folder>/**/*.cs
+		// compile even on a non-platform build. When the Condition is false the item
+		// never exists and _MauiRemovePlatformCompileItems strips the folder like any
+		// other Platforms/** content. Exercises both branches through the actual
+		// shipping SingleProject targets.
+		[Theory]
+		[InlineData("true", true)]
+		[InlineData("false", false)]
+		public void SingleProject_ConditionGatedFolderParticipatesOnlyWhenConditionIsTrue(string conditionValue, bool shouldIncludeConditionalFile)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			// An unconditioned shared folder guarantees @(MauiPlatformSpecificFolder)
+			// is non-empty in both branches, so the false case still flows through the
+			// collect/remove pipeline rather than short-circuiting on an empty list.
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Shared\\"));
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Conditional\\")
+				.WithAttribute("Condition", " '$(IncludeConditionalBackend)' == 'true' "));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Shared\\SharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class SharedMarker
+{
+	public static string Value => ""Shared"";
+}");
+
+			WriteFile("Platforms\\Conditional\\ConditionalMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class ConditionalMarker
+{
+	public static string Value => ""Conditional"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// No _SingleProjectTestTargetPlatformIdentifier — non-platform build; the
+			// property toggles the mapping's item Condition to true/false.
+			Build(projectFile, additionalArgs: $"-p:IncludeConditionalBackend={conditionValue}");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			// The unconditioned shared folder is always kept regardless of the gate.
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
+
+			if (shouldIncludeConditionalFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ConditionalMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ConditionalMarker");
+		}
+
+		// Design-time metadata contract for _MauiUnflipKeptCompileItemMetadata.
+		// The blanket <Compile Update> marks every Platforms/** file
+		// ExcludeFromCurrentConfiguration=true, and the per-TPI flips only cover the
+		// built-in $(<TPI>ProjectFolder) paths. A kept shared folder (empty TPI +
+		// empty ActivationValue, so it survives the blanket removal) therefore relies
+		// on _MauiUnflipKeptCompileItemMetadata to flip its Compile item back to
+		// ExcludeFromCurrentConfiguration=false so Visual Studio does not grey it out.
+		// This asserts the actual metadata value on the kept item via a diagnostic
+		// Message target that runs after the shipping unflip target on a non-platform
+		// (design-time-style) build.
+		[Fact]
+		public void SingleProject_UnflipKeptCompileItemMetadata_SetsExcludeFromCurrentConfigurationFalseForKeptSharedFolder()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Shared\\"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Shared\\SharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class SharedMarker
+{
+	public static string Value => ""Shared"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			// Diagnostic target: after the shipping unflip target runs, emit the
+			// ExcludeFromCurrentConfiguration metadata for each surviving Compile item
+			// (one Message per item via cross-item batching) so the test can assert the
+			// kept shared file was flipped back to false.
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpExcludeFromCurrentConfiguration")
+				.WithAttribute("AfterTargets", "_MauiUnflipKeptCompileItemMetadata");
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Condition", " '%(Compile.Identity)' != '' ")
+				.WithAttribute("Text", "COMPILE_META: %(Compile.Identity)|ExcludeFromCurrentConfiguration=%(Compile.ExcludeFromCurrentConfiguration)"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// Non-platform build (no _SingleProjectTestTargetPlatformIdentifier) mirrors
+			// the design-time evaluation where the IDE would otherwise grey out the file.
+			var log = Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
+
+			// The kept shared file must carry ExcludeFromCurrentConfiguration=false; the
+			// pipe format keeps the identity (which may use either path separator) and
+			// the metadata on the same emitted line.
+			Assert.True(
+				log.Contains("SharedMarker.cs|ExcludeFromCurrentConfiguration=false", StringComparison.OrdinalIgnoreCase),
+				"_MauiUnflipKeptCompileItemMetadata should flip ExcludeFromCurrentConfiguration back to false " +
+				"on the kept shared folder's Compile item. Build log:\n" + log);
 		}
 
 		// Backward compatibility: a folder that declares only the legacy singular
