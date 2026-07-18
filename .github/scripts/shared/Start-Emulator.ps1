@@ -801,6 +801,58 @@ if ($Platform -eq "android") {
             } catch { Write-Info "Runtime enroll attempt error: $_" }
             return $attempted
         }
+        # DOWNLOAD an iOS runtime when the agent has NONE on disk. The rescue + enroll paths
+        # above can only recover a runtime already present as a "Ready" disk image; when
+        # `simctl runtime list --json` shows 0 iOS images the agent was provisioned WITHOUT any
+        # iOS runtime, so there is literally nothing to enroll and both recover to $null (build
+        # 14699070, PR #27153: "0 iOS image(s) on disk" -> gate degraded to INCONCLUSIVE while
+        # asserting iOS "must work"). The ONLY recovery is to FETCH one — exactly as the deep
+        # stage's "Install iOS simulator runtimes" step does (eng/pipelines/ci-copilot.yml):
+        # `xcodebuild -downloadPlatform iOS -buildVersion <SDK>`. The gate stage
+        # (ReviewPR/CopilotReview) has NO such install step, so the gate boot must self-provision
+        # here or the iOS gate can never run on a runtime-less agent. Heavy (multi-GB, minutes)
+        # but only reached as the final resort before dead-ending — strictly additive, never on
+        # the healthy path. Returns $true if a download was attempted (caller re-scans + retries).
+        function Invoke-IosRuntimeDownload {
+            $attempted = $false
+            try {
+                # CoreSimulator/runtime downloads are Xcode-version-specific — select the newest
+                # installed Xcode first so the SDK probe + download target the version the build
+                # will actually use (mirrors the deep stage's install step).
+                $newestXcode = & bash -c 'ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1'
+                if ($newestXcode) {
+                    $curDev = (& xcode-select -p 2>$null)
+                    if ($curDev -notlike "$newestXcode*") {
+                        Write-Info "Download: switching xcode-select to newest Xcode ($newestXcode)..."
+                        & sudo -n xcode-select -s "$newestXcode/Contents/Developer" 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    }
+                }
+                # Probe the selected Xcode's iphonesimulator SDK version and download EXACTLY that
+                # runtime (future-proof as agents move to newer Xcodes); fall back to the generic
+                # latest-for-this-Xcode download if the probe or the versioned fetch fails.
+                $sdkVer = (& xcrun --sdk iphonesimulator --show-sdk-version 2>$null | Select-Object -First 1)
+                if ($sdkVer) {
+                    Write-Info "Download: no iOS runtime on disk - fetching iOS $sdkVer simulator runtime via 'xcodebuild -downloadPlatform iOS -buildVersion $sdkVer' (can take several minutes)..."
+                    & sudo -n xcodebuild -downloadPlatform iOS -buildVersion "$sdkVer" 2>&1 | ForEach-Object { Write-Info "  $_" }
+                }
+                else {
+                    Write-Info "Download: could not probe iphonesimulator SDK version - fetching generic 'xcodebuild -downloadPlatform iOS' (can take several minutes)..."
+                    & sudo -n xcodebuild -downloadPlatform iOS 2>&1 | ForEach-Object { Write-Info "  $_" }
+                }
+                # Fall back to the generic (unversioned) download, then to non-sudo, if the
+                # preferred path was refused (sudo -n with no cached credential) or errored.
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Info "Download: retrying generic 'xcodebuild -downloadPlatform iOS'..."
+                    & sudo -n xcodebuild -downloadPlatform iOS 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Info "Download: sudo path failed - retrying without sudo..."
+                        & xcodebuild -downloadPlatform iOS 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    }
+                }
+                $attempted = $true
+            } catch { Write-Info "Runtime download attempt error: $_" }
+            return $attempted
+        }
 
         if (-not $selectedDevice) {
             # First pass: try to create on any Ready runtime as-is.
@@ -836,6 +888,39 @@ if ($Platform -eq "android") {
                 }
                 Write-IosRuntimeDiag "after restart/enroll"
                 $rescueResult = Invoke-IosReadyRuntimeRescue
+            }
+
+            # DOWNLOAD RECOVERY (build 14699070, PR #27153: "0 iOS image(s) on disk"; build
+            # 14690025, PR #36427: on-disk iOS-26-5 image "Invalid runtime" uncreatable even
+            # after restart/enroll — both dead-ended the iOS gate at INCONCLUSIVE). The rescue +
+            # enroll passes only recover a runtime that is BOTH present as a Ready disk image AND
+            # enrollable; this final resort fires whenever they still produced no bootable device
+            # and DOWNLOADS a fresh SDK-matching runtime (as the deep stage's install step does),
+            # then retries the create loop once. It is reached only after every preferred-device
+            # create, the multi-runtime rescue, the CoreSimulatorService restart, and the
+            # `simctl runtime add` enroll have all failed — i.e. the agent is genuinely broken —
+            # so the multi-GB/minutes cost is never paid on a healthy or merely-slow boot. We log
+            # the on-disk image count for diagnostics but do NOT gate on it: "0 images" (must
+            # fetch) and "images present but all Invalid" (re-fetch a clean, SDK-matching copy)
+            # both need the same download. Honours the directive that the iOS gate must run.
+            if (-not $rescueResult) {
+                $readyImgCount = 0
+                try {
+                    $imgsNow = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
+                    $readyImgCount = @($imgsNow.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' -and $_.state -eq 'Ready' }).Count
+                } catch { }
+                Write-Info "No bootable iOS simulator after rescue+restart+enroll ($readyImgCount Ready image(s) on disk, all unusable) - attempting a runtime DOWNLOAD before giving up (iOS gate must run)..."
+                if (Invoke-IosRuntimeDownload) {
+                    xcrun simctl list runtimes *> $null
+                    Start-Sleep -Seconds 4
+                    # A freshly downloaded runtime can land "Ready" but unenrolled — enroll then retry.
+                    if (Invoke-IosRuntimeEnroll) {
+                        xcrun simctl list runtimes *> $null
+                        Start-Sleep -Seconds 4
+                    }
+                    Write-IosRuntimeDiag "after download"
+                    $rescueResult = Invoke-IosReadyRuntimeRescue
+                }
             }
 
             if ($rescueResult) {
