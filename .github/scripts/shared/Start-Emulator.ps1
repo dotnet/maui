@@ -355,8 +355,42 @@ if ($Platform -eq "android") {
                 }
             }
             
+            # LAST-RESORT TRANSPORT RECOVERY before declaring failure (build 14699254,
+            # #36655 android): a reused emulator can time out this 240s wait yet be
+            # fully booted moments later — the very next Start-Emulator invocation's
+            # top-of-script pre-check found the SAME emulator 'device'-ready right after
+            # this loop had given up. The in-loop 'adb reconnect offline' only nudges a
+            # transport already seen as 'offline'; if the transport is ABSENT from
+            # 'adb devices' entirely (process alive but adb never enumerated it) nothing
+            # recovers it and we waste a false 'Failed to boot' INCONCLUSIVE. A full adb
+            # server restart re-enumerates ALL transports and revives both the stuck-
+            # offline and absent cases. Try it once + a short grace re-poll. Strictly
+            # additive: if the device is genuinely dead the grace loop times out and we
+            # exit 1 exactly as before (never worse than today).
             if (-not $DeviceUdid) {
-                Write-Error "Emulator failed to start within $deviceTimeout seconds. Please try starting it manually."
+                Write-Info "Device wait timed out after ${deviceTimeout}s — attempting a full adb server restart (forceful transport re-enumeration) before giving up..."
+                adb kill-server 2>&1 | Out-Null
+                Start-Sleep -Seconds 2
+                adb start-server 2>&1 | Out-Null
+                Start-Sleep -Seconds 3
+                $graceWaited = 0
+                $graceTimeout = 60
+                while ($graceWaited -lt $graceTimeout) {
+                    $graceDevices = adb devices | Select-String "^emulator-\d+\s+device"
+                    if ($graceDevices.Count -gt 0) {
+                        $DeviceUdid = ($graceDevices[0].Line -split '\s+')[0]
+                        Write-Success "Emulator transport recovered after adb server restart: $DeviceUdid (grace ${graceWaited}s)"
+                        break
+                    }
+                    # Also nudge any transport that re-appeared as 'offline'.
+                    adb reconnect offline 2>&1 | Out-Null
+                    Start-Sleep -Seconds 5
+                    $graceWaited += 5
+                }
+            }
+            
+            if (-not $DeviceUdid) {
+                Write-Error "Emulator failed to start within $deviceTimeout seconds (and did not recover after an adb server restart). Please try starting it manually."
                 Write-Info "Current adb devices:"
                 adb devices -l
                 if (Test-Path $emulatorLog) {
