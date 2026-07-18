@@ -696,6 +696,7 @@
 
         <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
         <ItemGroup>
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
             <FileWrites Include="$(_ResizetizerStampFile)" />
             <FileWrites Include="$(_ResizetizerOutputsFile)" />
         </ItemGroup>
