@@ -199,9 +199,27 @@ steps:
           # enroll properly. Only runs in the already-failing retry branch (healthy agents
           # succeed on the first download and never reach here); non-destructive — the daemon
           # auto-relaunches on the next simctl call.
+          # A wedged CoreSimulatorService can't complete `simctl runtime delete`'s implicit
+          # unmount of the runtime APFS volumes, so the images get stuck in "(Deleting)"
+          # FOREVER: the wait-loop below spins "still N left..." and never reaches 0, then the
+          # re-download collides with the still-"Deleting" same-UUID image and fails "Invalid
+          # runtime: null", dead-ending the iOS sim boot (PR #35706 build 14697148 — killall
+          # alone did NOT clear the exit-70 wedge). Force-unmounting those volumes OUT-OF-BAND
+          # (via diskutil, bypassing the wedged daemon) lets `simctl runtime delete` complete
+          # instead of hanging. Only runs in this already-failed retry branch; a healthy
+          # agent's first download succeeds and none of this executes.
+          force_unmount_sim_runtime_volumes() {
+            for v in /Library/Developer/CoreSimulator/Volumes/* \
+                     /Library/Developer/CoreSimulator/Cryptex/Images/bundle/SimRuntimeBundle-* \
+                     /Library/Developer/CoreSimulator/Images/mnt/*; do
+              [ -e "$v" ] || continue
+              sudo diskutil unmount force "$v" 2>/dev/null || sudo umount -f "$v" 2>/dev/null || true
+            done
+          }
           echo "Restarting CoreSimulatorService before retry to clear the wedged daemon..."
           sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
           sleep 5
+          force_unmount_sim_runtime_volumes
           sudo xcrun simctl runtime delete all
           # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
           for i in $(seq 1 60); do
@@ -212,6 +230,21 @@ steps:
             fi
             echo "    still $C simulators left..."
           done
+          # If images are STILL present the delete hung on a stuck mount (images wedged in
+          # "(Deleting)"). Force-unmount again out-of-band and issue one more delete so the
+          # re-download starts from a clean slate instead of colliding with a "Deleting" image.
+          if [[ "$C" != "0" ]]; then
+            echo "Runtime delete did not drain ($C left) — force-unmounting stuck volumes and retrying delete..."
+            force_unmount_sim_runtime_volumes
+            sudo xcrun simctl runtime delete all 2>/dev/null || true
+            for i in $(seq 1 30); do
+              sleep 1
+              C=$(xcrun simctl runtime list -j | jq '. | length')
+              if [[ $C == 0 ]]; then
+                break
+              fi
+            done
+          fi
           echo "Re-trying simulator runtime installation..."
           sudo xcodebuild $DOWNLOAD_ARGS
 
@@ -241,6 +274,7 @@ steps:
               echo "Restarting CoreSimulatorService and re-downloading runtimes once more..."
               sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
               sleep 5
+              force_unmount_sim_runtime_volumes
               sudo xcrun simctl runtime delete all
               for i in $(seq 1 60); do
                 sleep 1
@@ -249,6 +283,11 @@ steps:
                   break
                 fi
               done
+              if [[ "$C" != "0" ]]; then
+                force_unmount_sim_runtime_volumes
+                sudo xcrun simctl runtime delete all 2>/dev/null || true
+                sleep 3
+              fi
               sudo xcodebuild $DOWNLOAD_ARGS
             else
               echo "##vso[task.logissue type=warning]Simulator runtimes still not create-usable after restart+re-download; iOS sim boot may fail and self-degrade to INCONCLUSIVE."
@@ -260,11 +299,20 @@ steps:
         echo "Verifying simulator runtimes..."
         xcrun simctl runtime list
         RUNTIME_COUNT=$(xcrun simctl runtime list -j | jq '. | length')
+        # Count only create-usable ("Ready") images. Images stuck in "(Deleting)" (or any
+        # non-"Ready" state) are NOT usable — `simctl create` fails "Invalid runtime" on them —
+        # so they must not be reported as a successful install. They previously inflated the
+        # count to a false "Found N simulator runtime(s)", masking a wedged agent whose iOS sim
+        # boot then silently degraded the maui-copilot gate to INCONCLUSIVE (PR #35706 14697148).
+        READY_COUNT=$(xcrun simctl runtime list -j | jq '[.[] | select(.state=="Ready")] | length' 2>/dev/null || echo 0)
         if [[ "$RUNTIME_COUNT" == "0" ]]; then
           echo "##vso[task.logissue type=error]No simulator runtimes installed after download attempt"
           exit 1
         fi
-        echo "Found $RUNTIME_COUNT simulator runtime(s)"
+        if [[ "$READY_COUNT" == "0" ]]; then
+          echo "##vso[task.logissue type=warning]$RUNTIME_COUNT simulator runtime image(s) present but 0 are 'Ready'/create-usable (likely stuck in '(Deleting)') — CoreSimulatorService is wedged on this AGENT. iOS sim boot will self-degrade to INCONCLUSIVE; this is agent infrastructure, not a PR problem."
+        fi
+        echo "Found $RUNTIME_COUNT simulator runtime(s) ($READY_COUNT Ready/create-usable)"
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
