@@ -129,8 +129,3 @@ Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnActionSheetRequeste
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnAlertRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.AlertArguments! arguments) -> void
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPageBusy(Microsoft.Maui.Controls.Page! sender, bool enabled) -> void
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPromptRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
-Microsoft.Maui.Controls.Platform.IGesturePlatformManager
-Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory
-Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory.CreateGesturePlatformManager(Microsoft.Maui.IViewHandler! handler) -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!
-Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider
-Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider.CreateGesturePlatformManager() -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!

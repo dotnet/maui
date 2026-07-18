@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Platform
 	/// <see cref="IGesturePlatformManager"/> used for a handler connection. Register a custom
 	/// implementation to override gesture handling behavior application-wide.
 	/// </summary>
-	public interface IGesturePlatformManagerFactory
+	internal interface IGesturePlatformManagerFactory
 	{
 		/// <summary>
 		/// Creates a new gesture platform manager for the supplied handler connection.
