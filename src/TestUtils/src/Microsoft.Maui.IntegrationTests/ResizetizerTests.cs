@@ -138,6 +138,24 @@ public class ResizetizerTests : BaseBuildTest
 		var processedImages = File.ReadAllLines(outputsFile);
 		Assert.Equal(2, processedImages.Length);
 		Assert.All(processedImages, path => Assert.True(File.Exists(path), $"Processed image does not exist: {path}"));
+
+		// Regression: on an incremental rebuild the up-to-date fallback must restore
+		// _ResizetizerCollectedImages / MauiProcessedImage from the persisted outputs list,
+		// not from a wildcard over the intermediate folder.  Without the fix the wildcard
+		// would pick up the custom-backend.items file written by VerifyCustomBackendImages
+		// in the first build and surface it as a processed image on the second build.
+		var stampFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.stamp");
+		Assert.True(File.Exists(stampFile), $"Stamp file was not created: {stampFile}");
+		// Make the stamp appear stale so ResizetizeImages re-runs, but keep image files
+		// unchanged so the Resizetizer task returns empty CopiedResources (up-to-date path).
+		File.SetLastWriteTime(stampFile, DateTime.UtcNow.AddMinutes(-10));
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Custom backend project failed on incremental rebuild. Check test output for errors.");
+
+		var processedImagesIncremental = File.ReadAllLines(outputsFile);
+		Assert.Equal(2, processedImagesIncremental.Length);
+		Assert.DoesNotContain(processedImagesIncremental, path => path.EndsWith(".items", StringComparison.OrdinalIgnoreCase));
 	}
 
 	[Fact]
@@ -236,5 +254,66 @@ public class ResizetizerTests : BaseBuildTest
 			"Custom backend font output list was not created; referenced fonts were not collected.");
 		Assert.True(File.Exists(Path.Combine(intermediateDir, "late-import.assets")),
 			"Custom backend asset output list was not created; referenced assets were not collected.");
+	}
+
+	[Fact]
+	public void CustomBackendEarlyOptInCollectsReferencedAssets()
+	{
+		SetTestIdentifier("custom-backend-early-optin");
+		var projectDir = TestDirectory;
+
+		// A referenced library provides MauiAsset items.  The items are surfaced to the app
+		// project only when ResizetizeCollectItems runs before ProcessMauiAssets.  For early
+		// opt-in backends (ResizetizerPlatformType set at evaluation time) the execution-time
+		// _PrepareExternalMauiAssets fallback is skipped because _ResizetizerIsCompatibleApp
+		// is already True; instead ProcessMauiAssetsDependsOnTargets must include
+		// ResizetizeCollectItems so that ProcessMauiAssets picks up the referenced items.
+		var libDir = Path.Combine(projectDir, "ResLib");
+		Directory.CreateDirectory(libDir);
+		File.WriteAllText(Path.Combine(libDir, "lib_asset.txt"), "asset-contents");
+		File.WriteAllText(Path.Combine(libDir, "ResLib.csproj"),
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <MauiAsset Include="lib_asset.txt" LogicalName="lib_asset.txt" />
+			  </ItemGroup>
+			</Project>
+			""");
+
+		// Early opt-in: ResizetizerPlatformType is set directly in the project body so
+		// _ResizetizerIsCompatibleApp becomes True at evaluation time.
+		var projectFile = Path.Combine(projectDir, "CustomBackend.csproj");
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			    <EnableDefaultItems>false</EnableDefaultItems>
+			    <ResizetizerPlatformType>custom-backend</ResizetizerPlatformType>
+			    <ResizetizerAfterAssetProcessingTargets>VerifyCustomBackendAssets</ResizetizerAfterAssetProcessingTargets>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <ProjectReference Include="ResLib\ResLib.csproj" />
+			  </ItemGroup>
+			  <Target Name="VerifyCustomBackendAssets">
+			    <Error Condition="'@(MauiProcessedAsset)' == ''" Text="Early-opt-in backends must receive processed assets collected from project references." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)early-optin.assets" Lines="@(MauiProcessedAsset)" Overwrite="true" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendResources" DependsOnTargets="ProcessMauiAssets" />
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Early opt-in custom backend project failed to collect referenced assets. Check test output for errors.");
+
+		var assetsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "resizetizer", "r", "early-optin.assets");
+		Assert.True(File.Exists(assetsFile), $"Early opt-in asset output list was not created: {assetsFile}");
+		var processedAssets = File.ReadAllLines(assetsFile);
+		Assert.NotEmpty(processedAssets);
 	}
 }

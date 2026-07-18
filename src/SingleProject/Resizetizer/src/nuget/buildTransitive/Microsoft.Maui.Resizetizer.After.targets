@@ -127,6 +127,14 @@
             ProcessMauiSplashScreens;
             _ReadResizetizeImagesOutputs;
         </ResizetizeDependsOnTargets>
+        <!-- Ensures project-reference MauiAsset items are collected before ProcessMauiAssets
+             for backends that opt in at evaluation time (ResizetizerPlatformType set in props
+             or the project body). The execution-time _PrepareExternalMauiAssets fallback only
+             handles the late-import case where _ResizetizerIsCompatibleApp was not yet True. -->
+        <ProcessMauiAssetsDependsOnTargets>
+            $(ProcessMauiAssetsDependsOnTargets);
+            ResizetizeCollectItems;
+        </ProcessMauiAssetsDependsOnTargets>
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);
             ResizetizeCollectItems;
@@ -387,7 +395,8 @@
         Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''" />
 
     <Target Name="ProcessMauiAssets"
-        Condition="'$(EnableMauiAssetProcessing)' == 'true'">
+        Condition="'$(EnableMauiAssetProcessing)' == 'true'"
+        DependsOnTargets="$(ProcessMauiAssetsDependsOnTargets)">
         <ItemGroup>
             <!--
                 The GetMauiAssetPath task uses the Link metadata or the ItemSpec, so make
@@ -686,12 +695,15 @@
         </ResizetizeImages>
 
         <ItemGroup>
-            <!-- Get Images that were generated -->
-            <!-- Either from the task, or if the task was skipped (up to date), use the wildcard lookup -->
+            <!-- Fresh build: use the task output directly -->
             <_ResizetizerCollectedImages Condition="'@(_CopiedResources->Count())' != '0'" Include="@(_CopiedResources)" />
+            <!-- Up-to-date path: restore from the persisted output list so that non-image artifacts
+                 written into the intermediate folder by external backends (e.g. *.items files) are
+                 never surfaced through MauiProcessedImage / _ResizetizerCollectedImages. -->
+            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == ''" Include="@(_ResizetizerOutputs)" />
+            <!-- Wildcard is kept solely for stale-file detection and cleanup. -->
             <_ResizetizerExistingImages Include="$(_MauiIntermediateImages)\**\*" />
             <_ResizetizerImagesToDelete Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
-            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == ''" Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
             <_ResizetizerImagesToDelete Remove="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
