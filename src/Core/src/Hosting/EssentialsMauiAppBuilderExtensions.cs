@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Hosting
 
 				BridgeEssentialsFromDI(services);
 
-#if WINDOWS
+#if WINDOWS || TIZEN
 				// Only forward MapServiceToken when ConfigureEssentials(e => e.UseMapServiceToken(...))
 				// supplied a value. Without this null guard, EssentialsInitializer (now registered
 				// unconditionally) would overwrite any token a caller had set directly via
@@ -275,6 +275,8 @@ namespace Microsoft.Maui.Hosting
 #if ANDROID || __IOS__ || __MACCATALYST__
 					if (webAuthenticator is IPlatformWebAuthenticatorCallback)
 						WebAuthenticator.SetDefault(webAuthenticator);
+					else
+						LogMissingNativeLifecycleInterface<IWebAuthenticator>(services, nameof(IPlatformWebAuthenticatorCallback));
 #else
 					WebAuthenticator.SetDefault(webAuthenticator);
 #endif
@@ -294,6 +296,8 @@ namespace Microsoft.Maui.Hosting
 #if WINDOWS || __IOS__ || __MACCATALYST__ || ANDROID
 					if (appActions is IPlatformAppActions)
 						AppActions.SetCurrent(appActions);
+					else
+						LogMissingNativeLifecycleInterface<IAppActions>(services, nameof(IPlatformAppActions));
 #else
 					AppActions.SetCurrent(appActions);
 #endif
@@ -304,13 +308,16 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<IDeviceInfo>(services, DeviceInfo.SetCurrent);
 				BridgeIfRegistered<IFileSystem>(services, FileSystem.SetCurrent);
 				BridgeIfRegistered<IGeocoding>(services, Geocoding.SetCurrent);
+				BridgeIfRegistered<IPermissions>(services, Permissions.SetCurrent);
 			}
 
 			/// <summary>
 			/// Resolves a DI-registered implementation and assigns it to the corresponding static facade.
-			/// Note: The resolved instance is stored in a static field for the app lifetime, effectively
-			/// promoting it to singleton scope regardless of its DI registration lifetime. Services bridged
-			/// here should be registered as Singleton for correct behavior.
+			/// Note: The resolved instance is stored in a process-wide static field until it is replaced
+			/// by a later bridge operation. This intentionally follows existing static facade semantics
+			/// and effectively promotes the service to singleton scope regardless of its DI registration
+			/// lifetime. It is not cleared when an individual MauiApp is disposed because multiple apps
+			/// can coexist in a process. Services bridged here should be registered as Singleton.
 			/// </summary>
 			static void BridgeIfRegistered<T>(IServiceProvider services, Action<T?> setter) where T : class
 			{
@@ -318,6 +325,15 @@ namespace Microsoft.Maui.Hosting
 				if (impl is not null)
 					setter(impl);
 			}
+
+			static void LogMissingNativeLifecycleInterface<T>(IServiceProvider services, string requiredInterface)
+				where T : class =>
+				services.GetService<ILoggerFactory>()?
+					.CreateLogger<EssentialsInitializer>()
+					.LogWarning(
+						"DI-registered {ServiceType} was not bridged to its static facade because native lifecycle callbacks require {RequiredInterface}.",
+						typeof(T).Name,
+						requiredInterface);
 
 			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)
 			{

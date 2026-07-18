@@ -63,8 +63,12 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			ResetStaticField(typeof(DeviceDisplay), "currentImplementation");
 			ResetStaticField(typeof(DeviceInfo), "currentImplementation");
 			ResetStaticField(typeof(FileSystem), "currentImplementation");
+			ResetStaticField(typeof(Permissions), "currentImplementation");
 			ResetStaticField("Microsoft.Maui.ApplicationModel.ActivityStateManager", "defaultImplementation");
 			ResetStaticField("Microsoft.Maui.ApplicationModel.WindowStateManager", "defaultImplementation");
+#if WINDOWS || TIZEN
+			ApplicationModel.Platform.MapServiceToken = null;
+#endif
 			// Geocoding is a special case: uses SetCurrent but the backing field is defaultImplementation
 			ResetStaticField(typeof(Geocoding), "defaultImplementation");
 		}
@@ -133,6 +137,18 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			using var app = builder.Build();
 
 			Assert.Same(mock, Connectivity.Current);
+		}
+
+		[Fact]
+		public void DIRegisteredPermissions_BridgedToStaticFacade()
+		{
+			var mock = new StubPermissions();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPermissions>(mock);
+
+			using var app = builder.Build();
+
+			Assert.Same(mock, Permissions.Current);
 		}
 
 		[Fact]
@@ -239,6 +255,78 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Same(mock, Contacts.Default);
 		}
 
+		[Fact]
+		public void DIRegisteredWebAuthenticator_BridgedOnlyWhenNativeLifecycleContractIsSupported()
+		{
+			var mock = new StubWebAuthenticator();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IWebAuthenticator>(mock);
+
+			using var app = builder.Build();
+
+#if ANDROID || __IOS__ || __MACCATALYST__
+			Assert.Null(GetStaticField(typeof(WebAuthenticator), "defaultImplementation"));
+#else
+			Assert.Same(mock, WebAuthenticator.Default);
+#endif
+		}
+
+		[Fact]
+		public void DIRegisteredAppActions_BridgedOnlyWhenNativeLifecycleContractIsSupported()
+		{
+			var mock = new StubAppActions();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions>(mock);
+
+			using var app = builder.Build();
+
+#if WINDOWS || __IOS__ || __MACCATALYST__ || ANDROID
+			Assert.Null(GetStaticField(typeof(AppActions), "currentImplementation"));
+#else
+			Assert.Same(mock, AppActions.Current);
+#endif
+		}
+
+		[Fact]
+		public void StaticFacadeIsNotClearedWhenOwningMauiAppIsDisposed()
+		{
+			var mock = new StubPreferences();
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IPreferences>(mock);
+
+			using (var firstApp = firstBuilder.Build())
+			{
+				Assert.Same(mock, Preferences.Default);
+			}
+
+			var secondBuilder = MauiApp.CreateBuilder();
+			using var secondApp = secondBuilder.Build();
+
+			Assert.Same(mock, Preferences.Default);
+		}
+
+#if WINDOWS || TIZEN
+		[Fact]
+		public void ConfiguredMapServiceToken_IsForwardedToPlatform()
+		{
+			const string token = "test-token";
+			var builder = MauiApp.CreateBuilder();
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(token));
+
+			using var app = builder.Build();
+
+			Assert.Equal(token, ApplicationModel.Platform.MapServiceToken);
+		}
+#endif
+
+		static object? GetStaticField(Type type, string fieldName)
+		{
+			var field = type.GetField(fieldName,
+				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+			Assert.NotNull(field);
+			return field!.GetValue(null);
+		}
+
 		// Stub implementations for testing
 		class StubPreferences : IPreferences
 		{
@@ -293,6 +381,45 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				Task.FromResult<Contact?>(null);
 			public Task<IEnumerable<Contact>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default) =>
 				Task.FromResult<IEnumerable<Contact>>(Array.Empty<Contact>());
+		}
+
+		class StubPermissions : IPermissions
+		{
+			public Task<PermissionStatus> CheckStatusAsync<TPermission>()
+				where TPermission : Permissions.BasePermission, new() =>
+				Task.FromResult(PermissionStatus.Granted);
+
+			public Task<PermissionStatus> RequestAsync<TPermission>()
+				where TPermission : Permissions.BasePermission, new() =>
+				Task.FromResult(PermissionStatus.Granted);
+
+			public bool ShouldShowRationale<TPermission>()
+				where TPermission : Permissions.BasePermission, new() => false;
+		}
+
+		class StubWebAuthenticator : IWebAuthenticator
+		{
+			public Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions) =>
+				Task.FromException<WebAuthenticatorResult>(new NotSupportedException());
+
+			public Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) =>
+				Task.FromException<WebAuthenticatorResult>(new NotSupportedException());
+		}
+
+		class StubAppActions : IAppActions
+		{
+			public bool IsSupported => true;
+
+			public event EventHandler<AppActionEventArgs>? AppActionActivated
+			{
+				add { }
+				remove { }
+			}
+
+			public Task<IEnumerable<AppAction>> GetAsync() =>
+				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
+
+			public Task SetAsync(IEnumerable<AppAction> actions) => Task.CompletedTask;
 		}
 	}
 }
