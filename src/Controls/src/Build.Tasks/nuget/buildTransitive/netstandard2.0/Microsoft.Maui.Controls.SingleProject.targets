@@ -65,7 +65,9 @@
           into _MauiResolvedActivationValueNormalized, default property
           MauiActiveBackend) matches the normalized ActivationValue. This is the path
           a backend like GTK takes on a plain net11.0 inner build where no
-          TargetPlatformIdentifier is recognized. The normalization target already
+          TargetPlatformIdentifier is recognized. The empty TargetPlatformIdentifier
+          guard prevents a neutral backend selector from adding its files to a
+          recognized Android/iOS/etc. inner build. The normalization target already
           stripped whitespace and lower-cased both sides, so this is a plain equality.
   -->
   <Target Name="_MauiCollectPlatformSpecificCompileItems"
@@ -75,7 +77,7 @@
     <ItemGroup>
       <_MauiPlatformSpecificCompileItems
           Include="$([MSBuild]::EnsureTrailingSlash('%(MauiPlatformSpecificFolder.Identity)'))**/*$(DefaultLanguageSourceExtension)"
-          Condition=" ('%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' and '%(MauiPlatformSpecificFolder.ActivationValue)' == '') or ('$(TargetPlatformIdentifier)' != '' and $([System.Text.RegularExpressions.Regex]::Replace(';%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers);', '\s+', '').ToLowerInvariant().Contains(';$(TargetPlatformIdentifier.ToLowerInvariant());'))) or ('%(MauiPlatformSpecificFolder.ActivationValue)' != '' and '%(MauiPlatformSpecificFolder._MauiResolvedActivationValueNormalized)' == '%(MauiPlatformSpecificFolder._MauiActivationValueNormalized)') " />
+          Condition=" ('%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' and '%(MauiPlatformSpecificFolder.ActivationValue)' == '') or ('$(TargetPlatformIdentifier)' != '' and $([System.Text.RegularExpressions.Regex]::Replace(';%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers);', '\s+', '').ToLowerInvariant().Contains(';$(TargetPlatformIdentifier.ToLowerInvariant());'))) or ('$(TargetPlatformIdentifier)' == '' and '%(MauiPlatformSpecificFolder.ActivationValue)' != '' and '%(MauiPlatformSpecificFolder._MauiResolvedActivationValueNormalized)' == '%(MauiPlatformSpecificFolder._MauiActivationValueNormalized)') " />
     </ItemGroup>
   </Target>
 

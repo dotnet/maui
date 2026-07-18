@@ -1098,6 +1098,64 @@ public static class IosMarker
 			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.IosMarker");
 		}
 
+		// The neutral backend selector must not add backend files to a recognized
+		// platform inner build. Android remains the only active platform here even
+		// when MauiActiveBackend names GTK.
+		[Fact]
+		public void SingleProject_RecognizedTfmIgnoresNeutralBackendSelector()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Gtk\\")
+				.WithAttribute("BackendIdentity", "gtk"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Android\\AndroidMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AndroidMarker
+{
+	public static string Value => ""Android"";
+}");
+
+			WriteFile("Platforms\\Gtk\\GtkMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class GtkMarker
+{
+	public static string Value => ""Gtk"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: "-p:_SingleProjectTestTargetPlatformIdentifier=android -p:MauiActiveBackend=gtk");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AndroidMarker");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.GtkMarker");
+		}
+
 		// A backend that is registered but not selected must be excluded: either
 		// MauiActiveBackend names a different backend, or it is unset entirely.
 		[Theory]
