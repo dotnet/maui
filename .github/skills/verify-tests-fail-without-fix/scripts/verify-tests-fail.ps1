@@ -2181,6 +2181,66 @@ Write-Log "BaseBranch: $BaseBranchName"
 Write-Log "MergeBase: $MergeBase"
 Write-Log ""
 
+# ─────────────────────────────────────────────────────────────────────────────
+# EXCLUDE CI-infrastructure fix files the gate cannot A/B-verify
+# ─────────────────────────────────────────────────────────────────────────────
+# For security the gate overlays TRUSTED (review-branch) copies of .github/scripts,
+# .github/skills and eng/scripts over the worktree (Review-PR.ps1 Restore-TrustedScripts),
+# so a PR that itself MODIFIES a file under those paths ALWAYS shows it as an uncommitted
+# worktree change (trusted content != the PR's committed content). The uncommitted-fix-files
+# guard below then aborted with a misleading "Uncommitted changes detected / run git add &&
+# commit" error that the caller treats as a missing-report infra failure and retries 3× before
+# a bare INCONCLUSIVE (build 14699515, #35156 catalyst: eng/scripts/{disable,enable}-notification-
+# center.sh). Worse, those files are force-restored to the SAME trusted version in BOTH the
+# without-fix and with-fix runs, so reverting them changes nothing — they are not A/B-testable.
+# The same holds for pipeline/workflow definitions (eng/pipelines, .github/workflows): the gate
+# runs on an already-checked-out pipeline, so editing those YAMLs in the worktree cannot alter
+# the gate's own execution. Drop all of these from the fix-file set. If real product/test fix
+# files remain, the A/B runs on those; if NONE remain the change is CI-infra-only and the gate
+# has no without-fix baseline it can build -> a deterministic, non-retried INCONCLUSIVE that
+# defers to the Deep UI Tests stage (which DOES exercise the pipeline/script change end-to-end).
+$infraFixPrefixes = @('.github/scripts/', '.github/skills/', 'eng/scripts/', 'eng/pipelines/', '.github/workflows/')
+$infraFixFiles = @()
+$productFixFiles = @()
+foreach ($f in $FixFiles) {
+    $norm = $f -replace '\\', '/'
+    $isInfra = $false
+    foreach ($p in $infraFixPrefixes) { if ($norm -like "$p*") { $isInfra = $true; break } }
+    if ($isInfra) { $infraFixFiles += $f } else { $productFixFiles += $f }
+}
+if ($infraFixFiles.Count -gt 0) {
+    Write-Log "Excluding $($infraFixFiles.Count) CI-infrastructure fix file(s) the gate force-restores or cannot toggle (not A/B-verifiable):"
+    foreach ($f in $infraFixFiles) { Write-Log "  (excluded) $f" }
+    $FixFiles = @($productFixFiles)
+    Write-Log "Remaining product/test fix file(s) after infra exclusion: $($FixFiles.Count)"
+}
+
+if ($infraFixFiles.Count -gt 0 -and $FixFiles.Count -eq 0) {
+    Write-Host ""
+    Write-Host "ℹ️  This PR only changes CI infrastructure (.github/scripts, .github/skills, eng/scripts, eng/pipelines, .github/workflows) that the gate force-restores to trusted versions or cannot toggle at run time. There is no without-fix baseline the gate can build for those paths (they are identical in both runs), so the change is not A/B-verifiable here — its impact is exercised by the Deep UI Tests stage. Reporting INCONCLUSIVE (deferred to Deep)." -ForegroundColor Yellow
+    # Write a minimal report WITHOUT the 'ENV ERROR' token so Review-PR.ps1's gate loop breaks
+    # immediately (no 3× retry) and classifies exit 3 as a clean, deterministic INCONCLUSIVE.
+    try {
+        if (-not (Test-Path $OutputPath)) { New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null }
+        $infraReport = @()
+        $infraReport += "## Gate: Test Verification"
+        $infraReport += ""
+        $infraReport += "**Result:** ⚠️ INCONCLUSIVE"
+        $infraReport += ""
+        $infraReport += "**Platform:** $($Platform.ToUpper())"
+        $infraReport += ""
+        $infraReport += "This PR only changes CI infrastructure the gate force-restores to trusted versions or cannot toggle at run time:"
+        $infraReport += ""
+        foreach ($f in $infraFixFiles) { $infraReport += "- ``$f``" }
+        $infraReport += ""
+        $infraReport += "These paths are identical (trusted) in both the without-fix and with-fix runs, so the gate cannot construct a without-fix baseline and the change is **not A/B-verifiable** here. Its behaviour is validated end-to-end by the **Deep UI Tests** stage."
+        Set-Content -Path (Join-Path $OutputPath "verification-report.md") -Value ($infraReport -join "`n") -Encoding UTF8
+    } catch {
+        Write-Host "  (could not write INCONCLUSIVE report: $_)" -ForegroundColor DarkGray
+    }
+    exit 3
+}
+
 # Verify each fix file is usable. A PR can MODIFY, ADD, or DELETE a fix file:
 #   - modified → exists on disk (HEAD) and at merge-base
 #   - added    → exists on disk (HEAD), not at merge-base  → NewFiles (not reverted)
