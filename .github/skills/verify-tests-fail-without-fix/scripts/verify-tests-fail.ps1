@@ -791,6 +791,19 @@ function Get-TestResultFromOutput {
 
     $content = Get-Content $LogFile -Raw
 
+    # Does this run contain a NATIVE shared-library load failure (e.g. libSkiaSharp /
+    # libHarfBuzzSharp DllNotFoundException) because the GATE AGENT lacks the native runtime?
+    # This is categorically environmental — a C# PR fix can neither add nor remove a native .so
+    # — so image/rasterization tests (Resizetizer/Graphics) fail identically with AND without
+    # the fix on a Linux (android) gate agent. Detected once here and used both by the dedicated
+    # env return below (no test counts case) and to ANNOTATE the trust-the-counts FAIL return, so
+    # the aggregation can exclude a test whose native-lib failure appears in BOTH states.
+    # (build 14699033, PR #36653: ResizetizeImagesTests DllNotFoundException 'libSkiaSharp' in
+    # both runs falsely counted as a with-fix failure → blocking FAILED, while the real repro
+    # DpiPathTests correctly went FAIL→PASS.)
+    $hasNativeLibLoadFailure = ($content -match '(?i)Unable to load (?:shared library|DLL)' -or
+                                $content -match '(?is)DllNotFoundException.{0,120}Unable to load')
+
     # ── First, check if tests actually ran and produced results ──
     # This must come BEFORE env error checks because xharness can report
     # exit code 83 (APP_LAUNCH_FAILURE) even when tests ran successfully
@@ -849,6 +862,7 @@ function Get-TestResultFromOutput {
                 return @{
                     Passed = $false; FailCount = $deviceFailCount; Failed = $deviceFailCount
                     PassCount = $devicePassCount; Total = $deviceTotal; Skipped = 0
+                    NativeLibLoadFailure = $hasNativeLibLoadFailure
                     FailureReason = "Device tests: $deviceFailCount of $deviceTotal failed"
                 }
             }
@@ -891,21 +905,18 @@ function Get-TestResultFromOutput {
         }
     }
 
-    # ── Native shared-library load failure (gate agent is missing a native dependency) ──
-    # A test process that throws DllNotFoundException / "Unable to load shared library" could
-    # not load a required NATIVE library (e.g. libSkiaSharp, libHarfBuzzSharp) because the GATE
-    # AGENT lacks it — NOT because the fix is wrong. This is common for Resizetizer/Graphics
-    # image-rasterization unit tests when the gate detects the test at CLASS level and runs the
-    # whole class on a Linux (android) gate agent that has no SkiaSharp native runtime: EVERY
-    # image test then fails with the SAME load error in BOTH the without-fix AND with-fix runs,
-    # so the gate would misreport a false FAILED even though the PR's own logic tests pass and
-    # real maui-pr CI (Windows Helix Unit Tests) passes these tests. A native-load failure means
-    # the test COULD NOT RUN, so nothing about the fix was verified → INCONCLUSIVE (env-class,
-    # non-blocking). SAFE: a genuine "fix does not work" surfaces as an assertion diff, never as
-    # a missing native library, so this can never mask a real regression (build 14699033,
-    # PR #36653 [Build] Resizetizer external backend: libSkiaSharp DllNotFoundException).
-    if ($content -match '(?i)Unable to load (?:shared library|DLL)' -or
-        $content -match '(?is)DllNotFoundException.{0,120}Unable to load') {
+    # ── Native shared-library load failure with NO parsed test counts (total load crash) ──
+    # Reaches here only when the run produced no "Passed:/Failed:" block at all — i.e. the test
+    # host crashed on native-lib load before any test ran. (The MIXED case — some tests pass and
+    # some fail on the missing lib — is handled by the trust-the-counts FAIL return above, which
+    # annotates NativeLibLoadFailure so the aggregation can exclude it when the failure appears in
+    # BOTH the without-fix and with-fix runs.) A missing NATIVE library (libSkiaSharp,
+    # libHarfBuzzSharp) is the GATE AGENT's problem, NOT the fix's: common for Resizetizer/Graphics
+    # image tests on a Linux (android) gate agent with no SkiaSharp native runtime. The test COULD
+    # NOT RUN, so nothing about the fix was verified → INCONCLUSIVE (env-class, non-blocking). SAFE:
+    # a genuine "fix does not work" surfaces as an assertion diff, never as a missing native library
+    # (build 14699033, PR #36653: libSkiaSharp DllNotFoundException).
+    if ($hasNativeLibLoadFailure) {
         $nativeLib = $null
         $libMatch = [regex]::Match($content, "(?i)Unable to load (?:shared library|DLL) '([^']+)'")
         if ($libMatch.Success) { $nativeLib = $libMatch.Groups[1].Value }
@@ -2895,12 +2906,22 @@ if ($leakFlakyCandidates.Count -gt 0 -and -not $nonLeakGenuineFail) {
 
 $reproducingCount = 0
 $withFixGenuineFailCount = 0
+$bothNativeLibCount = 0
 foreach ($t in $AllDetectedTests) {
     $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
     $w  = $withFixResults    | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
     if (-not $wo -or -not $w) { continue }
-    $woInconclusive = $wo.EnvError -or $wo.BuildError -or $wo.FilterMismatch
-    $wInconclusive  = $w.EnvError  -or $w.BuildError  -or $w.FilterMismatch
+    # A NATIVE shared-library load failure (libSkiaSharp etc.) that appears in BOTH the without-fix
+    # AND with-fix runs is definitively environmental — the gate agent lacks the native runtime and
+    # a C# fix can neither add nor remove a .so — so the test could not exercise the fixed code path
+    # in either state. Exclude it from BOTH the repro count and the with-fix genuine-failure count so
+    # it neither proves nor blocks the fix. Requiring the signature in BOTH states (not just one) is
+    # the safe guard: a genuine assertion regression would differ between the runs, never present as
+    # the identical missing-lib error in both. (build 14699033, PR #36653.)
+    $bothNativeLib = [bool]$wo.NativeLibLoadFailure -and [bool]$w.NativeLibLoadFailure
+    if ($bothNativeLib) { $bothNativeLibCount++ }
+    $woInconclusive = $wo.EnvError -or $wo.BuildError -or $wo.FilterMismatch -or $bothNativeLib
+    $wInconclusive  = $w.EnvError  -or $w.BuildError  -or $w.FilterMismatch  -or $bothNativeLib
     # FAIL → PASS: reproduces the bug and the fix resolves it.
     if ((-not $woInconclusive) -and (-not $wInconclusive) -and (-not $wo.Passed) -and $w.Passed) {
         $reproducingCount++
@@ -2948,7 +2969,11 @@ $prTestBuildError   = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest 
 # the repro test necessarily passes without it. Treat as INCONCLUSIVE (exit 3), like a filter
 # mismatch — guarded by $withFixGenuineFailCount -eq 0 so a real FAIL->FAIL is never masked.
 $fixPlatformMismatch = ($withFixGenuineFailCount -eq 0) -and (Test-FixIrrelevantToPlatform -FixFiles $FixFiles -Platform $Platform)
-$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError -and $withFixGenuineFailCount -eq 0) -or $fixPlatformMismatch
+# A native shared-library load failure present in BOTH states (see loop above) is env-class: when
+# it is the ONLY thing preventing a clean PASS (no genuine with-fix failure remains), the gate
+# verified nothing → INCONCLUSIVE (exit 3), never a false FAILED. (PR #36653: a PR whose only
+# detected test is an image/rasterization class that can't load libSkiaSharp on the gate agent.)
+$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError -and $withFixGenuineFailCount -eq 0) -or ($bothNativeLibCount -gt 0 -and $withFixGenuineFailCount -eq 0) -or $fixPlatformMismatch
 
 Write-Log ""
 Write-Log "Summary:"

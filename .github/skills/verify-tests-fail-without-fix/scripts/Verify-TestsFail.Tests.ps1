@@ -192,6 +192,58 @@ Test Run Failed.
         Remove-Item -LiteralPath $log -Force
     }
 
+    # The MIXED pass+fail case the FIRST native-lib fix MISSED: when SOME tests pass and SOME
+    # fail on the missing native lib, the "trust the counts" path returns a plain FAIL BEFORE the
+    # dedicated env block ever runs — so that path must ANNOTATE NativeLibLoadFailure. The
+    # aggregation then excludes the test only when the SAME load failure is present in BOTH the
+    # without-fix and with-fix runs. Real build 14699033 (#36653) ResizetizeImagesTests reported
+    # Passed:9 Failed:12 (every failure libSkiaSharp — some direct DllNotFoundException, one a
+    # downstream "File did not exist" because the image was never generated) and was counted as a
+    # genuine with-fix failure -> blocking FAILED, while the real repro DpiPathTests went FAIL->PASS.
+    It 'annotates NativeLibLoadFailure on a MIXED pass+fail run of libSkiaSharp failures (real #36653 ResizetizeImagesTests)' {
+        $log = New-LogFile @'
+[xUnit.net 00:00:01.43]     ResizetizeImagesTests+ExecuteForAndroid.SingleRasterAppIcon [FAIL]
+      There was an exception processing the image ''. System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+      /home/vsts/work/1/s/artifacts/bin/Resizetizer.UnitTests/Debug/net11.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+    ResizetizeImagesTests+ExecuteForCustomPlatform.UsesGenericDesktopFallback [FAIL]
+      File did not exist: /tmp/.../camera.png
+  Failed!  - Failed:    12, Passed:     9, Skipped:     0, Total:    21
+  Test Run Failed.
+  Total tests: 21
+       Passed: 9
+       Failed: 12
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'ResizetizeImagesTests'
+        $r.Passed               | Should -BeFalse
+        $r.NativeLibLoadFailure | Should -BeTrue
+        $r.FailCount            | Should -Be 12
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    # SAFETY counterpart: a MIXED pass+fail run whose failures are GENUINE managed assertions
+    # (no native lib in the log) must NOT be annotated, so a real regression is never masked by
+    # the both-states native-lib exclusion. (#36653 DpiPathTests: NullReference/ArgumentNull —
+    # the actual bug the fix resolves; it must still drive the FAIL->PASS repro count.)
+    It 'does NOT annotate NativeLibLoadFailure on a mixed run of genuine NRE/assert failures (real #36653 DpiPathTests)' {
+        $log = New-LogFile @'
+  Failed DpiPathTests+GetAppIconDpis.ReturnsGenericDesktopFallback(platform: "gtk") [< 1 ms]
+  Error Message:
+   System.NullReferenceException : Object reference not set to an instance of an object.
+  Failed DpiPathTests+GetDpis.ReturnsGenericDesktopFallback(platform: "gtk") [14 ms]
+  Error Message:
+   System.ArgumentNullException : Value cannot be null. (Parameter 'collection')
+  Test Run Failed.
+  Total tests: 22
+       Passed: 13
+       Failed: 9
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'DpiPathTests'
+        $r.Passed               | Should -BeFalse
+        $r.NativeLibLoadFailure | Should -Not -BeTrue
+        $r.FailCount            | Should -Be 9
+        Remove-Item -LiteralPath $log -Force
+    }
+
     It 'does NOT flag a genuine ran-and-failed assertion as a native-lib env error' {
         $log = New-LogFile "Build succeeded.`n    0 Error(s)`n  Failed:  2`n  Passed:  3`nAssert.Equal() Failure: Expected 5 but got 4"
         $r = Get-TestResultFromOutput -LogFile $log
