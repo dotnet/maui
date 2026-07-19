@@ -3322,8 +3322,12 @@ stages:
                       $b64 = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($f.FullName))
                       $blobFile = Join-Path $stageDir '_blob.json'
                       @{ content = $b64; encoding = 'base64' } | ConvertTo-Json | Set-Content $blobFile -Encoding UTF8
-                      $blob = (gh api -X POST "repos/$assetRepo/git/blobs" --input $blobFile | ConvertFrom-Json)
-                      if (-not $blob.sha) { throw "blob upload failed for $($f.Name)" }
+                      $blobOut = gh api -X POST "repos/$assetRepo/git/blobs" --input $blobFile 2>&1
+                      $blob = $null; try { $blob = ($blobOut | ConvertFrom-Json) } catch { }
+                      if (-not $blob -or -not $blob.sha) {
+                        $hint = if ("$blobOut" -match '404|403|Not Found|Resource not accessible') { " — the review token (GH_COMMENT_TOKEN) lacks Contents:write on $assetRepo; grant it or supply a write-capable token" } else { '' }
+                        throw "blob upload failed for $($f.Name): $blobOut$hint"
+                      }
                       $treeEntries.Add([ordered]@{ path = "$assetPrefix/$($f.Name)"; mode = '100644'; type = 'blob'; sha = [string]$blob.sha })
                     }
                     if ($treeEntries.Count -eq 0) { throw "no blobs uploaded" }
