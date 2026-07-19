@@ -350,6 +350,21 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void ExistingMapServiceToken_IsForwardedToDIPlatformGeocoding()
+		{
+			const string token = "existing-token";
+			ApplicationModel.Platform.MapServiceToken = token;
+			var mock = new StubPlatformGeocoding();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(mock);
+
+			using var app = builder.Build();
+
+			Assert.Same(mock, Geocoding.Default);
+			Assert.Equal(token, mock.MapServiceToken);
+		}
+
+		[Fact]
 		public void ConfiguredMapServiceToken_SkipsDIImplementationWithoutPlatformContract()
 		{
 			var mock = new StubGeocoding();

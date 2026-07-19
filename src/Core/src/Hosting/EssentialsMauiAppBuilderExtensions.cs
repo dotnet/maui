@@ -189,19 +189,23 @@ namespace Microsoft.Maui.Hosting
 					}
 				}
 
+#if WINDOWS || TIZEN
+				var mapServiceToken = _essentialsBuilder.MapServiceToken;
+				if (mapServiceToken is null && Geocoding.Default is IPlatformGeocoding existingPlatformGeocoding)
+					mapServiceToken = existingPlatformGeocoding.MapServiceToken;
+#endif
+
 				BridgeEssentialsFromDI(services);
 
 #if WINDOWS || TIZEN
-				// Only forward MapServiceToken when ConfigureEssentials(e => e.UseMapServiceToken(...))
-				// supplied a value. Without this null guard, EssentialsInitializer (now registered
-				// unconditionally) would overwrite any token a caller had set directly via
-				// ApplicationModel.Platform.MapServiceToken before MauiApp.Build().
-				if (_essentialsBuilder.MapServiceToken is not null)
+				// A ConfigureEssentials token takes precedence; otherwise preserve a token set
+				// directly through ApplicationModel.Platform.MapServiceToken before MauiApp.Build().
+				if (mapServiceToken is not null)
 				{
 					var geocoding = Geocoding.Default;
 					if (geocoding is IPlatformGeocoding platformGeocoding)
 					{
-						platformGeocoding.MapServiceToken = _essentialsBuilder.MapServiceToken;
+						platformGeocoding.MapServiceToken = mapServiceToken;
 					}
 					else
 					{
