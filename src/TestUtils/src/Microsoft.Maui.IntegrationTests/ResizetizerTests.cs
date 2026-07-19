@@ -144,16 +144,35 @@ public class ResizetizerTests : BaseBuildTest
 
 		// A genuine no-op rebuild must skip ResizetizeImages and restore only the
 		// persisted Resizetizer output list, not backend-written files from the folder.
-		const string incrementalBinlog = "custom-backend-incremental.binlog";
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, binlogPath: incrementalBinlog, output: _output),
+		var resizetizerStampFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.stamp");
+		Assert.True(File.Exists(resizetizerStampFile), $"Resizetizer stamp does not exist: {resizetizerStampFile}");
+		var incrementalStampWriteTime = File.GetLastWriteTimeUtc(resizetizerStampFile);
+		File.Delete(outputsFile);
+		System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
 			"Custom backend project failed on incremental rebuild. Check test output for errors.");
-		Assert.True(
-			WasTargetSkippedAsUpToDate(Path.Combine(projectDir, incrementalBinlog), "ResizetizeImages"),
-			"ResizetizeImages should be skipped as up-to-date on the no-op rebuild.");
+		Assert.Equal(incrementalStampWriteTime, File.GetLastWriteTimeUtc(resizetizerStampFile));
 
 		var processedImagesIncremental = File.ReadAllLines(outputsFile);
 		Assert.Equal(2, processedImagesIncremental.Length);
 		Assert.DoesNotContain(processedImagesIncremental, path => path.EndsWith(".items", StringComparison.OrdinalIgnoreCase));
+
+		// A partial cache restore can lose only the persisted output list while leaving
+		// the stamp and generated images. The missing list must invalidate the target,
+		// rerun image processing, and restore the processed-image contract.
+		var resizetizerOutputsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.outputs");
+		Assert.True(File.Exists(resizetizerOutputsFile), $"Resizetizer output list does not exist: {resizetizerOutputsFile}");
+		var stampWriteTime = File.GetLastWriteTimeUtc(resizetizerStampFile);
+		File.Delete(resizetizerOutputsFile);
+		File.Delete(outputsFile);
+		System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Custom backend project failed after deleting only the persisted image output list.");
+		Assert.True(File.GetLastWriteTimeUtc(resizetizerStampFile) > stampWriteTime,
+			"ResizetizeImages should rerun when the persisted output list is missing.");
+		Assert.True(File.Exists(resizetizerOutputsFile), "Resizetizer output list was not restored.");
+		Assert.Equal(2, File.ReadAllLines(outputsFile).Length);
 
 		// Removing the final image must not restore the previous output list. The old
 		// generated files are deleted and no processed images flow to the backend.
