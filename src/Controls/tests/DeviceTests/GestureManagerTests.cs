@@ -11,13 +11,12 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Gesture)]
 	public class GestureManagerTests : ControlsHandlerTestBase
 	{
+#if IOS || MACCATALYST || WINDOWS
 		// Regression coverage for https://github.com/dotnet/maui/issues/35044.
 		//
 		// This test intentionally lives in the device-test project (rather than Core.UnitTests)
-		// because the guard it exercises is compiled only under `#if PLATFORM`
-		// (GestureManager.CreateGesturePlatformManager). The netstandard-based Core.UnitTests
-		// never compiles that branch, so the platform behaviour can only be verified here where
-		// PLATFORM is defined for every target framework (android/ios/maccatalyst/windows).
+		// because the guard it exercises is compiled only for Apple and Windows, whose
+		// GesturePlatformManager implementations require IPlatformViewHandler.
 		//
 		// Scenario: a custom/third-party backend connects an IControlsView whose handler
 		// implements IViewHandler but NOT IPlatformViewHandler, and no
@@ -113,5 +112,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			public void DisconnectHandler() { }
 		}
+#endif
 	}
 }

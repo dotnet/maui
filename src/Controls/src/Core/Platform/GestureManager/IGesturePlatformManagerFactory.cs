@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <summary>
 		/// Creates a new <see cref="IGesturePlatformManager"/> for the supplied handler connection.
 		/// </summary>
-		/// <param name="handler">The handler whose platform view the gestures are attached to.</param>
+		/// <param name="handler">The handler connection for which the gesture manager is created.</param>
 		/// <returns>
 		/// A new <see cref="IGesturePlatformManager"/> instance. The framework owns and disposes this
 		/// instance. Return a new instance for each call because the manager is disposed and recreated

@@ -101,10 +101,10 @@ namespace Microsoft.Maui.Controls.Platform
 					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerProvider)}.{nameof(IGesturePlatformManagerProvider.CreateGesturePlatformManager)} cannot return null.");
 			}
 
-#if PLATFORM
-			// The built-in GesturePlatformManager requires an IPlatformViewHandler to access the
-			// platform view. Skip it for custom/third-party backends that don't implement
-			// IPlatformViewHandler — they provide their own gesture handling. (#35044)
+#if IOS || MACCATALYST || WINDOWS
+			// The Apple and Windows GesturePlatformManager implementations require an
+			// IPlatformViewHandler. Skip them for custom/third-party handlers that use
+			// a different platform-view contract and provide their own gesture handling. (#35044)
 			if (handler is not IPlatformViewHandler)
 				return null;
 #endif
