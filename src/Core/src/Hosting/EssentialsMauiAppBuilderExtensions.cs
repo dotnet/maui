@@ -248,13 +248,9 @@ namespace Microsoft.Maui.Hosting
 			{
 				// SetDefault pattern types
 				BridgeIfRegistered<IAccelerometer>(services, Accelerometer.SetDefault);
-				// IActivityStateManager is intentionally NOT bridged. It is Android-only, and its
-				// platform default is already initialized — with its ActivityLifecycleCallbacks
-				// registered — by ApplicationModel.Platform.Init() during UseEssentials(), before this
-				// bridge runs at MauiApp.Build() time. Replacing ActivityStateManager.Default after that
-				// point would leave the original lifecycle listener registered while the replacement
-				// missed the initial Init(Application) call. Custom (non-Android) backends never reach
-				// the Android-only code path, so bridging it here serves no purpose.
+#if ANDROID
+				BridgeIfRegistered<IActivityStateManager>(services, ActivityStateManager.SetDefault);
+#endif
 				BridgeIfRegistered<IBarometer>(services, Barometer.SetDefault);
 				BridgeIfRegistered<IBattery>(services, Battery.SetDefault);
 				BridgeIfRegistered<IBrowser>(services, Browser.SetDefault);
