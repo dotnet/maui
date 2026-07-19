@@ -302,6 +302,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Updated Test Title", label.Text);
 		}
 
+		// Regression test for https://github.com/dotnet/maui/issues/36562
+		// PR #35800 made ShellToolbar mirror the current page's title into Shell.Title (via
+		// SetValueFromRenderer) so TitleView bindings like {Binding Title, Source={x:Reference Shell}}
+		// resolve correctly. That mirrored value leaked into the native window title
+		// (ITitledElement.Title), which previously stayed empty in this scenario, breaking Shell UI
+		// tests around title/flyout layout on macOS/Windows.
+		[Fact]
+		public void WindowNativeTitleDoesNotLeakToolbarMirroredPageTitle()
+		{
+			var contentPage = new ContentPage() { Title = "Test Title" };
+			var titleView = new VerticalStackLayout();
+
+			TestShell testShell = new TestShell(contentPage);
+			var window = new Window()
+			{
+				Page = testShell
+			};
+
+			Shell.SetTitleView(contentPage, titleView);
+
+			// Shell.Title is mirrored from the page for TitleView binding purposes...
+			Assert.Equal("Test Title", testShell.Title);
+
+			// ...but that mirrored value must NOT leak into the native window title fallback.
+			Assert.Null(((ITitledElement)window).Title);
+
+			contentPage.Title = "Updated Test Title";
+			Assert.Equal("Updated Test Title", testShell.Title);
+			Assert.Null(((ITitledElement)window).Title);
+		}
+
 		[Fact]
 		public void ShellTitleBindingIsNotOverwrittenByCurrentPageTitle()
 		{
