@@ -6,7 +6,8 @@
 .DESCRIPTION
     Reads visual evidence gathered from public AzDO APIs, downloads only validated PNG
     attachments and the exact snapshot baseline from the tested merge commit, uploads
-    them to a dedicated GitHub branch, and writes deterministic collapsed comparison panels.
+    them to a dedicated GitHub branch, and records immutable URLs for deterministic
+    insertion into the single /review tests analysis comment.
 
     Visual publishing is supplementary evidence. Failures are recorded in context.json
     and never change the deterministic merge-readiness gate.
@@ -28,9 +29,6 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$AssetBranch = "review-tests-assets",
-
-    [Parameter(Mandatory = $false)]
-    [switch]$PostComment,
 
     [Parameter(Mandatory = $false)]
     [ValidateRange(1, 50)]
@@ -569,102 +567,6 @@ $descriptionLine
     return $builder.ToString()
 }
 
-function Get-ExistingVisualComments {
-    param(
-        [string]$Repository,
-        [int]$PrNumber
-    )
-
-    $comments = New-Object System.Collections.Generic.List[object]
-    for ($page = 1; $page -le 20; $page++) {
-        $pageComments = @(Invoke-GhApiJson `
-            -Method "GET" `
-            -Endpoint "repos/$Repository/issues/$PrNumber/comments?per_page=100&page=$page")
-        foreach ($comment in $pageComments) {
-            if ([string]$comment.body -and
-                [string]$comment.body -like '*<!-- Tests Failure Visuals -->*') {
-                $comments.Add($comment)
-            }
-        }
-        if ($pageComments.Count -lt 100) {
-            break
-        }
-    }
-    return $comments.ToArray()
-}
-
-function Publish-VisualComment {
-    param(
-        [string]$Repository,
-        [int]$PrNumber,
-        [string]$Body,
-        [switch]$UpdateOnly
-    )
-
-    $existing = @(Get-ExistingVisualComments -Repository $Repository -PrNumber $PrNumber | Sort-Object id -Descending)
-    foreach ($comment in $existing) {
-        try {
-            $result = Invoke-GhApiJson `
-                -Method "PATCH" `
-                -Endpoint "repos/$Repository/issues/comments/$($comment.id)" `
-                -Body @{ body = $Body }
-            return [string]$result.html_url
-        }
-        catch {
-            Write-Warning "Could not update visual comment $($comment.id); trying an older marker comment."
-        }
-    }
-
-    if ($UpdateOnly) {
-        if ($existing.Count -gt 0) {
-            throw "No existing visual marker comment was editable."
-        }
-        return $null
-    }
-
-    $result = Invoke-GhApiJson `
-        -Method "POST" `
-        -Endpoint "repos/$Repository/issues/$PrNumber/comments" `
-        -Body @{ body = $Body }
-    return [string]$result.html_url
-}
-
-function New-VisualCommentBody {
-    param(
-        [object]$Context,
-        [string]$Markdown
-    )
-
-    $author = [string]$Context.pr.author
-    if ($author -notmatch '^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$') {
-        $author = $null
-    }
-    $headSha = [string]$Context.pr.headRefOid
-    if ($headSha -notmatch '^[0-9a-fA-F]{40}$') {
-        $headSha = $null
-    }
-    $sha7 = if ($headSha.Length -ge 7) { $headSha.Substring(0, 7) } else { "unknown" }
-    $commitUrl = if ($headSha) { "https://github.com/$($Context.repository)/commit/$headSha" } else { "#" }
-    $attribution = if ($author) {
-        "> @$author - visual test-failure comparisons are available based on commit [``$sha7``]($commitUrl)."
-    }
-    else {
-        "> Visual test-failure comparisons are available based on commit [``$sha7``]($commitUrl)."
-    }
-
-    return @"
-<!-- Tests Failure Visuals -->
-
-## Visual Failure Comparisons
-
-$attribution
-
-$Markdown
-
-AI-generated visual evidence by GitHub Copilot.
-"@
-}
-
 function Save-Context {
     param(
         [object]$Context,
@@ -686,30 +588,10 @@ $visualEvidence = @($context.visualEvidence.comparisons)
 if ($visualEvidence.Count -eq 0) {
     Write-Host "No visual snapshot failures were detected."
     Remove-Item -LiteralPath $OutputMarkdownPath -Force -ErrorAction SilentlyContinue
-    $noVisualErrors = New-Object System.Collections.Generic.List[string]
-    if ($PostComment) {
-        try {
-            $body = @'
-<!-- Tests Failure Visuals -->
-
-## Visual Failure Comparisons
-
-No visual snapshot failures were detected by the latest `/review tests` run.
-'@
-            Publish-VisualComment `
-                -Repository $Repository `
-                -PrNumber $PrNumber `
-                -Body $body `
-                -UpdateOnly | Out-Null
-        }
-        catch {
-            $noVisualErrors.Add("Existing visual comparison comment could not be updated: $($_.Exception.Message)")
-        }
-    }
     $context | Add-Member -NotePropertyName visualAssets -NotePropertyValue ([ordered]@{
         published = $false
         comparisonCount = 0
-        errors = $noVisualErrors.ToArray()
+        errors = @()
     }) -Force
     Save-Context -Context $context -Path $ContextJsonPath
     exit 0
@@ -922,17 +804,6 @@ try {
         Set-Content -LiteralPath $OutputMarkdownPath -Value $markdown -Encoding UTF8
     }
 
-    $commentUrl = $null
-    if ($PostComment) {
-        try {
-            $commentBody = New-VisualCommentBody -Context $context -Markdown $markdown
-            $commentUrl = Publish-VisualComment -Repository $Repository -PrNumber $PrNumber -Body $commentBody
-        }
-        catch {
-            $errors.Add("Visual comparison comment could not be posted: $($_.Exception.Message)")
-        }
-    }
-
     $context | Add-Member -NotePropertyName visualAssets -NotePropertyValue ([ordered]@{
         published = $true
         branch = $AssetBranch
@@ -940,7 +811,6 @@ try {
         comparisonCount = $published.Count
         omittedCount = $omittedCount
         markdownPath = [System.IO.Path]::GetFileName($OutputMarkdownPath)
-        commentUrl = $commentUrl
         comparisons = $published.ToArray()
         errors = $errors.ToArray()
     }) -Force

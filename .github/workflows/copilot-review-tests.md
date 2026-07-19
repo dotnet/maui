@@ -150,8 +150,7 @@ on:
         pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
           -PrNumber "${PR_NUMBER}" \
           -ContextJsonPath "${context}" \
-          -OutputMarkdownPath "${output}" \
-          -PostComment
+          -OutputMarkdownPath "${output}"
     - name: Upload test-failure context
       if: >-
         steps.exact_command.outputs.should_run == 'true' &&
@@ -282,6 +281,39 @@ steps:
     with:
       name: review-tests-context-${{ github.run_id }}
       path: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
+  - name: Seal trusted visual merger inputs
+    env:
+      PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+      CONTEXT_PATH: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json
+    run: |
+      set -euo pipefail
+      trusted="${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"
+      sudo install -d -o root -g root -m 0555 "${trusted}"
+      sudo install -o root -g root -m 0444 "${CONTEXT_PATH}" "${trusted}/context.json"
+      sudo install -o root -g root -m 0555 \
+        .github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1 \
+        "${trusted}/Merge-TestVisualsIntoComment.ps1"
+
+post-steps:
+  - name: Merge trusted visuals into the analysis comment
+    if: always()
+    continue-on-error: true
+    env:
+      PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+    run: |
+      set -euo pipefail
+      trusted="${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"
+      agent_output="/tmp/gh-aw/agent_output.json"
+      if [ ! -f "${agent_output}" ] || [ ! -f "${trusted}/context.json" ]; then
+        echo "No agent comment payload or trusted visual context was available; leaving the ordinary analysis unchanged."
+        exit 0
+      fi
+      unset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN
+      pwsh "${trusted}/Merge-TestVisualsIntoComment.ps1" \
+        -PrNumber "${PR_NUMBER}" \
+        -Repository "${GITHUB_REPOSITORY}" \
+        -ContextJsonPath "${trusted}/context.json" \
+        -AgentOutputPath "${agent_output}"
 ---
 
 # Review PR Test Failures
@@ -310,9 +342,9 @@ The deterministic gather step wrote these files:
 - `/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json`
 - `/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.md`
 
-Read both files before classifying failures. When `context.json` contains a non-empty
-`visualAssets.commentUrl`, include one link to that trusted companion comment where
-indicated below. Do not embed the individual image URLs in the main report.
+Read both files before classifying failures. `visualAssets` may describe trusted,
+immutable visual images, but do not reproduce its URLs or render visual panels yourself.
+A deterministic post-step inserts a bounded visual section into your one comment payload.
 
 ## Pre-flight check
 
@@ -325,7 +357,7 @@ test -f '/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.e
 test -f '/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.md'
 ```
 
-The visual companion comment is optional. Its absence must not block the ordinary
+Visual asset publication is optional. Its absence must not block the ordinary
 test-failure report or change the deterministic verdict ceiling.
 
 If required files are missing, post a short failure report with `add_comment` unless dry-run mode is active.
@@ -374,8 +406,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 
 **Builds (this PR):** [build definition + ID links]. **Base sampling ([base branch], [N] recent build(s) per definition — the actual `baseSampleCount`):** [recent base build ID links].
 
-[When `visualAssets.commentUrl` is non-empty, add exactly one line:
-`**Visual comparisons:** [Open the expandable baseline / actual / diff panels]([visualAssets.commentUrl]).`]
+<!-- GH_AW_TRUSTED_VISUALS -->
 
 ### Recommended action
 
@@ -396,8 +427,10 @@ Do not use colorful emojis anywhere in the posted comment; the only status glyph
 
 Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
 
-Do not embed or reproduce the individual visual image URLs in this comment. The trusted
-pre-activation step already posts the bounded companion comment. Visual evidence is
-supplementary only and never permits a verdict above `gate.verdictCeiling`.
+Do not embed, link, summarize, or reproduce individual visual images yourself. Emit the
+`<!-- GH_AW_TRUSTED_VISUALS -->` placeholder exactly once inside the main collapsible.
+A trusted post-step replaces it with bounded expandable panels in this same comment.
+Visual evidence is supplementary only and never permits a verdict above
+`gate.verdictCeiling`.
 
 Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.

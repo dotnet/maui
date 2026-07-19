@@ -271,11 +271,12 @@ modifies that visual test or the affected snapshot/platform.
 The automated `/review tests` lane gathers failed UI result IDs from the public
 `vstmr.dev.azure.com/.../testresults/resultsbybuild` endpoint, then reads the public
 result-detail and attachment APIs. It publishes validated baseline/actual/diff PNGs to
-the repository's `review-tests-assets` branch and updates a dedicated expandable PR
-comment with immutable commit-pinned raw URLs. The ordinary test-failure analysis links
-to that companion comment rather than embedding every image, which avoids gh-aw's
-safe-output link limit. Visual publishing is supplementary evidence only: missing images
-never raise or lower the deterministic verdict ceiling.
+the repository's `review-tests-assets` branch. A trusted post-step inserts as many
+complete expandable comparison panels as fit inside the single test-failure analysis
+comment while enforcing gh-aw's URL, mention, and character limits; excess panels are
+reported as omitted rather than creating another comment. Visual publishing is
+supplementary evidence only: missing images never raise or lower the deterministic
+verdict ceiling.
 
 ## Platform mismatch
 

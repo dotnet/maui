@@ -209,8 +209,8 @@ Key fields to use:
 - `visualEvidence` — public AzDO result/attachment metadata for visual snapshot
   failures. It is supplementary evidence and never changes the deterministic gate.
 - `visualAssets` — present when the trusted publisher produced durable GitHub-hosted
-  images. `visualAssets.commentUrl` links to the trusted companion comment containing
-  the expandable baseline / actual / diff panels.
+  images. A deterministic merger inserts a bounded subset of these comparisons into
+  the single final analysis comment.
 - `knownIssues` — `{queried, matcherCount, error}`. If `queried` is `false` (gh failed),
   the absence of a `matchesKnownIssue` hit proves nothing — say so.
 - `baselineSummary[]` — which base build was inspected per pipeline definition, its
@@ -360,9 +360,6 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 | --- | --- | --- | --- |
 | [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no — use the leg diff: `regressed` when `legRegressedVsBase`, `also-red` when `legAlsoFailsOnBase`, else the test-level `alsoFailsOnBaseline`] | [specific evidence — lead with `deterministicAttribution` when it is `regressed-vs-base`/`pre-existing-on-base`, cite the base sampling (`baseGreenCount` green / `baseFailedCount` red of `baseSampleCount` base builds) for a regression, cite a known-issue link when `matchesKnownIssue` is set, cite the `[ci-scan]` issue + occurrence count when `matchesCiScan` is set (and note it as `Needs human investigation` when `ciScanDemoted` — a few-build regression contradicted by multi-build base-branch history), note `retried still failing` when true, link build/test IDs] |
 
-[When `visualAssets.commentUrl` is non-empty, add exactly one line:
-`**Visual comparisons:** [Open the expandable baseline / actual / diff panels]([visualAssets.commentUrl]).`]
-
 ### Recommended action
 
 [One concise recommendation, such as rerun a known flaky test, add a missing baseline, investigate a specific changed file, or wait for inaccessible data.]
@@ -388,19 +385,18 @@ Rules:
 - Include explicit limitations when data is unavailable (including unavailable baseline).
 - Cite concrete evidence for every verdict.
 - Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
-- Link to `visualAssets.commentUrl` when present, but do not embed or reproduce the
-  individual visual image URLs in the main report. The trusted publisher posts the
-  companion comment directly so its panels are not constrained by gh-aw safe-output
-  link limits. Visual publishing failures are limitations only; they do not weaken
-  or raise the gate.
+- Do not embed, link, or reproduce individual visual image URLs in the generated
+  analysis. The trusted merger inserts complete expandable panels into the same final
+  comment while enforcing gh-aw's URL, mention, and character limits. Visual publishing
+  failures are limitations only; they do not weaken or raise the gate.
 - Badge colors for the `Overall` (merge-readiness) badge: `1a7f37` for `Ready to merge`
   and `No failures found`, `d1242f` for `Not ready`, `bf8700` for
   `Needs human investigation`, and `6e7781` for `Insufficient data`.
 - Do not include a Data badge.
 - Do not use emojis anywhere in the posted comment.
 - Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
-- Repeated `/review tests` runs post a new PR conversation comment, hide older analysis
-  comments from the same workflow, and update the existing visual companion comment.
+- Each `/review tests` run posts exactly one PR conversation comment containing both
+  analysis and any bounded visual panels, while hiding older comments from the workflow.
 - If there are no failing or inconclusive checks, still post the standard visible report
   with `Overall` = `No failures found`, `Failures` = `0`, no platform badges, and a
   recommendation that no test-failure action is needed. Use badge color `1a7f37`.

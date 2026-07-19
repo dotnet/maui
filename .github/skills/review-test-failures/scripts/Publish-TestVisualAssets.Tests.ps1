@@ -18,10 +18,7 @@ BeforeAll {
             'Test-AzDoAttachmentUrl',
             'Get-SnapshotRoot',
             'Get-SnapshotCandidatePaths',
-            'New-VisualComparisonsMarkdown',
-            'Get-ExistingVisualComments',
-            'New-VisualCommentBody',
-            'Publish-VisualComment'
+            'New-VisualComparisonsMarkdown'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -152,100 +149,5 @@ Describe 'Visual comparison markdown' {
         $markdown.Length | Should -BeLessOrEqual 1800
         $markdown | Should -Match 'additional comparison\(s\) were omitted'
         ([regex]::Matches($markdown, '<details>').Count) | Should -Be ([regex]::Matches($markdown, '</details>').Count)
-    }
-}
-
-Describe 'Visual companion comment' {
-    It 'wraps trusted comparison panels in the stable marker and commit header' {
-        $context = [pscustomobject]@{
-            repository = 'dotnet/maui'
-            pr = [pscustomobject]@{
-                author = 'octocat'
-                headRefOid = '0123456789abcdef0123456789abcdef01234567'
-            }
-        }
-        $panels = '<details><summary>Comparison</summary></details>'
-
-        $body = New-VisualCommentBody -Context $context -Markdown $panels
-
-        $body | Should -Match '<!-- Tests Failure Visuals -->'
-        $body | Should -Match '@octocat'
-        $body | Should -Match '\[`0123456`\]\(https://github\.com/dotnet/maui/commit/0123456789abcdef0123456789abcdef01234567\)'
-        $body | Should -Match ([regex]::Escape($panels))
-        $body | Should -Match 'AI-generated visual evidence by GitHub Copilot\.'
-    }
-
-    It 'creates the companion comment when no marker comment exists' {
-        Mock Get-ExistingVisualComments { @() }
-        Mock Invoke-GhApiJson {
-            [pscustomobject]@{ html_url = 'https://github.com/dotnet/maui/pull/123#issuecomment-1' }
-        }
-
-        $url = Publish-VisualComment -Repository 'dotnet/maui' -PrNumber 123 -Body 'body'
-
-        $url | Should -Be 'https://github.com/dotnet/maui/pull/123#issuecomment-1'
-        Should -Invoke Invoke-GhApiJson -Times 1 -Exactly -ParameterFilter {
-            $Method -eq 'POST' -and
-            $Endpoint -eq 'repos/dotnet/maui/issues/123/comments' -and
-            $Body.body -eq 'body'
-        }
-    }
-
-    It 'updates the newest marker comment instead of creating a duplicate' {
-        Mock Get-ExistingVisualComments {
-            @(
-                [pscustomobject]@{ id = 10 },
-                [pscustomobject]@{ id = 20 }
-            )
-        }
-        Mock Invoke-GhApiJson {
-            [pscustomobject]@{ html_url = 'https://github.com/dotnet/maui/pull/123#issuecomment-20' }
-        }
-
-        $url = Publish-VisualComment -Repository 'dotnet/maui' -PrNumber 123 -Body 'replacement'
-
-        $url | Should -Be 'https://github.com/dotnet/maui/pull/123#issuecomment-20'
-        Should -Invoke Invoke-GhApiJson -Times 1 -Exactly -ParameterFilter {
-            $Method -eq 'PATCH' -and
-            $Endpoint -eq 'repos/dotnet/maui/issues/comments/20' -and
-            $Body.body -eq 'replacement'
-        }
-    }
-
-    It 'falls back to an older marker when the newest matching comment is not editable' {
-        Mock Get-ExistingVisualComments {
-            @(
-                [pscustomobject]@{ id = 10 },
-                [pscustomobject]@{ id = 20 }
-            )
-        }
-        Mock Invoke-GhApiJson {
-            if ($Endpoint -eq 'repos/dotnet/maui/issues/comments/20') {
-                throw 'forbidden'
-            }
-            [pscustomobject]@{ html_url = 'https://github.com/dotnet/maui/pull/123#issuecomment-10' }
-        }
-
-        $url = Publish-VisualComment -Repository 'dotnet/maui' -PrNumber 123 -Body 'replacement'
-
-        $url | Should -Be 'https://github.com/dotnet/maui/pull/123#issuecomment-10'
-        Should -Invoke Invoke-GhApiJson -Times 2 -Exactly -ParameterFilter { $Method -eq 'PATCH' }
-        Should -Invoke Invoke-GhApiJson -Times 0 -Exactly -ParameterFilter { $Method -eq 'POST' }
-    }
-
-    It 'does not create an empty-state comment when update-only finds no marker' {
-        Mock Get-ExistingVisualComments { @() }
-        Mock Invoke-GhApiJson {
-            throw 'unexpected API call'
-        }
-
-        $url = Publish-VisualComment `
-            -Repository 'dotnet/maui' `
-            -PrNumber 123 `
-            -Body 'no visual failures' `
-            -UpdateOnly
-
-        $url | Should -BeNullOrEmpty
-        Should -Invoke Invoke-GhApiJson -Times 0 -Exactly
     }
 }
