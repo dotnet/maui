@@ -33,10 +33,12 @@ public class EssentialsDIBridgeTests : TestBase
 		finally
 		{
 			var builder = MauiApp.CreateBuilder();
-			builder.Services.AddSingleton(original);
+			builder.Services.AddSingleton<IActivityStateManager>(original);
 
 			using var app = builder.Build();
 		}
+
+		Assert.Same(original, ActivityStateManager.Default);
 	}
 
 	sealed class StubActivityStateManager : IActivityStateManager
