@@ -759,16 +759,21 @@ namespace Microsoft.Maui.Controls
 			lv.OnRefreshCommandChanged(oldCommand, command);
 		}
 
+		WeakCommandSubscription _refreshCommandSubscription;
+
 		void OnRefreshCommandChanged(ICommand oldCommand, ICommand newCommand)
 		{
-			if (oldCommand != null)
-			{
-				oldCommand.CanExecuteChanged -= OnCommandCanExecuteChanged;
-			}
+			// Dispose the previous weak subscription so we never keep a stale CanExecuteChanged
+			// handler attached to a replaced command.
+			_refreshCommandSubscription?.Dispose();
+			_refreshCommandSubscription = null;
 
 			if (newCommand != null)
 			{
-				newCommand.CanExecuteChanged += OnCommandCanExecuteChanged;
+				// Subscribe via a weak proxy so a long-lived command (e.g. one exposed by a
+				// ViewModel whose CanExecuteChanged is a plain CLR event) does not keep this
+				// ListView - and through it its page - rooted in memory.
+				_refreshCommandSubscription = new WeakCommandSubscription(this, newCommand, OnCommandCanExecuteChanged);
 				RefreshAllowed = newCommand.CanExecute(null);
 			}
 			else
