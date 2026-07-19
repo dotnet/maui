@@ -222,7 +222,8 @@ public class ResizetizerTests : BaseBuildTest
 			    <WriteLinesToFile File="$(_MauiIntermediateImages)late-import.images" Lines="@(MauiProcessedImage)" Overwrite="true" />
 			  </Target>
 			  <Target Name="VerifyCustomBackendFonts">
-			    <Error Condition="'@(MauiProcessedFont)' == ''" Text="Custom backends must receive processed fonts collected from references." />
+			    <Error Condition="'$(ExpectNoProcessedFonts)' != 'true' And '@(MauiProcessedFont)' == ''" Text="Custom backends must receive processed fonts collected from references." />
+			    <Error Condition="'$(ExpectNoProcessedFonts)' == 'true' And '@(MauiProcessedFont)' != ''" Text="Removed fonts must not remain in the processed font contract." />
 			    <WriteLinesToFile File="$(_MauiIntermediateImages)late-import.fonts" Lines="@(MauiProcessedFont)" Overwrite="true" />
 			  </Target>
 			  <Target Name="VerifyCustomBackendAssets">
@@ -275,6 +276,27 @@ public class ResizetizerTests : BaseBuildTest
 			? processedFont
 			: Path.Combine(projectDir, processedFont);
 		Assert.True(File.Exists(processedFontPath), $"Processed font does not exist: {processedFont}");
+
+		File.WriteAllText(
+			projectFile,
+			File.ReadAllText(projectFile).Replace(
+				"""    <MauiFont Include="lib_font.ttf" />""",
+				string.Empty,
+				StringComparison.Ordinal));
+		var libProjectFile = Path.Combine(libDir, "ResLib.csproj");
+		File.WriteAllText(
+			libProjectFile,
+			File.ReadAllText(libProjectFile).Replace(
+				"""    <MauiFont Include="lib_font.ttf" />""",
+				string.Empty,
+				StringComparison.Ordinal));
+
+		var noFontBuildProps = BuildProps;
+		noFontBuildProps.Add("ExpectNoProcessedFonts=true");
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: noFontBuildProps, output: _output),
+			"Custom backend project failed after removing its final font. Check test output for errors.");
+		Assert.Empty(File.ReadAllLines(fontsFile));
+
 		Assert.True(File.Exists(Path.Combine(intermediateDir, "late-import.assets")),
 			"Custom backend asset output list was not created; referenced assets were not collected.");
 	}
