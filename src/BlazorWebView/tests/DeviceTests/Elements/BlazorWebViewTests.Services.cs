@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.MauiBlazorWebView.DeviceTests.Components;
 using WebViewAppShared;
@@ -142,7 +144,7 @@ public partial class BlazorWebViewTests
 	public void UsePlatformHandlerFactoryReplacesDefaultBlazorWebViewHandler()
 	{
 		// Companion to UsePlatformHandlerGenericReplacesDefaultBlazorWebViewHandler — verifies the
-		// factory overload (Func<IServiceProvider, IViewHandler>) also replaces the default handler.
+		// factory overload (Func<IServiceProvider, IBlazorWebViewHandler>) also replaces the default handler.
 		// The factory overload registers a different ServiceDescriptor shape (ImplementationFactory
 		// rather than ImplementationType), so GetHandlerType returns null here; we resolve through
 		// GetHandler instead and assert the produced instance type.
@@ -163,12 +165,95 @@ public partial class BlazorWebViewTests
 		Assert.IsType<CustomBlazorWebViewHandlerStub>(handler);
 	}
 
-	private class CustomBlazorWebViewHandlerStub : BlazorWebViewHandler
+	[Fact]
+	public async Task BlazorWebViewUsesCustomHandlerOperations()
 	{
-		// Marker subclass used only to prove that UsePlatformHandler replaced the default
-		// BlazorWebViewHandler registration. Inheriting from BlazorWebViewHandler keeps the
-		// IViewHandler contract honored on every device-test target framework without forcing
-		// us to reimplement the full handler surface.
-		public CustomBlazorWebViewHandlerStub() { }
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var handler = new CustomBlazorWebViewHandlerStub();
+			var blazorWebView = new BlazorWebView();
+			handler.SetVirtualView(blazorWebView);
+			blazorWebView.Handler = handler;
+			var workItemCalled = false;
+
+			Assert.Same(handler.FileProvider, blazorWebView.CreateFileProvider("wwwroot"));
+			Assert.True(await blazorWebView.TryDispatchAsync(_ => workItemCalled = true));
+			Assert.True(workItemCalled);
+		});
+	}
+
+	private class CustomBlazorWebViewHandlerStub : IBlazorWebViewHandler
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+		, IPlatformViewHandler
+#endif
+	{
+		public IFileProvider FileProvider { get; } = new NullFileProvider();
+
+		public bool HasContainer { get; set; }
+
+		public object ContainerView => null;
+
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+		public object PlatformView => _platformView;
+#else
+		public object PlatformView => null;
+#endif
+
+		public IView VirtualView { get; private set; }
+
+		IElement IElementHandler.VirtualView => VirtualView;
+
+		public IMauiContext MauiContext { get; private set; }
+
+		public IFileProvider CreateFileProvider(string contentRootDir) => FileProvider;
+
+		public Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
+		{
+			workItem(EmptyServiceProvider.Instance);
+			return Task.FromResult(true);
+		}
+
+		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
+
+		public void SetVirtualView(IElement view) => VirtualView = (IView)view;
+
+		public void UpdateValue(string property) { }
+
+		public void Invoke(string command, object args = null) { }
+
+		public void DisconnectHandler() { }
+
+		public Size GetDesiredSize(double widthConstraint, double heightConstraint) => Size.Zero;
+
+		public void PlatformArrange(Rect frame) { }
+
+#if ANDROID
+		private readonly global::Android.Views.View _platformView = new(global::Android.App.Application.Context);
+
+		global::Android.Views.View IPlatformViewHandler.PlatformView => _platformView;
+
+		global::Android.Views.View IPlatformViewHandler.ContainerView => null;
+#elif IOS || MACCATALYST
+		private readonly UIKit.UIView _platformView = new();
+
+		UIKit.UIView IPlatformViewHandler.PlatformView => _platformView;
+
+		UIKit.UIView IPlatformViewHandler.ContainerView => null;
+
+		UIKit.UIViewController IPlatformViewHandler.ViewController => null;
+#elif WINDOWS
+		private readonly Microsoft.UI.Xaml.FrameworkElement _platformView = new Microsoft.UI.Xaml.Controls.Grid();
+
+		Microsoft.UI.Xaml.FrameworkElement IPlatformViewHandler.PlatformView => _platformView;
+
+		Microsoft.UI.Xaml.FrameworkElement IPlatformViewHandler.ContainerView => null;
+#endif
+	}
+
+	private sealed class EmptyServiceProvider : IServiceProvider
+	{
+		public static EmptyServiceProvider Instance { get; } = new();
+
+		public object GetService(Type serviceType) => null;
 	}
 }

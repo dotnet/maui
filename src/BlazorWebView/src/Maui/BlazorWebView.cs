@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
-			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
+			return GetBlazorWebViewHandler().CreateFileProvider(contentRootDir);
 		}
 
 		/// <summary>
@@ -130,8 +130,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return false;
 			}
 
-			return await ((BlazorWebViewHandler)(Handler!)).TryDispatchAsync(workItem);
+			return await GetBlazorWebViewHandler().TryDispatchAsync(workItem);
 		}
+
+		private IBlazorWebViewHandler GetBlazorWebViewHandler() =>
+			Handler as IBlazorWebViewHandler ??
+			throw new InvalidOperationException(
+				$"The handler for {nameof(BlazorWebView)} must implement {nameof(IBlazorWebViewHandler)}.");
 
 		/// <inheritdoc />
 		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>

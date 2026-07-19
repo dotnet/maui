@@ -26,12 +26,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// after every other library's MAUI Blazor configuration, when composing multiple sources.
 		/// </remarks>
 		/// <typeparam name="THandler">The custom handler type to use for <see cref="IBlazorWebView"/>.
-		/// Must have a public parameterless constructor.</typeparam>
+		/// The handler must implement <see cref="IBlazorWebViewHandler"/> and have a public
+		/// parameterless constructor.</typeparam>
 		/// <param name="builder">The <see cref="IMauiBlazorWebViewBuilder"/>.</param>
 		/// <returns>The <see cref="IMauiBlazorWebViewBuilder"/> for chaining.</returns>
 		public static IMauiBlazorWebViewBuilder UsePlatformHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(
 			this IMauiBlazorWebViewBuilder builder)
-			where THandler : IViewHandler, new()
+			where THandler : IBlazorWebViewHandler, new()
 		{
 			ArgumentNullException.ThrowIfNull(builder);
 			builder.Services.ConfigureMauiHandlers(handlers =>
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <returns>The <see cref="IMauiBlazorWebViewBuilder"/> for chaining.</returns>
 		public static IMauiBlazorWebViewBuilder UsePlatformHandler(
 			this IMauiBlazorWebViewBuilder builder,
-			Func<IServiceProvider, IViewHandler> factory)
+			Func<IServiceProvider, IBlazorWebViewHandler> factory)
 		{
 			ArgumentNullException.ThrowIfNull(builder);
 			ArgumentNullException.ThrowIfNull(factory);
