@@ -185,6 +185,9 @@ public class ResizetizerTests : BaseBuildTest
 		File.WriteAllText(Path.Combine(libDir, "lib_image.svg"), BlankSvgContents);
 		File.WriteAllText(Path.Combine(libDir, "lib_font.ttf"), "not-a-real-font");
 		File.WriteAllText(Path.Combine(libDir, "lib_asset.txt"), "asset-contents");
+		// The app and referenced library intentionally contribute the same font filename.
+		// The physical copy output and MauiProcessedFont contract must contain it only once.
+		File.WriteAllText(Path.Combine(projectDir, "lib_font.ttf"), "not-a-real-font");
 		File.WriteAllText(Path.Combine(libDir, "ResLib.csproj"),
 			$$"""
 			<Project Sdk="Microsoft.NET.Sdk">
@@ -245,6 +248,7 @@ public class ResizetizerTests : BaseBuildTest
 			  <ItemGroup>
 			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
 			    <ProjectReference Include="ResLib\ResLib.csproj" />
+			    <MauiFont Include="lib_font.ttf" />
 			  </ItemGroup>
 			  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 			  <!-- Late import: this runs after the Resizetizer targets from the package. -->
@@ -263,8 +267,14 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.NotEmpty(processedImages);
 		Assert.All(processedImages, path => Assert.True(File.Exists(path), $"Processed image does not exist: {path}"));
 
-		Assert.True(File.Exists(Path.Combine(intermediateDir, "late-import.fonts")),
+		var fontsFile = Path.Combine(intermediateDir, "late-import.fonts");
+		Assert.True(File.Exists(fontsFile),
 			"Custom backend font output list was not created; referenced fonts were not collected.");
+		var processedFont = Assert.Single(File.ReadAllLines(fontsFile));
+		var processedFontPath = Path.IsPathRooted(processedFont)
+			? processedFont
+			: Path.Combine(projectDir, processedFont);
+		Assert.True(File.Exists(processedFontPath), $"Processed font does not exist: {processedFont}");
 		Assert.True(File.Exists(Path.Combine(intermediateDir, "late-import.assets")),
 			"Custom backend asset output list was not created; referenced assets were not collected.");
 	}
