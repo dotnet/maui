@@ -1,3 +1,4 @@
+#nullable enable annotations
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -200,19 +201,19 @@ public partial class BlazorWebViewTests
 
 		public bool HasContainer { get; set; }
 
-		public object ContainerView => null;
+		public object? ContainerView => null;
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
-		public object PlatformView => _platformView;
+		public object? PlatformView => _platformView;
 #else
-		public object PlatformView => null;
+		public object? PlatformView => null;
 #endif
 
-		public IView VirtualView { get; private set; }
+		public IView? VirtualView { get; private set; }
 
-		IElement IElementHandler.VirtualView => VirtualView;
+		IElement? IElementHandler.VirtualView => VirtualView;
 
-		public IMauiContext MauiContext { get; private set; }
+		public IMauiContext? MauiContext { get; private set; }
 
 		public IFileProvider CreateFileProvider(string contentRootDir) => FileProvider;
 
@@ -228,7 +229,7 @@ public partial class BlazorWebViewTests
 
 		public void UpdateValue(string property) { }
 
-		public void Invoke(string command, object args = null) { }
+		public void Invoke(string command, object? args = null) { }
 
 		public void DisconnectHandler() { }
 
@@ -241,21 +242,21 @@ public partial class BlazorWebViewTests
 
 		global::Android.Views.View IPlatformViewHandler.PlatformView => _platformView;
 
-		global::Android.Views.View IPlatformViewHandler.ContainerView => null;
+		global::Android.Views.View? IPlatformViewHandler.ContainerView => null;
 #elif IOS || MACCATALYST
 		private readonly UIKit.UIView _platformView = new();
 
 		UIKit.UIView IPlatformViewHandler.PlatformView => _platformView;
 
-		UIKit.UIView IPlatformViewHandler.ContainerView => null;
+		UIKit.UIView? IPlatformViewHandler.ContainerView => null;
 
-		UIKit.UIViewController IPlatformViewHandler.ViewController => null;
+		UIKit.UIViewController? IPlatformViewHandler.ViewController => null;
 #elif WINDOWS
 		private readonly Microsoft.UI.Xaml.FrameworkElement _platformView = new Microsoft.UI.Xaml.Controls.Grid();
 
 		Microsoft.UI.Xaml.FrameworkElement IPlatformViewHandler.PlatformView => _platformView;
 
-		Microsoft.UI.Xaml.FrameworkElement IPlatformViewHandler.ContainerView => null;
+		Microsoft.UI.Xaml.FrameworkElement? IPlatformViewHandler.ContainerView => null;
 #endif
 	}
 
@@ -263,6 +264,6 @@ public partial class BlazorWebViewTests
 	{
 		public static EmptyServiceProvider Instance { get; } = new();
 
-		public object GetService(Type serviceType) => null;
+		public object? GetService(Type serviceType) => null;
 	}
 }
