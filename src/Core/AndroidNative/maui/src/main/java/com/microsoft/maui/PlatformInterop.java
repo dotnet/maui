@@ -366,20 +366,23 @@ public class PlatformInterop {
         //     size would visibly change the result for any image larger than its view. Preserve native
         //     resolution but still guard against oversized bitmaps by capping the decode at the display
         //     size instead of the much smaller view size.
-        //   * CENTER_CROP (Aspect.AspectFill) and FIT_XY (Aspect.Fill) fill the view on every axis; a COVER
-        //     decode (CENTER_OUTSIDE) would keep the long axis of an extreme-aspect source above the display
-        //     bounds (e.g. a 4*displayWidth x displayHeight source still "covers" a display-sized view at
-        //     ~4*displayWidth), so they must stay display-bounded. Cover quality cannot take priority over
-        //     the safety invariant for a crash fix; the ImageView matrix still crops/scales the bounded
-        //     bitmap to fill the view. Honor the view's own size when it declares one so a small thumbnail
-        //     does not needlessly decode at the full display size, and fall back to the display ceiling.
-        //   * FitCenter (Aspect.AspectFit) and the default only need to fit WITHIN the view, so likewise
-        //     honor the view's own size when it declares one and fall back to an explicit display ceiling
-        //     when the view is WRAP_CONTENT / not yet measured, otherwise Glide's target-size negotiation
-        //     can still decode an extreme-aspect source above the display bounds.
+        //   * CENTER_CROP (Aspect.AspectFill) and FIT_XY (Aspect.Fill) fill the view on every axis, so a
+        //     fit-inside decode would shrink an extreme-aspect source to its short axis and then upscale it
+        //     to fill, losing detail. Cover the view instead, but clamp the decode so neither axis can ever
+        //     exceed the display bounds (the crash invariant). See DisplayBoundedFillStrategy: it targets the
+        //     covering ratio yet caps the scale at the display ratio and rounds toward the smaller bitmap, so
+        //     the decode is provably <= display on both axes while staying as sharp as the display allows.
+        //   * FitCenter (Aspect.AspectFit) and the default only need to fit WITHIN the view, so honor the
+        //     view's own size when it declares one and fall back to an explicit display ceiling when the view
+        //     is WRAP_CONTENT / not yet measured, otherwise Glide's target-size negotiation can still decode
+        //     an extreme-aspect source above the display bounds.
         ImageView.ScaleType scaleType = imageView.getScaleType();
         if (scaleType == ImageView.ScaleType.CENTER) {
             return limitToDisplaySize(builder, imageView.getContext());
+        }
+
+        if (scaleType == ImageView.ScaleType.CENTER_CROP || scaleType == ImageView.ScaleType.FIT_XY) {
+            return limitToViewCoveringDisplaySize(builder, imageView);
         }
 
         return limitToViewOrDisplaySize(builder, imageView);
@@ -431,6 +434,73 @@ public class PlatformInterop {
         }
 
         return displayLimit;
+    }
+
+    private static RequestBuilder<Drawable> limitToViewCoveringDisplaySize(RequestBuilder<Drawable> builder, ImageView imageView) {
+        // CENTER_CROP (Aspect.AspectFill) and FIT_XY (Aspect.Fill) fill the view on every axis. Decoding
+        // fit-inside would shrink a wide/tall source to the view's short axis and then upscale it to fill,
+        // losing detail, so cover the view box instead. DisplayBoundedFillStrategy caps the covering scale at
+        // the display ratio and rounds toward the smaller bitmap, so the decode stays <= display on both axes
+        // (never re-opening the oversized-bitmap crash) while remaining as sharp as the display allows.
+        Context context = imageView.getContext();
+        if (context == null) {
+            return builder.downsample(DownsampleStrategy.CENTER_INSIDE);
+        }
+
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        if (metrics == null) {
+            return builder.downsample(DownsampleStrategy.CENTER_INSIDE);
+        }
+
+        int displayWidth = metrics.widthPixels;
+        int displayHeight = metrics.heightPixels;
+        if (displayWidth <= 0 || displayHeight <= 0) {
+            return builder.downsample(DownsampleStrategy.CENTER_INSIDE);
+        }
+
+        int targetWidth = boundedDimension(imageView, true, displayWidth);
+        int targetHeight = boundedDimension(imageView, false, displayHeight);
+        return builder
+            .downsample(new DisplayBoundedFillStrategy(displayWidth, displayHeight))
+            .override(targetWidth, targetHeight);
+    }
+
+    // A cover downsample strategy for CENTER_CROP / FIT_XY that can never decode above the display bounds.
+    // getScaleFactor targets the covering (larger) axis ratio for sharpness but clamps it to the display
+    // (smaller) axis ratio; MEMORY rounding keeps the decoded bitmap <= that display-capped target, so the
+    // decoded size is provably <= display on both axes. This is the crash invariant the whole cap enforces.
+    private static final class DisplayBoundedFillStrategy extends DownsampleStrategy {
+        private final int maxWidth;
+        private final int maxHeight;
+
+        DisplayBoundedFillStrategy(int maxWidth, int maxHeight) {
+            this.maxWidth = maxWidth;
+            this.maxHeight = maxHeight;
+        }
+
+        @Override
+        public float getScaleFactor(int sourceWidth, int sourceHeight, int requestedWidth, int requestedHeight) {
+            if (sourceWidth <= 0 || sourceHeight <= 0) {
+                return 1f;
+            }
+
+            // Cover the requested box: the larger of the two axis ratios.
+            float cover = Math.max(
+                (float) requestedWidth / sourceWidth,
+                (float) requestedHeight / sourceHeight);
+            // Never let either decoded axis exceed the display: the smaller of the two display ratios.
+            float displayCap = Math.min(
+                (float) maxWidth / sourceWidth,
+                (float) maxHeight / sourceHeight);
+            // Never upscale during decode; the ImageView matrix handles any remaining fill.
+            return Math.min(1f, Math.min(cover, displayCap));
+        }
+
+        @Override
+        public SampleSizeRounding getSampleSizeRounding(int sourceWidth, int sourceHeight, int requestedWidth, int requestedHeight) {
+            // MEMORY keeps the decoded bitmap <= the display-capped target, preserving the crash invariant.
+            return SampleSizeRounding.MEMORY;
+        }
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
