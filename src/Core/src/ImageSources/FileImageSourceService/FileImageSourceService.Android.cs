@@ -67,22 +67,24 @@ namespace Microsoft.Maui
 							PlatformInterop.LoadImageFromResource(context, id, resourceCallback);
 
 							var result = await resourceCallback.Result.ConfigureAwait(false);
+
+							// The async Glide callback is not itself cancelable, so recheck the token before
+							// inspecting the result. A superseded (canceled) resource load must propagate
+							// cancellation even when the callback returned null, otherwise the non-ImageView
+							// consumer (ImageSourcePartExtensions.UpdateSourceAsync) treats null as a Glide
+							// failure and calls setImage(null), clearing the newer source it already applied.
+							// Dispose any drawable we are dropping and propagate cancellation so the caller's
+							// OperationCanceledException path leaves the newer image intact.
+							if (cancellationToken.IsCancellationRequested)
+							{
+								result?.Dispose();
+								throw new OperationCanceledException(cancellationToken);
+							}
+
 							if (result is null)
 							{
 								Logger?.LogWarning("Unable to load image resource '{File}'.", file);
 								return null;
-							}
-
-							// The async Glide callback is not itself cancelable, so recheck the token before
-							// returning. A superseded (canceled) resource load must NOT surface as a null result:
-							// the non-ImageView consumer (ImageSourcePartExtensions.UpdateSourceAsync) treats null as
-							// a Glide failure and calls setImage(null), clearing the newer source it already applied.
-							// Dispose the now-unneeded drawable and propagate cancellation so the caller's
-							// OperationCanceledException path leaves the newer image intact.
-							if (cancellationToken.IsCancellationRequested)
-							{
-								result.Dispose();
-								throw new OperationCanceledException(cancellationToken);
 							}
 
 							return result;

@@ -362,25 +362,23 @@ public class PlatformInterop {
         // Cap the decode so an oversized bitmap can never reach the canvas draw (the crash this fixes),
         // choosing a downsample strategy that matches the view's ScaleType (see AspectExtensions.cs for
         // the Aspect -> ScaleType mapping):
-        //   * CENTER_CROP (Aspect.AspectFill) and FIT_XY (Aspect.Fill) fill the view on every axis, so a
-        //     COVER decode (CENTER_OUTSIDE) would keep the long axis of an extreme-aspect source above the
-        //     display bounds (e.g. a 4*displayWidth x displayHeight source still "covers" a display-sized
-        //     view at ~4*displayWidth). Cover quality cannot take priority over the safety invariant for a
-        //     crash fix, so cap these at the display size too; the ImageView matrix still crops/scales the
-        //     bounded bitmap to fill the view.
         //   * CENTER (Aspect.Center) draws the source 1:1 without scaling, so decoding it down to the view
         //     size would visibly change the result for any image larger than its view. Preserve native
         //     resolution but still guard against oversized bitmaps by capping the decode at the display
         //     size instead of the much smaller view size.
-        //   * FitCenter (Aspect.AspectFit) and the default only need to fit WITHIN the view, so honor the
-        //     view's own size when it declares one (keeps small/thumbnail loads cheap) but still fall back
-        //     to an explicit display ceiling when the view is WRAP_CONTENT / not yet measured, otherwise
-        //     Glide's target-size negotiation can still decode an extreme-aspect source above the display
-        //     bounds.
+        //   * CENTER_CROP (Aspect.AspectFill) and FIT_XY (Aspect.Fill) fill the view on every axis; a COVER
+        //     decode (CENTER_OUTSIDE) would keep the long axis of an extreme-aspect source above the display
+        //     bounds (e.g. a 4*displayWidth x displayHeight source still "covers" a display-sized view at
+        //     ~4*displayWidth), so they must stay display-bounded. Cover quality cannot take priority over
+        //     the safety invariant for a crash fix; the ImageView matrix still crops/scales the bounded
+        //     bitmap to fill the view. Honor the view's own size when it declares one so a small thumbnail
+        //     does not needlessly decode at the full display size, and fall back to the display ceiling.
+        //   * FitCenter (Aspect.AspectFit) and the default only need to fit WITHIN the view, so likewise
+        //     honor the view's own size when it declares one and fall back to an explicit display ceiling
+        //     when the view is WRAP_CONTENT / not yet measured, otherwise Glide's target-size negotiation
+        //     can still decode an extreme-aspect source above the display bounds.
         ImageView.ScaleType scaleType = imageView.getScaleType();
-        if (scaleType == ImageView.ScaleType.CENTER
-                || scaleType == ImageView.ScaleType.CENTER_CROP
-                || scaleType == ImageView.ScaleType.FIT_XY) {
+        if (scaleType == ImageView.ScaleType.CENTER) {
             return limitToDisplaySize(builder, imageView.getContext());
         }
 
