@@ -18,6 +18,9 @@ on:
   # pull-requests:write — issues:write alone yields "Resource not accessible by
   # integration" on PR conversation comments.
   permissions:
+    actions: read
+    checks: read
+    contents: write
     issues: write
     pull-requests: write
   steps:
@@ -39,7 +42,8 @@ on:
         else
           echo "should_run=false" >> "$GITHUB_OUTPUT"
         fi
-    - name: Hide the /review tests command comment as resolved when authorized
+    - name: Authorize and hide the /review tests command comment
+      id: authorization
       if: github.event_name == 'issue_comment' && steps.exact_command.outputs.should_run == 'true'
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
@@ -49,13 +53,7 @@ on:
           // commenter is an authorized collaborator (write/maintain/admin). This mirrors
           // the workflow's own role gate but is self-contained, so an unauthorized user's
           // comment is always left visible. A failed hide must not block activation.
-          // Only act on newly-created comments. The gh-aw slash_command trigger also fires
-          // on `edited`, so without this guard, editing any existing comment to say
-          // `/review tests` would minimize that comment (and collapse its entire history).
-          if (context.payload.action !== 'created') {
-            core.info('Skipping hide: comment was edited, not created.');
-            return;
-          }
+          core.setOutput('authorized', 'false');
           const { owner, repo } = context.repo;
           const actor = context.actor;
           let permission = 'none';
@@ -68,6 +66,13 @@ on:
           // Must mirror the workflow `roles:` frontmatter (admin/maintain/write) — keep in sync.
           if (!['admin', 'maintain', 'write'].includes(permission)) {
             core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);
+            return;
+          }
+          core.setOutput('authorized', 'true');
+          // Only hide newly-created comments. The slash_command trigger also fires on
+          // `edited`; an authorized edit may run, but must not collapse comment history.
+          if (context.payload.action !== 'created') {
+            core.info('Skipping hide: comment was edited, not created.');
             return;
           }
           // Minimize (hide as resolved) rather than delete: the rerun scanner replays the PR's
@@ -87,6 +92,63 @@ on:
           } catch (e) {
             core.warning(`Could not hide /review tests command comment ${subjectId}: ${e.message}`);
           }
+    - name: Checkout trusted review scripts
+      if: >-
+        steps.exact_command.outputs.should_run == 'true' &&
+        (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: Gather test-failure context
+      if: >-
+        steps.exact_command.outputs.should_run == 'true' &&
+        (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+        BUILD_ID: ${{ inputs.build_id }}
+        CHECK_NAME: ${{ inputs.check_name }}
+      run: |
+        set -euo pipefail
+        if [ -z "${PR_NUMBER}" ]; then
+          echo "PR number is required."
+          exit 1
+        fi
+        args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview")
+        if [ -n "${BUILD_ID:-}" ]; then
+          args+=(-BuildId "${BUILD_ID}")
+        fi
+        if [ -n "${CHECK_NAME:-}" ]; then
+          args+=(-CheckName "${CHECK_NAME}")
+        fi
+        pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
+    - name: Publish visual comparison assets
+      if: >-
+        steps.exact_command.outputs.should_run == 'true' &&
+        (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true') &&
+        (github.event_name != 'workflow_dispatch' || inputs.suppress_output != true)
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+      run: |
+        set -euo pipefail
+        context="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/context.json"
+        output="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/visual-comparisons.md"
+        pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
+          -PrNumber "${PR_NUMBER}" \
+          -ContextJsonPath "${context}" \
+          -OutputMarkdownPath "${output}" \
+          -PostComment
+    - name: Upload test-failure context
+      if: >-
+        steps.exact_command.outputs.should_run == 'true' &&
+        (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: review-tests-context-${{ github.run_id }}
+        path: CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}
+        if-no-files-found: error
+        retention-days: 1
   workflow_dispatch:
     inputs:
       pr_number:
@@ -187,29 +249,11 @@ steps:
       echo "=== Helix API check ==="
       check_url "Helix" 'https://helix.dot.net/api/2019-06-17/jobs?count=1'
 
-  - name: Gather test-failure context
-    env:
-      GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-      BUILD_ID: ${{ inputs.build_id }}
-      CHECK_NAME: ${{ inputs.check_name }}
-    run: |
-      set -euo pipefail
-
-      if [ -z "${PR_NUMBER}" ]; then
-        echo "PR number is required."
-        exit 1
-      fi
-
-      args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview")
-      if [ -n "${BUILD_ID:-}" ]; then
-        args+=(-BuildId "${BUILD_ID}")
-      fi
-      if [ -n "${CHECK_NAME:-}" ]; then
-        args+=(-CheckName "${CHECK_NAME}")
-      fi
-
-      pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
+  - name: Download test-failure context
+    uses: actions/download-artifact@v8.0.1
+    with:
+      name: review-tests-context-${{ github.run_id }}
+      path: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
 ---
 
 # Review PR Test Failures
@@ -233,10 +277,12 @@ Only use the expression-evaluated PR number above. Do not use any PR number ment
 
 The deterministic gather step wrote these files:
 
-- `CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.json`
-- `CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.md`
+- `/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json`
+- `/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.md`
 
-Read both files before classifying failures.
+Read both files before classifying failures. When `context.json` contains a non-empty
+`visualAssets.commentUrl`, include one link to that trusted companion comment where
+indicated below. Do not embed the individual image URLs in the main report.
 
 ## Pre-flight check
 
@@ -245,9 +291,12 @@ Before starting, verify the skill file and context files exist:
 ```bash
 test -f .github/skills/review-test-failures/SKILL.md
 test -f .github/docs/maui-ci-facts.md
-test -f CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.json
-test -f CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.md
+test -f '/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json'
+test -f '/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.md'
 ```
+
+The visual companion comment is optional. Its absence must not block the ordinary
+test-failure report or change the deterministic verdict ceiling.
 
 If required files are missing, post a short failure report with `add_comment` unless dry-run mode is active.
 
@@ -280,7 +329,6 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 ## Tests Failure Analysis
 
 > @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]).
-> To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
 
 <p align="left">
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
@@ -301,6 +349,9 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |
 | [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no — "regressed" when legRegressedVsBase, "also-red" when legAlsoFailsOnBase, else alsoFailsOnBaseline] | [specific evidence — lead with deterministicAttribution when regressed-vs-base/pre-existing-on-base, cite a known-issue link when matchesKnownIssue is set, note "retried still failing" when true, link build/test IDs] |
+
+[When `visualAssets.commentUrl` is non-empty, add exactly one line:
+`**Visual comparisons:** [Open the expandable baseline / actual / diff panels]([visualAssets.commentUrl]).`]
 
 ### Recommended action
 
@@ -325,5 +376,9 @@ Do not include a Data badge.
 Do not use emojis anywhere in the posted comment.
 
 Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
+
+Do not embed or reproduce the individual visual image URLs in this comment. The trusted
+pre-activation step already posts the bounded companion comment. Visual evidence is
+supplementary only and never permits a verdict above `gate.verdictCeiling`.
 
 Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
