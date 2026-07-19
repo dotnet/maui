@@ -197,7 +197,22 @@ namespace Microsoft.Maui.Hosting
 				// unconditionally) would overwrite any token a caller had set directly via
 				// ApplicationModel.Platform.MapServiceToken before MauiApp.Build().
 				if (_essentialsBuilder.MapServiceToken is not null)
-					ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
+				{
+					var geocoding = Geocoding.Default;
+					if (geocoding is IPlatformGeocoding platformGeocoding)
+					{
+						platformGeocoding.MapServiceToken = _essentialsBuilder.MapServiceToken;
+					}
+					else
+					{
+						services.GetService<ILoggerFactory>()?
+							.CreateLogger<EssentialsInitializer>()
+							.LogWarning(
+								"Configured map service token was not applied because {ImplementationType} does not implement {RequiredInterface}.",
+								geocoding.GetType().FullName,
+								nameof(IPlatformGeocoding));
+					}
+				}
 #endif
 
 #if !TIZEN

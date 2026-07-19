@@ -66,9 +66,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			ResetStaticField(typeof(Permissions), "currentImplementation");
 			ResetStaticField("Microsoft.Maui.ApplicationModel.ActivityStateManager", "defaultImplementation");
 			ResetStaticField("Microsoft.Maui.ApplicationModel.WindowStateManager", "defaultImplementation");
-#if WINDOWS || TIZEN
-			ApplicationModel.Platform.MapServiceToken = null;
-#endif
 			// Geocoding is a special case: uses SetCurrent but the backing field is defaultImplementation
 			ResetStaticField(typeof(Geocoding), "defaultImplementation");
 		}
@@ -336,6 +333,34 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Assert.Equal(token, ApplicationModel.Platform.MapServiceToken);
 		}
+
+		[Fact]
+		public void ConfiguredMapServiceToken_IsForwardedToDIPlatformGeocoding()
+		{
+			const string token = "test-token";
+			var mock = new StubPlatformGeocoding();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(mock);
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(token));
+
+			using var app = builder.Build();
+
+			Assert.Same(mock, Geocoding.Default);
+			Assert.Equal(token, mock.MapServiceToken);
+		}
+
+		[Fact]
+		public void ConfiguredMapServiceToken_SkipsDIImplementationWithoutPlatformContract()
+		{
+			var mock = new StubGeocoding();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(mock);
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken("test-token"));
+
+			using var app = builder.Build();
+
+			Assert.Same(mock, Geocoding.Default);
+		}
 #endif
 
 		static object? GetStaticField(Type type, string fieldName)
@@ -393,6 +418,13 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			public Task<IEnumerable<Location>> GetLocationsAsync(string address) =>
 				Task.FromResult<IEnumerable<Location>>(Array.Empty<Location>());
 		}
+
+#if WINDOWS || TIZEN
+		class StubPlatformGeocoding : StubGeocoding, IPlatformGeocoding
+		{
+			public string? MapServiceToken { get; set; }
+		}
+#endif
 
 		class StubContacts : IContacts
 		{
