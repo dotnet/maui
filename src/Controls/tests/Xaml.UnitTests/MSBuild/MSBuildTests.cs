@@ -993,9 +993,14 @@ public static class SharedMarker
 		// other Platforms/** content. Exercises both branches through the actual
 		// shipping SingleProject targets.
 		[Theory]
-		[InlineData("true", true)]
-		[InlineData("false", false)]
-		public void SingleProject_ConditionGatedFolderParticipatesOnlyWhenConditionIsTrue(string conditionValue, bool shouldIncludeConditionalFile)
+		[InlineData("true", "", true)]
+		[InlineData("false", "", false)]
+		[InlineData("true", "android", true)]
+		[InlineData("false", "android", false)]
+		public void SingleProject_ConditionGatedFolderParticipatesOnlyWhenConditionIsTrue(
+			string conditionValue,
+			string targetPlatformIdentifier,
+			bool shouldIncludeConditionalFile)
 		{
 			SetUp();
 			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
@@ -1046,9 +1051,13 @@ public static class ConditionalMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			// No _SingleProjectTestTargetPlatformIdentifier — non-platform build; the
-			// property toggles the mapping's item Condition to true/false.
-			Build(projectFile, additionalArgs: $"-p:IncludeConditionalBackend={conditionValue}");
+			// Exercise both neutral and recognized-platform builds. The property toggles
+			// the mapping's item Condition to true/false, while the unconditioned shared
+			// folder must remain included in every case.
+			var additionalArgs = $"-p:IncludeConditionalBackend={conditionValue}";
+			if (!string.IsNullOrEmpty(targetPlatformIdentifier))
+				additionalArgs += $" -p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			Build(projectFile, additionalArgs: additionalArgs);
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
