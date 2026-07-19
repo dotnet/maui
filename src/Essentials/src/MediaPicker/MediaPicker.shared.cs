@@ -156,8 +156,8 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <remarks>
 		/// <para>Please note that performance might be affected by the compression quality, especially on lower-end devices.</para>
-		/// <para>For JPEG images, this controls the lossy compression quality directly.</para>
-		/// <para>For PNG images, values below 90 will convert to JPEG format for better compression. Values 90-99 will scale down the PNG image. Value 100 preserves original PNG format and quality.</para>
+		/// <para>The output container is preserved deterministically: a PNG source is saved as PNG and any other format is saved as JPEG.</para>
+		/// <para>For JPEG output this controls the lossy compression quality directly. PNG output is lossless, so this value does not affect PNG encoding (resizing, if requested, still applies).</para>
 		/// </remarks>
 		public int CompressionQuality
 		{

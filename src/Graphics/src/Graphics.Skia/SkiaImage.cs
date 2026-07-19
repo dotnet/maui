@@ -228,11 +228,15 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		/// <inheritdoc/>
 		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> Save(stream, format, options.Quality);
+			=> Save(stream, format, ClampQuality(options.Quality));
 
 		/// <inheritdoc/>
 		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> SaveAsync(stream, format, options.Quality);
+			=> SaveAsync(stream, format, ClampQuality(options.Quality));
+
+		// The options-based save clamps quality into 0..1 (consistent with the other platforms),
+		// rather than throwing like the legacy Save(stream, format, float) overload.
+		static float ClampQuality(float quality) => Math.Max(0f, Math.Min(1f, quality));
 
 		/// <summary>
 		/// Creates a new image from a stream.
