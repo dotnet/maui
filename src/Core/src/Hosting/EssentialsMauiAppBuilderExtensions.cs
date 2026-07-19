@@ -168,10 +168,13 @@ namespace Microsoft.Maui.Hosting
 		}
 #endif
 
-		class EssentialsInitializer : IMauiInitializeService
+		class EssentialsInitializer : IMauiInitializeService, IDisposable
 		{
 			private readonly IEnumerable<EssentialsRegistration> _essentialsRegistrations;
 			private EssentialsBuilder? _essentialsBuilder;
+#if !TIZEN
+			private IAppActions? _subscribedAppActions;
+#endif
 
 			public EssentialsInitializer(IEnumerable<EssentialsRegistration> essentialsRegistrations)
 			{
@@ -226,7 +229,10 @@ namespace Microsoft.Maui.Hosting
 				// lifetime (and across repeated MauiApp.Build() calls in tests / hosting scenarios)
 				// even when the handler is a no-op.
 				if (_essentialsBuilder.AppActionHandlers is not null)
-					AppActions.OnAppAction += HandleOnAppAction;
+				{
+					_subscribedAppActions = AppActions.Current;
+					_subscribedAppActions.AppActionActivated += HandleOnAppAction;
+				}
 
 				if (_essentialsBuilder.AppActions is not null)
 				{
@@ -236,6 +242,18 @@ namespace Microsoft.Maui.Hosting
 
 				if (_essentialsBuilder.TrackVersions)
 					VersionTracking.Track();
+			}
+
+			public void Dispose()
+			{
+#if !TIZEN
+				if (_subscribedAppActions is not null)
+				{
+					_subscribedAppActions.AppActionActivated -= HandleOnAppAction;
+					_subscribedAppActions = null;
+				}
+#endif
+				_essentialsBuilder = null;
 			}
 
 			/// <summary>

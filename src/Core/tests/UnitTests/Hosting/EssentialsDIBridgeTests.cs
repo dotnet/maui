@@ -285,6 +285,26 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void ConfiguredAppActionHandlerUnsubscribesWhenMauiAppIsDisposed()
+		{
+			var appActions = new StubAppActions();
+			var handlerCalls = 0;
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions>(appActions);
+			builder.ConfigureEssentials(essentials =>
+				essentials.OnAppAction(_ => handlerCalls++));
+
+			using (var app = builder.Build())
+			{
+				appActions.Raise(new AppAction("test", "Test"));
+				Assert.Equal(1, handlerCalls);
+			}
+
+			appActions.Raise(new AppAction("test", "Test"));
+			Assert.Equal(1, handlerCalls);
+		}
+
+		[Fact]
 		public void StaticFacadeIsNotClearedWhenOwningMauiAppIsDisposed()
 		{
 			var mock = new StubPreferences();
@@ -476,16 +496,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		{
 			public bool IsSupported => true;
 
-			public event EventHandler<AppActionEventArgs>? AppActionActivated
-			{
-				add { }
-				remove { }
-			}
+			public event EventHandler<AppActionEventArgs>? AppActionActivated;
 
 			public Task<IEnumerable<AppAction>> GetAsync() =>
 				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
 
 			public Task SetAsync(IEnumerable<AppAction> actions) => Task.CompletedTask;
+
+			public void Raise(AppAction appAction) =>
+				AppActionActivated?.Invoke(this, new AppActionEventArgs(appAction));
 		}
 	}
 }
