@@ -2299,7 +2299,7 @@ stages:
           - pwsh: |
               $ErrorActionPreference = 'Continue'
               $cats = "$(detectedCategories)"
-              $platform = "${{ parameters.Platform }}"
+              $platform = "$env:PARAM_PLATFORM"
               Write-Host "Detected categories from ReviewPR stage: $cats"
               Write-Host "Platform: $platform"
 
@@ -2591,6 +2591,29 @@ stages:
                   $snapDiffDest = Join-Path $catDir "snapshots-diff"
                   Write-Host "Moving snapshot-diffs from $snapDiffSrc -> $snapDiffDest"
                   Move-Item -Path $snapDiffSrc -Destination $snapDiffDest -Force -ErrorAction SilentlyContinue
+
+                  # Ship the committed BASELINE PNG next to each actual/-diff PNG so
+                  # the Post-AI-summary stage can render a baseline|actual|diff image
+                  # table inline in the review (the "Snapshot differences" section).
+                  # VisualRegressionTester writes only the actual (<name>.png) and the
+                  # computed diff (<name>-diff.png) into snapshots-diff; the baseline
+                  # lives in the repo at
+                  # src/Controls/tests/TestCases.*/snapshots/<env>/<name>.png — copy it
+                  # in as <name>-baseline.png. Best-effort: a missing baseline (a
+                  # brand-new snapshot) simply omits that column downstream.
+                  try {
+                    foreach ($dp in @(Get-ChildItem -Path $snapDiffDest -Filter '*-diff.png' -Recurse -ErrorAction SilentlyContinue)) {
+                      $snapName = $dp.Name -replace '-diff\.png$', ''
+                      $envName  = Split-Path $dp.DirectoryName -Leaf
+                      $baseDest = Join-Path $dp.DirectoryName ($snapName + '-baseline.png')
+                      if (Test-Path $baseDest) { continue }
+                      $wantSuffix = "/snapshots/$envName/$snapName.png"
+                      $baseSrc = Get-ChildItem -Path 'src/Controls/tests' -Recurse -Filter ($snapName + '.png') -Attributes !ReparsePoint -ErrorAction SilentlyContinue |
+                        Where-Object { ($_.FullName -replace '\\', '/') -like "*$wantSuffix" } |
+                        Select-Object -First 1
+                      if ($baseSrc) { Copy-Item $baseSrc.FullName $baseDest -Force -ErrorAction SilentlyContinue }
+                    }
+                  } catch { Write-Host "Baseline PNG capture skipped: $_" }
                 }
 
                 # Ship the UI-test failure diagnostics (screenshots + page source +
@@ -2636,6 +2659,13 @@ stages:
               exit 0
             displayName: 'Run deep UI tests (per-category loop)'
             timeoutInMinutes: 320
+            env:
+              # Passed as env (not an inline compile-time expression) so this large
+              # pwsh block contains NO ${{ }} expression — AzDO caps any scalar that
+              # DOES contain one at 21000 chars, and this block exceeds that. Reading
+              # the platform via $env:PARAM_PLATFORM keeps the block a plain literal
+              # with no length limit (mirrors the Post-AI-summary task's pattern).
+              PARAM_PLATFORM: ${{ parameters.Platform }}
 
           # Re-enable Notification Center after Catalyst tests (mirrors main CI cleanup)
           - ${{ if eq(parameters.Platform, 'catalyst') }}:
@@ -3101,6 +3131,7 @@ stages:
               $perCategoryFailures = [ordered]@{}
               $perCategoryBaseline = [ordered]@{}
               $perCategorySetupFailures = [ordered]@{}
+              $snapDiffTriples = New-Object System.Collections.Generic.List[object]
               foreach ($k in ($byCat.Keys | Sort-Object)) {
                 $b = $byCat[$k]
                 $totalPassed += [int]$b.Passed
@@ -3149,6 +3180,25 @@ stages:
                 }
                 $diffCol = if ($diffCount -gt 0) { "$diffCount diff PNG$(if ($diffCount -eq 1) {'' } else {'s'})" } else { '—' }
                 [void]$sb.AppendLine("| ``$k`` | $col | $diffCol |")
+
+                # Collect every snapshot-diff PNG (with its sibling actual + baseline,
+                # if shipped) so the "Snapshot differences" section below can embed the
+                # real images. Layout: <catDir>/snapshots-diff/<env>/<name>{,-diff,-baseline}.png
+                if ($diffCount -gt 0 -and (Test-Path $catDir)) {
+                  foreach ($dp in @(Get-ChildItem -Path $catDir -Filter '*-diff.png' -Recurse -ErrorAction SilentlyContinue)) {
+                    $snapName = $dp.Name -replace '-diff\.png$', ''
+                    $actualPath   = Join-Path $dp.DirectoryName ($snapName + '.png')
+                    $baselinePath = Join-Path $dp.DirectoryName ($snapName + '-baseline.png')
+                    $snapDiffTriples.Add([pscustomobject]@{
+                      Category = $k
+                      Env      = (Split-Path $dp.DirectoryName -Leaf)
+                      Name     = $snapName
+                      Diff     = $dp.FullName
+                      Actual   = $(if (Test-Path $actualPath) { $actualPath } else { $null })
+                      Baseline = $(if (Test-Path $baselinePath) { $baselinePath } else { $null })
+                    })
+                  }
+                }
 
                 # Capture failed test entries from the parsed TRX so we can
                 # render a per-category disclosure section listing the actual
@@ -3211,6 +3261,94 @@ stages:
                 [void]$sb.AppendLine()
                 [void]$sb.AppendLine("</details>")
                 [void]$sb.AppendLine()
+              }
+
+              # ── Snapshot differences — embed baseline/actual/diff IMAGES inline ──
+              # Show the ACTUAL visual delta (like a hand-authored screenshot-diff
+              # comment) instead of only a count + artifact link. Binary PNGs can't
+              # go through the text-only gists API, but a gist IS a git repo, so we
+              # create ONE secret gist, git-push the (capped) PNG set, and render
+              # SHA-pinned raw URLs (which serve image/png and are anonymously
+              # fetchable, so GitHub's image proxy renders them). Entirely
+              # best-effort: ANY failure (most likely the maui-bot PAT lacking the
+              # 'gist' scope) logs a diagnostic and leaves the review exactly as it
+              # was — it never blocks posting.
+              try {
+                $maxSnapEmbed = 12
+                $ghTok = $env:GH_TOKEN
+                if ($snapDiffTriples.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace($ghTok)) {
+                  $toEmbed = @($snapDiffTriples | Select-Object -First $maxSnapEmbed)
+                  $stageDir = Join-Path "$(Agent.TempDirectory)" ("snapgist-" + [Guid]::NewGuid().ToString('N').Substring(0, 8))
+                  New-Item -ItemType Directory -Force -Path $stageDir | Out-Null
+                  $idx = 0
+                  $renderRecs = @()
+                  foreach ($t in $toEmbed) {
+                    $idx++
+                    $safeName = ($t.Name -replace '[^A-Za-z0-9._-]', '_')
+                    $safeCat  = ($t.Category -replace '[^A-Za-z0-9._-]', '_')
+                    $prefix   = ('{0:D2}-{1}-{2}' -f $idx, $safeCat, $safeName)
+                    $rec = [pscustomobject]@{ Name = $t.Name; Category = $t.Category; Env = $t.Env; Baseline = $null; Actual = $null; Diff = $null }
+                    if ($t.Baseline -and (Test-Path $t.Baseline)) { $fn = "$prefix-baseline.png"; Copy-Item $t.Baseline (Join-Path $stageDir $fn) -Force -ErrorAction SilentlyContinue; $rec.Baseline = $fn }
+                    if ($t.Actual   -and (Test-Path $t.Actual))   { $fn = "$prefix-actual.png";   Copy-Item $t.Actual   (Join-Path $stageDir $fn) -Force -ErrorAction SilentlyContinue; $rec.Actual = $fn }
+                    if ($t.Diff     -and (Test-Path $t.Diff))     { $fn = "$prefix-diff.png";     Copy-Item $t.Diff     (Join-Path $stageDir $fn) -Force -ErrorAction SilentlyContinue; $rec.Diff = $fn }
+                    if ($rec.Baseline -or $rec.Actual -or $rec.Diff) { $renderRecs += $rec }
+                  }
+                  $pngCount = @(Get-ChildItem -Path $stageDir -Filter '*.png' -ErrorAction SilentlyContinue).Count
+                  if ($pngCount -gt 0 -and $renderRecs.Count -gt 0) {
+                    # 1) create a secret gist (placeholder README) via the API
+                    $gistBodyFile = Join-Path $stageDir '_gistcreate.json'
+                    @{ description = "maui-copilot snapshot diffs - PR #$prNumber build $(Build.BuildId)"; public = $false; files = @{ 'README.md' = @{ content = "Snapshot visual-diff images for the AI review of PR #$prNumber (build $(Build.BuildId)). Auto-generated." } } } | ConvertTo-Json -Depth 6 | Set-Content $gistBodyFile -Encoding UTF8
+                    $gistApiOut = gh api -X POST gists --input $gistBodyFile 2>&1
+                    $gist = $null
+                    try { $gist = ($gistApiOut | ConvertFrom-Json) } catch { }
+                    if (-not $gist -or -not $gist.id) { throw "gist create failed (maui-bot PAT likely missing the 'gist' scope)" }
+                    $gid = $gist.id; $gowner = $gist.owner.login
+                    # 2) git-push the binary PNGs into the gist repo (gists are git repos)
+                    $gistRepo = Join-Path $stageDir 'gistrepo'
+                    git clone "https://gist.github.com/$gid.git" $gistRepo 2>&1 | Out-Null
+                    if (-not (Test-Path (Join-Path $gistRepo '.git'))) { throw "gist clone failed" }
+                    Get-ChildItem -Path $stageDir -Filter '*.png' | ForEach-Object { Copy-Item $_.FullName (Join-Path $gistRepo $_.Name) -Force }
+                    git -C $gistRepo -c user.email='maui-bot@users.noreply.github.com' -c user.name='MauiBot' add --all 2>&1 | Out-Null
+                    git -C $gistRepo -c user.email='maui-bot@users.noreply.github.com' -c user.name='MauiBot' commit -q -m "snapshot diffs for PR #$prNumber build $(Build.BuildId)" 2>&1 | Out-Null
+                    $gbranch = (git -C $gistRepo symbolic-ref --short HEAD 2>$null)
+                    if ([string]::IsNullOrWhiteSpace($gbranch)) { $gbranch = 'master' }
+                    # Token is passed inline to push only (never persisted to .git/config
+                    # since clone used the tokenless URL); output is discarded so it can
+                    # never surface in the log (also AzDO-masked). Security rule 8.
+                    $null = git -C $gistRepo push "https://$($gowner):$($ghTok)@gist.github.com/$gid.git" "HEAD:$gbranch" 2>&1
+                    $gpushRc = $LASTEXITCODE
+                    $gsha = (git -C $gistRepo rev-parse HEAD 2>$null)
+                    if ($gpushRc -ne 0 -or [string]::IsNullOrWhiteSpace($gsha)) { throw "gist push failed" }
+                    $gsha = $gsha.Trim()
+                    $rawBase = "https://gist.githubusercontent.com/$gowner/$gid/raw/$gsha"
+                    # 3) render the collapsible baseline|actual|diff image section
+                    $moreNote = if ($snapDiffTriples.Count -gt $renderRecs.Count) { " (first $($renderRecs.Count) of $($snapDiffTriples.Count))" } else { " ($($renderRecs.Count))" }
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("<details><summary>📸 <strong>Snapshot differences — baseline vs actual vs diff</strong>$moreNote</summary>")
+                    [void]$sb.AppendLine("<br/>")
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("> For each failing ``VerifyScreenshot`` snapshot: the committed **baseline**, the **actual** render on this CI agent, and the computed **diff**. A large, uniform diff across many snapshots is usually a cross-machine baseline/environment mismatch (e.g. the macOS TitleBar / window chrome), not a code regression — compare against baseline history before concluding.")
+                    [void]$sb.AppendLine()
+                    foreach ($rec in $renderRecs) {
+                      $envSuffix = if ($rec.Env -and $rec.Env -ne 'snapshots-diff') { " — ``$($rec.Env)``" } else { '' }
+                      [void]$sb.AppendLine("<details><summary><code>$($rec.Name)</code>$envSuffix · <code>$($rec.Category)</code></summary>")
+                      [void]$sb.AppendLine("<br/>")
+                      [void]$sb.AppendLine()
+                      $heads = @(); $cells = @()
+                      if ($rec.Baseline) { $heads += '<th>Baseline (committed)</th>'; $cells += "<td><img width=`"260`" alt=`"$($rec.Name) baseline`" src=`"$rawBase/$($rec.Baseline)`"></td>" }
+                      if ($rec.Actual)   { $heads += '<th>Actual (CI)</th>';          $cells += "<td><img width=`"260`" alt=`"$($rec.Name) actual`" src=`"$rawBase/$($rec.Actual)`"></td>" }
+                      if ($rec.Diff)     { $heads += '<th>Diff</th>';                 $cells += "<td><img width=`"260`" alt=`"$($rec.Name) diff`" src=`"$rawBase/$($rec.Diff)`"></td>" }
+                      [void]$sb.AppendLine("<table><tr>$([string]::Join('', $heads))</tr><tr>$([string]::Join('', $cells))</tr></table>")
+                      [void]$sb.AppendLine("</details>")
+                      [void]$sb.AppendLine()
+                    }
+                    [void]$sb.AppendLine("</details>")
+                    [void]$sb.AppendLine()
+                    Write-Host "Embedded $($renderRecs.Count) snapshot-diff image set(s) via gist $gid (sha $gsha)"
+                  }
+                }
+              } catch {
+                Write-Host "##[warning]Snapshot-diff image embedding skipped: $($_.Exception.Message)"
               }
 
               # Fixture setup failures usually mark every test in the fixture as
