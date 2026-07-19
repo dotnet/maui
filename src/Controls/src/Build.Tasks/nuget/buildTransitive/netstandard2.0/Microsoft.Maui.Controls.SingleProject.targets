@@ -101,7 +101,26 @@
           AfterTargets="_MauiRemovePlatformCompileItems"
           Condition=" '$(SingleProject)' == 'true' and '@(_MauiPlatformSpecificCompileItems)' != '' ">
     <ItemGroup>
-      <Compile Update="@(_MauiPlatformSpecificCompileItems)">
+      <!--
+        Dynamic Compile Update item specs apply the metadata to unrelated Compile
+        items. Intersect the current Compile list with the kept platform items,
+        then replace only those matches while preserving their existing metadata.
+      -->
+      <_MauiCompileItemsNotToUnflip Include="@(Compile)" />
+      <_MauiCompileItemsNotToUnflip
+          Remove="@(_MauiPlatformSpecificCompileItems)"
+          MatchOnMetadata="FullPath"
+          MatchOnMetadataOptions="PathLike" />
+      <_MauiCompileItemsToUnflip Include="@(Compile)" />
+      <_MauiCompileItemsToUnflip
+          Remove="@(_MauiCompileItemsNotToUnflip)"
+          MatchOnMetadata="FullPath"
+          MatchOnMetadataOptions="PathLike" />
+      <Compile
+          Remove="@(_MauiCompileItemsToUnflip)"
+          MatchOnMetadata="FullPath"
+          MatchOnMetadataOptions="PathLike" />
+      <Compile Include="@(_MauiCompileItemsToUnflip)">
         <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
       </Compile>
     </ItemGroup>

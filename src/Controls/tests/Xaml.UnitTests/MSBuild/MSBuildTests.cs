@@ -1088,6 +1088,12 @@ public static class ConditionalMarker
 				.WithAttribute("Include", "Platforms\\Shared\\"));
 			project.Add(customMappings);
 
+			var unrelatedCompileMetadata = NewElement("ItemGroup");
+			var unrelatedCompile = NewElement("Compile").WithAttribute("Update", "Entry.cs");
+			unrelatedCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("true"));
+			unrelatedCompileMetadata.Add(unrelatedCompile);
+			project.Add(unrelatedCompileMetadata);
+
 			WriteFile("Entry.cs", @"
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -1137,6 +1143,9 @@ public static class SharedMarker
 				log.Contains("SharedMarker.cs|ExcludeFromCurrentConfiguration=false", StringComparison.OrdinalIgnoreCase),
 				"_MauiUnflipKeptCompileItemMetadata should flip ExcludeFromCurrentConfiguration back to false " +
 				"on the kept shared folder's Compile item. Build log:\n" + log);
+			Assert.True(
+				log.Contains("Entry.cs|ExcludeFromCurrentConfiguration=true", StringComparison.OrdinalIgnoreCase),
+				"_MauiUnflipKeptCompileItemMetadata must preserve unrelated Compile metadata. Build log:\n" + log);
 		}
 
 		// Backward compatibility: a folder that declares only the legacy singular
