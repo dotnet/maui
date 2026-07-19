@@ -3265,20 +3265,23 @@ stages:
 
               # ── Snapshot differences — embed baseline/actual/diff IMAGES inline ──
               # Show the ACTUAL visual delta (like a hand-authored screenshot-diff
-              # comment) instead of only a count + artifact link. Binary PNGs can't
-              # go through the text-only gists API, but a gist IS a git repo, so we
-              # create ONE secret gist, git-push the (capped) PNG set, and render
-              # SHA-pinned raw URLs (which serve image/png and are anonymously
-              # fetchable, so GitHub's image proxy renders them). Entirely
-              # best-effort: ANY failure (most likely the maui-bot PAT lacking the
-              # 'gist' scope) logs a diagnostic and leaves the review exactly as it
-              # was — it never blocks posting.
+              # comment) instead of only a count + artifact link. Binary PNGs are
+              # uploaded to a dedicated asset branch (review-tests-assets) via the
+              # git blobs/trees API and referenced by commit-pinned raw URLs. This
+              # needs ONLY the repo/contents scope the maui-bot token already has
+              # (it posts reviews + applies labels) — NOT the 'gist' scope — and the
+              # token never appears in any URL or command (gh api reads it from the
+              # environment). raw.githubusercontent.com serves the PNGs from the
+              # public repo anonymously, so GitHub's image proxy renders them. The
+              # same asset branch is shared with the /review tests GHA workflow.
+              # Entirely best-effort: ANY failure logs a diagnostic and leaves the
+              # review exactly as it was — it never blocks posting.
               try {
                 $maxSnapEmbed = 12
                 $ghTok = $env:GH_TOKEN
                 if ($snapDiffTriples.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace($ghTok)) {
                   $toEmbed = @($snapDiffTriples | Select-Object -First $maxSnapEmbed)
-                  $stageDir = Join-Path "$(Agent.TempDirectory)" ("snapgist-" + [Guid]::NewGuid().ToString('N').Substring(0, 8))
+                  $stageDir = Join-Path "$(Agent.TempDirectory)" ("snapembed-" + [Guid]::NewGuid().ToString('N').Substring(0, 8))
                   New-Item -ItemType Directory -Force -Path $stageDir | Out-Null
                   $idx = 0
                   $renderRecs = @()
@@ -3295,32 +3298,63 @@ stages:
                   }
                   $pngCount = @(Get-ChildItem -Path $stageDir -Filter '*.png' -ErrorAction SilentlyContinue).Count
                   if ($pngCount -gt 0 -and $renderRecs.Count -gt 0) {
-                    # 1) create a secret gist (placeholder README) via the API
-                    $gistBodyFile = Join-Path $stageDir '_gistcreate.json'
-                    @{ description = "maui-copilot snapshot diffs - PR #$prNumber build $(Build.BuildId)"; public = $false; files = @{ 'README.md' = @{ content = "Snapshot visual-diff images for the AI review of PR #$prNumber (build $(Build.BuildId)). Auto-generated." } } } | ConvertTo-Json -Depth 6 | Set-Content $gistBodyFile -Encoding UTF8
-                    $gistApiOut = gh api -X POST gists --input $gistBodyFile 2>&1
-                    $gist = $null
-                    try { $gist = ($gistApiOut | ConvertFrom-Json) } catch { }
-                    if (-not $gist -or -not $gist.id) { throw "gist create failed (maui-bot PAT likely missing the 'gist' scope)" }
-                    $gid = $gist.id; $gowner = $gist.owner.login
-                    # 2) git-push the binary PNGs into the gist repo (gists are git repos)
-                    $gistRepo = Join-Path $stageDir 'gistrepo'
-                    git clone "https://gist.github.com/$gid.git" $gistRepo 2>&1 | Out-Null
-                    if (-not (Test-Path (Join-Path $gistRepo '.git'))) { throw "gist clone failed" }
-                    Get-ChildItem -Path $stageDir -Filter '*.png' | ForEach-Object { Copy-Item $_.FullName (Join-Path $gistRepo $_.Name) -Force }
-                    git -C $gistRepo -c user.email='maui-bot@users.noreply.github.com' -c user.name='MauiBot' add --all 2>&1 | Out-Null
-                    git -C $gistRepo -c user.email='maui-bot@users.noreply.github.com' -c user.name='MauiBot' commit -q -m "snapshot diffs for PR #$prNumber build $(Build.BuildId)" 2>&1 | Out-Null
-                    $gbranch = (git -C $gistRepo symbolic-ref --short HEAD 2>$null)
-                    if ([string]::IsNullOrWhiteSpace($gbranch)) { $gbranch = 'master' }
-                    # Token is passed inline to push only (never persisted to .git/config
-                    # since clone used the tokenless URL); output is discarded so it can
-                    # never surface in the log (also AzDO-masked). Security rule 8.
-                    $null = git -C $gistRepo push "https://$($gowner):$($ghTok)@gist.github.com/$gid.git" "HEAD:$gbranch" 2>&1
-                    $gpushRc = $LASTEXITCODE
-                    $gsha = (git -C $gistRepo rev-parse HEAD 2>$null)
-                    if ($gpushRc -ne 0 -or [string]::IsNullOrWhiteSpace($gsha)) { throw "gist push failed" }
-                    $gsha = $gsha.Trim()
-                    $rawBase = "https://gist.githubusercontent.com/$gowner/$gid/raw/$gsha"
+                    # 1) resolve the shared asset repo + branch. Public repo =>
+                    #    raw.githubusercontent.com serves the PNGs anonymously so
+                    #    GitHub's image proxy renders them in the review body.
+                    $assetRepo = if ($env:BUILD_REPOSITORY_NAME) { $env:BUILD_REPOSITORY_NAME } else { 'dotnet/maui' }
+                    $assetBranch = 'review-tests-assets'
+                    $assetPrefix = "azdo-review/pr-$prNumber/$(Build.BuildId)"
+                    # ensure the asset branch exists (branch it off the default tip)
+                    $branchRef = $null
+                    try { $branchRef = (gh api "repos/$assetRepo/git/ref/heads/$assetBranch" 2>$null | ConvertFrom-Json) } catch { $branchRef = $null }
+                    if (-not $branchRef -or -not $branchRef.object) {
+                      $repoInfo = (gh api "repos/$assetRepo" | ConvertFrom-Json)
+                      $defRef = (gh api "repos/$assetRepo/git/ref/heads/$($repoInfo.default_branch)" | ConvertFrom-Json)
+                      $newRefFile = Join-Path $stageDir '_newref.json'
+                      @{ ref = "refs/heads/$assetBranch"; sha = $defRef.object.sha } | ConvertTo-Json | Set-Content $newRefFile -Encoding UTF8
+                      gh api -X POST "repos/$assetRepo/git/refs" --input $newRefFile 2>&1 | Out-Null
+                      try { $branchRef = (gh api "repos/$assetRepo/git/ref/heads/$assetBranch" 2>$null | ConvertFrom-Json) } catch { $branchRef = $null }
+                    }
+                    if (-not $branchRef -or -not $branchRef.object) { throw "asset branch '$assetBranch' unavailable (maui-bot token lacks contents:write?)" }
+                    # 2) upload each staged PNG as a git blob (base64) and collect tree entries
+                    $treeEntries = New-Object System.Collections.Generic.List[object]
+                    foreach ($f in (Get-ChildItem -Path $stageDir -Filter '*.png')) {
+                      $b64 = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($f.FullName))
+                      $blobFile = Join-Path $stageDir '_blob.json'
+                      @{ content = $b64; encoding = 'base64' } | ConvertTo-Json | Set-Content $blobFile -Encoding UTF8
+                      $blob = (gh api -X POST "repos/$assetRepo/git/blobs" --input $blobFile | ConvertFrom-Json)
+                      if (-not $blob.sha) { throw "blob upload failed for $($f.Name)" }
+                      $treeEntries.Add([ordered]@{ path = "$assetPrefix/$($f.Name)"; mode = '100644'; type = 'blob'; sha = [string]$blob.sha })
+                    }
+                    if ($treeEntries.Count -eq 0) { throw "no blobs uploaded" }
+                    # 3) create a tree + commit on the branch tip and fast-forward the ref.
+                    #    Retry on a raced update - the /review tests GHA writes here too.
+                    $commitSha = $null
+                    for ($attempt = 1; $attempt -le 3 -and -not $commitSha; $attempt++) {
+                      try {
+                        $tip = (gh api "repos/$assetRepo/git/ref/heads/$assetBranch" | ConvertFrom-Json)
+                        $parentSha = [string]$tip.object.sha
+                        $parentCommit = (gh api "repos/$assetRepo/git/commits/$parentSha" | ConvertFrom-Json)
+                        $treeFile = Join-Path $stageDir '_tree.json'
+                        @{ base_tree = $parentCommit.tree.sha; tree = $treeEntries.ToArray() } | ConvertTo-Json -Depth 8 | Set-Content $treeFile -Encoding UTF8
+                        $tree = (gh api -X POST "repos/$assetRepo/git/trees" --input $treeFile | ConvertFrom-Json)
+                        if (-not $tree.sha) { throw "tree create failed" }
+                        $commitFile = Join-Path $stageDir '_commit.json'
+                        @{ message = "snapshot diffs for PR #$prNumber build $(Build.BuildId)"; tree = [string]$tree.sha; parents = @($parentSha) } | ConvertTo-Json -Depth 4 | Set-Content $commitFile -Encoding UTF8
+                        $commit = (gh api -X POST "repos/$assetRepo/git/commits" --input $commitFile | ConvertFrom-Json)
+                        if (-not $commit.sha) { throw "commit create failed" }
+                        $patchFile = Join-Path $stageDir '_patch.json'
+                        @{ sha = [string]$commit.sha; force = $false } | ConvertTo-Json | Set-Content $patchFile -Encoding UTF8
+                        gh api -X PATCH "repos/$assetRepo/git/refs/heads/$assetBranch" --input $patchFile 2>&1 | Out-Null
+                        if ($LASTEXITCODE -ne 0) { throw "ref update raced (attempt $attempt)" }
+                        $commitSha = [string]$commit.sha
+                      } catch {
+                        if ($attempt -ge 3) { throw }
+                        Start-Sleep -Seconds $attempt
+                      }
+                    }
+                    if ([string]::IsNullOrWhiteSpace($commitSha)) { throw "asset branch update failed" }
+                    $rawBase = "https://raw.githubusercontent.com/$assetRepo/$commitSha/$assetPrefix"
                     # 3) render the collapsible baseline|actual|diff image section
                     $moreNote = if ($snapDiffTriples.Count -gt $renderRecs.Count) { " (first $($renderRecs.Count) of $($snapDiffTriples.Count))" } else { " ($($renderRecs.Count))" }
                     [void]$sb.AppendLine()
@@ -3344,15 +3378,15 @@ stages:
                     }
                     [void]$sb.AppendLine("</details>")
                     [void]$sb.AppendLine()
-                    Write-Host "Embedded $($renderRecs.Count) snapshot-diff image set(s) via gist $gid (sha $gsha)"
+                    Write-Host "Embedded $($renderRecs.Count) snapshot-diff image set(s) via asset branch $assetBranch (commit $commitSha)"
                   }
                 }
               } catch {
                 Write-Host "##[warning]Snapshot-diff image embedding skipped: $($_.Exception.Message)"
               }
-              # The best-effort embed above runs native commands (gh/git) that can
-              # fail — most commonly the maui-bot PAT lacking the 'gist' scope —
-              # leaving $LASTEXITCODE non-zero. Reset it so a downstream code path
+              # The best-effort embed above runs native commands (gh api) that can
+              # fail — a GitHub API error, the maui-bot token lacking contents:write,
+              # or a raced ref update — leaving $LASTEXITCODE non-zero. Reset it so a downstream code path
               # that runs no later native command (e.g. deferred mode with no
               # PRAgent dir, on a gate-FAILED PR) can't inherit that non-zero code
               # and fail the whole "Post AI summary review" task. The image embed
