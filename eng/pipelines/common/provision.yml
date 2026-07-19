@@ -287,56 +287,77 @@ steps:
           echo "Re-trying simulator runtime installation..."
           sudo xcodebuild $DOWNLOAD_ARGS
 
-          # A wedged CoreSimulatorService can leave runtimes "Ready" on disk yet NOT
-          # create-usable (`simctl create` -> "Invalid runtime"), which silently dead-ends
-          # the later iOS sim boot and degrades the maui-copilot gate to INCONCLUSIVE on a
-          # perfectly provisioned agent. Prove create-usability HERE — only inside this
-          # already-failed retry branch, so the healthy first-download path is untouched —
-          # and, if a runtime is still not usable, restart the daemon and re-download once
-          # more. A throwaway device is created then immediately deleted; nothing persists.
-          for smokeAttempt in 1 2; do
+          # KEEP TRYING until a runtime is actually create-usable — do NOT give up after a
+          # fixed number of tries and let the iOS gate self-degrade to INCONCLUSIVE. A wedged
+          # CoreSimulatorService can leave runtimes "Ready" on disk yet NOT create-usable
+          # (`simctl create` -> "Invalid runtime"), or leave the agent with 0 usable runtimes
+          # entirely ("0 runtimes enrolled / 0 images on disk"). The only reliable cure is to
+          # purge the on-disk image store and re-download on a clean slate — sometimes more
+          # than once (the daemon re-wedges, or a multi-GB download is transient/partial). Loop
+          # the restart+purge+re-download+smoke-test cycle until a create-usable runtime exists,
+          # bounded by BOTH an attempt cap AND a wall-clock budget kept safely under this step's
+          # timeout so a retry can never be killed mid-download (which would leave a half-staged
+          # image). Only inside this already-failed retry branch, so the healthy first-download
+          # path is untouched. Escalates to the nuclear on-disk image-store purge from the 2nd
+          # attempt on (the ghost-collision / drain-succeeds-but-still-wedged case a conditional
+          # purge alone missed). (PR #36427/#36577: agent showed "0 runtimes enrolled / 0 images
+          # on disk", the step retried 3x then degraded — directive: "iOS must work, keep trying
+          # as long as it works".) A throwaway device is created then immediately deleted.
+          maxRuntimeAttempts=8
+          installBudgetSeconds=2100   # ~35 min; leaves >=10 min of the 45-min step for a final download + verify
+          smokeAttempt=0
+          while : ; do
+            smokeAttempt=$((smokeAttempt+1))
             SMOKE_RT=$(xcrun simctl list runtimes -j | jq -r '[.runtimes[] | select(.platform=="iOS" and .isAvailable)] | sort_by(.version) | last | .identifier')
             SMOKE_DT=$(xcrun simctl list devicetypes -j | jq -r '[.devicetypes[] | select(.productFamily=="iPhone")] | .[0].identifier')
-            if [[ -n "$SMOKE_RT" && -n "$SMOKE_DT" ]]; then
+            if [[ -n "$SMOKE_RT" && "$SMOKE_RT" != "null" && -n "$SMOKE_DT" && "$SMOKE_DT" != "null" ]]; then
               SMOKE_UDID=$(xcrun simctl create "copilot-runtime-smoketest" "$SMOKE_DT" "$SMOKE_RT" 2>&1)
               SMOKE_RC=$?
               if [[ "$SMOKE_RC" == "0" ]]; then
-                echo "Simulator runtime is create-usable (smoke device $SMOKE_UDID); cleaning up."
+                echo "Simulator runtime is create-usable (smoke device $SMOKE_UDID) after $smokeAttempt attempt(s); cleaning up."
                 xcrun simctl delete "$SMOKE_UDID" 2>/dev/null || true
                 break
               fi
-              echo "Runtime NOT create-usable after download ('$SMOKE_UDID'); CoreSimulatorService still wedged."
+              echo "Runtime NOT create-usable (attempt $smokeAttempt/$maxRuntimeAttempts): '$SMOKE_UDID' — CoreSimulatorService still wedged."
             else
-              echo "Could not resolve an iOS runtime/devicetype to smoke-test (rt='$SMOKE_RT' dt='$SMOKE_DT')."
+              echo "Could not resolve an iOS runtime/devicetype to smoke-test (attempt $smokeAttempt/$maxRuntimeAttempts; rt='$SMOKE_RT' dt='$SMOKE_DT')."
             fi
-            if [[ "$smokeAttempt" == "1" ]]; then
-              echo "Restarting CoreSimulatorService and re-downloading runtimes once more..."
-              sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
-              sleep 5
-              force_unmount_sim_runtime_volumes
-              sudo xcrun simctl runtime delete all
-              for i in $(seq 1 60); do
-                sleep 1
-                C=$(xcrun simctl runtime list -j | jq '. | length')
-                if [[ $C == 0 ]]; then
-                  break
-                fi
-              done
-              if [[ "$C" != "0" ]]; then
-                force_unmount_sim_runtime_volumes
-                sudo xcrun simctl runtime delete all 2>/dev/null || true
-                sleep 3
-                # Still stuck -> purge the on-disk image store so this re-download starts
-                # clean (same wedge as PR #27153 build 14699070).
-                C=$(xcrun simctl runtime list -j | jq '. | length' 2>/dev/null || echo 0)
-                if [[ "$C" != "0" ]]; then
-                  purge_wedged_sim_image_store
-                fi
+            # Stop only when attempts are exhausted OR too little wall-clock remains to safely
+            # start another multi-GB download inside the step timeout — never a premature give-up.
+            if [[ "$smokeAttempt" -ge "$maxRuntimeAttempts" ]]; then
+              echo "##vso[task.logissue type=warning]Simulator runtimes still not create-usable after $smokeAttempt attempts (restart+purge+re-download); iOS sim boot may fail and self-degrade to INCONCLUSIVE. This is agent infrastructure, not a PR problem."
+              break
+            fi
+            if [[ "$SECONDS" -ge "$installBudgetSeconds" ]]; then
+              echo "##vso[task.logissue type=warning]Simulator-runtime install budget (${installBudgetSeconds}s) reached after $smokeAttempt attempts; stopping retries so the step timeout cannot kill a download mid-flight. iOS sim boot may self-degrade to INCONCLUSIVE."
+              break
+            fi
+            echo "Restarting CoreSimulatorService and re-downloading runtimes (next attempt $((smokeAttempt+1)); ${SECONDS}s elapsed)..."
+            sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+            sleep 5
+            force_unmount_sim_runtime_volumes
+            sudo xcrun simctl runtime delete all
+            for i in $(seq 1 60); do
+              sleep 1
+              C=$(xcrun simctl runtime list -j | jq '. | length')
+              if [[ $C == 0 ]]; then
+                break
               fi
-              sudo xcodebuild $DOWNLOAD_ARGS
-            else
-              echo "##vso[task.logissue type=warning]Simulator runtimes still not create-usable after restart+re-download; iOS sim boot may fail and self-degrade to INCONCLUSIVE."
+            done
+            if [[ "$C" != "0" ]]; then
+              force_unmount_sim_runtime_volumes
+              sudo xcrun simctl runtime delete all 2>/dev/null || true
+              sleep 3
+              C=$(xcrun simctl runtime list -j | jq '. | length' 2>/dev/null || echo 0)
             fi
+            # From the 2nd attempt on, ALWAYS purge the on-disk image store before re-downloading
+            # (not only when the drain fails): a runtime can drain from `runtime list` yet leave
+            # same-UUID "(Deleting)" ghosts in the image store that collide "Invalid runtime: null"
+            # on re-download and keep the agent at 0 create-usable runtimes (PR #27153 14699070).
+            if [[ "$smokeAttempt" -ge 2 || "$C" != "0" ]]; then
+              purge_wedged_sim_image_store
+            fi
+            sudo xcodebuild $DOWNLOAD_ARGS
           done
         fi
 
@@ -360,7 +381,13 @@ steps:
         echo "Found $RUNTIME_COUNT simulator runtime(s) ($READY_COUNT Ready/create-usable)"
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      timeoutInMinutes: 30
+      # 45 (was 30): the "keep trying until create-usable" retry loop above re-downloads the
+      # multi-GB runtime up to a few times on a wedged agent. Only the already-failed retry
+      # path uses the extra time — a healthy agent installs on the first download (~7 min) and
+      # exits — so this never slows a healthy iOS build. The loop's own installBudgetSeconds
+      # (2100s) stops starting new downloads with >=10 min to spare so this timeout can never
+      # kill a download mid-flight. Directive: iOS must work, keep trying as long as it works.
+      timeoutInMinutes: 45
 
 # Provision Additional Software
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:
