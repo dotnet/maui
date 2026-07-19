@@ -95,6 +95,24 @@ public partial class BlazorWebViewTests
 	}
 
 	[Fact]
+	public async Task BlazorWebViewCreateFileProviderWithIncompatibleHandlerThrowsClearException()
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var handler = new ViewHandlerStub();
+			var blazorWebView = new BlazorWebView();
+			handler.SetVirtualView(blazorWebView);
+			blazorWebView.Handler = handler;
+
+			var exception = Assert.Throws<InvalidOperationException>(
+				() => blazorWebView.CreateFileProvider("wwwroot"));
+
+			Assert.Contains(nameof(ViewHandlerStub), exception.Message, StringComparison.Ordinal);
+			Assert.Contains(nameof(IBlazorWebViewHandler), exception.Message, StringComparison.Ordinal);
+		});
+	}
+
+	[Fact]
 	public async Task BlazorWebViewWithoutDispatchFailsToGetScopedServices()
 	{
 		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
@@ -151,7 +169,7 @@ public partial class BlazorWebViewTests
 	}
 
 	[Fact]
-	public void UsePlatformHandlerFactoryReplacesDefaultBlazorWebViewHandler()
+	public async Task UsePlatformHandlerFactoryReplacesDefaultBlazorWebViewHandler()
 	{
 		// Companion to UsePlatformHandlerGenericReplacesDefaultBlazorWebViewHandler — verifies the
 		// factory overload (Func<IServiceProvider, IBlazorWebViewHandler>) also replaces the default handler.
@@ -169,10 +187,13 @@ public partial class BlazorWebViewTests
 		using var app = builder.Build();
 
 		var handlersFactory = app.Services.GetRequiredService<IMauiHandlersFactory>();
-		var handler = handlersFactory.GetHandler(typeof(BlazorWebView));
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var handler = handlersFactory.GetHandler(typeof(BlazorWebView));
 
-		Assert.True(factoryWasCalled, "Factory delegate should have been invoked when the handler was resolved.");
-		Assert.IsType<CustomBlazorWebViewHandlerStub>(handler);
+			Assert.True(factoryWasCalled, "Factory delegate should have been invoked when the handler was resolved.");
+			Assert.IsType<CustomBlazorWebViewHandlerStub>(handler);
+		});
 	}
 
 	[Fact]
@@ -192,13 +213,11 @@ public partial class BlazorWebViewTests
 		});
 	}
 
-	private class CustomBlazorWebViewHandlerStub : IBlazorWebViewHandler
+	private class ViewHandlerStub : IViewHandler
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 		, IPlatformViewHandler
 #endif
 	{
-		public IFileProvider FileProvider { get; } = new NullFileProvider();
-
 		public bool HasContainer { get; set; }
 
 		public object? ContainerView => null;
@@ -214,14 +233,6 @@ public partial class BlazorWebViewTests
 		IElement? IElementHandler.VirtualView => VirtualView;
 
 		public IMauiContext? MauiContext { get; private set; }
-
-		public IFileProvider CreateFileProvider(string contentRootDir) => FileProvider;
-
-		public Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
-		{
-			workItem(EmptyServiceProvider.Instance);
-			return Task.FromResult(true);
-		}
 
 		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
 
@@ -258,6 +269,19 @@ public partial class BlazorWebViewTests
 
 		Microsoft.UI.Xaml.FrameworkElement? IPlatformViewHandler.ContainerView => null;
 #endif
+	}
+
+	private class CustomBlazorWebViewHandlerStub : ViewHandlerStub, IBlazorWebViewHandler
+	{
+		public IFileProvider FileProvider { get; } = new NullFileProvider();
+
+		public IFileProvider CreateFileProvider(string contentRootDir) => FileProvider;
+
+		public Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
+		{
+			workItem(EmptyServiceProvider.Instance);
+			return Task.FromResult(true);
+		}
 	}
 
 	private sealed class EmptyServiceProvider : IServiceProvider
