@@ -277,6 +277,17 @@ public class ResizetizerTests : BaseBuildTest
 			: Path.Combine(projectDir, processedFont);
 		Assert.True(File.Exists(processedFontPath), $"Processed font does not exist: {processedFont}");
 
+		var fontStampFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauifont.stamp");
+		Assert.True(File.Exists(fontStampFile), $"Font stamp file does not exist: {fontStampFile}");
+		var fontStampWriteTime = File.GetLastWriteTimeUtc(fontStampFile);
+		File.Delete(fontsFile);
+		System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Custom backend project failed on a no-op font rebuild. Check test output for errors.");
+		Assert.Equal(fontStampWriteTime, File.GetLastWriteTimeUtc(fontStampFile));
+		Assert.True(File.Exists(fontsFile), "Custom backend font output list was not recreated on the no-op rebuild.");
+		Assert.Single(File.ReadAllLines(fontsFile));
+
 		File.WriteAllText(
 			projectFile,
 			File.ReadAllText(projectFile).Replace(
