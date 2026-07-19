@@ -125,12 +125,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
 		{
 			ArgumentNullException.ThrowIfNull(workItem);
-			if (Handler is null)
+			var handler = Handler;
+			if (handler is null)
 			{
 				return false;
 			}
 
-			return await GetBlazorWebViewHandler().TryDispatchAsync(workItem);
+			return await GetBlazorWebViewHandler(handler).TryDispatchAsync(workItem);
 		}
 
 		private IBlazorWebViewHandler GetBlazorWebViewHandler()
@@ -142,10 +143,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					$"{nameof(BlazorWebView)} must be connected to a handler before this operation can be performed.");
 			}
 
-			return handler as IBlazorWebViewHandler ??
+			return GetBlazorWebViewHandler(handler);
+		}
+
+		private static IBlazorWebViewHandler GetBlazorWebViewHandler(IViewHandler handler) =>
+			handler as IBlazorWebViewHandler ??
 				throw new InvalidOperationException(
 					$"The handler type '{handler.GetType().FullName}' must implement {nameof(IBlazorWebViewHandler)}.");
-		}
 
 		/// <inheritdoc />
 		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>
