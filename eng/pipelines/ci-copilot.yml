@@ -3350,6 +3350,14 @@ stages:
               } catch {
                 Write-Host "##[warning]Snapshot-diff image embedding skipped: $($_.Exception.Message)"
               }
+              # The best-effort embed above runs native commands (gh/git) that can
+              # fail — most commonly the maui-bot PAT lacking the 'gist' scope —
+              # leaving $LASTEXITCODE non-zero. Reset it so a downstream code path
+              # that runs no later native command (e.g. deferred mode with no
+              # PRAgent dir, on a gate-FAILED PR) can't inherit that non-zero code
+              # and fail the whole "Post AI summary review" task. The image embed
+              # is strictly optional and must never affect the task exit code.
+              $global:LASTEXITCODE = 0
 
               # Fixture setup failures usually mark every test in the fixture as
               # failed even though no individual test body ran. Render one
