@@ -97,6 +97,7 @@ New-Item -ItemType Directory -Force -Path $RunDirectory | Out-Null
 
 $ContextJsonPath = Join-Path $RunDirectory "context.json"
 $ContextMarkdownPath = Join-Path $RunDirectory "context.md"
+$VisualComparisonsPath = Join-Path $RunDirectory "visual-comparisons.md"
 $PromptPath = Join-Path $RunDirectory "prompt.md"
 $ReportPath = Join-Path $RunDirectory "report.md"
 $CommentPath = Join-Path $RunDirectory "comment.md"
@@ -277,8 +278,6 @@ function New-TestFailureReviewBody {
     else {
         "> Test-failure review results are available based on commit [``$commitSha7``]($commitUrl)."
     }
-    $authorPing += ' To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.'
-
     $badges = $badgeLines -join "`n"
 
     return @"
@@ -404,6 +403,20 @@ if ($GatherOnly) {
     exit 0
 }
 
+if ($PostComment -and -not $DryRun) {
+    $publisherScript = Join-Path $RepoRoot ".github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1"
+    Write-Host "Publishing visual comparison assets and companion comment..."
+    & pwsh $publisherScript `
+        -PrNumber $PRNumber `
+        -Repository $Repository `
+        -ContextJsonPath $ContextJsonPath `
+        -OutputMarkdownPath $VisualComparisonsPath `
+        -PostComment
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Visual comparison publishing failed; continuing with the ordinary test-failure report."
+    }
+}
+
 Assert-Command -Name "copilot"
 
 $skillPath = Join-Path $RepoRoot ".github/skills/review-test-failures/SKILL.md"
@@ -427,6 +440,8 @@ Context files:
 
 Rules:
 - Do not modify source files.
+- When context.json contains a non-empty visualAssets.commentUrl, include one link to
+  that trusted companion comment. Do not embed the individual image URLs.
 - Do not apply labels.
 - Do not trigger builds or reruns.
 - Do not post comments; this local runner handles optional posting after you finish.

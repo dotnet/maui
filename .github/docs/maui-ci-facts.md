@@ -268,6 +268,15 @@ Messages like `Baseline snapshot not yet created`, missing snapshot paths, or sn
 environment-version mismatches are strong **unrelated** evidence — unless the PR adds or
 modifies that visual test or the affected snapshot/platform.
 
+The automated `/review tests` lane gathers failed UI result IDs from the public
+`vstmr.dev.azure.com/.../testresults/resultsbybuild` endpoint, then reads the public
+result-detail and attachment APIs. It publishes validated baseline/actual/diff PNGs to
+the repository's `review-tests-assets` branch and updates a dedicated expandable PR
+comment with immutable commit-pinned raw URLs. The ordinary test-failure analysis links
+to that companion comment rather than embedding every image, which avoids gh-aw's
+safe-output link limit. Visual publishing is supplementary evidence only: missing images
+never raise or lower the deterministic verdict ceiling.
+
 ## Platform mismatch
 
 Platform mismatch is **supporting** evidence, not proof. An iOS-only test failing on a

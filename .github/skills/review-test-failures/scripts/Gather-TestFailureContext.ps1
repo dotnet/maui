@@ -244,6 +244,56 @@ function Get-AzDoTestRuns {
     return [ordered]@{ runs = $runs.ToArray(); truncated = $truncated }
 }
 
+function Get-AzDoFailedTestResultsByBuild {
+    # The public vstmr endpoint exposes the failed-result identifiers that the ordinary
+    # _apis/test/runs list hides behind authentication. Those identifiers are enough to
+    # retrieve the public result detail and attachment metadata for visual failures.
+    param(
+        [string]$Org,
+        [string]$Project,
+        [int]$BuildId,
+        [int]$MaxPages = 10
+    )
+
+    $results = New-Object System.Collections.Generic.List[object]
+    $continuation = $null
+    $truncated = $false
+    $page = 0
+    do {
+        $page++
+        $url = "https://vstmr.dev.azure.com/$Org/$Project/_apis/testresults/resultsbybuild?buildId=$BuildId&outcomes=Failed&`$top=10000&api-version=7.1-preview.1"
+        if ($continuation) {
+            $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))"
+        }
+
+        $response = Invoke-WebRequest -Uri $url -Headers @{ Accept = "application/json" } -UseBasicParsing -ErrorAction Stop
+        $body = if ([string]::IsNullOrWhiteSpace([string]$response.Content)) {
+            $null
+        }
+        else {
+            [string]$response.Content | ConvertFrom-Json
+        }
+
+        foreach ($result in (ConvertTo-Array $body.value)) {
+            $results.Add($result)
+        }
+
+        $continuation = Get-HeaderValue -Headers $response.Headers -Name 'x-ms-continuationtoken'
+        if ([string]::IsNullOrWhiteSpace($continuation)) {
+            $continuation = $null
+        }
+        if ($page -ge $MaxPages) {
+            $truncated = ($null -ne $continuation)
+            break
+        }
+    } while ($continuation)
+
+    return [ordered]@{
+        results = $results.ToArray()
+        truncated = $truncated
+    }
+}
+
 function Invoke-TextUrl {
     param(
         [Parameter(Mandatory = $true)]
@@ -300,6 +350,225 @@ function Get-PlatformFromText {
     if ($Text -match '(?i)\b(maccatalyst|catalyst|macos|mac)\b') { return "macos" }
     if ($Text -match '(?i)\b(windows|winui|win)\b') { return "windows" }
     return "unknown"
+}
+
+function Get-VisualSnapshotInfo {
+    param([string]$Message)
+
+    if ([string]::IsNullOrWhiteSpace($Message)) {
+        return $null
+    }
+
+    $different = [regex]::Match(
+        $Message,
+        '(?im)^\s*Snapshot different than baseline:\s*(?<path>[^\r\n]*?\.png)\s*\((?<description>[^\r\n)]*)\)')
+    $missing = [regex]::Match(
+        $Message,
+        '(?im)^\s*Baseline snapshot not yet created:\s*(?<path>[^\r\n]*?\.png)\s*$')
+
+    $kind = $null
+    $path = $null
+    $description = $null
+    if ($different.Success) {
+        $kind = "different"
+        $path = $different.Groups["path"].Value.Trim()
+        $description = $different.Groups["description"].Value.Trim()
+    }
+    elseif ($missing.Success) {
+        $kind = "missing-baseline"
+        $path = $missing.Groups["path"].Value.Trim()
+    }
+    else {
+        return $null
+    }
+
+    $fileName = [System.IO.Path]::GetFileName($path)
+    if ([string]::IsNullOrWhiteSpace($fileName) -or
+        $fileName -notmatch '^[A-Za-z0-9][A-Za-z0-9._ -]*\.png$' -or
+        $fileName.Contains("..") -or
+        ($kind -eq "different" -and $path -ne $fileName)) {
+        return $null
+    }
+
+    $differencePercent = $null
+    $baselineWidth = $null
+    $baselineHeight = $null
+    $actualWidth = $null
+    $actualHeight = $null
+    if ($description) {
+        $percentMatch = [regex]::Match($description, '^(?<value>\d+(?:\.\d+)?)%\s+difference$')
+        if ($percentMatch.Success) {
+            $parsed = 0.0
+            if ([double]::TryParse(
+                    $percentMatch.Groups["value"].Value,
+                    [System.Globalization.NumberStyles]::Float,
+                    [System.Globalization.CultureInfo]::InvariantCulture,
+                    [ref]$parsed)) {
+                $differencePercent = $parsed
+            }
+        }
+
+        $sizeMatch = [regex]::Match(
+            $description,
+            '^size differs - baseline is (?<bw>\d+)x(?<bh>\d+) pixels, actual is (?<aw>\d+)x(?<ah>\d+) pixels$')
+        if ($sizeMatch.Success) {
+            $baselineWidth = [int]$sizeMatch.Groups["bw"].Value
+            $baselineHeight = [int]$sizeMatch.Groups["bh"].Value
+            $actualWidth = [int]$sizeMatch.Groups["aw"].Value
+            $actualHeight = [int]$sizeMatch.Groups["ah"].Value
+        }
+    }
+
+    $pathHint = $null
+    $normalizedPath = $path -replace '\\', '/'
+    $snapshotPathMatch = [regex]::Match(
+        $normalizedPath,
+        '(?i)(?<path>src/Controls/tests/TestCases\.[^/]+\.Tests/snapshots/[^/]+/[^/]+\.png)$')
+    if ($snapshotPathMatch.Success) {
+        $pathHint = $snapshotPathMatch.Groups["path"].Value
+    }
+
+    return [ordered]@{
+        kind = $kind
+        snapshotFileName = $fileName
+        description = $description
+        differencePercent = $differencePercent
+        baselineWidth = $baselineWidth
+        baselineHeight = $baselineHeight
+        actualWidth = $actualWidth
+        actualHeight = $actualHeight
+        baselinePathHint = $pathHint
+    }
+}
+
+function Select-VisualAttachments {
+    param(
+        [object[]]$Attachments,
+        [string]$SnapshotFileName
+    )
+
+    if ([string]::IsNullOrWhiteSpace($SnapshotFileName)) {
+        return [ordered]@{ actual = $null; diff = $null; selectedRetry = $null; candidateCount = 0 }
+    }
+
+    $stem = [System.IO.Path]::GetFileNameWithoutExtension($SnapshotFileName)
+    $escapedStem = [regex]::Escape($stem)
+    $actualByRetry = @{}
+    $diffByRetry = @{}
+
+    foreach ($attachment in (ConvertTo-Array $Attachments)) {
+        $fileName = [string](Get-ObjectValue -Object $attachment -Names @("fileName", "name"))
+        $id = Get-ObjectValue -Object $attachment -Names @("id")
+        $url = [string](Get-ObjectValue -Object $attachment -Names @("url"))
+        if ([string]::IsNullOrWhiteSpace($fileName) -or
+            [string]::IsNullOrWhiteSpace($url) -or
+            $null -eq $id) {
+            continue
+        }
+
+        $actualMatch = [regex]::Match($fileName, "(?i)^$escapedStem(?:\[(?<retry>\d+)\])?\.png$")
+        $diffMatch = [regex]::Match($fileName, "(?i)^$escapedStem-diff(?:\[(?<retry>\d+)\])?\.png$")
+        if (-not $actualMatch.Success -and -not $diffMatch.Success) {
+            continue
+        }
+
+        $match = if ($actualMatch.Success) { $actualMatch } else { $diffMatch }
+        $retry = if ($match.Groups["retry"].Success) { [int]$match.Groups["retry"].Value } else { 0 }
+        $metadata = [ordered]@{
+            id = [int]$id
+            fileName = $fileName
+            size = Get-ObjectValue -Object $attachment -Names @("size")
+            url = $url
+        }
+        if ($actualMatch.Success) {
+            $actualByRetry[$retry] = $metadata
+        }
+        else {
+            $diffByRetry[$retry] = $metadata
+        }
+    }
+
+    $allRetries = @($actualByRetry.Keys + $diffByRetry.Keys | Sort-Object -Unique -Descending)
+    $selectedRetry = $null
+    foreach ($retry in $allRetries) {
+        if ($actualByRetry.ContainsKey($retry) -and $diffByRetry.ContainsKey($retry)) {
+            $selectedRetry = [int]$retry
+            break
+        }
+    }
+    if ($null -eq $selectedRetry -and $actualByRetry.Count -gt 0) {
+        $selectedRetry = [int](@($actualByRetry.Keys | Sort-Object -Descending)[0])
+    }
+
+    return [ordered]@{
+        actual = $(if ($null -ne $selectedRetry -and $actualByRetry.ContainsKey($selectedRetry)) { $actualByRetry[$selectedRetry] } else { $null })
+        diff = $(if ($null -ne $selectedRetry -and $diffByRetry.ContainsKey($selectedRetry)) { $diffByRetry[$selectedRetry] } else { $null })
+        selectedRetry = $selectedRetry
+        candidateCount = $allRetries.Count
+    }
+}
+
+function Get-VisualEnvironmentHintFromLog {
+    param([string]$Text)
+
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        return $null
+    }
+
+    $platform = if ($Text -match '(?i)TestCases\.iOS\.Tests|ios-simulator') {
+        "ios"
+    }
+    elseif ($Text -match '(?i)TestCases\.Android\.Tests|android-emulator') {
+        "android"
+    }
+    elseif ($Text -match '(?i)TestCases\.Mac\.Tests|maccatalyst') {
+        "macos"
+    }
+    elseif ($Text -match '(?i)TestCases\.WinUI\.Tests|winui_ui_tests') {
+        "windows"
+    }
+    else {
+        return $null
+    }
+
+    $environmentName = $null
+    $version = $null
+    if ($platform -eq "ios" -or $platform -eq "android") {
+        $versionMatch = [regex]::Match($Text, '(?im)--apiversion(?:=|\s+)["'']*(?<version>\d+(?:\.\d+)*)')
+        if ($versionMatch.Success) {
+            $version = $versionMatch.Groups["version"].Value
+        }
+    }
+
+    switch ($platform) {
+        "ios" {
+            if ($version -match '^26(?:\.|$)') {
+                $environmentName = "ios-26"
+            }
+            elseif ($Text -match '(?i)iPhone X \(iOS 16\.4\)') {
+                $environmentName = "ios-iphonex"
+            }
+            else {
+                $environmentName = "ios"
+            }
+        }
+        "android" {
+            if ($version -match '^36(?:\.|$)') {
+                $environmentName = "android-notch-36"
+            }
+            else {
+                $environmentName = "android"
+            }
+        }
+        "macos" { $environmentName = "mac" }
+        "windows" { $environmentName = "windows" }
+    }
+
+    return [ordered]@{
+        platform = $platform
+        environmentName = $environmentName
+        apiVersion = $version
+    }
 }
 
 function Get-AreaHintsFromPath {
@@ -2016,6 +2285,8 @@ foreach ($ref in $manualBuildRefs.ToArray()) {
 $builds = New-Object System.Collections.Generic.List[object]
 $allLogFailures = New-Object System.Collections.Generic.List[object]
 $allLogExcerpts = New-Object System.Collections.Generic.List[object]
+$allVisualEvidence = New-Object System.Collections.Generic.List[object]
+$visualEvidenceLimitations = New-Object System.Collections.Generic.List[string]
 # Failed Task legs whose log was read but yielded NO extractable failure (test OR build
 # error). This is the backstop for the "never wrong again" guarantee: even if a novel
 # break shape escapes both extractors, a failed-but-unexplained leg forces the verdict
@@ -2048,6 +2319,8 @@ foreach ($buildRef in $buildRefsById.Values) {
         logExcerpts = @()
         testFailuresFromLogs = @()
         testResults = @()
+        visualEnvironmentHints = @()
+        visualEvidence = @()
         helix = [ordered]@{
             checked = $false
             jobIds = @()
@@ -2151,6 +2424,17 @@ foreach ($buildRef in $buildRefsById.Values) {
         try {
             $logText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$($buildRef.buildId)/logs/$logId`?api-version=7.1"
             $lines = @($logText -split "`r?`n")
+
+            $visualEnvironmentHint = Get-VisualEnvironmentHintFromLog -Text $logText
+            if ($visualEnvironmentHint) {
+                $existingHint = @($buildSummary.visualEnvironmentHints | Where-Object {
+                    $_.platform -eq $visualEnvironmentHint.platform -and
+                    $_.environmentName -eq $visualEnvironmentHint.environmentName
+                })
+                if ($existingHint.Count -eq 0) {
+                    $buildSummary.visualEnvironmentHints += @($visualEnvironmentHint)
+                }
+            }
 
             $excerpts = @(Get-LogExcerpts -Lines $lines -LogId $logId -RecordName $record.name)
             foreach ($excerpt in $excerpts) {
@@ -2590,6 +2874,107 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
+    if ($build.definition.name -eq "maui-pr-uitests") {
+        try {
+            $failedResultPage = Get-AzDoFailedTestResultsByBuild `
+                -Org $buildRef.org `
+                -Project $buildRef.project `
+                -BuildId $buildRef.buildId
+            $failedResultsAll = @($failedResultPage.results)
+            $failedResults = @($failedResultsAll | Select-Object -First 100)
+
+            if ($failedResultPage.truncated) {
+                $visualEvidenceLimitations.Add("Visual result discovery for AzDO build $($buildRef.buildId) stopped at the pagination guard; some screenshot comparisons may be omitted.")
+            }
+            if ($failedResultsAll.Count -gt $failedResults.Count) {
+                $visualEvidenceLimitations.Add("Visual result discovery for AzDO build $($buildRef.buildId) inspected the first $($failedResults.Count) of $($failedResultsAll.Count) failed test results.")
+            }
+
+            foreach ($failedResult in $failedResults) {
+                $runId = [int](Get-ObjectValue -Object $failedResult -Names @("runId"))
+                $resultId = [int](Get-ObjectValue -Object $failedResult -Names @("id"))
+                if ($runId -le 0 -or $resultId -le 0) {
+                    continue
+                }
+
+                try {
+                    $resultUrl = "$baseUrl/_apis/test/Runs/$runId/Results/$resultId`?detailsToInclude=Iterations&api-version=7.1"
+                    $detail = Invoke-JsonUrl -Url $resultUrl -AllowAuth
+                    $message = [string](Get-ObjectValue -Object $detail -Names @("errorMessage"))
+                    $snapshotInfo = Get-VisualSnapshotInfo -Message $message
+                    if (-not $snapshotInfo) {
+                        continue
+                    }
+
+                    $attachmentsUrl = "$baseUrl/_apis/test/Runs/$runId/Results/$resultId/attachments?api-version=7.1"
+                    $attachmentResponse = Invoke-JsonUrl -Url $attachmentsUrl -AllowAuth
+                    $selectedAttachments = Select-VisualAttachments `
+                        -Attachments (ConvertTo-Array $attachmentResponse.value) `
+                        -SnapshotFileName $snapshotInfo.snapshotFileName
+
+                    if (-not $selectedAttachments.actual) {
+                        $visualEvidenceLimitations.Add("Visual result $runId/$resultId in AzDO build $($buildRef.buildId) named '$($snapshotInfo.snapshotFileName)' but exposed no matching actual-image attachment.")
+                        continue
+                    }
+
+                    $testName = [string](Get-ObjectValue -Object $detail -Names @("testCaseTitle") -Default (
+                        Get-ObjectValue -Object $detail.testCase -Names @("name") -Default (
+                            Get-ObjectValue -Object $failedResult -Names @("testCaseTitle") -Default $snapshotInfo.snapshotFileName
+                        )
+                    ))
+                    $automatedTestName = [string](Get-ObjectValue -Object $detail -Names @("automatedTestName") -Default (
+                        Get-ObjectValue -Object $failedResult -Names @("automatedTestName")
+                    ))
+                    $runName = [string](Get-ObjectValue -Object $detail.testRun -Names @("name"))
+                    $platform = Get-PlatformFromText -Text "$runName $automatedTestName $($detail.automatedTestStorage)"
+                    $environmentHints = @($buildSummary.visualEnvironmentHints | Where-Object { $_.platform -eq $platform })
+                    $environmentNames = @($environmentHints | ForEach-Object { $_.environmentName } | Where-Object { $_ } | Select-Object -Unique)
+                    $environmentName = if ($environmentNames.Count -eq 1) { $environmentNames[0] } else { $null }
+
+                    $evidence = [ordered]@{
+                        testName = $testName
+                        automatedTestName = $automatedTestName
+                        platform = $platform
+                        buildId = $buildRef.buildId
+                        buildDefinition = $build.definition.name
+                        buildUrl = $build._links.web.href
+                        buildSourceVersion = $build.sourceVersion
+                        runId = $runId
+                        runName = $runName
+                        resultId = $resultId
+                        completedDate = $detail.completedDate
+                        resultUrl = $resultUrl
+                        message = $message
+                        kind = $snapshotInfo.kind
+                        snapshotFileName = $snapshotInfo.snapshotFileName
+                        description = $snapshotInfo.description
+                        differencePercent = $snapshotInfo.differencePercent
+                        baselineWidth = $snapshotInfo.baselineWidth
+                        baselineHeight = $snapshotInfo.baselineHeight
+                        actualWidth = $snapshotInfo.actualWidth
+                        actualHeight = $snapshotInfo.actualHeight
+                        baselinePathHint = $snapshotInfo.baselinePathHint
+                        environmentName = $environmentName
+                        environmentHints = $environmentHints
+                        attachmentsListUrl = $attachmentsUrl
+                        selectedRetry = $selectedAttachments.selectedRetry
+                        actual = $selectedAttachments.actual
+                        diff = $selectedAttachments.diff
+                    }
+
+                    $buildSummary.visualEvidence += @($evidence)
+                    $allVisualEvidence.Add($evidence)
+                }
+                catch {
+                    $visualEvidenceLimitations.Add("Visual result detail $runId/$resultId in AzDO build $($buildRef.buildId) could not be inspected: $($_.Exception.Message)")
+                }
+            }
+        }
+        catch {
+            $visualEvidenceLimitations.Add("Visual result discovery failed for AzDO build $($buildRef.buildId): $($_.Exception.Message)")
+        }
+    }
+
     if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
         try {
             # Page through ALL test runs. The endpoint returns only one ~100-run page per call; summing
@@ -2715,6 +3100,7 @@ foreach ($buildRef in $buildRefsById.Values) {
 
 $allFailuresArray = $allLogFailures.ToArray()
 $allExcerptsArray = $allLogExcerpts.ToArray()
+$visualEvidenceArray = $allVisualEvidence.ToArray()
 $buildArray = $builds.ToArray()
 $dedupedFailures = @(Get-DeduplicatedFailures -Failures $allFailuresArray)
 
@@ -3519,13 +3905,13 @@ if ($ciScanIssues.error) {
 }
 
 $context = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     repository = $Repository
     azdo = [ordered]@{
         authenticated = -not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)
         authSource = $script:AzDoAuthSource
-        dataSourceGuidance = "Uses AzDO build, timeline, and build log REST APIs as the primary data source; authenticated _apis/test queries are optional and only attempted when an AzDO bearer token is available."
+        dataSourceGuidance = "Uses AzDO build, timeline, and build log REST APIs as the primary data source; public vstmr failed-result metadata is used for UI visual evidence; authenticated _apis/test queries remain optional."
     }
     pr = [ordered]@{
         number = $pr.number
@@ -3566,6 +3952,11 @@ $context = [ordered]@{
     }
     buildRefs = @($buildRefsById.Values)
     builds = $buildArray
+    visualEvidence = [ordered]@{
+        detected = $visualEvidenceArray.Count
+        comparisons = $visualEvidenceArray
+        limitations = $visualEvidenceLimitations.ToArray()
+    }
     failures = [ordered]@{
         unique = $dedupedFailures
         baseline = $baselineDeduped
@@ -3623,6 +4014,23 @@ $md.Add("- Platform labels: $(@($platformLabels) -join ', ')")
 $md.Add("- Inferred platforms from files: $(@($inferredPlatforms) -join ', ')")
 $md.Add("- Area labels: $(@($areaLabels) -join ', ')")
 $md.Add("- Area hints from files: $(@($areaHints) -join ', ')")
+$md.Add("")
+$md.Add("## Visual snapshot evidence")
+$md.Add("")
+$md.Add("- Visual comparisons detected: $($visualEvidenceArray.Count)")
+if ($visualEvidenceArray.Count -gt 0) {
+    foreach ($visual in $visualEvidenceArray) {
+        $description = if ($visual.description) { $visual.description } else { $visual.kind }
+        $environment = if ($visual.environmentName) { " · baseline environment $($visual.environmentName)" } else { "" }
+        $md.Add("  - $($visual.snapshotFileName) on $($visual.platform) (build $($visual.buildId), run $($visual.runId), result $($visual.resultId)): $description$environment")
+    }
+}
+if ($visualEvidenceLimitations.Count -gt 0) {
+    $md.Add("- Visual evidence limitations:")
+    foreach ($visualLimitation in $visualEvidenceLimitations) {
+        $md.Add("  - $visualLimitation")
+    }
+}
 $md.Add("")
 $md.Add("## Interesting checks")
 $md.Add("")

@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"a660514f7d51959086570bf40aba54d37b75893084fab06731323da0498e3c96","body_hash":"3c792af463587f1966232513b60a511f14af7dc37f72f44645351cc0479eac76","compiler_version":"v0.80.9","strict":true,"agent_id":"copilot","agent_model":"claude-opus-4.8","engine_versions":{"copilot":"1.0.63"}}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/cache/save","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/checkout","sha":"9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0","version":"v7.0.0"},{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"8c7d04ebf1ece56cd381446125da3e0f6896294a","version":"v0.80.9"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.7","digest":"sha256:aae231e4635c8999d039c132f1602d3df850fe9b84a00aa2b5ac981179b5661c","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.7@sha256:aae231e4635c8999d039c132f1602d3df850fe9b84a00aa2b5ac981179b5661c"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.7","digest":"sha256:009caf2e3d88fa77b64e9a03a95a228fc58db0f1701c6d324b29ba5a3c7c79b6","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.7@sha256:009caf2e3d88fa77b64e9a03a95a228fc58db0f1701c6d324b29ba5a3c7c79b6"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.7","digest":"sha256:deb1d4e19de62d51cee0508057a596a19315c3423ada4d675cad136dc8037c96","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.7@sha256:deb1d4e19de62d51cee0508057a596a19315c3423ada4d675cad136dc8037c96"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.27","digest":"sha256:fe984bddde4ec05d756d9043edb0a32912e6b7b72f6a121b1082f29221421cc7","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.27@sha256:fe984bddde4ec05d756d9043edb0a32912e6b7b72f6a121b1082f29221421cc7"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b","pinned_image":"ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b"},{"image":"ghcr.io/github/github-mcp-server:v1.4.0","digest":"sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036","pinned_image":"ghcr.io/github/github-mcp-server:v1.4.0@sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036"}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"90b2c600ea84962711207512946a60fc430f5db4af07b9da6575e19f92ff833e","body_hash":"114b4f90e4da8d71fb167b5ff52d113e5e90c7b1aacb48afa9f4d9f650c2f330","compiler_version":"v0.80.9","strict":true,"agent_id":"copilot","agent_model":"claude-opus-4.8","engine_versions":{"copilot":"1.0.63"}}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/cache/save","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/checkout","sha":"34e114876b0b11c390a56381ad16ebd13914f8d5","version":"v4"},{"repo":"actions/checkout","sha":"9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0","version":"v7.0.0"},{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"8c7d04ebf1ece56cd381446125da3e0f6896294a","version":"v0.80.9"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.7","digest":"sha256:aae231e4635c8999d039c132f1602d3df850fe9b84a00aa2b5ac981179b5661c","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.7@sha256:aae231e4635c8999d039c132f1602d3df850fe9b84a00aa2b5ac981179b5661c"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.7","digest":"sha256:009caf2e3d88fa77b64e9a03a95a228fc58db0f1701c6d324b29ba5a3c7c79b6","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.7@sha256:009caf2e3d88fa77b64e9a03a95a228fc58db0f1701c6d324b29ba5a3c7c79b6"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.7","digest":"sha256:deb1d4e19de62d51cee0508057a596a19315c3423ada4d675cad136dc8037c96","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.7@sha256:deb1d4e19de62d51cee0508057a596a19315c3423ada4d675cad136dc8037c96"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.27","digest":"sha256:fe984bddde4ec05d756d9043edb0a32912e6b7b72f6a121b1082f29221421cc7","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.27@sha256:fe984bddde4ec05d756d9043edb0a32912e6b7b72f6a121b1082f29221421cc7"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b","pinned_image":"ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b"},{"image":"ghcr.io/github/github-mcp-server:v1.4.0","digest":"sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036","pinned_image":"ghcr.io/github/github-mcp-server:v1.4.0@sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036"}]}
 # This file was automatically generated by gh-aw (v0.80.9). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _      
@@ -47,6 +47,7 @@
 # Custom actions used:
 #   - actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
 #   - actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+#   - actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 #   - actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 #   - actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 #   - actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -71,6 +72,9 @@ on:
     - created
     - edited
   # permissions: # Permissions applied to pre-activation job
+    # actions: read
+    # checks: read
+    # contents: write
     # issues: write
     # pull-requests: write
   # roles: # Roles processed as role check in pre-activation job
@@ -109,12 +113,54 @@ on:
       # else
         # echo "should_run=false" >> "$GITHUB_OUTPUT"
       # fi
-  # - if: github.event_name == 'issue_comment' && steps.exact_command.outputs.should_run == 'true'
-    # name: Hide the /review tests command comment as resolved when authorized
+  # - id: authorization
+    # if: github.event_name == 'issue_comment' && steps.exact_command.outputs.should_run == 'true'
+    # name: Authorize and hide the /review tests command comment
     # uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
     # with:
       # github-token: ${{ github.token }}
-      # script: "// Only hide when the command is exactly `/review tests` (should_run) AND the\n// commenter is an authorized collaborator (write/maintain/admin). This mirrors\n// the workflow's own role gate but is self-contained, so an unauthorized user's\n// comment is always left visible. A failed hide must not block activation.\n// Only act on newly-created comments. The gh-aw slash_command trigger also fires\n// on `edited`, so without this guard, editing any existing comment to say\n// `/review tests` would minimize that comment (and collapse its entire history).\nif (context.payload.action !== 'created') {\n  core.info('Skipping hide: comment was edited, not created.');\n  return;\n}\nconst { owner, repo } = context.repo;\nconst actor = context.actor;\nlet permission = 'none';\ntry {\n  const res = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: actor });\n  permission = res.data.permission;\n} catch (e) {\n  core.info(`Permission lookup for ${actor} failed: ${e.message}`);\n}\n// Must mirror the workflow `roles:` frontmatter (admin/maintain/write) — keep in sync.\nif (!['admin', 'maintain', 'write'].includes(permission)) {\n  core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);\n  return;\n}\n// Minimize (hide as resolved) rather than delete: the rerun scanner replays the PR's\n// REST comment history, and minimized comments are still returned by the REST list\n// endpoint — only collapsed in the web UI. node_id is the comment's GraphQL global id.\nconst subjectId = context.payload.comment.node_id;\ntry {\n  await github.graphql(\n    `mutation($id: ID!) {\n       minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) {\n         minimizedComment { isMinimized }\n       }\n     }`,\n    { id: subjectId }\n  );\n  core.info(`Hid /review tests command comment ${subjectId} as resolved.`);\n} catch (e) {\n  core.warning(`Could not hide /review tests command comment ${subjectId}: ${e.message}`);\n}\n"
+      # script: "// Only hide when the command is exactly `/review tests` (should_run) AND the\n// commenter is an authorized collaborator (write/maintain/admin). This mirrors\n// the workflow's own role gate but is self-contained, so an unauthorized user's\n// comment is always left visible. A failed hide must not block activation.\ncore.setOutput('authorized', 'false');\nconst { owner, repo } = context.repo;\nconst actor = context.actor;\nlet permission = 'none';\ntry {\n  const res = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: actor });\n  permission = res.data.permission;\n} catch (e) {\n  core.info(`Permission lookup for ${actor} failed: ${e.message}`);\n}\n// Must mirror the workflow `roles:` frontmatter (admin/maintain/write) — keep in sync.\nif (!['admin', 'maintain', 'write'].includes(permission)) {\n  core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);\n  return;\n}\ncore.setOutput('authorized', 'true');\n// Only hide newly-created comments. The slash_command trigger also fires on\n// `edited`; an authorized edit may run, but must not collapse comment history.\nif (context.payload.action !== 'created') {\n  core.info('Skipping hide: comment was edited, not created.');\n  return;\n}\n// Minimize (hide as resolved) rather than delete: the rerun scanner replays the PR's\n// REST comment history, and minimized comments are still returned by the REST list\n// endpoint — only collapsed in the web UI. node_id is the comment's GraphQL global id.\nconst subjectId = context.payload.comment.node_id;\ntry {\n  await github.graphql(\n    `mutation($id: ID!) {\n       minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) {\n         minimizedComment { isMinimized }\n       }\n     }`,\n    { id: subjectId }\n  );\n  core.info(`Hid /review tests command comment ${subjectId} as resolved.`);\n} catch (e) {\n  core.warning(`Could not hide /review tests command comment ${subjectId}: ${e.message}`);\n}\n"
+  # - if: steps.exact_command.outputs.should_run == 'true' && (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+    # name: Checkout trusted review scripts
+    # uses: actions/checkout@v4
+    # with:
+      # persist-credentials: false
+  # - env:
+      # BUILD_ID: ${{ inputs.build_id }}
+      # CHECK_NAME: ${{ inputs.check_name }}
+      # GH_TOKEN: ${{ github.token }}
+      # PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+    # if: steps.exact_command.outputs.should_run == 'true' && (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+    # name: Gather test-failure context
+    # run: |
+      # set -euo pipefail
+      # if [ -z "${PR_NUMBER}" ]; then
+        # echo "PR number is required."
+        # exit 1
+      # fi
+      # args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview")
+      # if [ -n "${BUILD_ID:-}" ]; then
+        # args+=(-BuildId "${BUILD_ID}")
+      # fi
+      # if [ -n "${CHECK_NAME:-}" ]; then
+        # args+=(-CheckName "${CHECK_NAME}")
+      # fi
+      # pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
+  # - continue-on-error: true
+    # env:
+      # GH_TOKEN: ${{ github.token }}
+      # PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+    # if: steps.exact_command.outputs.should_run == 'true' && (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true') && (github.event_name != 'workflow_dispatch' || inputs.suppress_output != true)
+    # name: Publish visual comparison assets
+    # run: "set -euo pipefail\ncontext=\"CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/context.json\"\noutput=\"CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/visual-comparisons.md\"\npwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \\\n  -PrNumber \"${PR_NUMBER}\" \\\n  -ContextJsonPath \"${context}\" \\\n  -OutputMarkdownPath \"${output}\" \\\n  -PostComment\n"
+  # - if: steps.exact_command.outputs.should_run == 'true' && (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+    # name: Upload test-failure context
+    # uses: actions/upload-artifact@v7.0.1
+    # with:
+      # if-no-files-found: error
+      # name: review-tests-context-${{ github.run_id }}
+      # path: CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}
+      # retention-days: 1
   workflow_dispatch:
     inputs:
       aw_context:
@@ -400,6 +446,7 @@ jobs:
           GH_AW_ENGINE_ID: "copilot"
           GH_AW_EXPR_A77326CF: ${{ github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_INPUTS_BUILD_ID: ${{ inputs.build_id }}
           GH_AW_INPUTS_CHECK_NAME: ${{ inputs.check_name }}
           GH_AW_INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
@@ -563,29 +610,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Verify connectivity to AzDO and Helix
         run: "set -euo pipefail\n\ncheck_url() {\n  local label=\"$1\" url=\"$2\"\n  local code\n  code=$(curl -s -o /dev/null -w \"%{http_code}\" \"$url\")\n  echo \"$label: HTTP $code\"\n}\n\necho \"=== AzDO API check ===\"\ncheck_url \"AzDO\" 'https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302&branchName=refs/heads/main&%24top=1&api-version=7.1'\n\necho \"=== Helix API check ===\"\ncheck_url \"Helix\" 'https://helix.dot.net/api/2019-06-17/jobs?count=1'\n"
-      - env:
-          BUILD_ID: ${{ inputs.build_id }}
-          CHECK_NAME: ${{ inputs.check_name }}
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-        name: Gather test-failure context
-        run: |-
-          set -euo pipefail
-
-          if [ -z "${PR_NUMBER}" ]; then
-            echo "PR number is required."
-            exit 1
-          fi
-
-          args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview")
-          if [ -n "${BUILD_ID:-}" ]; then
-            args+=(-BuildId "${BUILD_ID}")
-          fi
-          if [ -n "${CHECK_NAME:-}" ]; then
-            args+=(-CheckName "${CHECK_NAME}")
-          fi
-
-          pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
+      - name: Download test-failure context
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: review-tests-context-${{ github.run_id }}
+          path: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
 
       - name: Configure Git credentials
         env:
@@ -1727,10 +1756,14 @@ jobs:
     runs-on: ubuntu-slim
     environment: copilot-pat-pool
     permissions:
+      actions: read
+      checks: read
+      contents: write
       issues: write
       pull-requests: write
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' && steps.check_command_position.outputs.command_position_ok == 'true' }}
+      authorization_result: ${{ steps.authorization.outcome }}
       exact_command_result: ${{ steps.exact_command.outcome }}
       exact_command_should_run: ${{ steps.exact_command.outputs.should_run }}
       matched_command: ${{ steps.check_command_position.outputs.matched_command }}
@@ -1791,7 +1824,8 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
           EVENT_NAME: ${{ github.event_name }}
           ISSUE_PULL_REQUEST_URL: ${{ github.event.issue.pull_request.url }}
-      - name: Hide the /review tests command comment as resolved when authorized
+      - name: Authorize and hide the /review tests command comment
+        id: authorization
         if: github.event_name == 'issue_comment' && steps.exact_command.outputs.should_run == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -1801,13 +1835,7 @@ jobs:
             // commenter is an authorized collaborator (write/maintain/admin). This mirrors
             // the workflow's own role gate but is self-contained, so an unauthorized user's
             // comment is always left visible. A failed hide must not block activation.
-            // Only act on newly-created comments. The gh-aw slash_command trigger also fires
-            // on `edited`, so without this guard, editing any existing comment to say
-            // `/review tests` would minimize that comment (and collapse its entire history).
-            if (context.payload.action !== 'created') {
-              core.info('Skipping hide: comment was edited, not created.');
-              return;
-            }
+            core.setOutput('authorized', 'false');
             const { owner, repo } = context.repo;
             const actor = context.actor;
             let permission = 'none';
@@ -1820,6 +1848,13 @@ jobs:
             // Must mirror the workflow `roles:` frontmatter (admin/maintain/write) — keep in sync.
             if (!['admin', 'maintain', 'write'].includes(permission)) {
               core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);
+              return;
+            }
+            core.setOutput('authorized', 'true');
+            // Only hide newly-created comments. The slash_command trigger also fires on
+            // `edited`; an authorized edit may run, but must not collapse comment history.
+            if (context.payload.action !== 'created') {
+              core.info('Skipping hide: comment was edited, not created.');
               return;
             }
             // Minimize (hide as resolved) rather than delete: the rerun scanner replays the PR's
@@ -1839,6 +1874,55 @@ jobs:
             } catch (e) {
               core.warning(`Could not hide /review tests command comment ${subjectId}: ${e.message}`);
             }
+      - name: Checkout trusted review scripts
+        if: steps.exact_command.outputs.should_run == 'true' && (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+      - name: Gather test-failure context
+        if: steps.exact_command.outputs.should_run == 'true' && (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+        run: |
+          set -euo pipefail
+          if [ -z "${PR_NUMBER}" ]; then
+            echo "PR number is required."
+            exit 1
+          fi
+          args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview")
+          if [ -n "${BUILD_ID:-}" ]; then
+            args+=(-BuildId "${BUILD_ID}")
+          fi
+          if [ -n "${CHECK_NAME:-}" ]; then
+            args+=(-CheckName "${CHECK_NAME}")
+          fi
+          pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
+        env:
+          BUILD_ID: ${{ inputs.build_id }}
+          CHECK_NAME: ${{ inputs.check_name }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+      - name: Publish visual comparison assets
+        if: steps.exact_command.outputs.should_run == 'true' && (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true') && (github.event_name != 'workflow_dispatch' || inputs.suppress_output != true)
+        run: |
+          set -euo pipefail
+          context="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/context.json"
+          output="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/visual-comparisons.md"
+          pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
+            -PrNumber "${PR_NUMBER}" \
+            -ContextJsonPath "${context}" \
+            -OutputMarkdownPath "${output}" \
+            -PostComment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+        continue-on-error: true
+      - name: Upload test-failure context
+        if: steps.exact_command.outputs.should_run == 'true' && (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          if-no-files-found: error
+          name: review-tests-context-${{ github.run_id }}
+          path: CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}
+          retention-days: 1
 
   safe_outputs:
     needs:

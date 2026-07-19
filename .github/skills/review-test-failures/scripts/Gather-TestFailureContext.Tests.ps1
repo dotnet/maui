@@ -36,7 +36,11 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
+            'ConvertTo-Array',
             'Get-ObjectValue',
+            'Get-VisualSnapshotInfo',
+            'Select-VisualAttachments',
+            'Get-VisualEnvironmentHintFromLog',
             'Get-HelixWorkItemCounts',
             'Get-XUnitFailures',
             'Get-ConsoleFailureReason',
@@ -54,6 +58,72 @@ BeforeAll {
             }, $true)
         if (-not $function) { throw "Function '$functionName' not found in $scriptPath" }
         Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'Visual snapshot evidence helpers' {
+    It 'parses a snapshot difference and its percentage' {
+        $info = Get-VisualSnapshotInfo -Message @'
+VisualTestUtils.VisualTestFailedException :
+Snapshot different than baseline: EntryClearButtonColorShouldUpdateOnThemeChange.png (2.08% difference)
+If the correct baseline has changed, update it.
+'@
+        $info.kind | Should -Be 'different'
+        $info.snapshotFileName | Should -Be 'EntryClearButtonColorShouldUpdateOnThemeChange.png'
+        $info.description | Should -Be '2.08% difference'
+        $info.differencePercent | Should -Be 2.08
+    }
+
+    It 'parses a missing baseline and preserves a repository path hint' {
+        $info = Get-VisualSnapshotInfo -Message @'
+Baseline snapshot not yet created: /agent/_work/1/s/src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26/NewSnapshot.png
+Ensure new snapshot is correct.
+'@
+        $info.kind | Should -Be 'missing-baseline'
+        $info.snapshotFileName | Should -Be 'NewSnapshot.png'
+        $info.baselinePathHint | Should -Be 'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26/NewSnapshot.png'
+    }
+
+    It 'rejects an unsafe snapshot filename from untrusted test output' {
+        Get-VisualSnapshotInfo -Message 'Snapshot different than baseline: ../../payload.png (1.00% difference)' | Should -BeNullOrEmpty
+    }
+
+    It 'selects the highest complete visual retry and ignores teardown screenshots' {
+        $attachments = @(
+            [pscustomobject]@{ id = 7; fileName = 'Sample-diff.png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/7' },
+            [pscustomobject]@{ id = 9; fileName = 'Sample-diff[1].png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/9' },
+            [pscustomobject]@{ id = 13; fileName = 'Sample-iOS-UITestBaseTearDown-ScreenShot-guid.png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/13' },
+            [pscustomobject]@{ id = 15; fileName = 'Sample.png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/15' },
+            [pscustomobject]@{ id = 17; fileName = 'Sample[1].png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/17' }
+        )
+
+        $selected = Select-VisualAttachments -Attachments $attachments -SnapshotFileName 'Sample.png'
+        $selected.selectedRetry | Should -Be 1
+        $selected.actual.id | Should -Be 17
+        $selected.diff.id | Should -Be 9
+        $selected.candidateCount | Should -Be 2
+    }
+
+    It 'keeps an actual-only attachment for a missing baseline' {
+        $selected = Select-VisualAttachments -Attachments @(
+            [pscustomobject]@{ id = 4; fileName = 'NewSnapshot.png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/4' }
+        ) -SnapshotFileName 'NewSnapshot.png'
+
+        $selected.actual.id | Should -Be 4
+        $selected.diff | Should -BeNullOrEmpty
+    }
+
+    It 'maps current UI runtime logs to snapshot environment directories' {
+        $ios = Get-VisualEnvironmentHintFromLog -Text 'Running TestCases.iOS.Tests --device="ios-simulator-64" --apiversion="26.0"'
+        $ios.platform | Should -Be 'ios'
+        $ios.environmentName | Should -Be 'ios-26'
+
+        $android = Get-VisualEnvironmentHintFromLog -Text 'Running TestCases.Android.Tests --device="android-emulator-64" --apiversion="36"'
+        $android.platform | Should -Be 'android'
+        $android.environmentName | Should -Be 'android-notch-36'
+
+        $mac = Get-VisualEnvironmentHintFromLog -Text 'Running TestCases.Mac.Tests for maccatalyst'
+        $mac.environmentName | Should -Be 'mac'
     }
 }
 
