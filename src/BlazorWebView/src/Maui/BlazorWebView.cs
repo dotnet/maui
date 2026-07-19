@@ -133,10 +133,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return await GetBlazorWebViewHandler().TryDispatchAsync(workItem);
 		}
 
-		private IBlazorWebViewHandler GetBlazorWebViewHandler() =>
-			Handler as IBlazorWebViewHandler ??
-			throw new InvalidOperationException(
-				$"The handler for {nameof(BlazorWebView)} must implement {nameof(IBlazorWebViewHandler)}.");
+		private IBlazorWebViewHandler GetBlazorWebViewHandler()
+		{
+			var handler = Handler;
+			if (handler is null)
+			{
+				throw new InvalidOperationException(
+					$"{nameof(BlazorWebView)} must be connected to a handler before this operation can be performed.");
+			}
+
+			return handler as IBlazorWebViewHandler ??
+				throw new InvalidOperationException(
+					$"The handler type '{handler.GetType().FullName}' must implement {nameof(IBlazorWebViewHandler)}.");
+		}
 
 		/// <inheritdoc />
 		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>

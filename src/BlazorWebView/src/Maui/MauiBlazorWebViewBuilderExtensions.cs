@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui

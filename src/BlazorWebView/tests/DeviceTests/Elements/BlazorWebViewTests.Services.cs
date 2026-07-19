@@ -85,6 +85,15 @@ public partial class BlazorWebViewTests
 	}
 
 	[Fact]
+	public void BlazorWebViewCreateFileProviderBeforeHandlerThrowsClearException()
+	{
+		var exception = Assert.Throws<InvalidOperationException>(
+			() => new BlazorWebView().CreateFileProvider("wwwroot"));
+
+		Assert.Contains("must be connected to a handler", exception.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public async Task BlazorWebViewWithoutDispatchFailsToGetScopedServices()
 	{
 		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
