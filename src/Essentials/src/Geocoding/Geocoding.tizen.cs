@@ -7,7 +7,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	class GeocodingImplementation : IPlatformGeocoding, IGeocoding
+	class GeocodingImplementation : IPlatformGeocoding
 	{
 		public string? MapServiceToken { get; set; }
 
