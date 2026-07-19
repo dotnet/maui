@@ -372,8 +372,11 @@ public class PlatformInterop {
         //     size would visibly change the result for any image larger than its view. Preserve native
         //     resolution but still guard against oversized bitmaps by capping the decode at the display
         //     size instead of the much smaller view size.
-        //   * FitCenter (Aspect.AspectFit) and the default only need to fit WITHIN the view -> CENTER_INSIDE
-        //     at the view-negotiated size, which is already display-bounded.
+        //   * FitCenter (Aspect.AspectFit) and the default only need to fit WITHIN the view, so honor the
+        //     view's own size when it declares one (keeps small/thumbnail loads cheap) but still fall back
+        //     to an explicit display ceiling when the view is WRAP_CONTENT / not yet measured, otherwise
+        //     Glide's target-size negotiation can still decode an extreme-aspect source above the display
+        //     bounds.
         ImageView.ScaleType scaleType = imageView.getScaleType();
         if (scaleType == ImageView.ScaleType.CENTER
                 || scaleType == ImageView.ScaleType.CENTER_CROP
@@ -381,7 +384,55 @@ public class PlatformInterop {
             return limitToDisplaySize(builder, imageView.getContext());
         }
 
-        return builder.downsample(DownsampleStrategy.CENTER_INSIDE);
+        return limitToViewOrDisplaySize(builder, imageView);
+    }
+
+    private static RequestBuilder<Drawable> limitToViewOrDisplaySize(RequestBuilder<Drawable> builder, ImageView imageView) {
+        // FitCenter/AspectFit (MAUI's default Android scale type) only has to fit the source inside the
+        // view. A WRAP_CONTENT or not-yet-measured ImageView, however, gives Glide no bounded target, so an
+        // extreme-aspect source can still decode above the display bounds and crash. Prefer the view's own
+        // fixed/measured size when it has one (so small thumbnails stay cheap) and fall back to the display
+        // size as a hard ceiling otherwise.
+        builder = builder.downsample(DownsampleStrategy.CENTER_INSIDE);
+
+        Context context = imageView.getContext();
+        if (context == null) {
+            return builder;
+        }
+
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        if (metrics == null) {
+            return builder;
+        }
+
+        int displayWidth = metrics.widthPixels;
+        int displayHeight = metrics.heightPixels;
+        if (displayWidth <= 0 || displayHeight <= 0) {
+            return builder;
+        }
+
+        int targetWidth = boundedDimension(imageView, true, displayWidth);
+        int targetHeight = boundedDimension(imageView, false, displayHeight);
+        return builder.override(targetWidth, targetHeight);
+    }
+
+    private static int boundedDimension(ImageView imageView, boolean horizontal, int displayLimit) {
+        // Honor an already-measured or fixed positive dimension (clamped to the display so it can never
+        // exceed it); WRAP_CONTENT / MATCH_PARENT / unmeasured axes fall back to the display limit.
+        int measured = horizontal ? imageView.getWidth() : imageView.getHeight();
+        if (measured > 0) {
+            return Math.min(measured, displayLimit);
+        }
+
+        ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
+        if (layoutParams != null) {
+            int declared = horizontal ? layoutParams.width : layoutParams.height;
+            if (declared > 0) {
+                return Math.min(declared, displayLimit);
+            }
+        }
+
+        return displayLimit;
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
