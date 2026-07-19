@@ -83,6 +83,18 @@ Write-Host "Loading findings from: $FindingsFile" -ForegroundColor Cyan
 $rawJson = Get-Content -Path $FindingsFile -Raw -Encoding UTF8
 $parsed = $rawJson | ConvertFrom-Json
 
+# Guard: an empty, whitespace-only, or literal-"null" findings file parses to
+# $null. The expert review writes the inline-findings.post.ok sentinel whenever
+# the PR fix won, even when it produced ZERO inline findings — so this block can
+# legitimately run against a null/empty findings file. Calling .GetType() or
+# .PSObject on $null throws "You cannot call a method on a null-valued
+# expression" (surfaced as a scary non-fatal error in the deferred-post catch).
+# Treat it as "no findings" and exit cleanly.
+if ($null -eq $parsed) {
+    Write-Host "Findings file parsed to null (empty or 'null') — no inline findings to post." -ForegroundColor Green
+    exit 0
+}
+
 # Diagnostic: log what the parser sees
 Write-Host "  Parsed type: $($parsed.GetType().FullName)" -ForegroundColor Gray
 if ($parsed -is [System.Management.Automation.PSCustomObject]) {
