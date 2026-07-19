@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 			var sourceWidth = Math.Max(1, metrics.WidthPixels * widthMultiplier);
 			var sourceHeight = Math.Max(1, metrics.HeightPixels * heightMultiplier);
 			var filename = BaseImageSourceServiceTests.CreateBitmapFile(sourceWidth, sourceHeight, expectedColor);
-			var imageSource = new UriImageSourceStub(new Uri(filename));
+			var imageSource = new UriImageSourceStub(new Uri($"file://{filename}"));
 
 			var service = new UriImageSourceService();
 			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 			var sourceWidth = Math.Max(1, metrics.WidthPixels * widthMultiplier);
 			var sourceHeight = Math.Max(1, metrics.HeightPixels * heightMultiplier);
 			var filename = BaseImageSourceServiceTests.CreateBitmapFile(sourceWidth, sourceHeight, expectedColor);
-			var imageSource = new UriImageSourceStub(new Uri(filename));
+			var imageSource = new UriImageSourceStub(new Uri($"file://{filename}"));
 			var imageView = new ImageView(MauiProgram.DefaultContext);
 			imageView.SetScaleType(scaleTypeName switch
 			{
