@@ -397,6 +397,27 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The View to be displayed in the navigation bar.</param>
 		public static void SetTitleView(BindableObject obj, View value) => obj.SetValue(TitleViewProperty, value);
 
+		// Determines whether the Shell's Title was set by the user (explicit code, style, or a binding)
+		// as opposed to being mirrored from the current page by the renderer (FromHandler) or never set
+		// at all (DefaultValue). This lets ShellToolbar mirror the page title into Shell.Title for
+		// TitleView bindings without clobbering a title the user set intentionally.
+		internal bool IsTitleSetByUser()
+		{
+			if (GetIsBound(TitleProperty))
+				return true;
+
+			var context = GetContext(TitleProperty);
+			if (context is null)
+				return false;
+
+			var specificity = context.Values.GetSpecificity();
+			return specificity != SetterSpecificity.DefaultValue && specificity != SetterSpecificity.FromHandler;
+		}
+
+		// Returns the Title only when it was set by the user. Used by the native window title
+		// fallback so that a renderer-mirrored page title never leaks into the platform chrome.
+		internal string GetUserSetTitle() => IsTitleSetByUser() ? Title : null;
+
 		static void OnFlyoutBehaviorChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var element = (Element)bindable;
@@ -2134,55 +2155,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return currentPage;
-		}
-
-		// Returns true when Shell.Title holds a value the developer explicitly set
-		// (a direct value or a binding), as opposed to a title mirrored in from the
-		// current page by the toolbar renderer (SetterSpecificity.FromHandler).
-		// Used to keep renderer-generated titles from leaking into platform chrome
-		// such as the Window title while still exposing them for XAML bindings.
-		internal bool IsTitleSetByUser()
-		{
-			var titleContext = GetContext(TitleProperty);
-			if (titleContext == null)
-				return false;
-
-			if (titleContext.Bindings.Count > 0)
-				return true;
-
-			var specificity = titleContext.Values.GetSpecificity();
-			return specificity != SetterSpecificity.DefaultValue && specificity != SetterSpecificity.FromHandler;
-		}
-
-		// Tracks the last observed "is Title user-set" state so we can detect
-		// specificity flips (user <-> renderer-mirrored) that leave the string
-		// value unchanged. BindableObject suppresses PropertyChanged in that
-		// case, but Window/toolbar consumers still need to react because the
-		// specificity determines whether Title is exposed as the native Window
-		// title. See OnBindablePropertySet below.
-		bool _lastKnownTitleUserSet;
-
-		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool didChange, bool willFirePropertyChanged)
-		{
-			base.OnBindablePropertySet(property, original, value, didChange, willFirePropertyChanged);
-
-			// Fill the notification gap: when a set on TitleProperty flips the
-			// user-set/renderer-mirrored state but the string value is unchanged
-			// (or the incoming set had lower specificity than the current value),
-			// BindableObject won't raise PropertyChanged. Detect that here and
-			// synthesize the standard OnPropertyChanged so existing subscribers
-			// (Window.ShellPropertyChanged, ShellToolbar's Shell.PropertyChanged
-			// handler) refresh consistently — no new event or subscription needed.
-			if (property == TitleProperty)
-			{
-				var currentUserSet = IsTitleSetByUser();
-				if (currentUserSet != _lastKnownTitleUserSet)
-				{
-					_lastKnownTitleUserSet = currentUserSet;
-					if (!willFirePropertyChanged)
-						OnPropertyChanged(TitleProperty.PropertyName);
-				}
-			}
 		}
 
 		Element WalkToPage(Element element)
