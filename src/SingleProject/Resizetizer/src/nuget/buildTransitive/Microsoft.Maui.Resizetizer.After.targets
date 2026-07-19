@@ -700,7 +700,7 @@
             <!-- Up-to-date path: restore from the persisted output list so that non-image artifacts
                  written into the intermediate folder by external backends (e.g. *.items files) are
                  never surfaced through MauiProcessedImage / _ResizetizerCollectedImages. -->
-            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == ''" Include="@(_ResizetizerOutputs)" />
+            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == '' And '@(_MauiImageToProcess)' != ''" Include="@(_ResizetizerOutputs)" />
             <!-- Wildcard is kept solely for stale-file detection and cleanup. -->
             <_ResizetizerExistingImages Include="$(_MauiIntermediateImages)\**\*" />
             <_ResizetizerImagesToDelete Include="@(_ResizetizerExistingImages->'%(FullPath)')" />

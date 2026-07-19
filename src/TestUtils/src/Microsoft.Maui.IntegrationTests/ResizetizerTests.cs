@@ -1,3 +1,6 @@
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging.StructuredLogger;
+
 namespace Microsoft.Maui.IntegrationTests;
 
 [Trait("Category", "Build")]
@@ -122,7 +125,7 @@ public class ResizetizerTests : BaseBuildTest
 			    <MauiImage Include="image.svg" />
 			  </ItemGroup>
 			  <Target Name="VerifyCustomBackendImages">
-			    <Error Condition="'@(MauiProcessedImage)' == ''" Text="Custom backends must receive processed images." />
+			    <Error Condition="'@(MauiImage)' != '' And '@(MauiProcessedImage)' == ''" Text="Custom backends must receive processed images." />
 			    <Error Condition="'@(ContentWithTargetPath)' != ''" Text="Custom backends must not receive built-in output injection." />
 			    <WriteLinesToFile File="$(_MauiIntermediateImages)custom-backend.items" Lines="@(MauiProcessedImage)" Overwrite="true" />
 			  </Target>
@@ -139,23 +142,33 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.Equal(2, processedImages.Length);
 		Assert.All(processedImages, path => Assert.True(File.Exists(path), $"Processed image does not exist: {path}"));
 
-		// Regression: on an incremental rebuild the up-to-date fallback must restore
-		// _ResizetizerCollectedImages / MauiProcessedImage from the persisted outputs list,
-		// not from a wildcard over the intermediate folder.  Without the fix the wildcard
-		// would pick up the custom-backend.items file written by VerifyCustomBackendImages
-		// in the first build and surface it as a processed image on the second build.
-		var stampFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.stamp");
-		Assert.True(File.Exists(stampFile), $"Stamp file was not created: {stampFile}");
-		// Make the stamp appear stale so ResizetizeImages re-runs, but keep image files
-		// unchanged so the Resizetizer task returns empty CopiedResources (up-to-date path).
-		File.SetLastWriteTime(stampFile, DateTime.UtcNow.AddMinutes(-10));
-
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+		// A genuine no-op rebuild must skip ResizetizeImages and restore only the
+		// persisted Resizetizer output list, not backend-written files from the folder.
+		const string incrementalBinlog = "custom-backend-incremental.binlog";
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, binlogPath: incrementalBinlog, output: _output),
 			"Custom backend project failed on incremental rebuild. Check test output for errors.");
+		Assert.True(
+			WasTargetSkippedAsUpToDate(Path.Combine(projectDir, incrementalBinlog), "ResizetizeImages"),
+			"ResizetizeImages should be skipped as up-to-date on the no-op rebuild.");
 
 		var processedImagesIncremental = File.ReadAllLines(outputsFile);
 		Assert.Equal(2, processedImagesIncremental.Length);
 		Assert.DoesNotContain(processedImagesIncremental, path => path.EndsWith(".items", StringComparison.OrdinalIgnoreCase));
+
+		// Removing the final image must not restore the previous output list. The old
+		// generated files are deleted and no processed images flow to the backend.
+		File.WriteAllText(
+			projectFile,
+			File.ReadAllText(projectFile).Replace(
+				"""    <MauiImage Include="image.svg" />""",
+				string.Empty,
+				StringComparison.Ordinal));
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Custom backend project failed after removing its final image. Check test output for errors.");
+
+		Assert.Empty(File.ReadAllLines(outputsFile));
+		Assert.All(processedImages, path => Assert.False(File.Exists(path), $"Stale processed image still exists: {path}"));
 	}
 
 	[Fact]
@@ -316,4 +329,10 @@ public class ResizetizerTests : BaseBuildTest
 		var processedAssets = File.ReadAllLines(assetsFile);
 		Assert.NotEmpty(processedAssets);
 	}
+
+	static bool WasTargetSkippedAsUpToDate(string binlogPath, string targetName) =>
+		new BinLogReader().ReadRecords(binlogPath).Any(record =>
+			record.Args is TargetSkippedEventArgs skipped &&
+			skipped.TargetName == targetName &&
+			skipped.SkipReason == TargetSkipReason.OutputsUpToDate);
 }
