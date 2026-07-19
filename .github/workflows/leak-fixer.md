@@ -189,9 +189,10 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
    - **Track C (review response):** any code you push must keep the PR's tests valid — re-run the
      affected test so Track A stays red→green. Never push a change that breaks the PR's own test
      just to satisfy a review.
-2. **If a Track A leak is already fixed on `main`, open NO PR.** When your faithful regression
-   test passes on the *unpatched* source, the leak no longer reproduces — record
-   `skipped: already fixed on main (test green without fix)` and stop.
+2. **If a Track A leak already has an equivalent `[leak-fix]` merged to `main` or
+   `inflight/current`, open NO PR.** Check live merged PR metadata before branch creation or
+   test authoring. Also stop when your faithful regression test passes on the *unpatched*
+   source, recording `skipped: already fixed on main (test green without fix)`.
 3. **Managed scope for product fixes.** Any *product* change (Track A / a Track C code fix) must
    live in managed cross-platform code (`src/Controls/src`, `src/Core/src`, `src/Essentials/src`).
    If a `[leak-scan]` leak can only be reproduced with a platform handler / native peer, it is out
@@ -347,7 +348,7 @@ a response, fall through to Step 2.
 
 If `issue_number` was provided, use it (it must be a `[leak-scan]` issue → Track A). Otherwise
 auto-pick: list this scanner's open `[leak-scan]` issues (oldest first) and take the first that
-does NOT already have an open fix PR (Step 3 confirms).
+does NOT already have an open or merged equivalent fix PR (Step 3 confirms).
 
 ```bash
 # Open [leak-scan] (Track A) issues, oldest first.
@@ -367,12 +368,17 @@ Read the chosen issue's body in full (`gh issue view <N> --json title,body`). Ex
 - the **suggested fix** shape, and
 - any **non-default / disabling condition**.
 
-## Step 3 — De-dup + attempt cap (live GitHub searches)
+## Step 3 — De-dup merged/open fixes + attempt cap (live GitHub searches)
 
 A fix PR carries `Fixes #<N>` (and `Refs: <owner>/<repo>#<N>`) in its body — that is the join
 key. But the same underlying leak can be filed under MULTIPLE issue numbers (duplicate
 `[leak-scan]` issues, or a pre-existing upstream issue), so also de-dup by the **rooting
-`Type.Member`** the target names — never open a second fix for a leak already being fixed.
+`Type.Member`** the target names — never open a second fix for a leak already being fixed or
+already merged into `main` / `inflight/current`.
+
+Use the PR's live `baseRefName` as the branch authority. Do not trust a potentially stale
+`Target branch:` line in its body: leak PRs can be retargeted to `inflight/current` before
+merge.
 
 ```bash
 N=<issue-number>
@@ -381,35 +387,88 @@ N=<issue-number>
 # chain) so off-contract / fully-qualified titles key identically on both sides of the pipeline.
 API=$(gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title -q '.title' \
   | sed -E 's/^\[leak-scan\] *//' \
-  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } else print }')
+  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
 echo "target rooting API: $API"
 # Escape regex metacharacters (notably the '.' in Type.Member) so the jq test() calls below match
 # a LITERAL "Type.Member" — otherwise "BackButtonBehavior.Command" would also match "BackButtonBehaviorXCommand".
 API_RE=$(printf '%s' "$API" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
-# (a) Open [leak-fix] PR already addressing THIS issue number?
-gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title' \
+# (a) Exact [leak-fix] PRs already MERGED to main/inflight/current.
+gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
+  --search '"[leak-fix]" in:title' \
+  --json number,title,body,baseRefName,mergedAt,url \
+  | jq '[.[] |
+      select(.mergedAt != null) |
+      select(.title | startswith("[leak-fix] ")) |
+      select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
+  > /tmp/gh-aw/agent/merged-leak-fix-prs.json
+
+# Canonicalize every merged PR title with the same last-Type.Member extraction used for the
+# selected issue. This handles fully-qualified/off-contract wording without substring matches.
+jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
+  /tmp/gh-aw/agent/merged-leak-fix-prs.json \
+  | while IFS=$'\t' read -r PR TITLE BASE URL; do
+      PR_API=$(printf '%s\n' "$TITLE" \
+        | sed -E 's/^\[leak-fix\] *//' \
+        | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+      if test -n "$PR_API"; then
+        printf '%s\t%s\t%s\t%s\t%s\n' "$PR_API" "$PR" "$BASE" "$URL" "$TITLE"
+      fi
+    done \
+  | sort -u \
+  > /tmp/gh-aw/agent/merged-leak-fix-apis.tsv
+
+# Match either the selected issue reference OR the canonical rooting API. The latter catches
+# duplicate scanner issue numbers such as #36539 after #36344 was already fixed by #36369.
+jq --arg n "$N" '[.[] |
+    select((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b"))]' \
+  /tmp/gh-aw/agent/merged-leak-fix-prs.json \
+  > /tmp/gh-aw/agent/merged-issue-fix-prs.json
+awk -F '\t' -v api="$API" '$1 == api' \
+  /tmp/gh-aw/agent/merged-leak-fix-apis.tsv \
+  > /tmp/gh-aw/agent/merged-api-fix-prs.tsv
+jq -r '.[] | "equivalent fix already merged: #\(.number) -> \(.baseRefName) \(.url) — \(.title)"' \
+  /tmp/gh-aw/agent/merged-issue-fix-prs.json
+awk -F '\t' '{ print "equivalent API fix already merged: #" $2 " -> " $3 " " $4 " — " $5 }' \
+  /tmp/gh-aw/agent/merged-api-fix-prs.tsv
+echo "merged issue-reference matches: $(jq 'length' /tmp/gh-aw/agent/merged-issue-fix-prs.json)"
+echo "merged canonical-API matches: $(wc -l < /tmp/gh-aw/agent/merged-api-fix-prs.tsv | tr -d ' ')"
+# (b) Open [leak-fix] PR already addressing THIS issue number?
+gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
+  --search '"[leak-fix]" in:title' \
   --json number,title,body \
-  | jq --arg n "$N" '[.[] | select((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b"))]' \
+  | jq --arg n "$N" '[.[] |
+      select(.title | startswith("[leak-fix] ")) |
+      select((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b"))]' \
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
-# (b) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
+# (c) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
 #     [leak-fix] PR titles are "Fix <Type>.<Member> memory leak".
-gh pr list --repo "$GITHUB_REPOSITORY" --state open --search '"[leak-fix]" in:title' \
+gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
+  --search '"[leak-fix]" in:title' \
   --json number,title \
-  | jq --arg api "$API_RE" '[.[] | select(.title | test("Fix +"+$api+"([. ]|$)"))]' \
+  | jq --arg api "$API_RE" '[.[] |
+      select(.title | startswith("[leak-fix] ")) |
+      select(.title | test("^\\[leak-fix\\] +Fix +"+$api+"([. ]|$)"))]' \
   > /tmp/gh-aw/agent/same-api-prs.json
 jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/same-api-prs.json
-# (c) Closed-unmerged attempts for this issue (attempt cap = 3).
-gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:title' \
+# (d) Closed-unmerged attempts for this issue (attempt cap = 3).
+gh pr list --repo "$GITHUB_REPOSITORY" --state closed --limit 1000 \
+  --search '"[leak-fix]" in:title' \
   --json number,title,body,mergedAt \
-  | jq --arg n "$N" '[.[] | select(((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b")) and (.mergedAt == null))]' \
+  | jq --arg n "$N" '[.[] |
+      select(.title | startswith("[leak-fix] ")) |
+      select(((.body // "") | test("(Fixes|Refs)[^0-9]*#"+$n+"\\b")) and (.mergedAt == null))]' \
   > /tmp/gh-aw/agent/closed-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 ```
 
-- If an **open** fix PR already refs this issue (a) OR already fixes the same rooting
-  `Type.Member` (b) → `skipped: leak already being fixed` and stop (or, if `issue_number` was
-  explicit, just stop). Also double-check the leak isn't already fixed on `main` (Step 8 gate).
+- If `jq 'length' merged-issue-fix-prs.json` is greater than `0` OR
+  `merged-api-fix-prs.tsv` has at least one row (a) → record
+  `skipped: equivalent fix already merged via #<PR> to <baseRefName>` and stop. For automatic
+  selection, move to the next oldest issue; for explicit `issue_number`, stop the run.
+- If an **open** fix PR already refs this issue (b) OR already fixes the same rooting
+  `Type.Member` (c) → `skipped: leak already being fixed` and stop (or move to the next
+  automatic candidate). Also double-check the leak isn't already fixed on `main` (Step 6 gate).
 - If **3+ closed-unmerged** attempts exist → `skipped: attempt cap reached (3)` and stop.
 - An issue that is already CLOSED → `skipped: issue closed` (nothing to do).
 
