@@ -28,6 +28,8 @@ namespace Microsoft.Maui.Controls
 
 		readonly TableSectionModel _tableModel;
 
+		readonly TableRootWeakEventProxy _rootEventProxy;
+
 		TableIntent _intent = TableIntent.Data;
 
 		TableModel _model;
@@ -47,6 +49,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning disable CS0618 // Type or member is obsolete
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
 #pragma warning restore CS0618 // Type or member is obsolete
+			_rootEventProxy = new TableRootWeakEventProxy(this);
 			Model = _tableModel = new TableSectionModel(this, root);
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<TableView>>(() => new PlatformConfigurationRegistry<TableView>(this));
 		}
@@ -87,17 +90,15 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_tableModel.Root != null)
 				{
-					_tableModel.Root.SectionCollectionChanged -= OnSectionCollectionChanged;
-					_tableModel.Root.PropertyChanged -= OnTableModelRootPropertyChanged;
 					VisualDiagnostics.OnChildRemoved(this, _tableModel.Root, 0);
 				}
+				// Assigning the model's Root detaches the old root's events and attaches the
+				// new root's events through the weak proxy (see TableSectionModel.Apply/RemoveEvents).
 				_tableModel.Root = value ?? new TableRoot();
 				VisualDiagnostics.OnChildAdded(this, _tableModel.Root);
 				SetInheritedBindingContext(_tableModel.Root, BindingContext);
 
 				Root.SelectMany(r => r).ForEach(cell => cell.Parent = this);
-				_tableModel.Root.SectionCollectionChanged += OnSectionCollectionChanged;
-				_tableModel.Root.PropertyChanged += OnTableModelRootPropertyChanged;
 				OnModelChanged();
 			}
 		}
@@ -187,6 +188,75 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => new List<Maui.IVisualTreeElement>() { this.Root };
 
+		// Forwards a TableRoot's events to its owning TableView while holding only a weak
+		// reference to that TableView. The TableView owns this proxy strongly, so the proxy
+		// lives as long as the TableView; a shared/long-lived TableRoot keeps only the proxy
+		// alive, never the TableView.
+		sealed class TableRootWeakEventProxy
+		{
+			readonly WeakReference<TableView> _tableView;
+			TableRoot _root;
+
+			public TableRootWeakEventProxy(TableView tableView)
+			{
+				_tableView = new WeakReference<TableView>(tableView);
+			}
+
+			public void Subscribe(TableRoot root)
+			{
+				if (root == null)
+					return;
+
+				Unsubscribe();
+
+				_root = root;
+				root.CollectionChanged += OnCollectionChanged;
+				root.SectionCollectionChanged += OnSectionCollectionChanged;
+				root.PropertyChanged += OnPropertyChanged;
+			}
+
+			public void Unsubscribe()
+			{
+				var root = _root;
+				if (root == null)
+					return;
+
+				root.CollectionChanged -= OnCollectionChanged;
+				root.SectionCollectionChanged -= OnSectionCollectionChanged;
+				root.PropertyChanged -= OnPropertyChanged;
+				_root = null;
+			}
+
+			bool TryGetTableView(out TableView tableView)
+			{
+				if (_tableView.TryGetTarget(out tableView))
+					return true;
+
+				// The TableView has been collected; drop the subscription so the shared
+				// TableRoot no longer roots this proxy's handlers.
+				Unsubscribe();
+				return false;
+			}
+
+			void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+			{
+				if (TryGetTableView(out var tableView))
+					tableView.CollectionChanged(sender, e);
+			}
+
+			void OnSectionCollectionChanged(object sender, ChildCollectionChangedEventArgs e)
+			{
+				if (TryGetTableView(out var tableView))
+					tableView.OnSectionCollectionChanged(sender, e);
+			}
+
+			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (TryGetTableView(out var tableView))
+					tableView.OnTableModelRootPropertyChanged(sender, e);
+			}
+		}
+
 		internal class TableSectionModel : TableModel
 		{
 			static readonly BindableProperty PathProperty = BindableProperty.Create("Path", typeof(Tuple<int, int>), typeof(Cell), null);
@@ -263,8 +333,9 @@ namespace Microsoft.Maui.Controls
 
 			void ApplyEvents(TableRoot tableRoot)
 			{
-				tableRoot.CollectionChanged += _parent.CollectionChanged;
-				tableRoot.SectionCollectionChanged += _parent.OnSectionCollectionChanged;
+				// Subscribe through a weak proxy so a shared/long-lived TableRoot does not
+				// strongly root the TableView (and its page subtree) via its event handlers.
+				_parent._rootEventProxy.Subscribe(tableRoot);
 			}
 
 			void RemoveEvents(TableRoot tableRoot)
@@ -272,8 +343,7 @@ namespace Microsoft.Maui.Controls
 				if (tableRoot == null)
 					return;
 
-				tableRoot.CollectionChanged -= _parent.CollectionChanged;
-				tableRoot.SectionCollectionChanged -= _parent.OnSectionCollectionChanged;
+				_parent._rootEventProxy.Unsubscribe();
 			}
 
 			static void SetPath(Cell item, Tuple<int, int> index)
