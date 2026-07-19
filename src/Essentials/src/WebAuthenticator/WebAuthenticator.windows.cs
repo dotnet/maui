@@ -273,19 +273,37 @@ namespace Microsoft.Maui.Authentication
 
 		static bool RedirectActivationAndExit(AppInstance routeOwner, AppActivationArguments args)
 		{
+			_ = RedirectActivationAndExitAsync(routeOwner, args);
+			return true;
+		}
+
+		static async Task RedirectActivationAndExitAsync(AppInstance routeOwner, AppActivationArguments args)
+		{
 			try
 			{
-				// Complete redirection before terminating this transient callback process.
-				routeOwner.RedirectActivationToAsync(args).AsTask().GetAwaiter().GetResult();
+				await routeOwner.RedirectActivationToAsync(args).AsTask().ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
 				Debug.WriteLine($"Unable to redirect WebAuthenticator callback activation: {ex}");
-				return false;
 			}
+			finally
+			{
+				TerminateCurrentProcess();
+			}
+		}
 
-			Process.GetCurrentProcess().Kill();
-			return true;
+		static void TerminateCurrentProcess()
+		{
+			try
+			{
+				Process.GetCurrentProcess().Kill();
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Unable to terminate the transient WebAuthenticator callback process: {ex}");
+				Environment.Exit(1);
+			}
 		}
 
 		// AppInstance keys are app-defined, so keep WebAuthenticator routes separate from application-owned keys.

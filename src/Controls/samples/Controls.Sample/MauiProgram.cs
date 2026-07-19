@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
@@ -300,11 +301,7 @@ namespace Maui.Controls.Sample
 
 						if (!keyInstance.IsCurrent)
 						{
-							// The WinAppSDK single-instance guidance redirects the activation and then
-							// terminates the losing instance immediately. Using Kill here avoids leaving
-							// a headless process around that can continue to hold build outputs open.
-							keyInstance.RedirectActivationToAsync(args).AsTask().GetAwaiter().GetResult();
-							Process.GetCurrentProcess().Kill();
+							_ = RedirectActivationAndExitAsync(keyInstance, args);
 							return true;
 						}
 
@@ -348,5 +345,36 @@ namespace Maui.Controls.Sample
 
 			return appBuilder.Build();
 		}
+
+#if WINDOWS
+		static async Task RedirectActivationAndExitAsync(AppInstance keyInstance, AppActivationArguments args)
+		{
+			try
+			{
+				await keyInstance.RedirectActivationToAsync(args).AsTask().ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Unable to redirect the Controls Sample activation: {ex}");
+			}
+			finally
+			{
+				TerminateCurrentProcess();
+			}
+		}
+
+		static void TerminateCurrentProcess()
+		{
+			try
+			{
+				Process.GetCurrentProcess().Kill();
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Unable to terminate the transient Controls Sample process: {ex}");
+				Environment.Exit(1);
+			}
+		}
+#endif
 	}
 }
