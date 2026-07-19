@@ -12,7 +12,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	// Serialize mutations of MainThread and DispatcherProvider.Current with the
 	// other tests that modify the same process-wide state.
-	[Collection("MainThreadStaticState")]
+	[Collection(MainThreadStaticStateCollection.Name)]
 	public class MainThreadBridgeTests : IDisposable
 	{
 		public MainThreadBridgeTests()
