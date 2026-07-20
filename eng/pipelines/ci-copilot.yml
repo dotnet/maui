@@ -2898,6 +2898,38 @@ stages:
                 }
               }
 
+              # ── One-time diagnostic: does the persisted checkout PAT (and every
+              # other pipeline credential) have Contents:write on the asset repo?
+              # Runs UNCONDITIONALLY (even when there are no snapshot diffs) so ANY
+              # build's Post log confirms the write-token matrix without needing a
+              # diff-producing run. Read-only (probes repos/{repo}.permissions.push);
+              # NEVER echoes a token value (rule 8) — only the candidate NAME + a
+              # boolean. Restores GH_TOKEN afterwards so review posting is unaffected.
+              try {
+                $diagReviewTok = $env:GH_TOKEN
+                $diagRepo = if ($env:BUILD_REPOSITORY_NAME) { $env:BUILD_REPOSITORY_NAME } else { 'dotnet/maui' }
+                $diagCheckout = $null
+                try {
+                  foreach ($ln in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
+                    if ($ln -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') { $diagCheckout = ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($matches[1])) -split ':', 2)[-1]; break }
+                    elseif ($ln -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') { $diagCheckout = $matches[1]; break }
+                  }
+                } catch { $diagCheckout = $null }
+                $diagCand = New-Object System.Collections.Generic.List[object]
+                if ($diagCheckout             -and $diagCheckout             -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'CHECKOUT_PAT';      t = $diagCheckout }) }
+                if ($env:ASSET_WRITE_TOKEN    -and $env:ASSET_WRITE_TOKEN    -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'ASSET_WRITE_TOKEN'; t = $env:ASSET_WRITE_TOKEN }) }
+                if ($env:EMBED_TOKEN_DISPATCH -and $env:EMBED_TOKEN_DISPATCH -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'DISPATCH_TOKEN';    t = $env:EMBED_TOKEN_DISPATCH }) }
+                if ($env:EMBED_TOKEN_COPILOT  -and $env:EMBED_TOKEN_COPILOT  -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'COPILOT_TOKEN';     t = $env:EMBED_TOKEN_COPILOT }) }
+                if ($diagReviewTok            -and $diagReviewTok            -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'GH_COMMENT_TOKEN';  t = $diagReviewTok }) }
+                Write-Host ("[EMBED-DIAG] checkout PAT present={0}; probing {1} credential(s) for Contents:write on {2}" -f [bool]$diagCheckout, $diagCand.Count, $diagRepo)
+                foreach ($c in $diagCand) {
+                  $p = $false
+                  try { $env:GH_TOKEN = $c.t; $p = [bool]((gh api "repos/$diagRepo" 2>$null | ConvertFrom-Json).permissions.push) } catch { $p = $false }
+                  Write-Host ("[EMBED-DIAG] · Contents:write probe {0}: push={1}" -f $c.n, $p)
+                }
+                $env:GH_TOKEN = $diagReviewTok
+              } catch { Write-Host "[EMBED-DIAG] probe failed: $($_.Exception.Message)" }
+
               # Aggregator returns @{ category -> @{ Total/Passed/Failed/.../Results } }
               # using the SAME shape the in-process STEP 3 renderer expects
               # so we can reuse the markdown generation pattern directly.
