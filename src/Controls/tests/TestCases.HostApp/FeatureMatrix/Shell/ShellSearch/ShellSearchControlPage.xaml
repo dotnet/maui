@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:Maui.Controls.Sample"
+       x:Class="Maui.Controls.Sample.ShellSearchControlPage"
+       x:DataType="local:ShellViewModel"
+       x:Name="MainShell"
+       Title="ShellSearch"
+       AutomationId="ShellSearchMatrix">
+       <ShellContent Title="Search"
+                     Route="search"
+                     AutomationId="SearchTab">
+              <ContentPage Title="ShellSearch"
+                           x:Name="SearchContentPage"
+                           AutomationId="SearchContentPage">
+                     <ContentPage.ToolbarItems>
+                            <ToolbarItem Text="Options"
+                                         Clicked="OnOptionsClicked"
+                                         AutomationId="Options"/>
+                     </ContentPage.ToolbarItems>
+                     <Shell.SearchHandler>
+                            <local:SampleSearchHandler x:Name="SearchHandlerInstance"
+                                                       AutomationId="SearchHandler"
+                                                       BackgroundColor="{Binding BackgroundColor}"
+                                                       CancelButtonColor="{Binding CancelButtonColor}"
+                                                       CharacterSpacing="{Binding CharacterSpacing}"
+                                                       ClearIcon="{Binding ClearIcon}"
+                                                       ClearPlaceholderCommandParameter="{Binding ClearPlaceholderCommandParameter}"
+                                                       ClearPlaceholderEnabled="{Binding ClearPlaceholderEnabled}"
+                                                       ClearPlaceholderIcon="{Binding ClearPlaceholderIcon}"
+                                                       ClearPlaceholderCommand="{Binding ClearPlaceholderCommand}"
+                                                       Command="{Binding SearchCommand}"
+                                                       CommandParameter="{Binding CommandParameter}"
+                                                       FontAttributes="{Binding FontAttributes}"
+                                                       FontSize="{Binding FontSize}"
+                                                       FontFamily="{Binding FontFamily}"
+                                                       FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
+                                                       HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+                                                       ItemTemplate="{Binding SearchItemTemplate, Mode=TwoWay}"
+                                                       IsSearchEnabled="{Binding IsSearchEnabled}"
+                                                       Keyboard="{Binding Keyboard}"
+                                                       Placeholder="{Binding Placeholder}"
+                                                       PlaceholderColor="{Binding PlaceholderColor}"
+                                                       Query="{Binding Query}"
+                                                       QueryIcon="{Binding QueryIcon}"
+                                                       SearchBoxVisibility="{Binding SearchBoxVisibility}"
+                                                       ShowsResults="{Binding ShowsResults}"
+                                                       TextColor="{Binding TextColor}"
+                                                       TextTransform="{Binding TextTransform}"
+                                                       VerticalTextAlignment="{Binding VerticalTextAlignment}"/>
+                     </Shell.SearchHandler>
+                     <ScrollView>
+                            <VerticalStackLayout Padding="10,8">
+
+                                   <!-- Action buttons -->
+                                   <Grid RowSpacing="2"
+                                         ColumnSpacing="8"
+                                         RowDefinitions="Auto,Auto,Auto,Auto"
+                                         ColumnDefinitions="*,*">
+                                          <Button Grid.Row="0"
+                                                  Grid.Column="0"
+                                                  Text="ShowSoftInput"
+                                                  Clicked="OnShowSoftInputClicked"
+                                                  AutomationId="ShowSoftInputButton"/>
+                                          <Button Grid.Row="0"
+                                                  Grid.Column="1"
+                                                  Text="HideSoftInput"
+                                                  Clicked="OnHideSoftInputClicked"
+                                                  AutomationId="HideSoftInputButton"/>
+                                          <Button Grid.Row="1"
+                                                  Grid.Column="0"
+                                                  Text="SetQuery:Robin"
+                                                  Clicked="OnSetQueryClicked"
+                                                  AutomationId="SetQueryButton"/>
+                                          <Button Grid.Row="1"
+                                                  Grid.Column="1"
+                                                  Text="TriggerClearPlaceholder"
+                                                  Clicked="OnTriggerClearPlaceholderClicked"
+                                                  AutomationId="TriggerClearPlaceholderButton"/>
+                                          <Button Grid.Row="2"
+                                                  Grid.Column="0"
+                                                  x:Name="ToggleQueryIconBtn"
+                                                  Text="QueryIcon:Default"
+                                                  Clicked="OnToggleQueryIconClicked"
+                                                  AutomationId="ToggleQueryIconButton"/>
+                                          <Button Grid.Row="2"
+                                                  Grid.Column="1"
+                                                  x:Name="ToggleClearIconBtn"
+                                                  Text="ClearIcon:Default"
+                                                  Clicked="OnToggleClearIconClicked"
+                                                  AutomationId="ToggleClearIconButton"/>
+                                          <Button Grid.Row="3"
+                                                  Grid.Column="0"
+                                                  x:Name="ToggleClearPHIconBtn"
+                                                  Text="ClearPHIcon:Default"
+                                                  Clicked="OnToggleClearPlaceholderIconClicked"
+                                                  AutomationId="ToggleClearPlaceholderIconButton"/>
+                                          <Button Grid.Row="3"
+                                                  Grid.Column="1"
+                                                  x:Name="ToggleShowsResultsBtn"
+                                                  Text="ShowsResults:False"
+                                                  Clicked="OnToggleShowsResultsClicked"
+                                                  AutomationId="ToggleShowsResultsButton"/>
+                                   </Grid>
+
+                                   <!-- Status Labels (events and command/parameter tracking) -->
+                                   <Grid ColumnDefinitions="Auto,*"
+                                         RowSpacing="4"
+                                         ColumnSpacing="8"
+                                         RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+
+                                          <!-- QueryChanged event log -->
+                                          <Label Grid.Row="0"
+                                                 Grid.Column="0"
+                                                 Text="QueryChangedLog:"/>
+                                          <Label Grid.Row="0"
+                                                 Grid.Column="1"
+                                                 x:Name="QueryChangedLog"
+                                                 AutomationId="QueryChangedLog"
+                                                 Text="{Binding QueryChangedLog}"/>
+
+                                          <!-- Focus status (Focused/Unfocused events) -->
+                                          <Label Grid.Row="1"
+                                                 Grid.Column="0"
+                                                 Text="FocusStatus:"/>
+                                          <Label Grid.Row="1"
+                                                 Grid.Column="1"
+                                                 x:Name="FocusStatus"
+                                                 AutomationId="FocusStatus"
+                                                 Text="{Binding FocusStatus}"/>
+
+                                          <!-- OnQueryConfirmed override fired -->
+                                          <Label Grid.Row="2"
+                                                 Grid.Column="0"
+                                                 Text="CommandFired:"/>
+                                          <Label Grid.Row="2"
+                                                 Grid.Column="1"
+                                                 x:Name="CommandFired"
+                                                 AutomationId="CommandFired"
+                                                 Text="{Binding CommandFired}"/>
+
+                                          <!-- OnClearPlaceholderClicked override fired -->
+                                          <Label Grid.Row="3"
+                                                 Grid.Column="0"
+                                                 Text="ClearPHCommandFired:"/>
+                                          <Label Grid.Row="3"
+                                                 Grid.Column="1"
+                                                 x:Name="ClearPlaceholderCommandFired"
+                                                 AutomationId="ClearPlaceholderCommandFired"
+                                                 Text="{Binding ClearPlaceholderCommandFired}"/>
+
+                                          <!-- SelectedItem — last item tapped in suggestions dropdown -->
+                                          <Label Grid.Row="4"
+                                                 Grid.Column="0"
+                                                 Text="SelectedItem:"/>
+                                          <Label Grid.Row="4"
+                                                 Grid.Column="1"
+                                                 x:Name="SelectedItem"
+                                                 AutomationId="SelectedItem"
+                                                 Text="{Binding SelectedItem}"/>
+                                   </Grid>
+                                   <!-- Spacer to ensure content is scrollable for Collapsible search box -->
+                                   <BoxView HeightRequest="600"
+                                                 Color="Transparent"/>
+                            </VerticalStackLayout>
+                     </ScrollView>
+              </ContentPage>
+       </ShellContent>
+</Shell>
