@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Platform
                         return;
                     }
 
-                    if (_managerRef.TryGetTarget(out var manager))
+                    if (_managerRef is not null && _managerRef.TryGetTarget(out var manager))
                     {
                         var index = (int)SelectedIndex;
                         manager._delegate.OnTabSelected(index);
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Platform
 
             public override UIViewController ChildViewControllerForStatusBarHidden()
             {
-                if (_managerRef.TryGetTarget(out var manager))
+                if (_managerRef is not null && _managerRef.TryGetTarget(out var manager))
                     return manager.GetCurrentPageViewControllerFunc?.Invoke()
                         ?? manager._delegate.GetCurrentPageViewController();
 
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Platform
             {
                 get
                 {
-                    if (_managerRef.TryGetTarget(out var manager))
+                    if (_managerRef is not null && _managerRef.TryGetTarget(out var manager))
                         return manager.GetCurrentPageViewControllerFunc?.Invoke()
                             ?? manager._delegate.GetCurrentPageViewController();
 
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Platform
             {
                 base.ViewDidAppear(animated);
 
-                if (_managerRef.TryGetTarget(out var manager))
+                if (_managerRef is not null && _managerRef.TryGetTarget(out var manager))
                 {
                     manager._delegate.OnViewDidAppear();
                 }
@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Platform
             {
                 base.ViewDidDisappear(animated);
 
-                if (_managerRef.TryGetTarget(out var manager))
+                if (_managerRef is not null && _managerRef.TryGetTarget(out var manager))
                 {
                     manager._delegate.OnViewDidDisappear();
                 }
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Platform
             {
                 base.ViewDidLayoutSubviews();
 
-                if (_managerRef.TryGetTarget(out var manager))
+                if (_managerRef is not null && _managerRef.TryGetTarget(out var manager))
                 {
                     manager._delegate.OnViewDidLayoutSubviews();
                 }
@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Platform
                 base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422
 
-                if (_managerRef.TryGetTarget(out var manager))
+                if (_managerRef is not null && _managerRef.TryGetTarget(out var manager))
                 {
                     manager._delegate.OnTraitCollectionDidChange(previousTraitCollection);
                 }
@@ -252,7 +252,7 @@ namespace Microsoft.Maui.Platform
 
             void HandleFinishedCustomizingViewControllers(object sender, UITabBarCustomizeChangeEventArgs e)
             {
-                if (e.Changed && _managerRef.TryGetTarget(out var manager))
+                if (e.Changed && _managerRef is not null && _managerRef.TryGetTarget(out var manager))
                 {
                     manager._delegate.OnTabsReordered(e.ViewControllers);
                 }

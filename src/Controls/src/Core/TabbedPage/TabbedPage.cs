@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Controls
 		// can handle Add/Remove incrementally instead of full rebuild.
 		internal NotifyCollectionChangedEventArgs _pendingPagesChangedArgs;
 
+		// Stores the page whose Title/Icon changed so the mapper can refresh
+		// only that page's tab bar item instead of all children.
+		internal Page _pendingPropertyChangedPage;
+
 		/// <summary>Gets or sets the background color of the tab bar. This is a bindable property.</summary>
 		public Color BarBackgroundColor
 		{
@@ -127,6 +131,10 @@ namespace Microsoft.Maui.Controls
 
 				_pendingPagesChangedArgs = e;
 				Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
+
+				// Clear after UpdateValue — iOS mapper consumes it synchronously during the call above.
+				// On other platforms the mapper doesn't use it, so clear to avoid retaining removed pages.
+				_pendingPagesChangedArgs = null;
 				WireUnwireChanges(true);
 			}
 
@@ -145,7 +153,11 @@ namespace Microsoft.Maui.Controls
 			{
 				if (e.PropertyName == Page.TitleProperty.PropertyName ||
 					e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+				{
+					_pendingPropertyChangedPage = sender as Page;
 					Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
+					_pendingPropertyChangedPage = null;
+				}
 			}
 		}
 

@@ -30,6 +30,9 @@ namespace Microsoft.Maui.Controls
 		// disconnect handlers for pages that were removed.
 		HashSet<Page> _previousPages;
 
+		// Per-page generation counter to detect stale async icon loads in SetTabBarItem
+		Dictionary<Page, int> _tabBarItemGeneration;
+
 		static UIView OnCreatePlatformView(ViewHandler<ITabbedView, UIView> arg)
 		{
 			if (arg.VirtualView is TabbedPage tabbedPage && arg is TabbedViewHandler handler)
@@ -87,6 +90,7 @@ namespace Microsoft.Maui.Controls
 
 			// Clear previous pages tracking
 			_previousPages = null;
+			_tabBarItemGeneration = null;
 		}
 
 		UIView CreatePlatformView(TabbedViewHandler handler)
@@ -426,11 +430,24 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			manager.ViewControllers = list.ToArray();
+			var controllersArray = list.ToArray();
+			manager.ViewControllers = controllersArray;
 			manager.UpdateTabBarVisibility();
 
 			// Refresh Tags so UpdateChildrenOrderIndex maps to correct pages
 			RefreshTabBarItemTags(view);
+
+			// Restore SelectedViewController from CurrentPage (UIKit can reset selection on VC reassignment)
+			UIViewController controller = null;
+			if (view.CurrentPage is Page currentPage)
+			{
+				controller = GetViewController(currentPage);
+			}
+			if (controller is not null && controller != manager.SelectedViewController
+				&& Array.IndexOf(controllersArray, controller) >= 0)
+			{
+				manager.SelectedViewController = controller;
+			}
 
 			// Re-apply appearance for new items
 			MapBarBackgroundColor(handler, view);
@@ -560,7 +577,15 @@ namespace Microsoft.Maui.Controls
 
 		static void HandleTabBarItemRefresh(TabbedPage view, TabBarControllerManager manager)
 		{
-			// Only update tab bar items (Title/Icon) without rebuilding the VC array
+			// If a specific page changed, update only that page's tab bar item
+			var changedPage = view._pendingPropertyChangedPage;
+			if (changedPage is not null && changedPage.Handler is IPlatformViewHandler changedHandler)
+			{
+				view.SetTabBarItem(changedHandler, manager);
+				return;
+			}
+
+			// Fallback: update all tab bar items (e.g. trait collection change)
 			foreach (var child in view.InternalChildren)
 			{
 				if (child is Page page && page.Handler is IPlatformViewHandler pageHandler)
@@ -735,12 +760,26 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			// Increment generation to invalidate any in-flight icon loads for this page
+			_tabBarItemGeneration ??= new Dictionary<Page, int>();
+			_tabBarItemGeneration.TryGetValue(page, out var previousGen);
+			var currentGen = previousGen + 1;
+			_tabBarItemGeneration[page] = currentGen;
+
 			var icons = await GetIcon(page);
 
 			// Post-await guard: page or TabbedPage handler may have been removed during icon load
 			if (page.Handler is null || renderer.ViewController is null || Children.IndexOf(page) < 0
 				|| Handler is not TabbedViewHandler tvh || tvh.Manager is not TabBarControllerManager currentManager
 				|| currentManager != manager)
+			{
+				icons?.Item1?.Dispose();
+				icons?.Item2?.Dispose();
+				return;
+			}
+
+			// Stale icon guard: a newer SetTabBarItem call superseded this one
+			if (_tabBarItemGeneration.TryGetValue(page, out var latestGen) && latestGen != currentGen)
 			{
 				icons?.Item1?.Dispose();
 				icons?.Item2?.Dispose();
