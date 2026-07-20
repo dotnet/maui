@@ -7,7 +7,6 @@ using Microsoft.Maui.Accessibility;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.Communication;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
-using MauiContacts = Microsoft.Maui.ApplicationModel.Communication.Contacts;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Devices.Sensors;
@@ -17,6 +16,7 @@ using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Networking;
 using Microsoft.Maui.Storage;
+using MauiContacts = Microsoft.Maui.ApplicationModel.Communication.Contacts;
 #if ANDROID
 using Android.App;
 #endif
@@ -50,13 +50,7 @@ namespace Microsoft.Maui.Hosting
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
 #endif
 
-			// Register the EssentialsInitializer unconditionally so DI-registered Essentials
-			// implementations are bridged to the static facades during app startup, even when
-			// ConfigureEssentials() is not called. The initializer's AppActions event handler
-			// is only attached when at least one AppAction handler is configured, to avoid
-			// retaining the initializer instance via the static AppActions.OnAppAction event
-			// for apps that never opt into AppActions.
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+			AddEssentialsInitializer(builder.Services);
 
 			builder.ConfigureLifecycleEvents(life =>
 			{
@@ -123,9 +117,15 @@ namespace Microsoft.Maui.Hosting
 				builder.Services.AddSingleton<EssentialsRegistration>(new EssentialsRegistration(configureDelegate));
 			}
 
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+			AddEssentialsInitializer(builder.Services);
 
 			return builder;
+		}
+
+		static void AddEssentialsInitializer(IServiceCollection services)
+		{
+			services.TryAddSingleton<EssentialsCleanup>();
+			services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 		}
 
 		public static IEssentialsBuilder AddAppAction(this IEssentialsBuilder essentials, string id, string title, string? subtitle = null, string? icon = null) =>
@@ -168,13 +168,10 @@ namespace Microsoft.Maui.Hosting
 		}
 #endif
 
-		class EssentialsInitializer : IMauiInitializeService, IDisposable
+		class EssentialsInitializer : IMauiInitializeService
 		{
 			private readonly IEnumerable<EssentialsRegistration> _essentialsRegistrations;
 			private EssentialsBuilder? _essentialsBuilder;
-#if !TIZEN
-			private IAppActions? _subscribedAppActions;
-#endif
 
 			public EssentialsInitializer(IEnumerable<EssentialsRegistration> essentialsRegistrations)
 			{
@@ -198,7 +195,14 @@ namespace Microsoft.Maui.Hosting
 					mapServiceToken = existingPlatformGeocoding.MapServiceToken;
 #endif
 
-				BridgeEssentialsFromDI(services);
+				var facadeCleanups = new List<Action>();
+				BridgeEssentialsFromDI(services, facadeCleanups);
+
+				// Resolve cleanup after every bridged service so DI disposes it first. This
+				// restores static facades and removes AppActions handlers while the provider-owned
+				// implementations are still alive.
+				var cleanup = services.GetRequiredService<EssentialsCleanup>();
+				cleanup.AddFacadeCleanups(facadeCleanups);
 
 #if WINDOWS || TIZEN
 				// A ConfigureEssentials token takes precedence; otherwise preserve a token set
@@ -230,8 +234,7 @@ namespace Microsoft.Maui.Hosting
 				// even when the handler is a no-op.
 				if (_essentialsBuilder.AppActionHandlers is not null)
 				{
-					_subscribedAppActions = AppActions.Current;
-					_subscribedAppActions.AppActionActivated += HandleOnAppAction;
+					cleanup.Subscribe(AppActions.Current, HandleOnAppAction);
 				}
 
 				if (_essentialsBuilder.AppActions is not null)
@@ -244,58 +247,46 @@ namespace Microsoft.Maui.Hosting
 					VersionTracking.Track();
 			}
 
-			public void Dispose()
-			{
-#if !TIZEN
-				if (_subscribedAppActions is not null)
-				{
-					_subscribedAppActions.AppActionActivated -= HandleOnAppAction;
-					_subscribedAppActions = null;
-				}
-#endif
-				_essentialsBuilder = null;
-			}
-
 			/// <summary>
 			/// Bridges DI-registered Essentials implementations to the static facades.
 			/// If a service is registered in DI, it becomes the backing implementation for
 			/// the corresponding static API. If not registered, the existing lazy platform
 			/// default behavior is preserved.
 			/// </summary>
-			static void BridgeEssentialsFromDI(IServiceProvider services)
+			static void BridgeEssentialsFromDI(IServiceProvider services, List<Action> facadeCleanups)
 			{
 				// SetDefault pattern types
-				BridgeIfRegistered<IAccelerometer>(services, Accelerometer.SetDefault);
+				BridgeIfRegistered<IAccelerometer>(services, () => Accelerometer.Default, Accelerometer.SetDefault, facadeCleanups);
 #if ANDROID
-				BridgeIfRegistered<IActivityStateManager>(services, ActivityStateManager.SetDefault);
+				BridgeIfRegistered<IActivityStateManager>(services, () => ActivityStateManager.Default, ActivityStateManager.SetDefault, facadeCleanups);
 #endif
-				BridgeIfRegistered<IBarometer>(services, Barometer.SetDefault);
-				BridgeIfRegistered<IBattery>(services, Battery.SetDefault);
-				BridgeIfRegistered<IBrowser>(services, Browser.SetDefault);
-				BridgeIfRegistered<IClipboard>(services, Clipboard.SetDefault);
-				BridgeIfRegistered<ICompass>(services, Compass.SetDefault);
-				BridgeIfRegistered<IContacts>(services, MauiContacts.SetDefault);
-				BridgeIfRegistered<IEmail>(services, Email.SetDefault);
-				BridgeIfRegistered<IFilePicker>(services, FilePicker.SetDefault);
-				BridgeIfRegistered<IFlashlight>(services, Flashlight.SetDefault);
-				BridgeIfRegistered<IGeolocation>(services, Geolocation.SetDefault);
-				BridgeIfRegistered<IGyroscope>(services, Gyroscope.SetDefault);
-				BridgeIfRegistered<IHapticFeedback>(services, HapticFeedback.SetDefault);
-				BridgeIfRegistered<ILauncher>(services, Launcher.SetDefault);
-				BridgeIfRegistered<IMagnetometer>(services, Magnetometer.SetDefault);
-				BridgeIfRegistered<IMap>(services, Map.SetDefault);
-				BridgeIfRegistered<IMediaPicker>(services, MediaPicker.SetDefault);
-				BridgeIfRegistered<IOrientationSensor>(services, OrientationSensor.SetDefault);
-				BridgeIfRegistered<IPhoneDialer>(services, PhoneDialer.SetDefault);
-				BridgeIfRegistered<IPreferences>(services, Preferences.SetDefault);
-				BridgeIfRegistered<IScreenshot>(services, Screenshot.SetDefault);
-				BridgeIfRegistered<ISecureStorage>(services, SecureStorage.SetDefault);
-				BridgeIfRegistered<ISemanticScreenReader>(services, SemanticScreenReader.SetDefault);
-				BridgeIfRegistered<IShare>(services, Share.SetDefault);
-				BridgeIfRegistered<ISms>(services, Sms.SetDefault);
-				BridgeIfRegistered<ITextToSpeech>(services, TextToSpeech.SetDefault);
-				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.SetDefault);
-				BridgeIfRegistered<IVibration>(services, Vibration.SetDefault);
+				BridgeIfRegistered<IBarometer>(services, () => Barometer.Default, Barometer.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IBattery>(services, () => Battery.Default, Battery.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IBrowser>(services, () => Browser.Default, Browser.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IClipboard>(services, () => Clipboard.Default, Clipboard.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ICompass>(services, () => Compass.Default, Compass.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IContacts>(services, () => MauiContacts.Default, MauiContacts.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IEmail>(services, () => Email.Default, Email.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IFilePicker>(services, () => FilePicker.Default, FilePicker.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IFlashlight>(services, () => Flashlight.Default, Flashlight.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IGeolocation>(services, () => Geolocation.Default, Geolocation.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IGyroscope>(services, () => Gyroscope.Default, Gyroscope.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IHapticFeedback>(services, () => HapticFeedback.Default, HapticFeedback.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ILauncher>(services, () => Launcher.Default, Launcher.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IMagnetometer>(services, () => Magnetometer.Default, Magnetometer.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IMap>(services, () => Map.Default, Map.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IMediaPicker>(services, () => MediaPicker.Default, MediaPicker.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IOrientationSensor>(services, () => OrientationSensor.Default, OrientationSensor.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IPhoneDialer>(services, () => PhoneDialer.Default, PhoneDialer.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IPreferences>(services, () => Preferences.Default, Preferences.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IScreenshot>(services, () => Screenshot.Default, Screenshot.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ISecureStorage>(services, () => SecureStorage.Default, SecureStorage.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ISemanticScreenReader>(services, () => SemanticScreenReader.Default, SemanticScreenReader.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IShare>(services, () => Share.Default, Share.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ISms>(services, () => Sms.Default, Sms.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ITextToSpeech>(services, () => TextToSpeech.Default, TextToSpeech.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IVersionTracking>(services, () => VersionTracking.Default, VersionTracking.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IVibration>(services, () => Vibration.Default, Vibration.SetDefault, facadeCleanups);
 				// IWebAuthenticator: on Android/iOS/MacCatalyst the platform callback activities
 				// and lifecycle hooks (WebAuthenticatorCallbackActivity.OnResume, Platform.OpenUrl,
 				// ContinueUserActivity) cast WebAuthenticator.Default to IPlatformWebAuthenticatorCallback
@@ -307,17 +298,17 @@ namespace Microsoft.Maui.Hosting
 				{
 #if ANDROID || __IOS__ || __MACCATALYST__
 					if (webAuthenticator is IPlatformWebAuthenticatorCallback)
-						WebAuthenticator.SetDefault(webAuthenticator);
+						TrackAndSet(webAuthenticator, () => WebAuthenticator.Default, WebAuthenticator.SetDefault, facadeCleanups);
 					else
 						LogMissingNativeLifecycleInterface<IWebAuthenticator>(services, nameof(IPlatformWebAuthenticatorCallback));
 #else
-					WebAuthenticator.SetDefault(webAuthenticator);
+					TrackAndSet(webAuthenticator, () => WebAuthenticator.Default, WebAuthenticator.SetDefault, facadeCleanups);
 #endif
 				}
 #if WINDOWS || __IOS__ || __MACCATALYST__
-				BridgeIfRegistered<IWindowStateManager>(services, WindowStateManager.SetDefault);
+				BridgeIfRegistered<IWindowStateManager>(services, () => WindowStateManager.Default, WindowStateManager.SetDefault, facadeCleanups);
 #endif
-				BridgeIfRegistered<IAppleSignInAuthenticator>(services, AppleSignInAuthenticator.SetDefault);
+				BridgeIfRegistered<IAppleSignInAuthenticator>(services, () => AppleSignInAuthenticator.Default, AppleSignInAuthenticator.SetDefault, facadeCleanups);
 
 				// SetCurrent pattern types
 				// IAppActions: On native platforms, lifecycle hooks cast AppActions.Current to
@@ -328,35 +319,99 @@ namespace Microsoft.Maui.Hosting
 				{
 #if WINDOWS || __IOS__ || __MACCATALYST__ || ANDROID
 					if (appActions is IPlatformAppActions)
-						AppActions.SetCurrent(appActions);
+						TrackAndSet(appActions, () => AppActions.Current, AppActions.SetCurrent, facadeCleanups);
 					else
 						LogMissingNativeLifecycleInterface<IAppActions>(services, nameof(IPlatformAppActions));
 #else
-					AppActions.SetCurrent(appActions);
+					TrackAndSet(appActions, () => AppActions.Current, AppActions.SetCurrent, facadeCleanups);
 #endif
 				}
-				BridgeIfRegistered<IAppInfo>(services, AppInfo.SetCurrent);
-				BridgeIfRegistered<IConnectivity>(services, Connectivity.SetCurrent);
-				BridgeIfRegistered<IDeviceDisplay>(services, DeviceDisplay.SetCurrent);
-				BridgeIfRegistered<IDeviceInfo>(services, DeviceInfo.SetCurrent);
-				BridgeIfRegistered<IFileSystem>(services, FileSystem.SetCurrent);
-				BridgeIfRegistered<IGeocoding>(services, Geocoding.SetCurrent);
-				BridgeIfRegistered<IPermissions>(services, Permissions.SetCurrent);
+				BridgeIfRegistered<IAppInfo>(services, () => AppInfo.Current, AppInfo.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IConnectivity>(services, () => Connectivity.Current, Connectivity.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IDeviceDisplay>(services, () => DeviceDisplay.Current, DeviceDisplay.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IDeviceInfo>(services, () => DeviceInfo.Current, DeviceInfo.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IFileSystem>(services, () => FileSystem.Current, FileSystem.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IGeocoding>(services, () => Geocoding.Default, Geocoding.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IPermissions>(services, () => Permissions.Current, Permissions.SetCurrent, facadeCleanups);
 			}
 
 			/// <summary>
 			/// Resolves a DI-registered implementation and assigns it to the corresponding static facade.
-			/// Note: The resolved instance is stored in a process-wide static field until it is replaced
-			/// by a later bridge operation. This intentionally follows existing static facade semantics
-			/// and effectively promotes the service to singleton scope regardless of its DI registration
-			/// lifetime. It is not cleared when an individual MauiApp is disposed because multiple apps
-			/// can coexist in a process. Services bridged here should be registered as Singleton.
+			/// The prior facade value is restored when the owning app is disposed, unless another app or
+			/// internal caller replaced the facade in the meantime.
 			/// </summary>
-			static void BridgeIfRegistered<T>(IServiceProvider services, Action<T?> setter) where T : class
+			static void BridgeIfRegistered<T>(
+				IServiceProvider services,
+				Func<T> getter,
+				Action<T?> setter,
+				List<Action> facadeCleanups)
+				where T : class
 			{
 				var impl = services.GetService<T>();
 				if (impl is not null)
+					TrackAndSet(impl, getter, setter, facadeCleanups);
+			}
+
+			static void TrackAndSet<T>(
+				T impl,
+				Func<T> getter,
+				Action<T?> setter,
+				List<Action> facadeCleanups)
+				where T : class
+			{
+				var assignment = new FacadeAssignment<T>(impl);
+
+				lock (FacadeBridgeState<T>.SyncRoot)
+				{
+					if (FacadeBridgeState<T>.Assignments.Count == 0)
+						FacadeBridgeState<T>.Original = getter();
+
+					FacadeBridgeState<T>.Assignments.Add(assignment);
 					setter(impl);
+				}
+
+				facadeCleanups.Add(() =>
+				{
+					lock (FacadeBridgeState<T>.SyncRoot)
+					{
+						var index = FacadeBridgeState<T>.Assignments.IndexOf(assignment);
+						if (index < 0)
+							return;
+
+						var wasCurrent = index == FacadeBridgeState<T>.Assignments.Count - 1;
+						FacadeBridgeState<T>.Assignments.RemoveAt(index);
+						if (!wasCurrent)
+							return;
+
+						if (ReferenceEquals(getter(), impl))
+						{
+							var replacement = FacadeBridgeState<T>.Assignments.Count > 0
+								? FacadeBridgeState<T>.Assignments[FacadeBridgeState<T>.Assignments.Count - 1].Implementation
+								: FacadeBridgeState<T>.Original;
+							setter(replacement);
+						}
+
+						if (FacadeBridgeState<T>.Assignments.Count == 0)
+							FacadeBridgeState<T>.Original = null;
+					}
+				});
+			}
+
+			sealed class FacadeAssignment<T> where T : class
+			{
+				public FacadeAssignment(T implementation)
+				{
+					Implementation = implementation;
+				}
+
+				public T Implementation { get; }
+			}
+
+			static class FacadeBridgeState<T> where T : class
+			{
+				internal static readonly object SyncRoot = new();
+				internal static readonly List<FacadeAssignment<T>> Assignments = new();
+				internal static T? Original;
 			}
 
 			static void LogMissingNativeLifecycleInterface<T>(IServiceProvider services, string requiredInterface)
@@ -385,6 +440,56 @@ namespace Microsoft.Maui.Hosting
 			void HandleOnAppAction(object? sender, AppActionEventArgs e)
 			{
 				_essentialsBuilder?.AppActionHandlers?.Invoke(e.AppAction);
+			}
+		}
+
+		sealed class EssentialsCleanup : IDisposable
+		{
+			readonly List<Action> _facadeCleanups = new();
+#if !TIZEN
+			IAppActions? _subscribedAppActions;
+			EventHandler<AppActionEventArgs>? _appActionHandler;
+#endif
+
+			public void AddFacadeCleanups(IEnumerable<Action> cleanups)
+			{
+				_facadeCleanups.AddRange(cleanups);
+			}
+
+#if !TIZEN
+			public void Subscribe(IAppActions appActions, EventHandler<AppActionEventArgs> handler)
+			{
+				_subscribedAppActions = appActions;
+				_appActionHandler = handler;
+				appActions.AppActionActivated += handler;
+			}
+#endif
+
+			public void Dispose()
+			{
+#if !TIZEN
+				try
+				{
+					if (_subscribedAppActions is not null && _appActionHandler is not null)
+						_subscribedAppActions.AppActionActivated -= _appActionHandler;
+				}
+				finally
+				{
+					_subscribedAppActions = null;
+					_appActionHandler = null;
+					RestoreFacades();
+				}
+#else
+				RestoreFacades();
+#endif
+			}
+
+			void RestoreFacades()
+			{
+				for (int i = _facadeCleanups.Count - 1; i >= 0; i--)
+					_facadeCleanups[i]();
+
+				_facadeCleanups.Clear();
 			}
 		}
 

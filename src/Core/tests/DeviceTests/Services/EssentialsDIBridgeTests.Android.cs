@@ -13,6 +13,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests.Services;
 
 [Category(TestCategory.Application)]
+[Collection(EssentialsStaticStateCollection.Name)]
 public class EssentialsDIBridgeTests : TestBase
 {
 	[Fact]

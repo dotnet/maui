@@ -228,8 +228,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		public void TransientDIRegistration_StillBridged()
 		{
 			// Even with transient lifetime, the bridge resolves one instance and stores it
-			// in a static field — effectively promoting it to singleton scope. Services
-			// intended for bridging should be registered as Singleton.
+			// in the static facade for the lifetime of the owning MauiApp.
 			var builder = MauiApp.CreateBuilder();
 			builder.Services.AddTransient<IPreferences, StubPreferences>();
 
@@ -305,8 +304,9 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void StaticFacadeIsNotClearedWhenOwningMauiAppIsDisposed()
+		public void StaticFacadeRestoresPreviousImplementationWhenOwningMauiAppIsDisposed()
 		{
+			var original = Preferences.Default;
 			var mock = new StubPreferences();
 			var firstBuilder = MauiApp.CreateBuilder();
 			firstBuilder.Services.AddSingleton<IPreferences>(mock);
@@ -316,10 +316,98 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				Assert.Same(mock, Preferences.Default);
 			}
 
+			Assert.Same(original, Preferences.Default);
+		}
+
+		[Fact]
+		public void ContainerOwnedStaticFacadeIsRestoredBeforeServiceIsDisposed()
+		{
+			var original = Preferences.Default;
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+
+			var app = builder.Build();
+			var implementation = Assert.IsType<DisposableStubPreferences>(
+				app.Services.GetRequiredService<IPreferences>());
+
+			Assert.Same(implementation, Preferences.Default);
+
+			app.Dispose();
+
+			Assert.True(implementation.IsDisposed);
+			Assert.True(implementation.FacadeWasRestoredBeforeDispose);
+			Assert.Same(original, Preferences.Default);
+		}
+
+		[Fact]
+		public void OlderMauiAppDisposeDoesNotClobberLaterAppBridge()
+		{
+			var firstMock = new StubPreferences();
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IPreferences>(firstMock);
+			var firstApp = firstBuilder.Build();
+
+			var secondMock = new StubPreferences();
 			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IPreferences>(secondMock);
 			using var secondApp = secondBuilder.Build();
 
-			Assert.Same(mock, Preferences.Default);
+			firstApp.Dispose();
+
+			Assert.Same(secondMock, Preferences.Default);
+		}
+
+		[Fact]
+		public void NewerMauiAppDisposeRestoresOlderAppBridge()
+		{
+			var original = Preferences.Default;
+			var firstMock = new StubPreferences();
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IPreferences>(firstMock);
+			var firstApp = firstBuilder.Build();
+
+			var secondMock = new StubPreferences();
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IPreferences>(secondMock);
+			var secondApp = secondBuilder.Build();
+
+			secondApp.Dispose();
+			Assert.Same(firstMock, Preferences.Default);
+
+			firstApp.Dispose();
+			Assert.Same(original, Preferences.Default);
+		}
+
+		[Fact]
+		public void MauiAppDisposeDoesNotClobberExternalFacadeReplacement()
+		{
+			var bridged = new StubPreferences();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences>(bridged);
+			var app = builder.Build();
+
+			var external = new StubPreferences();
+			Preferences.SetDefault(external);
+
+			app.Dispose();
+
+			Assert.Same(external, Preferences.Default);
+		}
+
+		[Fact]
+		public void ConfiguredAppActionHandlerUnsubscribesBeforeContainerOwnedServiceIsDisposed()
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions, DisposableStubAppActions>();
+			builder.ConfigureEssentials(essentials => essentials.OnAppAction(_ => { }));
+			var app = builder.Build();
+			var appActions = Assert.IsType<DisposableStubAppActions>(
+				app.Services.GetRequiredService<IAppActions>());
+
+			app.Dispose();
+
+			Assert.True(appActions.WasUnsubscribed);
+			Assert.True(appActions.IsDisposed);
 		}
 
 		[Fact]
@@ -357,6 +445,19 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			public void Clear(string? sharedName = null) { }
 			public void Set<T>(string key, T value, string? sharedName = null) { }
 			public T Get<T>(string key, T defaultValue, string? sharedName = null) => defaultValue;
+		}
+
+		sealed class DisposableStubPreferences : StubPreferences, IDisposable
+		{
+			public bool FacadeWasRestoredBeforeDispose { get; private set; }
+
+			public bool IsDisposed { get; private set; }
+
+			public void Dispose()
+			{
+				FacadeWasRestoredBeforeDispose = !ReferenceEquals(this, Preferences.Default);
+				IsDisposed = true;
+			}
 		}
 
 		class StubBattery : IBattery
@@ -441,6 +542,48 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			public void Raise(AppAction appAction) =>
 				AppActionActivated?.Invoke(this, new AppActionEventArgs(appAction));
+		}
+
+		sealed class DisposableStubAppActions : IAppActions, IDisposable
+		{
+			EventHandler<AppActionEventArgs>? _appActionActivated;
+
+			public bool IsDisposed { get; private set; }
+
+			public bool IsSupported => true;
+
+			public bool WasUnsubscribed { get; private set; }
+
+			public event EventHandler<AppActionEventArgs>? AppActionActivated
+			{
+				add
+				{
+					ThrowIfDisposed();
+					_appActionActivated += value;
+				}
+				remove
+				{
+					ThrowIfDisposed();
+					_appActionActivated -= value;
+					WasUnsubscribed = true;
+				}
+			}
+
+			public Task<IEnumerable<AppAction>> GetAsync() =>
+				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
+
+			public Task SetAsync(IEnumerable<AppAction> actions) => Task.CompletedTask;
+
+			public void Dispose()
+			{
+				IsDisposed = true;
+			}
+
+			void ThrowIfDisposed()
+			{
+				if (IsDisposed)
+					throw new ObjectDisposedException(nameof(DisposableStubAppActions));
+			}
 		}
 	}
 }
