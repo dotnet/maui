@@ -29,6 +29,7 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 3. **Empirical grounding** — Reference specific code, line numbers, and call sites. No vague concerns
 4. **Severity calibration** — Distinguish errors from warnings from suggestions. Not everything is critical
 5. **Failure-mode probing** — Challenge your own conclusions with real failure scenarios, not softballs
+6. **Propagation-aware guards** — For an early return, idempotency flag, or latch above downstream side effects, trace every set/clear path and a repeat call after recipients or state change. If that trace exposes concrete misbehavior, do not dismiss it as rare or rationalize it into `LGTM`: use `NEEDS_DISCUSSION` while the failure remains unresolved, or `NEEDS_CHANGES` when the exact state transition verifies a ❌ Error.
 
 ## Inputs
 

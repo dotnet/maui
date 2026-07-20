@@ -22,16 +22,17 @@
 #       never to fetch a PR from the API.
 #
 # Brittleness reduction:
-#   Each scenario has a deterministic manipulation check proving the
-#   code-review skill was invoked, plus a narrow structural floor that tests
-#   the failure mode it is designed to catch. The lifecycle-latch scenario
-#   checks its final verdict because surfacing a risk and then delivering
-#   LGTM is its exact regression. All other semantics — confidence
-#   calibration, file/symbol identification, mechanism description,
-#   blast-radius / failure-mode reasoning — are scored by an LLM-judge
-#   `prompt` grader against the rubric. No regex AND-gate of "confidence
-#   value + diff symbol + regression vocabulary + finding marker + section
-#   heading."
+#   Each scenario overlays the PR's current SKILL.md into the frozen worktree
+#   and has a deterministic manipulation check proving the agent read that
+#   exact policy. This avoids relying on live-PR skill routing, which is not
+#   applicable to a frozen commit fixture. A narrow structural floor then
+#   tests the failure mode each scenario is designed to catch. The lifecycle-
+#   latch scenario checks its final verdict because surfacing a risk and then
+#   delivering LGTM is its exact regression. All other semantics — confidence
+#   calibration, file/symbol identification, mechanism description, blast-
+#   radius / failure-mode reasoning — are scored by an LLM-judge `prompt`
+#   grader against the rubric. No regex AND-gate of "confidence value + diff
+#   symbol + regression vocabulary + finding marker + section heading."
 #
 # Run policy:
 #   runs: 5 on regression scenarios (these are high-variance — agent may
@@ -95,11 +96,10 @@ stimuli:
       regression_issue: "35280"
       regression_file: src/Core/src/Graphics/MauiDrawable.Android.cs
     prompt: >-
-      Use the skill tool to invoke the `code-review` skill, then follow its
-      instructions to review a single commit pre-merge. There is no live pull
-      request for this fixture: the repository is already checked out as a
-      worktree pinned to the commit under review, so use the local worktree
-      instead of PR APIs.
+      You are reviewing a single commit pre-merge. First use the view tool to
+      read `review-input/code-review-SKILL.md`; apply that policy throughout
+      the review. The repository is already checked out as a worktree pinned
+      to the commit under review.
 
       Hypothesis to verify or refute: the new gradient code paths in this
       commit preserve per-stop alpha when a developer uses a Transparent
@@ -119,13 +119,21 @@ stimuli:
         type: worktree
         ref: 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd
         source: .
+      files:
+        - src: ../SKILL.md
+          dest: review-input/code-review-SKILL.md
     graders:
-      # Manipulation check: without this activation the run measures the base
-      # model, not the code-review skill this corpus claims to evaluate.
-      - type: skill-invocation
+      # Manipulation check: require a read of the exact SKILL.md overlaid from
+      # this PR, and reject network access that could reveal the known result.
+      - type: tool-calls
         config:
           required:
-            - code-review
+            - name: '^view$'
+              path: 'review-input/code-review-SKILL\.md$'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       # ── Structural floor (only one hard regex per scenario) ──────────
       # Silent LGTM is the failure mode under test. Any of these tokens
       # proves the reviewer at least flagged SOMETHING; the rubric then
@@ -176,8 +184,6 @@ stimuli:
         and consistent with this calibration.
     constraints:
       max_duration: 10m
-      expect_skills:
-        - code-review
 
   # ───────────────────────────────────────────────────────────────────────
   # Scenario 2 — native iOS collection enumerated without null check
@@ -207,11 +213,10 @@ stimuli:
       regression_issue: "34910"
       regression_file: src/Core/maps/src/Platform/iOS/MauiMKMapView.cs
     prompt: >-
-      Use the skill tool to invoke the `code-review` skill, then follow its
-      instructions to review a single commit pre-merge. There is no live pull
-      request for this fixture: the repository is already checked out as a
-      worktree pinned to the commit under review, so use the local worktree
-      instead of PR APIs.
+      You are reviewing a single commit pre-merge. First use the view tool to
+      read `review-input/code-review-SKILL.md`; apply that policy throughout
+      the review. The repository is already checked out as a worktree pinned
+      to the commit under review.
 
       Hypothesis to verify or refute: tapping the Map control will not
       crash the app on iOS or Mac Catalyst after this commit lands when
@@ -230,13 +235,21 @@ stimuli:
         type: worktree
         ref: dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9
         source: .
+      files:
+        - src: ../SKILL.md
+          dest: review-input/code-review-SKILL.md
     graders:
-      # Manipulation check: without this activation the run measures the base
-      # model, not the code-review skill this corpus claims to evaluate.
-      - type: skill-invocation
+      # Manipulation check: require a read of the exact SKILL.md overlaid from
+      # this PR, and reject network access that could reveal the known result.
+      - type: tool-calls
         config:
           required:
-            - code-review
+            - name: '^view$'
+              path: 'review-input/code-review-SKILL\.md$'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       # ── Structural floor (only one hard regex per scenario) ──────────
       - type: output-matches
         config:
@@ -279,8 +292,6 @@ stimuli:
         present and consistent with the Step 6 Blast Radius table.
     constraints:
       max_duration: 10m
-      expect_skills:
-        - code-review
 
   # ───────────────────────────────────────────────────────────────────────
   # Scenario 3 — page lifecycle latch suppresses repeat OnNavigatedTo
@@ -289,8 +300,12 @@ stimuli:
   # Regression PR:  dotnet/maui#31931
   #   "[Android] Page: Fix OnNavigatedTo called twice when NavigationPage is
   #    FlyoutPage Detail"
-  #   merge commit: af540589fc5a3b053cd8c08334d0ca5a0125451b
-  #   parent:       31257d81913000c0979d7075b492c2bc42311451
+  #   original inflight merge: af540589fc5a3b053cd8c08334d0ca5a0125451b
+  #   flowed commit on main:    8ee24cfe4c38038cec62e09dacc182815310c97d
+  #   parent on main:           b8332a3a3c9d25b04bd47193b5429340416c699e
+  #   The two commits have byte-for-byte identical patches. Pin the flowed
+  #   commit because the original inflight merge is no longer reachable from
+  #   main and GitHub may reject direct-SHA fetches for that orphaned object.
   # Regression issue: dotnet/maui#35756
   #   "Changing TabbedPage.CurrentPage from modal page no longer fires
   #    OnNavigatedTo on PopModalAsync"
@@ -320,11 +335,10 @@ stimuli:
       regression_issue: "35756"
       regression_file: src/Controls/src/Core/Page/Page.cs
     prompt: >-
-      Use the skill tool to invoke the `code-review` skill, then follow its
-      instructions to review a single commit pre-merge. There is no live pull
-      request for this fixture: the repository is already checked out as a
-      worktree pinned to the commit under review, so use the local worktree
-      instead of PR APIs.
+      You are reviewing a single commit pre-merge. First use the view tool to
+      read `review-input/code-review-SKILL.md`; apply that policy throughout
+      the review. The repository is already checked out as a worktree pinned
+      to the commit under review.
 
       Hypothesis to verify or refute: after this commit, a page still
       receives its OnNavigatedTo lifecycle callback when it is navigated to
@@ -347,15 +361,23 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: af540589fc5a3b053cd8c08334d0ca5a0125451b
+        ref: 8ee24cfe4c38038cec62e09dacc182815310c97d
         source: .
+      files:
+        - src: ../SKILL.md
+          dest: review-input/code-review-SKILL.md
     graders:
-      # Manipulation check: without this activation the run measures the base
-      # model, not the code-review skill this corpus claims to evaluate.
-      - type: skill-invocation
+      # Manipulation check: require a read of the exact SKILL.md overlaid from
+      # this PR, and reject network access that could reveal the known result.
+      - type: tool-calls
         config:
           required:
-            - code-review
+            - name: '^view$'
+              path: 'review-input/code-review-SKILL\.md$'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       # The failure under test is a reviewer that identifies the risk but
       # still delivers LGTM. The standard verdict section allows explanatory
       # prose, so the eval prompt adds a terminal, machine-readable marker
@@ -416,28 +438,26 @@ stimuli:
         page and the failure mode remains unresolved.
     constraints:
       max_duration: 10m
-      expect_skills:
-        - code-review
 
 scoring:
   # Vally 0.10 supports scoring.weights, but this suite deliberately omits
   # them so a trial's score is the unweighted mean of its graders' [0,1]
   # scores; the stimulus score is the mean across runs. The deterministic
-  # skill-invocation grader is the manipulation check: a trial that never
-  # activates code-review has not applied the treatment and fails regardless
-  # of how plausible its prose looks. The `prompt` grader contributes ONE
-  # holistic score (its rubric criteria are aggregated by the judge into a
-  # single overall_score, then normalized) — rubric criteria are not
-  # individually AND-gated, which is exactly the de-brittling we want.
+  # tool-calls grader is the manipulation check: a trial that never reads the
+  # overlaid current SKILL.md has not applied the treatment and fails
+  # regardless of how plausible its prose looks. The `prompt` grader
+  # contributes ONE holistic score (its rubric criteria are aggregated by the
+  # judge into a single overall_score, then normalized) — rubric criteria are
+  # not individually AND-gated, which is exactly the de-brittling we want.
   #
   # Each stimulus uses the manipulation check, one structural floor, and one
   # LLM judge. The lifecycle latch floor requires the terminal non-LGTM
   # marker; the judge verifies the regression conclusion without constraining
   # the prose in the standard Verdict section. With threshold 0.6 and a
   # scale_1_5 judge (normalized = (raw-1)/4), that stimulus scores roughly:
-  #   - correct review: (skill 1.0 + floor 1.0 + judge ~0.75) / 3
+  #   - correct review: (policy-read 1.0 + floor 1.0 + judge ~0.75) / 3
   #                     = ~0.917 -> PASS
-  #   - final LGTM:     (skill 1.0 + floor 0.0 + judge ~0.25) / 3
+  #   - final LGTM:     (policy-read 1.0 + floor 0.0 + judge ~0.25) / 3
   #                     = ~0.417 -> FAIL
   # This preserves semantic grading while making the tested verdict
   # inconsistency falsifiable and proving the skill was actually applied.
