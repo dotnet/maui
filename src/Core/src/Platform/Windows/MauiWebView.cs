@@ -146,14 +146,14 @@ namespace Microsoft.Maui.Platform
 		// virtual host that is mapped to the app directory via
 		// SetVirtualHostNameToFolderMapping, so only the exact host "appdir" serves
 		// local content. Returns true only when the URI is absolute, its scheme is
-		// https, it carries no user credentials, and its host is exactly "appdir".
-		// Matching the parsed host - rather than a raw string prefix - prevents
-		// unrelated hosts such as "appdir.example.com" (subdomain) or
-		// "appdir@host.example.com" (where "appdir" is the userinfo and the real host
-		// is host.example.com) from being treated as local content. Credentials are
-		// rejected because a virtual host mapping has no authentication, so userinfo
-		// (e.g. "user:pass@appdir") is never a legitimate local URL. The comparison
-		// is case-insensitive to mirror WebView2, which canonicalizes host names
+		// https, it carries no user info, and its host is exactly "appdir". Matching
+		// the parsed host - rather than a raw string prefix - prevents unrelated hosts
+		// such as "appdir.example.com" (subdomain) or "appdir@host.example.com" (where
+		// "appdir" is the userinfo and the real host is host.example.com) from being
+		// treated as local content. Any userinfo is rejected as well: the appdir
+		// virtual host has no user-info component, so a URL that carries one (e.g.
+		// "user:pass@appdir") is never a valid local URL. The comparison is
+		// case-insensitive to mirror WebView2, which canonicalizes host names
 		// case-insensitively (e.g. "APPDIR" == "appdir"); System.Uri already
 		// lower-cases Host, so this is belt-and-suspenders. A trailing dot
 		// ("appdir.") is intentionally a different host and is not treated as local,
