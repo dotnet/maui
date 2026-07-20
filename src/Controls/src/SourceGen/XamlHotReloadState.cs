@@ -61,6 +61,26 @@ internal static class XamlHotReloadState
 		/// On structural change, this list is cleared.
 		/// </summary>
 		public List<string> PatchBodies { get; } = new();
+
+		/// <summary>
+		/// The source text of the last <c>UpdateComponent()</c> partial emitted for this file during the
+		/// session, or <see langword="null"/> if none has been emitted yet. Once set, the generator keeps
+		/// re-emitting the method — regenerated for the current state, or this cached text when the current
+		/// iteration can't produce one (e.g. invalid XAML makes InitializeComponent generation throw) — so it
+		/// never transiently disappears from the compilation. A vanished source-generated method is seen by
+		/// EnC / Hot Reload metadata-update as a member deletion and crashes the EnC delta emitter
+		/// (dotnet/roslyn#79898).
+		/// </summary>
+		public string? LastUpdateComponentSource { get; set; }
+
+		/// <summary>
+		/// The source text of the last InitializeComponent partial (the <c>xsg</c> document) emitted for this
+		/// file, or <see langword="null"/> if none has been emitted yet. Re-emitted alongside
+		/// <see cref="LastUpdateComponentSource"/> on bail-out iterations: <c>__version</c> is declared only in
+		/// this InitializeComponent partial, so re-emitting the UpdateComponent partial without it would leave an
+		/// orphaned <c>UpdateComponent()</c> that references an undeclared field (CS0103).
+		/// </summary>
+		public string? LastInitializeComponentSource { get; set; }
 	}
 
 	/// <summary>
@@ -181,6 +201,77 @@ internal static class XamlHotReloadState
 			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 				return new List<string>(entry.PatchBodies);
 			return new List<string>();
+		}
+	}
+
+	/// <summary>
+	/// Records the source of the <c>UpdateComponent()</c> partial emitted for the given file, so the
+	/// generator keeps re-emitting it and it never transiently disappears (see
+	/// <see cref="CacheEntry.LastUpdateComponentSource"/>).
+	/// </summary>
+	public static void MarkUpdateComponentEmitted(string assemblyName, string targetFramework, string stateKey, string ucSource)
+	{
+		lock (_lock)
+		{
+			if (!_cache.TryGetValue((assemblyName, targetFramework, stateKey), out var entry))
+			{
+				entry = new CacheEntry();
+				_cache[(assemblyName, targetFramework, stateKey)] = entry;
+			}
+			entry.LastUpdateComponentSource = ucSource;
+		}
+	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> if an <c>UpdateComponent()</c> partial has already been emitted for the given file.
+	/// </summary>
+	public static bool HasEmittedUpdateComponent(string assemblyName, string targetFramework, string stateKey)
+	{
+		lock (_lock)
+		{
+			return _cache.TryGetValue((assemblyName, targetFramework, stateKey), out var entry) && entry.LastUpdateComponentSource != null;
+		}
+	}
+
+	/// <summary>
+	/// Returns the source of the last <c>UpdateComponent()</c> partial emitted for the given file, or
+	/// <see langword="null"/> if none has been emitted yet.
+	/// </summary>
+	public static string? GetLastUpdateComponentSource(string assemblyName, string targetFramework, string stateKey)
+	{
+		lock (_lock)
+		{
+			return _cache.TryGetValue((assemblyName, targetFramework, stateKey), out var entry) ? entry.LastUpdateComponentSource : null;
+		}
+	}
+
+	/// <summary>
+	/// Records the source of the InitializeComponent partial (the <c>xsg</c> document) emitted for the given
+	/// file, so it can be re-emitted alongside the UpdateComponent partial on bail-out iterations (see
+	/// <see cref="CacheEntry.LastInitializeComponentSource"/>).
+	/// </summary>
+	public static void MarkInitializeComponentEmitted(string assemblyName, string targetFramework, string stateKey, string icSource)
+	{
+		lock (_lock)
+		{
+			if (!_cache.TryGetValue((assemblyName, targetFramework, stateKey), out var entry))
+			{
+				entry = new CacheEntry();
+				_cache[(assemblyName, targetFramework, stateKey)] = entry;
+			}
+			entry.LastInitializeComponentSource = icSource;
+		}
+	}
+
+	/// <summary>
+	/// Returns the source of the last InitializeComponent partial emitted for the given file, or
+	/// <see langword="null"/> if none has been emitted yet.
+	/// </summary>
+	public static string? GetLastInitializeComponentSource(string assemblyName, string targetFramework, string stateKey)
+	{
+		lock (_lock)
+		{
+			return _cache.TryGetValue((assemblyName, targetFramework, stateKey), out var entry) ? entry.LastInitializeComponentSource : null;
 		}
 	}
 

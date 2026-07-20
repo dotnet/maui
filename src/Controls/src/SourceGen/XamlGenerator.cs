@@ -146,8 +146,59 @@ public class XamlGenerator : IIncrementalGenerator
 				throw new InvalidOperationException("Xaml item or target path is null");
 			}
 
+			// Keeps the previously-emitted generated sources for this file alive on iterations that bail out
+			// before (re)generating them — e.g. XAML that fails ShouldGenerateSourceGenInitializeComponent /
+			// CanSourceGenXaml, or that makes InitializeComponent generation throw. A source-generated member
+			// that silently disappears is seen by EnC / Hot Reload metadata-update as a member deletion, and
+			// deleting a member that only ever existed in EnC deltas crashes the EnC delta emitter
+			// (dotnet/roslyn#79898). Both the InitializeComponent partial (which declares the __version field)
+			// and the UpdateComponent partial (which reads it) are re-emitted verbatim, so the retained
+			// UpdateComponent() never references an undeclared __version (CS0103).
+			void KeepGeneratedSourcesAlive()
+			{
+				if (xamlItem?.ProjectItem is not { EnableIncrementalHotReload: true } hrProjectItem)
+					return;
+
+				var asm = compilation.AssemblyName ?? string.Empty;
+				var tfm = hrProjectItem.TargetFramework ?? string.Empty;
+				var key = hrProjectItem.HotReloadStateKey;
+
+				var lastUcSource = XamlHotReloadState.GetLastUpdateComponentSource(asm, tfm, key);
+				if (lastUcSource is null)
+					return; // Nothing has been emitted for this file yet — nothing to keep alive.
+
+				// Re-emit InitializeComponent first: it declares the __version field that UpdateComponent reads,
+				// so emitting the UC partial without it would orphan the method (CS0103).
+				var lastIcSource = XamlHotReloadState.GetLastInitializeComponentSource(asm, tfm, key);
+				if (lastIcSource is not null)
+					TryReemit(GetHintName(hrProjectItem, "xsg"), lastIcSource);
+
+				TryReemit(GetHintName(hrProjectItem, "uc.xsg"), lastUcSource);
+
+				void TryReemit(string hintName, string source)
+				{
+					try
+					{
+						sourceProductionContext.AddSource(hintName, source);
+					}
+					catch (ArgumentException)
+					{
+						// AddSource throws ArgumentException only when this hint name was already added this
+						// iteration — the source is already present, so there is nothing more to do. Any other
+						// exception (e.g. cancellation) is intentionally left to propagate.
+					}
+				}
+			}
+
 			if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
+			{
+				// Bails out before the try/catch below — e.g. the XAML became invalid this iteration
+				// (LoadXmlDocument throws inside ShouldGenerateSourceGenInitializeComponent and it returns
+				// false) or the root type temporarily can't be resolved. Keep the previously-emitted
+				// generated sources so EnC / Hot Reload metadata-update doesn't see a member deletion.
+				KeepGeneratedSourcesAlive();
 				return;
+			}
 
 			if (!CanSourceGenXaml(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache))
 			{
@@ -181,6 +232,10 @@ public class XamlGenerator : IIncrementalGenerator
 					var location = LocationCreate(relativePath, lineInfo, string.Empty);
 					sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
 				}
+
+				// Invalid XAML this iteration — keep the previously-emitted generated sources alive so they
+				// don't look like member deletions to EnC / Hot Reload metadata-update.
+				KeepGeneratedSourcesAlive();
 				return;
 			}
 
@@ -313,10 +368,39 @@ public class XamlGenerator : IIncrementalGenerator
 				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
 				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
 
-				// Emit UC source if a diff was computed
+				// Remember the InitializeComponent source so it can be re-emitted verbatim alongside the
+				// UpdateComponent partial on later bail-out iterations (it declares the __version field UC reads).
+				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
+					XamlHotReloadState.MarkInitializeComponentEmitted(assemblyName, targetFramework, stateKey, code);
+
+				// Keep UpdateComponent() alive once it has been emitted for this file. If the branch logic
+				// above did not (re)generate it this iteration — e.g. a C# Hot Reload edit that leaves the
+				// XAML unchanged, or a structural change that cleared the patch chain — re-emit it anyway:
+				// with the current patches, or as an empty no-op body. (Iterations where InitializeComponent
+				// generation throws on invalid XAML are handled by the catch block below.) A source-generated
+				// method that transiently disappears is seen by EnC / Hot Reload metadata-update as a member
+				// deletion, and deleting a method that only ever existed in EnC deltas crashes the delta
+				// emitter (dotnet/roslyn#79898).
+				if (ucCode == null
+					&& xamlItem.ProjectItem.EnableIncrementalHotReload
+					&& xamlItem.Xaml is not null
+					&& XamlHotReloadState.HasEmittedUpdateComponent(assemblyName, targetFramework, stateKey)
+					&& InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var ucRootType, out var ucAccessModifier)
+					&& ucRootType != null)
+				{
+					var existingPatches = XamlHotReloadState.GetPatchBodies(assemblyName, targetFramework, stateKey);
+					ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(ucRootType, ucAccessModifier, existingPatches, forceEmitWhenEmpty: true);
+				}
+
+				// Emit UC source if present. Once emitted, it is kept alive across generations (see above),
+				// including via the catch block below when InitializeComponent generation throws on invalid XAML.
+				// Record it as emitted only AFTER AddSource succeeds (matching the InitializeComponent path above),
+				// so a throwing AddSource (e.g. cancellation) doesn't leave the cache believing a UC was produced
+				// that never actually made it into the compilation.
 				if (ucCode != null)
 				{
 					sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "uc.xsg"), ucCode);
+					XamlHotReloadState.MarkUpdateComponentEmitted(assemblyName, targetFramework, stateKey, ucCode);
 				}
 			}
 			catch (Exception e)
@@ -342,6 +426,10 @@ public class XamlGenerator : IIncrementalGenerator
 
 				var location = xamlItem?.ProjectItem?.RelativePath is not null ? LocationCreate(xamlItem.ProjectItem.RelativePath, lineInfo, string.Empty) : null;
 				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
+
+				// InitializeComponent generation threw this iteration — keep the previously-emitted generated
+				// sources alive so they don't look like member deletions to EnC (see local function).
+				KeepGeneratedSourcesAlive();
 			}
 		});
 

@@ -147,9 +147,14 @@ static class UpdateComponentCodeWriter
 		INamedTypeSymbol rootType,
 		string accessModifier,
 		List<string> allPatchBodies,
-		int startVersion = 0)
+		int startVersion = 0,
+		bool forceEmitWhenEmpty = false)
 	{
-		if (allPatchBodies.Count == 0)
+		// When forceEmitWhenEmpty is set we still emit an (empty) UpdateComponent() body. This keeps the
+		// method present in the compilation after a structural reset clears the patch chain, so EnC /
+		// Hot Reload metadata-update sees a body *update* rather than a member *deletion* — the latter
+		// crashes the EnC delta emitter for a method that only ever existed in deltas (dotnet/roslyn#79898).
+		if (allPatchBodies.Count == 0 && !forceEmitWhenEmpty)
 			return null;
 
 		using var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine };
