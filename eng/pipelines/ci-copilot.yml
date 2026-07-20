@@ -2751,7 +2751,16 @@ stages:
           - checkout: self
             fetchDepth: 1
             fetchTags: false
-            persistCredentials: false
+            # persistCredentials:true is an INTENTIONAL exception to the pipeline's
+            # "always false" rule (security rule 2: "...unless the task pushes"). It
+            # lets the snapshot-diff embed below host the PNGs on the PUBLIC
+            # review-tests-assets branch using the GitHub service-connection PAT the
+            # checkout already writes into .git/config — so NO new/separate secret is
+            # needed. SAFE here because this job runs ONLY trusted pipeline-branch code
+            # (downloads artifacts + posts the review); it NEVER merges or builds/runs
+            # the untrusted PR, so the persisted credential is never exposed to
+            # PR-controlled code (the exact threat rule 2 guards against).
+            persistCredentials: true
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download CopilotLogs'
@@ -3314,7 +3323,22 @@ stages:
                     # was never provisioned) instead of authenticating with the literal.
                     $reviewTok = $env:GH_TOKEN
                     $assetRepo = if ($env:BUILD_REPOSITORY_NAME) { $env:BUILD_REPOSITORY_NAME } else { 'dotnet/maui' }
+                    # The BEST credential is the one the pipeline ALREADY has AND that
+                    # already has Contents:write: the GitHub service-connection PAT the
+                    # checkout persists into .git/config (persistCredentials:true on this
+                    # trusted-only job). Extract it so NO new token is needed. The probe
+                    # below still validates it (permissions.push) before use, so a config
+                    # format change just falls through to the next candidate — never a bad
+                    # auth. NEVER echo $checkoutTok or the raw extraheader line (rule 8).
+                    $checkoutTok = $null
+                    try {
+                      foreach ($ln in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
+                        if ($ln -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') { $checkoutTok = ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($matches[1])) -split ':', 2)[-1]; break }
+                        elseif ($ln -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') { $checkoutTok = $matches[1]; break }
+                      }
+                    } catch { $checkoutTok = $null }
                     $cand = New-Object System.Collections.Generic.List[object]
+                    if ($checkoutTok              -and $checkoutTok              -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'CHECKOUT_PAT';      t = $checkoutTok }) }
                     if ($env:ASSET_WRITE_TOKEN    -and $env:ASSET_WRITE_TOKEN    -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'ASSET_WRITE_TOKEN'; t = $env:ASSET_WRITE_TOKEN }) }
                     if ($env:EMBED_TOKEN_DISPATCH -and $env:EMBED_TOKEN_DISPATCH -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'DISPATCH_TOKEN';    t = $env:EMBED_TOKEN_DISPATCH }) }
                     if ($env:EMBED_TOKEN_COPILOT  -and $env:EMBED_TOKEN_COPILOT  -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'COPILOT_TOKEN';     t = $env:EMBED_TOKEN_COPILOT }) }
