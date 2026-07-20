@@ -77,6 +77,15 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 		}
 	}
 
+	readonly HashSet<string> _emittedTemplateMethods = new HashSet<string>();
+
+	// Reserves a generated DataTemplate LoadTemplate method name once per compilation unit, so a
+	// template whose value is set more than once in the same scope (e.g. a `required` property set
+	// in the object initializer AND as an assignment) emits the local function only once instead of
+	// redeclaring it. Returns true the first time a name is seen, false afterwards. See dotnet/maui#36682.
+	public bool TryReserveTemplateMethod(string name)
+		=> ParentContext != null ? ParentContext.TryReserveTemplateMethod(name) : _emittedTemplateMethods.Add(name);
+
 	internal Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? knownSGTypeConverters;
 	internal Dictionary<ITypeSymbol, IKnownMarkupValueProvider>? knownSGValueProviders;
 	internal Dictionary<ITypeSymbol, ProvideValueDelegate>? knownSGEarlyMarkupExtensions;

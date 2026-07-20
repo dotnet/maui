@@ -595,7 +595,10 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			var expectedColor = label == "run1" ? "Colors.Black" : "Colors.Green";
 			Assert.Contains(expectedColor, ic, StringComparison.Ordinal);
 
-			if (label == "run1") nameV1 = m.Groups[1].Value; else nameV2 = m.Groups[1].Value;
+			if (label == "run1")
+				nameV1 = m.Groups[1].Value;
+			else
+				nameV2 = m.Groups[1].Value;
 		}
 
 		// EnC anchor: the generated method name must be IDENTICAL across the edit, so Edit-and-Continue
@@ -632,6 +635,59 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.NotNull(ic);
 		Assert.DoesNotContain("LoadTemplate = () =>", ic, StringComparison.Ordinal);
 		Assert.Contains("LoadTemplate = LoadTemplate_", ic, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void DataTemplate_HotReload_SetMultipleTimes_EmitsSingleNamedMethod()
+	{
+		// Regression for dotnet/maui#36682: a DataTemplate assigned to a `required` property is set
+		// twice by the generator (once in the object initializer, once as a later assignment). Under
+		// Incremental Hot Reload the template body is a named local function, and emitting it twice
+		// in the same scope produced two `object LoadTemplate_L_P()` declarations -> CS0128 ("already
+		// defined") + CS8321 ("declared but never used"). The named method must be emitted only once,
+		// with every set-site re-pointing LoadTemplate at that single function.
+		const string host = """
+			namespace TestApp
+			{
+				public class TemplateHost : Microsoft.Maui.Controls.View
+				{
+					public required Microsoft.Maui.Controls.DataTemplate Template { get; set; }
+				}
+			}
+			""";
+		const string xaml = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <local:TemplateHost>
+			        <local:TemplateHost.Template>
+			            <DataTemplate>
+			                <Label Text="Hi" TextColor="Black" />
+			            </DataTemplate>
+			        </local:TemplateHost.Template>
+			    </local:TemplateHost>
+			</ContentPage>
+			""";
+
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(host));
+
+		// assertNoCompilationErrors: true throws if the generated .xsg.cs has C# errors (e.g. the
+		// duplicate-method CS0128 this test guards against).
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(
+			compilation, MakeFile(xaml), assertNoCompilationErrors: true);
+
+		var ic = FindSourceByHintSuffix(result, ".xsg.cs");
+		Assert.NotNull(ic);
+
+		// Exactly one named LoadTemplate method must be declared, even though LoadTemplate is
+		// assigned more than once.
+		var declarations = System.Text.RegularExpressions.Regex.Matches(ic, @"object LoadTemplate_\d+_\d+\(\)");
+		Assert.Single(declarations);
+		var assignments = System.Text.RegularExpressions.Regex.Matches(ic, @"\.LoadTemplate = LoadTemplate_\d+_\d+;");
+		Assert.True(assignments.Count >= 2, "expected the single named method to be assigned at every set-site");
 	}
 
 	[Fact]
@@ -1458,13 +1514,13 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 
-[Fact]
-public void ResourceWithConverters_UCDoesNotRegisterUnencodableKeys()
-{
-// When resources include custom types (converters) that can't be encoded as C# expressions,
-// the UC should NOT register those keys — otherwise they get removed on next patch.
-XamlHotReloadState.Reset();
-const string xamlV1 = """
+	[Fact]
+	public void ResourceWithConverters_UCDoesNotRegisterUnencodableKeys()
+	{
+		// When resources include custom types (converters) that can't be encoded as C# expressions,
+		// the UC should NOT register those keys — otherwise they get removed on next patch.
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -1475,7 +1531,7 @@ const string xamlV1 = """
     <Label Text="Hello" />
 </ContentPage>
 """;
-const string xamlV2 = """
+		const string xamlV2 = """
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -1488,17 +1544,17 @@ const string xamlV2 = """
 </ContentPage>
 """;
 
-var (_, run2) = TwoRuns(xamlV1, xamlV2);
-var uc = FindUCSource(run2, "uc.xsg");
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
 
-Assert.NotNull(uc);
-// Only emittable keys (Color values) should be in RegisterResourceKeys
-Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
-Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
-Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
-// The registered keys should only contain the color keys
-Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
-}
+		Assert.NotNull(uc);
+		// Only emittable keys (Color values) should be in RegisterResourceKeys
+		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
+		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
+		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
+		// The registered keys should only contain the color keys
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+	}
 
 	[Fact]
 	public void ConverterResourceAdded_UCEmitsNewInstance()
