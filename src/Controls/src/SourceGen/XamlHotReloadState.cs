@@ -61,6 +61,14 @@ internal static class XamlHotReloadState
 		/// On structural change, this list is cleared.
 		/// </summary>
 		public List<string> PatchBodies { get; } = new();
+
+		/// <summary>
+		/// True once an <c>UpdateComponent()</c> partial has been emitted for this file during the session.
+		/// Once set, the generator keeps re-emitting the method so it never transiently disappears from the
+		/// compilation — a vanished source-generated method is seen by EnC / Hot Reload metadata-update as a
+		/// member deletion and crashes the EnC delta emitter (dotnet/roslyn#79898).
+		/// </summary>
+		public bool UpdateComponentEmitted { get; set; }
 	}
 
 	/// <summary>
@@ -181,6 +189,34 @@ internal static class XamlHotReloadState
 			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 				return new List<string>(entry.PatchBodies);
 			return new List<string>();
+		}
+	}
+
+	/// <summary>
+	/// Records that an <c>UpdateComponent()</c> partial has been emitted for the given file, so the
+	/// generator keeps re-emitting it and it never transiently disappears (see <see cref="CacheEntry.UpdateComponentEmitted"/>).
+	/// </summary>
+	public static void MarkUpdateComponentEmitted(string assemblyName, string targetFramework, string relativePath)
+	{
+		lock (_lock)
+		{
+			if (!_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
+			{
+				entry = new CacheEntry();
+				_cache[(assemblyName, targetFramework, relativePath)] = entry;
+			}
+			entry.UpdateComponentEmitted = true;
+		}
+	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> if an <c>UpdateComponent()</c> partial has already been emitted for the given file.
+	/// </summary>
+	public static bool HasEmittedUpdateComponent(string assemblyName, string targetFramework, string relativePath)
+	{
+		lock (_lock)
+		{
+			return _cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) && entry.UpdateComponentEmitted;
 		}
 	}
 

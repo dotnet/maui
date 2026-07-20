@@ -313,9 +313,28 @@ public class XamlGenerator : IIncrementalGenerator
 				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
 				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
 
-				// Emit UC source if a diff was computed
+				// Keep UpdateComponent() alive once it has been emitted for this file. If the branch logic
+				// above did not (re)generate it this iteration — e.g. a C# Hot Reload edit that leaves the
+				// XAML unchanged, an invalid-XAML parse error, or a structural change that cleared the patch
+				// chain — re-emit it anyway: with the current patches, or as an empty no-op body. A
+				// source-generated method that transiently disappears is seen by EnC / Hot Reload metadata-update
+				// as a member deletion, and deleting a method that only ever existed in EnC deltas crashes the
+				// delta emitter (dotnet/roslyn#79898).
+				if (ucCode == null
+					&& xamlItem.ProjectItem.EnableIncrementalHotReload
+					&& xamlItem.Xaml is not null
+					&& XamlHotReloadState.HasEmittedUpdateComponent(assemblyName, targetFramework, stateKey)
+					&& InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var ucRootType, out var ucAccessModifier)
+					&& ucRootType != null)
+				{
+					var existingPatches = XamlHotReloadState.GetPatchBodies(assemblyName, targetFramework, stateKey);
+					ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(ucRootType, ucAccessModifier, existingPatches, forceEmitWhenEmpty: true);
+				}
+
+				// Emit UC source if present. Once emitted, it is kept alive across generations (see above).
 				if (ucCode != null)
 				{
+					XamlHotReloadState.MarkUpdateComponentEmitted(assemblyName, targetFramework, stateKey);
 					sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "uc.xsg"), ucCode);
 				}
 			}

@@ -738,6 +738,54 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
+	public void CSharpOnlyEdit_AfterPatch_KeepsUpdateComponentAlive()
+	{
+		// Regression for dotnet/roslyn#79898: once UpdateComponent() has been emitted, a generator
+		// re-run triggered by a C# Hot Reload edit (the compilation changes while the XAML is
+		// unchanged) must NOT drop the generated UpdateComponent() partial. A source-generated method
+		// that transiently disappears is seen by Edit-and-Continue as a member *deletion*, and deleting
+		// a method that only ever existed in EnC deltas crashes the EnC delta emitter
+		// (DefinitionMap.GetPreviousMethodHandle). Before the fix, run 3 below produced no UC at all.
+		XamlHotReloadState.Reset();
+
+		var compilation = CreateCompilation();
+		var fileV1 = MakeFile(PageXamlV1);
+		var fileV2 = MakeFile(PageXamlV2_PropertyChange);
+
+		ISourceGenerator generator = new XamlGenerator().AsSourceGenerator();
+		var options = new Microsoft.CodeAnalysis.GeneratorDriverOptions(
+			disabledOutputs: Microsoft.CodeAnalysis.IncrementalGeneratorOutputKind.None,
+			trackIncrementalGeneratorSteps: true);
+
+		Microsoft.CodeAnalysis.GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
+			.AddAdditionalTexts(System.Collections.Immutable.ImmutableArray.Create<Microsoft.CodeAnalysis.AdditionalText>(fileV1.Text))
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV1]));
+
+		// Run 1: seed at version 0 — no UC yet.
+		driver = driver.RunGenerators(compilation);
+		Assert.Null(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+
+		// Run 2: real property change → UpdateComponent() is emitted.
+		driver = driver
+			.ReplaceAdditionalText(fileV1.Text, fileV2.Text)
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV2]))
+			.RunGenerators(compilation);
+		Assert.NotNull(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+
+		// Run 3: XAML unchanged, but the compilation changes (a C# Hot Reload edit adds a type). The
+		// generator re-runs for the unchanged XAML; UpdateComponent() must survive, re-emitted with the
+		// same accumulated patch chain (version 0→1) rather than dropped.
+		var compilationAfterCSharpEdit = compilation.AddSyntaxTrees(
+			CSharpSyntaxTree.ParseText("namespace TestApp { class __CSharpEditMarker { } }"));
+		driver = driver.RunGenerators(compilationAfterCSharpEdit);
+
+		var run3Uc = FindUCSource(driver.GetRunResult(), "uc.xsg");
+		Assert.NotNull(run3Uc);
+		Assert.Contains("__version == 0", run3Uc!, StringComparison.Ordinal);
+		Assert.Contains("__version = 1", run3Uc!, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void SecondRun_StructuralChange_EmitsUCWithChildAdd()
 	{
 		// Arrange: V3 adds a Button child — our child add/remove support handles this incrementally
