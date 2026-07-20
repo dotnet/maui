@@ -194,66 +194,79 @@ namespace Microsoft.Maui.Hosting
 #endif
 
 				var facadeCleanups = new List<Action>();
-				BridgeEssentialsFromDI(services, facadeCleanups);
+				EssentialsCleanup? cleanup = null;
+				try
+				{
+					BridgeEssentialsFromDI(services, facadeCleanups);
 
-				// Resolve cleanup after every bridged service so DI disposes it first. This
-				// restores static facades and removes AppActions handlers while the provider-owned
-				// implementations are still alive.
-				var cleanup = services.GetRequiredService<EssentialsCleanup>();
-				cleanup.SetFacadeCleanups(facadeCleanups);
+					// Resolve cleanup after every bridged service so DI disposes it first. This
+					// restores static facades and removes AppActions handlers while the provider-owned
+					// implementations are still alive.
+					cleanup = services.GetRequiredService<EssentialsCleanup>();
+					cleanup.SetFacadeCleanups(facadeCleanups);
 
 #if WINDOWS || TIZEN
-				// A ConfigureEssentials token takes precedence; otherwise preserve a token set
-				// directly through ApplicationModel.Platform.MapServiceToken before MauiApp.Build().
-				if (mapServiceToken is not null)
-				{
-					var geocoding = Geocoding.Default;
-					if (geocoding is IPlatformGeocoding platformGeocoding)
+					// A ConfigureEssentials token takes precedence; otherwise preserve a token set
+					// directly through ApplicationModel.Platform.MapServiceToken before MauiApp.Build().
+					if (mapServiceToken is not null)
 					{
-						platformGeocoding.MapServiceToken = mapServiceToken;
+						var geocoding = Geocoding.Default;
+						if (geocoding is IPlatformGeocoding platformGeocoding)
+						{
+							platformGeocoding.MapServiceToken = mapServiceToken;
+						}
+						else
+						{
+							services.GetService<ILoggerFactory>()?
+								.CreateLogger<EssentialsInitializer>()
+								.LogWarning(
+									"Configured map service token was not applied because {ImplementationType} does not implement {RequiredInterface}.",
+									geocoding.GetType().FullName,
+									nameof(IPlatformGeocoding));
+						}
 					}
-					else
-					{
-						services.GetService<ILoggerFactory>()?
-							.CreateLogger<EssentialsInitializer>()
-							.LogWarning(
-								"Configured map service token was not applied because {ImplementationType} does not implement {RequiredInterface}.",
-								geocoding.GetType().FullName,
-								nameof(IPlatformGeocoding));
-					}
-				}
 #endif
 
 #if !TIZEN
-				// Only subscribe to the current AppActions implementation when at least one
-				// handler was actually registered via IEssentialsBuilder.OnAppAction. The
-				// subscription would otherwise pin this initializer instance for the app's
-				// lifetime (and across repeated MauiApp.Build() calls in tests / hosting scenarios)
-				// even when the handler is a no-op.
-				if (_essentialsBuilder.AppActionHandlers is not null)
-				{
-					cleanup.Subscribe(AppActions.Current, HandleOnAppAction);
-				}
+					// Only subscribe to the current AppActions implementation when at least one
+					// handler was actually registered via IEssentialsBuilder.OnAppAction. The
+					// subscription would otherwise pin this initializer instance for the app's
+					// lifetime (and across repeated MauiApp.Build() calls in tests / hosting scenarios)
+					// even when the handler is a no-op.
+					if (_essentialsBuilder.AppActionHandlers is not null)
+					{
+						cleanup.Subscribe(AppActions.Current, HandleOnAppAction);
+					}
 
-				if (_essentialsBuilder.AppActions is not null)
-				{
-					SetAppActions(services, _essentialsBuilder.AppActions);
-				}
+					if (_essentialsBuilder.AppActions is not null)
+					{
+						SetAppActions(services, _essentialsBuilder.AppActions);
+					}
 #endif
 
-				if (_essentialsBuilder.TrackVersions)
-				{
-					var versionTrackingBeforeTrack = VersionTracking.GetDefault();
-					VersionTracking.Track();
-					if (versionTrackingBeforeTrack is null && VersionTracking.GetDefault() is { } initializedVersionTracking)
+					if (_essentialsBuilder.TrackVersions)
 					{
-						TrackInitialized(
-							initializedVersionTracking,
-							versionTrackingBeforeTrack,
-							VersionTracking.GetDefault,
-							VersionTracking.SetDefault,
-							facadeCleanups);
+						var versionTrackingBeforeTrack = VersionTracking.GetDefault();
+						VersionTracking.Track();
+						if (versionTrackingBeforeTrack is null && VersionTracking.GetDefault() is { } initializedVersionTracking)
+						{
+							TrackInitialized(
+								initializedVersionTracking,
+								versionTrackingBeforeTrack,
+								VersionTracking.GetDefault,
+								VersionTracking.SetDefault,
+								facadeCleanups);
+						}
 					}
+				}
+				catch
+				{
+					if (cleanup is not null)
+						cleanup.Dispose();
+					else
+						EssentialsCleanup.RestoreFacades(facadeCleanups);
+
+					throw;
 				}
 			}
 
@@ -550,12 +563,17 @@ namespace Microsoft.Maui.Hosting
 #endif
 			}
 
+			internal static void RestoreFacades(List<Action> facadeCleanups)
+			{
+				for (int i = facadeCleanups.Count - 1; i >= 0; i--)
+					facadeCleanups[i]();
+
+				facadeCleanups.Clear();
+			}
+
 			void RestoreFacades()
 			{
-				for (int i = _facadeCleanups.Count - 1; i >= 0; i--)
-					_facadeCleanups[i]();
-
-				_facadeCleanups.Clear();
+				RestoreFacades(_facadeCleanups);
 			}
 		}
 

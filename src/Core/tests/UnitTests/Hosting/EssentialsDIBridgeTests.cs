@@ -456,6 +456,21 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void FailedBridgeResolutionRestoresPreviouslyAssignedFacade()
+		{
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+
+			var bridgedPreferences = new StubPreferences();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences>(bridgedPreferences);
+			builder.Services.AddSingleton<IScreenshot>(_ => throw new InvalidOperationException("boom"));
+
+			var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+			Assert.Equal("boom", ex.Message);
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+		}
+
+		[Fact]
 		public void LaterMauiAppCanReplaceStaticFacade()
 		{
 			var firstMock = new StubPreferences();
