@@ -172,9 +172,74 @@ function Remove-InlineVisualSection {
         [TimeSpan]::FromSeconds(1))
 }
 
+function Get-VisualRelationship {
+    param(
+        [object]$Comparison,
+        [object]$Context
+    )
+
+    $testName = [string]$Comparison.testName
+    $platform = [string]$Comparison.platform
+    $failure = $null
+    foreach ($candidate in @($Context.failures.unique | Where-Object { $null -ne $_ })) {
+        if ([string]::Equals(
+                [string]$candidate.testName,
+                $testName,
+                [StringComparison]::OrdinalIgnoreCase) -and
+            [string]::Equals(
+                [string]$candidate.platform,
+                $platform,
+                [StringComparison]::OrdinalIgnoreCase)) {
+            $failure = $candidate
+            break
+        }
+    }
+
+    if ($null -eq $failure) {
+        return [pscustomobject]@{
+            label = "Needs human investigation"
+            detail = "No decisive exact test-and-platform baseline attribution was available."
+        }
+    }
+
+    switch ([string]$failure.deterministicAttribution) {
+        "regressed-vs-base" {
+            return [pscustomobject]@{
+                label = "Likely PR-caused"
+                detail = "The same leg was green on the sampled base build and red on this PR."
+            }
+        }
+        "pre-existing-on-base" {
+            return [pscustomobject]@{
+                label = "Likely unrelated"
+                detail = "The exact test and platform also failed on the base branch."
+            }
+        }
+        "known-issue" {
+            return [pscustomobject]@{
+                label = "Likely unrelated"
+                detail = "The exact test and platform also failed on base and matched a known issue."
+            }
+        }
+        default {
+            $detail = if ([bool]$failure.alsoFailsOnBaseline -or [bool]$failure.legAlsoFailsOnBase) {
+                "Base-branch evidence exists, but it was not strong enough to dismiss this exact failure."
+            }
+            else {
+                "No decisive exact test-and-platform baseline attribution was available."
+            }
+            return [pscustomobject]@{
+                label = "Needs human investigation"
+                detail = $detail
+            }
+        }
+    }
+}
+
 function New-InlineVisualPanel {
     param(
         [object]$Comparison,
+        [object]$Relationship,
         [string]$BaselineUrl,
         [string]$ActualUrl,
         [string]$DiffUrl
@@ -188,6 +253,8 @@ function New-InlineVisualPanel {
     $actualAlt = Escape-VisualText -Value "$([string]$Comparison.testName) actual" -MaximumLength 220
     $diffAlt = Escape-VisualText -Value "$([string]$Comparison.testName) diff" -MaximumLength 220
     $safeActualUrl = Escape-VisualText -Value $ActualUrl -MaximumLength 2048
+    $relationshipLabel = Escape-VisualText -Value ([string]$Relationship.label) -MaximumLength 80
+    $relationshipDetail = Escape-VisualText -Value ([string]$Relationship.detail) -MaximumLength 240
     $buildId = [int]$Comparison.buildId
 
     $baselineCell = if ($BaselineUrl) {
@@ -213,9 +280,11 @@ function New-InlineVisualPanel {
 
     return @"
 <details>
-<summary><code>$testName</code> - $platform - visual comparison</summary>
+<summary><code>$testName</code> - $platform - <strong>$relationshipLabel</strong> - visual comparison</summary>
 
 $descriptionLine
+
+**Relationship to PR:** **$relationshipLabel** - $relationshipDetail
 
 <table><tr><th>CI baseline</th><th>Fresh PR actual</th><th>CI diff</th></tr><tr>
 <td>$baselineCell</td>
@@ -238,6 +307,7 @@ function New-InlineVisualSection {
     [void]$builder.AppendLine("### Visual failure comparisons")
     [void]$builder.AppendLine()
     [void]$builder.AppendLine("Full-resolution CI baseline, actual, and diff images are embedded below. They supplement the failure classification and do not change the deterministic verdict ceiling.")
+    [void]$builder.AppendLine("Relationship labels use deterministic exact test-and-platform baseline evidence; missing or mixed evidence remains **Needs human investigation**.")
     [void]$builder.AppendLine()
 
     foreach ($panel in @($Panels)) {
@@ -355,8 +425,10 @@ function Merge-VisualsIntoBody {
             $diffUrl = $null
         }
 
+        $relationship = Get-VisualRelationship -Comparison $comparison -Context $Context
         $validPanels.Add((New-InlineVisualPanel `
                     -Comparison $comparison `
+                    -Relationship $relationship `
                     -BaselineUrl $baselineUrl `
                     -ActualUrl $actualUrl `
                     -DiffUrl $diffUrl))

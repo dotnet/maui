@@ -387,8 +387,12 @@ Rules:
 - Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
 - Do not embed, link, or reproduce individual visual image URLs in the generated
   analysis. The trusted merger inserts complete expandable panels into the same final
-  comment while enforcing gh-aw's URL, mention, and character limits. Visual publishing
-  failures are limitations only; they do not weaken or raise the gate.
+  comment while enforcing gh-aw's URL, mention, and character limits. The merger labels
+  each panel from exact test-and-platform deterministic attribution only: PR-only
+  regressions are `Likely PR-caused`, exact base/known-issue matches are
+  `Likely unrelated`, and unmatched or mixed evidence remains
+  `Needs human investigation`. Visual publishing failures are limitations only; they do
+  not weaken or raise the gate.
 - Badge colors for the `Overall` (merge-readiness) badge: `1a7f37` for `Ready to merge`
   and `No failures found`, `d1242f` for `Not ready`, `bf8700` for
   `Needs human investigation`, and `6e7781` for `Insufficient data`.

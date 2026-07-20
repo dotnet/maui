@@ -276,7 +276,11 @@ complete expandable comparison panels as fit inside the single test-failure anal
 comment while enforcing gh-aw's URL, mention, and character limits; excess panels are
 reported as omitted rather than creating another comment. Visual publishing is
 supplementary evidence only: missing images never raise or lower the deterministic
-verdict ceiling.
+verdict ceiling. Each panel also shows a conservative relationship label derived only
+from the exact test-and-platform `deterministicAttribution`: `regressed-vs-base` is
+Likely PR-caused, `pre-existing-on-base` or `known-issue` is Likely unrelated, and
+indeterminate or unmatched evidence remains Needs human investigation. Platform or area
+mismatch alone never produces an unrelated label.
 
 ## Platform mismatch
 

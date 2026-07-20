@@ -19,6 +19,7 @@ BeforeAll {
             'Test-VisualAssetUrl',
             'Get-CommentLimitCounts',
             'Remove-InlineVisualSection',
+            'Get-VisualRelationship',
             'New-InlineVisualPanel',
             'New-InlineVisualSection',
             'Insert-InlineVisualSection',
@@ -61,6 +62,7 @@ BeforeAll {
     function New-VisualTestContext {
         param(
             [object[]]$Comparisons = @((New-VisualTestComparison)),
+            [object[]]$Failures = @(),
             [int]$OmittedCount = 0,
             [bool]$Published = $true,
             [string]$Commit = ('a' * 40),
@@ -70,12 +72,33 @@ BeforeAll {
         return [pscustomobject]@{
             repository = 'dotnet/maui'
             pr = [pscustomobject]@{ number = $PrNumber }
+            failures = [pscustomobject]@{
+                unique = $Failures
+            }
             visualAssets = [pscustomobject]@{
                 published = $Published
                 commit = $Commit
                 omittedCount = $OmittedCount
                 comparisons = $Comparisons
             }
+        }
+    }
+
+    function New-VisualTestFailure {
+        param(
+            [string]$TestName = 'VisualTest',
+            [string]$Platform = 'ios',
+            [string]$DeterministicAttribution = 'indeterminate',
+            [bool]$AlsoFailsOnBaseline = $false,
+            [bool]$LegAlsoFailsOnBase = $false
+        )
+
+        return [pscustomobject]@{
+            testName = $TestName
+            platform = $Platform
+            deterministicAttribution = $DeterministicAttribution
+            alsoFailsOnBaseline = $AlsoFailsOnBaseline
+            legAlsoFailsOnBase = $LegAlsoFailsOnBase
         }
     }
 }
@@ -131,7 +154,10 @@ Describe 'Inline visual input validation' {
 Describe 'Inline visual body merge' {
     It 'replaces the trusted placeholder with escaped expandable panels inside one comment' {
         $comparison = New-VisualTestComparison -TestName '<b>@danger</b>'
-        $context = New-VisualTestContext -Comparisons @($comparison)
+        $failure = New-VisualTestFailure `
+            -TestName '<b>@danger</b>' `
+            -DeterministicAttribution 'regressed-vs-base'
+        $context = New-VisualTestContext -Comparisons @($comparison) -Failures @($failure)
         $body = @'
 ## Tests Failure Analysis
 
@@ -162,6 +188,8 @@ Investigate.
         $merged | Should -Match ([regex]::Escape((Get-InlineVisualStartMarker)))
         $merged | Should -Not -Match ([regex]::Escape((Get-InlineVisualPlaceholder)))
         $merged | Should -Match '&lt;b&gt;&#64;danger&lt;/b&gt;'
+        $merged | Should -Match '<strong>Likely PR-caused</strong> - visual comparison'
+        $merged | Should -Match 'The same leg was green on the sampled base build and red on this PR'
         $merged | Should -Match '<th>CI baseline</th><th>Fresh PR actual</th><th>CI diff</th>'
         $merged.IndexOf('### Visual failure comparisons') |
             Should -BeLessThan $merged.IndexOf('### Recommended action')
@@ -227,9 +255,9 @@ Investigate.
             -PrNumber 123 `
             -MaxCommentUrls 45 `
             -MaxCommentMentions 10 `
-            -MaxCommentCharacters 1700
+            -MaxCommentCharacters 2000
 
-        $merged.Length | Should -BeLessOrEqual 1700
+        $merged.Length | Should -BeLessOrEqual 2000
         ([regex]::Matches($merged, '<details>').Count) |
             Should -Be ([regex]::Matches($merged, '</details>').Count)
         $merged | Should -Match 'additional comparison\(s\) were omitted'
@@ -308,6 +336,65 @@ Investigate.
 
         $merged | Should -Match '^Short failure report\.'
         $merged | Should -Match '### Visual failure comparisons'
+    }
+}
+
+Describe 'Inline visual relationship classification' {
+    It 'maps exact deterministic attribution to the review taxonomy' {
+        $context = New-VisualTestContext -Failures @(
+            (New-VisualTestFailure -TestName 'Regression' -DeterministicAttribution 'regressed-vs-base'),
+            (New-VisualTestFailure -TestName 'Existing' -DeterministicAttribution 'pre-existing-on-base'),
+            (New-VisualTestFailure -TestName 'Known' -DeterministicAttribution 'known-issue'),
+            (New-VisualTestFailure -TestName 'Mixed' -AlsoFailsOnBaseline $true)
+        )
+
+        (Get-VisualRelationship `
+                -Comparison (New-VisualTestComparison -TestName 'Regression') `
+                -Context $context).label |
+            Should -Be 'Likely PR-caused'
+        (Get-VisualRelationship `
+                -Comparison (New-VisualTestComparison -TestName 'Existing') `
+                -Context $context).label |
+            Should -Be 'Likely unrelated'
+        (Get-VisualRelationship `
+                -Comparison (New-VisualTestComparison -TestName 'Known') `
+                -Context $context).label |
+            Should -Be 'Likely unrelated'
+
+        $mixed = Get-VisualRelationship `
+            -Comparison (New-VisualTestComparison -TestName 'Mixed') `
+            -Context $context
+        $mixed.label | Should -Be 'Needs human investigation'
+        $mixed.detail | Should -Match 'not strong enough to dismiss'
+    }
+
+    It 'requires an exact platform match before calling a visual failure unrelated' {
+        $context = New-VisualTestContext -Failures @(
+            (New-VisualTestFailure `
+                    -TestName 'VisualTest' `
+                    -Platform 'unknown' `
+                    -DeterministicAttribution 'pre-existing-on-base')
+        )
+
+        $relationship = Get-VisualRelationship `
+            -Comparison (New-VisualTestComparison -Platform 'ios') `
+            -Context $context
+
+        $relationship.label | Should -Be 'Needs human investigation'
+        $relationship.detail | Should -Match 'No decisive exact test-and-platform'
+    }
+
+    It 'does not surface an unrecognized attribution value' {
+        $context = New-VisualTestContext -Failures @(
+            (New-VisualTestFailure -DeterministicAttribution '<script>@all</script>')
+        )
+
+        $relationship = Get-VisualRelationship `
+            -Comparison (New-VisualTestComparison) `
+            -Context $context
+
+        $relationship.label | Should -Be 'Needs human investigation'
+        $relationship.detail | Should -Not -Match 'script|@all'
     }
 }
 
