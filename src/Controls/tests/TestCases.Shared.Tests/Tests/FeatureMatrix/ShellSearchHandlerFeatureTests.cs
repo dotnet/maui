@@ -611,6 +611,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_CancelButtonColor()
 	{
+// TODO: For now, CI shows an incorrect screenshot for this test; it renders properly on local macOS 26.
 #if IOS
 		App.WaitForElement("Cancel");
 		App.Tap("Cancel");
