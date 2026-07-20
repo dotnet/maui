@@ -19,6 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("http://appdir/index.html", false)]         // wrong scheme
 		[InlineData("https://appdir.example.com/page.html", false)] // host merely starts with "appdir"
 		[InlineData("https://appdir@host.example.com/page.html", false)] // "appdir" is userinfo, not host
+		[InlineData("https://user:pass@appdir/index.html", false)] // host is appdir but carries credentials (no auth on a virtual host)
 		[InlineData("https://example.com/index.html", false)]   // unrelated host
 		[InlineData("index.html", false)]                        // relative URL is not an absolute appdir URL
 		public void IsUriWithLocalSchemeClassifiesByParsedHost(string url, bool expected) =>
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("https://appdir/index.html", true)]          // true appdir URLs are local
 		[InlineData("https://appdir.example.com/page.html", false)] // different host
 		[InlineData("https://appdir@host.example.com/page.html", false)] // appdir as userinfo
+		[InlineData("https://user:pass@appdir/index.html", false)] // appdir host but with credentials
 		[InlineData("https://example.com/index.html", false)]    // external host
 		public void IsLocalAppDirUrlClassifiesCorrectly(string url, bool expected) =>
 			Assert.Equal(expected, MauiWebView.IsLocalAppDirUrl(url));

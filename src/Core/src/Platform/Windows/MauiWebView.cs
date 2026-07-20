@@ -144,19 +144,24 @@ namespace Microsoft.Maui.Platform
 
 		// Core check on an already-parsed Uri. "appdir" is an arbitrary placeholder
 		// virtual host that is mapped to the app directory via
-		// SetVirtualHostNameToFolderMapping, so ONLY the exact host "appdir" serves
+		// SetVirtualHostNameToFolderMapping, so only the exact host "appdir" serves
 		// local content. Returns true only when the URI is absolute, its scheme is
-		// https, and its host is exactly "appdir". Matching the parsed host - rather
-		// than a raw string prefix - prevents unrelated hosts such as
-		// "appdir.example.com" (subdomain) or "appdir@host.example.com" (userinfo)
-		// from being treated as local content. The comparison is case-insensitive to
-		// mirror WebView2, which canonicalizes host names case-insensitively (e.g.
-		// "APPDIR" == "appdir"); System.Uri already lower-cases Host, so this is
-		// belt-and-suspenders. A trailing dot ("appdir.") is intentionally a
-		// different host and is not treated as local, which also matches WebView2.
+		// https, it carries no user credentials, and its host is exactly "appdir".
+		// Matching the parsed host - rather than a raw string prefix - prevents
+		// unrelated hosts such as "appdir.example.com" (subdomain) or
+		// "appdir@host.example.com" (where "appdir" is the userinfo and the real host
+		// is host.example.com) from being treated as local content. Credentials are
+		// rejected because a virtual host mapping has no authentication, so userinfo
+		// (e.g. "user:pass@appdir") is never a legitimate local URL. The comparison
+		// is case-insensitive to mirror WebView2, which canonicalizes host names
+		// case-insensitively (e.g. "APPDIR" == "appdir"); System.Uri already
+		// lower-cases Host, so this is belt-and-suspenders. A trailing dot
+		// ("appdir.") is intentionally a different host and is not treated as local,
+		// which also matches WebView2.
 		static bool IsUriWithLocalScheme(Uri uri) =>
 			uri.IsAbsoluteUri &&
 			uri.Scheme == Uri.UriSchemeHttps &&
+			string.IsNullOrEmpty(uri.UserInfo) &&
 			string.Equals(uri.Host, LocalHostName, StringComparison.OrdinalIgnoreCase);
 
 		static bool IsWebView2DataUriWithBaseUrl(string? uri)
