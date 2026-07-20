@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Platform
 {
 	internal class MauiDoneAccessoryView : UIView
 	{
+		const double AccessoryHeight = 44;
+
 		// UIKit's localized "Done" label, matching UIBarButtonSystemItem.Done so VoiceOver keeps reading
 		// the affordance in the user's language on the iOS 26+ glass button path.
 		static readonly string DoneAccessibilityLabel =
@@ -84,7 +86,7 @@ namespace Microsoft.Maui.Platform
 			return doneButton.Equals(hitView) || hitView.IsDescendantOfView(doneButton) ? hitView : null;
 		}
 
-		static CGRect InitialFrame() => new(0, 0, UIScreen.MainScreen.Bounds.Width, 44);
+		static CGRect InitialFrame() => new(0, 0, UIScreen.MainScreen.Bounds.Width, AccessoryHeight);
 
 		void Initialize(EventHandler doneClicked)
 		{
@@ -112,8 +114,8 @@ namespace Microsoft.Maui.Platform
 			AddSubview(toolbar);
 		}
 
-		// iOS 26+: a floating Liquid Glass close button, sized by its own configuration and pinned to
-		// the trailing layout margin so nothing here is hard-coded.
+		// iOS 26+: a floating Liquid Glass close button pinned to the trailing layout margin. Keep the
+		// original accessory height so UIKit continues scrolling focused input above the keyboard.
 		void InitializeGlassButton(EventHandler doneClicked)
 		{
 			ClipsToBounds = false;
@@ -124,17 +126,11 @@ namespace Microsoft.Maui.Platform
 
 			NSLayoutConstraint.ActivateConstraints(new[]
 			{
+				button.WidthAnchor.ConstraintEqualTo((nfloat)AccessoryHeight),
+				button.HeightAnchor.ConstraintEqualTo((nfloat)AccessoryHeight),
 				button.CenterYAnchor.ConstraintEqualTo(CenterYAnchor),
 				button.TrailingAnchor.ConstraintEqualTo(LayoutMarginsGuide.TrailingAnchor),
 			});
-
-			// Let iOS decide the button's natural size, then size the accessory to fit it plus the
-			// view's standard layout margins instead of hard-coding dimensions.
-			var buttonSize = button.SystemLayoutSizeFittingSize(UIView.UILayoutFittingCompressedSize);
-			var margins = LayoutMargins;
-			var height = buttonSize.Height + margins.Top + margins.Bottom;
-
-			Frame = new CGRect(0, 0, Frame.Width, height);
 		}
 
 		static UIButton CreateGlassButton(EventHandler action)
@@ -149,7 +145,7 @@ namespace Microsoft.Maui.Platform
 			var configuration = UIButtonConfiguration.GlassButtonConfiguration;
 			configuration.Image = UIImage.GetSystemImage("xmark");
 			configuration.CornerStyle = UIButtonConfigurationCornerStyle.Capsule;
-			configuration.ButtonSize = UIButtonConfigurationSize.Large;
+			configuration.ButtonSize = UIButtonConfigurationSize.Medium;
 			configuration.BaseForegroundColor = UIColor.Label;
 			button.Configuration = configuration;
 

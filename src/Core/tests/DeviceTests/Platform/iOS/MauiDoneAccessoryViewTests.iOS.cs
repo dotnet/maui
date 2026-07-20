@@ -73,15 +73,22 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task AccessorySizesToNaturalButtonHeight()
+		public async Task AccessoryPreservesKeyboardLayoutHeight()
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
-				using var accessoryView = new MauiDoneAccessoryView();
+				using var accessoryView = CreateLaidOutAccessoryView();
 
-				// The height should be driven by the button/toolbar's natural size plus margins, not a
-				// zero/clipped frame — on either the glass (26+) or toolbar (< 26) path.
-				Assert.True(accessoryView.Frame.Height > 40, $"Unexpected accessory height: {accessoryView.Frame.Height}");
+				Assert.Equal(44, accessoryView.Frame.Height);
+
+				if (UsesGlassButton)
+				{
+					var button = Assert.IsType<UIButton>(accessoryView.DoneButton);
+					Assert.True(button.Frame.Width >= 44, $"Unexpected button width: {button.Frame.Width}");
+					Assert.True(button.Frame.Height >= 44, $"Unexpected button height: {button.Frame.Height}");
+					Assert.True(button.Frame.GetMinY() >= accessoryView.Bounds.GetMinY());
+					Assert.True(button.Frame.GetMaxY() <= accessoryView.Bounds.GetMaxY());
+				}
 			});
 		}
 
