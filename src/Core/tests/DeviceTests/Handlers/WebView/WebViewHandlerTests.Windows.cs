@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,6 +7,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Web.WebView2.Core;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -113,6 +115,128 @@ namespace Microsoft.Maui.DeviceTests
 						await platformView.CoreWebView2.ExecuteScriptAsync("document.title"));
 				});
 			});
+		}
+
+		// DIAGNOSTIC: characterizes the DenyCors behavior change flagged in review.
+		// LoadHtml uses NavigateToString, which produces a document with an opaque/null
+		// origin. Under DenyCors a script `fetch()` of an https://appdir/ resource is a
+		// cross-origin request subject to CORS, so it is denied (DOM subresources like
+		// <script src> are still allowed - this is the difference the existing tests miss).
+		// This test asserts the CURRENT (post-change) behavior: the fetch is blocked.
+		[Fact(DisplayName = "LoadHtml script fetch of appdir resource is blocked under DenyCors")]
+		public async Task LoadHtmlScriptFetchOfAppDirResourceIsBlocked()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub();
+				var handler = CreateHandler(webView);
+				var platformView = (MauiWebView)handler.PlatformView;
+
+				await AttachAndRun(webView, async (_) =>
+				{
+					await platformView.EnsureCoreWebView2Async();
+
+					var navigated = new TaskCompletionSource();
+					platformView.CoreWebView2.NavigationCompleted += (_, _) => navigated.TrySetResult();
+
+					// null baseUrl => the appdir folder mapping is applied; NavigateToString
+					// gives the document a null origin, so the absolute appdir fetch below is
+					// cross-origin.
+					var html =
+						"<script>" +
+						"  fetch('https://appdir/appdir-subresource-test.js')" +
+						"    .then(function (r) { return r.ok ? r.text() : Promise.reject('status'); })" +
+						"    .then(function () { document.title = 'fetch-ok'; })" +
+						"    .catch(function () { document.title = 'fetch-blocked'; });" +
+						"</script>";
+					((IWebViewDelegate)platformView).LoadHtml(html, null);
+
+					await navigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+					var title = await WaitForTitleAsync(
+						platformView,
+						TimeSpan.FromSeconds(5),
+						"\"fetch-ok\"", "\"fetch-blocked\"");
+
+					// Under DenyCors + null-origin document, the cross-origin fetch to appdir
+					// is denied. (If this ever returns "fetch-ok", the mapping is effectively
+					// Allow for the LoadHtml path.)
+					Assert.Equal("\"fetch-blocked\"", title);
+				});
+			});
+		}
+
+		// DIAGNOSTIC: confirms that a script fetch/XHR is a subresource request and does
+		// NOT raise NavigationStarting (which only fires for document/frame navigations).
+		// This matters because it means NavigationStarting is not a viable interception
+		// point for allowing/denying fetch - only the folder-mapping access mode or a
+		// WebResourceRequested filter can influence it. A real appdir page is loaded first
+		// (document origin IS https://appdir) so the fetch is same-origin and succeeds,
+		// isolating "does fetch navigate?" from "is fetch blocked?".
+		[Fact(DisplayName = "Script fetch does not raise NavigationStarting")]
+		public async Task ScriptFetchDoesNotRaiseNavigationStarting()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub();
+				var handler = CreateHandler(webView);
+				var platformView = (MauiWebView)handler.PlatformView;
+
+				await AttachAndRun(webView, async (_) =>
+				{
+					await platformView.EnsureCoreWebView2Async();
+
+					var navigated = new TaskCompletionSource();
+					platformView.CoreWebView2.NavigationCompleted += (_, _) => navigated.TrySetResult();
+					((IWebViewDelegate)platformView).LoadUrl("https://appdir/appdir-subresource-test.html");
+					await navigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+					var navStartUris = new List<string>();
+					void OnNavStarting(CoreWebView2 s, CoreWebView2NavigationStartingEventArgs e) =>
+						navStartUris.Add(e.Uri);
+					platformView.CoreWebView2.NavigationStarting += OnNavStarting;
+
+					try
+					{
+						// Same-origin fetch (document origin is https://appdir), so it is not
+						// blocked by DenyCors; we only care whether it triggers a navigation.
+						await platformView.CoreWebView2.ExecuteScriptAsync(
+							"fetch('https://appdir/appdir-subresource-test.js').then(function (r) { return r.text(); });");
+
+						// Give any (unexpected) navigation time to surface.
+						await Task.Delay(1500);
+					}
+					finally
+					{
+						platformView.CoreWebView2.NavigationStarting -= OnNavStarting;
+					}
+
+					// A fetch is a subresource request, not a navigation - NavigationStarting
+					// must not fire for it.
+					Assert.DoesNotContain(
+						navStartUris,
+						u => u.Contains("appdir-subresource-test.js", StringComparison.OrdinalIgnoreCase));
+				});
+			});
+		}
+
+		// Polls document.title until it matches one of the expected JSON-encoded values or
+		// the timeout elapses, then returns whatever the last observed value was.
+		static async Task<string> WaitForTitleAsync(MauiWebView webView, TimeSpan timeout, params string[] until)
+		{
+			var deadline = DateTime.UtcNow + timeout;
+			string title = null;
+			while (DateTime.UtcNow < deadline)
+			{
+				title = await webView.CoreWebView2.ExecuteScriptAsync("document.title");
+				foreach (var expected in until)
+				{
+					if (title == expected)
+						return title;
+				}
+				await Task.Delay(200);
+			}
+			return title;
 		}
 
 		[Theory(DisplayName = "UrlSource Updates Correctly")]
