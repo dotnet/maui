@@ -397,6 +397,27 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The View to be displayed in the navigation bar.</param>
 		public static void SetTitleView(BindableObject obj, View value) => obj.SetValue(TitleViewProperty, value);
 
+		// Determines whether the Shell's Title was set by the user (explicit code, style, or a binding)
+		// as opposed to being mirrored from the current page by the renderer (FromHandler) or never set
+		// at all (DefaultValue). This lets ShellToolbar mirror the page title into Shell.Title for
+		// TitleView bindings without clobbering a title the user set intentionally.
+		internal bool IsTitleSetByUser()
+		{
+			if (GetIsBound(TitleProperty))
+				return true;
+
+			var context = GetContext(TitleProperty);
+			if (context is null)
+				return false;
+
+			var specificity = context.Values.GetSpecificity();
+			return specificity != SetterSpecificity.DefaultValue && specificity != SetterSpecificity.FromHandler;
+		}
+
+		// Returns the Title only when it was set by the user. Used by the native window title
+		// fallback so that a renderer-mirrored page title never leaks into the platform chrome.
+		internal string GetUserSetTitle() => IsTitleSetByUser() ? Title : null;
+
 		static void OnFlyoutBehaviorChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var element = (Element)bindable;
