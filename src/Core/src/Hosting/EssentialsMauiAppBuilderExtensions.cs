@@ -225,9 +225,9 @@ namespace Microsoft.Maui.Hosting
 #endif
 
 #if !TIZEN
-				// Only subscribe to the static AppActions.OnAppAction event when at least one
-				// handler was actually registered via IEssentialsBuilder.OnAppAction. The static
-				// event subscription would otherwise pin this initializer instance for the app's
+				// Only subscribe to the current AppActions implementation when at least one
+				// handler was actually registered via IEssentialsBuilder.OnAppAction. The
+				// subscription would otherwise pin this initializer instance for the app's
 				// lifetime (and across repeated MauiApp.Build() calls in tests / hosting scenarios)
 				// even when the handler is a no-op.
 				if (_essentialsBuilder.AppActionHandlers is not null)
