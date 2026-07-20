@@ -146,13 +146,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// UpdateFromPosition -> ScrollToPosition(0, oldPos, ...); clear it so later
 				// programmatic Position/CurrentItem changes aren't suppressed.
 				_gotoPosition = -1;
+
+				// A new items source means a fresh baseline. Reset the tracked position so the next
+				// re-attach treats a subsequent source swap as a reset (Position 0) rather than a
+				// detached position change. This keeps a new ItemsSource/ViewModel resetting to the
+				// first item, matching Android behavior.
+				_lastSyncedPosition = 0;
 			}
 
-			// A new items source means a fresh baseline. Reset the tracked position so the next
-			// re-attach treats the source swap as a reset (Position 0) rather than a detached
-			// position change. This keeps a new ItemsSource/ViewModel resetting to the first item,
-			// matching Android behavior.
-			_lastSyncedPosition = 0;
 			_isUpdating = false;
 		}
 
