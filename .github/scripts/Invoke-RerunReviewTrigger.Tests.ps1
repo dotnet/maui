@@ -333,14 +333,17 @@ Describe 'Get-RerunActions' {
         $result.Actions.Count | Should -Be 0
     }
 
-    It 'refuses to trigger when the candidate has no rerun comment id' {
+    It 'triggers when the candidate has no rerun comment id (autonomous queue label)' {
         $items = @(New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'x')
         $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x' -RerunCommentId 0)
 
         $result = Get-RerunActions -Items $items -Candidates $candidates
 
-        $result.HadFailure | Should -BeTrue
-        $result.Actions.Count | Should -Be 0
+        $result.HadFailure | Should -BeFalse
+        $result.Actions.Count | Should -Be 1
+        $result.Actions[0].prNumber | Should -Be 5
+        $result.Actions[0].decision | Should -Be 'trigger'
+        $result.Actions[0].rerunCommentId | Should -Be 0
     }
 
     It 'continues processing valid decisions after a failed one' {

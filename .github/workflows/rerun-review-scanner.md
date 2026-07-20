@@ -275,7 +275,7 @@ safe-outputs:
 
 # Rerun Review Scanner
 
-You are scanning queued .NET MAUI PRs that already have the label `s/agent-ready-for-rerun`.
+You are scanning queued .NET MAUI PRs that already have the label `s/agent-ready-for-rerun`. This label is applied either by a maintainer's `/review rerun` command or autonomously by the daily PR Review Queue workflow when it detects genuinely new PR-author activity since the last AI review. Both sources are valid and treated identically here.
 
 ## Concurrency, locking, and duplicate prevention
 
@@ -316,11 +316,29 @@ so the scanner path behaves exactly like a maintainer `/review`, which has no
 such limit. Volume is instead bounded structurally:
 
 1. A PR only becomes a candidate when `Resolve-RerunEligibility.ps1` finds
-   genuinely *new* author activity (a new commit or a new non-command comment)
-   since the last AI Summary / rerun checkpoint — the same deterministic gate the
+   genuinely *new* author activity (a new commit, a new non-command comment, or a
+   head commit SHA that differs from the last reviewed SHA) since the last AI Summary /
+   rerun checkpoint — the same deterministic gate the
    `/review rerun` command uses. The identical PR state cannot be re-queued.
-2. Re-entry is not autonomous: a human (or the PR author's new push) must produce
-   that new activity and `/review rerun` must re-apply the queue label each cycle.
+2. Re-entry requires genuinely new activity each cycle. The queue label is applied
+   either by a maintainer's `/review rerun` or autonomously by the PR Review Queue
+   workflow — but in both cases only when the deterministic gate
+   (`Resolve-RerunEligibility.ps1` / `Resolve-AutonomousRerunEligibility`) finds
+   new activity since the last AI Summary. When a review **completes** (the `trigger`
+   path) it posts a fresh AI Summary that advances the checkpoint, so the identical
+   PR state cannot re-qualify and autonomous re-entry cannot loop.
+
+   > **Skip-path checkpoint (anti-flap):** the `trigger` path advances the checkpoint by
+   > posting a fresh AI Summary, but a `skip` decision removes `s/agent-ready-for-rerun`
+   > without posting one. To stop the daily queue from re-labelling that same declined
+   > state forever, `Query-AutoRerunCandidates.ps1` reads the most recent time the label
+   > was **removed** (`Get-LastDeclinedAt`, from the issue events API) and passes it to
+   > `Resolve-AutonomousRerunEligibility -LastDeclinedAt`. When that removal is newer than
+   > the latest AI Summary it becomes the eligibility checkpoint, so re-labelling requires
+   > genuinely new activity **after the decline** (a fresh push or a new author comment) —
+   > not merely a head that still differs from the summary's SHA. A removal that preceded a
+   > completed review is naturally superseded by that review's newer AI Summary, so the
+   > `trigger` path is unaffected.
 3. The per-PR in-progress lock prevents overlapping reviews of the same PR.
 
 This is an accepted, documented cost trade-off: it matches manual `/review`
@@ -348,7 +366,7 @@ Each object in the `decisions` array must use:
 
 - `pr_number`: the candidate `prNumber`.
 - `decision`: `trigger` or `skip`.
-- `rerun_comment_id`: the candidate `rerunCommentId`. If it is missing, choose `skip` and use `"0"`.
+- `rerun_comment_id`: the candidate `rerunCommentId`. It may be missing (`"0"`) when the queue label was applied autonomously by the PR Review Queue instead of a `/review rerun` comment. A missing id is **not** by itself a reason to skip — base `trigger`/`skip` on the new activity in the candidate context, and use `"0"` when it is absent (the dispatch does not need a comment; the acknowledgement reaction is simply skipped).
 - `expected_head_sha`: the candidate `headSha`.
 - `platform`: the candidate `platform`.
 - `pipeline_ref`: the candidate `pipelineRef`.
