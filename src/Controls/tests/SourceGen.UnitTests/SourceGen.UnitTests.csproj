@@ -11,6 +11,8 @@
     <Nullable>enable</Nullable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    <!-- Required for MetadataUpdater.IsSupported to be true even in Release builds -->
+    <MetadataUpdaterSupport>true</MetadataUpdaterSupport>
   </PropertyGroup>
 
   <ItemGroup>
