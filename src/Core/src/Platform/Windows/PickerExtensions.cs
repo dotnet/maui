@@ -97,6 +97,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void DisconnectPlaceholderCharacterSpacing(this ComboBox nativeComboBox)
+		{
+			nativeComboBox.Loaded -= OnPlaceholderCharacterSpacingLoaded;
+		}
+
 		static void OnPlaceholderCharacterSpacingLoaded(object sender, RoutedEventArgs e)
 		{
 			if (sender is ComboBox nativeComboBox)
