@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls
 				return tabbedPage.CreatePlatformView(handler);
 			}
 
-			return null;
+			throw new InvalidOperationException("TabbedViewHandler.PlatformViewFactory requires a TabbedPage and TabbedViewHandler.");
 		}
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
@@ -805,17 +805,31 @@ namespace Microsoft.Maui.Controls
 		{
 			var source = new TaskCompletionSource<Tuple<UIImage, UIImage>>();
 
-			page.IconImageSource.LoadImage(Handler.MauiContext, result =>
+			var mauiContext = Handler?.MauiContext;
+			if (mauiContext is null || page.IconImageSource is null)
 			{
-				if (result?.Value is null)
+				source.SetResult(null);
+				return source.Task;
+			}
+
+			try
+			{
+				page.IconImageSource.LoadImage(mauiContext, result =>
 				{
-					source.SetResult(null);
-				}
-				else
-				{
-					source.SetResult(Tuple.Create(result.Value, (UIImage)null));
-				}
-			});
+					if (result?.Value is null)
+					{
+						source.TrySetResult(null);
+					}
+					else
+					{
+						source.TrySetResult(Tuple.Create(result.Value, (UIImage)null));
+					}
+				});
+			}
+			catch
+			{
+				source.TrySetResult(null);
+			}
 
 			return source.Task;
 		}
@@ -839,10 +853,24 @@ namespace Microsoft.Maui.Controls
 		{
 			for (var i = 0; i < viewControllers.Length; i++)
 			{
-				var originalIndex = -1;
-				if (int.TryParse(viewControllers[i].TabBarItem.Tag.ToString(), out originalIndex))
+				var tabBarItem = viewControllers[i]?.TabBarItem;
+
+				if (tabBarItem is null)
 				{
-					var page = (Page)InternalChildren[originalIndex];
+					continue;
+				}
+
+				var originalIndex = (int)tabBarItem.Tag;
+
+				if (originalIndex < 0 || originalIndex >= InternalChildren.Count)
+				{
+					continue;
+				}
+
+				var page = InternalChildren[originalIndex] as Page;
+
+				if (page is not null)
+				{
 					SetIndex(page, i);
 				}
 			}
