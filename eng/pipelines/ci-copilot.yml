@@ -3322,10 +3322,44 @@ stages:
               # Entirely best-effort: ANY failure logs a diagnostic and leaves the
               # review exactly as it was — it never blocks posting.
               try {
-                $maxSnapEmbed = 12
+                # RANK snapshot diffs by likely PR-relevance, then embed as MANY as
+                # fit under a safe review-body budget instead of a hard "first 12".
+                # A single run can emit hundreds of diffs (e.g. broad cross-machine
+                # catalyst layout noise); a flat cap buries the handful that actually
+                # matter. Snapshots whose baseline/test file THIS PR changed rank
+                # first (rank 0), fuzzy filename matches next (rank 1), everything
+                # else last (rank 2 - environment mismatch); stable by category+name
+                # within a rank. Then fill the deep block up to $deepBudget chars -
+                # well under GitHub's ~262KB body cap (we've seen ~105KB post fine) -
+                # so the highest-signal deltas are always visible AND the review
+                # still posts. The untruncated set stays available via the artifact
+                # link rendered above.
                 $ghTok = $env:GH_TOKEN
                 if ($snapDiffTriples.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace($ghTok)) {
-                  $toEmbed = @($snapDiffTriples | Select-Object -First $maxSnapEmbed)
+                  $prStems = @()
+                  try {
+                    $prStems = @(gh api "repos/dotnet/maui/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null |
+                      ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) } |
+                      Where-Object { $_ -and $_.Length -ge 4 } | Select-Object -Unique)
+                  } catch { $prStems = @() }
+                  foreach ($t in $snapDiffTriples) {
+                    $nm = [string]$t.Name; $rk = 2
+                    if ($prStems -contains $nm) { $rk = 0 }
+                    else { foreach ($s in $prStems) { if ($nm.IndexOf($s, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 -or $s.IndexOf($nm, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) { $rk = 1; break } } }
+                    $t | Add-Member -NotePropertyName _Rank -NotePropertyValue $rk -Force
+                  }
+                  $ranked = @($snapDiffTriples | Sort-Object _Rank, Category, Name)
+                  # Budget-driven count: ~6.3K chars per image table, measured off
+                  # the live deep block ($sb already holds the per-category table + AI
+                  # analysis), never more than 40 (bounds asset-branch blob API calls
+                  # to ~120). The render loop below re-checks the real budget so the
+                  # body can never overshoot even if the estimate is off.
+                  $deepBudget  = 160000
+                  $estPerTable = 6300
+                  $fitCount = [int][Math]::Floor(($deepBudget - $sb.Length) / $estPerTable)
+                  if ($fitCount -lt 1) { $fitCount = 1 }
+                  $maxSnapEmbed = [Math]::Min($fitCount, 40)
+                  $toEmbed = @($ranked | Select-Object -First $maxSnapEmbed)
                   $stageDir = Join-Path "$(Agent.TempDirectory)" ("snapembed-" + [Guid]::NewGuid().ToString('N').Substring(0, 8))
                   New-Item -ItemType Directory -Force -Path $stageDir | Out-Null
                   $idx = 0
@@ -3450,29 +3484,39 @@ stages:
                     $rawBase = "https://raw.githubusercontent.com/$assetRepo/$commitSha/$assetPrefix"
                     } finally { $env:GH_TOKEN = $reviewTok }
                     # 3) render the collapsible baseline|actual|diff image section
-                    $moreNote = if ($snapDiffTriples.Count -gt $renderRecs.Count) { " (first $($renderRecs.Count) of $($snapDiffTriples.Count))" } else { " ($($renderRecs.Count))" }
-                    [void]$sb.AppendLine()
-                    [void]$sb.AppendLine("<details><summary>📸 <strong>Snapshot differences — baseline vs actual vs diff</strong>$moreNote</summary>")
-                    [void]$sb.AppendLine("<br/>")
-                    [void]$sb.AppendLine()
-                    [void]$sb.AppendLine("> For each failing ``VerifyScreenshot`` snapshot: the committed **baseline**, the **actual** render on this CI agent, and the computed **diff**. A large, uniform diff across many snapshots is usually a cross-machine baseline/environment mismatch (e.g. the macOS TitleBar / window chrome), not a code regression — compare against baseline history before concluding.")
-                    [void]$sb.AppendLine()
-                    foreach ($rec in $renderRecs) {
+                    # Build each table's markup up front, then append only as many
+                    # (in ranked order) as fit under $deepBudget so the count in the
+                    # summary is exact and the body can never overshoot GitHub's cap.
+                    $tableBlocks = foreach ($rec in $renderRecs) {
                       $envSuffix = if ($rec.Env -and $rec.Env -ne 'snapshots-diff') { " — ``$($rec.Env)``" } else { '' }
-                      [void]$sb.AppendLine("<details><summary><code>$($rec.Name)</code>$envSuffix · <code>$($rec.Category)</code></summary>")
-                      [void]$sb.AppendLine("<br/>")
-                      [void]$sb.AppendLine()
                       $heads = @(); $cells = @()
                       if ($rec.Baseline) { $heads += '<th>Baseline (committed)</th>'; $cells += "<td><img width=`"260`" alt=`"$($rec.Name) baseline`" src=`"$rawBase/$($rec.Baseline)`"></td>" }
                       if ($rec.Actual)   { $heads += '<th>Actual (CI)</th>';          $cells += "<td><img width=`"260`" alt=`"$($rec.Name) actual`" src=`"$rawBase/$($rec.Actual)`"></td>" }
                       if ($rec.Diff)     { $heads += '<th>Diff</th>';                 $cells += "<td><img width=`"260`" alt=`"$($rec.Name) diff`" src=`"$rawBase/$($rec.Diff)`"></td>" }
-                      [void]$sb.AppendLine("<table><tr>$([string]::Join('', $heads))</tr><tr>$([string]::Join('', $cells))</tr></table>")
-                      [void]$sb.AppendLine("</details>")
-                      [void]$sb.AppendLine()
+                      "<details><summary><code>$($rec.Name)</code>$envSuffix · <code>$($rec.Category)</code></summary>`n<br/>`n`n<table><tr>$([string]::Join('', $heads))</tr><tr>$([string]::Join('', $cells))</tr></table>`n</details>`n"
+                    }
+                    $tableBlocks = @($tableBlocks)
+                    # Reserve headroom for the section header, blurb and closing tag.
+                    $running = $sb.Length + 2000
+                    $fitBlocks = New-Object System.Collections.Generic.List[string]
+                    foreach ($blk in $tableBlocks) {
+                      if ($fitBlocks.Count -ge 1 -and ($running + $blk.Length) -gt $deepBudget) { break }
+                      $fitBlocks.Add($blk); $running += $blk.Length
+                    }
+                    $shown = $fitBlocks.Count
+                    $moreNote = if ($snapDiffTriples.Count -gt $shown) { " (top $shown of $($snapDiffTriples.Count) · ranked by PR-relevance · full set in the artifact above)" } else { " (all $shown)" }
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("<details><summary>📸 <strong>Snapshot differences — baseline vs actual vs diff</strong>$moreNote</summary>")
+                    [void]$sb.AppendLine("<br/>")
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("> For each failing ``VerifyScreenshot`` snapshot: the committed **baseline**, the **actual** render on this CI agent, and the computed **diff**. Ordered by likely PR-relevance — snapshots whose baseline/test file this PR changed are shown first. A large, uniform diff across many snapshots is usually a cross-machine baseline/environment mismatch (e.g. the macOS TitleBar / window chrome), not a code regression — compare against baseline history before concluding.")
+                    [void]$sb.AppendLine()
+                    foreach ($blk in $fitBlocks) {
+                      [void]$sb.AppendLine($blk)
                     }
                     [void]$sb.AppendLine("</details>")
                     [void]$sb.AppendLine()
-                    Write-Host "Embedded $($renderRecs.Count) snapshot-diff image set(s) via asset branch $assetBranch (commit $commitSha)"
+                    Write-Host "Embedded $shown of $($snapDiffTriples.Count) snapshot-diff image set(s) via asset branch $assetBranch (commit $commitSha)"
                   }
                 }
               } catch {
