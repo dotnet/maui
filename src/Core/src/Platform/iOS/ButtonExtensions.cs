@@ -1,4 +1,5 @@
 using System;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -41,7 +42,17 @@ namespace Microsoft.Maui.Platform
 					platformButton.SetTitleColor(null, UIControlState.Highlighted);
 					platformButton.SetTitleColor(null, UIControlState.Disabled);
 					platformButton.TintColor = window.TintColor;
+
+					// Clear ForegroundColor from the attributed title set by UpdateCharacterSpacing.
+					var attributedTitle = platformButton.GetAttributedTitle(UIControlState.Normal);
+					if (attributedTitle != null && attributedTitle.Length > 0)
+					{
+						var mutable = new NSMutableAttributedString(attributedTitle);
+						mutable.RemoveAttribute(UIStringAttributeKey.ForegroundColor, new NSRange(0, mutable.Length));
+						platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
+					}
 				}
+
 				return;
 			}
 
