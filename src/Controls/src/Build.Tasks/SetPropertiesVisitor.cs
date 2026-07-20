@@ -532,12 +532,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			TypeReference tSourceRef = null;
+			// True when tSourceRef is inferred from a RelativeSource AncestorType rather than an
+			// explicit x:DataType declared on the binding node itself. AncestorType only identifies
+			// the *nearest ancestor of that type (or a subtype)* that will be resolved at runtime -
+			// it does not guarantee the actual runtime instance is exactly that type. A derived type
+			// (e.g. a custom base page/view) commonly declares the bound property, so failing to find
+			// the property on the literal AncestorType is not necessarily a real binding error.
+			bool tSourceRefIsAncestorTypeInferred = false;
 			if (HasRelativeOrReferenceSource(node) && xDataTypeIsInOuterScope)
 			{
 				if (!TryGetRelativeSourceAncestorTypeReference(node, context, module, out tSourceRef))
 				{
 					return false;
 				}
+
+				tSourceRefIsAncestorTypeInferred = true;
 			}
 
 			if (tSourceRef is null)
@@ -586,7 +595,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (tSourceRef == null)
 				return false; //throw
 
-			if (!TryParsePath(context, path, tSourceRef, node as IXmlLineInfo, module, out var properties))
+			if (!TryParsePath(context, path, tSourceRef, node as IXmlLineInfo, module, out var properties, suppressPropertyNotFoundError: tSourceRefIsAncestorTypeInferred))
 			{
 				return false;
 			}
@@ -798,7 +807,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		static bool TryParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module, out IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> pathProperties)
+		static bool TryParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module, out IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> pathProperties, bool suppressPropertyNotFoundError = false)
 		{
 			pathProperties = null;
 
@@ -838,7 +847,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic && !pd.GetMethod.IsStatic, out var propDeclTypeRef);
 					if (property is null)
 					{
-						context.LoggingHelper.LogWarningOrError(BindingPropertyNotFound, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, p, previousPartTypeRef);
+						// When the source type was inferred from RelativeSource AncestorType (rather
+						// than an explicit x:DataType), a missing property doesn't necessarily mean the
+						// binding is invalid - the actual runtime ancestor may be a subtype that declares
+						// the property. Silently fall back to a regular (reflection-based) Binding instead
+						// of failing the build, matching the pre-existing behavior for RelativeSource
+						// bindings without an explicit x:DataType and the SourceGen inflator's equivalent
+						// fallback in KnownMarkups.ProvideValueForBindingExtension.
+						if (!suppressPropertyNotFoundError)
+						{
+							context.LoggingHelper.LogWarningOrError(BindingPropertyNotFound, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, p, previousPartTypeRef);
+						}
 						return false;
 					}
 
