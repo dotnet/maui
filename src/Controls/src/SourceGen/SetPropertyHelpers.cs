@@ -427,7 +427,10 @@ static class SetPropertyHelpers
 			writer = icWriter;
 			parentVar = inflatorVar;
 		}
-		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
+		// Remap diagnostics on the generated `+= handler;` line (e.g. CS8622 for a nullability
+		// mismatch on the delegate signature) to the user's handler method declaration, so the
+		// error is navigable and actionable instead of pointing into the generated .xsg.cs file.
+		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfoForSymbol(writer, handlerSymbol) : PrePost.NoBlock())
 		{
 			writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += {handler};");
 		}
