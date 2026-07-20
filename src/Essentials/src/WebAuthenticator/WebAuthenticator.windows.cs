@@ -142,8 +142,8 @@ namespace Microsoft.Maui.Authentication
 
 		void ClearCurrentAuthentication()
 		{
-			// Keep the route for the process lifetime. Windows App SDK cannot re-register an
-			// AppInstance after UnregisterKey (microsoft/WindowsAppSDK#4420).
+			// Do not call UnregisterKey here. Windows App SDK cannot safely register another
+			// key after UnregisterKey (microsoft/WindowsAppSDK#4420).
 			tcsResponse = null;
 			currentRedirectUri = null;
 			currentOptions = null;

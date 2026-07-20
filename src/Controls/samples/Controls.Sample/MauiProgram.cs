@@ -296,7 +296,8 @@ namespace Maui.Controls.Sample
 						LogEvent(nameof(WindowsLifecycle.OnAppInstanceActivated), args.Kind.ToString());
 
 						// This sample opts into single-instancing from the MAUI lifecycle callback
-						// instead of a custom Program.cs entry point.
+						// instead of a custom Program.cs entry point. An app-owned key must redirect
+						// every activation the main instance handles, including protocol callbacks.
 						var keyInstance = AppInstance.FindOrRegisterForKey("Maui.Controls.Sample");
 
 						if (!keyInstance.IsCurrent)

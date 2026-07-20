@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Authentication
 		/// </summary>
 		/// <param name="args">The activation arguments delivered by the OS.</param>
 		/// <returns><see langword="true"/> when the activation was handled, otherwise <see langword="false"/>.</returns>
-		bool OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments args);
+		bool OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments args) => false;
 #endif
 	}
 

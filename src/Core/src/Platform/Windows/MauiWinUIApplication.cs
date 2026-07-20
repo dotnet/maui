@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
@@ -94,13 +95,35 @@ namespace Microsoft.Maui
 			{
 				// WinAppSDK delivers redirected activations on a worker thread, while MAUI
 				// lifecycle handlers are UI-facing.
-				if (dispatcher.IsDispatchRequired)
+				if (!dispatcher.IsDispatchRequired)
 				{
-					dispatcher.Dispatch(() => OnAppInstanceActivated(args));
+					OnAppInstanceActivated(args);
 					return;
 				}
 
-				OnAppInstanceActivated(args);
+				DispatchAppInstanceActivationAndWait(args);
+			}
+
+			void DispatchAppInstanceActivationAndWait(AppActivationArguments args)
+			{
+				// Redirected activation data can depend on resources owned by the redirecting process.
+				// Keep this event callback alive until the UI lifecycle handlers finish consuming it.
+				using var activationCompleted = new ManualResetEventSlim();
+
+				var dispatched = dispatcher.Dispatch(() =>
+				{
+					try
+					{
+						OnAppInstanceActivated(args);
+					}
+					finally
+					{
+						activationCompleted.Set();
+					}
+				});
+
+				if (dispatched)
+					activationCompleted.Wait();
 			}
 		}
 
