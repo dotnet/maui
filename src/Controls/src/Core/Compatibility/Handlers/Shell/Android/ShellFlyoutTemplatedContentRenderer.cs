@@ -530,6 +530,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_flyoutHeight = View.MeasuredHeight;
 				_flyoutWidth = View.MeasuredWidth;
 
+				// Re-request insets so OnApplyWindowInsets re-evaluates whether
+				// the bottom padding is still needed at the new flyout size.
+				// Without this, the padding set during the first inset dispatch
+				// (which may have been at full-screen height) would persist even
+				// after FlyoutHeight is changed to a smaller value.
+				ViewCompat.RequestApplyInsets(_rootView);
 
 				// We wait to instantiate the flyout footer until we know the WxH of the flyout container
 				if (_footerView == null)
