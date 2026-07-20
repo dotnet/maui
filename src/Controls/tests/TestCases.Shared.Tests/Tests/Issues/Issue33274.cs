@@ -20,12 +20,16 @@ public class Issue33274 : _IssuesUITest
 
 		// We are already at maximum and the increment schould not increase the internal value
 		App.IncreaseStepper("Maximumstepper");
+		Assert.That(App.WaitForTextToBePresentInElement("Maximumlabel", "1"), Is.True);
 		App.DecreaseStepper("Maximumstepper");
+		Assert.That(App.WaitForTextToBePresentInElement("Maximumlabel", "0"), Is.True);
 		Assert.That(App.FindElement("Maximumlabel").GetText(), Is.EqualTo("0"));
 
 		// We are already at minimum and the decrement schould not decrease the internal value
 		App.DecreaseStepper("Minimumstepper");
+		Assert.That(App.WaitForTextToBePresentInElement("Minimumlabel", "0"), Is.True);
 		App.IncreaseStepper("Minimumstepper");
+		Assert.That(App.WaitForTextToBePresentInElement("Minimumlabel", "1"), Is.True);
 		Assert.That(App.FindElement("Minimumlabel").GetText(), Is.EqualTo("1"));
 	}
 }

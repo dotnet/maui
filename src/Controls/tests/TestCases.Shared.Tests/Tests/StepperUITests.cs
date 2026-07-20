@@ -60,6 +60,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// 2. Increase the value.
 			App.IncreaseStepper(stepperAutomationId);
+			ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement(valueAutomationId, "1"));
 
 			// 3. Verify that the value has increased.
 			var step3Value = App.FindElement(valueAutomationId).GetText();
@@ -67,6 +68,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// 4. Decrease the value.
 			App.DecreaseStepper(stepperAutomationId);
+			ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement(valueAutomationId, "0"));
 
 			// 5. Verify that the value has decreased.
 			var step5Value = App.FindElement(valueAutomationId).GetText();

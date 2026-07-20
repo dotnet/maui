@@ -18,11 +18,13 @@ public class Issue33769 : _IssuesUITest
 	{
 		App.WaitForElementTillPageNavigationSettled("Issue33769_StepperStatusLabel");
 		App.IncreaseStepper("Issue33769_Stepper");
-		var result = App.WaitForElement("Issue33769_StepperStatusLabel").GetText();
+		Assert.That(App.WaitForTextToBePresentInElement("Issue33769_StepperStatusLabel", "Success"), Is.True);
+		var result = App.FindElement("Issue33769_StepperStatusLabel").GetText();
 		Assert.That(result, Is.EqualTo("Success"));
 
 		App.DecreaseStepper("Issue33769_Stepper");
-		result = App.WaitForElement("Issue33769_StepperStatusLabel").GetText();
+		Assert.That(App.WaitForTextToBePresentInElement("Issue33769_StepperStatusLabel", "Success"), Is.True);
+		result = App.FindElement("Issue33769_StepperStatusLabel").GetText();
 		Assert.That(result, Is.EqualTo("Success"));
 	}
 }

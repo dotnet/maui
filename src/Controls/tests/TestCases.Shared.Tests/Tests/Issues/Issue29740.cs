@@ -22,9 +22,11 @@ public class Issue29740 : _IssuesUITest
 		}
 		var initialvalue = App.WaitForElementTillPageNavigationSettled("29740StepperValueLabel").GetText();
 		Assert.That(initialvalue, Is.EqualTo("Stepper Value: 0"));
+		int[] expectedValues = { 3, 6, 9, 10 };
 		for (int i = 0; i < 4; i++)
 		{
 			App.IncreaseStepper("29740Stepper");
+			Assert.That(App.WaitForTextToBePresentInElement("29740StepperValueLabel", $"Stepper Value: {expectedValues[i]}"), Is.True);
 		}
 		var finalvalue = App.WaitForElement("29740StepperValueLabel").GetText();
 		Assert.That(finalvalue, Is.EqualTo("Stepper Value: 10"));

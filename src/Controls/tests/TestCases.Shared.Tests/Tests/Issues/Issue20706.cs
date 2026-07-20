@@ -23,6 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Increase the value.
 			App.IncreaseStepper("myStepper");
+			Assert.That(App.WaitForTextToBePresentInElement("entry", "2"), Is.True);
 
 			// Verify that the value has been increased.
 			var step1Value = App.FindElement("entry").GetText();
@@ -33,11 +34,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Increase the value.
 			App.IncreaseStepper("myStepper");
+			Assert.That(App.WaitForTextToBePresentInElement("entry", "12"), Is.True);
 			var step2Value = App.FindElement("entry").GetText();
 			Assert.That("12", Is.EqualTo(step2Value));
 
 			// Decrease the value.
 			App.DecreaseStepper("myStepper");
+			Assert.That(App.WaitForTextToBePresentInElement("entry", "2"), Is.True);
 
 			// Verify that the value has decreased.
 			var step3Value = App.FindElement("entry").GetText();
