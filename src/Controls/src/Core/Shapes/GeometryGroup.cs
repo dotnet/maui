@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -53,27 +54,61 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public event EventHandler InvalidateGeometryRequested;
 
+		// Subscribe via weak proxies so a shared / long-lived GeometryCollection (and its child
+		// geometries) does not keep this GeometryGroup rooted in memory. See issue #36365.
+		WeakNotifyCollectionChangedProxy _childrenProxy;
+		NotifyCollectionChangedEventHandler _childrenCollectionChangedHandler;
+		PropertyChangedEventHandler _childPropertyChangedHandler;
+		readonly List<WeakNotifyPropertyChangedProxy> _childProxies = new();
+
+		~GeometryGroup()
+		{
+			_childrenProxy?.Unsubscribe();
+
+			foreach (var proxy in _childProxies)
+			{
+				proxy.Unsubscribe();
+			}
+		}
+
 		void UpdateChildren(GeometryCollection oldCollection, GeometryCollection newCollection)
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnChildrenCollectionChanged;
-
-				foreach (var oldChildren in oldCollection)
-				{
-					oldChildren.PropertyChanged -= OnChildrenPropertyChanged;
-				}
+				_childrenProxy?.Unsubscribe();
+				ClearChildPropertyChangedSubscriptions();
 			}
 
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnChildrenCollectionChanged;
+			_childrenCollectionChangedHandler ??= OnChildrenCollectionChanged;
+			_childrenProxy ??= new WeakNotifyCollectionChangedProxy();
+			_childrenProxy.Subscribe(newCollection, _childrenCollectionChangedHandler);
 
 			foreach (var newChildren in newCollection)
 			{
-				newChildren.PropertyChanged += OnChildrenPropertyChanged;
+				SubscribeChildPropertyChanged(newChildren);
 			}
+		}
+
+		void SubscribeChildPropertyChanged(Geometry child)
+		{
+			if (child == null)
+				return;
+
+			_childPropertyChangedHandler ??= OnChildrenPropertyChanged;
+			_childProxies.Add(new WeakNotifyPropertyChangedProxy(child, _childPropertyChangedHandler));
+		}
+
+		void ClearChildPropertyChangedSubscriptions()
+		{
+			foreach (var proxy in _childProxies)
+			{
+				proxy.Unsubscribe();
+			}
+
+			_childProxies.Clear();
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -85,7 +120,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (!(oldItem is Geometry oldGeometry))
 						continue;
 
-					oldGeometry.PropertyChanged -= OnChildrenPropertyChanged;
+					UnsubscribeChildPropertyChanged(oldGeometry);
 				}
 			}
 
@@ -96,11 +131,29 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (!(newItem is Geometry newGeometry))
 						continue;
 
-					newGeometry.PropertyChanged += OnChildrenPropertyChanged;
+					SubscribeChildPropertyChanged(newGeometry);
 				}
 			}
 
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				ClearChildPropertyChangedSubscriptions();
+			}
+
 			Invalidate();
+		}
+
+		void UnsubscribeChildPropertyChanged(Geometry child)
+		{
+			for (int i = _childProxies.Count - 1; i >= 0; i--)
+			{
+				if (_childProxies[i].TryGetSource(out var source) && ReferenceEquals(source, child))
+				{
+					_childProxies[i].Unsubscribe();
+					_childProxies.RemoveAt(i);
+					return;
+				}
+			}
 		}
 
 		void OnChildrenPropertyChanged(object sender, PropertyChangedEventArgs e)
