@@ -3304,14 +3304,17 @@ stages:
                   if ($pngCount -gt 0 -and $renderRecs.Count -gt 0) {
                     # Git-object writes (blobs/trees/commits/refs) need Contents:write,
                     # which the review comment token (GH_COMMENT_TOKEN) lacks. Use the
-                    # write-capable COPILOT token for JUST these calls, then restore the
-                    # comment token so the review itself is still posted as maui-bot. The
-                    # token only ever lives in $env:GH_TOKEN (gh reads it from there) — it
-                    # never appears in a URL or command line. The finally guarantees the
-                    # comment token is restored even if a git call throws (so a failed
+                    # write-capable ASSET_WRITE_TOKEN for JUST these calls, then restore
+                    # the comment token so the review itself is still posted as maui-bot.
+                    # The token only ever lives in $env:GH_TOKEN (gh reads it from there)
+                    # — it never appears in a URL or command line. The finally guarantees
+                    # the comment token is restored even if a git call throws (so a failed
                     # embed can never post the review under the wrong identity).
+                    # The -notmatch '^\$\(' guard ignores an unexpanded AzDO macro (i.e.
+                    # the SnapshotAssetToken secret not provisioned yet) so we skip cleanly
+                    # instead of authenticating with the literal string '$(SnapshotAssetToken)'.
                     $reviewTok = $env:GH_TOKEN
-                    if (-not [string]::IsNullOrWhiteSpace($env:ASSET_WRITE_TOKEN)) { $env:GH_TOKEN = $env:ASSET_WRITE_TOKEN }
+                    if (-not [string]::IsNullOrWhiteSpace($env:ASSET_WRITE_TOKEN) -and $env:ASSET_WRITE_TOKEN -notmatch '^\$\(') { $env:GH_TOKEN = $env:ASSET_WRITE_TOKEN }
                     try {
                     # 1) resolve the shared asset repo + branch. Public repo =>
                     #    raw.githubusercontent.com serves the PNGs anonymously so
@@ -3772,7 +3775,13 @@ stages:
             displayName: 'Post AI summary review'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
-              ASSET_WRITE_TOKEN: $(COPILOT_TOKEN)
+              # Contents:write PAT for hosting snapshot-diff PNGs on the shared
+              # review-tests-assets branch. GH_COMMENT_TOKEN (Contents:read) 404s and
+              # COPILOT_TOKEN (fine-grained PAT) 403s on git-object writes. Provision
+              # SnapshotAssetToken in the MAUI variable group with the SAME PAT the
+              # copilot-review-tests GHA workflow already uses to write that branch.
+              # Until it exists this macro is unexpanded and the embed skips cleanly.
+              ASSET_WRITE_TOKEN: $(SnapshotAssetToken)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
 
