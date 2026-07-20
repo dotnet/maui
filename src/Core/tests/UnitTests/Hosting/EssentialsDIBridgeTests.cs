@@ -24,8 +24,8 @@ namespace Microsoft.Maui.UnitTests.Hosting
 	{
 		public void Dispose()
 		{
-			// Reset all Essentials static backing fields after each test via reflection.
-			// SetDefault/SetCurrent are internal, so we clear the backing fields directly.
+			// Clear backing fields directly to avoid initializing platform defaults during cleanup
+			// and to cover platform-specific types without a common setter contract.
 			ResetStaticField(typeof(Accelerometer), "defaultImplementation");
 			ResetStaticField(typeof(Barometer), "defaultImplementation");
 			ResetStaticField(typeof(Battery), "defaultImplementation");

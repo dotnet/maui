@@ -74,7 +74,7 @@ public class EssentialsDIBridgeTests
 	}
 
 	[Fact]
-	public void ConfiguredMapServiceTokenSkipsDIImplementationWithoutPlatformContract()
+	public void ConfiguredMapServiceTokenIsNotAppliedWithoutPlatformContract()
 	{
 		var original = Geocoding.Default;
 		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
