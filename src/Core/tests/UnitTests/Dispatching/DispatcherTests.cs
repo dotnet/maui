@@ -192,12 +192,13 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 				Assert.True(ticks > 1);
 			});
 
+#nullable enable
 		sealed class NonDisposableDispatcherProviderStub : IDispatcherProvider
 		{
-			readonly Dictionary<int, IDispatcher> _dispatchers = new();
+			readonly Dictionary<int, IDispatcher?> _dispatchers = new();
 			readonly object _sync = new();
 
-			public IDispatcher GetForCurrentThread()
+			public IDispatcher? GetForCurrentThread()
 			{
 				var threadId = Environment.CurrentManagedThreadId;
 
@@ -217,5 +218,6 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 				}
 			}
 		}
+#nullable restore
 	}
 }
