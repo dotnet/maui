@@ -12,5 +12,10 @@
                 HorizontalOptions="Center"
                 AutomationId="ContentPageSafeAreaButton"
                 WidthRequest="400"/>
+        <Button Text="Grid SafeArea"
+                Clicked="OnGridSafeAreaButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="GridSafeAreaButton"
+                WidthRequest="400"/>
     </VerticalStackLayout>
 </ContentPage>
