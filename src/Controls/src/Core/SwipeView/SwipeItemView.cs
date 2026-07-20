@@ -52,6 +52,11 @@ namespace Microsoft.Maui.Controls
 			Invoked?.Invoke(this, EventArgs.Empty);
 		}
 
+		// Subscribe through a weak command subscription so a long-lived ICommand (e.g. one owned by
+		// a singleton/static view-model) does not root this SwipeItemView - and its visual subtree -
+		// via the command's CanExecuteChanged invocation list. See issue #36537.
+		WeakCommandSubscription _commandSubscription;
+
 		void OnCommandChanged()
 		{
 			IsEnabled = Command?.CanExecute(CommandParameter) ?? true;
@@ -59,7 +64,7 @@ namespace Microsoft.Maui.Controls
 			if (Command == null)
 				return;
 
-			Command.CanExecuteChanged += OnCommandCanExecuteChanged;
+			_commandSubscription = new WeakCommandSubscription(this, Command, OnCommandCanExecuteChanged);
 		}
 
 		void OnCommandChanging()
@@ -67,7 +72,8 @@ namespace Microsoft.Maui.Controls
 			if (Command == null)
 				return;
 
-			Command.CanExecuteChanged -= OnCommandCanExecuteChanged;
+			_commandSubscription?.Dispose();
+			_commandSubscription = null;
 		}
 
 		void OnCommandParameterChanged()
