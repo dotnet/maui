@@ -93,12 +93,10 @@ namespace Microsoft.Maui.Platform
 					if (platformView is MauiView clearedMauiView)
 					{
 						clearedMauiView.SynthesizeAccessibilityLabelFromChildren = false;
-						clearedMauiView.AccessibilityContainerLabel = null;
-						clearedMauiView.AccessibilityContainerHint = null;
-						clearedMauiView.ClearAccessibilityContainerElement();
 					}
 				}
 
+				ClearContainerAccessibility(platformView);
 				return;
 			}
 
@@ -189,6 +187,11 @@ namespace Microsoft.Maui.Platform
 				&& contentView.PresentedContent is not null
 				&& platformView.GestureRecognizers is not { Length: > 0 })
 			{
+				// Keep the container's own AccessibilityLabel/Hint set too (even though it never
+				// becomes the accessibility element itself, IsAccessibilityElement stays false).
+				// Testing showed VoiceOver's traversal order goes wrong (jumps to the last child
+				// instead of the first) if these are left nil while a custom accessibilityElements
+				// array is also returned — so don't treat this assignment as dead code.
 				platformView.AccessibilityLabel = semantics.Description;
 				platformView.AccessibilityHint = semantics.Hint;
 				platformView.IsAccessibilityElement = false;
@@ -205,14 +208,24 @@ namespace Microsoft.Maui.Platform
 
 			// Falling through: this container has no content, or owns its own gesture (Guard 2).
 			// Clear any stale phantom label so it doesn't linger once this view becomes a leaf.
-			if (platformView is MauiView leafMauiView)
-			{
-				leafMauiView.AccessibilityContainerLabel = null;
-				leafMauiView.AccessibilityContainerHint = null;
-				leafMauiView.ClearAccessibilityContainerElement();
-			}
+			ClearContainerAccessibility(platformView);
 
 			UpdateSemantics(platformView, semantics);
+		}
+
+		/// <summary>
+		/// Clears any phantom container accessibility state (label, hint, and cached phantom
+		/// element) set by the IContentView container branch above. Shared by both the
+		/// null-semantics reset path and the fallthrough-to-leaf path so the two don't drift.
+		/// </summary>
+		static void ClearContainerAccessibility(UIView platformView)
+		{
+			if (platformView is MauiView mauiView)
+			{
+				mauiView.AccessibilityContainerLabel = null;
+				mauiView.AccessibilityContainerHint = null;
+				mauiView.ClearAccessibilityContainerElement();
+			}
 		}
 
 		internal static void UpdateSemantics(this UIView platformView, Semantics? semantics)
