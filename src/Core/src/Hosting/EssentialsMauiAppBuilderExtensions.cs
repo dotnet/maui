@@ -38,19 +38,7 @@ namespace Microsoft.Maui.Hosting
 	{
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
-			// Register MainThreadBridgeInitializer FIRST so MainThread.SetCustomImplementation
-			// runs before EssentialsInitializer resolves DI-registered services. Order matters:
-			// IMauiInitializeService instances are executed in DI registration order
-			// (MauiContextExtensions.InitializeAppServices iterates GetServices<IMauiInitializeService>()),
-			// and on netstandard / external TFMs MainThread throws NotImplementedInReferenceAssemblyException
-			// until the bridge is installed. If EssentialsInitializer ran first, any DI-registered
-			// Essentials implementation whose constructor touched MainThread would fail during
-			// the very bridge call meant to enable it.
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
-#endif
-
-			AddEssentialsInitializer(builder.Services);
+			AddEssentialsInitializer(builder);
 
 			builder.ConfigureLifecycleEvents(life =>
 			{
@@ -117,15 +105,23 @@ namespace Microsoft.Maui.Hosting
 				builder.Services.AddSingleton<EssentialsRegistration>(new EssentialsRegistration(configureDelegate));
 			}
 
-			AddEssentialsInitializer(builder.Services);
+			AddEssentialsInitializer(builder);
 
 			return builder;
 		}
 
-		static void AddEssentialsInitializer(IServiceCollection services)
+		static void AddEssentialsInitializer(MauiAppBuilder builder)
 		{
-			services.TryAddSingleton<EssentialsCleanup>();
-			services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+			builder.ConfigureDispatching();
+
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
+			// Register MainThreadBridgeInitializer first so it runs before EssentialsInitializer
+			// resolves DI services whose constructors may use MainThread. This shared path also
+			// covers ConfigureEssentials with MauiApp.CreateBuilder(useDefaults: false).
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
+#endif
+			builder.Services.TryAddSingleton<EssentialsCleanup>();
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 		}
 
 		public static IEssentialsBuilder AddAppAction(this IEssentialsBuilder essentials, string id, string title, string? subtitle = null, string? icon = null) =>

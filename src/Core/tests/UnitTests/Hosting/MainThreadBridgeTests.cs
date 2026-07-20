@@ -2,9 +2,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Storage;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Hosting
@@ -231,6 +233,25 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
+		[Fact]
+		public void ConfigureEssentialsWithoutDefaults_BridgesMainThreadBeforeResolvingServices()
+		{
+			var dispatcherStub = new DispatcherStub(
+				isInvokeRequired: () => false,
+				invokeOnMainThread: null);
+
+			DispatcherProvider.SetCurrent(new TestDispatcherProvider(dispatcherStub));
+
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IPreferences, MainThreadAwarePreferences>();
+			builder.ConfigureEssentials();
+
+			using var app = builder.Build();
+
+			var preferences = Assert.IsType<MainThreadAwarePreferences>(Preferences.Default);
+			Assert.True(preferences.WasCreatedOnMainThread);
+		}
+
 		class TestDispatcherProvider : IDispatcherProvider
 		{
 			readonly IDispatcher _dispatcher;
@@ -241,6 +262,32 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 
 			public IDispatcher? GetForCurrentThread() => _dispatcher;
+		}
+
+		sealed class MainThreadAwarePreferences : IPreferences
+		{
+			public MainThreadAwarePreferences()
+			{
+				WasCreatedOnMainThread = MainThread.IsMainThread;
+			}
+
+			public bool WasCreatedOnMainThread { get; }
+
+			public bool ContainsKey(string key, string? sharedName = null) => false;
+
+			public void Remove(string key, string? sharedName = null)
+			{
+			}
+
+			public void Clear(string? sharedName = null)
+			{
+			}
+
+			public void Set<T>(string key, T value, string? sharedName = null)
+			{
+			}
+
+			public T Get<T>(string key, T defaultValue, string? sharedName = null) => defaultValue;
 		}
 	}
 }
