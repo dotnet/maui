@@ -54,6 +54,21 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 	}
 
+	// Scrolls/drags the search page into view on platforms where the collapsible
+	// search box can be pushed off-screen; no-op on platforms that don't need it.
+	void ScrollSearchPageIntoView()
+	{
+#if MACCATALYST
+		App.ScrollUp("SearchContentPage", ScrollStrategy.Gesture, 0.9, 1000);
+#elif IOS
+		var rect = App.WaitForElement("SearchContentPage").GetRect();
+		float startX = rect.X + rect.Width * 0.05f;
+		float startY = rect.Y + rect.Height * 0.15f;
+		float endY = rect.Y + rect.Height * 0.6f;
+		App.DragCoordinates(startX, startY, startX, endY);
+#endif
+	}
+
 	[Test, Order(1)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_Placeholder()
@@ -279,15 +294,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.WaitForElement("SearchBoxVisibilityCollapsible");
 		App.Tap("SearchBoxVisibilityCollapsible");
 		ApplyAndReturn();
-#if MACCATALYST
-		App.ScrollUp("SearchContentPage", ScrollStrategy.Gesture, 0.9, 1000);
-#elif IOS
-		var rect = App.WaitForElement("SearchContentPage").GetRect();
-		float startX = rect.X + rect.Width * 0.05f;
-		float startY = rect.Y + rect.Height * 0.15f;
-		float endY = rect.Y + rect.Height * 0.6f;
-		App.DragCoordinates(startX, startY, startX, endY);
-#endif
+		ScrollSearchPageIntoView();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -458,7 +465,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("BackToSearchButton");
 		var searchHandler2 = App.GetShellSearchHandler();
 		searchHandler2.Tap();
-		searchHandler.Clear();
+		searchHandler2.Clear();
 		searchHandler2.SendKeys("Apple");
 		App.WaitForElement("Apple");
 		App.TapFirstSearchResult(this, searchHandler2, "SearchResultName");
@@ -569,7 +576,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/26968"
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/26968
 	[Test, Order(34)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_TextTransformLowercase()
