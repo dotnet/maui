@@ -27,8 +27,9 @@ BeforeAll {
             'Get-UsableCandidateCount',
             'Invoke-GhJson',
             'Get-MergedRegressionFixPRs',
-            'Get-IssueAuthorAssociation',
+            'Get-FixPrContext',
             'Get-IssueContext',
+            'Get-RegressionAttributionContext',
             'Get-OpenRegressionCorpusPrTags',
             'Get-ExistingRegressionPrTags',
             'Get-IntroducingPrDetails',
@@ -413,7 +414,8 @@ Describe 'Get-MergedRegressionFixPRs' {
         Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
             -not $AllowFailure -and
             ($GhArgs -join ' ') -match 'sort:created-asc' -and
-            ($GhArgs -join ' ') -match 'number,body,mergeCommit,mergedAt'
+            ($GhArgs -join ' ') -match 'number,mergeCommit,mergedAt' -and
+            ($GhArgs -join ' ') -notmatch '\bbody\b'
         }
     }
 }
@@ -476,17 +478,24 @@ Describe 'Get-IssueContext' {
     }
 }
 
-Describe 'Get-IssueAuthorAssociation' {
-    It 'reads the association from the issue REST resource' {
+Describe 'Get-FixPrContext' {
+    It 'reads the body and association atomically from the issue REST resource' {
         Mock Invoke-GhJson {
             param([string[]]$GhArgs)
-            $script:authorAssociationGhArgs = $GhArgs
-            return [PSCustomObject]@{ author_association = 'MEMBER' }
+            $script:fixPrContextGhArgs = $GhArgs
+            return [PSCustomObject]@{
+                number = 35803
+                body = "Fixes #35756`nRegression from #31931"
+                author_association = 'MEMBER'
+            }
         }
 
-        Get-IssueAuthorAssociation -Owner 'dotnet' -Repo 'maui' -Number 35803 |
-            Should -Be 'MEMBER'
-        $script:authorAssociationGhArgs | Should -Be @('api', 'repos/dotnet/maui/issues/35803')
+        $context = Get-FixPrContext -Owner 'dotnet' -Repo 'maui' -Number 35803
+
+        $context.Body | Should -Be "Fixes #35756`nRegression from #31931"
+        $context.AuthorAssociation | Should -Be 'MEMBER'
+        $context.IsTrustedAttribution | Should -BeTrue
+        $script:fixPrContextGhArgs | Should -Be @('api', 'repos/dotnet/maui/issues/35803')
         Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
             $AllowFailure -and $GhArgs[0] -eq 'api'
         }
@@ -494,12 +503,86 @@ Describe 'Get-IssueAuthorAssociation' {
     It 'treats an unavailable fix PR as untrusted' {
         Mock Invoke-GhJson { $null }
 
-        $association = Get-IssueAuthorAssociation -Owner 'dotnet' -Repo 'maui' -Number 35803
+        $context = Get-FixPrContext -Owner 'dotnet' -Repo 'maui' -Number 35803
 
-        ($null -eq $association) | Should -BeTrue
+        ($null -eq $context) | Should -BeTrue
         Should -Invoke -CommandName Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
             $AllowFailure -and $GhArgs[0] -eq 'api'
         }
+    }
+}
+
+Describe 'Get-RegressionAttributionContext' {
+    It 'uses the REST fix body when structural search results omit body' {
+        Mock Invoke-GhJson {
+            param([string[]]$GhArgs)
+            if ($GhArgs[0] -eq 'pr') {
+                return @([PSCustomObject]@{
+                        number = 35768
+                        mergeCommit = [PSCustomObject]@{ oid = 'fix-sha' }
+                        mergedAt = '2026-07-17T00:00:00Z'
+                    })
+            }
+            return [PSCustomObject]@{
+                number = 35768
+                body = "Fixes #35756`nRegression from #31931"
+                author_association = 'MEMBER'
+            }
+        }
+        Mock Get-IssueContext {
+            return [PSCustomObject]@{
+                Number = 35756
+                Labels = @('regressed-in-10.0.70')
+                Body = ''
+                CommentText = ''
+                IsTrustedAttribution = $false
+            }
+        }
+
+        $fixPr = @(Get-MergedRegressionFixPRs -Owner dotnet -Repo maui -LookbackDays 60 -Limit 1)[0]
+        $fixPr.PSObject.Properties.Name | Should -Not -Contain 'body'
+        $fixContext = Get-FixPrContext -Owner dotnet -Repo maui -Number $fixPr.number
+
+        $attribution = Get-RegressionAttributionContext `
+            -Owner dotnet `
+            -Repo maui `
+            -FixPr $fixPr.number `
+            -FixPrContext $fixContext
+
+        $attribution.LinkedIssueNumbers | Should -Be @(35756)
+        $attribution.IntroducingPr | Should -Be 31931
+        $attribution.AttributionSource | Should -Be 'pr-body'
+        $attribution.RegressionIssues.Count | Should -Be 1
+        Should -Invoke -CommandName Get-IssueContext -Times 1 -Exactly -ParameterFilter {
+            $Number -eq 35756
+        }
+    }
+
+    It 'uses an untrusted REST body for issue discovery but not attribution' {
+        $fixContext = [PSCustomObject]@{
+            Body = "Fixes #35756`nRegression from #31931"
+            AuthorAssociation = 'CONTRIBUTOR'
+            IsTrustedAttribution = $false
+        }
+        Mock Get-IssueContext {
+            return [PSCustomObject]@{
+                Number = 35756
+                Labels = @()
+                Body = ''
+                CommentText = ''
+                IsTrustedAttribution = $false
+            }
+        }
+
+        $attribution = Get-RegressionAttributionContext `
+            -Owner dotnet `
+            -Repo maui `
+            -FixPr 35768 `
+            -FixPrContext $fixContext
+
+        $attribution.LinkedIssueNumbers | Should -Be @(35756)
+        $attribution.IntroducingPr | Should -BeNullOrEmpty
+        $attribution.AttributionSource | Should -BeNullOrEmpty
     }
 }
 

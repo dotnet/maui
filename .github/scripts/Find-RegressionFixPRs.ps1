@@ -279,19 +279,26 @@ function Get-MergedRegressionFixPRs {
     $prs = Invoke-GhJson -GhArgs @(
         'pr', 'list', '--repo', "$Owner/$Repo",
         '--state', 'merged', '--search', $search, '--limit', "$Limit",
-        '--json', 'number,body,mergeCommit,mergedAt'
+        '--json', 'number,mergeCommit,mergedAt'
     )
     return @($prs | Where-Object { $null -ne $_ } | Sort-Object mergedAt, number)
 }
 
-function Get-IssueAuthorAssociation {
-    # REST exposes author_association for both issues and PRs (which are issues).
+function Get-FixPrContext {
+    # REST exposes a PR through the issue resource. Fetch the editable body and its
+    # trust signal together so attribution never combines differently filtered data.
     param([string]$Owner, [string]$Repo, [int]$Number)
     $issue = Invoke-GhJson -GhArgs @(
         'api', "repos/$Owner/$Repo/issues/$Number"
     ) -AllowFailure
     if (-not $issue) { return $null }
-    return [string]$issue.author_association
+    $association = [string]$issue.author_association
+    return [PSCustomObject]@{
+        Number               = $issue.number
+        Body                 = [string]$issue.body
+        AuthorAssociation    = $association
+        IsTrustedAttribution = Test-IsTrustedAssociation $association
+    }
 }
 
 function Get-IssueContext {
@@ -320,6 +327,70 @@ function Get-IssueContext {
         Body        = [string]$issue.body
         CommentText = $commentText
         IsTrustedAttribution = Test-IsTrustedAssociation ([string]$issue.author_association)
+    }
+}
+
+function Get-RegressionAttributionContext {
+    # Deterministic orchestration for linked-issue expansion and trusted-text
+    # attribution. Text stays internal; only structural fields reach candidates.
+    param(
+        [string]$Owner,
+        [string]$Repo,
+        [int]$FixPr,
+        $FixPrContext
+    )
+
+    $fixPrBody = if ($FixPrContext) { [string]$FixPrContext.Body } else { '' }
+    $linkedIssues = @(Get-LinkedIssueNumbers -PRBody $fixPrBody -Owner $Owner -Repo $Repo)
+    $commentSources = New-Object System.Collections.Generic.List[object]
+    $bodySources = New-Object System.Collections.Generic.List[object]
+    if ($FixPrContext -and $FixPrContext.IsTrustedAttribution -and $fixPrBody) {
+        $bodySources.Add([PSCustomObject]@{ Source = 'pr-body'; Text = $fixPrBody }) | Out-Null
+    }
+
+    $regressionIssues = New-Object System.Collections.Generic.List[object]
+    foreach ($issueNum in $linkedIssues) {
+        $ctx = Get-IssueContext -Owner $Owner -Repo $Repo -Number $issueNum
+        if (-not $ctx) { continue }
+        $regressedIn = @(Get-RegressedInLabels $ctx.Labels)
+        $regressionIssues.Add([PSCustomObject]@{
+                number            = $ctx.Number
+                regressedInLabels = $regressedIn
+            }) | Out-Null
+        if ($ctx.CommentText) {
+            $commentSources.Add([PSCustomObject]@{ Source = 'issue-comment'; Text = $ctx.CommentText }) | Out-Null
+        }
+        if ($ctx.IsTrustedAttribution) {
+            $bodySources.Add([PSCustomObject]@{ Source = 'issue-body'; Text = $ctx.Body }) | Out-Null
+        }
+    }
+
+    $attributionSources = New-Object System.Collections.Generic.List[object]
+    foreach ($source in $commentSources) {
+        $attributionSources.Add($source) | Out-Null
+    }
+    foreach ($source in $bodySources) {
+        $attributionSources.Add($source) | Out-Null
+    }
+
+    $introducingPr = $null
+    $attributionSource = $null
+    foreach ($entry in $attributionSources) {
+        $references = @(Get-IntroducingPrReferences $entry.Text | Where-Object {
+                $_ -ne $FixPr -and $_ -notin $linkedIssues
+            })
+        if ($references.Count -gt 0) {
+            $introducingPr = [int]$references[0]
+            $attributionSource = $entry.Source
+            break
+        }
+    }
+
+    return [PSCustomObject]@{
+        LinkedIssueNumbers = @($linkedIssues)
+        RegressionIssues   = $regressionIssues
+        IntroducingPr      = $introducingPr
+        AttributionSource  = $attributionSource
     }
 }
 
@@ -436,56 +507,16 @@ foreach ($pr in $fixPRs) {
     if ((Get-UsableCandidateCount -Candidates $candidates) -ge $MaxPRs) { break }
 
     $fixNumber = [int]$pr.number
-    $fixPrAssociation = Get-IssueAuthorAssociation -Owner $Owner -Repo $Repo -Number $fixNumber
-    $linkedIssues = Get-LinkedIssueNumbers -PRBody $pr.body -Owner $Owner -Repo $Repo
-
-    # Keep only maintainer-authored editable bodies as attribution. The fix body
-    # still drives linked-issue discovery above, regardless of author association.
-    $commentSources = New-Object System.Collections.Generic.List[object]
-    $bodySources = New-Object System.Collections.Generic.List[object]
-    if (Test-IsTrustedAssociation $fixPrAssociation) {
-        $bodySources.Add([PSCustomObject]@{ Source = 'pr-body'; Text = [string]$pr.body }) | Out-Null
-    }
-
-    $regressionIssues = New-Object System.Collections.Generic.List[object]
-    foreach ($issueNum in $linkedIssues) {
-        $ctx = Get-IssueContext -Owner $Owner -Repo $Repo -Number $issueNum
-        if (-not $ctx) { continue }
-        $regressedIn = @(Get-RegressedInLabels $ctx.Labels)
-        $regressionIssues.Add([PSCustomObject]@{
-            number            = $ctx.Number
-            regressedInLabels = $regressedIn
-        }) | Out-Null
-        if ($ctx.CommentText) {
-            $commentSources.Add([PSCustomObject]@{ Source = 'issue-comment'; Text = $ctx.CommentText }) | Out-Null
-        }
-        if ($ctx.IsTrustedAttribution) {
-            $bodySources.Add([PSCustomObject]@{ Source = 'issue-body'; Text = $ctx.Body }) | Out-Null
-        }
-    }
-
-    # An explicit trusted maintainer comment takes precedence over editable bodies.
-    $attribSources = New-Object System.Collections.Generic.List[object]
-    foreach ($source in $commentSources) {
-        $attribSources.Add($source) | Out-Null
-    }
-    foreach ($source in $bodySources) {
-        $attribSources.Add($source) | Out-Null
-    }
-
-    # Find the introducing PR reference, excluding the fix PR and its linked issues.
-    $introducingPr = $null
-    $attributionSource = $null
-    foreach ($entry in $attribSources) {
-        $refs = @(Get-IntroducingPrReferences $entry.Text | Where-Object {
-            $_ -ne $fixNumber -and $_ -notin $linkedIssues
-        })
-        if ($refs.Count -gt 0) {
-            $introducingPr = [int]$refs[0]
-            $attributionSource = $entry.Source
-            break
-        }
-    }
+    $fixPrContext = Get-FixPrContext -Owner $Owner -Repo $Repo -Number $fixNumber
+    $attribution = Get-RegressionAttributionContext `
+        -Owner $Owner `
+        -Repo $Repo `
+        -FixPr $fixNumber `
+        -FixPrContext $fixPrContext
+    $linkedIssues = @($attribution.LinkedIssueNumbers)
+    $regressionIssues = $attribution.RegressionIssues
+    $introducingPr = $attribution.IntroducingPr
+    $attributionSource = $attribution.AttributionSource
 
     if (-not (Test-CandidateIsNew -IntroducingPr $introducingPr -FixPr $fixNumber -ExistingNumbers @($existingNumbers))) {
         Write-Host "  ⏭️ PR #$fixNumber → introducing #$introducingPr already in corpus; skipping."
