@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 	internal class MauiDoneAccessoryView : UIView
 	{
 		const double AccessoryHeight = 44;
+		const string DoneAccessoryIdentifier = "DoneAccessory";
 
 		// UIKit's localized "Done" label, matching UIBarButtonSystemItem.Done so VoiceOver keeps reading
 		// the affordance in the user's language on the iOS 26+ glass button path.
@@ -90,6 +91,8 @@ namespace Microsoft.Maui.Platform
 
 		void Initialize(EventHandler doneClicked)
 		{
+			AccessibilityIdentifier = DoneAccessoryIdentifier;
+
 			if (UseGlassButton)
 				InitializeGlassButton(doneClicked);
 			else

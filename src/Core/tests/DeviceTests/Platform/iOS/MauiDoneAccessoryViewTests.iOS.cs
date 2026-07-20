@@ -93,6 +93,17 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task AccessoryHasStableAccessibilityIdentifier()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var accessoryView = CreateLaidOutAccessoryView();
+
+				Assert.Equal("DoneAccessory", accessoryView.AccessibilityIdentifier);
+			});
+		}
+
+		[Fact]
 		public async Task DoneAffordanceUsesLocalizedLabel()
 		{
 			await InvokeOnMainThreadAsync(() =>
