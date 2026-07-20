@@ -190,24 +190,6 @@ namespace Microsoft.Maui.IntegrationTests
 					},
 				}
 			},
-			new WarningsPerFile
-			{
-				File = "ILC",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL3050",
-						Messages = new List<string>
-						{
-							"Java.Interop.JavaConvert.<GetJniHandleConverter>g__TryMakeGenericCollectionTypeFactory|4_5(Type): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
-							"Java.Interop.JavaConvert.<GetJniHandleConverter>g__TryMakeGenericCollectionTypeFactory|4_5(Type): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
-							"Java.Interop.JavaConvert.<GetJniHandleConverter>g__TryMakeGenericCollectionTypeFactory|4_5(Type): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
-							"Microsoft.Android.Runtime.ManagedTypeManager.ManagedTypeManager(): Using member 'Java.Interop.JniRuntime.ReflectionJniTypeManager.ReflectionJniTypeManager()' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. This JniTypeManager implementation is not compatible with Native AOT. Use a different JniTypeManager implementation that supports Native AOT.",
-						}
-					},
-				}
-			},
 		};
 
 		public static List<WarningsPerFile> ExpectedNativeAOTWarnings
