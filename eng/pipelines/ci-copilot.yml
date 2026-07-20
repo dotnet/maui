@@ -3268,12 +3268,16 @@ stages:
               # comment) instead of only a count + artifact link. Binary PNGs are
               # uploaded to a dedicated asset branch (review-tests-assets) via the
               # git blobs/trees API and referenced by commit-pinned raw URLs. This
-              # needs ONLY the repo/contents scope the maui-bot token already has
-              # (it posts reviews + applies labels) — NOT the 'gist' scope — and the
-              # token never appears in any URL or command (gh api reads it from the
-              # environment). raw.githubusercontent.com serves the PNGs from the
-              # public repo anonymously, so GitHub's image proxy renders them. The
-              # same asset branch is shared with the /review tests GHA workflow.
+              # needs a token with Contents:write on the asset repo. The maui-bot
+              # review token (GH_COMMENT_TOKEN) only has PR/issue write (posts
+              # reviews + labels), NOT Contents:write, so a write-capable
+              # ASSET_WRITE_TOKEN is swapped into GH_TOKEN for just the blob/tree/
+              # commit/ref calls and restored in a finally (the review itself is
+              # still POSTed as maui-bot). The write token never appears in any URL
+              # or command (gh api reads it from the environment).
+              # raw.githubusercontent.com serves the PNGs from the public repo
+              # anonymously, so GitHub's image proxy renders them. The same asset
+              # branch is shared with the /review tests GHA workflow.
               # Entirely best-effort: ANY failure logs a diagnostic and leaves the
               # review exactly as it was — it never blocks posting.
               try {
@@ -3336,7 +3340,7 @@ stages:
                       $blobOut = gh api -X POST "repos/$assetRepo/git/blobs" --input $blobFile 2>&1
                       $blob = $null; try { $blob = ($blobOut | ConvertFrom-Json) } catch { }
                       if (-not $blob -or -not $blob.sha) {
-                        $hint = if ("$blobOut" -match '404|403|Not Found|Resource not accessible') { " — the review token (GH_COMMENT_TOKEN) lacks Contents:write on $assetRepo; grant it or supply a write-capable token" } else { '' }
+                        $hint = if ("$blobOut" -match '404|403|Not Found|Resource not accessible') { " — ASSET_WRITE_TOKEN lacks Contents:write on $assetRepo. Provision a token with Contents:write on the asset repo (e.g. the dotnet-bot repo PAT the loc pipeline uses, or a dedicated fine-grained PAT scoped to a public assets repo) and wire it as ASSET_WRITE_TOKEN on the Post task" } else { '' }
                         throw "blob upload failed for $($f.Name): $blobOut$hint"
                       }
                       $treeEntries.Add([ordered]@{ path = "$assetPrefix/$($f.Name)"; mode = '100644'; type = 'blob'; sha = [string]$blob.sha })
