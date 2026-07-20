@@ -269,13 +269,10 @@
 	     generates a single MIBC profile, then moves only the assemblies that contributed
 	     methods from the exclude list to partial R2R compilation.
 	     Enabled by setting MauiEmitPartialR2RXamlProfile=true.
-	     Requires MetadataUpdaterSupport=false (hot reload must be explicitly disabled),
-	     since XAML hot reload depends on the ability to update InitializeComponent methods
-	     at runtime and must not be blocked by partial R2R pre-compilation.
 	     Runs after R2R assembly selection. -->
 	<Target Name="_MauiGenerateMibcProfile"
 		AfterTargets="_SelectR2RAssemblies"
-		Condition=" '$(MauiEmitPartialR2RXamlProfile)' == 'true' AND ('$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' OR '$(TargetPlatformIdentifier)' == 'tvos') AND '$(Configuration)' != 'Release' AND '$(MetadataUpdaterSupport)' == 'false' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
+		Condition=" '$(MauiEmitPartialR2RXamlProfile)' == 'true' AND ('$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' OR '$(TargetPlatformIdentifier)' == 'tvos') AND '$(Configuration)' != 'Release' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
 		DependsOnTargets="_MauiWriteMibcInputList;_MauiRunMibcProfileGenerator">
 
 		<!-- Read the list of assemblies that had InitializeComponent* methods -->
