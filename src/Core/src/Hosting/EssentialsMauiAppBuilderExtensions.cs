@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -264,37 +266,37 @@ namespace Microsoft.Maui.Hosting
 			static void BridgeEssentialsFromDI(IServiceProvider services, List<Action> facadeCleanups)
 			{
 				// SetDefault pattern types
-				BridgeIfRegistered<IAccelerometer>(services, () => Accelerometer.Default, Accelerometer.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IAccelerometer>(services, () => Accelerometer.Default, () => GetFacadeBackingField<IAccelerometer>(typeof(Accelerometer), "defaultImplementation"), Accelerometer.SetDefault, facadeCleanups);
 #if ANDROID
-				BridgeIfRegistered<IActivityStateManager>(services, () => ActivityStateManager.Default, ActivityStateManager.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IActivityStateManager>(services, () => ActivityStateManager.Default, () => GetFacadeBackingField<IActivityStateManager>(typeof(ActivityStateManager), "defaultImplementation"), ActivityStateManager.SetDefault, facadeCleanups);
 #endif
-				BridgeIfRegistered<IBarometer>(services, () => Barometer.Default, Barometer.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IBattery>(services, () => Battery.Default, Battery.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IBrowser>(services, () => Browser.Default, Browser.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IClipboard>(services, () => Clipboard.Default, Clipboard.SetDefault, facadeCleanups);
-				BridgeIfRegistered<ICompass>(services, () => Compass.Default, Compass.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IContacts>(services, () => MauiContacts.Default, MauiContacts.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IEmail>(services, () => Email.Default, Email.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IFilePicker>(services, () => FilePicker.Default, FilePicker.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IFlashlight>(services, () => Flashlight.Default, Flashlight.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IGeolocation>(services, () => Geolocation.Default, Geolocation.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IGyroscope>(services, () => Gyroscope.Default, Gyroscope.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IHapticFeedback>(services, () => HapticFeedback.Default, HapticFeedback.SetDefault, facadeCleanups);
-				BridgeIfRegistered<ILauncher>(services, () => Launcher.Default, Launcher.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IMagnetometer>(services, () => Magnetometer.Default, Magnetometer.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IMap>(services, () => Map.Default, Map.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IMediaPicker>(services, () => MediaPicker.Default, MediaPicker.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IOrientationSensor>(services, () => OrientationSensor.Default, OrientationSensor.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IPhoneDialer>(services, () => PhoneDialer.Default, PhoneDialer.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IPreferences>(services, () => Preferences.Default, Preferences.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IScreenshot>(services, () => Screenshot.Default, Screenshot.SetDefault, facadeCleanups);
-				BridgeIfRegistered<ISecureStorage>(services, () => SecureStorage.Default, SecureStorage.SetDefault, facadeCleanups);
-				BridgeIfRegistered<ISemanticScreenReader>(services, () => SemanticScreenReader.Default, SemanticScreenReader.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IShare>(services, () => Share.Default, Share.SetDefault, facadeCleanups);
-				BridgeIfRegistered<ISms>(services, () => Sms.Default, Sms.SetDefault, facadeCleanups);
-				BridgeIfRegistered<ITextToSpeech>(services, () => TextToSpeech.Default, TextToSpeech.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IBarometer>(services, () => Barometer.Default, () => GetFacadeBackingField<IBarometer>(typeof(Barometer), "defaultImplementation"), Barometer.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IBattery>(services, () => Battery.Default, () => GetFacadeBackingField<IBattery>(typeof(Battery), "defaultImplementation"), Battery.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IBrowser>(services, () => Browser.Default, () => GetFacadeBackingField<IBrowser>(typeof(Browser), "defaultImplementation"), Browser.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IClipboard>(services, () => Clipboard.Default, () => GetFacadeBackingField<IClipboard>(typeof(Clipboard), "defaultImplementation"), Clipboard.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ICompass>(services, () => Compass.Default, () => GetFacadeBackingField<ICompass>(typeof(Compass), "defaultImplementation"), Compass.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IContacts>(services, () => MauiContacts.Default, () => GetFacadeBackingField<IContacts>(typeof(MauiContacts), "defaultImplementation"), MauiContacts.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IEmail>(services, () => Email.Default, () => GetFacadeBackingField<IEmail>(typeof(Email), "defaultImplementation"), Email.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IFilePicker>(services, () => FilePicker.Default, () => GetFacadeBackingField<IFilePicker>(typeof(FilePicker), "defaultImplementation"), FilePicker.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IFlashlight>(services, () => Flashlight.Default, () => GetFacadeBackingField<IFlashlight>(typeof(Flashlight), "defaultImplementation"), Flashlight.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IGeolocation>(services, () => Geolocation.Default, () => GetFacadeBackingField<IGeolocation>(typeof(Geolocation), "defaultImplementation"), Geolocation.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IGyroscope>(services, () => Gyroscope.Default, () => GetFacadeBackingField<IGyroscope>(typeof(Gyroscope), "defaultImplementation"), Gyroscope.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IHapticFeedback>(services, () => HapticFeedback.Default, () => GetFacadeBackingField<IHapticFeedback>(typeof(HapticFeedback), "defaultImplementation"), HapticFeedback.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ILauncher>(services, () => Launcher.Default, () => GetFacadeBackingField<ILauncher>(typeof(Launcher), "defaultImplementation"), Launcher.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IMagnetometer>(services, () => Magnetometer.Default, () => GetFacadeBackingField<IMagnetometer>(typeof(Magnetometer), "defaultImplementation"), Magnetometer.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IMap>(services, () => Map.Default, () => GetFacadeBackingField<IMap>(typeof(Map), "defaultImplementation"), Map.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IMediaPicker>(services, () => MediaPicker.Default, () => GetFacadeBackingField<IMediaPicker>(typeof(MediaPicker), "defaultImplementation"), MediaPicker.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IOrientationSensor>(services, () => OrientationSensor.Default, () => GetFacadeBackingField<IOrientationSensor>(typeof(OrientationSensor), "defaultImplementation"), OrientationSensor.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IPhoneDialer>(services, () => PhoneDialer.Default, () => GetFacadeBackingField<IPhoneDialer>(typeof(PhoneDialer), "defaultImplementation"), PhoneDialer.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IPreferences>(services, () => Preferences.Default, () => GetFacadeBackingField<IPreferences>(typeof(Preferences), "defaultImplementation"), Preferences.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IScreenshot>(services, () => Screenshot.Default, () => GetFacadeBackingField<IScreenshot>(typeof(Screenshot), "defaultImplementation"), Screenshot.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ISecureStorage>(services, () => SecureStorage.Default, () => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"), SecureStorage.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ISemanticScreenReader>(services, () => SemanticScreenReader.Default, () => GetFacadeBackingField<ISemanticScreenReader>(typeof(SemanticScreenReader), "defaultImplementation"), SemanticScreenReader.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IShare>(services, () => Share.Default, () => GetFacadeBackingField<IShare>(typeof(Share), "defaultImplementation"), Share.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ISms>(services, () => Sms.Default, () => GetFacadeBackingField<ISms>(typeof(Sms), "defaultImplementation"), Sms.SetDefault, facadeCleanups);
+				BridgeIfRegistered<ITextToSpeech>(services, () => TextToSpeech.Default, () => GetFacadeBackingField<ITextToSpeech>(typeof(TextToSpeech), "defaultImplementation"), TextToSpeech.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.GetDefault, VersionTracking.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IVibration>(services, () => Vibration.Default, Vibration.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IVibration>(services, () => Vibration.Default, () => GetFacadeBackingField<IVibration>(typeof(Vibration), "defaultImplementation"), Vibration.SetDefault, facadeCleanups);
 				// IWebAuthenticator: on Android/iOS/MacCatalyst the platform callback activities
 				// and lifecycle hooks (WebAuthenticatorCallbackActivity.OnResume, Platform.OpenUrl,
 				// ContinueUserActivity) cast WebAuthenticator.Default to IPlatformWebAuthenticatorCallback
@@ -306,17 +308,17 @@ namespace Microsoft.Maui.Hosting
 				{
 #if ANDROID || __IOS__ || __MACCATALYST__
 					if (webAuthenticator is IPlatformWebAuthenticatorCallback)
-						TrackAndSet(webAuthenticator, () => WebAuthenticator.Default, WebAuthenticator.SetDefault, facadeCleanups);
+						TrackAndSet(webAuthenticator, () => WebAuthenticator.Default, () => GetFacadeBackingField<IWebAuthenticator>(typeof(WebAuthenticator), "defaultImplementation"), WebAuthenticator.SetDefault, facadeCleanups);
 					else
 						LogMissingNativeLifecycleInterface<IWebAuthenticator>(services, nameof(IPlatformWebAuthenticatorCallback));
 #else
-					TrackAndSet(webAuthenticator, () => WebAuthenticator.Default, WebAuthenticator.SetDefault, facadeCleanups);
+					TrackAndSet(webAuthenticator, () => WebAuthenticator.Default, () => GetFacadeBackingField<IWebAuthenticator>(typeof(WebAuthenticator), "defaultImplementation"), WebAuthenticator.SetDefault, facadeCleanups);
 #endif
 				}
 #if WINDOWS || __IOS__ || __MACCATALYST__
-				BridgeIfRegistered<IWindowStateManager>(services, () => WindowStateManager.Default, WindowStateManager.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IWindowStateManager>(services, () => WindowStateManager.Default, () => GetFacadeBackingField<IWindowStateManager>(typeof(WindowStateManager), "defaultImplementation"), WindowStateManager.SetDefault, facadeCleanups);
 #endif
-				BridgeIfRegistered<IAppleSignInAuthenticator>(services, () => AppleSignInAuthenticator.Default, AppleSignInAuthenticator.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IAppleSignInAuthenticator>(services, () => AppleSignInAuthenticator.Default, () => GetFacadeBackingField<IAppleSignInAuthenticator>(typeof(AppleSignInAuthenticator), "defaultImplementation"), AppleSignInAuthenticator.SetDefault, facadeCleanups);
 
 				// SetCurrent pattern types
 				// IAppActions: On native platforms, lifecycle hooks cast AppActions.Current to
@@ -327,20 +329,20 @@ namespace Microsoft.Maui.Hosting
 				{
 #if WINDOWS || __IOS__ || __MACCATALYST__ || ANDROID
 					if (appActions is IPlatformAppActions)
-						TrackAndSet(appActions, () => AppActions.Current, AppActions.SetCurrent, facadeCleanups);
+						TrackAndSet(appActions, () => AppActions.Current, () => GetFacadeBackingField<IAppActions>(typeof(AppActions), "currentImplementation"), AppActions.SetCurrent, facadeCleanups);
 					else
 						LogMissingNativeLifecycleInterface<IAppActions>(services, nameof(IPlatformAppActions));
 #else
-					TrackAndSet(appActions, () => AppActions.Current, AppActions.SetCurrent, facadeCleanups);
+					TrackAndSet(appActions, () => AppActions.Current, () => GetFacadeBackingField<IAppActions>(typeof(AppActions), "currentImplementation"), AppActions.SetCurrent, facadeCleanups);
 #endif
 				}
-				BridgeIfRegistered<IAppInfo>(services, () => AppInfo.Current, AppInfo.SetCurrent, facadeCleanups);
-				BridgeIfRegistered<IConnectivity>(services, () => Connectivity.Current, Connectivity.SetCurrent, facadeCleanups);
-				BridgeIfRegistered<IDeviceDisplay>(services, () => DeviceDisplay.Current, DeviceDisplay.SetCurrent, facadeCleanups);
-				BridgeIfRegistered<IDeviceInfo>(services, () => DeviceInfo.Current, DeviceInfo.SetCurrent, facadeCleanups);
-				BridgeIfRegistered<IFileSystem>(services, () => FileSystem.Current, FileSystem.SetCurrent, facadeCleanups);
-				BridgeIfRegistered<IGeocoding>(services, () => Geocoding.Default, Geocoding.SetCurrent, facadeCleanups);
-				BridgeIfRegistered<IPermissions>(services, () => Permissions.Current, Permissions.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IAppInfo>(services, () => AppInfo.Current, () => GetFacadeBackingField<IAppInfo>(typeof(AppInfo), "currentImplementation"), AppInfo.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IConnectivity>(services, () => Connectivity.Current, () => GetFacadeBackingField<IConnectivity>(typeof(Connectivity), "currentImplementation"), Connectivity.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IDeviceDisplay>(services, () => DeviceDisplay.Current, () => GetFacadeBackingField<IDeviceDisplay>(typeof(DeviceDisplay), "currentImplementation"), DeviceDisplay.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IDeviceInfo>(services, () => DeviceInfo.Current, () => GetFacadeBackingField<IDeviceInfo>(typeof(DeviceInfo), "currentImplementation"), DeviceInfo.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IFileSystem>(services, () => FileSystem.Current, () => GetFacadeBackingField<IFileSystem>(typeof(FileSystem), "currentImplementation"), FileSystem.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IGeocoding>(services, () => Geocoding.Default, () => GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation"), Geocoding.SetCurrent, facadeCleanups);
+				BridgeIfRegistered<IPermissions>(services, () => Permissions.Current, () => GetFacadeBackingField<IPermissions>(typeof(Permissions), "currentImplementation"), Permissions.SetCurrent, facadeCleanups);
 			}
 
 			/// <summary>
@@ -351,18 +353,32 @@ namespace Microsoft.Maui.Hosting
 			static void BridgeIfRegistered<T>(
 				IServiceProvider services,
 				Func<T?> getter,
+				Func<T?> originalGetter,
 				Action<T?> setter,
 				List<Action> facadeCleanups)
 				where T : class
 			{
 				var impl = services.GetService<T>();
 				if (impl is not null)
-					TrackAndSet(impl, getter, setter, facadeCleanups);
+					TrackAndSet(impl, getter, originalGetter, setter, facadeCleanups);
+			}
+
+			static void BridgeIfRegistered<T>(
+				IServiceProvider services,
+				Func<T?> getter,
+				Action<T?> setter,
+				List<Action> facadeCleanups)
+				where T : class
+			{
+				var impl = services.GetService<T>();
+				if (impl is not null)
+					TrackAndSet(impl, getter, getter, setter, facadeCleanups);
 			}
 
 			static void TrackAndSet<T>(
 				T impl,
 				Func<T?> getter,
+				Func<T?> originalGetter,
 				Action<T?> setter,
 				List<Action> facadeCleanups)
 				where T : class
@@ -372,13 +388,24 @@ namespace Microsoft.Maui.Hosting
 				lock (FacadeBridgeState<T>.SyncRoot)
 				{
 					if (FacadeBridgeState<T>.Assignments.Count == 0)
-						FacadeBridgeState<T>.Original = getter();
+						FacadeBridgeState<T>.Original = originalGetter();
 
 					FacadeBridgeState<T>.Assignments.Add(assignment);
 					setter(impl);
 				}
 
 				AddFacadeCleanup(assignment, getter, setter, facadeCleanups);
+			}
+
+			static T? GetFacadeBackingField<T>(
+				[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicFields)] Type facadeType,
+				string fieldName)
+				where T : class
+			{
+				var field = facadeType.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Static)
+					?? throw new InvalidOperationException($"Field '{fieldName}' not found on '{facadeType.Name}'.");
+
+				return (T?)field.GetValue(null);
 			}
 
 			static void TrackInitialized<T>(

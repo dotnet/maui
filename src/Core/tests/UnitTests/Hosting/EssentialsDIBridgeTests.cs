@@ -198,6 +198,21 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void DIBridge_DoesNotInitializePlatformDefaultForOriginalCapture()
+		{
+			ResetStaticField(typeof(Preferences), "defaultImplementation");
+
+			var mock = new StubPreferences();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences>(mock);
+
+			using (var app = builder.Build())
+				Assert.Same(mock, Preferences.Default);
+
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+		}
+
+		[Fact]
 		public void DIRegisteredGeocoding_BridgedToDefaultProperty()
 		{
 			// Geocoding is unique: uses SetCurrent internally but exposes Default property,
@@ -364,17 +379,25 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var firstMock = new StubPreferences();
 			var firstBuilder = MauiApp.CreateBuilder();
 			firstBuilder.Services.AddSingleton<IPreferences>(firstMock);
-			var firstApp = firstBuilder.Build();
+			using (var firstApp = firstBuilder.Build())
+			{
+				var secondMock = new StubPreferences();
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IPreferences>(secondMock);
 
-			var secondMock = new StubPreferences();
-			var secondBuilder = MauiApp.CreateBuilder();
-			secondBuilder.Services.AddSingleton<IPreferences>(secondMock);
-			var secondApp = secondBuilder.Build();
+				MauiApp? secondApp = secondBuilder.Build();
+				try
+				{
+					secondApp.Dispose();
+					secondApp = null;
+					Assert.Same(firstMock, Preferences.Default);
+				}
+				finally
+				{
+					secondApp?.Dispose();
+				}
+			}
 
-			secondApp.Dispose();
-			Assert.Same(firstMock, Preferences.Default);
-
-			firstApp.Dispose();
 			Assert.Same(original, Preferences.Default);
 		}
 
