@@ -411,6 +411,28 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void ConfiguredVersionTrackingIsRestoredBeforeBridgedServicesAreDisposed()
+		{
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+			builder.Services.AddSingleton<IAppInfo>(new StubAppInfo());
+			builder.ConfigureEssentials(essentials => essentials.UseVersionTracking());
+			var app = builder.Build();
+			var preferences = Assert.IsType<DisposableStubPreferences>(
+				app.Services.GetRequiredService<IPreferences>());
+
+			Assert.NotNull(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+			app.Dispose();
+
+			Assert.True(preferences.IsDisposed);
+			Assert.True(preferences.FacadeWasRestoredBeforeDispose);
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+		}
+
+		[Fact]
 		public void LaterMauiAppCanReplaceStaticFacade()
 		{
 			var firstMock = new StubPreferences();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Xunit;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 	{
 		public DispatcherTests()
 		{
-			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			DispatcherProvider.SetCurrent(new NonDisposableDispatcherProviderStub());
 		}
 
 		public void Dispose()
@@ -190,5 +191,31 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 				// If it's repeating, ticks will be greater than 1
 				Assert.True(ticks > 1);
 			});
+
+		sealed class NonDisposableDispatcherProviderStub : IDispatcherProvider
+		{
+			readonly Dictionary<int, IDispatcher> _dispatchers = new();
+			readonly object _sync = new();
+
+			public IDispatcher GetForCurrentThread()
+			{
+				var threadId = Environment.CurrentManagedThreadId;
+
+				lock (_sync)
+				{
+					if (!_dispatchers.TryGetValue(threadId, out var dispatcher))
+					{
+						dispatcher = DispatcherProviderStubOptions.SkipDispatcherCreation
+							? null
+							: new DispatcherStub(
+								DispatcherProviderStubOptions.IsInvokeRequired,
+								DispatcherProviderStubOptions.InvokeOnMainThread);
+						_dispatchers.Add(threadId, dispatcher);
+					}
+
+					return dispatcher;
+				}
+			}
+		}
 	}
 }

@@ -188,6 +188,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public static IVersionTracking Default =>
 			defaultImplementation ??= new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
 
+		internal static IVersionTracking? GetDefault() =>
+			defaultImplementation;
+
 		internal static void SetDefault(IVersionTracking? implementation) =>
 			defaultImplementation = implementation;
 

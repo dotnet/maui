@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Hosting
 				// restores static facades and removes AppActions handlers while the provider-owned
 				// implementations are still alive.
 				var cleanup = services.GetRequiredService<EssentialsCleanup>();
-				cleanup.AddFacadeCleanups(facadeCleanups);
+				cleanup.SetFacadeCleanups(facadeCleanups);
 
 #if WINDOWS || TIZEN
 				// A ConfigureEssentials token takes precedence; otherwise preserve a token set
@@ -244,7 +244,19 @@ namespace Microsoft.Maui.Hosting
 #endif
 
 				if (_essentialsBuilder.TrackVersions)
+				{
+					var versionTrackingBeforeTrack = VersionTracking.GetDefault();
 					VersionTracking.Track();
+					if (versionTrackingBeforeTrack is null && VersionTracking.GetDefault() is { } initializedVersionTracking)
+					{
+						TrackInitialized(
+							initializedVersionTracking,
+							versionTrackingBeforeTrack,
+							VersionTracking.GetDefault,
+							VersionTracking.SetDefault,
+							facadeCleanups);
+					}
+				}
 			}
 
 			/// <summary>
@@ -285,7 +297,7 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<IShare>(services, () => Share.Default, Share.SetDefault, facadeCleanups);
 				BridgeIfRegistered<ISms>(services, () => Sms.Default, Sms.SetDefault, facadeCleanups);
 				BridgeIfRegistered<ITextToSpeech>(services, () => TextToSpeech.Default, TextToSpeech.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IVersionTracking>(services, () => VersionTracking.Default, VersionTracking.SetDefault, facadeCleanups);
+				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.GetDefault, VersionTracking.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IVibration>(services, () => Vibration.Default, Vibration.SetDefault, facadeCleanups);
 				// IWebAuthenticator: on Android/iOS/MacCatalyst the platform callback activities
 				// and lifecycle hooks (WebAuthenticatorCallbackActivity.OnResume, Platform.OpenUrl,
@@ -342,7 +354,7 @@ namespace Microsoft.Maui.Hosting
 			/// </summary>
 			static void BridgeIfRegistered<T>(
 				IServiceProvider services,
-				Func<T> getter,
+				Func<T?> getter,
 				Action<T?> setter,
 				List<Action> facadeCleanups)
 				where T : class
@@ -354,7 +366,7 @@ namespace Microsoft.Maui.Hosting
 
 			static void TrackAndSet<T>(
 				T impl,
-				Func<T> getter,
+				Func<T?> getter,
 				Action<T?> setter,
 				List<Action> facadeCleanups)
 				where T : class
@@ -370,6 +382,37 @@ namespace Microsoft.Maui.Hosting
 					setter(impl);
 				}
 
+				AddFacadeCleanup(assignment, getter, setter, facadeCleanups);
+			}
+
+			static void TrackInitialized<T>(
+				T impl,
+				T? original,
+				Func<T?> getter,
+				Action<T?> setter,
+				List<Action> facadeCleanups)
+				where T : class
+			{
+				var assignment = new FacadeAssignment<T>(impl);
+
+				lock (FacadeBridgeState<T>.SyncRoot)
+				{
+					if (FacadeBridgeState<T>.Assignments.Count == 0)
+						FacadeBridgeState<T>.Original = original;
+
+					FacadeBridgeState<T>.Assignments.Add(assignment);
+				}
+
+				AddFacadeCleanup(assignment, getter, setter, facadeCleanups);
+			}
+
+			static void AddFacadeCleanup<T>(
+				FacadeAssignment<T> assignment,
+				Func<T?> getter,
+				Action<T?> setter,
+				List<Action> facadeCleanups)
+				where T : class
+			{
 				facadeCleanups.Add(() =>
 				{
 					lock (FacadeBridgeState<T>.SyncRoot)
@@ -383,7 +426,7 @@ namespace Microsoft.Maui.Hosting
 						if (!wasCurrent)
 							return;
 
-						if (ReferenceEquals(getter(), impl))
+						if (ReferenceEquals(getter(), assignment.Implementation))
 						{
 							var replacement = FacadeBridgeState<T>.Assignments.Count > 0
 								? FacadeBridgeState<T>.Assignments[FacadeBridgeState<T>.Assignments.Count - 1].Implementation
@@ -445,15 +488,15 @@ namespace Microsoft.Maui.Hosting
 
 		sealed class EssentialsCleanup : IDisposable
 		{
-			readonly List<Action> _facadeCleanups = new();
+			List<Action> _facadeCleanups = new();
 #if !TIZEN
 			IAppActions? _subscribedAppActions;
 			EventHandler<AppActionEventArgs>? _appActionHandler;
 #endif
 
-			public void AddFacadeCleanups(IEnumerable<Action> cleanups)
+			public void SetFacadeCleanups(List<Action> cleanups)
 			{
-				_facadeCleanups.AddRange(cleanups);
+				_facadeCleanups = cleanups;
 			}
 
 #if !TIZEN
