@@ -172,6 +172,70 @@ function Remove-InlineVisualSection {
         [TimeSpan]::FromSeconds(1))
 }
 
+function Test-VisualSnapshotPathMatchesPlatform {
+    param(
+        [string]$Path,
+        [string]$Platform
+    )
+
+    $normalizedPath = "/" + (($Path -replace '\\', '/').TrimStart('/'))
+    $normalizedPlatform = if ($null -eq $Platform) { "" } else { $Platform.ToLowerInvariant() }
+    switch ($normalizedPlatform) {
+        "android" { return $normalizedPath -match '/snapshots/android(?:-[^/]+)?/' }
+        "ios" { return $normalizedPath -match '/snapshots/ios(?:-[^/]+)?/' }
+        "macos" { return $normalizedPath -match '/snapshots/mac/' }
+        "maccatalyst" { return $normalizedPath -match '/snapshots/mac/' }
+        "windows" { return $normalizedPath -match '/snapshots/windows/' }
+        default { return $false }
+    }
+}
+
+function Test-VisualComparisonChanged {
+    param(
+        [object]$Comparison,
+        [object]$Context
+    )
+
+    $changedFiles = @($Context.scope.changedFiles | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+    if ($changedFiles.Count -eq 0) {
+        return $false
+    }
+
+    $snapshotFileName = [System.IO.Path]::GetFileName([string]$Comparison.snapshotFileName)
+    if (-not [string]::IsNullOrWhiteSpace($snapshotFileName)) {
+        foreach ($changedFile in $changedFiles) {
+            $matchingFileName = [string]::Equals(
+                [System.IO.Path]::GetFileName([string]$changedFile),
+                $snapshotFileName,
+                [StringComparison]::OrdinalIgnoreCase)
+            $matchingPlatform = Test-VisualSnapshotPathMatchesPlatform `
+                -Path ([string]$changedFile) `
+                -Platform ([string]$Comparison.platform)
+            if ($matchingFileName -and $matchingPlatform) {
+                return $true
+            }
+        }
+    }
+
+    $automatedTestName = [string]$Comparison.automatedTestName
+    $classMatch = [regex]::Match(
+        $automatedTestName,
+        '\.(?<class>[A-Za-z_][A-Za-z0-9_]*)(?:\([^)]*\))?\.[^.]+$')
+    if ($classMatch.Success) {
+        $testFileName = $classMatch.Groups['class'].Value + ".cs"
+        foreach ($changedFile in $changedFiles) {
+            if ([string]::Equals(
+                    [System.IO.Path]::GetFileName([string]$changedFile),
+                    $testFileName,
+                    [StringComparison]::OrdinalIgnoreCase)) {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
 function Get-VisualRelationship {
     param(
         [object]$Comparison,
@@ -195,6 +259,25 @@ function Get-VisualRelationship {
         }
     }
 
+    $attribution = if ($null -ne $failure) {
+        [string]$failure.deterministicAttribution
+    }
+    else {
+        ""
+    }
+    if ($attribution -eq "regressed-vs-base") {
+        return [pscustomobject]@{
+            label = "Likely PR-caused"
+            detail = "The same leg was green on the sampled base build and red on this PR."
+        }
+    }
+    $comparisonChanged = Test-VisualComparisonChanged -Comparison $Comparison -Context $Context
+    if ($comparisonChanged) {
+        return [pscustomobject]@{
+            label = "Likely PR-caused"
+            detail = "This PR changes the exact snapshot or visual test."
+        }
+    }
     if ($null -eq $failure) {
         return [pscustomobject]@{
             label = "Needs human investigation"
@@ -202,13 +285,7 @@ function Get-VisualRelationship {
         }
     }
 
-    switch ([string]$failure.deterministicAttribution) {
-        "regressed-vs-base" {
-            return [pscustomobject]@{
-                label = "Likely PR-caused"
-                detail = "The same leg was green on the sampled base build and red on this PR."
-            }
-        }
+    switch ($attribution) {
         "pre-existing-on-base" {
             return [pscustomobject]@{
                 label = "Likely unrelated"
@@ -307,7 +384,7 @@ function New-InlineVisualSection {
     [void]$builder.AppendLine("### Visual failure comparisons")
     [void]$builder.AppendLine()
     [void]$builder.AppendLine("Full-resolution CI baseline, actual, and diff images are embedded below. They supplement the failure classification and do not change the deterministic verdict ceiling.")
-    [void]$builder.AppendLine("Relationship labels use deterministic exact test-and-platform baseline evidence; missing or mixed evidence remains **Needs human investigation**.")
+    [void]$builder.AppendLine("Relationship labels use deterministic exact test-and-platform baseline evidence plus exact changed snapshot/test scope; missing or mixed evidence remains **Needs human investigation**.")
     [void]$builder.AppendLine()
 
     foreach ($panel in @($Panels)) {

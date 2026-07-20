@@ -740,7 +740,9 @@ foreach ($evidence in $selectedEvidence) {
 
         $prepared.Add([ordered]@{
             testName = $(if ($evidence.testName) { [string]$evidence.testName } else { [System.IO.Path]::GetFileNameWithoutExtension($snapshotFileName) })
+            automatedTestName = [string]$evidence.automatedTestName
             platform = [string]$evidence.platform
+            snapshotFileName = $snapshotFileName
             description = $(if ($evidence.description) { [string]$evidence.description } else { [string]$evidence.kind })
             buildId = $buildId
             buildUrl = [string]$evidence.buildUrl
@@ -784,7 +786,9 @@ try {
         $rawPrefix = "https://raw.githubusercontent.com/$Repository/$assetCommit/"
         $published.Add([ordered]@{
             testName = $comparison.testName
+            automatedTestName = $comparison.automatedTestName
             platform = $comparison.platform
+            snapshotFileName = $comparison.snapshotFileName
             description = $comparison.description
             buildId = $comparison.buildId
             buildUrl = $comparison.buildUrl

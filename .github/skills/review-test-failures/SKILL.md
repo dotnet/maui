@@ -388,11 +388,12 @@ Rules:
 - Do not embed, link, or reproduce individual visual image URLs in the generated
   analysis. The trusted merger inserts complete expandable panels into the same final
   comment while enforcing gh-aw's URL, mention, and character limits. The merger labels
-  each panel from exact test-and-platform deterministic attribution only: PR-only
-  regressions are `Likely PR-caused`, exact base/known-issue matches are
-  `Likely unrelated`, and unmatched or mixed evidence remains
-  `Needs human investigation`. Visual publishing failures are limitations only; they do
-  not weaken or raise the gate.
+  each panel from exact test-and-platform deterministic attribution plus exact changed
+  snapshot/test scope: PR-only regressions and directly changed visual coverage are
+  `Likely PR-caused`, exact base/known-issue matches are `Likely unrelated`, and
+  unmatched or mixed evidence remains `Needs human investigation`. A same-named snapshot
+  on another platform does not count as changed scope. Visual publishing failures are
+  limitations only; they do not weaken or raise the gate.
 - Badge colors for the `Overall` (merge-readiness) badge: `1a7f37` for `Ready to merge`
   and `No failures found`, `d1242f` for `Not ready`, `bf8700` for
   `Needs human investigation`, and `6e7781` for `Insufficient data`.

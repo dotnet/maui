@@ -19,6 +19,8 @@ BeforeAll {
             'Test-VisualAssetUrl',
             'Get-CommentLimitCounts',
             'Remove-InlineVisualSection',
+            'Test-VisualSnapshotPathMatchesPlatform',
+            'Test-VisualComparisonChanged',
             'Get-VisualRelationship',
             'New-InlineVisualPanel',
             'New-InlineVisualSection',
@@ -43,6 +45,8 @@ BeforeAll {
             [int]$PrNumber = 123,
             [string]$TestName = 'VisualTest',
             [string]$Platform = 'ios',
+            [string]$SnapshotFileName,
+            [string]$AutomatedTestName,
             [switch]$ActualOnly
         )
 
@@ -50,6 +54,8 @@ BeforeAll {
         return [pscustomobject]@{
             testName = $TestName
             platform = $Platform
+            snapshotFileName = $(if ($SnapshotFileName) { $SnapshotFileName } else { "$TestName.png" })
+            automatedTestName = $AutomatedTestName
             description = '1.25% difference'
             buildId = 456
             baselineStatus = 'resolved from the tested runtime environment'
@@ -63,6 +69,7 @@ BeforeAll {
         param(
             [object[]]$Comparisons = @((New-VisualTestComparison)),
             [object[]]$Failures = @(),
+            [string[]]$ChangedFiles = @(),
             [int]$OmittedCount = 0,
             [bool]$Published = $true,
             [string]$Commit = ('a' * 40),
@@ -74,6 +81,9 @@ BeforeAll {
             pr = [pscustomobject]@{ number = $PrNumber }
             failures = [pscustomobject]@{
                 unique = $Failures
+            }
+            scope = [pscustomobject]@{
+                changedFiles = $ChangedFiles
             }
             visualAssets = [pscustomobject]@{
                 published = $Published
@@ -395,6 +405,68 @@ Describe 'Inline visual relationship classification' {
 
         $relationship.label | Should -Be 'Needs human investigation'
         $relationship.detail | Should -Not -Match 'script|@all'
+    }
+
+    It 'marks an exact changed platform snapshot as likely PR-caused' {
+        $comparison = New-VisualTestComparison `
+            -TestName 'ChangedSnapshot' `
+            -Platform 'windows' `
+            -SnapshotFileName 'ChangedSnapshot.png'
+        $context = New-VisualTestContext `
+            -Comparisons @($comparison) `
+            -Failures @(
+                (New-VisualTestFailure `
+                        -TestName 'ChangedSnapshot' `
+                        -Platform 'windows' `
+                        -DeterministicAttribution 'pre-existing-on-base')
+            ) `
+            -ChangedFiles @(
+                'src/Controls/tests/TestCases.WinUI.Tests/snapshots/windows/ChangedSnapshot.png'
+            )
+
+        $relationship = Get-VisualRelationship -Comparison $comparison -Context $context
+
+        $relationship.label | Should -Be 'Likely PR-caused'
+        $relationship.detail | Should -Match 'exact snapshot or visual test'
+    }
+
+    It 'does not use a same-named snapshot changed for another platform' {
+        $comparison = New-VisualTestComparison `
+            -TestName 'CrossPlatformSnapshot' `
+            -Platform 'windows' `
+            -SnapshotFileName 'CrossPlatformSnapshot.png'
+        $context = New-VisualTestContext `
+            -Comparisons @($comparison) `
+            -Failures @(
+                (New-VisualTestFailure `
+                        -TestName 'CrossPlatformSnapshot' `
+                        -Platform 'windows' `
+                        -DeterministicAttribution 'pre-existing-on-base')
+            ) `
+            -ChangedFiles @(
+                'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26/CrossPlatformSnapshot.png'
+            )
+
+        (Get-VisualRelationship -Comparison $comparison -Context $context).label |
+            Should -Be 'Likely unrelated'
+    }
+
+    It 'marks the exact changed visual test class as likely PR-caused' {
+        $comparison = New-VisualTestComparison `
+            -TestName 'VerifySearch' `
+            -Platform 'windows' `
+            -AutomatedTestName 'Microsoft.Maui.TestCases.Tests.ShellSearchHandlerFeatureTests(Windows).VerifySearch'
+        $context = New-VisualTestContext `
+            -Comparisons @($comparison) `
+            -Failures @(
+                (New-VisualTestFailure -TestName 'VerifySearch' -Platform 'windows')
+            ) `
+            -ChangedFiles @(
+                'src/Controls/tests/TestCases.Shared.Tests/Tests/FeatureMatrix/ShellSearchHandlerFeatureTests.cs'
+            )
+
+        (Get-VisualRelationship -Comparison $comparison -Context $context).label |
+            Should -Be 'Likely PR-caused'
     }
 }
 
