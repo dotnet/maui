@@ -3302,19 +3302,34 @@ stages:
                   }
                   $pngCount = @(Get-ChildItem -Path $stageDir -Filter '*.png' -ErrorAction SilentlyContinue).Count
                   if ($pngCount -gt 0 -and $renderRecs.Count -gt 0) {
-                    # Git-object writes (blobs/trees/commits/refs) need Contents:write,
-                    # which the review comment token (GH_COMMENT_TOKEN) lacks. Use the
-                    # write-capable ASSET_WRITE_TOKEN for JUST these calls, then restore
-                    # the comment token so the review itself is still posted as maui-bot.
-                    # The token only ever lives in $env:GH_TOKEN (gh reads it from there)
-                    # — it never appears in a URL or command line. The finally guarantees
-                    # the comment token is restored even if a git call throws (so a failed
-                    # embed can never post the review under the wrong identity).
-                    # The -notmatch '^\$\(' guard ignores an unexpanded AzDO macro (i.e.
-                    # the SnapshotAssetToken secret not provisioned yet) so we skip cleanly
-                    # instead of authenticating with the literal string '$(SnapshotAssetToken)'.
+                    # Git-object writes (blobs/trees/commits/refs) need Contents:write on
+                    # the PUBLIC asset repo. GH_COMMENT_TOKEN (Contents:read) 404s and
+                    # COPILOT_TOKEN 403s. Rather than provision a NEW secret, probe every
+                    # credential the pipeline ALREADY exposes and use the first that can
+                    # actually write (repos/{repo}.permissions.push == true). The chosen
+                    # token only ever lives in $env:GH_TOKEN (gh reads it there) — never in
+                    # a URL/command line — and the review comment token is restored in the
+                    # finally so the review itself always posts as maui-bot. The
+                    # -notmatch '^\$\(' guard skips any unexpanded AzDO macro (a secret that
+                    # was never provisioned) instead of authenticating with the literal.
                     $reviewTok = $env:GH_TOKEN
-                    if (-not [string]::IsNullOrWhiteSpace($env:ASSET_WRITE_TOKEN) -and $env:ASSET_WRITE_TOKEN -notmatch '^\$\(') { $env:GH_TOKEN = $env:ASSET_WRITE_TOKEN }
+                    $assetRepo = if ($env:BUILD_REPOSITORY_NAME) { $env:BUILD_REPOSITORY_NAME } else { 'dotnet/maui' }
+                    $cand = New-Object System.Collections.Generic.List[object]
+                    if ($env:ASSET_WRITE_TOKEN    -and $env:ASSET_WRITE_TOKEN    -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'ASSET_WRITE_TOKEN'; t = $env:ASSET_WRITE_TOKEN }) }
+                    if ($env:EMBED_TOKEN_DISPATCH -and $env:EMBED_TOKEN_DISPATCH -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'DISPATCH_TOKEN';    t = $env:EMBED_TOKEN_DISPATCH }) }
+                    if ($env:EMBED_TOKEN_COPILOT  -and $env:EMBED_TOKEN_COPILOT  -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'COPILOT_TOKEN';     t = $env:EMBED_TOKEN_COPILOT }) }
+                    if ($reviewTok                -and $reviewTok                -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'GH_COMMENT_TOKEN';  t = $reviewTok }) }
+                    $writeTok = $null; $writeName = $null
+                    foreach ($c in $cand) {
+                      $push = $false
+                      try { $env:GH_TOKEN = $c.t; $push = [bool]((gh api "repos/$assetRepo" 2>$null | ConvertFrom-Json).permissions.push) } catch { $push = $false }
+                      Write-Host ("  · Contents:write probe {0}: push={1}" -f $c.n, $push)
+                      if ($push) { $writeTok = $c.t; $writeName = $c.n; break }
+                    }
+                    $env:GH_TOKEN = $reviewTok
+                    if (-not $writeTok) { throw ("no pipeline credential has Contents:write on {0} (probed: {1})" -f $assetRepo, (($cand | ForEach-Object { $_.n }) -join ', ')) }
+                    Write-Host ("Hosting snapshot diffs on {0} using {1} (Contents:write confirmed)" -f $assetRepo, $writeName)
+                    $env:GH_TOKEN = $writeTok
                     try {
                     # 1) resolve the shared asset repo + branch. Public repo =>
                     #    raw.githubusercontent.com serves the PNGs anonymously so
@@ -3782,6 +3797,12 @@ stages:
               # copilot-review-tests GHA workflow already uses to write that branch.
               # Until it exists this macro is unexpanded and the embed skips cleanly.
               ASSET_WRITE_TOKEN: $(SnapshotAssetToken)
+              # Extra existing-secret candidates the embed probes for Contents:write on
+              # the public asset repo — NO new token is provisioned; whichever pipeline
+              # secret already has push wins. VIGILANT_GUIDE_DISPATCH_TOKEN and
+              # COPILOT_TOKEN are the only other GitHub credentials this pipeline exposes.
+              EMBED_TOKEN_DISPATCH: $(VIGILANT_GUIDE_DISPATCH_TOKEN)
+              EMBED_TOKEN_COPILOT: $(COPILOT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
 
