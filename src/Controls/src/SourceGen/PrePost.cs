@@ -2,6 +2,7 @@ using System;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Xml;
+using Microsoft.CodeAnalysis;
 
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -48,6 +49,37 @@ class PrePost : IDisposable
 
 	public static PrePost NewDisableWarning(IndentedTextWriter codeWriter, string warning)
 		=> new(() => codeWriter.WriteLineNoTabs($"#pragma warning disable {warning}"), () => codeWriter.WriteLineNoTabs($"#pragma warning restore {warning}"));
+
+	/// <summary>
+	/// Adds a #line directive that remaps diagnostics on the wrapped line(s) to the given symbol's
+	/// declaration location. Used so that diagnostics on generator-emitted method-group conversions
+	/// (e.g. XAML event handler subscriptions) are attributed to the user's handler method, not to
+	/// the generated .xsg.cs file that the user cannot navigate to.
+	/// </summary>
+	public static PrePost NewLineInfoForSymbol(IndentedTextWriter codeWriter, ISymbol symbol)
+	{
+		static void LineInfo(IndentedTextWriter cw, ISymbol s)
+		{
+			Location? loc = null;
+			foreach (var l in s.Locations)
+			{
+				if (l.IsInSource)
+				{
+					loc = l;
+					break;
+				}
+			}
+			if (loc is null)
+				return;
+			var span = loc.GetLineSpan();
+			var line = span.StartLinePosition.Line + 1; // #line is 1-indexed
+			cw.WriteLineNoTabs($"#line {line} \"{span.Path}\"");
+		}
+		static void LineDefault(IndentedTextWriter cw)
+			=> cw.WriteLineNoTabs("#line default");
+
+		return new(() => LineInfo(codeWriter, symbol), () => LineDefault(codeWriter));
+	}
 
 	readonly Action post;
 	PrePost(Action pre, Action post)
