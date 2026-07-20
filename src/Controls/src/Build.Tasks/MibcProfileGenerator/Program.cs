@@ -59,6 +59,8 @@ static class MibcProfileGenerator
 
 		string outputPath = args[0];
 		var inputPaths = ExpandResponseFiles(args.Skip(1));
+		if (inputPaths is null)
+			return 1;
 		bool uncompressed = string.Equals(Path.GetExtension(outputPath), ".dll", StringComparison.OrdinalIgnoreCase);
 
 		if (inputPaths.Count == 0)
@@ -121,8 +123,9 @@ static class MibcProfileGenerator
 	/// <summary>
 	/// Expands arguments, treating any argument starting with '@' as a response file
 	/// containing one assembly path per line. Non-response-file arguments are passed through.
+	/// Returns null and writes to stderr if a response file is not found.
 	/// </summary>
-	static List<string> ExpandResponseFiles(IEnumerable<string> args)
+	static List<string>? ExpandResponseFiles(IEnumerable<string> args)
 	{
 		var result = new List<string>();
 		foreach (var arg in args)
@@ -133,7 +136,7 @@ static class MibcProfileGenerator
 				if (!File.Exists(responseFile))
 				{
 					Console.Error.WriteLine($"Error: Response file not found: {responseFile}");
-					continue;
+					return null;
 				}
 
 				foreach (var line in File.ReadAllLines(responseFile))
