@@ -14,6 +14,30 @@ namespace Microsoft.Maui.DeviceTests.Services;
 public class EssentialsDIBridgeTests
 {
 	[Fact]
+	public void MauiAppBuildWithoutMapTokenDoesNotInitializeGeocoding()
+	{
+		var field = typeof(Geocoding).GetField(
+			"defaultImplementation",
+			System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+			?? throw new InvalidOperationException("Geocoding backing field was not found.");
+		var original = field.GetValue(null);
+
+		try
+		{
+			field.SetValue(null, null);
+
+			var builder = MauiApp.CreateBuilder();
+			using var app = builder.Build();
+
+			Assert.Null(field.GetValue(null));
+		}
+		finally
+		{
+			field.SetValue(null, original);
+		}
+	}
+
+	[Fact]
 	public void ConfiguredMapServiceTokenIsForwardedToPlatform()
 	{
 		const string token = "test-token";

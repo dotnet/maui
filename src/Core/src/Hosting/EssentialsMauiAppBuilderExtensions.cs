@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Hosting
 
 #if WINDOWS || TIZEN
 				var mapServiceToken = _essentialsBuilder.MapServiceToken;
-				if (mapServiceToken is null && Geocoding.Default is IPlatformGeocoding existingPlatformGeocoding)
+				if (mapServiceToken is null && GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation") is IPlatformGeocoding existingPlatformGeocoding)
 					mapServiceToken = existingPlatformGeocoding.MapServiceToken;
 #endif
 
