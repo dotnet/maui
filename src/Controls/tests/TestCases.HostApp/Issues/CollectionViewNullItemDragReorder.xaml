@@ -15,7 +15,7 @@
                 <DataTemplate x:DataType="local:CollectionViewNullItemDragReorder+ReorderItem">
                     <Grid Padding="16"
                           Margin="0,0,0,8"
-                          HeightRequest="40"
+                          HeightRequest="70"
                           BackgroundColor="#FFFFFF"
                           AutomationId="{Binding ContainerAutomationId}">
                         <Label Text="{Binding Text}"

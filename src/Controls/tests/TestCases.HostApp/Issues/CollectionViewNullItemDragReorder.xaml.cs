@@ -1,10 +1,11 @@
+#nullable enable
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.None, 90001, "CollectionView2 (Windows) drag-and-drop reorder with null items in the ItemsSource", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 36068, "CollectionView2 (Windows) drag-and-drop reorder with null items in the ItemsSource", PlatformAffected.All)]
 public partial class CollectionViewNullItemDragReorder : ContentPage
 {
 	public ObservableCollection<ReorderItem?> Items { get; }
@@ -33,7 +34,7 @@ public partial class CollectionViewNullItemDragReorder : ContentPage
 		UpdateStatusLabel();
 	}
 
-	void OnReorderCompleted(object sender, EventArgs e)
+	void OnReorderCompleted(object? sender, EventArgs e)
 	{
 		UpdateStatusLabel();
 	}
