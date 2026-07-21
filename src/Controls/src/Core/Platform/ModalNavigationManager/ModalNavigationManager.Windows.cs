@@ -190,7 +190,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (navRoot.RootView is WindowRootView wrv && wrv.AppTitleBarContainer is not null)
 					{
-						wrv.SetTitleBarVisibility(showTitleBar ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed);
+						// Always restore the visual containers to Visible. The reserved height
+						// (WindowTitleBarContentControlMinHeight via navRoot.SetTitleBarVisibility below)
+						// will be 0 in full-screen, so no space is taken. Keeping the container Visible
+						// avoids a permanent collapse when the window later exits full-screen after
+						// the modal has already been dismissed. Height is restored by the
+						// WM_STYLECHANGING handler in MauiWinUIWindow when the window leaves full-screen.
+						wrv.SetTitleBarVisibility(UI.Xaml.Visibility.Visible);
 					}
 
 					navRoot?.SetTitleBarVisibility(showTitleBar);

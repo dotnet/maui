@@ -362,22 +362,22 @@ namespace Microsoft.Maui.DeviceTests
 						// This exercises the AppWindow.Changed subscription path added by the fix.
 						appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
 
-						// Allow the AppWindow.Changed event to propagate.
-						await Task.Delay(100);
-
-						// The presenter change must clear the title bar reservation on the modal.
-						Assert.Equal(0d, modalWindowRootView.WindowTitleBarContentControlMinHeight);
+						// Wait deterministically for the AppWindow.Changed event to propagate and
+						// the DispatcherQueue.TryEnqueue callback to update WindowTitleBarContentControlMinHeight.
+						await AssertEventually(
+							() => modalWindowRootView.WindowTitleBarContentControlMinHeight == 0d,
+							timeout: 2000,
+							message: "Modal should clear title bar space after switching to full-screen");
 
 						// Restore windowed mode while the modal is still open.
 						appWindow.SetPresenter(AppWindowPresenterKind.Default);
 
-						// Allow the AppWindow.Changed event to propagate.
-						await Task.Delay(100);
-
-						// The reservation must be restored when returning to windowed mode.
-						Assert.True(
-							modalWindowRootView.WindowTitleBarContentControlMinHeight > 0,
-							"Modal should restore title bar space when returning to windowed mode");
+						// Wait deterministically for the AppWindow.Changed event to propagate and
+						// the DispatcherQueue.TryEnqueue callback to restore WindowTitleBarContentControlMinHeight.
+						await AssertEventually(
+							() => modalWindowRootView.WindowTitleBarContentControlMinHeight > 0,
+							timeout: 2000,
+							message: "Modal should restore title bar space when returning to windowed mode");
 					}
 					finally
 					{
