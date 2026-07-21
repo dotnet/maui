@@ -442,7 +442,7 @@ if ($AllowAllTools) {
 }
 
 $outputLines = New-Object System.Collections.Generic.List[string]
-$copilotArgs = @("-p", $prompt, "--output-format", "json", "--model", $model)
+$copilotArgs = @("-p", $prompt, "--output-format", "json", "--model", $model, "--context", "long_context")
 if ($AllowAllTools) {
     $copilotArgs += "--allow-all"
 }
