@@ -30,7 +30,7 @@ on:
         default: 5
   steps:
     - name: Checkout repository scripts
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7.0.0
       with:
         persist-credentials: false
     - name: Build rerun candidate context
@@ -132,8 +132,9 @@ safe-outputs:
           type: string
       steps:
         - name: Checkout repository scripts
-          uses: actions/checkout@v4
+          uses: actions/checkout@v7.0.0
           with:
+            ref: main
             persist-credentials: false
         - name: Download rerun candidate context
           uses: actions/download-artifact@v8.0.1
@@ -159,7 +160,7 @@ safe-outputs:
           # here. We dispatch the same review-trigger.yml workflow a maintainer
           # `/review` runs; it owns PR validation, the s/agent-review-in-progress
           # lock, platform inference, OIDC, and the AzDO pipeline trigger.
-          uses: actions/github-script@v8
+          uses: actions/github-script@v9.0.0
           with:
             github-token: ${{ secrets.GITHUB_TOKEN }}
             script: |

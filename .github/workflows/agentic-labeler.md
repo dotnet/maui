@@ -39,8 +39,9 @@ on:
   # Allow this workflow to run for any actor (including first-time community
   # contributors). It is labeling-only — the agent runs with read-only tokens,
   # and label writes happen through the sandboxed safe-output job capped at
-  # `add_labels: max: 10` (sized to fit one area-* label plus up to several
-  # platform/* labels in a single call).
+  # `add_labels: max: 10` and restricted to `area-*` / `platform/*` labels
+  # (sized to fit one area label plus up to several platform labels in a
+  # single call).
   #
   # Fork PR safety: this workflow uses `pull_request_target` and DOES check
   # out the PR branch (no `checkout: false`). gh-aw protects the agent
@@ -83,6 +84,13 @@ safe-outputs:
     # Blast-radius cap: allow up to 10 labels per call so area + platform
     # labels all survive in a single add_labels invocation.
     max: 10
+    # Enforce the workflow contract at the safe-output boundary. gh-aw v0.81.6
+    # validates and sanitizes label names through its issue-intent normalizer;
+    # this allowlist additionally prevents any other label family from being
+    # applied if untrusted content confuses the agent.
+    allowed:
+      - "area-*"
+      - "platform/*"
   # This workflow is labeling-only — never create issues for agent-side
   # status events (noop, missing tool, incomplete run, failure). Those
   # paths default to opening tracker issues, which would contradict the
@@ -113,8 +121,9 @@ tools:
     # would filter that content out and the agent could not read the body
     # it needs to label). This is safe because:
     #   - the agent job runs read-only;
-    #   - all writes go through the sandboxed safe-output job, which
-    #     accepts only `add_labels` (capped at 10 labels per call);
+    #   - all writes go through the sandboxed safe-output job, which accepts
+    #     only `add_labels`, capped at 10 labels and restricted to the
+    #     `area-*` and `platform/*` families;
     #   - prompt hardening below tells the agent to ignore any labeling
     #     instructions found in the issue/PR body.
     min-integrity: none

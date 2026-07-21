@@ -83,7 +83,7 @@ on:
   # the script never executes PR-controlled code.
   steps:
     - name: Checkout repository scripts
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7.0.0
       with:
         persist-credentials: false
     - name: Build ci-fix PR watch context

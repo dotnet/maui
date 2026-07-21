@@ -89,6 +89,7 @@ tools:
   bash: ["gh", "git", "grep", "sed", "awk", "sort", "uniq", "jq", "cat", "echo", "date", "test", "true", "false", "bash", "sh"]
 
 safe-outputs:
+  needs: [pat_pool]
   create-pull-request:
     title-prefix: "[actions] "
     labels: [dependencies, agentic-workflows]
@@ -129,7 +130,7 @@ creating another PR. Mention the existing PR in the run output only. (The `--aut
 the check to this workflow's own bot-created PRs — safe-outputs opens them as `app/github-actions` —
 so an unrelated user-opened PR with a colliding title cannot suppress the refresh.)
 
-## Step 1 — Ensure the gh-aw CLI is available at the pinned version
+## Step 1 — Ensure the gh-aw CLI is available at the committed lock version
 
 The `gh aw` command comes from the `github/gh-aw` gh extension, which may not be preinstalled on
 the runner. Read this workflow's required version from the `compiler_version` metadata in its
