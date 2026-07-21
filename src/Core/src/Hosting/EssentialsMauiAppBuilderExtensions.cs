@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Hosting
 					setter(impl);
 				}
 
-				AddFacadeCleanup(assignment, getter, setter, facadeCleanups);
+				AddFacadeCleanup(assignment, originalGetter, setter, facadeCleanups);
 			}
 
 			static T? GetFacadeBackingField<T>(

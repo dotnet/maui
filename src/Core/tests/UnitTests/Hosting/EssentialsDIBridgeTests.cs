@@ -215,6 +215,21 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void CleanupDoesNotInitializePlatformDefaultAfterExternalClear()
+		{
+			ResetStaticField(typeof(Preferences), "defaultImplementation");
+
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences>(new StubPreferences());
+			var app = builder.Build();
+
+			ResetStaticField(typeof(Preferences), "defaultImplementation");
+			app.Dispose();
+
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+		}
+
+		[Fact]
 		public void DIRegisteredGeocoding_BridgedToDefaultProperty()
 		{
 			// Geocoding is unique: uses SetCurrent internally but exposes Default property,
