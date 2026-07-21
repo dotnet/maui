@@ -212,17 +212,15 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
 
-#if IOS || MACCATALYST
-		handlersCollection.AddHandler<Shell, ShellRenderer>();
+#if ANDROID || IOS || MACCATALYST
+		handlersCollection.AddHandler<Shell, ShellHandler>();
+		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
+		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #elif WINDOWS
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
-#elif ANDROID
-		handlersCollection.AddHandler<Shell, ShellHandler>();
-		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
-		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #elif TIZEN
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();

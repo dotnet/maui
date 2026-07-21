@@ -31,7 +31,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public ShellFlyoutLayoutManager(IShellContext context)
 		{
 			_context = context;
-			_context.Shell.PropertyChanged += OnShellPropertyChanged;
+
+			// When used from the handler path, the mapper drives updates directly.
+			// Only subscribe to PropertyChanged for the compatibility renderer path.
+			if (context is not Handlers.ShellHandler)
+			{
+				_context.Shell.PropertyChanged += OnShellPropertyChanged;
+			}
+
 			ShellController.StructureChanged += OnStructureChanged;
 		}
 
@@ -383,11 +390,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Is(Shell.FlyoutHeaderBehaviorProperty))
 			{
-				SetHeaderContentInset();
-				LayoutParallax();
+				OnFlyoutHeaderBehaviorChanged();
 			}
 			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
+			{
 				UpdateVerticalScrollMode();
+			}
+		}
+
+		internal void OnFlyoutHeaderBehaviorChanged()
+		{
+			SetHeaderContentInset();
+			LayoutParallax();
 		}
 
 		public void ViewDidLoad()
