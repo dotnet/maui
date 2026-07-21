@@ -385,7 +385,7 @@ N=<issue-number>
 # The rooting Type.Member this issue is about (titles lead with it: "[leak-scan] Type.Member — ...").
 # Use the same extraction as daily-leak-hunter.md (last Type.Member pair of the first identifier
 # chain) so off-contract / fully-qualified titles key identically on both sides of the pipeline.
-API=$(gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title -q '.title' \
+API=$(gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title -q '.title | gsub("[\r\n]+";" ")' \
   | sed -E 's/^\[leak-scan\] *//' \
   | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
 echo "target rooting API: $API"
@@ -393,13 +393,21 @@ echo "target rooting API: $API"
 # a LITERAL "Type.Member" — otherwise "BackButtonBehavior.Command" would also match "BackButtonBehaviorXCommand".
 API_RE=$(printf '%s' "$API" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 # (a) Exact [leak-fix] PRs already MERGED to main/inflight/current.
-gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
+# Fail-closed: a transient fetch error writes nothing, and jq on an empty pipe still emits []
+# with exit 0 — this gate would then wrongly conclude "no merged fix exists" and let leak-fixer
+# create a duplicate PR (the exact outcome this workflow prevents). Split fetch from filter.
+if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
   --search '"[leak-fix]" in:title' \
   --json number,title,body,baseRefName,mergedAt,url \
-  | jq '[.[] |
-      select(.mergedAt != null) |
-      select(.title | startswith("[leak-fix] ")) |
-      select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
+  > /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json; then
+  echo "ERROR: 'gh pr list --state merged [leak-fix]' failed — aborting to avoid fail-open dedup that would re-create an already-merged fix." >&2
+  exit 1
+fi
+jq '[.[] |
+    select(.mergedAt != null) |
+    select(.title | startswith("[leak-fix] ")) |
+    select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
+  /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json \
   > /tmp/gh-aw/agent/merged-leak-fix-prs.json
 
 # Canonicalize every merged PR title with the same last-Type.Member extraction used for the
@@ -443,13 +451,21 @@ gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 # (c) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
 #     [leak-fix] PR titles are "Fix <Type>.<Member> memory leak".
-gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
-  --search '"[leak-fix]" in:title' \
-  --json number,title \
-  | jq --arg api "$API_RE" '[.[] |
-      select(.title | startswith("[leak-fix] ")) |
-      select(.title | test("^\\[leak-fix\\] +Fix +"+$api+"([. ]|$)"))]' \
-  > /tmp/gh-aw/agent/same-api-prs.json
+#     Guard: if $API is empty (issue title had no Type.Member chain), $API_RE is empty and the
+#     test() regex collapses to "^\[leak-fix\] +Fix +([. ]|$)", which false-matches unrelated
+#     PRs like "[leak-fix] Fix .NET …" and would wrongly skip this fix — so only scan when set.
+if test -n "$API"; then
+  gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
+    --search '"[leak-fix]" in:title' \
+    --json number,title \
+    | jq --arg api "$API_RE" '[.[] |
+        select(.title | startswith("[leak-fix] ")) |
+        select(.title | test("^\\[leak-fix\\] +Fix +"+$api+"([. ]|$)"))]' \
+    > /tmp/gh-aw/agent/same-api-prs.json
+else
+  echo "target rooting API is empty (issue #$N title has no Type.Member chain) — skipping same-API dedup so an empty regex can't false-match unrelated [leak-fix] PRs." >&2
+  echo '[]' > /tmp/gh-aw/agent/same-api-prs.json
+fi
 jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/same-api-prs.json
 # (d) Closed-unmerged attempts for this issue (attempt cap = 3).
 gh pr list --repo "$GITHUB_REPOSITORY" --state closed --limit 1000 \

@@ -178,7 +178,7 @@ gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
 # Type.Member pair of the first identifier chain: for a fully-qualified title like
 # "Microsoft.Maui.Controls.Picker.ItemsSource" this yields "Picker.ItemsSource" (not the
 # namespace head "Microsoft.Maui", which would over-collapse distinct leaks to one key).
-jq -r '.[].title' /tmp/gh-aw/agent/my-open-leakscan.json \
+jq -r '.[].title | gsub("[\r\n]+";" ")' /tmp/gh-aw/agent/my-open-leakscan.json \
   | sed -E 's/^\[leak-scan\] *//' \
   | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }' \
   | sort -u \
@@ -188,13 +188,21 @@ echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 # Fetch only this workflow family's exact generated PRs that are already merged into one of
 # the two active source-flow branches. Trust live baseRefName, not a stale "Target branch:"
 # line in the PR body (PRs can be retargeted before merge).
-gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
+# Fail-closed: if the fetch errors (transient API/auth/rate-limit) it writes nothing, and jq on
+# an empty pipe still emits [] with exit 0 — the de-dup would then wrongly conclude "no merged
+# fix exists" and re-file a duplicate. Split the fetch from the filter and abort on failure.
+if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
   --search '"[leak-fix]" in:title' \
   --json number,title,body,baseRefName,mergedAt,url \
-  | jq '[.[] |
-      select(.mergedAt != null) |
-      select(.title | startswith("[leak-fix] ")) |
-      select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
+  > /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json; then
+  echo "ERROR: 'gh pr list --state merged [leak-fix]' failed — aborting so a transient API/auth/rate-limit error can't empty the merged-fix set and re-file duplicate leaks (fail-closed)." >&2
+  exit 1
+fi
+jq '[.[] |
+    select(.mergedAt != null) |
+    select(.title | startswith("[leak-fix] ")) |
+    select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
+  /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json \
   > /tmp/gh-aw/agent/merged-leak-fix-prs.json
 
 # Keep the canonical API first so every candidate can be checked with grep -Fx before its
