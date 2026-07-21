@@ -2006,6 +2006,20 @@ $selNone = Select-OpenMainFixPr -CandidateFixPrs @(@{ number = 40005; state = 'M
 Assert-Eq -Label "no OPEN candidates → returns null" `
     -Expected $true -Actual ($null -eq $selNone)
 
+# Null/empty MainBranch guard: a candidate with a missing/empty baseRef must NOT
+# be picked by 'baseRef -eq ""' — the selector must skip the main-match and fall
+# back to the first OPEN candidate (defends the renderer when metadata.mainBranch
+# is absent, e.g. slim fixtures). The empty-baseRef candidate is deliberately
+# second so the pre-guard bug (which matched it via -eq "") is distinguishable
+# from the fixed first-OPEN fallback.
+$nullMainBranch = @(
+    @{ number = 40006; state = 'OPEN'; baseRef = 'inflight/current' },
+    @{ number = 40007; state = 'OPEN'; baseRef = '' }
+)
+$selNullMain = Select-OpenMainFixPr -CandidateFixPrs $nullMainBranch -MainBranch $null
+Assert-Eq -Label "null MainBranch + empty-baseRef candidate → falls back to first OPEN (no accidental match)" `
+    -Expected 40006 -Actual ([int]$selNullMain.number)
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 

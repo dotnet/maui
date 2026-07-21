@@ -3532,8 +3532,15 @@ function Select-OpenMainFixPr {
     param($CandidateFixPrs, [string]$MainBranch)
     $open = @($CandidateFixPrs | Where-Object { $_.state -eq 'OPEN' })
     if ($open.Count -eq 0) { return $null }
-    $onMain = $open | Where-Object { $_.baseRef -eq $MainBranch } | Select-Object -First 1
-    if ($onMain) { return $onMain }
+    # Only attempt the main-targeting match when we actually know the main branch.
+    # $MainBranch is typed [string], so a $null caller argument arrives as ''.
+    # Without this guard 'baseRef -eq ""' would match a candidate whose own
+    # baseRef is empty/missing, wrongly selecting it and defeating the intended
+    # first-OPEN fallback below.
+    if (-not [string]::IsNullOrEmpty($MainBranch)) {
+        $onMain = $open | Where-Object { $_.baseRef -eq $MainBranch } | Select-Object -First 1
+        if ($onMain) { return $onMain }
+    }
     return $open | Select-Object -First 1
 }
 
