@@ -553,11 +553,14 @@ namespace Microsoft.Maui.Handlers
 					// After NavigationFinished has updated CurrentPage, fire lifecycle events
 					// for each popped page. Handles multi-page native pops (e.g., long-press
 					// back button menu selecting an intermediate page).
+					// Iterate in reverse (top→bottom) so the first callback is for the page
+					// that was actually on top before the pop — ensures NavigatedTo receives
+					// the correct PreviousPage. Matches renderer behavior.
 					if (poppedPages.Count > 0 && ControlsConfiguration?.OnNativePopCompleted is { } onPopCompleted)
 					{
-						foreach (var poppedPage in poppedPages)
+						for (int index = poppedPages.Count - 1; index >= 0; index--)
 						{
-							onPopCompleted(handler.NavigationView, poppedPage);
+							onPopCompleted(handler.NavigationView, poppedPages[index]);
 						}
 					}
 				}
