@@ -21,6 +21,7 @@ public partial class Material3_EntryControlMainPage : ContentPage
 	public Material3_EntryControlMainPage(EntryViewModel viewModel)
 	{
 		InitializeComponent();
+		grid.HeightRequest = 130;
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
 		EntryControl.PropertyChanged += UpdateEntryControl;
@@ -36,7 +37,7 @@ public partial class Material3_EntryControlMainPage : ContentPage
 		await Navigation.PushAsync(new EntryOptionsPage(_viewModel));
 	}
 
-	void CursorPositionButton_Clicked(object sender, EventArgs e)
+	void CursorPositionEntry_TextChanged(object sender, TextChangedEventArgs e)
 	{
 		if (int.TryParse(CursorPositionEntry.Text, out int cursorPosition))
 		{

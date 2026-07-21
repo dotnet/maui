@@ -7,7 +7,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
-
+[Category(UITestCategories.Material3)]
 public class Material3EntryFeatureTests : _GalleryUITest
 {
 	public override string GalleryPageName => "Entry Material3 Feature Matrix";
@@ -19,90 +19,36 @@ public class Material3EntryFeatureTests : _GalleryUITest
 	{
 	}
 
+	// Note: FontAutoScaling states cannot currently be reliably covered in CI environments, as system font scaling settings are not consistently supported or controllable in automated runs.
+
 	[Test, Order(1)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_InitialState_VerifyVisualState()
+	public void VerifyMaterial3TextWhenAlignedHorizontally()
 	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HCenter");
+		App.Tap("HCenter");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_TextWithHorizontalAlignment_VerifyVisualState()
+	public void VerifyMaterial3TextWhenAlignedVertically()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("HCenter");
-		App.Tap("HCenter");
+		App.WaitForElement("VEnd");
+		App.Tap("VEnd");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(3)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_TextWithVerticalAlignment_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("VEnd");
-		App.Tap("VEnd");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(4)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_HorizontalAndVerticalAlignment_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("VEnd");
-		App.Tap("VEnd");
-		App.WaitForElement("HEnd");
-		App.Tap("HEnd");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(5)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_TextColor_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextColorRed");
-		App.Tap("TextColorRed");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(6)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_FontSize_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontSizeEntry");
-		App.ClearText("FontSizeEntry");
-		App.EnterText("FontSizeEntry", "20");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(7)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_FontFamily_VerifyVisualState()
+	public void VerifyMaterial3TextWhenFontFamilySetValue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -110,27 +56,12 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.EnterText("FontFamily", "MontserratBold");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(8)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_FontAttributes_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesBold");
-		App.Tap("FontAttributesBold");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(9)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_CharacterSpacing_VerifyVisualState()
+	[Test, Order(4)]
+	public void VerifyMaterial3TextWhenCharacterSpacingSetValues()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -139,13 +70,12 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.EnterText("CharacterSpacing", "5");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(10)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_HorizontalAlignmentWithCharacterSpacing_VerifyVisualState()
+	[Test, Order(5)]
+	public void VerifyMaterial3HorizontalTextAlignmentBasedOnCharacterSpacing()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -156,13 +86,12 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.Tap("HCenter");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(11)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_VerticalAlignmentWithCharacterSpacing_VerifyVisualState()
+	[Test, Order(6)]
+	public void VerifyMaterial3VerticalTextAlignmentBasedOnCharacterSpacing()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -173,13 +102,28 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.Tap("VEnd");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(12)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_CharacterSpacingWithFontFamily_VerifyVisualState()
+	[Test, Order(7)]
+	public void VerifyMaterial3IsPasswordBasedOnCharacterSpacing()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("CharacterSpacing");
+		App.ClearText("CharacterSpacing");
+		App.EnterText("CharacterSpacing", "5");
+		App.WaitForElement("PasswordTrue");
+		App.Tap("PasswordTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(8)]
+	public void VerifyMaterial3CharacterSpacingWhenFontFamily()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -190,13 +134,71 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.EnterText("FontFamily", "MontserratBold");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(9)]
+	public void VerifyMaterial3TextWhenIsPasswordTrueOrFalse()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("PasswordTrue");
+		App.Tap("PasswordTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(10)]
+	public void VerifyMaterial3IsPasswordBasedOnVerticalTextAlignment()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("VEnd");
+		App.Tap("VEnd");
+		App.WaitForElement("PasswordTrue");
+		App.Tap("PasswordTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(11)]
+	public void VerifyMaterial3IsPasswordBasedOnHorizontalTextAlignment()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HEnd");
+		App.Tap("HEnd");
+		App.WaitForElement("PasswordTrue");
+		App.Tap("PasswordTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(12)]
+	public void VerifyMaterial3IsPasswordWhenMaxLengthSetValue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLength");
+		App.WaitForElement("MaxLength");
+		App.ClearText("MaxLength");
+		App.EnterText("MaxLength", "6");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(13)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_CharacterSpacingWithMaxLength_VerifyVisualState()
+	public void VerifyMaterial3CharacterSpacingWhenMaxLengthSet()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -211,44 +213,74 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.EnterText("MaxLength", "6");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(14)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_IsPassword_VerifyVisualState()
+	public void VerifyMaterial3HorizontalTextAlignmentWhenVerticalTextAlignmentSet()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("PasswordTrue");
-		App.Tap("PasswordTrue");
+		App.WaitForElement("VEnd");
+		App.Tap("VEnd");
+		App.WaitForElement("HEnd");
+		App.Tap("HEnd");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(15)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_IsPasswordWithCharacterSpacing_VerifyVisualState()
+	public void VerifyMaterial3TextWhenTextColorSetCorrectly()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("CharacterSpacing");
-		App.ClearText("CharacterSpacing");
-		App.EnterText("CharacterSpacing", "5");
-		App.WaitForElement("PasswordTrue");
-		App.Tap("PasswordTrue");
+		App.WaitForElement("TextColorRed");
+		App.Tap("TextColorRed");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(16)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_IsPasswordWithFontSize_VerifyVisualState()
+	public void VerifyMaterial3TextColorResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextColorRed");
+		App.Tap("TextColorRed");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextColorDefault");
+		App.Tap("TextColorDefault");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(17)]
+	public void VerifyMaterial3TextWhenFontSizeSetCorrectly()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontSizeEntry");
+		App.ClearText("FontSizeEntry");
+		App.EnterText("FontSizeEntry", "20");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+[Test, Order(18)]
+	public void VerifyMaterial3IsPasswordWhenFontSizeSet()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -257,13 +289,61 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.ClearText("FontSizeEntry");
 		App.EnterText("FontSizeEntry", "20");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(17)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_FlowDirection_VerifyVisualState()
+#if TEST_FAILS_ON_ANDROID //Related issue: issue link: https://github.com/dotnet/maui/issues/29833"
+	[Test, Order(19)]
+	public void VerifyMaterial3TextWhenIsSpellCheckEnabledTrue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("SpellCheckTrue");
+		App.Tap("SpellCheckTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.EnterText("TestEntry", "Testig");
+		App.EnterText("TestEntry", " ");
+		VerifyScreenshotWithKeyboardHandling();
+	}
+#endif
+
+#if TEST_FAILS_ON_ANDROID //In Android related issue:https://github.com/dotnet/maui/issues/26968 and In mac and Windows keybord type is not supported.
+	[Test, Order(20)]
+	public void VerifyMaterial3TextWhenKeyboardTypeSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Numeric");
+		App.Tap("Numeric");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.Tap("TestEntry");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(21)]
+	public void VerifyMaterial3TextWhenReturnTypeSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Search");
+		App.Tap("Search");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.Tap("TestEntry");
+		VerifyScreenshot();
+	}
+#endif
+
+
+	[Test, Order(22)]
+	public void VerifyMaterial3EntryControlWhenFlowDirectionSet()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -271,13 +351,28 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRightToLeft");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(18)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderText_VerifyVisualState()
+	[Test, Order(23)]
+	public void VerifyMaterial3PlaceholderWhenFlowDirectionSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FlowDirectionRightToLeft");
+		App.Tap("FlowDirectionRightToLeft");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+
+	[Test, Order(24)]
+	public void VerifyMaterial3EntryControlWhenPlaceholderTextSet()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -286,15 +381,14 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.EnterText("PlaceholderText", "Enter your name");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
+		App.WaitForElement("TestEntry");
 		App.ClearText("TestEntry");
-		App.DismissKeyboard();
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		HideSoftKeyboardIfVisible();
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(19)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderColor_VerifyVisualState()
+	[Test, Order(25)]
+	public void VerifyMaterial3EntryControlWhenPlaceholderColorSet()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -304,133 +398,77 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.ClearText("TextEntryChanged");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-#if TEST_FAILS_ON_ANDROID //FlowDirection does not apply to the placeholder in Material3 Entry.
-	[Test, Order(20)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderWithFlowDirection_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FlowDirectionRightToLeft");
-		App.Tap("FlowDirectionRightToLeft");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-#endif
-
-#if TEST_FAILS_ON_ANDROID //HorizontalTextAlignment does not apply to the placeholder in Material3 Entry. TextInputLayout does not expose a public API for hint text gravity.
-	[Test, Order(21)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderWithHorizontalAlignment_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("HCenter");
-		App.Tap("HCenter");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-#endif
-
-	[Test, Order(22)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderWithVerticalAlignment_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("VStart");
-		App.Tap("VStart");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(23)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderWithFontFamily_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontFamily");
-		App.EnterText("FontFamily", "MontserratBold");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(24)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderWithFontSize_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontSizeEntry");
-		App.ClearText("FontSizeEntry");
-		App.EnterText("FontSizeEntry", "20");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(25)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderWithFontAttributes_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesItalic");
-		App.Tap("FontAttributesItalic");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-#if TEST_FAILS_ON_ANDROID //CharacterSpacing does not apply to the placeholder in Material3 Entry. TextInputLayout does not expose a public API for hint letter spacing.
 	[Test, Order(26)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderWithCharacterSpacing_VerifyVisualState()
+	public void VerifyMaterial3PlaceholderColorResetToDefault()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("CharacterSpacing");
-		App.ClearText("CharacterSpacing");
-		App.EnterText("CharacterSpacing", "5");
+		App.WaitForElement("PlaceholderColorRed");
+		App.Tap("PlaceholderColorRed");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("PlaceholderColorDefault");
+		App.Tap("PlaceholderColorDefault");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
-#endif
 
 	[Test, Order(27)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderWithPasswordTrue_VerifyVisualState()
+	public void VerifyMaterial3TextWhenFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+[Test, Order(28)]
+	public void VerifyMaterial3Entry_WithShadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(29)]
+	public void VerifyMaterial3PlaceholderWithShadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(30)]
+	public void VerifyMaterial3PlaceholderWithPasswordTrue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -443,119 +481,354 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.Tap("PasswordTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(28)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_Shadow_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("ShadowCheckBox");
-		App.Tap("ShadowCheckBox");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(29)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderWithShadow_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("ShadowCheckBox");
-		App.Tap("ShadowCheckBox");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(30)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_IsEnabled_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("EnabledFalse");
-		App.Tap("EnabledFalse");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(31)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_IsPasswordWithMaxLength_VerifyVisualState()
+	public void VerifyMaterial3PlaceholderWithHorizontalAlignment()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
+		App.WaitForElement("HCenter");
+		App.Tap("HCenter");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "Test Entered Set MaxLength");
-		App.WaitForElement("MaxLength");
-		App.ClearText("MaxLength");
-		App.EnterText("MaxLength", "6");
-		App.WaitForElement("PasswordTrue");
-		App.Tap("PasswordTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(32)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_IsPasswordWithVerticalAlignment_VerifyVisualState()
+	public void VerifyMaterial3PlaceholderWithVerticalAlignment()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("PasswordTrue");
-		App.Tap("PasswordTrue");
+		App.WaitForElement("VStart");
+		App.Tap("VStart");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(33)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_IsPasswordWithHorizontalAlignment_VerifyVisualState()
+[Test, Order(33)]
+	public void VerifyMaterial3PlaceholderWithCharacterSpacing()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("HEnd");
-		App.Tap("HEnd");
-		App.WaitForElement("PasswordTrue");
-		App.Tap("PasswordTrue");
+		App.WaitForElement("CharacterSpacing");
+		App.ClearText("CharacterSpacing");
+		App.EnterText("CharacterSpacing", "5");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(34)]
-	[Category(UITestCategories.Material3)]
-	public void Material3Entry_PlaceholderColorAndTextColor_VerifyVisualState()
+	public void VerifyMaterial3PlaceholderWithFontFamily()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("TextColorRed");
-		App.Tap("TextColorRed");
-		App.WaitForElement("PlaceholderColorBlue");
-		App.Tap("PlaceholderColorBlue");
+		App.WaitForElement("FontFamily");
+		App.EnterText("FontFamily", "MontserratBold");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("TestEntry");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
+	[Test, Order(35)]
+	public void VerifyMaterial3PlaceholderWithFontSize()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontSizeEntry");
+		App.ClearText("FontSizeEntry");
+		App.EnterText("FontSizeEntry", "20");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(36)]
+	public void VerifyMaterial3PlaceholderWithFontAttributes()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(37)]
+	public void VerifyMaterial3EntryWhenWidthRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("WidthRequest");
+		App.ClearText("WidthRequest");
+		App.EnterText("WidthRequest", "150");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(38)]
+	public void VerifyMaterial3EntryWhenHeightRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequest");
+		App.ClearText("HeightRequest");
+		App.EnterText("HeightRequest", "80");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(39)]
+	public void VerifyMaterial3EntryWhenHeightRequestAndWidthRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequest");
+		App.ClearText("HeightRequest");
+		App.EnterText("HeightRequest", "100");
+		App.WaitForElement("WidthRequest");
+		App.ClearText("WidthRequest");
+		App.EnterText("WidthRequest", "150");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(40)]
+	public void VerifyMaterial3EntryWhenOpacitySet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0.5");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(41)]
+	public void VerifyMaterial3EntryWhenOpacityResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0.5");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "1.0");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(42)]
+	public void VerifyMaterial3EntryWhenOpacitySetToZero()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(43)]
+	public void VerifyMaterial3EntryWhenBackgroundColorSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorLightBlue");
+		App.Tap("BackgroundColorLightBlue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+	
+	[Test, Order(44)]
+	public void VerifyMaterial3TextWhenBoldAndItalicFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(45)]
+	public void VerifyMaterial3PlaceholderTextWhenBoldAndItalicFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your name");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		HideSoftKeyboardIfVisible();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(46)]
+	public void VerifyMaterial3EntryBackgroundColorWithTextColor()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("TextColorRed");
+		App.Tap("TextColorRed");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(47)]
+	public void VerifyMaterial3EntryBackgroundColorWithPlaceholderText()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorLightBlue");
+		App.Tap("BackgroundColorLightBlue");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your name");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		HideSoftKeyboardIfVisible();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(48)]
+	public void VerifyMaterial3EntryBackgroundColorWithPlaceholderColor()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("PlaceholderColorRed");
+		App.Tap("PlaceholderColorRed");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(49)]
+	public void VerifyMaterial3EntryBackgroundColorResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorDefault");
+		App.Tap("BackgroundColorDefault");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+
+	/// <summary>
+	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping
+	/// </summary>
+	/// <param name="screenshotName">Optional name for the screenshot</param>
+	private void VerifyScreenshotWithKeyboardHandling(string? screenshotName = null)
+	{		if (App.IsKeyboardShown())
+			App.DismissKeyboard();
+
+		// Using cropping instead of DismissKeyboard() on iOS to maintain focus during testing
+		if (string.IsNullOrEmpty(screenshotName))
+			VerifyScreenshot(cropBottom: CropBottomValue);
+		else
+			VerifyScreenshot(screenshotName, cropBottom: CropBottomValue);
+	}
+
+	/// <summary>
+	/// Helper method to handle keyboard visibility and set exception if screenshot verification fails
+	/// </summary>
+	/// <param name="exception">Reference to exception variable</param>
+	/// <param name="screenshotName">Name for the screenshot</param>
+	private void VerifyScreenshotWithKeyboardHandlingOrSetException(ref Exception? exception, string screenshotName)
+	{
+		if (App.IsKeyboardShown())
+			App.DismissKeyboard();
+		VerifyScreenshotOrSetException(ref exception, screenshotName, cropBottom: CropBottomValue);
+
+	}
+
+	/// <summary>
+	/// Hides the soft keyboard on Android/iOS if it is currently visible, and on Android waits for the
+	/// hide animation to complete. Prevents flakiness when a prior action (e.g. tapping a button that
+	/// calls Focus() on an Entry re-shows the keyboard. No-op on Windows and MacCatalyst.
+	/// </summary>
+	private void HideSoftKeyboardIfVisible()
+	{if (App.IsKeyboardShown())
+		{
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+		}
+	}
 }
 #endif
