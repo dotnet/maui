@@ -51,7 +51,16 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "OnAppInstanceActivated fires exactly once during startup")]
 		public void OnAppInstanceActivatedFiresExactlyOnce()
 		{
-			var count = MauiProgram.LifecycleEventLog.Count(e => e == nameof(WindowsLifecycle.OnAppInstanceActivated));
+			var log = MauiProgram.LifecycleEventLog;
+			var launchingIndex = log.IndexOf(nameof(WindowsLifecycle.OnLaunching));
+
+			Assert.True(launchingIndex >= 0,
+				$"Expected {nameof(WindowsLifecycle.OnLaunching)} in the lifecycle log. Log: [{string.Join(", ", log)}]");
+
+			var count = log
+				.Take(launchingIndex)
+				.Count(e => e == nameof(WindowsLifecycle.OnAppInstanceActivated));
+
 			Assert.Equal(1, count);
 		}
 	}
