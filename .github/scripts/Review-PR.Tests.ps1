@@ -56,6 +56,19 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
 }
 
+Describe 'Copilot reviewer configuration' {
+    It 'defaults the main review orchestrator to GPT-5.6 Sol with long context' {
+        $content | Should -Match ([regex]::Escape("else { 'gpt-5.6-sol' }"))
+        $content | Should -Match '--context long_context'
+    }
+
+    It 'defaults the local test reviewer to GPT-5.6 Sol with long context' {
+        $reviewTests = Get-Content -Raw (Join-Path $PSScriptRoot 'Review-Tests.ps1')
+        $reviewTests | Should -Match ([regex]::Escape('else { "gpt-5.6-sol" }'))
+        $reviewTests | Should -Match ([regex]::Escape('"--context", "long_context"'))
+    }
+}
+
 Describe 'Copilot token usage helpers' {
     It 'normalizes known token fields while preserving raw token field paths' {
         $usage = [pscustomobject]@{
