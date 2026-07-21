@@ -85,29 +85,49 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 
-			ClearBindingContext();
+			// Detach the bound view from the ItemsView's logical children. Unbind() is only
+			// ever invoked from PrepareForReuse, ItemsViewController cell recycling, or the
+			// deterministic disposing path of Dispose(bool) - never from the finalizer - so
+			// touching the managed object graph here is safe.
+			DetachFromItemsView();
+
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				// Also detach the native platform view from the cell's ContentView, since a
+				// strong subview reference here can keep the platform view (and therefore the
+				// bound VirtualView) reachable even after logical-child bookkeeping is cleared.
+				ClearSubviews();
+			}
 		}
 
-		// Clears the bound view's BindingContext. Called during routine recycling and final teardown.
-		void ClearBindingContext()
+		// Managed-only cleanup: clears the bound view's BindingContext and removes it from the
+		// ItemsView's logical children (mirrors TemplatedCell2.Unbind()). Uses view.Parent
+		// (itself backed by a WeakReference<Element>) rather than tracking a separate reference.
+		// Only ever invoked via Unbind(), which is only called on the deterministic disposing
+		// path (see Dispose(bool)) - never from the finalizer.
+		void DetachFromItemsView()
 		{
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.BindingContext = null;
+				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
 			}
 		}
 
-		// Removes the bound view from the ItemsView's logical children, so it (and its handler) can
-		// be collected. Intentionally NOT called from Unbind()/ClearBindingContext() - only from
-		// final teardown paths (ItemsViewController.Disconnect()/ClearMeasurementCells()), since
-		// removing it during routine recycling can corrupt native layout state (e.g. CarouselView
-		// crash).
-		internal void DetachFromItemsView()
+		protected override void Dispose(bool disposing)
 		{
-			if (PlatformHandler?.VirtualView is View view)
+			// Only run managed/native cleanup on the deterministic disposing path. When
+			// disposing == false (finalizer), touching the managed object graph
+			// (BindingContext, LogicalChildren, events) is unsafe: it can run on the
+			// finalizer thread and reference objects that are themselves being finalized.
+			// Unbind() already calls DetachFromItemsView(), so this also covers the case
+			// where the cell is deallocated without ever going through PrepareForReuse/Unbind.
+			if (disposing)
 			{
-				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
+				Unbind();
 			}
+
+			base.Dispose(disposing);
 		}
 
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(

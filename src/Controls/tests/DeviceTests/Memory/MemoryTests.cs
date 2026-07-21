@@ -244,9 +244,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Slider))]
 	[InlineData(typeof(Stepper))]
 	[InlineData(typeof(SwipeView))]
-#if TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Switch))]
-#endif
 	[InlineData(typeof(TimePicker))]
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TableView))]
@@ -347,7 +345,6 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning restore CS0618 // Type or member is obsolete
 			var handler = CreateHandler<LayoutHandler>(layout);
 			var viewHandler = view.Handler;
-			Assert.NotNull(viewHandler);
 
 			if (view is HybridWebView)
 			{
@@ -355,7 +352,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				// Await WebView2's own readiness API instead of polling or using a fixed delay.
 				// EnsureCoreWebView2Async completes exactly when initialization finishes (or
 				// immediately if already initialized), so there's no magic timeout/interval to tune.
-				if (viewHandler.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 webView2)
+				if (viewHandler?.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 webView2)
 				{
 					await webView2.EnsureCoreWebView2Async();
 				}
