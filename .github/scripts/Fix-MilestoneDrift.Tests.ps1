@@ -129,6 +129,60 @@ Describe 'Resolve-MergedAfterCutoff' {
     }
 }
 
+Describe 'Get-PrNumbersFromGitLog — terminal squash PR suffix' {
+    It 'parses an ordinary terminal PR suffix' {
+        $result = @(Get-PrNumbersFromGitLog @('abc1234 Fix a layout regression (#35031)'))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 35031
+    }
+
+    It 'returns only the terminal PR when an issue reference appears earlier' {
+        $result = @(Get-PrNumbersFromGitLog @(
+            'abc1234 Fix Shell.Items.Clear() memory leak (#34898) (#35031)'
+        ))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 35031
+    }
+
+    It 'returns only the terminal PR after multiple earlier parenthesized references' {
+        $result = @(Get-PrNumbersFromGitLog @(
+            'abc1234 Reconcile reports (#100) and (#200) before the fix (#34719)'
+        ))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 34719
+    }
+
+    It 'ignores a subject with no terminal PR suffix' {
+        @(Get-PrNumbersFromGitLog @(
+            'abc1234 Follow up on (#35031) without a squash suffix'
+        )).Count | Should -Be 0
+    }
+
+    It 'ignores malformed or non-numeric terminal references "<Reference>"' -ForEach @(
+        @{ Reference = '(#)' }
+        @{ Reference = '(#abc)' }
+        @{ Reference = '(#12x)' }
+        @{ Reference = '(#999999999999999999999999999999)' }
+    ) {
+        @(Get-PrNumbersFromGitLog @("abc1234 Malformed reference $Reference")).Count | Should -Be 0
+    }
+
+    It 'tolerates trailing whitespace after the terminal PR suffix' {
+        $result = @(Get-PrNumbersFromGitLog @('abc1234 Fix a layout regression (#35031)   '))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 35031
+    }
+
+    It 'deduplicates repeated PR subjects and sorts the result' {
+        $result = @(Get-PrNumbersFromGitLog @(
+            'abc1234 First appearance (#35031)',
+            'def5678 Another PR (#34719)',
+            'fed9876 Cherry-pick the first PR (#35031)'
+        ))
+        ($result -join ',') | Should -Be '34719,35031'
+    }
+}
+
 Describe 'Get-PrInfo — merged-after cutoff enforcement' {
     BeforeAll {
         # Build a GitHub-pulls-API-shaped object (ConvertFrom-Json style) for the mock.
@@ -1613,6 +1667,46 @@ Describe 'Get-OnBranchShaFromLog — grep fallback subject precision' {
 
     It 'returns null for empty input' {
         Get-OnBranchShaFromLog @() 42 | Should -BeNullOrEmpty
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Git-log PR parsing integration block (no mocks, no GitHub).
+# ---------------------------------------------------------------------------
+Describe 'Git-log PR parsing paths (unmocked)' -Skip:(-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    BeforeAll {
+        $script:prLogTmp = Join-Path ([IO.Path]::GetTempPath()) "prlogtest-$(New-Guid)"
+        New-Item -ItemType Directory -Path $script:prLogTmp -Force | Out-Null
+
+        git -C $script:prLogTmp init -q
+        git -C $script:prLogTmp config user.email 'milestone-test@example.invalid'
+        git -C $script:prLogTmp config user.name 'Milestone Test'
+        git -C $script:prLogTmp config commit.gpgsign false
+
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Base change (#100)'
+        git -C $script:prLogTmp tag 'from'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Fix Shell.Items.Clear() memory leak (#34898) (#35031)'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Fix VisualStateGroups (#50) (#34716) (#34719)'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Subject mentions (#99999) but has no terminal PR suffix'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Malformed suffix (#not-a-pr)'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Duplicate cherry-pick (#35031)'
+        git -C $script:prLogTmp tag 'to'
+    }
+
+    AfterAll {
+        if ($script:prLogTmp -and (Test-Path $script:prLogTmp)) {
+            Remove-Item -Recurse -Force $script:prLogTmp -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'Get-PrNumbersBetweenTags returns only terminal PR suffixes and deduplicates them' {
+        $result = @(Get-PrNumbersBetweenTags 'from' 'to' $script:prLogTmp)
+        ($result -join ',') | Should -Be '34719,35031'
+    }
+
+    It 'Get-PrNumbersReachableFromTag uses the same terminal-suffix behavior' {
+        $result = @(Get-PrNumbersReachableFromTag 'to' $script:prLogTmp)
+        ($result -join ',') | Should -Be '100,34719,35031'
     }
 }
 
