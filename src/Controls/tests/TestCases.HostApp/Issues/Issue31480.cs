@@ -44,28 +44,37 @@ public class Issue31480 : ContentPage
 			}
 		};
 
-		// Toggles the flow direction of the labels *after* the initial render so the
-		// dynamic MapFlowDirection / HasFormattedTextSpans rebuild path is exercised
-		// (the mapper skips the connecting-handler pass, so only a later change hits it).
+		// This label starts LeftToRight and is flipped to RightToLeft at runtime by the
+		// toggle button below. It exercises the dynamic-switch path where the FlowDirection
+		// changes *after* the handler is connected, forcing MapFlowDirection to rebuild the
+		// formatted text so the stale paragraph style is refreshed.
+		var dynamicLabel = new Label
+		{
+			AutomationId = "DynamicFormattedLabel",
+			FlowDirection = FlowDirection.LeftToRight,
+			FormattedText = new FormattedString
+			{
+				Spans =
+				{
+					new Span { Text = "Welcome to " },
+					new Span { Text = ".NET MAUI", FontAttributes = FontAttributes.Bold },
+					new Span { Text = " – " },
+					new Span { Text = "Formatted", TextDecorations = TextDecorations.Underline },
+					new Span { Text = " Text", TextColor = Colors.DarkOrange }
+				}
+			}
+		};
+
 		var toggleButton = new Button
 		{
-			Text = "Toggle FlowDirection",
 			AutomationId = "ToggleFlowDirectionButton",
+			Text = "Toggle FlowDirection",
 			FlowDirection = FlowDirection.LeftToRight
 		};
-
 		toggleButton.Clicked += (_, _) =>
-		{
-			// rtlLabel starts as inherited RTL (default MatchParent), so flip it to an
-			// explicit LeftToRight on the first click to force a visible re-alignment.
-			rtlLabel.FlowDirection = rtlLabel.FlowDirection == FlowDirection.LeftToRight
+			dynamicLabel.FlowDirection = dynamicLabel.FlowDirection == FlowDirection.LeftToRight
 				? FlowDirection.RightToLeft
 				: FlowDirection.LeftToRight;
-
-			ltrLabel.FlowDirection = ltrLabel.FlowDirection == FlowDirection.LeftToRight
-				? FlowDirection.RightToLeft
-				: FlowDirection.LeftToRight;
-		};
 
 		Content = new VerticalStackLayout
 		{
@@ -77,6 +86,8 @@ public class Issue31480 : ContentPage
 				rtlLabel,
 				new Label { Text = "LTR FormattedText (should be left-aligned):", AutomationId = "LTRHeaderLabel", FlowDirection = FlowDirection.LeftToRight },
 				ltrLabel,
+				new Label { Text = "Dynamic FormattedText (toggled at runtime):", AutomationId = "DynamicHeaderLabel", FlowDirection = FlowDirection.LeftToRight },
+				dynamicLabel,
 				toggleButton,
 			}
 		};

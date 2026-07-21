@@ -15,20 +15,19 @@ public class Issue31480 : _IssuesUITest
 	public void LabelFormattedTextShouldRespectRTLFlowDirection()
 	{
 		App.WaitForElement("RTLFormattedLabel");
+		App.WaitForElement("LTRFormattedLabel");
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.Label)]
-	public void LabelFormattedTextShouldUpdateWhenFlowDirectionChanges()
+	public void LabelFormattedTextShouldUpdateWhenFlowDirectionChangesAfterRender()
 	{
-		App.WaitForElement("RTLFormattedLabel");
-
-		// Toggle the flow direction after the initial render so the dynamic
-		// MapFlowDirection rebuild path is exercised (the RTL label becomes
-		// left-aligned and the LTR label becomes right-aligned).
+		// The label starts LeftToRight; toggling switches it to RightToLeft after the
+		// handler is connected, which must rebuild the formatted text via MapFlowDirection.
+		App.WaitForElement("DynamicFormattedLabel");
 		App.Tap("ToggleFlowDirectionButton");
-		App.WaitForElement("RTLFormattedLabel");
+		App.WaitForElement("DynamicFormattedLabel");
 		VerifyScreenshot();
 	}
 }

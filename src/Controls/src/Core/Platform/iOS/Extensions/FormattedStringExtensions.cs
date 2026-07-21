@@ -31,16 +31,16 @@ namespace Microsoft.Maui.Controls.Platform
 			var flowDirection = effectiveFlowDirection.ToFlowDirection();
 
 			return ToNSAttributedString(
-			 label.FormattedText,
-			 label.RequireFontManager(),
-			 label.LineHeight,
-			 label.HorizontalTextAlignment,
-			 label.ToFont(),
-			 label.TextColor,
-			 label.TextTransform,
-			 label.LineBreakMode,
-			 label.CharacterSpacing,
-			 flowDirection);
+				label.FormattedText,
+				label.RequireFontManager(),
+				label.LineHeight,
+				label.HorizontalTextAlignment,
+				label.ToFont(),
+				label.TextColor,
+				label.TextTransform,
+				label.LineBreakMode,
+				label.CharacterSpacing,
+				flowDirection);
 		}
 
 		public static NSAttributedString ToNSAttributedString(
