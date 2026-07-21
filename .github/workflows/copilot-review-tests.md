@@ -315,7 +315,7 @@ post-steps:
         echo "No agent comment payload or trusted visual context was available; leaving the ordinary analysis unchanged."
         exit 0
       fi
-      unset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN
+      unset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN GH_AW_GITHUB_TOKEN GH_AW_GITHUB_MCP_SERVER_TOKEN GITHUB_MCP_SERVER_TOKEN
       pwsh "${trusted}/Merge-TestVisualsIntoComment.ps1" \
         -PrNumber "${PR_NUMBER}" \
         -Repository "${GITHUB_REPOSITORY}" \
