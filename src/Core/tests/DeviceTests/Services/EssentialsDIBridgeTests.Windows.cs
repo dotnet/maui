@@ -120,6 +120,36 @@ public class EssentialsDIBridgeTests
 		}
 	}
 
+	[Fact]
+	public void ThrowingMapServiceTokenSetterDoesNotLeakAssignment()
+	{
+		const string originalPlatformToken = "original-platform-token";
+		const string configuredToken = "throw-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var initialAssignmentCount = GetMapTokenAssignmentCount();
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var replacement = new ThrowingPlatformGeocoding();
+
+		try
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(replacement);
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(configuredToken));
+
+			var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+			Assert.Equal("map token failed", exception.Message);
+			Assert.Equal(initialAssignmentCount, GetMapTokenAssignmentCount());
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+			Assert.Same(original, Geocoding.Default);
+		}
+		finally
+		{
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -245,6 +275,16 @@ public class EssentialsDIBridgeTests
 		}
 	}
 
+	static int GetMapTokenAssignmentCount()
+	{
+		var field = typeof(EssentialsExtensions).GetField(
+			"s_mapTokenAssignments",
+			System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+			?? throw new InvalidOperationException("Map-token assignment field was not found.");
+
+		return ((System.Collections.ICollection)field.GetValue(null)!).Count;
+	}
+
 	sealed class WindowsMapServiceTokenScope : IDisposable
 	{
 		readonly Func<string?> _originalGetter = EssentialsExtensions.WindowsMapServiceTokenGetter;
@@ -289,5 +329,22 @@ public class EssentialsDIBridgeTests
 	sealed class StubPlatformGeocoding : StubGeocoding, IPlatformGeocoding
 	{
 		public string? MapServiceToken { get; set; }
+	}
+
+	sealed class ThrowingPlatformGeocoding : StubGeocoding, IPlatformGeocoding
+	{
+		string? _mapServiceToken;
+
+		public string? MapServiceToken
+		{
+			get => _mapServiceToken;
+			set
+			{
+				if (value == "throw-token")
+					throw new InvalidOperationException("map token failed");
+
+				_mapServiceToken = value;
+			}
+		}
 	}
 }

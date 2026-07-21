@@ -449,7 +449,15 @@ namespace Microsoft.Maui.Hosting
 				);
 
 				s_mapTokenAssignments.Add(assignment);
-				implementation.MapServiceToken = mapServiceToken;
+				try
+				{
+					implementation.MapServiceToken = mapServiceToken;
+				}
+				catch
+				{
+					s_mapTokenAssignments.Remove(assignment);
+					throw;
+				}
 				facadeCleanups.Add(() => CleanupMapServiceToken(assignment));
 			}
 
