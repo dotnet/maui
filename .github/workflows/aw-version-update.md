@@ -66,6 +66,7 @@ network:
 checkout:
   ref: main
 
+model: gpt-5.6-terra
 engine:
   id: copilot
   env:

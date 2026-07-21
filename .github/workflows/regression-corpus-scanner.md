@@ -128,7 +128,7 @@ concurrency:
   group: "gh-aw-${{ github.workflow }}"
   cancel-in-progress: false
 
-model: claude-sonnet-4.6
+model: claude-sonnet-5
 engine:
   id: copilot
   env:
