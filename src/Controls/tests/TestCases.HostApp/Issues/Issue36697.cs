@@ -1,16 +1,15 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 12345, "Button with CharacterSpacing does not restore TextColor to platform default when reset to null", PlatformAffected.iOS)]
-public class Issue12345 : ContentPage
+[Issue(IssueTracker.Github, 36697, "Button with CharacterSpacing does not restore TextColor to platform default when reset to null", PlatformAffected.iOS | PlatformAffected.macOS)]
+public class Issue36697 : ContentPage
 {
     Button _buttonWithCharacterSpacing;
-    public Issue12345()
+    public Issue36697()
     {
         _buttonWithCharacterSpacing = new Button
         {
             Text = "Sample Button",
             AutomationId = "ButtonWithCharacterSpacing",
-            TextColor = Colors.DarkOrange,
 
         };
 
@@ -23,6 +22,16 @@ public class Issue12345 : ContentPage
                 Children =
                 {
                     _buttonWithCharacterSpacing,
+                    new Button
+                    {
+                        Text = "Dynamically change the TextColor",
+                        AutomationId = "SetTextColorButton",
+                        Command = new Command(() =>
+                        {
+                            _buttonWithCharacterSpacing.TextColor = Colors.DarkOrange;
+                        })
+                    },
+
                     new Button
                     {
                         Text = "Dynamically change the CharacterSpacing",

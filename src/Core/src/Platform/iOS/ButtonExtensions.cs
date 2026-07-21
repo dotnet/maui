@@ -42,17 +42,9 @@ namespace Microsoft.Maui.Platform
 					platformButton.SetTitleColor(null, UIControlState.Highlighted);
 					platformButton.SetTitleColor(null, UIControlState.Disabled);
 					platformButton.TintColor = window.TintColor;
-
-					// Clear ForegroundColor from the attributed title set by UpdateCharacterSpacing.
-					var attributedTitle = platformButton.GetAttributedTitle(UIControlState.Normal);
-					if (attributedTitle != null && attributedTitle.Length > 0)
-					{
-						var mutable = new NSMutableAttributedString(attributedTitle);
-						mutable.RemoveAttribute(UIStringAttributeKey.ForegroundColor, new NSRange(0, mutable.Length));
-						platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
-					}
 				}
 
+				UpdateAttributedTitleColor(platformButton, null);
 				return;
 			}
 
@@ -61,8 +53,25 @@ namespace Microsoft.Maui.Platform
 			platformButton.SetTitleColor(color, UIControlState.Normal);
 			platformButton.SetTitleColor(color, UIControlState.Highlighted);
 			platformButton.SetTitleColor(color, UIControlState.Disabled);
-
 			platformButton.TintColor = color;
+
+			UpdateAttributedTitleColor(platformButton, color);
+		}
+
+		static void UpdateAttributedTitleColor(UIButton platformButton, UIKit.UIColor? color)
+		{
+			var attributedTitle = platformButton.GetAttributedTitle(UIControlState.Normal);
+			if (attributedTitle == null || attributedTitle.Length == 0)
+				return;
+
+			var mutable = new NSMutableAttributedString(attributedTitle);
+
+			if (color is null)
+				mutable.RemoveAttribute(UIStringAttributeKey.ForegroundColor, new NSRange(0, mutable.Length));
+			else
+				mutable.AddAttribute(UIStringAttributeKey.ForegroundColor, color, new NSRange(0, mutable.Length));
+
+			platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
 		}
 
 		// TODO: Make this public in .NET 11
