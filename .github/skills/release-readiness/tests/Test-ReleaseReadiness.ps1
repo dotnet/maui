@@ -1432,9 +1432,78 @@ Assert-Eq -Label "contradictory merged backport evidence is low confidence" `
 Assert-Eq -Label "contradictory evidence explains missing SR git contents" `
     -Expected $true -Actual (($classification.evidence -join "`n") -match 'not found in SR git contents')
 
+# A merged backport that GitHub reports as MERGED but that is missing from the
+# SR git contents must keep its stale-fetch/manual-merge-target guidance even
+# when the source PR is still OPEN against inflight/current.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression in inflight'
+        state = 'OPEN'
+        baseRefName = 'inflight/current'
+        mergedAt = $null
+        closedAt = $null
+        body = 'Fixes #35000'
+        mergeCommit = $null
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+
+function Get-BackportPrsForSr {
+    param($Repo, $SrBranch, $SourcePrNumber)
+    return @([pscustomobject]@{
+        number = 36001
+        title = 'Backport fix regression from inflight'
+        state = 'MERGED'
+        mergedAt = '2026-01-02T00:00:00Z'
+        closedAt = '2026-01-02T00:00:00Z'
+    })
+}
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return $false
+}
+
+$openInflightMissingBackport = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35002) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "merged backport absent beats open inflight subreason" `
+    -Expected 'needs-human-review' -Actual $openInflightMissingBackport.classification
+Assert-Eq -Label "missing merged backport recommends rerun without NoFetch" `
+    -Expected $true -Actual ($openInflightMissingBackport.recommendedAction -match 'without `-NoFetch`')
+Assert-Eq -Label "missing merged backport action mentions absent SR contents" `
+    -Expected $true -Actual ($openInflightMissingBackport.recommendedAction -match 'absent from SR git contents')
+Assert-Eq -Label "missing merged backport action is not candidate-promotion guidance" `
+    -Expected $false -Actual ($openInflightMissingBackport.recommendedAction -match 'Candidate promotion')
+
 # A merged source whose commit is on main is ready for the repository's
 # backport automation. The report must emit the exact command, not a generic
 # "open a backport" instruction.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-01-01T00:00:00Z'
+        closedAt = '2026-01-01T00:00:00Z'
+        body = 'Fixes #35000'
+        mergeCommit = [pscustomobject]@{ oid = 'abc1234def5678' }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return $true
+}
+
 function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
 
 $mainBackportCandidate = Classify-RegressionCandidate `
@@ -5449,6 +5518,54 @@ $hNowStale = Get-ReportSemanticHash -Data $dNowStale -Verdict $nfV
 Assert-Eq -Label "hash: honors stored nightlyFeedNow (ok@T1 vs stale@T2 → DIFFERENT)" -Expected $false -Actual ($hNowOk -eq $hNowStale)
 Assert-Eq -Label "hash: stored-now tier resolves to ok at T1" -Expected 'ok' -Actual (Get-NightlyFeedTier -Freshness $dNowOk['nightlyFeed'] -Now $dNowOk['nightlyFeedNow'])
 Assert-Eq -Label "hash: stored-now tier resolves to stale at T2" -Expected 'stale' -Actual (Get-NightlyFeedTier -Freshness $dNowStale['nightlyFeed'] -Now $dNowStale['nightlyFeedNow'])
+
+# ───── Get-ReportSemanticHash folds in rendered PR/action guidance ─────
+Write-Host "`n[Unit] Get-ReportSemanticHash × rendered guidance" -ForegroundColor Cyan
+function New-GuidanceHashData {
+    param(
+        [int]$MainFixPr = 40002,
+        [string]$RecommendedAction = 'Wait for main merge; then backport',
+        [string]$NextAction = 'No action'
+    )
+    @{
+        metadata   = @{ srHeadSha = 'cafe12345678'; mainBranch = 'main' }
+        ci         = @{ overall = 'green' }
+        srContents = @{ sourcePrs = @(35001, 35002) }
+        regressions = @(
+            @{
+                issue = 35000
+                state = 'OPEN'
+                classification = 'open-on-main'
+                candidateFixPrs = @(
+                    @{ number = 40001; state = 'OPEN'; baseRef = 'inflight/current' },
+                    @{ number = $MainFixPr; state = 'OPEN'; baseRef = 'main' }
+                )
+                recommendedAction = $RecommendedAction
+            }
+        )
+        openSrPrs = @()
+        shipChecks = @(
+            @{ Area = 'Ship Assessment validation feed'; Status = 'READY'; NextAction = $NextAction }
+        )
+    }
+}
+
+$guidanceV = @{ symbol = '🟡' }
+$guidanceBase = New-GuidanceHashData
+$guidanceSame = New-GuidanceHashData
+$guidanceDifferentPr = New-GuidanceHashData -MainFixPr 40003
+$guidanceDifferentAction = New-GuidanceHashData -RecommendedAction 'Post the backport command after merge'
+$guidanceDifferentNextAction = New-GuidanceHashData -NextAction 'Paste the validation feed into ship assessment'
+
+$hGuidanceBase = Get-ReportSemanticHash -Data $guidanceBase -Verdict $guidanceV
+Assert-Eq -Label "hash: rendered guidance fold is deterministic" `
+    -Expected $hGuidanceBase -Actual (Get-ReportSemanticHash -Data $guidanceSame -Verdict $guidanceV)
+Assert-Eq -Label "hash: selected rendered fix PR change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentPr -Verdict $guidanceV))
+Assert-Eq -Label "hash: recommendedAction change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentAction -Verdict $guidanceV))
+Assert-Eq -Label "hash: shipCheck NextAction change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentNextAction -Verdict $guidanceV))
 
 # ───── Engine-level fail-open under WarningPreference=Stop ─────
 # The helper's inner catch is hardened, but the SR engine's OUTER catch in

@@ -2379,6 +2379,8 @@ function Classify-RegressionCandidate {
     $perPrVerdicts = @()
     foreach ($pr in $strongPrs) {
         $verdict = $null
+        $subreason = $null
+        $subreasonPr = $null
         $confidence = 'high'
         $evidence = @()
 
@@ -2410,6 +2412,8 @@ function Classify-RegressionCandidate {
                     }
                 } else {
                     $verdict = 'needs-human-review'
+                    $subreason = 'merged-backport-missing'
+                    $subreasonPr = [int]$mergedBackport.number
                     $confidence = 'low'
                     $evidence += "Backport PR #$($mergedBackport.number) is MERGED in GitHub but not found in SR git contents — re-run without -NoFetch or verify the merge target manually"
                 }
@@ -2441,10 +2445,14 @@ function Classify-RegressionCandidate {
                     $verdict = 'needs-human-review'
                     $confidence = 'medium'
                     if ($pr.baseRef -like 'inflight/*') {
+                        $subreason = 'open-non-main-inflight'
+                        $subreasonPr = [int]$pr.number
                         # inflight/* PRs reach main via normal Candidate promotion — do NOT
                         # instruct a captain to retarget. Wait for the merge + promotion flow.
                         $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef) — wait for it to merge and flow to main via Candidate promotion, then rerun readiness. (Retargeting to main directly is an optional expedited path, not required.)"
                     } else {
+                        $subreason = 'open-non-main-other'
+                        $subreasonPr = [int]$pr.number
                         $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef), not main — wait for its content to reach main (via merge + forward-flow), then rerun readiness"
                     }
                 }
@@ -2456,7 +2464,7 @@ function Classify-RegressionCandidate {
             }
         }
 
-        $perPrVerdicts += @{ pr = $pr; verdict = $verdict; confidence = $confidence; evidence = $evidence }
+        $perPrVerdicts += @{ pr = $pr; verdict = $verdict; subreason = $subreason; subreasonPr = $subreasonPr; confidence = $confidence; evidence = $evidence }
     }
 
     # Pick the highest-priority verdict (in-sr-active > backport-in-progress > ... > no-fix-yet)
@@ -2527,17 +2535,11 @@ function Classify-RegressionCandidate {
         'merged-non-main-only' { 'Flow fix to main first, then rerun readiness to verify the merged source PR is on main before requesting a backport' }
         'open-on-main' { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" }
         'needs-human-review' {
-            # Surface the same Candidate-promotion / forward-flow guidance the
-            # evidence carries: the Tier-2 Markdown renders recommendedAction,
-            # NOT evidence, so a bare 'Manual review required' would drop it.
-            if ($best.pr -and $best.pr.state -eq 'OPEN' -and $best.pr.baseRef -and $best.pr.baseRef -ne $Ctx.mainBranch) {
-                if ($best.pr.baseRef -like 'inflight/*') {
-                    "Wait for #$($best.pr.number) to merge and reach main via Candidate promotion, then rerun readiness (retargeting to main directly is an optional expedited path, not required)"
-                } else {
-                    "Wait for #$($best.pr.number)'s content to reach main (merge + forward-flow), then rerun readiness"
-                }
-            } else {
-                'Manual review required'
+            switch ($best.subreason) {
+                'merged-backport-missing' { "Re-run readiness without ``-NoFetch`` (or verify the backport's merge target manually) — backport #$($best.subreasonPr) is MERGED on GitHub but absent from SR git contents" }
+                'open-non-main-inflight'  { "Wait for #$($best.subreasonPr) to merge and reach main via Candidate promotion, then rerun readiness (retargeting to main directly is an optional expedited path, not required)" }
+                'open-non-main-other'     { "Wait for #$($best.subreasonPr)'s content to reach main (merge + forward-flow), then rerun readiness" }
+                default { 'Manual review required' }
             }
         }
         'no-fix-yet' { 'No fix exists — investigate priority' }
@@ -3430,6 +3432,14 @@ function Get-ReportSemanticHash {
     # run, producing a DIFFERENT hash for identical content — silently defeating
     # the workflow's idempotent no-op (which compares a hash written by an earlier
     # process against one computed now). Insertion order keeps the hash stable.
+    $mainBranchName = $null
+    $md = $Data.metadata
+    if ($md -is [System.Collections.IDictionary]) {
+        if ($md.Contains('mainBranch')) { $mainBranchName = $md['mainBranch'] }
+    } elseif ($md -and $md.PSObject.Properties['mainBranch']) {
+        $mainBranchName = $md.mainBranch
+    }
+
     $semantic = [ordered]@{
         verdict = $Verdict.symbol
         # Tracker lifecycle mode (candidate / in-flight / shipped). Folded in so a
@@ -3452,6 +3462,29 @@ function Get-ReportSemanticHash {
                 } else { '' }
         regressions = if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
                           @($Data['regressions'] | Sort-Object issue | ForEach-Object {
+                              $cfp = $null
+                              if ($_ -is [System.Collections.IDictionary]) {
+                                  if ($_.Contains('candidateFixPrs')) { $cfp = $_['candidateFixPrs'] }
+                              } elseif ($_.PSObject.Properties['candidateFixPrs']) {
+                                  $cfp = $_.candidateFixPrs
+                              }
+                              $selPrNum = ''
+                              if ($cfp) {
+                                  $sel = Select-OpenMainFixPr -CandidateFixPrs $cfp -MainBranch $mainBranchName
+                                  if ($sel) {
+                                      if ($sel -is [System.Collections.IDictionary]) {
+                                          if ($sel.Contains('number')) { $selPrNum = $sel['number'] }
+                                      } elseif ($sel.PSObject.Properties['number']) {
+                                          $selPrNum = $sel.number
+                                      }
+                                  }
+                              }
+                              $recAct = ''
+                              if ($_ -is [System.Collections.IDictionary]) {
+                                  if ($_.Contains('recommendedAction')) { $recAct = [string]$_['recommendedAction'] }
+                              } elseif ($_.PSObject.Properties['recommendedAction']) {
+                                  $recAct = [string]$_.recommendedAction
+                              }
                               # `no-fix-yet` is the ONLY classification whose rendered tier
                               # depends on issue state (OPEN -> Tier 1, CLOSED -> Tier 3; see
                               # Format-MarkdownReport's $emitTier). Fold the state-derived tier
@@ -3464,9 +3497,9 @@ function Get-ReportSemanticHash {
                               # spam issue watchers — preserving the conservative design above.
                               if ($_.classification -eq 'no-fix-yet') {
                                   $nfyTier = if ($_.state -eq 'OPEN') { 't1' } else { 't3' }
-                                  "$($_.issue):$($_.classification):$nfyTier"
+                                  "$($_.issue):$($_.classification):$($nfyTier):$($selPrNum):$recAct"
                               } else {
-                                  "$($_.issue):$($_.classification)"
+                                  "$($_.issue):$($_.classification):$($selPrNum):$recAct"
                               }
                           }) -join '|'
                       } else { '' }
@@ -3475,7 +3508,13 @@ function Get-ReportSemanticHash {
                     } else { '' }
         shipChecks = if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
                          @($Data['shipChecks'] | Sort-Object Area | ForEach-Object {
-                             "$($_.Area):$($_.Status)"
+                             $na = ''
+                             if ($_ -is [System.Collections.IDictionary]) {
+                                 if ($_.Contains('NextAction')) { $na = [string]$_['NextAction'] }
+                             } elseif ($_.PSObject.Properties['NextAction']) {
+                                 $na = [string]$_.NextAction
+                             }
+                             "$($_.Area):$($_.Status):$na"
                          }) -join '|'
                      } else { '' }
         # Nightly dogfood feed banner state. Folded in so a feed going stale (or a
@@ -3530,7 +3569,15 @@ function Select-OpenMainFixPr {
         the prior single-candidate behavior).
     #>
     param($CandidateFixPrs, [string]$MainBranch)
-    $open = @($CandidateFixPrs | Where-Object { $_.state -eq 'OPEN' })
+    $open = @($CandidateFixPrs | Where-Object {
+        $state = $null
+        if ($_ -is [System.Collections.IDictionary]) {
+            if ($_.Contains('state')) { $state = $_['state'] }
+        } elseif ($_.PSObject.Properties['state']) {
+            $state = $_.state
+        }
+        $state -eq 'OPEN'
+    })
     if ($open.Count -eq 0) { return $null }
     # Only attempt the main-targeting match when we actually know the main branch.
     # $MainBranch is typed [string], so a $null caller argument arrives as ''.
@@ -3538,7 +3585,15 @@ function Select-OpenMainFixPr {
     # baseRef is empty/missing, wrongly selecting it and defeating the intended
     # first-OPEN fallback below.
     if (-not [string]::IsNullOrEmpty($MainBranch)) {
-        $onMain = $open | Where-Object { $_.baseRef -eq $MainBranch } | Select-Object -First 1
+        $onMain = $open | Where-Object {
+            $baseRef = $null
+            if ($_ -is [System.Collections.IDictionary]) {
+                if ($_.Contains('baseRef')) { $baseRef = $_['baseRef'] }
+            } elseif ($_.PSObject.Properties['baseRef']) {
+                $baseRef = $_.baseRef
+            }
+            $baseRef -eq $MainBranch
+        } | Select-Object -First 1
         if ($onMain) { return $onMain }
     }
     return $open | Select-Object -First 1

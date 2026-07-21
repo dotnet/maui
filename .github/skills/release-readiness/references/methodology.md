@@ -228,7 +228,8 @@ After `release/<major>.0.1xx-sr<N>` is cut and before SR<N> ships:
 
 3. Title it `Update PatchVersion from <current> to <(N+1)*10>`.
 4. Keep `SdkBandVersion`, `PreReleaseVersionLabel=ci.main`, and
-   `StabilizePackageVersion=false` unchanged.
+   `StabilizePackageVersion=false` unchanged unless the main branch's
+   mainline settings are themselves misconfigured.
 5. Keep the PR separate from the SR servicing-flip PR and merge it before
    shipping the current SR.
 
@@ -237,8 +238,12 @@ For SR9 → SR10, that means changing only
 `<PatchVersion>100</PatchVersion>` with title
 `Update PatchVersion from 90 to 100`.
 
-The readiness report must emit these exact instructions when the check is
-blocked. It remains report-only and must not edit or push `main`.
+The readiness report must emit these instructions when the check is blocked,
+with one conditional variant: when `main` is already misconfigured for a
+servicing/stable build (for example, `PreReleaseVersionLabel=servicing` or
+`StabilizePackageVersion=true`), the report instead instructs restoring
+`PreReleaseVersionLabel=ci.main` and `StabilizePackageVersion=false` in the
+same PR. It remains report-only and must not edit or push `main`.
 
 ## Gotcha #7: Default-Channel → Per-Build Feed → Ship Assessment
 
