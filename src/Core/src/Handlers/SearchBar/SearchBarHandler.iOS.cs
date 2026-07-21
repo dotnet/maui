@@ -67,13 +67,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(searchBar);
 
-			// Any text update requires that we update any attributed string formatting.
-			// Unlike LabelHandler/EntryHandler, SearchBarHandler does not use a TextMapper
-			// to reorder Text before CharacterSpacing/alignment/MaxLength, so those properties
-			// are already applied before MapText runs during connect. Calling MapFormatting
-			// unconditionally here ensures the attributed-string formatting is re-applied
-			// after the text value is set.
-			MapFormatting(handler, searchBar);
+			if (!handler.IsConnectingHandler())
+			{
+				// If we're not connecting the handler, we need to update the text formatting.
+				// During connect, CharacterSpacing/HorizontalTextAlignment/MaxLength are applied
+				// by the normal mapper sweep after Text, so calling MapFormatting here would
+				// cause those properties to fire twice (including any AppendToMapping/ModifyMapping
+				// callbacks).
+				MapFormatting(handler, searchBar);
+			}
 		}
 
 		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
