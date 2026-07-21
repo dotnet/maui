@@ -1930,6 +1930,45 @@ $clsOpenIssue = Classify-RegressionCandidate `
 Assert-Eq -Label "OPEN issue + OPEN candidate PR → stays open-on-main (guard is CLOSED-only)" `
     -Expected 'open-on-main' -Actual $clsOpenIssue.classification
 
+# Test 4 — CLOSED issue + OPEN candidate on a NON-main branch (e.g. inflight/current).
+# The OPEN-candidate split routes a non-main OPEN PR to 'needs-human-review' rather
+# than 'open-on-main', so a verdict-string-only guard would let a CLOSED issue with an
+# unmerged non-main candidate surface as a false Tier-2 risk. The guard keys on the
+# SELECTED PR being OPEN, so this still reroutes to the honest 'no-fix-yet' (no
+# comment-cited merged fix on the SR) — an unmerged PR cannot have closed the issue.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix regression on inflight'
+        state       = 'OPEN'
+        baseRefName = 'inflight/current'
+        mergedAt    = $null
+        closedAt    = $null
+        body        = 'Fixes #88888'
+        mergeCommit = $null
+        files       = @([pscustomobject]@{ path = 'src/Core/src/Core.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+$clsClosedNonMain = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 88888; state = 'CLOSED' }) `
+    -CandidatePrs @(88889) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "CLOSED issue + OPEN non-main candidate → no-fix-yet, never needs-human-review" `
+    -Expected 'no-fix-yet' -Actual $clsClosedNonMain.classification
+Assert-Eq -Label "CLOSED non-main contradiction evidence explains the unmerged-PR reason" `
+    -Expected $true -Actual (($clsClosedNonMain.evidence -join "`n") -match 'unmerged PR cannot have closed')
+$vClosedNonMain = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @(@{ classification = $clsClosedNonMain.classification; state = 'CLOSED' })
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "CLOSED non-main no-fix-yet is non-blocking (Tier 3 effective → 🟢)" `
+    -Expected '🟢' -Actual $vClosedNonMain.symbol
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 

@@ -2473,11 +2473,22 @@ function Classify-RegressionCandidate {
     #   b. Otherwise fall to the honest 'no-fix-yet' (Tier 3 for a CLOSED issue):
     #      the automation can't pin a verified fix on this SR and the open
     #      candidate hasn't merged. NOT an active SR regression.
-    # Scope is strict: ONLY open-on-main + CLOSED is contradictory. Every other
-    # verdict (merged-*, backport-in-progress, rejected-from-sr, in-sr-*,
-    # needs-human-review) stays as-is even for CLOSED issues — those are still
-    # actionable (the SR may still need the backport).
-    if ($best.verdict -eq 'open-on-main' -and (Get-AzdoProp $Issue 'state') -eq 'CLOSED') {
+    # Scope: the contradiction is "issue CLOSED but the SELECTED fix PR is still
+    # OPEN/unmerged" — an unmerged PR cannot have closed the issue. Gate on the
+    # selected PR being OPEN, not just the verdict string: the OPEN-candidate
+    # split routes an OPEN PR targeting a non-`main` branch (e.g. inflight/current)
+    # to 'needs-human-review' rather than 'open-on-main', and that path is equally
+    # contradictory for a CLOSED issue. Every other verdict (merged-*,
+    # backport-in-progress, rejected-from-sr, in-sr-*) stays as-is even for CLOSED
+    # issues — those are still actionable (the SR may still need the backport).
+    # The merged-backport 'needs-human-review' (~L2399) is excluded because its
+    # selected PR is not OPEN; and on any rare overlap, the Resolve-ClosedFixUnlinked
+    # recovery below reclassifies to closed-fix-unlinked before we fall to no-fix-yet.
+    $selectedPrOpenUnmerged = $best.pr -and $best.pr.state -eq 'OPEN'
+    $closedWithOpenCandidate =
+        $best.verdict -eq 'open-on-main' -or
+        ($best.verdict -eq 'needs-human-review' -and $selectedPrOpenUnmerged -and $best.pr.baseRef -ne $Ctx.mainBranch)
+    if ($closedWithOpenCandidate -and (Get-AzdoProp $Issue 'state') -eq 'CLOSED') {
         $rec = Resolve-ClosedFixUnlinked -Ctx $Ctx -Issue $Issue -RevertedPrSet $revertedPrSet
         if ($rec) { return $rec }
         return @{
