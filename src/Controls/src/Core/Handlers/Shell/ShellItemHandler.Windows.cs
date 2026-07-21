@@ -547,7 +547,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				case nameof(SearchHandler.FontFamily):
 				case nameof(SearchHandler.FontSize):
 				case nameof(SearchHandler.FontAttributes):
-				case nameof(SearchHandler.FontAutoScalingEnabled):
 					autoSuggestBox.UpdateSearchHandlerFont(_currentSearchHandler, this.GetRequiredService<IFontManager>());
 					break;
 			}
