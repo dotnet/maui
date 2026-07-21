@@ -2258,10 +2258,15 @@ function Classify-RegressionCandidate {
         if ($r.revertBackportPr) { $revertedPrSet[$r.revertBackportPr] = $true }
     }
     $mainRevertedPrSet = @{}
-    $hasMainReverts = if ($SrContents -is [hashtable]) { $SrContents.ContainsKey('mainReverts') }
-                      else { $SrContents.PSObject.Properties.Name -contains 'mainReverts' }
-    if ($hasMainReverts) {
-        foreach ($r in @($SrContents.mainReverts)) {
+    # Shape-safe read: $SrContents is a [hashtable] during a live survey but can be
+    # an arbitrary IDictionary (e.g. [ordered]@{}) or a [pscustomobject] after a
+    # JSON round-trip. The old `-is [hashtable]` probe fell through to a PSObject
+    # property read that an ordered dictionary does not satisfy, so `mainReverts`
+    # was silently ignored and the guard no-op'd. Route through Get-MetadataValue
+    # (IDictionary.Contains) so it fires for every dictionary shape (#36497 review).
+    $mainReverts = Get-MetadataValue -Container $SrContents -Name 'mainReverts'
+    if ($mainReverts) {
+        foreach ($r in @($mainReverts)) {
             if ($r.revertsPr) { $mainRevertedPrSet[[int]$r.revertsPr] = $true }
             if ($r.revertBackportPr) { $mainRevertedPrSet[[int]$r.revertBackportPr] = $true }
         }
@@ -2573,13 +2578,11 @@ function Classify-RegressionCandidate {
         }
     }
 
-    $ctxMode = if ($Ctx -is [hashtable] -or $Ctx -is [System.Collections.IDictionary]) {
-        if ($Ctx.ContainsKey('mode')) { $Ctx['mode'] } else { $null }
-    } elseif ($Ctx.PSObject.Properties['mode']) {
-        $Ctx.mode
-    } else {
-        $null
-    }
+    # Shape-safe read: IDictionary does not guarantee ContainsKey — an [ordered]
+    # dictionary (OrderedDictionary) exposes only .Contains, so `$Ctx.ContainsKey`
+    # throws MethodNotFound under StrictMode. Get-MetadataValue uses
+    # IDictionary.Contains and also handles the [pscustomobject] round-trip shape.
+    $ctxMode = Get-MetadataValue -Container $Ctx -Name 'mode'
     $isCandidateMode = $ctxMode -eq 'candidate' -or $Ctx.srBranch -eq $Ctx.mainBranch
     $backportCommand = "/backport to $($Ctx.srBranch)"
     $candidateMergedGuidance = 'Fix must land on main before the SR is cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'

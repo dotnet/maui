@@ -1623,6 +1623,25 @@ Assert-Eq -Label "reverted-on-main source with OPEN backport does NOT emit a bac
 Assert-Eq -Label "reverted-on-main source with OPEN backport action mentions reverted on main" `
     -Expected $true -Actual ($mainRevertedOpenBackport.recommendedAction -match 'reverted on main')
 
+# Regression guard (PR #36497 re-review): the main-revert guard must fire when
+# $SrContents is an arbitrary IDictionary (e.g. [ordered]@{}), not just a
+# [hashtable]. An [ordered]@{} is an OrderedDictionary whose keys are NOT surfaced
+# as PSObject properties, so the prior `-is [hashtable]` probe fell through and
+# silently ignored `mainReverts` — mis-reporting a reverted-on-main source as a
+# live backport. Routing through Get-MetadataValue (IDictionary.Contains) makes it
+# shape-agnostic. (Reuses the OPEN-backport mocks above: main-revert must still win.)
+$orderedSrContents = [ordered]@{ sourcePrs = @(); reverts = @(); mainReverts = @(@{ revertsPr = 35001; revertBackportPr = $null }) }
+$mainRevertedOrdered = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents $orderedSrContents
+
+Assert-Eq -Label "main-revert guard fires for [ordered] SrContents (IDictionary, not hashtable)" `
+    -Expected 'needs-human-review' -Actual $mainRevertedOrdered.classification
+Assert-Eq -Label "[ordered] SrContents main-revert action mentions reverted on main" `
+    -Expected $true -Actual ($mainRevertedOrdered.recommendedAction -match 'reverted on main')
+
 # ───── Bug regression: issue fixed by SR-direct PR (closing keyword on SR commit) ─────
 # Real-world case: issue #35756 (TabbedPage modal) was fixed by PR #35768 opened
 # directly against release/10.0.1xx-sr7. A later PR #35803 opened against main
@@ -2594,6 +2613,23 @@ $dataPscoInflight = @{
 $pscoHashInflight = Get-ReportSemanticHash -Data $dataPscoInflight -Verdict $pscoVerdict
 Assert-Eq -Label "hash: pscustomobject mode is actually read (candidate vs in-flight differ)" `
     -Expected $false -Actual ($pscoHash -eq $pscoHashInflight)
+
+# ───── Regression guard (PR #36497 re-review): Get-MetadataValue shape-safety ─────
+# The shared accessor must read values from ANY IDictionary, not just [hashtable].
+# An [ordered]@{} is an OrderedDictionary: it has NO .ContainsKey method (only
+# .Contains), so the previous inline `$X.ContainsKey('mode')` guards threw
+# MethodNotFound under StrictMode, and a `-is [hashtable]`-only probe fell through
+# to a PSObject-property read that an ordered dictionary does not satisfy. Both
+# shape-fragile call sites (the $Ctx mode read and the $SrContents mainReverts
+# read) now route through Get-MetadataValue, so cover the ordered shape explicitly.
+Write-Host "`n[Unit] Get-MetadataValue is shape-safe for arbitrary IDictionary (ordered)" -ForegroundColor Cyan
+$orderedCtx = [ordered]@{ mode = 'candidate'; mainReverts = @(1, 2) }
+$gmvThrew = $false; $gmvMode = $null
+try { $gmvMode = Get-MetadataValue -Container $orderedCtx -Name 'mode' } catch { $gmvThrew = $true; Write-Host "    threw: $($_.Exception.Message)" -ForegroundColor Red }
+Assert-Eq -Label "Get-MetadataValue does NOT throw on an [ordered] dictionary" -Expected $false -Actual $gmvThrew
+Assert-Eq -Label "Get-MetadataValue reads a present key from an [ordered] dictionary" -Expected 'candidate' -Actual $gmvMode
+Assert-Eq -Label "Get-MetadataValue returns default for an absent key on an [ordered] dictionary" `
+    -Expected $null -Actual (Get-MetadataValue -Container $orderedCtx -Name 'noSuchKey')
 
 # ───── Format-MarkdownReport: tracker markers + linkification + body cap ─────
 Write-Host "`n[Unit] Format-MarkdownReport (markers, linkification, cap)" -ForegroundColor Cyan
