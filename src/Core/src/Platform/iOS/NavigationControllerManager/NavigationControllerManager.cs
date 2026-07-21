@@ -69,7 +69,13 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         public TaskCompletionSource<bool> PushViewController(UIViewController viewController, bool animated)
         {
-            var completionSource = new TaskCompletionSource<bool>();
+            // Matches NavigationRenderer.OnPushRequested behavior:
+            // If any text entry controls have focus, we need to end their editing session
+            // so that they are not the first responder; if we don't some things (like the activity indicator
+            // on pull-to-refresh) will not work correctly.
+            _navigationController.View?.Window?.EndEditing(true);
+
+            var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _pendingViewControllers = null;
             _completionTasks[viewController] = completionSource;
             _navigationController.PushViewController(viewController, animated);
@@ -83,7 +89,7 @@ namespace Microsoft.Maui.Platform
         public Task<bool> PopViewController(bool animated)
         {
             _pendingViewControllers = null;
-            _popCompletionTask = new TaskCompletionSource<bool>();
+            _popCompletionTask = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _navigationController.PopViewController(animated);
             return _popCompletionTask.Task;
         }
@@ -95,7 +101,7 @@ namespace Microsoft.Maui.Platform
         public Task<bool> PopToRootViewController(UIViewController rootViewController, bool animated)
         {
             _pendingViewControllers = null;
-            var completionSource = new TaskCompletionSource<bool>();
+            var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _completionTasks[rootViewController] = completionSource;
             _navigationController.PopToRootViewController(animated);
 
@@ -403,7 +409,7 @@ namespace Microsoft.Maui.Platform
 
             if (!context.IsCancelled)
             {
-                _popCompletionTask = new TaskCompletionSource<bool>();
+                _popCompletionTask = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _delegate.OnInteractivePopCompleted();
             }
         }
