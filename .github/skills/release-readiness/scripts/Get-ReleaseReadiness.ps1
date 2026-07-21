@@ -1758,7 +1758,20 @@ function Get-SrCommits {
     # existing SR-content classifications stay unchanged.
     $mainReverts = @()
     if ($Ctx.mainBranch) {
-        $mainRevertScan = Get-CommitsForRevSpec -RevSpec "origin/$($Ctx.mainBranch) --regexp-ignore-case --grep=Revert" -OriginTag 'main'
+        # Bound the main-side revert scan to the current release cycle instead of
+        # scanning ALL of main's history. We only need reverts of PRs that could be
+        # backport candidates for THIS SR; such a fix and its revert both land in the
+        # window between the release baseline and main. An unbounded scan matches
+        # hundreds of reverts and Get-CommitsForRevSpec spawns a git subprocess per
+        # match (and per revert body) — that cost grows without bound (PR #36497
+        # review). In candidate mode main IS the SR-to-be, so bound by the prior-SR
+        # baseline (excludeBranches); in in-flight/shipped mode bound by the SR ref
+        # itself (reverts on main SINCE the SR forked from main).
+        $mainRevertBounds =
+            if ($Ctx.mode -eq 'candidate') { @($Ctx.excludeBranches | ForEach-Object { "^$_" }) }
+            else { @("^$($Ctx.srRef)") }
+        $mainRevertRevSpec = "origin/$($Ctx.mainBranch) $(($mainRevertBounds -join ' ')) --regexp-ignore-case --grep=Revert"
+        $mainRevertScan = Get-CommitsForRevSpec -RevSpec $mainRevertRevSpec -OriginTag 'main'
         $mainReverts = @($mainRevertScan.reverts)
     }
 
@@ -2420,7 +2433,20 @@ function Classify-RegressionCandidate {
             $closedUnmergedBackport = $pr.backports | Where-Object { $_.state -eq 'CLOSED' -and -not $_.mergedAt } | Select-Object -First 1
             $mergedBackport = $pr.backports | Where-Object { $_.state -eq 'MERGED' } | Select-Object -First 1
 
-            if ($mergedBackport) {
+            # A source PR reverted on main must never be presented as safe to track
+            # or land, regardless of backport state. Check this AHEAD of the
+            # backport-state branches: otherwise an OPEN backport (or any other
+            # backport state) masks the revert and the report emits
+            # 'backport-in-progress' ("Track backport PR to completion") for code
+            # that main has already backed out (PR #36497 review).
+            if ($mainRevertedPrSet.ContainsKey([int]$pr.number)) {
+                $verdict = 'needs-human-review'
+                $subreason = 'reverted-on-main'
+                $subreasonPr = [int]$pr.number
+                $confidence = 'medium'
+                $evidence += "PR #$($pr.number) merged to main but was later reverted on main — do not backport until a human verifies the current fix/revert chain"
+            }
+            elseif ($mergedBackport) {
                 # backport landed but PR # is different from what we tracked → check sourcePrSet for backport #
                 if ($sourcePrSet.ContainsKey([int]$mergedBackport.number)) {
                     if ($revertedPrSet.ContainsKey([int]$mergedBackport.number)) {
@@ -2447,13 +2473,9 @@ function Classify-RegressionCandidate {
                 $evidence += "Backport PR #$($closedUnmergedBackport.number) CLOSED unmerged — needs WorkIQ for context"
             }
             elseif ($pr.state -eq 'MERGED') {
-                if ($mainRevertedPrSet.ContainsKey([int]$pr.number)) {
-                    $verdict = 'needs-human-review'
-                    $subreason = 'reverted-on-main'
-                    $subreasonPr = [int]$pr.number
-                    $confidence = 'medium'
-                    $evidence += "PR #$($pr.number) merged to main but was later reverted on main — do not backport until a human verifies the current fix/revert chain"
-                } elseif ($pr.onMain) {
+                # reverted-on-main is handled by the hoisted guard above, so a PR
+                # reaching here is known NOT to have been reverted on main.
+                if ($pr.onMain) {
                     $verdict = 'merged-on-main-no-backport'
                     $confidence = 'medium'
                     $evidence += "PR #$($pr.number) merged to main, no backport PR opened"
@@ -3145,6 +3167,28 @@ function Get-VerdictTier {
     }
 }
 
+# Shape-safe accessor for report metadata (and any maybe-hashtable /
+# maybe-pscustomobject payload). Report data is a live [hashtable] during a
+# survey but a [pscustomobject] once round-tripped through JSON (renderer /
+# idempotency callers). Under Set-StrictMode -Version Latest, `.ContainsKey()`
+# throws MethodNotFound on a pscustomobject and a bare property read throws on a
+# hashtable missing the key — so probe the shape before reading and return
+# $Default when the key/property is absent. Reused by Get-OverallVerdict,
+# Get-ReportSemanticHash and Format-MarkdownReport so every metadata read stays
+# shape-safe from one place.
+function Get-MetadataValue {
+    param($Container, [string]$Name, $Default = $null)
+    if ($null -eq $Container) { return $Default }
+    if ($Container -is [System.Collections.IDictionary]) {
+        if ($Container.Contains($Name)) { return $Container[$Name] }
+        return $Default
+    }
+    if ($Container.PSObject -and $Container.PSObject.Properties[$Name]) {
+        return $Container.$Name
+    }
+    return $Default
+}
+
 function Get-OverallVerdict {
     <#
     .SYNOPSIS
@@ -3176,10 +3220,7 @@ function Get-OverallVerdict {
     #>
     param($Data)
 
-    $isCandidate = $false
-    if ($Data.metadata.ContainsKey('mode') -and $Data.metadata['mode'] -eq 'candidate') {
-        $isCandidate = $true
-    }
+    $isCandidate = ((Get-MetadataValue -Container $Data.metadata -Name 'mode') -eq 'candidate')
 
     $reasons = New-Object System.Collections.Generic.List[string]
     $tier1 = $false
@@ -3469,13 +3510,9 @@ function Get-ReportSemanticHash {
     # run, producing a DIFFERENT hash for identical content — silently defeating
     # the workflow's idempotent no-op (which compares a hash written by an earlier
     # process against one computed now). Insertion order keeps the hash stable.
-    $mainBranchName = $null
-    $md = $Data.metadata
-    if ($md -is [System.Collections.IDictionary]) {
-        if ($md.Contains('mainBranch')) { $mainBranchName = $md['mainBranch'] }
-    } elseif ($md -and $md.PSObject.Properties['mainBranch']) {
-        $mainBranchName = $md.mainBranch
-    }
+    $mainBranchName = Get-MetadataValue -Container $Data.metadata -Name 'mainBranch'
+    $modeForHash = Get-MetadataValue -Container $Data.metadata -Name 'mode' -Default 'in-flight'
+    if (-not $modeForHash) { $modeForHash = 'in-flight' }
 
     $semantic = [ordered]@{
         verdict = $Verdict.symbol
@@ -3491,7 +3528,7 @@ function Get-ReportSemanticHash {
         # shipped lifecycle). `mode` is constant within a mode, so it adds NO daily
         # churn — only the one-time transition refreshes. Default 'in-flight' when
         # absent, matching Format-MarkdownReport's $mode default.
-        mode = if ($Data.metadata -and $Data.metadata.ContainsKey('mode') -and $Data.metadata['mode']) { $Data.metadata['mode'] } else { 'in-flight' }
+        mode = $modeForHash
         srHead = $Data.metadata.srHeadSha
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
         srPrs = if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
@@ -3641,16 +3678,11 @@ function Format-MarkdownReport {
 
     $ctx = $Data.metadata
     $srBranch = $ctx.srBranch
-    # Main branch, read defensively: real reports carry it in metadata, but some
-    # renderer fixtures/callers omit it. Under StrictMode a missing key throws
-    # for BOTH hashtables and pscustomobjects, so probe before reading. A null
-    # value makes Select-OpenMainFixPr fall back to the first OPEN candidate.
-    $mainBranchName = $null
-    if ($ctx -is [System.Collections.IDictionary]) {
-        if ($ctx.Contains('mainBranch')) { $mainBranchName = $ctx['mainBranch'] }
-    } elseif ($ctx -and $ctx.PSObject.Properties['mainBranch']) {
-        $mainBranchName = $ctx.mainBranch
-    }
+    # Main branch, read shape-safe via the shared accessor: real reports carry it
+    # in metadata, but some renderer fixtures/callers omit it, and metadata may be
+    # a hashtable (live survey) OR a pscustomobject (JSON round-trip). A null value
+    # makes Select-OpenMainFixPr fall back to the first OPEN candidate.
+    $mainBranchName = Get-MetadataValue -Container $ctx -Name 'mainBranch'
     $shortHead = if ($ctx.srHeadSha) { $ctx.srHeadSha.Substring(0, 8) } else { '?' }
 
     # Compute verdict + semantic hash (deterministic, used in markers)
@@ -3667,23 +3699,13 @@ function Format-MarkdownReport {
     }
     [void]$sb.AppendLine("<!-- release-readiness-hash: sha=$semanticHash -->")
 
-    # $mode / $inherits, read defensively for the SAME reason as $mainBranchName
-    # above: under StrictMode `.ContainsKey()` throws on a PSCustomObject and a
-    # bare property access throws on a hashtable missing the key, and renderer
-    # fixtures/callers pass either shape. Probe the shape before reading (key
-    # absent -> the documented 'in-flight' / $false defaults).
-    $mode = 'in-flight'
-    if ($ctx -is [System.Collections.IDictionary]) {
-        if ($ctx.Contains('mode')) { $mode = $ctx['mode'] }
-    } elseif ($ctx -and $ctx.PSObject.Properties['mode']) {
-        $mode = $ctx.mode
-    }
-    $inherits = $false
-    if ($ctx -is [System.Collections.IDictionary]) {
-        $inherits = ($ctx.Contains('inheritFromPriorSr') -and $ctx['inheritFromPriorSr'])
-    } elseif ($ctx -and $ctx.PSObject.Properties['inheritFromPriorSr']) {
-        $inherits = [bool]$ctx.inheritFromPriorSr
-    }
+    # $mode / $inherits, read shape-safe via the shared accessor for the SAME
+    # reason as $mainBranchName above (metadata may be a hashtable during a survey
+    # or a pscustomobject after a JSON round-trip; key/property absent -> the
+    # documented 'in-flight' / $false defaults).
+    $mode = Get-MetadataValue -Container $ctx -Name 'mode' -Default 'in-flight'
+    if (-not $mode) { $mode = 'in-flight' }
+    $inherits = [bool](Get-MetadataValue -Container $ctx -Name 'inheritFromPriorSr' -Default $false)
     if ($mode -eq 'candidate') {
         if ($inherits) {
             [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (main + inherited from $($ctx.priorSrBranch))")

@@ -932,6 +932,27 @@ if (-not $SkipE2E) {
                         Assert-Eq -Label "candidate issue title = in-flight form" `
                                   -Expected "[Release Readiness] .NET 11.0 preview$candidateN — $($candidate.branchName)" `
                                   -Actual $candidate.issueTitle
+
+                        # Dual-tracker window (PR #36497 review, Finding 4): once
+                        # shipped+1 has been CUT to a real branch (branchExists=true =>
+                        # in-flight), the detector must ALSO surface a fresh shipped+2
+                        # CANDIDATE from main (net11.0's PreReleaseVersionIteration has
+                        # advanced by one). The previous bound only looked at shipped+1,
+                        # so a Lane 4 regression that dropped the shipped+2 row during the
+                        # cut->tag window would still pass. This is dormant in steady state
+                        # — it only fires once shipped+1's branch actually exists.
+                        $candidateN2 = $shippedPreviewN + 2
+                        $candidate2 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq $candidateN2 } | Select-Object -First 1
+                        if ($null -eq $candidate2) {
+                            Write-Host "  ❌ net11 missing preview$candidateN2 candidate tracker (dual-tracker window)" -ForegroundColor Red; $script:failed++
+                        } else {
+                            Assert-Eq -Label "shipped+2 candidate mode = candidate (not cut yet)" `
+                                      -Expected 'candidate' -Actual $candidate2.mode
+                            Assert-Eq -Label "shipped+2 candidate branchExists = false" `
+                                      -Expected $false -Actual $candidate2.branchExists
+                            Assert-Eq -Label "shipped+2 candidate surveyRef = mainBranch" `
+                                      -Expected $net11.mainBranch -Actual $candidate2.surveyRef
+                        }
                     } else {
                         Assert-Eq -Label "candidate mode = candidate (no branch yet)" -Expected 'candidate' -Actual $candidate.mode
                         Assert-Eq -Label "candidate surveyRef = mainBranch (no branch yet)" `
@@ -1560,6 +1581,47 @@ Assert-Eq -Label "main-side reverted source does NOT emit a backport command" `
     -Expected $false -Actual ($mainRevertedCandidate.recommendedAction -match '/backport')
 Assert-Eq -Label "main-side reverted source action mentions reverted on main" `
     -Expected $true -Actual ($mainRevertedCandidate.recommendedAction -match 'reverted on main')
+
+# Regression guard (PR #36497 review, Finding 2): a source PR that merged to main,
+# was later reverted on main, AND still has an OPEN backport PR against the SR must
+# be classified 'needs-human-review' — NOT 'backport-in-progress'. Before the fix
+# the OPEN-backport arm was evaluated ahead of the main-revert check, so the report
+# told the captain to "Track backport PR to completion" for code main had already
+# backed out. The hoisted main-revert guard must win regardless of backport state.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression later reverted (with open backport)'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-01-01T00:00:00Z'
+        closedAt = '2026-01-01T00:00:00Z'
+        body = 'Fixes #35000'
+        mergeCommit = [pscustomobject]@{ oid = 'abc1234def5678' }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $true }
+function Get-BackportPrsForSr {
+    param($Repo, $SrBranch, $SourcePrNumber)
+    return @([pscustomobject]@{ number = 35002; state = 'OPEN'; mergedAt = $null; closedAt = $null; title = "[release/10.0.1xx-sr7] Fix regression later reverted" })
+}
+
+$mainRevertedOpenBackport = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @(@{ revertsPr = 35001; revertBackportPr = $null }) }
+
+Assert-Eq -Label "reverted-on-main source with OPEN backport still requires human review" `
+    -Expected 'needs-human-review' -Actual $mainRevertedOpenBackport.classification
+Assert-Eq -Label "reverted-on-main source with OPEN backport is NOT backport-in-progress" `
+    -Expected $false -Actual ($mainRevertedOpenBackport.classification -eq 'backport-in-progress')
+Assert-Eq -Label "reverted-on-main source with OPEN backport does NOT emit a backport command" `
+    -Expected $false -Actual ($mainRevertedOpenBackport.recommendedAction -match '/backport')
+Assert-Eq -Label "reverted-on-main source with OPEN backport action mentions reverted on main" `
+    -Expected $true -Actual ($mainRevertedOpenBackport.recommendedAction -match 'reverted on main')
 
 # ───── Bug regression: issue fixed by SR-direct PR (closing keyword on SR commit) ─────
 # Real-world case: issue #35756 (TabbedPage modal) was fixed by PR #35768 opened
@@ -2491,6 +2553,47 @@ try {
 } finally {
     Remove-Item -LiteralPath $childScriptPath -ErrorAction SilentlyContinue
 }
+
+# ───── Regression guard (PR #36497 review, Finding 3): pscustomobject metadata ─────
+# After a JSON round-trip (ConvertFrom-Json), a report's $Data.metadata is a
+# [pscustomobject], not a [hashtable]. Get-OverallVerdict and Get-ReportSemanticHash
+# both read metadata.mode; the previous `$Data.metadata.ContainsKey('mode')` form
+# throws MethodNotFound on a pscustomobject (it has no ContainsKey method), so any
+# caller that verdicted or hashed a DESERIALIZED report crashed before ever reaching
+# the renderer's own defensive reads. The shared Get-MetadataValue accessor must make
+# both entry points shape-safe. ($Data itself stays a hashtable — only metadata flips
+# shape — matching how the idempotency/renderer callers rebuild the payload.)
+Write-Host "`n[Unit] pscustomobject metadata is shape-safe (Get-OverallVerdict + Get-ReportSemanticHash)" -ForegroundColor Cyan
+$dataPsco = @{
+    metadata    = [pscustomobject]@{ mode = 'candidate'; mainBranch = 'main'; srHeadSha = ('a' * 40); fetchedAt = '2025-01-01T00:00:00Z' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$pscoVerdict = $null; $pscoVerdictThrew = $false
+try { $pscoVerdict = Get-OverallVerdict -Data $dataPsco } catch { $pscoVerdictThrew = $true; Write-Host "    threw: $($_.Exception.Message)" -ForegroundColor Red }
+Assert-Eq -Label "Get-OverallVerdict does NOT throw on pscustomobject metadata" -Expected $false -Actual $pscoVerdictThrew
+Assert-Eq -Label "Get-OverallVerdict returns a non-null verdict on pscustomobject metadata" -Expected $true -Actual ($null -ne $pscoVerdict)
+
+$pscoHash = $null; $pscoHashThrew = $false
+try { $pscoHash = Get-ReportSemanticHash -Data $dataPsco -Verdict $pscoVerdict } catch { $pscoHashThrew = $true; Write-Host "    threw: $($_.Exception.Message)" -ForegroundColor Red }
+Assert-Eq -Label "Get-ReportSemanticHash does NOT throw on pscustomobject metadata" -Expected $false -Actual $pscoHashThrew
+Assert-Eq -Label "Get-ReportSemanticHash returns a 64-char SHA-256 on pscustomobject metadata" -Expected $true -Actual ($pscoHash -match '^[0-9a-f]{64}$')
+
+# The mode carried on the pscustomobject must be HONORED, not silently defaulted:
+# the hash's mode-fold (candidate vs in-flight) is exactly what flips the tracker at
+# the cut, so a swallowed mode would freeze it. Same content, only metadata.mode differs.
+$dataPscoInflight = @{
+    metadata    = [pscustomobject]@{ mode = 'in-flight'; mainBranch = 'main'; srHeadSha = ('a' * 40); fetchedAt = '2025-01-01T00:00:00Z' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$pscoHashInflight = Get-ReportSemanticHash -Data $dataPscoInflight -Verdict $pscoVerdict
+Assert-Eq -Label "hash: pscustomobject mode is actually read (candidate vs in-flight differ)" `
+    -Expected $false -Actual ($pscoHash -eq $pscoHashInflight)
 
 # ───── Format-MarkdownReport: tracker markers + linkification + body cap ─────
 Write-Host "`n[Unit] Format-MarkdownReport (markers, linkification, cap)" -ForegroundColor Cyan
