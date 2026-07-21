@@ -29,22 +29,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellFlyoutLayoutManager _shellFlyoutContentManager;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The view ordering cache only references renderer-owned subviews and is cleared in Dispose.")]
 		UIView[] _uIViews;
-		event EventHandler WillAppear;
-		event EventHandler WillDisappear;
+		bool _isDisposed;
 
-		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "IShellFlyoutContentRenderer exposes this lifecycle event, so the explicit interface event must remain available to interface consumers.")]
-		event EventHandler IShellFlyoutContentRenderer.WillAppear
-		{
-			add => WillAppear += value;
-			remove => WillAppear -= value;
-		}
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Event subscribers are cleared in Dispose(bool).")]
+		public event EventHandler WillAppear;
 
-		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "IShellFlyoutContentRenderer exposes this lifecycle event, so the explicit interface event must remain available to interface consumers.")]
-		event EventHandler IShellFlyoutContentRenderer.WillDisappear
-		{
-			add => WillDisappear += value;
-			remove => WillDisappear -= value;
-		}
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Event subscribers are cleared in Dispose(bool).")]
+		public event EventHandler WillDisappear;
 
 		const short HeaderIndex = 0;
 		const short FooterIndex = 1;
@@ -303,9 +294,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlyoutBgImageAsync()
 		{
+			if (_isDisposed || _shellContext?.Shell is not Shell shell || _bgImage is null)
+				return;
+
 			// Image
-			var imageSource = _shellContext.Shell.FlyoutBackgroundImage;
-			if (imageSource is null || !_shellContext.Shell.IsSet(Shell.FlyoutBackgroundImageProperty))
+			var imageSource = shell.FlyoutBackgroundImage;
+			if (imageSource is null || !shell.IsSet(Shell.FlyoutBackgroundImageProperty))
 			{
 				_bgImage.RemoveFromSuperview();
 				_bgImage.Image?.Dispose();
@@ -317,40 +311,41 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (mauiContext is null)
 				return;
 
+			var bgImage = _bgImage;
 			imageSource.LoadImage(mauiContext, result =>
 			{
-				var nativeImage = result?.Value;
-
-				if (View is null || nativeImage is null)
+				if (_isDisposed)
 					return;
 
-				int previousIndex = GetPreviousIndex(_bgImage);
+				var nativeImage = result?.Value;
+				var view = ViewIfLoaded;
 				if (nativeImage is null ||
-					_shellContext.Shell.FlyoutBackgroundImage != imageSource)
+					view is null ||
+					!ReferenceEquals(bgImage, _bgImage) ||
+					_shellContext?.Shell is not Shell currentShell ||
+					!ReferenceEquals(imageSource, currentShell.FlyoutBackgroundImage))
 				{
-					_bgImage?.RemoveFromSuperview();
 					return;
 				}
 
-				_bgImage.Image = nativeImage;
-				switch (_shellContext.Shell.FlyoutBackgroundImageAspect)
+				int previousIndex = GetPreviousIndex(bgImage);
+				bgImage.Image = nativeImage;
+				switch (currentShell.FlyoutBackgroundImageAspect)
 				{
 					default:
 					case Aspect.AspectFit:
-						_bgImage.ContentMode = UIViewContentMode.ScaleAspectFit;
+						bgImage.ContentMode = UIViewContentMode.ScaleAspectFit;
 						break;
 					case Aspect.AspectFill:
-						_bgImage.ContentMode = UIViewContentMode.ScaleAspectFill;
+						bgImage.ContentMode = UIViewContentMode.ScaleAspectFill;
 						break;
 					case Aspect.Fill:
-						_bgImage.ContentMode = UIViewContentMode.ScaleToFill;
+						bgImage.ContentMode = UIViewContentMode.ScaleToFill;
 						break;
 				}
 
-				if (_bgImage.Superview != View)
-				{
-					AddViewInCorrectOrder(_bgImage, previousIndex);
-				}
+				if (!_isDisposed && ReferenceEquals(bgImage, _bgImage) && bgImage.Superview != view)
+					AddViewInCorrectOrder(bgImage, previousIndex);
 			});
 		}
 
@@ -432,6 +427,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_isDisposed)
+				return;
+
+			_isDisposed = true;
+
 			if (disposing)
 			{
 				if (_shellContext?.Shell is not null)
@@ -453,6 +453,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_footerView?.Dispose();
 				_tableViewController?.RemoveFromParentViewController();
 				_tableViewController?.Dispose();
+				WillAppear = null;
+				WillDisappear = null;
 			}
 
 			_bgImage = null;

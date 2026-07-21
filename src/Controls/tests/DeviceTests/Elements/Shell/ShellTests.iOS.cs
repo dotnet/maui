@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -130,7 +131,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = mainTab2;
 				await OnFrameSetToNotEmpty(pageWithoutTopTabs.Content);
 				var boundsWithoutTopTabs = pageWithoutTopTabs.Content.GetPlatformViewBounds();
-				
+
 				// Both APIs should produce consistent results
 				Assert.Equal(ShellSectionRootRenderer.HeaderHeight, (boundsWithTopTabs.Top - boundsWithoutTopTabs.Top), 1);
 
@@ -436,11 +437,11 @@ namespace Microsoft.Maui.DeviceTests
 				UIView titleView = Shell.GetTitleView(_context.Shell.CurrentPage)?.Handler?.PlatformView as UIView ?? Shell.GetTitleView(_context.Shell)?.Handler?.PlatformView as UIView;
 
 				UIView parentView = GetParentByType(titleView, typeof(UIKit.UIControl));
-				
+
 				if (parentView != null)
 				{
 					handler.PreviousFrame = parentView.Frame;
-					
+
 					// height constraint
 					NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Bottom, 1.0f, 0.0f).Active = true;
 					NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Top, 1.0f, 0.0f).Active = true;
@@ -582,6 +583,51 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 #endif
+		[Fact(DisplayName = "Shell Section Delegates Do Not Retain Renderer")]
+		public async Task ShellSectionDelegatesDoNotRetainRenderer()
+		{
+			var references = await InvokeOnMainThreadAsync(CreateShellSectionDelegateReferences);
+
+			await AssertionExtensions.WaitForGC(references.Renderer);
+			GC.KeepAlive(references.NavigationDelegate);
+			GC.KeepAlive(references.GestureDelegate);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static ShellSectionDelegateReferences CreateShellSectionDelegateReferences()
+		{
+			var renderer = new ShellSectionRenderer(new TestShellContext());
+			renderer.LoadViewIfNeeded();
+
+			var references = new ShellSectionDelegateReferences(
+				new WeakReference(renderer),
+				renderer.Delegate,
+				renderer.InteractivePopGestureRecognizer.Delegate);
+
+			((IDisconnectable)renderer).Disconnect();
+			return references;
+		}
+
+		readonly record struct ShellSectionDelegateReferences(
+			WeakReference Renderer,
+			object NavigationDelegate,
+			object GestureDelegate);
+
+		sealed class TestShellContext : IShellContext
+		{
+			public bool AllowFlyoutGesture => true;
+			public IShellItemRenderer CurrentShellItemRenderer => null;
+			public Shell Shell { get; } = new();
+			public IMauiContext MauiContext => null;
+
+			public IShellNavBarAppearanceTracker CreateNavBarAppearanceTracker() => null;
+			public IShellPageRendererTracker CreatePageRendererTracker() => null;
+			public IShellFlyoutContentRenderer CreateShellFlyoutContentRenderer() => null;
+			public IShellSearchResultsRenderer CreateShellSearchResultsRenderer() => null;
+			public IShellSectionRenderer CreateShellSectionRenderer(ShellSection shellSection) => null;
+			public IShellTabBarAppearanceTracker CreateTabBarAppearanceTracker() => null;
+		}
+
 		async Task TapToSelect(ContentPage page)
 		{
 			var shellContent = page.Parent as ShellContent;

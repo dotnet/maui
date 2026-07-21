@@ -265,42 +265,39 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
-
-			if (disposing)
+			if (disposing && !_disposed)
 			{
-				if (!_disposed)
+				ShellController.RemoveAppearanceObserver(this);
+
+				_disposed = true;
+
+				Shell.PropertyChanged -= OnShellPropertyChanged;
+				((IShellController)Shell).RemoveFlyoutBehaviorObserver(this);
+
+				_flyoutAnimation?.StopAnimation(true);
+				_flyoutAnimation = null;
+				if (PanGestureRecognizer != null)
 				{
-					ShellController.RemoveAppearanceObserver(this);
-
-					_disposed = true;
-
-					Shell.PropertyChanged -= OnShellPropertyChanged;
-					((IShellController)Shell).RemoveFlyoutBehaviorObserver(this);
-
-					_flyoutAnimation?.StopAnimation(true);
-					_flyoutAnimation = null;
-					if (PanGestureRecognizer != null)
-					{
-						View?.RemoveGestureRecognizer(PanGestureRecognizer);
-						PanGestureRecognizer.Dispose();
-						PanGestureRecognizer = null;
-					}
-					RemoveTapoffView();
-					if (Flyout?.ViewController is UIViewController flyoutController)
-					{
-						flyoutController.View?.RemoveFromSuperview();
-						flyoutController.RemoveFromParentViewController();
-						flyoutController.Dispose();
-					}
-					Flyout = null;
-					_flyoutTransition = null;
-					SlideFlyoutTransition = null;
-					Context = null;
-					Shell = null;
-					Detail = null;
+					View?.RemoveGestureRecognizer(PanGestureRecognizer);
+					PanGestureRecognizer.Dispose();
+					PanGestureRecognizer = null;
 				}
+				RemoveTapoffView();
+				if (Flyout?.ViewController is UIViewController flyoutController)
+				{
+					flyoutController.View?.RemoveFromSuperview();
+					flyoutController.RemoveFromParentViewController();
+					flyoutController.Dispose();
+				}
+				Flyout = null;
+				_flyoutTransition = null;
+				SlideFlyoutTransition = null;
+				Context = null;
+				Shell = null;
+				Detail = null;
 			}
+
+			base.Dispose(disposing);
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The Shell.PropertyChanged subscription is removed in Dispose before the shell reference is released.")]

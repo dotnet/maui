@@ -834,7 +834,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override bool ShouldBegin(UIGestureRecognizer recognizer)
 			{
-				if (!_parent.TryGetTarget(out var parent))
+				if (!_parent.TryGetTarget(out var parent) || parent._disposed)
 					return false;
 
 				if (parent.ActiveViewControllers().Length == 1)
@@ -864,7 +864,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
-				if (!_self.TryGetTarget(out var self))
+				if (!_self.TryGetTarget(out var self) || self._disposed)
 					return;
 
 				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
@@ -885,7 +885,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void WillShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
-				if (!_self.TryGetTarget(out var self))
+				if (!_self.TryGetTarget(out var self) || self._disposed)
 					return;
 
 				var element = self.ElementForViewController(viewController);
@@ -936,7 +936,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (!context.IsCancelled)
 				{
-					if (!_self.TryGetTarget(out var self))
+					if (!_self.TryGetTarget(out var self) || self._disposed)
 						return;
 
 					self._popCompletionTask = new TaskCompletionSource<bool>();

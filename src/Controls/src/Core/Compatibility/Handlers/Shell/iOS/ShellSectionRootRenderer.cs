@@ -199,7 +199,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_header?.Dispose();
 				_tracker?.Dispose();
 				_blurView?.RemoveFromSuperview();
+				_blurView?.Dispose();
 				_containerArea?.RemoveFromSuperview();
+				_containerArea?.Dispose();
 
 				foreach (var renderer in _renderers)
 				{

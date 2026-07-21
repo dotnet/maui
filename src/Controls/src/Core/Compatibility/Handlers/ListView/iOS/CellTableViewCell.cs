@@ -1,7 +1,7 @@
 #nullable disable
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Compatibility;
 using ObjCRuntime;
 using UIKit;
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 				{
 					PropertyChanged = null;
-				_cell = null;
+					_cell = null;
 				}
 			}
 		}
@@ -122,6 +122,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+				PropertyChanged = null;
+
 #pragma warning disable CS0618 // Type or member is obsolete
 				if (Cell is Cell cell)
 				{

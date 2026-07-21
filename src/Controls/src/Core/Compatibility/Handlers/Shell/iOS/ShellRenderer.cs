@@ -1,7 +1,7 @@
 #nullable disable
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
@@ -210,32 +210,44 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void Dispose(bool disposing)
 		{
+			if (disposing)
+				DisconnectHandler();
+
 			base.Dispose(disposing);
+		}
 
-			if (disposing && !_disposed)
+		void DisconnectHandler()
+		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
+			var element = Element;
+			if (element != null)
+				element.PropertyChanged -= OnElementPropertyChanged;
+
+			ElementChanged = null;
+
+			if (!ReferenceEquals(_incomingRenderer, _currentShellItemRenderer))
 			{
-				_disposed = true;
-
-				if (Element != null)
-					Element.PropertyChanged -= OnElementPropertyChanged;
-
-				ElementChanged = null;
-
-				if (!ReferenceEquals(_incomingRenderer, _currentShellItemRenderer))
-				{
-					(_incomingRenderer as IDisconnectable)?.Disconnect();
-					_incomingRenderer?.Dispose();
-				}
-
-				(_currentShellItemRenderer as IDisconnectable)?.Disconnect();
-				_currentShellItemRenderer?.Dispose();
-				FlyoutRenderer?.Dispose();
+				(_incomingRenderer as IDisconnectable)?.Disconnect();
+				_incomingRenderer?.Dispose();
 			}
+
+			(_currentShellItemRenderer as IDisconnectable)?.Disconnect();
+			_currentShellItemRenderer?.Dispose();
+			_flyoutRenderer?.Dispose();
 
 			_incomingRenderer = null;
 			_currentShellItemRenderer = null;
+			_flyoutRenderer = null;
 			_mauiContext = null;
-			FlyoutRenderer = null;
+
+			if (element is IElement shell && ReferenceEquals(shell.Handler, this))
+				shell.Handler = null;
+
+			Element = null;
 		}
 
 		protected virtual async void OnCurrentItemChanged()
@@ -446,6 +458,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.DisconnectHandler()
 		{
+			DisconnectHandler();
 		}
 	}
 }

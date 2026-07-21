@@ -1,7 +1,7 @@
 #nullable disable
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using ObjCRuntime;
 using UIKit;
 using NSAction = System.Action;
@@ -225,6 +225,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_closer != null)
 				{
+					_closer.View?.RemoveGestureRecognizer(_closer);
 					_closer.Dispose();
 					_closer = null;
 				}
@@ -252,11 +253,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_globalCloser == null || _globalCloser.State == UIGestureRecognizerState.Cancelled)
 				return;
 
-			cell?.ContentCell?.RemoveGestureRecognizer(_closer);
-			_closer.Dispose();
-			_closer = null;
+			if (_closer is not null)
+			{
+				cell?.ContentCell?.RemoveGestureRecognizer(_closer);
+				_closer.Dispose();
+				_closer = null;
+			}
 
-			_table.RemoveGestureRecognizer(_globalCloser);
+			_table?.RemoveGestureRecognizer(_globalCloser);
 			_table = null;
 			_globalCloser.Dispose();
 			_globalCloser = null;

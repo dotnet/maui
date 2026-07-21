@@ -46,16 +46,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 #pragma warning disable CS0618 // Type or member is obsolete
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ModelChanged handler only reloads the weak PlatformView reference for this table source lifetime.")]
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ModelChanged subscription is removed in Dispose(bool).")]
 		public TableViewModelRenderer(TableView model)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
 			TableView = model;
-			model.ModelChanged += (s, e) => PlatformView?.ReloadData();
+			model.ModelChanged += OnModelChanged;
 			AutomaticallyDeselect = true;
 		}
 
 		public bool AutomaticallyDeselect { get; set; }
+
+		void OnModelChanged(object sender, EventArgs e) =>
+			PlatformView?.ReloadData();
 
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
@@ -189,6 +192,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void Tap(UITapGestureRecognizer gesture)
 		{
 			gesture.View.EndEditing(true);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (TableView is TableView tableView)
+					tableView.ModelChanged -= OnModelChanged;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+				PlatformView = null;
+				TableView = null;
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 
