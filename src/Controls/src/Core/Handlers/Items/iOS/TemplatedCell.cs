@@ -85,10 +85,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 
+			DetachFromItemsView();
+		}
+
+		// Managed-only cleanup: clears the bound view's BindingContext and removes it from the
+		// ItemsView's logical children (mirrors TemplatedCell2.Unbind()). Without this, a view
+		// created for this cell's DataTemplate stays reachable via the ItemsView's internal
+		// children list even after the cell stops being visible/bound, which prevents the view
+		// (and its handler/platform view) from ever being collected.
+		void DetachFromItemsView()
+		{
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.BindingContext = null;
+				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			// Ensure the logical-child link back to the ItemsView is always cleaned up when this
+			// cell is deallocated, even if PrepareForReuse/Unbind was never called for this
+			// instance (e.g. the cell was discarded rather than recycled by UICollectionView).
+			DetachFromItemsView();
+
+			base.Dispose(disposing);
 		}
 
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
