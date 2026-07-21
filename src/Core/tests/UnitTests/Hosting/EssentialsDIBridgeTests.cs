@@ -621,27 +621,31 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			secondBuilder.ConfigureEssentials(_ => probe.Enter());
 			using var start = new Barrier(2);
 
-			var firstBuild = Task.Run(() =>
-			{
-				start.SignalAndWait();
-				return firstBuilder.Build();
-			});
-			var secondBuild = Task.Run(() =>
-			{
-				start.SignalAndWait();
-				return secondBuilder.Build();
-			});
+			var firstBuild = StartBuild(firstBuilder);
+			var secondBuild = StartBuild(secondBuilder);
 
 			var apps = await Task.WhenAll(firstBuild, secondBuild);
 			try
 			{
 				Assert.Equal(1, probe.MaxConcurrent);
+				Assert.Equal(2, probe.EntryCount);
 			}
 			finally
 			{
 				for (int i = apps.Length - 1; i >= 0; i--)
 					apps[i].Dispose();
 			}
+
+			Task<MauiApp> StartBuild(MauiAppBuilder builder) =>
+				Task.Factory.StartNew(
+					() =>
+					{
+						start.SignalAndWait();
+						return builder.Build();
+					},
+					CancellationToken.None,
+					TaskCreationOptions.LongRunning,
+					TaskScheduler.Default);
 		}
 
 		[Fact]
@@ -768,6 +772,8 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			int _entries;
 			int _maxConcurrent;
 
+			public int EntryCount => Volatile.Read(ref _entries);
+
 			public int MaxConcurrent => Volatile.Read(ref _maxConcurrent);
 
 			public void Enter()
@@ -776,7 +782,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				UpdateMax(active);
 
 				if (Interlocked.Increment(ref _entries) == 1)
-					_secondEntry.Wait(TimeSpan.FromMilliseconds(500));
+					_secondEntry.Wait(TimeSpan.FromSeconds(5));
 				else
 					_secondEntry.Set();
 
