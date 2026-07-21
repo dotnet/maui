@@ -437,7 +437,7 @@ namespace Microsoft.Maui.Hosting
 					mapServiceToken,
 					implementation.MapServiceToken
 #if WINDOWS
-					, Windows.Services.Maps.MapService.ServiceToken
+					, global::Windows.Services.Maps.MapService.ServiceToken
 #endif
 				);
 
@@ -487,9 +487,9 @@ namespace Microsoft.Maui.Hosting
 				}
 #if WINDOWS
 				if (platformSuccessor is null &&
-					string.Equals(Windows.Services.Maps.MapService.ServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+					string.Equals(global::Windows.Services.Maps.MapService.ServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
 				{
-					Windows.Services.Maps.MapService.ServiceToken = assignment.PreviousPlatformToken;
+					global::Windows.Services.Maps.MapService.ServiceToken = assignment.PreviousPlatformToken;
 				}
 #endif
 			}
