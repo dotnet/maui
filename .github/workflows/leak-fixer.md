@@ -470,6 +470,12 @@ jq --arg n "$N" --arg apiplain "$API" --arg repo "$REPO_RE" \
     /tmp/gh-aw/agent/merged-leakfix-all.json \
   > /tmp/gh-aw/agent/merged-fix-prs.json
 jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent/merged-fix-prs.json
+# Reset the SHARED re-open override sentinel at the start of every candidate. It lives at a single
+#   fixed path (NOT keyed by $N) and is written only inside the merged-fix block below, while Step 3
+#   may advance to the next-oldest candidate within the SAME run. Without this reset a sentinel
+#   written for an earlier candidate would leak forward and falsely gate a later one (phantom
+#   "maintainer override" / "unverified timeline"). Clear it so it reflects ONLY the current $N.
+rm -f /tmp/gh-aw/agent/reopen-override.txt
 # (d-override) MAINTAINER RE-OPEN GUARD: if this [leak-scan] issue was RE-OPENED *after* the
 #   newest matched merged [leak-fix] PR merged, a maintainer deliberately overrode the auto-close
 #   (the merged fix was incomplete / another retention edge remains). This workflow NEVER re-opens
@@ -482,9 +488,14 @@ if [ "$(jq 'length' /tmp/gh-aw/agent/merged-fix-prs.json)" -ge 1 ]; then
   # never happen on an unverified timeline. If the timeline cannot be fetched AND parsed as a JSON
   # array, we cannot rule out a maintainer re-open, so write the override sentinel (skip close/
   # rebuild, leave the issue open) instead of treating a failed lookup as an empty timeline.
-  if gh api "repos/$GITHUB_REPOSITORY/issues/$N/timeline" --paginate -H "Accept: application/vnd.github+json" \
-       > /tmp/gh-aw/agent/issue-timeline.json 2>/dev/null \
-     && jq -e 'type == "array"' /tmp/gh-aw/agent/issue-timeline.json >/dev/null 2>&1; then
+  if gh api "repos/$GITHUB_REPOSITORY/issues/$N/timeline" --paginate --slurp -H "Accept: application/vnd.github+json" \
+       > /tmp/gh-aw/agent/issue-timeline-pages.json 2>/dev/null \
+     && jq -e 'type == "array"' /tmp/gh-aw/agent/issue-timeline-pages.json >/dev/null 2>&1; then
+    # `gh api --paginate` writes each page as a SEPARATE JSON array; without --slurp a multi-page
+    # timeline emits concatenated arrays ([..][..]) and every jq read below would run once PER page,
+    # so REOPENED_AT could become multi-valued and the string comparison would misfire. --slurp
+    # collects the pages into one array-of-arrays; `add` flattens them into a single event stream.
+    jq 'add // []' /tmp/gh-aw/agent/issue-timeline-pages.json > /tmp/gh-aw/agent/issue-timeline.json
     REOPENED_AT=$(jq -r '[.[] | select(.event=="reopened") | .created_at] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/issue-timeline.json)
     if [ "$(jq -n --arg r "$REOPENED_AT" --arg m "$FIX_MERGED_AT" '($r != "") and ($m != "") and ($r > $m)')" = "true" ]; then
       echo "REOPEN OVERRIDE: issue #$N re-opened at $REOPENED_AT AFTER merged fix at $FIX_MERGED_AT — maintainer override; will NOT close or rebuild." \
