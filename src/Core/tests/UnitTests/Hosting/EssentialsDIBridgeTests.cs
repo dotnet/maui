@@ -357,19 +357,33 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public void OlderMauiAppDisposeDoesNotClobberLaterAppBridge()
 		{
+			var original = Preferences.Default;
 			var firstMock = new StubPreferences();
 			var firstBuilder = MauiApp.CreateBuilder();
 			firstBuilder.Services.AddSingleton<IPreferences>(firstMock);
-			var firstApp = firstBuilder.Build();
+			MauiApp? firstApp = firstBuilder.Build();
+			MauiApp? secondApp = null;
 
-			var secondMock = new StubPreferences();
-			var secondBuilder = MauiApp.CreateBuilder();
-			secondBuilder.Services.AddSingleton<IPreferences>(secondMock);
-			using var secondApp = secondBuilder.Build();
+			try
+			{
+				var secondMock = new StubPreferences();
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IPreferences>(secondMock);
+				secondApp = secondBuilder.Build();
 
-			firstApp.Dispose();
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Same(secondMock, Preferences.Default);
 
-			Assert.Same(secondMock, Preferences.Default);
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Same(original, Preferences.Default);
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
 		}
 
 		[Fact]
@@ -415,6 +429,41 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			app.Dispose();
 
 			Assert.Same(external, Preferences.Default);
+		}
+
+		[Fact]
+		public void ExternalFacadeReplacementSurvivesLaterMauiAppLifetime()
+		{
+			var firstMock = new StubPreferences();
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IPreferences>(firstMock);
+			MauiApp? firstApp = firstBuilder.Build();
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var external = new StubPreferences();
+				Preferences.SetDefault(external);
+
+				var secondMock = new StubPreferences();
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IPreferences>(secondMock);
+				secondApp = secondBuilder.Build();
+				Assert.Same(secondMock, Preferences.Default);
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Same(external, Preferences.Default);
+
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Same(external, Preferences.Default);
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
 		}
 
 		[Fact]

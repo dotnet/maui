@@ -396,13 +396,11 @@ namespace Microsoft.Maui.Hosting
 				List<Action> facadeCleanups)
 				where T : class
 			{
-				var assignment = new FacadeAssignment<T>(impl);
+				FacadeAssignment<T> assignment;
 
 				lock (FacadeBridgeState<T>.SyncRoot)
 				{
-					if (FacadeBridgeState<T>.Assignments.Count == 0)
-						FacadeBridgeState<T>.Original = originalGetter();
-
+					assignment = new FacadeAssignment<T>(impl, originalGetter());
 					FacadeBridgeState<T>.Assignments.Add(assignment);
 					setter(impl);
 				}
@@ -429,13 +427,10 @@ namespace Microsoft.Maui.Hosting
 				List<Action> facadeCleanups)
 				where T : class
 			{
-				var assignment = new FacadeAssignment<T>(impl);
+				var assignment = new FacadeAssignment<T>(impl, original);
 
 				lock (FacadeBridgeState<T>.SyncRoot)
 				{
-					if (FacadeBridgeState<T>.Assignments.Count == 0)
-						FacadeBridgeState<T>.Original = original;
-
 					FacadeBridgeState<T>.Assignments.Add(assignment);
 				}
 
@@ -458,39 +453,40 @@ namespace Microsoft.Maui.Hosting
 							return;
 
 						var wasCurrent = index == FacadeBridgeState<T>.Assignments.Count - 1;
+						if (!wasCurrent)
+						{
+							var successor = FacadeBridgeState<T>.Assignments[index + 1];
+							if (ReferenceEquals(successor.Previous, assignment.Implementation))
+								successor.Previous = assignment.Previous;
+						}
+
 						FacadeBridgeState<T>.Assignments.RemoveAt(index);
 						if (!wasCurrent)
 							return;
 
 						if (ReferenceEquals(getter(), assignment.Implementation))
-						{
-							var replacement = FacadeBridgeState<T>.Assignments.Count > 0
-								? FacadeBridgeState<T>.Assignments[FacadeBridgeState<T>.Assignments.Count - 1].Implementation
-								: FacadeBridgeState<T>.Original;
-							setter(replacement);
-						}
-
-						if (FacadeBridgeState<T>.Assignments.Count == 0)
-							FacadeBridgeState<T>.Original = null;
+							setter(assignment.Previous);
 					}
 				});
 			}
 
 			sealed class FacadeAssignment<T> where T : class
 			{
-				public FacadeAssignment(T implementation)
+				public FacadeAssignment(T implementation, T? previous)
 				{
 					Implementation = implementation;
+					Previous = previous;
 				}
 
 				public T Implementation { get; }
+
+				public T? Previous { get; set; }
 			}
 
 			static class FacadeBridgeState<T> where T : class
 			{
 				internal static readonly object SyncRoot = new();
 				internal static readonly List<FacadeAssignment<T>> Assignments = new();
-				internal static T? Original;
 			}
 
 			static void LogMissingNativeLifecycleInterface<T>(IServiceProvider services, string requiredInterface)
