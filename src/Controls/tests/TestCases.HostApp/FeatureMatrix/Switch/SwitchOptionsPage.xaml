@@ -51,8 +51,13 @@
                            Orientation="Horizontal"
                            Spacing="10"
                            VerticalOptions="Center">
-                     <CheckBox AutomationId="IsEnabledFalseCheckBox"
+                     <CheckBox x:Name="IsEnabledFalseCheckBox"
+                               AutomationId="IsEnabledFalseCheckBox"
+                               IsChecked="True"
                                CheckedChanged="OnEnabledCheckBoxCheckedChanged"/>
+                     <Label AutomationId="IsEnabledFalseCheckBoxState"
+                            VerticalOptions="Center"
+                            Text="{Binding IsChecked, Source={x:Reference IsEnabledFalseCheckBox}, StringFormat='({0})'}"/>
               </StackLayout>
 
               <!-- IsVisible -->
@@ -65,8 +70,13 @@
                            Orientation="Horizontal"
                            Spacing="10"
                            VerticalOptions="Center">
-                     <CheckBox AutomationId="IsVisibleFalseCheckBox"
+                     <CheckBox x:Name="IsVisibleFalseCheckBox"
+                               AutomationId="IsVisibleFalseCheckBox"
+                               IsChecked="True"
                                CheckedChanged="OnVisibleCheckBoxCheckedChanged"/>
+                     <Label AutomationId="IsVisibleFalseCheckBoxState"
+                            VerticalOptions="Center"
+                            Text="{Binding IsChecked, Source={x:Reference IsVisibleFalseCheckBox}, StringFormat='({0})'}"/>
               </StackLayout>
 
               <!-- IsToggled -->
@@ -79,8 +89,12 @@
                            Orientation="Horizontal"
                            Spacing="10"
                            VerticalOptions="Center">
-                     <CheckBox AutomationId="IsToggledTrueCheckBox"
+                     <CheckBox x:Name="IsToggledTrueCheckBox"
+                               AutomationId="IsToggledTrueCheckBox"
                                CheckedChanged="OnToggledCheckBoxCheckedChanged"/>
+                     <Label AutomationId="IsToggledTrueCheckBoxState"
+                            VerticalOptions="Center"
+                            Text="{Binding IsChecked, Source={x:Reference IsToggledTrueCheckBox}, StringFormat='({0})'}"/>
               </StackLayout>
 
               <!-- OnColor -->
@@ -134,9 +148,14 @@
                      VerticalOptions="Center"/>
               <HorizontalStackLayout Grid.Row="6"
                                      Grid.Column="1"
+                                     Spacing="10"
                                      VerticalOptions="Center">
-                     <CheckBox AutomationId="ShadowTrueCheckBox"
+                     <CheckBox x:Name="ShadowTrueCheckBox"
+                               AutomationId="ShadowTrueCheckBox"
                                CheckedChanged="OnShadowCheckBoxCheckedChanged"/>
+                     <Label AutomationId="ShadowTrueCheckBoxState"
+                            VerticalOptions="Center"
+                            Text="{Binding IsChecked, Source={x:Reference ShadowTrueCheckBox}, StringFormat='({0})'}"/>
               </HorizontalStackLayout>
 
               <!-- ThumbColor -->

@@ -12,22 +12,20 @@
     </ContentPage.ToolbarItems>
 
     <Grid RowDefinitions="*,Auto">
-        <Grid x:Name="SwitchGrid"
-              Grid.Row="0">
-            <Switch AutomationId="SwitchControl"
-                    FlowDirection="{Binding FlowDirection}"
-                    IsEnabled="{Binding IsEnabled}"
-                    IsVisible="{Binding IsVisible}"
-                    IsToggled="{Binding IsToggled}"
-                    OnColor="{Binding OnColor}"
-                    OffColor="{Binding OffColor}"
-                    Shadow="{Binding Shadow}"
-                    ThumbColor="{Binding ThumbColor}"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center"
-                    Toggled="Switch_Toggled">
-            </Switch>
-        </Grid>
+        <Switch Grid.Row="0"
+                AutomationId="SwitchControl"
+                FlowDirection="{Binding FlowDirection}"
+                IsEnabled="{Binding IsEnabled}"
+                IsVisible="{Binding IsVisible}"
+                IsToggled="{Binding IsToggled}"
+                OnColor="{Binding OnColor}"
+                OffColor="{Binding OffColor}"
+                Shadow="{Binding Shadow}"
+                ThumbColor="{Binding ThumbColor}"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Toggled="Switch_Toggled">
+        </Switch>
         <HorizontalStackLayout Grid.Row="1"
                                HorizontalOptions="Center"
                                Padding="0,0,0,40"

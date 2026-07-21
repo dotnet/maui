@@ -36,11 +36,11 @@ public partial class SwitchOptionsPage : ContentPage
 	{
 		if (e.Value)
 		{
-			_viewModel.IsEnabled = false;
+			_viewModel.IsEnabled = true;
 		}
 		else
 		{
-			_viewModel.IsEnabled = true;
+			_viewModel.IsEnabled = false;
 		}
 	}
 
@@ -49,11 +49,11 @@ public partial class SwitchOptionsPage : ContentPage
 
 		if (e.Value)
 		{
-			_viewModel.IsVisible = false;
+			_viewModel.IsVisible = true;
 		}
 		else
 		{
-			_viewModel.IsVisible = true;
+			_viewModel.IsVisible = false;
 		}
 	}
 
