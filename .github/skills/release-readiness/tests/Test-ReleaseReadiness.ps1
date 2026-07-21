@@ -869,75 +869,23 @@ if (-not $SkipE2E) {
                 Write-Host "  ❌ majors[] missing net10 entry" -ForegroundColor Red; $script:failed++
             }
 
-            # net11 — pre-GA: no SR trackers; two preview trackers now that preview6 has
-            # been cut. preview6 is IN-FLIGHT (branch release/11.0.1xx-preview6 exists) and
-            # preview7 is the CANDIDATE from net11.0 (exactly the role preview6 held before
-            # its branch was cut).
+            # net11 — pre-GA: no SR trackers; preview6 has shipped, so preview7
+            # is the active candidate from net11.0.
             if ($byMajor.ContainsKey(11)) {
                 $net11 = $byMajor[11]
                 Assert-Eq -Label "net11 mainBranch is 'net11.0'"          -Expected 'net11.0' -Actual $net11.mainBranch
                 Assert-Eq -Label "net11 highestShippedTag is null (pre-GA)" -Expected $true -Actual ([string]::IsNullOrEmpty($net11.highestShippedTag))
-                Assert-Eq -Label "net11 highestShippedPreviewTag carries preview5 tag" `
-                          -Expected '11.0.0-preview.5.26304.4' -Actual $net11.highestShippedPreviewTag
-                Assert-Eq -Label "net11 tracker count is 2 (preview6 in-flight + preview7 candidate)" -Expected 2 -Actual $net11.trackers.Count
+                Assert-Eq -Label "net11 highestShippedPreviewTag carries preview6 tag" `
+                          -Expected '11.0.0-preview.6.26360.8' -Actual $net11.highestShippedPreviewTag
+                Assert-Eq -Label "net11 tracker count is 1 (preview7 candidate)" -Expected 1 -Actual $net11.trackers.Count
                 $previewTrackers = @($net11.trackers | Where-Object branchType -eq 'preview')
-                Assert-Eq -Label "net11 has 2 preview trackers"           -Expected 2 -Actual $previewTrackers.Count
+                Assert-Eq -Label "net11 has 1 preview tracker"            -Expected 1 -Actual $previewTrackers.Count
                 $srTrackers = @($net11.trackers | Where-Object branchType -eq 'sr')
                 Assert-Eq -Label "net11 has 0 SR trackers (pre-GA -> Lane 2 skipped)" -Expected 0 -Actual $srTrackers.Count
 
                 # Select each preview by its number rather than array position so the
                 # assertions don't hinge on detector ordering.
-                $preview6 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq 6 } | Select-Object -First 1
                 $preview7 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq 7 } | Select-Object -First 1
-                if ($null -eq $preview6) {
-                    Write-Host "  ❌ net11 missing preview6 tracker" -ForegroundColor Red; $script:failed++
-                } else {
-                # Lifecycle-INVARIANT fields (don't drift candidate<->in-flight): identity,
-                # tag prefix, preview number, milestone, and the canonical proposed branch slug.
-                Assert-Eq -Label "preview6 canonicalKey"              -Expected 'net11-preview6'       -Actual $preview6.canonicalKey
-                Assert-Eq -Label "preview6 expectedTagPrefix"         -Expected '11.0.0-preview.6.'   -Actual $preview6.expectedTagPrefix
-                Assert-Eq -Label "preview6 previewNumber = 6"         -Expected 6                      -Actual $preview6.previewNumber
-                Assert-Eq -Label "preview6 milestone name"            -Expected '.NET 11.0-preview6'  -Actual $preview6.milestoneName
-                Assert-Eq -Label "preview6 branchName = canonical slug" `
-                          -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
-                # preview6 transitions candidate (no branch) -> in-flight (branch cut) over its
-                # cycle. Don't hard-code EITHER state: read the detector's own branchExists and
-                # assert mode/surveyRef/issueTitle are CONSISTENT with it. This stays green across
-                # the candidate->in-flight cut instead of drifting the day the branch lands — same
-                # invariant-over-snapshot philosophy as the hasRecentActivity asserts below.
-                Assert-Eq -Label "preview6 branchExists is a [bool] (lifecycle pivot)" `
-                          -Expected $true -Actual ($preview6.branchExists -is [bool])
-                if ($preview6.branchExists) {
-                    # Branch has been cut -> in-flight: the tracker surveys the branch itself.
-                    Assert-Eq -Label "preview6 mode = in-flight (branch exists)" -Expected 'in-flight' -Actual $preview6.mode
-                    Assert-Eq -Label "preview6 surveyRef = branchName (branch exists)" `
-                              -Expected $preview6.branchName -Actual $preview6.surveyRef
-                    Assert-Eq -Label "preview6 issue title = in-flight form" `
-                              -Expected "[Release Readiness] .NET 11.0 preview6 — $($preview6.branchName)" `
-                              -Actual $preview6.issueTitle
-                } else {
-                    # No branch yet -> candidate: the tracker surveys the major's dev branch.
-                    Assert-Eq -Label "preview6 mode = candidate (no branch yet)" -Expected 'candidate' -Actual $preview6.mode
-                    Assert-Eq -Label "preview6 surveyRef = mainBranch (no branch yet)" `
-                              -Expected $net11.mainBranch -Actual $preview6.surveyRef
-                    Assert-Eq -Label "preview6 issue title = candidate form" `
-                              -Expected "[Release Readiness] .NET 11.0 preview6 — candidate from $($net11.mainBranch)" `
-                              -Actual $preview6.issueTitle
-                }
-                # hasRecentActivity is a 7-day-window signal, not a marker of an
-                # "active preview cycle" — net11.0 can idle >7 days and report $false.
-                # Assert the flag's TYPE, not its date-dependent value.
-                Assert-Eq -Label "preview6 hasRecentActivity is a [bool] (value date-dependent)" `
-                          -Expected $true -Actual ($preview6.hasRecentActivity -is [bool])
-                # Pin the count->flag WIRING (hasRecentActivity = recentCommitCount > 0) for the
-                # preview construction path too — same-instant fields, so date-independent yet it
-                # still trips on an inverted/hardcoded mapping.
-                Assert-Eq -Label "preview6 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
-                          -Expected $true -Actual ($preview6.hasRecentActivity -eq ([int]$preview6.recentCommitCount -gt 0))
-                Assert-Eq -Label "preview6 regressionLabels carries previewN-1 + previewN" `
-                          -Expected 'regressed-in-11.0.0-preview5,regressed-in-11.0.0-preview6' `
-                          -Actual ($preview6.regressionLabels -join ',')
-                }
 
                 # preview7 — candidate from net11.0. net11.0 carries
                 # PreReleaseVersionIteration=7, so the detector emits a candidate for the
@@ -1517,6 +1465,80 @@ Assert-Eq -Label "merged main source without backport is classified for backport
 Assert-Eq -Label "merged main source emits exact backport command" `
     -Expected 'On the merged source PR, post `/backport to release/10.0.1xx-sr7`' `
     -Actual $mainBackportCandidate.recommendedAction
+
+# Candidate mode surveys main before the SR branch exists. It must never tell a
+# release captain to post `/backport to main`; it should instead say to land on
+# main before the cut and rerun after the real release/...-srN branch exists.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    $state = if ($PrNumber -eq 35003) { 'OPEN' } else { 'MERGED' }
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression'
+        state = $state
+        baseRefName = 'main'
+        mergedAt = if ($state -eq 'MERGED') { '2026-01-01T00:00:00Z' } else { $null }
+        closedAt = if ($state -eq 'MERGED') { '2026-01-01T00:00:00Z' } else { $null }
+        body = 'Fixes #35000'
+        mergeCommit = if ($state -eq 'MERGED') { [pscustomobject]@{ oid = 'abc1234def5678' } } else { $null }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $true }
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+
+$candidateMergedBackportGuidance = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'main'; mainBranch = 'main'; mode = 'candidate' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+$candidateOpenBackportGuidance = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35003) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'main'; mainBranch = 'main'; mode = 'candidate' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+
+Assert-Eq -Label "candidate merged-on-main guidance does NOT emit /backport to main" `
+    -Expected $false -Actual ($candidateMergedBackportGuidance.recommendedAction -match '/backport to main')
+Assert-Eq -Label "candidate merged-on-main guidance says land before cut + rerun" `
+    -Expected $true -Actual ($candidateMergedBackportGuidance.recommendedAction -match 'before the SR is cut' -and $candidateMergedBackportGuidance.recommendedAction -match 'rerun readiness')
+Assert-Eq -Label "candidate open-on-main guidance does NOT emit /backport to main" `
+    -Expected $false -Actual ($candidateOpenBackportGuidance.recommendedAction -match '/backport to main')
+Assert-Eq -Label "candidate open-on-main guidance says wait for main merge + rerun" `
+    -Expected $true -Actual ($candidateOpenBackportGuidance.recommendedAction -match 'Wait for the main merge' -and $candidateOpenBackportGuidance.recommendedAction -match 'rerun readiness')
+
+# A source PR that merged to main and was later reverted on main must not receive
+# automated backport guidance; cherry-picking it to SR would reintroduce a change
+# main has already backed out.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression later reverted'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-01-01T00:00:00Z'
+        closedAt = '2026-01-01T00:00:00Z'
+        body = 'Fixes #35000'
+        mergeCommit = [pscustomobject]@{ oid = 'abc1234def5678' }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $true }
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+
+$mainRevertedCandidate = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @(@{ revertsPr = 35001; revertBackportPr = $null }) }
+
+Assert-Eq -Label "main-side reverted source requires human review" `
+    -Expected 'needs-human-review' -Actual $mainRevertedCandidate.classification
+Assert-Eq -Label "main-side reverted source does NOT emit a backport command" `
+    -Expected $false -Actual ($mainRevertedCandidate.recommendedAction -match '/backport')
+Assert-Eq -Label "main-side reverted source action mentions reverted on main" `
+    -Expected $true -Actual ($mainRevertedCandidate.recommendedAction -match 'reverted on main')
 
 # ───── Bug regression: issue fixed by SR-direct PR (closing keyword on SR commit) ─────
 # Real-world case: issue #35756 (TabbedPage modal) was fixed by PR #35768 opened
@@ -4095,6 +4117,21 @@ Assert-Eq -Label "null-channels build: build check shows channels as '_none_'" -
 $s17Feed = Get-MaestroCheckByPrefix -Checks $s17 -Prefix 'Ship Assessment validation feed'
 Assert-Eq -Label "null-channels build: feed check is WATCH (null channels != promoted)" -Expected 'WATCH' -Actual $s17Feed.Status
 
+# ── Scenario 18: promoted SR build with no commit property → feed URL falls
+#    back to ctx.srHeadSha, not some unrelated/default build field. ──
+$noCommitPropSrHead = 'f00dbabe707f745a27a7791495b240e756926980'
+$noCommitPropBuild = @(
+    [PSCustomObject]@{
+        id = 333100; branch = 'release/10.0.1xx-sr8'; buildNumber = '20260716.3'
+        buildLink = 'https://example/nocommit'; channels = @('.NET 10.0.1xx SDK')
+    }
+)
+$s18 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $noCommitPropBuild -SrHeadSha $noCommitPropSrHead
+$s18Feed = Get-MaestroCheckByPrefix -Checks $s18 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "promoted build without commit property: feed check is READY" -Expected 'READY' -Actual $s18Feed.Status
+Assert-Eq -Label "promoted build without commit property: feed URL falls back to srHeadSha sha8" -Expected $true `
+    -Actual ($s18Feed.Details -match 'darc-pub-dotnet-maui-f00dbabe/nuget/v3/index\.json')
+
 # =========================================================================
 # Get-MilestoneHygieneChecks — current/next milestone existence + stale detection
 # =========================================================================
@@ -4370,7 +4407,7 @@ $t7 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-07-01') -PatchVersion
 Assert-Eq -Label "T7: 07-01 (month starts on Wed) → Jul 14" -Expected '2026-07-14' -Actual $t7.Date.ToString('yyyy-MM-dd')
 
 # Scenario T8: time-of-day portion shouldn't affect the result
-$t8 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-09T23:59:00Z') -PatchVersion 80
+$t8 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-09T23:59:00') -PatchVersion 80
 Assert-Eq -Label "T8: time-of-day stripped → 06-09 still recognized as shipping day" -Expected 0 -Actual $t8.DaysFromNow
 
 # Scenario T9: patch=$null (caller doesn't know) → defaults to 2nd-Tuesday cadence

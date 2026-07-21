@@ -1752,6 +1752,16 @@ function Get-SrCommits {
         foreach ($n in $inherited.fixedIssues) { $fixedIssueSet.Add([int]$n) | Out-Null }
     }
 
+    # Main-side reverts matter for backport guidance: a source PR can remain an
+    # ancestor of main after a later revert, so ancestry alone is not enough to
+    # safely recommend `/backport`. Keep this separate from SR-side reverts so
+    # existing SR-content classifications stay unchanged.
+    $mainReverts = @()
+    if ($Ctx.mainBranch) {
+        $mainRevertScan = Get-CommitsForRevSpec -RevSpec "origin/$($Ctx.mainBranch) --regexp-ignore-case --grep=Revert" -OriginTag 'main'
+        $mainReverts = @($mainRevertScan.reverts)
+    }
+
     $srcPrsSorted = @($sourcePrSet | Sort-Object)
     $result = @{
         commitCount = $mergedCommits.Count
@@ -1765,6 +1775,7 @@ function Get-SrCommits {
         backportPrs = @($backportPrSet | Sort-Object)
         fixedIssues = @($fixedIssueSet | Sort-Object)
         reverts = $mergedReverts
+        mainReverts = $mainReverts
     }
     return $result
 }
@@ -2233,6 +2244,15 @@ function Classify-RegressionCandidate {
         if ($r.revertsPr) { $revertedPrSet[$r.revertsPr] = $true }
         if ($r.revertBackportPr) { $revertedPrSet[$r.revertBackportPr] = $true }
     }
+    $mainRevertedPrSet = @{}
+    $hasMainReverts = if ($SrContents -is [hashtable]) { $SrContents.ContainsKey('mainReverts') }
+                      else { $SrContents.PSObject.Properties.Name -contains 'mainReverts' }
+    if ($hasMainReverts) {
+        foreach ($r in @($SrContents.mainReverts)) {
+            if ($r.revertsPr) { $mainRevertedPrSet[[int]$r.revertsPr] = $true }
+            if ($r.revertBackportPr) { $mainRevertedPrSet[[int]$r.revertBackportPr] = $true }
+        }
+    }
 
     # === EARLY-EXIT: issue is already fixed by a commit IN the SR contents ===
     #
@@ -2427,7 +2447,13 @@ function Classify-RegressionCandidate {
                 $evidence += "Backport PR #$($closedUnmergedBackport.number) CLOSED unmerged — needs WorkIQ for context"
             }
             elseif ($pr.state -eq 'MERGED') {
-                if ($pr.onMain) {
+                if ($mainRevertedPrSet.ContainsKey([int]$pr.number)) {
+                    $verdict = 'needs-human-review'
+                    $subreason = 'reverted-on-main'
+                    $subreasonPr = [int]$pr.number
+                    $confidence = 'medium'
+                    $evidence += "PR #$($pr.number) merged to main but was later reverted on main — do not backport until a human verifies the current fix/revert chain"
+                } elseif ($pr.onMain) {
                     $verdict = 'merged-on-main-no-backport'
                     $confidence = 'medium'
                     $evidence += "PR #$($pr.number) merged to main, no backport PR opened"
@@ -2525,20 +2551,31 @@ function Classify-RegressionCandidate {
         }
     }
 
+    $ctxMode = if ($Ctx -is [hashtable] -or $Ctx -is [System.Collections.IDictionary]) {
+        if ($Ctx.ContainsKey('mode')) { $Ctx['mode'] } else { $null }
+    } elseif ($Ctx.PSObject.Properties['mode']) {
+        $Ctx.mode
+    } else {
+        $null
+    }
+    $isCandidateMode = $ctxMode -eq 'candidate' -or $Ctx.srBranch -eq $Ctx.mainBranch
     $backportCommand = "/backport to $($Ctx.srBranch)"
+    $candidateMergedGuidance = 'Fix must land on main before the SR is cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
+    $candidateOpenGuidance = 'Wait for the main merge before the SR cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
     $recAction = switch ($best.verdict) {
         'in-sr-active' { 'No action — fix is shipping' }
         'in-sr-reverted' { 'Investigate: backport landed and was reverted on SR' }
         'rejected-from-sr' { 'Check rejection rationale (WorkIQ) — was this intentional or stale?' }
         'backport-in-progress' { 'Track backport PR to completion' }
-        'merged-on-main-no-backport' { "On the merged source PR, post ``$backportCommand``" }
+        'merged-on-main-no-backport' { if ($isCandidateMode) { $candidateMergedGuidance } else { "On the merged source PR, post ``$backportCommand``" } }
         'merged-non-main-only' { 'Flow fix to main first, then rerun readiness to verify the merged source PR is on main before requesting a backport' }
-        'open-on-main' { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" }
+        'open-on-main' { if ($isCandidateMode) { $candidateOpenGuidance } else { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" } }
         'needs-human-review' {
             switch ($best.subreason) {
                 'merged-backport-missing' { "Re-run readiness without ``-NoFetch`` (or verify the backport's merge target manually) — backport #$($best.subreasonPr) is MERGED on GitHub but absent from SR git contents" }
                 'open-non-main-inflight'  { "Wait for #$($best.subreasonPr) to merge and reach main via Candidate promotion, then rerun readiness (retargeting to main directly is an optional expedited path, not required)" }
                 'open-non-main-other'     { "Wait for #$($best.subreasonPr)'s content to reach main (merge + forward-flow), then rerun readiness" }
+                'reverted-on-main'        { "Manual review required: source PR #$($best.subreasonPr) was reverted on main; verify the revert chain or find a replacement fix before requesting any SR backport" }
                 default { 'Manual review required' }
             }
         }
@@ -4003,7 +4040,11 @@ function Format-MarkdownReport {
                         baseCell = $base
                         issCell = $issCell
                         statusCell = '🔵 OPEN — awaiting main merge'
-                        actionCell = "Watch for merge, then post ``/backport to $srBranch`` on the merged source PR"
+                        actionCell = if ($mode -eq 'candidate') {
+                            'Watch for merge to main before the SR cut; rerun readiness after the release/...-srN branch is cut to get the exact backport command'
+                        } else {
+                            "Watch for merge, then post ``/backport to $srBranch`` on the merged source PR"
+                        }
                     })
                 }
             }

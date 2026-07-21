@@ -133,7 +133,7 @@ Post this exact comment on the merged source PR:
 /backport to release/<major>.0.1xx-sr<N>
 ```
 
-`.github/workflows/backport.yml` delegates this operation to Arcade. A successful run creates a branch named `backport/pr-<source-pr>-to-release/<major>.0.1xx-sr<N>` and an SR-targeted PR whose body identifies `Backport of #<source-pr>`. Its cherry-pick commit preserves source pedigree with `(cherry picked from commit <source-merge-sha>)`.
+`.github/workflows/backport.yml` delegates this operation to Arcade. Arcade downloads the source PR patch and reapplies it with `git am --3way`; it does **not** run `git cherry-pick -x`. A successful run creates a branch named `backport/pr-<source-pr>-to-release/<major>.0.1xx-sr<N>` and an SR-targeted PR whose body identifies `Backport of #<source-pr>`. Validate the automated path by that generated branch name and PR body, not by a cherry-pick trailer.
 
 ### Automation conflict fallback
 
@@ -147,6 +147,14 @@ git cherry-pick -x <source-merge-sha>
 # Resolve any conflicts, then test the resolved behavior.
 git push -u origin HEAD
 ```
+
+If `<source-merge-sha>` is a multi-parent merge commit, use mainline parent 1:
+
+```bash
+git cherry-pick -x -m 1 <source-merge-sha>
+```
+
+Retain plain `git cherry-pick -x <source-merge-sha>` for single-parent squash/rebase commits. Only this manual fallback creates the `(cherry picked from commit <sha>)` trailer.
 
 Open the resulting PR against the SR branch, keep the generated branch/title convention, and state `Backport of #<source-pr>` in its body. After it merges, re-run readiness so the regression is classified from the SR contents rather than the source PR's state.
 
@@ -269,9 +277,13 @@ catches it.
 - SR9 branch `release/10.0.1xx-sr9` was cut **without** a default channel.
 - Build `20260710.6` (BAR **322419** / AzDO **3019432**) was **not promoted** →
   no per-build feed → the Assessment was created without a feed link.
-- Fixed by `darc add-default-channel --repo https://github.com/dotnet/maui
+- Immediate recovery: release engineering can one-off promote the already-built
+  BAR build with `darc add-build-to-channel --id 322419 --channel ".NET 10.0.1xx
+  SDK"` so the build-specific feed is generated without waiting for a default
+  mapping.
+- Durable fix: `darc add-default-channel --repo https://github.com/dotnet/maui
   --branch release/10.0.1xx-sr9 --channel ".NET 10.0.1xx SDK"` (maestro-config
-  PR) and re-promoting the build. `darc get-asset --name
+  PR) so future builds auto-promote. `darc get-asset --name
   Microsoft.Maui.Controls --build 322419` then showed channel `.NET 10.0.1xx
   SDK` and feed `darc-pub-dotnet-maui-8e2547a4`.
 - SR8 for reference used feed `darc-pub-dotnet-maui-bf615689` — same
@@ -279,17 +291,21 @@ catches it.
 
 ### The workflow
 
-1. Ensure the SR branch has a BAR default-channel mapping (the
-   `BAR default-channel mapping` check). Without it, escalate to release
-   engineering: `darc add-default-channel --channel ".NET <band> SDK" --branch
-   release/<major>.0.1xx-sr<N> --repo https://github.com/dotnet/maui`.
-2. Ensure the SR HEAD build is **promoted** to that channel. The
+1. If an already-built SR head is unpromoted, ask release engineering for the
+   immediate one-off recovery: `darc add-build-to-channel --id <BAR_BUILD_ID>
+   --channel ".NET <band> SDK"`.
+2. Ensure the SR branch has a BAR default-channel mapping as the durable
+   automatic-flow fix (the `BAR default-channel mapping` check). Without it,
+   escalate to release engineering: `darc add-default-channel --channel ".NET
+   <band> SDK" --branch release/<major>.0.1xx-sr<N> --repo
+   https://github.com/dotnet/maui`.
+3. Ensure the SR HEAD build is **promoted** to that channel. The
    `Ship Assessment validation feed` check reports `READY` (with the derived
    feed URL) once the build carries a channel, or `WATCH` while it is
    unpromoted.
-3. Confirm the feed location with `darc get-asset --name
+4. Confirm the feed location with `darc get-asset --name
    Microsoft.Maui.Controls --build <BAR id>` (prints the `NugetFeed` location).
-4. **Paste that feed URL into the DevDiv ship Assessment.**
+5. **Paste that feed URL into the DevDiv ship Assessment.**
 
 The report derives and surfaces the feed URL but remains report-only — it does
 not create channels, promote builds, or edit the Assessment.
