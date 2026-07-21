@@ -134,3 +134,30 @@ Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnActionSheetRequeste
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnAlertRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.AlertArguments! arguments) -> void
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPageBusy(Microsoft.Maui.Controls.Page! sender, bool enabled) -> void
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPromptRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.Duration.get -> System.TimeSpan
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.FromVersion.get -> int
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.InstanceCount.get -> int
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.Timestamp.get -> System.DateTimeOffset
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.ToVersion.get -> int
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.UpdatedTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.CurrentVersion.get -> int
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.UpdateApplied -> System.EventHandler<Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs!>?
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.UpdateFailed -> System.EventHandler<Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs!>?
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.UpdateRequested -> System.EventHandler<Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs!>?
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.UpdateSkipped -> System.EventHandler<Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs!>?
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.Exception.get -> System.Exception!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.Instance.get -> object!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.Timestamp.get -> System.DateTimeOffset
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.UpdatedType.get -> System.Type!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.Version.get -> int
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs.HandledTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs.Timestamp.get -> System.DateTimeOffset
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs.UpdatedTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.HandledTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.Timestamp.get -> System.DateTimeOffset
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.UpdatedTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
