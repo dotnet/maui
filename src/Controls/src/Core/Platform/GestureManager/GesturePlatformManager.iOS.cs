@@ -103,7 +103,9 @@ namespace Microsoft.Maui.Controls.Platform
 					if (uiGestureRecognizer is null)
 						continue;
 
-					PlatformView?.RemoveGestureRecognizer(uiGestureRecognizer);
+					// The gesture may have been attached to the inner UIControl instead of the container
+					// (see LoadRecognizers). Remove from whichever view actually holds it.
+					(uiGestureRecognizer.View ?? PlatformView)?.RemoveGestureRecognizer(uiGestureRecognizer);
 					uiGestureRecognizer.ShouldReceiveTouch = null;
 					uiGestureRecognizer.Dispose();
 				}
@@ -817,12 +819,30 @@ namespace Microsoft.Maui.Controls.Platform
 				_gestureRecognizers[recognizer] = nativeRecognizers;
 				foreach (UIGestureRecognizer? nativeRecognizer in nativeRecognizers)
 				{
-					if (nativeRecognizer != null && PlatformView != null)
+					// Cache PlatformView locally so nullable flow analysis carries through the block
+					// (PlatformView is a WeakReference-backed property, so each access is a separate call).
+					var platformView = PlatformView;
+					if (nativeRecognizer != null && platformView != null)
 					{
 						_proxy ??= new ShouldReceiveTouchProxy(this);
 						nativeRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveTouch;
 
-						PlatformView.AddGestureRecognizer(nativeRecognizer);
+						// If the inner platform view is a UIControl (e.g. UIButton, ImageButton) different
+						// from the container, adding the tap gesture to the container is unreliable because
+						// UIControl consumes touches via its own tracking mechanism. Attach the gesture
+						// directly to the UIControl so it fires when the user taps the control, and set
+						// CancelsTouchesInView = false so the control's own actions (e.g. Button.Clicked)
+						// continue to fire. See https://github.com/dotnet/maui/issues/19099.
+						UIView targetView = platformView;
+						if (nativeRecognizer is UITapGestureRecognizer &&
+							_handler.PlatformView is UIControl innerControl &&
+							!ReferenceEquals(innerControl, platformView))
+						{
+							nativeRecognizer.CancelsTouchesInView = false;
+							targetView = innerControl;
+						}
+
+						targetView.AddGestureRecognizer(nativeRecognizer);
 
 					}
 				}
@@ -856,7 +876,10 @@ namespace Microsoft.Maui.Controls.Platform
 					if (uiRecognizer is null)
 						continue;
 
-					PlatformView?.RemoveGestureRecognizer(uiRecognizer);
+					// The gesture may have been attached to the inner UIControl instead of the container
+					// (see the AddGestureRecognizer call earlier in this method). Remove from whichever
+					// view actually holds it.
+					(uiRecognizer.View ?? PlatformView)?.RemoveGestureRecognizer(uiRecognizer);
 
 					if (TryGetTapGestureRecognizer(gestureRecognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
 						tapGestureRecognizer != null)
