@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -285,17 +284,22 @@ namespace Microsoft.Maui.Handlers
 				return existing;
 			}
 
+			if (MauiContext is null)
+			{
+				throw new InvalidOperationException("MauiContext must be set before creating view controllers.");
+			}
+
 			UIViewController vc;
 
 			if (ControlsConfiguration?.CreateViewControllerForPage is { } factory)
 			{
 				// Controls layer provides a ParentingViewController wrapper
-				vc = factory(view, MauiContext!);
+				vc = factory(view, MauiContext);
 			}
 			else
 			{
 				// Core-only fallback
-				var platformHandler = view.ToHandler(MauiContext!);
+				var platformHandler = view.ToHandler(MauiContext);
 				vc = platformHandler.ViewController
 					?? new ContainerViewController(view, platformHandler);
 			}
