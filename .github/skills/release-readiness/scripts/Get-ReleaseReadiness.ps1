@@ -766,9 +766,22 @@ function Get-ReleaseShipChecks {
                     -NextAction "No bump needed."
             } else {
                 $mainBumpTitle = "Update PatchVersion from $($vpMain.Patch) to $expectedNextPatchPrefix"
+                # Same cycle → a PatchVersion bump is required. But if main is
+                # ALSO misconfigured for a servicing/stable build (rare: same
+                # cycle AND mainline settings flipped), the bump PR must ADDITIONALLY
+                # restore the dev-main settings — telling the captain to keep them
+                # "unchanged" would leave main emitting servicing/stable packages.
+                if ($mainMainlineOk) {
+                    $mainlineKeepClause = "Keep ``SdkBandVersion``, ``PreReleaseVersionLabel=ci.main``, and ``StabilizePackageVersion=false`` unchanged"
+                } else {
+                    $mainFixNeeded = @()
+                    if (-not $mainLabelOk)     { $mainFixNeeded += "``PreReleaseVersionLabel`` (currently ``$($vpMain.PreReleaseVersionLabel)``)" }
+                    if (-not $mainStabilizeOk) { $mainFixNeeded += "``StabilizePackageVersion`` (currently ``$($vpMain.StabilizePackageVersion)``)" }
+                    $mainlineKeepClause = "Keep ``SdkBandVersion`` unchanged, and in the SAME PR restore the dev-main mainline settings that are currently misconfigured for a stable/servicing build ($($mainFixNeeded -join ' and ')): set ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false`` — leaving them as-is would keep ``$($Ctx.mainBranch)`` emitting servicing/stable packages"
+                }
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
                     -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. Once SR$targetSr tags, every PR currently merging to main as ``$($vpMain.FullVersion)`` would falsely claim to ship in SR$targetSr." `
-                    -NextAction "Open a focused PR targeting ``$($Ctx.mainBranch)`` titled ``$mainBumpTitle``. In ``eng/Versions.props``, change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``. Keep ``SdkBandVersion``, ``PreReleaseVersionLabel=ci.main``, and ``StabilizePackageVersion=false`` unchanged; do not combine this main bump with the SR servicing-flip PR. This is the one-line pattern used by #35433 and #35879. Merge it before shipping SR$targetSr."
+                    -NextAction "Open a focused PR targeting ``$($Ctx.mainBranch)`` titled ``$mainBumpTitle``. In ``eng/Versions.props``, change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``. $mainlineKeepClause; do not combine this main bump with the SR servicing-flip PR. This is the one-line pattern used by #35433 and #35879. Merge it before shipping SR$targetSr."
             }
         }
     }
@@ -2513,6 +2526,20 @@ function Classify-RegressionCandidate {
         'merged-on-main-no-backport' { "On the merged source PR, post ``$backportCommand``" }
         'merged-non-main-only' { 'Flow fix to main first, then rerun readiness to verify the merged source PR is on main before requesting a backport' }
         'open-on-main' { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" }
+        'needs-human-review' {
+            # Surface the same Candidate-promotion / forward-flow guidance the
+            # evidence carries: the Tier-2 Markdown renders recommendedAction,
+            # NOT evidence, so a bare 'Manual review required' would drop it.
+            if ($best.pr -and $best.pr.state -eq 'OPEN' -and $best.pr.baseRef -and $best.pr.baseRef -ne $Ctx.mainBranch) {
+                if ($best.pr.baseRef -like 'inflight/*') {
+                    "Wait for #$($best.pr.number) to merge and reach main via Candidate promotion, then rerun readiness (retargeting to main directly is an optional expedited path, not required)"
+                } else {
+                    "Wait for #$($best.pr.number)'s content to reach main (merge + forward-flow), then rerun readiness"
+                }
+            } else {
+                'Manual review required'
+            }
+        }
         'no-fix-yet' { 'No fix exists — investigate priority' }
         default { 'Manual review required' }
     }
@@ -3485,11 +3512,46 @@ function Get-ReportSemanticHash {
     }
 }
 
+function Select-OpenMainFixPr {
+    <#
+    .SYNOPSIS
+        From a regression record's candidate fix PRs, pick the OPEN PR that
+        actually drove the 'open-on-main' verdict: the one targeting main.
+
+    .DESCRIPTION
+        The classifier reports 'open-on-main' when ANY candidate is an OPEN PR
+        against main, but candidateFixPrs can hold several OPEN PRs in arbitrary
+        order (e.g. an inflight/current PR first, the main PR second). The
+        Open-Fix-PRs-Inbound renderer must surface the main-targeting PR — the
+        one that owns the '🔵 awaiting main merge' status and the /backport
+        action — not merely the first OPEN candidate, which would attach that
+        row to the wrong PR and hide the PR that drove the verdict. Falls back
+        to the first OPEN candidate when none targets main (defensive; preserves
+        the prior single-candidate behavior).
+    #>
+    param($CandidateFixPrs, [string]$MainBranch)
+    $open = @($CandidateFixPrs | Where-Object { $_.state -eq 'OPEN' })
+    if ($open.Count -eq 0) { return $null }
+    $onMain = $open | Where-Object { $_.baseRef -eq $MainBranch } | Select-Object -First 1
+    if ($onMain) { return $onMain }
+    return $open | Select-Object -First 1
+}
+
 function Format-MarkdownReport {
     param($Data, [string]$RepoUrl, [string]$TrackerKey, [int]$MaxBodyBytes = 60000)
 
     $ctx = $Data.metadata
     $srBranch = $ctx.srBranch
+    # Main branch, read defensively: real reports carry it in metadata, but some
+    # renderer fixtures/callers omit it. Under StrictMode a missing key throws
+    # for BOTH hashtables and pscustomobjects, so probe before reading. A null
+    # value makes Select-OpenMainFixPr fall back to the first OPEN candidate.
+    $mainBranchName = $null
+    if ($ctx -is [System.Collections.IDictionary]) {
+        if ($ctx.Contains('mainBranch')) { $mainBranchName = $ctx['mainBranch'] }
+    } elseif ($ctx -and $ctx.PSObject.Properties['mainBranch']) {
+        $mainBranchName = $ctx.mainBranch
+    }
     $shortHead = if ($ctx.srHeadSha) { $ctx.srHeadSha.Substring(0, 8) } else { '?' }
 
     # Compute verdict + semantic hash (deterministic, used in markers)
@@ -3865,8 +3927,12 @@ function Format-MarkdownReport {
                 }
             } else {
                 # open-on-main: fix PR is OPEN against main (or another non-SR base).
-                # Pick the first candidate PR whose state is OPEN.
-                $openMain = $r.candidateFixPrs | Where-Object { $_.state -eq 'OPEN' } | Select-Object -First 1
+                # Surface the OPEN PR that actually drove the verdict — the one
+                # targeting main — not merely the first OPEN candidate. A mixed
+                # candidate list (inflight PR first, main PR second) would
+                # otherwise render the inflight PR with the wrong '🔵 awaiting
+                # main merge' row + /backport action, hiding the main PR.
+                $openMain = Select-OpenMainFixPr -CandidateFixPrs $r.candidateFixPrs -MainBranch $mainBranchName
                 if ($openMain) {
                     $prLink = "[#$($openMain.number)]($RepoUrl/pull/$($openMain.number))"
                     $base = if ($openMain.baseRef) { "``$($openMain.baseRef)``" } else { '`main`' }

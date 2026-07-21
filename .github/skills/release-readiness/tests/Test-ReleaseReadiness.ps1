@@ -1576,6 +1576,13 @@ Assert-Eq -Label "open inflight PR evidence mentions Candidate promotion path" `
     -Expected $true -Actual (($nonMainOpen.evidence -join "`n") -match 'Candidate promotion')
 Assert-Eq -Label "open inflight PR evidence does NOT demand retargeting as required" `
     -Expected $false -Actual (($nonMainOpen.evidence -join "`n") -match 'must target main')
+# The Tier-2 Markdown renders recommendedAction, NOT evidence — so the same
+# Candidate-promotion guidance must reach recommendedAction, not fall through
+# to the generic 'Manual review required'.
+Assert-Eq -Label "open inflight PR recommendedAction surfaces Candidate promotion" `
+    -Expected $true -Actual ($nonMainOpen.recommendedAction -match 'Candidate promotion')
+Assert-Eq -Label "open inflight PR recommendedAction is not the generic fallback" `
+    -Expected $false -Actual ($nonMainOpen.recommendedAction -eq 'Manual review required')
 
 # ───── Get-IssueCommentPrs (negation guard on fix-phrase scoring) ─────
 # A maintainer comment that NEGATES a fix ("not fixed by #X", "won't fix #Y") must
@@ -1968,6 +1975,36 @@ $vClosedNonMain = Get-OverallVerdict -Data @{
 }
 Assert-Eq -Label "CLOSED non-main no-fix-yet is non-blocking (Tier 3 effective → 🟢)" `
     -Expected '🟢' -Actual $vClosedNonMain.symbol
+
+# ───── Select-OpenMainFixPr (mixed-candidate renderer selection) ─────
+# 'open-on-main' can be produced by a candidate list holding several OPEN PRs.
+# The Open-Fix-PRs-Inbound renderer must surface the PR that actually drove the
+# verdict — the one targeting main — not merely the first OPEN candidate. A mixed
+# list (inflight PR first, main PR second) must render the MAIN PR with its
+# '🔵 awaiting main merge' row + /backport action, not the inflight PR.
+Write-Host "`n[Unit] Select-OpenMainFixPr (mixed-candidate renderer selection)" -ForegroundColor Cyan
+
+$mixedInflightFirst = @(
+    @{ number = 40001; state = 'OPEN'; baseRef = 'inflight/current' },
+    @{ number = 40002; state = 'OPEN'; baseRef = 'main' }
+)
+$selMixed = Select-OpenMainFixPr -CandidateFixPrs $mixedInflightFirst -MainBranch 'main'
+Assert-Eq -Label "mixed candidates (inflight first, main second) → selects the MAIN PR" `
+    -Expected 40002 -Actual ([int]$selMixed.number)
+
+# Fallback: no OPEN candidate targets main → keep prior behavior (first OPEN).
+$noMainCandidate = @(
+    @{ number = 40003; state = 'OPEN'; baseRef = 'inflight/current' },
+    @{ number = 40004; state = 'MERGED'; baseRef = 'main' }
+)
+$selFallback = Select-OpenMainFixPr -CandidateFixPrs $noMainCandidate -MainBranch 'main'
+Assert-Eq -Label "no OPEN main candidate → falls back to first OPEN candidate" `
+    -Expected 40003 -Actual ([int]$selFallback.number)
+
+# No OPEN candidates at all → null (renderer skips the row).
+$selNone = Select-OpenMainFixPr -CandidateFixPrs @(@{ number = 40005; state = 'MERGED'; baseRef = 'main' }) -MainBranch 'main'
+Assert-Eq -Label "no OPEN candidates → returns null" `
+    -Expected $true -Actual ($null -eq $selNone)
 
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
@@ -3259,6 +3296,26 @@ Assert-Eq -Label "Main-not-bumped: next action preserves mainline version settin
     -Actual ([bool]($mainBumpCheck.NextAction -match 'SdkBandVersion.*PreReleaseVersionLabel=ci\.main.*StabilizePackageVersion=false.*unchanged'))
 Assert-Eq -Label "Main-not-bumped: next action separates the servicing flip" -Expected $true `
     -Actual ([bool]($mainBumpCheck.NextAction -match 'do not combine.*servicing-flip'))
+
+# Scenario 1c: SR8 in-flight, main STILL same cycle (10.0.80) AND misconfigured
+# for a servicing/stable build (PreReleaseVersionLabel=servicing, Stabilize=true).
+# The bump path must ALSO tell the captain to restore ci.main/false — not keep
+# them "unchanged" (which would leave main emitting servicing/stable packages).
+$checks1c = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+
+$mainBumpCheck1c = Get-CheckByAreaPrefix -Checks $checks1c -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main same-cycle + misconfigured: still BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck1c.Status
+Assert-Eq -Label "Main same-cycle + misconfigured: still requires the 80→90 bump" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1c.NextAction -match ([regex]::Escape('Update PatchVersion from 80 to 90'))))
+Assert-Eq -Label "Main same-cycle + misconfigured: does NOT tell captain to keep ci.main/false unchanged" -Expected $false `
+    -Actual ([bool]($mainBumpCheck1c.NextAction -match 'PreReleaseVersionLabel=ci\.main.*StabilizePackageVersion=false.*unchanged'))
+Assert-Eq -Label "Main same-cycle + misconfigured: instructs restoring the dev-main settings in the same PR" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1c.NextAction -match 'restore the dev-main mainline settings'))
+Assert-Eq -Label "Main same-cycle + misconfigured: names the offending servicing setting" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1c.NextAction -match 'StabilizePackageVersion'))
 
 # Scenario 1b: SR9 in-flight, main STILL at 10.0.90 — emit the exact
 # triple-digit SR10 bump used by the live 10.0.90 release.
