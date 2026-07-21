@@ -43,17 +43,12 @@ on:
   # (sized to fit one area label plus up to several platform labels in a
   # single call).
   #
-  # Fork PR safety: this workflow uses `pull_request_target` and DOES check
-  # out the PR branch (no `checkout: false`). gh-aw protects the agent
-  # infrastructure by restoring `.github/` (including this SKILL.md and the
-  # workflow definition) from the base branch via `restore_base_github_folders.sh`
-  # AFTER the PR-branch checkout. Attacker-controlled fork content cannot
-  # influence labeling rules, prompts, or workflow config. The agent CAN read
-  # other workspace files but has no shell/exec/write tools — only safe-output
-  # `add_labels` calls, which post the chosen labels through a separate
-  # sandboxed job.
+  # Fork PR safety: this workflow uses `pull_request_target` but disables
+  # checkout entirely. The agent reads issue/PR metadata through the filtered
+  # GitHub tools, so untrusted PR code never enters the secret-bearing job.
   roles: all
 
+checkout: false
 permissions:
   contents: read
   issues: read
@@ -62,20 +57,7 @@ permissions:
 engine:
   id: copilot
   env:
-    COPILOT_GITHUB_TOKEN: |
-      ${{ case(
-        needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
-        needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1,
-        needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2,
-        needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3,
-        needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4,
-        needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5,
-        needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6,
-        needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
-        needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
-        needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
-        'NO COPILOT PAT AVAILABLE')
-      }}
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 network: defaults
 
@@ -84,7 +66,7 @@ safe-outputs:
     # Blast-radius cap: allow up to 10 labels per call so area + platform
     # labels all survive in a single add_labels invocation.
     max: 10
-    # Enforce the workflow contract at the safe-output boundary. gh-aw v0.81.6
+    # Enforce the workflow contract at the safe-output boundary. gh-aw v0.82.14
     # validates and sanitizes label names through its issue-intent normalizer;
     # this allowlist additionally prevents any other label family from being
     # applied if untrusted content confuses the agent.
