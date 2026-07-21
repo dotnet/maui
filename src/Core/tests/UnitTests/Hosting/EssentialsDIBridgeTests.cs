@@ -583,6 +583,35 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void EssentialsInitializationAndCleanupFailuresAreAggregatedInOrder()
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions, ThrowingUnsubscribeAppActions>();
+			builder.Services.AddSingleton<IVersionTracking, ThrowingVersionTracking>();
+			builder.ConfigureEssentials(essentials =>
+			{
+				essentials.OnAppAction(_ => { });
+				essentials.UseVersionTracking();
+			});
+
+			var aggregate = Assert.Throws<AggregateException>(() => builder.Build());
+
+			Assert.StartsWith("Essentials initialization and cleanup both failed.", aggregate.Message, StringComparison.Ordinal);
+			Assert.Collection(
+				aggregate.InnerExceptions,
+				ex =>
+				{
+					Assert.IsType<InvalidOperationException>(ex);
+					Assert.Equal("version tracking failed", ex.Message);
+				},
+				ex =>
+				{
+					Assert.IsType<InvalidOperationException>(ex);
+					Assert.Equal("unsubscribe failed", ex.Message);
+				});
+		}
+
+		[Fact]
 		public async Task ConcurrentMauiAppBuildsSerializeEssentialsInitialization()
 		{
 			var probe = new InitializationConcurrencyProbe();
@@ -866,6 +895,56 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				await Task.Yield();
 				throw new InvalidOperationException("app actions failed");
 			}
+		}
+
+		sealed class ThrowingUnsubscribeAppActions : IAppActions
+		{
+			public bool IsSupported => true;
+
+			public event EventHandler<AppActionEventArgs>? AppActionActivated
+			{
+				add { }
+				remove => throw new InvalidOperationException("unsubscribe failed");
+			}
+
+			public Task<IEnumerable<AppAction>> GetAsync() =>
+				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
+
+			public Task SetAsync(IEnumerable<AppAction> actions) => Task.CompletedTask;
+		}
+
+		sealed class ThrowingVersionTracking : IVersionTracking
+		{
+			public bool IsFirstLaunchEver => false;
+
+			public bool IsFirstLaunchForCurrentVersion => false;
+
+			public bool IsFirstLaunchForCurrentBuild => false;
+
+			public string CurrentVersion => "1.0";
+
+			public string CurrentBuild => "1";
+
+			public string? PreviousVersion => null;
+
+			public string? PreviousBuild => null;
+
+			public string? FirstInstalledVersion => null;
+
+			public string? FirstInstalledBuild => null;
+
+			public IReadOnlyList<string> VersionHistory => Array.Empty<string>();
+
+			public IReadOnlyList<string> BuildHistory => Array.Empty<string>();
+
+			public void Track()
+			{
+				throw new InvalidOperationException("version tracking failed");
+			}
+
+			public bool IsFirstLaunchForVersion(string version) => false;
+
+			public bool IsFirstLaunchForBuild(string build) => false;
 		}
 
 		sealed class RecordingLoggerFactory : ILoggerFactory

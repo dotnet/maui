@@ -251,12 +251,22 @@ namespace Microsoft.Maui.Hosting
 						}
 					}
 				}
-				catch
+				catch (Exception initializationException)
 				{
-					if (cleanup is not null)
-						cleanup.Dispose();
-					else
-						EssentialsCleanup.RestoreFacades(facadeCleanups);
+					try
+					{
+						if (cleanup is not null)
+							cleanup.Dispose();
+						else
+							EssentialsCleanup.RestoreFacades(facadeCleanups);
+					}
+					catch (Exception cleanupException)
+					{
+						throw new AggregateException(
+							"Essentials initialization and cleanup both failed.",
+							initializationException,
+							cleanupException);
+					}
 
 					throw;
 				}
