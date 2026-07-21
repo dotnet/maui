@@ -560,38 +560,6 @@ namespace Microsoft.Maui.Hosting
 				internal static readonly List<FacadeAssignment<T>> Assignments = new();
 			}
 
-#if WINDOWS || TIZEN
-			sealed class MapTokenAssignment
-			{
-				public MapTokenAssignment(
-					IPlatformGeocoding implementation,
-					string appliedToken,
-					string? previousToken
-#if WINDOWS
-					, string? previousPlatformToken
-#endif
-				)
-				{
-					Implementation = implementation;
-					AppliedToken = appliedToken;
-					PreviousToken = previousToken;
-#if WINDOWS
-					PreviousPlatformToken = previousPlatformToken;
-#endif
-				}
-
-				public IPlatformGeocoding Implementation { get; }
-
-				public string AppliedToken { get; }
-
-				public string? PreviousToken { get; set; }
-
-#if WINDOWS
-				public string? PreviousPlatformToken { get; set; }
-#endif
-			}
-#endif
-
 			static void LogMissingNativeLifecycleInterface<T>(IServiceProvider services, string requiredInterface)
 				where T : class =>
 				services.GetService<ILoggerFactory>()?
@@ -627,6 +595,38 @@ namespace Microsoft.Maui.Hosting
 				_essentialsBuilder?.AppActionHandlers?.Invoke(e.AppAction);
 			}
 		}
+
+#if WINDOWS || TIZEN
+		sealed class MapTokenAssignment
+		{
+			public MapTokenAssignment(
+				IPlatformGeocoding implementation,
+				string appliedToken,
+				string? previousToken
+#if WINDOWS
+				, string? previousPlatformToken
+#endif
+			)
+			{
+				Implementation = implementation;
+				AppliedToken = appliedToken;
+				PreviousToken = previousToken;
+#if WINDOWS
+				PreviousPlatformToken = previousPlatformToken;
+#endif
+			}
+
+			public IPlatformGeocoding Implementation { get; }
+
+			public string AppliedToken { get; }
+
+			public string? PreviousToken { get; set; }
+
+#if WINDOWS
+			public string? PreviousPlatformToken { get; set; }
+#endif
+		}
+#endif
 
 		sealed class EssentialsCleanup : IDisposable
 		{

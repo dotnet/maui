@@ -543,6 +543,31 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void InitializationAndDisposalFailuresAreAggregatedInOrder()
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<ThrowingDisposable>();
+			builder.Services.AddSingleton<IMauiInitializeService>(services =>
+				new DoubleFailureInitializeService(services.GetRequiredService<ThrowingDisposable>()));
+
+			var aggregate = Assert.Throws<AggregateException>(() => builder.Build());
+
+			Assert.StartsWith("MauiApp initialization and cleanup both failed.", aggregate.Message, StringComparison.Ordinal);
+			Assert.Collection(
+				aggregate.InnerExceptions,
+				ex =>
+				{
+					Assert.IsType<InvalidOperationException>(ex);
+					Assert.Equal("initialization failed", ex.Message);
+				},
+				ex =>
+				{
+					Assert.IsType<InvalidOperationException>(ex);
+					Assert.Equal("disposal failed", ex.Message);
+				});
+		}
+
+		[Fact]
 		public async Task ConcurrentMauiAppBuildsSerializeEssentialsInitialization()
 		{
 			var probe = new InitializationConcurrencyProbe();
@@ -665,6 +690,30 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			{
 				Assert.False(_probe.IsDisposed);
 				throw new InvalidOperationException("later initializer failed");
+			}
+		}
+
+		sealed class ThrowingDisposable : IDisposable
+		{
+			public void Dispose()
+			{
+				throw new InvalidOperationException("disposal failed");
+			}
+		}
+
+		sealed class DoubleFailureInitializeService : IMauiInitializeService
+		{
+			readonly ThrowingDisposable _dependency;
+
+			public DoubleFailureInitializeService(ThrowingDisposable dependency)
+			{
+				_dependency = dependency;
+			}
+
+			public void Initialize(IServiceProvider services)
+			{
+				Assert.NotNull(_dependency);
+				throw new InvalidOperationException("initialization failed");
 			}
 		}
 
