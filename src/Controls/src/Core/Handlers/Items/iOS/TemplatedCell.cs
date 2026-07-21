@@ -85,10 +85,49 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 
+			// Detach the bound view from the ItemsView's logical children. Unbind() is only
+			// ever invoked from PrepareForReuse, ItemsViewController cell recycling, or the
+			// deterministic disposing path of Dispose(bool) - never from the finalizer - so
+			// touching the managed object graph here is safe.
+			DetachFromItemsView();
+
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				// Also detach the native platform view from the cell's ContentView, since a
+				// strong subview reference here can keep the platform view (and therefore the
+				// bound VirtualView) reachable even after logical-child bookkeeping is cleared.
+				ClearSubviews();
+			}
+		}
+
+		// Managed-only cleanup: clears the bound view's BindingContext and removes it from the
+		// ItemsView's logical children (mirrors TemplatedCell2.Unbind()). Uses view.Parent
+		// (itself backed by a WeakReference<Element>) rather than tracking a separate reference.
+		// Only ever invoked via Unbind(), which is only called on the deterministic disposing
+		// path (see Dispose(bool)) - never from the finalizer.
+		void DetachFromItemsView()
+		{
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.BindingContext = null;
+				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			// Only run managed/native cleanup on the deterministic disposing path. When
+			// disposing == false (finalizer), touching the managed object graph
+			// (BindingContext, LogicalChildren, events) is unsafe: it can run on the
+			// finalizer thread and reference objects that are themselves being finalized.
+			// Unbind() already calls DetachFromItemsView(), so this also covers the case
+			// where the cell is deallocated without ever going through PrepareForReuse/Unbind.
+			if (disposing)
+			{
+				Unbind();
+			}
+
+			base.Dispose(disposing);
 		}
 
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
