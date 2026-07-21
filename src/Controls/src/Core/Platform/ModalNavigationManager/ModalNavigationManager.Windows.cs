@@ -18,6 +18,12 @@ namespace Microsoft.Maui.Controls.Platform
 		// when the user enters or exits full-screen while a modal is visible.
 		AppWindow? _appWindowForPresenterChanges;
 
+		// Captured at subscription time from the WinUI Window (a DependencyObject with a
+		// guaranteed non-null DispatcherQueue). AppWindow.DispatcherQueue returns null because
+		// AppWindow does not implement IDispatcherQueueObject, so we cannot use sender.DispatcherQueue
+		// in the Changed event handler.
+		Microsoft.UI.Dispatching.DispatcherQueue? _windowDispatcherQueue;
+
 		partial void InitializePlatform()
 		{
 			_window.Created += (_, _) => SyncModalStackWhenPlatformIsReady();
@@ -258,6 +264,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			_windowDispatcherQueue = platformWindow.DispatcherQueue;
 			_appWindowForPresenterChanges = appWindow;
 			_appWindowForPresenterChanges.Changed += OnAppWindowPresenterChanged;
 		}
@@ -273,6 +280,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_appWindowForPresenterChanges.Changed -= OnAppWindowPresenterChanged;
 			_appWindowForPresenterChanges = null;
+			_windowDispatcherQueue = null;
 		}
 
 		// Fires whenever the window's AppWindow.Presenter changes (e.g., windowed ↔ full-screen).
@@ -289,7 +297,10 @@ namespace Microsoft.Maui.Controls.Platform
 			// MAUI/WinUI state reads (modal list, MauiContext, Presenter) onto the dispatcher.
 			// This avoids races with modal pop/disconnect and COM apartment violations.
 			// Re-check that a modal is still present at dispatch time before acting.
-			sender.DispatcherQueue?.TryEnqueue(() =>
+			// NOTE: sender.DispatcherQueue is null for AppWindow (it does not implement
+			// IDispatcherQueueObject), so we use the window's DispatcherQueue captured at
+			// subscription time instead.
+			_windowDispatcherQueue?.TryEnqueue(() =>
 			{
 				if (_platformModalPages.Count == 0)
 				{
