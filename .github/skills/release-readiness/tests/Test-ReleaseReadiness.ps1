@@ -818,17 +818,17 @@ if (-not $SkipE2E) {
     #     (SR2/SR3 dropped by the Lane 1 staleness guard; shipped SRs dropped by
     #      shipped-exclusion; every net10 preview branch already shipped + net10.0
     #      isn't in a preview cycle). Today: SR9 in-flight + SR10 candidate.
-    #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 2 preview trackers
-    #     (preview6 in-flight: release/11.0.1xx-preview6 was cut, tag not yet published;
-    #      preview7 candidate: net11.0 bumped to PreReleaseVersionIteration=7, so the
-    #      detector now surfaces a candidate for the NEXT preview alongside in-flight
-    #      preview6. Once preview7's branch is cut this becomes preview7 in-flight +
-    #      preview8 candidate — update this snapshot then, same as the SR lane above.)
+    #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag) + a preview lane derived from
+    #     the LIVE highestShippedPreviewTag: the detector always surfaces the NEXT preview
+    #     (shipped + 1) as the candidate from net11.0 (PreReleaseVersionIteration), plus an
+    #     optional second in-flight tracker only while the previous preview's branch is cut
+    #     but its tag is unpublished. Asserted structurally (parse N from the shipped tag,
+    #     require candidate = N+1, bound the count) so no per-preview-ship edit is needed.
     Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
     Write-Host "  Expected:" -ForegroundColor DarkGray
     Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
     Write-Host "    - net10 trackers: >=1 SR + exactly 1 candidate, 0 preview (today SR9 in-flight + SR10 candidate)" -ForegroundColor DarkGray
-    Write-Host "    - net11 trackers: 0 SR (pre-GA), 2 preview (preview6 in-flight, preview7 candidate)" -ForegroundColor DarkGray
+    Write-Host "    - net11 trackers: 0 SR (pre-GA), preview lane = candidate (shipped+1) + optional in-flight" -ForegroundColor DarkGray
 
     $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -875,53 +875,74 @@ if (-not $SkipE2E) {
                 $net11 = $byMajor[11]
                 Assert-Eq -Label "net11 mainBranch is 'net11.0'"          -Expected 'net11.0' -Actual $net11.mainBranch
                 Assert-Eq -Label "net11 highestShippedTag is null (pre-GA)" -Expected $true -Actual ([string]::IsNullOrEmpty($net11.highestShippedTag))
-                Assert-Eq -Label "net11 highestShippedPreviewTag carries preview6 tag" `
-                          -Expected '11.0.0-preview.6.26360.8' -Actual $net11.highestShippedPreviewTag
-                Assert-Eq -Label "net11 tracker count is 1 (preview7 candidate)" -Expected 1 -Actual $net11.trackers.Count
+
+                # Drift-proof preview lane: derive the expected candidate preview number
+                # from the LIVE highestShippedPreviewTag instead of pinning a specific tag
+                # or count. Assert the tag SHAPE (11.0.0-preview.N.*) rather than a fixed
+                # value, parse N, and require the detector's candidate = N+1. This follows
+                # every preview ship automatically (preview6 shipped -> preview7 candidate;
+                # once preview7 ships -> preview8 candidate) with no per-ship test edit.
+                $shippedPreviewMatch = [regex]::Match([string]$net11.highestShippedPreviewTag, '^11\.0\.0-preview\.(\d+)\.')
+                Assert-Eq -Label "net11 highestShippedPreviewTag has 11.0.0-preview.N shape" `
+                          -Expected $true -Actual $shippedPreviewMatch.Success
+                $shippedPreviewN = if ($shippedPreviewMatch.Success) { [int]$shippedPreviewMatch.Groups[1].Value } else { -1 }
+                $candidateN = $shippedPreviewN + 1
+
                 $previewTrackers = @($net11.trackers | Where-Object branchType -eq 'preview')
-                Assert-Eq -Label "net11 has 1 preview tracker"            -Expected 1 -Actual $previewTrackers.Count
-                $srTrackers = @($net11.trackers | Where-Object branchType -eq 'sr')
-                Assert-Eq -Label "net11 has 0 SR trackers (pre-GA -> Lane 2 skipped)" -Expected 0 -Actual $srTrackers.Count
+                $srTrackers      = @($net11.trackers | Where-Object branchType -eq 'sr')
+                # Steady post-ship state = 1 preview tracker (the candidate). A transient
+                # second tracker appears only while the previous preview's branch is cut but
+                # its tag is unpublished (in-flight + candidate). Bound the count rather than
+                # pin it so the assertion survives that window.
+                Assert-Eq -Label "net11 preview tracker count is 1 or 2 (candidate + optional in-flight)" `
+                          -Expected $true -Actual ($previewTrackers.Count -ge 1 -and $previewTrackers.Count -le 2)
+                Assert-Eq -Label "net11 trackers are all preview (0 SR pre-GA -> Lane 2 skipped)" `
+                          -Expected 0 -Actual $srTrackers.Count
+                Assert-Eq -Label "net11 no preview tracker is at/below the shipped preview" `
+                          -Expected 0 -Actual (@($previewTrackers | Where-Object { [int]$_.previewNumber -le $shippedPreviewN }).Count)
 
-                # Select each preview by its number rather than array position so the
-                # assertions don't hinge on detector ordering.
-                $preview7 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq 7 } | Select-Object -First 1
+                # Select the candidate (shipped + 1) by its DERIVED number rather than a
+                # pinned value or array position, so the assertions don't hinge on detector
+                # ordering and follow each preview ship automatically. Expected slug /
+                # milestone / label fields are built from $candidateN (not tautologically
+                # read back from the tracker), so they still exercise the detector's
+                # slug-generation logic while staying drift-proof.
+                $candidate = $previewTrackers | Where-Object { [int]$_.previewNumber -eq $candidateN } | Select-Object -First 1
 
-                # preview7 — candidate from net11.0. net11.0 carries
-                # PreReleaseVersionIteration=7, so the detector emits a candidate for the
-                # NEXT preview distinct from in-flight preview6. Branch not cut yet ->
-                # candidate surveying net11.0. Mirrors the preview6 invariants but for the
-                # candidate state; reads branchExists and asserts mode/surveyRef/title are
-                # CONSISTENT with it so it stays green across the candidate->in-flight cut.
-                if ($null -eq $preview7) {
-                    Write-Host "  ❌ net11 missing preview7 candidate tracker" -ForegroundColor Red; $script:failed++
+                # candidate preview — from net11.0. net11.0 carries
+                # PreReleaseVersionIteration=$candidateN, so the detector emits a candidate
+                # for the NEXT preview distinct from the shipped one. Reads branchExists and
+                # asserts mode/surveyRef/title are CONSISTENT with it so it stays green
+                # across the candidate->in-flight cut.
+                if ($null -eq $candidate) {
+                    Write-Host "  ❌ net11 missing preview$candidateN candidate tracker" -ForegroundColor Red; $script:failed++
                 } else {
-                    Assert-Eq -Label "preview7 canonicalKey"              -Expected 'net11-preview7'       -Actual $preview7.canonicalKey
-                    Assert-Eq -Label "preview7 expectedTagPrefix"         -Expected '11.0.0-preview.7.'   -Actual $preview7.expectedTagPrefix
-                    Assert-Eq -Label "preview7 previewNumber = 7"         -Expected 7                      -Actual $preview7.previewNumber
-                    Assert-Eq -Label "preview7 milestone name"            -Expected '.NET 11.0-preview7'  -Actual $preview7.milestoneName
-                    Assert-Eq -Label "preview7 branchName = canonical slug" `
-                              -Expected 'release/11.0.1xx-preview7' -Actual $preview7.branchName
-                    Assert-Eq -Label "preview7 branchExists is a [bool] (lifecycle pivot)" `
-                              -Expected $true -Actual ($preview7.branchExists -is [bool])
-                    if ($preview7.branchExists) {
-                        Assert-Eq -Label "preview7 mode = in-flight (branch exists)" -Expected 'in-flight' -Actual $preview7.mode
-                        Assert-Eq -Label "preview7 surveyRef = branchName (branch exists)" `
-                                  -Expected $preview7.branchName -Actual $preview7.surveyRef
-                        Assert-Eq -Label "preview7 issue title = in-flight form" `
-                                  -Expected "[Release Readiness] .NET 11.0 preview7 — $($preview7.branchName)" `
-                                  -Actual $preview7.issueTitle
+                    Assert-Eq -Label "candidate canonicalKey = net11-previewN+1"  -Expected "net11-preview$candidateN"      -Actual $candidate.canonicalKey
+                    Assert-Eq -Label "candidate expectedTagPrefix = shipped+1"    -Expected "11.0.0-preview.$candidateN."   -Actual $candidate.expectedTagPrefix
+                    Assert-Eq -Label "candidate previewNumber = shipped+1"        -Expected $candidateN                     -Actual ([int]$candidate.previewNumber)
+                    Assert-Eq -Label "candidate milestone name = shipped+1"       -Expected ".NET 11.0-preview$candidateN"  -Actual $candidate.milestoneName
+                    Assert-Eq -Label "candidate branchName = canonical slug" `
+                              -Expected "release/11.0.1xx-preview$candidateN" -Actual $candidate.branchName
+                    Assert-Eq -Label "candidate branchExists is a [bool] (lifecycle pivot)" `
+                              -Expected $true -Actual ($candidate.branchExists -is [bool])
+                    if ($candidate.branchExists) {
+                        Assert-Eq -Label "candidate mode = in-flight (branch exists)" -Expected 'in-flight' -Actual $candidate.mode
+                        Assert-Eq -Label "candidate surveyRef = branchName (branch exists)" `
+                                  -Expected $candidate.branchName -Actual $candidate.surveyRef
+                        Assert-Eq -Label "candidate issue title = in-flight form" `
+                                  -Expected "[Release Readiness] .NET 11.0 preview$candidateN — $($candidate.branchName)" `
+                                  -Actual $candidate.issueTitle
                     } else {
-                        Assert-Eq -Label "preview7 mode = candidate (no branch yet)" -Expected 'candidate' -Actual $preview7.mode
-                        Assert-Eq -Label "preview7 surveyRef = mainBranch (no branch yet)" `
-                                  -Expected $net11.mainBranch -Actual $preview7.surveyRef
-                        Assert-Eq -Label "preview7 issue title = candidate form" `
-                                  -Expected "[Release Readiness] .NET 11.0 preview7 — candidate from $($net11.mainBranch)" `
-                                  -Actual $preview7.issueTitle
+                        Assert-Eq -Label "candidate mode = candidate (no branch yet)" -Expected 'candidate' -Actual $candidate.mode
+                        Assert-Eq -Label "candidate surveyRef = mainBranch (no branch yet)" `
+                                  -Expected $net11.mainBranch -Actual $candidate.surveyRef
+                        Assert-Eq -Label "candidate issue title = candidate form" `
+                                  -Expected "[Release Readiness] .NET 11.0 preview$candidateN — candidate from $($net11.mainBranch)" `
+                                  -Actual $candidate.issueTitle
                     }
-                    Assert-Eq -Label "preview7 regressionLabels carries previewN-1 + previewN" `
-                              -Expected 'regressed-in-11.0.0-preview6,regressed-in-11.0.0-preview7' `
-                              -Actual ($preview7.regressionLabels -join ',')
+                    Assert-Eq -Label "candidate regressionLabels carries previewN-1 + previewN" `
+                              -Expected "regressed-in-11.0.0-preview$($candidateN-1),regressed-in-11.0.0-preview$candidateN" `
+                              -Actual ($candidate.regressionLabels -join ',')
                 }
             } else {
                 Write-Host "  ❌ majors[] missing net11 entry" -ForegroundColor Red; $script:failed++
