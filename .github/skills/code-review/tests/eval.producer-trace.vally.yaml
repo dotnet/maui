@@ -1,0 +1,101 @@
+# Hermetic regression guard for the producer-trace reviewer capability.
+#
+# Source: PR #36185, intermediate commit 90edd581. That commit introduced an
+# incompleteness detector which treated a normal non-zero exit line as proof
+# that a Windows device-test run did not finish. The bug was fixed later in the
+# same PR, so the original commit is not a durable fixture ref. The inert
+# snapshots below preserve only the review input needed to reproduce the miss.
+
+name: code-review-producer-trace
+description: >-
+  Verifies that code-review independently traces a token matched from external
+  output to its out-of-diff producer and catches an over-restrictive gate.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 10m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  - name: producer-trace-console-token-over-cap
+    tags:
+      source_pr: "36185"
+      kind: producer-trace
+    prompt: >-
+      You are reviewing a candidate patch before merge. The review input is
+      materialized under `review-input`: inspect `review-input/change.diff`
+      first, then read supporting source snapshots under `review-input/src` as
+      needed.
+
+      Hypothesis to verify or refute: the new device-test incompleteness
+      detector distinguishes a run that was killed, hung, or crashed from an
+      ordinary failed run that completed and produced named test results.
+
+      Use only the materialized review input. Do not fetch a pull request,
+      issue, external page, or repository history. Deliver a code review using
+      the skill's standard output format (Independent Assessment, Findings,
+      Blast Radius or Failure-Mode Probing, Verdict, and Confidence). Mark each
+      finding with a severity emoji and end with NEEDS_CHANGES,
+      NEEDS_DISCUSSION, or LGTM.
+    environment:
+      files:
+        - src: fixtures/producer-trace/change.diff
+          dest: review-input/change.diff
+        - src: fixtures/producer-trace/src/.github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1
+          dest: review-input/src/.github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1
+        - src: fixtures/producer-trace/src/eng/devices/run-windows-devicetests.cmd
+          dest: review-input/src/eng/devices/run-windows-devicetests.cmd
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      - type: tool-calls
+        config:
+          required:
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'change\.diff'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'Gather-TestFailureContext\.ps1'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'run-windows-devicetests\.cmd'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
+      - type: prompt
+        name: producer-trace-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent identifies that Get-ConsoleFailureReason treats a non-zero
+        "Test execution completed with exit code" line as a reason to set
+        isIncomplete to true.
+      - >-
+        The agent independently traces that token to
+        eng/devices/run-windows-devicetests.cmd and verifies that the runner
+        prints it at the shared upload tail for every exit, including an
+        ordinary test failure that completed and produced result files.
+      - >-
+        The agent explains that isIncomplete flows into the classifier's
+        incomplete expression and forces a helix-workitem-incomplete capping
+        record even when every failure is named.
+      - >-
+        The agent treats the behavior as an over-restriction despite being
+        fail-closed and returns NEEDS_CHANGES or NEEDS_DISCUSSION, not LGTM.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - code-review
+
+scoring:
+  # All three signals are load-bearing. With an unweighted mean and threshold
+  # 0.85, missing the structural verdict or either required source read caps
+  # the maximum possible score at 2/3, so no holistic judge score can mask it.
+  # A passing run also needs judge >= 0.55: (1 + 1 + 0.55) / 3 = 0.85.
+  threshold: 0.85
