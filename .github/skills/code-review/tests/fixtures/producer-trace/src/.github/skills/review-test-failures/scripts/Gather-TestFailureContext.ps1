@@ -9,7 +9,7 @@ function Get-ConsoleFailureReason {
         if ([string]::IsNullOrWhiteSpace($ln)) { continue }
         if ($ln -match '(?i)timeout|timed out') { $out.isTimeout = $true }
         if ($ln -match '(?i)crash|unhandled exception|fatal error|core dumped|\bsegfault\b|\.dmp\b') { $out.isCrash = $true }
-        if ($ln -match '(?i)^\s*\[FAIL\]|timeout waiting|timed out|did not (complete|finish)|unhandled exception|fatal error|core dumped|\bsegfault\b|segmentation fault|\.dmp\b|test execution completed with exit code:\s*[1-9]|process (was )?killed|\bhang(ing|s)?\b') {
+        if ($ln -match '(?i)timeout waiting|timed out|did not (complete|finish)|unhandled exception|fatal error|core dumped|\bsegfault\b|segmentation fault|\.dmp\b|test execution completed with exit code:\s*[1-9]|process (was )?killed|\bhang(ing|s)?\b') {
             $t = $ln.Trim()
             if ($t.Length -gt 300) { $t = $t.Substring(0, 300) }
             if (-not $reasonLines.Contains($t)) { $reasonLines.Add($t) }

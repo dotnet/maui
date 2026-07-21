@@ -5,6 +5,9 @@
 # that a Windows device-test run did not finish. The bug was fixed later in the
 # same PR, so the original commit is not a durable fixture ref. The inert
 # snapshots below preserve only the review input needed to reproduce the miss.
+# Keep the parser snapshot focused on the exit-code branch. The historical
+# parser also matched [FAIL], which creates a second valid over-cap finding and
+# prevents this scenario from discriminating the producer coupling it guards.
 
 name: code-review-producer-trace
 description: >-
