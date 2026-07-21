@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -38,6 +39,11 @@ namespace Microsoft.Maui.Hosting
 
 	public static class EssentialsExtensions
 	{
+		static readonly object s_essentialsBridgeLock = new();
+#if WINDOWS || TIZEN
+		static readonly List<MapTokenAssignment> s_mapTokenAssignments = new();
+#endif
+
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
 			AddEssentialsInitializer(builder);
@@ -116,12 +122,6 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.ConfigureDispatching();
 
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
-			// Register MainThreadBridgeInitializer first so it runs before EssentialsInitializer
-			// resolves DI services whose constructors may use MainThread. This shared path also
-			// covers ConfigureEssentials with MauiApp.CreateBuilder(useDefaults: false).
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
-#endif
 			builder.Services.TryAddSingleton<EssentialsCleanup>();
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 		}
@@ -144,28 +144,6 @@ namespace Microsoft.Maui.Hosting
 			}
 		}
 
-		/// <summary>
-		/// Lightweight initializer that bridges the MAUI application dispatcher to MainThread
-		/// so that MainThread.BeginInvokeOnMainThread and MainThread.IsMainThread work
-		/// on custom platform backends / external TFMs where no native
-		/// MainThread implementation exists.
-		/// </summary>
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
-		class MainThreadBridgeInitializer : IMauiInitializeService
-		{
-			public void Initialize(IServiceProvider services)
-			{
-				var dispatcher = services.GetOptionalApplicationDispatcher();
-				if (dispatcher is null)
-					return;
-
-				MainThread.SetCustomImplementation(
-					isMainThread: () => !dispatcher.IsDispatchRequired,
-					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
-			}
-		}
-#endif
-
 		class EssentialsInitializer : IMauiInitializeService
 		{
 			private readonly IEnumerable<EssentialsRegistration> _essentialsRegistrations;
@@ -178,25 +156,35 @@ namespace Microsoft.Maui.Hosting
 
 			public void Initialize(IServiceProvider services)
 			{
-				_essentialsBuilder = new EssentialsBuilder();
-				if (_essentialsRegistrations != null)
-				{
-					foreach (var essentialsRegistration in _essentialsRegistrations)
-					{
-						essentialsRegistration.RegisterEssentialsOptions(_essentialsBuilder);
-					}
-				}
+				lock (s_essentialsBridgeLock)
+					InitializeCore(services);
+			}
 
-#if WINDOWS || TIZEN
-				var mapServiceToken = _essentialsBuilder.MapServiceToken;
-				if (mapServiceToken is null && GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation") is IPlatformGeocoding existingPlatformGeocoding)
-					mapServiceToken = existingPlatformGeocoding.MapServiceToken;
-#endif
-
+			void InitializeCore(IServiceProvider services)
+			{
 				var facadeCleanups = new List<Action>();
 				EssentialsCleanup? cleanup = null;
 				try
 				{
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
+					BridgeMainThreadFromDispatcher(services, facadeCleanups);
+#endif
+
+					_essentialsBuilder = new EssentialsBuilder();
+					if (_essentialsRegistrations != null)
+					{
+						foreach (var essentialsRegistration in _essentialsRegistrations)
+						{
+							essentialsRegistration.RegisterEssentialsOptions(_essentialsBuilder);
+						}
+					}
+
+#if WINDOWS || TIZEN
+					var mapServiceToken = _essentialsBuilder.MapServiceToken;
+					if (mapServiceToken is null && GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation") is IPlatformGeocoding existingPlatformGeocoding)
+						mapServiceToken = existingPlatformGeocoding.MapServiceToken;
+#endif
+
 					BridgeEssentialsFromDI(services, facadeCleanups);
 
 					// Resolve cleanup after every bridged service so DI disposes it first. This
@@ -213,7 +201,7 @@ namespace Microsoft.Maui.Hosting
 						var geocoding = Geocoding.Default;
 						if (geocoding is IPlatformGeocoding platformGeocoding)
 						{
-							platformGeocoding.MapServiceToken = mapServiceToken;
+							TrackAndSetMapServiceToken(platformGeocoding, mapServiceToken, facadeCleanups);
 						}
 						else
 						{
@@ -233,14 +221,18 @@ namespace Microsoft.Maui.Hosting
 					// subscription would otherwise pin this initializer instance for the app's
 					// lifetime (and across repeated MauiApp.Build() calls in tests / hosting scenarios)
 					// even when the handler is a no-op.
-					if (_essentialsBuilder.AppActionHandlers is not null)
+					if (_essentialsBuilder.AppActionHandlers is not null || _essentialsBuilder.AppActions is not null)
 					{
-						cleanup.Subscribe(AppActions.Current, HandleOnAppAction);
-					}
+						var appActions = AppActions.Current;
 
-					if (_essentialsBuilder.AppActions is not null)
-					{
-						SetAppActions(services, _essentialsBuilder.AppActions);
+						if (_essentialsBuilder.AppActionHandlers is not null)
+							cleanup.Subscribe(appActions, HandleOnAppAction);
+
+						if (_essentialsBuilder.AppActions is not null)
+						{
+							var logger = services.GetService<ILoggerFactory>()?.CreateLogger<IEssentialsBuilder>();
+							SetAppActions(appActions, logger, _essentialsBuilder.AppActions);
+						}
 					}
 #endif
 
@@ -269,6 +261,26 @@ namespace Microsoft.Maui.Hosting
 					throw;
 				}
 			}
+
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
+			static void BridgeMainThreadFromDispatcher(IServiceProvider services, List<Action> facadeCleanups)
+			{
+				var dispatcher = services.GetOptionalApplicationDispatcher();
+				if (dispatcher is null)
+					return;
+
+				var implementation = MainThread.CreateCustomImplementation(
+					isMainThread: () => !dispatcher.IsDispatchRequired,
+					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
+
+				TrackAndSet(
+					implementation,
+					MainThread.GetCustomImplementation,
+					MainThread.GetCustomImplementation,
+					MainThread.SetCustomImplementation,
+					facadeCleanups);
+			}
+#endif
 
 			/// <summary>
 			/// Bridges DI-registered Essentials implementations to the static facades.
@@ -419,6 +431,65 @@ namespace Microsoft.Maui.Hosting
 				return (T?)field.GetValue(null);
 			}
 
+#if WINDOWS || TIZEN
+			static void TrackAndSetMapServiceToken(
+				IPlatformGeocoding implementation,
+				string mapServiceToken,
+				List<Action> facadeCleanups)
+			{
+				var assignment = new MapTokenAssignment(
+					implementation,
+					mapServiceToken,
+					implementation.MapServiceToken
+#if WINDOWS
+					, Windows.Services.Maps.MapService.ServiceToken
+#endif
+				);
+
+				s_mapTokenAssignments.Add(assignment);
+				implementation.MapServiceToken = mapServiceToken;
+				facadeCleanups.Add(() => CleanupMapServiceToken(assignment));
+			}
+
+			static void CleanupMapServiceToken(MapTokenAssignment assignment)
+			{
+				var index = s_mapTokenAssignments.IndexOf(assignment);
+				if (index < 0)
+					return;
+
+				MapTokenAssignment? successor = null;
+				for (int i = index + 1; i < s_mapTokenAssignments.Count; i++)
+				{
+					if (ReferenceEquals(s_mapTokenAssignments[i].Implementation, assignment.Implementation))
+					{
+						successor = s_mapTokenAssignments[i];
+						break;
+					}
+				}
+
+				if (successor is not null)
+				{
+					if (string.Equals(successor.PreviousToken, assignment.AppliedToken, StringComparison.Ordinal))
+						successor.PreviousToken = assignment.PreviousToken;
+#if WINDOWS
+					if (string.Equals(successor.PreviousPlatformToken, assignment.AppliedToken, StringComparison.Ordinal))
+						successor.PreviousPlatformToken = assignment.PreviousPlatformToken;
+#endif
+				}
+
+				s_mapTokenAssignments.RemoveAt(index);
+				if (successor is not null)
+					return;
+
+				if (string.Equals(assignment.Implementation.MapServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+					assignment.Implementation.MapServiceToken = assignment.PreviousToken;
+#if WINDOWS
+				if (string.Equals(Windows.Services.Maps.MapService.ServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+					Windows.Services.Maps.MapService.ServiceToken = assignment.PreviousPlatformToken;
+#endif
+			}
+#endif
+
 			static void TrackInitialized<T>(
 				T impl,
 				T? original,
@@ -489,6 +560,38 @@ namespace Microsoft.Maui.Hosting
 				internal static readonly List<FacadeAssignment<T>> Assignments = new();
 			}
 
+#if WINDOWS || TIZEN
+			sealed class MapTokenAssignment
+			{
+				public MapTokenAssignment(
+					IPlatformGeocoding implementation,
+					string appliedToken,
+					string? previousToken
+#if WINDOWS
+					, string? previousPlatformToken
+#endif
+				)
+				{
+					Implementation = implementation;
+					AppliedToken = appliedToken;
+					PreviousToken = previousToken;
+#if WINDOWS
+					PreviousPlatformToken = previousPlatformToken;
+#endif
+				}
+
+				public IPlatformGeocoding Implementation { get; }
+
+				public string AppliedToken { get; }
+
+				public string? PreviousToken { get; set; }
+
+#if WINDOWS
+				public string? PreviousPlatformToken { get; set; }
+#endif
+			}
+#endif
+
 			static void LogMissingNativeLifecycleInterface<T>(IServiceProvider services, string requiredInterface)
 				where T : class =>
 				services.GetService<ILoggerFactory>()?
@@ -498,17 +601,24 @@ namespace Microsoft.Maui.Hosting
 						typeof(T).Name,
 						requiredInterface);
 
-			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)
+			static void SetAppActions(IAppActions appActions, ILogger? logger, List<AppAction> actions)
+			{
+				_ = SetAppActionsAsync(appActions, logger, actions);
+			}
+
+			internal static async Task SetAppActionsAsync(IAppActions appActions, ILogger? logger, List<AppAction> actions)
 			{
 				try
 				{
-					await AppActions.SetAsync(appActions);
+					await appActions.SetAsync(actions).ConfigureAwait(false);
 				}
 				catch (FeatureNotSupportedException ex)
 				{
-					services.GetService<ILoggerFactory>()?
-						.CreateLogger<IEssentialsBuilder>()?
-						.LogError(ex, "App Actions are not supported on this platform.");
+					logger?.LogError(ex, "App Actions are not supported on this platform.");
+				}
+				catch (Exception ex)
+				{
+					logger?.LogError(ex, "An error occurred while setting app actions.");
 				}
 			}
 
@@ -542,6 +652,12 @@ namespace Microsoft.Maui.Hosting
 
 			public void Dispose()
 			{
+				lock (s_essentialsBridgeLock)
+					DisposeCore();
+			}
+
+			void DisposeCore()
+			{
 #if !TIZEN
 				try
 				{
@@ -561,10 +677,13 @@ namespace Microsoft.Maui.Hosting
 
 			internal static void RestoreFacades(List<Action> facadeCleanups)
 			{
-				for (int i = facadeCleanups.Count - 1; i >= 0; i--)
-					facadeCleanups[i]();
+				lock (s_essentialsBridgeLock)
+				{
+					for (int i = facadeCleanups.Count - 1; i >= 0; i--)
+						facadeCleanups[i]();
 
-				facadeCleanups.Clear();
+					facadeCleanups.Clear();
+				}
 			}
 
 			void RestoreFacades()

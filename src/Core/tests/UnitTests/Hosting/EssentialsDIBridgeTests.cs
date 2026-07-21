@@ -1,8 +1,10 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Accessibility;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.Communication;
@@ -520,6 +522,77 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void LaterInitializerFailureDisposesProviderAndRestoresFacade()
+		{
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+
+			var preferences = new StubPreferences();
+			DisposableProbe? probe = null;
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences>(preferences);
+			builder.Services.AddSingleton(_ => probe = new DisposableProbe());
+			builder.Services.AddSingleton<IMauiInitializeService>(services =>
+				new ThrowingInitializeService(services.GetRequiredService<DisposableProbe>()));
+
+			var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+			Assert.Equal("later initializer failed", ex.Message);
+			Assert.NotNull(probe);
+			Assert.True(probe!.IsDisposed);
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+		}
+
+		[Fact]
+		public async Task ConcurrentMauiAppBuildsSerializeEssentialsInitialization()
+		{
+			var probe = new InitializationConcurrencyProbe();
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.ConfigureEssentials(_ => probe.Enter());
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.ConfigureEssentials(_ => probe.Enter());
+			using var start = new Barrier(2);
+
+			var firstBuild = Task.Run(() =>
+			{
+				start.SignalAndWait();
+				return firstBuilder.Build();
+			});
+			var secondBuild = Task.Run(() =>
+			{
+				start.SignalAndWait();
+				return secondBuilder.Build();
+			});
+
+			var apps = await Task.WhenAll(firstBuild, secondBuild);
+			try
+			{
+				Assert.Equal(1, probe.MaxConcurrent);
+			}
+			finally
+			{
+				for (int i = apps.Length - 1; i >= 0; i--)
+					apps[i].Dispose();
+			}
+		}
+
+		[Fact]
+		public async Task ConfiguredAppActionsLogsUnexpectedSetFailure()
+		{
+			var loggerFactory = new RecordingLoggerFactory();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+			builder.Services.AddSingleton<IAppActions, FaultingStubAppActions>();
+			builder.ConfigureEssentials(essentials =>
+				essentials.AddAppAction(new AppAction("test", "Test")));
+
+			using var app = builder.Build();
+			var exception = await loggerFactory.Error.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.IsType<InvalidOperationException>(exception);
+			Assert.Equal("app actions failed", exception.Message);
+		}
+
+		[Fact]
 		public void LaterMauiAppCanReplaceStaticFacade()
 		{
 			var firstMock = new StubPreferences();
@@ -566,6 +639,68 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			{
 				FacadeWasRestoredBeforeDispose = !ReferenceEquals(this, Preferences.Default);
 				IsDisposed = true;
+			}
+		}
+
+		sealed class DisposableProbe : IDisposable
+		{
+			public bool IsDisposed { get; private set; }
+
+			public void Dispose()
+			{
+				IsDisposed = true;
+			}
+		}
+
+		sealed class ThrowingInitializeService : IMauiInitializeService
+		{
+			readonly DisposableProbe _probe;
+
+			public ThrowingInitializeService(DisposableProbe probe)
+			{
+				_probe = probe;
+			}
+
+			public void Initialize(IServiceProvider services)
+			{
+				Assert.False(_probe.IsDisposed);
+				throw new InvalidOperationException("later initializer failed");
+			}
+		}
+
+		sealed class InitializationConcurrencyProbe
+		{
+			readonly ManualResetEventSlim _secondEntry = new();
+			int _active;
+			int _entries;
+			int _maxConcurrent;
+
+			public int MaxConcurrent => Volatile.Read(ref _maxConcurrent);
+
+			public void Enter()
+			{
+				var active = Interlocked.Increment(ref _active);
+				UpdateMax(active);
+
+				if (Interlocked.Increment(ref _entries) == 1)
+					_secondEntry.Wait(TimeSpan.FromMilliseconds(500));
+				else
+					_secondEntry.Set();
+
+				Interlocked.Decrement(ref _active);
+			}
+
+			void UpdateMax(int value)
+			{
+				var current = Volatile.Read(ref _maxConcurrent);
+				while (value > current)
+				{
+					var observed = Interlocked.CompareExchange(ref _maxConcurrent, value, current);
+					if (observed == current)
+						return;
+
+					current = observed;
+				}
 			}
 		}
 
@@ -651,6 +786,66 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			public void Raise(AppAction appAction) =>
 				AppActionActivated?.Invoke(this, new AppActionEventArgs(appAction));
+		}
+
+		sealed class FaultingStubAppActions : IAppActions
+		{
+			public bool IsSupported => true;
+
+			public event EventHandler<AppActionEventArgs>? AppActionActivated { add { } remove { } }
+
+			public Task<IEnumerable<AppAction>> GetAsync() =>
+				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
+
+			public async Task SetAsync(IEnumerable<AppAction> actions)
+			{
+				await Task.Yield();
+				throw new InvalidOperationException("app actions failed");
+			}
+		}
+
+		sealed class RecordingLoggerFactory : ILoggerFactory
+		{
+			public TaskCompletionSource<Exception> Error { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public void AddProvider(ILoggerProvider provider)
+			{
+			}
+
+			public ILogger CreateLogger(string categoryName) =>
+				new RecordingLogger(Error);
+
+			public void Dispose()
+			{
+			}
+		}
+
+		sealed class RecordingLogger : ILogger
+		{
+			readonly TaskCompletionSource<Exception> _error;
+
+			public RecordingLogger(TaskCompletionSource<Exception> error)
+			{
+				_error = error;
+			}
+
+			public IDisposable? BeginScope<TState>(TState state)
+				where TState : notnull =>
+				null;
+
+			public bool IsEnabled(LogLevel logLevel) => true;
+
+			public void Log<TState>(
+				LogLevel logLevel,
+				EventId eventId,
+				TState state,
+				Exception? exception,
+				Func<TState, Exception?, string> formatter)
+			{
+				if (logLevel >= LogLevel.Error && exception is not null)
+					_error.TrySetResult(exception);
+			}
 		}
 
 		sealed class DisposableStubAppActions : IAppActions, IDisposable

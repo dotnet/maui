@@ -234,6 +234,45 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void OverlappingMauiAppsRestorePreviousMainThreadBridge()
+		{
+			var firstDispatcher = new DispatcherStub(
+				isInvokeRequired: () => false,
+				invokeOnMainThread: action => action());
+			var secondDispatcher = new DispatcherStub(
+				isInvokeRequired: () => true,
+				invokeOnMainThread: action => action());
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				DispatcherProvider.SetCurrent(new TestDispatcherProvider(firstDispatcher));
+				firstApp = MauiApp.CreateBuilder().Build();
+				Assert.True(MainThread.IsMainThread);
+
+				DispatcherProvider.SetCurrent(new TestDispatcherProvider(secondDispatcher));
+				secondApp = MauiApp.CreateBuilder().Build();
+				Assert.False(MainThread.IsMainThread);
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.True(MainThread.IsMainThread);
+
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Throws<NotImplementedInReferenceAssemblyException>(
+					() => _ = MainThread.IsMainThread);
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
+		[Fact]
 		public void ConfigureEssentialsWithoutDefaults_BridgesMainThreadBeforeResolvingServices()
 		{
 			var dispatcherStub = new DispatcherStub(
