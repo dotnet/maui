@@ -16,6 +16,10 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly SpanCollection _spans = new SpanCollection();
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+		readonly List<SpanPropertyProxy> _spanProxies = new List<SpanPropertyProxy>();
+
+		PropertyChangingEventHandler _onItemPropertyChanging;
+		PropertyChangedEventHandler _onItemPropertyChanged;
 
 		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged
 		{
@@ -25,6 +29,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Initializes a new instance of the FormattedString class.</summary>
 		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
+
+		~FormattedString()
+		{
+			for (int i = 0; i < _spanProxies.Count; i++)
+				_spanProxies[i].Unsubscribe();
+		}
 
 		protected override void OnBindingContextChanged()
 		{
@@ -53,8 +63,7 @@ namespace Microsoft.Maui.Controls
 					if (bo != null)
 					{
 						bo.Parent?.RemoveLogicalChild(bo);
-						bo.PropertyChanging -= OnItemPropertyChanging;
-						bo.PropertyChanged -= OnItemPropertyChanged;
+						RemoveSpanProxy(bo);
 					}
 
 				}
@@ -68,8 +77,7 @@ namespace Microsoft.Maui.Controls
 					if (bo != null)
 					{
 						this.AddLogicalChild(bo);
-						bo.PropertyChanging += OnItemPropertyChanging;
-						bo.PropertyChanged += OnItemPropertyChanged;
+						AddSpanProxy(bo);
 					}
 
 				}
@@ -82,6 +90,50 @@ namespace Microsoft.Maui.Controls
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e) => OnPropertyChanged(nameof(Spans));
 
 		void OnItemPropertyChanging(object sender, PropertyChangingEventArgs e) => OnPropertyChanging(nameof(Spans));
+
+		// Subscribe to each span's PropertyChanging/PropertyChanged through weak proxies so that a
+		// shared or long-lived Span does not strongly root this FormattedString (and its owning
+		// Label) via the span's event invocation list. See https://github.com/dotnet/maui/issues/36517.
+		void AddSpanProxy(Span span)
+		{
+			_onItemPropertyChanging ??= OnItemPropertyChanging;
+			_onItemPropertyChanged ??= OnItemPropertyChanged;
+			_spanProxies.Add(new SpanPropertyProxy(span, _onItemPropertyChanging, _onItemPropertyChanged));
+		}
+
+		void RemoveSpanProxy(Span span)
+		{
+			for (int i = _spanProxies.Count - 1; i >= 0; i--)
+			{
+				if (ReferenceEquals(_spanProxies[i].Span, span))
+				{
+					_spanProxies[i].Unsubscribe();
+					_spanProxies.RemoveAt(i);
+					break;
+				}
+			}
+		}
+
+		sealed class SpanPropertyProxy
+		{
+			readonly WeakNotifyPropertyChangingProxy _changing;
+			readonly WeakNotifyPropertyChangedProxy _changed;
+
+			public Span Span { get; }
+
+			public SpanPropertyProxy(Span span, PropertyChangingEventHandler changingHandler, PropertyChangedEventHandler changedHandler)
+			{
+				Span = span;
+				_changing = new WeakNotifyPropertyChangingProxy(span, changingHandler);
+				_changed = new WeakNotifyPropertyChangedProxy(span, changedHandler);
+			}
+
+			public void Unsubscribe()
+			{
+				_changing.Unsubscribe();
+				_changed.Unsubscribe();
+			}
+		}
 
 		class SpanCollection : ObservableCollection<Span>
 		{
