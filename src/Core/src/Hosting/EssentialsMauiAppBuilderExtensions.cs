@@ -452,35 +452,45 @@ namespace Microsoft.Maui.Hosting
 				if (index < 0)
 					return;
 
-				MapTokenAssignment? successor = null;
+				var platformSuccessor = index + 1 < s_mapTokenAssignments.Count
+					? s_mapTokenAssignments[index + 1]
+					: null;
+				MapTokenAssignment? implementationSuccessor = null;
 				for (int i = index + 1; i < s_mapTokenAssignments.Count; i++)
 				{
 					if (ReferenceEquals(s_mapTokenAssignments[i].Implementation, assignment.Implementation))
 					{
-						successor = s_mapTokenAssignments[i];
+						implementationSuccessor = s_mapTokenAssignments[i];
 						break;
 					}
 				}
 
-				if (successor is not null)
+				if (implementationSuccessor is not null &&
+					string.Equals(implementationSuccessor.PreviousToken, assignment.AppliedToken, StringComparison.Ordinal))
 				{
-					if (string.Equals(successor.PreviousToken, assignment.AppliedToken, StringComparison.Ordinal))
-						successor.PreviousToken = assignment.PreviousToken;
-#if WINDOWS
-					if (string.Equals(successor.PreviousPlatformToken, assignment.AppliedToken, StringComparison.Ordinal))
-						successor.PreviousPlatformToken = assignment.PreviousPlatformToken;
-#endif
+					implementationSuccessor.PreviousToken = assignment.PreviousToken;
 				}
+#if WINDOWS
+				if (platformSuccessor is not null &&
+					string.Equals(platformSuccessor.PreviousPlatformToken, assignment.AppliedToken, StringComparison.Ordinal))
+				{
+					platformSuccessor.PreviousPlatformToken = assignment.PreviousPlatformToken;
+				}
+#endif
 
 				s_mapTokenAssignments.RemoveAt(index);
-				if (successor is not null)
-					return;
 
-				if (string.Equals(assignment.Implementation.MapServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+				if (implementationSuccessor is null &&
+					string.Equals(assignment.Implementation.MapServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+				{
 					assignment.Implementation.MapServiceToken = assignment.PreviousToken;
+				}
 #if WINDOWS
-				if (string.Equals(Windows.Services.Maps.MapService.ServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+				if (platformSuccessor is null &&
+					string.Equals(Windows.Services.Maps.MapService.ServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+				{
 					Windows.Services.Maps.MapService.ServiceToken = assignment.PreviousPlatformToken;
+				}
 #endif
 			}
 #endif

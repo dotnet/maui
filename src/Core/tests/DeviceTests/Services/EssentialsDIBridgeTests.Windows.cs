@@ -185,6 +185,72 @@ public class EssentialsDIBridgeTests
 		}
 	}
 
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void DistinctGeocodingMapServiceTokenRestoresAcrossOverlappingApps(bool disposeOlderFirst)
+	{
+		const string originalPlatformToken = "original-platform-token";
+		const string firstToken = "first-token";
+		const string secondToken = "second-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var originalWindowsToken = Windows.Services.Maps.MapService.ServiceToken;
+		var first = new StubPlatformGeocoding { MapServiceToken = "first-original-token" };
+		var second = new StubPlatformGeocoding { MapServiceToken = "second-original-token" };
+		MauiApp? firstApp = null;
+		MauiApp? secondApp = null;
+
+		try
+		{
+			Windows.Services.Maps.MapService.ServiceToken = originalPlatformToken;
+
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IGeocoding>(first);
+			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(firstToken));
+			firstApp = firstBuilder.Build();
+			Windows.Services.Maps.MapService.ServiceToken = firstToken;
+
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IGeocoding>(second);
+			secondBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(secondToken));
+			secondApp = secondBuilder.Build();
+			Windows.Services.Maps.MapService.ServiceToken = secondToken;
+
+			if (disposeOlderFirst)
+			{
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Equal("first-original-token", first.MapServiceToken);
+				Assert.Equal(secondToken, Windows.Services.Maps.MapService.ServiceToken);
+
+				secondApp.Dispose();
+				secondApp = null;
+			}
+			else
+			{
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Equal("second-original-token", second.MapServiceToken);
+				Assert.Equal(firstToken, Windows.Services.Maps.MapService.ServiceToken);
+
+				firstApp.Dispose();
+				firstApp = null;
+			}
+
+			Assert.Equal("first-original-token", first.MapServiceToken);
+			Assert.Equal("second-original-token", second.MapServiceToken);
+			Assert.Equal(originalPlatformToken, Windows.Services.Maps.MapService.ServiceToken);
+		}
+		finally
+		{
+			secondApp?.Dispose();
+			firstApp?.Dispose();
+			Windows.Services.Maps.MapService.ServiceToken = originalWindowsToken;
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
 	static void RestoreGeocoding(IGeocoding original, string? originalToken)
 	{
 		var builder = MauiApp.CreateBuilder();
