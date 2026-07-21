@@ -118,6 +118,7 @@ namespace Microsoft.Maui.Platform
 			if (placeholderTextBlock is not null)
 			{
 				placeholderTextBlock.CharacterSpacing = nativeComboBox.CharacterSpacing;
+				placeholderTextBlock.RefreshThemeResources();
 			}
 		}
 
