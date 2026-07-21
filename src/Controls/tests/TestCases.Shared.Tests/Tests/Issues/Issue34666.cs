@@ -11,11 +11,11 @@ public class Issue34666 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "The C6 page cannot scroll on Windows and Android platforms";
+	public override string Issue => "Disabling RefreshView cascades IsEnabled=false to its child CollectionView, preventing scrolling";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void CollectionViewScrollsWhenRefreshViewDisabled()
+	public void CollectionViewDoesNotScrollWhenRefreshViewDisabled()
 	{
 		App.WaitForElement("Baboon");
 		App.ScrollDown("CollectionView");
