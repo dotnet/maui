@@ -72,6 +72,17 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
    git log --oneline -10 -- <changed-file>
    ```
 
+### Step 1.5: Trace External Output Contracts (Always Active)
+
+When changed code classifies external tool output with a regex or string literal:
+
+1. Locate and read the producer, even when it is outside the diff.
+2. State the exact condition under which the producer emits each matched token. Confirming that the text exists is not enough: compare the producer's emission condition with the consumer's semantic assumption.
+3. Construct an ordinary negative case that must not trip the classifier, then trace it through every downstream guard, cap, veto, or early return.
+4. If the ordinary case reaches the restrictive path, report a correctness finding and do not return `LGTM` unless the over-restriction is explicitly intended and documented. Fail-closed direction does not make the behavior correct.
+
+These are the direct-execution form of the always-active Logic/Correctness and Regression Prevention CHECKs in `.github/agents/maui-expert-reviewer.md`. If the expert agent is unavailable in the current environment, apply these probes yourself rather than skipping them.
+
 ### Step 2: Delegate to Expert Reviewer
 
 Delegate to the `maui-expert-reviewer` agent (`.github/agents/maui-expert-reviewer.md`) which runs per-dimension sub-agent evaluation. The agent's sole output is `inline-findings.json` — file:line comments in GitHub Review API format.
