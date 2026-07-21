@@ -56,6 +56,12 @@ if ($AssetBranch -notmatch '^[A-Za-z0-9][A-Za-z0-9._/-]{0,100}$' -or
     $AssetBranch.EndsWith(".")) {
     throw "Asset branch name is not safe."
 }
+if ($AssetBranch -in @('main', 'master', 'HEAD')) {
+    # Defense-in-depth: this workflow runs with `contents: write`, so never allow a
+    # misconfiguration (or future reuse) to publish generated assets onto a
+    # protected/default branch.
+    throw "Asset branch must not be a protected or default branch name."
+}
 if (-not (Test-Path -LiteralPath $ContextJsonPath)) {
     throw "Context JSON was not found: $ContextJsonPath"
 }
@@ -500,7 +506,7 @@ if ([int]$context.pr.number -ne $PrNumber) {
     throw "Context PR '$($context.pr.number)' did not match trusted PR '$PrNumber'."
 }
 
-$visualEvidence = @($context.visualEvidence.comparisons)
+$visualEvidence = @($context.visualEvidence.comparisons | Where-Object { $null -ne $_ })
 if ($visualEvidence.Count -eq 0) {
     Write-Host "No visual snapshot failures were detected."
     $context | Add-Member -NotePropertyName visualAssets -NotePropertyValue ([ordered]@{

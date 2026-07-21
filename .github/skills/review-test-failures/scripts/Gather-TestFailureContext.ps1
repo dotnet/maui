@@ -261,7 +261,10 @@ function Get-AzDoFailedTestResultsByBuild {
     $page = 0
     do {
         $page++
-        $url = "https://vstmr.dev.azure.com/$Org/$Project/_apis/testresults/resultsbybuild?buildId=$BuildId&outcomes=Failed&`$top=10000&api-version=7.1-preview.1"
+        # $top is bounded well above the 100-result cap the caller inspects (and above any
+        # realistic per-build failure count) so paging + counting behave exactly as before
+        # without pulling a multi-megabyte payload on pathological builds.
+        $url = "https://vstmr.dev.azure.com/$Org/$Project/_apis/testresults/resultsbybuild?buildId=$BuildId&outcomes=Failed&`$top=500&api-version=7.1-preview.1"
         if ($continuation) {
             $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))"
         }
