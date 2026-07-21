@@ -3349,16 +3349,25 @@ stages:
                     $t | Add-Member -NotePropertyName _Rank -NotePropertyValue $rk -Force
                   }
                   $ranked = @($snapDiffTriples | Sort-Object _Rank, Category, Name)
-                  # Budget-driven count: ~6.3K chars per image table, measured off
-                  # the live deep block ($sb already holds the per-category table + AI
-                  # analysis), never more than 40 (bounds asset-branch blob API calls
-                  # to ~120). The render loop below re-checks the real budget so the
-                  # body can never overshoot even if the estimate is off.
-                  $deepBudget  = 160000
-                  $estPerTable = 6300
+                  # Budget-driven count. Each raw-URL image table measures ~0.9-1.2K
+                  # chars live (three raw.githubusercontent links + markup), so the
+                  # OLD 6.3K/table estimate under-filled badly - it capped the embed at
+                  # ~25 tables when the body had ample room for far more. Use ~1.15K
+                  # per table and a 60-table ceiling (bounds asset-branch blob API
+                  # calls to ~180). $deepBudget caps the DEEP block ($sb); the FULL
+                  # review body also carries the AI summary, the gate section AND the
+                  # per-test disclosures that are appended to $sb AFTER this embed, so
+                  # we keep a conservative 130K deep-block budget. Total body then
+                  # stays comfortably under GitHub's 262 144 hard cap even on a
+                  # pathological cross-machine noise run (observed non-table content is
+                  # ~75-90K, and per-category disclosures are themselves capped at 30
+                  # items). The render loop below re-checks the real budget so the body
+                  # can never overshoot even if the estimate is off.
+                  $deepBudget  = 130000
+                  $estPerTable = 1150
                   $fitCount = [int][Math]::Floor(($deepBudget - $sb.Length) / $estPerTable)
                   if ($fitCount -lt 1) { $fitCount = 1 }
-                  $maxSnapEmbed = [Math]::Min($fitCount, 40)
+                  $maxSnapEmbed = [Math]::Min($fitCount, 60)
                   $toEmbed = @($ranked | Select-Object -First $maxSnapEmbed)
                   $stageDir = Join-Path "$(Agent.TempDirectory)" ("snapembed-" + [Guid]::NewGuid().ToString('N').Substring(0, 8))
                   New-Item -ItemType Directory -Force -Path $stageDir | Out-Null
