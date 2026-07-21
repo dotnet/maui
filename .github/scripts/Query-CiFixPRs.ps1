@@ -79,6 +79,25 @@ $FailureStatusStates = @('failure', 'error')
 # the safety bound never depends solely on an LLM-authored body marker.
 $AttemptMax = 10
 
+# The prefetch runs before the agent, so a transient GitHub API outage would otherwise
+# suppress the entire scheduled sweep. Keep retries bounded and preserve the existing
+# fail-closed result after the final attempt.
+$TransientGhHttpStatusCodes = @(429, 500, 502, 503, 504)
+$MaxTransientGhAttempts = 4
+$TransientGhRetryBaseDelaySeconds = 2
+
+function Test-IsTransientGhFailure {
+    param([AllowEmptyString()][string]$Detail)
+
+    foreach ($statusCode in $TransientGhHttpStatusCodes) {
+        if ($Detail -match "(?i)\bHTTP $statusCode\b") {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Invoke-GhCommand {
     param(
         [Parameter(Mandatory = $true)][string[]]$Arguments,
@@ -86,24 +105,35 @@ function Invoke-GhCommand {
         [switch]$AllowFailure
     )
 
-    $output = & gh @Arguments 2>&1
-    $exitCode = $LASTEXITCODE
+    for ($attempt = 1; $attempt -le $MaxTransientGhAttempts; $attempt++) {
+        $output = & gh @Arguments 2>&1
+        $exitCode = $LASTEXITCODE
 
-    # `2>&1` folds gh's stderr into the pipeline as ErrorRecord objects while real
-    # stdout stays as strings. Separate the two by type so a success-path caller
-    # never receives a stderr line (gh progress/deprecation/rate-limit notices)
-    # concatenated into the JSON it is about to parse. On failure, both streams are
-    # surfaced in the exception/warning message for diagnosability.
-    $stdoutText = (@($output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) |
-        ForEach-Object { $_.ToString() }) -join "`n"
-    $stderrText = (@($output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) |
-        ForEach-Object { $_.ToString() }) -join "`n"
+        # `2>&1` folds gh's stderr into the pipeline as ErrorRecord objects while real
+        # stdout stays as strings. Separate the two by type so a success-path caller
+        # never receives a stderr line (gh progress/deprecation/rate-limit notices)
+        # concatenated into the JSON it is about to parse. On failure, both streams are
+        # surfaced in the exception/warning message for diagnosability.
+        $stdoutText = (@($output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) |
+            ForEach-Object { $_.ToString() }) -join "`n"
+        $stderrText = (@($output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) |
+            ForEach-Object { $_.ToString() }) -join "`n"
 
-    if ($exitCode -ne 0) {
+        if ($exitCode -eq 0) {
+            return $stdoutText
+        }
+
         $message = "gh $Description failed with exit code $exitCode."
         $detail = (@($stderrText, $stdoutText) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ' '
         if (-not [string]::IsNullOrWhiteSpace($detail)) {
             $message = "$message Output: $detail"
+        }
+
+        if ((Test-IsTransientGhFailure -Detail $detail) -and ($attempt -lt $MaxTransientGhAttempts)) {
+            $delaySeconds = $TransientGhRetryBaseDelaySeconds * [Math]::Pow(2, $attempt - 1)
+            Write-Warning "$message Retrying in $delaySeconds second(s) ($attempt/$MaxTransientGhAttempts)."
+            Start-Sleep -Seconds $delaySeconds
+            continue
         }
 
         if ($AllowFailure) {
@@ -114,7 +144,7 @@ function Invoke-GhCommand {
         throw $message
     }
 
-    return $stdoutText
+    throw "gh $Description exhausted its retry budget unexpectedly."
 }
 
 function ConvertFrom-JsonLines {
