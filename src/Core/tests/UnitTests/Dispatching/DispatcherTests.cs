@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
@@ -195,14 +196,28 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 #nullable enable
 		sealed class NonDisposableDispatcherProviderStub : IDispatcherProvider
 		{
-			readonly ThreadLocal<IDispatcher?> _dispatcher = new(() =>
-				DispatcherProviderStubOptions.SkipDispatcherCreation
-					? null
-					: new DispatcherStub(
-						DispatcherProviderStubOptions.IsInvokeRequired,
-						DispatcherProviderStubOptions.InvokeOnMainThread));
+			readonly ConditionalWeakTable<Thread, DispatcherHolder> _dispatchers = new();
 
-			public IDispatcher? GetForCurrentThread() => _dispatcher.Value;
+			public IDispatcher? GetForCurrentThread() =>
+				_dispatchers.GetValue(
+					Thread.CurrentThread,
+					_ => new DispatcherHolder(
+						DispatcherProviderStubOptions.SkipDispatcherCreation
+							? null
+							: new DispatcherStub(
+								DispatcherProviderStubOptions.IsInvokeRequired,
+								DispatcherProviderStubOptions.InvokeOnMainThread)))
+				.Dispatcher;
+
+			sealed class DispatcherHolder
+			{
+				public DispatcherHolder(IDispatcher? dispatcher)
+				{
+					Dispatcher = dispatcher;
+				}
+
+				public IDispatcher? Dispatcher { get; }
+			}
 		}
 #nullable restore
 	}
