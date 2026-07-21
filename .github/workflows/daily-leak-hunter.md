@@ -168,9 +168,12 @@ Fetch this scanner's own open `[leak-scan]` issues (they are filed with the `age
 label), then fetch merged generated fixes and extract the **rooting API** each artifact covers:
 
 ```bash
-gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
+if ! gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
   --state open --label agentic-workflows --limit 200 --json number,title,body \
-  > /tmp/gh-aw/agent/my-open-leakscan.json
+  > /tmp/gh-aw/agent/my-open-leakscan.json; then
+  echo "ERROR: 'gh issue list [leak-scan]' failed — aborting so a transient error can't empty the already-filed set and re-file duplicate scanner issues (fail-closed)." >&2
+  exit 1
+fi
 # The rooting API is the "Type.Member" the title names. Titles SHOULD lead with it (Step 6),
 # but real runs have produced off-contract titles like "Shell BackButtonBehavior.Command …"
 # (#36345) vs "BackButtonBehavior.Command: …" (#36354). A prefix-only cut keys those on
