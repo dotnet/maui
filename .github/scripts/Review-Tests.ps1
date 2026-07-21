@@ -97,7 +97,6 @@ New-Item -ItemType Directory -Force -Path $RunDirectory | Out-Null
 
 $ContextJsonPath = Join-Path $RunDirectory "context.json"
 $ContextMarkdownPath = Join-Path $RunDirectory "context.md"
-$VisualComparisonsPath = Join-Path $RunDirectory "visual-comparisons.md"
 $PromptPath = Join-Path $RunDirectory "prompt.md"
 $ReportPath = Join-Path $RunDirectory "report.md"
 $CommentPath = Join-Path $RunDirectory "comment.md"
@@ -164,10 +163,11 @@ function Get-EmbeddedTestFailureReport {
 
     $prefix = $Content.Substring(0, $startIndex)
     $report = $Content.Substring($startIndex)
-    $insideCodeFence = ([regex]::Matches($prefix, '```').Count % 2) -eq 1
+    $insideCodeFence = ([regex]::Matches($prefix, '(?m)^[ \t]*```').Count % 2) -eq 1
     if ($insideCodeFence) {
-        $closingFence = $report.LastIndexOf('```', [StringComparison]::Ordinal)
-        if ($closingFence -ge 0) {
+        $closingFenceMatches = @([regex]::Matches($report, '(?m)^[ \t]*```[^`]*[ \t]*$'))
+        if ($closingFenceMatches.Count -gt 0) {
+            $closingFence = $closingFenceMatches[$closingFenceMatches.Count - 1].Index
             $report = $report.Substring(0, $closingFence)
         }
     }
@@ -456,8 +456,7 @@ if ($PostComment -and -not $DryRun) {
     & pwsh $publisherScript `
         -PrNumber $PRNumber `
         -Repository $Repository `
-        -ContextJsonPath $ContextJsonPath `
-        -OutputMarkdownPath $VisualComparisonsPath
+        -ContextJsonPath $ContextJsonPath
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "Visual comparison publishing failed; continuing with the ordinary test-failure report."
     }

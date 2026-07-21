@@ -107,14 +107,16 @@ on:
     - name: Checkout trusted review scripts
       if: >-
         steps.exact_command.outputs.should_run == 'true' &&
-        (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+        steps.check_membership.outputs.is_team_member == 'true' &&
+        steps.check_command_position.outputs.command_position_ok == 'true'
       uses: actions/checkout@v4
       with:
         persist-credentials: false
     - name: Gather test-failure context
       if: >-
         steps.exact_command.outputs.should_run == 'true' &&
-        (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+        steps.check_membership.outputs.is_team_member == 'true' &&
+        steps.check_command_position.outputs.command_position_ok == 'true'
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
@@ -137,7 +139,8 @@ on:
     - name: Publish visual comparison assets
       if: >-
         steps.exact_command.outputs.should_run == 'true' &&
-        (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true') &&
+        steps.check_membership.outputs.is_team_member == 'true' &&
+        steps.check_command_position.outputs.command_position_ok == 'true' &&
         (github.event_name != 'workflow_dispatch' || inputs.suppress_output != true)
       continue-on-error: true
       env:
@@ -146,15 +149,14 @@ on:
       run: |
         set -euo pipefail
         context="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/context.json"
-        output="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/visual-comparisons.md"
         pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
           -PrNumber "${PR_NUMBER}" \
-          -ContextJsonPath "${context}" \
-          -OutputMarkdownPath "${output}"
+          -ContextJsonPath "${context}"
     - name: Upload test-failure context
       if: >-
         steps.exact_command.outputs.should_run == 'true' &&
-        (github.event_name == 'workflow_dispatch' || steps.authorization.outputs.authorized == 'true')
+        steps.check_membership.outputs.is_team_member == 'true' &&
+        steps.check_command_position.outputs.command_position_ok == 'true'
       uses: actions/upload-artifact@v7.0.1
       with:
         name: review-tests-context-${{ github.run_id }}
@@ -277,6 +279,7 @@ steps:
       check_url "Helix" 'https://helix.dot.net/api/2019-06-17/jobs?count=1'
 
   - name: Download test-failure context
+    continue-on-error: true
     uses: actions/download-artifact@v8.0.1
     with:
       name: review-tests-context-${{ github.run_id }}
@@ -287,6 +290,10 @@ steps:
       CONTEXT_PATH: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json
     run: |
       set -euo pipefail
+      if [ ! -f "${CONTEXT_PATH}" ]; then
+        echo "No test-failure context artifact was available; continuing without trusted visual merge inputs."
+        exit 0
+      fi
       trusted="${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"
       sudo install -d -o root -g root -m 0555 "${trusted}"
       sudo install -o root -g root -m 0444 "${CONTEXT_PATH}" "${trusted}/context.json"

@@ -11,14 +11,13 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
-            'Escape-Html',
             'Get-SafeAssetSlug',
             'Invoke-GhApiJson',
             'Test-PngFile',
             'Test-AzDoAttachmentUrl',
             'Get-SnapshotRoot',
             'Get-SnapshotCandidatePaths',
-            'New-VisualComparisonsMarkdown'
+            'Get-VisualEvidenceDedupKey'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -107,47 +106,26 @@ Describe 'Snapshot baseline candidates' {
     }
 }
 
-Describe 'Visual comparison markdown' {
-    It 'renders escaped, collapsed three-column comparison panels' {
-        $markdown = New-VisualComparisonsMarkdown -Comparisons @(
-            [pscustomobject]@{
-                testName = '<script>alert(1)</script>'
-                platform = 'iOS'
-                description = '2.08% difference'
-                buildId = 123
-                buildUrl = 'https://dev.azure.com/example'
-                baselineUrl = 'https://raw.githubusercontent.com/org/repo/sha/base.png'
-                baselineStatus = 'resolved'
-                actualUrl = 'https://raw.githubusercontent.com/org/repo/sha/actual.png'
-                diffUrl = 'https://raw.githubusercontent.com/org/repo/sha/diff.png'
-            }
-        ) -OmittedCount 0 -MaximumCharacters 5000
+Describe 'Visual evidence deduplication' {
+    It 'keeps same snapshot failures distinct across runtime environments and result identities' {
+        $ios26 = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = 'ios-26'
+            buildId = 100
+            runId = 200
+            resultId = 300
+        }
+        $ios16 = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = 'ios-iphonex'
+            buildId = 100
+            runId = 201
+            resultId = 301
+        }
 
-        $markdown | Should -Match '<details>'
-        $markdown | Should -Not -Match '<details open'
-        $markdown | Should -Match '<th>CI baseline</th><th>Fresh PR actual</th><th>CI diff</th>'
-        $markdown | Should -Match '&lt;script&gt;alert\(1\)&lt;/script&gt;'
-        $markdown | Should -Not -Match '<script>'
-    }
-
-    It 'bounds complete panels instead of truncating HTML mid-panel' {
-        $items = @(1..8 | ForEach-Object {
-            [pscustomobject]@{
-                testName = "VeryLongSnapshotName$_" + ('x' * 80)
-                platform = 'windows'
-                description = '1.00% difference'
-                buildId = 123
-                buildUrl = 'https://dev.azure.com/example'
-                baselineUrl = "https://raw.githubusercontent.com/org/repo/sha/base$_.png"
-                baselineStatus = 'resolved'
-                actualUrl = "https://raw.githubusercontent.com/org/repo/sha/actual$_.png"
-                diffUrl = "https://raw.githubusercontent.com/org/repo/sha/diff$_.png"
-            }
-        })
-
-        $markdown = New-VisualComparisonsMarkdown -Comparisons $items -OmittedCount 0 -MaximumCharacters 1800
-        $markdown.Length | Should -BeLessOrEqual 1800
-        $markdown | Should -Match 'additional comparison\(s\) were omitted'
-        ([regex]::Matches($markdown, '<details>').Count) | Should -Be ([regex]::Matches($markdown, '</details>').Count)
+        Get-VisualEvidenceDedupKey -Evidence $ios26 |
+            Should -Not -Be (Get-VisualEvidenceDedupKey -Evidence $ios16)
     }
 }

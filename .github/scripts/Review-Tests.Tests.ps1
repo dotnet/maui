@@ -122,6 +122,37 @@ Trailing assistant prose.
             Should -Be ([regex]::Matches($report, '</details>').Count)
     }
 
+    It 'ignores stray inline backticks before an unfenced report with evidence fences' {
+        $content = @'
+The assistant mentions an inline marker ``` before the report.
+
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Review</summary>
+
+```text
+error: sample
+```
+
+**Overall verdict:** Not ready
+
+</details>
+
+Trailing assistant prose.
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match '```text'
+        $report | Should -Match 'error: sample'
+        $report | Should -Match '\*\*Overall verdict:\*\* Not ready'
+        $report | Should -Not -Match 'Trailing assistant prose'
+    }
+
     It 'reuses a complete report instead of wrapping a second title and badge section' {
         $content = @'
 Generated report:

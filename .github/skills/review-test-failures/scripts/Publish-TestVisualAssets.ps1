@@ -22,9 +22,6 @@ param(
     [string]$ContextJsonPath,
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputMarkdownPath,
-
-    [Parameter(Mandatory = $false)]
     [string]$Repository = $env:GITHUB_REPOSITORY,
 
     [Parameter(Mandatory = $false)]
@@ -40,11 +37,7 @@ param(
 
     [Parameter(Mandatory = $false)]
     [ValidateRange(1024, 524288000)]
-    [long]$MaxTotalBytes = 104857600,
-
-    [Parameter(Mandatory = $false)]
-    [ValidateRange(1000, 50000)]
-    [int]$MaxMarkdownCharacters = 28000
+    [long]$MaxTotalBytes = 104857600
 )
 
 $ErrorActionPreference = "Stop"
@@ -66,9 +59,6 @@ if ($AssetBranch -notmatch '^[A-Za-z0-9][A-Za-z0-9._/-]{0,100}$' -or
 if (-not (Test-Path -LiteralPath $ContextJsonPath)) {
     throw "Context JSON was not found: $ContextJsonPath"
 }
-if ([string]::IsNullOrWhiteSpace($OutputMarkdownPath)) {
-    $OutputMarkdownPath = Join-Path (Split-Path -Parent $ContextJsonPath) "visual-comparisons.md"
-}
 
 $RepoRoot = git rev-parse --show-toplevel 2>$null
 if (-not $RepoRoot) {
@@ -83,15 +73,6 @@ else {
 }
 $DownloadDirectory = Join-Path $DownloadRoot "$PrNumber"
 New-Item -ItemType Directory -Force -Path $DownloadDirectory | Out-Null
-
-function Escape-Html {
-    param([string]$Value)
-
-    if ($null -eq $Value) {
-        return ""
-    }
-    return [System.Net.WebUtility]::HtmlEncode($Value)
-}
 
 function Get-SafeAssetSlug {
     param([string]$Value)
@@ -488,83 +469,18 @@ function Publish-GitAssets {
     throw "Asset branch update exhausted $MaxAttempts attempts."
 }
 
-function New-VisualComparisonsMarkdown {
-    param(
-        [object[]]$Comparisons,
-        [int]$OmittedCount,
-        [int]$MaximumCharacters
+function Get-VisualEvidenceDedupKey {
+    param([object]$Evidence)
+
+    $parts = @(
+        [string]$Evidence.platform,
+        [string]$Evidence.snapshotFileName,
+        [string]$Evidence.environmentName,
+        [string]$Evidence.buildId,
+        [string]$Evidence.runId,
+        [string]$Evidence.resultId
     )
-
-    if (@($Comparisons).Count -eq 0) {
-        return ""
-    }
-
-    $header = @"
-### Visual comparisons
-
-Full-resolution CI snapshot evidence is preserved below. These images supplement the failure classification and do not change the deterministic verdict ceiling.
-
-"@
-    $builder = [System.Text.StringBuilder]::new()
-    [void]$builder.Append($header)
-    $shown = 0
-
-    foreach ($comparison in $Comparisons) {
-        $safeTestName = Escape-Html ([string]$comparison.testName)
-        $safePlatform = Escape-Html ([string]$comparison.platform)
-        $safeDescription = Escape-Html ([string]$comparison.description)
-        $safeBaselineAlt = Escape-Html "$($comparison.testName) baseline"
-        $safeActualAlt = Escape-Html "$($comparison.testName) actual"
-        $safeDiffAlt = Escape-Html "$($comparison.testName) diff"
-        $baselineCell = if ($comparison.baselineUrl) {
-            "<img alt=""$safeBaselineAlt"" width=""260"" src=""$(Escape-Html ([string]$comparison.baselineUrl))"">"
-        }
-        else {
-            "<em>Baseline unavailable: $(Escape-Html ([string]$comparison.baselineStatus))</em>"
-        }
-        $diffCell = if ($comparison.diffUrl) {
-            "<img alt=""$safeDiffAlt"" width=""260"" src=""$(Escape-Html ([string]$comparison.diffUrl))"">"
-        }
-        else {
-            "<em>CI diff was not generated.</em>"
-        }
-        $buildId = [int]$comparison.buildId
-        $buildUrl = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$buildId"
-        $descriptionLine = if ($safeDescription) {
-            "CI reported <code>$safeDescription</code> in build [$buildId]($buildUrl)."
-        }
-        else {
-            "CI reported a visual snapshot failure in build [$buildId]($buildUrl)."
-        }
-
-        $panel = @"
-<details>
-<summary><code>$safeTestName</code> - $safePlatform - visual comparison</summary>
-
-$descriptionLine
-
-<table><tr><th>CI baseline</th><th>Fresh PR actual</th><th>CI diff</th></tr><tr>
-<td>$baselineCell</td>
-<td><img alt="$safeActualAlt" width="260" src="$(Escape-Html ([string]$comparison.actualUrl))"></td>
-<td>$diffCell</td>
-</tr></table>
-</details>
-
-"@
-
-        $reservedFooter = 180
-        if (($builder.Length + $panel.Length + $reservedFooter) -gt $MaximumCharacters) {
-            $OmittedCount += (@($Comparisons).Count - $shown)
-            break
-        }
-        [void]$builder.Append($panel)
-        $shown++
-    }
-
-    if ($OmittedCount -gt 0) {
-        [void]$builder.Append("Visual output was bounded for comment safety; $OmittedCount additional comparison(s) were omitted.`n")
-    }
-    return $builder.ToString()
+    return ($parts -join '|').ToLowerInvariant()
 }
 
 function Save-Context {
@@ -587,7 +503,6 @@ if ([int]$context.pr.number -ne $PrNumber) {
 $visualEvidence = @($context.visualEvidence.comparisons)
 if ($visualEvidence.Count -eq 0) {
     Write-Host "No visual snapshot failures were detected."
-    Remove-Item -LiteralPath $OutputMarkdownPath -Force -ErrorAction SilentlyContinue
     $context | Add-Member -NotePropertyName visualAssets -NotePropertyValue ([ordered]@{
         published = $false
         comparisonCount = 0
@@ -598,19 +513,23 @@ if ($visualEvidence.Count -eq 0) {
 }
 
 $deduped = [ordered]@{}
+$dedupeDroppedCount = 0
 foreach ($evidence in @($visualEvidence | Sort-Object `
         @{ Expression = { if ($_.completedDate) { [datetime]$_.completedDate } else { [datetime]::MinValue } }; Descending = $true }, `
         @{ Expression = { [int]$_.buildId }; Descending = $true }, `
         @{ Expression = { [int]$_.resultId }; Descending = $true })) {
-    $key = "$([string]$evidence.platform)|$([string]$evidence.snapshotFileName)".ToLowerInvariant()
+    $key = Get-VisualEvidenceDedupKey -Evidence $evidence
     if (-not $deduped.Contains($key)) {
         $deduped[$key] = $evidence
+    }
+    else {
+        $dedupeDroppedCount++
     }
 }
 
 $allUnique = @($deduped.Values)
 $selectedEvidence = @($allUnique | Select-Object -First $MaxComparisons)
-$omittedCount = [Math]::Max(0, $allUnique.Count - $selectedEvidence.Count)
+$omittedCount = [Math]::Max(0, $allUnique.Count - $selectedEvidence.Count) + $dedupeDroppedCount
 $assets = New-Object System.Collections.Generic.List[object]
 $prepared = New-Object System.Collections.Generic.List[object]
 $errors = New-Object System.Collections.Generic.List[string]
@@ -800,21 +719,12 @@ try {
         })
     }
 
-    $markdown = New-VisualComparisonsMarkdown `
-        -Comparisons $published.ToArray() `
-        -OmittedCount $omittedCount `
-        -MaximumCharacters $MaxMarkdownCharacters
-    if (-not [string]::IsNullOrWhiteSpace($markdown)) {
-        Set-Content -LiteralPath $OutputMarkdownPath -Value $markdown -Encoding UTF8
-    }
-
     $context | Add-Member -NotePropertyName visualAssets -NotePropertyValue ([ordered]@{
         published = $true
         branch = $AssetBranch
         commit = $assetCommit
         comparisonCount = $published.Count
         omittedCount = $omittedCount
-        markdownPath = [System.IO.Path]::GetFileName($OutputMarkdownPath)
         comparisons = $published.ToArray()
         errors = $errors.ToArray()
     }) -Force
@@ -828,6 +738,5 @@ catch {
         errors = @($message)
     }) -Force
     Save-Context -Context $context -Path $ContextJsonPath
-    Remove-Item -LiteralPath $OutputMarkdownPath -Force -ErrorAction SilentlyContinue
     Write-Warning $message
 }
