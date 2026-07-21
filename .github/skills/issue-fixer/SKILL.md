@@ -1,10 +1,10 @@
 ---
 name: issue-fixer
-description: "Reproduce-first, root-cause-first workflow for fixing a .NET MAUI GitHub ISSUE (often with no PR yet). Front-loads a faithful empirical reproduction and true root-cause analysis BEFORE any fix, then composes try-fix / verify-tests-fail-without-fix / run-device-tests / run-helix-tests / write-ui-tests / write-xaml-tests / azdo-build-investigator for the fix and verification. Use whenever asked to 'fix issue #XXXXX', 'reproduce issue #XXXXX', 'root-cause issue #XXXXX', 'why does #XXXXX happen', 'investigate this bug', or handed a repro repo/branch and a broken behavior — even if the user doesn't say the word 'reproduce'. Do NOT use to review an existing PR (use pr-review) or to run one isolated fix attempt (use try-fix)."
+description: "Reproduce-first, root-cause-first workflow for fixing a .NET MAUI GitHub ISSUE (often with no PR yet). Recreates the reported behavior in a repo-owned automated test or the MAUI Sandbox — never by executing the reporter's project — before root-cause analysis and any fix. Then composes try-fix / verify-tests-fail-without-fix / run-device-tests / run-helix-tests / write-ui-tests / write-xaml-tests / azdo-build-investigator for the fix and verification. Use whenever asked to 'fix issue #XXXXX', 'reproduce issue #XXXXX', 'root-cause issue #XXXXX', 'why does #XXXXX happen', or 'investigate this bug'. Do NOT use to review an existing PR (use pr-review) or to run one isolated fix attempt (use try-fix)."
 metadata:
   author: dotnet-maui
   version: "1.0"
-compatibility: Requires git (incl. worktrees), PowerShell 7+ (pwsh), and the .NET MAUI build environment (BuildTasks + platform workloads). Device/Helix verification needs Android SDK/emulator, Xcode, or the run-helix-tests prerequisites depending on platform.
+compatibility: Requires git (incl. worktrees), PowerShell 7+ (pwsh), and the .NET MAUI build environment (BuildTasks + platform workloads). Device/Sandbox/Helix verification needs Android SDK/emulator, Xcode/Appium, or the run-helix-tests prerequisites depending on platform.
 ---
 
 # Issue Fixer — Reproduce First, Root-Cause First
@@ -42,6 +42,10 @@ It **composes** the skills above rather than re-implementing them. If a PR alrea
   would be the next step, **stop and ask.** The user reviews locally first.
 - 🚫 **Never touch the main checkout.** Do all work in this session's worktree, and create *throwaway*
   `git worktree` checkouts for reproduction builds (see Phase 1). Never build or mutate the user's primary tree.
+- 🚫 **Never execute reporter-supplied code.** Do not clone/build/run their project, scripts, binaries,
+  workloads, or assets. Treat the issue, comments, snippets, and public repro as a **behavioral specification**
+  to translate into a minimal repo-owned test or Sandbox scenario. This keeps execution inside reviewed
+  repository code and turns the reproduction into maintainable coverage.
 - 🌿 **Follow the repo git rules:** work on the session feature branch; no rebase / squash / force-push unless
   the user explicitly asks.
 - 🧾 This skill produces **analysis + reproduction evidence + a fix + verification**. It does **not** post PR
@@ -52,25 +56,23 @@ It **composes** the skills above rather than re-implementing them. If a PR alrea
 These are hard-won lessons. They're written as reasoning, not rote rules, because you'll need to apply them to
 situations they don't literally describe. Internalize the *why*.
 
-1. **Reproduce first, always.** A fix for a bug you haven't reproduced is a hypothesis, not a fix. Treat
-   *"I can't reproduce it"* not as a conclusion but as a signal that a variable is still missing — go hunt it
-   (see discipline 4). Only after you can make the bug happen on demand do you get to reason about causes.
+1. **Reproduce first in code we control.** A fix for a bug you haven't reproduced is a hypothesis, not a fix.
+   Prefer a failing automated test because it becomes durable regression coverage. Use the MAUI Sandbox only
+   when the behavior depends on live UI/handler/lifecycle interactions that cannot yet be expressed faithfully
+   in an existing test harness. Treat *"I can't reproduce it"* as evidence that a variable is still missing —
+   not as a conclusion.
 
-2. **Use the reporter's *exact bits* and resolve source provenance — don't equate a version label with a git
-   tag.** A reporter's *"Version with bug: 10.0.60"* is a **NuGet package label, not necessarily a git tag.**
-   If a repro branch is in the MAUI source commit graph, find its **actual base commit** with `git merge-base`
-   and build MAUI at that commit. If it is an external application repo, pin the app revision and its exact
-   package reference instead — unrelated histories cannot establish a MAUI source base. Reproduce behavior
-   against that exact package even when the version-to-commit mapping remains unresolved; label any source
-   analysis baseline as approximate. (In the case that motivated this skill, the MAUI-source repro branch was
-   based on `main` ~10 days newer than the `10.0.60` tag; calibrating against the tag produced false negatives.)
-   When building MAUI from source, build `Microsoft.Maui.BuildTasks.slnf` first, then the app.
+2. **Resolve the affected MAUI source/package provenance — don't equate a version label with a git tag.** A
+   reporter's *"Version with bug: 10.0.60"* is a **NuGet package label, not necessarily a git tag.** If a cited
+   branch is in the MAUI source commit graph, find its actual base with `git merge-base`. An external application
+   repo can reveal package/configuration facts but cannot establish a MAUI source base, and must not be executed.
+   Recreate the scenario in a repo-owned harness against the affected source train; label an unresolved
+   version-to-commit mapping and any approximate analysis baseline explicitly.
 
-3. **Use the reporter's exact app, supplied build command, and steps.** Fast-deployment debug builds
-   (`-t:Install`, no `EmbedAssembliesIntoApk`) can behave *differently* from embedded-assembly APKs. When the
-   reporter supplies a `dotnet build` invocation, reproduce it exactly; always preserve their exact interaction
-   sequence. If the command is omitted, use only the bounded canonical fallback in Phase 1 and label it as not
-   reporter-exact. Small deviations ("I used the Sandbox instead," "I skipped a tap") routinely hide the bug.
+3. **Translate the reported scenario; don't run it.** Preserve the relevant control structure, properties,
+   platform, deployment clues, and interaction sequence from the issue, but implement them yourself in the
+   smallest suitable MAUI test or Sandbox page. Fast deployment versus an embedded APK can still matter, so
+   record and vary it in the controlled harness rather than invoking the reporter's command.
 
 4. **Enumerate and eliminate environmental variables — and record each as tested.** When the bug won't
    reproduce, systematically vary the things you control and log the result of each:
@@ -124,88 +126,75 @@ Understand the bug on paper before touching a keyboard.
 - Read the issue body **and every comment in chronological order**: symptom, expected vs actual,
   **stated version(s)**, platform(s), and linked discussion. Human corrections in later comments supersede
   stale details in the body or earlier agent analysis. `gh issue view <n> --comments`.
-- Collect the reporter's **reproduction assets**: repro repo/branch URL, exact `dotnet build`/run command,
-  exact interaction steps, screenshots/stack traces/logs.
-- **Classify the setup evidence — reporter-exact vs canonical fallback.** The reporter's *exact* launch command
-  is the gold standard and is **required whenever they give it**, because build flags and deploy mode change
-  behavior (discipline 3). But reporters routinely hand you a complete, runnable project + platform/TFM +
-  interaction steps and simply *omit the terminal command*. That omission alone is **not** a reason to block:
-  the app is still runnable. When the command is missing, record the absence explicitly, and note that Phase 1
-  will fall back to a **canonical** launch (see Phase 1) — clearly labeled as *not reporter-exact*. Only treat
-  Phase 0 as truly blocked when there is **no** viable declared target at all (no project, no platform/TFM, or
-  no interaction steps).
+- Extract the reporter's **behavioral specification**: relevant code/control structure, package version,
+  platform/TFM, properties, deployment clues, exact interaction steps, screenshots, stack traces, and logs.
+  You may inspect issue text and snippets, but do not clone, build, or execute their project or commands.
+- **Select a controlled reproduction harness:**
+
+  | Reported behavior | Preferred repo-owned harness |
+  |-------------------|------------------------------|
+  | Pure logic, parsing, XAML/XamlC, bindings, or source generation | Unit/XAML test |
+  | Native handler/platform lifecycle without full end-user automation | Device test |
+  | End-user interaction that existing test infrastructure can drive | UI test |
+  | Live UI/navigation/lifecycle behavior not yet expressible faithfully in a test | `Controls.Sample.Sandbox` via `sandbox-agent` |
+
+  Choose the lowest-cost test that still exercises the real failing path. Sandbox is a temporary discovery
+  harness, not final regression coverage; if it reproduces, Phase 4 must convert the scenario into an automated
+  test.
 - Search for **existing PRs/issues** that already touch this. If a PR already fixes it → this is probably a
   `pr-review` job; note it and confirm with the user before continuing here.
 - Write the **falsifiable claim** you're going to prove, e.g. *"On Android, tapping Detail→Swap twice on the
   reporter's app crashes with `IllegalStateException` in fragment commit."*
 
-**Exit:** you can state the app, platform, interaction steps, and the claim to reproduce, **and** you have
-classified the launch command as either `reporter-exact` (captured verbatim) or `canonical fallback` (command
-absent — absence recorded, fallback flagged for Phase 1). Block only when no runnable target exists.
+**Exit:** you can state the reported behavior, platform, exact relevant interaction sequence, falsifiable claim,
+and selected repo-owned harness. Block only when the issue lacks enough behavioral detail to construct a
+controlled scenario.
 
-### Phase 1 — Faithful reproduction
+### Phase 1 — Controlled repo-owned reproduction
 
-Make the bug happen on demand, against the reporter's real tree. Two independent evidence tracks run here —
-keep them separate so you never over-claim:
+Make the reported behavior happen on demand using code in this repository. The reporter's project is evidence,
+not an executable input. Keep two independent evidence tracks so you never over-claim:
 
-- **Source provenance** (what MAUI *bits* the behavior runs on).
-- **Application behavior** (does the app misbehave when driven through the reporter's steps).
+- **Source provenance** — which MAUI source train/package the report concerns.
+- **Controlled behavior** — whether the repo-owned test/Sandbox scenario exhibits the reported failure.
 
-1. **Pin the source commit (provenance track).** If a repro branch is in the MAUI source repository (or the
-   same commit graph), `git merge-base` it against `main`/candidate to find its *actual* base — do **not**
-   trust the version label (discipline 2). This `git merge-base` rule is **not** relaxed when a repro branch
-   gives you a MAUI source base. An external application-repo branch instead establishes the app revision, not
-   the MAUI source revision; use the app's exact package reference as its MAUI provenance evidence. If the
-   package version cannot be mapped to a commit, that must **not** block reproducing behavior on the reporter's
-   **exact package version**. Unmapped provenance only limits your *exact-source / root-cause* claims later.
-   If you must build MAUI from source for analysis and can't resolve the commit, use the nearest analysis
-   baseline **only with an explicit "approximate, not the reporter's exact source" label** and report the
-   unresolved mapping.
-2. **Create a throwaway MAUI worktree only when source analysis/building needs a resolved source commit**
-   (never the main checkout):
+1. **Resolve source provenance.** Map the reported package/source train to a MAUI commit when possible. Use
+   `git merge-base` only for branches in the MAUI commit graph. External app repositories are never run and do
+   not establish source provenance. If mapping remains unresolved, label the selected MAUI analysis baseline
+   approximate; do not manufacture a tag/commit relationship.
+2. **Create a throwaway MAUI worktree when reproduction needs a historical or candidate commit** (never the
+   main checkout):
    ```bash
    git worktree add ../maui-repro-<sha> <sha>
    ```
-   Build `Microsoft.Maui.BuildTasks.slnf` first when building MAUI from source. Build an external reporter app
-   from its own clone/project against its declared package version; do not assume it belongs in the MAUI
-   worktree.
-3. **Launch the app — reporter-exact if given, otherwise a bounded canonical fallback.**
-   - **Reporter-exact (preferred, required when supplied):** use their exact `dotnet build`/run command and
-     deploy mode (discipline 3).
-   - **Canonical fallback (command absent):** derive a **documented, canonical** MAUI launch command from the
-     project's *declared* TFM/platform and the repository's own tooling (e.g. the standard
-     `dotnet build -t:Run -f <declared-tfm>` path, or the repo's device-test/run scripts). **Bounds — do not
-     cross:** don't invent undeclared configuration flags, device identifiers, deployment modes, or extra
-     interaction steps. Record the **exact fallback command**, the **source** that makes it canonical (which
-     declared TFM/tooling it came from), and **every remaining unknown** in the variable table. If there is no
-     viable declared target or tooling to derive a command from, stay **blocked** and say why.
-     > The fallback reproduces **application behavior only** — it is *not* evidence of the reporter's original
-     > build environment. Label any behavior you observe as "reproduced via canonical fallback (not
-     > reporter-exact build env)."
-4. **Run the reporter's exact steps** on the app. Reproduce the crash/leak/misbehavior. A behavior reproduced
-   under the canonical fallback **is sufficient** to continue to root-cause investigation (Phase 2) — just
-   carry the label forward.
-5. **If it won't reproduce, enumerate variables** (discipline 4) and record each attempt:
+   Build `Microsoft.Maui.BuildTasks.slnf` first when building MAUI from source.
+3. **Implement the controlled scenario.**
+   - **Automated test (preferred):** create the smallest behavioral unit/XAML/device/UI test that preserves the
+     relevant setup, steps, and observable failure. Run it unfixed and require the expected failure.
+   - **Sandbox (temporary):** delegate to `sandbox-agent`, implement the scenario in
+     `src/Controls/samples/Controls.Sample.Sandbox/`, and follow
+     `.github/instructions/sandbox.instructions.md`. Use `BuildAndRunSandbox.ps1`; verify actual Appium actions,
+     completion markers, device logs, and the expected failure. A successful launch is not a reproduction.
+4. **If it won't reproduce, enumerate variables** (discipline 4) and record each attempt:
 
    | Variable | Value tried | Result | Notes |
    |----------|-------------|--------|-------|
-   | Application revision | `<sha>` / branch / supplied snapshot | ❌/✅ | external repro app identity |
-   | MAUI source commit | `<sha>` via merge-base / `unresolved` / `N/A exact-package repro` | ❌/✅ | never substitute a package label for a commit |
-   | Launch command | `reporter-exact` / `canonical fallback: <cmd>` | | source of canonical + unknowns |
+   | Harness | unit / XAML / device / UI test / Sandbox | ❌/✅ | path + why selected |
+   | Scenario source | issue body/comments/snippets | | relevant setup/steps translated |
+   | MAUI source commit | `<sha>` via merge-base / approximate `<sha>` | ❌/✅ | never substitute a package label for a commit |
+   | Harness command | repo test runner / `BuildAndRunSandbox.ps1` | | exact command |
    | Package provenance | version→commit `<mapped sha>` / `unmapped` | | approximate-baseline label if unmapped |
    | API level | e.g. 34 | | |
-   | Deploy mode | fast-deploy `-t:Install` / embedded APK | | unknown if fallback |
+   | Deploy mode | fast-deploy / embedded APK | | controlled harness setting |
    | Emulator ABI | arm64-v8a (Apple Silicon) / x86_64 (Helix) | | |
    | Device | emulator / physical | | |
 
-   A canonical fallback that does **not** reproduce is **not** a false negative — enumerate the remaining
-   variables/delta exactly as today (a missing reporter-exact command is itself one such variable). When every
-   controllable variable is exhausted and it still won't repro, **name the uncontrollable delta**
-   (e.g. x86_64 Helix) and carry it to Phase 4 escalation — do **not** conclude "not a bug."
+   When every controllable variable is exhausted and it still won't reproduce, **name the uncontrollable
+   delta** (e.g. x86_64 Helix) and carry it to Phase 4 escalation — do **not** conclude "not a bug."
 
-**Exit:** either a reliable local reproduction — labeled `reporter-exact` or `canonical fallback` — **or** an
-explicit, evidence-backed statement of the remaining variable(s) you can't test locally, with provenance
-(mapped/unmapped) recorded.
+**Exit:** either a failing repo-owned automated test, a repeatable Sandbox reproduction labeled temporary, or
+an explicit evidence-backed statement of the remaining variable(s) you cannot test locally. Source provenance
+and the exact controlled harness command are recorded.
 
 ### Phase 2 — Root-cause analysis
 
@@ -213,8 +202,8 @@ Find *what actually causes* the observed behavior — not the last thing that to
 
 - **Minimize only after faithful reproduction.** Reduce the reproduced case one variable at a time and verify
   the smaller case still fails. This is a diagnostic accelerator, not a replacement acceptance scenario: the
-  reporter's exact app/steps (or labeled canonical fallback) remains the final behavior check. If minimization
-  loses the failure, keep the faithful repro and record which removed variable mattered.
+  controlled scenario must still represent the exact relevant user-visible setup and steps from the issue. If
+  minimization loses the failure, keep the larger repo-owned repro and record which removed variable mattered.
 - **Form at least 3 meaningfully competing root-cause hypotheses.** For each, record: theory, a discriminating
   command/observation that could reject it, result (`CONFIRMED`, `DENIED`, or `PARTIAL`), and implications.
   Three variants of the same symptom are not competing hypotheses. Prefer experiments that distinguish several
@@ -266,9 +255,8 @@ Feed each `try-fix` invocation:
 - `platform` — the reproduced platform from Phase 1
 - `target_files` — the files identified in Phase 2
 - `test_command` — the strongest empirical command currently available: the planned Phase 4 regression command
-  when a test already exists; otherwise the faithful Phase 1 behavior reproducer through the appropriate repo
-  runner, explicitly labeled provisional. A provisional reproducer does not replace Phase 4's non-circular
-  regression test.
+  when Phase 1 produced an automated test; otherwise the Sandbox reproducer, explicitly labeled provisional.
+  A Sandbox reproducer does not replace Phase 4's non-circular regression test.
 
 Each model must generate its approach **independently first**, then produce a **DIFFERENT** approach from any
 existing changes (review the diff first). "Different" means a different root-cause hypothesis, not just a
@@ -327,10 +315,14 @@ challenge** — believed to remove the root cause. Any deferred test-integrity c
 
 Prove the fix works with a test that would actually catch the bug.
 
-1. **Pick / write a non-circular test** (discipline 6). If the issue lacks coverage, compose the right author:
-   - UI interaction bug → **`write-ui-tests`** (`.github/skills/write-ui-tests/SKILL.md`)
-   - XAML parse/XamlC/source-gen bug → **`write-xaml-tests`** (`.github/skills/write-xaml-tests/SKILL.md`)
-   - Then run the **circular-test checklist** below and fix the test if it fails any item.
+1. **Finalize a non-circular automated regression test** (discipline 6).
+   - If Phase 1 already produced a failing test, preserve it and adversarially verify its setup/assertions.
+   - If Phase 1 used Sandbox, translate that proven scenario into the lightest faithful automated test now;
+     Sandbox evidence alone cannot complete the issue.
+   - If coverage must be authored, compose the right author:
+     - UI interaction bug → **`write-ui-tests`** (`.github/skills/write-ui-tests/SKILL.md`)
+     - XAML parse/XamlC/source-gen bug → **`write-xaml-tests`** (`.github/skills/write-xaml-tests/SKILL.md`)
+   - Run the **circular-test checklist** below and fix the test if it fails any item.
    - If Phase 3 deferred the test-integrity challenge, send the final test to the other models for that focused
      probe now. A dispute loops back to test authoring; don't let the earlier fix consensus waive this gate.
 2. **Verify fail-without-fix / pass-with-fix** via **`verify-tests-fail-without-fix`**
@@ -370,14 +362,15 @@ Use this structure:
 ## Issue #XXXXX — <one-line summary>
 
 ### Reproduction
-- Application revision: <reporter repo commit / branch / supplied project snapshot>
-- MAUI runtime bits: <source commit | exact NuGet package version>
+- Behavioral specification: <issue body/comments and relevant setup/interaction sequence>
+- Controlled harness: <test type + path | Sandbox page + temporary status>
+- MAUI runtime bits: <source commit / affected package train>
 - MAUI source provenance: <resolved via merge-base or version→sha | unresolved — analysis baseline <sha> is approximate>
-- Launch command: <reporter-exact: <cmd> | canonical fallback: <cmd> — source: <declared TFM/tooling>; not reporter-exact build env>
-- App / steps: <exact interaction steps>
-- Result: <reproduced ✅ (reporter-exact | canonical fallback) | not reproducible locally — remaining delta: <x86_64 Helix/…>>
+- Harness command: <repo test runner | BuildAndRunSandbox.ps1>
+- Translated setup / steps: <what was recreated from the report>
+- Result: <failing automated test ✅ | repeatable Sandbox reproduction ⚠️ temporary | not reproducible — remaining delta>
 - Variable enumeration: <table or link to it>
-- Remaining unknowns: <flags/device/deploy-mode not derivable from declared config>
+- Reporter code executed: **No**
 
 ### Root cause
 - <the true root cause>
@@ -405,6 +398,7 @@ This skill orchestrates; it does not re-implement. Quick reference for what to c
 
 | Phase | Compose | For |
 |-------|---------|-----|
+| 1 | Appropriate repo test harness / `sandbox-agent` | Prefer a failing automated test; use Sandbox only for temporary UI/lifecycle discovery |
 | 3 | `try-fix` ×4 models (sequential) + cross-pollination + adversarial challenge | Multi-model fix exploration, then attack the winner (AGREE/DISPUTE/DISCARD) before it advances |
 | 4 | `write-ui-tests` / `write-xaml-tests` | Author a non-circular reproducing test |
 | 4 | `verify-tests-fail-without-fix` | Prove fail-without-fix / pass-with-fix (inverted semantics) |
@@ -413,9 +407,9 @@ This skill orchestrates; it does not re-implement. Quick reference for what to c
 
 ## Origin
 
-The disciplines here were distilled from an intense empirical investigation of a MAUI Android bug — the
-issue #35371 stale-`ContainerView` leak (PRs #35372 / #36169) and the FlyoutPage detail-swap fragment crash —
-where reproduction hinged on the reporter's *actual* base commit (not the `10.0.60` label), on embedded-assembly
-vs fast-deploy, and ultimately on the x86_64-Helix ABI that couldn't be reproduced on Apple-Silicon locally.
-The recurring failure mode was calibrating against the wrong tree and writing circular tests. This skill encodes
-the fix: reproduce faithfully, find the real root, and verify with a test that can actually go red.
+The disciplines here were distilled from an intense empirical investigation of a MAUI Android bug — the issue
+#35371 stale-`ContainerView` leak (PRs #35372 / #36169) and the FlyoutPage detail-swap fragment crash — where
+source provenance, embedded-assembly vs fast-deploy, and x86_64 Helix ABI materially changed the result. The
+reporter's artifacts revealed those variables, but future investigations should recreate the behavior in
+repo-owned code rather than execute external repro projects. The recurring failure modes were calibrating
+against the wrong tree and writing circular tests.
