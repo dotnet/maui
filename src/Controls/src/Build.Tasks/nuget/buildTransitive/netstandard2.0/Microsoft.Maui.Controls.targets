@@ -10,7 +10,15 @@
     <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
     <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' ">SourceGen</_MauiXamlInflator>
 
+    <!-- XAML Incremental Hot Reload (XIHR): opt-in for the initial ship (Preview 6). Hot reload is a
+         dev-time feature; when enabled it emits per-page registry calls and keeps the runtime feature
+         switch on. Default off everywhere — set <EnableMauiIncrementalHotReload>true</...> to opt in.
+         Default-on is planned for a later preview (see the .NET 11 Hot Reload plan). Resolves to an
+         explicit true/false so the value always flows to the source generator and runtime config. -->
+    <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == ''">false</EnableMauiIncrementalHotReload>
+
     <!-- XAML Hot Reload mode for IDE communication (Legacy or SourceGen) -->
+    <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == '' and '$(EnableMauiIncrementalHotReload)' == 'true'">SourceGen</MauiXamlHotReload>
     <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == ''">Legacy</MauiXamlHotReload>
 
     <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' ">$(EnableMauiDiagnostics)</EnableMauiXamlDiagnostics>
@@ -85,11 +93,6 @@
 		<PropertyGroup>
 			<_MauiXamlHotReloadUpper>$([System.String]::Copy('$(MauiXamlHotReload)').Trim().ToUpperInvariant())</_MauiXamlHotReloadUpper>
 		</PropertyGroup>
-
-		<Warning
-			Code="MAUI1002"
-			Text="MauiXamlHotReload is set to 'SourceGen'. Source generator-based XAML Hot Reload is experimental and not yet fully implemented. Use at your own risk."
-			Condition="'$(_MauiXamlHotReloadUpper)' == 'SOURCEGEN'" />
 
 		<Warning
 			Code="MAUI1003"
@@ -382,6 +385,10 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsWindowsCollectionView2HandlerEnabled"
                                       Condition="'$(UseWindowsCollectionView2Handler)' != ''"
                                       Value="$(UseWindowsCollectionView2Handler)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled"
+                                      Condition="'$(EnableMauiIncrementalHotReload)' != ''"
+                                      Value="$(EnableMauiIncrementalHotReload)"
                                       Trim="true" />
     </ItemGroup>
   </Target>
