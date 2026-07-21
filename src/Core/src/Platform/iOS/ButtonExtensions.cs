@@ -61,15 +61,19 @@ namespace Microsoft.Maui.Platform
 		static void UpdateAttributedTitleColor(UIButton platformButton, UIKit.UIColor? color)
 		{
 			var attributedTitle = platformButton.GetAttributedTitle(UIControlState.Normal);
-			if (attributedTitle == null || attributedTitle.Length == 0)
+			if (attributedTitle is null || attributedTitle.Length == 0)
 				return;
 
 			var mutable = new NSMutableAttributedString(attributedTitle);
 
 			if (color is null)
+			{
 				mutable.RemoveAttribute(UIStringAttributeKey.ForegroundColor, new NSRange(0, mutable.Length));
+			}
 			else
+			{
 				mutable.AddAttribute(UIStringAttributeKey.ForegroundColor, color, new NSRange(0, mutable.Length));
+			}
 
 			platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
 		}
