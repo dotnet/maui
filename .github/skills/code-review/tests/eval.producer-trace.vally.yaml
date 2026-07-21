@@ -100,5 +100,7 @@ scoring:
   # All three signals are load-bearing. With an unweighted mean and threshold
   # 0.85, missing the structural verdict or either required source read caps
   # the maximum possible score at 2/3, so no holistic judge score can mask it.
-  # A passing run also needs judge >= 0.55: (1 + 1 + 0.55) / 3 = 0.85.
+  # Across runs, the suite also needs a judge average >= 0.55:
+  # (1 + 1 + 0.55) / 3 = 0.85. The judge's own 0.6 threshold controls its
+  # per-trial pass label; Vally computes the suite gate from aggregate scores.
   threshold: 0.85

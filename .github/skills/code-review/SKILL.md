@@ -81,6 +81,13 @@ When changed code classifies external tool output with a regex or string literal
 3. Construct an ordinary negative case that must not trip the classifier, then trace it through every downstream guard, cap, veto, or early return.
 4. If the ordinary case reaches the restrictive path, report a correctness finding and do not return `LGTM` unless the over-restriction is explicitly intended and documented. Fail-closed direction does not make the behavior correct.
 
+Before the verdict, include an **External Output Contract** table with these columns:
+
+| Consumer token/pattern | Producer location | Producer emission condition | Consumer assumption | Ordinary negative case | Downstream effect |
+|---|---|---|---|---|---|
+
+A row that only confirms matching text, without comparing the two conditions, is incomplete analysis.
+
 These are the direct-execution form of the always-active Logic/Correctness and Regression Prevention CHECKs in `.github/agents/maui-expert-reviewer.md`. If the expert agent is unavailable in the current environment, apply these probes yourself rather than skipping them.
 
 ### Step 2: Delegate to Expert Reviewer
