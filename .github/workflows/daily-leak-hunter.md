@@ -168,6 +168,12 @@ Fetch this scanner's own open `[leak-scan]` issues (they are filed with the `age
 label), then fetch merged generated fixes and extract the **rooting API** each artifact covers:
 
 ```bash
+# Each bash call is a fresh subshell and the gh-aw runtime pre-creates only
+# /tmp/gh-aw and /tmp/gh-aw/safeoutputs — NOT /tmp/gh-aw/agent. Create it before
+# the first redirect below, otherwise that redirect fails and the run aborts
+# before any de-dup logic runs (the /tmp filesystem persists across the later
+# subshells, so one mkdir here covers every /tmp/gh-aw/agent write in this job).
+mkdir -p /tmp/gh-aw/agent
 if ! gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
   --state open --label agentic-workflows --limit 200 --json number,title,body \
   > /tmp/gh-aw/agent/my-open-leakscan.json; then
