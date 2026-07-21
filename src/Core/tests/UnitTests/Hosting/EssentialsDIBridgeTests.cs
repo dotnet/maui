@@ -640,7 +640,9 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				Task.Factory.StartNew(
 					() =>
 					{
-						start.SignalAndWait();
+						Assert.True(
+							start.SignalAndWait(TimeSpan.FromSeconds(5)),
+							"Timed out waiting for both build tasks to start.");
 						return builder.Build();
 					},
 					CancellationToken.None,
