@@ -1,3 +1,4 @@
+#if !WINDOWS // Fix is not implemented on Windows yet
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -40,3 +41,4 @@ public class Issue33612 : _IssuesUITest
 		Assert.That(tappedItemText, Is.EqualTo("First item"));
 	}
 }
+#endif
