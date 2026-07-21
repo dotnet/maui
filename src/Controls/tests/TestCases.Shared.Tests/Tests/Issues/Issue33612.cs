@@ -1,4 +1,4 @@
-#if !WINDOWS // Fix is not implemented on Windows yet
+#if !WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
