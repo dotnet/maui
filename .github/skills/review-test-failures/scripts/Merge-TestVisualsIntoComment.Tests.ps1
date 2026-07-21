@@ -71,6 +71,7 @@ BeforeAll {
             [object[]]$Failures = @(),
             [string[]]$ChangedFiles = @(),
             [int]$OmittedCount = 0,
+            [int]$PreparationFailureCount = 0,
             [bool]$Published = $true,
             [string]$Commit = ('a' * 40),
             [int]$PrNumber = 123
@@ -89,6 +90,7 @@ BeforeAll {
                 published = $Published
                 commit = $Commit
                 omittedCount = $OmittedCount
+                preparationFailureCount = $PreparationFailureCount
                 comparisons = $Comparisons
             }
         }
@@ -305,6 +307,23 @@ Investigate.
 
         $merged | Should -Not -Match 'evil\.example'
         $merged | Should -Match '1 additional comparison\(s\) were omitted'
+    }
+
+    It 'surfaces preparation failures alongside published comparisons in a mixed run' {
+        $comparison = New-VisualTestComparison
+        $context = New-VisualTestContext -Comparisons @($comparison) -PreparationFailureCount 2
+
+        $merged = Merge-VisualsIntoBody `
+            -Body '<details><!-- GH_AW_TRUSTED_VISUALS --></details>' `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 60000
+
+        $merged | Should -Match 'test-actual\.png'
+        $merged | Should -Match '2 visual comparison\(s\) could not be prepared from CI artifacts and are not shown\.'
     }
 
     It 'is idempotent within the pre-post payload' {

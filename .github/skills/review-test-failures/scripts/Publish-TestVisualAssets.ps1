@@ -478,13 +478,17 @@ function Publish-GitAssets {
 function Get-VisualEvidenceDedupKey {
     param([object]$Evidence)
 
+    # Key on stable *logical* identity only: platform + snapshot + resolved
+    # runtime environment (leg). Build/run/result identifiers are intentionally
+    # excluded so that retry attempts of the same logical snapshot failure
+    # collapse to a single panel instead of consuming the bounded comparison
+    # budget with duplicate retry panels. The caller sorts newest-first, so the
+    # retained entry is the latest attempt; genuinely different environments or
+    # platforms still produce distinct keys.
     $parts = @(
         [string]$Evidence.platform,
         [string]$Evidence.snapshotFileName,
-        [string]$Evidence.environmentName,
-        [string]$Evidence.buildId,
-        [string]$Evidence.runId,
-        [string]$Evidence.resultId
+        [string]$Evidence.environmentName
     )
     return ($parts -join '|').ToLowerInvariant()
 }
@@ -539,6 +543,7 @@ $omittedCount = [Math]::Max(0, $allUnique.Count - $selectedEvidence.Count) + $de
 $assets = New-Object System.Collections.Generic.List[object]
 $prepared = New-Object System.Collections.Generic.List[object]
 $errors = New-Object System.Collections.Generic.List[string]
+$preparationFailureCount = 0
 $totalBytes = 0L
 $index = 0
 
@@ -579,12 +584,24 @@ foreach ($evidence in $selectedEvidence) {
             $diff = $evidence.diff
             if (Test-AzDoAttachmentUrl -Url ([string]$diff.url) -RunId $runId -ResultId $resultId -AttachmentId ([int]$diff.id)) {
                 if (-not $diff.size -or [long]$diff.size -le $MaxFileBytes) {
-                    $diffPath = Join-Path $DownloadDirectory "$assetPrefix-diff.png"
-                    Invoke-DownloadFile -Url ([string]$diff.url) -Path $diffPath -MaximumBytes $MaxFileBytes
-                    if (Test-PngFile -Path $diffPath -MaximumBytes $MaxFileBytes) {
-                        $itemAssets.Add([ordered]@{ kind = "diff"; localPath = $diffPath; assetPath = "$assetPrefix-diff.png"; size = (Get-Item -LiteralPath $diffPath).Length })
+                    $diffCandidatePath = Join-Path $DownloadDirectory "$assetPrefix-diff.png"
+                    try {
+                        Invoke-DownloadFile -Url ([string]$diff.url) -Path $diffCandidatePath -MaximumBytes $MaxFileBytes
+                        if (Test-PngFile -Path $diffCandidatePath -MaximumBytes $MaxFileBytes) {
+                            $diffPath = $diffCandidatePath
+                            $itemAssets.Add([ordered]@{ kind = "diff"; localPath = $diffPath; assetPath = "$assetPrefix-diff.png"; size = (Get-Item -LiteralPath $diffPath).Length })
+                        }
+                        else {
+                            Remove-Item -LiteralPath $diffCandidatePath -Force -ErrorAction SilentlyContinue
+                        }
                     }
-                    else {
+                    catch {
+                        # The diff is optional and the renderer supports a null diff, so a
+                        # diff download/validation failure must not bubble to the outer
+                        # per-comparison catch and discard the already-validated actual
+                        # (and any baseline). Isolate it like the baseline candidate
+                        # downloads below and keep publishing the remaining panel.
+                        Remove-Item -LiteralPath $diffCandidatePath -Force -ErrorAction SilentlyContinue
                         $diffPath = $null
                     }
                 }
@@ -679,6 +696,7 @@ foreach ($evidence in $selectedEvidence) {
         })
     }
     catch {
+        $preparationFailureCount++
         $errors.Add("$snapshotFileName (build $buildId, run $runId, result $resultId): $($_.Exception.Message)")
     }
 }
@@ -690,6 +708,7 @@ if ($assets.Count -eq 0 -or $prepared.Count -eq 0) {
     }
     $context | Add-Member -NotePropertyName visualAssets -NotePropertyValue ([ordered]@{
         published = $false
+        preparationFailureCount = $preparationFailureCount
         errors = $errors.ToArray()
     }) -Force
     Save-Context -Context $context -Path $ContextJsonPath
@@ -731,6 +750,7 @@ try {
         commit = $assetCommit
         comparisonCount = $published.Count
         omittedCount = $omittedCount
+        preparationFailureCount = $preparationFailureCount
         comparisons = $published.ToArray()
         errors = $errors.ToArray()
     }) -Force

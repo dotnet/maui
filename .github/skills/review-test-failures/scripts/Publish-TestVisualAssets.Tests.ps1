@@ -107,7 +107,7 @@ Describe 'Snapshot baseline candidates' {
 }
 
 Describe 'Visual evidence deduplication' {
-    It 'keeps same snapshot failures distinct across runtime environments and result identities' {
+    It 'keeps same snapshot failures distinct across runtime environments' {
         $ios26 = [pscustomobject]@{
             platform = 'ios'
             snapshotFileName = 'Controls.Sample.png'
@@ -127,5 +127,43 @@ Describe 'Visual evidence deduplication' {
 
         Get-VisualEvidenceDedupKey -Evidence $ios26 |
             Should -Not -Be (Get-VisualEvidenceDedupKey -Evidence $ios16)
+    }
+
+    It 'collapses retry attempts of the same snapshot in the same environment to one key' {
+        $firstAttempt = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = 'ios-26'
+            buildId = 100
+            runId = 200
+            resultId = 300
+        }
+        $retryAttempt = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = 'ios-26'
+            buildId = 101
+            runId = 205
+            resultId = 999
+        }
+
+        Get-VisualEvidenceDedupKey -Evidence $firstAttempt |
+            Should -Be (Get-VisualEvidenceDedupKey -Evidence $retryAttempt)
+    }
+
+    It 'keeps same snapshot failures distinct across platforms' {
+        $ios = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = 'ios-26'
+        }
+        $android = [pscustomobject]@{
+            platform = 'android'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = 'ios-26'
+        }
+
+        Get-VisualEvidenceDedupKey -Evidence $ios |
+            Should -Not -Be (Get-VisualEvidenceDedupKey -Evidence $android)
     }
 }

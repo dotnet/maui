@@ -376,7 +376,8 @@ $descriptionLine
 function New-InlineVisualSection {
     param(
         [string[]]$Panels,
-        [int]$OmittedCount
+        [int]$OmittedCount,
+        [int]$PreparationFailureCount = 0
     )
 
     $builder = [System.Text.StringBuilder]::new()
@@ -397,6 +398,9 @@ function New-InlineVisualSection {
     }
     if ($OmittedCount -gt 0) {
         [void]$builder.AppendLine("Visual output was bounded for comment safety; $OmittedCount additional comparison(s) were omitted.")
+    }
+    if ($PreparationFailureCount -gt 0) {
+        [void]$builder.AppendLine("$PreparationFailureCount visual comparison(s) could not be prepared from CI artifacts and are not shown.")
     }
 
     [void]$builder.AppendLine((Get-InlineVisualEndMarker))
@@ -517,11 +521,17 @@ function Merge-VisualsIntoBody {
     else {
         0
     }
+    $preparationFailureCount = if ($Context.visualAssets.preparationFailureCount) {
+        [Math]::Max(0, [int]$Context.visualAssets.preparationFailureCount)
+    }
+    else {
+        0
+    }
     $selectedPanels = New-Object System.Collections.Generic.List[string]
     foreach ($panel in $validPanels) {
         $trialPanels = @($selectedPanels.ToArray()) + @($panel)
         $trialOmitted = $publisherOmitted + $invalidCount + ($validPanels.Count - $trialPanels.Count)
-        $trialSection = New-InlineVisualSection -Panels $trialPanels -OmittedCount $trialOmitted
+        $trialSection = New-InlineVisualSection -Panels $trialPanels -OmittedCount $trialOmitted -PreparationFailureCount $preparationFailureCount
         $trialBody = Insert-InlineVisualSection -Body $baseBody -Section $trialSection
         if (Test-CommentWithinLimits `
                 -Body $trialBody `
@@ -533,7 +543,7 @@ function Merge-VisualsIntoBody {
     }
 
     $omittedCount = $publisherOmitted + $invalidCount + ($validPanels.Count - $selectedPanels.Count)
-    $section = New-InlineVisualSection -Panels $selectedPanels.ToArray() -OmittedCount $omittedCount
+    $section = New-InlineVisualSection -Panels $selectedPanels.ToArray() -OmittedCount $omittedCount -PreparationFailureCount $preparationFailureCount
     $mergedBody = Insert-InlineVisualSection -Body $baseBody -Section $section
     if (-not (Test-CommentWithinLimits `
             -Body $mergedBody `
