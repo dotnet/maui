@@ -75,7 +75,7 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 
 ### Step 2: Delegate to Expert Reviewer
 
-Delegate to the `maui-expert-reviewer` agent (`.github/agents/maui-expert-reviewer.md`) which runs per-dimension sub-agent evaluation. The agent's sole output is `inline-findings.json` — file:line comments in GitHub Review API format.
+Delegate to the `maui-expert-reviewer` agent (`.github/agents/maui-expert-reviewer.md`) with model `claude-opus-4.8`, which runs per-dimension sub-agent evaluation. Keeping the expert reviewer on a different model family from the GPT-5.6 Sol orchestrator reduces correlated review misses. The agent's sole output is `inline-findings.json` — file:line comments in GitHub Review API format.
 
 **After the agent finishes:**
 

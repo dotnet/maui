@@ -448,6 +448,8 @@ jobs:
   # ==========================================================================
   # LLM EVALUATION (matrix)
   # Runs `vally eval` for each changed skill's capability specs (eval*.vally.yaml).
+  # Executor and judge models are owned by each spec so evaluations match the
+  # skill's production workload while using a cross-vendor judge.
   # ==========================================================================
   evaluate:
     name: evaluate (${{ matrix.entry.name }})
@@ -680,8 +682,6 @@ jobs:
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
             --junit \
-            --model claude-opus-4.6 \
-            --judge-model claude-opus-4.6 \
             "${RUNS_ARGS[@]}" \
             --workers 4 \
             --verbose
@@ -772,8 +772,6 @@ jobs:
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
             --junit \
-            --model claude-opus-4.6 \
-            --judge-model claude-opus-4.6 \
             "${RUNS_ARGS[@]}" \
             --workers 4 \
             --verbose
@@ -918,8 +916,6 @@ jobs:
             --skill-dir .github/skills \
             --output-dir hermeticity-results/out \
             --junit \
-            --model claude-opus-4.6 \
-            --judge-model claude-opus-4.6 \
             --runs 1 \
             --workers 1 \
             --verbose

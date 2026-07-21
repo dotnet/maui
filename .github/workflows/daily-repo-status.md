@@ -29,6 +29,7 @@ permissions:
   issues: read
   pull-requests: read
 
+model: gpt-5.6-terra
 engine:
   id: copilot
   env:

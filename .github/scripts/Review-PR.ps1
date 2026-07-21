@@ -1150,8 +1150,8 @@ function Invoke-CopilotStep {
     # --secret-env-vars: defense-in-depth — strips named tokens from copilot's
     # shell/MCP subprocess env even if they somehow appear (e.g., via variable groups).
     # Model is overridable via $env:COPILOT_REVIEW_MODEL so contributors without internal-model access
-    # can run this script (e.g., with 'claude-opus-4.6' or 'claude-sonnet-4.6').
-    $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.5' }
+    # can run this script (e.g., with 'claude-opus-4.8' or 'claude-sonnet-5').
+    $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.6-sol' }
     if ([string]::IsNullOrWhiteSpace($modelName)) {
         $modelName = $copilotModel
     }

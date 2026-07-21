@@ -43,7 +43,7 @@ permissions:
   contents: read
   issues: read
 
-model: claude-opus-4.8
+model: claude-sonnet-5
 engine:
   id: copilot
   env:
