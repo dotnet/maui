@@ -22,13 +22,17 @@
 #       never to fetch a PR from the API.
 #
 # Brittleness reduction:
-#   Each scenario has exactly ONE structural-floor regex
-#   ('(❌|⚠️|NEEDS_CHANGES|NEEDS_DISCUSSION)' — silent LGTM is the failure
-#   mode under test). All other semantics — confidence calibration, file/
-#   symbol identification, mechanism description, blast-radius / failure-
-#   mode reasoning — are scored by an LLM-judge `prompt` grader against
-#   the rubric. No regex AND-gate of "confidence value + diff symbol +
-#   regression vocabulary + finding marker + section heading."
+#   Each scenario overlays the PR's current SKILL.md into the frozen worktree
+#   and has a deterministic manipulation check proving the agent read that
+#   exact policy. This avoids relying on live-PR skill routing, which is not
+#   applicable to a frozen commit fixture. A narrow structural floor then
+#   tests the failure mode each scenario is designed to catch. The lifecycle-
+#   latch scenario checks its final verdict because surfacing a risk and then
+#   delivering LGTM is its exact regression. All other semantics — confidence
+#   calibration, file/symbol identification, mechanism description, blast-
+#   radius / failure-mode reasoning — are scored by an LLM-judge `prompt`
+#   grader against the rubric. No regex AND-gate of "confidence value + diff
+#   symbol + regression vocabulary + finding marker + section heading."
 #
 # Run policy:
 #   runs: 5 on regression scenarios (these are high-variance — agent may
@@ -92,8 +96,10 @@ stimuli:
       regression_issue: "35280"
       regression_file: src/Core/src/Graphics/MauiDrawable.Android.cs
     prompt: >-
-      You are reviewing a single commit pre-merge. The repository is
-      already checked out as a worktree pinned to the commit under review.
+      You are reviewing a single commit pre-merge. First use the view tool to
+      read `review-input/code-review-SKILL.md`; apply that policy throughout
+      the review. The repository is already checked out as a worktree pinned
+      to the commit under review.
 
       Hypothesis to verify or refute: the new gradient code paths in this
       commit preserve per-stop alpha when a developer uses a Transparent
@@ -113,7 +119,21 @@ stimuli:
         type: worktree
         ref: 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd
         source: .
+      files:
+        - src: ../SKILL.md
+          dest: review-input/code-review-SKILL.md
     graders:
+      # Manipulation check: require a read of the exact SKILL.md overlaid from
+      # this PR, and reject network access that could reveal the known result.
+      - type: tool-calls
+        config:
+          required:
+            - name: '^view$'
+              path: 'review-input/code-review-SKILL\.md$'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       # ── Structural floor (only one hard regex per scenario) ──────────
       # Silent LGTM is the failure mode under test. Any of these tokens
       # proves the reviewer at least flagged SOMETHING; the rubric then
@@ -164,8 +184,6 @@ stimuli:
         and consistent with this calibration.
     constraints:
       max_duration: 10m
-      expect_skills:
-        - code-review
 
   # ───────────────────────────────────────────────────────────────────────
   # Scenario 2 — native iOS collection enumerated without null check
@@ -195,8 +213,10 @@ stimuli:
       regression_issue: "34910"
       regression_file: src/Core/maps/src/Platform/iOS/MauiMKMapView.cs
     prompt: >-
-      You are reviewing a single commit pre-merge. The repository is
-      already checked out as a worktree pinned to the commit under review.
+      You are reviewing a single commit pre-merge. First use the view tool to
+      read `review-input/code-review-SKILL.md`; apply that policy throughout
+      the review. The repository is already checked out as a worktree pinned
+      to the commit under review.
 
       Hypothesis to verify or refute: tapping the Map control will not
       crash the app on iOS or Mac Catalyst after this commit lands when
@@ -215,7 +235,21 @@ stimuli:
         type: worktree
         ref: dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9
         source: .
+      files:
+        - src: ../SKILL.md
+          dest: review-input/code-review-SKILL.md
     graders:
+      # Manipulation check: require a read of the exact SKILL.md overlaid from
+      # this PR, and reject network access that could reveal the known result.
+      - type: tool-calls
+        config:
+          required:
+            - name: '^view$'
+              path: 'review-input/code-review-SKILL\.md$'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       # ── Structural floor (only one hard regex per scenario) ──────────
       - type: output-matches
         config:
@@ -258,24 +292,173 @@ stimuli:
         present and consistent with the Step 6 Blast Radius table.
     constraints:
       max_duration: 10m
-      expect_skills:
-        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 3 — page lifecycle latch suppresses repeat OnNavigatedTo
+  # (PR #31931 → issue #35756)
+  #
+  # Regression PR:  dotnet/maui#31931
+  #   "[Android] Page: Fix OnNavigatedTo called twice when NavigationPage is
+  #    FlyoutPage Detail"
+  #   original inflight merge: af540589fc5a3b053cd8c08334d0ca5a0125451b
+  #   flowed commit on main:    8ee24cfe4c38038cec62e09dacc182815310c97d
+  #   parent on main:           b8332a3a3c9d25b04bd47193b5429340416c699e
+  #   The two commits have byte-for-byte identical patches. Pin the flowed
+  #   commit because the original inflight merge is no longer reachable from
+  #   main and GitHub may reject direct-SHA fetches for that orphaned object.
+  # Regression issue: dotnet/maui#35756
+  #   "Changing TabbedPage.CurrentPage from modal page no longer fires
+  #    OnNavigatedTo on PopModalAsync"
+  #   labels: i/regression · s/verified · regressed-in-10.0.70 ·
+  #           area-controls-tabbedpage · partner/syncfusion
+  #
+  # Smoking gun (verified in the live diff at
+  # src/Controls/src/Core/Page/Page.cs):
+  #   The PR prepended an early-return guard to SendNavigatedTo:
+  #       if (HasNavigatedTo) { return; }
+  #   to stop OnNavigatedTo firing twice. But that return short-circuits the
+  #   WHOLE method, including the trailing child propagation:
+  #       (this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
+  #   HasNavigatedTo is cleared only in SendNavigatedFrom. A container page
+  #   (TabbedPage) whose CurrentPage changes while it stays navigated-to — a
+  #   modal is shown over it, the tab is switched, then the modal is popped —
+  #   keeps its latch set, so the guard suppresses re-dispatch to the now-
+  #   current tab. The asymmetry between "this page already fired its own
+  #   event" and "this page's subtree is fully navigated" IS the regression.
+  # User-visible failure: changing TabbedPage.CurrentPage from a modal and
+  #   then calling PopModalAsync no longer fires OnNavigatedTo on the newly
+  #   selected tab (Android + iOS, 10.0.70).
+  # ───────────────────────────────────────────────────────────────────────
+  - name: navigatedto-latch-suppresses-reentry
+    tags:
+      regression_pr: "31931"
+      regression_issue: "35756"
+      regression_file: src/Controls/src/Core/Page/Page.cs
+    prompt: >-
+      You are reviewing a single commit pre-merge. First use the view tool to
+      read `review-input/code-review-SKILL.md`; apply that policy throughout
+      the review. The repository is already checked out as a worktree pinned
+      to the commit under review.
+
+      Hypothesis to verify or refute: after this commit, a page still
+      receives its OnNavigatedTo lifecycle callback when it is navigated to
+      again without having first been fully navigated away from — for
+      example a container page (such as a tabbed or flyout page) whose
+      visible child changes while another page is displayed on top of it,
+      then becomes the foreground page again. The newly-current child should
+      still receive OnNavigatedTo.
+
+      Do not fetch any pull request, issue, or external page — use ONLY
+      the local worktree and `git diff HEAD^ HEAD` to inspect what
+      changed. Read full source files for changed paths, not just diff
+      hunks. Then deliver a code review using the skill's standard
+      output format (Independent Assessment → Findings → Failure-Mode
+      Probing → Verdict + Confidence). Mark each finding with a severity
+      emoji (❌ Error, ⚠️ Warning, or 💡 Info). End with a `### Verdict:`
+      section and a `**Confidence:**` rating. After the review, make the
+      final non-empty line exactly one of `FINAL_VERDICT: NEEDS_CHANGES`,
+      `FINAL_VERDICT: NEEDS_DISCUSSION`, or `FINAL_VERDICT: LGTM`.
+    environment:
+      git:
+        type: worktree
+        ref: 8ee24cfe4c38038cec62e09dacc182815310c97d
+        source: .
+      files:
+        - src: ../SKILL.md
+          dest: review-input/code-review-SKILL.md
+    graders:
+      # Manipulation check: require a read of the exact SKILL.md overlaid from
+      # this PR, and reject network access that could reveal the known result.
+      - type: tool-calls
+        config:
+          required:
+            - name: '^view$'
+              path: 'review-input/code-review-SKILL\.md$'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
+      # The failure under test is a reviewer that identifies the risk but
+      # still delivers LGTM. The standard verdict section allows explanatory
+      # prose, so the eval prompt adds a terminal, machine-readable marker
+      # instead of inferring the conclusion from free-form prose.
+      - type: output-matches
+        config:
+          pattern: '(^|\n)FINAL_VERDICT: (NEEDS_CHANGES|NEEDS_DISCUSSION)\s*$'
+      - type: prompt
+        name: regression-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent inspects src/Controls/src/Core/Page/Page.cs in the
+        worktree's HEAD commit and identifies the new early-return guard
+        added at the top of SendNavigatedTo — `if (HasNavigatedTo) { return; }`
+        — by name, line reference, or near-equivalent quote of the code.
+      - >-
+        The agent recognizes that this guard short-circuits the ENTIRE
+        SendNavigatedTo body — not only the duplicate NavigatedTo /
+        OnNavigatedTo invocation but also the trailing propagation to the
+        current child, `(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args)`
+        — and that HasNavigatedTo is cleared only in SendNavigatedFrom.
+        Equivalent phrasings — "the latch is one-way until the page
+        navigates away", "the early return also skips forwarding NavigatedTo
+        to the current child", "a container that never navigates away stops
+        re-dispatching to its CurrentPage" — all count as correct
+        identification of the mechanism.
+      - >-
+        The agent connects this to a concrete failure: a container page
+        (TabbedPage / FlyoutPage) whose CurrentPage changes while it remains
+        navigated-to — e.g. a modal is dismissed over it — will not deliver
+        OnNavigatedTo to the newly-current child because the container's
+        latch is still set; more generally, any legitimate re-navigation to
+        an already-navigated page is suppressed. The agent flags this as a
+        regression risk (❌ Error or ⚠️ Warning). The verdict is
+        NEEDS_CHANGES or NEEDS_DISCUSSION, not LGTM.
+      - >-
+        The final non-empty line is exactly `FINAL_VERDICT: NEEDS_CHANGES`
+        or `FINAL_VERDICT: NEEDS_DISCUSSION`. This machine-readable marker
+        records the review conclusion without constraining the prose inside
+        the standard Verdict section.
+      - >-
+        The Failure-Mode Probing section actually traces what the second
+        SendNavigatedTo call does once HasNavigatedTo is already true,
+        per SKILL.md Step 6 ("What happens during handler disconnect/
+        reconnect (navigation, Shell tab switch)?"). The reviewer does NOT
+        softball with a rhetorical question — they follow the early return
+        through to the skipped child-propagation side effect.
+      - >-
+        The Blast Radius Assessment recognizes this as shared, cross-platform
+        navigation-lifecycle dispatch that runs for ALL pages — not opt-in
+        feature code. It distinguishes certainty in the identified failure
+        mechanism from confidence that the change is safe to merge. The
+        structured `**Confidence:**` field is explicitly **low**, because
+        the change modifies shared lifecycle infrastructure affecting every
+        page and the failure mode remains unresolved.
+    constraints:
+      max_duration: 10m
 
 scoring:
   # Vally 0.10 supports scoring.weights, but this suite deliberately omits
   # them so a trial's score is the unweighted mean of its graders' [0,1]
-  # scores; the stimulus
-  # score is the mean across runs; the skill passes when that mean >=
-  # threshold. The `prompt` grader contributes ONE holistic score (its rubric
-  # criteria are aggregated by the judge into a single overall_score, then
-  # normalized) — rubric criteria are not individually AND-gated, which is
-  # exactly the de-brittling we want.
+  # scores; the stimulus score is the mean across runs. The deterministic
+  # tool-calls grader is the manipulation check: a trial that never reads the
+  # overlaid current SKILL.md has not applied the treatment and fails
+  # regardless of how plausible its prose looks. The `prompt` grader
+  # contributes ONE holistic score (its rubric criteria are aggregated by the
+  # judge into a single overall_score, then normalized) — rubric criteria are
+  # not individually AND-gated, which is exactly the de-brittling we want.
   #
-  # We keep exactly two graders per stimulus (one structural floor +
-  # one LLM judge) so the judge carries ~50% of every score. With
-  # threshold 0.6 and a scale_1_5 judge (normalized = (raw-1)/4):
-  #   - correct review:  (floor 1.0 + judge ~0.75) / 2 = ~0.875  -> PASS
-  #   - silent LGTM:     (floor 0.0 + judge ~0.25) / 2 = ~0.125  -> FAIL
-  # which is the falsifiability property (acceptance criterion #4) the
-  # corpus exists to guarantee.
+  # Each stimulus uses the manipulation check, one structural floor, and one
+  # LLM judge. The lifecycle latch floor requires the terminal non-LGTM
+  # marker; the judge verifies the regression conclusion without constraining
+  # the prose in the standard Verdict section. With threshold 0.6 and a
+  # scale_1_5 judge (normalized = (raw-1)/4), that stimulus scores roughly:
+  #   - correct review: (policy-read 1.0 + floor 1.0 + judge ~0.75) / 3
+  #                     = ~0.917 -> PASS
+  #   - final LGTM:     (policy-read 1.0 + floor 0.0 + judge ~0.25) / 3
+  #                     = ~0.417 -> FAIL
+  # This preserves semantic grading while making the tested verdict
+  # inconsistency falsifiable and proving the skill was actually applied.
   threshold: 0.6

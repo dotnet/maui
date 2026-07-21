@@ -29,6 +29,7 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 3. **Empirical grounding** — Reference specific code, line numbers, and call sites. No vague concerns
 4. **Severity calibration** — Distinguish errors from warnings from suggestions. Not everything is critical
 5. **Failure-mode probing** — Challenge your own conclusions with real failure scenarios, not softballs
+6. **Propagation-aware guards** — For an early return, idempotency flag, or latch above downstream side effects, trace every set/clear path and a repeat call after recipients or state change. If that trace exposes concrete misbehavior, do not dismiss it as rare or rationalize it into `LGTM`: use `NEEDS_DISCUSSION` while the failure remains unresolved, or `NEEDS_CHANGES` when the exact state transition verifies a ❌ Error.
 
 ## Inputs
 
@@ -182,6 +183,7 @@ Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`) **
 - What happens with null `Parent`, `Handler`, `BindingContext`, or `PlatformView`?
 - Can multiple subscriptions accumulate across handler lifecycle (missing unsubscribe)?
 - Does static state survive page disposal and get stale?
+- When a change adds an **early-return guard, idempotency flag, or one-way latch** *above* propagation or other side effects, distinguish the local work the guard suppresses from every downstream effect it also bypasses. List every path that **sets** the latch and every path that **clears** it, then trace a subsequent call while the latch is set. Check whether the input, recipient, or downstream state can change while the latch remains set: completing local work once does not prove every recipient has observed the current state. Don't accept "all the scenarios are handled" without tracing that state transition.
 
 #### Confidence Calibration
 
@@ -198,6 +200,10 @@ Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`) **
 | CI red or pending | Max **low** | Invoke `azdo-build-investigator` skill to classify failures. Per Rule #6, do not post `LGTM` unless failures are confirmed PR-unrelated. |
 | No relevant tests run (UITests skip PR builds) | Max **low** | Note the coverage gap in the CI Status section. |
 | Prior ❌ Error findings unresolved | n/a — overrides cap | Per Rule #5, verdict is **NEEDS_CHANGES** regardless of own assessment. |
+
+**Confidence is confidence in the safety recommendation, not confidence that an individual finding exists.** Apply the most restrictive applicable cap to the required `**Confidence:**` field. A reviewer can be certain that a failure mechanism exists while remaining low-confidence that the change is safe to merge.
+
+**Do not rationalize away a failure mode you surfaced.** If Failure-Mode Probing produces a concrete scenario where the change misbehaves and you cannot *disprove* it by tracing exact state transitions, you may not downgrade it to 💡 Info or post `LGTM`. An un-disproven failure mode is an unresolved risk: it caps the required `**Confidence:**` field at **low** and the verdict at **NEEDS_DISCUSSION**. Escalate to **NEEDS_CHANGES** only when exact state transitions verify a concrete ❌ Error finding; mere plausibility does not establish a defect. High confidence requires the *absence* of un-disproven failure modes — not a narrative explaining why the one you found is probably fine.
 
 #### Deliver Verdict
 
