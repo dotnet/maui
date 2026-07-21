@@ -43,6 +43,13 @@ namespace Microsoft.Maui.Hosting
 #if WINDOWS || TIZEN
 		static readonly List<MapTokenAssignment> s_mapTokenAssignments = new();
 #endif
+#if WINDOWS
+		internal static Func<string?> WindowsMapServiceTokenGetter { get; set; } =
+			static () => global::Windows.Services.Maps.MapService.ServiceToken;
+
+		internal static Action<string?> WindowsMapServiceTokenSetter { get; set; } =
+			static token => global::Windows.Services.Maps.MapService.ServiceToken = token;
+#endif
 
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
@@ -437,7 +444,7 @@ namespace Microsoft.Maui.Hosting
 					mapServiceToken,
 					implementation.MapServiceToken
 #if WINDOWS
-					, global::Windows.Services.Maps.MapService.ServiceToken
+					, WindowsMapServiceTokenGetter()
 #endif
 				);
 
@@ -487,9 +494,9 @@ namespace Microsoft.Maui.Hosting
 				}
 #if WINDOWS
 				if (platformSuccessor is null &&
-					string.Equals(global::Windows.Services.Maps.MapService.ServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+					string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
 				{
-					global::Windows.Services.Maps.MapService.ServiceToken = assignment.PreviousPlatformToken;
+					WindowsMapServiceTokenSetter(assignment.PreviousPlatformToken);
 				}
 #endif
 			}
