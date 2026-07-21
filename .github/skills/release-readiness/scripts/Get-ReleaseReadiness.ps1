@@ -3667,8 +3667,23 @@ function Format-MarkdownReport {
     }
     [void]$sb.AppendLine("<!-- release-readiness-hash: sha=$semanticHash -->")
 
-    $mode = if ($ctx.ContainsKey('mode')) { $ctx['mode'] } else { 'in-flight' }
-    $inherits = ($ctx.ContainsKey('inheritFromPriorSr') -and $ctx['inheritFromPriorSr'])
+    # $mode / $inherits, read defensively for the SAME reason as $mainBranchName
+    # above: under StrictMode `.ContainsKey()` throws on a PSCustomObject and a
+    # bare property access throws on a hashtable missing the key, and renderer
+    # fixtures/callers pass either shape. Probe the shape before reading (key
+    # absent -> the documented 'in-flight' / $false defaults).
+    $mode = 'in-flight'
+    if ($ctx -is [System.Collections.IDictionary]) {
+        if ($ctx.Contains('mode')) { $mode = $ctx['mode'] }
+    } elseif ($ctx -and $ctx.PSObject.Properties['mode']) {
+        $mode = $ctx.mode
+    }
+    $inherits = $false
+    if ($ctx -is [System.Collections.IDictionary]) {
+        $inherits = ($ctx.Contains('inheritFromPriorSr') -and $ctx['inheritFromPriorSr'])
+    } elseif ($ctx -and $ctx.PSObject.Properties['inheritFromPriorSr']) {
+        $inherits = [bool]$ctx.inheritFromPriorSr
+    }
     if ($mode -eq 'candidate') {
         if ($inherits) {
             [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (main + inherited from $($ctx.priorSrBranch))")
