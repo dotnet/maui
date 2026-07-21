@@ -291,7 +291,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Trigger phrases**: "fix issue #XXXXX", "reproduce issue #XXXXX", "root-cause issue #XXXXX", "why does #XXXXX happen", "investigate this bug"
    - **Composes**: `try-fix` (fix attempts), `verify-tests-fail-without-fix` / `run-device-tests` / `run-helix-tests` / `write-ui-tests` / `write-xaml-tests` (verification), `azdo-build-investigator` (CI escalation)
    - **Do NOT use for**: A PR that already exists → use `pr-review`. One isolated fix attempt → use `try-fix`.
-   - **Note**: Separates exact-package behavior reproduction from MAUI source provenance (uses `git merge-base` for MAUI-source branches; version labels ≠ git tags), rejects circular tests, and stops to ask before pushing.
+   - **Note**: Recreates reporter behavior in a repo-owned test or Sandbox (never executes the reporter project), separates source provenance from behavior evidence, rejects circular tests, and stops to ask before pushing.
 
 2. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
    - **Purpose**: Query and triage open issues that need milestones, labels, or investigation
