@@ -126,11 +126,11 @@ namespace Microsoft.Maui.Platform
             if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
             {
 #if MACCATALYST
-				if (TabBar.Hidden || TabBar.Alpha != 1.0f)
-				{
-					TabBar.Alpha = 1.0f;
-					TabBar.Hidden = false;
-				}
+                    if (TabBar.Hidden || TabBar.Alpha != 1.0f)
+                    {
+                        TabBar.Alpha = 1.0f;
+                        TabBar.Hidden = false;
+                    }
 #endif
             }
         }

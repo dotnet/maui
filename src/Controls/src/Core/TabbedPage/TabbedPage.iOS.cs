@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnBarBackgroundChanged(object sender, EventArgs e)
 		{
-			var tabBar = GetTabBar((ITabbedViewHandler)Handler);
+			var tabBar = GetTabBar(Handler as ITabbedViewHandler);
 			tabBar?.UpdateBackground(_currentBarBackground);
 		}
 
