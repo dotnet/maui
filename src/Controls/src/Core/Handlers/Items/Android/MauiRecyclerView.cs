@@ -662,10 +662,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			// If ItemsView is disabled, don't handle touch events.
-			// But only when the ItemsView itself is explicitly disabled, not when it inherits
-			// IsEnabled=false from a parent (e.g. RefreshView.IsEnabled=false propagating down).
-			if (ItemsView?.IsEnabled == false && !ItemsView.IsExplicitlyEnabled)
+			// If ItemsView is disabled, don't handle touch events
+			if (ItemsView?.IsEnabled == false)
 			{
 				return false;
 			}
@@ -677,7 +675,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool DispatchTouchEvent(MotionEvent e)
 		{
-			if (ItemsView?.IsEnabled == false && !ItemsView.IsExplicitlyEnabled)
+			if (ItemsView?.IsEnabled == false)
 			{
 				return base.DispatchTouchEvent(e);
 			}
@@ -692,10 +690,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnInterceptTouchEvent(MotionEvent e)
 		{
-			// If ItemsView is disabled, intercept all touch events to prevent interactions.
-			// But only when the ItemsView itself is explicitly disabled, not when it inherits
-			// IsEnabled=false from a parent (e.g. RefreshView.IsEnabled=false propagating down).
-			if (ItemsView?.IsEnabled == false && !ItemsView.IsExplicitlyEnabled)
+			// If ItemsView is disabled, intercept all touch events to prevent interactions
+			if (ItemsView?.IsEnabled == false)
 			{
 				return true;
 			}
