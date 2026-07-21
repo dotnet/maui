@@ -117,6 +117,13 @@ on:
         steps.exact_command.outputs.should_run == 'true' &&
         steps.check_membership.outputs.is_team_member == 'true' &&
         steps.check_command_position.outputs.command_position_ok == 'true'
+      # Resilience: a transient failure gathering context (AzDO/Helix/network) must
+      # NOT fail the pre-activation job, otherwise the agent job — which is designed
+      # to post a short failure report when the context files are missing (see the
+      # prompt's pre-flight below) — is skipped entirely and the run goes silent.
+      # The whole downstream already tolerates a missing context.json (the artifact
+      # download is continue-on-error, the seal/merge steps exit 0 when it's absent).
+      continue-on-error: true
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
@@ -161,7 +168,12 @@ on:
       with:
         name: review-tests-context-${{ github.run_id }}
         path: CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}
-        if-no-files-found: error
+        # 'warn' (not 'error'): with the gather step now allowed to fail, an empty or
+        # absent context directory must not fail the pre-activation job. Failing here
+        # would skip the agent job and its documented "post a short failure report"
+        # fallback; the missing artifact is instead surfaced as a log warning and the
+        # download step (continue-on-error) + seal/merge no-file guards handle absence.
+        if-no-files-found: warn
         retention-days: 1
   workflow_dispatch:
     inputs:
