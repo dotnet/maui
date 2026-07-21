@@ -20,12 +20,12 @@ public class Issue33034 : _IssuesUITest
 		App.SetOrientationLandscape();
 		//Adding delay to allow for orientation change to complete
 		Thread.Sleep(2000);
-		var initialRect = App.WaitForElement("EdgeLabel").GetRect();
+		var initialRect = App.WaitForElementAndGetRect("EdgeLabel");
 
 		App.TapTab("Second Tab");
 		App.WaitForElement("EdgeLabel");
 		App.TapTab("First Tab");
-		var afterSwitchRect = App.WaitForElement("EdgeLabel").GetRect();
+		var afterSwitchRect = App.WaitForElementAndGetRect("EdgeLabel");
 
 		Assert.That(afterSwitchRect.X, Is.EqualTo(initialRect.X).Within(5));
 		Assert.That(afterSwitchRect.Width, Is.EqualTo(initialRect.Width).Within(5));
