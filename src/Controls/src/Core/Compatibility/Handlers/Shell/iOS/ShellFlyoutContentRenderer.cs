@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIVisualEffectView _blurView;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The background image view is owned by this renderer and released in Dispose.")]
 		UIImageView _bgImage;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The background image result owns the current native image and is disposed when replaced or when this renderer is disposed.")]
+		IDisposable _bgImageResult;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The shell context is retained for the renderer lifetime and released after Shell.PropertyChanged is unsubscribed in Dispose.")]
 		IShellContext _shellContext;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The header container is owned by this renderer and disposed when replaced or in Dispose.")]
@@ -302,8 +304,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (imageSource is null || !shell.IsSet(Shell.FlyoutBackgroundImageProperty))
 			{
 				_bgImage.RemoveFromSuperview();
-				_bgImage.Image?.Dispose();
 				_bgImage.Image = null;
+				_bgImageResult?.Dispose();
+				_bgImageResult = null;
 				return;
 			}
 
@@ -315,7 +318,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			imageSource.LoadImage(mauiContext, result =>
 			{
 				if (_isDisposed)
+				{
+					result?.Dispose();
 					return;
+				}
 
 				var nativeImage = result?.Value;
 				var view = ViewIfLoaded;
@@ -325,11 +331,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_shellContext?.Shell is not Shell currentShell ||
 					!ReferenceEquals(imageSource, currentShell.FlyoutBackgroundImage))
 				{
+					result?.Dispose();
 					return;
 				}
 
 				int previousIndex = GetPreviousIndex(bgImage);
+				var previousResult = _bgImageResult;
+				_bgImageResult = result;
 				bgImage.Image = nativeImage;
+				previousResult?.Dispose();
 				switch (currentShell.FlyoutBackgroundImageAspect)
 				{
 					default:
@@ -446,7 +456,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_footerView?.RemoveFromSuperview();
 				_blurView?.RemoveFromSuperview();
 				_bgImage?.RemoveFromSuperview();
-				_bgImage?.Image?.Dispose();
+				if (_bgImage is not null)
+					_bgImage.Image = null;
+				_bgImageResult?.Dispose();
 				_bgImage?.Dispose();
 				_blurView?.Dispose();
 				_headerView?.Dispose();
@@ -457,6 +469,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				WillDisappear = null;
 			}
 
+			_bgImageResult = null;
 			_bgImage = null;
 			_blurView = null;
 			_headerView = null;

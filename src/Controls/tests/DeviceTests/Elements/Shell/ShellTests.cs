@@ -36,6 +36,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			EnsureHandlerCreated(builder =>
 			{
+#if IOS || MACCATALYST
+				builder.ConfigureImageSources(services =>
+				{
+					services.AddService<IDelayedImageSource, DelayedImageSourceService>();
+				});
+#endif
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					SetupShellHandlers(handlers);

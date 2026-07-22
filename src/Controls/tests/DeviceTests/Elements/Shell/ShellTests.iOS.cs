@@ -5,9 +5,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
@@ -658,6 +660,36 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, secondRenderer.DisposeCount);
 			});
 
+		[Fact(DisplayName = "Stale Shell Flyout Background Image Is Disposed")]
+		public async Task StaleShellFlyoutBackgroundImageIsDisposed()
+		{
+			SetupBuilder();
+			var imageSource = new DelayedImageSource();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ContentPage());
+				shell.FlyoutBackgroundImage = imageSource;
+			});
+			var imageSourceServiceProvider = MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var imageSourceService = imageSourceServiceProvider.GetRequiredImageSourceService<DelayedImageSource>();
+			var delayedImageSourceService = Assert.IsType<DelayedImageSourceService>(imageSourceService);
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async _ =>
+			{
+				try
+				{
+					Assert.True(await Task.Run(() => delayedImageSourceService.Starting.WaitOne(TimeSpan.FromSeconds(5))));
+					shell.FlyoutBackgroundImage = null;
+				}
+				finally
+				{
+					delayedImageSourceService.DoWork.Set();
+				}
+
+				Assert.True(await Task.Run(() => delayedImageSourceService.Disposed.WaitOne(TimeSpan.FromSeconds(5))));
+			});
+		}
+
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		static ShellSectionDelegateReferences CreateShellSectionDelegateReferences()
 		{
@@ -709,6 +741,42 @@ namespace Microsoft.Maui.DeviceTests
 			public void Disconnect() => DisconnectCount++;
 
 			public void Dispose() => DisposeCount++;
+		}
+
+		interface IDelayedImageSource : IImageSource
+		{
+		}
+
+		sealed class DelayedImageSource : ImageSource, IDelayedImageSource
+		{
+		}
+
+		sealed class DelayedImageSourceService : IImageSourceService<IDelayedImageSource>
+		{
+			public AutoResetEvent Starting { get; } = new(false);
+			public AutoResetEvent DoWork { get; } = new(false);
+			public AutoResetEvent Disposed { get; } = new(false);
+
+			public Task<IImageSourceServiceResult<UIImage>> GetImageAsync(
+				IImageSource imageSource,
+				float scale = 1,
+				CancellationToken cancellationToken = default) =>
+				GetImageAsync((IDelayedImageSource)imageSource, scale, cancellationToken);
+
+			public async Task<IImageSourceServiceResult<UIImage>> GetImageAsync(
+				IDelayedImageSource imageSource,
+				float scale = 1,
+				CancellationToken cancellationToken = default)
+			{
+				Starting.Set();
+				await Task.Run(() => DoWork.WaitOne(), cancellationToken);
+				var image = await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(() => new UIImage());
+				return new ImageSourceServiceResult(image, () =>
+				{
+					image.Dispose();
+					Disposed.Set();
+				});
+			}
 		}
 
 		async Task TapToSelect(ContentPage page)
