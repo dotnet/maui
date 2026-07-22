@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		void SetupBuilder(Type shellHandlerType = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -45,6 +45,9 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					SetupShellHandlers(handlers);
+					if (shellHandlerType != null)
+						handlers.AddHandler(typeof(Shell), shellHandlerType);
+
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));

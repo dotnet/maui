@@ -255,12 +255,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		static void DisconnectAndDispose(IShellItemRenderer renderer)
 		{
+			DetachRenderer(renderer);
+			(renderer as IDisconnectable)?.Disconnect();
+			renderer?.Dispose();
+		}
+
+		static void DetachAndDispose(IShellItemRenderer renderer)
+		{
+			DetachRenderer(renderer);
+			renderer?.Dispose();
+		}
+
+		static void DetachRenderer(IShellItemRenderer renderer)
+		{
 			var viewController = renderer?.ViewController;
 			viewController?.ViewIfLoaded?.RemoveFromSuperview();
 			viewController?.RemoveFromParentViewController();
-
-			(renderer as IDisconnectable)?.Disconnect();
-			renderer?.Dispose();
 		}
 
 		protected virtual async void OnCurrentItemChanged()
@@ -417,15 +427,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_activeTransition = transition.Transition(oldRenderer, newRenderer);
 				await _activeTransition;
 
-				if (_disposed)
-				{
-					DisconnectAndDispose(oldRenderer);
-					return;
-				}
+				DetachAndDispose(oldRenderer);
 
-				oldRenderer.ViewController.RemoveFromParentViewController();
-				oldRenderer.ViewController.View.RemoveFromSuperview();
-				oldRenderer.Dispose();
+				if (_disposed)
+					return;
 			}
 			else
 			{

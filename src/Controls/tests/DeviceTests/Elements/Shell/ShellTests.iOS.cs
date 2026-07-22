@@ -624,7 +624,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Disconnect Shell During Current Item Change Does Not Recreate Renderer")]
 		public async Task DisconnectShellDuringCurrentItemChangeDoesNotRecreateRenderer()
 		{
-			SetupBuilder();
+			SetupBuilder(typeof(TestableShellRenderer));
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new ContentPage());
@@ -633,7 +633,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				using var handler = (ShellHandler)shell.ToHandler(MauiContext);
+				using var handler = (TestableShellRenderer)shell.ToHandler(MauiContext);
 				var activeTransitionField = typeof(ShellHandler).GetField("_activeTransition", BindingFlags.Instance | BindingFlags.NonPublic);
 				var currentRendererField = typeof(ShellHandler).GetField("_currentShellItemRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
 				var incomingRendererField = typeof(ShellHandler).GetField("_incomingRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -646,9 +646,11 @@ namespace Microsoft.Maui.DeviceTests
 				activeTransitionField.SetValue(handler, transition.Task);
 
 				shell.CurrentItem = shell.Items[1];
+				var currentItemChanged = handler.CurrentItemChangedTask;
+				Assert.False(currentItemChanged.IsCompleted);
 				((IElementHandler)handler).DisconnectHandler();
 				transition.SetResult(true);
-				await Task.Yield();
+				await currentItemChanged;
 
 				Assert.Null(handler.Element);
 				Assert.Null(shell.Handler);
@@ -772,8 +774,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class TestableShellRenderer : ShellHandler
 		{
+			public Task CurrentItemChangedTask { get; private set; } = Task.CompletedTask;
+
 			public Task SetCurrentShellItemControllerForTestAsync(IShellItemRenderer renderer) =>
 				SetCurrentShellItemControllerAsync(renderer);
+
+			protected override void OnCurrentItemChanged()
+			{
+				CurrentItemChangedTask = OnCurrentItemChangedAsync();
+			}
 		}
 
 		sealed class TrackedShellItemRenderer : IShellItemRenderer, IDisconnectable
