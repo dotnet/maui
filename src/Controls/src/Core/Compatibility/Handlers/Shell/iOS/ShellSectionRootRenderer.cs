@@ -237,6 +237,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_containerArea = null;
 			_pageAnimation = null;
 			_isDisposed = true;
+
+			base.Dispose(disposing);
 		}
 
 		protected virtual void LayoutRenderers()
