@@ -137,8 +137,28 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static void MapBackground(IImageHandler handler, IImage image)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			handler.ToPlatform().UpdateBackground(image);
+			if (handler.PlatformView is null)
+			{
+				return;
+			}
+
+			if (handler is ImageHandler imghandler)
+			{
+				var platformView = imghandler.PlatformView;
+				if (platformView.IsLoaded)
+				{
+					handler.UpdateValue(nameof(IViewHandler.ContainerView));
+					handler.ToPlatform().UpdateBackground(image);
+				}
+				else
+				{
+					// Defer container creation until the view is in the active visual tree.
+					// Manipulating the parent panel while the page is not loaded causes a
+					// COMException. See https://github.com/dotnet/maui/issues/36694
+					platformView.Loaded -= imghandler.OnImageLoaded;
+					platformView.Loaded += imghandler.OnImageLoaded;
+				}
+			}
 		}
 
 		/// <summary>
@@ -187,6 +207,7 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				UpdateValue(nameof(IViewHandler.ContainerView));
+				UpdateValue(nameof(IImage.Background));
 			}
 		}
 
