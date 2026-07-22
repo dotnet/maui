@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -9,6 +10,8 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(GradientStops))]
 	public abstract class GradientBrush : Brush
 	{
+		readonly Dictionary<GradientStop, int> _subscriptionRefCounts = new();
+
 		/// <summary>Initializes a new instance of the <see cref="GradientBrush"/> class.</summary>
 		public GradientBrush()
 		{
@@ -47,59 +50,133 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateGradientStops(GradientStopCollection oldCollection, GradientStopCollection newCollection)
 		{
-			if (oldCollection != null)
-			{
-				oldCollection.CollectionChanged -= OnGradientStopCollectionChanged;
+			DetachCollection(oldCollection);
+			AttachCollection(newCollection);
+			Invalidate();
+		}
 
-				foreach (var oldStop in oldCollection)
-				{
-					oldStop.Parent = null;
-					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
-				}
-			}
-
-			if (newCollection == null)
+		void AttachCollection(GradientStopCollection collection)
+		{
+			if (collection == null)
 				return;
 
-			newCollection.CollectionChanged += OnGradientStopCollectionChanged;
+			collection.CollectionChanged += OnGradientStopCollectionChanged;
 
-			foreach (var newStop in newCollection)
-			{
-				if (newStop is not null)
-				{
-					newStop.Parent = this;
-					newStop.PropertyChanged += OnGradientStopPropertyChanged;
-				}
-			}
+			foreach (var stop in collection)
+				SubscribeToStop(stop);
+		}
+
+		void DetachCollection(GradientStopCollection collection)
+		{
+			if (collection == null)
+				return;
+
+			collection.CollectionChanged -= OnGradientStopCollectionChanged;
+
+			foreach (var stop in collection)
+				UnsubscribeFromStop(stop);
 		}
 
 		void OnGradientStopCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.OldItems != null)
+			switch (e.Action)
 			{
-				foreach (var oldItem in e.OldItems)
-				{
-					if (!(oldItem is GradientStop oldStop))
-						continue;
+				case NotifyCollectionChangedAction.Add:
+					if (e.NewItems != null)
+					{
+						foreach (GradientStop stop in e.NewItems)
+							SubscribeToStop(stop);
+					}
+					break;
 
-					oldStop.Parent = null;
-					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
-				}
-			}
+				case NotifyCollectionChangedAction.Remove:
+					if (e.OldItems != null)
+					{
+						foreach (GradientStop stop in e.OldItems)
+							UnsubscribeFromStop(stop);
+					}
+					break;
 
-			if (e.NewItems != null)
-			{
-				foreach (var newItem in e.NewItems)
-				{
-					if (!(newItem is GradientStop newStop))
-						continue;
+				case NotifyCollectionChangedAction.Replace:
+					if (e.OldItems != null)
+					{
+						foreach (GradientStop stop in e.OldItems)
+							UnsubscribeFromStop(stop);
+					}
+					if (e.NewItems != null)
+					{
+						foreach (GradientStop stop in e.NewItems)
+							SubscribeToStop(stop);
+					}
+					break;
 
-					newStop.Parent = this;
-					newStop.PropertyChanged += OnGradientStopPropertyChanged;
-				}
+				case NotifyCollectionChangedAction.Move:
+					// No subscription changes required.
+					break;
+
+				case NotifyCollectionChangedAction.Reset:
+					ResubscribeCollection(sender as GradientStopCollection);
+					break;
 			}
 
 			Invalidate();
+		}
+
+		void SubscribeToStop(GradientStop stop)
+		{
+			if (stop == null)
+				return;
+
+			if (_subscriptionRefCounts.TryGetValue(stop, out var count))
+			{
+				_subscriptionRefCounts[stop] = count + 1;
+				return;
+			}
+
+			_subscriptionRefCounts[stop] = 1;
+			stop.Parent = this;
+			stop.PropertyChanged += OnGradientStopPropertyChanged;
+		}
+
+		void UnsubscribeFromStop(GradientStop stop)
+		{
+			if (stop == null)
+				return;
+
+			if (!_subscriptionRefCounts.TryGetValue(stop, out var count))
+				return;
+
+			if (count > 1)
+			{
+				_subscriptionRefCounts[stop] = count - 1;
+				return;
+			}
+
+			_subscriptionRefCounts.Remove(stop);
+			stop.Parent = null;
+			stop.PropertyChanged -= OnGradientStopPropertyChanged;
+		}
+
+		void UnsubscribeFromAllStops()
+		{
+			foreach (var stop in _subscriptionRefCounts.Keys)
+			{
+				stop.Parent = null;
+				stop.PropertyChanged -= OnGradientStopPropertyChanged;
+			}
+
+			_subscriptionRefCounts.Clear();
+		}
+
+		void ResubscribeCollection(GradientStopCollection collection)
+		{
+			UnsubscribeFromAllStops();
+
+			if (collection == null)
+				return;
+
+			foreach (var stop in collection)
+				SubscribeToStop(stop);
 		}
 
 		void OnGradientStopPropertyChanged(object sender, PropertyChangedEventArgs e)
