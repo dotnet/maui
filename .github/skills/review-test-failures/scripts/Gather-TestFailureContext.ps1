@@ -154,7 +154,11 @@ function Invoke-JsonUrl {
         [Parameter(Mandatory = $true)]
         [string]$Url,
 
-        [switch]$AllowAuth
+        [switch]$AllowAuth,
+
+        # Bound each request so a single stalled AzDO/Helix response cannot hold the gather
+        # step near the job ceiling (the visual-evidence loop issues ~200 of these calls).
+        [int]$TimeoutSec = 100
     )
 
     $headers = @{
@@ -166,7 +170,7 @@ function Invoke-JsonUrl {
         $headers.Authorization = "Bearer $env:AZDO_TOKEN"
     }
 
-    $response = Invoke-WebRequest -Uri $Url -Headers $headers -UseBasicParsing -ErrorAction Stop
+    $response = Invoke-WebRequest -Uri $Url -Headers $headers -UseBasicParsing -TimeoutSec $TimeoutSec -ErrorAction Stop
     $content = $response.Content
     if ([string]::IsNullOrWhiteSpace($content)) {
         return $null
@@ -300,7 +304,10 @@ function Get-AzDoFailedTestResultsByBuild {
 function Invoke-TextUrl {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$Url
+        [string]$Url,
+
+        # Bound each request so a single stalled response cannot hold the gather step.
+        [int]$TimeoutSec = 100
     )
 
     $headers = @{
@@ -311,7 +318,7 @@ function Invoke-TextUrl {
         $headers.Authorization = "Bearer $env:AZDO_TOKEN"
     }
 
-    $response = Invoke-WebRequest -Uri $Url -Headers $headers -UseBasicParsing -ErrorAction Stop
+    $response = Invoke-WebRequest -Uri $Url -Headers $headers -UseBasicParsing -TimeoutSec $TimeoutSec -ErrorAction Stop
     return [string]$response.Content
 }
 
@@ -2290,6 +2297,20 @@ $allLogFailures = New-Object System.Collections.Generic.List[object]
 $allLogExcerpts = New-Object System.Collections.Generic.List[object]
 $allVisualEvidence = New-Object System.Collections.Generic.List[object]
 $visualEvidenceLimitations = New-Object System.Collections.Generic.List[string]
+# Bound the total wall-clock time spent discovering visual evidence. The per-build inner loop
+# below issues up to ~2 requests for each of the first 100 failed results; across several
+# maui-pr-uitests builds a stalled AzDO response (even with a per-request TimeoutSec) could
+# otherwise hold the pre-activation gather near the job ceiling before continue-on-error can
+# fall back. Once the budget is exhausted we stop issuing new visual-evidence requests.
+$visualEvidenceBudgetSeconds = 600
+$parsedVisualBudget = 0
+if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_VISUAL_BUDGET_SECONDS) -and
+    [int]::TryParse($env:REVIEW_TESTS_VISUAL_BUDGET_SECONDS, [ref]$parsedVisualBudget) -and
+    $parsedVisualBudget -gt 0) {
+    $visualEvidenceBudgetSeconds = $parsedVisualBudget
+}
+$visualEvidenceDeadline = (Get-Date).AddSeconds($visualEvidenceBudgetSeconds)
+$visualEvidenceBudgetTripped = $false
 # Failed Task legs whose log was read but yielded NO extractable failure (test OR build
 # error). This is the backstop for the "never wrong again" guarantee: even if a novel
 # break shape escapes both extractors, a failed-but-unexplained leg forces the verdict
@@ -2877,7 +2898,7 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
-    if ($build.definition.name -eq "maui-pr-uitests") {
+    if ($build.definition.name -eq "maui-pr-uitests" -and (Get-Date) -lt $visualEvidenceDeadline) {
         try {
             $failedResultPage = Get-AzDoFailedTestResultsByBuild `
                 -Org $buildRef.org `
@@ -2894,6 +2915,13 @@ foreach ($buildRef in $buildRefsById.Values) {
             }
 
             foreach ($failedResult in $failedResults) {
+                if ((Get-Date) -ge $visualEvidenceDeadline) {
+                    if (-not $visualEvidenceBudgetTripped) {
+                        $visualEvidenceBudgetTripped = $true
+                        $visualEvidenceLimitations.Add("Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted.")
+                    }
+                    break
+                }
                 $runId = [int](Get-ObjectValue -Object $failedResult -Names @("runId"))
                 $resultId = [int](Get-ObjectValue -Object $failedResult -Names @("id"))
                 if ($runId -le 0 -or $resultId -le 0) {

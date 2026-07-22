@@ -485,10 +485,23 @@ function Get-VisualEvidenceDedupKey {
     # budget with duplicate retry panels. The caller sorts newest-first, so the
     # retained entry is the latest attempt; genuinely different environments or
     # platforms still produce distinct keys.
+    # When the environment is unresolved (the gatherer sets environmentName to null whenever a
+    # build exposes multiple environment hints for one platform), platform + snapshot alone cannot
+    # tell two distinct legs apart: distinct iOS legs failing the same snapshot would both key on
+    # "ios|name.png|" and one would be collapsed as if it were a retry of the other. Fall back to a
+    # per-result discriminator in that case so distinct legs stay separate; a resolved environment
+    # still keeps collapsing genuine retry attempts of the same leg.
+    $environmentName = [string]$Evidence.environmentName
+    $legDiscriminator = if ([string]::IsNullOrWhiteSpace($environmentName)) {
+        "leg:$([string]$Evidence.runId):$([string]$Evidence.resultId)"
+    }
+    else {
+        $environmentName
+    }
     $parts = @(
         [string]$Evidence.platform,
         [string]$Evidence.snapshotFileName,
-        [string]$Evidence.environmentName
+        $legDiscriminator
     )
     return ($parts -join '|').ToLowerInvariant()
 }

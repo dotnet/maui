@@ -284,6 +284,12 @@ steps:
       name: review-tests-context-${{ github.run_id }}
       path: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
   - name: Seal trusted visual merger inputs
+    # Supplementary visual-merge setup. If sealing the trusted inputs fails (e.g. a sudo/install
+    # filesystem error) do NOT fail the whole review — the ordinary analysis comment must still
+    # post. This stays fail-closed: the downstream merge step reads ONLY the root-owned trusted
+    # dir and no-ops when "${trusted}/context.json" is absent, so a failed seal can never merge
+    # untrusted PR-controlled inputs.
+    continue-on-error: true
     env:
       PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
       CONTEXT_PATH: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json

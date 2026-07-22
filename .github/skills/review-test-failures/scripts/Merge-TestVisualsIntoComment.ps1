@@ -462,6 +462,20 @@ function Merge-VisualsIntoBody {
     $baseBody = Remove-InlineVisualSection -Body $Body
     $placeholder = Get-InlineVisualPlaceholder
     if (-not $Context.visualAssets -or -not [bool]$Context.visualAssets.published) {
+        # Publishing produced no panels. If that was because every comparison failed *preparation*
+        # (published=false with a positive preparationFailureCount), simply stripping the placeholder
+        # would make the comment indistinguishable from a run that had no visual evidence at all.
+        # Render a failure-only section so the count is still surfaced to the reader.
+        $prepFailures = if ($Context.visualAssets -and $Context.visualAssets.preparationFailureCount) {
+            [Math]::Max(0, [int]$Context.visualAssets.preparationFailureCount)
+        }
+        else {
+            0
+        }
+        if ($prepFailures -gt 0) {
+            $failureSection = New-InlineVisualSection -Panels @() -OmittedCount 0 -PreparationFailureCount $prepFailures
+            return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
+        }
         return $baseBody.Replace($placeholder, "")
     }
 

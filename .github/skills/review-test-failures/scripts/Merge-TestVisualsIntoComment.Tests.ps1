@@ -291,6 +291,26 @@ Investigate.
         $merged | Should -Be "Analysis`n`nDone"
     }
 
+    It 'renders a failure-only section when every comparison failed preparation' {
+        # published=false with a positive preparationFailureCount means all comparisons failed to
+        # prepare. The count must still be surfaced rather than stripped away, so the comment is
+        # distinguishable from a run that had no visual evidence at all.
+        $context = New-VisualTestContext -Published $false -PreparationFailureCount 3 -Comparisons @()
+        $body = "Analysis`n<!-- GH_AW_TRUSTED_VISUALS -->`nDone"
+
+        $merged = Merge-VisualsIntoBody `
+            -Body $body `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 60000
+
+        $merged | Should -Match 'Visual failure comparisons'
+        $merged | Should -Match '3 visual comparison\(s\) could not be prepared from CI artifacts and are not shown\.'
+    }
+
     It 'skips an invalid actual URL and reports the comparison as omitted' {
         $comparison = New-VisualTestComparison
         $comparison.actualUrl = 'https://evil.example/payload.png'

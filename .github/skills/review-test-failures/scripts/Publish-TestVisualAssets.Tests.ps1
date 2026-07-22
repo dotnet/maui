@@ -166,4 +166,29 @@ Describe 'Visual evidence deduplication' {
         Get-VisualEvidenceDedupKey -Evidence $ios |
             Should -Not -Be (Get-VisualEvidenceDedupKey -Evidence $android)
     }
+
+    It 'keeps distinct legs separate when the environment is unresolved (multi-hint build)' {
+        # The gatherer sets environmentName to null when a build exposes multiple environment
+        # hints for one platform. Two distinct iOS legs failing the same snapshot must not
+        # collapse onto "ios|name.png|" as if one were a retry of the other.
+        $legA = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = $null
+            buildId = 100
+            runId = 200
+            resultId = 300
+        }
+        $legB = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = $null
+            buildId = 100
+            runId = 201
+            resultId = 301
+        }
+
+        Get-VisualEvidenceDedupKey -Evidence $legA |
+            Should -Not -Be (Get-VisualEvidenceDedupKey -Evidence $legB)
+    }
 }

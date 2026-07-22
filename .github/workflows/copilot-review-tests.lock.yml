@@ -636,7 +636,8 @@ jobs:
         with:
           name: review-tests-context-${{ github.run_id }}
           path: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
-      - env:
+      - continue-on-error: true
+        env:
           CONTEXT_PATH: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json
           PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
         name: Seal trusted visual merger inputs
