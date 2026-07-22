@@ -83,7 +83,7 @@ on:
   # the script never executes PR-controlled code.
   steps:
     - name: Checkout repository scripts
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
     - name: Build ci-fix PR watch context
@@ -123,24 +123,11 @@ jobs:
 if: |
   github.repository == 'dotnet/maui'
 
+model: claude-opus-4.8
 engine:
   id: copilot
-  model: claude-opus-4.8
   env:
-    COPILOT_GITHUB_TOKEN: |
-      ${{ case(
-        needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
-        needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1,
-        needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2,
-        needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3,
-        needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4,
-        needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5,
-        needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6,
-        needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
-        needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
-        needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
-        'NO COPILOT PAT AVAILABLE')
-      }}
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 # AI-credit budget: DISABLED for this workflow via the -1 sentinel. Token cost is not
 # a constraint here, and the default daily cap (5000 AIC) was throttling the
@@ -202,9 +189,9 @@ safe-outputs:
       - "net11.0"
     allowed-branches:
       - "ci-fix/**"
-    # allowed-files is the enforced allowlist. It already excludes .github/**,
-    # so no protected-files blocklist is needed (a prior protected-files
-    # exclude of .github/ was dead config and contradicted this allowlist).
+    # Fail closed on protected files as defense-in-depth. allowed-files is the
+    # enforced product/test allowlist and already excludes .github/**.
+    protected-files: blocked
     allowed-files:
       - "src/AI/**"
       - "src/Core/**"
@@ -236,6 +223,7 @@ safe-outputs:
     # prompt-injected agent therefore cannot push code to an arbitrary PR.
     required-title-prefix: "[ci-fix-net11] "
     required-labels: [agentic-workflows]
+    protected-files: blocked
     # Mirror create-pull-request's enforced allowlist so a follow-up attempt can
     # never touch files outside the fix surface (.github/** stays excluded).
     allowed-files:
@@ -283,7 +271,7 @@ safe-outputs:
     # never the title, so disable title rewrites — this compiles to allow_title:false
     # and removes any ability to retitle an arbitrary PR.
     title: false
-    # NOTE: gh-aw v0.80.9 (the pinned compiler) does NOT emit required-title-prefix/required-labels into
+    # NOTE: gh-aw v0.82.14 does NOT emit required-title-prefix/required-labels into
     # the compiled config for update-pull-request (verified against the lock — it
     # silently drops them, unlike add-comment / push-to-pull-request-branch which
     # honor them). So which-PR scoping here relies on prompt Hard-Rule 6 +
@@ -302,10 +290,8 @@ safe-outputs:
     target: "*"
     # Hard constraint (defense-in-depth): only ever un-draft THIS workflow's own
     # ci-fix PRs — [ci-fix-net11] title prefix AND agentic-workflows label — so a
-    # confused or prompt-injected agent cannot mark an arbitrary PR ready. (If the
-    # v0.80.9 compiler silently drops these — as documented for update-pull-request
-    # above — the Step 3.6 preconditions + min-integrity:approved are the compensating
-    # scope controls; verify against the lock after compiling.)
+    # confused or prompt-injected agent cannot mark an arbitrary PR ready. gh-aw
+    # v0.82.14 emits both constraints into the generated handler config.
     required-title-prefix: "[ci-fix-net11] "
     required-labels: [agentic-workflows]
   add-labels:
@@ -323,9 +309,8 @@ safe-outputs:
     max: 3
     target: "*"
     # Hard constraint (defense-in-depth): only ever label THIS workflow's own ci-fix PRs —
-    # [ci-fix-net11] title prefix AND agentic-workflows label. (If the v0.80.9 compiler drops
-    # these — as documented for update-pull-request above — the Step 3.6 preconditions +
-    # min-integrity:approved + the allowed:[p/0] allowlist are the compensating controls.)
+    # [ci-fix-net11] title prefix AND agentic-workflows label. gh-aw v0.82.14
+    # emits both constraints into the generated handler config.
     required-title-prefix: "[ci-fix-net11] "
     required-labels: [agentic-workflows]
 
@@ -426,7 +411,7 @@ through `safe-outputs`.
    `push_to_pull_request_branch`), and `add_labels` additionally has an
    `allowed: [p/0]` allowlist so it can ONLY ever add `p/0` — so these can only
    ever land on THIS workflow's own PRs. `update_pull_request` CANNOT be
-   config-locked to a title/label in gh-aw v0.80.9 (the compiler silently drops
+   config-locked to a title/label in gh-aw v0.82.14 (the compiler silently drops
    `required-*` for that output — verified against the lock), so it keeps
    `title: false` (no retitles; body-marker edits only) plus this prompt-level
    guard. Before emitting ANY of these, VERIFY the target PR carries BOTH the
@@ -942,7 +927,7 @@ not the base branch's flakiness.
   maintainer's deliberate de-prioritization.)
 - The PR is unmistakably THIS workflow's own: `[ci-fix-net11] ` title prefix AND the
   `agentic-workflows` label (mirrors the safe-output lock; the compensating scope
-  control if the v0.80.9 compiler drops the declarative required-*).
+  control alongside the v0.82.14 declarative required-* constraints).
 - You reached this gate from Step 3 (green), Step 4 (**unrelated-flake**), or the Step 3.5
   **CI-state target-focused fast-path** (1a) — i.e. the fix is NOT implicated in any red that
   has concluded. If Step 4 classified a red as **caused by the fix** (ADVANCE), do NOT run
