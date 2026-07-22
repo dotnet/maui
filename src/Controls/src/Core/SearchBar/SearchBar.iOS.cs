@@ -19,10 +19,11 @@ namespace Microsoft.Maui.Controls
 			Platform.SearchBarExtensions.UpdateText(handler.PlatformView, searchBar);
 
 			// Any text update requires that we update any attributed string formatting.
-			// This must run even during handler connection because the SearchBarHandler mapper
-			// applies CharacterSpacing/MaxLength/HorizontalTextAlignment before Text, so
-			// UpdateText can wipe the attributed string that those mappers already set.
-			SearchBarHandler.MapFormatting(handler, searchBar);
+			// During handler connection these properties are applied by the normal mapper sweep after Text.
+			if (!handler.IsConnectingHandler())
+			{
+				SearchBarHandler.MapFormatting(handler, searchBar);
+			}
 		}
 
 		internal static void MapUserInteraction(ISearchBarHandler handler, SearchBar searchBar)
