@@ -62,6 +62,16 @@ public partial class BlazorWebViewTests
 	}
 
 	[Fact]
+	public async Task StaticContentCacheControlProviderReturningWhitespaceKeepsDefaultNoStore()
+	{
+		// A whitespace-only value is treated the same as null/empty: it is a non-standard, meaningless Cache-Control
+		// value that is far more likely an accidental result of string manipulation than an intentional opt-in.
+		var cacheControl = await GetServedCacheControlHeaderAsync(_ => "   ", fetchQueryString: "?test=whitespace-provider");
+
+		Assert.Contains("no-store", cacheControl, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public async Task StaticContentCacheControlProviderReturningValueWithNewlinesKeepsDefaultNoStore()
 	{
 		// Values containing CR/LF are rejected in favor of the default: some platforms concatenate the value into
