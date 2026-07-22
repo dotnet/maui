@@ -132,6 +132,9 @@ namespace Microsoft.Maui.Hosting
 			builder.ConfigureDispatching();
 
 			builder.Services.TryAddSingleton<EssentialsCleanup>();
+			builder.Services.TryAddEnumerable(
+				ServiceDescriptor.Singleton<IMauiAppCleanupService, EssentialsCleanup>(
+					services => services.GetRequiredService<EssentialsCleanup>()));
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 		}
 
@@ -266,7 +269,7 @@ namespace Microsoft.Maui.Hosting
 					try
 					{
 						if (cleanup is not null)
-							cleanup.Dispose();
+							cleanup.Cleanup();
 						else
 							EssentialsCleanup.RestoreFacades(facadeCleanups);
 					}
@@ -803,9 +806,10 @@ namespace Microsoft.Maui.Hosting
 		}
 #endif
 
-		sealed class EssentialsCleanup : IDisposable
+		sealed class EssentialsCleanup : IMauiAppCleanupService
 		{
 			List<Action> _facadeCleanups = new();
+			bool _cleanedUp;
 #if !TIZEN
 			IAppActions? _subscribedAppActions;
 			EventHandler<AppActionEventArgs>? _appActionHandler;
@@ -825,10 +829,16 @@ namespace Microsoft.Maui.Hosting
 			}
 #endif
 
-			public void Dispose()
+			public void Cleanup()
 			{
 				lock (s_essentialsBridgeLock)
+				{
+					if (_cleanedUp)
+						return;
+
+					_cleanedUp = true;
 					DisposeCore();
+				}
 			}
 
 			void DisposeCore()

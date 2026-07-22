@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,7 +40,35 @@ namespace Microsoft.Maui.Hosting
 		{
 			DisposeConfiguration();
 
-			(_services as IDisposable)?.Dispose();
+			Exception? cleanupException = null;
+			try
+			{
+				CleanupAppServices();
+			}
+			catch (Exception ex)
+			{
+				cleanupException = ex;
+			}
+
+			try
+			{
+				(_services as IDisposable)?.Dispose();
+			}
+			catch (Exception disposalException)
+			{
+				if (cleanupException is not null)
+				{
+					throw new AggregateException(
+						"MauiApp cleanup and service provider disposal both failed.",
+						cleanupException,
+						disposalException);
+				}
+
+				throw;
+			}
+
+			if (cleanupException is not null)
+				ExceptionDispatchInfo.Capture(cleanupException).Throw();
 		}
 
 		/// <inheritdoc />
@@ -47,15 +76,48 @@ namespace Microsoft.Maui.Hosting
 		{
 			DisposeConfiguration();
 
-			if (_services is IAsyncDisposable asyncDisposable)
+			Exception? cleanupException = null;
+			try
 			{
-				// Fire and forget because this is called from a sync context
-				await asyncDisposable.DisposeAsync();
+				CleanupAppServices();
 			}
-			else
+			catch (Exception ex)
 			{
-				(_services as IDisposable)?.Dispose();
+				cleanupException = ex;
 			}
+
+			try
+			{
+				if (_services is IAsyncDisposable asyncDisposable)
+				{
+					await asyncDisposable.DisposeAsync();
+				}
+				else
+				{
+					(_services as IDisposable)?.Dispose();
+				}
+			}
+			catch (Exception disposalException)
+			{
+				if (cleanupException is not null)
+				{
+					throw new AggregateException(
+						"MauiApp cleanup and service provider disposal both failed.",
+						cleanupException,
+						disposalException);
+				}
+
+				throw;
+			}
+
+			if (cleanupException is not null)
+				ExceptionDispatchInfo.Capture(cleanupException).Throw();
+		}
+
+		private void CleanupAppServices()
+		{
+			foreach (var cleanupService in _services.GetServices<IMauiAppCleanupService>())
+				cleanupService.Cleanup();
 		}
 
 		private void DisposeConfiguration()
@@ -64,5 +126,10 @@ namespace Microsoft.Maui.Hosting
 			// won't dispose.
 			(Configuration as IDisposable)?.Dispose();
 		}
+	}
+
+	internal interface IMauiAppCleanupService
+	{
+		void Cleanup();
 	}
 }

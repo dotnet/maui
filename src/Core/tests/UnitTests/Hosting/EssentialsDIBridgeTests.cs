@@ -352,6 +352,60 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void NonDisposableServiceProviderRestoresStaticFacadeWhenMauiAppIsDisposed()
+		{
+			var original = Preferences.Default;
+			var mock = new StubPreferences();
+			var factory = new NonDisposableServiceProviderFactory();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences>(mock);
+			builder.ConfigureContainer(factory);
+
+			var app = builder.Build();
+			try
+			{
+				Assert.Same(mock, Preferences.Default);
+				Assert.False(app.Services is IDisposable);
+
+				app.Dispose();
+
+				Assert.Same(original, Preferences.Default);
+			}
+			finally
+			{
+				factory.DisposeInnerProvider();
+				Preferences.SetDefault(original);
+			}
+		}
+
+		[Fact]
+		public async Task NonDisposableServiceProviderRestoresStaticFacadeWhenMauiAppIsDisposedAsync()
+		{
+			var original = Preferences.Default;
+			var mock = new StubPreferences();
+			var factory = new NonDisposableServiceProviderFactory();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences>(mock);
+			builder.ConfigureContainer(factory);
+
+			var app = builder.Build();
+			try
+			{
+				Assert.Same(mock, Preferences.Default);
+				Assert.False(app.Services is IAsyncDisposable);
+
+				await app.DisposeAsync();
+
+				Assert.Same(original, Preferences.Default);
+			}
+			finally
+			{
+				factory.DisposeInnerProvider();
+				Preferences.SetDefault(original);
+			}
+		}
+
+		[Fact]
 		public void ContainerOwnedStaticFacadeIsRestoredBeforeServiceIsDisposed()
 		{
 			var original = Preferences.Default;
@@ -947,6 +1001,37 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			{
 				IsDisposed = true;
 			}
+		}
+
+		sealed class NonDisposableServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
+		{
+			ServiceProvider? _innerProvider;
+
+			public IServiceCollection CreateBuilder(IServiceCollection services) => services;
+
+			public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
+			{
+				_innerProvider = containerBuilder.BuildServiceProvider();
+				return new NonDisposableServiceProvider(_innerProvider);
+			}
+
+			public void DisposeInnerProvider()
+			{
+				_innerProvider?.Dispose();
+			}
+		}
+
+		sealed class NonDisposableServiceProvider : IServiceProvider
+		{
+			readonly IServiceProvider _innerProvider;
+
+			public NonDisposableServiceProvider(IServiceProvider innerProvider)
+			{
+				_innerProvider = innerProvider;
+			}
+
+			public object? GetService(Type serviceType) =>
+				_innerProvider.GetService(serviceType);
 		}
 
 		sealed class ThrowingInitializeService : IMauiInitializeService
