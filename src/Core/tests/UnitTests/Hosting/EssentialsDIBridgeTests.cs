@@ -538,6 +538,136 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void DisposedOlderMauiAppFacadeIsNotRestoredByLaterApp()
+		{
+			var original = Preferences.Default;
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+			MauiApp? thirdApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+				firstApp = firstBuilder.Build();
+				var firstPreferences = Assert.IsType<DisposableStubPreferences>(
+					firstApp.Services.GetRequiredService<IPreferences>());
+
+				var secondPreferences = new StubPreferences();
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IPreferences>(secondPreferences);
+				secondApp = secondBuilder.Build();
+
+				Preferences.SetDefault(firstPreferences);
+
+				var thirdPreferences = new StubPreferences();
+				var thirdBuilder = MauiApp.CreateBuilder();
+				thirdBuilder.Services.AddSingleton<IPreferences>(thirdPreferences);
+				thirdApp = thirdBuilder.Build();
+
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.True(firstPreferences.IsDisposed);
+				Assert.Same(thirdPreferences, Preferences.Default);
+
+				thirdApp.Dispose();
+				thirdApp = null;
+				Assert.Same(original, Preferences.Default);
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Same(original, Preferences.Default);
+			}
+			finally
+			{
+				thirdApp?.Dispose();
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
+		public void DisposingExternallySelectedOwnerDoesNotLeaveDisposedFacade()
+		{
+			var original = Preferences.Default;
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+				firstApp = firstBuilder.Build();
+				var firstPreferences = Assert.IsType<DisposableStubPreferences>(
+					firstApp.Services.GetRequiredService<IPreferences>());
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IPreferences>(new StubPreferences());
+				secondApp = secondBuilder.Build();
+
+				Preferences.SetDefault(firstPreferences);
+				firstApp.Dispose();
+				firstApp = null;
+
+				Assert.True(firstPreferences.IsDisposed);
+				Assert.Same(original, Preferences.Default);
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Same(original, Preferences.Default);
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
+		public void SharedFacadeImplementationKeepsNewestActiveOwner()
+		{
+			var original = Preferences.Default;
+			var sharedPreferences = new StubPreferences();
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+			MauiApp? thirdApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IPreferences>(sharedPreferences);
+				firstApp = firstBuilder.Build();
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IPreferences>(sharedPreferences);
+				secondApp = secondBuilder.Build();
+
+				var thirdPreferences = new StubPreferences();
+				var thirdBuilder = MauiApp.CreateBuilder();
+				thirdBuilder.Services.AddSingleton<IPreferences>(thirdPreferences);
+				thirdApp = thirdBuilder.Build();
+
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Same(thirdPreferences, Preferences.Default);
+
+				thirdApp.Dispose();
+				thirdApp = null;
+				Assert.Same(sharedPreferences, Preferences.Default);
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Same(original, Preferences.Default);
+			}
+			finally
+			{
+				thirdApp?.Dispose();
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
 		public void ConfiguredAppActionHandlerUnsubscribesBeforeContainerOwnedServiceIsDisposed()
 		{
 			var builder = MauiApp.CreateBuilder();

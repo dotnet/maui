@@ -17,31 +17,19 @@ namespace Microsoft.Maui.DeviceTests.Services;
 public class EssentialsDIBridgeTests : TestBase
 {
 	[Fact]
-	public void DIRegisteredActivityStateManagerIsInitialized()
+	public void DIRegisteredActivityStateManagerIsNotBridgedWithoutCleanupContract()
 	{
 		var original = ActivityStateManager.Default;
 		var replacement = new StubActivityStateManager();
+		var builder = MauiApp.CreateBuilder();
+		builder.Services.AddSingleton<IActivityStateManager>(replacement);
 
-		try
-		{
-			var builder = MauiApp.CreateBuilder();
-			builder.Services.AddSingleton<IActivityStateManager>(replacement);
-
-			using var app = builder.Build();
-			_ = app.Services.GetRequiredService<ILifecycleEventService>();
-
-			Assert.Same(replacement, ActivityStateManager.Default);
-			Assert.Equal(1, replacement.ApplicationInitializationCount);
-		}
-		finally
-		{
-			var builder = MauiApp.CreateBuilder();
-			builder.Services.AddSingleton<IActivityStateManager>(original);
-
-			using var app = builder.Build();
-		}
+		using var app = builder.Build();
+		_ = app.Services.GetRequiredService<ILifecycleEventService>();
 
 		Assert.Same(original, ActivityStateManager.Default);
+		Assert.Same(replacement, app.Services.GetRequiredService<IActivityStateManager>());
+		Assert.Equal(0, replacement.ApplicationInitializationCount);
 	}
 
 	[Fact]

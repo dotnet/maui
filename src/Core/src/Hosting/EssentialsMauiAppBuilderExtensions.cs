@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -355,9 +356,8 @@ namespace Microsoft.Maui.Hosting
 
 				// SetDefault pattern types
 				BridgeIfRegistered<IAccelerometer>(services, () => GetFacadeBackingField<IAccelerometer>(typeof(Accelerometer), "defaultImplementation"), Accelerometer.SetDefault, facadeCleanups);
-#if ANDROID
-				BridgeIfRegistered<IActivityStateManager>(services, () => GetFacadeBackingField<IActivityStateManager>(typeof(ActivityStateManager), "defaultImplementation"), ActivityStateManager.SetDefault, facadeCleanups);
-#endif
+				// IActivityStateManager is intentionally not bridged. Init(Application) registers
+				// Android lifecycle callbacks, and the interface has no way to unregister them.
 				BridgeIfRegistered<IBarometer>(services, () => GetFacadeBackingField<IBarometer>(typeof(Barometer), "defaultImplementation"), Barometer.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IBattery>(services, () => GetFacadeBackingField<IBattery>(typeof(Battery), "defaultImplementation"), Battery.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IBrowser>(services, () => GetFacadeBackingField<IBrowser>(typeof(Browser), "defaultImplementation"), Browser.SetDefault, facadeCleanups);
@@ -496,7 +496,9 @@ namespace Microsoft.Maui.Hosting
 
 				lock (FacadeBridgeState<T>.SyncRoot)
 				{
-					assignment = new FacadeAssignment<T>(impl, currentGetter());
+					var previous = currentGetter();
+					var previousOwner = FacadeBridgeState<T>.FindOwner(previous);
+					assignment = new FacadeAssignment<T>(impl, previous, previousOwner);
 					FacadeBridgeState<T>.Assignments.Add(assignment);
 					setter(impl);
 				}
@@ -600,10 +602,12 @@ namespace Microsoft.Maui.Hosting
 				List<Action> facadeCleanups)
 				where T : class
 			{
-				var assignment = new FacadeAssignment<T>(impl, original);
+				FacadeAssignment<T> assignment;
 
 				lock (FacadeBridgeState<T>.SyncRoot)
 				{
+					var previousOwner = FacadeBridgeState<T>.FindOwner(original);
+					assignment = new FacadeAssignment<T>(impl, original, previousOwner);
 					FacadeBridgeState<T>.Assignments.Add(assignment);
 				}
 
@@ -625,19 +629,19 @@ namespace Microsoft.Maui.Hosting
 						if (index < 0)
 							return;
 
-						var wasCurrent = index == FacadeBridgeState<T>.Assignments.Count - 1;
-						if (!wasCurrent)
+						var current = getter();
+						var ownsCurrent = ReferenceEquals(
+							FacadeBridgeState<T>.FindOwner(current),
+							assignment);
+
+						foreach (var dependent in FacadeBridgeState<T>.Assignments)
 						{
-							var successor = FacadeBridgeState<T>.Assignments[index + 1];
-							if (ReferenceEquals(successor.Previous, assignment.Implementation))
-								successor.Previous = assignment.Previous;
+							if (ReferenceEquals(dependent.PreviousOwner, assignment))
+								dependent.RebasePreviousOwner(assignment);
 						}
 
 						FacadeBridgeState<T>.Assignments.RemoveAt(index);
-						if (!wasCurrent)
-							return;
-
-						if (ReferenceEquals(getter(), assignment.Implementation))
+						if (ownsCurrent)
 							setter(assignment.Previous);
 					}
 				});
@@ -645,21 +649,50 @@ namespace Microsoft.Maui.Hosting
 
 			sealed class FacadeAssignment<T> where T : class
 			{
-				public FacadeAssignment(T implementation, T? previous)
+				public FacadeAssignment(
+					T implementation,
+					T? previous,
+					FacadeAssignment<T>? previousOwner)
 				{
 					Implementation = implementation;
-					Previous = previous;
+					SetPrevious(previous, previousOwner);
 				}
 
 				public T Implementation { get; }
 
-				public T? Previous { get; set; }
+				public T? Previous { get; private set; }
+
+				public FacadeAssignment<T>? PreviousOwner { get; private set; }
+
+				public void RebasePreviousOwner(FacadeAssignment<T> previousOwner)
+				{
+					Debug.Assert(ReferenceEquals(PreviousOwner, previousOwner));
+					SetPrevious(previousOwner.Previous, previousOwner.PreviousOwner);
+				}
+
+				void SetPrevious(T? previous, FacadeAssignment<T>? previousOwner)
+				{
+					Debug.Assert(previousOwner is null || ReferenceEquals(previous, previousOwner.Implementation));
+					Previous = previous;
+					PreviousOwner = previousOwner;
+				}
 			}
 
 			static class FacadeBridgeState<T> where T : class
 			{
 				internal static readonly object SyncRoot = new();
 				internal static readonly List<FacadeAssignment<T>> Assignments = new();
+
+				internal static FacadeAssignment<T>? FindOwner(T? implementation)
+				{
+					for (int i = Assignments.Count - 1; i >= 0; i--)
+					{
+						if (ReferenceEquals(Assignments[i].Implementation, implementation))
+							return Assignments[i];
+					}
+
+					return null;
+				}
 			}
 
 			sealed class LazyVersionTracking : IVersionTracking
