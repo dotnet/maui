@@ -128,7 +128,7 @@ Describe 'Add-MissingUITestResultsNote' {
     It 'annotates a bare "detected categories" placeholder with no results' {
         $result = Add-MissingUITestResultsNote -Content '**Detected UI test categories:** `Picker,ViewBaseTests`'
         $result | Should -Match 'No UI test results were produced'
-        $result | Should -Match 'before requesting another review'
+        $result | Should -Match 'Fix the build/gate issues and push again'
         $result | Should -Not -Match '/review rerun'
         # Original content is preserved.
         $result | Should -Match 'Detected UI test categories'

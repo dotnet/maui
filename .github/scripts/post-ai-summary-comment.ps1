@@ -171,7 +171,8 @@ function Add-MissingUITestResultsNote {
 > [!WARNING]
 > **No UI test results were produced for the detected categories.** The platform-pool run
 > returned no results — most often because the PR build failed (see the **Gate** section) or
-> the deep UI test stage was skipped. Fix the build/gate issues before requesting another review.
+> the deep UI test stage was skipped. Fix the build/gate issues and push again; the review
+> re-runs on new commits (a maintainer can also re-run it).
 '@
     return ($Content.TrimEnd() + [Environment]::NewLine + $note)
 }
