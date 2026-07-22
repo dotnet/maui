@@ -15,6 +15,15 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 	Dictionary<DataTemplate, List<ItemContainer>> _recyclePool = new();
 
 	/// <summary>
+	/// Dedicated pool for blank (null-item) <see cref="ItemContainer"/> instances. These have
+	/// no <see cref="ElementWrapper"/> child and thus no <see cref="DataTemplate"/> key, so they
+	/// cannot be stored in <see cref="_recyclePool"/>. Without this pool, every null item scrolled
+	/// into view allocates a brand-new ItemContainer instead of reusing one, causing repeated
+	/// allocations during scrolling of sparse/null-containing collections.
+	/// </summary>
+	List<ItemContainer> _nullItemPool = new();
+
+	/// <summary>
 	/// A minimal ControlTemplate for ItemContainer that contains no selection visuals
 	/// (no PART_SelectionCheckbox, no PART_SelectionVisual, no PART_CommonVisual).
 	/// Defined in ItemsViewStyles.xaml and applied to group header/footer containers
@@ -46,6 +55,15 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			// path so they can inherit the parent ItemsView.BindingContext.
 			if (templateContext.Item is null && !templateContext.IsHeader && !templateContext.IsFooter)
 			{
+				// Reuse a pooled blank container if one is available instead of allocating a
+				// new ItemContainer on every scroll pass over null items.
+				if (_nullItemPool.Count > 0)
+				{
+					var pooledNullContainer = _nullItemPool[^1];
+					_nullItemPool.RemoveAt(_nullItemPool.Count - 1);
+					return pooledNullContainer;
+				}
+
 				// CV2 has no ListViewItem wrapper, so we set both MinHeight and MinWidth on ItemContainer.
 				// Default sizing hints for null-data item containers in CV2, based on CV1 behavior.
 				return new ItemContainer
@@ -246,6 +264,13 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				_recyclePool[template] = new List<ItemContainer> { item };
 			}
 		}
+		else if (item is not null && item.Child is null)
+		{
+			// Blank containers created for null regular-data items have no ElementWrapper
+			// child (and therefore no template key), so they can't go in _recyclePool.
+			// Pool them separately to avoid reallocating on every scroll over null items.
+			_nullItemPool.Add(item);
+		}
 
 		_view.RemoveLogicalChild(wrapperView);
 	}
@@ -277,6 +302,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		}
 
 		_recyclePool.Clear();
+		_nullItemPool.Clear();
 	}
 }
 

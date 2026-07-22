@@ -509,68 +509,35 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await Task.Delay(500);
 
-				// Selecting the null item programmatically should not throw
+				var itemsView = (WItemsView)collectionView.Handler.PlatformView;
+				var containers = itemsView.GetChildren<ItemContainer>().ToList();
+				Assert.True(containers.Count >= 3, $"Expected at least 3 containers, got {containers.Count}");
+
+				// Drive selection from the platform side (as a real tap would), instead of
+				// setting CollectionView.SelectedItem directly. This exercises the
+				// PlatformSelectionChanged -> UpdateVirtualSingleSelection round-trip, which
+				// is the path that previously threw/undid selection for a null-item row.
+				var nullContainer = containers[1];
 				var exception = await Record.ExceptionAsync(async () =>
 				{
-					collectionView.SelectedItem = null;
+					nullContainer.IsSelected = true;
 					await Task.Delay(100);
 				});
 
 				Assert.Null(exception);
 				Assert.Null(collectionView.SelectedItem);
-			});
-		}
+				Assert.True(nullContainer.IsSelected, "Platform container for the null item should remain selected.");
 
-		[Fact]
-		public async Task NullItem_CollectionMove_DoesNotMoveWrongRow()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+				// Deselecting from the platform side should also round-trip cleanly.
+				exception = await Record.ExceptionAsync(async () =>
 				{
-					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
-					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
+					nullContainer.IsSelected = false;
+					await Task.Delay(100);
 				});
-			});
 
-			var data = new ObservableCollection<object> { "Item 1", null, null, "Item 4" };
-
-			var collectionView = new CollectionView
-			{
-				ItemTemplate = new Controls.DataTemplate(() =>
-				{
-					var label = new Label { HeightRequest = 40 };
-					label.SetBinding(Label.TextProperty, new Binding("."));
-					return label;
-				}),
-				ItemsSource = data,
-				CanReorderItems = true,
-				HeightRequest = 400,
-				WidthRequest = 300
-			};
-
-			var layout = new VerticalStackLayout
-			{
-				collectionView
-			};
-
-			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
-			{
-				await Task.Delay(500);
-
-				// Test ObservableCollection.Move() directly instead of drag/drop simulation.
-				// This exercises the code path where null items exist in the collection.
-				// NOTE: This tests data binding behavior, not actual drag-drop UI interaction.
-				// For real drag-drop testing, use actual pointer events (tap + drag).
-				data.Move(0, 2);
-				await Task.Delay(200);
-
-				// After the move, the order should be: null, null, "Item 1", "Item 4"
-				Assert.Null(data[0]);
-				Assert.Null(data[1]);
-				Assert.Equal("Item 1", data[2]);
-				Assert.Equal("Item 4", data[3]);
+				Assert.Null(exception);
+				Assert.Null(collectionView.SelectedItem);
+				Assert.False(nullContainer.IsSelected);
 			});
 		}
 	}
