@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Content cell is removed during updates and cleared in Dispose(bool).")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Content cell is replaced during updates and retained after disposal because UIKit can issue late layout and reuse callbacks.")]
 		public UITableViewCell ContentCell { get; private set; }
 
 		public bool IsOpen => ScrollDelegate.IsOpen;
@@ -286,7 +286,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_tableView = null;
-				ContentCell = null;
 
 				_moreButton?.Dispose();
 				_moreButton = null;

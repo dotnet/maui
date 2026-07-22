@@ -69,6 +69,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewDidLayoutSubviews()
 		{
+			if (_isDisposed)
+				return;
+
 			_didLayoutSubviews = true;
 			base.ViewDidLayoutSubviews();
 

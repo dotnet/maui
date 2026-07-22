@@ -502,7 +502,10 @@ public class MemoryTests : ControlsHandlerTestBase
 			cell.ContextActions.Add(new MenuItem { Text = "Action" });
 #pragma warning restore CS0618 // Type or member is obsolete
 			using var tableView = new UIKit.UITableView();
-			using var nativeCell = new UIKit.UITableViewCell();
+			using var nativeCell = new CellTableViewCell(UIKit.UITableViewCellStyle.Default, "ContextActionsCellTest")
+			{
+				Cell = cell
+			};
 			var contextActionsCell = new ContextActionsCell();
 
 			contextActionsCell.Update(tableView, cell, nativeCell);
@@ -510,6 +513,8 @@ public class MemoryTests : ControlsHandlerTestBase
 
 			contextActionsCell.Dispose();
 			Assert.DoesNotContain(GetPropertyChangedSubscribers(cell), subscriber => ReferenceEquals(subscriber.Target, contextActionsCell));
+			Assert.Same(cell, ((Microsoft.Maui.Controls.Compatibility.INativeElementView)contextActionsCell).Element);
+			contextActionsCell.SizeThatFits(new CoreGraphics.CGSize(100, 44));
 		});
 	}
 

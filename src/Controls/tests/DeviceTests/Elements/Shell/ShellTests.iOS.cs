@@ -598,6 +598,29 @@ namespace Microsoft.Maui.DeviceTests
 			GC.KeepAlive(references.GestureDelegate);
 		}
 
+		[Fact(DisplayName = "Disposed Shell Section Root Ignores Late Layout")]
+		public async Task DisposedShellSectionRootIgnoresLateLayout()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ContentPage());
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+
+				IShellContext shellContext = handler;
+				var shellItemRenderer = Assert.IsType<ShellItemRenderer>(shellContext.CurrentShellItemRenderer);
+				var sectionRenderer = Assert.IsType<ShellSectionRenderer>(shellItemRenderer.CurrentRenderer);
+				var rootRenderer = Assert.IsType<ShellSectionRootRenderer>(sectionRenderer.ViewControllers[0]);
+
+				rootRenderer.Dispose();
+				rootRenderer.ViewDidLayoutSubviews();
+			});
+		}
+
 		[Fact(DisplayName = "Disconnect Shell During Current Item Change Does Not Recreate Renderer")]
 		public async Task DisconnectShellDuringCurrentItemChangeDoesNotRecreateRenderer()
 		{
