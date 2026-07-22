@@ -80,10 +80,6 @@ namespace Microsoft.Maui.Animations
 					}
 				});
 			}
-			else
-			{
-				SystemEnabled = _uiSettings.AnimationsEnabled;
-			}
 		}
 
 		void RenderingFrameEventHandler(object? sender, object? args)
