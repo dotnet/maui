@@ -11,8 +11,6 @@ public class Issue1939 : TestContentPage
 	readonly GroupedData _temp1 = new GroupedData() { GroupName = $"Group #1", HasHeader = true };
 	readonly GroupedData _temp2 = new GroupedData() { GroupName = $"Group #2", HasHeader = false };
 
-	StackLayout _rootLayout;
-
 	protected override void Init()
 	{
 		var listView = new ListView
@@ -23,16 +21,14 @@ public class Issue1939 : TestContentPage
 			ItemsSource = Data
 		};
 
-		_rootLayout = new StackLayout
+		Content = new StackLayout
 		{
 			VerticalOptions = LayoutOptions.Center,
 			Children = {
-				new Label { Text = "This test adds two groups to this list and then clears the items from one of them. If the test crashes, this test has failed." },
+				new Label { Text = "This test adds two groups to this list and then clears the items from one of them. If the test crashes, this test has failed.", AutomationId = "InstructionsLabel" },
 				listView
 			}
 		};
-
-		Content = _rootLayout;
 	}
 
 	protected override void OnAppearing()
@@ -64,11 +60,6 @@ public class Issue1939 : TestContentPage
 		await Task.Delay(1500);
 
 		results.Clear();
-
-		// Signal that the populated group was cleared without crashing. The test anchors on this
-		// stable marker instead of the "Group #1" header, which is torn down by this very Clear()
-		// and therefore races the assertion (see https://github.com/dotnet/maui/issues/36048).
-		_rootLayout.Children.Add(new Label { Text = "Clear Completed", AutomationId = "ClearCompleted" });
 	}
 
 

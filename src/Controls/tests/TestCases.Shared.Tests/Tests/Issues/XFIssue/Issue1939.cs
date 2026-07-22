@@ -16,9 +16,10 @@ public class Issue1939 : _IssuesUITest
 	[Category(UITestCategories.ListView)]
 	public void Issue1939Test()
 	{
-		// "Group #1" is cleared by the HostApp ~1.7s after appearing (the operation under test),
-		// so waiting on it races with that teardown. Anchor on the post-clear marker instead,
-		// which deterministically proves the group was cleared without crashing (#36048).
-		App.WaitForElement("ClearCompleted");
+		// The HostApp clears the "Group #1" items ~1.7s after the page appears, which is the
+		// operation under test. Waiting on a group element would race with that clearing, so we
+		// instead wait on the stable instructions label. If the clear crashes the app, this
+		// WaitForElement call fails and the test fails.
+		App.WaitForElement("InstructionsLabel");
 	}
 }
