@@ -2,7 +2,7 @@
 
 <#
 .SYNOPSIS
-    Updates the cgmanifest.json file with package versions from Versions.props
+    Updates cgmanifest.json with centrally managed package versions
 .DESCRIPTION
     This script reads the central package version files to extract NuGet package versions
     and updates the cgmanifest.json file with these versions.
