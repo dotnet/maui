@@ -50,8 +50,11 @@ jobs:
           fi
           TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           # `/review rerun` is not a supported command. Reject it explicitly so
-          # it cannot fall through to the generic `/review` matcher below.
-          if [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+rerun([[:space:]]|$) ]]; then
+          # it cannot fall through to the generic `/review` matcher below. `sed`
+          # strips leading whitespace per line, so a leading BLANK line survives in
+          # TRIMMED_BODY; tolerate leading whitespace/newlines here (consistent with
+          # the generic matcher) so a pasted `\n/review rerun` can't evade the guard.
+          if [[ "${TRIMMED_BODY}" =~ ^[[:space:]]*/review[[:space:]]+rerun([[:space:]]|$) ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
