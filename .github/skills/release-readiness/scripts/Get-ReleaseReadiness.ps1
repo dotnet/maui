@@ -3566,7 +3566,7 @@ function Get-ReportSemanticHash {
         # churn — only the one-time transition refreshes. Default 'in-flight' when
         # absent, matching Format-MarkdownReport's $mode default.
         mode = $modeForHash
-        srHead = $Data.metadata.srHeadSha
+        srHead = Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha'
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
         srPrs = if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
                     @($Data['srContents'].sourcePrs | Sort-Object) -join ','

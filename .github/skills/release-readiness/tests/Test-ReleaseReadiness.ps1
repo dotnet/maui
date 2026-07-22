@@ -2740,6 +2740,26 @@ $pscoHashInflight = Get-ReportSemanticHash -Data $dataPscoInflight -Verdict $psc
 Assert-Eq -Label "hash: pscustomobject mode is actually read (candidate vs in-flight differ)" `
     -Expected $false -Actual ($pscoHash -eq $pscoHashInflight)
 
+# ───── Regression guard (PR #36497 re-review): srHead read must be shape-safe ─────
+# Get-ReportSemanticHash folds metadata.srHeadSha into the idempotency payload. On a
+# slim or JSON-round-tripped report whose [pscustomobject] metadata OMITS srHeadSha,
+# the previous direct `$Data.metadata.srHeadSha` read threw PropertyNotFound under
+# Set-StrictMode -Version Latest — contradicting this function's "every metadata read
+# stays shape-safe" contract (all its sibling reads go through Get-MetadataValue).
+# Cover the absent-key shape explicitly: the hash must still compute (srHead = $null).
+Write-Host "`n[Unit] Get-ReportSemanticHash is shape-safe when srHeadSha is absent" -ForegroundColor Cyan
+$dataNoSrHead = @{
+    metadata    = [pscustomobject]@{ mode = 'in-flight'; mainBranch = 'main'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001) }
+    regressions = @()
+    openSrPrs   = @()
+}
+$noSrHeadThrew = $false; $noSrHeadHash = $null
+try { $noSrHeadHash = Get-ReportSemanticHash -Data $dataNoSrHead -Verdict $pscoVerdict } catch { $noSrHeadThrew = $true; Write-Host "    threw: $($_.Exception.Message)" -ForegroundColor Red }
+Assert-Eq -Label "Get-ReportSemanticHash does NOT throw when srHeadSha is absent" -Expected $false -Actual $noSrHeadThrew
+Assert-Eq -Label "Get-ReportSemanticHash returns a 64-char SHA-256 when srHeadSha is absent" -Expected $true -Actual ($noSrHeadHash -match '^[0-9a-f]{64}$')
+
 # ───── Regression guard (PR #36497 re-review): Get-MetadataValue shape-safety ─────
 # The shared accessor must read values from ANY IDictionary, not just [hashtable].
 # An [ordered]@{} is an OrderedDictionary: it has NO .ContainsKey method (only
