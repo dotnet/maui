@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private void ApplyStaticContentCacheControlOverride(IDictionary<string, string> headers, string originalRequestUri)
 		{
 			var contentType = headers.TryGetValue("Content-Type", out var resolvedContentType) ? resolvedContentType : string.Empty;
-			var cacheControlOverride = StaticContentCacheControl.ResolveOverride(_handler.VirtualView, originalRequestUri, contentType);
+			var cacheControlOverride = StaticContentCacheControl.ResolveOverride(_handler.VirtualView, originalRequestUri, contentType, _logger);
 			if (cacheControlOverride is not null)
 			{
 				headers["Cache-Control"] = cacheControlOverride;

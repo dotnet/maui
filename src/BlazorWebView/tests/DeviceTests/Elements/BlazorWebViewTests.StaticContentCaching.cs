@@ -59,6 +59,18 @@ public partial class BlazorWebViewTests
 	}
 
 	[Fact]
+	public async Task StaticContentCacheControlProviderThrowingKeepsDefaultNoStore()
+	{
+		// A provider that throws must not crash or hang static asset serving: the exception is caught and logged,
+		// and the request falls back to the historical default header.
+		var cacheControl = await GetServedCacheControlHeaderAsync(
+			_ => throw new InvalidOperationException("provider failure"),
+			fetchQueryString: "?test=throwing-provider");
+
+		Assert.Contains("no-store", cacheControl, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public async Task StaticContentCacheControlProviderReceivesResolvedContentType()
 	{
 		string observedContentType = null;

@@ -61,4 +61,7 @@ internal static partial class Log
 
 	[LoggerMessage(EventId = 18, Level = LogLevel.Debug, Message = "Created WebKit WKWebView.")]
 	public static partial void CreatedWebKitWKWebView(this ILogger logger);
+
+	[LoggerMessage(EventId = 19, Level = LogLevel.Error, Message = "The StaticContentCacheControlProvider threw an exception for request '{requestUri}'. Falling back to the default Cache-Control header.")]
+	public static partial void StaticContentCacheControlProviderFailed(this ILogger logger, string requestUri, Exception exception);
 }
