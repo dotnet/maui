@@ -621,6 +621,33 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Disposed Shell Flyout Content Ignores Late Lifecycle Callbacks")]
+		public async Task DisposedShellFlyoutContentIgnoresLateLifecycleCallbacks()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ContentPage());
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, handler =>
+			{
+				var flyoutContent = handler.ViewController
+					.ChildViewControllers
+					.OfType<ShellFlyoutContentRenderer>()
+					.First();
+
+				flyoutContent.Dispose();
+				flyoutContent.ViewDidLoad();
+				flyoutContent.ViewWillAppear(false);
+				flyoutContent.ViewWillLayoutSubviews();
+				flyoutContent.ViewDidLayoutSubviews();
+				flyoutContent.ViewWillDisappear(false);
+
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact(DisplayName = "Disconnect Shell During Current Item Change Does Not Recreate Renderer")]
 		public async Task DisconnectShellDuringCurrentItemChangeDoesNotRecreateRenderer()
 		{

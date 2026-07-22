@@ -261,6 +261,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewWillLayoutSubviews()
 		{
+			if (_isDisposed)
+				return;
+
 			base.ViewWillLayoutSubviews();
 			UpdateFooterPosition();
 			UpdateFlyoutContent();
@@ -363,6 +366,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewDidLayoutSubviews()
 		{
+			if (_isDisposed)
+				return;
+
 			base.ViewDidLayoutSubviews();
 
 			_tableViewController.LayoutParallax();
@@ -372,6 +378,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewDidLoad()
 		{
+			if (_isDisposed)
+				return;
+
 			base.ViewDidLoad();
 
 
@@ -418,6 +427,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewWillAppear(bool animated)
 		{
+			if (_isDisposed)
+				return;
+
 			UpdateFlowDirection();
 			base.ViewWillAppear(animated);
 			WillAppear?.Invoke(this, EventArgs.Empty);
@@ -425,6 +437,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewWillDisappear(bool animated)
 		{
+			if (_isDisposed)
+				return;
+
 			base.ViewWillDisappear(animated);
 
 			WillDisappear?.Invoke(this, EventArgs.Empty);
