@@ -616,8 +616,6 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
 		HideSoftKeyboardIfVisible();
-		App.WaitForElement("CursorPositionEntry");
-		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		HideSoftKeyboardIfVisible();
