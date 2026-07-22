@@ -4223,11 +4223,13 @@ function Invoke-MaestroChecksWithMocks {
         $BuildResponse = @(),
         [switch]$AssetAuthFail,
         $AssetResponse = @([PSCustomObject]@{
-            locations = @([PSCustomObject]@{
-                type = 'NugetFeed'
-                location = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-a11840bf/nuget/v3/index.json'
-            })
-        }),
+                name      = 'Microsoft.Maui.Controls'
+                version   = '10.0.0-ci.1'
+                # Real `darc get-asset --output-format json` shape: locations is a flat
+                # array of URL STRINGS (GetAssetOperation: locations = ...Select(l => l.Location)),
+                # NOT { type, location } objects and NOT a top-level NugetFeed property.
+                locations = @('https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-a11840bf/nuget/v3/index.json')
+            }),
         [string]$SrBranch = 'release/10.0.1xx-sr8',
         [string]$SrHeadSha = 'a11840bfdeadbeefcafebabe1234567890abcdef',
         [string]$Mode = 'in-flight',
@@ -4252,7 +4254,11 @@ function Invoke-MaestroChecksWithMocks {
         }
         if ($DarcArgs[0] -eq 'get-build') {
             if ($script:_mockBuildNoMatch) {
-                return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = 42; NoMatch = $true }
+                # darc's generic error exit code (Constants.ErrorCode = 42). It is
+                # returned for no-match, auth, network, and invalid-args alike, so
+                # Invoke-DarcJson surfaces it as Success=$false with NO spurious
+                # no-match flag — indistinguishable from any other darc failure.
+                return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = 42 }
             }
             if ($script:_mockBuildAuthFail) {
                 return [PSCustomObject]@{ Success = $false; Data = @() }
@@ -4357,6 +4363,25 @@ Assert-Eq -Label "promoted build without NugetFeed asset location: feed check is
 Assert-Eq -Label "promoted build without NugetFeed asset location: details refuse guessed endpoint" -Expected $true `
     -Actual ($s2bFeed.Details -match 'did not confirm a NugetFeed')
 
+# ── Scenario 2c: real darc get-asset shape — `locations` is an array of URL
+#    STRINGS with a mix of non-feed and feed URLs. The per-build darc-pub NuGet
+#    feed must be picked out of the strings (the old { type, location } object
+#    parser saw null for every field and wrongly emitted WATCH). Regression test
+#    for the get-asset locations shape fix. ──
+$s2cAsset = @([PSCustomObject]@{
+        name      = 'Microsoft.Maui.Controls'
+        version   = '10.0.0-ci.1'
+        locations = @(
+            'https://dev.azure.com/dnceng/internal/_apis/build/318278/artifacts',
+            'https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-a11840bf/nuget/v3/index.json'
+        )
+    })
+$s2c = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead -AssetResponse $s2cAsset
+$s2cFeed = Get-MaestroCheckByPrefix -Checks $s2c -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "string-URL locations: feed check is READY (parses real darc shape)" -Expected 'READY' -Actual $s2cFeed.Status
+Assert-Eq -Label "string-URL locations: picks the darc-pub NuGet feed URL out of the strings" -Expected $true `
+    -Actual ($s2cFeed.Details -match 'darc-pub-dotnet-maui-a11840bf/nuget/v3/index\.json')
+
 # ── Scenario 3: SR branch MISSING from BAR (the SR8 real-world bug) → BLOCKED ──
 $s3 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr7 -BuildResponse @()
 $s3Map = Get-MaestroCheckByPrefix -Checks $s3 -Prefix 'BAR default-channel'
@@ -4378,18 +4403,26 @@ Assert-Eq -Label "darc-call-failed: mapping is UNKNOWN with auth-issue hint" -Ex
 Assert-Eq -Label "darc-call-failed: mapping details mention auth/network" -Expected $true `
     -Actual ($s5Map.Details -match 'auth')
 
-# ── Scenario 6: mapping OK but no build for HEAD → WATCH (CI in flight) ──
+# ── Scenario 6: mapping OK but darc returns exit 0 + no build for HEAD → WATCH.
+#    (This is the genuine empty-but-successful "CI still in flight" path.) ──
 $s6 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse @()
 $s6Build = Get-MaestroCheckByPrefix -Checks $s6 -Prefix 'BAR build for SR HEAD'
-Assert-Eq -Label "no-build-for-head: build check is WATCH (not BLOCKED — transient)" -Expected 'WATCH' -Actual $s6Build.Status
+Assert-Eq -Label "no-build-for-head (exit 0, empty): build check is WATCH (not BLOCKED — transient)" -Expected 'WATCH' -Actual $s6Build.Status
 
-# ── Scenario 6b: real darc no-match contract is exit 42, not Success=true + [].
-#    Treat it as the same transient WATCH/no-build state, not auth/network failure.
+# ── Scenario 6b: darc get-build exits 42 (Constants.ErrorCode). This is darc's
+#    GENERIC error code — returned for no-match AND auth/network/invalid-args/
+#    exceptions alike — so it is NOT a reliable "no build yet" signal. It must
+#    surface as UNKNOWN, never a reassuring WATCH that could mask a real auth or
+#    BAR outage at ship time. (Regression test for the exit-42 semantics fix.) ──
 $s6b = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildNoMatch
 $s6bBuild = Get-MaestroCheckByPrefix -Checks $s6b -Prefix 'BAR build for SR HEAD'
-Assert-Eq -Label "get-build exit 42 no-match: build check is WATCH" -Expected 'WATCH' -Actual $s6bBuild.Status
-Assert-Eq -Label "get-build exit 42 no-match: details say no build found, not failed" -Expected $true `
-    -Actual (($s6bBuild.Details -match 'No BAR build found') -and -not ($s6bBuild.Details -match 'failed'))
+Assert-Eq -Label "get-build exit 42 (generic error): build check is UNKNOWN, not a reassuring WATCH" -Expected 'UNKNOWN' -Actual $s6bBuild.Status
+Assert-Eq -Label "get-build exit 42: details name the generic exit code and its ambiguity" -Expected $true `
+    -Actual (($s6bBuild.Details -match 'exit 42') -and ($s6bBuild.Details -match 'auth'))
+# The Assessment-feed row must also degrade to UNKNOWN on the same failure (can't
+# confirm promotion), not be silently dropped.
+$s6bFeed = Get-MaestroCheckByPrefix -Checks $s6b -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "get-build exit 42: feed check is UNKNOWN (promotion unconfirmable)" -Expected 'UNKNOWN' -Actual $s6bFeed.Status
 
 # ── Scenario 7: candidate mode → no checks emitted (SR doesn't exist yet) ──
 $s7 = Invoke-MaestroChecksWithMocks -Mode 'candidate' -DefaultChannelsResponse $mockChannelsWithSr8
@@ -4524,7 +4557,7 @@ $noCommitPropBuild = @(
         buildLink = 'https://example/nocommit'; channels = @('.NET 10.0.1xx SDK')
     }
 )
-$s18Asset = @([PSCustomObject]@{ NugetFeed = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-f00dbabe/nuget/v3/index.json' })
+$s18Asset = @([PSCustomObject]@{ locations = @('https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-f00dbabe/nuget/v3/index.json') })
 $s18 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $noCommitPropBuild -SrHeadSha $noCommitPropSrHead -AssetResponse $s18Asset
 $s18Feed = Get-MaestroCheckByPrefix -Checks $s18 -Prefix 'Ship Assessment validation feed'
 Assert-Eq -Label "promoted build without commit property: feed check is READY" -Expected 'READY' -Actual $s18Feed.Status
@@ -4534,6 +4567,26 @@ Assert-Eq -Label "promoted build without commit property: feed URL falls back to
 Set-Item function:Test-DarcAvailable $script:OrigTestDarcAvailableForMaestro
 Set-Item function:Invoke-DarcJson $script:OrigInvokeDarcJsonForMaestro
 $script:DarcStub = $null
+
+# ── Direct Invoke-DarcJson contract test: darc's non-zero exit is the generic
+#    Constants.ErrorCode (42), NOT a reliable "no match". The wrapper must surface
+#    Success=$false and the raw ExitCode, and must NOT expose a truthy NoMatch flag
+#    that a caller could trust as "no build yet" (regression test — fails if the
+#    exit-42→NoMatch derivation is reintroduced). We shim the `darc` executable so
+#    the real Invoke-DarcJson runs against a controlled exit code (no darc needed).
+Write-Host "`n[Unit] Invoke-DarcJson — darc exit-42 contract" -ForegroundColor Cyan
+$script:OrigDarcForExitTest = ${function:darc}
+function darc { $global:LASTEXITCODE = 42 }
+try {
+    $darc42 = Invoke-DarcJson -DarcArgs @('get-build', '--repo', 'https://github.com/dotnet/maui', '--commit', 'deadbeef')
+    Assert-Eq -Label "Invoke-DarcJson: darc exit 42 → Success=`$false" -Expected $false -Actual $darc42.Success
+    Assert-Eq -Label "Invoke-DarcJson: darc exit 42 → raw ExitCode surfaced (42)" -Expected 42 -Actual $darc42.ExitCode
+    Assert-Eq -Label "Invoke-DarcJson: darc exit 42 → NO truthy NoMatch flag (generic error, not no-match)" -Expected $false `
+        -Actual ([bool](Get-AzdoProp $darc42 'NoMatch'))
+} finally {
+    if ($null -ne $script:OrigDarcForExitTest) { Set-Item function:darc $script:OrigDarcForExitTest }
+    else { Remove-Item function:darc -ErrorAction SilentlyContinue }
+}
 
 # =========================================================================
 # Get-MilestoneHygieneChecks — current/next milestone existence + stale detection

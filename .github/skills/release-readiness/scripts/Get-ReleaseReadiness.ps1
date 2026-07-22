@@ -876,19 +876,26 @@ function Invoke-DarcJson {
         $jsonOutput = & darc @DarcArgs --output-format json 2>$null
         $exitCode = $LASTEXITCODE
         if ($exitCode -ne 0) {
-            return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $exitCode; NoMatch = ($exitCode -eq 42) }
+            # darc's non-zero exit is Constants.ErrorCode (42) in almost every case —
+            # GetBuildOperation/GetAssetOperation return it for no matches, invalid
+            # arguments, auth failures, and unhandled exceptions alike. It is therefore
+            # NOT a reliable "no match" signal, so we deliberately do not derive a
+            # NoMatch flag from it; the caller surfaces any failure as UNKNOWN rather
+            # than a reassuring "no build yet". A genuine empty-but-successful response
+            # is exit 0 with empty output (handled below).
+            return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $exitCode }
         }
         $joined = ($jsonOutput | Out-String)
         if ([string]::IsNullOrWhiteSpace($joined)) {
-            return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = 0; NoMatch = $false }
+            return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = 0 }
         }
         $parsed = $joined | ConvertFrom-Json -ErrorAction Stop
         if ($null -eq $parsed) {
-            return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = 0; NoMatch = $false }
+            return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = 0 }
         }
-        return [PSCustomObject]@{ Success = $true; Data = @($parsed); ExitCode = 0; NoMatch = $false }
+        return [PSCustomObject]@{ Success = $true; Data = @($parsed); ExitCode = 0 }
     } catch {
-        return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $null; NoMatch = $false }
+        return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $null }
     }
 }
 
@@ -982,14 +989,17 @@ function Get-MaestroOperationalChecks {
             -NextAction "Locally, once the build is confirmed: ``darc get-asset --name Microsoft.Maui.Controls --build <id>`` to get the NugetFeed URL, then link it in the ship Assessment."
     } else {
         $builds = Invoke-DarcJson -DarcArgs @('get-build', '--repo', $repoUrl, '--commit', $Ctx.srHeadSha)
-        if ((-not $builds.Success) -and (Get-AzdoProp $builds 'NoMatch')) {
-            $checks += New-ReadinessCheck -Area $buildArea -Status 'WATCH' `
-                -Details "No BAR build found for SR HEAD ``$headShort`` yet (``darc get-build`` returned no match). This can be normal while CI/BAR publishing is still running." `
-                -NextAction "Wait for CI to complete on ``$($Ctx.srBranch)`` at SR HEAD, then re-run readiness report. If this persists after CI is green, verify BAR publishing for the SR build."
-        } elseif (-not $builds.Success) {
+        if (-not $builds.Success) {
+            # darc failed. Its exit code is the generic Constants.ErrorCode (42) for
+            # no-match, auth, network, and BAR outages alike, so we cannot safely
+            # downgrade this to a reassuring "no build yet" WATCH — report UNKNOWN and
+            # tell the reader it may be transient. A genuine empty-but-successful darc
+            # response (exit 0, no builds) is the WATCH case handled further below.
+            $buildExit = Get-AzdoProp $builds 'ExitCode'
+            $exitInfo = if ($null -ne $buildExit) { " (darc exit $buildExit)" } else { "" }
             $checks += New-ReadinessCheck -Area $buildArea -Status 'UNKNOWN' `
-                -Details "``darc get-build`` failed for SR HEAD ``$headShort``." `
-                -NextAction "Run locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``"
+                -Details "``darc get-build`` did not return a usable result for SR HEAD ``$headShort``$exitInfo. darc exit 42 is a generic error code (no build yet, auth failure, or a network/BAR outage), so this is UNKNOWN rather than a definitive no-build; it may be transient while CI/BAR publishing is still running." `
+                -NextAction "Run locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``. If CI is still in-flight, re-run the readiness report shortly; if it persists after CI is green, check darc auth and BAR publishing for the SR build."
             $feedSha8Fail = $Ctx.srHeadSha.Substring(0, [Math]::Min(8, $Ctx.srHeadSha.Length))
             $feedUrlFail = "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-$feedSha8Fail/nuget/v3/index.json"
             $checks += New-ReadinessCheck -Area 'Ship Assessment validation feed' -Status 'UNKNOWN' `
@@ -1052,23 +1062,29 @@ function Get-MaestroOperationalChecks {
                 $asset = Invoke-DarcJson -DarcArgs @('get-asset', '--name', 'Microsoft.Maui.Controls', '--build', "$($latest.id)")
                 $nugetFeed = $null
                 if ($asset.Success) {
+                    # `darc get-asset --output-format json` projects each asset's
+                    # locations to a flat array of URL STRINGS
+                    # (GetAssetOperation: `locations = ...Select(l => l.Location)`).
+                    # It does NOT emit `{ type, location }` objects or a top-level
+                    # `NugetFeed` property, so collect the NuGet v3 feed URLs directly.
+                    $feedCandidates = @()
                     foreach ($a in @($asset.Data)) {
-                        foreach ($prop in 'NugetFeed', 'nugetFeed') {
-                            $v = Get-AzdoProp $a $prop
-                            if ($v) { $nugetFeed = [string]$v; break }
-                        }
-                        if ($nugetFeed) { break }
                         foreach ($loc in @((Get-AzdoProp $a 'locations'))) {
-                            $kind = (Get-AzdoProp $loc 'type')
-                            if (-not $kind) { $kind = (Get-AzdoProp $loc 'locationType') }
-                            $location = (Get-AzdoProp $loc 'location')
-                            if (-not $location) { $location = (Get-AzdoProp $loc 'feed') }
-                            if ($location -and ($kind -match 'NuGetFeed|NugetFeed')) {
-                                $nugetFeed = [string]$location
-                                break
+                            $locStr = [string]$loc
+                            if ($locStr -match '/nuget/v\d+/index\.json') {
+                                $feedCandidates += $locStr
                             }
                         }
-                        if ($nugetFeed) { break }
+                    }
+                    # Prefer the per-build darc-pub validation feed (what the ship
+                    # Assessment must link); otherwise fall back to any NuGet v3 feed
+                    # the asset is published to. Guard the indexing so an empty
+                    # candidate set does not throw under Set-StrictMode -Version Latest.
+                    $preferredFeeds = @($feedCandidates | Where-Object { $_ -match 'darc-pub' })
+                    if ($preferredFeeds.Count -gt 0) {
+                        $nugetFeed = $preferredFeeds[0]
+                    } elseif ($feedCandidates.Count -gt 0) {
+                        $nugetFeed = $feedCandidates[0]
                     }
                 }
                 if ($nugetFeed) {
