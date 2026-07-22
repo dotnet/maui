@@ -135,6 +135,7 @@ public partial class EntryControlMainPage : ContentPage
 	void MainLabel_Tapped(object sender, TappedEventArgs e)
 	{
 		// Recreate the page to verify initial mappers
+		EntryControl.PropertyChanged -= UpdateEntryControl;
 		ToolbarItems.Clear();
 		Content = new ContentView();
 		INameScope scope = this;
