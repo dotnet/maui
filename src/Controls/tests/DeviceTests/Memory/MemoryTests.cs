@@ -474,16 +474,42 @@ public class MemoryTests : ControlsHandlerTestBase
 
 			Assert.NotNull(previousSource);
 			Assert.Single(initialSubscribers);
+			previousSource.NumberOfSections(platformView);
+			var previousSourceGestureCount = platformView.GestureRecognizers?.Length ?? 0;
 #pragma warning disable CS0618 // Type or member is obsolete
 			tableView.HasUnevenRows = true;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			var replacementSubscribers = GetModelChangedSubscribers(tableView);
+			var replacementSource = platformView.Source;
+			replacementSource.NumberOfSections(platformView);
 			Assert.NotSame(previousSource, platformView.Source);
 			Assert.Single(replacementSubscribers);
 			Assert.NotSame(initialSubscribers[0].Target, replacementSubscribers[0].Target);
+			Assert.Equal(previousSourceGestureCount, platformView.GestureRecognizers?.Length ?? 0);
 
 			renderer.Dispose();
+		});
+	}
+
+	[Fact("ContextActionsCell Disposal Unsubscribes Cell")]
+	public async Task ContextActionsCellDisposalUnsubscribesCell()
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			var cell = new ViewCell();
+			cell.ContextActions.Add(new MenuItem { Text = "Action" });
+#pragma warning restore CS0618 // Type or member is obsolete
+			using var tableView = new UIKit.UITableView();
+			using var nativeCell = new UIKit.UITableViewCell();
+			var contextActionsCell = new ContextActionsCell();
+
+			contextActionsCell.Update(tableView, cell, nativeCell);
+			Assert.Contains(GetPropertyChangedSubscribers(cell), subscriber => ReferenceEquals(subscriber.Target, contextActionsCell));
+
+			contextActionsCell.Dispose();
+			Assert.DoesNotContain(GetPropertyChangedSubscribers(cell), subscriber => ReferenceEquals(subscriber.Target, contextActionsCell));
 		});
 	}
 
@@ -494,6 +520,13 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning restore CS0618 // Type or member is obsolete
 		Assert.NotNull(eventField);
 		return (eventField.GetValue(tableView) as MulticastDelegate)?.GetInvocationList() ?? [];
+	}
+
+	static Delegate[] GetPropertyChangedSubscribers(BindableObject bindable)
+	{
+		var eventField = typeof(BindableObject).GetField("PropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+		Assert.NotNull(eventField);
+		return (eventField.GetValue(bindable) as MulticastDelegate)?.GetInvocationList() ?? [];
 	}
 #endif
 

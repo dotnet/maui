@@ -304,6 +304,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_cell != null)
 				{
+					_cell.PropertyChanged -= OnCellPropertyChanged;
 					if (_cell.HasContextActions)
 						((INotifyCollectionChanged)_cell.ContextActions).CollectionChanged -= OnContextItemsChanged;
 					_cell = null;
