@@ -69,24 +69,24 @@
   <Target Name="_GetTemplatePackageVersions">
     <ItemGroup>
       <_TemplatePackageVersion Include="MS_EXT_LOG_DEBUG_VERSION_VALUE">
-        <CurrentVersion>$(MicrosoftExtensionsLoggingDebugVersion)</CurrentVersion>
-        <ReplacementVersion>$(MicrosoftExtensionsLoggingDebugVersion)</ReplacementVersion>
-        <ReplacementVersion Condition="$(MicrosoftExtensionsLoggingDebugVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftExtensionsLoggingDebugVersion)', '-.*$', '-*'))</ReplacementVersion>
+        <CurrentVersion>$(MicrosoftDotNetNPackageVersion)</CurrentVersion>
+        <ReplacementVersion>$(MicrosoftDotNetNPackageVersion)</ReplacementVersion>
+        <ReplacementVersion Condition="$(MicrosoftDotNetNPackageVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftDotNetNPackageVersion)', '-.*$', '-*'))</ReplacementVersion>
       </_TemplatePackageVersion>
       <_TemplatePackageVersion Include="MS_COMPONENTS_WEB_VERSION_VALUE">
-        <CurrentVersion>$(MicrosoftAspNetCoreComponentsWebPackageVersion)</CurrentVersion>
-        <ReplacementVersion>$(MicrosoftAspNetCoreComponentsWebPackageVersion)</ReplacementVersion>
-        <ReplacementVersion Condition="$(MicrosoftAspNetCoreComponentsWebPackageVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebPackageVersion)', '-.*$', '-*'))</ReplacementVersion>
+        <CurrentVersion>$(MicrosoftDotNetNPackageVersion)</CurrentVersion>
+        <ReplacementVersion>$(MicrosoftDotNetNPackageVersion)</ReplacementVersion>
+        <ReplacementVersion Condition="$(MicrosoftDotNetNPackageVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftDotNetNPackageVersion)', '-.*$', '-*'))</ReplacementVersion>
       </_TemplatePackageVersion>
       <_TemplatePackageVersion Include="MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE">
-        <CurrentVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)</CurrentVersion>
-        <ReplacementVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)</ReplacementVersion>
-        <ReplacementVersion Condition="$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)', '-.*$', '-*'))</ReplacementVersion>
+        <CurrentVersion>$(MicrosoftDotNetNPackageVersion)</CurrentVersion>
+        <ReplacementVersion>$(MicrosoftDotNetNPackageVersion)</ReplacementVersion>
+        <ReplacementVersion Condition="$(MicrosoftDotNetNPackageVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftDotNetNPackageVersion)', '-.*$', '-*'))</ReplacementVersion>
       </_TemplatePackageVersion>
       <_TemplatePackageVersion Include="MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE">
-        <CurrentVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)</CurrentVersion>
-        <ReplacementVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)</ReplacementVersion>
-        <ReplacementVersion Condition="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)', '-.*$', '-*'))</ReplacementVersion>
+        <CurrentVersion>$(MicrosoftDotNetNPackageVersion)</CurrentVersion>
+        <ReplacementVersion>$(MicrosoftDotNetNPackageVersion)</ReplacementVersion>
+        <ReplacementVersion Condition="$(MicrosoftDotNetNPackageVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftDotNetNPackageVersion)', '-.*$', '-*'))</ReplacementVersion>
       </_TemplatePackageVersion>
     </ItemGroup>
   </Target>
@@ -209,7 +209,7 @@
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_PreviewNProperties);ExpectedDotNetPackageVersion=$(MicrosoftDotNetN1PackageVersion);ExpectedTemplatePackageVersion=11.0.0-*" />
+        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;MicrosoftDotNetNPackageVersion=11.0.0-preview.7.26364.110;ExpectedDotNetPackageVersion=$(MicrosoftDotNetN1PackageVersion);ExpectedTemplatePackageVersion=11.0.0-*" />
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
@@ -217,7 +217,7 @@
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_PreviewNProperties);MicrosoftDotNetN1PackageVersion=10.0.0;ExpectedDotNetPackageVersion=10.0.0;ExpectedTemplatePackageVersion=11.0.0-*" />
+        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;MicrosoftDotNetNPackageVersion=11.0.0-preview.7.26364.110;MicrosoftDotNetN1PackageVersion=10.0.0;ExpectedDotNetPackageVersion=10.0.0;ExpectedTemplatePackageVersion=11.0.0-*" />
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
