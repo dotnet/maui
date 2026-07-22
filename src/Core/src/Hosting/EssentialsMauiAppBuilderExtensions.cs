@@ -715,13 +715,26 @@ namespace Microsoft.Maui.Hosting
 			sealed class AppActionsSynchronizationContext : SynchronizationContext, IDisposable
 			{
 				readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object?>> _queue = new();
+				int _acceptingPosts = 1;
 
 				public override void Post(SendOrPostCallback d, object? state)
 				{
 					if (d is null)
 						throw new ArgumentNullException(nameof(d));
 
-					_queue.Add(new KeyValuePair<SendOrPostCallback, object?>(d, state));
+					if (Volatile.Read(ref _acceptingPosts) == 0)
+						return;
+
+					try
+					{
+						_queue.Add(new KeyValuePair<SendOrPostCallback, object?>(d, state));
+					}
+					catch (InvalidOperationException) when (Volatile.Read(ref _acceptingPosts) == 0)
+					{
+					}
+					catch (ObjectDisposedException) when (Volatile.Read(ref _acceptingPosts) == 0)
+					{
+					}
 				}
 
 				public void RunOnCurrentThread()
@@ -732,11 +745,13 @@ namespace Microsoft.Maui.Hosting
 
 				public void Complete()
 				{
-					_queue.CompleteAdding();
+					if (Interlocked.Exchange(ref _acceptingPosts, 0) != 0)
+						_queue.CompleteAdding();
 				}
 
 				public void Dispose()
 				{
+					Interlocked.Exchange(ref _acceptingPosts, 0);
 					_queue.Dispose();
 				}
 			}

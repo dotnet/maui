@@ -830,6 +830,25 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void ConfiguredAppActionsSynchronizationContextIgnoresLatePosts()
+		{
+			var appActions = new CapturingSynchronizationContextAppActions();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions>(appActions);
+			builder.ConfigureEssentials(essentials =>
+				essentials.AddAppAction(new AppAction("test", "Test")));
+
+			using var app = builder.Build();
+
+			var callbackInvoked = false;
+			var exception = Record.Exception(() =>
+				appActions.CapturedContext!.Post(_ => callbackInvoked = true, null));
+
+			Assert.Null(exception);
+			Assert.False(callbackInvoked);
+		}
+
+		[Fact]
 		public async Task ConfiguredAppActionsLogsUnexpectedSetFailure()
 		{
 			var loggerFactory = new RecordingLoggerFactory();
@@ -1141,6 +1160,24 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			{
 				await Task.Yield();
 				SetCompleted = true;
+			}
+		}
+
+		sealed class CapturingSynchronizationContextAppActions : IAppActions
+		{
+			public SynchronizationContext? CapturedContext { get; private set; }
+
+			public bool IsSupported => true;
+
+			public event EventHandler<AppActionEventArgs>? AppActionActivated { add { } remove { } }
+
+			public Task<IEnumerable<AppAction>> GetAsync() =>
+				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
+
+			public async Task SetAsync(IEnumerable<AppAction> actions)
+			{
+				CapturedContext = SynchronizationContext.Current;
+				await Task.Yield();
 			}
 		}
 
