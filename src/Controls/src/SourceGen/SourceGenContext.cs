@@ -9,9 +9,11 @@ using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
+class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem, Action<Diagnostic>? diagnosticReporter = null)
 {
-	internal static SourceGenContext CreateNewForTests() => new SourceGenContext(
+	List<Diagnostic>? _bufferedDiagnostics;
+
+	internal static SourceGenContext CreateNewForTests(Action<Diagnostic>? diagnosticReporter = null) => new SourceGenContext(
 		null!,
 		null!,
 		default,
@@ -19,7 +21,8 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 		new Dictionary<XmlType, INamedTypeSymbol>(),
 		null!,
 		null,
-		null!);
+		null!,
+		diagnosticReporter);
 
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
@@ -34,6 +37,12 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<INode, ILocalValue> Variables { get; } = new Dictionary<INode, ILocalValue>();
 	public void ReportDiagnostic(Diagnostic diagnostic)
 	{
+		if (ParentContext is not null)
+		{
+			ParentContext.ReportDiagnostic(diagnostic);
+			return;
+		}
+
 		// Check if this diagnostic should be suppressed based on NoWarn
 		var noWarn = ProjectItem?.NoWarn;
 		if (!string.IsNullOrEmpty(noWarn))
@@ -51,8 +60,47 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 				}
 			}
 		}
-		sourceProductionContext.ReportDiagnostic(diagnostic);
+
+		if (_bufferedDiagnostics is not null)
+		{
+			_bufferedDiagnostics.Add(diagnostic);
+			return;
+		}
+
+		ReportDiagnosticCore(diagnostic);
 	}
+
+	internal int BufferedDiagnosticCount => _bufferedDiagnostics?.Count ?? 0;
+
+	internal void BeginDiagnosticBuffering()
+	{
+		if (_bufferedDiagnostics is not null)
+			throw new InvalidOperationException("Diagnostic buffering is already active.");
+
+		_bufferedDiagnostics = [];
+	}
+
+	internal void FlushBufferedDiagnostics()
+	{
+		if (_bufferedDiagnostics is null)
+			throw new InvalidOperationException("Diagnostic buffering is not active.");
+
+		var diagnostics = _bufferedDiagnostics;
+		_bufferedDiagnostics = null;
+		foreach (var diagnostic in diagnostics)
+			ReportDiagnosticCore(diagnostic);
+	}
+
+	internal void DiscardBufferedDiagnostics() => _bufferedDiagnostics = null;
+
+	void ReportDiagnosticCore(Diagnostic diagnostic)
+	{
+		if (diagnosticReporter is not null)
+			diagnosticReporter(diagnostic);
+		else
+			sourceProductionContext.ReportDiagnostic(diagnostic);
+	}
+
 	public IDictionary<INode, ILocalValue> ServiceProviders { get; } = new Dictionary<INode, ILocalValue>();
 	public IDictionary<INode, (ILocalValue namescope, IDictionary<string, ILocalValue> namesInScope)> Scopes = new Dictionary<INode, (ILocalValue, IDictionary<string, ILocalValue>)>();
 	public SourceGenContext? ParentContext { get; set; }
