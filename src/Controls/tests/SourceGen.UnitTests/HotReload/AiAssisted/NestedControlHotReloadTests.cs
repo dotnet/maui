@@ -171,6 +171,57 @@ public class NestedControlHotReloadTests : IDisposable
 			["ProbeCard.xaml"] = new XamlHotReloadDocument(probeCard),
 		};
 
+	const string Nc04PageTemplate = """
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestAiAssisted"
+		             x:Class="TestAiAssisted.MainPage">
+		  <VerticalStackLayout>
+		    <local:ProbeCard x:Name="CardA" Value="__CARD_A_VALUE__" />
+		    <local:ProbeCard x:Name="CardB" Value="__CARD_B_VALUE__" />
+		  </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	const string Nc04ProbeCardTemplate = """
+		<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestAiAssisted"
+		             x:Class="TestAiAssisted.ProbeCard"
+		             x:Name="Root">
+		  <ContentView.Resources>
+		    <ResourceDictionary>
+		      <local:__CONVERTER__ x:Key="Fmt" />
+		    </ResourceDictionary>
+		  </ContentView.Resources>
+		  <Label x:Name="CardLabel"
+		         Text="{Binding Source={x:Reference Root}, Path=Value, Converter={StaticResource Fmt}}" />
+		</ContentView>
+		""";
+
+	static string Nc04Page(string cardAValue, string cardBValue) =>
+		Nc04PageTemplate
+			.Replace("__CARD_A_VALUE__", cardAValue, StringComparison.Ordinal)
+			.Replace("__CARD_B_VALUE__", cardBValue, StringComparison.Ordinal);
+
+	static string Nc04ProbeCard(string converter) =>
+		Nc04ProbeCardTemplate.Replace("__CONVERTER__", converter, StringComparison.Ordinal);
+
+	static string GetProbeCardUpdateV2(XamlHotReloadGeneration generation)
+	{
+		var updateComponentSource = Assert.Single(generation[1].GeneratedRoots,
+			static root => root.TypeName == "TestAiAssisted.ProbeCard").UpdateComponentSource;
+		Assert.NotNull(updateComponentSource);
+		return updateComponentSource!;
+	}
+
+	static void AssertProbeCardResourceDecline(string updateComponentSource)
+	{
+		Assert.Contains("XamlComponentRegistry.GetResourceKeys(this)", updateComponentSource, StringComparison.Ordinal);
+		Assert.Contains("XamlComponentRegistry.RegisterResourceKeys(this, global::System.Array.Empty<string>())", updateComponentSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("ProbeConverterUpdated", updateComponentSource, StringComparison.Ordinal);
+	}
+
 	// Wave2 · Nested Controls · P0-07 (V1 slice) · NC-01
 	// Provenance: MAUI Wave2 plan §3.5 NC-01 (P0-07) | anonymized "reusable card with per-instance local resources" pattern
 	// Faithfulness: construction-only — two same-compilation ProbeCard instances, each with its own
@@ -362,6 +413,23 @@ public class NestedControlHotReloadTests : IDisposable
 
 	// Wave2 · Nested Controls · P0-07 · NC-04
 	// Provenance: MAUI Wave2 plan §3.5 NC-04 (P0-07)
+	// Expected: GREEN
+	[Fact]
+	public void NestedGeneratedRoots_LocalResources_EmitsDocumentedResourceDecline()
+	{
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(NestedGeneratedRoots_LocalResources_EmitsDocumentedResourceDecline),
+			PageClass,
+			PageStub,
+			ProbeCardStub);
+		var generation = harness.GenerateDocuments(
+			Documents(Nc04Page("A1", "B1"), Nc04ProbeCard("ProbeConverterOriginal")),
+			Documents(Nc04Page("A2", "B2"), Nc04ProbeCard("ProbeConverterUpdated")));
+
+		AssertProbeCardResourceDecline(GetProbeCardUpdateV2(generation));
+		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);
+	}
+
 	// Faithfulness: ProbeCard is a separately generated XAML root, not a same-assembly C# stand-in.
 	// The page creates two cards, and the live session creates two retained pages, so each update
 	// must reach four independent ProbeCard roots. The harness applies deltas to page roots; the
@@ -372,60 +440,20 @@ public class NestedControlHotReloadTests : IDisposable
 	[MetadataUpdateFact(Skip = "Issue #36732: generated root Resources updates remove registered keys but do not reconstruct the V2 dictionary, so retained x:Reference bindings keep the V1 converter.")]
 	public void NestedGeneratedRoots_LocalResources_XReference_RetainedInstancesAndFreshInstanceStayIndependent()
 	{
-		const string pageTemplate = """
-			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             xmlns:local="clr-namespace:TestAiAssisted"
-			             x:Class="TestAiAssisted.MainPage">
-			  <VerticalStackLayout>
-			    <local:ProbeCard x:Name="CardA" Value="__CARD_A_VALUE__" />
-			    <local:ProbeCard x:Name="CardB" Value="__CARD_B_VALUE__" />
-			  </VerticalStackLayout>
-			</ContentPage>
-			""";
-		const string probeCardTemplate = """
-			<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             xmlns:local="clr-namespace:TestAiAssisted"
-			             x:Class="TestAiAssisted.ProbeCard"
-			             x:Name="Root">
-			  <ContentView.Resources>
-			    <ResourceDictionary>
-			      <local:__CONVERTER__ x:Key="Fmt" />
-			    </ResourceDictionary>
-			  </ContentView.Resources>
-			  <Label x:Name="CardLabel"
-			         Text="{Binding Source={x:Reference Root}, Path=Value, Converter={StaticResource Fmt}}" />
-			</ContentView>
-			""";
-
-		static string Page(string cardAValue, string cardBValue) =>
-			pageTemplate
-				.Replace("__CARD_A_VALUE__", cardAValue, StringComparison.Ordinal)
-				.Replace("__CARD_B_VALUE__", cardBValue, StringComparison.Ordinal);
-
-		static string ProbeCard(string converter) =>
-			probeCardTemplate.Replace("__CONVERTER__", converter, StringComparison.Ordinal);
-
 		using var harness = new XamlHotReloadTestHarness(
 			nameof(NestedGeneratedRoots_LocalResources_XReference_RetainedInstancesAndFreshInstanceStayIndependent),
 			PageClass,
 			PageStub,
 			ProbeCardStub);
 		var generation = harness.GenerateDocuments(
-			Documents(Page("A1", "B1"), ProbeCard("ProbeConverterOriginal")),
-			Documents(Page("A2", "B2"), ProbeCard("ProbeConverterUpdated")),
-			Documents(Page("A1", "B1"), ProbeCard("ProbeConverterOriginal")));
+			Documents(Nc04Page("A1", "B1"), Nc04ProbeCard("ProbeConverterOriginal")),
+			Documents(Nc04Page("A2", "B2"), Nc04ProbeCard("ProbeConverterUpdated")),
+			Documents(Nc04Page("A1", "B1"), Nc04ProbeCard("ProbeConverterOriginal")));
 
-		var probeCardUpdateV2 = Assert.Single(generation[1].GeneratedRoots,
-			static root => root.TypeName == "TestAiAssisted.ProbeCard").UpdateComponentSource;
-		Assert.NotNull(probeCardUpdateV2);
 		// Temporarily unskipped and confirmed: the root-Resources path removes the V1 registered
 		// key then registers an empty key set without constructing ProbeConverterUpdated. That leaves
 		// retained StaticResource bindings attached to their V1 converter; it is the #36732 decline.
-		Assert.Contains("XamlComponentRegistry.GetResourceKeys(this)", probeCardUpdateV2!, StringComparison.Ordinal);
-		Assert.Contains("XamlComponentRegistry.RegisterResourceKeys(this, global::System.Array.Empty<string>())", probeCardUpdateV2!, StringComparison.Ordinal);
-		Assert.DoesNotContain("ProbeConverterUpdated", probeCardUpdateV2!, StringComparison.Ordinal);
+		AssertProbeCardResourceDecline(GetProbeCardUpdateV2(generation));
 
 		harness.RunLive(generation, live =>
 		{
