@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == '' and '$(MauiTestProject)' == 'true'">false</UseN1PackageVersions>
+    <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == '' and ('$(IsTestProject)' == 'true' or '$(MauiTestProject)' == 'true')">false</UseN1PackageVersions>
     <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == ''">true</UseN1PackageVersions>
     <MicrosoftDotNetNPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftDotNetNPackageVersion>
     <MicrosoftDotNetN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftDotNetN1PackageVersion>
