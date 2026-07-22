@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 
 			foreach (var gradientStop in GradientStops)
+			{
 				SetInheritedBindingContext(gradientStop, BindingContext);
+			}
 		}
 
 		void UpdateGradientStops(GradientStopCollection oldCollection, GradientStopCollection newCollection)
@@ -57,24 +59,32 @@ namespace Microsoft.Maui.Controls
 
 		void AttachCollection(GradientStopCollection collection)
 		{
-			if (collection == null)
+			if (collection is null)
+			{
 				return;
+			}
 
 			collection.CollectionChanged += OnGradientStopCollectionChanged;
 
 			foreach (var stop in collection)
+			{
 				SubscribeToGradientStop(stop);
+			}
 		}
 
 		void DetachCollection(GradientStopCollection collection)
 		{
-			if (collection == null)
+			if (collection is null)
+			{
 				return;
+			}
 
 			collection.CollectionChanged -= OnGradientStopCollectionChanged;
 
 			foreach (var stop in collection)
+			{
 				UnsubscribeFromGradientStop(stop);
+			}
 		}
 
 		void OnGradientStopCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -82,31 +92,39 @@ namespace Microsoft.Maui.Controls
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					if (e.NewItems != null)
+					if (e.NewItems is not null)
 					{
 						foreach (GradientStop stop in e.NewItems)
+						{
 							SubscribeToGradientStop(stop);
+						}
 					}
 					break;
 
 				case NotifyCollectionChangedAction.Remove:
-					if (e.OldItems != null)
+					if (e.OldItems is not null)
 					{
 						foreach (GradientStop stop in e.OldItems)
+						{
 							UnsubscribeFromGradientStop(stop);
+						}
 					}
 					break;
 
 				case NotifyCollectionChangedAction.Replace:
-					if (e.OldItems != null)
+					if (e.OldItems is not null)
 					{
 						foreach (GradientStop stop in e.OldItems)
+						{
 							UnsubscribeFromGradientStop(stop);
+						}
 					}
-					if (e.NewItems != null)
+					if (e.NewItems is not null)
 					{
 						foreach (GradientStop stop in e.NewItems)
+						{
 							SubscribeToGradientStop(stop);
+						}
 					}
 					break;
 
@@ -124,8 +142,10 @@ namespace Microsoft.Maui.Controls
 
 		void SubscribeToGradientStop(GradientStop stop)
 		{
-			if (stop == null)
+			if (stop is null)
+			{
 				return;
+			}
 
 			if (_subscriptionRefCounts.TryGetValue(stop, out var count))
 			{
@@ -140,11 +160,15 @@ namespace Microsoft.Maui.Controls
 
 		void UnsubscribeFromGradientStop(GradientStop stop)
 		{
-			if (stop == null)
+			if (stop is null)
+			{
 				return;
+			}
 
 			if (!_subscriptionRefCounts.TryGetValue(stop, out var count))
+			{
 				return;
+			}
 
 			if (count > 1)
 			{
@@ -172,11 +196,15 @@ namespace Microsoft.Maui.Controls
 		{
 			UnsubscribeFromAllGradientStops();
 
-			if (collection == null)
+			if (collection is null)
+			{
 				return;
+			}
 
 			foreach (var stop in collection)
+			{
 				SubscribeToGradientStop(stop);
+			}
 		}
 
 		void OnGradientStopPropertyChanged(object sender, PropertyChangedEventArgs e)
