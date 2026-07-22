@@ -29,11 +29,7 @@ public partial class Material3_EntryControlMainPage : ContentPage
 
 	async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new EntryViewModel();
-		_viewModel.Text = "Test Entry";
-		_viewModel.Placeholder = "Enter text here";
-		_viewModel.CursorPosition = 0;
-		_viewModel.SelectionLength = 0;
+		_viewModel.Reset();
 		await Navigation.PushAsync(new EntryOptionsPage(_viewModel));
 	}
 
