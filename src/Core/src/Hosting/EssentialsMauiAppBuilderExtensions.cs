@@ -419,9 +419,13 @@ namespace Microsoft.Maui.Hosting
 				// VersionTracking captures Preferences and AppInfo when its lazy default is created.
 				// Install an app-owned lazy wrapper so a later static call cannot retain provider-owned
 				// services after this MauiApp is disposed.
-				var implementation = new LazyVersionTracking(
-					dependencies.Preferences ?? Preferences.Default,
-					dependencies.AppInfo ?? AppInfo.Current);
+				Func<IPreferences> getPreferences = dependencies.Preferences is { } preferences
+					? () => preferences
+					: static () => Preferences.Default;
+				Func<IAppInfo> getAppInfo = dependencies.AppInfo is { } appInfo
+					? () => appInfo
+					: static () => AppInfo.Current;
+				var implementation = new LazyVersionTracking(getPreferences, getAppInfo);
 				TrackAndSet(
 					implementation,
 					VersionTracking.GetDefault,
@@ -627,9 +631,9 @@ namespace Microsoft.Maui.Hosting
 			{
 				readonly Lazy<IVersionTracking> _implementation;
 
-				public LazyVersionTracking(IPreferences preferences, IAppInfo appInfo)
+				public LazyVersionTracking(Func<IPreferences> getPreferences, Func<IAppInfo> getAppInfo)
 				{
-					_implementation = new(() => new VersionTrackingImplementation(preferences, appInfo));
+					_implementation = new(() => new VersionTrackingImplementation(getPreferences(), getAppInfo()));
 				}
 
 				IVersionTracking Implementation => _implementation.Value;

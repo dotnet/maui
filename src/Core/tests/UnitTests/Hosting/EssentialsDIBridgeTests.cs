@@ -660,6 +660,29 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void LazyVersionTrackingPreservesUnregisteredFacadeLaziness()
+		{
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+			Assert.Null(GetStaticField(typeof(AppInfo), "currentImplementation"));
+
+			var appInfoBuilder = MauiApp.CreateBuilder();
+			appInfoBuilder.Services.AddSingleton<IAppInfo>(new StubAppInfo());
+			using (var app = appInfoBuilder.Build())
+			{
+				Assert.NotNull(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+				Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+			}
+
+			var preferencesBuilder = MauiApp.CreateBuilder();
+			preferencesBuilder.Services.AddSingleton<IPreferences>(new StubPreferences());
+			using (var app = preferencesBuilder.Build())
+			{
+				Assert.NotNull(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+				Assert.Null(GetStaticField(typeof(AppInfo), "currentImplementation"));
+			}
+		}
+
+		[Fact]
 		public void FailedBridgeResolutionRestoresPreviouslyAssignedFacade()
 		{
 			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
