@@ -311,6 +311,27 @@ Investigate.
         $merged | Should -Match '3 visual comparison\(s\) could not be prepared from CI artifacts and are not shown\.'
     }
 
+    It 'reports publisher-omitted comparisons in the failure-only section (not just preparation failures)' {
+        # When every prepared comparison failed AND the MaxComparisons cap / dedup already dropped
+        # others, the failure-only section must surface BOTH counts. Previously omittedCount was
+        # hardcoded to zero here, silently losing the capped/deduped omissions (e.g. 30 unique
+        # failures capped to 24 with all 24 preparations failing would lose the other 6).
+        $context = New-VisualTestContext -Published $false -PreparationFailureCount 24 -OmittedCount 6 -Comparisons @()
+        $body = "Analysis`n<!-- GH_AW_TRUSTED_VISUALS -->`nDone"
+
+        $merged = Merge-VisualsIntoBody `
+            -Body $body `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 60000
+
+        $merged | Should -Match '24 visual comparison\(s\) could not be prepared from CI artifacts and are not shown\.'
+        $merged | Should -Match '6 additional comparison\(s\) were omitted'
+    }
+
     It 'skips an invalid actual URL and reports the comparison as omitted' {
         $comparison = New-VisualTestComparison
         $comparison.actualUrl = 'https://evil.example/payload.png'

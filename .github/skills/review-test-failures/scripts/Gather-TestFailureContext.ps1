@@ -256,7 +256,11 @@ function Get-AzDoFailedTestResultsByBuild {
         [string]$Org,
         [string]$Project,
         [int]$BuildId,
-        [int]$MaxPages = 10
+        [int]$MaxPages = 10,
+        # Optional wall-clock bound shared with the caller's visual-evidence budget. Paging stops
+        # once this deadline passes so a build with many failed-result pages cannot hold the gather
+        # past its budget. Defaults to MaxValue so unbudgeted callers behave exactly as before.
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     $results = New-Object System.Collections.Generic.List[object]
@@ -291,6 +295,13 @@ function Get-AzDoFailedTestResultsByBuild {
         }
         if ($page -ge $MaxPages) {
             $truncated = ($null -ne $continuation)
+            break
+        }
+        if ($null -ne $continuation -and (Get-Date) -ge $Deadline) {
+            # Remaining-budget guard: more pages exist but the shared visual-evidence deadline has
+            # passed. Stop paging and report truncation so the caller records the omission caveat
+            # instead of blocking on further network round-trips.
+            $truncated = $true
             break
         }
     } while ($continuation)
@@ -2898,12 +2909,23 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
+    if ($build.definition.name -eq "maui-pr-uitests" -and (Get-Date) -ge $visualEvidenceDeadline -and -not $visualEvidenceBudgetTripped) {
+        # The visual budget was already exhausted before this maui-pr-uitests build's visual
+        # discovery could begin (earlier builds' Helix/log reads share the same wall-clock budget).
+        # Without this, the discovery block below is skipped silently and an empty visual scan is
+        # indistinguishable from a genuinely clean one. Record the caveat exactly once -- the same
+        # limitation the inner per-result guard records when the budget trips mid-scan.
+        $visualEvidenceBudgetTripped = $true
+        $visualEvidenceLimitations.Add("Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted.")
+    }
+
     if ($build.definition.name -eq "maui-pr-uitests" -and (Get-Date) -lt $visualEvidenceDeadline) {
         try {
             $failedResultPage = Get-AzDoFailedTestResultsByBuild `
                 -Org $buildRef.org `
                 -Project $buildRef.project `
-                -BuildId $buildRef.buildId
+                -BuildId $buildRef.buildId `
+                -Deadline $visualEvidenceDeadline
             $failedResultsAll = @($failedResultPage.results)
             $failedResults = @($failedResultsAll | Select-Object -First 100)
 

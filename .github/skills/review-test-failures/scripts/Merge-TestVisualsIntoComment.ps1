@@ -473,7 +473,16 @@ function Merge-VisualsIntoBody {
             0
         }
         if ($prepFailures -gt 0) {
-            $failureSection = New-InlineVisualSection -Panels @() -OmittedCount 0 -PreparationFailureCount $prepFailures
+            # Surface the publisher's omittedCount here too: when every comparison failed preparation
+            # the MaxComparisons cap / dedup drops are still real omissions, and hardcoding zero would
+            # under-report how many comparisons the reader is not seeing.
+            $publisherOmitted = if ($Context.visualAssets.omittedCount) {
+                [Math]::Max(0, [int]$Context.visualAssets.omittedCount)
+            }
+            else {
+                0
+            }
+            $failureSection = New-InlineVisualSection -Panels @() -OmittedCount $publisherOmitted -PreparationFailureCount $prepFailures
             return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
         }
         return $baseBody.Replace($placeholder, "")

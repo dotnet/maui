@@ -488,15 +488,24 @@ function Get-VisualEvidenceDedupKey {
     # When the environment is unresolved (the gatherer sets environmentName to null whenever a
     # build exposes multiple environment hints for one platform), platform + snapshot alone cannot
     # tell two distinct legs apart: distinct iOS legs failing the same snapshot would both key on
-    # "ios|name.png|" and one would be collapsed as if it were a retry of the other. Fall back to a
-    # per-result discriminator in that case so distinct legs stay separate; a resolved environment
-    # still keeps collapsing genuine retry attempts of the same leg.
+    # "ios|name.png|" and one would be collapsed as if it were a retry of the other. Prefer the AzDO
+    # test-run *name* -- the pipeline job/leg display name carried through gathering -- as the leg
+    # identity in that case: it is stable across retries of the SAME leg (a retry re-runs the same
+    # job and reuses its run name) yet differs between DISTINCT legs, so same-leg retries collapse to
+    # one panel (freeing MaxComparisons slots for genuinely distinct failures) while distinct legs
+    # stay separate. Only when no run name is available do we fall back to the per-result identifier,
+    # which never collapses distinct legs (fails safe); its cost is that a same-leg retry lacking a
+    # run name is not collapsed, which the downstream omittedCount caveat still surfaces.
     $environmentName = [string]$Evidence.environmentName
-    $legDiscriminator = if ([string]::IsNullOrWhiteSpace($environmentName)) {
-        "leg:$([string]$Evidence.runId):$([string]$Evidence.resultId)"
+    $runName = [string]$Evidence.runName
+    $legDiscriminator = if (-not [string]::IsNullOrWhiteSpace($environmentName)) {
+        $environmentName
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($runName)) {
+        "run:$runName"
     }
     else {
-        $environmentName
+        "leg:$([string]$Evidence.runId):$([string]$Evidence.resultId)"
     }
     $parts = @(
         [string]$Evidence.platform,
@@ -560,8 +569,32 @@ $preparationFailureCount = 0
 $totalBytes = 0L
 $index = 0
 
+# Aggregate wall-clock budget for the whole publish step. Each selected comparison can fetch an
+# actual image, a diff image, and several baseline candidates, and every download allows up to
+# Invoke-DownloadFile's MaxAttempts x 2-minute timeout. A handful of degraded AzDO/raw hosts could
+# otherwise hold this pre-activation step for hours despite continue-on-error, so once the budget is
+# spent we stop starting new comparisons and record the untouched remainder as omitted.
+$publishBudgetSeconds = 900
+$parsedPublishBudget = 0
+if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_PUBLISH_BUDGET_SECONDS) -and
+    [int]::TryParse($env:REVIEW_TESTS_PUBLISH_BUDGET_SECONDS, [ref]$parsedPublishBudget) -and
+    $parsedPublishBudget -gt 0) {
+    $publishBudgetSeconds = $parsedPublishBudget
+}
+$publishDeadline = (Get-Date).AddSeconds($publishBudgetSeconds)
+
 foreach ($evidence in $selectedEvidence) {
     $index++
+    if ((Get-Date) -ge $publishDeadline) {
+        # Budget exhausted: items $index..Count (inclusive of the current one) are untouched. Record
+        # them as omitted and stop before starting any more downloads.
+        $remaining = $selectedEvidence.Count - $index + 1
+        if ($remaining -gt 0) {
+            $omittedCount += $remaining
+            $errors.Add("Publish budget of ${publishBudgetSeconds}s exhausted before preparing $remaining remaining comparison(s); they were omitted.")
+        }
+        break
+    }
     $runId = [int]$evidence.runId
     $resultId = [int]$evidence.resultId
     $buildId = [int]$evidence.buildId
@@ -721,6 +754,7 @@ if ($assets.Count -eq 0 -or $prepared.Count -eq 0) {
     }
     $context | Add-Member -NotePropertyName visualAssets -NotePropertyValue ([ordered]@{
         published = $false
+        omittedCount = $omittedCount
         preparationFailureCount = $preparationFailureCount
         errors = $errors.ToArray()
     }) -Force

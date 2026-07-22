@@ -191,4 +191,58 @@ Describe 'Visual evidence deduplication' {
         Get-VisualEvidenceDedupKey -Evidence $legA |
             Should -Not -Be (Get-VisualEvidenceDedupKey -Evidence $legB)
     }
+
+    It 'collapses same-leg retry attempts when the environment is unresolved but the run name is stable' {
+        # A retry re-runs the same pipeline job/leg and reuses its test-run name, so even though the
+        # environment could not be resolved (multi-hint build) the two attempts share a stable leg
+        # identity and must collapse to one key -- otherwise each retry consumes a MaxComparisons slot
+        # and crowds out genuinely distinct failures.
+        $firstAttempt = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = $null
+            runName = 'TestCases.iOS.Tests (ios-26)'
+            buildId = 100
+            runId = 200
+            resultId = 300
+        }
+        $retryAttempt = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = $null
+            runName = 'TestCases.iOS.Tests (ios-26)'
+            buildId = 101
+            runId = 205
+            resultId = 999
+        }
+
+        Get-VisualEvidenceDedupKey -Evidence $firstAttempt |
+            Should -Be (Get-VisualEvidenceDedupKey -Evidence $retryAttempt)
+    }
+
+    It 'keeps distinct legs separate when the environment is unresolved but the run names differ' {
+        # Distinct legs (e.g. two iOS device queues) run under different pipeline jobs, so their
+        # test-run names differ even when the environment cannot be resolved. They must stay separate.
+        $legA = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = $null
+            runName = 'TestCases.iOS.Tests (ios-26)'
+            buildId = 100
+            runId = 200
+            resultId = 300
+        }
+        $legB = [pscustomobject]@{
+            platform = 'ios'
+            snapshotFileName = 'Controls.Sample.png'
+            environmentName = $null
+            runName = 'TestCases.iOS.Tests (ios-iphonex)'
+            buildId = 100
+            runId = 200
+            resultId = 300
+        }
+
+        Get-VisualEvidenceDedupKey -Evidence $legA |
+            Should -Not -Be (Get-VisualEvidenceDedupKey -Evidence $legB)
+    }
 }
