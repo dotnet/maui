@@ -138,6 +138,8 @@ namespace Microsoft.Maui.Controls
 				navigationBarAppearance.BackgroundColor = ColorExtensions.BackgroundColor;
 				// Match renderer: default translucency is driven by IsNavigationBarTranslucent (defaults to false)
 				navBar.Translucent = userTranslucentValue;
+
+				SetupDefaultNavigationBarAppearance(navBar, navigationBarAppearance);
 			}
 			else if (barBackgroundColor is null && barBackground is not null)
 			{
@@ -189,6 +191,8 @@ namespace Microsoft.Maui.Controls
 			navBar.CompactAppearance = navigationBarAppearance;
 			navBar.StandardAppearance = navigationBarAppearance;
 			navBar.ScrollEdgeAppearance = navigationBarAppearance;
+
+			MapHideNavigationBarSeparator(handler, navigationPage);
 		}
 
 		void OnBarBackgroundBrushInvalidated(object sender, EventArgs e)
@@ -269,21 +273,15 @@ namespace Microsoft.Maui.Controls
 				navBar.ScrollEdgeAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
 			}
 
-			navBar.TintColor = barTextColor is null
-				? UINavigationBar.Appearance.TintColor
-				: barTextColor.ToPlatform();
-
-			// Per-page IconColor overrides TintColor (back arrow + button text)
 			var iconColor = navigationPage.CurrentPage is Page current ? GetIconColor(current) : null;
-
-			if (iconColor is not null)
+			if (iconColor is null)
 			{
-				var statusBarMode = iOSSpecificNavigationPage.GetStatusBarTextColorMode(navigationPage);
-				if (statusBarMode != PlatformConfiguration.iOSSpecific.StatusBarTextColorMode.DoNotAdjust)
-				{
-					navBar.TintColor = iconColor.ToPlatform();
-				}
+				iconColor = barTextColor;
 			}
+
+			navBar.TintColor = iconColor is null || iOSSpecificNavigationPage.GetStatusBarTextColorMode(navigationPage) == PlatformConfiguration.iOSSpecific.StatusBarTextColorMode.DoNotAdjust
+				? UINavigationBar.Appearance.TintColor
+				: iconColor.ToPlatform();
 
 			// iOS 26+ Liquid Glass ignores TintColor for the back button; apply via appearance instead.
 			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
@@ -358,6 +356,11 @@ namespace Microsoft.Maui.Controls
 		static void MapStatusBarTextColorMode(NavigationViewHandler handler, NavigationPage navigationPage)
 		{
 			SetStatusBarStyle(navigationPage);
+
+			// Matches renderer: StatusBarTextColorMode gates IconColor/TintColor in
+			// MapBarTextColor. Toggling the mode must also refresh bar text appearance,
+			// otherwise the tint stays stale from the previous mode.
+			MapBarTextColor(handler, navigationPage);
 		}
 
 		static void SetStatusBarStyle(NavigationPage navigationPage)
@@ -425,6 +428,41 @@ namespace Microsoft.Maui.Controls
 			var scrollEdge = navBar.ScrollEdgeAppearance;
 			scrollEdge.ShadowColor = shadowColor;
 			navBar.ScrollEdgeAppearance = scrollEdge;
+		}
+
+		/// <summary>
+		/// Bridges legacy UINavigationBar API values to the modern UINavigationBarAppearance API.
+		/// Matches renderer's SetupDefaultNavigationBarAppearance() — preserves native background,
+		/// shadow, and back-indicator images set via UINavigationBar.Appearance proxy (pre-iOS 13 pattern).
+		/// Only fills values that the appearance doesn't already have (null checks).
+		/// </summary>
+		static void SetupDefaultNavigationBarAppearance(UINavigationBar navBar, UINavigationBarAppearance appearance)
+		{
+			if (appearance.BackgroundColor is null)
+			{
+				appearance.BackgroundColor = navBar.BarTintColor;
+			}
+
+			if (appearance.BackgroundImage is null)
+			{
+				appearance.BackgroundImage = navBar.GetBackgroundImage(UIBarMetrics.Default);
+			}
+
+			if (appearance.ShadowImage is null)
+			{
+				var shadowImage = navBar.ShadowImage;
+				appearance.ShadowImage = shadowImage;
+
+				if (shadowImage is not null && shadowImage.Size == CoreGraphics.CGSize.Empty)
+				{
+					appearance.ShadowColor = UIColor.Clear;
+				}
+			}
+
+			var backIndicatorImage = navBar.BackIndicatorImage;
+			var backIndicatorMask = navBar.BackIndicatorTransitionMaskImage;
+
+			appearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorMask);
 		}
 	}
 }

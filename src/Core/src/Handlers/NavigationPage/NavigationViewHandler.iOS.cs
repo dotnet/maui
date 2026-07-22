@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Handlers
 			}
 			_viewControllerMap.Clear();
 			NavigationStack = new List<IView>();
+			_pendingNavigationStack = null;
 
 			base.OnDisconnectHandler(platformView);
 		}
