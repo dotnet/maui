@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
 		CancellationTokenSource _scrollDebounce;
+		internal int DragStartPosition { get; private set; } = -1;
 
 		// We need to keep track of the old views to update the visual states
 		// if this is null we are not attached to the window
@@ -112,14 +113,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
-			//	_isDragging = true;
+			DragStartPosition = ItemsView?.Position ?? -1;
 			ItemsView?.SetIsDragging(true);
 		}
 
 		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
 		{
+			DragStartPosition = -1;
 			ItemsView?.SetIsDragging(false);
-			//_isDragging = false;
 		}
 
 		public override void UpdateItemsSource()
