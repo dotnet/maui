@@ -2,6 +2,37 @@
   <PropertyGroup>
     <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == '' and '$(MauiTestProject)' == 'true'">false</UseN1PackageVersions>
     <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == ''">true</UseN1PackageVersions>
+    <MicrosoftNETCoreAppRefN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftNETCoreAppRefN1PackageVersion>
+    <SystemTextJsonN1PackageVersion>$(MicrosoftNETCoreAppRefN1PackageVersion)</SystemTextJsonN1PackageVersion>
+    <SystemTextEncodingsWebN1PackageVersion>$(MicrosoftNETCoreAppRefN1PackageVersion)</SystemTextEncodingsWebN1PackageVersion>
+    <MicrosoftBclAsyncInterfacesN1PackageVersion>$(MicrosoftNETCoreAppRefN1PackageVersion)</MicrosoftBclAsyncInterfacesN1PackageVersion>
+    <SystemCodeDomN1PackageVersion>$(MicrosoftNETCoreAppRefN1PackageVersion)</SystemCodeDomN1PackageVersion>
+    <MicrosoftExtensionsConfigurationN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsConfigurationN1Version>
+    <MicrosoftExtensionsConfigurationAbstractionsN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsConfigurationAbstractionsN1Version>
+    <MicrosoftExtensionsConfigurationJsonN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsConfigurationJsonN1Version>
+    <MicrosoftExtensionsDependencyInjectionN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsDependencyInjectionN1Version>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsDependencyInjectionAbstractionsN1Version>
+    <MicrosoftExtensionsFileProvidersAbstractionsN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsFileProvidersAbstractionsN1Version>
+    <MicrosoftExtensionsLoggingAbstractionsN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsLoggingAbstractionsN1Version>
+    <MicrosoftExtensionsLoggingN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsLoggingN1Version>
+    <MicrosoftExtensionsLoggingConsoleN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsLoggingConsoleN1Version>
+    <MicrosoftExtensionsLoggingDebugN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsLoggingDebugN1Version>
+    <MicrosoftExtensionsPrimitivesN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsPrimitivesN1Version>
+    <MicrosoftExtensionsHostingAbstractionsN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsHostingAbstractionsN1Version>
+    <MicrosoftExtensionsHttpN1Version>11.0.0-preview.6.26359.118</MicrosoftExtensionsHttpN1Version>
+    <MicrosoftAspNetCoreAuthorizationN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreAuthorizationN1PackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreAuthenticationFacebookN1PackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGoogleN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreAuthenticationGoogleN1PackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreAuthenticationMicrosoftAccountN1PackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreComponentsAnalyzersN1PackageVersion>
+    <MicrosoftAspNetCoreComponentsFormsN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreComponentsFormsN1PackageVersion>
+    <MicrosoftAspNetCoreComponentsN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreComponentsN1PackageVersion>
+    <MicrosoftAspNetCoreComponentsWebN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreComponentsWebN1PackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreComponentsWebAssemblyN1PackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreComponentsWebAssemblyServerN1PackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreComponentsWebViewN1PackageVersion>
+    <MicrosoftAspNetCoreMetadataN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftAspNetCoreMetadataN1PackageVersion>
+    <MicrosoftJSInteropN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftJSInteropN1PackageVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UseN1PackageVersions)' == 'true' and $(MicrosoftExtensionsConfigurationVersion.Contains('-'))">

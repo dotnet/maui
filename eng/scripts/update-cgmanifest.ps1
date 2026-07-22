@@ -4,7 +4,7 @@
 .SYNOPSIS
     Updates the cgmanifest.json file with package versions from Versions.props
 .DESCRIPTION
-    This script reads the Versions.props file to extract NuGet package versions
+    This script reads the central package version files to extract NuGet package versions
     and updates the cgmanifest.json file with these versions.
 .NOTES
     This ensures that the Component Governance manifest is kept in sync with the actual package versions used in the project.
@@ -15,11 +15,15 @@ $ErrorActionPreference = 'Stop'
 # Get the paths to the files
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "../..")
 $versionsPropsPath = Join-Path $repoRoot "eng/Versions.props"
+$nuGetVersionsTargetsPath = Join-Path $repoRoot "eng/NuGetVersions.targets"
 $cgManifestPath = Join-Path $repoRoot "src/Templates/src/cgmanifest.json"
 
-# Read the Versions.props file
+# Read the central package version files
 Write-Host "Reading versions from: $versionsPropsPath"
 [xml]$versionsProps = Get-Content $versionsPropsPath -Raw
+Write-Host "Reading versions from: $nuGetVersionsTargetsPath"
+[xml]$nuGetVersionsTargets = Get-Content $nuGetVersionsTargetsPath -Raw
+$versionDocuments = @($versionsProps, $nuGetVersionsTargets)
 
 # Check if cgmanifest.json exists
 if (Test-Path $cgManifestPath) {
@@ -35,7 +39,7 @@ else {
     } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
 }
 
-# Create a mapping of package names to version property names in Versions.props
+# Create a mapping of package names to central version property names
 $packageVersionMappings = @{
     # Microsoft.NET.Test.Sdk and test-related packages
     'Microsoft.NET.Test.Sdk' = 'MicrosoftNETTestSdkPackageVersion'
@@ -92,9 +96,11 @@ function New-PackageEntry {
 function Get-VersionPropertyValue {
     param([string]$PropertyName)
 
-    foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
-        if ($propertyGroup.$PropertyName) {
-            return $propertyGroup.$PropertyName.ToString().Trim()
+    foreach ($versionDocument in $versionDocuments) {
+        foreach ($propertyGroup in $versionDocument.Project.PropertyGroup) {
+            if ($propertyGroup.$PropertyName) {
+                return $propertyGroup.$PropertyName.ToString().Trim()
+            }
         }
     }
 
