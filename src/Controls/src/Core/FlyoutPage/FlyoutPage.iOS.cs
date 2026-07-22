@@ -155,19 +155,31 @@ namespace Microsoft.Maui.Controls
                 return;
             }
 
-            EventHandler onItemTapped = (sender, e) =>
-            {
-                flyoutPage.IsPresented = !flyoutPage.IsPresented;
-            };
-
             var mauiContext = flyoutPage.FindMauiContext();
             if (mauiContext is null)
             {
                 return;
             }
 
+            // Weak reference prevents a pending async callback from keeping
+            // the page alive after the handler is disconnected (memory leak fix).
+            var weakPage = new WeakReference<FlyoutPage>(flyoutPage);
+
+            EventHandler onItemTapped = (sender, e) =>
+            {
+                if (weakPage.TryGetTarget(out var p))
+                {
+                    p.IsPresented = !p.IsPresented;
+                }
+            };
+
             flyoutPage.Flyout.IconImageSource.LoadImage(mauiContext, result =>
             {
+                if (!weakPage.TryGetTarget(out var fp))
+                {
+                    return;
+                }
+
                 var icon = result?.Value;
 
                 if (icon is not null)
@@ -176,7 +188,7 @@ namespace Microsoft.Maui.Controls
                     var originalSize = icon.Size;
                     if (originalSize.Height > 44)
                     {
-                        if (flyoutPage.Flyout.IconImageSource is not FontImageSource fontImageSource ||
+                        if (fp.Flyout.IconImageSource is not FontImageSource fontImageSource ||
                             !fontImageSource.IsSet(FontImageSource.SizeProperty))
                         {
                             icon = icon.ResizeImageSource(originalSize.Width, 44f, originalSize);
@@ -198,17 +210,17 @@ namespace Microsoft.Maui.Controls
                 {
                     // Fallback: use Flyout.Title as text button
                     targetVC.NavigationItem.LeftBarButtonItem =
-                        new UIBarButtonItem(flyoutPage.Flyout?.Title ?? string.Empty, UIBarButtonItemStyle.Plain, onItemTapped);
+                        new UIBarButtonItem(fp.Flyout?.Title ?? string.Empty, UIBarButtonItemStyle.Plain, onItemTapped);
                 }
 
                 // Set AutomationId and VoiceOver label/hint on the hamburger button.
-                if (!string.IsNullOrEmpty(flyoutPage.AutomationId))
+                if (!string.IsNullOrEmpty(fp.AutomationId))
                 {
-                    targetVC.NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = $"btn_{flyoutPage.AutomationId}";
+                    targetVC.NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = $"btn_{fp.AutomationId}";
                 }
 
                 // Apply FlyoutPage's SemanticProperties (Description/Hint), if set.
-                var semantics = SemanticProperties.UpdateSemantics(flyoutPage, null);
+                var semantics = SemanticProperties.UpdateSemantics(fp, null);
                 if (semantics is not null)
                 {
                     targetVC.NavigationItem.LeftBarButtonItem.UpdateSemantics(semantics);

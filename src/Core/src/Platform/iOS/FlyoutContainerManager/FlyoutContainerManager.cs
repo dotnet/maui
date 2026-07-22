@@ -263,6 +263,7 @@ internal class FlyoutContainerManager
 
 	internal void UpdateFlyoutBehavior(FlyoutBehavior behavior)
 	{
+		var previousBehavior = _flyoutBehavior;
 		_flyoutBehavior = behavior;
 
 		// Before initial layout, just store the behavior.
@@ -281,7 +282,9 @@ internal class FlyoutContainerManager
 			shouldPresent = true; // Locked = always presented (even on iPhone)
 		}
 
-		if (shouldPresent != _isPresented)
+		bool stateChanged = shouldPresent != _isPresented;
+
+		if (stateChanged)
 		{
 			// Notify delegate so VirtualView.IsPresented and IsPresentedChanged stay in sync.
 			// Safe because the mapper fires after ShouldShowSplitMode has settled;
@@ -294,10 +297,13 @@ internal class FlyoutContainerManager
 			UpdateClickOffView();
 		}
 
-		// Always update the bar button after a behavior change — the hamburger must be
-		// hidden in Split/Locked mode and shown in Popover mode, regardless of whether
-		// the presented state changed.
-		NotifyLeftBarButtonNeedsUpdate();
+		// Only update the bar button when behavior or presented state actually changed.
+		// Skipping redundant calls prevents excessive ShouldShowToolbarButton invocations
+		// when the same behavior is re-applied (e.g., repeated DisplayInfoChanged events).
+		if (previousBehavior != behavior || stateChanged)
+		{
+			NotifyLeftBarButtonNeedsUpdate();
+		}
 	}
 
 	internal void UpdateFlyoutWidth(double width)
