@@ -67,6 +67,7 @@
   </PropertyGroup>
 
   <Target Name="_GetTemplatePackageVersions">
+    <!-- Templates float on the current N preview band rather than pinning N-1; at GA they use exact stable N. -->
     <ItemGroup>
       <_TemplatePackageVersion Include="MS_EXT_LOG_DEBUG_VERSION_VALUE">
         <CurrentVersion>$(MicrosoftDotNetNPackageVersion)</CurrentVersion>
