@@ -20,7 +20,7 @@ public partial class ResourceAndThemeHotReloadTests
 	// TryEmitExpandedMarkupExtension) + keyed-scalar resource patch; fails if the value is not
 	// re-resolved against the renamed key on live update.
 	// Expected: GREEN
-	[Theory]
+	[MetadataUpdateTheory]
 	[InlineData("TextColor", "Color", "Color", "Red", "Blue")]
 	[InlineData("FontSize", "x:Double", "Double", "20", "30")]
 	[InlineData("Text", "x:String", "String", "Hello", "World")]

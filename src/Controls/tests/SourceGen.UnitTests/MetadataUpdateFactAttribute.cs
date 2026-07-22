@@ -28,3 +28,19 @@ public sealed class MetadataUpdateFactAttribute : FactAttribute
 		}
 	}
 }
+
+/// <summary>
+/// A <see cref="TheoryAttribute"/> that skips the test when the runtime does not support applying
+/// metadata updates (<see cref="MetadataUpdater.IsSupported"/> is <see langword="false"/>).
+/// </summary>
+public sealed class MetadataUpdateTheoryAttribute : TheoryAttribute
+{
+	public MetadataUpdateTheoryAttribute()
+	{
+		if (!MetadataUpdater.IsSupported)
+		{
+			Skip = "Requires runtime support for applying metadata updates. " +
+				"Set DOTNET_MODIFIABLE_ASSEMBLIES=debug in the environment to run these tests.";
+		}
+	}
+}

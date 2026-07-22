@@ -161,7 +161,7 @@ public partial class TemplateAndSelectorHotReloadTests
 	//               keeps emitting the stale accessor, or the compiled binding fails at construction.
 	// Expected: GREEN
 	// Issue: https://github.com/dotnet/maui/issues/36482
-	[Theory]
+	[MetadataUpdateTheory]
 	[InlineData("local:ItemA", "local:ItemB")]
 	[InlineData("{x:Type local:ItemA}", "{x:Type local:ItemB}")]
 	public void CompiledTemplate_RetypeAndReverse_GeneratedSourceTracksCurrentType(string dataTypeA, string dataTypeB)
