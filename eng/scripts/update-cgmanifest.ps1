@@ -15,15 +15,11 @@ $ErrorActionPreference = 'Stop'
 # Get the paths to the files
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "../..")
 $versionsPropsPath = Join-Path $repoRoot "eng/Versions.props"
-$nuGetVersionsTargetsPath = Join-Path $repoRoot "eng/NuGetVersions.targets"
 $cgManifestPath = Join-Path $repoRoot "src/Templates/src/cgmanifest.json"
 
 # Read the central package version files
 Write-Host "Reading versions from: $versionsPropsPath"
 [xml]$versionsProps = Get-Content $versionsPropsPath -Raw
-Write-Host "Reading versions from: $nuGetVersionsTargetsPath"
-[xml]$nuGetVersionsTargets = Get-Content $nuGetVersionsTargetsPath -Raw
-$versionDocuments = @($versionsProps, $nuGetVersionsTargets)
 
 # Check if cgmanifest.json exists
 if (Test-Path $cgManifestPath) {
@@ -65,11 +61,9 @@ $packageVersionMappings = @{
     'CommunityToolkit.Mvvm' = 'CommunityToolkitMvvmPackageVersion'
 }
 
-$n1PackageVersionMappings = @{
-    'Microsoft.Extensions.Logging.Debug' = 'MicrosoftDotNetN1PackageVersion'
-    'Microsoft.Extensions.Configuration' = 'MicrosoftDotNetN1PackageVersion'
-    'Microsoft.Extensions.DependencyInjection' = 'MicrosoftDotNetN1PackageVersion'
-}
+# Microsoft.Extensions template dependencies use published N-1 during previews, then stable N at GA.
+$n1PackageVersionNode = ([xml](Get-Content (Join-Path $repoRoot "eng/NuGetVersions.targets") -Raw)).SelectSingleNode('//MicrosoftDotNetN1PackageVersion')
+$n1PackageVersion = if ($null -eq $n1PackageVersionNode) { $null } else { $n1PackageVersionNode.InnerText.Trim() }
 
 # Initialize new registrations list
 $newRegistrations = New-Object System.Collections.ArrayList
@@ -91,20 +85,6 @@ function New-PackageEntry {
             }
         }
     }
-}
-
-function Get-VersionPropertyValue {
-    param([string]$PropertyName)
-
-    foreach ($versionDocument in $versionDocuments) {
-        foreach ($propertyGroup in $versionDocument.Project.PropertyGroup) {
-            if ($propertyGroup.$PropertyName) {
-                return $propertyGroup.$PropertyName.ToString().Trim()
-            }
-        }
-    }
-
-    return $null
 }
 
 # Handle CommunityToolkit.Maui versions first
@@ -139,28 +119,30 @@ foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
 # Process other packages
 foreach ($package in $packageVersionMappings.GetEnumerator()) {
     $packageName = $package.Key
-    $currentVersionPropertyName = $package.Value
-    $currentVersion = Get-VersionPropertyValue $currentVersionPropertyName
-    $versionPropertyName = $currentVersionPropertyName
-    $version = $currentVersion
+    $versionPropertyName = $package.Value
+    $version = $null
 
-    if (-not [string]::IsNullOrEmpty($currentVersion) -and
-        $n1PackageVersionMappings.ContainsKey($packageName) -and
-        $currentVersion.Contains('-')) {
-        $versionPropertyName = $n1PackageVersionMappings[$packageName]
-        $version = Get-VersionPropertyValue $versionPropertyName
-        if ([string]::IsNullOrEmpty($version)) {
-            throw "Could not find required N-1 version for $packageName (property: $versionPropertyName)"
+    # Look for the version in PropertyGroups
+    foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
+        if ($propertyGroup.$versionPropertyName) {
+            $version = $propertyGroup.$versionPropertyName.ToString().Trim()
+            if ($packageName.StartsWith('Microsoft.Extensions.') -and $version.Contains('-')) {
+                if ([string]::IsNullOrEmpty($n1PackageVersion)) {
+                    throw "Could not find required N-1 version for $packageName (property: MicrosoftDotNetN1PackageVersion)"
+                }
+                $version = $n1PackageVersion
+            }
+            if (-not [string]::IsNullOrEmpty($version)) {
+                Write-Host "Found $packageName version: $version"
+                [void]$newRegistrations.Add((New-PackageEntry -PackageName $packageName -PackageVersion $version))
+                break
+            }
         }
     }
 
     if ([string]::IsNullOrEmpty($version)) {
         Write-Warning "Could not find version for $packageName (property: $versionPropertyName)"
-        continue
     }
-
-    Write-Host "Found $packageName version: $version"
-    [void]$newRegistrations.Add((New-PackageEntry -PackageName $packageName -PackageVersion $version))
 }
 
 # Sort registrations by package name for consistent ordering
