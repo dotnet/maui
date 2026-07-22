@@ -54,7 +54,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (type.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 		{
 			//we might want to move this to a separate method
-			var visitor = new SetPropertiesVisitor(Context);
+			var visitor = new SetPropertiesVisitor(Context, valuePrecomputePass: true);
 			// var children = node.Properties.Values.ToList();
 			// children.AddRange(node.CollectionItems);
 			foreach (var cn in node.CollectionItems)
@@ -220,7 +220,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				var pType = req is IPropertySymbol prop ? prop.Type : ((IFieldSymbol)req).Type;
 				var pConverter = req.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(compilation.GetTypeByMetadataName("System.ComponentModel.TypeConverterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as ITypeSymbol;
 
-				var visitor = new SetPropertiesVisitor(Context);
+				var visitor = new SetPropertiesVisitor(Context, valuePrecomputePass: true);
 				var children = node.Properties.Values.ToList();
 				children.AddRange(node.CollectionItems);
 				foreach (var cn in children)
