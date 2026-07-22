@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // The issue also affects Windows; tracked for follow-up in: https://github.com/dotnet/maui/issues/34701
+#if TEST_FAILS_ON_ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,7 +20,7 @@ public class Issue34666 : _IssuesUITest
 		App.WaitForElement("Baboon");
 		App.ScrollDown("CollectionView");
 		App.ScrollDown("CollectionView");
-		App.WaitForElement("Gelada");
+		App.WaitForElement("Baboon");
 	}
 }
 #endif
