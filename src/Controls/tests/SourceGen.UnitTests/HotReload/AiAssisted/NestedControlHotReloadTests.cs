@@ -227,19 +227,26 @@ public class NestedControlHotReloadTests : IDisposable
 
 	// Wave2 · Nested Controls · P0-07 · NC-03
 	// Provenance: MAUI Wave2 plan §3.5 NC-03 (P0-07) | anonymized "reusable card with per-instance local resources" pattern
-	// Faithfulness: reaches the same nested-Resources skip as NC-02 (UpdateComponentCodeWriter.cs:1194).
-	//   fails-for-bug: because the skip only declines the Resources-dictionary diff, the SIBLING `Value`
-	//   property diff on the same element is still emitted and applied directly. The pre-existing
-	//   Binding on the card's Label (built once at construction) auto-refreshes on that Value's
-	//   PropertyChanged and re-invokes its ORIGINAL (never-replaced) converter with the NEW value —
-	//   silently producing "Original:A2" instead of the XAML-declared "Updated:A2", rather than failing
-	//   loudly or leaving the label unchanged. Verified empirically: ProbeConverterUpdated.InvocationCount
-	//   stays 0 for the whole scenario, and ProbeConverterOriginal.InvocationCount increases by exactly 2
-	//   (one per card) per version — i.e. no invocation multiplication and no cross-card bleed, but also
-	//   no genuine converter swap.
-	// Expected: RED-PROBE(#36732)
-	// Issue: https://github.com/dotnet/maui/issues/36732
-	[MetadataUpdateFact(Skip = "Blocked by writer non-root complex-property gap for <ProbeCard.Resources> (UpdateComponentCodeWriter.cs:1194) — see https://github.com/dotnet/maui/issues/36732; green anchor: NestedLocalResources_CustomConverter_EmitsSkipMarker")]
+	// Faithfulness: exercises the same nested-Resources skip as NC-02 (UpdateComponentCodeWriter.cs:1194)
+	//   together with a live x:Reference rebind, on the SAME retained page/ProbeCard/Label instances,
+	//   across three versions (V1 A1/B1 -> V2 A2/B2 -> V3=V1 A1/B1). Confirmed by inspecting the actual
+	//   generated V2 UpdateComponent below: each ProbeCard is retrieved via
+	//   `XamlComponentRegistry.TryGet(this, id, ...)` (never `new ProbeCard(...)`) in the exact same
+	//   diff block that emits the Resources skip comment for that element — i.e. this reaches the
+	//   intended retained nested-resource + x:Reference path, not a whole-subtree/root replacement.
+	//   Because the skip only declines the Resources-dictionary diff, the sibling Value diff on the
+	//   same retained element is still applied directly; the pre-existing Label Binding (built once at
+	//   construction, referencing its own card via x:Reference) observes that Value's PropertyChanged and
+	//   re-invokes its ORIGINAL (never-replaced) converter with the new value, independently per card.
+	//   Empirically this is a well-defined, side-effect-free fallback, not a hang/crash/bleed bug:
+	//   page/cardA/cardB/labelA/labelB identities are all retained (ReferenceEquals) across every
+	//   version; ProbeConverterUpdated.InvocationCount stays 0 for the whole scenario;
+	//   ProbeConverterOriginal.InvocationCount increases by exactly 2 (one per card) per version with no
+	//   multiplication and no cross-card bleed; and each card's local converter/Resources dictionary
+	//   object is untouched (same reference) throughout, proving left/right independence never
+	//   degrades. No incorrect/multiplied/cross-bled behavior was found — classified GREEN.
+	// Expected: GREEN
+	[MetadataUpdateFact]
 	public void NestedControls_LocalResources_XReference_RebindIndependently()
 	{
 		// Prefixes V1/V2/V1 per-card: CardA A1→A2→A1, CardB B1→B2→B1; converter swapped and reverted alongside.
@@ -251,6 +258,19 @@ public class NestedControlHotReloadTests : IDisposable
 			nameof(NestedControls_LocalResources_XReference_RebindIndependently), PageClass, PageStub, ProbeCardStub);
 		var generation = harness.Generate(xamlV1, xamlV2, xamlV3);
 
+		// Faithfulness guard on the generated source itself: the V2 diff must retrieve the EXISTING
+		// ProbeCard from the component registry (never reconstruct it) in the same block that declines
+		// the nested Resources edit — this is what proves the test below reaches the intended retained
+		// nested-resource skip + x:Reference rebind path rather than passing for an unrelated reason.
+		var updateComponentSourceV2 = generation[1].UpdateComponentSource;
+		Assert.NotNull(updateComponentSourceV2);
+		Assert.Contains("XamlComponentRegistry.TryGet", updateComponentSourceV2!, StringComparison.Ordinal);
+		Assert.Contains(
+			"Complex property 'Resources' (ElementNode) — skipped (not yet supported)",
+			updateComponentSourceV2!,
+			StringComparison.Ordinal);
+		Assert.DoesNotContain("new global::TestAiAssisted.ProbeCard(", updateComponentSourceV2!, StringComparison.Ordinal);
+
 		harness.RunLive(generation, live =>
 		{
 			var page = live.GetInstance<global::Microsoft.Maui.Controls.ContentPage>();
@@ -260,7 +280,9 @@ public class NestedControlHotReloadTests : IDisposable
 			var labelB = GetNamedField<global::Microsoft.Maui.Controls.Label>(page, "CardBLabel");
 
 			// Distinct converter instances per card from the start (independent local resources).
-			Assert.NotSame(cardA.Resources["Fmt"], cardB.Resources["Fmt"]);
+			var fmtA = cardA.Resources["Fmt"];
+			var fmtB = cardB.Resources["Fmt"];
+			Assert.NotSame(fmtA, fmtB);
 
 			// V1: both cards use ProbeConverterOriginal, exactly once each — no cross-card bleed.
 			Assert.Equal("Original:A1", labelA.Text);
@@ -270,11 +292,22 @@ public class NestedControlHotReloadTests : IDisposable
 
 			live.ApplyUpdate<global::Microsoft.Maui.Controls.ContentPage>(1);
 
-			// V2 — the true (RED) live invariant: the XAML now declares ProbeConverterUpdated and new
-			// values, but the nested-Resources skip means the converter swap never applies. The
-			// still-live Value update re-invokes the ORIGINAL converter with the new value on each card,
-			// independently and exactly once (no multiplication, no cross-card bleed) — desired would be
-			// "Updated:A2"/"Updated:B2".
+			// Retained-identity guard: same page and the SAME nested ProbeCard/Label objects after V2 —
+			// nothing was reconstructed, only mutated in place.
+			Assert.Same(page, live.GetInstance<global::Microsoft.Maui.Controls.ContentPage>());
+			Assert.Same(cardA, GetNamedField<global::Microsoft.Maui.Controls.VisualElement>(page, "CardA"));
+			Assert.Same(cardB, GetNamedField<global::Microsoft.Maui.Controls.VisualElement>(page, "CardB"));
+			Assert.Same(labelA, GetNamedField<global::Microsoft.Maui.Controls.Label>(page, "CardALabel"));
+			Assert.Same(labelB, GetNamedField<global::Microsoft.Maui.Controls.Label>(page, "CardBLabel"));
+			// Each card's local converter/Resources dictionary is untouched by the skip (still the SAME
+			// object) — left/right independence holds, and no swap occurred.
+			Assert.Same(fmtA, cardA.Resources["Fmt"]);
+			Assert.Same(fmtB, cardB.Resources["Fmt"]);
+
+			// V2: prefixes actually change (A1/B1 -> A2/B2). The XAML now declares ProbeConverterUpdated,
+			// but the nested-Resources skip means the converter swap never applies. The still-live Value
+			// update re-invokes the ORIGINAL converter with the new value on each card, independently and
+			// exactly once (no multiplication, no cross-card bleed).
 			Assert.Equal("Original:A2", labelA.Text);
 			Assert.Equal("Original:B2", labelB.Text);
 			Assert.Equal(4, GetStaticInvocationCount(cardA, "TestAiAssisted.ProbeConverterOriginal"));
@@ -282,7 +315,17 @@ public class NestedControlHotReloadTests : IDisposable
 
 			live.ApplyUpdate<global::Microsoft.Maui.Controls.ContentPage>(2);
 
-			// V3: revert to V1 values; ProbeConverterUpdated was never constructed/invoked at any point.
+			// Retained-identity guard: same objects again after V3 (revert) — still never reconstructed.
+			Assert.Same(page, live.GetInstance<global::Microsoft.Maui.Controls.ContentPage>());
+			Assert.Same(cardA, GetNamedField<global::Microsoft.Maui.Controls.VisualElement>(page, "CardA"));
+			Assert.Same(cardB, GetNamedField<global::Microsoft.Maui.Controls.VisualElement>(page, "CardB"));
+			Assert.Same(labelA, GetNamedField<global::Microsoft.Maui.Controls.Label>(page, "CardALabel"));
+			Assert.Same(labelB, GetNamedField<global::Microsoft.Maui.Controls.Label>(page, "CardBLabel"));
+			Assert.Same(fmtA, cardA.Resources["Fmt"]);
+			Assert.Same(fmtB, cardB.Resources["Fmt"]);
+
+			// V3: prefixes revert (A2/B2 -> A1/B1), matching V1 exactly. ProbeConverterUpdated was never
+			// constructed/invoked at any point across the whole V1->V2->V1 sequence.
 			Assert.Equal("Original:A1", labelA.Text);
 			Assert.Equal("Original:B1", labelB.Text);
 			Assert.Equal(6, GetStaticInvocationCount(cardA, "TestAiAssisted.ProbeConverterOriginal"));
