@@ -46,6 +46,10 @@ stimuli:
       finding with a severity emoji and end with NEEDS_CHANGES,
       NEEDS_DISCUSSION, or LGTM.
     environment:
+      # Isolate the unit under test. Without this, --skill-dir loads every
+      # repository skill and Copilot may answer without activating code-review.
+      skills:
+        - ..
       files:
         - src: fixtures/producer-trace/change.diff
           dest: review-input/change.diff
