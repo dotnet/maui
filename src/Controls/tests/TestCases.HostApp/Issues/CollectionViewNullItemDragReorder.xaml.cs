@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 36068, "CollectionView2 (Windows) drag-and-drop reorder with null items in the ItemsSource", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 36068, "CollectionView2 (Windows) drag-and-drop reorder with null items in the ItemsSource", PlatformAffected.UWP)]
 public partial class CollectionViewNullItemDragReorder : ContentPage
 {
 	public ObservableCollection<ReorderItem?> Items { get; }
