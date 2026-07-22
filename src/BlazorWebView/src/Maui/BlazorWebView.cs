@@ -78,7 +78,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </para>
 		/// <para>
 		/// The callback is invoked from the platform's request handling, which may run on a background thread, so it
-		/// must not access UI state directly.
+		/// must not access UI state directly. If the callback throws, the exception is logged and the request falls
+		/// back to the default header.
 		/// </para>
 		/// </summary>
 		public Func<BlazorWebViewStaticContentRequest, string?>? StaticContentCacheControlProvider { get; set; }

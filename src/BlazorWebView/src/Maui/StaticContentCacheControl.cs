@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal const string Default = "no-cache, max-age=0, must-revalidate, no-store";
 
 		// Returns the application-provided Cache-Control override for the request, or null to use the default.
-		internal static string? ResolveOverride(IBlazorWebView? blazorWebView, string requestUri, string contentType)
+		internal static string? ResolveOverride(IBlazorWebView? blazorWebView, string requestUri, string contentType, ILogger? logger)
 		{
 			var provider = blazorWebView?.StaticContentCacheControlProvider;
 			if (provider is null)
@@ -25,7 +26,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return null;
 			}
 
-			var cacheControl = provider(new BlazorWebViewStaticContentRequest(uri, contentType));
+			string? cacheControl;
+			try
+			{
+				cacheControl = provider(new BlazorWebViewStaticContentRequest(uri, contentType));
+			}
+			catch (Exception ex)
+			{
+				// The provider is arbitrary application code invoked from the native request-handling path. On Windows
+				// it runs inside an async void handler, where an escaped exception would also skip deferral.Complete()
+				// and hang the request. A faulty provider must not take down static asset serving, so keep the default.
+				logger?.StaticContentCacheControlProviderFailed(requestUri, ex);
+				return null;
+			}
 
 			// An empty string is deliberately treated like null (keep the default): an empty Cache-Control header
 			// value is non-standard and engine-dependent, and is more likely an accidental result of string
