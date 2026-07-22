@@ -14,18 +14,31 @@ public partial class BlazorWebViewTests
 	const string CacheControlTestFileContents = "static asset used by the cache-control tests";
 
 	// Each test fetches a unique URL (path + query): the WebView HTTP cache is shared for the app origin across
-	// BlazorWebView instances (and persists across runs on a device), so a response cached by one test (e.g. with
-	// max-age=3600) must not be able to satisfy another test's fetch and skip its provider invocation.
+	// BlazorWebView instances, so a response cached by one test must not be able to satisfy another test's fetch and
+	// skip its provider invocation. The cacheable override test additionally uses a per-run nonce because that cache
+	// also persists across runs on a device, so a fixed URL could be served from a prior run's max-age=3600 response.
 
 	[Fact]
 	public async Task StaticContentCacheControlProviderCanOverrideCacheControlHeader()
 	{
-		var cacheControl = await GetServedCacheControlHeaderAsync(
-			request => request.Uri.AbsolutePath.EndsWith(CacheControlTestFilePath, StringComparison.Ordinal)
-				? "max-age=3600"
-				: null,
-			fetchQueryString: "?test=override");
+		var nonce = Guid.NewGuid().ToString("N");
+		var providerInvokedForTarget = false;
 
+		var cacheControl = await GetServedCacheControlHeaderAsync(
+			request =>
+			{
+				if (request.Uri.AbsolutePath.EndsWith(CacheControlTestFilePath, StringComparison.Ordinal))
+				{
+					providerInvokedForTarget = true;
+					return "max-age=3600";
+				}
+				return null;
+			},
+			fetchQueryString: $"?test=override&nonce={nonce}");
+
+		// The nonce makes this a guaranteed cache miss, so a passing header assertion cannot come from a stale cached
+		// response: the provider must have run for the requested resource.
+		Assert.True(providerInvokedForTarget, "The provider was not invoked for the requested resource - the response was likely served from the WebView cache.");
 		Assert.Equal("max-age=3600", cacheControl);
 	}
 
