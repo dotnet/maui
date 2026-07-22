@@ -24,7 +24,12 @@ Describe '/review command matching' {
             'if [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+rerun([[:space:]]|$) ]]')
         $genericReviewMatcher = $script:MatchJob.IndexOf(
             'elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]')
-        $rerunGuardEnd = $script:MatchJob.IndexOf("`n          fi", $rerunGuard)
+        # Locate the guard's closing `fi` tolerant of CRLF line endings and any leading
+        # whitespace, so a non-functional reformat (Windows CRLF / re-indent) of the
+        # workflow doesn't break this regression test.
+        $rerunGuardMatch = [regex]::Match(
+            $script:MatchJob.Substring($rerunGuard), '\r?\n[ \t]*fi(?=[\r\n]|$)')
+        $rerunGuardEnd = if ($rerunGuardMatch.Success) { $rerunGuard + $rerunGuardMatch.Index } else { -1 }
 
         $rerunGuard | Should -BeGreaterOrEqual 0
         $rerunGuardEnd | Should -BeGreaterThan $rerunGuard
