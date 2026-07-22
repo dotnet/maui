@@ -55,6 +55,22 @@ public class NestedControlHotReloadTests : IDisposable
 		namespace TestAiAssisted;
 
 		// Generic same-compilation custom control: a reusable "card" with its own bindable Value.
+		public class ProbeCard : global::Microsoft.Maui.Controls.ContentView
+		{
+			public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty =
+				global::Microsoft.Maui.Controls.BindableProperty.Create(nameof(Value), typeof(string), typeof(ProbeCard), default(string));
+
+			public string? Value
+			{
+				get => (string?)GetValue(ValueProperty);
+				set => SetValue(ValueProperty, value);
+			}
+		}
+		""";
+
+	const string GeneratedProbeCardStub = """
+		namespace TestAiAssisted;
+
 		public partial class ProbeCard : global::Microsoft.Maui.Controls.ContentView
 		{
 			public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty =
@@ -76,6 +92,10 @@ public class NestedControlHotReloadTests : IDisposable
 				InitializeComponent();
 			}
 		}
+		""";
+
+	const string ProbeConverterStubs = """
+		namespace TestAiAssisted;
 
 		public sealed class ProbeConverterOriginal : global::Microsoft.Maui.Controls.IValueConverter
 		{
@@ -236,7 +256,7 @@ public class NestedControlHotReloadTests : IDisposable
 		var xamlV1 = Xaml("A1", "ProbeConverterOriginal", "B1", "ProbeConverterOriginal");
 
 		using var harness = new XamlHotReloadTestHarness(
-			nameof(NestedCustomControls_Construct_HaveIndependentIdentityAndNamescope), PageClass, PageStub, ProbeCardStub);
+			nameof(NestedCustomControls_Construct_HaveIndependentIdentityAndNamescope), PageClass, PageStub, ProbeCardStub, ProbeConverterStubs);
 		var generation = harness.Generate(xamlV1);
 
 		harness.RunLive(generation, live =>
@@ -289,7 +309,7 @@ public class NestedControlHotReloadTests : IDisposable
 		var xamlV2 = Xaml("A1", "ProbeConverterUpdated", "B1", "ProbeConverterOriginal");
 
 		using var harness = new XamlHotReloadTestHarness(
-			nameof(NestedLocalResources_CustomConverter_EmitsSkipMarker), PageClass, PageStub, ProbeCardStub);
+			nameof(NestedLocalResources_CustomConverter_EmitsSkipMarker), PageClass, PageStub, ProbeCardStub, ProbeConverterStubs);
 		var generation = harness.Generate(xamlV1, xamlV2);
 		var updateComponentSource = generation[1].UpdateComponentSource;
 
@@ -333,7 +353,7 @@ public class NestedControlHotReloadTests : IDisposable
 		var xamlV3 = Xaml("A1", "ProbeConverterOriginal", "B1", "ProbeConverterOriginal");
 
 		using var harness = new XamlHotReloadTestHarness(
-			nameof(NestedControls_LocalResources_XReference_RebindIndependently), PageClass, PageStub, ProbeCardStub);
+			nameof(NestedControls_LocalResources_XReference_RebindIndependently), PageClass, PageStub, ProbeCardStub, ProbeConverterStubs);
 		var generation = harness.Generate(xamlV1, xamlV2, xamlV3);
 
 		// Faithfulness guard on the generated source itself: the V2 diff must retrieve the EXISTING
@@ -421,7 +441,8 @@ public class NestedControlHotReloadTests : IDisposable
 			nameof(NestedGeneratedRoots_LocalResources_EmitsDocumentedResourceDecline),
 			PageClass,
 			PageStub,
-			ProbeCardStub);
+			GeneratedProbeCardStub,
+			ProbeConverterStubs);
 		var generation = harness.GenerateDocuments(
 			Documents(Nc04Page("A1", "B1"), Nc04ProbeCard("ProbeConverterOriginal")),
 			Documents(Nc04Page("A2", "B2"), Nc04ProbeCard("ProbeConverterUpdated")));
@@ -444,7 +465,8 @@ public class NestedControlHotReloadTests : IDisposable
 			nameof(NestedGeneratedRoots_LocalResources_XReference_RetainedInstancesAndFreshInstanceStayIndependent),
 			PageClass,
 			PageStub,
-			ProbeCardStub);
+			GeneratedProbeCardStub,
+			ProbeConverterStubs);
 		var generation = harness.GenerateDocuments(
 			Documents(Nc04Page("A1", "B1"), Nc04ProbeCard("ProbeConverterOriginal")),
 			Documents(Nc04Page("A2", "B2"), Nc04ProbeCard("ProbeConverterUpdated")),
