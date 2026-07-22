@@ -206,26 +206,28 @@
       <_StableNProperties>@(_DotNetNVersionProperty->'%(Identity)=11.0.0', ';')</_StableNProperties>
     </PropertyGroup>
 
+    <ItemGroup>
+      <_DotNetPackageVersionTest Include="PreviewShipping">
+        <Properties>UseN1PackageVersions=true;MicrosoftDotNetNPackageVersion=11.0.0-preview.7.26364.110;ExpectedDotNetPackageVersion=$(MicrosoftDotNetN1PackageVersion);ExpectedTemplatePackageVersion=11.0.0-*</Properties>
+      </_DotNetPackageVersionTest>
+      <_DotNetPackageVersionTest Include="PreviewOverride">
+        <Properties>UseN1PackageVersions=false;$(_PreviewNProperties);ExpectedDotNetPackageVersion=11.0.0-preview.7.26364.110;ExpectedTemplatePackageVersion=11.0.0-*</Properties>
+      </_DotNetPackageVersionTest>
+      <_DotNetPackageVersionTest Include="PreviewTestProject">
+        <Properties>IsTestProject=true;$(_PreviewNProperties);ExpectedDotNetPackageVersion=11.0.0-preview.7.26364.110;ExpectedTemplatePackageVersion=11.0.0-*</Properties>
+      </_DotNetPackageVersionTest>
+      <_DotNetPackageVersionTest Include="FirstPreview">
+        <Properties>UseN1PackageVersions=true;MicrosoftDotNetNPackageVersion=11.0.0-preview.7.26364.110;MicrosoftDotNetN1PackageVersion=10.0.0;ExpectedDotNetPackageVersion=10.0.0;ExpectedTemplatePackageVersion=11.0.0-*</Properties>
+      </_DotNetPackageVersionTest>
+      <_DotNetPackageVersionTest Include="Stable">
+        <Properties>UseN1PackageVersions=true;$(_StableNProperties);ExpectedDotNetPackageVersion=11.0.0;ExpectedTemplatePackageVersion=11.0.0</Properties>
+      </_DotNetPackageVersionTest>
+    </ItemGroup>
+
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;MicrosoftDotNetNPackageVersion=11.0.0-preview.7.26364.110;ExpectedDotNetPackageVersion=$(MicrosoftDotNetN1PackageVersion);ExpectedTemplatePackageVersion=11.0.0-*" />
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=false;$(_PreviewNProperties);ExpectedDotNetPackageVersion=11.0.0-preview.7.26364.110;ExpectedTemplatePackageVersion=11.0.0-*" />
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;IsTestProject=true;$(_PreviewNProperties);ExpectedDotNetPackageVersion=11.0.0-preview.7.26364.110;ExpectedTemplatePackageVersion=11.0.0-*" />
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;MicrosoftDotNetNPackageVersion=11.0.0-preview.7.26364.110;MicrosoftDotNetN1PackageVersion=10.0.0;ExpectedDotNetPackageVersion=10.0.0;ExpectedTemplatePackageVersion=11.0.0-*" />
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_StableNProperties);ExpectedDotNetPackageVersion=11.0.0;ExpectedTemplatePackageVersion=11.0.0" />
+        Properties="TestDotNetPackageVersionSelection=true;%(_DotNetPackageVersionTest.Properties)" />
   </Target>
 
   <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">
