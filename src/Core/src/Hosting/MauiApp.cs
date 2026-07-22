@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Hosting
 			{
 				if (_services is IAsyncDisposable asyncDisposable)
 				{
-					await asyncDisposable.DisposeAsync();
+					await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 				}
 				else
 				{
