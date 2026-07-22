@@ -1,30 +1,158 @@
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+
 # AI-Assisted Hot Reload Test Harness
 
-## Purpose and Scope
-This directory contains targeted XAML Incremental Hot Reload (XIHR) tests authored to cover specific regressions and scenarios reported in community issues.
+## Purpose and scope
 
-The tests herein cover the **source generator boundary** and focused in-process metadata-update behavior. They compile incremental-generator output, evaluate diagnostics, inspect `UpdateComponent` source generation, and may apply Roslyn deltas to collectible test assemblies. They **do not** exercise the IDE, `dotnet watch`, Roslyn's live edit classifier, a physical device, or native rendering.
+This directory contains issue-derived XAML Incremental Hot Reload (XIHR) source-generator tests and focused in-process metadata-update probes. Tests generate and compile incremental output, inspect diagnostics or `UpdateComponent`, and, where supported, apply Roslyn deltas to collectible test assemblies.
 
-## Research Methodology
-These scenarios were derived from an analysis of five GitHub issue shards (open and closed), which were triaged, deduplicated, and mapped to specific technical boundaries. The resulting 28-row canonical ledger classifies each issue into exactly one disposition (implemented, already covered, deferred to other layers, or rejected).
+They do not exercise the IDE, `dotnet watch`, Roslyn's live edit classifier, a physical device, native rendering, or handler lifecycle. A generated-source marker proves only the documented generator branch; it does not prove runtime behavior.
 
-To add future issue-derived scenarios:
-1. Identify the minimal reproduction of the XAML edit.
-2. Determine if the failure is at the generator boundary (e.g., malformed code, crashed generator, dropped property) or downstream (e.g., layout, handler, IDE session poisoning).
-3. If it's a generator failure, author a test in `StructuralHotReloadTests.cs` or `GeneratorRecoveryHotReloadTests.cs`.
-4. Update the ledger below with the new scenario.
+## Canonical local result
 
-## Implemented AI-Assisted Tests
+With metadata updates enabled on the canonical integration branch:
 
-1. **`StructuralHotReloadTests.RootComplexElementProperty_IsNotSilentlyDropped` / `RootComplexElementProperty_AppliesToExistingPage`**
-   - **Target Issue:** #36256
-   - **Description:** Verifies that when replacing root content with a complex property (e.g., `CollectionView.ItemTemplate`), the generator emits compilable instantiation code and a live metadata update assigns the CollectionView and usable template to the existing page.
+| Filter | Passed | Skipped | Failed |
+|---|---:|---:|---:|
+| `FullyQualifiedName~HotReload.AiAssisted` | 40 | 18 | 0 |
+| `FullyQualifiedName~XamlIncrementalHotReloadE2ETests` | 13 | 0 | 0 |
 
-2. **`GeneratorRecoveryHotReloadTests.MalformedExpression_ThenRepair_RecomputesGeneratorDiagnostics`**
-   - **Target Issue:** #36157
-   - **Description:** Generator-boundary diagnostic recomputation probe: verifies that a repaired malformed expression no longer produces `MAUIG1003` in the generator's current run and that the resulting source compiles. It does not test IDE Error List or dotnet-watch recovery.
+These are local `net11.0` Debug results with `DOTNET_MODIFIABLE_ASSEMBLIES=debug`. Theory data contributes test cases: RT-01 has three passing rows and TS-03 has two; skip-gated theories may be reported as one skipped theory.
 
-## Canonical Disposition Ledger
+```bash
+DOTNET_MODIFIABLE_ASSEMBLIES=debug dotnet test src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj -c Debug --filter "FullyQualifiedName~HotReload.AiAssisted"
+DOTNET_MODIFIABLE_ASSEMBLIES=debug dotnet test src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj -c Debug --filter "FullyQualifiedName~XamlIncrementalHotReloadE2ETests"
+```
+
+## Classification
+
+| Classification | Meaning |
+|---|---|
+| **GREEN live** | Passing retained-object metadata-update behavior. |
+| **GREEN construction** | Passing initial construction or realization behavior; no post-update runtime claim. |
+| **GREEN generator guard** | Passing generation, diagnostic, source-shape, or compile assertion only. |
+| **DOC-SKIP-GUARD** | Passing assertion that an unsupported writer path is explicitly skipped and still compiles. |
+| **RED-PROBE (skip-gated)** | Desired live behavior is encoded but intentionally skipped for a known gap. It is not passing coverage. |
+| **Capability boundary** | Harness plumbing is covered, but the in-memory host cannot faithfully supply the runtime artifact or service. |
+| **Integration/host deferred** | Requires a real runtime assembly boundary, IDE/watch host, device, native handler, or lifecycle. |
+
+## Wave-1 retained coverage
+
+| Area | Classification | Exact method |
+|---|---|---|
+| #36256 complex root property | GREEN generator guard | `StructuralHotReloadTests.RootComplexElementProperty_IsNotSilentlyDropped` |
+| #36256 live root replacement | GREEN live | `StructuralHotReloadTests.RootComplexElementProperty_AppliesToExistingPage` |
+| Inline resources | DOC-SKIP-GUARD | `StructuralHotReloadTests.ComplexPropertyWithNestedResources_IsExplicitlySkipped` |
+| Ancestor `StaticResource` | DOC-SKIP-GUARD | `StructuralHotReloadTests.ComplexPropertyWithAncestorStaticResource_IsExplicitlySkipped` |
+| Nested and element-form `StaticResource` | DOC-SKIP-GUARD, two theory rows | `StructuralHotReloadTests.ComplexPropertyWithNestedStaticResourceShape_IsExplicitlySkipped` |
+| Preflight diagnostics | GREEN generator guard | `StructuralHotReloadTests.StaticResourcePreflight_DiscardsParserDiagnostics` |
+| #36157 recovery boundary | GREEN generator guard | `GeneratorRecoveryHotReloadTests.MalformedExpression_ThenRepair_RecomputesGeneratorDiagnostics` |
+
+# Wave-2 living index
+
+## Harness capabilities
+
+| ID | Classification | Exact method and boundary |
+|---|---|---|
+| `cap-app-host` | GREEN construction | `HarnessCapabilityTests.ApplicationHost_ResolvesAppResources_AndRestoresPreviousApplication` |
+| `cap-theme-flip` | GREEN live | `HarnessCapabilityTests.ApplicationHost_ThemeFlipIsSynchronous` |
+| `cap-multi-doc` | GREEN generator guard | `HarnessCapabilityTests.MultiDocument_DictionaryOnlyEdit_TracksAllDocumentsAndCompilesPage` |
+| `cap-multi-doc` | Capability boundary, skip-gated | `HarnessCapabilityTests.MultiDocument_DictionaryOnlyEdit_RetainsPageAndLabelIdentity`; nearby passing guard: `MultiDocument_DictionaryOnlyEdit_TracksAllDocumentsAndCompilesPage`. No product pass is claimed because compiled `ResourceDictionary Source=` payload is unavailable in the in-memory ALC. |
+| `cap-multi-instance` | GREEN live | `HarnessCapabilityTests.MultipleInstances_RetainedRootsUpdateAndFreshRootStartsLatest` |
+
+## Resources and themes
+
+| ID | Classification | Exact method, guard, and issue |
+|---|---|---|
+| RT-01 | GREEN live, three theory rows | `ResourceAndThemeHotReloadTests.DynamicResourceKey_RenameAndReverse_UpdatesVisibleValue` |
+| RT-02 | DOC-SKIP-GUARD | `ResourceAndThemeHotReloadTests.MergedDictionaries_ComplexProperty_EmitsSkipMarker` |
+| RT-03 | RED-PROBE (skip-gated), #36732 | `ResourceAndThemeHotReloadTests.InlineMergedDictionaries_ReorderThenRemove_RecomputesWinner`; passing guard: RT-02 `MergedDictionaries_ComplexProperty_EmitsSkipMarker`. |
+| RT-04 | DOC-SKIP-GUARD | `ResourceAndThemeHotReloadTests.BasedOnStyle_ComplexResource_EmitsSkipMarker` |
+| RT-05 | RED-PROBE (skip-gated), #36732 | `ResourceAndThemeHotReloadTests.BasedOnStyle_BaseSwapAndReverse_ReappliesLiveTarget`; passing guard: RT-04 `BasedOnStyle_ComplexResource_EmitsSkipMarker`. |
+| RT-06 | DOC-SKIP-GUARD | `ResourceAndThemeHotReloadTests.TriggeredStyle_ComplexProperty_EmitsSkipMarker` |
+| RT-07 | RED-PROBE (skip-gated), #36732 | `ResourceAndThemeHotReloadTests.ActiveTriggerStyle_RemoveReAdd_UnappliesBeforeReattach`; passing guard: RT-06 `TriggeredStyle_ComplexProperty_EmitsSkipMarker`. |
+| RT-08 | GREEN generator guard | `ResourceAndThemeHotReloadTests.AppThemeBinding_BranchEdit_IsCapturedInGeneratedComponent` |
+| RT-08 | RED-PROBE (skip-gated), #36732 | `ResourceAndThemeHotReloadTests.AppThemeBinding_BranchEdit_UpdatesSelectedBranchLive`; passing guard: `AppThemeBinding_BranchEdit_IsCapturedInGeneratedComponent`. The live writer currently supplies an `IProvideValueTarget` with null `TargetProperty`. |
+| RT-09 | GREEN live | `ResourceAndThemeHotReloadTests.ApplicationDynamicResource_FansOutAndFreshRootsStartLatest` |
+| RT-10 | GREEN generator guard | `ResourceAndThemeHotReloadTests.SourceMergedDictionaries_ReorderThenRemove_TracksDocumentsAndCompiles` |
+| RT-10 | Capability boundary, skip-gated, #36732 | `ResourceAndThemeHotReloadTests.SourceMergedDictionaries_ReorderThenRemove_UsesRuntimeFallback`; passing guard: `SourceMergedDictionaries_ReorderThenRemove_TracksDocumentsAndCompiles`. The in-memory ALC has no compiled `Source=` payload. |
+| RT-11 | GREEN generator guard | `ResourceAndThemeHotReloadTests.MultiDocumentMalformedThenRepair_IsAtomicAcrossPageAndDictionary` |
+
+## Visual states and behaviors
+
+| ID | Classification | Exact method, guard, and issue |
+|---|---|---|
+| VS-01 | DOC-SKIP-GUARD | `VisualStateHotReloadTests.ActiveVsmSetter_ComplexAttachedProperty_EmitsSkipMarker` |
+| VS-02 | RED-PROBE (skip-gated theory), #36732 | `VisualStateHotReloadTests.ActiveVsmSetter_EditAndReverse_ReappliesImmediately`; passing guard: VS-01 `ActiveVsmSetter_ComplexAttachedProperty_EmitsSkipMarker`. |
+| VS-03 | DOC-SKIP-GUARD | `VisualStateHotReloadTests.Behavior_ClearAndComplexProperty_EmitsSkipMarker` |
+| VS-04 | RED-PROBE (skip-gated), #36732 | `VisualStateHotReloadTests.BehaviorCollection_RemoveReAdd_DetachesAndAttachesOnce`; passing guard: VS-03 `Behavior_ClearAndComplexProperty_EmitsSkipMarker`. |
+| VS-05 | RED-PROBE (skip-gated), #36732 | `VisualStateHotReloadTests.VsmState_AddRemoveReAdd_And_FallbackReversion`; nearby passing writer guard: VS-01 `ActiveVsmSetter_ComplexAttachedProperty_EmitsSkipMarker`. |
+| VS-06 | DOC-SKIP-GUARD | `VisualStateHotReloadTests.ActiveVsmThemeResourceSetter_ComplexAttachedProperty_EmitsSkipMarker` |
+| VS-06 | RED-PROBE (skip-gated), #36732 | `VisualStateHotReloadTests.ActiveVsmThemeResourceSetter_EditAndReverse_PreservesStateAndThemeSemantics`; passing guard: `ActiveVsmThemeResourceSetter_ComplexAttachedProperty_EmitsSkipMarker`. |
+
+## Templates and selectors
+
+| ID | Classification | Exact method, guard, and issue |
+|---|---|---|
+| TS-01 | GREEN construction/generator | `TemplateAndSelectorHotReloadTests.KeyedDataTemplate_EditBody_ConstructionStableAndSourceReflectsEdit` |
+| TS-01 | RED-PROBE (skip-gated), #36482 | `TemplateAndSelectorHotReloadTests.KeyedDataTemplate_EditBody_FutureRealizationReflectsNewFactory`; passing guard: `KeyedDataTemplate_EditBody_ConstructionStableAndSourceReflectsEdit`. |
+| TS-02 | GREEN construction/generator | `TemplateAndSelectorHotReloadTests.Selector_ConstructionDistinguishesBranchesAndIsStableAcrossUpdate` |
+| TS-02 | RED-PROBE (skip-gated), #36482 | `TemplateAndSelectorHotReloadTests.Selector_FutureRealizationReflectsNewFactory`; passing guard: `Selector_ConstructionDistinguishesBranchesAndIsStableAcrossUpdate`. |
+| TS-03 | GREEN construction/generator, two theory rows | `TemplateAndSelectorHotReloadTests.CompiledTemplate_RetypeAndReverse_GeneratedSourceTracksCurrentType` |
+| TS-03 | RED-PROBE (skip-gated), #36482 | `TemplateAndSelectorHotReloadTests.CompiledTemplate_Retype_FutureRealizationBindsNewType`; passing guard: `CompiledTemplate_RetypeAndReverse_GeneratedSourceTracksCurrentType`. |
+| TS-04 | GREEN construction | `TemplateAndSelectorHotReloadTests.ControlTemplate_Construction_NamescopeXReferenceAndVsmAreIsolated` |
+| TS-04 | RED-PROBE (skip-gated), #36482 | `TemplateAndSelectorHotReloadTests.ControlTemplate_FutureRealizationReflectsNewVersion`; passing guard: `ControlTemplate_Construction_NamescopeXReferenceAndVsmAreIsolated`. |
+| TS-05 | DOC-SKIP-GUARD | `TemplateAndSelectorHotReloadTests.BindableLayoutTemplate_AttachedComplex_EmitsSkipMarker` |
+| TS-06 | RED-PROBE (skip-gated), #36732 | `TemplateAndSelectorHotReloadTests.BindableLayoutTemplate_RetypeAndReverse_DoesNotDuplicateControllerChildren`; passing guard: TS-05 `BindableLayoutTemplate_AttachedComplex_EmitsSkipMarker`. |
+
+## Bindings and markup
+
+| ID | Classification | Exact method, guard, and issue |
+|---|---|---|
+| BM-01 | GREEN live | `BindingAndMarkupHotReloadTests.DynamicResourceToBinding_SwapAndReverse_UpdatesVisibleValue` |
+| BM-02 | GREEN live | `BindingAndMarkupHotReloadTests.CustomMarkupExtension_EditAndReverse_ReprovidesValue` |
+| BM-03 | DOC-SKIP-GUARD | `BindingAndMarkupHotReloadTests.MultiBinding_ComplexProperty_EmitsSkipMarker` |
+| BM-04 | RED-PROBE (skip-gated), #36732 | `BindingAndMarkupHotReloadTests.DynamicResourceToBinding_RemovesDormantRegistration`; passing guard: BM-03 `MultiBinding_ComplexProperty_EmitsSkipMarker`. |
+| BM-05 | RED-PROBE (skip-gated theory), #36732 | `BindingAndMarkupHotReloadTests.MultiBindingChildren_RemoveReAdd_NoDuplicateExpressions`; passing guard: BM-03 `MultiBinding_ComplexProperty_EmitsSkipMarker`. |
+
+## Nested controls
+
+All NC provenance is an anonymized production pattern; no application-specific names or text are retained.
+
+| ID | Classification | Exact method, guard, and issue |
+|---|---|---|
+| NC-01 | GREEN construction/live | `NestedControlHotReloadTests.NestedCustomControls_Construct_HaveIndependentIdentityAndNamescope` |
+| NC-02 | DOC-SKIP-GUARD | `NestedControlHotReloadTests.NestedLocalResources_CustomConverter_EmitsSkipMarker` |
+| NC-03 | GREEN live | `NestedControlHotReloadTests.NestedControls_LocalResources_XReference_RebindIndependently` |
+| NC-04 | GREEN generator guard | `NestedControlHotReloadTests.NestedGeneratedRoots_LocalResources_EmitsDocumentedResourceDecline` |
+| NC-04 | RED-PROBE (skip-gated), #36732 | `NestedControlHotReloadTests.NestedGeneratedRoots_LocalResources_XReference_RetainedInstancesAndFreshInstanceStayIndependent`; passing guard: `NestedGeneratedRoots_LocalResources_EmitsDocumentedResourceDecline`. |
+
+## Cross-assembly invalidation
+
+`cap-cross-asm-MC` is limited to incremental-generator reference invalidation and caching.
+
+| ID | Classification | Exact method and boundary |
+|---|---|---|
+| XA-01 | GREEN generator guard | `CrossAssemblyHotReloadTests.ReferencedAssemblySwap_InvalidatesXamlPipeline` |
+| XA-02 | GREEN generator guard | `CrossAssemblyHotReloadTests.UnchangedReferences_XamlPipelineCached` |
+
+XA-01/02 cover incremental-generator invalidation and caching only. XA-03 is intentionally represented by the existing `SourceGenXamlCodeBehindTests.TestCodeBehindGenerator_ImplementationChangeDoesNotTriggerRegeneration` and `SourceGenXamlCodeBehindTests.TestCodeBehindGenerator_SignatureChangeTriggersRegeneration`. Loading a separate runtime assembly and applying deltas across that boundary remains integration/host deferred.
+
+## Honest limitations and deferred lanes
+
+- A compiled `ResourceDictionary Source=` payload is unavailable in the in-memory collectible ALC; `cap-multi-doc` and RT-10 therefore stop at document tracking/generation/compile, with live probes skip-gated.
+- Cross-assembly tests cover generator invalidation only. Separate-runtime-assembly deltas, IDE/Hot Reload host behavior, `dotnet watch`, device lifecycle, native handlers, and rendered output remain integration lanes.
+- Generated `x:Name` fields require manual C# stubs because `CodeBehindCodeWriter` is outside this harness.
+- The AppThemeBinding live probe finds a null `IProvideValueTarget.TargetProperty`; RT-08's passing generator guard does not prove live re-provisioning.
+- Keyed template and selector future factories remain the #36482 gap; passing construction/source guards do not prove post-update future realization.
+- Complex property and collection reconciliation remains #36732. DOC-SKIP-GUARD rows prove explicit decline and compilability, not successful live reconciliation.
+
+## Wave-1 research disposition ledger
+
+This 28-row issue-research ledger predates the Wave-2 test IDs. Its legacy `RT-*` labels are research rows, not the Wave-2 RT-01..11 coverage identifiers above.
 
 | ID | Issue | Disposition | Target/evidence | Assertion and current net11 expectation |
 |---|---|---|---|---|
@@ -33,7 +161,7 @@ To add future issue-derived scenarios:
 | XIHR-03 | [#36156](https://github.com/dotnet/maui/issues/36156) | Deferred IDE-host-only | IDE/Roslyn rude-edit session integration test | No generator unit test: must reproduce a compile-failing rude edit and verify a later valid edit applies in the same host session. |
 | XIHR-04 | [#36155](https://github.com/dotnet/maui/issues/36155) | Existing adequate | `CSharpExpressionInterpolationTests` + `CSharpExpressionDiagnosticsTests` ternary tests | Shape/compile pass. |
 | XIHR-05 | [#36158](https://github.com/dotnet/maui/issues/36158) | Existing adequate | `Maui36158Tests` | Exact diagnostic location pass. |
-| XIHR-06 | [#36482](https://github.com/dotnet/maui/issues/36482) | Existing adequate | Four `DataTemplate_HotReload_*` pipeline tests | Stable named method and compile pass; device/watch deferred outside this row. |
+| XIHR-06 | [#36482](https://github.com/dotnet/maui/issues/36482) | Existing baseline + Wave-2 probes | Four baseline `DataTemplate_HotReload_*` pipeline tests plus TS-01..04 | Construction/source guards pass; future template/selector realization remains skip-gated under #36482. |
 | XIHR-07 | [#34027](https://github.com/dotnet/maui/issues/34027) | Rejected/non-HR | MSBuild/IDE contract | No edit-derived SG test. |
 | XIHR-08 | [#35931](https://github.com/dotnet/maui/issues/35931) | Deferred integration/device | Android `dotnet watch` test | Must assert rendered Label changes after watch dispatch. |
 | XIHR-09 | [#21083](https://github.com/dotnet/maui/issues/21083) | Rejected/non-HR | XamlC/VisualDiagnostics suite | Debug XamlC SourceInfo is not XIHR UC behavior. |
