@@ -255,6 +255,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		static void DisconnectAndDispose(IShellItemRenderer renderer)
 		{
+			var viewController = renderer?.ViewController;
+			viewController?.ViewIfLoaded?.RemoveFromSuperview();
+			viewController?.RemoveFromParentViewController();
+
 			(renderer as IDisconnectable)?.Disconnect();
 			renderer?.Dispose();
 		}

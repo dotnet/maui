@@ -314,7 +314,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (disposing)
 				{
-					((SecondaryToolbarItemContent)CustomView).TouchUpInside -= OnClicked;
+					if (CustomView is SecondaryToolbarItemContent customView)
+						customView.TouchUpInside -= OnClicked;
 
 					if (_item.TryGetTarget(out var item))
 						item.PropertyChanged -= OnPropertyChanged;

@@ -518,6 +518,27 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 	}
 
+	[Fact("Secondary Toolbar Item Disposal Unsubscribes After Custom View Replacement")]
+	public async Task SecondaryToolbarItemDisposalUnsubscribesAfterCustomViewReplacement()
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var item = new ToolbarItem
+			{
+				Order = ToolbarItemOrder.Secondary
+			};
+			var nativeItem = Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(item);
+			using var replacementView = new UIKit.UIView();
+
+			Assert.Contains(GetPropertyChangedSubscribers(item), subscriber => ReferenceEquals(subscriber.Target, nativeItem));
+
+			nativeItem.CustomView = replacementView;
+			nativeItem.Dispose();
+
+			Assert.DoesNotContain(GetPropertyChangedSubscribers(item), subscriber => ReferenceEquals(subscriber.Target, nativeItem));
+		});
+	}
+
 	static Delegate[] GetModelChangedSubscribers(object tableView)
 	{
 #pragma warning disable CS0618 // Type or member is obsolete

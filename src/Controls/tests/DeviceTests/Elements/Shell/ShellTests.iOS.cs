@@ -630,10 +630,10 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(new ContentPage());
 				shell.Items.Add(new ContentPage());
 			});
-			var handler = await InvokeOnMainThreadAsync(() => (ShellHandler)shell.ToHandler(MauiContext));
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
+				using var handler = (ShellHandler)shell.ToHandler(MauiContext);
 				var activeTransitionField = typeof(ShellHandler).GetField("_activeTransition", BindingFlags.Instance | BindingFlags.NonPublic);
 				var currentRendererField = typeof(ShellHandler).GetField("_currentShellItemRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
 				var incomingRendererField = typeof(ShellHandler).GetField("_incomingRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -656,6 +656,28 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(incomingRendererField.GetValue(handler));
 			});
 		}
+
+		[Fact(DisplayName = "Disconnect Shell Detaches Current Item Renderer Before Disposal")]
+		public Task DisconnectShellDetachesCurrentItemRendererBeforeDisposal() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var handler = new TestableShellRenderer();
+				using var parentViewController = new UIViewController();
+				var currentRendererField = typeof(ShellHandler).GetField("_currentShellItemRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.NotNull(currentRendererField);
+
+				var renderer = new TrackedShellItemRenderer();
+				parentViewController.AddChildViewController(renderer.ViewController);
+				parentViewController.View.AddSubview(renderer.ViewController.View);
+				currentRendererField.SetValue(handler, renderer);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				Assert.Null(renderer.ParentAtDispose);
+				Assert.Null(renderer.SuperviewAtDispose);
+				Assert.Equal(1, renderer.DisconnectCount);
+				Assert.Equal(1, renderer.DisposeCount);
+			});
 
 		[Fact(DisplayName = "Disconnect Shell Disposes All Pending Item Renderers")]
 		public Task DisconnectShellDisposesAllPendingItemRenderers() =>
@@ -758,12 +780,20 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public int DisconnectCount { get; private set; }
 			public int DisposeCount { get; private set; }
+			public UIViewController ParentAtDispose { get; private set; }
+			public UIView SuperviewAtDispose { get; private set; }
 			public ShellItem ShellItem { get; set; }
-			public UIViewController ViewController => null;
+			public UIViewController ViewController { get; } = new UIViewController();
 
 			public void Disconnect() => DisconnectCount++;
 
-			public void Dispose() => DisposeCount++;
+			public void Dispose()
+			{
+				ParentAtDispose = ViewController.ParentViewController;
+				SuperviewAtDispose = ViewController.ViewIfLoaded?.Superview;
+				DisposeCount++;
+				ViewController.Dispose();
+			}
 		}
 
 		interface IDelayedImageSource : IImageSource
