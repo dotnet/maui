@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <!-- Shipping projects use published N-1 packages during previews; tests use current N. At GA, all projects use stable N. -->
     <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == '' and ('$(IsTestProject)' == 'true' or '$(MauiTestProject)' == 'true')">false</UseN1PackageVersions>
     <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == ''">true</UseN1PackageVersions>
     <MicrosoftDotNetNPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftDotNetNPackageVersion>
