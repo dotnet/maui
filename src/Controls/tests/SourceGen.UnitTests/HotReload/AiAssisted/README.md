@@ -17,7 +17,7 @@ With metadata updates enabled on the canonical integration branch:
 
 | Filter | Passed | Skipped | Failed |
 |---|---:|---:|---:|
-| `FullyQualifiedName~HotReload.AiAssisted` | 40 | 18 | 0 |
+| `FullyQualifiedName~HotReload.AiAssisted` | 41 | 18 | 0 |
 | `FullyQualifiedName~XamlIncrementalHotReloadE2ETests` | 13 | 0 | 0 |
 
 These are local `net11.0` Debug results with `DOTNET_MODIFIABLE_ASSEMBLIES=debug`. Theory data contributes test cases: RT-01 has three passing rows and TS-03 has two; skip-gated theories may be reported as one skipped theory.
@@ -89,7 +89,8 @@ DOTNET_MODIFIABLE_ASSEMBLIES=debug dotnet test src/Controls/tests/SourceGen.Unit
 | VS-02 | RED-PROBE (skip-gated theory), #36732 | `VisualStateHotReloadTests.ActiveVsmSetter_EditAndReverse_ReappliesImmediately`; passing guard: VS-01 `ActiveVsmSetter_ComplexAttachedProperty_EmitsSkipMarker`. |
 | VS-03 | DOC-SKIP-GUARD | `VisualStateHotReloadTests.Behavior_ClearAndComplexProperty_EmitsSkipMarker` |
 | VS-04 | RED-PROBE (skip-gated), #36732 | `VisualStateHotReloadTests.BehaviorCollection_RemoveReAdd_DetachesAndAttachesOnce`; passing guard: VS-03 `Behavior_ClearAndComplexProperty_EmitsSkipMarker`. |
-| VS-05 | RED-PROBE (skip-gated), #36732 | `VisualStateHotReloadTests.VsmState_AddRemoveReAdd_And_FallbackReversion`; nearby passing writer guard: VS-01 `ActiveVsmSetter_ComplexAttachedProperty_EmitsSkipMarker`. |
+| VS-05 | DOC-SKIP-GUARD | `VisualStateHotReloadTests.VsmState_AddRemoveReAdd_ComplexAttachedProperty_EmitsSkipMarker` |
+| VS-05 | RED-PROBE (skip-gated), #36732 | `VisualStateHotReloadTests.VsmState_AddRemoveReAdd_And_FallbackReversion`; passing guard: `VsmState_AddRemoveReAdd_ComplexAttachedProperty_EmitsSkipMarker`. |
 | VS-06 | DOC-SKIP-GUARD | `VisualStateHotReloadTests.ActiveVsmThemeResourceSetter_ComplexAttachedProperty_EmitsSkipMarker` |
 | VS-06 | RED-PROBE (skip-gated), #36732 | `VisualStateHotReloadTests.ActiveVsmThemeResourceSetter_EditAndReverse_PreservesStateAndThemeSemantics`; passing guard: `ActiveVsmThemeResourceSetter_ComplexAttachedProperty_EmitsSkipMarker`. |
 
@@ -115,7 +116,7 @@ DOTNET_MODIFIABLE_ASSEMBLIES=debug dotnet test src/Controls/tests/SourceGen.Unit
 | BM-01 | GREEN live | `BindingAndMarkupHotReloadTests.DynamicResourceToBinding_SwapAndReverse_UpdatesVisibleValue` |
 | BM-02 | GREEN live | `BindingAndMarkupHotReloadTests.CustomMarkupExtension_EditAndReverse_ReprovidesValue` |
 | BM-03 | DOC-SKIP-GUARD | `BindingAndMarkupHotReloadTests.MultiBinding_ComplexProperty_EmitsSkipMarker` |
-| BM-04 | RED-PROBE (skip-gated), #36732 | `BindingAndMarkupHotReloadTests.DynamicResourceToBinding_RemovesDormantRegistration`; passing guard: BM-03 `MultiBinding_ComplexProperty_EmitsSkipMarker`. |
+| BM-04 | RED-PROBE (skip-gated), #36732 | `BindingAndMarkupHotReloadTests.DynamicResourceToBinding_RemovesDormantRegistration`; passing guard: BM-01 `DynamicResourceToBinding_SwapAndReverse_UpdatesVisibleValue`. |
 | BM-05 | RED-PROBE (skip-gated theory), #36732 | `BindingAndMarkupHotReloadTests.MultiBindingChildren_RemoveReAdd_NoDuplicateExpressions`; passing guard: BM-03 `MultiBinding_ComplexProperty_EmitsSkipMarker`. |
 
 ## Nested controls

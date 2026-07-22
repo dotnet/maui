@@ -79,6 +79,41 @@ public partial class VisualStateHotReloadTests
 		});
 	}
 
+	static string[] CreateVs05StateGraphVersions() =>
+	[
+		CreateStateGraphXaml(includeActive: true, activeColor: "Red"),
+		CreateStateGraphXaml(includeActive: false, activeColor: null),
+		CreateStateGraphXaml(includeActive: true, activeColor: "Green"),
+	];
+
+	// Wave2 · Visual State · family 2 core · VS-05
+	// Provenance: MAUI §2.1; public-app T13/T14; minimal add/remove/re-add extension
+	// Faithfulness: reaches writer L1319 with the exact state-graph versions used by the live probe.
+	// Expected: DOC-SKIP-GUARD
+	// Issue: https://github.com/dotnet/maui/issues/36732
+	[Fact]
+	public void VsmState_AddRemoveReAdd_ComplexAttachedProperty_EmitsSkipMarker()
+	{
+		using var harness = CreateHarness();
+		var generation = harness.Generate(CreateVs05StateGraphVersions());
+
+		for (var index = 0; index < generation.Versions.Length; index++)
+		{
+			var compilation = harness.Compile(generation[index]);
+			Assert.True(compilation.PeImage.Length > 0, $"Generated VS-05 version {index} should compile.");
+
+			if (index == 0)
+				continue;
+
+			var updateComponentSource = generation[index].UpdateComponentSource;
+			Assert.NotNull(updateComponentSource);
+			Assert.Contains(
+				"Complex attached property 'VisualStateManager.VisualStateGroups' — skipped",
+				updateComponentSource!,
+				StringComparison.Ordinal);
+		}
+	}
+
 	// Wave2 · Visual State · family 2 core · VS-05
 	// Provenance: MAUI §2.1; public-app T13/T14; minimal add/remove/re-add extension
 	// Faithfulness: reaches writer L1319; fails-for-bug: state removal cannot apply fallback or re-add a live state.
@@ -88,10 +123,7 @@ public partial class VisualStateHotReloadTests
 	public void VsmState_AddRemoveReAdd_And_FallbackReversion()
 	{
 		using var harness = CreateHarness();
-		var generation = harness.Generate(
-			CreateStateGraphXaml(includeActive: true, activeColor: "Red"),
-			CreateStateGraphXaml(includeActive: false, activeColor: null),
-			CreateStateGraphXaml(includeActive: true, activeColor: "Green"));
+		var generation = harness.Generate(CreateVs05StateGraphVersions());
 
 		harness.RunLive(generation, live =>
 		{

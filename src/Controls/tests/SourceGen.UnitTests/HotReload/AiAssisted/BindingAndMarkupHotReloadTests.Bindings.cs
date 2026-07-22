@@ -97,7 +97,7 @@ public partial class BindingAndMarkupHotReloadTests
 	// Faithfulness: reaches DynamicResource-to-Binding teardown in the retained Label; fails-for-bug: a dormant DynamicResource registration still reacts after Binding wins.
 	// Expected: RED-PROBE(#36732)
 	// Issue: https://github.com/dotnet/maui/issues/36732
-	[MetadataUpdateFact(Skip = "Blocked by writer binding teardown gap — see #36732; green anchor: MultiBinding_ComplexProperty_EmitsSkipMarker")]
+	[MetadataUpdateFact(Skip = "Blocked by writer binding teardown gap — see #36732; green anchor: DynamicResourceToBinding_SwapAndReverse_UpdatesVisibleValue")]
 	public void DynamicResourceToBinding_RemovesDormantRegistration()
 	{
 		const string xamlV1 = """
