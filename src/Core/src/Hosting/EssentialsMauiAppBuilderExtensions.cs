@@ -194,8 +194,8 @@ namespace Microsoft.Maui.Hosting
 						mapServiceToken = existingPlatformGeocoding.MapServiceToken;
 #endif
 
-					BridgeEssentialsFromDI(services, facadeCleanups);
-					BridgeLazyVersionTrackingFromDI(services, facadeCleanups);
+					var versionTrackingDependencies = BridgeEssentialsFromDI(services, facadeCleanups);
+					BridgeLazyVersionTrackingFromDI(versionTrackingDependencies, facadeCleanups);
 
 					// Resolve cleanup after every bridged service so DI disposes it first. This
 					// restores static facades and removes AppActions handlers while the provider-owned
@@ -307,8 +307,14 @@ namespace Microsoft.Maui.Hosting
 			/// the corresponding static API. If not registered, the existing lazy platform
 			/// default behavior is preserved.
 			/// </summary>
-			static void BridgeEssentialsFromDI(IServiceProvider services, List<Action> facadeCleanups)
+			static (IPreferences? Preferences, IAppInfo? AppInfo, IVersionTracking? VersionTracking) BridgeEssentialsFromDI(
+				IServiceProvider services,
+				List<Action> facadeCleanups)
 			{
+				IPreferences? preferences = null;
+				IAppInfo? appInfo = null;
+				IVersionTracking? versionTracking = null;
+
 				// SetDefault pattern types
 				BridgeIfRegistered<IAccelerometer>(services, () => GetFacadeBackingField<IAccelerometer>(typeof(Accelerometer), "defaultImplementation"), Accelerometer.SetDefault, facadeCleanups);
 #if ANDROID
@@ -332,14 +338,18 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<IMediaPicker>(services, () => GetFacadeBackingField<IMediaPicker>(typeof(MediaPicker), "defaultImplementation"), MediaPicker.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IOrientationSensor>(services, () => GetFacadeBackingField<IOrientationSensor>(typeof(OrientationSensor), "defaultImplementation"), OrientationSensor.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IPhoneDialer>(services, () => GetFacadeBackingField<IPhoneDialer>(typeof(PhoneDialer), "defaultImplementation"), PhoneDialer.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IPreferences>(services, () => GetFacadeBackingField<IPreferences>(typeof(Preferences), "defaultImplementation"), Preferences.SetDefault, facadeCleanups);
+				preferences = services.GetService<IPreferences>();
+				if (preferences is not null)
+					TrackAndSet(preferences, () => GetFacadeBackingField<IPreferences>(typeof(Preferences), "defaultImplementation"), Preferences.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IScreenshot>(services, () => GetFacadeBackingField<IScreenshot>(typeof(Screenshot), "defaultImplementation"), Screenshot.SetDefault, facadeCleanups);
 				BridgeIfRegistered<ISecureStorage>(services, () => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"), SecureStorage.SetDefault, facadeCleanups);
 				BridgeIfRegistered<ISemanticScreenReader>(services, () => GetFacadeBackingField<ISemanticScreenReader>(typeof(SemanticScreenReader), "defaultImplementation"), SemanticScreenReader.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IShare>(services, () => GetFacadeBackingField<IShare>(typeof(Share), "defaultImplementation"), Share.SetDefault, facadeCleanups);
 				BridgeIfRegistered<ISms>(services, () => GetFacadeBackingField<ISms>(typeof(Sms), "defaultImplementation"), Sms.SetDefault, facadeCleanups);
 				BridgeIfRegistered<ITextToSpeech>(services, () => GetFacadeBackingField<ITextToSpeech>(typeof(TextToSpeech), "defaultImplementation"), TextToSpeech.SetDefault, facadeCleanups);
-				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.GetDefault, VersionTracking.SetDefault, facadeCleanups);
+				versionTracking = services.GetService<IVersionTracking>();
+				if (versionTracking is not null)
+					TrackAndSet(versionTracking, VersionTracking.GetDefault, VersionTracking.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IVibration>(services, () => GetFacadeBackingField<IVibration>(typeof(Vibration), "defaultImplementation"), Vibration.SetDefault, facadeCleanups);
 				// IWebAuthenticator: on Android/iOS/MacCatalyst the platform callback activities
 				// and lifecycle hooks (WebAuthenticatorCallbackActivity.OnResume, Platform.OpenUrl,
@@ -380,31 +390,35 @@ namespace Microsoft.Maui.Hosting
 					TrackAndSet(appActions, () => GetFacadeBackingField<IAppActions>(typeof(AppActions), "currentImplementation"), AppActions.SetCurrent, facadeCleanups);
 #endif
 				}
-				BridgeIfRegistered<IAppInfo>(services, () => GetFacadeBackingField<IAppInfo>(typeof(AppInfo), "currentImplementation"), AppInfo.SetCurrent, facadeCleanups);
+				appInfo = services.GetService<IAppInfo>();
+				if (appInfo is not null)
+					TrackAndSet(appInfo, () => GetFacadeBackingField<IAppInfo>(typeof(AppInfo), "currentImplementation"), AppInfo.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IConnectivity>(services, () => GetFacadeBackingField<IConnectivity>(typeof(Connectivity), "currentImplementation"), Connectivity.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceDisplay>(services, () => GetFacadeBackingField<IDeviceDisplay>(typeof(DeviceDisplay), "currentImplementation"), DeviceDisplay.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceInfo>(services, () => GetFacadeBackingField<IDeviceInfo>(typeof(DeviceInfo), "currentImplementation"), DeviceInfo.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IFileSystem>(services, () => GetFacadeBackingField<IFileSystem>(typeof(FileSystem), "currentImplementation"), FileSystem.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IGeocoding>(services, () => GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation"), Geocoding.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IPermissions>(services, () => GetFacadeBackingField<IPermissions>(typeof(Permissions), "currentImplementation"), Permissions.SetCurrent, facadeCleanups);
+
+				return (preferences, appInfo, versionTracking);
 			}
 
-			static void BridgeLazyVersionTrackingFromDI(IServiceProvider services, List<Action> facadeCleanups)
+			static void BridgeLazyVersionTrackingFromDI(
+				(IPreferences? Preferences, IAppInfo? AppInfo, IVersionTracking? VersionTracking) dependencies,
+				List<Action> facadeCleanups)
 			{
-				if (services.GetService<IVersionTracking>() is not null)
+				if (dependencies.VersionTracking is not null)
 					return;
 
-				var preferences = services.GetService<IPreferences>();
-				var appInfo = services.GetService<IAppInfo>();
-				if (preferences is null && appInfo is null)
+				if (dependencies.Preferences is null && dependencies.AppInfo is null)
 					return;
 
 				// VersionTracking captures Preferences and AppInfo when its lazy default is created.
 				// Install an app-owned lazy wrapper so a later static call cannot retain provider-owned
 				// services after this MauiApp is disposed.
 				var implementation = new LazyVersionTracking(
-					preferences ?? Preferences.Default,
-					appInfo ?? AppInfo.Current);
+					dependencies.Preferences ?? Preferences.Default,
+					dependencies.AppInfo ?? AppInfo.Current);
 				TrackAndSet(
 					implementation,
 					VersionTracking.GetDefault,

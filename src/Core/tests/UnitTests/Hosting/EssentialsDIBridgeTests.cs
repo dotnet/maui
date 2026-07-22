@@ -582,6 +582,30 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void LazyVersionTrackingReusesTransientBridgeDependencies()
+		{
+			var preferencesResolutions = 0;
+			var appInfoResolutions = 0;
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddTransient<IPreferences>(_ =>
+			{
+				preferencesResolutions++;
+				return new StubPreferences();
+			});
+			builder.Services.AddTransient<IAppInfo>(_ =>
+			{
+				appInfoResolutions++;
+				return new StubAppInfo();
+			});
+
+			using var app = builder.Build();
+			_ = VersionTracking.CurrentVersion;
+
+			Assert.Equal(1, preferencesResolutions);
+			Assert.Equal(1, appInfoResolutions);
+		}
+
+		[Fact]
 		public void FailedBridgeResolutionRestoresPreviouslyAssignedFacade()
 		{
 			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
