@@ -308,7 +308,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile, additionalArgs: $"-c {configuration} -p:MauiXamlInflator=SourceGen -p:EmitCompilerGeneratedFiles=True -p:CompilerGeneratedFilesOutputPath=Generated");
+			// Pin XIHR off: this test covers the legacy ResourceProvider2 hot-reload fallback
+			// (InitializeComponentRuntime), which XAML Incremental Hot Reload intentionally supersedes
+			// when enabled (on by default in Debug). See dotnet/maui#36682.
+			Build(projectFile, additionalArgs: $"-c {configuration} -p:MauiXamlInflator=SourceGen -p:EnableMauiIncrementalHotReload=false -p:EmitCompilerGeneratedFiles=True -p:CompilerGeneratedFilesOutputPath=Generated");
 
 			var generatorDirectory = IOPath.Combine(tempDirectory, "Generated", "Microsoft.Maui.Controls.SourceGen", "Microsoft.Maui.Controls.SourceGen.XamlGenerator");
 			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"), nonEmpty: true);
