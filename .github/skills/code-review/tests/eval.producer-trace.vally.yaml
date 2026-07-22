@@ -29,10 +29,10 @@ stimuli:
       source_pr: "36185"
       kind: producer-trace
     prompt: >-
-      You are reviewing a candidate patch before merge. The review input is
-      materialized under `review-input`: inspect `review-input/change.diff`
-      first, then read supporting source snapshots under `review-input/src` as
-      needed.
+      Invoke the `code-review` skill to review a candidate patch before merge.
+      The review input is materialized under `review-input`: inspect
+      `review-input/change.diff` first, then read supporting source snapshots
+      under `review-input/src` as needed.
 
       Hypothesis to verify or refute: the new device-test incompleteness
       detector distinguishes a run that was killed, hung, or crashed from an
@@ -55,7 +55,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+          pattern: 'External Output Contract[\s\S]*(NEEDS_CHANGES|NEEDS_DISCUSSION)'
       - type: tool-calls
         config:
           required:
@@ -98,8 +98,9 @@ stimuli:
 
 scoring:
   # All three signals are load-bearing. With an unweighted mean and threshold
-  # 0.85, missing the structural verdict or either required source read caps
-  # the maximum possible score at 2/3, so no holistic judge score can mask it.
+  # 0.85, missing the contract + non-LGTM verdict or any required source read
+  # caps the maximum possible score at 2/3, so no holistic judge score can mask
+  # it.
   # Across runs, the suite also needs a judge average >= 0.55:
   # (1 + 1 + 0.55) / 3 = 0.85. The judge's own 0.6 threshold controls its
   # per-trial pass label; Vally computes the suite gate from aggregate scores.
