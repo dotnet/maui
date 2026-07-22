@@ -522,6 +522,66 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void LazyVersionTrackingIsRestoredBeforeBridgedServicesAreDisposed()
+		{
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+			builder.Services.AddSingleton<IAppInfo>(new StubAppInfo());
+			var app = builder.Build();
+			var preferences = Assert.IsType<DisposableStubPreferences>(
+				app.Services.GetRequiredService<IPreferences>());
+
+			_ = VersionTracking.IsFirstLaunchEver;
+			Assert.NotNull(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+			app.Dispose();
+
+			Assert.True(preferences.IsDisposed);
+			Assert.True(preferences.FacadeWasRestoredBeforeDispose);
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+		}
+
+		[Fact]
+		public void OverlappingMauiAppsOwnIndependentLazyVersionTrackingFacades()
+		{
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IPreferences>(new StubPreferences());
+				firstBuilder.Services.AddSingleton<IAppInfo>(new StubAppInfo());
+				firstApp = firstBuilder.Build();
+				var firstVersionTracking = VersionTracking.Default;
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IPreferences>(new StubPreferences());
+				secondBuilder.Services.AddSingleton<IAppInfo>(new StubAppInfo());
+				secondApp = secondBuilder.Build();
+				var secondVersionTracking = VersionTracking.Default;
+
+				Assert.NotSame(firstVersionTracking, secondVersionTracking);
+
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Same(secondVersionTracking, VersionTracking.Default);
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
 		public void FailedBridgeResolutionRestoresPreviouslyAssignedFacade()
 		{
 			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));

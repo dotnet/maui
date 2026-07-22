@@ -195,6 +195,7 @@ namespace Microsoft.Maui.Hosting
 #endif
 
 					BridgeEssentialsFromDI(services, facadeCleanups);
+					BridgeLazyVersionTrackingFromDI(services, facadeCleanups);
 
 					// Resolve cleanup after every bridged service so DI disposes it first. This
 					// restores static facades and removes AppActions handlers while the provider-owned
@@ -386,6 +387,29 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<IFileSystem>(services, () => GetFacadeBackingField<IFileSystem>(typeof(FileSystem), "currentImplementation"), FileSystem.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IGeocoding>(services, () => GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation"), Geocoding.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IPermissions>(services, () => GetFacadeBackingField<IPermissions>(typeof(Permissions), "currentImplementation"), Permissions.SetCurrent, facadeCleanups);
+			}
+
+			static void BridgeLazyVersionTrackingFromDI(IServiceProvider services, List<Action> facadeCleanups)
+			{
+				if (services.GetService<IVersionTracking>() is not null)
+					return;
+
+				var preferences = services.GetService<IPreferences>();
+				var appInfo = services.GetService<IAppInfo>();
+				if (preferences is null && appInfo is null)
+					return;
+
+				// VersionTracking captures Preferences and AppInfo when its lazy default is created.
+				// Install an app-owned lazy wrapper so a later static call cannot retain provider-owned
+				// services after this MauiApp is disposed.
+				var implementation = new LazyVersionTracking(
+					preferences ?? Preferences.Default,
+					appInfo ?? AppInfo.Current);
+				TrackAndSet(
+					implementation,
+					VersionTracking.GetDefault,
+					VersionTracking.SetDefault,
+					facadeCleanups);
 			}
 
 			/// <summary>
@@ -580,6 +604,48 @@ namespace Microsoft.Maui.Hosting
 			{
 				internal static readonly object SyncRoot = new();
 				internal static readonly List<FacadeAssignment<T>> Assignments = new();
+			}
+
+			sealed class LazyVersionTracking : IVersionTracking
+			{
+				readonly Lazy<IVersionTracking> _implementation;
+
+				public LazyVersionTracking(IPreferences preferences, IAppInfo appInfo)
+				{
+					_implementation = new(() => new VersionTrackingImplementation(preferences, appInfo));
+				}
+
+				IVersionTracking Implementation => _implementation.Value;
+
+				public bool IsFirstLaunchEver => Implementation.IsFirstLaunchEver;
+
+				public bool IsFirstLaunchForCurrentVersion => Implementation.IsFirstLaunchForCurrentVersion;
+
+				public bool IsFirstLaunchForCurrentBuild => Implementation.IsFirstLaunchForCurrentBuild;
+
+				public string CurrentVersion => Implementation.CurrentVersion;
+
+				public string CurrentBuild => Implementation.CurrentBuild;
+
+				public string? PreviousVersion => Implementation.PreviousVersion;
+
+				public string? PreviousBuild => Implementation.PreviousBuild;
+
+				public string? FirstInstalledVersion => Implementation.FirstInstalledVersion;
+
+				public string? FirstInstalledBuild => Implementation.FirstInstalledBuild;
+
+				public IReadOnlyList<string> VersionHistory => Implementation.VersionHistory;
+
+				public IReadOnlyList<string> BuildHistory => Implementation.BuildHistory;
+
+				public void Track() => Implementation.Track();
+
+				public bool IsFirstLaunchForVersion(string version) =>
+					Implementation.IsFirstLaunchForVersion(version);
+
+				public bool IsFirstLaunchForBuild(string build) =>
+					Implementation.IsFirstLaunchForBuild(build);
 			}
 
 			static void LogMissingNativeLifecycleInterface<T>(IServiceProvider services, string requiredInterface)
