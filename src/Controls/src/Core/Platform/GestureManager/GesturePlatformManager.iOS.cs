@@ -68,6 +68,25 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		// Returns the view that native gesture recognizers should be attached to.
+		//
+		// UIControl subclasses (UIButton, UISwitch, UISlider, UITextField, UISearchBar, etc.)
+		// consume touches through their own tracking mechanism (beginTracking/continueTracking),
+		// so a gesture recognizer attached to an ancestor container never receives the touch.
+		// This affects any control whose inner platform view is a UIControl once it ends up
+		// wrapped in a container - whether that's because a handler statically sets
+		// NeedsContainer => true (Button, ImageButton, Switch), or dynamically because Clip,
+		// Shadow, or Border is set on any other control (Slider, Entry, SearchBar, etc.). The
+		// check is therefore based on the actual inner platform view type rather than on why the
+		// wrapping occurred. See https://github.com/dotnet/maui/issues/19099.
+		UIView GetGestureTargetView(PlatformView container)
+		{
+			if (_handler.PlatformView is UIControl innerControl && !ReferenceEquals(innerControl, container))
+				return innerControl;
+
+			return container;
+		}
+
 		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers =>
 			(_handler.VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
 
@@ -827,19 +846,16 @@ namespace Microsoft.Maui.Controls.Platform
 						_proxy ??= new ShouldReceiveTouchProxy(this);
 						nativeRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveTouch;
 
-						// If the inner platform view is a UIControl (e.g. UIButton, ImageButton) different
-						// from the container, adding the tap gesture to the container is unreliable because
-						// UIControl consumes touches via its own tracking mechanism. Attach the gesture
-						// directly to the UIControl so it fires when the user taps the control, and set
-						// CancelsTouchesInView = false so the control's own actions (e.g. Button.Clicked)
-						// continue to fire. See https://github.com/dotnet/maui/issues/19099.
-						UIView targetView = platformView;
-						if (nativeRecognizer is UITapGestureRecognizer &&
-							_handler.PlatformView is UIControl innerControl &&
-							!ReferenceEquals(innerControl, platformView))
+						UIView targetView = GetGestureTargetView(platformView);
+						if (!ReferenceEquals(targetView, platformView))
 						{
+							// The gesture recognizer is attached directly to the inner UIControl instead
+							// of the container, so it participates in the control's own touch tracking.
+							// CancelsTouchesInView defaults to true, which would cancel the touch sequence
+							// delivered to the control once the gesture recognizes, suppressing the
+							// control's native action (e.g. Button.Clicked). Set it to false so both the
+							// gesture and the native action fire. See https://github.com/dotnet/maui/issues/19099.
 							nativeRecognizer.CancelsTouchesInView = false;
-							targetView = innerControl;
 						}
 
 						targetView.AddGestureRecognizer(nativeRecognizer);
