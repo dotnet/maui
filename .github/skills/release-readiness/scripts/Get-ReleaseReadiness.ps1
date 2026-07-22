@@ -739,8 +739,11 @@ function Get-ReleaseShipChecks {
             # StabilizePackageVersion=false). If main is misconfigured as a
             # servicing/stable build while its patch is bumped, PRs merging to main
             # would emit packages that misrepresent their ship vehicle — so that is
-            # BLOCKED, not READY. Unset elements default to the dev-main values.
-            $mainLabelOk     = [string]::IsNullOrEmpty($vpMain.PreReleaseVersionLabel) -or ($vpMain.PreReleaseVersionLabel -eq 'ci.main')
+            # BLOCKED, not READY. An empty/missing PreReleaseVersionLabel is
+            # release-only/stable in Arcade, so only ci.main is acceptable here.
+            # StabilizePackageVersion defaults false when omitted; only explicit
+            # true/non-false is bad.
+            $mainLabelOk     = ($vpMain.PreReleaseVersionLabel -eq 'ci.main')
             $mainStabilizeOk = [string]::IsNullOrEmpty($vpMain.StabilizePackageVersion) -or ($vpMain.StabilizePackageVersion -eq 'false')
             $mainMainlineOk  = $mainLabelOk -and $mainStabilizeOk
 
@@ -871,20 +874,21 @@ function Invoke-DarcJson {
     param([string[]]$DarcArgs)
     try {
         $jsonOutput = & darc @DarcArgs --output-format json 2>$null
-        if ($LASTEXITCODE -ne 0) {
-            return [PSCustomObject]@{ Success = $false; Data = @() }
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -ne 0) {
+            return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $exitCode; NoMatch = ($exitCode -eq 42) }
         }
         $joined = ($jsonOutput | Out-String)
         if ([string]::IsNullOrWhiteSpace($joined)) {
-            return [PSCustomObject]@{ Success = $true; Data = @() }
+            return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = 0; NoMatch = $false }
         }
         $parsed = $joined | ConvertFrom-Json -ErrorAction Stop
         if ($null -eq $parsed) {
-            return [PSCustomObject]@{ Success = $true; Data = @() }
+            return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = 0; NoMatch = $false }
         }
-        return [PSCustomObject]@{ Success = $true; Data = @($parsed) }
+        return [PSCustomObject]@{ Success = $true; Data = @($parsed); ExitCode = 0; NoMatch = $false }
     } catch {
-        return [PSCustomObject]@{ Success = $false; Data = @() }
+        return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $null; NoMatch = $false }
     }
 }
 
@@ -978,7 +982,11 @@ function Get-MaestroOperationalChecks {
             -NextAction "Locally, once the build is confirmed: ``darc get-asset --name Microsoft.Maui.Controls --build <id>`` to get the NugetFeed URL, then link it in the ship Assessment."
     } else {
         $builds = Invoke-DarcJson -DarcArgs @('get-build', '--repo', $repoUrl, '--commit', $Ctx.srHeadSha)
-        if (-not $builds.Success) {
+        if ((-not $builds.Success) -and (Get-AzdoProp $builds 'NoMatch')) {
+            $checks += New-ReadinessCheck -Area $buildArea -Status 'WATCH' `
+                -Details "No BAR build found for SR HEAD ``$headShort`` yet (``darc get-build`` returned no match). This can be normal while CI/BAR publishing is still running." `
+                -NextAction "Wait for CI to complete on ``$($Ctx.srBranch)`` at SR HEAD, then re-run readiness report. If this persists after CI is green, verify BAR publishing for the SR build."
+        } elseif (-not $builds.Success) {
             $checks += New-ReadinessCheck -Area $buildArea -Status 'UNKNOWN' `
                 -Details "``darc get-build`` failed for SR HEAD ``$headShort``." `
                 -NextAction "Run locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``"
@@ -1043,9 +1051,37 @@ function Get-MaestroOperationalChecks {
             $buildSha8 = $buildCommit.Substring(0, [Math]::Min(8, $buildCommit.Length))
             $feedUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-$buildSha8/nuget/v3/index.json"
             if ($hasChans) {
-                $checks += New-ReadinessCheck -Area $feedArea -Status 'READY' `
-                    -Details "Build **$($latest.buildNumber)** is promoted ($chans) → its per-build feed exists: ``$feedUrl``. Link this feed in the ship Assessment (DevDiv 'Assessment' work item) so CSI/customers can validate the exact candidate packages." `
-                    -NextAction "Add the feed URL to the Assessment. Confirm the location with ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` (prints the NugetFeed location)."
+                $asset = Invoke-DarcJson -DarcArgs @('get-asset', '--name', 'Microsoft.Maui.Controls', '--build', "$($latest.id)")
+                $nugetFeed = $null
+                if ($asset.Success) {
+                    foreach ($a in @($asset.Data)) {
+                        foreach ($prop in 'NugetFeed', 'nugetFeed') {
+                            $v = Get-AzdoProp $a $prop
+                            if ($v) { $nugetFeed = [string]$v; break }
+                        }
+                        if ($nugetFeed) { break }
+                        foreach ($loc in @((Get-AzdoProp $a 'locations'))) {
+                            $kind = (Get-AzdoProp $loc 'type')
+                            if (-not $kind) { $kind = (Get-AzdoProp $loc 'locationType') }
+                            $location = (Get-AzdoProp $loc 'location')
+                            if (-not $location) { $location = (Get-AzdoProp $loc 'feed') }
+                            if ($location -and ($kind -match 'NuGetFeed|NugetFeed')) {
+                                $nugetFeed = [string]$location
+                                break
+                            }
+                        }
+                        if ($nugetFeed) { break }
+                    }
+                }
+                if ($nugetFeed) {
+                    $checks += New-ReadinessCheck -Area $feedArea -Status 'READY' `
+                        -Details "Build **$($latest.buildNumber)** is promoted ($chans) and ``darc get-asset`` confirms its NugetFeed location: ``$nugetFeed``. Link this feed in the ship Assessment (DevDiv 'Assessment' work item) so CSI/customers can validate the exact candidate packages." `
+                        -NextAction "Add the confirmed NugetFeed URL to the Assessment."
+                } else {
+                    $checks += New-ReadinessCheck -Area $feedArea -Status 'WATCH' `
+                        -Details "Build **$($latest.buildNumber)** is promoted ($chans), but ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` did not confirm a NugetFeed location. Do not link the guessed endpoint until BAR shows the published feed. Expected feed name, once published, is ``$feedUrl``." `
+                        -NextAction "Re-run ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` and add the returned NugetFeed URL to the Assessment once it appears."
+                }
             } else {
                 $checks += New-ReadinessCheck -Area $feedArea -Status 'WATCH' `
                     -Details "Build **$($latest.buildNumber)** for SR HEAD is NOT promoted to any channel → its per-build darc-pub feed is not generated, so the ship Assessment has no validation feed to link (this is what left the SR9 assessment incomplete). Once promoted, the feed will be ``$feedUrl``." `
@@ -2497,11 +2533,11 @@ function Classify-RegressionCandidate {
                 } else {
                     $verdict = 'needs-human-review'
                     $confidence = 'medium'
-                    if ($pr.baseRef -like 'inflight/*') {
+                    if ($pr.baseRef -eq 'inflight/current') {
                         $subreason = 'open-non-main-inflight'
                         $subreasonPr = [int]$pr.number
-                        # inflight/* PRs reach main via normal Candidate promotion — do NOT
-                        # instruct a captain to retarget. Wait for the merge + promotion flow.
+                        # inflight/current PRs reach main via normal Candidate promotion — do
+                        # NOT instruct a captain to retarget. Wait for the merge + promotion flow.
                         $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef) — wait for it to merge and flow to main via Candidate promotion, then rerun readiness. (Retargeting to main directly is an optional expedited path, not required.)"
                     } else {
                         $subreason = 'open-non-main-other'

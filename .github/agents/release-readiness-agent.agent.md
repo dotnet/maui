@@ -185,7 +185,8 @@ Both lanes may emit `UNKNOWN` rows when a tool isn't available in the running en
 | `UNKNOWN` row | MCP tool | Patch rule |
 |---|---|---|
 | `BAR default-channel mapping (<branch> → .NET <band> SDK)` | `maestro_default_channels` with `repository: https://github.com/dotnet/maui` | Mapping present + enabled → `READY`. Missing/disabled → `BLOCKED` + surface the `darc add-default-channel` command from the script's `Next action`. |
-| `BAR build for <branch> HEAD (<short-sha>)` | `maestro_builds` with `commit: <full-sha>` and `repository: https://github.com/dotnet/maui` | ≥1 build returned → `READY` and cite buildNumber/id. Empty → `WATCH` (transient, CI still running). |
+| `BAR build for <branch> HEAD (<short-sha>)` | `maestro_builds` with `commit: <full-sha>` and `repository: https://github.com/dotnet/maui` | Filter returned builds to the requested SR branch **before** patching: accept only builds whose branch metadata is `<branch>` (or `refs/heads/<branch>`). A same-SHA build from `main` or another branch does **not** count. Matching SR build → `READY` and cite buildNumber/id. Empty/no SR-branch match → `WATCH` (transient, CI still running). |
+| `Ship Assessment validation feed` | `maestro_builds` / BAR asset details for the verified SR-branch build | Patch to `READY` only after verifying the SR-branch build has a published `NugetFeed` location for the `Microsoft.Maui.Controls` asset (the per-build `darc-pub-dotnet-maui-<sha8>` endpoint). If the build exists but the `NugetFeed` location is absent/unconfirmed, leave/patch as `WATCH` and tell the captain to wait for BAR asset publishing rather than linking a guessed feed URL. |
 | `Milestone hygiene` (API failure) | Re-run `gh auth status` and retry — milestone checks use plain `gh api`, so UNKNOWN means gh isn't scoped right. |
 
 Always cite the MCP query result in your write-up (e.g. *"Verified via `maestro_default_channels`: SR8 is **not** in the mapping list — see darc command above"*).
