@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -588,10 +589,74 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var references = await InvokeOnMainThreadAsync(CreateShellSectionDelegateReferences);
 
+			Assert.NotNull(references.NavigationDelegate);
+			Assert.NotNull(references.GestureDelegate);
 			await AssertionExtensions.WaitForGC(references.Renderer);
 			GC.KeepAlive(references.NavigationDelegate);
 			GC.KeepAlive(references.GestureDelegate);
 		}
+
+		[Fact(DisplayName = "Disconnect Shell During Current Item Change Does Not Recreate Renderer")]
+		public async Task DisconnectShellDuringCurrentItemChangeDoesNotRecreateRenderer()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ContentPage());
+				shell.Items.Add(new ContentPage());
+			});
+			var handler = await InvokeOnMainThreadAsync(() => (ShellHandler)shell.ToHandler(MauiContext));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var activeTransitionField = typeof(ShellHandler).GetField("_activeTransition", BindingFlags.Instance | BindingFlags.NonPublic);
+				var currentRendererField = typeof(ShellHandler).GetField("_currentShellItemRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
+				var incomingRendererField = typeof(ShellHandler).GetField("_incomingRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
+
+				Assert.NotNull(activeTransitionField);
+				Assert.NotNull(currentRendererField);
+				Assert.NotNull(incomingRendererField);
+
+				var transition = new TaskCompletionSource<bool>();
+				activeTransitionField.SetValue(handler, transition.Task);
+
+				shell.CurrentItem = shell.Items[1];
+				((IElementHandler)handler).DisconnectHandler();
+				transition.SetResult(true);
+				await Task.Yield();
+
+				Assert.Null(handler.Element);
+				Assert.Null(shell.Handler);
+				Assert.Null(currentRendererField.GetValue(handler));
+				Assert.Null(incomingRendererField.GetValue(handler));
+			});
+		}
+
+		[Fact(DisplayName = "Disconnect Shell Disposes All Pending Item Renderers")]
+		public Task DisconnectShellDisposesAllPendingItemRenderers() =>
+			InvokeOnMainThreadAsync(async () =>
+			{
+				using var handler = new TestableShellRenderer();
+				var activeTransitionField = typeof(ShellHandler).GetField("_activeTransition", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.NotNull(activeTransitionField);
+
+				var transition = new TaskCompletionSource<bool>();
+				activeTransitionField.SetValue(handler, transition.Task);
+
+				var firstRenderer = new TrackedShellItemRenderer();
+				var secondRenderer = new TrackedShellItemRenderer();
+				var firstTransition = handler.SetCurrentShellItemControllerForTestAsync(firstRenderer);
+				var secondTransition = handler.SetCurrentShellItemControllerForTestAsync(secondRenderer);
+
+				((IElementHandler)handler).DisconnectHandler();
+				transition.SetResult(true);
+				await Task.WhenAll(firstTransition, secondTransition);
+
+				Assert.Equal(1, firstRenderer.DisconnectCount);
+				Assert.Equal(1, firstRenderer.DisposeCount);
+				Assert.Equal(1, secondRenderer.DisconnectCount);
+				Assert.Equal(1, secondRenderer.DisposeCount);
+			});
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		static ShellSectionDelegateReferences CreateShellSectionDelegateReferences()
@@ -626,6 +691,24 @@ namespace Microsoft.Maui.DeviceTests
 			public IShellSearchResultsRenderer CreateShellSearchResultsRenderer() => null;
 			public IShellSectionRenderer CreateShellSectionRenderer(ShellSection shellSection) => null;
 			public IShellTabBarAppearanceTracker CreateTabBarAppearanceTracker() => null;
+		}
+
+		sealed class TestableShellRenderer : ShellHandler
+		{
+			public Task SetCurrentShellItemControllerForTestAsync(IShellItemRenderer renderer) =>
+				SetCurrentShellItemControllerAsync(renderer);
+		}
+
+		sealed class TrackedShellItemRenderer : IShellItemRenderer, IDisconnectable
+		{
+			public int DisconnectCount { get; private set; }
+			public int DisposeCount { get; private set; }
+			public ShellItem ShellItem { get; set; }
+			public UIViewController ViewController => null;
+
+			public void Disconnect() => DisconnectCount++;
+
+			public void Dispose() => DisposeCount++;
 		}
 
 		async Task TapToSelect(ContentPage page)

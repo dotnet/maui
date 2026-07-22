@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -102,6 +103,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		Task _activeTransition = Task.CompletedTask;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Incoming item renderer is a transient transition reference cleared when ShellRenderer is disposed.")]
 		IShellItemRenderer _incomingRenderer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Pending item renderers are disposed when superseded or when ShellRenderer disconnects.")]
+		readonly HashSet<IShellItemRenderer> _pendingRenderers = new(ReferenceEqualityComparer.Instance);
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "MauiContext is provided by the handler and cleared when ShellRenderer is disposed.")]
 		IMauiContext _mauiContext;
 
@@ -229,14 +232,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			ElementChanged = null;
 
-			if (!ReferenceEquals(_incomingRenderer, _currentShellItemRenderer))
+			foreach (var pendingRenderer in _pendingRenderers)
 			{
-				(_incomingRenderer as IDisconnectable)?.Disconnect();
-				_incomingRenderer?.Dispose();
+				if (!ReferenceEquals(pendingRenderer, _currentShellItemRenderer))
+					DisconnectAndDispose(pendingRenderer);
 			}
 
-			(_currentShellItemRenderer as IDisconnectable)?.Disconnect();
-			_currentShellItemRenderer?.Dispose();
+			_pendingRenderers.Clear();
+			DisconnectAndDispose(_currentShellItemRenderer);
 			_flyoutRenderer?.Dispose();
 
 			_incomingRenderer = null;
@@ -248,6 +251,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				shell.Handler = null;
 
 			Element = null;
+		}
+
+		static void DisconnectAndDispose(IShellItemRenderer renderer)
+		{
+			(renderer as IDisconnectable)?.Disconnect();
+			renderer?.Dispose();
 		}
 
 		protected virtual async void OnCurrentItemChanged()
@@ -264,7 +273,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual async Task OnCurrentItemChangedAsync()
 		{
-			var currentItem = Shell.CurrentItem;
+			var shell = Element as Shell;
+			if (_disposed || shell == null)
+				return;
+
+			var currentItem = shell.CurrentItem;
 
 			var oldLayer = _currentShellItemRenderer
 				?.ViewController
@@ -275,6 +288,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				oldLayer.RemoveAllAnimations();
 
 			await _activeTransition;
+			if (_disposed)
+				return;
+
 			if (_currentShellItemRenderer?.ShellItem != currentItem)
 			{
 				var newController = CreateShellItemRenderer(currentItem);
@@ -284,6 +300,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_disposed)
+				return;
+
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
 			{
 				OnCurrentItemChanged();
@@ -296,7 +315,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateFlowDirection(bool readdViews = false)
 		{
-			if (_currentShellItemRenderer?.ViewController == null)
+			if (_disposed || _currentShellItemRenderer?.ViewController == null)
 				return;
 
 			var originalValue = _currentShellItemRenderer.ViewController.View.SemanticContentAttribute;
@@ -339,16 +358,37 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected async Task SetCurrentShellItemControllerAsync(IShellItemRenderer value)
 		{
+			if (_disposed)
+			{
+				DisconnectAndDispose(value);
+				return;
+			}
+
+			_pendingRenderers.Add(value);
 			_incomingRenderer = value;
 			await _activeTransition;
 
+			if (_disposed)
+			{
+				if (_pendingRenderers.Remove(value))
+					DisconnectAndDispose(value);
+
+				return;
+			}
+
 			// This means the selected item changed while the active transition
 			// was finishing up
+			var shell = Element as Shell;
 			if (_incomingRenderer != value ||
-				value.ShellItem != this.Shell.CurrentItem)
+				shell == null ||
+				value.ShellItem != shell.CurrentItem)
 			{
-				(value as IDisconnectable)?.Disconnect();
-				value?.Dispose();
+				if (ReferenceEquals(_incomingRenderer, value))
+					_incomingRenderer = null;
+
+				if (_pendingRenderers.Remove(value))
+					DisconnectAndDispose(value);
+
 				return;
 			}
 
@@ -356,7 +396,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			(oldRenderer as IDisconnectable)?.Disconnect();
 			var newRenderer = value;
 
+			_pendingRenderers.Remove(value);
 			_currentShellItemRenderer = value;
+			_incomingRenderer = null;
 
 			AddChildViewController(newRenderer.ViewController);
 			View.AddSubview(newRenderer.ViewController.View);
@@ -371,6 +413,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_activeTransition = transition.Transition(oldRenderer, newRenderer);
 				await _activeTransition;
 
+				if (_disposed)
+				{
+					DisconnectAndDispose(oldRenderer);
+					return;
+				}
+
 				oldRenderer.ViewController.RemoveFromParentViewController();
 				oldRenderer.ViewController.View.RemoveFromSuperview();
 				oldRenderer.Dispose();
@@ -381,7 +429,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			// current renderer is still valid
-			if (_currentShellItemRenderer == value)
+			if (!_disposed && _currentShellItemRenderer == value)
 			{
 				UpdateBackgroundColor();
 				UpdateFlowDirection();
@@ -390,6 +438,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void UpdateBackgroundColor()
 		{
+			if (_disposed || Element == null)
+				return;
+
 			var color = Shell.BackgroundColor?.ToPlatform();
 			if (color == null)
 				color = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor;
@@ -399,6 +450,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void SetupCurrentShellItem()
 		{
+			if (_disposed)
+				return;
+
 			if (Shell.CurrentItem == null)
 			{
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
