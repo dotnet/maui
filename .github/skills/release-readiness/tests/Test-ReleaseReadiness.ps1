@@ -4443,6 +4443,22 @@ $s15Feed = Get-MaestroCheckByPrefix -Checks $s15 -Prefix 'Ship Assessment valida
 Assert-Eq -Label "same-sha-main-build-only: no feed READY/WATCH row emitted (no SR build)" -Expected $true `
     -Actual ($null -eq $s15Feed)
 
+# ── Scenario 15b: SR build whose branch metadata carries the refs/heads/ prefix ──
+# BAR/darc may return the SR branch as `refs/heads/release/...` on the branch/
+# gitHubBranch/githubBranch fields (not just azureDevOpsBranch). Those must still
+# match $Ctx.srBranch after refs/heads/ stripping, otherwise a valid SR build is
+# filtered out and misreported as WATCH/no-build.
+$refsHeadsSrBuild = @(
+    [PSCustomObject]@{ id = 400600; gitHubBranch = 'refs/heads/release/10.0.1xx-sr8'
+        buildNumber = '20260716.2'; buildLink = 'https://example/sr8'
+        commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'; channels = @('.NET 10.0.1xx SDK') }
+)
+$s15b = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $refsHeadsSrBuild
+$s15bBuild = Get-MaestroCheckByPrefix -Checks $s15b -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "refs/heads-prefixed SR branch build: build check is READY (not filtered out)" -Expected 'READY' -Actual $s15bBuild.Status
+Assert-Eq -Label "refs/heads-prefixed SR branch build: details cite the build number" -Expected $true `
+    -Actual ($s15bBuild.Details -match '20260716\.2')
+
 # ── Scenario 16: BOTH a higher-id main build and a lower-id SR build for HEAD →
 #    picks the SR branch build, not the highest id across all branches. ──
 $mainAndSrBuilds = @(

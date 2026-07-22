@@ -1008,12 +1008,10 @@ function Get-MaestroOperationalChecks {
             # carrying no branch metadata at all is left in rather than dropped.
             $srBranchBuilds = @($builds.Data | Where-Object {
                 $branchNames = @()
-                foreach ($prop in 'branch', 'gitHubBranch', 'githubBranch') {
+                foreach ($prop in 'branch', 'gitHubBranch', 'githubBranch', 'azureDevOpsBranch') {
                     $bv = Get-AzdoProp $_ $prop
-                    if ($bv) { $branchNames += [string]$bv }
+                    if ($bv) { $branchNames += (([string]$bv) -replace '^refs/heads/', '') }
                 }
-                $azdoBranch = Get-AzdoProp $_ 'azureDevOpsBranch'
-                if ($azdoBranch) { $branchNames += (([string]$azdoBranch) -replace '^refs/heads/', '') }
                 ($branchNames.Count -eq 0) -or ($branchNames -contains $Ctx.srBranch)
             })
             if ($srBranchBuilds.Count -eq 0) {
