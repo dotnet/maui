@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 		// Thread safety (no shared mutable state)
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultTrackTintCache = new();
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultThumbTintCache = new();
+		static readonly ConditionalWeakTable<ASwitch, ColorStateList> _defaultCompatThumbTintCache = new();
 
 		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view)
 		{
@@ -88,6 +89,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view)
 		{
+			// Cache the original theme tint before first modification
+			// so it can be restored when ThumbColor is cleared, mirroring the
+			// MaterialSwitch (Material3) cache-and-restore pattern above instead
+			// of dropping the tint entirely.
+			if (!_defaultCompatThumbTintCache.TryGetValue(aSwitch, out var defaultThumbTintList))
+			{
+				var currentTint = aSwitch.ThumbTintList;
+				if (currentTint is not null)
+				{
+					_defaultCompatThumbTintCache.Add(aSwitch, currentTint);
+					defaultThumbTintList = currentTint;
+				}
+			}
+
 			var thumbColor = view.ThumbColor;
 
 			if (thumbColor is not null)
@@ -98,7 +113,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				aSwitch.ThumbTintList = null;
+				aSwitch.ThumbTintList = defaultThumbTintList;
 			}
 		}
 

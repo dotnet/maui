@@ -14,13 +14,18 @@ public class Issue19883 : _IssuesUITest
 	[Category(UITestCategories.Switch)]
 	public void SettingThumbColorToNullResetsToDefault()
 	{
+		Exception? exception = null;
 		App.WaitForElement("TestSwitch");
 
 		// Initial state: ThumbColor is Orange, no OnColor set
-		VerifyScreenshot("Issue19883_ThumbColorOrange");
+		VerifyScreenshotOrSetException(ref exception, "Issue19883_ThumbColorOrange");
 
 		// Reset ThumbColor to null: switch should revert to the default thumb color
 		App.Tap("ResetThumbColorButton");
-		VerifyScreenshot("Issue19883_ThumbColorNull");
+		VerifyScreenshotOrSetException(ref exception, "Issue19883_ThumbColorNull");
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }
