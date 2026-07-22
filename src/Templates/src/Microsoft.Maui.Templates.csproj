@@ -200,48 +200,16 @@
       <_DotNetNVersionProperty Include="MicrosoftAspNetCoreMetadataPackageVersion" />
       <_DotNetNVersionProperty Include="MicrosoftJSInteropPackageVersion" />
 
-      <_DotNetN1VersionProperty Include="MicrosoftNETCoreAppRefN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="SystemTextJsonN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="SystemTextEncodingsWebN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftBclAsyncInterfacesN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="SystemCodeDomN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsConfigurationN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsConfigurationAbstractionsN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsConfigurationJsonN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsDependencyInjectionN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsDependencyInjectionAbstractionsN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsFileProvidersAbstractionsN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsHostingAbstractionsN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsHttpN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsLoggingAbstractionsN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsLoggingN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsLoggingConsoleN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsLoggingDebugN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftExtensionsPrimitivesN1Version" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreAuthorizationN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreAuthenticationFacebookN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreAuthenticationGoogleN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreAuthenticationMicrosoftAccountN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsAnalyzersN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsFormsN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsWebN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsWebAssemblyN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsWebAssemblyServerN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreComponentsWebViewN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftAspNetCoreMetadataN1PackageVersion" />
-      <_DotNetN1VersionProperty Include="MicrosoftJSInteropN1PackageVersion" />
     </ItemGroup>
     <PropertyGroup>
       <_PreviewNProperties>@(_DotNetNVersionProperty->'%(Identity)=11.0.0-preview.7.26364.110', ';')</_PreviewNProperties>
       <_StableNProperties>@(_DotNetNVersionProperty->'%(Identity)=11.0.0', ';')</_StableNProperties>
-      <_StableN1Properties>@(_DotNetN1VersionProperty->'%(Identity)=10.0.0', ';')</_StableN1Properties>
     </PropertyGroup>
 
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_PreviewNProperties);ExpectedDotNetPackageVersion=$(MicrosoftExtensionsConfigurationN1Version);ExpectedTemplatePackageVersion=11.0.0-*" />
+        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_PreviewNProperties);ExpectedDotNetPackageVersion=$(MicrosoftDotNetN1PackageVersion);ExpectedTemplatePackageVersion=11.0.0-*" />
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
@@ -249,7 +217,7 @@
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"
-        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_PreviewNProperties);$(_StableN1Properties);ExpectedDotNetPackageVersion=10.0.0;ExpectedTemplatePackageVersion=11.0.0-*" />
+        Properties="TestDotNetPackageVersionSelection=true;UseN1PackageVersions=true;$(_PreviewNProperties);MicrosoftDotNetN1PackageVersion=10.0.0;ExpectedDotNetPackageVersion=10.0.0;ExpectedTemplatePackageVersion=11.0.0-*" />
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="_GetDotNetPackageVersionSelection"

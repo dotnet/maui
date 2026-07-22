@@ -66,9 +66,9 @@ $packageVersionMappings = @{
 }
 
 $n1PackageVersionMappings = @{
-    'Microsoft.Extensions.Logging.Debug' = 'MicrosoftExtensionsLoggingDebugN1Version'
-    'Microsoft.Extensions.Configuration' = 'MicrosoftExtensionsConfigurationN1Version'
-    'Microsoft.Extensions.DependencyInjection' = 'MicrosoftExtensionsDependencyInjectionN1Version'
+    'Microsoft.Extensions.Logging.Debug' = 'MicrosoftDotNetN1PackageVersion'
+    'Microsoft.Extensions.Configuration' = 'MicrosoftDotNetN1PackageVersion'
+    'Microsoft.Extensions.DependencyInjection' = 'MicrosoftDotNetN1PackageVersion'
 }
 
 # Initialize new registrations list
