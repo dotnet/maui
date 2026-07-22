@@ -113,8 +113,26 @@ namespace Microsoft.Maui.Hosting
 
 		private void CleanupAppServices()
 		{
+			List<Exception>? exceptions = null;
 			foreach (var cleanupService in _services.GetServices<IMauiAppCleanupService>())
-				cleanupService.Cleanup();
+			{
+				try
+				{
+					cleanupService.Cleanup();
+				}
+				catch (Exception ex)
+				{
+					(exceptions ??= new()).Add(ex);
+				}
+			}
+
+			if (exceptions is null)
+				return;
+
+			if (exceptions.Count == 1)
+				ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+			throw new AggregateException("One or more MauiApp cleanup services failed.", exceptions);
 		}
 
 		private void DisposeConfiguration()

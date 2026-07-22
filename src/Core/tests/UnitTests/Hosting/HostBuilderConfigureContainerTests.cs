@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,6 +61,35 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Assert.True(cleanup.WasCalled);
 			Assert.True(configuration.IsDisposed);
+		}
+
+		[Fact]
+		public void AppCleanupRunsAllServicesAndAggregatesFailures()
+		{
+			var executionOrder = new List<int>();
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() =>
+				{
+					executionOrder.Add(1);
+					throw new InvalidOperationException("first cleanup failed");
+				}));
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() => executionOrder.Add(2)));
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() =>
+				{
+					executionOrder.Add(3);
+					throw new InvalidOperationException("third cleanup failed");
+				}));
+
+			var aggregate = Assert.Throws<AggregateException>(() => builder.Build().Dispose());
+
+			Assert.Equal(new[] { 1, 2, 3 }, executionOrder);
+			Assert.Collection(
+				aggregate.InnerExceptions,
+				ex => Assert.Equal("first cleanup failed", ex.Message),
+				ex => Assert.Equal("third cleanup failed", ex.Message));
 		}
 
 		static (MauiApp App, DisposableConfigurationProvider Configuration, ConfigurationReadingCleanup Cleanup)
@@ -125,6 +155,18 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 				WasCalled = true;
 			}
+		}
+
+		sealed class CallbackCleanup : IMauiAppCleanupService
+		{
+			readonly Action _cleanup;
+
+			public CallbackCleanup(Action cleanup)
+			{
+				_cleanup = cleanup;
+			}
+
+			public void Cleanup() => _cleanup();
 		}
 
 		sealed class DisposableConfigurationSource : IConfigurationSource

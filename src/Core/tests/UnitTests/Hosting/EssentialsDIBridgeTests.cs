@@ -773,6 +773,34 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void AppActionsUnsubscribeAndFacadeCleanupFailuresAreAggregated()
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions, ThrowingUnsubscribeAppActions>();
+			builder.ConfigureEssentials(essentials => essentials.OnAppAction(_ => { }));
+			var app = builder.Build();
+
+			var cleanupType = typeof(EssentialsExtensions).GetNestedType(
+				"EssentialsCleanup",
+				System.Reflection.BindingFlags.NonPublic)
+				?? throw new InvalidOperationException("EssentialsCleanup type not found.");
+			var cleanup = app.Services.GetRequiredService(cleanupType);
+			var facadeCleanupsField = cleanupType.GetField(
+				"_facadeCleanups",
+				System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+				?? throw new InvalidOperationException("EssentialsCleanup facade list not found.");
+			var facadeCleanups = Assert.IsType<List<Action>>(facadeCleanupsField.GetValue(cleanup));
+			facadeCleanups.Add(() => throw new InvalidOperationException("facade cleanup failed"));
+
+			var aggregate = Assert.Throws<AggregateException>(() => app.Dispose());
+
+			Assert.Collection(
+				aggregate.InnerExceptions,
+				ex => Assert.Equal("unsubscribe failed", ex.Message),
+				ex => Assert.Equal("facade cleanup failed", ex.Message));
+		}
+
+		[Fact]
 		public void FacadeCleanupRunsAllActionsAndClearsAfterFailures()
 		{
 			var executionOrder = new List<int>();

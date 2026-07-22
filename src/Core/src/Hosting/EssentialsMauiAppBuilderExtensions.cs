@@ -883,17 +883,41 @@ namespace Microsoft.Maui.Hosting
 			void DisposeCore()
 			{
 #if !TIZEN
+				Exception? unsubscribeException = null;
 				try
 				{
 					if (_subscribedAppActions is not null && _appActionHandler is not null)
 						_subscribedAppActions.AppActionActivated -= _appActionHandler;
 				}
+				catch (Exception ex)
+				{
+					unsubscribeException = ex;
+				}
 				finally
 				{
 					_subscribedAppActions = null;
 					_appActionHandler = null;
+				}
+
+				try
+				{
 					RestoreFacadeCleanups(_facadeCleanups);
 				}
+				catch (Exception facadeException)
+				{
+					if (unsubscribeException is not null)
+					{
+						throw new AggregateException(
+							"AppActions unsubscription and facade restoration both failed.",
+							unsubscribeException,
+							facadeException);
+					}
+
+					throw;
+				}
+
+				if (unsubscribeException is not null)
+					ExceptionDispatchInfo.Capture(unsubscribeException).Throw();
 #else
 				RestoreFacadeCleanups(_facadeCleanups);
 #endif
