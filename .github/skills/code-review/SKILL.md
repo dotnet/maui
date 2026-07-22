@@ -1,10 +1,12 @@
 ---
 name: code-review
 description: >-
-  Deep code review of PR changes for correctness, safety, and MAUI conventions.
+  Deep code review of PR or materialized candidate-patch changes for correctness,
+  safety, and MAUI conventions.
   Uses independence-first assessment (code before narrative) and delegates to the
   maui-expert-reviewer agent for per-dimension sub-agent evaluation. Triggers on:
-  "review code for PR", "code review PR", "analyze code changes", "check PR code quality".
+  "review code for PR", "code review PR", "review candidate patch",
+  "analyze code changes", "check PR code quality".
   Do NOT use for: summarizing PRs, describing what changed, general PR questions,
   running tests, or fixing code.
 ---
@@ -34,7 +36,10 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 
 | Input | Required | Description |
 |-------|----------|-------------|
-| pr_number | Yes | GitHub PR number to review |
+| `pr_number` | Conditional | GitHub PR number for a live-PR review |
+| `review_input` | Conditional | Materialized candidate diff plus supporting source files; use when no live PR is available |
+
+Exactly one review source is required.
 
 ## Outputs
 
@@ -51,6 +56,13 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 ### Step 1: Gather Code Context (No PR Narrative)
 
 **Do NOT read the PR description or issue yet.**
+
+For a materialized `review_input`, read its candidate diff first, then every
+supporting source file in full. Trace callers, consumers, and producers available
+in the snapshot. Do not fetch PR narrative, external pages, or repository history
+that the fixture does not provide. Then continue at Step 1.5.
+
+For a live `pr_number`:
 
 1. **Get the diff:**
    ```bash

@@ -29,10 +29,11 @@ stimuli:
       source_pr: "36185"
       kind: producer-trace
     prompt: >-
-      Invoke the `code-review` skill to review a candidate patch before merge.
-      The review input is materialized under `review-input`: inspect
-      `review-input/change.diff` first, then read supporting source snapshots
-      under `review-input/src` as needed.
+      /code-review
+
+      Review a candidate patch before merge. The review input is materialized
+      under `review-input`: inspect `review-input/change.diff` first, then read
+      supporting source snapshots under `review-input/src` as needed.
 
       Hypothesis to verify or refute: the new device-test incompleteness
       detector distinguishes a run that was killed, hung, or crashed from an
