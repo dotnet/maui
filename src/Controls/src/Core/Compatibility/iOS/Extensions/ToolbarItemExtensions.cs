@@ -281,16 +281,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		sealed class SecondaryToolbarItem : UIBarButtonItem
 		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The content view is owned by this toolbar item and released after its TouchUpInside subscription is removed in Dispose.")]
+			SecondaryToolbarItemContent _content;
 			readonly WeakReference<ToolbarItem> _item;
 
 			public SecondaryToolbarItem(ToolbarItem item) : base(new SecondaryToolbarItemContent())
 			{
+				_content = (SecondaryToolbarItemContent)CustomView;
 				_item = new(item);
 				UpdateText(item);
 				UpdateIcon(item);
 				UpdateIsEnabled(item);
 
-				((SecondaryToolbarItemContent)CustomView).TouchUpInside += OnClicked;
+				_content.TouchUpInside += OnClicked;
 				item.PropertyChanged += OnPropertyChanged;
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
@@ -314,8 +317,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (disposing)
 				{
-					if (CustomView is SecondaryToolbarItemContent customView)
-						customView.TouchUpInside -= OnClicked;
+					_content?.TouchUpInside -= OnClicked;
+					_content = null;
 
 					if (_item.TryGetTarget(out var item))
 						item.PropertyChanged -= OnPropertyChanged;

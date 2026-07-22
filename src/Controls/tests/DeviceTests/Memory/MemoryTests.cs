@@ -528,14 +528,21 @@ public class MemoryTests : ControlsHandlerTestBase
 				Order = ToolbarItemOrder.Secondary
 			};
 			var nativeItem = Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(item);
+			using var originalContent = Assert.IsAssignableFrom<UIKit.UIControl>(nativeItem.CustomView);
 			using var replacementView = new UIKit.UIView();
+			var activationCount = 0;
+			item.Command = new Command(() => activationCount++);
 
 			Assert.Contains(GetPropertyChangedSubscribers(item), subscriber => ReferenceEquals(subscriber.Target, nativeItem));
+			originalContent.SendActionForControlEvents(UIKit.UIControlEvent.TouchUpInside);
+			Assert.Equal(1, activationCount);
 
 			nativeItem.CustomView = replacementView;
 			nativeItem.Dispose();
 
 			Assert.DoesNotContain(GetPropertyChangedSubscribers(item), subscriber => ReferenceEquals(subscriber.Target, nativeItem));
+			originalContent.SendActionForControlEvents(UIKit.UIControlEvent.TouchUpInside);
+			Assert.Equal(1, activationCount);
 		});
 	}
 
