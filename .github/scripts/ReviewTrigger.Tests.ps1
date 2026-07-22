@@ -9,16 +9,17 @@ BeforeAll {
 
     $matchJob = [regex]::Match(
         $workflow,
-        '(?ms)^  match:\s.*?(?=^  mark-rerun-ready:)')
+        '(?ms)^  match:\s.*?(?=^  trigger-review:)')
     if (-not $matchJob.Success) {
         throw 'Could not find the match job in review-trigger.yml.'
     }
 
+    $script:Workflow = $workflow
     $script:MatchJob = $matchJob.Value
 }
 
-Describe '/review rerun comment matching' {
-    It 'rejects rerun comments before the generic review command matcher' {
+Describe '/review command matching' {
+    It 'rejects the removed rerun subcommand before the generic review matcher' {
         $rerunGuard = $script:MatchJob.IndexOf(
             'if [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+rerun([[:space:]]|$) ]]')
         $genericReviewMatcher = $script:MatchJob.IndexOf(
@@ -33,15 +34,18 @@ Describe '/review rerun comment matching' {
             $rerunGuardEnd - $rerunGuard)
 
         $rerunBlock | Should -Match 'echo "matched=false" >> "\$GITHUB_OUTPUT"'
-        $rerunBlock | Should -Match 'echo "command=none" >> "\$GITHUB_OUTPUT"'
         $rerunBlock | Should -Match 'exit 0'
         $rerunBlock | Should -Not -Match 'echo "matched=true"'
-        $rerunBlock | Should -Not -Match 'echo "command=(review|rerun)"'
-        $script:MatchJob | Should -Not -Match 'echo "command=rerun"'
+        $script:MatchJob | Should -Not -Match 'echo "command='
+    }
+
+    It 'does not contain the removed rerun job' {
+        $script:Workflow | Should -Not -Match '(?m)^  mark-rerun-ready:'
+        $script:Workflow | Should -Not -Match 'Resolve-RerunEligibility\.ps1'
     }
 
     It 'continues to route workflow dispatch to a normal review' {
         $script:MatchJob | Should -Match 'github\.event_name.*workflow_dispatch'
-        $script:MatchJob | Should -Match 'echo "command=review" >> "\$GITHUB_OUTPUT"'
+        $script:MatchJob | Should -Match 'echo "matched=true" >> "\$GITHUB_OUTPUT"'
     }
 }

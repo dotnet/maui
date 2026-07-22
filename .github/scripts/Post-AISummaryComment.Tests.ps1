@@ -10,6 +10,7 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'post-ai-summary-comment.ps1'
+    $script:ScriptSource = Get-Content -Raw -LiteralPath $scriptPath
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -127,9 +128,14 @@ Describe 'Add-MissingUITestResultsNote' {
     It 'annotates a bare "detected categories" placeholder with no results' {
         $result = Add-MissingUITestResultsNote -Content '**Detected UI test categories:** `Picker,ViewBaseTests`'
         $result | Should -Match 'No UI test results were produced'
-        $result | Should -Match '/review rerun'
+        $result | Should -Match 'before requesting another review'
+        $result | Should -Not -Match '/review rerun'
         # Original content is preserved.
         $result | Should -Match 'Detected UI test categories'
+    }
+
+    It 'does not advertise the removed rerun command' {
+        $script:ScriptSource | Should -Not -Match '/review rerun'
     }
 
     It 'does NOT annotate when deep results are present' {
