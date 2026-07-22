@@ -1,10 +1,12 @@
 ---
 name: code-review
 description: >-
-  Deep code review of PR changes for correctness, safety, and MAUI conventions.
+  Deep code review of PR or materialized candidate-patch changes for correctness,
+  safety, and MAUI conventions.
   Uses independence-first assessment (code before narrative) and delegates to the
   maui-expert-reviewer agent for per-dimension sub-agent evaluation. Triggers on:
-  "review code for PR", "code review PR", "analyze code changes", "check PR code quality".
+  "review code for PR", "code review PR", "review candidate patch",
+  "analyze code changes", "check PR code quality".
   Do NOT use for: summarizing PRs, describing what changed, general PR questions,
   running tests, or fixing code.
 ---
@@ -35,7 +37,10 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 
 | Input | Required | Description |
 |-------|----------|-------------|
-| pr_number | Yes | GitHub PR number to review |
+| `pr_number` | Conditional | GitHub PR number for a live-PR review |
+| `review_input` | Conditional | Materialized candidate diff plus supporting source files; use when no live PR is available |
+
+Exactly one review source is required.
 
 ## Outputs
 
@@ -52,6 +57,13 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 ### Step 1: Gather Code Context (No PR Narrative)
 
 **Do NOT read the PR description or issue yet.**
+
+For a materialized `review_input`, read its candidate diff first, then every
+supporting source file in full. Trace callers, consumers, and producers available
+in the snapshot. Do not fetch PR narrative, external pages, or repository history
+that the fixture does not provide. Then continue at Step 1.5.
+
+For a live `pr_number`:
 
 1. **Get the diff:**
    ```bash
@@ -72,6 +84,24 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
    ```bash
    git log --oneline -10 -- <changed-file>
    ```
+
+### Step 1.5: Trace External Output Contracts (Always Active)
+
+When changed code classifies external tool output with a regex or string literal:
+
+1. Locate and read the producer, even when it is outside the diff.
+2. State the exact condition under which the producer emits each matched token. Confirming that the text exists is not enough: compare the producer's emission condition with the consumer's semantic assumption.
+3. Construct an ordinary negative case that must not trip the classifier, then trace it through every downstream guard, cap, veto, or early return.
+4. If the ordinary case reaches the restrictive path, report a correctness finding and do not return `LGTM` unless the over-restriction is explicitly intended and documented. Fail-closed direction does not make the behavior correct.
+
+Before the verdict, include an **External Output Contract** table with these columns:
+
+| Consumer token/pattern | Producer location | Producer emission condition | Consumer assumption | Ordinary negative case | Downstream effect |
+|---|---|---|---|---|---|
+
+A row that only confirms matching text, without comparing the two conditions, is incomplete analysis.
+
+These are the direct-execution form of the always-active Logic/Correctness and Regression Prevention CHECKs in `.github/agents/maui-expert-reviewer.md`. If the expert agent is unavailable in the current environment, apply these probes yourself rather than skipping them.
 
 ### Step 2: Delegate to Expert Reviewer
 
