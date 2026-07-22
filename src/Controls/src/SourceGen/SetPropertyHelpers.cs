@@ -231,6 +231,16 @@ static class SetPropertyHelpers
 		// Handle lambda expressions
 		if (vn.Value is Expression expression)
 		{
+			// Check for method group reference in lambda body (missing parentheses)
+			var methodGroupRef = CSharpExpressionHelpers.DetectLambdaMethodGroupReference(expression.Code);
+			if (methodGroupRef != null)
+			{
+				var (methodGroup, suggestion) = methodGroupRef.Value;
+				var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.LambdaMethodGroupReference, location, methodGroup, suggestion));
+				return;
+			}
+
 			if (treeOrder && icWriter != null && inflatorVar != null)
 			{
 				writer = icWriter;
@@ -673,7 +683,7 @@ static class SetPropertyHelpers
 		}
 
 		// Analyze the expression for mixed local+binding scenarios
-		var analysis = ExpressionAnalyzer.Analyze(expression.Code, "__source", dataTypeSymbol, context.RootType);
+		var analysis = ExpressionAnalyzer.Analyze(expression.Code, "__source", dataTypeSymbol, context.RootType, context.Compilation);
 
 		// Check for ambiguity first - resolve the expression
 		var resolution = MemberResolver.Resolve(expression.Code, context.RootType, dataTypeSymbol, context.Compilation);
@@ -698,11 +708,32 @@ static class SetPropertyHelpers
 		// Handle not-found case for simple identifiers
 		if (resolution.Location == MemberLocation.Neither &&
 			!string.IsNullOrEmpty(resolution.RootIdentifier) &&
-			MemberResolver.IsSimpleIdentifier(expression.Code))
+			MemberResolver.IsSimpleIdentifier(expression.Code) &&
+			!MemberResolver.StartsWithTypeReference(context.Compilation, expression.Code, MemberResolver.GetContainingNamespace(context.RootType)))
 		{
 			var neitherLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberNotFound, neitherLocation, resolution.RootIdentifier, context.RootType?.Name ?? "this", dataTypeSymbol.Name));
 			return true; // Handled (with error)
+		}
+
+		// Validate identifiers inside interpolated string holes
+		if (expression.Code.StartsWith("$\"", StringComparison.Ordinal) || expression.Code.StartsWith("$@\"", StringComparison.Ordinal))
+		{
+			var interpolatedIds = CSharpExpressionHelpers.ExtractInterpolatedStringIdentifierReferences(expression.Code);
+			foreach (var idReference in interpolatedIds)
+			{
+				var id = idReference.Identifier;
+				var idResolution = MemberResolver.Resolve(id, context.RootType, dataTypeSymbol, context.Compilation);
+				if (idResolution.Location == MemberLocation.Neither &&
+					!MemberResolver.HasMember(context.RootType, id, includeMethods: true) &&
+					!MemberResolver.HasMember(dataTypeSymbol, id, includeMethods: true) &&
+					!MemberResolver.ResolvesToType(context.Compilation, idReference.TypeReferenceCandidate, MemberResolver.GetContainingNamespace(context.RootType)))
+				{
+					var idLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberNotFound, idLocation, id, context.RootType?.Name ?? "this", dataTypeSymbol.Name));
+					return true; // Handled (with error)
+				}
+			}
 		}
 
 		// If we have binding handlers, this needs a TypedBinding
@@ -750,7 +781,7 @@ static class SetPropertyHelpers
 			expression, context.Compilation, dataTypeSymbol, context.RootType);
 
 		// Analyze expression for mixed local+binding scenarios
-		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, context.RootType);
+		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, context.RootType, context.Compilation);
 		var handlers = analysis.Handlers;
 
 		// Resolve the expression's result type for TProperty.
