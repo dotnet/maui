@@ -80,11 +80,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			collection.CollectionChanged -= OnGradientStopCollectionChanged;
-
-			foreach (var stop in collection)
-			{
-				UnsubscribeFromGradientStop(stop);
-			}
+			UnsubscribeFromAllGradientStops();
 		}
 
 		void OnGradientStopCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
