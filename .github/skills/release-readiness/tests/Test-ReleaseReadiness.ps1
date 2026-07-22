@@ -4353,7 +4353,7 @@ Assert-Eq -Label "sr-mapped + promoted build: feed check is READY" -Expected 'RE
 Assert-Eq -Label "sr-mapped + promoted build: feed URL derived from build commit sha8" -Expected $true `
     -Actual ($s2Feed.Details -match 'darc-pub-dotnet-maui-a11840bf/nuget/v3/index\.json')
 Assert-Eq -Label "sr-mapped + promoted build: feed READY is based on confirmed NugetFeed" -Expected $true `
-    -Actual ($s2Feed.Details -match 'darc get-asset.*confirms its NugetFeed')
+    -Actual ($s2Feed.Details -match 'darc get-asset.*confirms the per-build validation feed')
 
 # ── Scenario 2b: channel-present is not enough — if get-asset has no NugetFeed,
 #    the Assessment feed row must WATCH instead of linking a guessed endpoint. ──
@@ -4361,7 +4361,9 @@ $s2b = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithS
 $s2bFeed = Get-MaestroCheckByPrefix -Checks $s2b -Prefix 'Ship Assessment validation feed'
 Assert-Eq -Label "promoted build without NugetFeed asset location: feed check is WATCH" -Expected 'WATCH' -Actual $s2bFeed.Status
 Assert-Eq -Label "promoted build without NugetFeed asset location: details refuse guessed endpoint" -Expected $true `
-    -Actual ($s2bFeed.Details -match 'did not confirm a NugetFeed')
+    -Actual ($s2bFeed.Details -match 'Do not link a substitute endpoint')
+Assert-Eq -Label "promoted build without NugetFeed asset location: details note no feed location returned" -Expected $true `
+    -Actual ($s2bFeed.Details -match 'returned no NuGet feed location')
 
 # ── Scenario 2c: real darc get-asset shape — `locations` is an array of URL
 #    STRINGS with a mix of non-feed and feed URLs. The per-build darc-pub NuGet
@@ -4381,6 +4383,47 @@ $s2cFeed = Get-MaestroCheckByPrefix -Checks $s2c -Prefix 'Ship Assessment valida
 Assert-Eq -Label "string-URL locations: feed check is READY (parses real darc shape)" -Expected 'READY' -Actual $s2cFeed.Status
 Assert-Eq -Label "string-URL locations: picks the darc-pub NuGet feed URL out of the strings" -Expected $true `
     -Actual ($s2cFeed.Details -match 'darc-pub-dotnet-maui-a11840bf/nuget/v3/index\.json')
+
+# ── Scenario 2d: get-asset returns NuGet v3 feeds but NONE is the per-build
+#    darc-pub validation feed for THIS build's SHA — a shared/durable feed
+#    (dotnet-eng) plus an INTERNAL per-build feed (darc-int-*, same sha but auth-
+#    gated). The old code fell back to "any NuGet v3 feed" (feedCandidates[0]) and
+#    marked READY, telling the captain to link a feed that cannot validate the
+#    exact public candidate packages. Must now stay WATCH. (Regression test for
+#    the per-build-feed SHA-exact gating fix.) ──
+$s2dAsset = @([PSCustomObject]@{
+        name      = 'Microsoft.Maui.Controls'
+        version   = '10.0.0-ci.1'
+        locations = @(
+            'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json',
+            'https://pkgs.dev.azure.com/dnceng/internal/_packaging/darc-int-dotnet-maui-a11840bf/nuget/v3/index.json'
+        )
+    })
+$s2d = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead -AssetResponse $s2dAsset
+$s2dFeed = Get-MaestroCheckByPrefix -Checks $s2d -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "shared/internal-only feeds (no public per-build darc-pub): feed check is WATCH, not READY" -Expected 'WATCH' -Actual $s2dFeed.Status
+Assert-Eq -Label "shared/internal-only feeds: details refuse to link a substitute endpoint" -Expected $true `
+    -Actual ($s2dFeed.Details -match 'Do not link a substitute endpoint')
+Assert-Eq -Label "shared/internal-only feeds: does NOT present a shared/internal feed as the confirmed per-build feed" -Expected $false `
+    -Actual ($s2dFeed.Details -match 'confirms the per-build validation feed')
+
+# ── Scenario 2e: get-asset returns a darc-pub feed but for the WRONG build SHA
+#    (a DIFFERENT build's per-build feed). The old substring match on 'darc-pub'
+#    accepted it and marked READY, linking a feed for a different candidate. Must
+#    now stay WATCH — only the exact `darc-pub-dotnet-maui-<thisBuildSha8>` counts.
+#    (Regression test for SHA-exact gating.) ──
+$s2eAsset = @([PSCustomObject]@{
+        name      = 'Microsoft.Maui.Controls'
+        version   = '10.0.0-ci.1'
+        locations = @('https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-deadbeef/nuget/v3/index.json')
+    })
+$s2e = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead -AssetResponse $s2eAsset
+$s2eFeed = Get-MaestroCheckByPrefix -Checks $s2e -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "wrong-SHA darc-pub feed: feed check is WATCH, not READY" -Expected 'WATCH' -Actual $s2eFeed.Status
+Assert-Eq -Label "wrong-SHA darc-pub feed: details name the expected per-build token (this build's sha8)" -Expected $true `
+    -Actual ($s2eFeed.Details -match 'darc-pub-dotnet-maui-a11840bf')
+Assert-Eq -Label "wrong-SHA darc-pub feed: does NOT confirm the wrong-SHA feed as the per-build feed" -Expected $false `
+    -Actual ($s2eFeed.Details -match 'confirms the per-build validation feed')
 
 # ── Scenario 3: SR branch MISSING from BAR (the SR8 real-world bug) → BLOCKED ──
 $s3 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr7 -BuildResponse @()
