@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -591,7 +593,36 @@ namespace Microsoft.Maui.Hosting
 
 			static void SetAppActions(IAppActions appActions, ILogger? logger, List<AppAction> actions)
 			{
-				_ = SetAppActionsAsync(appActions, logger, actions);
+				// App initialization is synchronous, but a DI-owned implementation must finish
+				// before Build returns so provider disposal cannot race its asynchronous work.
+				// Pump captured continuations on this thread to preserve platform thread affinity.
+				var previousContext = SynchronizationContext.Current;
+				using var context = new AppActionsSynchronizationContext();
+
+				try
+				{
+					SynchronizationContext.SetSynchronizationContext(context);
+					var task = SetAppActionsAsync(appActions, logger, actions);
+					Task? completion = null;
+
+					if (!task.IsCompleted)
+					{
+						completion = task.ContinueWith(
+							static (_, state) => ((AppActionsSynchronizationContext)state!).Complete(),
+							context,
+							CancellationToken.None,
+							TaskContinuationOptions.ExecuteSynchronously,
+							TaskScheduler.Default);
+						context.RunOnCurrentThread();
+					}
+
+					task.GetAwaiter().GetResult();
+					completion?.GetAwaiter().GetResult();
+				}
+				finally
+				{
+					SynchronizationContext.SetSynchronizationContext(previousContext);
+				}
 			}
 
 			internal static async Task SetAppActionsAsync(IAppActions appActions, ILogger? logger, List<AppAction> actions)
@@ -613,6 +644,35 @@ namespace Microsoft.Maui.Hosting
 			void HandleOnAppAction(object? sender, AppActionEventArgs e)
 			{
 				_essentialsBuilder?.AppActionHandlers?.Invoke(e.AppAction);
+			}
+
+			sealed class AppActionsSynchronizationContext : SynchronizationContext, IDisposable
+			{
+				readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object?>> _queue = new();
+
+				public override void Post(SendOrPostCallback d, object? state)
+				{
+					if (d is null)
+						throw new ArgumentNullException(nameof(d));
+
+					_queue.Add(new KeyValuePair<SendOrPostCallback, object?>(d, state));
+				}
+
+				public void RunOnCurrentThread()
+				{
+					foreach (var workItem in _queue.GetConsumingEnumerable())
+						workItem.Key(workItem.Value);
+				}
+
+				public void Complete()
+				{
+					_queue.CompleteAdding();
+				}
+
+				public void Dispose()
+				{
+					_queue.Dispose();
+				}
 			}
 		}
 

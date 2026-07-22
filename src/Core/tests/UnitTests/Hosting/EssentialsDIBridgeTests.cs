@@ -651,6 +651,125 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task ConfiguredAppActionsCompleteBeforeBuildReturns()
+		{
+			var appActions = new BlockingDisposableStubAppActions();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions>(_ => appActions);
+			builder.ConfigureEssentials(essentials =>
+				essentials.AddAppAction(new AppAction("test", "Test")));
+
+			var buildTask = Task.Factory.StartNew(
+				builder.Build,
+				CancellationToken.None,
+				TaskCreationOptions.LongRunning,
+				TaskScheduler.Default);
+
+			await appActions.SetStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			var completedBeforeRelease = ReferenceEquals(
+				await Task.WhenAny(buildTask, Task.Delay(TimeSpan.FromMilliseconds(250))),
+				buildTask);
+			appActions.ReleaseSet();
+
+			var app = await buildTask.WaitAsync(TimeSpan.FromSeconds(5));
+			try
+			{
+				await appActions.SetCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.False(completedBeforeRelease);
+				Assert.True(appActions.SetCompletedBeforeDispose);
+				Assert.False(appActions.IsDisposed);
+			}
+			finally
+			{
+				app.Dispose();
+			}
+
+			Assert.True(appActions.IsDisposed);
+		}
+
+		[Fact]
+		public async Task ConfiguredAppActionsCompleteBeforeProviderIsDisposedAfterLaterInitializerFailure()
+		{
+			var appActions = new BlockingDisposableStubAppActions();
+			var probe = new DisposableProbe();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions>(_ => appActions);
+			builder.Services.AddSingleton(probe);
+			builder.ConfigureEssentials(essentials =>
+				essentials.AddAppAction(new AppAction("test", "Test")));
+			builder.Services.AddSingleton<IMauiInitializeService>(services =>
+				new ThrowingInitializeService(services.GetRequiredService<DisposableProbe>()));
+
+			var buildTask = Task.Factory.StartNew(
+				() => Record.Exception(builder.Build),
+				CancellationToken.None,
+				TaskCreationOptions.LongRunning,
+				TaskScheduler.Default);
+
+			await appActions.SetStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			var completedBeforeRelease = ReferenceEquals(
+				await Task.WhenAny(buildTask, Task.Delay(TimeSpan.FromMilliseconds(250))),
+				buildTask);
+			var disposedBeforeRelease = appActions.IsDisposed;
+			appActions.ReleaseSet();
+
+			var exception = await buildTask.WaitAsync(TimeSpan.FromSeconds(5));
+			await appActions.SetCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.False(completedBeforeRelease);
+			Assert.False(disposedBeforeRelease);
+			Assert.IsType<InvalidOperationException>(exception);
+			Assert.Equal("later initializer failed", exception.Message);
+			Assert.True(appActions.SetCompletedBeforeDispose);
+			Assert.True(appActions.IsDisposed);
+		}
+
+		[Fact]
+		public async Task ConfiguredAppActionsSetupPumpsBuildSynchronizationContext()
+		{
+			var appActions = new YieldingStubAppActions();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions>(appActions);
+			builder.ConfigureEssentials(essentials =>
+				essentials.AddAppAction(new AppAction("test", "Test")));
+
+			var buildTask = Task.Factory.StartNew(
+				() =>
+				{
+					var previousContext = SynchronizationContext.Current;
+					var context = new RecordingSynchronizationContext();
+					try
+					{
+						SynchronizationContext.SetSynchronizationContext(context);
+						var app = builder.Build();
+						return (
+							App: app,
+							ContextRestored: ReferenceEquals(context, SynchronizationContext.Current),
+							OriginalContextUsed: context.WasUsed);
+					}
+					finally
+					{
+						SynchronizationContext.SetSynchronizationContext(previousContext);
+					}
+				},
+				CancellationToken.None,
+				TaskCreationOptions.LongRunning,
+				TaskScheduler.Default);
+
+			var result = await buildTask.WaitAsync(TimeSpan.FromSeconds(5));
+			try
+			{
+				Assert.True(result.ContextRestored);
+				Assert.False(result.OriginalContextUsed);
+				Assert.True(appActions.SetCompleted);
+			}
+			finally
+			{
+				result.App.Dispose();
+			}
+		}
+
+		[Fact]
 		public async Task ConfiguredAppActionsLogsUnexpectedSetFailure()
 		{
 			var loggerFactory = new RecordingLoggerFactory();
@@ -902,6 +1021,79 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			{
 				await Task.Yield();
 				throw new InvalidOperationException("app actions failed");
+			}
+		}
+
+		sealed class BlockingDisposableStubAppActions : IAppActions, IDisposable
+		{
+			int _isDisposed;
+			readonly TaskCompletionSource<bool> _releaseSet =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public bool IsDisposed => Volatile.Read(ref _isDisposed) != 0;
+
+			public bool IsSupported => true;
+
+			public bool SetCompletedBeforeDispose { get; private set; }
+
+			public TaskCompletionSource<bool> SetCompleted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public TaskCompletionSource<bool> SetStarted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public event EventHandler<AppActionEventArgs>? AppActionActivated { add { } remove { } }
+
+			public Task<IEnumerable<AppAction>> GetAsync() =>
+				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
+
+			public async Task SetAsync(IEnumerable<AppAction> actions)
+			{
+				SetStarted.TrySetResult(true);
+				await _releaseSet.Task.ConfigureAwait(false);
+				SetCompletedBeforeDispose = !IsDisposed;
+				SetCompleted.TrySetResult(true);
+			}
+
+			public void ReleaseSet()
+			{
+				_releaseSet.TrySetResult(true);
+			}
+
+			public void Dispose()
+			{
+				Volatile.Write(ref _isDisposed, 1);
+			}
+		}
+
+		sealed class YieldingStubAppActions : IAppActions
+		{
+			public bool IsSupported => true;
+
+			public bool SetCompleted { get; private set; }
+
+			public event EventHandler<AppActionEventArgs>? AppActionActivated { add { } remove { } }
+
+			public Task<IEnumerable<AppAction>> GetAsync() =>
+				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
+
+			public async Task SetAsync(IEnumerable<AppAction> actions)
+			{
+				await Task.Yield();
+				SetCompleted = true;
+			}
+		}
+
+		sealed class RecordingSynchronizationContext : SynchronizationContext
+		{
+			int _wasUsed;
+
+			public bool WasUsed => Volatile.Read(ref _wasUsed) != 0;
+
+			public override void Post(SendOrPostCallback d, object? state)
+			{
+				Volatile.Write(ref _wasUsed, 1);
+				d(state);
 			}
 		}
 
