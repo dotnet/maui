@@ -942,8 +942,15 @@ namespace Microsoft.Maui.DeviceTests
 			byte maxAlpha = 0;
 			for (int i = alphaByteOffset; i < pixels.Length; i += bytesPerPixel)
 			{
+				if (pixels[i] == byte.MaxValue)
+				{
+					return byte.MaxValue;
+				}
+
 				if (pixels[i] > maxAlpha)
+				{
 					maxAlpha = pixels[i];
+				}
 			}
 
 			return maxAlpha;
