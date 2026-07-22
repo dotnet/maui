@@ -74,7 +74,15 @@ namespace Microsoft.Maui.Controls
 		partial void FireDeferredNavigatedTo();
 		partial void OnHandlerDisconnected();
 
+#if IOS || MACCATALYST
+		// On iOS/MacCatalyst, default to legacy NavigationImpl (event-based).
+		// UseHandlerNavigation() is called when NavigationViewHandler connects,
+		// enabling MauiNavigationImpl (RequestNavigation-based).
+		// This ensures the renderer fallback works without any special handling.
+		const bool UseMauiHandler = false;
+#else
 		const bool UseMauiHandler = true;
+#endif
 
 		bool _setForMaui;
 
@@ -103,6 +111,19 @@ namespace Microsoft.Maui.Controls
 
 			if (root != null)
 				PushPage(root);
+		}
+
+		/// <summary>
+		/// Switches from legacy NavigationImpl to MauiNavigationImpl.
+		/// Called when NavigationViewHandler connects on iOS/MacCatalyst.
+		/// </summary>
+		internal void UseHandlerNavigation()
+		{
+			if (!_setForMaui)
+			{
+				_setForMaui = true;
+				Navigation = new MauiNavigationImpl(this);
+			}
 		}
 
 		/// <summary>Gets or sets the background color for the bar at the top of the NavigationPage. This is a bindable property.</summary>
@@ -748,6 +769,16 @@ namespace Microsoft.Maui.Controls
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
+
+#if IOS || MACCATALYST
+			// On iOS/MacCatalyst, enable handler-based navigation (MauiNavigationImpl)
+			// when NavigationViewHandler connects. Constructor defaults to legacy
+			// NavigationImpl on these platforms to support renderer fallback.
+			if (Handler is NavigationViewHandler && !_setForMaui)
+			{
+				UseHandlerNavigation();
+			}
+#endif
 
 			if (Navigation is MauiNavigationImpl && InternalChildren.Count > 0)
 			{
