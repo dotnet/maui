@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +53,40 @@ namespace Microsoft.Maui.Hosting
 		internal static Action<string?> WindowsMapServiceTokenSetter { get; set; } =
 			static token => global::Windows.Services.Maps.MapService.ServiceToken = token;
 #endif
+
+		internal static void RestoreFacadeCleanups(List<Action> facadeCleanups)
+		{
+			lock (s_essentialsBridgeLock)
+			{
+				List<Exception>? exceptions = null;
+				try
+				{
+					for (int i = facadeCleanups.Count - 1; i >= 0; i--)
+					{
+						try
+						{
+							facadeCleanups[i]();
+						}
+						catch (Exception ex)
+						{
+							(exceptions ??= new()).Add(ex);
+						}
+					}
+				}
+				finally
+				{
+					facadeCleanups.Clear();
+				}
+
+				if (exceptions is null)
+					return;
+
+				if (exceptions.Count == 1)
+					ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+				throw new AggregateException("One or more Essentials facade cleanup actions failed.", exceptions);
+			}
+		}
 
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
@@ -271,7 +306,7 @@ namespace Microsoft.Maui.Hosting
 						if (cleanup is not null)
 							cleanup.Cleanup();
 						else
-							EssentialsCleanup.RestoreFacades(facadeCleanups);
+							RestoreFacadeCleanups(facadeCleanups);
 					}
 					catch (Exception cleanupException)
 					{
@@ -857,27 +892,11 @@ namespace Microsoft.Maui.Hosting
 				{
 					_subscribedAppActions = null;
 					_appActionHandler = null;
-					RestoreFacades();
+					RestoreFacadeCleanups(_facadeCleanups);
 				}
 #else
-				RestoreFacades();
+				RestoreFacadeCleanups(_facadeCleanups);
 #endif
-			}
-
-			internal static void RestoreFacades(List<Action> facadeCleanups)
-			{
-				lock (s_essentialsBridgeLock)
-				{
-					for (int i = facadeCleanups.Count - 1; i >= 0; i--)
-						facadeCleanups[i]();
-
-					facadeCleanups.Clear();
-				}
-			}
-
-			void RestoreFacades()
-			{
-				RestoreFacades(_facadeCleanups);
 			}
 		}
 

@@ -773,6 +773,36 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void FacadeCleanupRunsAllActionsAndClearsAfterFailures()
+		{
+			var executionOrder = new List<int>();
+			var cleanups = new List<Action>
+				{
+					() =>
+					{
+						executionOrder.Add(1);
+						throw new InvalidOperationException("first cleanup failed");
+					},
+					() => executionOrder.Add(2),
+					() =>
+					{
+						executionOrder.Add(3);
+						throw new InvalidOperationException("third cleanup failed");
+					},
+				};
+
+			var aggregate = Assert.Throws<AggregateException>(
+				() => EssentialsExtensions.RestoreFacadeCleanups(cleanups));
+
+			Assert.Equal(new[] { 3, 2, 1 }, executionOrder);
+			Assert.Empty(cleanups);
+			Assert.Collection(
+				aggregate.InnerExceptions,
+				ex => Assert.Equal("third cleanup failed", ex.Message),
+				ex => Assert.Equal("first cleanup failed", ex.Message));
+		}
+
+		[Fact]
 		public async Task ConcurrentMauiAppBuildsSerializeEssentialsInitialization()
 		{
 			var probe = new InitializationConcurrencyProbe();
