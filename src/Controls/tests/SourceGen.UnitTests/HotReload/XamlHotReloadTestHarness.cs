@@ -64,6 +64,12 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 	public string XamlPath { get; }
 
 	public XamlHotReloadGeneration Generate(params string[] xamlVersions)
+		=> Generate(xamlVersions, allowDiagnostics: false);
+
+	public XamlHotReloadGeneration GenerateAllowingDiagnostics(params string[] xamlVersions)
+		=> Generate(xamlVersions, allowDiagnostics: true);
+
+	XamlHotReloadGeneration Generate(string[] xamlVersions, bool allowDiagnostics)
 	{
 		ObjectDisposedException.ThrowIf(_disposed, this);
 		ArgumentNullException.ThrowIfNull(xamlVersions);
@@ -95,20 +101,23 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 			driver = driver
 				.WithUpdatedAnalyzerConfigOptions(SourceGeneratorDriver.CreateAnalyzerConfigOptionsProvider(file))
 				.RunGenerators(compilation);
+			var stateVersion = XamlHotReloadState.GetVersion(AssemblyName, "net11.0", XamlPath);
 
 			var result = driver.GetRunResult();
 			var initializeComponentSource = FindGeneratedSource(result, static hintName =>
 				hintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase)
 				&& !hintName.Contains("uc.xsg", StringComparison.OrdinalIgnoreCase));
-			Assert.NotNull(initializeComponentSource);
+			if (!allowDiagnostics)
+				Assert.NotNull(initializeComponentSource);
 
 			versions.Add(new XamlHotReloadGeneratedVersion(
 				ScenarioIdentity,
 				index,
 				xamlVersions[index],
-				initializeComponentSource!,
+				initializeComponentSource,
 				FindGeneratedSource(result, static hintName =>
 					hintName.Contains("uc.xsg", StringComparison.OrdinalIgnoreCase)),
+				stateVersion,
 				result));
 			previousFile = file;
 		}
@@ -124,9 +133,14 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 		if (!string.Equals(version.ScenarioIdentity, ScenarioIdentity, StringComparison.Ordinal))
 			throw new ArgumentException("The generated version belongs to a different harness.", nameof(version));
 
+		var initializeComponentSource = version.InitializeComponentSource;
+		Assert.True(
+			initializeComponentSource is not null,
+			$"Cannot compile generated version {version.Index} because it has no InitializeComponent source.");
+
 		var compilation = CreateCompilation(
 			includeGeneratedSources: true,
-			version.InitializeComponentSource,
+			initializeComponentSource,
 			version.UpdateComponentSource);
 		var errors = compilation.GetDiagnostics()
 			.Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
@@ -249,8 +263,9 @@ internal sealed record XamlHotReloadGeneratedVersion(
 	string ScenarioIdentity,
 	int Index,
 	string Xaml,
-	string InitializeComponentSource,
+	string? InitializeComponentSource,
 	string? UpdateComponentSource,
+	int StateVersion,
 	GeneratorDriverRunResult GeneratorResult);
 
 internal sealed record XamlHotReloadCompiledVersion(
