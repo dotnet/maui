@@ -126,6 +126,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			_isUpdating = true;
+			// Pending scroll target belongs to the old source; clear it.
+			_gotoPosition = -1;
 			base.UpdateItemsSource();
 			//we don't need to Subscribe because base calls CreateItemsViewSource
 			_carouselViewLoopManager?.SetItemsSource(LoopItemsSource);
@@ -134,6 +136,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 				carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
+				// The Position=0 reset above sets _gotoPosition; clear it so later programmatic Position/CurrentItem changes aren't suppressed.
+				_gotoPosition = -1;
 			}
 			_isUpdating = false;
 		}
@@ -215,6 +219,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_isUpdating = false;
 			_isRotating = false;
 			_isInternalCollectionUpdate = false;
+			// Don't let a pending scroll target survive re-attach.
+			_gotoPosition = -1;
 		}
 
 		internal void UpdateScrollingConstraints()
@@ -366,6 +372,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			_isUpdating = false;
 			ScrollToPosition(targetPosition, targetPosition, false, true);
+			// The forced scroll above sets _gotoPosition but fires no callback when already at the target; clear it so a later user-initiated scroll isn't suppressed.
+			_gotoPosition = -1;
 		}
 
 		int GetPositionWhenAddingItems(int carouselPosition, int currentItemPosition)
