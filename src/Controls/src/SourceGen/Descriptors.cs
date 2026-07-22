@@ -317,6 +317,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor LambdaMethodGroupReference = new DiagnosticDescriptor(
+			id: "MAUIX2018",
+			title: "Lambda body is a method group reference",
+			messageFormat: "Lambda body '{0}' is a method group reference, not a method invocation.{1}",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor MissingEventHandler = new DiagnosticDescriptor(
 			id: "MAUIX2014",
 			title: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandlerTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
@@ -392,4 +400,3 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 	}
 }
-
