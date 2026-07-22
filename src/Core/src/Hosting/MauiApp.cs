@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -38,52 +39,57 @@ namespace Microsoft.Maui.Hosting
 		/// <inheritdoc />
 		public void Dispose()
 		{
-			DisposeConfiguration();
-
-			Exception? cleanupException = null;
+			var exceptions = new List<Exception>();
 			try
 			{
 				CleanupAppServices();
 			}
 			catch (Exception ex)
 			{
-				cleanupException = ex;
+				exceptions.Add(ex);
+			}
+
+			try
+			{
+				DisposeConfiguration();
+			}
+			catch (Exception ex)
+			{
+				exceptions.Add(ex);
 			}
 
 			try
 			{
 				(_services as IDisposable)?.Dispose();
 			}
-			catch (Exception disposalException)
+			catch (Exception ex)
 			{
-				if (cleanupException is not null)
-				{
-					throw new AggregateException(
-						"MauiApp cleanup and service provider disposal both failed.",
-						cleanupException,
-						disposalException);
-				}
-
-				throw;
+				exceptions.Add(ex);
 			}
 
-			if (cleanupException is not null)
-				ExceptionDispatchInfo.Capture(cleanupException).Throw();
+			ThrowIfDisposalFailed(exceptions);
 		}
 
 		/// <inheritdoc />
 		public async ValueTask DisposeAsync()
 		{
-			DisposeConfiguration();
-
-			Exception? cleanupException = null;
+			var exceptions = new List<Exception>();
 			try
 			{
 				CleanupAppServices();
 			}
 			catch (Exception ex)
 			{
-				cleanupException = ex;
+				exceptions.Add(ex);
+			}
+
+			try
+			{
+				DisposeConfiguration();
+			}
+			catch (Exception ex)
+			{
+				exceptions.Add(ex);
 			}
 
 			try
@@ -97,21 +103,12 @@ namespace Microsoft.Maui.Hosting
 					(_services as IDisposable)?.Dispose();
 				}
 			}
-			catch (Exception disposalException)
+			catch (Exception ex)
 			{
-				if (cleanupException is not null)
-				{
-					throw new AggregateException(
-						"MauiApp cleanup and service provider disposal both failed.",
-						cleanupException,
-						disposalException);
-				}
-
-				throw;
+				exceptions.Add(ex);
 			}
 
-			if (cleanupException is not null)
-				ExceptionDispatchInfo.Capture(cleanupException).Throw();
+			ThrowIfDisposalFailed(exceptions);
 		}
 
 		private void CleanupAppServices()
@@ -125,6 +122,17 @@ namespace Microsoft.Maui.Hosting
 			// Explicitly dispose the Configuration, since it is added as a singleton object that the ServiceProvider
 			// won't dispose.
 			(Configuration as IDisposable)?.Dispose();
+		}
+
+		private static void ThrowIfDisposalFailed(List<Exception> exceptions)
+		{
+			if (exceptions.Count == 0)
+				return;
+
+			if (exceptions.Count == 1)
+				ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+			throw new AggregateException("MauiApp cleanup and disposal failed.", exceptions);
 		}
 	}
 
