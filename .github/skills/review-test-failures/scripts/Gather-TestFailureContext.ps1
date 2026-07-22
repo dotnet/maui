@@ -231,7 +231,7 @@ function Get-AzDoTestRuns {
         if ($continuation) { $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))" }
         $headers = @{ Accept = "application/json" }
         if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) { $headers.Authorization = "Bearer $env:AZDO_TOKEN" }
-        $resp = Invoke-WebRequest -Uri $url -Headers $headers -UseBasicParsing -ErrorAction Stop
+        $resp = Invoke-WebRequest -Uri $url -Headers $headers -UseBasicParsing -TimeoutSec 100 -ErrorAction Stop
         $body = if ([string]::IsNullOrWhiteSpace([string]$resp.Content)) { $null } else { [string]$resp.Content | ConvertFrom-Json }
         foreach ($r in (ConvertTo-Array $body.value)) {
             # Defense in depth: drop any run that carries an explicit, MISMATCHED build id. The list view
@@ -273,7 +273,7 @@ function Get-AzDoFailedTestResultsByBuild {
             $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))"
         }
 
-        $response = Invoke-WebRequest -Uri $url -Headers @{ Accept = "application/json" } -UseBasicParsing -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri $url -Headers @{ Accept = "application/json" } -UseBasicParsing -TimeoutSec 100 -ErrorAction Stop
         $body = if ([string]::IsNullOrWhiteSpace([string]$response.Content)) {
             $null
         }
@@ -1086,7 +1086,7 @@ function Invoke-HelixFileText {
     param([string]$Url, [int]$MaxChars = 4000000, $Truncated = $null)
     if ([string]::IsNullOrWhiteSpace($Url)) { return $null }
     try {
-        $resp = Invoke-WebRequest -Uri $Url -UseBasicParsing -MaximumRedirection 5 -ErrorAction Stop
+        $resp = Invoke-WebRequest -Uri $Url -UseBasicParsing -MaximumRedirection 5 -TimeoutSec 100 -ErrorAction Stop
         # Azure blob serves the uploaded .xml result files as application/octet-stream, so
         # Invoke-WebRequest returns $resp.Content as a byte[] (a plain [string] cast would
         # stringify it as space-joined decimal byte values -- e.g. "60 63 120 ..." -- and
