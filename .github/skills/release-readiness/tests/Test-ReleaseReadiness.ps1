@@ -4241,7 +4241,6 @@ function Invoke-MaestroChecksWithMocks {
     $script:_mockBuilds = @($BuildResponse)
     $script:_mockAssetAuthFail = [bool]$AssetAuthFail
     $script:_mockAssets = @($AssetResponse)
-    $script:_darcAvailable = $DarcAvailable
 
     $script:DarcStub = {
         param([string[]]$DarcArgs)
@@ -4280,7 +4279,10 @@ function Invoke-MaestroChecksWithMocks {
         }
         return Get-MaestroOperationalChecks -Ctx $ctx -SkipChecks:$SkipChecks
     } finally {
-        Remove-Variable -Name _darcAvailable -Scope Script -ErrorAction SilentlyContinue
+        # Clear the stub delegate so a later test that calls Invoke-DarcJson without
+        # re-arming the mock fails loudly (& $null) instead of silently reusing this
+        # fixture's stub — prevents cross-test contamination.
+        $script:DarcStub = $null
     }
 }
 
