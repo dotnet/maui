@@ -183,10 +183,24 @@ function Invoke-DownloadFile {
         [string]$Url,
         [string]$Path,
         [long]$MaximumBytes,
-        [int]$MaxAttempts = 3
+        [int]$MaxAttempts = 3,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
+    $perRequestTimeout = [TimeSpan]::FromMinutes(2)
+
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        # Bound each attempt by the smaller of the per-request ceiling and the time left on the
+        # aggregate publish budget. HttpClient.Timeout stops applying once ResponseHeadersRead
+        # returns, so a host that sends headers then stalls the body would otherwise hold the job
+        # open indefinitely. A CancellationTokenSource covers the whole operation (GetAsync *and*
+        # the body reads), giving a hard wall-clock cap and honoring the shared deadline.
+        $remainingBudget = $Deadline - (Get-Date)
+        if ($remainingBudget -le [TimeSpan]::Zero) {
+            throw "Publish budget exhausted before downloading '$Url'."
+        }
+        $attemptTimeout = if ($remainingBudget -lt $perRequestTimeout) { $remainingBudget } else { $perRequestTimeout }
+
         $completed = $false
         $caught = $null
         $statusCode = 0
@@ -195,15 +209,23 @@ function Invoke-DownloadFile {
         $response = $null
         $inputStream = $null
         $outputStream = $null
+        $cts = $null
         try {
+            $cts = [System.Threading.CancellationTokenSource]::new()
+            $cts.CancelAfter($attemptTimeout)
+            $token = $cts.Token
+
             $handler = [System.Net.Http.HttpClientHandler]::new()
             $handler.AllowAutoRedirect = $true
             $handler.MaxAutomaticRedirections = 5
             $client = [System.Net.Http.HttpClient]::new($handler)
-            $client.Timeout = [TimeSpan]::FromMinutes(2)
+            # The cancellation token, not HttpClient.Timeout, enforces the wall-clock bound so it
+            # also covers the post-headers body read.
+            $client.Timeout = [System.Threading.Timeout]::InfiniteTimeSpan
             $response = $client.GetAsync(
                 $Url,
-                [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead
+                [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,
+                $token
             ).GetAwaiter().GetResult()
             [void]$response.EnsureSuccessStatusCode()
             if ($response.Content.Headers.ContentLength -and
@@ -215,7 +237,7 @@ function Invoke-DownloadFile {
             $outputStream = [System.IO.File]::Create($Path)
             $buffer = New-Object byte[] 81920
             $total = 0L
-            while (($read = $inputStream.Read($buffer, 0, $buffer.Length)) -gt 0) {
+            while (($read = $inputStream.ReadAsync($buffer, 0, $buffer.Length, $token).GetAwaiter().GetResult()) -gt 0) {
                 $total += $read
                 if ($total -gt $MaximumBytes) {
                     throw "Download exceeded the $MaximumBytes-byte size limit."
@@ -236,6 +258,7 @@ function Invoke-DownloadFile {
             if ($response) { $response.Dispose() }
             if ($client) { $client.Dispose() }
             if ($handler) { $handler.Dispose() }
+            if ($cts) { $cts.Dispose() }
             if (-not $completed) {
                 Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
             }
@@ -616,7 +639,7 @@ foreach ($evidence in $selectedEvidence) {
 
         $actualPath = Join-Path $DownloadDirectory "$assetPrefix-actual.png"
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $actualPath) | Out-Null
-        Invoke-DownloadFile -Url ([string]$actual.url) -Path $actualPath -MaximumBytes $MaxFileBytes
+        Invoke-DownloadFile -Url ([string]$actual.url) -Path $actualPath -MaximumBytes $MaxFileBytes -Deadline $publishDeadline
         if (-not (Test-PngFile -Path $actualPath -MaximumBytes $MaxFileBytes)) {
             throw "Actual attachment was not a bounded PNG."
         }
@@ -632,7 +655,7 @@ foreach ($evidence in $selectedEvidence) {
                 if (-not $diff.size -or [long]$diff.size -le $MaxFileBytes) {
                     $diffCandidatePath = Join-Path $DownloadDirectory "$assetPrefix-diff.png"
                     try {
-                        Invoke-DownloadFile -Url ([string]$diff.url) -Path $diffCandidatePath -MaximumBytes $MaxFileBytes
+                        Invoke-DownloadFile -Url ([string]$diff.url) -Path $diffCandidatePath -MaximumBytes $MaxFileBytes -Deadline $publishDeadline
                         if (Test-PngFile -Path $diffCandidatePath -MaximumBytes $MaxFileBytes) {
                             $diffPath = $diffCandidatePath
                             $itemAssets.Add([ordered]@{ kind = "diff"; localPath = $diffPath; assetPath = "$assetPrefix-diff.png"; size = (Get-Item -LiteralPath $diffPath).Length })
@@ -669,7 +692,7 @@ foreach ($evidence in $selectedEvidence) {
                 $candidateUrl = "https://raw.githubusercontent.com/$Repository/$revision/$(ConvertTo-UrlPath $candidatePath)"
                 $candidateLocalPath = Join-Path $DownloadDirectory "$assetPrefix-baseline-$($candidateFiles.Count).png"
                 try {
-                    Invoke-DownloadFile -Url $candidateUrl -Path $candidateLocalPath -MaximumBytes $MaxFileBytes
+                    Invoke-DownloadFile -Url $candidateUrl -Path $candidateLocalPath -MaximumBytes $MaxFileBytes -Deadline $publishDeadline
                     if (Test-PngFile -Path $candidateLocalPath -MaximumBytes $MaxFileBytes) {
                         $candidateFiles.Add([ordered]@{
                             repositoryPath = $candidatePath
@@ -718,7 +741,11 @@ foreach ($evidence in $selectedEvidence) {
 
         $itemBytes = (@($itemAssets | ForEach-Object { [long]$_.size }) | Measure-Object -Sum).Sum
         if (($totalBytes + $itemBytes) -gt $MaxTotalBytes) {
-            $omittedCount += ($selectedEvidence.Count - $prepared.Count)
+            # Items $index..Count (inclusive of the current one, which is being rejected for the byte
+            # cap) are untouched. Use the index-based remainder -- matching the publish-budget break
+            # above -- so comparisons that already failed preparation (counted in
+            # $preparationFailureCount) are not also double-counted here as omitted.
+            $omittedCount += [Math]::Max(0, $selectedEvidence.Count - $index + 1)
             break
         }
         $totalBytes += $itemBytes

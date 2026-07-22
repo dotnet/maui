@@ -2313,6 +2313,9 @@ $visualEvidenceLimitations = New-Object System.Collections.Generic.List[string]
 # maui-pr-uitests builds a stalled AzDO response (even with a per-request TimeoutSec) could
 # otherwise hold the pre-activation gather near the job ceiling before continue-on-error can
 # fall back. Once the budget is exhausted we stop issuing new visual-evidence requests.
+# The deadline is started lazily on the first maui-pr-uitests build that visual discovery actually
+# reaches (see below), so unrelated timeline/log/Helix work on earlier builds cannot consume the
+# visual-only budget before discovery has begun.
 $visualEvidenceBudgetSeconds = 600
 $parsedVisualBudget = 0
 if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_VISUAL_BUDGET_SECONDS) -and
@@ -2320,7 +2323,7 @@ if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_VISUAL_BUDGET_SECONDS) -
     $parsedVisualBudget -gt 0) {
     $visualEvidenceBudgetSeconds = $parsedVisualBudget
 }
-$visualEvidenceDeadline = (Get-Date).AddSeconds($visualEvidenceBudgetSeconds)
+$visualEvidenceDeadline = $null
 $visualEvidenceBudgetTripped = $false
 # Failed Task legs whose log was read but yielded NO extractable failure (test OR build
 # error). This is the backstop for the "never wrong again" guarantee: even if a novel
@@ -2909,12 +2912,20 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
+    if ($build.definition.name -eq "maui-pr-uitests" -and $null -eq $visualEvidenceDeadline) {
+        # Start the visual-evidence budget on the first maui-pr-uitests build we actually reach, so
+        # unrelated earlier work (timeline, log, and Helix reads on non-uitests builds) does not
+        # consume the visual-only budget before discovery has a chance to begin.
+        $visualEvidenceDeadline = (Get-Date).AddSeconds($visualEvidenceBudgetSeconds)
+    }
+
     if ($build.definition.name -eq "maui-pr-uitests" -and (Get-Date) -ge $visualEvidenceDeadline -and -not $visualEvidenceBudgetTripped) {
         # The visual budget was already exhausted before this maui-pr-uitests build's visual
-        # discovery could begin (earlier builds' Helix/log reads share the same wall-clock budget).
-        # Without this, the discovery block below is skipped silently and an empty visual scan is
-        # indistinguishable from a genuinely clean one. Record the caveat exactly once -- the same
-        # limitation the inner per-result guard records when the budget trips mid-scan.
+        # discovery could begin (an earlier maui-pr-uitests build's visual scan consumed the shared
+        # wall-clock budget). Without this, the discovery block below is skipped silently and an
+        # empty visual scan is indistinguishable from a genuinely clean one. Record the caveat
+        # exactly once -- the same limitation the inner per-result guard records when the budget
+        # trips mid-scan.
         $visualEvidenceBudgetTripped = $true
         $visualEvidenceLimitations.Add("Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted.")
     }

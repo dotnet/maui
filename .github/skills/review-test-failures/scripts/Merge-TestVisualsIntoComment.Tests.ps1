@@ -329,7 +329,12 @@ Investigate.
             -MaxCommentCharacters 60000
 
         $merged | Should -Match '24 visual comparison\(s\) could not be prepared from CI artifacts and are not shown\.'
-        $merged | Should -Match '6 additional comparison\(s\) were omitted'
+        # Omissions in the all-preparation-failed path come from publisher bounds (dedup / cap /
+        # budget), never from panels failing to fit the comment, so the wording must not blame
+        # comment-safety limits.
+        $merged | Should -Match '6 additional visual comparison\(s\) were omitted by publisher bounds'
+        $merged | Should -Not -Match 'bounded for comment safety'
+        $merged | Should -Not -Match 'none fit within the comment safety limits'
     }
 
     It 'skips an invalid actual URL and reports the comparison as omitted' {

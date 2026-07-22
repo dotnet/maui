@@ -17,7 +17,8 @@ BeforeAll {
             'Test-AzDoAttachmentUrl',
             'Get-SnapshotRoot',
             'Get-SnapshotCandidatePaths',
-            'Get-VisualEvidenceDedupKey'
+            'Get-VisualEvidenceDedupKey',
+            'Invoke-DownloadFile'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -244,5 +245,24 @@ Describe 'Visual evidence deduplication' {
 
         Get-VisualEvidenceDedupKey -Evidence $legA |
             Should -Not -Be (Get-VisualEvidenceDedupKey -Evidence $legB)
+    }
+}
+
+Describe 'Download budget enforcement' {
+    It 'throws without attempting a network call when the publish deadline has already passed' {
+        # F2: the aggregate publish budget must gate each download. A deadline in the past has to
+        # fail fast -- before any HttpClient work -- so a stalled host cannot hold the Helix job
+        # open past its ceiling. The guard sits ahead of the try/catch, so it surfaces the budget
+        # message rather than a swallowed connection error.
+        $destination = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+        {
+            Invoke-DownloadFile `
+                -Url 'https://dev.azure.com/should-not-be-contacted.png' `
+                -Path $destination `
+                -MaximumBytes 1048576 `
+                -Deadline ((Get-Date).AddSeconds(-1))
+        } | Should -Throw '*Publish budget exhausted*'
+
+        Test-Path -LiteralPath $destination | Should -BeFalse
     }
 }

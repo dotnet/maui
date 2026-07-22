@@ -377,7 +377,8 @@ function New-InlineVisualSection {
     param(
         [string[]]$Panels,
         [int]$OmittedCount,
-        [int]$PreparationFailureCount = 0
+        [int]$PreparationFailureCount = 0,
+        [bool]$OmittedForCommentSafety = $true
     )
 
     $builder = [System.Text.StringBuilder]::new()
@@ -392,12 +393,17 @@ function New-InlineVisualSection {
         [void]$builder.Append($panel)
     }
 
-    if (@($Panels).Count -eq 0 -and $OmittedCount -gt 0) {
+    if (@($Panels).Count -eq 0 -and $OmittedCount -gt 0 -and $OmittedForCommentSafety) {
         [void]$builder.AppendLine("Visual comparisons were detected, but none fit within the comment safety limits.")
         [void]$builder.AppendLine()
     }
     if ($OmittedCount -gt 0) {
-        [void]$builder.AppendLine("Visual output was bounded for comment safety; $OmittedCount additional comparison(s) were omitted.")
+        if ($OmittedForCommentSafety) {
+            [void]$builder.AppendLine("Visual output was bounded for comment safety; $OmittedCount additional comparison(s) were omitted.")
+        }
+        else {
+            [void]$builder.AppendLine("$OmittedCount additional visual comparison(s) were omitted by publisher bounds (deduplication, the comparison cap, or the discovery/publish time budget).")
+        }
     }
     if ($PreparationFailureCount -gt 0) {
         [void]$builder.AppendLine("$PreparationFailureCount visual comparison(s) could not be prepared from CI artifacts and are not shown.")
@@ -482,7 +488,7 @@ function Merge-VisualsIntoBody {
             else {
                 0
             }
-            $failureSection = New-InlineVisualSection -Panels @() -OmittedCount $publisherOmitted -PreparationFailureCount $prepFailures
+            $failureSection = New-InlineVisualSection -Panels @() -OmittedCount $publisherOmitted -PreparationFailureCount $prepFailures -OmittedForCommentSafety $false
             return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
         }
         return $baseBody.Replace($placeholder, "")
