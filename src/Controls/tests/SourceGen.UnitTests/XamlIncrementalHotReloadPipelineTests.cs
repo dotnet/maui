@@ -640,12 +640,14 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	[Fact]
 	public void DataTemplate_HotReload_SetMultipleTimes_EmitsSingleNamedMethod()
 	{
-		// Regression for dotnet/maui#36682: a DataTemplate assigned to a `required` property is set
-		// twice by the generator (once in the object initializer, once as a later assignment). Under
-		// Incremental Hot Reload the template body is a named local function, and emitting it twice
-		// in the same scope produced two `object LoadTemplate_L_P()` declarations -> CS0128 ("already
-		// defined") + CS8321 ("declared but never used"). The named method must be emitted only once,
-		// with every set-site re-pointing LoadTemplate at that single function.
+		// Regression for dotnet/maui#36682 and #36683: a DataTemplate assigned to a `required`
+		// property is visited more than once by the generator (a value-precompute prepass for the
+		// object initializer, plus the main pass). Under Incremental Hot Reload the template body is
+		// a named local function; emitting it twice in the same scope produced two
+		// `object LoadTemplate_L_P()` declarations -> CS0128 ("already defined") + CS8321 ("declared
+		// but never used"). The named method must be emitted exactly once and LoadTemplate must be
+		// wired up. (#36683 also defers the prepass emission to the main pass, so LoadTemplate is now
+		// assigned a single time from the correctly-scoped pass.)
 		const string host = """
 			namespace TestApp
 			{
@@ -682,12 +684,66 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var ic = FindSourceByHintSuffix(result, ".xsg.cs");
 		Assert.NotNull(ic);
 
-		// Exactly one named LoadTemplate method must be declared, even though LoadTemplate is
-		// assigned more than once.
+		// Exactly one named LoadTemplate method must be declared (no CS0128 duplicate), and
+		// LoadTemplate must be wired up to it.
 		var declarations = System.Text.RegularExpressions.Regex.Matches(ic, @"object LoadTemplate_\d+_\d+\(\)");
 		Assert.Single(declarations);
 		var assignments = System.Text.RegularExpressions.Regex.Matches(ic, @"\.LoadTemplate = LoadTemplate_\d+_\d+;");
-		Assert.True(assignments.Count >= 2, "expected the single named method to be assigned at every set-site");
+		Assert.True(assignments.Count >= 1, "expected LoadTemplate to be assigned the single named method");
+	}
+
+	[Fact]
+	public void DataTemplate_HotReload_RequiredProperty_ResolvesOuterReferenceAtCompileTime()
+	{
+		// Regression for dotnet/maui#36683 review: a `required` DataTemplate property whose body
+		// references an outer named element via {x:Reference} must have its body emitted from the
+		// main SetPropertiesVisitor pass (which runs after namescope registration), so the reference
+		// resolves at compile time. Previously the value-precompute prepass emitted the body first,
+		// before namescopes were registered, and first-wins dedup kept that runtime-resolved
+		// (XamlServiceProvider fallback) body instead of the optimized one.
+		const string host = """
+			namespace TestApp
+			{
+				public class TemplateHost : Microsoft.Maui.Controls.View
+				{
+					public required Microsoft.Maui.Controls.DataTemplate Template { get; set; }
+				}
+			}
+			""";
+		const string xaml = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage"
+			             x:Name="ThePage">
+			    <local:TemplateHost>
+			        <local:TemplateHost.Template>
+			            <DataTemplate>
+			                <Label HeightRequest="{Binding Source={x:Reference ThePage}, Path=Height}" />
+			            </DataTemplate>
+			        </local:TemplateHost.Template>
+			    </local:TemplateHost>
+			</ContentPage>
+			""";
+
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(host));
+
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(
+			compilation, MakeFile(xaml), assertNoCompilationErrors: true);
+
+		var ic = FindSourceByHintSuffix(result, ".xsg.cs");
+		Assert.NotNull(ic);
+
+		// Single named method, wired up.
+		Assert.Single(System.Text.RegularExpressions.Regex.Matches(ic, @"object LoadTemplate_\d+_\d+\(\)"));
+		Assert.Contains("LoadTemplate = LoadTemplate_", ic, StringComparison.Ordinal);
+
+		// The x:Reference to the outer page must be resolved at compile time (a direct __root
+		// reference), NOT via the runtime XamlServiceProvider/SimpleValueTargetProvider fallback.
+		Assert.Contains("= __root;", ic, StringComparison.Ordinal);
+		Assert.DoesNotContain("SimpleValueTargetProvider", ic, StringComparison.Ordinal);
 	}
 
 	[Fact]

@@ -10,7 +10,12 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 using static LocationHelpers;
 
-class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false) : IXamlNodeVisitor
+// valuePrecomputePass: set by CreateValuesVisitor when this visitor is run only to precompute a
+// value (e.g. a `required` property's value for the object initializer, or an x:Array element)
+// before namescopes are registered. In that pass, DataTemplate LoadTemplate emission under
+// Incremental Hot Reload is deferred to the main pass so x:Reference/bindings resolve against the
+// outer scope at compile time rather than falling back to runtime resolution. See dotnet/maui#36683.
+class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false, bool valuePrecomputePass = false) : IXamlNodeVisitor
 {
 	SourceGenContext Context => context;
 	IndentedTextWriter Writer => Context.Writer;
@@ -239,6 +244,15 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		if (propertyName == XmlName._CreateContent)
 		{
+			// Under Incremental Hot Reload, defer DataTemplate LoadTemplate emission from a
+			// value-precompute prepass (required-property/x:Array) to the main SetPropertiesVisitor
+			// pass. The main pass runs after namescope registration, so it resolves x:Reference and
+			// bindings against the outer scope at compile time; the prepass runs earlier and would
+			// emit a slower runtime-resolved body that first-wins dedup would then keep
+			// (dotnet/maui#36683). Non-HR builds keep their existing prepass behavior.
+			if (valuePrecomputePass && Context.ProjectItem.EnableIncrementalHotReload)
+				return;
+
 			var variable = Context.Variables[parentNode];
 
 			// Under XAML Incremental Hot Reload, emit the template content as a stably-named local
