@@ -13,17 +13,17 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnSwipePagingButtonClicked(object sender, EventArgs e)
+		void OnSwipePagingButtonClicked(object? sender, EventArgs e)
 		{
 			On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetIsSwipePagingEnabled(!On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().IsSwipePagingEnabled());
 		}
 
-		void OnSmoothScrollButtonClicked(object sender, EventArgs e)
+		void OnSmoothScrollButtonClicked(object? sender, EventArgs e)
 		{
 			On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetIsSmoothScrollEnabled(!On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().IsSmoothScrollEnabled());
 		}
 
-		void OnReturnButtonClicked(object sender, EventArgs e)
+		void OnReturnButtonClicked(object? sender, EventArgs e)
 		{
 			Navigation.PopAsync();
 		}

@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages
 		}
 
 		int count = 0;
-		private void OnCounterClicked(object sender, EventArgs e)
+		private void OnCounterClicked(object? sender, EventArgs e)
 		{
 			count++;
 			CounterLabel.Text = $"Current count: {count}";

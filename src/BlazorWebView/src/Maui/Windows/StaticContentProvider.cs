@@ -464,24 +464,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return Mappings.TryGetValue(extension, out contentType);
 			}
 
-			private static string GetExtension(string path)
+		private static string GetExtension(string path)
+		{
+			// Don't use Path.GetExtension as that may throw an exception if there are
+			// invalid characters in the path. Invalid characters should be handled
+			// by the FileProviders
+
+			if (string.IsNullOrWhiteSpace(path))
 			{
-				// Don't use Path.GetExtension as that may throw an exception if there are
-				// invalid characters in the path. Invalid characters should be handled
-				// by the FileProviders
+				return null;
+			}
 
-				if (string.IsNullOrWhiteSpace(path))
-				{
-					return null;
-				}
-
-				int index = path.LastIndexOf('.');
-				if (index < 0)
-				{
-					return null;
-				}
-
-				return path.Substring(index);
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
+			int index = path.LastIndexOf('.');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
+			if (index < 0)
+			{
+				return null;
+			}				return path.Substring(index);
 			}
 		}
 	}

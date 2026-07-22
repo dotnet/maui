@@ -26,6 +26,20 @@ namespace Microsoft.Maui.Controls.Maps
 			typeof(MapElement),
 			5f);
 
+		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
+		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(
+			nameof(IsVisible),
+			typeof(bool),
+			typeof(MapElement),
+			true);
+
+		/// <summary>Bindable property for <see cref="ZIndex"/>.</summary>
+		public static readonly BindableProperty ZIndexProperty = BindableProperty.Create(
+			nameof(ZIndex),
+			typeof(int),
+			typeof(MapElement),
+			0);
+
 		/// <summary>
 		/// Gets or sets the stroke color. This is a bindable property.
 		/// </summary>
@@ -43,6 +57,28 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			get => (float)GetValue(StrokeWidthProperty);
 			set => SetValue(StrokeWidthProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the map element is visible on the map.
+		/// The default value is <see langword="true"/>.
+		/// This is a bindable property.
+		/// </summary>
+		public bool IsVisible
+		{
+			get => (bool)GetValue(IsVisibleProperty);
+			set => SetValue(IsVisibleProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the z-index of the map element, which controls its draw order relative to other elements.
+		/// Higher values are drawn on top of lower values. The default value is <c>0</c>.
+		/// This is a bindable property.
+		/// </summary>
+		public int ZIndex
+		{
+			get => (int)GetValue(ZIndexProperty);
+			set => SetValue(ZIndexProperty, value);
 		}
 
 		/// <summary>

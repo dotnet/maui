@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			InitializeComponent();
 		}
 
-		void OnSwipeItemInvoked(object sender, EventArgs e)
+		void OnSwipeItemInvoked(object? sender, EventArgs e)
 		{
 			DisplayAlertAsync("SwipeItemSizeGallery", "Delete SwipeItem Invoked", "Ok");
 		}

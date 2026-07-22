@@ -6,7 +6,6 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using AndroidX.Activity;
-using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -82,10 +81,11 @@ namespace Microsoft.Maui.ApplicationModel
 			if (activity.Application is not Application application)
 				throw new InvalidOperationException("Activity was not attached to an application.");
 
-			if (activity is ComponentActivity componentActivity && MediaPickerImplementation.IsPhotoPickerAvailable)
+			if (activity is ComponentActivity componentActivity)
 			{
-				PickVisualMediaForResult.Instance.Register(componentActivity);
-				PickMultipleVisualMediaForResult.Instance.Register(componentActivity);
+				// Register MediaPicker contracts so AndroidX can deliver pending results after activity/process recreation.
+				// Feature support is still checked before launch.
+				RegisterActivityResultLaunchers(componentActivity);
 			}
 
 			Init(application);
@@ -121,6 +121,25 @@ namespace Microsoft.Maui.ApplicationModel
 
 		void OnActivityStateChanged(Activity activity, ActivityState ev)
 			=> ActivityStateChanged?.Invoke(null, new ActivityStateChangedEventArgs(activity, ev));
+
+		internal static void RegisterActivityResultLaunchers(ComponentActivity componentActivity)
+			=> RegisterActivityResultLaunchers(
+				() => CapturePhotoForResult.Instance.Register(componentActivity),
+				() => CaptureVideoForResult.Instance.Register(componentActivity),
+				() => PickVisualMediaForResult.Instance.Register(componentActivity),
+				() => PickMultipleVisualMediaForResult.Instance.Register(componentActivity));
+
+		internal static void RegisterActivityResultLaunchers(
+			Action registerCapturePhoto,
+			Action registerCaptureVideo,
+			Action registerPickVisualMedia,
+			Action registerPickMultipleVisualMedia)
+		{
+			registerCapturePhoto();
+			registerCaptureVideo();
+			registerPickVisualMedia();
+			registerPickMultipleVisualMedia();
+		}
 	}
 
 	static class ActivityStateManagerExtensions

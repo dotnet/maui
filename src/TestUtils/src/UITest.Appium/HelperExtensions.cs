@@ -80,8 +80,8 @@ namespace UITest.Appium
 		/// <summary>
 		/// Closes a picker dialog using platform-specific dismiss actions.
 		/// For Android, taps the "Cancel" button.
-		/// For iOS/MacCatalyst, taps the "Done" button.
 		/// For Windows, either taps coordinates (if provided) or the "Cancel" button.
+		/// For iOS, taps the "selected" button on iOS 26+, otherwise taps the "Done" button. For MacCatalyst, taps the "Done" button.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="x">Optional X coordinate for Windows tap. Default is 0.</param>
@@ -91,6 +91,10 @@ namespace UITest.Appium
 			if (app is AppiumAndroidApp)
 			{
 				app.Tap("Cancel");
+			}
+			else if (app is AppiumIOSApp iosApp && IsIOS26OrHigher(iosApp))
+			{
+				app.Tap("selected");
 			}
 			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
 			{

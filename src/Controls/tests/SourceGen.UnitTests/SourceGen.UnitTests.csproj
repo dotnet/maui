@@ -11,6 +11,8 @@
     <Nullable>enable</Nullable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    <!-- Required for MetadataUpdater.IsSupported to be true even in Release builds -->
+    <MetadataUpdaterSupport>true</MetadataUpdaterSupport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +30,7 @@
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\src\SourceGen\Controls.SourceGen.csproj" />
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\HybridWebViewSourceGen\Core.HybridWebViewSourceGen.csproj" />
     <ProjectReference Include="..\..\..\..\src\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
   </ItemGroup>
 
