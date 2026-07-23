@@ -234,11 +234,9 @@ namespace Microsoft.Maui.Hosting
 					var versionTrackingDependencies = BridgeEssentialsFromDI(services, facadeCleanups);
 					BridgeLazyVersionTrackingFromDI(versionTrackingDependencies, facadeCleanups);
 
-					// Resolve cleanup after every bridged service so DI disposes it first. This
-					// restores static facades and removes AppActions handlers while the provider-owned
-					// implementations are still alive.
+					// Resolve app-owned cleanup before registering AppActions handlers. Facade
+					// actions are appended after initialization has accumulated the complete batch.
 					cleanup = services.GetRequiredService<EssentialsCleanup>();
-					cleanup.SetFacadeCleanups(facadeCleanups);
 
 #if WINDOWS || TIZEN
 					// A ConfigureEssentials token takes precedence; otherwise preserve a token set
@@ -297,13 +295,18 @@ namespace Microsoft.Maui.Hosting
 								facadeCleanups);
 						}
 					}
+
+					cleanup.SetFacadeCleanups(facadeCleanups);
 				}
 				catch (Exception initializationException)
 				{
 					try
 					{
 						if (cleanup is not null)
+						{
+							cleanup.SetFacadeCleanups(facadeCleanups);
 							cleanup.Cleanup();
+						}
 						else
 							RestoreFacadeCleanups(facadeCleanups);
 					}
