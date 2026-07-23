@@ -1,0 +1,11 @@
+# Runtime SQLite database (recreated on startup from migrations).
+Data/app.db
+Data/app.db-shm
+Data/app.db-wal
+
+# Apple "Sign in with Apple" domain-verification file (download from the Apple Developer portal
+# and drop it here). It is domain-specific; do not commit.
+apple-developer-domain-association.txt
+
+# Apple Sign in with Apple private key (AuthKey_<KeyId>.p8). Secret; do not commit.
+AuthKey_*.p8
