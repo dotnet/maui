@@ -10,10 +10,10 @@ for driving passkeys from a *native* client. Because the ceremony logic is the *
 Identity passkey implementation, this doubles as an interop conformance check across Apple, Android, and
 Windows.
 
-> ⚠️ This is a **local dev tool** — it relaxes a couple of defaults for convenience (no email
-> confirmation; a passwordless test-user fallback) and its native `/passkeys/*` API authenticates the
-> session with a **cookie** rather than a bearer token. That's fine here but is **not** how a production
-> native app should do it — see [Authentication & CSRF](#authentication--csrf-why-cookies-here) below.
+> ⚠️ This is a **local dev tool** — it relaxes a default for convenience (no email confirmation) and its
+> native `/passkeys/*` API authenticates the session with a **cookie** rather than a bearer token. That's
+> fine here but is **not** how a production native app should do it — see
+> [Authentication & CSRF](#authentication--csrf-why-cookies-here) below.
 
 ## How this was scaffolded (and exactly what we changed)
 
@@ -29,7 +29,7 @@ Everything else is stock. The complete set of changes on top of that template is
 
 | File | Why |
 | --- | --- |
-| `PasskeyApiEndpoints.cs` | Native-app-facing passkey ceremony API: `POST /passkeys/register/begin` · `/register/finish` · `/login/begin` · `/login/finish`. The template's passkey UI (`/Account/Manage/Passkeys`) is browser + antiforgery based; a native `HttpClient` needs a plain JSON-in/JSON-out API with the WebAuthn challenge correlated through the Identity cookie. |
+| `Components/Account/PasskeyApiEndpoints.cs` | Native-app-facing passkey ceremony API: `POST /passkeys/register/begin` · `/register/finish` · `/login/begin` · `/login/finish`. Lives next to the template's own identity endpoints. The template's passkey UI (`/Account/Manage/Passkeys`) is browser + antiforgery based; a native `HttpClient` needs a plain JSON-in/JSON-out API with the WebAuthn challenge correlated through the Identity cookie. |
 | `WellKnownEndpoints.cs` | Serves `/.well-known/assetlinks.json` (Android Digital Asset Links) and `/.well-known/apple-app-site-association` (Apple) from config, so real devices trust this domain as the credential provider. |
 | `.gitignore` | Ignores the runtime SQLite database (`Data/app.db*`). |
 | `README.md` | This file. |
@@ -65,7 +65,7 @@ Everything else is stock. The complete set of changes on top of that template is
 | Piece | Where | Purpose |
 | --- | --- | --- |
 | Blazor Web App + Identity | `Components/`, `Data/`, most of `Program.cs` | The stock template. Its web passkey UI (`/Account/Manage/Passkeys`) works out of the box. |
-| Native passkey API | `PasskeyApiEndpoints.cs` | `/passkeys/register/begin` · `/register/finish` · `/login/begin` · `/login/finish` — JSON in / JSON out, cookie-correlated, no antiforgery. |
+| Native passkey API | `Components/Account/PasskeyApiEndpoints.cs` | `/passkeys/register/begin` · `/register/finish` · `/login/begin` · `/login/finish` — JSON in / JSON out, cookie-correlated, no antiforgery. |
 | Native bootstrap auth | `MapIdentityApi` under `/account` | `/account/register`, `/account/login?useCookies=true` — username/password sign-in before enrolling a passkey. |
 | Domain association | `WellKnownEndpoints.cs` | Serves `/.well-known/assetlinks.json` (Android) and `/.well-known/apple-app-site-association` (Apple) from config. |
 | Config | `appsettings.json` → `Passkeys`, user-secrets | RP ID / origins / fingerprints. |
@@ -134,16 +134,16 @@ short-lived framework cookie (`Identity.TwoFactorUserId`, set by the built-in ce
 native client **must** use a cookie container (the MAUI sample does).
 
 ```
-POST /passkeys/register/begin?username=alice@example.com   -> PublicKeyCredentialCreationOptions JSON
-POST /passkeys/register/finish   (body: attestation JSON)  -> { registered, username }
-POST /passkeys/login/begin?username=alice@example.com      -> PublicKeyCredentialRequestOptions JSON
-POST /passkeys/login/finish      (body: assertion JSON)    -> { authenticated, username }
+POST /passkeys/register/begin    (signed-in session required)  -> PublicKeyCredentialCreationOptions JSON
+POST /passkeys/register/finish   (body: attestation JSON)      -> { registered, username }
+POST /passkeys/login/begin?username=alice@example.com          -> PublicKeyCredentialRequestOptions JSON
+POST /passkeys/login/finish      (body: assertion JSON)        -> { authenticated, username }
 ```
 
-`register/begin` enrolls the passkey for the **currently signed-in** user when the request carries the
-Identity session cookie (the recommended "enroll after login" flow); as a test-harness fallback it
-accepts a `username` and auto-provisions a passwordless user. `login/begin` may be called **without**
-`username` for username-less / discoverable-credential sign-in.
+`register/begin` enrolls a passkey for the **currently signed-in** user (identified by the Identity
+session cookie), so the caller must sign in first — the "add a passkey after you log in" flow. Anonymous
+requests get a `401`; the server never creates an account from an arbitrary posted username.
+`login/begin` may be called **without** `username` for username-less / discoverable-credential sign-in.
 
 ## Authentication & CSRF (why cookies here)
 

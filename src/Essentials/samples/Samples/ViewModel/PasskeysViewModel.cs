@@ -137,7 +137,9 @@ namespace Samples.ViewModel
 				Log("Requesting creation options…");
 
 				// 1) Ask the RP server for PublicKeyCredentialCreationOptions (WebAuthn JSON).
-				var creationOptionsJson = await PostAsync($"/passkeys/register/begin?username={Uri.EscapeDataString(Username)}");
+				//    Enrollment is for the signed-in user (the session cookie set at sign-in identifies
+				//    them), so no username is sent here.
+				var creationOptionsJson = await PostAsync("/passkeys/register/begin");
 
 				// 2) Create the passkey with the platform authenticator (biometric / PIN prompt).
 				Log("Creating passkey with the platform authenticator…");
