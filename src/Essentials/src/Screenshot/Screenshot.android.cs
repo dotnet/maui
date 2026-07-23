@@ -56,10 +56,8 @@ namespace Microsoft.Maui.Media
 			return bitmap is null ? null : new ScreenshotResult(bitmap);
 		}
 
-#nullable enable annotations
 		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
 			platformView is View view ? CaptureAsync(view)! : Task.FromResult<IScreenshotResult?>(null);
-#nullable restore
 
 		static async Task<Bitmap?> RenderAsync(View view, Window? window)
 		{
