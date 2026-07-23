@@ -687,6 +687,43 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Disposed Shell Table Source Clears Scrolled Subscribers")]
+		public async Task DisposedShellTableSourceClearsScrolledSubscribers()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ContentPage());
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, handler =>
+			{
+				var flyoutContent = handler.ViewController
+					.ChildViewControllers
+					.OfType<ShellFlyoutContentRenderer>()
+					.First();
+				var tableViewController = flyoutContent.ChildViewControllers
+					.OfType<ShellTableViewController>()
+					.First();
+				var source = Assert.IsType<ShellTableViewSource>(tableViewController.TableView.Source);
+				var scrolled = false;
+				source.ScrolledEvent += OnScrolled;
+
+				flyoutContent.Dispose();
+
+				using var nativeScrollView = new UIScrollView();
+				source.Scrolled(nativeScrollView);
+				Assert.False(scrolled);
+
+				return Task.CompletedTask;
+
+				void OnScrolled(object sender, UIScrollView view)
+				{
+					scrolled = true;
+				}
+			});
+		}
+
 		[Fact(DisplayName = "Shell Flyout Renderer Disposal Is Idempotent After Native Teardown")]
 		public Task ShellFlyoutRendererDisposalIsIdempotentAfterNativeTeardown() =>
 			InvokeOnMainThreadAsync(() =>

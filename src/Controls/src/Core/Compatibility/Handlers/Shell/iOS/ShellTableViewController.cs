@@ -1,8 +1,8 @@
 #nullable disable
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
 using ObjCRuntime;
@@ -137,7 +137,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ShellController.FlyoutItemsChanged -= OnFlyoutItemsChanged;
 
 				if (_source != null)
+				{
 					_source.ScrolledEvent -= OnScrolled;
+					_source.Disconnect();
+				}
 
 				ShellFlyoutContentManager.TearDown();
 				_onElementSelected = null;

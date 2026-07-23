@@ -1,7 +1,7 @@
 #nullable disable
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
@@ -26,8 +26,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_onElementSelected = onElementSelected;
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Event is owned by ShellTableViewController and unsubscribed in ShellTableViewController.Dispose(bool).")]
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "All event subscribers are cleared by Disconnect when ShellTableViewController is disposed.")]
 		public event EventHandler<UIScrollView> ScrolledEvent;
+
+		internal void Disconnect()
+		{
+			ScrolledEvent = null;
+		}
 
 		public List<List<Element>> Groups
 		{
