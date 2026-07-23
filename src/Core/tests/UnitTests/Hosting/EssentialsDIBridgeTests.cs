@@ -427,6 +427,27 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void RepeatedInitializeAppServicesRestoresAllFacadeAssignments()
+		{
+			var original = Preferences.Default;
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+
+			var app = builder.Build();
+			var implementation = Assert.IsType<DisposableStubPreferences>(
+				app.Services.GetRequiredService<IPreferences>());
+
+			app.InitializeAppServices();
+			Assert.Same(implementation, Preferences.Default);
+
+			app.Dispose();
+
+			Assert.True(implementation.IsDisposed);
+			Assert.True(implementation.FacadeWasRestoredBeforeDispose);
+			Assert.Same(original, Preferences.Default);
+		}
+
+		[Fact]
 		public void OlderMauiAppDisposeDoesNotClobberLaterAppBridge()
 		{
 			var original = Preferences.Default;

@@ -816,7 +816,7 @@ namespace Microsoft.Maui.Hosting
 
 			public void SetFacadeCleanups(List<Action> cleanups)
 			{
-				_facadeCleanups = cleanups;
+				_facadeCleanups.AddRange(cleanups);
 			}
 
 #if !TIZEN
