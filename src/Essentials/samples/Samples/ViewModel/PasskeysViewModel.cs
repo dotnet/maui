@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -28,12 +29,15 @@ namespace Samples.ViewModel
 		string serverBaseUrl = "https://your-tunnel-5177.devtunnels.ms";
 
 		string username = "alice@example.com";
+		string password = "Passw0rd!";
 		string status = string.Empty;
 
 		HttpClient httpClient;
 
 		public PasskeysViewModel()
 		{
+			SignUpCommand = new Command(async () => await SignUpAsync());
+			SignInPasswordCommand = new Command(async () => await SignInPasswordAsync());
 			RegisterCommand = new Command(async () => await RegisterAsync());
 			LoginCommand = new Command(async () => await LoginAsync());
 		}
@@ -56,15 +60,71 @@ namespace Samples.ViewModel
 			set => SetProperty(ref username, value);
 		}
 
+		public string Password
+		{
+			get => password;
+			set => SetProperty(ref password, value);
+		}
+
 		public string Status
 		{
 			get => status;
 			set => SetProperty(ref status, value);
 		}
 
+		public ICommand SignUpCommand { get; }
+
+		public ICommand SignInPasswordCommand { get; }
+
 		public ICommand RegisterCommand { get; }
 
 		public ICommand LoginCommand { get; }
+
+		async Task SignUpAsync()
+		{
+			try
+			{
+				IsBusy = true;
+				Log($"Creating account '{Username}'…");
+
+				// ASP.NET Core Identity's MapIdentityApi: POST /account/register { email, password }.
+				await PostJsonAsync("/account/register", new { email = Username, password = Password });
+
+				Log("✅ Account created. Now sign in with the password.");
+			}
+			catch (Exception ex)
+			{
+				HandleError(ex);
+			}
+			finally
+			{
+				IsBusy = false;
+			}
+		}
+
+		async Task SignInPasswordAsync()
+		{
+			try
+			{
+				IsBusy = true;
+				Log($"Signing in as '{Username}' with a password…");
+
+				// The native "bootstrap": POST /account/login?useCookies=true sets the Identity auth
+				// cookie on our CookieContainer. No browser, no webview — just a form post. Once signed
+				// in, "Create a passkey" enrolls a credential bound to THIS user (server reads the cookie).
+				await PostJsonAsync("/account/login?useCookies=true", new { email = Username, password = Password });
+
+				Log("✅ Signed in with a password. You can now create a passkey for faster sign-in.");
+			}
+			catch (Exception ex)
+			{
+				HandleError(ex);
+			}
+			finally
+			{
+				IsBusy = false;
+			}
+		}
 
 		async Task RegisterAsync()
 		{
@@ -110,7 +170,12 @@ namespace Samples.ViewModel
 				Log("Requesting request options…");
 
 				// 1) Ask the RP server for PublicKeyCredentialRequestOptions (WebAuthn JSON).
-				var requestOptionsJson = await PostAsync($"/passkeys/login/begin?username={Uri.EscapeDataString(Username)}");
+				//    Leave the username blank for username-less / discoverable-credential sign-in —
+				//    the passkey itself carries the user handle and the OS account picker lists it.
+				var beginUrl = string.IsNullOrWhiteSpace(Username)
+					? "/passkeys/login/begin"
+					: $"/passkeys/login/begin?username={Uri.EscapeDataString(Username)}";
+				var requestOptionsJson = await PostAsync(beginUrl);
 
 				// 2) Assert with the platform authenticator (biometric / PIN prompt).
 				Log("Asserting passkey with the platform authenticator…");
@@ -157,6 +222,12 @@ namespace Samples.ViewModel
 
 			return body;
 		}
+
+		// Posts a JSON object (used for the ASP.NET Core Identity /account endpoints, whose success
+		// responses are often empty). Shares the same cookie-preserving HttpClient so the auth cookie
+		// set by /account/login flows into the subsequent passkey ceremony calls.
+		Task<string> PostJsonAsync(string relativeUrl, object payload)
+			=> PostAsync(relativeUrl, JsonSerializer.Serialize(payload));
 
 		HttpClient GetClient()
 		{

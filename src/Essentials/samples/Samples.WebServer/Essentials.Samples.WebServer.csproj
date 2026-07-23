@@ -7,10 +7,10 @@
     <RootNamespace>Essentials.Samples.WebServer</RootNamespace>
     <UserSecretsId>maui-essentials-auth-server</UserSecretsId>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
-    <!-- This is a developer-facing reference server for the .NET MAUI Essentials auth samples. It
-         hosts BOTH the passkeys relying party (ASP.NET Core Identity / WebAuthn) AND the OAuth
-         "pass-through" backend for the WebAuthenticator sample, so testing is "launch one web app,
-         run the MAUI app". Build and run it locally (see README.md). -->
+    <!-- This is a developer-facing reference relying-party (RP) server for the .NET MAUI Essentials
+         Passkeys sample: an ASP.NET Core Identity / WebAuthn backend the native app registers and
+         signs in against, so testing is "launch one web app, run the MAUI app". Build and run it
+         locally (see README.md). -->
     <IsPackable>false</IsPackable>
     <!-- EF Core packages are pinned to the same servicing band as the rest of the repo so they
          restore from the repo's own feeds (no nuget.org needed for this project). -->
@@ -23,15 +23,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(_PasskeysEfCoreVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(_PasskeysEfCoreVersion)" PrivateAssets="all" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(_PasskeysEfCoreVersion)" />
-  </ItemGroup>
-
-  <!-- OAuth "pass-through" providers for the WebAuthenticator sample. Facebook/Google/Microsoft use
-       repo-managed versions; Apple comes from the community package. -->
-  <ItemGroup>
-    <PackageReference Include="AspNet.Security.OAuth.Apple" Version="9.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
   </ItemGroup>
 
 </Project>

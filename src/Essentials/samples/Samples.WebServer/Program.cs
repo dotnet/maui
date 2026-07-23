@@ -23,9 +23,10 @@ var authBuilder = builder.Services.AddAuthentication(options =>
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     });
 authBuilder.AddIdentityCookies();
-// OAuth "pass-through" providers for the WebAuthenticator sample. They sign into
-// IdentityConstants.ExternalScheme (the DefaultSignInScheme above), which /mobileauth reads back.
-authBuilder.AddOAuthPassthroughProviders(builder.Configuration, builder.Environment);
+// Bearer token support so MapIdentityApi can wire up its /login, /refresh, etc. endpoints. The native
+// MAUI sample uses the COOKIE variant (/account/login?useCookies=true), but MapIdentityApi still
+// requires the bearer token services to be registered.
+authBuilder.AddBearerToken(IdentityConstants.BearerScheme);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -41,6 +42,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
+    .AddApiEndpoints()
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
@@ -107,11 +109,13 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
+// Native-app-facing username/password auth (ASP.NET Core Identity API). Gives /account/register,
+// /account/login (use ?useCookies=true to set the Identity auth cookie), /account/refresh, etc.
+// This is the "bootstrap" the native app uses BEFORE enrolling a passkey — no browser required.
+app.MapGroup("/account").MapIdentityApi<ApplicationUser>();
+
 // Native-app-facing passkey ceremony API (used by the .NET MAUI Essentials sample).
 app.MapNativePasskeyApi();
-
-// OAuth pass-through API (/mobileauth/{scheme}) for the WebAuthenticator sample + Apple domain check.
-app.MapOAuthPassthrough();
 
 // Platform domain-association documents (Android assetlinks.json / Apple AASA).
 app.MapDomainAssociation(app.Configuration);
