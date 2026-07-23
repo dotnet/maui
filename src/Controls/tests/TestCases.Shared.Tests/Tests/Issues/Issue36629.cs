@@ -18,7 +18,7 @@ public class Issue36629 : _IssuesUITest
         App.WaitForElement("ContentLabel36629");
 
         // Take a screenshot to verify the SearchHandler font properties are visually applied
-        // (FontSize=24, FontFamily=OpenSansRegular, FontAttributes=Bold, VerticalTextAlignment=Center)
+        // (FontSize=14, FontFamily=Dokdo, FontAttributes=Bold, VerticalTextAlignment=Start)
         VerifyScreenshot();
     }
 }

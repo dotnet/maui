@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 36629, "[Windows] SearchHandler FontSize, FontFamily, VerticalTextAlignment, and FontAttributes are not applied", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 36629, "[Windows] SearchHandler FontSize, FontFamily, VerticalTextAlignment, and FontAttributes are not applied", PlatformAffected.UWP)]
 public class Issue36629 : TestShell
 {
     protected override void Init()
