@@ -18,7 +18,11 @@ BeforeAll {
             'Get-SnapshotRoot',
             'Get-SnapshotCandidatePaths',
             'Get-VisualEvidenceDedupKey',
-            'Invoke-DownloadFile'
+            'Invoke-DownloadFile',
+            'Get-AssetBranchRef',
+            'Initialize-AssetBranch',
+            'Publish-GitAssets',
+            'Remove-VisualDownloadDirectory'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -264,5 +268,68 @@ Describe 'Download budget enforcement' {
         } | Should -Throw '*Publish budget exhausted*'
 
         Test-Path -LiteralPath $destination | Should -BeFalse
+    }
+}
+
+Describe 'Git publication budget enforcement' {
+    It 'throws before starting gh when the publish deadline has passed' {
+        {
+            Invoke-GhApiJson `
+                -Method 'GET' `
+                -Endpoint 'repos/dotnet/maui' `
+                -Deadline ((Get-Date).AddSeconds(-1))
+        } | Should -Throw '*Publish budget exhausted*'
+    }
+
+    It 'passes the shared deadline to every publication API call' {
+        $assetPath = Join-Path $TestDrive 'asset.png'
+        [System.IO.File]::WriteAllBytes($assetPath, [byte[]](1, 2, 3))
+        $deadline = (Get-Date).AddMinutes(5)
+
+        Mock Initialize-AssetBranch {}
+        Mock Get-AssetBranchRef {
+            return [pscustomobject]@{
+                object = [pscustomobject]@{ sha = 'parent-sha' }
+            }
+        }
+        Mock Invoke-GhApiJson {
+            if ($Method -eq 'POST' -and $Endpoint -like '*/git/blobs') {
+                return [pscustomobject]@{ sha = 'blob-sha' }
+            }
+            if ($Method -eq 'GET' -and $Endpoint -like '*/git/commits/*') {
+                return [pscustomobject]@{ tree = [pscustomobject]@{ sha = 'parent-tree' } }
+            }
+            if ($Method -eq 'POST' -and $Endpoint -like '*/git/trees') {
+                return [pscustomobject]@{ sha = 'new-tree' }
+            }
+            if ($Method -eq 'POST' -and $Endpoint -like '*/git/commits') {
+                return [pscustomobject]@{ sha = 'new-commit' }
+            }
+            return $null
+        }
+
+        $result = Publish-GitAssets `
+            -Repository 'dotnet/maui' `
+            -Branch 'review-tests-assets' `
+            -Assets @([pscustomobject]@{ localPath = $assetPath; assetPath = 'pr-123/asset.png' }) `
+            -CommitMessage 'test' `
+            -Deadline $deadline
+
+        $result | Should -Be 'new-commit'
+        Should -Invoke Invoke-GhApiJson -Times 5 -Exactly -ParameterFilter {
+            $Deadline -eq $deadline
+        }
+    }
+}
+
+Describe 'Visual download cleanup' {
+    It 'removes the per-run download directory recursively' {
+        $directory = Join-Path $TestDrive 'downloads'
+        New-Item -ItemType Directory -Path $directory | Out-Null
+        Set-Content -LiteralPath (Join-Path $directory 'asset.png') -Value 'data'
+
+        Remove-VisualDownloadDirectory -Path $directory
+
+        Test-Path -LiteralPath $directory | Should -BeFalse
     }
 }

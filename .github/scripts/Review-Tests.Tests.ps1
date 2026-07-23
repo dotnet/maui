@@ -57,6 +57,24 @@ Set-Content -LiteralPath $CommentBodyPath -Value "$tokenState|$context" -NoNewli
             [Environment]::SetEnvironmentVariable('GH_TOKEN', $priorToken, 'Process')
         }
     }
+
+    It 'returns a nonzero result when sealed merge setup fails' {
+        Mock New-Item {
+            throw 'simulated setup failure'
+        } -ParameterFilter {
+            $ItemType -eq 'Directory'
+        }
+
+        $result = Invoke-SealedVisualMerge `
+            -MergeScriptContent 'throw "should not run"' `
+            -ContextJsonContent '{}' `
+            -CommentBodyPath (Join-Path $TestDrive 'comment.md') `
+            -PrNumber 123 `
+            -Repository 'dotnet/maui'
+
+        $result.exitCode | Should -Be 1
+        ($result.output -join "`n") | Should -Match 'simulated setup failure'
+    }
 }
 
 Describe 'Local test-failure report extraction' {
@@ -219,5 +237,27 @@ Generated report:
     It 'returns null when no complete report is embedded' {
         Get-EmbeddedTestFailureReport -Content 'Only a short analysis sentence.' |
             Should -BeNullOrEmpty
+    }
+
+    It 'rejects a report with an unclosed details block' {
+        Get-EmbeddedTestFailureReport -Content @'
+<!-- Tests Failure -->
+## Tests Failure Analysis
+<details>
+<summary>Review</summary>
+Partial analysis
+'@ | Should -BeNullOrEmpty
+    }
+
+    It 'rejects a fenced report without the outer closing fence' {
+        Get-EmbeddedTestFailureReport -Content @'
+```markdown
+<!-- Tests Failure -->
+## Tests Failure Analysis
+<details>
+<summary>Review</summary>
+Complete-looking analysis
+</details>
+'@ | Should -BeNullOrEmpty
     }
 }

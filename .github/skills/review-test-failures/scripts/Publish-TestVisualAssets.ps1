@@ -77,7 +77,7 @@ $DownloadRoot = if (-not [string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) {
 else {
     Join-Path ([System.IO.Path]::GetTempPath()) "review-test-visual-assets"
 }
-$DownloadDirectory = Join-Path $DownloadRoot "$PrNumber"
+$DownloadDirectory = Join-Path $DownloadRoot "$PrNumber-$([guid]::NewGuid().ToString('N'))"
 New-Item -ItemType Directory -Force -Path $DownloadDirectory | Out-Null
 
 function Get-SafeAssetSlug {
@@ -345,12 +345,17 @@ function Invoke-GhApiJson {
     param(
         [string]$Method,
         [string]$Endpoint,
-        [object]$Body
+        [object]$Body,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
+
+    if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+        throw "Publish budget exhausted before gh api $Method $Endpoint."
+    }
 
     $arguments = @("api", "--method", $Method, $Endpoint)
     $payloadPath = $null
-    $stderrPath = [System.IO.Path]::GetTempFileName()
+    $process = $null
     try {
         if ($null -ne $Body) {
             $payloadPath = [System.IO.Path]::GetTempFileName()
@@ -358,13 +363,47 @@ function Invoke-GhApiJson {
             $arguments += @("--input", $payloadPath)
         }
 
-        $output = & gh @arguments 2>$stderrPath
-        $exitCode = $LASTEXITCODE
-        $stderr = Get-Content -LiteralPath $stderrPath -Raw -ErrorAction SilentlyContinue
-        if ($exitCode -ne 0) {
+        $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+        $startInfo.FileName = "gh"
+        $startInfo.UseShellExecute = $false
+        $startInfo.RedirectStandardOutput = $true
+        $startInfo.RedirectStandardError = $true
+        foreach ($argument in $arguments) {
+            [void]$startInfo.ArgumentList.Add([string]$argument)
+        }
+
+        $process = [System.Diagnostics.Process]::new()
+        $process.StartInfo = $startInfo
+        if (-not $process.Start()) {
+            throw "gh api $Method $Endpoint could not be started."
+        }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+
+        if ($Deadline -eq [datetime]::MaxValue) {
+            $process.WaitForExit()
+        }
+        else {
+            $remainingMilliseconds = [Math]::Floor(($Deadline - (Get-Date)).TotalMilliseconds)
+            if ($remainingMilliseconds -le 0 -or
+                -not $process.WaitForExit([int][Math]::Min([int]::MaxValue, $remainingMilliseconds))) {
+                try {
+                    $process.Kill($true)
+                    $process.WaitForExit()
+                }
+                catch {
+                    # The process may have exited between the timeout and termination request.
+                }
+                throw "Publish budget exhausted while calling gh api $Method $Endpoint."
+            }
+        }
+
+        $output = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        if ($process.ExitCode -ne 0) {
             throw "gh api $Method $Endpoint failed: $stderr $output"
         }
-        $text = ($output | Out-String).Trim()
+        $text = ([string]$output).Trim()
         if ([string]::IsNullOrWhiteSpace($text)) {
             return $null
         }
@@ -374,18 +413,21 @@ function Invoke-GhApiJson {
         if ($payloadPath) {
             Remove-Item -LiteralPath $payloadPath -Force -ErrorAction SilentlyContinue
         }
-        Remove-Item -LiteralPath $stderrPath -Force -ErrorAction SilentlyContinue
+        if ($null -ne $process) {
+            $process.Dispose()
+        }
     }
 }
 
 function Get-AssetBranchRef {
     param(
         [string]$Repository,
-        [string]$Branch
+        [string]$Branch,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     try {
-        return Invoke-GhApiJson -Method "GET" -Endpoint "repos/$Repository/git/ref/heads/$Branch"
+        return Invoke-GhApiJson -Method "GET" -Endpoint "repos/$Repository/git/ref/heads/$Branch" -Deadline $Deadline
     }
     catch {
         if ($_.Exception.Message -match 'HTTP 404|Reference does not exist') {
@@ -398,25 +440,26 @@ function Get-AssetBranchRef {
 function Initialize-AssetBranch {
     param(
         [string]$Repository,
-        [string]$Branch
+        [string]$Branch,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
-    $existing = Get-AssetBranchRef -Repository $Repository -Branch $Branch
+    $existing = Get-AssetBranchRef -Repository $Repository -Branch $Branch -Deadline $Deadline
     if ($existing) {
         return $existing
     }
 
-    $repositoryInfo = Invoke-GhApiJson -Method "GET" -Endpoint "repos/$Repository"
+    $repositoryInfo = Invoke-GhApiJson -Method "GET" -Endpoint "repos/$Repository" -Deadline $Deadline
     $defaultBranch = [string]$repositoryInfo.default_branch
     if ([string]::IsNullOrWhiteSpace($defaultBranch)) {
         throw "Repository '$Repository' did not expose a default branch."
     }
-    $defaultRef = Invoke-GhApiJson -Method "GET" -Endpoint "repos/$Repository/git/ref/heads/$defaultBranch"
+    $defaultRef = Invoke-GhApiJson -Method "GET" -Endpoint "repos/$Repository/git/ref/heads/$defaultBranch" -Deadline $Deadline
     try {
         Invoke-GhApiJson -Method "POST" -Endpoint "repos/$Repository/git/refs" -Body @{
             ref = "refs/heads/$Branch"
             sha = $defaultRef.object.sha
-        } | Out-Null
+        } -Deadline $Deadline | Out-Null
     }
     catch {
         if ($_.Exception.Message -notmatch 'HTTP 422|Reference already exists') {
@@ -424,7 +467,7 @@ function Initialize-AssetBranch {
         }
     }
 
-    $created = Get-AssetBranchRef -Repository $Repository -Branch $Branch
+    $created = Get-AssetBranchRef -Repository $Repository -Branch $Branch -Deadline $Deadline
     if (-not $created) {
         throw "Asset branch '$Branch' could not be initialized."
     }
@@ -437,10 +480,11 @@ function Publish-GitAssets {
         [string]$Branch,
         [object[]]$Assets,
         [string]$CommitMessage,
+        [datetime]$Deadline = [datetime]::MaxValue,
         [int]$MaxAttempts = 5
     )
 
-    Initialize-AssetBranch -Repository $Repository -Branch $Branch | Out-Null
+    Initialize-AssetBranch -Repository $Repository -Branch $Branch -Deadline $Deadline | Out-Null
 
     $blobByHash = @{}
     $entries = New-Object System.Collections.Generic.List[object]
@@ -451,7 +495,7 @@ function Publish-GitAssets {
             $blob = Invoke-GhApiJson -Method "POST" -Endpoint "repos/$Repository/git/blobs" -Body @{
                 content = [Convert]::ToBase64String($bytes)
                 encoding = "base64"
-            }
+            } -Deadline $Deadline
             $blobByHash[$hash] = $blob.sha
         }
         $entries.Add([ordered]@{
@@ -463,33 +507,36 @@ function Publish-GitAssets {
     }
 
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
-        $branchRef = Get-AssetBranchRef -Repository $Repository -Branch $Branch
+        $branchRef = Get-AssetBranchRef -Repository $Repository -Branch $Branch -Deadline $Deadline
         if (-not $branchRef) {
-            Initialize-AssetBranch -Repository $Repository -Branch $Branch | Out-Null
-            $branchRef = Get-AssetBranchRef -Repository $Repository -Branch $Branch
+            Initialize-AssetBranch -Repository $Repository -Branch $Branch -Deadline $Deadline | Out-Null
+            $branchRef = Get-AssetBranchRef -Repository $Repository -Branch $Branch -Deadline $Deadline
         }
         $parentSha = [string]$branchRef.object.sha
-        $parentCommit = Invoke-GhApiJson -Method "GET" -Endpoint "repos/$Repository/git/commits/$parentSha"
+        $parentCommit = Invoke-GhApiJson -Method "GET" -Endpoint "repos/$Repository/git/commits/$parentSha" -Deadline $Deadline
         $tree = Invoke-GhApiJson -Method "POST" -Endpoint "repos/$Repository/git/trees" -Body @{
             base_tree = $parentCommit.tree.sha
             tree = $entries.ToArray()
-        }
+        } -Deadline $Deadline
         $commit = Invoke-GhApiJson -Method "POST" -Endpoint "repos/$Repository/git/commits" -Body @{
             message = $CommitMessage
             tree = $tree.sha
             parents = @($parentSha)
-        }
+        } -Deadline $Deadline
 
         try {
             Invoke-GhApiJson -Method "PATCH" -Endpoint "repos/$Repository/git/refs/heads/$Branch" -Body @{
                 sha = $commit.sha
                 force = $false
-            } | Out-Null
+            } -Deadline $Deadline | Out-Null
             return [string]$commit.sha
         }
         catch {
             if ($attempt -ge $MaxAttempts -or $_.Exception.Message -notmatch 'HTTP 409|HTTP 422|not a fast forward') {
                 throw
+            }
+            if ($Deadline -ne [datetime]::MaxValue -and (Get-Date).AddSeconds($attempt) -ge $Deadline) {
+                throw "Publish budget exhausted before retrying the asset branch update."
             }
             Start-Sleep -Seconds $attempt
         }
@@ -547,6 +594,15 @@ function Save-Context {
     $Context | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $Path -Encoding UTF8
 }
 
+function Remove-VisualDownloadDirectory {
+    param([string]$Path)
+
+    if (-not [string]::IsNullOrWhiteSpace($Path) -and (Test-Path -LiteralPath $Path)) {
+        Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+try {
 $context = Get-Content -LiteralPath $ContextJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
 if ([string]$context.repository -ne $Repository) {
     throw "Context repository '$($context.repository)' did not match trusted repository '$Repository'."
@@ -592,12 +648,10 @@ $preparationFailureCount = 0
 $totalBytes = 0L
 $index = 0
 
-# Aggregate wall-clock budget for the whole publish step. Each selected comparison can fetch an
-# actual image, a diff image, and several baseline candidates, and every download allows up to
-# Invoke-DownloadFile's MaxAttempts x 2-minute timeout. A handful of degraded AzDO/raw hosts could
-# otherwise hold this pre-activation step for hours despite continue-on-error, so once the budget is
-# spent we stop starting new comparisons and record the untouched remainder as omitted.
-$publishBudgetSeconds = 900
+# Aggregate wall-clock budget shared by preparation and Git publication. Reserve four minutes below
+# the workflow's 16-minute hard stop so a budget failure can still update context.json and let the
+# ordinary-report fallback run. Every download and gh API call observes the same deadline.
+$publishBudgetSeconds = 720
 $parsedPublishBudget = 0
 if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_PUBLISH_BUDGET_SECONDS) -and
     [int]::TryParse($env:REVIEW_TESTS_PUBLISH_BUDGET_SECONDS, [ref]$parsedPublishBudget) -and
@@ -804,7 +858,8 @@ try {
         -Repository $Repository `
         -Branch $AssetBranch `
         -Assets $assets.ToArray() `
-        -CommitMessage "[skip ci] Store /review tests visuals for PR #$PrNumber at $headLabel"
+        -CommitMessage "[skip ci] Store /review tests visuals for PR #$PrNumber at $headLabel" `
+        -Deadline $publishDeadline
 
     $published = New-Object System.Collections.Generic.List[object]
     foreach ($comparison in $prepared) {
@@ -856,4 +911,8 @@ catch {
     }) -Force
     Save-Context -Context $context -Path $ContextJsonPath
     Write-Warning $message
+}
+}
+finally {
+    Remove-VisualDownloadDirectory -Path $DownloadDirectory
 }

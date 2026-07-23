@@ -157,6 +157,10 @@ function Invoke-SealedVisualMerge {
                 -CommentBodyPath $CommentBodyPath 2>&1)
         $mergeExitCode = $LASTEXITCODE
     }
+    catch {
+        $mergeExitCode = 1
+        $mergeOutput = @("Visual comparison merge setup failed: $($_.Exception.Message)")
+    }
     finally {
         foreach ($tokenName in $tokenNames) {
             [Environment]::SetEnvironmentVariable($tokenName, $savedTokens[$tokenName], "Process")
@@ -223,20 +227,33 @@ function Get-EmbeddedTestFailureReport {
     $prefix = $Content.Substring(0, $startIndex)
     $report = $Content.Substring($startIndex)
     $insideCodeFence = ([regex]::Matches($prefix, '(?m)^[ \t]*```').Count % 2) -eq 1
+
+    $lastDetails = $report.LastIndexOf("</details>", [StringComparison]::OrdinalIgnoreCase)
+    if ($lastDetails -lt 0) {
+        return $null
+    }
+
+    $reportEnd = $lastDetails + "</details>".Length
+    $completeReport = $report.Substring(0, $reportEnd)
+    $openDetailsCount = [regex]::Matches($completeReport, '<details(?:\s[^>]*)?>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
+    $closeDetailsCount = [regex]::Matches($completeReport, '</details>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
+    if ($openDetailsCount -eq 0 -or $openDetailsCount -ne $closeDetailsCount) {
+        return $null
+    }
+
+    $innerFenceCount = [regex]::Matches($completeReport, '(?m)^[ \t]*```[^\r\n]*$').Count
+    if (($innerFenceCount % 2) -ne 0) {
+        return $null
+    }
+
     if ($insideCodeFence) {
-        $closingFenceMatches = @([regex]::Matches($report, '(?m)^[ \t]*```[^`]*[ \t]*$'))
-        if ($closingFenceMatches.Count -gt 0) {
-            $closingFence = $closingFenceMatches[$closingFenceMatches.Count - 1].Index
-            $report = $report.Substring(0, $closingFence)
+        $afterReport = $report.Substring($reportEnd)
+        if (-not [regex]::IsMatch($afterReport, '(?m)^[ \t]*```[ \t]*$')) {
+            return $null
         }
     }
 
-    $lastDetails = $report.LastIndexOf("</details>", [StringComparison]::OrdinalIgnoreCase)
-    if ($lastDetails -ge 0) {
-        $report = $report.Substring(0, $lastDetails + "</details>".Length)
-    }
-
-    return $report.Trim()
+    return $completeReport.Trim()
 }
 
 function Escape-Html {
