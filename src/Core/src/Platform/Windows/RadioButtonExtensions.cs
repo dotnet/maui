@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else if (background is SolidPaint solidPaint)
 			{
+				platformRadioButton.ClearValue(RadioButton.BackgroundProperty);
 				UpdateColors(platformRadioButton.Resources, _backgroundColorKeys, solidPaint.ToPlatform());
 			}
 

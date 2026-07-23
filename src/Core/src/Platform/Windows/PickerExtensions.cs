@@ -28,10 +28,12 @@ namespace Microsoft.Maui.Platform
 			else if (brush is null)
 			{
 				nativeComboBox.Resources.RemoveKeys(BackgroundColorResourceKeys);
+				nativeComboBox.ClearValue(ComboBox.BackgroundProperty);
 			}
 			else
 			{
 				nativeComboBox.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
+				nativeComboBox.ClearValue(ComboBox.BackgroundProperty);
 			}
 
 			nativeComboBox.RefreshThemeResources();

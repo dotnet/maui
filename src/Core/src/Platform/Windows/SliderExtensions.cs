@@ -156,6 +156,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				platformSlider.ClearValue(Slider.BackgroundProperty);
 				UpdateColor(platformSlider, BackgroundColorResourceKeys, background?.ToPlatform());
 			}
 		}

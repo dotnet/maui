@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Platform
 					break;
 
 				case ImageSourcePaint image:
+					uiSearchBar.BarTintColor = UISearchBar.Appearance.BarTintColor;
 					uiSearchBar.UpdateBackgroundImageSource(image.ImageSource, searchBar.Handler);
 					break;
 
