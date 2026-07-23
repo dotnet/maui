@@ -15,7 +15,7 @@ namespace Samples.ViewModel
 		//
 		// Dev-tunnel first: external providers (Microsoft/Google/Facebook/Apple) only redirect back to
 		// a real, stable, public HTTPS domain — not localhost — so point this at your dev tunnel URL.
-		// From src/Essentials/samples run `pwsh ./setup-devtunnel.ps1` to provision one (see
+		// From src/Essentials/samples run `pwsh ./Configure.ps1` to provision one (see
 		// Samples.WebServer/README.md), then replace the host below with the printed https://…devtunnels.ms
 		// URL and register that domain's redirect URIs with each provider. It's the SAME URL the
 		// Passkeys page uses.
