@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using AndroidX.Core.Content;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 using MSwitch = Google.Android.Material.MaterialSwitch.MaterialSwitch;
 
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Platform
 					defaultTrackTintList = currentTint;
 				}
 			}
-			
+
 			var trackColor = view.TrackColor;
 
 			if (trackColor is not null)
@@ -101,14 +102,14 @@ namespace Microsoft.Maui.Platform
 				// Once a custom tint has been applied, SwitchCompat keeps applying a tint list
 				// to the thumb; simply clearing it (setting null) strips the native state-based
 				// colors and leaves a white/transparent thumb. Rebuild the platform default thumb
-				// tint (skyblue when on, light grey when off, dimmed when disabled) so the native
-				// appearance and shadow are restored.
+				// tint (skyblue when on, light grey when off, opaque grey when disabled) so the
+				// native appearance is restored.
 				aSwitch.ThumbTintList = aSwitch.GetDefaultThumbColorStateList();
 			}
 		}
 
-		// Recreates AppCompat's default switch thumb tint (@color/abc_tint_switch_thumb):
-		//   disabled -> colorSwitchThumbNormal * disabledAlpha
+		// Recreates the platform default switch thumb tint per state:
+		//   disabled -> switch_thumb_disabled_material_(light|dark) (opaque grey)
 		//   checked  -> colorControlActivated
 		//   normal   -> colorSwitchThumbNormal
 		static ColorStateList? GetDefaultThumbColorStateList(this ASwitch aSwitch)
@@ -121,7 +122,16 @@ namespace Microsoft.Maui.Platform
 
 			var normalColor = context.GetThemeAttrColor(Resource.Attribute.colorSwitchThumbNormal);
 			var activatedColor = context.GetThemeAttrColor(Resource.Attribute.colorControlActivated);
-			var disabledColor = context.GetDisabledThemeAttrColor(Resource.Attribute.colorSwitchThumbNormal);
+
+			// The native disabled thumb is an opaque grey baked into
+			// @color/switch_thumb_disabled_material_(light|dark). It is NOT
+			// colorSwitchThumbNormal * disabledAlpha, which would produce a nearly
+			// transparent thumb on a light background.
+			var isDarkTheme = (context.Resources?.Configuration?.UiMode & UiMode.NightMask) == UiMode.NightYes;
+			var disabledColorRes = isDarkTheme
+				? Resource.Color.switch_thumb_disabled_material_dark
+				: Resource.Color.switch_thumb_disabled_material_light;
+			var disabledColor = ContextCompat.GetColor(context, disabledColorRes);
 
 			return ColorStateListExtensions.CreateSwitch(disabledColor, activatedColor, normalColor);
 		}
