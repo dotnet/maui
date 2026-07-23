@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	public class UIContainerView : UIView
 	{
 		readonly View _view;
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Renderer is owned by the container view and disconnected and cleared in Disconnect.")]
+		readonly bool _ownsHandler;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Captured handler reference is cleared in Disconnect; owning flyout containers also disconnect it.")]
 		IPlatformViewHandler _renderer;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Platform view is owned as a UIKit subview and detached and cleared in Disconnect.")]
 		UIView _platformView;
@@ -22,8 +23,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal event EventHandler HeaderSizeChanged;
 
 		public UIContainerView(View view)
+			: this(view, ownsHandler: false)
+		{
+		}
+
+		internal UIContainerView(View view, bool ownsHandler)
 		{
 			_view = view;
+			_ownsHandler = ownsHandler;
 
 			UpdatePlatformView();
 			ClipsToBounds = true;
@@ -149,7 +156,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (platformView?.Superview == this)
 				platformView.RemoveFromSuperview();
 
-			renderer?.DisconnectHandler();
+			if (_ownsHandler)
+				renderer?.DisconnectHandler();
 		}
 
 		protected override void Dispose(bool disposing)

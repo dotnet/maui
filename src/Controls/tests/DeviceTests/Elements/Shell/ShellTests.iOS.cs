@@ -687,6 +687,30 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Disconnecting Reparented UI Container Preserves Shared Handler")]
+		public Task DisconnectingReparentedUIContainerPreservesSharedHandler()
+		{
+			SetupBuilder();
+
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var titleView = new Label { Text = "Title View" };
+				var handler = CreateHandler<LabelHandler>(titleView);
+				using var firstContainer = new UIContainerView(titleView);
+				using var secondContainer = new UIContainerView(titleView);
+				var platformView = handler.PlatformView;
+
+				Assert.Same(secondContainer, platformView.Superview);
+
+				firstContainer.Disconnect();
+
+				Assert.Same(handler, titleView.Handler);
+				Assert.Same(secondContainer, platformView.Superview);
+
+				((IElementHandler)handler).DisconnectHandler();
+			});
+		}
+
 		[Fact(DisplayName = "Disposed Shell Table Source Clears Scrolled Subscribers")]
 		public async Task DisposedShellTableSourceClearsScrolledSubscribers()
 		{

@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_footer is not null)
 			{
-				_footerView = new UIContainerView(_footer);
+				_footerView = new UIContainerView(_footer, ownsHandler: true);
 				_uIViews[FooterIndex] = _footerView;
 				AddViewInCorrectOrder(_footerView, previousIndex);
 
