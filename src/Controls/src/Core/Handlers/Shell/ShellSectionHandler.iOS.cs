@@ -32,17 +32,16 @@ namespace Microsoft.Maui.Controls.Handlers
         internal const int HeaderHeight = 35;
 
         IShellContext? _shellContext;
-        UINavigationController _navigationController = null!;
-        IShellNavBarAppearanceTracker? _appearanceTracker;
+        internal UINavigationController _navigationController = null!;
+        internal IShellNavBarAppearanceTracker? _appearanceTracker;
 
         // Navigation completion tracking (previously in NavigationControllerManager)
         readonly Dictionary<UIViewController, TaskCompletionSource<bool>> _completionTasks = new();
         TaskCompletionSource<bool>? _popCompletionTask;
         UIViewController[]? _pendingViewControllers;
-        bool _firstLayoutCompleted;
 
         // Navigation stack tracking
-        readonly Dictionary<Element, IShellPageRendererTracker> _trackers = new();
+        internal readonly Dictionary<Element, IShellPageRendererTracker> _trackers = new();
 
         // Root content management (from ShellSectionRootRenderer)
         UIView? _containerArea;
@@ -738,16 +737,12 @@ namespace Microsoft.Maui.Controls.Handlers
                     if (command is not null)
                     {
                         if (command.CanExecute(commandParameter))
-                        {
                             command.Execute(commandParameter);
-                        }
                         return false;
                     }
 
                     if (tracker.Value.Page?.SendBackButtonPressed() == true)
-                    {
                         return false;
-                    }
 
                     break;
                 }
@@ -762,7 +757,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 await _shellContext.Shell.GoToAsync("..", true);
 
-                // Navigation was cancelled — restore nav bar items
+                // Navigation was cancelled — restore nav bar alpha
                 if (_navigationController.NavigationBar.Items!.Length == navItemsCount)
                 {
                     for (int i = 0; i < _navigationController.NavigationBar.Subviews.Length; i++)
@@ -864,7 +859,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         #region Visual Updates
 
-        void UpdateTabBarItem()
+        internal void UpdateTabBarItem()
         {
             _navigationController.Title = VirtualView.Title;
 
@@ -885,6 +880,22 @@ namespace Microsoft.Maui.Controls.Handlers
                 _navigationController.View?.UpdateFlowDirection(_shellContext.Shell);
                 _navigationController.NavigationBar.UpdateFlowDirection(_shellContext.Shell);
             }
+        }
+
+        // Called by the Controls-layer ShellSection.iOS.cs MapFlowDirection mapper.
+        // Extends UpdateFlowDirection() to also update the tab bar container,
+        // and applies unconditionally (not only for the current section).
+        internal void UpdateFlowDirectionForControls()
+        {
+            if (_shellContext?.Shell is null)
+                return;
+
+            var shell = _shellContext.Shell;
+            _navigationController.View?.UpdateFlowDirection(shell);
+            _navigationController.NavigationBar.UpdateFlowDirection(shell);
+
+            if (_navigationController.TabBarController?.TabBar is { } tabBar)
+                tabBar.UpdateFlowDirection(shell);
         }
 
         void UpdateNavigationBarHidden()
