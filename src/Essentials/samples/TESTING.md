@@ -45,15 +45,47 @@ Passkeys and Web Authenticator pages.
 
 1. `pwsh ./setup-devtunnel.ps1` → note the URL, then host + run (above).
 2. **Native trust** (real devices only): the RP must accept each app's native origin and serve its
-   domain-association doc.
-   - Android: put your signing cert SHA-256 in `Passkeys:Android:Sha256CertFingerprints` and add the
-     `android:apk-key-hash:<hash>` origin to `Passkeys:AllowedOrigins`. Served at
-     `/.well-known/assetlinks.json`.
+   domain-association doc. `setup-devtunnel.ps1` now writes the **Android** values for you (package,
+   debug-key SHA-256, and `android:apk-key-hash:` origin). For the others:
    - Apple: add `<TeamID>.<BundleID>` to `Passkeys:Apple:AppIds` and the app's associated-domains
      entitlement `webcredentials:<host>`. Served at `/.well-known/apple-app-site-association`.
    - Windows: nothing extra (Win11 platform trusts the https origin).
 3. In the app's **Passkeys** page: set the server URL, enter a username, tap **Register a passkey**,
    then **Sign in with a passkey**.
+
+### Android emulator — concrete walkthrough
+
+No paid account and **no app manifest changes** are needed (Digital Asset Links live on the server;
+intent-filters are only for App Links, a different feature). You do need the right emulator.
+
+**Emulator prerequisites** (one-time):
+- An **API 34+** AVD using a **Google Play** system image (not AOSP) so Google Password Manager is
+  present.
+- Sign the emulator into a **Google account** (Settings → Passwords, passkeys & accounts).
+- Set a **secure screen lock** (PIN/pattern) — passkeys require device authentication.
+
+**Steps:**
+1. `cd src/Essentials/samples && pwsh ./setup-devtunnel.ps1`
+   This provisions the tunnel and writes into the server's user-secrets: the RP domain + web origin,
+   **and** the Android package (`com.microsoft.maui.essentials`), your debug keystore SHA-256, and the
+   `android:apk-key-hash:` origin. (It reads `~/.android/debug.keystore`; build the Android app once
+   first if that file doesn't exist yet.)
+2. Host the tunnel and run the server (two terminals):
+   ```bash
+   devtunnel host maui-essentials
+   dotnet run --project Samples.WebServer --launch-profile http
+   ```
+   Verify Google can see the asset links: open `https://<tunnel-host>/.well-known/assetlinks.json`
+   in a browser — it should list your package + fingerprint.
+3. Run the sample on the emulator:
+   ```bash
+   dotnet build src/Essentials/samples/Samples/Essentials.Sample.csproj -t:Run -f net11.0-android
+   ```
+4. In the app open **Passkeys**, set the server URL to your `https://<tunnel-host>`, enter a username,
+   tap **Register a passkey** (approve the device prompt), then **Sign in with a passkey**.
+
+If registration fails with a "no create options"/provider error, re-check the three emulator
+prerequisites above — that's the usual cause.
 
 ## Web Authenticator — end to end
 
