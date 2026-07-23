@@ -124,6 +124,7 @@ on:
       # The whole downstream already tolerates a missing context.json (the artifact
       # download is continue-on-error, the seal/merge steps exit 0 when it's absent).
       continue-on-error: true
+      timeout-minutes: 20
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
@@ -150,6 +151,7 @@ on:
         steps.check_command_position.outputs.command_position_ok == 'true' &&
         (github.event_name != 'workflow_dispatch' || inputs.suppress_output != true)
       continue-on-error: true
+      timeout-minutes: 16
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}

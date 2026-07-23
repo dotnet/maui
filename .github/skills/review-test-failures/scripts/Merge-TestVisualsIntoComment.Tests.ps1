@@ -47,6 +47,7 @@ BeforeAll {
             [string]$Platform = 'ios',
             [string]$SnapshotFileName,
             [string]$AutomatedTestName,
+            [string]$BaselineRepositoryPath,
             [switch]$ActualOnly
         )
 
@@ -58,6 +59,7 @@ BeforeAll {
             automatedTestName = $AutomatedTestName
             description = '1.25% difference'
             buildId = 456
+            baselineRepositoryPath = $BaselineRepositoryPath
             baselineStatus = 'resolved from the tested runtime environment'
             baselineUrl = $(if ($ActualOnly) { $null } else { "$prefix-baseline.png" })
             actualUrl = "$prefix-actual.png"
@@ -585,7 +587,8 @@ Describe 'Inline visual relationship classification' {
         $comparison = New-VisualTestComparison `
             -TestName 'ChangedSnapshot' `
             -Platform 'windows' `
-            -SnapshotFileName 'ChangedSnapshot.png'
+            -SnapshotFileName 'ChangedSnapshot.png' `
+            -BaselineRepositoryPath 'src/Controls/tests/TestCases.WinUI.Tests/snapshots/windows/ChangedSnapshot.png'
         $context = New-VisualTestContext `
             -Comparisons @($comparison) `
             -Failures @(
@@ -619,6 +622,28 @@ Describe 'Inline visual relationship classification' {
             ) `
             -ChangedFiles @(
                 'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26/CrossPlatformSnapshot.png'
+            )
+
+        (Get-VisualRelationship -Comparison $comparison -Context $context).label |
+            Should -Be 'Likely unrelated'
+    }
+
+    It 'does not use a same-named snapshot changed for another environment' {
+        $comparison = New-VisualTestComparison `
+            -TestName 'CrossEnvironmentSnapshot' `
+            -Platform 'ios' `
+            -SnapshotFileName 'CrossEnvironmentSnapshot.png' `
+            -BaselineRepositoryPath 'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios/CrossEnvironmentSnapshot.png'
+        $context = New-VisualTestContext `
+            -Comparisons @($comparison) `
+            -Failures @(
+                (New-VisualTestFailure `
+                        -TestName 'CrossEnvironmentSnapshot' `
+                        -Platform 'ios' `
+                        -DeterministicAttribution 'pre-existing-on-base')
+            ) `
+            -ChangedFiles @(
+                'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26/CrossEnvironmentSnapshot.png'
             )
 
         (Get-VisualRelationship -Comparison $comparison -Context $context).label |

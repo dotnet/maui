@@ -201,18 +201,33 @@ function Test-VisualComparisonChanged {
         return $false
     }
 
-    $snapshotFileName = [System.IO.Path]::GetFileName([string]$Comparison.snapshotFileName)
-    if (-not [string]::IsNullOrWhiteSpace($snapshotFileName)) {
+    $baselineRepositoryPath = [string]$Comparison.baselineRepositoryPath
+    if (-not [string]::IsNullOrWhiteSpace($baselineRepositoryPath)) {
+        $normalizedBaselinePath = ($baselineRepositoryPath -replace '\\', '/').TrimStart('/')
         foreach ($changedFile in $changedFiles) {
-            $matchingFileName = [string]::Equals(
-                [System.IO.Path]::GetFileName([string]$changedFile),
-                $snapshotFileName,
-                [StringComparison]::OrdinalIgnoreCase)
-            $matchingPlatform = Test-VisualSnapshotPathMatchesPlatform `
-                -Path ([string]$changedFile) `
-                -Platform ([string]$Comparison.platform)
-            if ($matchingFileName -and $matchingPlatform) {
+            $normalizedChangedFile = ([string]$changedFile -replace '\\', '/').TrimStart('/')
+            if ([string]::Equals(
+                    $normalizedChangedFile,
+                    $normalizedBaselinePath,
+                    [StringComparison]::OrdinalIgnoreCase)) {
                 return $true
+            }
+        }
+    }
+    else {
+        $snapshotFileName = [System.IO.Path]::GetFileName([string]$Comparison.snapshotFileName)
+        if (-not [string]::IsNullOrWhiteSpace($snapshotFileName)) {
+            foreach ($changedFile in $changedFiles) {
+                $matchingFileName = [string]::Equals(
+                    [System.IO.Path]::GetFileName([string]$changedFile),
+                    $snapshotFileName,
+                    [StringComparison]::OrdinalIgnoreCase)
+                $matchingPlatform = Test-VisualSnapshotPathMatchesPlatform `
+                    -Path ([string]$changedFile) `
+                    -Platform ([string]$Comparison.platform)
+                if ($matchingFileName -and $matchingPlatform) {
+                    return $true
+                }
             }
         }
     }
