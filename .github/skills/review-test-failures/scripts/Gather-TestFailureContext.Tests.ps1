@@ -38,6 +38,8 @@ BeforeAll {
     foreach ($functionName in @(
             'ConvertTo-Array',
             'Get-ObjectValue',
+            'Get-HeaderValue',
+            'Get-AzDoFailedTestResultsByBuild',
             'Get-VisualSnapshotInfo',
             'Select-VisualAttachments',
             'Get-VisualEnvironmentHintFromLog',
@@ -173,6 +175,10 @@ Describe 'Get-VisualEvidenceBudgetDecision (elapsed-only visual budget accountin
 }
 
 Describe 'Get-VisualRequestTimeoutSeconds (per-request timeout capped by remaining visual budget)' {
+    It 'returns the default for an unbudgeted deadline sentinel' {
+        Get-VisualRequestTimeoutSeconds -Deadline ([datetime]::MaxValue) | Should -Be 100
+    }
+
     It 'returns the full default when the deadline is far away' {
         $t = Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(500)
         $t | Should -Be 100
@@ -201,6 +207,51 @@ Describe 'Get-VisualRequestTimeoutSeconds (per-request timeout capped by remaini
     It 'honors custom default and minimum bounds' {
         (Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(999) -DefaultTimeoutSec 60) | Should -Be 60
         (Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(-1) -MinimumTimeoutSec 5) | Should -Be 5
+    }
+}
+
+Describe 'Get-AzDoFailedTestResultsByBuild request budgeting' {
+    BeforeEach {
+        Mock Invoke-WebRequest {
+            return [pscustomobject]@{
+                Content = '{"value":[]}'
+                Headers = @{}
+            }
+        }
+    }
+
+    It 'caps the first page request by the remaining visual budget' {
+        Get-AzDoFailedTestResultsByBuild `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BuildId 123 `
+            -Deadline ((Get-Date).AddSeconds(3)) | Out-Null
+
+        Should -Invoke -CommandName Invoke-WebRequest -Times 1 -Exactly -ParameterFilter {
+            $TimeoutSec -gt 0 -and $TimeoutSec -le 3
+        }
+    }
+
+    It 'keeps the default timeout for the unbudgeted deadline sentinel' {
+        Get-AzDoFailedTestResultsByBuild `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BuildId 123 | Out-Null
+
+        Should -Invoke -CommandName Invoke-WebRequest -Times 1 -Exactly -ParameterFilter {
+            $TimeoutSec -eq 100
+        }
+    }
+
+    It 'does not issue a request after the visual budget is exhausted' {
+        $result = Get-AzDoFailedTestResultsByBuild `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BuildId 123 `
+            -Deadline ((Get-Date).AddSeconds(-1))
+
+        Should -Invoke -CommandName Invoke-WebRequest -Times 0 -Exactly
+        $result.truncated | Should -BeTrue
     }
 }
 

@@ -268,6 +268,11 @@ function Get-AzDoFailedTestResultsByBuild {
     $truncated = $false
     $page = 0
     do {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $truncated = $true
+            break
+        }
+
         $page++
         # $top is bounded well above the 100-result cap the caller inspects (and above any
         # realistic per-build failure count) so paging + counting behave exactly as before
@@ -277,7 +282,8 @@ function Get-AzDoFailedTestResultsByBuild {
             $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))"
         }
 
-        $response = Invoke-WebRequest -Uri $url -Headers @{ Accept = "application/json" } -UseBasicParsing -TimeoutSec 100 -ErrorAction Stop
+        $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $Deadline
+        $response = Invoke-WebRequest -Uri $url -Headers @{ Accept = "application/json" } -UseBasicParsing -TimeoutSec $requestTimeoutSec -ErrorAction Stop
         $body = if ([string]::IsNullOrWhiteSpace([string]$response.Content)) {
             $null
         }
@@ -2333,6 +2339,10 @@ function Get-VisualRequestTimeoutSeconds {
         [int]$DefaultTimeoutSec = 100,
         [int]$MinimumTimeoutSec = 1
     )
+
+    if ($Deadline -eq [datetime]::MaxValue) {
+        return $DefaultTimeoutSec
+    }
 
     $remaining = [int][Math]::Floor(($Deadline - (Get-Date)).TotalSeconds)
     if ($remaining -lt $MinimumTimeoutSec) {
