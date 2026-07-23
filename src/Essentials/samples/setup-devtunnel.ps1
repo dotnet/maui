@@ -41,12 +41,35 @@
 param(
     [string]$TunnelId = 'maui-essentials',
     [int]$Port = 5177,
+    [string]$AndroidPackage = 'com.microsoft.maui.essentials',
+    [string]$DebugKeystore = (Join-Path $HOME '.android/debug.keystore'),
     [switch]$StartHost
 )
 
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $project = Join-Path $here 'Samples.WebServer/Essentials.Samples.WebServer.csproj'
+
+# Computes the Android debug-signing-key fingerprints needed for passkeys: the colon-hex SHA-256
+# (for assetlinks.json) and the "android:apk-key-hash:<base64url>" origin (for ValidateOrigin).
+# Returns $null if keytool or the keystore is unavailable (e.g. before the first Android build).
+function Get-AndroidKeyInfo($keystore) {
+    if (-not (Get-Command 'keytool' -ErrorAction SilentlyContinue)) {
+        Write-Warning "keytool not found (install a JDK). Skipping Android fingerprint setup."
+        return $null
+    }
+    if (-not (Test-Path $keystore)) {
+        Write-Warning "Debug keystore not found at '$keystore' (build the Android app once to create it). Skipping Android fingerprint setup."
+        return $null
+    }
+    $out = & keytool -list -v -keystore $keystore -alias androiddebugkey -storepass android -keypass android 2>$null
+    $line = $out | Where-Object { $_ -match 'SHA256:' } | Select-Object -First 1
+    if (-not $line) { Write-Warning "Could not read SHA-256 from the debug keystore."; return $null }
+    $hex = ($line -replace '.*SHA256:\s*', '').Trim()
+    $bytes = [byte[]]($hex.Split(':') | ForEach-Object { [Convert]::ToByte($_, 16) })
+    $b64url = [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+    return [pscustomobject]@{ Hex = $hex; Origin = "android:apk-key-hash:$b64url" }
+}
 
 function Require-Command($name, $hint) {
     if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
@@ -98,7 +121,18 @@ else {
     dotnet user-secrets --project $project set 'Passkeys:ServerDomain' $domain | Out-Null
     dotnet user-secrets --project $project set 'Passkeys:AllowedOrigins:0' $uri | Out-Null
     Write-Host "    Done. The passkeys RP ID is '$domain'." -ForegroundColor Green
-    Write-Host "    (Add Android apk-key-hash origins + Apple app-ids, and OAuth client ids/secrets, later — see README.md.)" -ForegroundColor DarkGray
+
+    # Android: compute + write the debug-key fingerprint (assetlinks) and apk-key-hash origin.
+    $android = Get-AndroidKeyInfo $DebugKeystore
+    if ($android) {
+        dotnet user-secrets --project $project set 'Passkeys:Android:PackageName' $AndroidPackage | Out-Null
+        dotnet user-secrets --project $project set 'Passkeys:Android:Sha256CertFingerprints:0' $android.Hex | Out-Null
+        dotnet user-secrets --project $project set 'Passkeys:AllowedOrigins:1' $android.Origin | Out-Null
+        Write-Host "    Android configured: package '$AndroidPackage'" -ForegroundColor Green
+        Write-Host "      SHA-256 : $($android.Hex)" -ForegroundColor DarkGray
+        Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
+    }
+    Write-Host "    (Apple app-ids and OAuth client ids/secrets are added separately — see README.md.)" -ForegroundColor DarkGray
 
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Yellow
