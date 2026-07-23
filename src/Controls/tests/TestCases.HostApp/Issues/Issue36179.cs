@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 36179, "Entry.Completed accidentally fired on Enter key press in IME candidate window", PlatformAffected.Windows)]
+[Issue(IssueTracker.Github, 36179, "Entry.Completed accidentally fired on Enter key press in IME candidate window", PlatformAffected.UWP)]
 public class Issue36179 : TestContentPage
 {
 	protected override void Init()
