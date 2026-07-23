@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Platform
 		// Thread safety (no shared mutable state)
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultTrackTintCache = new();
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultThumbTintCache = new();
-		static readonly ConditionalWeakTable<ASwitch, ColorStateList> _defaultCompatThumbTintCache = new();
 
 		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view)
 		{
@@ -89,20 +88,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view)
 		{
-			// Cache the original theme tint before first modification
-			// so it can be restored when ThumbColor is cleared, mirroring the
-			// MaterialSwitch (Material3) cache-and-restore pattern above instead
-			// of dropping the tint entirely.
-			if (!_defaultCompatThumbTintCache.TryGetValue(aSwitch, out var defaultThumbTintList))
-			{
-				var currentTint = aSwitch.ThumbTintList;
-				if (currentTint is not null)
-				{
-					_defaultCompatThumbTintCache.Add(aSwitch, currentTint);
-					defaultThumbTintList = currentTint;
-				}
-			}
-
 			var thumbColor = view.ThumbColor;
 
 			if (thumbColor is not null)
@@ -113,8 +98,32 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				aSwitch.ThumbTintList = defaultThumbTintList;
+				// Once a custom tint has been applied, SwitchCompat keeps applying a tint list
+				// to the thumb; simply clearing it (setting null) strips the native state-based
+				// colors and leaves a white/transparent thumb. Rebuild the platform default thumb
+				// tint (skyblue when on, light grey when off, dimmed when disabled) so the native
+				// appearance and shadow are restored.
+				aSwitch.ThumbTintList = aSwitch.GetDefaultThumbColorStateList();
 			}
+		}
+
+		// Recreates AppCompat's default switch thumb tint (@color/abc_tint_switch_thumb):
+		//   disabled -> colorSwitchThumbNormal * disabledAlpha
+		//   checked  -> colorControlActivated
+		//   normal   -> colorSwitchThumbNormal
+		static ColorStateList? GetDefaultThumbColorStateList(this ASwitch aSwitch)
+		{
+			var context = aSwitch.Context;
+			if (context is null)
+			{
+				return null;
+			}
+
+			var normalColor = context.GetThemeAttrColor(Resource.Attribute.colorSwitchThumbNormal);
+			var activatedColor = context.GetThemeAttrColor(Resource.Attribute.colorControlActivated);
+			var disabledColor = context.GetDisabledThemeAttrColor(Resource.Attribute.colorSwitchThumbNormal);
+
+			return ColorStateListExtensions.CreateSwitch(disabledColor, activatedColor, normalColor);
 		}
 
 		public static Drawable? GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>
