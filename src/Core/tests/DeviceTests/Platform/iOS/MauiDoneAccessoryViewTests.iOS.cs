@@ -8,12 +8,65 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[CollectionDefinition(MauiDoneAccessoryViewAppContextSwitchCollection.Name, DisableParallelization = true)]
+	public class MauiDoneAccessoryViewAppContextSwitchCollection
+	{
+		public const string Name = "MauiDoneAccessoryView AppContext switch";
+	}
+
 	[Category(TestCategory.Entry)]
+	[Collection(MauiDoneAccessoryViewAppContextSwitchCollection.Name)]
 	public class MauiDoneAccessoryViewTests : TestBase
 	{
-		// iOS 26+ shows the floating, pass-through Liquid Glass close button; earlier versions keep the
-		// original full-width touch-blocking Done toolbar. The expected behavior differs by path.
-		static bool UsesGlassButton => OperatingSystem.IsIOSVersionAtLeast(26);
+		// iOS 26+ shows the floating, pass-through Liquid Glass close button by default; earlier versions
+		// and apps using the compatibility switch keep the original full-width touch-blocking Done toolbar.
+		static bool UsesGlassButton =>
+			OperatingSystem.IsIOSVersionAtLeast(26) &&
+			!(AppContext.TryGetSwitch(MauiDoneAccessoryView.UseLegacyDoneAccessorySwitch, out var useLegacyDoneAccessory) && useLegacyDoneAccessory);
+
+		[Fact]
+		public async Task LegacyDoneAccessorySwitchSelectsExpectedImplementation()
+		{
+			var wasConfigured = AppContext.TryGetSwitch(
+				MauiDoneAccessoryView.UseLegacyDoneAccessorySwitch,
+				out var previousValue);
+
+			try
+			{
+				await InvokeOnMainThreadAsync(() =>
+				{
+					if (!wasConfigured)
+					{
+						using var defaultAccessoryView = CreateLaidOutAccessoryView();
+						AssertUsesGlassButton(defaultAccessoryView, OperatingSystem.IsIOSVersionAtLeast(26));
+					}
+
+					AppContext.SetSwitch(MauiDoneAccessoryView.UseLegacyDoneAccessorySwitch, false);
+					using var modernAccessoryView = CreateLaidOutAccessoryView();
+
+					AssertUsesGlassButton(modernAccessoryView, OperatingSystem.IsIOSVersionAtLeast(26));
+
+					var wasClicked = false;
+					AppContext.SetSwitch(MauiDoneAccessoryView.UseLegacyDoneAccessorySwitch, true);
+					using var legacyAccessoryView = CreateLaidOutAccessoryView(() => wasClicked = true);
+
+					AssertUsesGlassButton(modernAccessoryView, OperatingSystem.IsIOSVersionAtLeast(26));
+					AssertUsesGlassButton(legacyAccessoryView, false);
+
+					legacyAccessoryView.SendDoneClicked();
+					Assert.True(wasClicked);
+
+					AppContext.SetSwitch(MauiDoneAccessoryView.UseLegacyDoneAccessorySwitch, false);
+					AssertUsesGlassButton(legacyAccessoryView, false);
+				});
+			}
+			finally
+			{
+				AppContext.SetSwitch(
+					MauiDoneAccessoryView.UseLegacyDoneAccessorySwitch,
+					wasConfigured && previousValue);
+			}
+		}
 
 		[Theory]
 		[InlineData(UISemanticContentAttribute.ForceLeftToRight, false)]
@@ -30,7 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 				var hitView = accessoryView.HitTest(new CGPoint(transparentHitX, accessoryView.Bounds.GetMidY()), null);
 
 				if (UsesGlassButton)
-					Assert.Null(hitView); // iOS 26+ floating button lets taps pass through to the field behind
+					Assert.Null(hitView); // floating button lets taps pass through to the field behind
 				else
 					Assert.NotNull(hitView); // classic toolbar keeps blocking taps across its full width
 			});
@@ -117,7 +170,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				if (UsesGlassButton)
 				{
-					// iOS 26+: our floating close button supplies the localized "Done" label explicitly.
+					// The floating close button supplies the localized "Done" label explicitly.
 					var expected = Foundation.NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Done");
 
 					Assert.False(string.IsNullOrEmpty(accessoryView.DoneButton?.AccessibilityLabel));
@@ -125,8 +178,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				else
 				{
-					// iOS < 26: the classic UIToolbar hosts a UIBarButtonSystemItem.Done, which UIKit
-					// localizes for us — so the accessory is a translucent toolbar and needs no manual label.
+					// The classic UIToolbar hosts a UIBarButtonSystemItem.Done, which UIKit localizes
+					// for us, so the accessory is a translucent toolbar and needs no manual label.
 					var toolbar = Assert.IsType<UIToolbar>(Assert.Single(accessoryView.Subviews));
 					Assert.True(toolbar.Translucent);
 				}
@@ -148,6 +201,22 @@ namespace Microsoft.Maui.DeviceTests
 			accessoryView.LayoutIfNeeded();
 
 			return accessoryView;
+		}
+
+		static void AssertUsesGlassButton(MauiDoneAccessoryView accessoryView, bool expected)
+		{
+			var backgroundPoint = new CGPoint(accessoryView.Bounds.GetMinX() + 1, accessoryView.Bounds.GetMidY());
+
+			if (expected)
+			{
+				Assert.IsType<UIButton>(Assert.Single(accessoryView.Subviews));
+				Assert.Null(accessoryView.HitTest(backgroundPoint, null));
+			}
+			else
+			{
+				Assert.IsType<UIToolbar>(Assert.Single(accessoryView.Subviews));
+				Assert.NotNull(accessoryView.HitTest(backgroundPoint, null));
+			}
 		}
 
 		static CGPoint FindDoneButtonHitPoint(MauiDoneAccessoryView accessoryView, bool doneButtonIsLeading)
