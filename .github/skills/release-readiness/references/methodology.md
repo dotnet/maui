@@ -1,6 +1,6 @@
 # Release Readiness — Methodology
 
-This document captures the algorithms used by `Get-ReleaseReadiness.ps1` and **the three gotchas** discovered through real SR analysis that the algorithms exist to prevent.
+This document captures the algorithms used by `Get-ReleaseReadiness.ps1` and **the seven gotchas** discovered through real SR analysis that the algorithms exist to prevent.
 
 ## Gotcha #1: Cherry-Pick Number Swap
 
@@ -112,6 +112,203 @@ git merge-base --is-ancestor "$mergeSha" origin/release/10.0.1xx-sr7 && echo "on
 ```
 
 The skill records `onMain`, `onInflight`, `onSr` independently. A PR can be merged-and-on-main, merged-but-only-on-inflight, or merged-and-on-SR (via direct merge or backport).
+
+## Gotcha #4: Source-to-SR Backport Workflow
+
+### The trap
+
+Do not treat a merged PR or an open SR fix branch as a backport candidate. A backport starts from a **merged source PR whose merge commit is on `main`**. Triggering the automation before that point is skipped; triggering it for `merged-non-main-only` bypasses the required mainline fix.
+
+### The automated path
+
+Confirm all of these first:
+
+1. Source PR state is `MERGED`.
+2. Its merge commit is an ancestor of `origin/main`.
+3. No OPEN or MERGED backport PR already targets the SR branch.
+
+Post this exact comment on the merged source PR:
+
+```text
+/backport to release/<major>.0.1xx-sr<N>
+```
+
+`.github/workflows/backport.yml` delegates this operation to Arcade. Arcade downloads the source PR patch and reapplies it with `git am --3way`; it does **not** run `git cherry-pick -x`. A successful run creates a branch named `backport/pr-<source-pr>-to-release/<major>.0.1xx-sr<N>` and an SR-targeted PR whose body identifies `Backport of #<source-pr>`. Validate the automated path by that generated branch name and PR body, not by a cherry-pick trailer.
+
+### Automation conflict fallback
+
+If the workflow cannot apply the change cleanly, use the source PR's **merge commit** — not its head-branch tip — to prepare a manual backport:
+
+```bash
+git fetch origin
+git switch -c backport/pr-<source-pr>-to-release/<major>.0.1xx-sr<N> \
+  origin/release/<major>.0.1xx-sr<N>
+git cherry-pick -x <source-merge-sha>
+# Resolve any conflicts, then test the resolved behavior.
+git push -u origin HEAD
+```
+
+If `<source-merge-sha>` is a multi-parent merge commit, use mainline parent 1:
+
+```bash
+git cherry-pick -x -m 1 <source-merge-sha>
+```
+
+Retain plain `git cherry-pick -x <source-merge-sha>` for single-parent squash/rebase commits. Only this manual fallback creates the `(cherry picked from commit <sha>)` trailer.
+
+Open the resulting PR against the SR branch, keep the generated branch/title convention, and state `Backport of #<source-pr>` in its body. After it merges, re-run readiness so the regression is classified from the SR contents rather than the source PR's state.
+
+## Gotcha #5: Servicing Version Flip
+
+### The trap
+
+A release branch cut from `main` normally retains CI versioning. Green CI does
+not prove the branch will produce stable packages: it must use
+`PreReleaseVersionLabel=servicing` and `StabilizePackageVersion=true`.
+
+Every .NET 10 SR1–SR8 finished with both values. SR1–SR7 used an explicit
+flip PR; SR8 inherited the same diff through its catch-up merge from SR7:
+
+| SR | Transition |
+|----|------------|
+| SR1–SR7 | Dedicated servicing flip PRs: #32433, #33057, #33520, #34001, #34371, #34942, #35520 |
+| SR8 | Catch-up merge #35810 preserved PatchVersion 80 and inherited the flip |
+
+### The workflow
+
+After the last required content backport, open a focused PR **targeting the
+SR branch**. Keep `PatchVersion` unchanged and make only this versioning
+transition:
+
+```diff
+- <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
+- <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
++ <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
+...
+- <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
++ <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
+```
+
+Keep the `main` version bump in its own `main` PR. After the servicing PR
+merges, rerun final CI at the new SR HEAD. The report is advisory only: it
+must recommend this PR workflow, never edit a release branch directly.
+
+## Gotcha #6: Next-Cycle Main PatchVersion Bump
+
+### The trap
+
+Cutting an SR branch does not automatically move `main` to the next release
+cycle. If both refs keep the same `PatchVersion`, new work merged to `main`
+continues to identify itself as part of the SR that is about to ship.
+
+Do not solve this by copying the release branch's servicing settings back to
+`main`. The two transitions are independent:
+
+- The SR branch keeps its current `PatchVersion` and switches to
+  `servicing`/stable package production.
+- `main` keeps `ci.main`/prerelease package production and advances only its
+  `PatchVersion`.
+
+### Historical pattern
+
+The .NET 10 transitions were focused, one-file, one-line PRs:
+
+| Preparing | PR | `PatchVersion` |
+|-----------|----|----------------|
+| SR7 | #34943 | `60` → `70` |
+| SR8 | #35433 | `70` → `80` |
+| SR9 | #35879 | `80` → `90` |
+
+`SdkBandVersion` remained `10.0.100`, and the mainline prerelease settings
+were unchanged in each PR.
+
+### The workflow
+
+After `release/<major>.0.1xx-sr<N>` is cut and before SR<N> ships:
+
+1. Open a focused PR targeting `main`.
+2. Change only `eng/Versions.props`:
+
+   ```diff
+   - <PatchVersion><current></PatchVersion>
+   + <PatchVersion><(N+1)*10></PatchVersion>
+   ```
+
+3. Title it `Update PatchVersion from <current> to <(N+1)*10>`.
+4. Keep `SdkBandVersion`, `PreReleaseVersionLabel=ci.main`, and
+   `StabilizePackageVersion=false` unchanged unless the main branch's
+   mainline settings are themselves misconfigured.
+5. Keep the PR separate from the SR servicing-flip PR and merge it before
+   shipping the current SR.
+
+For SR9 → SR10, that means changing only
+`<PatchVersion>90</PatchVersion>` to
+`<PatchVersion>100</PatchVersion>` with title
+`Update PatchVersion from 90 to 100`.
+
+The readiness report must emit these instructions when the check is blocked,
+with one conditional variant: when `main` is already misconfigured for a
+servicing/stable build (for example, `PreReleaseVersionLabel=servicing` or
+`StabilizePackageVersion=true`), the report instead instructs restoring
+`PreReleaseVersionLabel=ci.main` and `StabilizePackageVersion=false` in the
+same PR. It remains report-only and must not edit or push `main`.
+
+## Gotcha #7: Default-Channel → Per-Build Feed → Ship Assessment
+
+### The trap
+
+The DevDiv ship **Assessment** (an Azure DevOps "Assessment" work item) must
+link the **per-build NuGet feed** so CSI and customers can validate the exact
+candidate packages before the release ships. That feed —
+`https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-<sha8>/nuget/v3/index.json`
+(`<sha8>` = the build's commit short SHA) — is **only generated when the build
+is promoted to a channel**. Promotion requires a **BAR default-channel
+mapping** for the SR branch (Gotcha checks emit this as `BAR default-channel
+mapping`).
+
+If the branch has no default channel, the build is never promoted, no per-build
+feed is generated, and the Assessment gets created **without** the validation
+feed — exactly what happened for SR9: the assessment shipped incomplete and CSI
+had no feed to validate against. CI stays green throughout, so nothing else
+catches it.
+
+### Real example (SR9)
+
+- SR9 branch `release/10.0.1xx-sr9` was cut **without** a default channel.
+- Build `20260710.6` (BAR **322419** / AzDO **3019432**) was **not promoted** →
+  no per-build feed → the Assessment was created without a feed link.
+- Immediate recovery: release engineering can one-off promote the already-built
+  BAR build with `darc add-build-to-channel --id 322419 --channel ".NET 10.0.1xx
+  SDK"` so the build-specific feed is generated without waiting for a default
+  mapping.
+- Durable fix: `darc add-default-channel --repo https://github.com/dotnet/maui
+  --branch release/10.0.1xx-sr9 --channel ".NET 10.0.1xx SDK"` (maestro-config
+  PR) so future builds auto-promote. `darc get-asset --name
+  Microsoft.Maui.Controls --build 322419` then showed channel `.NET 10.0.1xx
+  SDK` and feed `darc-pub-dotnet-maui-8e2547a4`.
+- SR8 for reference used feed `darc-pub-dotnet-maui-bf615689` — same
+  `darc-pub-dotnet-maui-<sha8>` pattern.
+
+### The workflow
+
+1. If an already-built SR head is unpromoted, ask release engineering for the
+   immediate one-off recovery: `darc add-build-to-channel --id <BAR_BUILD_ID>
+   --channel ".NET <band> SDK"`.
+2. Ensure the SR branch has a BAR default-channel mapping as the durable
+   automatic-flow fix (the `BAR default-channel mapping` check). Without it,
+   escalate to release engineering: `darc add-default-channel --channel ".NET
+   <band> SDK" --branch release/<major>.0.1xx-sr<N> --repo
+   https://github.com/dotnet/maui`.
+3. Ensure the SR HEAD build is **promoted** to that channel. The
+   `Ship Assessment validation feed` check reports `READY` (with the derived
+   feed URL) once the build carries a channel, or `WATCH` while it is
+   unpromoted.
+4. Confirm the feed location with `darc get-asset --name
+   Microsoft.Maui.Controls --build <BAR id>` (prints the `NugetFeed` location).
+5. **Paste that feed URL into the DevDiv ship Assessment.**
+
+The report derives and surfaces the feed URL but remains report-only — it does
+not create channels, promote builds, or edit the Assessment.
 
 ## Revert Detection
 
