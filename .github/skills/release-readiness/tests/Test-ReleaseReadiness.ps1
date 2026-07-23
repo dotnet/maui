@@ -5228,6 +5228,97 @@ Write-Host "`n[Unit] Test-IsP0Pr — p/0 PR blocker classification" -ForegroundC
 $prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
 . $prevScript -Branch 'release/11.0.1xx-preview6'
 
+# GitHub's GraphQL endpoint can fail independently of the REST API. Prove open
+# and merged PR discovery retain the engine's expected object shape and do not
+# abort the report when `gh pr list` fails but REST remains available.
+Write-Host "`n[Unit] Preview PR discovery GraphQL → REST fallback" -ForegroundColor Cyan
+$origPreviewInvokeGitHubWithRetry = (Get-Item function:Invoke-GitHubWithRetry).ScriptBlock
+$origPreviewTestBranchExists = (Get-Item function:Test-BranchExists).ScriptBlock
+$script:PreviewFallbackCalls = @()
+$script:PreviewOpenRestJson = @'
+[
+  {
+    "number": 70001,
+    "title": "Open preview fix",
+    "user": { "login": "contributor" },
+    "html_url": "https://example.invalid/pull/70001",
+    "created_at": "2026-07-20T00:00:00Z",
+    "updated_at": "2026-07-21T00:00:00Z",
+    "merged_at": null,
+    "draft": false,
+    "labels": [{ "name": "p/0" }],
+    "head": { "ref": "fix/preview" },
+    "base": { "ref": "net11.0" }
+  }
+]
+'@
+$script:PreviewClosedRestJson = @'
+[
+  {
+    "number": 70002,
+    "title": "Merged component flow",
+    "user": { "login": "dotnet-maestro[bot]" },
+    "html_url": "https://example.invalid/pull/70002",
+    "created_at": "2026-07-18T00:00:00Z",
+    "updated_at": "2026-07-19T00:00:00Z",
+    "merged_at": "2026-07-19T00:00:00Z",
+    "draft": false,
+    "labels": [],
+    "head": { "ref": "darc-net11.0-70002" },
+    "base": { "ref": "net11.0" }
+  },
+  {
+    "number": 70003,
+    "title": "Closed without merge",
+    "user": { "login": "contributor" },
+    "html_url": "https://example.invalid/pull/70003",
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-18T00:00:00Z",
+    "merged_at": null,
+    "draft": false,
+    "labels": [],
+    "head": { "ref": "abandoned" },
+    "base": { "ref": "net11.0" }
+  }
+]
+'@
+try {
+    function Test-BranchExists { param([string]$BranchName) return $true }
+    function Invoke-GitHubWithRetry {
+        param(
+            [string[]]$Arguments,
+            [string]$Description,
+            [int]$MaxRetries = 3
+        )
+        $script:PreviewFallbackCalls += ,@($Arguments)
+        if ($Arguments[0] -eq 'pr') {
+            throw "Failed to $Description after 3 attempt(s) (gh exit 1): HTTP 502: Bad Gateway"
+        }
+        if ($Arguments -contains 'state=open') { return $script:PreviewOpenRestJson }
+        if ($Arguments -contains 'state=closed') { return $script:PreviewClosedRestJson }
+        throw "Unexpected REST fallback arguments: $($Arguments -join ' ')"
+    }
+
+    $fallbackOpenPrs = @(Get-OpenPullRequests -BaseBranch 'net11.0')
+    Assert-Eq -Label "preview open-PR fallback: returns REST result after GraphQL failure" -Expected 1 -Actual $fallbackOpenPrs.Count
+    Assert-Eq -Label "preview open-PR fallback: preserves author login" -Expected 'contributor' -Actual $fallbackOpenPrs[0].author.login
+    Assert-Eq -Label "preview open-PR fallback: preserves head/base refs" -Expected 'fix/preview,net11.0' -Actual "$($fallbackOpenPrs[0].headRefName),$($fallbackOpenPrs[0].baseRefName)"
+    Assert-Eq -Label "preview open-PR fallback: supplies conservative merge state" -Expected 'UNKNOWN' -Actual $fallbackOpenPrs[0].mergeStateStatus
+    Assert-Eq -Label "preview open-PR fallback: supplies reviewDecision property as null" -Expected $true -Actual ($null -eq $fallbackOpenPrs[0].reviewDecision)
+
+    $fallbackMergedPrs = @(Get-MergedPullRequests -BaseBranch 'net11.0')
+    Assert-Eq -Label "preview merged-PR fallback: excludes closed-unmerged PRs" -Expected 1 -Actual $fallbackMergedPrs.Count
+    Assert-Eq -Label "preview merged-PR fallback: preserves merged PR number" -Expected 70002 -Actual $fallbackMergedPrs[0].number
+    Assert-Eq -Label "preview merged-PR fallback: preserves mergedAt" -Expected '2026-07-19T00:00:00Z' `
+              -Actual ([DateTime]$fallbackMergedPrs[0].mergedAt).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    $previewRestCalls = @($script:PreviewFallbackCalls | Where-Object { $_[0] -eq 'api' })
+    Assert-Eq -Label "preview PR fallback: uses REST for both open and merged queries" -Expected 2 -Actual $previewRestCalls.Count
+} finally {
+    Set-Item function:Invoke-GitHubWithRetry $origPreviewInvokeGitHubWithRetry
+    Set-Item function:Test-BranchExists $origPreviewTestBranchExists
+    Remove-Variable -Name PreviewFallbackCalls,PreviewOpenRestJson,PreviewClosedRestJson -Scope Script -ErrorAction SilentlyContinue
+}
+
 $p0Pr        = [PSCustomObject]@{ number = 34758; labels = @([PSCustomObject]@{ name = 'p/0' }, [PSCustomObject]@{ name = 'area-xaml' }) }
 $nonP0Pr     = [PSCustomObject]@{ number = 99999; labels = @([PSCustomObject]@{ name = 'area-xaml' }, [PSCustomObject]@{ name = 'p/1' }) }
 $missingLbls = [PSCustomObject]@{ number = 12345 }            # no labels property at all

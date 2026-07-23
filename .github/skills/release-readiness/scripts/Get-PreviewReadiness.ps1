@@ -215,12 +215,14 @@ function Invoke-GitHubWithRetry {
         }
 
         $retryCount++
-        if ($text -match "502|503|504|timeout|stream error|CANCEL|Bad Gateway" -and $retryCount -lt $MaxRetries) {
+        if ($text -match "(?i)502|503|504|timeout|stream error|CANCEL|Bad Gateway|rate limit|secondary rate|connection reset|unexpected EOF|TLS handshake" -and $retryCount -lt $MaxRetries) {
             Start-Sleep -Seconds ($baseDelay * [Math]::Pow(2, $retryCount - 1))
             continue
         }
 
-        throw "Failed to $Description"
+        $failureText = if ([string]::IsNullOrWhiteSpace($text)) { '(no gh error output)' } else { $text.Trim() }
+        if ($failureText.Length -gt 1000) { $failureText = $failureText.Substring(0, 1000) + '…' }
+        throw "Failed to $Description after $retryCount attempt(s) (gh exit $exitCode): $failureText"
     }
 
     throw "Failed to $Description after $MaxRetries attempts"
@@ -236,6 +238,78 @@ function ConvertFrom-JsonOrEmptyArray {
         return @()
     }
     return @($parsed)
+}
+
+function ConvertFrom-RestPullRequests {
+    <#
+    .SYNOPSIS
+        Projects REST pull-request list objects into the `gh pr list --json`
+        shape consumed by the preview-readiness engine.
+    .DESCRIPTION
+        GitHub's GraphQL endpoint can return transient 502s while the REST pulls
+        endpoint remains healthy. REST does not expose reviewDecision or
+        mergeStateStatus in its list response, so the fallback supplies
+        conservative null/UNKNOWN values while preserving every field the
+        downstream StrictMode code expects.
+    #>
+    param([string]$Json)
+
+    $items = ConvertFrom-JsonOrEmptyArray $Json
+    $result = @()
+    foreach ($item in @($items)) {
+        if ($null -eq $item) { continue }
+        $user = if ($item.PSObject.Properties['user']) { $item.user } else { $null }
+        $head = if ($item.PSObject.Properties['head']) { $item.head } else { $null }
+        $base = if ($item.PSObject.Properties['base']) { $item.base } else { $null }
+        $labels = if ($item.PSObject.Properties['labels']) { @($item.labels) } else { @() }
+        $result += [PSCustomObject]@{
+            number           = if ($item.PSObject.Properties['number']) { $item.number } else { $null }
+            title            = if ($item.PSObject.Properties['title']) { $item.title } else { $null }
+            author           = [PSCustomObject]@{
+                login = if ($user -and $user.PSObject.Properties['login']) { $user.login } else { $null }
+            }
+            url              = if ($item.PSObject.Properties['html_url']) { $item.html_url } else { $null }
+            createdAt        = if ($item.PSObject.Properties['created_at']) { $item.created_at } else { $null }
+            updatedAt        = if ($item.PSObject.Properties['updated_at']) { $item.updated_at } else { $null }
+            mergedAt         = if ($item.PSObject.Properties['merged_at']) { $item.merged_at } else { $null }
+            isDraft          = if ($item.PSObject.Properties['draft']) { [bool]$item.draft } else { $false }
+            reviewDecision   = $null
+            mergeStateStatus = 'UNKNOWN'
+            labels           = $labels
+            headRefName      = if ($head -and $head.PSObject.Properties['ref']) { $head.ref } else { $null }
+            baseRefName      = if ($base -and $base.PSObject.Properties['ref']) { $base.ref } else { $null }
+        }
+    }
+    return @($result)
+}
+
+function Get-PullRequestsViaRest {
+    param(
+        [string]$BaseBranch,
+        [ValidateSet('open', 'merged')][string]$State
+    )
+
+    # REST has no `merged` list state. Query the newest closed PRs and retain
+    # only entries with merged_at; this fallback is used only while GraphQL is
+    # unavailable and preserves a conservative, bounded readiness signal.
+    $restState = if ($State -eq 'merged') { 'closed' } else { 'open' }
+    $json = Invoke-GitHubWithRetry -Arguments @(
+        'api',
+        '--method',
+        'GET',
+        "repos/$Repository/pulls",
+        '-f', "state=$restState",
+        '-f', "base=$BaseBranch",
+        '-f', 'sort=updated',
+        '-f', 'direction=desc',
+        '-f', 'per_page=100'
+    ) -Description "list $State PRs for $BaseBranch via REST"
+
+    $prs = @(ConvertFrom-RestPullRequests -Json $json)
+    if ($State -eq 'merged') {
+        $prs = @($prs | Where-Object { $_.mergedAt })
+    }
+    return @($prs)
 }
 
 function Get-ContentFromRepo {
@@ -524,22 +598,26 @@ function Get-OpenPullRequests {
         return @()
     }
 
-    $json = Invoke-GitHubWithRetry -Arguments @(
-        "pr",
-        "list",
-        "--repo",
-        $Repository,
-        "--state",
-        "open",
-        "--base",
-        $BaseBranch,
-        "--limit",
-        "100",
-        "--json",
-        "number,title,author,url,createdAt,updatedAt,isDraft,reviewDecision,mergeStateStatus,labels,headRefName,baseRefName"
-    ) -Description "list open PRs for $BaseBranch"
-
-    return ConvertFrom-JsonOrEmptyArray $json
+    try {
+        $json = Invoke-GitHubWithRetry -Arguments @(
+            "pr",
+            "list",
+            "--repo",
+            $Repository,
+            "--state",
+            "open",
+            "--base",
+            $BaseBranch,
+            "--limit",
+            "100",
+            "--json",
+            "number,title,author,url,createdAt,updatedAt,isDraft,reviewDecision,mergeStateStatus,labels,headRefName,baseRefName"
+        ) -Description "list open PRs for $BaseBranch"
+        return ConvertFrom-JsonOrEmptyArray $json
+    } catch {
+        Write-Warning "GraphQL open-PR query failed; falling back to REST: $($_.Exception.Message)"
+        return Get-PullRequestsViaRest -BaseBranch $BaseBranch -State 'open'
+    }
 }
 
 function Get-MergedPullRequests {
@@ -559,22 +637,26 @@ function Get-MergedPullRequests {
         return @()
     }
 
-    $json = Invoke-GitHubWithRetry -Arguments @(
-        "pr",
-        "list",
-        "--repo",
-        $Repository,
-        "--state",
-        "merged",
-        "--base",
-        $BaseBranch,
-        "--limit",
-        "100",
-        "--json",
-        "number,title,author,url,createdAt,updatedAt,mergedAt,labels,headRefName,baseRefName"
-    ) -Description "list merged PRs for $BaseBranch"
-
-    return ConvertFrom-JsonOrEmptyArray $json
+    try {
+        $json = Invoke-GitHubWithRetry -Arguments @(
+            "pr",
+            "list",
+            "--repo",
+            $Repository,
+            "--state",
+            "merged",
+            "--base",
+            $BaseBranch,
+            "--limit",
+            "100",
+            "--json",
+            "number,title,author,url,createdAt,updatedAt,mergedAt,labels,headRefName,baseRefName"
+        ) -Description "list merged PRs for $BaseBranch"
+        return ConvertFrom-JsonOrEmptyArray $json
+    } catch {
+        Write-Warning "GraphQL merged-PR query failed; falling back to REST: $($_.Exception.Message)"
+        return Get-PullRequestsViaRest -BaseBranch $BaseBranch -State 'merged'
+    }
 }
 
 function Get-IssuesByLabel {
