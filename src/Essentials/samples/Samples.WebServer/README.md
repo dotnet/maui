@@ -55,7 +55,7 @@ From `src/Essentials/samples`, run the helper — it provisions a persistent tun
 resulting domain straight into this server's user-secrets, so you don't edit any files:
 
 ```bash
-pwsh ./setup-devtunnel.ps1
+pwsh ./Configure.ps1
 ```
 
 It prints the public `https://…devtunnels.ms` URL to paste into **both** sample pages, and sets

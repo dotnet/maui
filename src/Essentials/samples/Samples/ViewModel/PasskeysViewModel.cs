@@ -19,7 +19,7 @@ namespace Samples.ViewModel
 		//
 		// Dev-tunnel first: passkeys are bound to a domain (the RP ID), so the server must be reachable
 		// at a real, stable, public HTTPS domain — localhost can't complete a ceremony on a device.
-		// From src/Essentials/samples run `pwsh ./setup-devtunnel.ps1` to provision one (it also writes
+		// From src/Essentials/samples run `pwsh ./Configure.ps1` to provision one (it also writes
 		// the domain into the server's user-secrets — see Samples.WebServer/README.md), then replace the
 		// host below with the printed https://…devtunnels.ms URL. It's the SAME URL the Web
 		// Authenticator page uses.

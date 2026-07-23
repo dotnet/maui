@@ -1,18 +1,20 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    One-shot setup for testing the .NET MAUI Essentials auth samples (Passkeys + WebAuthenticator)
-    against the single Samples.WebServer web app, exposed on a STABLE public HTTPS domain via a Microsoft
-    dev tunnel.
+    Configures (and optionally hosts a dev tunnel for) the .NET MAUI Essentials auth samples
+    (Passkeys + WebAuthenticator), which are both served by the single Samples.WebServer web app.
 
 .DESCRIPTION
     Passkeys (and OAuth redirect URIs) are bound to a domain, so `localhost` will not work from a
     real device. This script provisions a dev tunnel with a *persistent* tunnel id — so the public
-    domain stays the same every time — and writes that domain straight into the server's user-secrets
-    (for the passkeys relying party) so you don't have to edit any files.
+    domain stays the same every time — and writes the resulting configuration into the SERVER's
+    user-secrets (the MAUI app itself reads no secrets; you type the URL into its UI):
 
-    One server hosts both samples, so you configure one tunnel and use one URL for both the Passkeys
-    and Web Authenticator pages.
+      - the passkeys relying-party domain + web origin, and
+      - the Android package name (read from the sample app's project) plus the debug-signing-key
+        SHA-256 fingerprint and `android:apk-key-hash:` origin (so Digital Asset Links validate).
+
+    It does NOT run the web server — that is a separate `dotnet run` (see the printed next steps).
 
     You run this once. After that, the same domain is reused on every run.
 
@@ -26,29 +28,52 @@
     The local HTTP port the server listens on. Defaults to 5177 (matches the project's
     launchSettings.json "http" profile).
 
+.PARAMETER AndroidPackage
+    The Android application id. Defaults to the sample app's <ApplicationId> read from its project.
+
+.PARAMETER DebugKeystore
+    Path to the Android debug keystore. Defaults to the .NET for Android location
+    (<userhome>/.android/debug.keystore), resolved per-platform.
+
 .PARAMETER StartHost
     If set, starts hosting the tunnel (blocking) at the end. Otherwise prints the host command.
 
 .EXAMPLE
-    ./setup-devtunnel.ps1
-    # Provisions the tunnel, writes ServerDomain into user-secrets, prints next steps.
+    ./Configure.ps1
+    # Provisions the tunnel, writes the server config into user-secrets, prints next steps.
 
 .EXAMPLE
-    ./setup-devtunnel.ps1 -StartHost
+    ./Configure.ps1 -StartHost
     # Provisions the tunnel and starts hosting it.
 #>
 [CmdletBinding()]
 param(
     [string]$TunnelId = 'maui-essentials',
     [int]$Port = 5177,
-    [string]$AndroidPackage = 'com.microsoft.maui.essentials',
-    [string]$DebugKeystore = (Join-Path $HOME '.android/debug.keystore'),
+    [string]$AndroidPackage,
+    [string]$DebugKeystore,
     [switch]$StartHost
 )
 
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$project = Join-Path $here 'Samples.WebServer/Essentials.Samples.WebServer.csproj'
+$project = Join-Path $here 'Samples.WebServer' 'Essentials.Samples.WebServer.csproj'
+
+# Default the Android package to the sample app's <ApplicationId> so the two never drift.
+if (-not $AndroidPackage) {
+    $appCsproj = Join-Path $here 'Samples' 'Essentials.Sample.csproj'
+    if (Test-Path $appCsproj) {
+        $m = [regex]::Match((Get-Content -Raw $appCsproj), '<ApplicationId>\s*([^<]+?)\s*</ApplicationId>')
+        if ($m.Success) { $AndroidPackage = $m.Groups[1].Value.Trim() }
+    }
+    if (-not $AndroidPackage) { $AndroidPackage = 'com.microsoft.maui.essentials' }
+}
+
+# Default to the .NET for Android debug keystore location (all platforms). $HOME is cross-platform
+# in PowerShell; use Join-Path so the separators are correct on Windows too.
+if (-not $DebugKeystore) {
+    $DebugKeystore = Join-Path $HOME '.android' 'debug.keystore'
+}
 
 # Computes the Android debug-signing-key fingerprints needed for passkeys: the colon-hex SHA-256
 # (for assetlinks.json) and the "android:apk-key-hash:<base64url>" origin (for ValidateOrigin).

@@ -28,7 +28,7 @@ From `src/Essentials/samples`:
 
 ```bash
 # Provisions the tunnel AND writes the passkeys domain into the server's user-secrets.
-pwsh ./setup-devtunnel.ps1
+pwsh ./Configure.ps1
 ```
 
 The script prints the public `https://…devtunnels.ms` URL. Then, in two terminals:
@@ -43,9 +43,9 @@ Passkeys and Web Authenticator pages.
 
 ## Passkeys — end to end
 
-1. `pwsh ./setup-devtunnel.ps1` → note the URL, then host + run (above).
+1. `pwsh ./Configure.ps1` → note the URL, then host + run (above).
 2. **Native trust** (real devices only): the RP must accept each app's native origin and serve its
-   domain-association doc. `setup-devtunnel.ps1` now writes the **Android** values for you (package,
+   domain-association doc. `Configure.ps1` now writes the **Android** values for you (package,
    debug-key SHA-256, and `android:apk-key-hash:` origin). For the others:
    - Apple: add `<TeamID>.<BundleID>` to `Passkeys:Apple:AppIds` and the app's associated-domains
      entitlement `webcredentials:<host>`. Served at `/.well-known/apple-app-site-association`.
@@ -65,7 +65,7 @@ intent-filters are only for App Links, a different feature). You do need the rig
 - Set a **secure screen lock** (PIN/pattern) — passkeys require device authentication.
 
 **Steps:**
-1. `cd src/Essentials/samples && pwsh ./setup-devtunnel.ps1`
+1. `cd src/Essentials/samples && pwsh ./Configure.ps1`
    This provisions the tunnel and writes into the server's user-secrets: the RP domain + web origin,
    **and** the Android package (`com.microsoft.maui.essentials`), your debug keystore SHA-256, and the
    `android:apk-key-hash:` origin. (It reads `~/.android/debug.keystore`; build the Android app once
@@ -94,7 +94,7 @@ External providers only redirect back to a public HTTPS domain, so a dev tunnel 
 special cases) is in the server README's **Web Authenticator sample** section:
 [`Samples.WebServer/README.md`](Samples.WebServer/README.md#web-authenticator-sample).
 
-1. `pwsh ./setup-devtunnel.ps1` → note the `https://<tunnel-host>` URL (same one as passkeys).
+1. `pwsh ./Configure.ps1` → note the `https://<tunnel-host>` URL (same one as passkeys).
 2. For each provider you want, create an OAuth app and register the redirect URI
    `https://<tunnel-host>/signin-<provider>` (`/signin-google`, `/signin-microsoft`,
    `/signin-facebook`, `/signin-apple`). Apple additionally needs a Services ID, a downloaded `.p8`
