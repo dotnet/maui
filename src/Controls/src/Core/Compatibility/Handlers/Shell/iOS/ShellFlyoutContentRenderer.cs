@@ -151,17 +151,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			int previousIndex = GetPreviousIndex(_footerView);
 			if (_footer is not null)
 			{
-				var oldRenderer = (IPlatformViewHandler)_footer.Handler;
 				var oldFooterView = _footerView;
 				_footer.MeasureInvalidated -= OnFooterMeasureInvalidated;
 				_tableViewController.FooterView = null;
-				_footerView?.Disconnect();
 				_footerView = null;
 				_uIViews[FooterIndex] = null;
 				oldFooterView?.RemoveFromSuperview();
-
-				_footer.Handler = null;
-				oldRenderer?.DisconnectHandler();
+				oldFooterView?.Dispose();
 			}
 
 			_footer = view;

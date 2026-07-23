@@ -649,6 +649,44 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Disposed Shell Flyout Content Disconnects Header And Footer Handlers")]
+		public async Task DisposedShellFlyoutContentDisconnectsHeaderAndFooterHandlers()
+		{
+			SetupBuilder();
+			var header = new Label { Text = "Header" };
+			var footer = new Label { Text = "Footer" };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ContentPage());
+				shell.FlyoutHeader = header;
+				shell.FlyoutFooter = footer;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, handler =>
+			{
+				var flyoutContent = handler.ViewController
+					.ChildViewControllers
+					.OfType<ShellFlyoutContentRenderer>()
+					.First();
+				var headerPlatformView = header.ToPlatform();
+				var footerPlatformView = footer.ToPlatform();
+
+				Assert.NotNull(header.Handler);
+				Assert.NotNull(footer.Handler);
+				Assert.NotNull(headerPlatformView.Superview);
+				Assert.NotNull(footerPlatformView.Superview);
+
+				flyoutContent.Dispose();
+
+				Assert.Null(header.Handler);
+				Assert.Null(footer.Handler);
+				Assert.Null(headerPlatformView.Superview);
+				Assert.Null(footerPlatformView.Superview);
+
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact(DisplayName = "Shell Flyout Renderer Disposal Is Idempotent After Native Teardown")]
 		public Task ShellFlyoutRendererDisposalIsIdempotentAfterNativeTeardown() =>
 			InvokeOnMainThreadAsync(() =>
