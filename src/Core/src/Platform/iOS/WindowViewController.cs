@@ -146,11 +146,6 @@ internal class WindowViewController : UIViewController
 		
 		_isTitleBarVisible = (iTitleBar?.Visibility == Visibility.Visible);
 
-		// Layout the TitleBar first so the constraint reflects the correct height before
-		// hiding the system titlebar, which may synchronously trigger SafeAreaInsetsDidChange.
-		IsFirstLayout = true;
-		LayoutTitleBar();
-
 		var platformTitleBar = platformWindow.WindowScene?.Titlebar;
 
 		if (newTitleBar is not null && platformTitleBar is not null)
@@ -162,7 +157,10 @@ internal class WindowViewController : UIViewController
 		{
 			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Visible;
 		}
-			
+		
+		IsFirstLayout = true;
+		LayoutTitleBar();
+		// Force immediate constraint processing so _contentWrapperView repositions below the TitleBar.
 		View?.LayoutIfNeeded();
 	}
 
