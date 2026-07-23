@@ -160,8 +160,11 @@ internal class WindowViewController : UIViewController
 		
 		IsFirstLayout = true;
 		LayoutTitleBar();
-		// Force immediate constraint processing so _contentWrapperView repositions below the TitleBar.
-		View?.LayoutIfNeeded();
+		if (OperatingSystem.IsMacCatalystVersionAtLeast(26))
+		{
+			// Force immediate constraint processing so _contentWrapperView repositions below the TitleBar.
+			View?.LayoutIfNeeded();
+		}
 	}
 
 	/// <summary>
