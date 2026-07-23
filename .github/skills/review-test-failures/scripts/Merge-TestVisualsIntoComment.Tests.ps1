@@ -26,6 +26,7 @@ BeforeAll {
             'New-InlineVisualSection',
             'Insert-InlineVisualSection',
             'Test-CommentWithinLimits',
+            'Insert-LimitSafeInlineVisualSection',
             'Merge-VisualsIntoBody',
             'Write-AtomicUtf8Text',
             'Update-AgentOutputFile',
@@ -412,6 +413,25 @@ Investigate.
         $merged | Should -Not -Match 'dev/injected'
         # A publish failure is not "no visual evidence": the placeholder must be replaced by a section.
         $merged | Should -Not -Be "Analysis`n`nDone"
+    }
+
+    It 'does not add a failure-only section when it would exceed the comment limit' {
+        $body = ('x' * 95) + (Get-InlineVisualPlaceholder)
+        $context = New-VisualTestContext `
+            -Published $false `
+            -PublicationFailed $true `
+            -Errors @('raw exception')
+
+        $merged = Merge-VisualsIntoBody `
+            -Body $body `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 100
+
+        $merged | Should -Be ('x' * 95)
     }
 
     It 'does not misclassify a pre-publication budget omission as a Git/API publication failure' {

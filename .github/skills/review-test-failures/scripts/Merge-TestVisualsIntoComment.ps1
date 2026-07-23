@@ -480,6 +480,27 @@ function Test-CommentWithinLimits {
         $counts.characters -le $MaxCommentCharacters
 }
 
+function Insert-LimitSafeInlineVisualSection {
+    param(
+        [string]$Body,
+        [string]$Section,
+        [int]$MaxCommentUrls,
+        [int]$MaxCommentMentions,
+        [int]$MaxCommentCharacters
+    )
+
+    $mergedBody = Insert-InlineVisualSection -Body $Body -Section $Section
+    if (Test-CommentWithinLimits `
+            -Body $mergedBody `
+            -MaxCommentUrls $MaxCommentUrls `
+            -MaxCommentMentions $MaxCommentMentions `
+            -MaxCommentCharacters $MaxCommentCharacters) {
+        return $mergedBody
+    }
+
+    return $Body.Replace((Get-InlineVisualPlaceholder), "")
+}
+
 function Merge-VisualsIntoBody {
     param(
         [string]$Body,
@@ -529,11 +550,21 @@ function Merge-VisualsIntoBody {
         $publicationFailed = [bool]($Context.visualAssets -and $Context.visualAssets.publicationFailed)
         if ($publicationFailed) {
             $failureSection = New-InlineVisualSection -Panels @() -PublisherOmittedCount $publisherOmitted -CommentSafetyOmittedCount 0 -PreparationFailureCount $prepFailures -PublicationFailed $true
-            return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
+            return Insert-LimitSafeInlineVisualSection `
+                -Body $baseBody `
+                -Section $failureSection `
+                -MaxCommentUrls $MaxCommentUrls `
+                -MaxCommentMentions $MaxCommentMentions `
+                -MaxCommentCharacters $MaxCommentCharacters
         }
         if ($prepFailures -gt 0) {
             $failureSection = New-InlineVisualSection -Panels @() -PublisherOmittedCount $publisherOmitted -CommentSafetyOmittedCount 0 -PreparationFailureCount $prepFailures
-            return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
+            return Insert-LimitSafeInlineVisualSection `
+                -Body $baseBody `
+                -Section $failureSection `
+                -MaxCommentUrls $MaxCommentUrls `
+                -MaxCommentMentions $MaxCommentMentions `
+                -MaxCommentCharacters $MaxCommentCharacters
         }
         # No panels were published and no explicit publication or preparation failure occurred, but
         # comparisons were detected and then bounded away by publisher budget/dedup/cap (e.g. the
@@ -541,7 +572,12 @@ function Merge-VisualsIntoBody {
         # the placeholder, so a non-empty-but-unpublished scan is never rendered as a genuinely clean run.
         if ($publisherOmitted -gt 0) {
             $failureSection = New-InlineVisualSection -Panels @() -PublisherOmittedCount $publisherOmitted -CommentSafetyOmittedCount 0 -PreparationFailureCount 0
-            return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
+            return Insert-LimitSafeInlineVisualSection `
+                -Body $baseBody `
+                -Section $failureSection `
+                -MaxCommentUrls $MaxCommentUrls `
+                -MaxCommentMentions $MaxCommentMentions `
+                -MaxCommentCharacters $MaxCommentCharacters
         }
         return $baseBody.Replace($placeholder, "")
     }

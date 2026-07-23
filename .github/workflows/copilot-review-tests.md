@@ -124,7 +124,6 @@ on:
       # The whole downstream already tolerates a missing context.json (the artifact
       # download is continue-on-error, the seal/merge steps exit 0 when it's absent).
       continue-on-error: true
-      timeout-minutes: 20
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
@@ -143,7 +142,7 @@ on:
         if [ -n "${CHECK_NAME:-}" ]; then
           args+=(-CheckName "${CHECK_NAME}")
         fi
-        pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
+        timeout 20m pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
     - name: Publish visual comparison assets
       if: >-
         steps.exact_command.outputs.should_run == 'true' &&
@@ -151,14 +150,13 @@ on:
         steps.check_command_position.outputs.command_position_ok == 'true' &&
         (github.event_name != 'workflow_dispatch' || inputs.suppress_output != true)
       continue-on-error: true
-      timeout-minutes: 16
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
       run: |
         set -euo pipefail
         context="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/context.json"
-        pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
+        timeout 16m pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
           -PrNumber "${PR_NUMBER}" \
           -ContextJsonPath "${context}"
     - name: Upload test-failure context

@@ -11,6 +11,7 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
+            'Invoke-SealedVisualMerge',
             'Get-EmbeddedTestFailureReport',
             'Collapse-OpenDetails',
             'New-TestFailureReviewBody'
@@ -21,6 +22,40 @@ BeforeAll {
             }, $true)
         if (-not $function) { throw "Function '$functionName' not found in $scriptPath" }
         Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'Local visual merge trust boundary' {
+    It 'runs captured merger content without GitHub tokens and restores the parent environment' {
+        $commentPath = Join-Path $TestDrive 'comment.md'
+        $priorToken = [Environment]::GetEnvironmentVariable('GH_TOKEN', 'Process')
+        [Environment]::SetEnvironmentVariable('GH_TOKEN', 'secret-for-test', 'Process')
+        try {
+            $mergeScript = @'
+param(
+    [int]$PrNumber,
+    [string]$Repository,
+    [string]$ContextJsonPath,
+    [string]$CommentBodyPath
+)
+$tokenState = if ([string]::IsNullOrEmpty($env:GH_TOKEN)) { 'missing' } else { 'present' }
+$context = Get-Content -LiteralPath $ContextJsonPath -Raw
+Set-Content -LiteralPath $CommentBodyPath -Value "$tokenState|$context" -NoNewline
+'@
+            $result = Invoke-SealedVisualMerge `
+                -MergeScriptContent $mergeScript `
+                -ContextJsonContent '{"sealed":true}' `
+                -CommentBodyPath $commentPath `
+                -PrNumber 123 `
+                -Repository 'dotnet/maui'
+
+            $result.exitCode | Should -Be 0
+            (Get-Content -LiteralPath $commentPath -Raw) | Should -Be 'missing|{"sealed":true}'
+            [Environment]::GetEnvironmentVariable('GH_TOKEN', 'Process') | Should -Be 'secret-for-test'
+        }
+        finally {
+            [Environment]::SetEnvironmentVariable('GH_TOKEN', $priorToken, 'Process')
+        }
     }
 }
 

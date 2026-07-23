@@ -113,6 +113,65 @@ function Assert-Command {
     }
 }
 
+function Invoke-SealedVisualMerge {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$MergeScriptContent,
+        [Parameter(Mandatory = $true)]
+        [string]$ContextJsonContent,
+        [Parameter(Mandatory = $true)]
+        [string]$CommentBodyPath,
+        [Parameter(Mandatory = $true)]
+        [int]$PrNumber,
+        [Parameter(Mandatory = $true)]
+        [string]$Repository
+    )
+
+    $sealedMergeDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("review-tests-merge-" + [guid]::NewGuid().ToString("N"))
+    $sealedMergeScriptPath = Join-Path $sealedMergeDirectory "Merge-TestVisualsIntoComment.ps1"
+    $sealedContextJsonPath = Join-Path $sealedMergeDirectory "context.json"
+    $tokenNames = @(
+        "COPILOT_GITHUB_TOKEN",
+        "GH_TOKEN",
+        "GITHUB_TOKEN",
+        "GH_AW_GITHUB_TOKEN",
+        "GH_AW_GITHUB_MCP_SERVER_TOKEN",
+        "GITHUB_MCP_SERVER_TOKEN"
+    )
+    $savedTokens = @{}
+    $mergeExitCode = 1
+    $mergeOutput = @()
+    try {
+        New-Item -ItemType Directory -Path $sealedMergeDirectory | Out-Null
+        [System.IO.File]::WriteAllText($sealedMergeScriptPath, $MergeScriptContent, [System.Text.UTF8Encoding]::new($false))
+        [System.IO.File]::WriteAllText($sealedContextJsonPath, $ContextJsonContent, [System.Text.UTF8Encoding]::new($false))
+        foreach ($tokenName in $tokenNames) {
+            $savedTokens[$tokenName] = [Environment]::GetEnvironmentVariable($tokenName, "Process")
+            [Environment]::SetEnvironmentVariable($tokenName, $null, "Process")
+        }
+
+        $mergeOutput = @(& pwsh $sealedMergeScriptPath `
+                -PrNumber $PrNumber `
+                -Repository $Repository `
+                -ContextJsonPath $sealedContextJsonPath `
+                -CommentBodyPath $CommentBodyPath 2>&1)
+        $mergeExitCode = $LASTEXITCODE
+    }
+    finally {
+        foreach ($tokenName in $tokenNames) {
+            [Environment]::SetEnvironmentVariable($tokenName, $savedTokens[$tokenName], "Process")
+        }
+        if (Test-Path -LiteralPath $sealedMergeDirectory) {
+            Remove-Item -LiteralPath $sealedMergeDirectory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    return [pscustomobject]@{
+        exitCode = $mergeExitCode
+        output = $mergeOutput
+    }
+}
+
 function Get-FinalAssistantMessage {
     param([string[]]$Lines)
 
@@ -462,6 +521,17 @@ if ($PostComment -and -not $DryRun) {
     }
 }
 
+$visualMergeScript = Join-Path $RepoRoot ".github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1"
+$sealedVisualMergeContent = $null
+$sealedVisualContextContent = $null
+if ((Test-Path -LiteralPath $visualMergeScript) -and (Test-Path -LiteralPath $ContextJsonPath)) {
+    # Capture trusted post-processing inputs in this parent process before Copilot runs. The child
+    # cannot mutate these in-memory strings, even when the explicit -AllowAllTools escape hatch is
+    # enabled. Materialize them outside the worktree only after the child exits.
+    $sealedVisualMergeContent = Get-Content -LiteralPath $visualMergeScript -Raw -Encoding UTF8
+    $sealedVisualContextContent = Get-Content -LiteralPath $ContextJsonPath -Raw -Encoding UTF8
+}
+
 Assert-Command -Name "copilot"
 
 $skillPath = Join-Path $RepoRoot ".github/skills/review-test-failures/SKILL.md"
@@ -545,14 +615,17 @@ $reportContent = Get-Content -Path $ReportPath -Raw -Encoding UTF8
 $reviewBody = New-TestFailureReviewBody -PRNumber $PRNumber -Repository $Repository -ReportContent $reportContent -ContextJsonPath $ContextJsonPath
 Set-Content -Path $CommentPath -Value $reviewBody -Encoding UTF8
 
-$visualMergeScript = Join-Path $RepoRoot ".github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1"
-if (Test-Path $visualMergeScript) {
-    & pwsh $visualMergeScript `
+if ($null -ne $sealedVisualMergeContent -and $null -ne $sealedVisualContextContent) {
+    $mergeResult = Invoke-SealedVisualMerge `
+        -MergeScriptContent $sealedVisualMergeContent `
+        -ContextJsonContent $sealedVisualContextContent `
+        -CommentBodyPath $CommentPath `
         -PrNumber $PRNumber `
-        -Repository $Repository `
-        -ContextJsonPath $ContextJsonPath `
-        -CommentBodyPath $CommentPath
-    if ($LASTEXITCODE -eq 0) {
+        -Repository $Repository
+    foreach ($line in @($mergeResult.output)) {
+        Write-Host $line
+    }
+    if ($mergeResult.exitCode -eq 0) {
         $reviewBody = Get-Content -Path $CommentPath -Raw -Encoding UTF8
     }
     else {
