@@ -145,7 +145,6 @@ namespace Microsoft.Maui.Controls.Platform
 				_ => UITextAlignment.Left
 			};
 
-			#if !MACOS
 			style.LineBreakMode = defaultLineBreakMode switch
 			{
 				LineBreakMode.NoWrap => UILineBreakMode.Clip,
@@ -155,17 +154,6 @@ namespace Microsoft.Maui.Controls.Platform
 				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
 				_ => UILineBreakMode.WordWrap
 			};
-			#else
-			style.LineBreakMode = defaultLineBreakMode switch
-			{
-				LineBreakMode.NoWrap => NSLineBreakMode.Clipping,
-				LineBreakMode.CharacterWrap => NSLineBreakMode.CharWrapping,
-				LineBreakMode.HeadTruncation => NSLineBreakMode.TruncatingHead,
-				LineBreakMode.MiddleTruncation => NSLineBreakMode.TruncatingMiddle,
-				LineBreakMode.TailTruncation => NSLineBreakMode.TruncatingTail,
-				_ => NSLineBreakMode.ByWordWrapping
-			};
-			#endif
 
 			var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 			var hasUnderline = false;
