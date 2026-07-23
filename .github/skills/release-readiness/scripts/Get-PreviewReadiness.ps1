@@ -289,27 +289,59 @@ function Get-PullRequestsViaRest {
         [ValidateSet('open', 'merged')][string]$State
     )
 
-    # REST has no `merged` list state. Query the newest closed PRs and retain
-    # only entries with merged_at; this fallback is used only while GraphQL is
-    # unavailable and preserves a conservative, bounded readiness signal.
-    $restState = if ($State -eq 'merged') { 'closed' } else { 'open' }
-    $json = Invoke-GitHubWithRetry -Arguments @(
-        'api',
-        '--method',
-        'GET',
-        "repos/$Repository/pulls",
-        '-f', "state=$restState",
-        '-f', "base=$BaseBranch",
-        '-f', 'sort=updated',
-        '-f', 'direction=desc',
-        '-f', 'per_page=100'
-    ) -Description "list $State PRs for $BaseBranch via REST"
-
-    $prs = @(ConvertFrom-RestPullRequests -Json $json)
-    if ($State -eq 'merged') {
-        $prs = @($prs | Where-Object { $_.mergedAt })
+    if ($State -eq 'open') {
+        $json = Invoke-GitHubWithRetry -Arguments @(
+            'api',
+            '--method',
+            'GET',
+            "repos/$Repository/pulls",
+            '-f', 'state=open',
+            '-f', "base=$BaseBranch",
+            '-f', 'sort=updated',
+            '-f', 'direction=desc',
+            '-f', 'per_page=100'
+        ) -Description "list open PRs for $BaseBranch via REST"
+        return @(ConvertFrom-RestPullRequests -Json $json)
     }
-    return @($prs)
+
+    # REST has no `merged` list state. Page through closed PRs and filter each
+    # page until we have the same 100 merged records requested from GraphQL.
+    # Filtering only the first 100 closed PRs is incomplete: recently updated
+    # closed-unmerged PRs can push real merges out of that page and make a
+    # healthy dependency flow look stale/missing. Cap the scan and throw if the
+    # cap is exhausted before the server returns a short final page; the caller
+    # then renders merged-history-unavailable instead of a confident partial
+    # signal.
+    $maxMerged = 100
+    $pageSize = 100
+    $maxPages = 10
+    $mergedPrs = @()
+    $reachedEnd = $false
+    for ($page = 1; $page -le $maxPages -and $mergedPrs.Count -lt $maxMerged; $page++) {
+        $json = Invoke-GitHubWithRetry -Arguments @(
+            'api',
+            '--method',
+            'GET',
+            "repos/$Repository/pulls",
+            '-f', 'state=closed',
+            '-f', "base=$BaseBranch",
+            '-f', 'sort=updated',
+            '-f', 'direction=desc',
+            '-f', "per_page=$pageSize",
+            '-f', "page=$page"
+        ) -Description "list merged PRs for $BaseBranch via REST (page $page)"
+        $pagePrs = @(ConvertFrom-RestPullRequests -Json $json)
+        $mergedPrs += @($pagePrs | Where-Object { $_.mergedAt })
+        if ($pagePrs.Count -lt $pageSize) {
+            $reachedEnd = $true
+            break
+        }
+    }
+
+    if ($mergedPrs.Count -lt $maxMerged -and -not $reachedEnd) {
+        throw "REST merged-PR fallback exceeded $maxPages pages before reaching the end of closed PR history for $BaseBranch."
+    }
+    return @($mergedPrs | Select-Object -First $maxMerged)
 }
 
 function Get-ContentFromRepo {

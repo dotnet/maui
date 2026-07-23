@@ -5235,6 +5235,7 @@ Write-Host "`n[Unit] Preview PR discovery GraphQL → REST fallback" -Foreground
 $origPreviewInvokeGitHubWithRetry = (Get-Item function:Invoke-GitHubWithRetry).ScriptBlock
 $origPreviewTestBranchExists = (Get-Item function:Test-BranchExists).ScriptBlock
 $script:PreviewFallbackCalls = @()
+$script:PreviewUsePagedClosedFixture = $false
 $script:PreviewOpenRestJson = @'
 [
   {
@@ -5295,7 +5296,20 @@ try {
             throw "Failed to $Description after 3 attempt(s) (gh exit 1): HTTP 502: Bad Gateway"
         }
         if ($Arguments -contains 'state=open') { return $script:PreviewOpenRestJson }
-        if ($Arguments -contains 'state=closed') { return $script:PreviewClosedRestJson }
+        if ($Arguments -contains 'state=closed') {
+            $pageArg = $Arguments | Where-Object { $_ -like 'page=*' } | Select-Object -First 1
+            $page = if ($pageArg) { [int]($pageArg -replace '^page=', '') } else { 1 }
+            if ($script:PreviewUsePagedClosedFixture -and $page -eq 1) {
+                return @(1..100 | ForEach-Object {
+                    [PSCustomObject]@{
+                        number = 71000 + $_
+                        title = "Closed without merge $_"
+                        merged_at = $null
+                    }
+                }) | ConvertTo-Json -Depth 4
+            }
+            return $script:PreviewClosedRestJson
+        }
         throw "Unexpected REST fallback arguments: $($Arguments -join ' ')"
     }
 
@@ -5313,10 +5327,20 @@ try {
               -Actual ([DateTime]$fallbackMergedPrs[0].mergedAt).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
     $previewRestCalls = @($script:PreviewFallbackCalls | Where-Object { $_[0] -eq 'api' })
     Assert-Eq -Label "preview PR fallback: uses REST for both open and merged queries" -Expected 2 -Actual $previewRestCalls.Count
+
+    # Page 1 contains 100 closed-unmerged PRs; the actual merged PR appears on
+    # page 2. A one-page fallback silently loses it and can emit false stale or
+    # missing dependency-flow signals.
+    $script:PreviewUsePagedClosedFixture = $true
+    $pagedMergedPrs = @(Get-PullRequestsViaRest -BaseBranch 'net11.0' -State 'merged')
+    Assert-Eq -Label "preview merged-PR fallback: pages past 100 closed-unmerged PRs" -Expected 1 -Actual $pagedMergedPrs.Count
+    Assert-Eq -Label "preview merged-PR fallback: recovers page-2 merged PR" -Expected 70002 -Actual $pagedMergedPrs[0].number
+    $page2Calls = @($script:PreviewFallbackCalls | Where-Object { $_ -contains 'page=2' })
+    Assert-Eq -Label "preview merged-PR fallback: requests page 2 when page 1 is full" -Expected 1 -Actual $page2Calls.Count
 } finally {
     Set-Item function:Invoke-GitHubWithRetry $origPreviewInvokeGitHubWithRetry
     Set-Item function:Test-BranchExists $origPreviewTestBranchExists
-    Remove-Variable -Name PreviewFallbackCalls,PreviewOpenRestJson,PreviewClosedRestJson -Scope Script -ErrorAction SilentlyContinue
+    Remove-Variable -Name PreviewFallbackCalls,PreviewUsePagedClosedFixture,PreviewOpenRestJson,PreviewClosedRestJson -Scope Script -ErrorAction SilentlyContinue
 }
 
 $p0Pr        = [PSCustomObject]@{ number = 34758; labels = @([PSCustomObject]@{ name = 'p/0' }, [PSCustomObject]@{ name = 'area-xaml' }) }
