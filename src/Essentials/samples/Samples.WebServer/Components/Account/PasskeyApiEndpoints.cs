@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Essentials.Samples.WebServer.Data;
@@ -14,11 +13,11 @@ namespace Microsoft.AspNetCore.Routing;
 /// Identity authentication cookie, so the native client MUST use a <c>CookieContainer</c> and send
 /// the cookie from the <c>/begin</c> response back on the matching <c>/finish</c> request.
 ///
-/// Registration enrolls a passkey for the currently signed-in user (the recommended "add a passkey
-/// after you log in" flow); as a local test-harness convenience it falls back to auto-provisioning a
-/// passwordless user from the posted username. Do NOT copy that shortcut into production; it exists
-/// purely so the cross-platform Passkeys Essentials API can be exercised end to end against a
-/// spec-conformant relying party.
+/// Registration enrolls a passkey for the currently signed-in user (the "add a passkey after you log
+/// in" flow), so the caller must authenticate first. This is a developer-facing reference server; do
+/// not treat its relaxed conveniences (no email confirmation, cookie-based session) as production
+/// guidance — it exists purely so the cross-platform Passkeys Essentials API can be exercised end to
+/// end against a spec-conformant relying party.
 /// </summary>
 internal static class PasskeyApiEndpoints
 {
@@ -28,34 +27,19 @@ internal static class PasskeyApiEndpoints
 
 		// 1) Registration — begin: returns PublicKeyCredentialCreationOptions JSON (WebAuthn).
 		//
-		// Real flow: if the caller is already authenticated (they bootstrapped with a password via
-		// /account/login?useCookies=true), enroll the passkey for THAT user — the honest "add a
-		// passkey for faster sign-in after you've logged in" flow. No typed username needed.
-		//
-		// Harness fallback: if there is no session yet, fall back to the posted 'username' and
-		// auto-provision a passwordless test user so the API can still be exercised in isolation.
+		// Enrolls a passkey for the currently signed-in user — the honest "add a passkey for faster
+		// sign-in after you've logged in" flow. The caller must first authenticate (POST
+		// /account/login?useCookies=true) so the request carries the Identity session cookie. Anonymous
+		// requests are rejected: a relying party must never mint an account just because someone asked to
+		// register a passkey for an arbitrary username.
 		group.MapPost("/register/begin", async (
-			string? username,
 			HttpContext context,
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager) =>
 		{
 			var user = await userManager.GetUserAsync(context.User);
-
 			if (user is null)
-			{
-				if (string.IsNullOrWhiteSpace(username))
-					return Results.BadRequest("Sign in first (POST /account/login), or pass a 'username' to auto-provision a test user.");
-
-				user = await userManager.FindByNameAsync(username);
-				if (user is null)
-				{
-					user = new ApplicationUser { UserName = username, Email = username, EmailConfirmed = true };
-					var created = await userManager.CreateAsync(user);
-					if (!created.Succeeded)
-						return Results.BadRequest(string.Join("; ", created.Errors.Select(e => e.Description)));
-				}
-			}
+				return Results.Unauthorized();
 
 			var userId = await userManager.GetUserIdAsync(user);
 			var userName = await userManager.GetUserNameAsync(user) ?? user.UserName!;
