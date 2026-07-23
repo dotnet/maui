@@ -102,7 +102,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var app = builder.Build();
 			app.Dispose();
 
-			Assert.True(factory.Provider?.IsDisposed == true);
+			Assert.True(factory.Provider.IsDisposed);
 		}
 
 		[Fact]
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
 
 			Assert.Equal("initialization failed", exception.Message);
-			Assert.True(factory.Provider?.IsDisposed == true);
+			Assert.True(factory.Provider.IsDisposed);
 		}
 
 		static (MauiApp App, DisposableConfigurationProvider Configuration, ConfigurationReadingCleanup Cleanup)
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 		sealed class AsyncOnlyServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
 		{
-			public AsyncOnlyServiceProvider? Provider { get; private set; }
+			public AsyncOnlyServiceProvider Provider { get; private set; } = null!;
 
 			public IServiceCollection CreateBuilder(IServiceCollection services) => services;
 
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			public bool IsDisposed { get; private set; }
 
-			public object? GetService(Type serviceType) =>
+			public object GetService(Type serviceType) =>
 				_innerProvider.GetService(serviceType);
 
 			public ValueTask DisposeAsync()
