@@ -941,7 +941,11 @@ public class EditorFeatureTests : _GalleryUITest
 		App.Tap("AutoSizeTextChanges");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
+#if MACCATALYST
+		App.EnterText("TextEntryChanged", "WhenautoresizingisenabledtheheightoftheEditorwillincreasewhentheuserfillsitwithtextandtheheightwilldecreaseastheuserdeletestextThiscanbeusedtoensurethatEditorobjectsinaDataTemplate");
+#else
 		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
+#endif
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
