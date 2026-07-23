@@ -4135,6 +4135,337 @@ Write-Host "`n[Unit] Test-IsP0Pr — p/0 PR blocker classification" -ForegroundC
 $prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
 . $prevScript -Branch 'release/11.0.1xx-preview6'
 
+# =========================================================================
+# Preview consumer installability — workload set, feeds, pins, redaction
+# =========================================================================
+Write-Host "`n[Unit] Preview consumer installability" -ForegroundColor Cyan
+
+$installabilityScript = Join-Path $PSScriptRoot '..' 'scripts' 'PreviewInstallability.ps1'
+. $installabilityScript
+
+Assert-Eq -Label "installability: SDK feature band is derived from SDK patch" `
+    -Expected '11.0.100' -Actual (Get-PreviewSdkFeatureBand '11.0.103-preview.6.1')
+Assert-Eq -Label "installability: CLI version converts to workload-set NuGet version" `
+    -Expected '11.100.0-preview.6.26363.2' -Actual (ConvertTo-WorkloadSetNuGetVersion '11.0.100-preview.6.26363.2')
+Assert-Eq -Label "installability: NuGet version converts back to CLI version" `
+    -Expected '11.0.100-preview.6.26363.2' -Actual (ConvertTo-WorkloadSetCliVersion '11.100.0-preview.6.26363.2' '11.0.100')
+
+$iiExternalCredentialSourceRejected = $false
+try {
+    $null = ConvertFrom-PreviewPackageSourceSpec -Major 11 `
+        -AdditionalPackageSource 'credential_alias=https://api.nuget.org/v3/index.json'
+} catch {
+    $iiExternalCredentialSourceRejected = $true
+}
+Assert-Eq -Label "installability: credential-bearing additional sources cannot target NuGet.org" `
+    -Expected $true -Actual $iiExternalCredentialSourceRejected
+
+$iiPins = [PSCustomObject]@{
+    Vmr     = [PSCustomObject]@{ Version = '11.0.100-preview.6.26359.118' }
+    Android = [PSCustomObject]@{ Version = '37.0.0-preview.6.59' }
+    Macios  = [PSCustomObject]@{ Version = '26.5.11720-net11-p6' }
+}
+$iiWorkloadSetManifest = [ordered]@{
+    'Microsoft.NET.Sdk.Android'                    = '37.0.0-preview.6.59/11.0.100-preview.6'
+    'Microsoft.NET.Sdk.iOS'                        = '26.5.11720-net11-p6/11.0.100-preview.6'
+    'Microsoft.NET.Sdk.MacCatalyst'                = '26.5.11720-net11-p6/11.0.100-preview.6'
+    'Microsoft.NET.Sdk.macOS'                      = '26.5.11720-net11-p6/11.0.100-preview.6'
+    'Microsoft.NET.Sdk.tvOS'                       = '26.5.11720-net11-p6/11.0.100-preview.6'
+    'Microsoft.NET.Workload.Mono.ToolChain.Current'= '11.0.100-preview.6.26359.118/11.0.100-preview.6'
+    'Microsoft.NET.Workload.Emscripten.Current'    = '11.0.100-preview.6.26359.118/11.0.100-preview.6'
+    'Microsoft.NET.Sdk.Maui'                       = '11.0.0-preview.6.26360.8/11.0.100-preview.6'
+}
+$iiDependencies = [ordered]@{
+    'microsoft.net.sdk.android' = @{
+        jdk = @{ version = '[21.0,22.0)'; recommendedVersion = '21.0.8' }
+        androidsdk = @{
+            packages = @(
+                @{ sdkPackage = @{ id = 'build-tools;36.0.0' } }
+                @{ sdkPackage = @{ id = 'platforms;android-36' } }
+            )
+        }
+    }
+    'microsoft.net.sdk.ios' = @{
+        xcode = @{ version = '[26.6,)'; recommendedVersion = '26.6' }
+        sdk = @{ version = '26.5' }
+    }
+    'microsoft.net.sdk.maui' = @{
+        windowsAppSdk = @{ recommendedVersion = '1.8.251106002' }
+    }
+}
+$iiComponentManifest = [ordered]@{
+    packs = [ordered]@{
+        'Microsoft.Android.Sdk.net11'                                  = @{ version = '37.0.0-preview.6.59' }
+        'Microsoft.iOS.Sdk.net11.0_26.5'                               = @{ version = '26.5.11720-net11-p6' }
+        'Microsoft.MacCatalyst.Sdk.net11.0_26.5'                       = @{ version = '26.5.11720-net11-p6' }
+        'Microsoft.NETCore.App.Runtime.Mono.net11.android-arm64'       = @{ version = '11.0.0-preview.6.26359.118' }
+        'Microsoft.NETCore.App.Runtime.Mono.net11.ios-arm64'           = @{ version = '11.0.0-preview.6.26359.118' }
+        'Microsoft.NETCore.App.Runtime.Mono.net11.maccatalyst-arm64'   = @{ version = '11.0.0-preview.6.26359.118' }
+        'Microsoft.Maui.Controls'                                      = @{ version = '11.0.0-preview.6.26360.8' }
+    }
+}
+$iiPackageReader = {
+    param($ResolvedSource, $PackageId, $Version, $EntryNames)
+    if ($PackageId -like 'Microsoft.NET.Workloads.*') {
+        return @{ 'data/microsoft.net.workloads.workloadset.json' = $iiWorkloadSetManifest }
+    }
+    return @{
+        'data/WorkloadDependencies.json' = $iiDependencies
+        'data/WorkloadManifest.json'     = $iiComponentManifest
+    }
+}.GetNewClosure()
+
+$iiSourcePackages = @{
+    'dotnet-workloads' = @(
+        'microsoft.net.workloads.11.0.100-preview.6'
+    )
+    'dotnet11-workloads' = @(
+        'microsoft.net.sdk.android.manifest-11.0.100-preview.6',
+        'microsoft.android.sdk.net11'
+    )
+    'dotnet11' = @(
+        'microsoft.net.sdk.ios.manifest-11.0.100-preview.6',
+        'microsoft.net.sdk.maccatalyst.manifest-11.0.100-preview.6',
+        'microsoft.net.sdk.macos.manifest-11.0.100-preview.6',
+        'microsoft.net.sdk.maui.manifest-11.0.100-preview.6',
+        'microsoft.net.workload.mono.toolchain.current.manifest-11.0.100-preview.6',
+        'microsoft.ios.sdk.net11.0_26.5',
+        'microsoft.maccatalyst.sdk.net11.0_26.5',
+        'microsoft.maui.controls'
+    )
+    'dotnet11-transport' = @(
+        'microsoft.netcore.app.runtime.mono.net11.android-arm64',
+        'microsoft.netcore.app.runtime.mono.net11.ios-arm64',
+        'microsoft.netcore.app.runtime.mono.net11.maccatalyst-arm64'
+    )
+}
+$iiFetcher = {
+    param($Url, $Source)
+
+    if ($Url -eq $Source.Uri) {
+        return @{
+            resources = @(
+                @{ '@id' = "https://fake/$($Source.Name)/query2/"; '@type' = 'SearchQueryService/3.5.0' }
+                @{ '@id' = "https://fake/$($Source.Name)/flat2"; '@type' = 'PackageBaseAddress/3.0.0' }
+            )
+        }
+    }
+    if ($Url -match '/query2/') {
+        if ($Source.Name -ne 'dotnet-workloads') { return @{ data = @() } }
+        return @{
+            data = @(
+                @{
+                    id = 'Microsoft.NET.Workloads.11.0.100-preview.6'
+                    version = '11.100.0-preview.6.26363.2'
+                    versions = @(
+                        @{ version = '11.100.0-preview.6.26363.2' }
+                        @{ version = '11.100.0-preview.6.26364.2' }
+                    )
+                }
+                @{
+                    id = 'Microsoft.NET.Workloads.11.0.100-preview.6.Msi.x64'
+                    version = '11.100.0-preview.6.26363.2'
+                    versions = @(@{ version = '11.100.0-preview.6.26363.2' })
+                }
+            )
+        }
+    }
+    if ($Url -match '/flat2/(?<id>[^/]+)/index\.json$') {
+        $id = $Matches.id.ToLowerInvariant()
+        $available = @($iiSourcePackages[$Source.Name]) -contains $id
+        return @{ versions = if ($available) { @(
+            '11.100.0-preview.6.26363.2',
+            '37.0.0-preview.6.59',
+            '26.5.11720-net11-p6',
+            '11.0.100-preview.6.26359.118',
+            '11.0.0-preview.6.26359.118',
+            '11.0.0-preview.6.26360.8'
+        ) } else { @() } }
+    }
+    throw "Unexpected installability fixture URL: $Url"
+}.GetNewClosure()
+
+$iiResult = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $false `
+    -Fetcher $iiFetcher -PackageReader $iiPackageReader
+Assert-Eq -Label "installability: coherent workload set is installable" -Expected 'installable' -Actual $iiResult.Status
+Assert-Eq -Label "installability: workload-set search excludes MSI variants" `
+    -Expected 'Microsoft.NET.Workloads.11.0.100-preview.6' -Actual $iiResult.PackageId
+Assert-Eq -Label "installability: confirmed workload CLI version is preserved" `
+    -Expected '11.0.100-preview.6.26363.2' -Actual $iiResult.CliVersion
+Assert-Eq -Label "installability: Android branch pin matches workload set" `
+    -Expected 'match' -Actual (@($iiResult.PinComparisons | Where-Object WorkloadId -eq 'Microsoft.NET.Sdk.Android')[0].Status)
+Assert-Eq -Label "installability: transport feed is discovered from representative runtime pack" `
+    -Expected $true -Actual (@($iiResult.RequiredSources.Name) -contains 'dotnet11-transport')
+Assert-Eq -Label "installability: Apple SDK representative packs are probed" `
+    -Expected $true -Actual (
+        @($iiResult.PackProbes.Category) -contains 'ios-sdk' -and
+        @($iiResult.PackProbes.Category) -contains 'maccatalyst-sdk'
+    )
+Assert-Eq -Label "installability: generated NuGet config clears inherited sources" `
+    -Expected $true -Actual ($iiResult.NuGetConfig -match '<clear\s*/>')
+Assert-Eq -Label "installability: JDK requirement comes from component manifest" `
+    -Expected '21.0.8' -Actual $iiResult.PlatformRequirements.Jdk.RecommendedVersion
+Assert-Eq -Label "installability: Xcode requirement comes from component manifest" `
+    -Expected '26.6' -Actual $iiResult.PlatformRequirements.Xcode.RecommendedVersion
+Assert-Eq -Label "installability: Windows App SDK requirement comes from MAUI manifest" `
+    -Expected '1.8.251106002' -Actual $iiResult.PlatformRequirements.WindowsAppSdk
+
+$iiInternalExactFetcher = {
+    param($Url, $Source)
+    if ($Url -eq $Source.Uri) {
+        return @{
+            resources = @(
+                @{ '@id' = "https://fake/$($Source.Name)/query2/"; '@type' = 'SearchQueryService/3.5.0' }
+                @{ '@id' = "https://fake/$($Source.Name)/flat2"; '@type' = 'PackageBaseAddress/3.0.0' }
+            )
+        }
+    }
+    if ($Url -match '/flat2/microsoft\.net\.workloads\.11\.0\.100-preview\.6/index\.json$') {
+        return @{ versions = if ($Source.Name -eq 'internal_preview6') {
+            @('11.100.0-preview.6.26363.2')
+        } else { @() } }
+    }
+    return & $iiFetcher $Url $Source
+}.GetNewClosure()
+$iiInternalExact = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' `
+    -AdditionalPackageSource 'internal_preview6=https://pkgs.dev.azure.com/dnceng/internal/_packaging/example-shipping/nuget/v3/index.json' `
+    -PublicSafe $false -Fetcher $iiInternalExactFetcher -PackageReader $iiPackageReader
+Assert-Eq -Label "installability: confirmed version is resolved from an additional source before discovery preference" `
+    -Expected 'installable' -Actual $iiInternalExact.Status
+Assert-Eq -Label "installability: additional source carrying the confirmed workload set is retained" `
+    -Expected $true -Actual (@($iiInternalExact.RequiredSources.Name) -contains 'internal_preview6')
+
+$iiUnreadablePackageReader = {
+    param($ResolvedSource, $PackageId, $Version, $EntryNames)
+    if ($PackageId -like 'Microsoft.NET.Workloads.*') {
+        return @{ 'data/microsoft.net.workloads.workloadset.json' = $iiWorkloadSetManifest }
+    }
+    return @{
+        'data/WorkloadDependencies.json' = $iiDependencies
+        'data/WorkloadManifest.json'     = $null
+    }
+}.GetNewClosure()
+$iiUnreadable = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $false `
+    -Fetcher $iiFetcher -PackageReader $iiUnreadablePackageReader
+Assert-Eq -Label "installability: unreadable component manifests cannot produce installable" `
+    -Expected 'unknown' -Actual $iiUnreadable.Status
+Assert-Eq -Label "installability: unreadable component content is represented in evidence" `
+    -Expected $true -Actual (@($iiUnreadable.ManifestPackages.ContentStatus) -contains 'unknown')
+
+$iiWrongBand = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -WorkloadSetCliVersion '11.0.200-preview.6.26363.2' -PublicSafe $false `
+    -Fetcher $iiFetcher -PackageReader $iiPackageReader
+Assert-Eq -Label "installability: workload-set feature band must match branch SDK" `
+    -Expected 'mismatched' -Actual $iiWrongBand.Status
+
+$iiNoCandidateFetcher = {
+    param($Url, $Source)
+    if ($Url -eq $Source.Uri) {
+        return @{
+            resources = @(
+                @{ '@id' = "https://fake/$($Source.Name)/query2/"; '@type' = 'SearchQueryService/3.5.0' }
+                @{ '@id' = "https://fake/$($Source.Name)/flat2"; '@type' = 'PackageBaseAddress/3.0.0' }
+            )
+        }
+    }
+    if ($Url -match '/query2/') { return @{ data = @() } }
+    return @{ versions = @() }
+}
+$iiNoCandidate = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -PublicSafe $false -Fetcher $iiNoCandidateFetcher -PackageReader $iiPackageReader
+Assert-Eq -Label "installability: no unconfirmed candidate remains unknown rather than blocked" `
+    -Expected 'unknown' -Actual $iiNoCandidate.Status
+
+$iiResolvedRoles = @(
+    [PSCustomObject]@{
+        Source = [PSCustomObject]@{ Name = 'workloads'; Role = 'workload-set' }
+        Available = $true
+    },
+    [PSCustomObject]@{
+        Source = [PSCustomObject]@{ Name = 'platform'; Role = 'platform' }
+        Available = $true
+    }
+)
+Assert-Eq -Label "installability: unrelated workload-set feed is not probed for platform packs" `
+    -Expected @('platform') -Actual @(
+        (Get-PreviewSourceOrder -ResolvedSources $iiResolvedRoles -PackageId 'Microsoft.Android.Sdk.net11').Source.Name
+    )
+
+$iiMismatchedManifest = [ordered]@{}
+foreach ($entry in $iiWorkloadSetManifest.GetEnumerator()) { $iiMismatchedManifest[$entry.Key] = $entry.Value }
+$iiMismatchedManifest['Microsoft.NET.Sdk.Android'] = '37.0.0-preview.6.999/11.0.100-preview.6'
+$iiMismatch = Compare-PreviewWorkloadSetPins -Manifest $iiMismatchedManifest -Pins $iiPins -Major 11 -Preview 6
+Assert-Eq -Label "installability: component pin mismatch is detected" `
+    -Expected 'mismatch' -Actual (@($iiMismatch | Where-Object WorkloadId -eq 'Microsoft.NET.Sdk.Android')[0].Status)
+Assert-Eq -Label "installability: MAUI preview regex accepts the target preview" `
+    -Expected 'match' -Actual (@($iiMismatch | Where-Object WorkloadId -eq 'Microsoft.NET.Sdk.Maui')[0].Status)
+
+$iiAdditionalSource = [PSCustomObject]@{
+    Name = 'internal_preview6'; Uri = 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/example-shipping/nuget/v3/index.json'
+    Role = 'additional'; IsAdditional = $true; IsInternal = $true
+}
+$iiUnavailableSource = [PSCustomObject]@{
+    Source = $iiAdditionalSource; Available = $false; AuthenticationLost = $true
+    SearchUrl = $null; FlatUrl = $null; Reason = 'HTTP 401'
+}
+$iiAuthUnknown = Find-PreviewPackageLocation -ResolvedSources @($iiUnavailableSource) `
+    -PackageId 'Example.Package' -Version '1.0.0'
+Assert-Eq -Label "installability: inaccessible authenticated source is unknown, not missing" `
+    -Expected 'unknown' -Actual $iiAuthUnknown.Status
+
+$iiMissingSource = [PSCustomObject]@{
+    Source = [PSCustomObject]@{
+        Name = 'public'; Uri = 'https://api.nuget.org/v3/index.json'
+        Role = 'shared'; IsAdditional = $false; IsInternal = $false
+    }
+    Available = $true; AuthenticationLost = $false
+    SearchUrl = 'https://fake/public/query2/'; FlatUrl = 'https://fake/public/flat2'; Reason = $null
+}
+$iiMissingFetcher = { param($Url, $Source) @{ versions = @() } }
+$iiMissing = Find-PreviewPackageLocation -ResolvedSources @($iiMissingSource) `
+    -PackageId 'Example.Package' -Version '1.0.0' -Fetcher $iiMissingFetcher
+Assert-Eq -Label "installability: confirmed absence on accessible sources is missing" `
+    -Expected 'missing' -Actual $iiMissing.Status
+
+$iiPrivateResult = [PSCustomObject]@{
+    Status = 'unknown'; Summary = 'Authentication is required.'; SdkVersion = '11.0.100-preview.6.1'
+    SdkFeatureBand = '11.0.100'; PackageId = 'Example.Package'; CliVersion = '11.0.100-preview.6.2'
+    NuGetVersion = '11.100.0-preview.6.2'; VersionConfirmed = $true; PinComparisons = @()
+    ManifestPackages = @([PSCustomObject]@{
+        WorkloadId = 'Example.Workload'; PackageId = 'Example.Manifest'; Version = '1.0.0'; Status = 'unknown'
+        ResolvedSource = $null; UnknownSources = @('internal_preview6')
+    })
+    PackProbes = @(); RequiredSources = @($iiAdditionalSource); PlatformRequirements = $null
+    NuGetConfig = '<configuration>private</configuration>'; InstallCommand = 'dotnet workload install'
+}
+$iiPublicResult = ConvertTo-PublicInstallabilityResult -Result $iiPrivateResult
+$iiPublicJson = $iiPublicResult | ConvertTo-Json -Depth 10
+$iiPublicMarkdown = Format-PreviewInstallabilityMarkdown -Result $iiPublicResult -PublicSafe $true
+Assert-Eq -Label "installability: public JSON removes additional source URL" `
+    -Expected $false -Actual ($iiPublicJson.Contains($iiAdditionalSource.Uri))
+Assert-Eq -Label "installability: public JSON removes additional source name" `
+    -Expected $false -Actual ($iiPublicJson.Contains($iiAdditionalSource.Name))
+Assert-Eq -Label "installability: public JSON removes local NuGet config" `
+    -Expected $null -Actual $iiPublicResult.NuGetConfig
+Assert-Eq -Label "installability: public Markdown removes additional source URL" `
+    -Expected $false -Actual ($iiPublicMarkdown.Contains($iiAdditionalSource.Uri))
+Assert-Eq -Label "installability: public Markdown explains local-only credential setup" `
+    -Expected $true -Actual ($iiPublicMarkdown -match 'Packaging Read PAT')
+Assert-Eq -Label "installability: public Markdown renders package availability evidence" `
+    -Expected $true -Actual ($iiPublicMarkdown -match 'Manifest package.+Availability')
+
+Assert-Eq -Label "installability check: installable maps to READY" `
+    -Expected 'READY' -Actual (ConvertTo-PreviewInstallabilityCheck $iiResult).Status
+Assert-Eq -Label "installability check: missing maps to BLOCKED" `
+    -Expected 'BLOCKED' -Actual (ConvertTo-PreviewInstallabilityCheck ([PSCustomObject]@{
+        Status = 'missing'; Summary = 'missing'; VersionConfirmed = $true
+    })).Status
+Assert-Eq -Label "installability check: unknown maps to UNKNOWN" `
+    -Expected 'UNKNOWN' -Actual (ConvertTo-PreviewInstallabilityCheck $iiPrivateResult).Status
+
 $p0Pr        = [PSCustomObject]@{ number = 34758; labels = @([PSCustomObject]@{ name = 'p/0' }, [PSCustomObject]@{ name = 'area-xaml' }) }
 $nonP0Pr     = [PSCustomObject]@{ number = 99999; labels = @([PSCustomObject]@{ name = 'area-xaml' }, [PSCustomObject]@{ name = 'p/1' }) }
 $missingLbls = [PSCustomObject]@{ number = 12345 }            # no labels property at all
