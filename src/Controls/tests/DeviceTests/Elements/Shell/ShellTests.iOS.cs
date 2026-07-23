@@ -668,11 +668,16 @@ namespace Microsoft.Maui.DeviceTests
 					.ChildViewControllers
 					.OfType<ShellFlyoutContentRenderer>()
 					.First();
+				var tableViewController = flyoutContent.ChildViewControllers
+					.OfType<ShellTableViewController>()
+					.First();
+				var tableView = tableViewController.View;
 				var headerPlatformView = header.ToPlatform();
 				var footerPlatformView = footer.ToPlatform();
 
 				Assert.NotNull(header.Handler);
 				Assert.NotNull(footer.Handler);
+				Assert.NotNull(tableView.Superview);
 				Assert.NotNull(headerPlatformView.Superview);
 				Assert.NotNull(footerPlatformView.Superview);
 
@@ -680,6 +685,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Null(header.Handler);
 				Assert.Null(footer.Handler);
+				Assert.Null(tableView.Superview);
 				Assert.Null(headerPlatformView.Superview);
 				Assert.Null(footerPlatformView.Superview);
 
@@ -755,6 +761,16 @@ namespace Microsoft.Maui.DeviceTests
 				var renderer = new TestableShellFlyoutRenderer();
 
 				renderer.DisposeForTest(false);
+				renderer.DisposeForTest(true);
+			});
+
+		[Fact(DisplayName = "Unattached Shell Flyout Renderer Can Be Disposed")]
+		public Task UnattachedShellFlyoutRendererCanBeDisposed() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				var renderer = new TestableShellFlyoutRenderer();
+
+				renderer.DisposeForTest(true);
 				renderer.DisposeForTest(true);
 			});
 
@@ -1039,7 +1055,10 @@ namespace Microsoft.Maui.DeviceTests
 				CancellationToken cancellationToken = default)
 			{
 				Starting.Set();
-				await Task.Run(() => DoWork.WaitOne());
+				// The test needs the canceled load to produce a stale result, but the wait must remain bounded.
+				if (!await Task.Run(() => DoWork.WaitOne(TimeSpan.FromSeconds(30))))
+					throw new TimeoutException("Timed out waiting to continue the delayed image load.");
+
 				var image = await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(() => new UIImage());
 				return new ImageSourceServiceResult(image, () =>
 				{

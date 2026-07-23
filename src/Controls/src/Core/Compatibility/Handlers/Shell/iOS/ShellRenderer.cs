@@ -296,10 +296,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_activeTransitionCancellation?.TrySetResult(true);
 		}
 
-		static async Task WaitForTransitionOrCancellationAsync(Task transition, Task cancellation)
+		static async Task WaitForTransitionOrCancellationAsync(Task transition, Task cancellation, ILogger logger)
 		{
 			var completedTask = await Task.WhenAny(transition, cancellation);
+			if (!ReferenceEquals(completedTask, transition))
+				_ = ObserveTransitionAsync(transition, logger);
+
 			await completedTask;
+		}
+
+		static async Task ObserveTransitionAsync(Task transition, ILogger logger)
+		{
+			try
+			{
+				await transition.ConfigureAwait(false);
+			}
+			catch (Exception exc) when (exc is not OperationCanceledException)
+			{
+				logger?.LogWarning(exc, "Shell item transition failed after cancellation");
+			}
 		}
 
 		protected virtual async void OnCurrentItemChanged()
@@ -458,7 +473,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_outgoingRenderer = oldRenderer;
 				_activeTransition = WaitForTransitionOrCancellationAsync(
 					transition.Transition(oldRenderer, newRenderer),
-					transitionCancellation.Task);
+					transitionCancellation.Task,
+					_mauiContext?.CreateLogger<ShellRenderer>());
 
 				try
 				{

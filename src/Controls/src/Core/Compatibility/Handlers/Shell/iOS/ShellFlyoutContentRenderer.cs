@@ -474,6 +474,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_blurView?.Dispose();
 				_headerView?.Dispose();
 				_footerView?.Dispose();
+				_tableViewController?.ViewIfLoaded?.RemoveFromSuperview();
 				_tableViewController?.RemoveFromParentViewController();
 				_tableViewController?.Dispose();
 				WillAppear = null;

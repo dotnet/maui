@@ -272,10 +272,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				ShellController.RemoveAppearanceObserver(this);
-
-				Shell.PropertyChanged -= OnShellPropertyChanged;
-				((IShellController)Shell).RemoveFlyoutBehaviorObserver(this);
+				if (Shell is not null)
+				{
+					ShellController.RemoveAppearanceObserver(this);
+					Shell.PropertyChanged -= OnShellPropertyChanged;
+					((IShellController)Shell).RemoveFlyoutBehaviorObserver(this);
+				}
 
 				_flyoutAnimation?.StopAnimation(true);
 				_flyoutAnimation = null;
