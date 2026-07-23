@@ -353,15 +353,6 @@ function GetDotNetInstallScript {
 }
 
 function InitializeBuildTool {
-  # Allow a caller (e.g. a bootstrap script running out-of-proc) to inject the build tool via
-  # environment variables instead of the in-proc _InitializeBuildTool variable. Only the tool path and
-  # command are consumed by the MSBuild function below, so those are all that's needed.
-  if [[ -n "${_BuildToolPath:-}" ]]; then
-    _InitializeBuildTool="$_BuildToolPath"
-    _InitializeBuildToolCommand="$_BuildToolCommand"
-    return
-  fi
-
   if [[ -n "${_InitializeBuildTool:-}" ]]; then
     return
   fi
@@ -432,7 +423,7 @@ function InitializeToolset {
   if [[ -z "$nuget_config" ]]; then
     # Search for any variation of nuget.config in the RepoRoot
     local found_config
-    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname nuget.config | head -n 1)
+    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname "nuget.config" -print -quit)
 
     if [[ -n "$found_config" ]]; then
       nuget_config="$found_config"
@@ -466,7 +457,7 @@ function InitializeToolset {
 }
 
 function ExitWithExitCode {
-  if [[ "$prepare_machine" == true ]]; then
+  if [[ "$ci" == true && "$prepare_machine" == true ]]; then
     StopProcesses
   fi
   exit $1
@@ -475,8 +466,7 @@ function ExitWithExitCode {
 function StopProcesses {
   echo "Killing running build processes..."
   pkill -9 "dotnet" || true
-  pkill -9 -i -x VBCSCompiler || true
-  pkill -9 -i -x MSBuild || true
+  pkill -9 "vbcscompiler" || true
   return 0
 }
 
@@ -503,7 +493,14 @@ function DotNet {
 function MSBuild {
   if [[ "$ci" == true ]]; then
     if [[ "$binary_log" != true && "$exclude_ci_binary_log" != true ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the --excludeCIBinarylog switch."
+      Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the -noBinaryLog switch."
+      ExitWithExitCode 1
+    fi
+
+    # Node reuse must be disabled in CI builds unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
+    # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
+    if [[ "$node_reuse" == true && "${MSBUILD_NODEREUSE_ENABLED:-}" != "1" ]]; then
+      Write-PipelineTelemetryError -category 'Build'  "Node reuse must be disabled in CI build."
       ExitWithExitCode 1
     fi
   fi
