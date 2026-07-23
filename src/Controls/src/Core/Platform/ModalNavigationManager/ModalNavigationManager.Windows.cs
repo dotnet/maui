@@ -192,7 +192,11 @@ namespace Microsoft.Maui.Controls.Platform
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
 
 					var navRoot = context.GetNavigationRootManager();
-					bool showTitleBar = !IsWindowFullScreen();
+					// Combine presenter state with the app's explicit TitleBar.IsVisible setting.
+					// Casting to the concrete TitleBar type is safe — ModalNavigationManager is in the
+					// same assembly and TitleBar is the only platform implementation on Windows.
+					// Defaults to true (show title bar) when no custom TitleBar is set.
+					bool showTitleBar = !IsWindowFullScreen() && ((_window.TitleBar as TitleBar)?.IsVisible ?? true);
 
 					if (navRoot.RootView is WindowRootView wrv && wrv.AppTitleBarContainer is not null)
 					{
@@ -314,7 +318,11 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				bool showTitleBar = sender.Presenter?.Kind != AppWindowPresenterKind.FullScreen;
+				bool isFullScreen = sender.Presenter?.Kind == AppWindowPresenterKind.FullScreen;
+				// Combine presenter state with the app's explicit TitleBar.IsVisible setting so that
+				// an app that intentionally hides its TitleBar does not have the reservation forced
+				// back on when leaving full-screen. Defaults to true when no TitleBar is set.
+				bool showTitleBar = !isFullScreen && ((_window.TitleBar as TitleBar)?.IsVisible ?? true);
 				rootManager.SetTitleBarVisibility(showTitleBar);
 			});
 		}
