@@ -63,8 +63,9 @@ intent-filters are only for App Links, a different feature). You do need the rig
 1. `cd src/Essentials/samples && pwsh ./Configure.ps1`
    This provisions the tunnel and writes into the server's user-secrets: the RP domain + web origin,
    **and** the Android package (`com.microsoft.maui.essentials`), your debug keystore SHA-256, and the
-   `android:apk-key-hash:` origin. (It reads `~/.android/debug.keystore`; build the Android app once
-   first if that file doesn't exist yet.)
+   `android:apk-key-hash:` origin. (It reads the keystore .NET for Android signs debug builds with —
+   `<LocalApplicationData>/Xamarin/Mono for Android/debug.keystore`, **not** `~/.android/debug.keystore`;
+   build the Android app once first if it doesn't exist yet.)
 2. Host the tunnel and run the server (two terminals):
    ```bash
    devtunnel host maui-essentials

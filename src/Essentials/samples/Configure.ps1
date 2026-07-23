@@ -32,8 +32,10 @@
     The Android application id. Defaults to the sample app's <ApplicationId> read from its project.
 
 .PARAMETER DebugKeystore
-    Path to the Android debug keystore. Defaults to the .NET for Android location
-    (<userhome>/.android/debug.keystore), resolved per-platform.
+    Path to the Android debug keystore. Defaults to the keystore .NET for Android actually signs debug
+    builds with: <LocalApplicationData>/Xamarin/Mono for Android/debug.keystore (e.g. on macOS
+    ~/Library/Application Support/Xamarin/Mono for Android/debug.keystore). This is NOT
+    ~/.android/debug.keystore.
 
 .PARAMETER StartHost
     If set, starts hosting the tunnel (blocking) at the end. Otherwise prints the host command.
@@ -69,10 +71,19 @@ if (-not $AndroidPackage) {
     if (-not $AndroidPackage) { $AndroidPackage = 'com.microsoft.maui.essentials' }
 }
 
-# Default to the .NET for Android debug keystore location (all platforms). $HOME is cross-platform
-# in PowerShell; use Join-Path so the separators are correct on Windows too.
+# Default to the .NET for Android debug keystore — the key the build actually signs the APK with.
+# .NET Android resolves this as <LocalApplicationData>/Xamarin/Mono for Android/debug.keystore, which
+# maps per-OS to:
+#   macOS   : ~/Library/Application Support/Xamarin/Mono for Android/debug.keystore
+#   Windows : %LOCALAPPDATA%\Xamarin\Mono for Android\debug.keystore
+#   Linux   : ~/.local/share/Xamarin/Mono for Android/debug.keystore
+# This is deliberately NOT ~/.android/debug.keystore — that is Android Studio's key and does NOT sign
+# the .NET MAUI app. Reading the wrong keystore makes assetlinks.json advertise a fingerprint the APK
+# isn't signed with, and passkey creation then fails on-device with
+# "the incoming request could not be validated".
 if (-not $DebugKeystore) {
-    $DebugKeystore = Join-Path $HOME '.android' 'debug.keystore'
+    $localAppData = [Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)
+    $DebugKeystore = Join-Path $localAppData 'Xamarin' 'Mono for Android' 'debug.keystore'
 }
 
 # Computes the Android debug-signing-key fingerprints needed for passkeys: the colon-hex SHA-256
