@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -106,6 +107,31 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void MauiAppDisposeDoesNotCaptureCurrentSynchronizationContextForAsyncOnlyServiceProvider()
+		{
+			var factory = new AsyncOnlyServiceProviderFactory(useYieldingProvider: true);
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.ConfigureContainer(factory);
+			var app = builder.Build();
+			var originalContext = SynchronizationContext.Current;
+
+			try
+			{
+				SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+
+				app.Dispose();
+			}
+			finally
+			{
+				SynchronizationContext.SetSynchronizationContext(originalContext);
+			}
+
+			var provider = Assert.IsType<YieldingAsyncOnlyServiceProvider>(factory.Provider);
+			Assert.True(provider.IsDisposed);
+			Assert.False(provider.DisposeStartedWithSynchronizationContext);
+		}
+
+		[Fact]
 		public void BuildFailureDisposesAsyncOnlyServiceProvider()
 		{
 			var factory = new AsyncOnlyServiceProviderFactory();
@@ -166,35 +192,61 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 		sealed class AsyncOnlyServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
 		{
+			readonly bool _useYieldingProvider;
+
+			public AsyncOnlyServiceProviderFactory(bool useYieldingProvider = false)
+			{
+				_useYieldingProvider = useYieldingProvider;
+			}
+
 			public AsyncOnlyServiceProvider Provider { get; private set; } = null!;
 
 			public IServiceCollection CreateBuilder(IServiceCollection services) => services;
 
 			public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
 			{
-				Provider = new AsyncOnlyServiceProvider(containerBuilder.BuildServiceProvider());
+				Provider = _useYieldingProvider
+					? new YieldingAsyncOnlyServiceProvider(containerBuilder.BuildServiceProvider())
+					: new AsyncOnlyServiceProvider(containerBuilder.BuildServiceProvider());
 				return Provider;
 			}
 		}
 
-		sealed class AsyncOnlyServiceProvider : IServiceProvider, IAsyncDisposable
+		class AsyncOnlyServiceProvider : IServiceProvider, IAsyncDisposable
 		{
-			readonly ServiceProvider _innerProvider;
+			protected readonly ServiceProvider InnerProvider;
 
 			public AsyncOnlyServiceProvider(ServiceProvider innerProvider)
 			{
-				_innerProvider = innerProvider;
+				InnerProvider = innerProvider;
 			}
 
 			public bool IsDisposed { get; private set; }
 
 			public object GetService(Type serviceType) =>
-				_innerProvider.GetService(serviceType);
+				InnerProvider.GetService(serviceType);
 
-			public ValueTask DisposeAsync()
+			public virtual ValueTask DisposeAsync()
 			{
 				IsDisposed = true;
-				return _innerProvider.DisposeAsync();
+				return InnerProvider.DisposeAsync();
+			}
+		}
+
+		sealed class YieldingAsyncOnlyServiceProvider : AsyncOnlyServiceProvider
+		{
+			public YieldingAsyncOnlyServiceProvider(ServiceProvider innerProvider)
+				: base(innerProvider)
+			{
+			}
+
+			public bool DisposeStartedWithSynchronizationContext { get; private set; }
+
+			public override async ValueTask DisposeAsync()
+			{
+				DisposeStartedWithSynchronizationContext = SynchronizationContext.Current is not null;
+				await Task.Yield();
+				await base.DisposeAsync();
 			}
 		}
 

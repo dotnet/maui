@@ -66,9 +66,10 @@ namespace Microsoft.Maui.Hosting
 				}
 				else if (_services is IAsyncDisposable asyncDisposable)
 				{
-					// Dispose is synchronous, so an async-only provider must not capture
-					// the caller's synchronization context while disposing.
-					asyncDisposable.DisposeAsync().AsTask().GetAwaiter().GetResult();
+					Task.Run(async () =>
+					{
+						await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+					}).GetAwaiter().GetResult();
 				}
 			}
 			catch (Exception ex)
