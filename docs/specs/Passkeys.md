@@ -873,7 +873,7 @@ cancel must come from a different thread than the blocking call, using the pre-a
   construction, and JSON translation; the interactive ceremony runs behind a manual/sample test with a
   reference RP server.
 - **Reference RP server (test backend)**: the repo ships one at
-  [`src/Essentials/samples/Sample.Server`](../../src/Essentials/samples/Sample.Server).
+  [`src/Essentials/samples/Samples.WebServer`](../../src/Essentials/samples/Samples.WebServer).
   It is the **default .NET Blazor Web App template with ASP.NET Core Identity "Individual Accounts"**
   — which includes built-in passkey support since .NET 10 — so the browser passkey UI works out of the
   box and provides a spec-conformant `PublicKeyCredentialCreationOptions` / `RequestOptions` producer
@@ -906,7 +906,7 @@ cancel must come from a different thread than the blocking call, using the pre-a
 
   It is a local dev tool (auto-creates users, no password). It is part of the solution and builds in
   CI, but you run it locally to test on devices:
-  `dotnet run --project src/Essentials/samples/Sample.Server`.
+  `dotnet run --project src/Essentials/samples/Samples.WebServer`.
   Docs: [Passkeys in ASP.NET Core](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/) ·
   [Blazor Web App passkeys](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/blazor).
 - **Stable public domain (dev tunnels)**: passkeys are bound to a domain (the RP ID) and `localhost`

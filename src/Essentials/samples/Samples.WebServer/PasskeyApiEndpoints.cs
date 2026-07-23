@@ -1,9 +1,9 @@
 using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
-using Server.Data;
+using Essentials.Samples.WebServer.Data;
 
-namespace Server;
+namespace Essentials.Samples.WebServer;
 
 /// <summary>
 /// Native-app-facing passkey ceremony endpoints used by the .NET MAUI Essentials sample.

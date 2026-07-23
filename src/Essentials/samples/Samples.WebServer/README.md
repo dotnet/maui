@@ -32,7 +32,7 @@ the standard ASP.NET Core external-login pattern.
 ## Run it
 
 ```bash
-dotnet run --project src/Essentials/samples/Sample.Server --launch-profile http
+dotnet run --project src/Essentials/samples/Samples.WebServer --launch-profile http
 # listens on http://localhost:5177  (https://localhost:7235 with the "https" profile)
 ```
 
@@ -79,7 +79,7 @@ Note the printed `https://<id>-5177.<region>.devtunnels.ms` URL. The host (no sc
 passkeys **RP ID** / `ServerDomain`; set it via user-secrets:
 
 ```bash
-dotnet user-secrets --project src/Essentials/samples/Sample.Server \
+dotnet user-secrets --project src/Essentials/samples/Samples.WebServer \
   set "Passkeys:ServerDomain" "<id>-5177.<region>.devtunnels.ms"
 ```
 
@@ -212,7 +212,7 @@ Store OAuth secrets with **user-secrets** (recommended) or environment variables
 providers are enabled:
 
 ```bash
-cd src/Essentials/samples/Sample.Server
+cd src/Essentials/samples/Samples.WebServer
 
 dotnet user-secrets set "GoogleClientId"     "<id>"
 dotnet user-secrets set "GoogleClientSecret" "<secret>"

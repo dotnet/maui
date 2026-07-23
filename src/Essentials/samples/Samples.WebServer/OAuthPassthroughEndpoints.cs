@@ -4,7 +4,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 
-namespace Server;
+namespace Essentials.Samples.WebServer;
 
 /// <summary>
 /// "Pass-through" OAuth endpoints for the .NET MAUI Essentials <c>WebAuthenticator</c> sample.
