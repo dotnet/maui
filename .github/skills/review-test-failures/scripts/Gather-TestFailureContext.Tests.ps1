@@ -232,6 +232,22 @@ Describe 'Get-AzDoFailedTestResultsByBuild request budgeting' {
         }
     }
 
+    It 'still issues a bounded first page when the deadline is near-expiry (sub-second remaining)' {
+        # Near-expiry regression: the deadline has NOT yet passed when the first page's top-of-loop
+        # guard runs, so exactly one request must fire -- but its timeout has to be clamped to the
+        # minimum (1s) rather than the 100s default, otherwise a first page issued with a few hundred
+        # milliseconds of budget left could overrun the shared visual deadline by ~100s.
+        Get-AzDoFailedTestResultsByBuild `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BuildId 123 `
+            -Deadline ((Get-Date).AddMilliseconds(300)) | Out-Null
+
+        Should -Invoke -CommandName Invoke-WebRequest -Times 1 -Exactly -ParameterFilter {
+            $TimeoutSec -eq 1
+        }
+    }
+
     It 'keeps the default timeout for the unbudgeted deadline sentinel' {
         Get-AzDoFailedTestResultsByBuild `
             -Org 'dnceng-public' `

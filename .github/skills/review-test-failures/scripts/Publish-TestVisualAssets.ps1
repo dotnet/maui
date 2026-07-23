@@ -699,6 +699,13 @@ foreach ($evidence in $selectedEvidence) {
                             localPath = $candidateLocalPath
                         })
                     }
+                    else {
+                        # The download succeeded but the payload is not a usable PNG (e.g. an HTML
+                        # 404 body or an oversized image). Mirror the diff-download and catch-path
+                        # cleanup so a rejected candidate never lingers in the temp download dir and
+                        # is never mistaken for a validated baseline.
+                        Remove-Item -LiteralPath $candidateLocalPath -Force -ErrorAction SilentlyContinue
+                    }
                 }
                 catch {
                     Remove-Item -LiteralPath $candidateLocalPath -Force -ErrorAction SilentlyContinue
