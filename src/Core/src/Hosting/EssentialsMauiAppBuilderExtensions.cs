@@ -455,12 +455,12 @@ namespace Microsoft.Maui.Hosting
 				// VersionTracking captures Preferences and AppInfo when its lazy default is created.
 				// Install an app-owned lazy wrapper so a later static call cannot retain provider-owned
 				// services after this MauiApp is disposed.
-				Func<IPreferences> getPreferences = dependencies.Preferences is { } preferences
-					? () => preferences
-					: static () => Preferences.Default;
-				Func<IAppInfo> getAppInfo = dependencies.AppInfo is { } appInfo
-					? () => appInfo
-					: static () => AppInfo.Current;
+				Func<VersionTrackingDependency<IPreferences>> getPreferences = dependencies.Preferences is { } preferences
+					? () => new(preferences, owner: null)
+					: static () => CaptureVersionTrackingDependency(static () => Preferences.Default);
+				Func<VersionTrackingDependency<IAppInfo>> getAppInfo = dependencies.AppInfo is { } appInfo
+					? () => new(appInfo, owner: null)
+					: static () => CaptureVersionTrackingDependency(static () => AppInfo.Current);
 				var implementation = new LazyVersionTracking(getPreferences, getAppInfo);
 				TrackAndSet(
 					implementation,
@@ -615,6 +615,16 @@ namespace Microsoft.Maui.Hosting
 				AddFacadeCleanup(assignment, getter, setter, facadeCleanups);
 			}
 
+			static VersionTrackingDependency<T> CaptureVersionTrackingDependency<T>(Func<T> getter)
+				where T : class
+			{
+				lock (FacadeBridgeState<T>.SyncRoot)
+				{
+					var implementation = getter();
+					return new(implementation, FacadeBridgeState<T>.FindOwner(implementation));
+				}
+			}
+
 			static void AddFacadeCleanup<T>(
 				FacadeAssignment<T> assignment,
 				Func<T?> getter,
@@ -698,14 +708,47 @@ namespace Microsoft.Maui.Hosting
 
 			sealed class LazyVersionTracking : IVersionTracking
 			{
-				readonly Lazy<IVersionTracking> _implementation;
+				readonly object _sync = new();
+				readonly Func<VersionTrackingDependency<IPreferences>> _getPreferences;
+				readonly Func<VersionTrackingDependency<IAppInfo>> _getAppInfo;
+				VersionTrackingState? _state;
 
-				public LazyVersionTracking(Func<IPreferences> getPreferences, Func<IAppInfo> getAppInfo)
+				public LazyVersionTracking(
+					Func<VersionTrackingDependency<IPreferences>> getPreferences,
+					Func<VersionTrackingDependency<IAppInfo>> getAppInfo)
 				{
-					_implementation = new(() => new VersionTrackingImplementation(getPreferences(), getAppInfo()));
+					_getPreferences = getPreferences;
+					_getAppInfo = getAppInfo;
 				}
 
-				IVersionTracking Implementation => _implementation.Value;
+				IVersionTracking Implementation
+				{
+					get
+					{
+						lock (s_essentialsBridgeLock)
+						{
+							lock (_sync)
+							{
+								var preferences = _getPreferences();
+								var appInfo = _getAppInfo();
+
+								if (_state is null ||
+									!_state.Preferences.Matches(preferences) ||
+									!_state.AppInfo.Matches(appInfo))
+								{
+									_state = new VersionTrackingState(
+										new VersionTrackingImplementation(
+											preferences.Implementation,
+											appInfo.Implementation),
+										preferences,
+										appInfo);
+								}
+
+								return _state.Implementation;
+							}
+						}
+					}
+				}
 
 				public bool IsFirstLaunchEver => Implementation.IsFirstLaunchEver;
 
@@ -736,6 +779,42 @@ namespace Microsoft.Maui.Hosting
 
 				public bool IsFirstLaunchForBuild(string build) =>
 					Implementation.IsFirstLaunchForBuild(build);
+			}
+
+			sealed class VersionTrackingState
+			{
+				public VersionTrackingState(
+					IVersionTracking implementation,
+					VersionTrackingDependency<IPreferences> preferences,
+					VersionTrackingDependency<IAppInfo> appInfo)
+				{
+					Implementation = implementation;
+					Preferences = preferences;
+					AppInfo = appInfo;
+				}
+
+				public IVersionTracking Implementation { get; }
+
+				public VersionTrackingDependency<IPreferences> Preferences { get; }
+
+				public VersionTrackingDependency<IAppInfo> AppInfo { get; }
+			}
+
+			readonly struct VersionTrackingDependency<T> where T : class
+			{
+				public VersionTrackingDependency(T implementation, object? owner)
+				{
+					Implementation = implementation;
+					Owner = owner;
+				}
+
+				public T Implementation { get; }
+
+				public object? Owner { get; }
+
+				public bool Matches(VersionTrackingDependency<T> other) =>
+					ReferenceEquals(Implementation, other.Implementation) &&
+					ReferenceEquals(Owner, other.Owner);
 			}
 
 			static void LogMissingNativeLifecycleInterface<T>(IServiceProvider services, string requiredInterface)

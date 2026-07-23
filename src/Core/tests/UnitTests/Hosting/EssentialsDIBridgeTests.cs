@@ -810,6 +810,44 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void OverlappingMauiAppsRefreshLazyVersionTrackingFallbackOwner()
+		{
+			var originalAppInfo = AppInfo.Current;
+			var fallbackAppInfo = new StubAppInfo("3.0.0", "3");
+			AppInfo.SetCurrent(fallbackAppInfo);
+			MauiApp? appInfoApp = null;
+			MauiApp? preferencesApp = null;
+
+			try
+			{
+				var appInfoBuilder = MauiApp.CreateBuilder();
+				appInfoBuilder.Services.AddSingleton<IAppInfo>(
+					_ => new DisposableStubAppInfo("1.0.0", "1"));
+				appInfoApp = appInfoBuilder.Build();
+				var providerAppInfo = Assert.IsType<DisposableStubAppInfo>(
+					appInfoApp.Services.GetRequiredService<IAppInfo>());
+
+				var preferencesBuilder = MauiApp.CreateBuilder();
+				preferencesBuilder.Services.AddSingleton<IPreferences>(new StubPreferences());
+				preferencesApp = preferencesBuilder.Build();
+
+				Assert.Equal("1.0.0", VersionTracking.CurrentVersion);
+
+				appInfoApp.Dispose();
+				appInfoApp = null;
+
+				Assert.True(providerAppInfo.IsDisposed);
+				Assert.Equal("3.0.0", VersionTracking.CurrentVersion);
+			}
+			finally
+			{
+				preferencesApp?.Dispose();
+				appInfoApp?.Dispose();
+				AppInfo.SetCurrent(originalAppInfo);
+			}
+		}
+
+		[Fact]
 		public void LazyVersionTrackingReusesTransientBridgeDependencies()
 		{
 			var preferencesResolutions = 0;
@@ -1280,15 +1318,63 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 		class StubAppInfo : IAppInfo
 		{
+			readonly string _versionString;
+			readonly string _buildString;
+
+			public StubAppInfo(string versionString = "1.0.0", string buildString = "1")
+			{
+				_versionString = versionString;
+				_buildString = buildString;
+			}
+
 			public string PackageName => "test.package";
 			public string Name => "Test";
-			public string VersionString => "1.0.0";
-			public Version Version => new Version(1, 0, 0);
-			public string BuildString => "1";
+			public virtual string VersionString => _versionString;
+			public Version Version => System.Version.Parse(VersionString);
+			public virtual string BuildString => _buildString;
 			public AppTheme RequestedTheme => AppTheme.Light;
 			public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 			public LayoutDirection RequestedLayoutDirection => LayoutDirection.LeftToRight;
 			public void ShowSettingsUI() { }
+		}
+
+		sealed class DisposableStubAppInfo : StubAppInfo, IDisposable
+		{
+			public DisposableStubAppInfo(string versionString, string buildString)
+				: base(versionString, buildString)
+			{
+			}
+
+			public bool IsDisposed { get; private set; }
+
+			public override string VersionString
+			{
+				get
+				{
+					ThrowIfDisposed();
+					return base.VersionString;
+				}
+			}
+
+			public override string BuildString
+			{
+				get
+				{
+					ThrowIfDisposed();
+					return base.BuildString;
+				}
+			}
+
+			public void Dispose()
+			{
+				IsDisposed = true;
+			}
+
+			void ThrowIfDisposed()
+			{
+				if (IsDisposed)
+					throw new ObjectDisposedException(nameof(DisposableStubAppInfo));
+			}
 		}
 
 		class StubConnectivity : IConnectivity
