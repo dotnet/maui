@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -708,6 +709,46 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, renderer.DisposeCount);
 			});
 
+		[Fact(DisplayName = "Disconnect Shell Cancels Active Item Transition Before Disposal")]
+		public Task DisconnectShellCancelsActiveItemTransitionBeforeDisposal() =>
+			InvokeOnMainThreadAsync(async () =>
+			{
+				using var handler = new TestableShellRenderer();
+				var currentRendererField = typeof(ShellHandler).GetField("_currentShellItemRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
+				var elementProperty = typeof(ShellHandler).GetProperty(nameof(ShellHandler.Element), BindingFlags.Instance | BindingFlags.Public);
+				Assert.NotNull(currentRendererField);
+				Assert.NotNull(elementProperty);
+
+				var shell = new Shell();
+				shell.Items.Add(new ContentPage());
+				shell.Items.Add(new ContentPage());
+				shell.CurrentItem = shell.Items[1];
+				elementProperty.SetValue(handler, shell);
+
+				var oldRenderer = new TrackedShellItemRenderer { ShellItem = shell.Items[0] };
+				var newRenderer = new TrackedShellItemRenderer { ShellItem = shell.Items[1] };
+				var transition = new ControlledShellItemTransition();
+				handler.ShellItemTransition = transition;
+				currentRendererField.SetValue(handler, oldRenderer);
+
+				var setCurrentItem = handler.SetCurrentShellItemControllerForTestAsync(newRenderer);
+				await transition.Started.Task.WaitAsync(TimeSpan.FromSeconds(1));
+				Assert.NotEmpty(newRenderer.ViewController.View.Layer.AnimationKeys);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				var completedTask = await Task.WhenAny(setCurrentItem, Task.Delay(TimeSpan.FromSeconds(1)));
+				transition.Complete();
+				await setCurrentItem;
+
+				Assert.Same(setCurrentItem, completedTask);
+				Assert.False(newRenderer.HadAnimationsAtDispose);
+				Assert.Equal(1, oldRenderer.DisconnectCount);
+				Assert.Equal(1, oldRenderer.DisposeCount);
+				Assert.Equal(1, newRenderer.DisconnectCount);
+				Assert.Equal(1, newRenderer.DisposeCount);
+			});
+
 		[Fact(DisplayName = "Disconnect Shell Disposes All Pending Item Renderers")]
 		public Task DisconnectShellDisposesAllPendingItemRenderers() =>
 			InvokeOnMainThreadAsync(async () =>
@@ -802,9 +843,13 @@ namespace Microsoft.Maui.DeviceTests
 		sealed class TestableShellRenderer : ShellHandler
 		{
 			public Task CurrentItemChangedTask { get; private set; } = Task.CompletedTask;
+			public IShellItemTransition ShellItemTransition { get; set; }
 
 			public Task SetCurrentShellItemControllerForTestAsync(IShellItemRenderer renderer) =>
 				SetCurrentShellItemControllerAsync(renderer);
+
+			protected override IShellItemTransition CreateShellItemTransition() =>
+				ShellItemTransition ?? base.CreateShellItemTransition();
 
 			protected override void OnCurrentItemChanged()
 			{
@@ -816,6 +861,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public int DisconnectCount { get; private set; }
 			public int DisposeCount { get; private set; }
+			public bool HadAnimationsAtDispose { get; private set; }
 			public UIViewController ParentAtDispose { get; private set; }
 			public UIView SuperviewAtDispose { get; private set; }
 			public ShellItem ShellItem { get; set; }
@@ -825,11 +871,32 @@ namespace Microsoft.Maui.DeviceTests
 
 			public void Dispose()
 			{
+				HadAnimationsAtDispose = ViewController.ViewIfLoaded?.Layer.AnimationKeys?.Length > 0;
 				ParentAtDispose = ViewController.ParentViewController;
 				SuperviewAtDispose = ViewController.ViewIfLoaded?.Superview;
 				DisposeCount++;
 				ViewController.Dispose();
 			}
+		}
+
+		sealed class ControlledShellItemTransition : IShellItemTransition
+		{
+			readonly TaskCompletionSource<bool> _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public TaskCompletionSource<bool> Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public Task Transition(IShellItemRenderer oldRenderer, IShellItemRenderer newRenderer)
+			{
+				using var animation = CABasicAnimation.FromKeyPath("opacity");
+				animation.From = NSNumber.FromDouble(0);
+				animation.To = NSNumber.FromDouble(1);
+				animation.Duration = 60;
+				newRenderer.ViewController.View.Layer.AddAnimation(animation, "active-shell-item-transition");
+				Started.TrySetResult(true);
+				return _completion.Task;
+			}
+
+			public void Complete() => _completion.TrySetResult(true);
 		}
 
 		interface IDelayedImageSource : IImageSource

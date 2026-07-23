@@ -101,8 +101,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Flyout renderer is owned by ShellRenderer and disposed in Dispose(bool).")]
 		IShellFlyoutRenderer _flyoutRenderer;
 		Task _activeTransition = Task.CompletedTask;
+		TaskCompletionSource<bool> _activeTransitionCancellation;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Incoming item renderer is a transient transition reference cleared when ShellRenderer is disposed.")]
 		IShellItemRenderer _incomingRenderer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Outgoing item renderer is retained only while its transition is active and disposed when the transition completes or ShellRenderer disconnects.")]
+		IShellItemRenderer _outgoingRenderer;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Pending item renderers are disposed when superseded or when ShellRenderer disconnects.")]
 		readonly HashSet<IShellItemRenderer> _pendingRenderers = new(ReferenceEqualityComparer.Instance);
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "MauiContext is provided by the handler and cleared when ShellRenderer is disposed.")]
@@ -231,6 +234,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				element.PropertyChanged -= OnElementPropertyChanged;
 
 			ElementChanged = null;
+			CancelActiveTransition();
 
 			foreach (var pendingRenderer in _pendingRenderers)
 			{
@@ -239,9 +243,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			_pendingRenderers.Clear();
+			var outgoingRenderer = _outgoingRenderer;
+			_outgoingRenderer = null;
+			if (outgoingRenderer is not null &&
+				!ReferenceEquals(outgoingRenderer, _currentShellItemRenderer))
+			{
+				DetachAndDispose(outgoingRenderer);
+			}
+
 			DisconnectAndDispose(_currentShellItemRenderer);
 			_flyoutRenderer?.Dispose();
 
+			_activeTransition = Task.CompletedTask;
+			_activeTransitionCancellation = null;
 			_incomingRenderer = null;
 			_currentShellItemRenderer = null;
 			_flyoutRenderer = null;
@@ -271,6 +285,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var viewController = renderer?.ViewController;
 			viewController?.ViewIfLoaded?.RemoveFromSuperview();
 			viewController?.RemoveFromParentViewController();
+		}
+
+		void CancelActiveTransition()
+		{
+			if (_activeTransition.IsCompleted)
+				return;
+
+			_currentShellItemRenderer?.ViewController?.ViewIfLoaded?.Layer.RemoveAllAnimations();
+			_activeTransitionCancellation?.TrySetResult(true);
+		}
+
+		static async Task WaitForTransitionOrCancellationAsync(Task transition, Task cancellation)
+		{
+			var completedTask = await Task.WhenAny(transition, cancellation);
+			await completedTask;
 		}
 
 		protected virtual async void OnCurrentItemChanged()
@@ -423,11 +452,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (oldRenderer != null)
 			{
 				var transition = CreateShellItemTransition();
+				var transitionCancellation = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-				_activeTransition = transition.Transition(oldRenderer, newRenderer);
-				await _activeTransition;
+				_activeTransitionCancellation = transitionCancellation;
+				_outgoingRenderer = oldRenderer;
+				_activeTransition = WaitForTransitionOrCancellationAsync(
+					transition.Transition(oldRenderer, newRenderer),
+					transitionCancellation.Task);
 
-				DetachAndDispose(oldRenderer);
+				try
+				{
+					await _activeTransition;
+				}
+				finally
+				{
+					if (ReferenceEquals(_activeTransitionCancellation, transitionCancellation))
+						_activeTransitionCancellation = null;
+
+					if (ReferenceEquals(_outgoingRenderer, oldRenderer))
+					{
+						_outgoingRenderer = null;
+						DetachAndDispose(oldRenderer);
+					}
+				}
 
 				if (_disposed)
 					return;
