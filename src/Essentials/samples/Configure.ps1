@@ -1,11 +1,11 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Configures (and optionally hosts a dev tunnel for) the .NET MAUI Essentials auth samples
-    (Passkeys + WebAuthenticator), which are both served by the single Samples.WebServer web app.
+    Configures (and optionally hosts a dev tunnel for) the .NET MAUI Essentials Passkeys sample,
+    which is served by the Samples.WebServer relying-party web app.
 
 .DESCRIPTION
-    Passkeys (and OAuth redirect URIs) are bound to a domain, so `localhost` will not work from a
+    Passkeys are bound to a domain (the RP ID), so `localhost` will not work from a
     real device. This script provisions a dev tunnel with a *persistent* tunnel id — so the public
     domain stays the same every time — and writes the resulting configuration into the SERVER's
     user-secrets (the MAUI app itself reads no secrets; you type the URL into its UI):
@@ -183,7 +183,7 @@ else {
         Write-Host "      SHA-256 : $($android.Hex)" -ForegroundColor DarkGray
         Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
     }
-    Write-Host "    (Apple app-ids and OAuth client ids/secrets are added separately — see README.md.)" -ForegroundColor DarkGray
+    Write-Host "    (Apple app-ids are added separately — see README.md.)" -ForegroundColor DarkGray
 
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Yellow
