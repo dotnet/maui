@@ -813,8 +813,7 @@ namespace Microsoft.Maui.Hosting
 			List<Action> _facadeCleanups = new();
 			bool _cleanedUp;
 #if !TIZEN
-			IAppActions? _subscribedAppActions;
-			EventHandler<AppActionEventArgs>? _appActionHandler;
+			readonly List<(IAppActions AppActions, EventHandler<AppActionEventArgs> Handler)> _appActionSubscriptions = new();
 #endif
 
 			public void SetFacadeCleanups(List<Action> cleanups)
@@ -825,8 +824,7 @@ namespace Microsoft.Maui.Hosting
 #if !TIZEN
 			public void Subscribe(IAppActions appActions, EventHandler<AppActionEventArgs> handler)
 			{
-				_subscribedAppActions = appActions;
-				_appActionHandler = handler;
+				_appActionSubscriptions.Add((appActions, handler));
 				appActions.AppActionActivated += handler;
 			}
 #endif
@@ -846,21 +844,20 @@ namespace Microsoft.Maui.Hosting
 			void DisposeCore()
 			{
 #if !TIZEN
-				Exception? unsubscribeException = null;
-				try
+				List<Exception>? exceptions = null;
+				for (int i = _appActionSubscriptions.Count - 1; i >= 0; i--)
 				{
-					if (_subscribedAppActions is not null && _appActionHandler is not null)
-						_subscribedAppActions.AppActionActivated -= _appActionHandler;
+					var subscription = _appActionSubscriptions[i];
+					try
+					{
+						subscription.AppActions.AppActionActivated -= subscription.Handler;
+					}
+					catch (Exception ex)
+					{
+						(exceptions ??= new()).Add(ex);
+					}
 				}
-				catch (Exception ex)
-				{
-					unsubscribeException = ex;
-				}
-				finally
-				{
-					_subscribedAppActions = null;
-					_appActionHandler = null;
-				}
+				_appActionSubscriptions.Clear();
 
 				try
 				{
@@ -868,19 +865,18 @@ namespace Microsoft.Maui.Hosting
 				}
 				catch (Exception facadeException)
 				{
-					if (unsubscribeException is not null)
-					{
-						throw new AggregateException(
-							"AppActions unsubscription and facade restoration both failed.",
-							unsubscribeException,
-							facadeException);
-					}
-
-					throw;
+					(exceptions ??= new()).Add(facadeException);
 				}
 
-				if (unsubscribeException is not null)
-					ExceptionDispatchInfo.Capture(unsubscribeException).Throw();
+				if (exceptions is null)
+					return;
+
+				if (exceptions.Count == 1)
+					ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+				throw new AggregateException(
+					"AppActions unsubscription and facade restoration failed.",
+					exceptions);
 #else
 				RestoreFacadeCleanups(_facadeCleanups);
 #endif

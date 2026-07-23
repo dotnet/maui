@@ -448,6 +448,28 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void RepeatedInitializeAppServicesUnsubscribesAllAppActionHandlers()
+		{
+			var appActions = new StubAppActions();
+			var handlerInvocations = 0;
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions>(appActions);
+			builder.ConfigureEssentials(essentials =>
+				essentials.OnAppAction(_ => handlerInvocations++));
+
+			var app = builder.Build();
+			app.InitializeAppServices();
+
+			appActions.Raise(new AppAction("test", "Test"));
+			Assert.Equal(2, handlerInvocations);
+
+			app.Dispose();
+			appActions.Raise(new AppAction("test", "Test"));
+
+			Assert.Equal(2, handlerInvocations);
+		}
+
+		[Fact]
 		public void OlderMauiAppDisposeDoesNotClobberLaterAppBridge()
 		{
 			var original = Preferences.Default;
