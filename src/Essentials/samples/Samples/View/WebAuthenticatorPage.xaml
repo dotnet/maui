@@ -13,7 +13,7 @@
             <Label Text="Quickly and easily authenticate and wait for callbacks on external urls." FontAttributes="Bold" Margin="12" />
             <Label Text="OAuth server base URL" FontAttributes="Bold" Margin="12,0,12,0" />
             <Entry Text="{Binding AuthBaseUrl}" Placeholder="https://your-tunnel.devtunnels.ms" Keyboard="Url" Margin="12,0,12,0" />
-            <Label Text="Points at the Sample.Server project (same web app as the Passkeys page). Use a dev tunnel URL for on-device testing (see the server README)."
+            <Label Text="Points at the Samples.WebServer project (same web app as the Passkeys page). Use a dev tunnel URL for on-device testing (see the server README)."
                    FontSize="12" TextColor="Gray" Margin="12,0,12,0" />
         </StackLayout>
 

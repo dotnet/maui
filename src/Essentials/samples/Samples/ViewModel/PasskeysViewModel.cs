@@ -13,14 +13,14 @@ namespace Samples.ViewModel
 {
 	public class PasskeysViewModel : BaseViewModel
 	{
-		// The relying-party (RP) server is the single Sample.Server project in this repo — it hosts BOTH
+		// The relying-party (RP) server is the single Samples.WebServer project in this repo — it hosts BOTH
 		// the passkeys relying party (this page) AND the OAuth pass-through. So testing is: launch that
 		// one web app, then run this MAUI app.
 		//
 		// Dev-tunnel first: passkeys are bound to a domain (the RP ID), so the server must be reachable
 		// at a real, stable, public HTTPS domain — localhost can't complete a ceremony on a device.
 		// From src/Essentials/samples run `pwsh ./setup-devtunnel.ps1` to provision one (it also writes
-		// the domain into the server's user-secrets — see Sample.Server/README.md), then replace the
+		// the domain into the server's user-secrets — see Samples.WebServer/README.md), then replace the
 		// host below with the printed https://…devtunnels.ms URL. It's the SAME URL the Web
 		// Authenticator page uses.
 		//

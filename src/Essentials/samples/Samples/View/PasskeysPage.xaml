@@ -11,7 +11,7 @@
     <ScrollView>
         <StackLayout Padding="12" Spacing="8">
 
-            <Label Text="Register and sign in with a passkey (WebAuthn/FIDO2) against the reference ASP.NET Core Identity relying-party server (Sample.Server)."
+            <Label Text="Register and sign in with a passkey (WebAuthn/FIDO2) against the reference ASP.NET Core Identity relying-party server (Samples.WebServer)."
                    FontAttributes="Bold" />
 
             <Label Text="{Binding SupportedText}" FontAttributes="Italic" />

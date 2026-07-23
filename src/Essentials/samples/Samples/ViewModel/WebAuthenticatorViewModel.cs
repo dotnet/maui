@@ -9,14 +9,14 @@ namespace Samples.ViewModel
 {
 	public class WebAuthenticatorViewModel : BaseViewModel
 	{
-		// The reference backend is the single Sample.Server project in this repo — it hosts BOTH the
+		// The reference backend is the single Samples.WebServer project in this repo — it hosts BOTH the
 		// OAuth pass-through (this page) AND the passkeys relying party. So testing is: launch that one
 		// web app, then run this MAUI app.
 		//
 		// Dev-tunnel first: external providers (Microsoft/Google/Facebook/Apple) only redirect back to
 		// a real, stable, public HTTPS domain — not localhost — so point this at your dev tunnel URL.
 		// From src/Essentials/samples run `pwsh ./setup-devtunnel.ps1` to provision one (see
-		// Sample.Server/README.md), then replace the host below with the printed https://…devtunnels.ms
+		// Samples.WebServer/README.md), then replace the host below with the printed https://…devtunnels.ms
 		// URL and register that domain's redirect URIs with each provider. It's the SAME URL the
 		// Passkeys page uses.
 		//

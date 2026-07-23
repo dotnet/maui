@@ -2,7 +2,7 @@
 <#
 .SYNOPSIS
     One-shot setup for testing the .NET MAUI Essentials auth samples (Passkeys + WebAuthenticator)
-    against the single Sample.Server web app, exposed on a STABLE public HTTPS domain via a Microsoft
+    against the single Samples.WebServer web app, exposed on a STABLE public HTTPS domain via a Microsoft
     dev tunnel.
 
 .DESCRIPTION
@@ -46,7 +46,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$project = Join-Path $here 'Sample.Server/Essentials.Sample.Server.csproj'
+$project = Join-Path $here 'Samples.WebServer/Essentials.Samples.WebServer.csproj'
 
 function Require-Command($name, $hint) {
     if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
