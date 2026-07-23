@@ -119,25 +119,43 @@ devtunnel create $TunnelId --allow-anonymous 2>$null | Out-Host
 devtunnel port create $TunnelId -p $Port --protocol http 2>$null | Out-Host
 
 Write-Host "==> Resolving the public tunnel URL…" -ForegroundColor Cyan
-$uri = $null
-try {
-    $json = devtunnel show $TunnelId --json 2>$null | ConvertFrom-Json
-    # The forwarding URIs live under the tunnel/ports depending on CLI version; search broadly.
-    $candidates = @()
-    if ($json.tunnel.portForwardingUris) { $candidates += $json.tunnel.portForwardingUris }
-    foreach ($p in @($json.tunnel.ports) + @($json.ports)) {
-        if ($p.portForwardingUris) { $candidates += $p.portForwardingUris }
+
+# Reads the persistent public URL for our port from `devtunnel show --json`. This is only assigned
+# once the tunnel has been hosted at least once (after that it persists), so a brand-new tunnel
+# returns $null here until it has been hosted.
+function Get-PortUri($tunnelId, $port) {
+    try {
+        $json = devtunnel show $tunnelId --json 2>$null | ConvertFrom-Json
+        $p = $json.tunnel.ports | Where-Object { $_.portNumber -eq $port } | Select-Object -First 1
+        if ($p -and $p.portUri) { return ([string]$p.portUri).TrimEnd('/') }
     }
-    $uri = $candidates | Where-Object { $_ -match "^https://.*-$Port\..*devtunnels\.ms" } | Select-Object -First 1
-    if (-not $uri) { $uri = $candidates | Where-Object { $_ -match '^https://.*devtunnels\.ms' } | Select-Object -First 1 }
+    catch { }
+    return $null
 }
-catch { }
+
+$uri = Get-PortUri $TunnelId $Port
 
 if (-not $uri) {
-    Write-Warning "Could not auto-detect the tunnel URL. Run 'devtunnel show $TunnelId' and copy the https://…devtunnels.ms URL."
+    # First run for this tunnel: host it briefly in the background so the URL gets assigned, then
+    # re-read it (it persists afterwards).
+    Write-Host "    New tunnel — starting a brief host session to obtain the URL…" -ForegroundColor DarkGray
+    $job = Start-Job -ScriptBlock { param($t) devtunnel host $t } -ArgumentList $TunnelId
+    try {
+        for ($i = 0; $i -lt 15 -and -not $uri; $i++) {
+            Start-Sleep -Seconds 2
+            $uri = Get-PortUri $TunnelId $Port
+        }
+    }
+    finally {
+        Stop-Job $job -ErrorAction SilentlyContinue
+        Remove-Job $job -Force -ErrorAction SilentlyContinue
+    }
+}
+
+if (-not $uri) {
+    Write-Warning "Could not auto-detect the tunnel URL. Run 'devtunnel host $TunnelId' once, note the 'Connect via browser' URL, then re-run this script."
 }
 else {
-    $uri = $uri.TrimEnd('/')
     $domain = ([Uri]$uri).Host
     Write-Host "    Public URL : $uri" -ForegroundColor Green
     Write-Host "    RP ID/host : $domain" -ForegroundColor Green
