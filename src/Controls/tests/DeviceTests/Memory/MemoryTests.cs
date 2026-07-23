@@ -538,6 +538,11 @@ public class MemoryTests : ControlsHandlerTestBase
 			Assert.Equal(1, activationCount);
 
 			nativeItem.CustomView = replacementView;
+			item.Text = "Updated";
+			item.IconImageSource = new FileImageSource();
+			item.IsEnabled = false;
+			Assert.True(originalContent.Enabled);
+			Assert.Same(replacementView, nativeItem.CustomView);
 			nativeItem.Dispose();
 
 			Assert.DoesNotContain(GetPropertyChangedSubscribers(item), subscriber => ReferenceEquals(subscriber.Target, nativeItem));

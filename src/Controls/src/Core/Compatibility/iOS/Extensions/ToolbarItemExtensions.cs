@@ -329,7 +329,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ToolbarItem PropertyChanged subscription is removed in Dispose.")]
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				if (!_item.TryGetTarget(out var item))
+				if (!_item.TryGetTarget(out var item) ||
+					_content is null ||
+					!ReferenceEquals(CustomView, _content))
 					return;
 
 				if (e.PropertyName == MenuItem.TextProperty.PropertyName)
@@ -352,23 +354,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
 					{
-						((SecondaryToolbarItemContent)CustomView).Image = ScaleImageToSystemDefaults(item.IconImageSource, result?.Value);
+						if (_content is not null)
+							_content.Image = ScaleImageToSystemDefaults(item.IconImageSource, result?.Value);
 					});
 				}
 				else
 				{
-					((SecondaryToolbarItemContent)CustomView).Image = null;
+					if (_content is not null)
+						_content.Image = null;
 				}
 			}
 
 			void UpdateIsEnabled(ToolbarItem item)
 			{
-				((UIControl)CustomView).Enabled = item.IsEnabled;
+				if (_content is not null)
+					_content.Enabled = item.IsEnabled;
 			}
 
 			void UpdateText(ToolbarItem item)
 			{
-				((SecondaryToolbarItemContent)CustomView).Text = item.Text;
+				if (_content is not null)
+					_content.Text = item.Text;
 			}
 
 			sealed class SecondaryToolbarItemContent : UIControl
