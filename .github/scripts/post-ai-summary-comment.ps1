@@ -845,7 +845,6 @@ if ($existingRaw) {
 $authorPing = ""
 if ($prAuthor) {
     $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>."
-    $authorPing += ' To request a fresh review after new comments or commits, comment `/review rerun`.'
 }
 
 $summaryContent = @($gateContent) + @($phaseContentByKey.Values)
