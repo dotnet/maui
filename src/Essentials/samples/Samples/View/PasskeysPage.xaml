@@ -1,0 +1,38 @@
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.PasskeysPage"
+                Title="Passkeys">
+    <views:BasePage.BindingContext>
+        <viewmodels:PasskeysViewModel />
+    </views:BasePage.BindingContext>
+
+    <ScrollView>
+        <StackLayout Padding="12" Spacing="8">
+
+            <Label Text="Register and sign in with a passkey (WebAuthn/FIDO2) against the reference ASP.NET Core Identity relying-party server (Sample.Server)."
+                   FontAttributes="Bold" />
+
+            <Label Text="{Binding SupportedText}" FontAttributes="Italic" />
+
+            <Label Text="Server base URL" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Entry Text="{Binding ServerBaseUrl}" Placeholder="https://your-tunnel.devtunnels.ms" Keyboard="Url" />
+            <Label Text="On a real device the server must be reachable at the same domain as the RP ID (use a dev tunnel). See the server README."
+                   FontSize="12" TextColor="Gray" />
+
+            <Label Text="Username" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Entry Text="{Binding Username}" Placeholder="alice@example.com" Keyboard="Email" />
+
+            <Button Text="Register a passkey" Command="{Binding RegisterCommand}" IsEnabled="{Binding IsNotBusy}" />
+            <Button Text="Sign in with a passkey" Command="{Binding LoginCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+            <Label Text="Log" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Label Text="{Binding Status}" FontFamily="Monospace" FontSize="12" />
+
+        </StackLayout>
+    </ScrollView>
+
+</views:BasePage>

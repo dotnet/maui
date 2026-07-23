@@ -9,7 +9,20 @@ namespace Samples.ViewModel
 {
 	public class WebAuthenticatorViewModel : BaseViewModel
 	{
-		const string authenticationUrl = "https://xamarin-essentials-auth-sample.azurewebsites.net/mobileauth/";
+		// The reference backend is the single Sample.Server project in this repo — it hosts BOTH the
+		// OAuth pass-through (this page) AND the passkeys relying party. So testing is: launch that one
+		// web app, then run this MAUI app.
+		//
+		// Dev-tunnel first: external providers (Microsoft/Google/Facebook/Apple) only redirect back to
+		// a real, stable, public HTTPS domain — not localhost — so point this at your dev tunnel URL.
+		// From src/Essentials/samples run `pwsh ./setup-devtunnel.ps1` to provision one (see
+		// Sample.Server/README.md), then replace the host below with the printed https://…devtunnels.ms
+		// URL and register that domain's redirect URIs with each provider. It's the SAME URL the
+		// Passkeys page uses.
+		//
+		// (localhost / 10.0.2.2 only exercises the round-trip and can be added back later; it can't
+		// complete a real provider sign-in.)
+		string authBaseUrl = "https://your-tunnel-5177.devtunnels.ms";
 
 		public WebAuthenticatorViewModel()
 		{
@@ -17,6 +30,12 @@ namespace Samples.ViewModel
 			GoogleCommand = new Command(async () => await OnAuthenticate("Google"));
 			FacebookCommand = new Command(async () => await OnAuthenticate("Facebook"));
 			AppleCommand = new Command(async () => await OnAuthenticate("Apple"));
+		}
+
+		public string AuthBaseUrl
+		{
+			get => authBaseUrl;
+			set => SetProperty(ref authBaseUrl, value);
 		}
 
 		public ICommand MicrosoftCommand { get; }
@@ -56,7 +75,8 @@ namespace Samples.ViewModel
 				}
 				else
 				{
-					var authUrl = new Uri(authenticationUrl + scheme);
+					var baseUrl = (AuthBaseUrl ?? string.Empty).TrimEnd('/');
+					var authUrl = new Uri($"{baseUrl}/mobileauth/{scheme}");
 					var callbackUrl = new Uri("xamarinessentials://");
 
 					r = await WebAuthenticator.AuthenticateAsync(authUrl, callbackUrl);
