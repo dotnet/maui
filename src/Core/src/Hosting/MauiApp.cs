@@ -60,7 +60,16 @@ namespace Microsoft.Maui.Hosting
 
 			try
 			{
-				(_services as IDisposable)?.Dispose();
+				if (_services is IDisposable disposable)
+				{
+					disposable.Dispose();
+				}
+				else if (_services is IAsyncDisposable asyncDisposable)
+				{
+					// Dispose is synchronous, so an async-only provider must not capture
+					// the caller's synchronization context while disposing.
+					asyncDisposable.DisposeAsync().AsTask().GetAwaiter().GetResult();
+				}
 			}
 			catch (Exception ex)
 			{

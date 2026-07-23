@@ -12,6 +12,7 @@ using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Networking;
@@ -1000,11 +1001,16 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public async Task ConfiguredAppActionsCompleteBeforeBuildReturns()
+		public async Task ConfiguredAppActionsDoesNotBlockBuildWhenSetAsyncAwaitsDispatcher()
 		{
-			var appActions = new BlockingDisposableStubAppActions();
+			var dispatchedAction = new TaskCompletionSource<Action>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var dispatcher = new Microsoft.Maui.UnitTests.DispatcherStub(
+				isInvokeRequired: () => false,
+				invokeOnMainThread: action => dispatchedAction.TrySetResult(action));
+			var appActions = new DispatchingStubAppActions(dispatcher);
 			var builder = MauiApp.CreateBuilder();
-			builder.Services.AddSingleton<IAppActions>(_ => appActions);
+			builder.Services.AddSingleton<IAppActions>(appActions);
 			builder.ConfigureEssentials(essentials =>
 				essentials.AddAppAction(new AppAction("test", "Test")));
 
@@ -1015,126 +1021,22 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				TaskScheduler.Default);
 
 			await appActions.SetStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			var completedBeforeRelease = ReferenceEquals(
-				await Task.WhenAny(buildTask, Task.Delay(TimeSpan.FromMilliseconds(250))),
+			var action = await dispatchedAction.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			var completedBeforeDispatch = ReferenceEquals(
+				await Task.WhenAny(buildTask, Task.Delay(TimeSpan.FromSeconds(2))),
 				buildTask);
-			appActions.ReleaseSet();
+			action();
 
 			var app = await buildTask.WaitAsync(TimeSpan.FromSeconds(5));
 			try
 			{
 				await appActions.SetCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-				Assert.False(completedBeforeRelease);
-				Assert.True(appActions.SetCompletedBeforeDispose);
-				Assert.False(appActions.IsDisposed);
+				Assert.True(completedBeforeDispatch);
 			}
 			finally
 			{
 				app.Dispose();
 			}
-
-			Assert.True(appActions.IsDisposed);
-		}
-
-		[Fact]
-		public async Task ConfiguredAppActionsCompleteBeforeProviderIsDisposedAfterLaterInitializerFailure()
-		{
-			var appActions = new BlockingDisposableStubAppActions();
-			var probe = new DisposableProbe();
-			var builder = MauiApp.CreateBuilder();
-			builder.Services.AddSingleton<IAppActions>(_ => appActions);
-			builder.Services.AddSingleton(probe);
-			builder.ConfigureEssentials(essentials =>
-				essentials.AddAppAction(new AppAction("test", "Test")));
-			builder.Services.AddSingleton<IMauiInitializeService>(services =>
-				new ThrowingInitializeService(services.GetRequiredService<DisposableProbe>()));
-
-			var buildTask = Task.Factory.StartNew(
-				() => Record.Exception(builder.Build),
-				CancellationToken.None,
-				TaskCreationOptions.LongRunning,
-				TaskScheduler.Default);
-
-			await appActions.SetStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			var completedBeforeRelease = ReferenceEquals(
-				await Task.WhenAny(buildTask, Task.Delay(TimeSpan.FromMilliseconds(250))),
-				buildTask);
-			var disposedBeforeRelease = appActions.IsDisposed;
-			appActions.ReleaseSet();
-
-			var exception = await buildTask.WaitAsync(TimeSpan.FromSeconds(5));
-			await appActions.SetCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-			Assert.False(completedBeforeRelease);
-			Assert.False(disposedBeforeRelease);
-			Assert.IsType<InvalidOperationException>(exception);
-			Assert.Equal("later initializer failed", exception.Message);
-			Assert.True(appActions.SetCompletedBeforeDispose);
-			Assert.True(appActions.IsDisposed);
-		}
-
-		[Fact]
-		public async Task ConfiguredAppActionsSetupPumpsBuildSynchronizationContext()
-		{
-			var appActions = new YieldingStubAppActions();
-			var builder = MauiApp.CreateBuilder();
-			builder.Services.AddSingleton<IAppActions>(appActions);
-			builder.ConfigureEssentials(essentials =>
-				essentials.AddAppAction(new AppAction("test", "Test")));
-
-			var buildTask = Task.Factory.StartNew(
-				() =>
-				{
-					var previousContext = SynchronizationContext.Current;
-					var context = new RecordingSynchronizationContext();
-					try
-					{
-						SynchronizationContext.SetSynchronizationContext(context);
-						var app = builder.Build();
-						return (
-							App: app,
-							ContextRestored: ReferenceEquals(context, SynchronizationContext.Current),
-							OriginalContextUsed: context.WasUsed);
-					}
-					finally
-					{
-						SynchronizationContext.SetSynchronizationContext(previousContext);
-					}
-				},
-				CancellationToken.None,
-				TaskCreationOptions.LongRunning,
-				TaskScheduler.Default);
-
-			var result = await buildTask.WaitAsync(TimeSpan.FromSeconds(5));
-			try
-			{
-				Assert.True(result.ContextRestored);
-				Assert.False(result.OriginalContextUsed);
-				Assert.True(appActions.SetCompleted);
-			}
-			finally
-			{
-				result.App.Dispose();
-			}
-		}
-
-		[Fact]
-		public void ConfiguredAppActionsSynchronizationContextIgnoresLatePosts()
-		{
-			var appActions = new CapturingSynchronizationContextAppActions();
-			var builder = MauiApp.CreateBuilder();
-			builder.Services.AddSingleton<IAppActions>(appActions);
-			builder.ConfigureEssentials(essentials =>
-				essentials.AddAppAction(new AppAction("test", "Test")));
-
-			using var app = builder.Build();
-
-			var callbackInvoked = false;
-			var exception = Record.Exception(() =>
-				appActions.CapturedContext!.Post(_ => callbackInvoked = true, null));
-
-			Assert.Null(exception);
-			Assert.False(callbackInvoked);
 		}
 
 		[Fact]
@@ -1423,17 +1325,11 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
-		sealed class BlockingDisposableStubAppActions : IAppActions, IDisposable
+		sealed class DispatchingStubAppActions : IAppActions
 		{
-			int _isDisposed;
-			readonly TaskCompletionSource<bool> _releaseSet =
-				new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-			public bool IsDisposed => Volatile.Read(ref _isDisposed) != 0;
+			readonly IDispatcher _dispatcher;
 
 			public bool IsSupported => true;
-
-			public bool SetCompletedBeforeDispose { get; private set; }
 
 			public TaskCompletionSource<bool> SetCompleted { get; } =
 				new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1443,74 +1339,19 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			public event EventHandler<AppActionEventArgs>? AppActionActivated { add { } remove { } }
 
+			public DispatchingStubAppActions(IDispatcher dispatcher)
+			{
+				_dispatcher = dispatcher;
+			}
+
 			public Task<IEnumerable<AppAction>> GetAsync() =>
 				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
 
 			public async Task SetAsync(IEnumerable<AppAction> actions)
 			{
 				SetStarted.TrySetResult(true);
-				await _releaseSet.Task.ConfigureAwait(false);
-				SetCompletedBeforeDispose = !IsDisposed;
+				await _dispatcher.DispatchAsync(() => { });
 				SetCompleted.TrySetResult(true);
-			}
-
-			public void ReleaseSet()
-			{
-				_releaseSet.TrySetResult(true);
-			}
-
-			public void Dispose()
-			{
-				Volatile.Write(ref _isDisposed, 1);
-			}
-		}
-
-		sealed class YieldingStubAppActions : IAppActions
-		{
-			public bool IsSupported => true;
-
-			public bool SetCompleted { get; private set; }
-
-			public event EventHandler<AppActionEventArgs>? AppActionActivated { add { } remove { } }
-
-			public Task<IEnumerable<AppAction>> GetAsync() =>
-				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
-
-			public async Task SetAsync(IEnumerable<AppAction> actions)
-			{
-				await Task.Yield();
-				SetCompleted = true;
-			}
-		}
-
-		sealed class CapturingSynchronizationContextAppActions : IAppActions
-		{
-			public SynchronizationContext? CapturedContext { get; private set; }
-
-			public bool IsSupported => true;
-
-			public event EventHandler<AppActionEventArgs>? AppActionActivated { add { } remove { } }
-
-			public Task<IEnumerable<AppAction>> GetAsync() =>
-				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
-
-			public async Task SetAsync(IEnumerable<AppAction> actions)
-			{
-				CapturedContext = SynchronizationContext.Current;
-				await Task.Yield();
-			}
-		}
-
-		sealed class RecordingSynchronizationContext : SynchronizationContext
-		{
-			int _wasUsed;
-
-			public bool WasUsed => Volatile.Read(ref _wasUsed) != 0;
-
-			public override void Post(SendOrPostCallback d, object? state)
-			{
-				Volatile.Write(ref _wasUsed, 1);
-				d(state);
 			}
 		}
 

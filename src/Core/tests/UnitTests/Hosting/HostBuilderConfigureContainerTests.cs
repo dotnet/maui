@@ -92,6 +92,33 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				ex => Assert.Equal("third cleanup failed", ex.Message));
 		}
 
+		[Fact]
+		public void MauiAppDisposeDisposesAsyncOnlyServiceProvider()
+		{
+			var factory = new AsyncOnlyServiceProviderFactory();
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.ConfigureContainer(factory);
+
+			var app = builder.Build();
+			app.Dispose();
+
+			Assert.True(factory.Provider?.IsDisposed == true);
+		}
+
+		[Fact]
+		public void BuildFailureDisposesAsyncOnlyServiceProvider()
+		{
+			var factory = new AsyncOnlyServiceProviderFactory();
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.ConfigureContainer(factory);
+			builder.Services.AddSingleton<IMauiInitializeService, ThrowingInitializeService>();
+
+			var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+			Assert.Equal("initialization failed", exception.Message);
+			Assert.True(factory.Provider?.IsDisposed == true);
+		}
+
 		static (MauiApp App, DisposableConfigurationProvider Configuration, ConfigurationReadingCleanup Cleanup)
 			BuildAppWithTrackedConfiguration()
 		{
@@ -135,6 +162,48 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 
 			public object GetService(Type serviceType) => _serviceProvider.GetService(serviceType);
+		}
+
+		sealed class AsyncOnlyServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
+		{
+			public AsyncOnlyServiceProvider? Provider { get; private set; }
+
+			public IServiceCollection CreateBuilder(IServiceCollection services) => services;
+
+			public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
+			{
+				Provider = new AsyncOnlyServiceProvider(containerBuilder.BuildServiceProvider());
+				return Provider;
+			}
+		}
+
+		sealed class AsyncOnlyServiceProvider : IServiceProvider, IAsyncDisposable
+		{
+			readonly ServiceProvider _innerProvider;
+
+			public AsyncOnlyServiceProvider(ServiceProvider innerProvider)
+			{
+				_innerProvider = innerProvider;
+			}
+
+			public bool IsDisposed { get; private set; }
+
+			public object? GetService(Type serviceType) =>
+				_innerProvider.GetService(serviceType);
+
+			public ValueTask DisposeAsync()
+			{
+				IsDisposed = true;
+				return _innerProvider.DisposeAsync();
+			}
+		}
+
+		sealed class ThrowingInitializeService : IMauiInitializeService
+		{
+			public void Initialize(IServiceProvider services)
+			{
+				throw new InvalidOperationException("initialization failed");
+			}
 		}
 
 		sealed class ConfigurationReadingCleanup : IMauiAppCleanupService
