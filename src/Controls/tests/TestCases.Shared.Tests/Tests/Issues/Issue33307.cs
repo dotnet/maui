@@ -14,15 +14,22 @@ public class Issue33307 : _IssuesUITest
 	{
 		App.WaitForElement("Page1");
 		App.Tap("Page1");
+		App.WaitForElement("AddItems");
 		App.Tap("AddItems");
 		App.TapBackArrow();
+		App.WaitForElement("Page2");
 		App.Tap("Page2");
+		App.WaitForElement("Add");
 		App.Tap("Add");
+		App.WaitForElement("SelectSecondItem");
 		App.Tap("SelectSecondItem");
 		App.TapBackArrow();
+		App.WaitForElement("Page1");
 		App.Tap("Page1");
+		App.WaitForElement("DeleteItem");
 		App.Tap("DeleteItem");
 		App.TapBackArrow();
+		App.WaitForElement("Page2");
 		App.Tap("Page2");
 		App.WaitForElement("StatusLabel");
 		Assert.That(App.FindElement("StatusLabel").GetText(), Is.EqualTo("None"));
