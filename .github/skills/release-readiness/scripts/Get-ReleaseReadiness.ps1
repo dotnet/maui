@@ -1061,13 +1061,21 @@ function Get-MaestroOperationalChecks {
             if ($hasChans) {
                 $asset = Invoke-DarcJson -DarcArgs @('get-asset', '--name', 'Microsoft.Maui.Controls', '--build', "$($latest.id)")
                 $nugetFeed = $null
-                if ($asset.Success) {
+                # Initialize BEFORE the success check so the WATCH branch below can
+                # ALWAYS read them. A failed `darc get-asset` (auth/network/no asset)
+                # leaves $asset.Success false and skips the success block; under
+                # Set-StrictMode -Version Latest an unset $feedCandidates or
+                # $expectedFeedToken in that branch would THROW and abort the ENTIRE
+                # readiness report instead of degrading this one feed check.
+                $feedCandidates = @()
+                $expectedFeedToken = "darc-pub-dotnet-maui-$buildSha8"
+                $assetLookupOk = [bool]$asset.Success
+                if ($assetLookupOk) {
                     # `darc get-asset --output-format json` projects each asset's
                     # locations to a flat array of URL STRINGS
                     # (GetAssetOperation: `locations = ...Select(l => l.Location)`).
                     # It does NOT emit `{ type, location }` objects or a top-level
                     # `NugetFeed` property, so collect the NuGet v3 feed URLs directly.
-                    $feedCandidates = @()
                     foreach ($a in @($asset.Data)) {
                         foreach ($loc in @((Get-AzdoProp $a 'locations'))) {
                             $locStr = [string]$loc
@@ -1088,7 +1096,6 @@ function Get-MaestroOperationalChecks {
                     # the already-computed expected feed name
                     # `darc-pub-dotnet-maui-<buildSha8>` (SHA-exact; -match is
                     # case-insensitive). Guard indexing for Set-StrictMode -Version Latest.
-                    $expectedFeedToken = "darc-pub-dotnet-maui-$buildSha8"
                     $confirmedFeeds = @($feedCandidates | Where-Object { $_ -match [regex]::Escape($expectedFeedToken) })
                     if ($confirmedFeeds.Count -gt 0) {
                         $nugetFeed = $confirmedFeeds[0]
@@ -1099,13 +1106,15 @@ function Get-MaestroOperationalChecks {
                         -Details "Build **$($latest.buildNumber)** is promoted ($chans) and ``darc get-asset`` confirms the per-build validation feed ``$nugetFeed`` (matches the expected ``$expectedFeedToken``). Link this feed in the ship Assessment (DevDiv 'Assessment' work item) so CSI/customers can validate the exact candidate packages." `
                         -NextAction "Add the confirmed per-build NugetFeed URL to the Assessment."
                 } else {
-                    if ($feedCandidates.Count -gt 0) {
+                    if (-not $assetLookupOk) {
+                        $otherFeedNote = " ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` did not return a usable result (darc auth/network failure, or the asset is not published yet), so the per-build feed could not be confirmed."
+                    } elseif ($feedCandidates.Count -gt 0) {
                         $otherFeedNote = " ``darc get-asset`` returned $($feedCandidates.Count) other NuGet feed location(s) (e.g. ``$($feedCandidates[0])``) — shared/durable or wrong-SHA feeds that may mix builds or require auth, so they do NOT prove validation of this exact candidate and are not linked."
                     } else {
                         $otherFeedNote = " ``darc get-asset`` returned no NuGet feed location for this build."
                     }
                     $checks += New-ReadinessCheck -Area $feedArea -Status 'WATCH' `
-                        -Details "Build **$($latest.buildNumber)** is promoted ($chans), but the expected per-build validation feed ``$expectedFeedToken`` was not among ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` locations.$otherFeedNote Do not link a substitute endpoint until BAR shows the exact per-build feed. Expected feed, once published, is ``$feedUrl``." `
+                        -Details "Build **$($latest.buildNumber)** is promoted ($chans), but the expected per-build validation feed ``$expectedFeedToken`` was not confirmed among ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` locations.$otherFeedNote Do not link a substitute endpoint until BAR shows the exact per-build feed. Expected feed, once published, is ``$feedUrl``." `
                         -NextAction "Re-run ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` and add the returned per-build ``$expectedFeedToken`` NugetFeed URL to the Assessment once it appears."
                 }
             } else {

@@ -4425,6 +4425,32 @@ Assert-Eq -Label "wrong-SHA darc-pub feed: details name the expected per-build t
 Assert-Eq -Label "wrong-SHA darc-pub feed: does NOT confirm the wrong-SHA feed as the per-build feed" -Expected $false `
     -Actual ($s2eFeed.Details -match 'confirms the per-build validation feed')
 
+# ── Scenario 2f: `darc get-asset` itself FAILS (auth/network) on a promoted build.
+#    $asset.Success is false, so the success block is skipped. The WATCH branch
+#    still reads $feedCandidates/$expectedFeedToken — which MUST be initialized
+#    before the success check, or Set-StrictMode -Version Latest throws on the
+#    unset variables and ABORTS the whole readiness report. The check must degrade
+#    to WATCH, not crash. (Regression test for the uninitialized-variable abort.)
+#    Wrapped in try/catch so the pre-fix throw surfaces as clean assert failures
+#    rather than aborting this test file. ──
+$s2fThrew = $false
+$s2f = @()
+try {
+    $s2f = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead -AssetAuthFail
+} catch {
+    $s2fThrew = $true
+}
+Assert-Eq -Label "get-asset lookup failure: does NOT throw/abort the report under StrictMode" -Expected $false -Actual $s2fThrew
+$s2fFeed = Get-MaestroCheckByPrefix -Checks $s2f -Prefix 'Ship Assessment validation feed'
+$s2fStatus = if ($s2fFeed) { $s2fFeed.Status } else { '<no-feed-check-emitted>' }
+$s2fDetails = if ($s2fFeed) { [string]$s2fFeed.Details } else { '' }
+Assert-Eq -Label "get-asset lookup failure: feed check degrades to WATCH (not aborted)" -Expected 'WATCH' -Actual $s2fStatus
+Assert-Eq -Label "get-asset lookup failure: details note the lookup did not return a usable result" -Expected $true `
+    -Actual ($s2fDetails -match 'did not return a usable result')
+$s2fBuild = Get-MaestroCheckByPrefix -Checks $s2f -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "get-asset lookup failure: build check still emitted (report completed, not aborted)" -Expected $true `
+    -Actual ($null -ne $s2fBuild)
+
 # ── Scenario 3: SR branch MISSING from BAR (the SR8 real-world bug) → BLOCKED ──
 $s3 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr7 -BuildResponse @()
 $s3Map = Get-MaestroCheckByPrefix -Checks $s3 -Prefix 'BAR default-channel'
