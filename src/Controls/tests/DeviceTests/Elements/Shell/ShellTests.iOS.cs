@@ -925,7 +925,7 @@ namespace Microsoft.Maui.DeviceTests
 				CancellationToken cancellationToken = default)
 			{
 				Starting.Set();
-				await Task.Run(() => DoWork.WaitOne(), cancellationToken);
+				await Task.Run(() => DoWork.WaitOne());
 				var image = await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(() => new UIImage());
 				return new ImageSourceServiceResult(image, () =>
 				{
