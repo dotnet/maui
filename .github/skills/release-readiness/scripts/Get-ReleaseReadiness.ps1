@@ -133,13 +133,11 @@ param(
     # from main today. Requires -SrBranch to be the prior SR (used as the
     # exclude baseline). Treats origin/main as the "SR-to-be".
     [switch]$Candidate,
-    # Display-only: mark the survey as a SHIPPED SR (its stable tag already
-    # exists). Behaves exactly like in-flight for all survey/verdict logic
-    # (surveys the SR branch directly) — it ONLY relabels the rendered report
-    # header `mode=shipped` so a post-ship tracker doesn't misreport as
-    # in-flight. Set by the workflow for the most-recently-shipped SR, whose
-    # tracker keeps refreshing until a human closes it. Mutually exclusive with
-    # -Candidate.
+    # Mark the survey as a SHIPPED SR (its stable tag already exists). Surveys
+    # the SR branch directly, but applies post-ship verdict, carry-forward, and
+    # hotfix-vs-next-SR guidance semantics. Set by the workflow for the most-
+    # recently-shipped SR, whose tracker refreshes until a human closes it.
+    # Mutually exclusive with -Candidate.
     [switch]$Shipped,
     # When set in -Candidate mode, model the dotnet/maui workflow where, after
     # cutting SRn+1 from main, the prior SR (-SrBranch) is merged in. The
@@ -523,6 +521,119 @@ function Get-MainBumpDateForCycle {
     } catch {
         return $null
     }
+}
+
+function Get-StableTagInfo {
+    <#
+    .SYNOPSIS
+        Resolves the stable git tag for a shipped SR version and returns its date.
+    .DESCRIPTION
+        Shipped SRs publish a BARE stable tag `Major.Minor.Patch` (e.g. `10.0.60`)
+        — no prerelease suffix. Given that version string, look up the tag ref and
+        prefer the corresponding GitHub Release's published_at timestamp. MAUI's
+        stable tags are lightweight, so git alone exposes only the tagged commit's
+        committer date, not when the release became public. When release metadata is
+        unavailable, use that commit date as a conservative content-freeze anchor.
+
+        Returns [PSCustomObject]@{ Tag; Date (UTC); DateSource } or $null when the
+        tag is absent or its date is unreadable.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Version,
+        [string]$Repo = 'dotnet/maui'
+    )
+    if ([string]::IsNullOrWhiteSpace($Version)) { return $null }
+    # Guard: only accept a clean Major.Minor.Patch — never a prerelease/malformed
+    # string that could resolve a non-stable tag.
+    if ($Version -notmatch '^\d+\.\d+\.\d+$') { return $null }
+
+    # The public GitHub Release timestamp is the best available evidence for when
+    # customers could consume the release. Query it quietly because the tracker can
+    # run between tag creation and Release publication, or during a GitHub outage.
+    $publishedAt = Invoke-Gh @('api', "repos/$Repo/releases/tags/$Version", '--jq', '.published_at') -Quiet
+    if ($publishedAt) {
+        if ($publishedAt -is [array]) { $publishedAt = $publishedAt[0] }
+        $publishedUtc = ConvertTo-Utc -Value ([string]$publishedAt).Trim()
+        if ($publishedUtc) {
+            return [PSCustomObject]@{
+                Tag        = $Version
+                Date       = $publishedUtc
+                DateSource = 'github-release'
+            }
+        }
+    }
+
+    $ref = "refs/tags/$Version"
+    # `creatordate` is the tagger date for annotated tags and the target commit's
+    # committer date for lightweight tags. No spaces in the format token keeps it
+    # safe under Invoke-Git's argument splitting.
+    $dateStr = Invoke-Git "for-each-ref --format=%(creatordate:iso-strict) $ref"
+    if (-not $dateStr) { $dateStr = Invoke-Git "log -1 --format=%cI $Version" }
+    if (-not $dateStr) { return $null }
+    if ($dateStr -is [array]) { $dateStr = $dateStr[0] }
+    $dateUtc = ConvertTo-Utc -Value ([string]$dateStr).Trim()
+    if (-not $dateUtc) { return $null }
+    $tagType = Invoke-Git "cat-file -t $ref"
+    if ($tagType -is [array]) { $tagType = $tagType[0] }
+    return [PSCustomObject]@{
+        Tag        = $Version
+        Date       = $dateUtc
+        DateSource = if (([string]$tagType).Trim() -eq 'tag') { 'annotated-tag' } else { 'tagged-commit' }
+    }
+}
+
+function Test-IsCarryForwardRegression {
+    <#
+    .SYNOPSIS
+        Decides whether a regression record is a POST-SHIP carry-forward for an
+        already-shipped SR (and therefore non-gating in -Shipped mode).
+    .DESCRIPTION
+        Deterministic, evidence-only. A regression is carry-forward when EITHER:
+          (1) The issue was created AFTER the SR's public release timestamp (or,
+              when unavailable, its tagged-commit content anchor) — it could not
+              have been part of what shipped, so it's follow-up work for the next
+              SR / a hotfix decision, not a retroactive ship blocker; OR
+          (2) The issue's milestone explicitly names a LATER SR (same major, higher
+              SR number) or a later major — a triager has assigned it to a future
+              cycle.
+
+        Does NOT parse free-text human notes, comments, or labels beyond the
+        structured milestone. Returns $false when it cannot make a positive
+        determination (missing ship date + no later-SR milestone) so the caller
+        keeps the conservative "still a follow-up to review" stance.
+
+        StrictMode/shape-safe: reads `createdAt` and `milestone` through
+        Get-MetadataValue so a hashtable (live survey) and a pscustomobject (JSON
+        round-trip) both work.
+    #>
+    param(
+        $Regression,
+        $ShipDate,
+        [int]$ShippedSrNumber = 0,
+        [int]$ShippedMajor = 0
+    )
+    if ($null -eq $Regression) { return $false }
+
+    # Signal (1): created after ship.
+    $shipUtc = ConvertTo-Utc -Value $ShipDate
+    if ($shipUtc) {
+        $created = ConvertTo-Utc -Value (Get-MetadataValue -Container $Regression -Name 'createdAt')
+        if ($created -and $created -gt $shipUtc) { return $true }
+    }
+
+    # Signal (2): milestone names a later SR / later major.
+    $milestone = Get-MetadataValue -Container $Regression -Name 'milestone'
+    if ($milestone) {
+        $mm = [regex]::Match([string]$milestone, '^\.NET\s+(\d+)(?:\.0)?\s+SR(\d+)$')
+        if ($mm.Success) {
+            $mMajor = [int]$mm.Groups[1].Value
+            $mSr    = [int]$mm.Groups[2].Value
+            if ($mMajor -gt $ShippedMajor) { return $true }
+            if ($mMajor -eq $ShippedMajor -and $ShippedSrNumber -gt 0 -and $mSr -gt $ShippedSrNumber) { return $true }
+        }
+    }
+
+    return $false
 }
 
 function New-ReadinessCheck {
@@ -1563,11 +1674,10 @@ function Resolve-Context {
         Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
     }
     elseif ($Shipped) {
-        # Display-only relabel. The survey is identical to in-flight (the SR
-        # branch surveyed directly); only the rendered header reads 'shipped'
-        # so the post-ship tracker doesn't misreport as in-flight.
+        # Survey the same SR branch as in-flight mode, but apply post-ship verdict,
+        # carry-forward, and hotfix-vs-next-SR guidance semantics.
         $mode = 'shipped'
-        Write-Host "Shipped mode: surveying already-tagged SR branch $effectiveSrRef (display-only relabel)" -ForegroundColor Cyan
+        Write-Host "Shipped mode: surveying already-tagged SR branch $effectiveSrRef with post-ship semantics" -ForegroundColor Cyan
     }
 
     # Main-side revert detection needs a bounded release-window baseline, but the
@@ -1689,6 +1799,20 @@ function Get-RevertedPrFromSubject {
     return $null
 }
 
+function Get-ClosingIssueNumbers {
+    <#
+    .SYNOPSIS
+        Extracts dotnet/maui issue numbers named by GitHub closing keywords.
+    #>
+    param([string]$Text)
+    if ([string]::IsNullOrWhiteSpace($Text)) { return @() }
+
+    $matches = [regex]::Matches(
+        $Text,
+        '(?im)(?:fixes|closes|resolves)\s+(?:dotnet/maui#|#|https?://github\.com/dotnet/maui/issues/)(\d+)\b')
+    return @($matches | ForEach-Object { [int]$_.Groups[1].Value } | Sort-Object -Unique)
+}
+
 # Internal scanner — extracts source PRs / backports / reverts from commits
 # selected by an arbitrary `git log` rev-spec. Used by Get-SrCommits both for
 # the primary scan and (optionally) for the inherited-from-prior-SR scan.
@@ -1749,11 +1873,8 @@ function Get-CommitsForRevSpec {
         if ($cherryShaMatch.Success) { $cherrySourceSha = $cherryShaMatch.Groups[1].Value }
 
         # Fixed issues
-        $issMatches = [regex]::Matches($body, '(?im)(?:fixes|closes|resolves)\s+(?:dotnet/maui#|#)(\d+)')
-        $fixesList = @()
-        foreach ($m in $issMatches) {
-            $n = [int]$m.Groups[1].Value
-            $fixesList += $n
+        $fixesList = @(Get-ClosingIssueNumbers -Text $body)
+        foreach ($n in $fixesList) {
             $fixedIssues.Add($n) | Out-Null
         }
 
@@ -2167,7 +2288,7 @@ function Get-IssueCommentPrs {
 function Get-PrEvidenceType {
     param($PrBody, $IssueNumber)
     if (-not $PrBody) { return 'none' }
-    if ($PrBody -match "(?im)(?:fixes|closes|resolves)\s+(?:dotnet/maui#|#)$IssueNumber\b") {
+    if (@(Get-ClosingIssueNumbers -Text $PrBody) -contains [int]$IssueNumber) {
         return 'closing-keyword'
     }
     if ($PrBody -match '(?im)(?:backport|cherry[-\s]picked)') {
@@ -2354,6 +2475,23 @@ function Classify-RegressionCandidate {
         if ($r.revertsPr) { $revertedPrSet[$r.revertsPr] = $true }
         if ($r.revertBackportPr) { $revertedPrSet[$r.revertBackportPr] = $true }
     }
+    # sourcePrSet intentionally contains both a backport PR number and the source
+    # PR named by "Backport of #N". Preserve that mapping so a later revert of the
+    # backport cannot leave the source number looking active (e.g. source #36495,
+    # backport #36498, then a revert of #36498).
+    $sourceToBackportPrs = @{}
+    $srCommitsForMapping = Get-MetadataValue -Container $SrContents -Name 'commits'
+    foreach ($commit in @($srCommitsForMapping)) {
+        $sourcePr = [int](Get-MetadataValue -Container $commit -Name 'sourcePr' -Default 0)
+        $backportPr = [int](Get-MetadataValue -Container $commit -Name 'backportPr' -Default 0)
+        if (-not $sourcePr -or -not $backportPr) { continue }
+        if (-not $sourceToBackportPrs.ContainsKey($sourcePr)) {
+            $sourceToBackportPrs[$sourcePr] = [System.Collections.Generic.List[int]]::new()
+        }
+        if (-not $sourceToBackportPrs[$sourcePr].Contains($backportPr)) {
+            [void]$sourceToBackportPrs[$sourcePr].Add($backportPr)
+        }
+    }
     $mainRevertedPrSet = @{}
     # Shape-safe read: $SrContents is a [hashtable] during a live survey but can be
     # an arbitrary IDictionary (e.g. [ordered]@{}) or a [pscustomobject] after a
@@ -2368,6 +2506,17 @@ function Classify-RegressionCandidate {
             if ($r.revertBackportPr) { $mainRevertedPrSet[[int]$r.revertBackportPr] = $true }
         }
     }
+
+    # Target-branch on-ancestry context. A fix merged BEFORE the SR was cut (or a
+    # catch-up merge) is common ancestry of BOTH main and the SR, so the differential
+    # `srRef ^main` source-PR set omits it — yet the fix IS present on the SR. When a
+    # merged fix's commit is verifiably an ancestor of the target branch, that beats a
+    # `merged-on-main-no-backport` conclusion (real-world: #35615 under SR9). Only apply
+    # this override when the target is a GENUINE SR branch distinct from main — in
+    # candidate mode the target IS main, so common ancestry proves nothing.
+    $ctxModeEarly = Get-MetadataValue -Container $Ctx -Name 'mode'
+    $targetSrRef  = Get-MetadataValue -Container $Ctx -Name 'srRef'
+    $targetIsDistinct = ($ctxModeEarly -ne 'candidate') -and [bool]$targetSrRef
 
     # === EARLY-EXIT: issue is already fixed by a commit IN the SR contents ===
     #
@@ -2456,14 +2605,31 @@ function Classify-RegressionCandidate {
             continue
         }
 
-        # Detect "Revert ..." titled PRs — these are NOT fixes, they're rollbacks.
-        # When the only candidate PR is a revert, the issue is likely unfixed (or
-        # in a revert-of-revert chain that needs manual verification).
-        $isRevertPr = ($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')
-        if ($isRevertPr) { $sawRevertCandidate = $true; continue }
-
         $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
         $onMain = if ($mergeSha) { Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.mainBranch)" } else { $false }
+        # Verified presence on the (real) target SR branch. `$onTargetRef` is the raw
+        # ancestry check against srRef (valid even in candidate mode, where srRef==main).
+        # `$onTarget` gates the merged-on-main → in-sr-active override to a DISTINCT SR
+        # target only.
+        $onTargetRef = if ($targetSrRef -and $mergeSha) { Test-CommitOnBranch -Sha $mergeSha -BranchRef $targetSrRef } else { $false }
+        $onTarget = [bool]($targetIsDistinct -and $onTargetRef)
+
+        # Detect "Revert ..." titled PRs. Normally a revert is a ROLLBACK, not a fix,
+        # so skip it and remember we saw one. BUT a revert of the change that INTRODUCED
+        # the regression can itself be the fix. Accept a revert as a fix ONLY under
+        # strict, conservative evidence: it MERGED, it EXPLICITLY closes THIS issue
+        # (closing-keyword — not a bare mention or generic "Reverts #X" body), and the
+        # source PR is verified in the target contents OR its merge commit is an
+        # ancestor of the target. The source-PR set covers normal backports, whose
+        # target merge SHA differs from the source merge SHA (real-world: #36495 →
+        # SR9 backport #36498). Anything short of all three stays a rollback.
+        $isRevertPr = ($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')
+        if ($isRevertPr) {
+            $sourcePrInTargetContents = $sourcePrSet.ContainsKey([int]$prNum)
+            $revertCountsAsFix = ($ev -eq 'closing-keyword') -and ($info.state -eq 'MERGED') -and
+                ($onTargetRef -or $sourcePrInTargetContents)
+            if (-not $revertCountsAsFix) { $sawRevertCandidate = $true; continue }
+        }
 
         # Look for backport PRs targeting SR
         $backports = Get-BackportPrsForSr -Repo $Ctx.repo -SrBranch $Ctx.srBranch -SourcePrNumber $prNum
@@ -2477,6 +2643,7 @@ function Classify-RegressionCandidate {
             mergedAt = $info.mergedAt
             evidenceType = $ev
             onMain = $onMain
+            onTarget = $onTarget
             backports = @($backports | ForEach-Object {
                 @{ number = $_.number; state = $_.state; mergedAt = $_.mergedAt; closedAt = $_.closedAt; title = $_.title }
             })
@@ -2521,12 +2688,26 @@ function Classify-RegressionCandidate {
 
         # In-SR (with revert check)
         if ($sourcePrSet.ContainsKey($pr.number)) {
-            if ($revertedPrSet.ContainsKey($pr.number)) {
+            $mappedBackports = @()
+            if ($sourceToBackportPrs.ContainsKey([int]$pr.number)) {
+                $mappedBackports = @($sourceToBackportPrs[[int]$pr.number])
+            }
+            $activeMappedBackports = @($mappedBackports | Where-Object { -not $revertedPrSet.ContainsKey([int]$_) })
+            if ($mappedBackports.Count -gt 0 -and $activeMappedBackports.Count -eq 0) {
+                $verdict = 'in-sr-reverted'
+                $mappedList = ($mappedBackports | ForEach-Object { "#$_" }) -join ', '
+                $evidence += "PR #$($pr.number) reached the SR through mapped backport(s) $mappedList, but every mapped backport was reverted"
+            } elseif ($revertedPrSet.ContainsKey($pr.number)) {
                 $verdict = 'in-sr-reverted'
                 $evidence += "PR #$($pr.number) source-PR in SR but reverted"
             } else {
                 $verdict = 'in-sr-active'
-                $evidence += "PR #$($pr.number) source-PR in SR contents (active)"
+                if ($activeMappedBackports.Count -gt 0) {
+                    $mappedList = ($activeMappedBackports | ForEach-Object { "#$_" }) -join ', '
+                    $evidence += "PR #$($pr.number) source-PR is active in the SR through mapped backport(s) $mappedList"
+                } else {
+                    $evidence += "PR #$($pr.number) source-PR in SR contents (active)"
+                }
             }
         }
         else {
@@ -2577,7 +2758,20 @@ function Classify-RegressionCandidate {
             elseif ($pr.state -eq 'MERGED') {
                 # reverted-on-main is handled by the hoisted guard above, so a PR
                 # reaching here is known NOT to have been reverted on main.
-                if ($pr.onMain) {
+                if ($pr.onTarget) {
+                    # Merge commit is verifiably an ancestor of the SR branch, even
+                    # though it fell out of the differential source-PR set (common
+                    # ancestry with main — merged before the cut or via catch-up
+                    # merge). Presence on the branch beats a "no backport" verdict.
+                    if ($revertedPrSet.ContainsKey([int]$pr.number)) {
+                        $verdict = 'in-sr-reverted'
+                        $evidence += "PR #$($pr.number) merge commit is present on $($Ctx.srBranch) but was reverted on the SR"
+                    } else {
+                        $verdict = 'in-sr-active'
+                        $evidence += "PR #$($pr.number) merge commit verified on $($Ctx.srBranch) via common ancestry (absent from the differential source-PR set, but present on the branch)"
+                    }
+                }
+                elseif ($pr.onMain) {
                     $verdict = 'merged-on-main-no-backport'
                     $confidence = 'medium'
                     $evidence += "PR #$($pr.number) merged to main, no backport PR opened"
@@ -2681,17 +2875,40 @@ function Classify-RegressionCandidate {
     # IDictionary.Contains and also handles the [pscustomobject] round-trip shape.
     $ctxMode = Get-MetadataValue -Container $Ctx -Name 'mode'
     $isCandidateMode = $ctxMode -eq 'candidate' -or $Ctx.srBranch -eq $Ctx.mainBranch
+    $isShippedMode = $ctxMode -eq 'shipped'
     $backportCommand = "/backport to $($Ctx.srBranch)"
-    $candidateMergedGuidance = 'Fix must land on main before the SR is cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
+    # Candidate mode surveys main BEFORE the SR is cut. For a fix already merged on
+    # main, do NOT say it "must land on main" (it already has) — say it will be
+    # included when the SR is cut.
+    $candidateMergedGuidance = 'Fix is already merged on main and will be included when the next SR is cut; rerun readiness after the release/...-srN branch exists to confirm and get the exact backport command if any follow-up is needed.'
     $candidateOpenGuidance = 'Wait for the main merge before the SR cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
+    # Shipped mode: the SR already tagged, so the current-SR `/backport` command no
+    # longer applies. Reframe as a human hotfix/next-SR decision (never an automatic
+    # backport to an already-shipped SR).
+    $shippedMergedGuidance = "SR ``$($Ctx.srBranch)`` has already shipped — the automatic current-SR backport workflow no longer applies. A human decides whether to hotfix this shipped SR or carry the fix forward to the next SR."
+    $shippedOpenGuidance = "SR ``$($Ctx.srBranch)`` has already shipped and this fix has not merged yet — a human decides whether it warrants a hotfix to the shipped SR or should ride the next SR; the automatic current-SR backport workflow no longer applies."
     $recAction = switch ($best.verdict) {
         'in-sr-active' { 'No action — fix is shipping' }
         'in-sr-reverted' { 'Investigate: backport landed and was reverted on SR' }
         'rejected-from-sr' { 'Check rejection rationale (WorkIQ) — was this intentional or stale?' }
-        'backport-in-progress' { 'Track backport PR to completion' }
-        'merged-on-main-no-backport' { if ($isCandidateMode) { $candidateMergedGuidance } else { "On the merged source PR, post ``$backportCommand``" } }
+        'backport-in-progress' {
+            if ($isShippedMode) {
+                "SR ``$($Ctx.srBranch)`` has already shipped — decide whether the open backport should land as a hotfix or close in favor of the next SR; it is not a retroactive ship blocker."
+            } else {
+                'Track backport PR to completion'
+            }
+        }
+        'merged-on-main-no-backport' {
+            if ($isShippedMode) { $shippedMergedGuidance }
+            elseif ($isCandidateMode) { $candidateMergedGuidance }
+            else { "On the merged source PR, post ``$backportCommand``" }
+        }
         'merged-non-main-only' { 'Flow fix to main first, then rerun readiness to verify the merged source PR is on main before requesting a backport' }
-        'open-on-main' { if ($isCandidateMode) { $candidateOpenGuidance } else { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" } }
+        'open-on-main' {
+            if ($isShippedMode) { $shippedOpenGuidance }
+            elseif ($isCandidateMode) { $candidateOpenGuidance }
+            else { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" }
+        }
         'needs-human-review' {
             switch ($best.subreason) {
                 'merged-backport-missing' { "Re-run readiness without ``-NoFetch`` (or verify the backport's merge target manually) — backport #$($best.subreasonPr) is MERGED on GitHub but absent from SR git contents" }
@@ -3289,6 +3506,99 @@ function Get-MetadataValue {
     return $Default
 }
 
+function Get-ShippedVerdict {
+    <#
+    .SYNOPSIS
+        Computes the post-ship follow-up verdict for an already-tagged SR (-Shipped).
+    .DESCRIPTION
+        An SR that has tagged cannot be un-shipped, so this NEVER returns 🔴 Not
+        Ready. It surfaces the same regression/CI/ship-check signals the in-flight
+        verdict uses, but reframes them:
+          - Actionable Tier-1/Tier-2 regressions that are NOT carry-forward, and any
+            BLOCKED ship check, drive a 🟡 "Shipped — follow-up required".
+          - Regressions created after ship (or milestoned to a later SR) are
+            carry-forward → advisory, non-gating.
+          - CI red/stale/unknown is advisory only (the release already published).
+          - Otherwise 🟢 "Shipped — clean".
+
+        Reads the actual stable-tag ship date + shipped SR number/major from
+        $Data.shippedInfo (populated by Invoke-Main) to classify carry-forward.
+        Absent shippedInfo → carry-forward detection simply finds nothing and every
+        actionable signal is treated as a follow-up (conservative).
+    #>
+    param($Data)
+
+    $reasons = New-Object System.Collections.Generic.List[string]
+    $followUp = $false
+
+    # Ship anchor for carry-forward classification.
+    $shipDate = $null; $shippedSr = 0; $shippedMajor = 0
+    if ($Data.ContainsKey('shippedInfo') -and $Data['shippedInfo']) {
+        $si = $Data['shippedInfo']
+        $shipDate     = ConvertTo-Utc -Value (Get-MetadataValue -Container $si -Name 'tagDate')
+        $shippedSr    = [int](Get-MetadataValue -Container $si -Name 'srNumber' -Default 0)
+        $shippedMajor = [int](Get-MetadataValue -Container $si -Name 'major' -Default 0)
+    }
+
+    if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
+        $followCounts = @{}
+        $carryCount = 0
+        foreach ($r in $Data['regressions']) {
+            $tier = Get-VerdictTier -Classification $r.classification
+            # `no-fix-yet` only counts while the issue is still OPEN (parity with the
+            # in-flight verdict's downgrade).
+            if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') { $tier = 3 }
+            if ($tier -ge 3) { continue }
+            if (Test-IsCarryForwardRegression -Regression $r -ShipDate $shipDate `
+                    -ShippedSrNumber $shippedSr -ShippedMajor $shippedMajor) {
+                $carryCount++
+                continue
+            }
+            if (-not $followCounts.ContainsKey($r.classification)) { $followCounts[$r.classification] = 0 }
+            $followCounts[$r.classification]++
+            $followUp = $true
+        }
+        foreach ($k in $followCounts.Keys | Sort-Object) {
+            $reasons.Add("[Follow-up] $($followCounts[$k]) × ``$k`` — post-ship carry-forward / hotfix decision, not a ship blocker") | Out-Null
+        }
+        if ($carryCount -gt 0) {
+            $followUp = $true
+            $reasons.Add("[Advisory] $carryCount regression(s) created after ship or milestoned to a later SR — carry-forward, non-gating") | Out-Null
+        }
+    }
+
+    # CI is advisory in shipped mode — the tag already published.
+    if ($Data.ContainsKey('ci') -and $Data['ci'] -and
+        $Data['ci'].overall -in @('red-needs-review', 'stale', 'partial-unknown', 'unknown')) {
+        $reasons.Add("[Advisory] Post-ship CI on the SR branch is ``$($Data['ci'].overall)`` — informational; it does not affect the already-shipped release.") | Out-Null
+    }
+
+    # BLOCKED ship checks post-ship are follow-ups (they should already be satisfied),
+    # not retroactive ship blockers.
+    if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
+        $blockedShipChecks = @($Data['shipChecks'] | Where-Object { $_.Status -eq 'BLOCKED' })
+        foreach ($sc in $blockedShipChecks) {
+            $followUp = $true
+            $reasons.Add("[Follow-up] Ship check needs post-ship attention: $($sc.Area)") | Out-Null
+        }
+    }
+
+    if ($followUp) {
+        return @{
+            symbol = '🟡'
+            tier = 2
+            label = 'Shipped — follow-up required'
+            reasons = $reasons.ToArray()
+        }
+    }
+    return @{
+        symbol = '🟢'
+        tier = 3
+        label = 'Shipped — clean'
+        reasons = if ($reasons.Count -gt 0) { $reasons.ToArray() } else { @('Shipped — no post-ship follow-ups detected.') }
+    }
+}
+
 function Get-OverallVerdict {
     <#
     .SYNOPSIS
@@ -3320,7 +3630,19 @@ function Get-OverallVerdict {
     #>
     param($Data)
 
-    $isCandidate = ((Get-MetadataValue -Container $Data.metadata -Name 'mode') -eq 'candidate')
+    $mode = Get-MetadataValue -Container $Data.metadata -Name 'mode'
+    $isCandidate = ($mode -eq 'candidate')
+
+    # ── SHIPPED MODE: post-ship follow-up framing (never retroactively blocks) ──
+    # The SR already tagged. Nothing surfaced here can un-ship it, so we NEVER
+    # return 🔴 Not Ready. Newly discovered regressions and signals become
+    # post-ship FOLLOW-UPS (carry-forward / hotfix decisions). CI red is advisory.
+    # Regressions created after ship (or milestoned to a later SR) are carry-forward
+    # and non-gating. Verdict is 🟡 "Shipped — follow-up required" when there's an
+    # actionable follow-up, else 🟢 "Shipped — clean".
+    if ($mode -eq 'shipped') {
+        return (Get-ShippedVerdict -Data $Data)
+    }
 
     $reasons = New-Object System.Collections.Generic.List[string]
     $tier1 = $false
@@ -3613,22 +3935,44 @@ function Get-ReportSemanticHash {
     $mainBranchName = Get-MetadataValue -Container $Data.metadata -Name 'mainBranch'
     $modeForHash = Get-MetadataValue -Container $Data.metadata -Name 'mode' -Default 'in-flight'
     if (-not $modeForHash) { $modeForHash = 'in-flight' }
+    $shippedInfoForHash = if ($modeForHash -eq 'shipped' -and $Data.ContainsKey('shippedInfo') -and $Data['shippedInfo']) {
+        $Data['shippedInfo']
+    } else { $null }
+    $shipDateForHash = if ($shippedInfoForHash) {
+        ConvertTo-Utc -Value (Get-MetadataValue -Container $shippedInfoForHash -Name 'tagDate')
+    } else { $null }
+    $shipVersionForHash = if ($shippedInfoForHash) {
+        [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'version')
+    } else { '' }
+    $shipDateSourceForHash = if ($shippedInfoForHash) {
+        [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'dateSource')
+    } else { '' }
+    $shipSrForHash = if ($shippedInfoForHash) {
+        [int](Get-MetadataValue -Container $shippedInfoForHash -Name 'srNumber' -Default 0)
+    } else { 0 }
+    $shipMajorForHash = if ($shippedInfoForHash) {
+        [int](Get-MetadataValue -Container $shippedInfoForHash -Name 'major' -Default 0)
+    } else { 0 }
 
     $semantic = [ordered]@{
         verdict = $Verdict.symbol
         # Tracker lifecycle mode (candidate / in-flight / shipped). Folded in so a
         # lifecycle TRANSITION always flips the hash and refreshes the tracker —
         # even when every other hashed field is byte-for-byte identical across the
-        # flip. This matters most at in-flight -> shipped: `-Shipped` is a pure
-        # display relabel that surveys the SAME SR branch as in-flight, so srHead,
-        # ci, srPrs, regressions, shipChecks and nightlyFeed can all be unchanged
-        # at the moment the stable tag publishes. Without `mode` here, hash(shipped)
+        # flip. This matters most at in-flight -> shipped: `-Shipped` surveys the
+        # SAME SR branch as in-flight, so srHead, ci, srPrs, regressions, shipChecks
+        # and nightlyFeed can all be unchanged at the moment the stable tag
+        # publishes. Without `mode` here, hash(shipped)
         # == hash(in-flight), the workflow's idempotent no-op skips `gh issue edit`,
         # and the tracker never visually flips to "shipped" (the whole point of the
         # shipped lifecycle). `mode` is constant within a mode, so it adds NO daily
         # churn — only the one-time transition refreshes. Default 'in-flight' when
         # absent, matching Format-MarkdownReport's $mode default.
         mode = $modeForHash
+        shippedAnchor = if ($shippedInfoForHash) {
+            $shipDateToken = if ($shipDateForHash) { $shipDateForHash.ToString('o') } else { '' }
+            "$shipVersionForHash|$shipDateToken|$shipDateSourceForHash"
+        } else { '' }
         srHead = Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha'
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
         srPrs = if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
@@ -3659,6 +4003,12 @@ function Get-ReportSemanticHash {
                               } elseif ($_.PSObject.Properties['recommendedAction']) {
                                   $recAct = [string]$_.recommendedAction
                               }
+                              $lifecycleBucket = ''
+                              if ($modeForHash -eq 'shipped') {
+                                  $isCarryForward = Test-IsCarryForwardRegression -Regression $_ -ShipDate $shipDateForHash `
+                                      -ShippedSrNumber $shipSrForHash -ShippedMajor $shipMajorForHash
+                                  $lifecycleBucket = if ($isCarryForward) { 'carry-forward' } else { 'follow-up' }
+                              }
                               # `no-fix-yet` is the ONLY classification whose rendered tier
                               # depends on issue state (OPEN -> Tier 1, CLOSED -> Tier 3; see
                               # Format-MarkdownReport's $emitTier). Fold the state-derived tier
@@ -3671,9 +4021,9 @@ function Get-ReportSemanticHash {
                               # spam issue watchers — preserving the conservative design above.
                               if ($_.classification -eq 'no-fix-yet') {
                                   $nfyTier = if ($_.state -eq 'OPEN') { 't1' } else { 't3' }
-                                  "$($_.issue):$($_.classification):$($nfyTier):$($selPrNum):$recAct"
+                                  "$($_.issue):$($_.classification):$($nfyTier):$($lifecycleBucket):$($selPrNum):$recAct"
                               } else {
-                                  "$($_.issue):$($_.classification):$($selPrNum):$recAct"
+                                  "$($_.issue):$($_.classification):$($lifecycleBucket):$($selPrNum):$recAct"
                               }
                           }) -join '|'
                       } else { '' }
@@ -3806,6 +4156,20 @@ function Format-MarkdownReport {
     $mode = Get-MetadataValue -Container $ctx -Name 'mode' -Default 'in-flight'
     if (-not $mode) { $mode = 'in-flight' }
     $inherits = [bool](Get-MetadataValue -Container $ctx -Name 'inheritFromPriorSr' -Default $false)
+
+    # Shipped-render context — resolved once and reused by the header, the ship-date
+    # line, and the post-ship follow-up summary. Reads the actual stable-tag ship
+    # date + shipped SR number/major from $Data.shippedInfo (Invoke-Main populates
+    # it). Absent → carry-forward detection finds nothing and every follow-up stays
+    # actionable (conservative).
+    $isShippedRender = ($mode -eq 'shipped')
+    $shippedInfoRender = if ($isShippedRender -and $Data.ContainsKey('shippedInfo') -and $Data['shippedInfo']) { $Data['shippedInfo'] } else { $null }
+    $shipTagDateRender = if ($shippedInfoRender) { ConvertTo-Utc -Value (Get-MetadataValue -Container $shippedInfoRender -Name 'tagDate') } else { $null }
+    $shipTagVersion    = if ($shippedInfoRender) { Get-MetadataValue -Container $shippedInfoRender -Name 'version' } else { $null }
+    $shipTagDateSource = if ($shippedInfoRender) { Get-MetadataValue -Container $shippedInfoRender -Name 'dateSource' } else { $null }
+    $shipTagSrNum      = if ($shippedInfoRender) { [int](Get-MetadataValue -Container $shippedInfoRender -Name 'srNumber' -Default 0) } else { 0 }
+    $shipTagMajor      = if ($shippedInfoRender) { [int](Get-MetadataValue -Container $shippedInfoRender -Name 'major' -Default 0) } else { 0 }
+
     if ($mode -eq 'candidate') {
         if ($inherits) {
             [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (main + inherited from $($ctx.priorSrBranch))")
@@ -3818,6 +4182,18 @@ function Format-MarkdownReport {
         }
     } else {
         [void]$sb.AppendLine("# Release Readiness — $srBranch")
+        if ($isShippedRender) {
+            [void]$sb.AppendLine()
+            if ($shipTagDateRender -and $shipTagDateSource -eq 'github-release') {
+                $shipVerLabel = if ($shipTagVersion) { "$shipTagVersion " } else { '' }
+                [void]$sb.AppendLine("> 📦 **Shipped ${shipVerLabel}on $($shipTagDateRender.ToString('yyyy-MM-dd')) (post-ship tracker).** ``$srBranch`` has already tagged. Findings below are post-ship **follow-ups / carry-forward** (hotfix or next-SR decisions), not ship blockers.")
+            } elseif ($shipTagDateRender) {
+                $shipVerLabel = if ($shipTagVersion) { "$shipTagVersion " } else { '' }
+                [void]$sb.AppendLine("> 📦 **Shipped ${shipVerLabel}(post-ship tracker; tagged-content anchor $($shipTagDateRender.ToString('yyyy-MM-dd'))).** ``$srBranch`` has already tagged. Findings below are post-ship **follow-ups / carry-forward** (hotfix or next-SR decisions), not ship blockers.")
+            } else {
+                [void]$sb.AppendLine("> 📦 **Shipped SR (post-ship tracker).** ``$srBranch`` has already tagged. Findings below are post-ship **follow-ups / carry-forward** (hotfix or next-SR decisions), not ship blockers.")
+            }
+        }
     }
     [void]$sb.AppendLine()
 
@@ -3890,7 +4266,21 @@ function Format-MarkdownReport {
         if ($bumpInfoForShip) { $mainBumpDateForShip = $bumpInfoForShip.Date }
     }
     $shipDate = Get-ExpectedShipDate -PatchVersion $patchForShipDate -MainBumpDate $mainBumpDateForShip
-    if ($shipDate.Cadence -eq 'asap-hotfix') {
+    if ($isShippedRender) {
+        # The SR already tagged — show the public release date when available,
+        # otherwise label the tagged-commit fallback precisely. Suppress the overdue
+        # "window passed" warning either way (a shipped SR is not "late").
+        if ($shipTagDateRender) {
+            $shipVerLabel2 = if ($shipTagVersion) { "$shipTagVersion " } else { '' }
+            if ($shipTagDateSource -eq 'github-release') {
+                [void]$sb.AppendLine("**Shipped**: 📦 ${shipVerLabel2}on $($shipTagDateRender.ToString('dddd MMMM d, yyyy')) (GitHub Release published) — post-ship tracker; ship-window checks no longer apply.")
+            } else {
+                [void]$sb.AppendLine("**Tag content anchor**: 📦 ${shipVerLabel2}$($shipTagDateRender.ToString('dddd MMMM d, yyyy')) (tagged commit date; public release timestamp unavailable) — post-ship tracker; ship-window checks no longer apply.")
+            }
+        } else {
+            [void]$sb.AppendLine("**Shipped**: 📦 This SR has already tagged — post-ship tracker; ship-window checks no longer apply.")
+        }
+    } elseif ($shipDate.Cadence -eq 'asap-hotfix') {
         [void]$sb.AppendLine("**Expected ship date**: 🚑 $($shipDate.FormattedLong) — $($shipDate.Note)")
     } elseif ($shipDate.MissedWindow) {
         [void]$sb.AppendLine("**Expected ship date**: ⚠️ $($shipDate.FormattedLong) — **window passed** ($([Math]::Abs($shipDate.DaysFromNow)) day(s) ago). $($shipDate.Note)")
@@ -3913,11 +4303,15 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine()
     }
 
-    # === BLOCKING SUMMARY (hoisted to top, right under the verdict) ===
-    # Surface every BLOCKED ship-check AND every Tier 1 regression so the
-    # release captain sees what's preventing ship without scrolling past
-    # CI tables, open-PR tables, and the full tier breakdown below.
+    # === BLOCKING / POST-SHIP FOLLOW-UP SUMMARY (hoisted to top, under verdict) ===
+    # In-flight/candidate: every BLOCKED ship-check + Tier 1 regression is a ship
+    # blocker. Shipped: the SR already tagged, so the same items become post-ship
+    # FOLLOW-UPS (hotfix / next-SR decisions), and Tier-1 regressions that are
+    # carry-forward (created after ship or milestoned to a later SR) are split into
+    # a separate, explicitly non-gating list so they stay VISIBLE without implying
+    # the shipped release is broken.
     $blockingItems = New-Object System.Collections.Generic.List[hashtable]
+    $carryForwardItems = New-Object System.Collections.Generic.List[hashtable]
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
         foreach ($sc in $Data['shipChecks']) {
             if ($sc.Status -eq 'BLOCKED') {
@@ -3933,18 +4327,63 @@ function Format-MarkdownReport {
         foreach ($r in $Data['regressions']) {
             $tier = Get-VerdictTier -Classification $r.classification
             if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') { $tier = 3 }
-            if ($tier -eq 1) {
+            # In normal release modes only Tier 1 belongs in the hoisted blocking
+            # summary. After ship, Tier 1 and Tier 2 are follow-ups/hotfix decisions,
+            # so hoist both; otherwise the report can claim "No post-ship follow-ups"
+            # while listing a needs-human-review row later in the document.
+            if ($tier -eq 1 -or ($isShippedRender -and $tier -eq 2)) {
                 $issLink = "[#$($r.issue)]($RepoUrl/issues/$($r.issue))"
-                [void]$blockingItems.Add(@{
+                $item = @{
                     area = "🐞 $issLink — $($r.classification)"
                     details = $r.title
                     action = $r.recommendedAction
-                })
+                }
+                if ($isShippedRender -and (Test-IsCarryForwardRegression -Regression $r `
+                        -ShipDate $shipTagDateRender -ShippedSrNumber $shipTagSrNum -ShippedMajor $shipTagMajor)) {
+                    [void]$carryForwardItems.Add($item)
+                } else {
+                    [void]$blockingItems.Add($item)
+                }
             }
         }
     }
 
-    if ($blockingItems.Count -gt 0) {
+    if ($isShippedRender) {
+        if ($blockingItems.Count -gt 0) {
+            [void]$sb.AppendLine("## 📌 Post-ship follow-ups — $($blockingItems.Count) item(s)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_``$srBranch`` already shipped — these did NOT block the release. Each needs a human hotfix-vs-next-SR decision._")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| Area | Details | Next action |')
+            [void]$sb.AppendLine('|---|---|---|')
+            foreach ($b in $blockingItems) {
+                $area = Format-MarkdownTableCell $b.area
+                $details = Format-MarkdownTableCell $b.details
+                $action = Format-MarkdownTableCell $b.action
+                [void]$sb.AppendLine("| $area | $details | $action |")
+            }
+            [void]$sb.AppendLine()
+        } elseif ($carryForwardItems.Count -eq 0) {
+            [void]$sb.AppendLine("## 🟢 No post-ship follow-ups")
+            [void]$sb.AppendLine()
+        }
+        if ($carryForwardItems.Count -gt 0) {
+            [void]$sb.AppendLine("## 🔁 Carry-forward — $($carryForwardItems.Count) item(s)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_Regressions created after ship or milestoned to a later SR. Non-gating for this shipped SR — tracked forward to the next cycle._")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| Area | Details | Next action |')
+            [void]$sb.AppendLine('|---|---|---|')
+            foreach ($b in $carryForwardItems) {
+                $area = Format-MarkdownTableCell $b.area
+                $details = Format-MarkdownTableCell $b.details
+                $action = Format-MarkdownTableCell $b.action
+                [void]$sb.AppendLine("| $area | $details | $action |")
+            }
+            [void]$sb.AppendLine()
+        }
+    }
+    elseif ($blockingItems.Count -gt 0) {
         [void]$sb.AppendLine("## 🔴 Blocking — $($blockingItems.Count) item(s)")
         [void]$sb.AppendLine()
         [void]$sb.AppendLine('| Area | Details | Next action |')
@@ -4001,14 +4440,35 @@ function Format-MarkdownReport {
                 $cpTitle = Format-MarkdownTableCell $cpTitleRaw
                 $author = if ($cp.author -and $cp.author.login) { Format-GitHubHandle $cp.author.login } else { 'unknown' }
 
-                # Status: OPEN + draft/ready + mergeable (all fields optional).
-                $draftBit = if ($cp.PSObject.Properties['isDraft'] -and $cp.isDraft) { '📝 Draft' } else { '✅ Ready' }
-                $mergeBit = switch ("$($cp.mergeable)".ToUpperInvariant()) {
-                    'MERGEABLE'   { ' · mergeable' }
-                    'CONFLICTING' { ' · ⚠️ conflicts' }
-                    default       { '' }
+                # Status: lead with a non-contradictory summary that prioritizes
+                # BLOCKING facts (draft, merge conflicts, review required / changes
+                # requested) ahead of non-blocking facts (mergeable, approved, ready
+                # for review). All component fields are optional; degrade gracefully.
+                # The old cell rendered "✅ Ready · ⚠️ conflicts" — a review-required,
+                # conflicting PR is NOT "Ready", so blocking facts now come first and
+                # the not-draft state is labelled "Ready for review" (not "Ready").
+                $isDraft = [bool](Get-MetadataValue -Container $cp -Name 'isDraft' -Default $false)
+                $mergeState = "$((Get-MetadataValue -Container $cp -Name 'mergeable' -Default ''))".ToUpperInvariant()
+                $reviewState = "$((Get-MetadataValue -Container $cp -Name 'reviewDecision' -Default ''))".ToUpperInvariant()
+
+                $blockingFacts = @()
+                if ($isDraft) { $blockingFacts += '📝 Draft' }
+                if ($mergeState -eq 'CONFLICTING') { $blockingFacts += '⚠️ conflicts' }
+                if ($reviewState -eq 'CHANGES_REQUESTED') { $blockingFacts += '⚠️ changes requested' }
+                elseif ($reviewState -eq 'REVIEW_REQUIRED') { $blockingFacts += 'review required' }
+
+                $okFacts = @()
+                if ($mergeState -eq 'MERGEABLE') { $okFacts += 'mergeable' }
+                if ($reviewState -eq 'APPROVED') { $okFacts += 'approved' }
+                if (-not $isDraft) { $okFacts += 'Ready for review' }
+
+                $facts = @($blockingFacts) + @($okFacts)
+                $leadSymbol = if ($blockingFacts.Count -gt 0) { '🟠' } else { '🟢' }
+                $statusCell = if ($facts.Count -gt 0) {
+                    "$leadSymbol Open · " + ($facts -join ' · ')
+                } else {
+                    "$leadSymbol Open"
                 }
-                $statusCell = "🟢 Open · $draftBit$mergeBit"
 
                 # Age of the PR (created) and last activity (updated), relative to $nowRef.
                 $openedCell = '—'
@@ -4151,12 +4611,17 @@ function Format-MarkdownReport {
                     $openBp = $cp.backports | Where-Object { $_.state -eq 'OPEN' } | Select-Object -First 1
                     if ($openBp) {
                         $prLink = "[#$($openBp.number)]($RepoUrl/pull/$($openBp.number))"
+                        $postShipBackport = ($mode -eq 'shipped')
                         [void]$openFixRows.Add(@{
                             prCell  = $prLink
                             baseCell = "``$srBranch``"
                             issCell = $issCell
-                            statusCell = "🟡 backport OPEN on SR"
-                            actionCell = 'Land this PR before ship'
+                            statusCell = if ($postShipBackport) { '🟡 backport OPEN — post-ship decision' } else { '🟡 backport OPEN on SR' }
+                            actionCell = if ($postShipBackport) {
+                                'Decide whether this backport should land as a hotfix or close in favor of the next SR; it is not a retroactive ship blocker.'
+                            } else {
+                                'Land this PR before ship'
+                            }
                         })
                         break
                     }
@@ -4172,13 +4637,16 @@ function Format-MarkdownReport {
                 if ($openMain) {
                     $prLink = "[#$($openMain.number)]($RepoUrl/pull/$($openMain.number))"
                     $base = if ($openMain.baseRef) { "``$($openMain.baseRef)``" } else { '`main`' }
+                    $postShipOpenFix = ($mode -eq 'shipped')
                     [void]$openFixRows.Add(@{
                         prCell  = $prLink
                         baseCell = $base
                         issCell = $issCell
-                        statusCell = '🔵 OPEN — awaiting main merge'
+                        statusCell = if ($postShipOpenFix) { '🔵 OPEN — post-ship fix decision' } else { '🔵 OPEN — awaiting main merge' }
                         actionCell = if ($mode -eq 'candidate') {
                             'Watch for merge to main before the SR cut; rerun readiness after the release/...-srN branch is cut to get the exact backport command'
+                        } elseif ($postShipOpenFix) {
+                            "After merge, decide whether this warrants a hotfix to the shipped SR or should ride the next SR; no automatic current-SR backport applies."
                         } else {
                             "Watch for merge, then post ``/backport to $srBranch`` on the merged source PR"
                         }
@@ -4188,9 +4656,14 @@ function Format-MarkdownReport {
         }
 
         if ($openFixRows.Count -gt 0) {
-            [void]$sb.AppendLine("## 📥 Open Fix PRs Inbound — $($openFixRows.Count) PR(s)")
+            $openFixHeading = if ($mode -eq 'shipped') { 'Open Fix PRs Post-ship' } else { 'Open Fix PRs Inbound' }
+            [void]$sb.AppendLine("## 📥 $openFixHeading — $($openFixRows.Count) PR(s)")
             [void]$sb.AppendLine()
-            [void]$sb.AppendLine('_Fix PRs in flight for regression issues. Land these (or their backports) before ship to close out the regression list._')
+            if ($mode -eq 'shipped') {
+                [void]$sb.AppendLine('_Fix PRs discovered after the SR shipped. Track them for a human hotfix-vs-next-SR decision; they are not retroactive ship blockers._')
+            } else {
+                [void]$sb.AppendLine('_Fix PRs in flight for regression issues. Land these (or their backports) before ship to close out the regression list._')
+            }
             [void]$sb.AppendLine()
             [void]$sb.AppendLine('| Fix PR | Base | Regression issue | Status | Next action |')
             [void]$sb.AppendLine('|---|---|---|---|---|')
@@ -4337,6 +4810,10 @@ function Format-MarkdownReport {
 
         [void]$sb.AppendLine("## Regression Candidates — $($regs.Count) issues scanned")
         [void]$sb.AppendLine()
+        if ($isShippedRender) {
+            [void]$sb.AppendLine("_Post-ship tracker: the tiers below are severity groupings, not ship gates. ``$srBranch`` already shipped — treat Tier 1/2 rows as post-ship **follow-ups / carry-forward** (see the summary above)._")
+            [void]$sb.AppendLine()
+        }
         [void]$sb.AppendLine('### Summary')
         [void]$sb.AppendLine('| Verdict | Count |')
         [void]$sb.AppendLine('|---|---|')
@@ -4397,8 +4874,10 @@ function Format-MarkdownReport {
             }
         }
 
-        & $emitTier '🔴 Tier 1 — Blocking' $tier1Classes '_No blocking regressions._' 'OPEN'
-        & $emitTier '🟡 Tier 2 — Risk / Review' $tier2Classes '_No risk-tier regressions._' $null
+        $tier1Title = if ($isShippedRender) { '🔴 Tier 1 — Urgent follow-up' } else { '🔴 Tier 1 — Blocking' }
+        $tier2Title = if ($isShippedRender) { '🟡 Tier 2 — Follow-up / Review' } else { '🟡 Tier 2 — Risk / Review' }
+        & $emitTier $tier1Title $tier1Classes '_No blocking regressions._' 'OPEN'
+        & $emitTier $tier2Title $tier2Classes '_No risk-tier regressions._' $null
         & $emitTier '🟢 Tier 3 — Informational' $tier3Classes $null 'CLOSED'
     }
 
@@ -4574,6 +5053,32 @@ function Invoke-Main {
     $data = @{
         metadata = $ctx
         warnings = @()
+    }
+
+    # Shipped mode: prefer the GitHub Release publication time for the report's
+    # "shipped on" date and carry-forward cutoff. If release metadata is unavailable,
+    # use the stable tag's content date as an explicitly labeled conservative anchor.
+    # The stable tag is Versions.props FullVersion at the current branch tip (including
+    # hotfix patches). Fail-open: no usable date keeps every item as a follow-up.
+    if ($ctx.mode -eq 'shipped') {
+        $shippedInfo = @{ version = $null; srNumber = 0; major = 0; tagDate = $null; dateSource = $null; tagFound = $false }
+        $srMatchShip = [regex]::Match($ctx.srBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
+        if ($srMatchShip.Success) {
+            $shippedInfo.major    = [int]$srMatchShip.Groups[1].Value
+            $shippedInfo.srNumber = [int]$srMatchShip.Groups[3].Value
+        }
+        $vpShipped = Get-VersionsPropsState -Ref $ctx.srRef
+        if ($vpShipped) {
+            $shippedInfo.version = $vpShipped.FullVersion
+            if (-not $shippedInfo.major) { $shippedInfo.major = [int]$vpShipped.Major }
+            $tagInfo = Get-StableTagInfo -Version $vpShipped.FullVersion -Repo $ctx.repo
+            if ($tagInfo) {
+                $shippedInfo.tagDate = $tagInfo.Date.ToString('o')
+                $shippedInfo.dateSource = $tagInfo.DateSource
+                $shippedInfo.tagFound = $true
+            }
+        }
+        $data['shippedInfo'] = $shippedInfo
     }
 
     # Nightly dogfood feed freshness (full runs only). Maps this SR lane to its Azure
