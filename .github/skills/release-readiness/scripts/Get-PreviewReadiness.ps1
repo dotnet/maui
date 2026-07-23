@@ -15,7 +15,7 @@
         - Maestro / dependency-flow PRs
         - Release-branch human PRs
         - net<major>.0 inflight PRs (preview-next watch)
-        - Priority release blockers (p/0, p/1) tagged release-relevant
+        - Priority release-blocking issues (p/0, p/1) tagged release-relevant
         - Known Build Error issues tagged release-relevant
         - Xcode requirement variables (from eng/pipelines/common/variables.yml)
         - CI truth (placeholder — not wired to #35052 yet)
@@ -180,6 +180,13 @@ $StatusRank = @{
     "INSUFFICIENT_DATA" = 2
     "BLOCKED"           = 3
 }
+
+# GraphQL supplies the review and merge-conflict metadata used to prioritize PR
+# actions. REST is a reliable availability fallback, but its list endpoint does
+# not expose those fields. Keep this run-level fact separate from the PR shape:
+# downstream consumers still receive the same conservative properties either way.
+$script:OpenPullRequestMetadataUsedRest = $false
+$script:OpenPullRequestMetadataRestBases = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
 
 # ===================================================================
 # HELPERS
@@ -648,7 +655,21 @@ function Get-OpenPullRequests {
         return ConvertFrom-JsonOrEmptyArray $json
     } catch {
         Write-Warning "GraphQL open-PR query failed; falling back to REST: $($_.Exception.Message)"
+        $script:OpenPullRequestMetadataUsedRest = $true
+        [void]$script:OpenPullRequestMetadataRestBases.Add($BaseBranch)
         return Get-PullRequestsViaRest -BaseBranch $BaseBranch -State 'open'
+    }
+}
+
+function Get-OpenPrMetadataScope {
+    param(
+        [array]$RestBases,
+        [string]$TargetBase,
+        [string]$InflightBase
+    )
+    return [PSCustomObject]@{
+        TargetUsedRest   = @($RestBases) -contains $TargetBase
+        InflightUsedRest = @($RestBases) -contains $InflightBase
     }
 }
 
@@ -1588,6 +1609,26 @@ function Get-OverallStatus {
     return $worst
 }
 
+function Get-ReadinessVerdict {
+    <#
+    .SYNOPSIS
+        Maps detailed checklist states to the document-level ship verdict.
+    #>
+    param([array]$Checks)
+
+    if (@($Checks | Where-Object { $_.Status -eq 'BLOCKED' }).Count -gt 0) {
+        return 'Not Ready'
+    }
+
+    # Cleanup is explicitly post-ship housekeeping. Every other non-ready state
+    # means the report cannot honestly make an unconditional Ready claim.
+    if (@($Checks | Where-Object { $_.Status -notin @('READY', 'CLEANUP') }).Count -gt 0) {
+        return 'Conditionally Ready'
+    }
+
+    return 'Ready'
+}
+
 function Format-MarkdownCell {
     param([string]$Value)
     if ($null -eq $Value) {
@@ -1658,7 +1699,9 @@ function Add-PRTable {
     param(
         [System.Text.StringBuilder]$Builder,
         [array]$PRs,
-        [int]$MaxRows = 100
+        [int]$MaxRows = 100,
+        [switch]$SortByActionability,
+        [string]$FullListUrl
     )
 
     if ($PRs.Count -eq 0) {
@@ -1669,15 +1712,44 @@ function Add-PRTable {
 
     [void]$Builder.AppendLine("| PR | Title | Author | Base | State | Age | Next action |")
     [void]$Builder.AppendLine("|----|-------|--------|------|-------|-----|-------------|")
-    $rows = @($PRs | Select-Object -First $MaxRows)
-    foreach ($pr in $rows) {
-        $action = Get-PRAction -PR $pr
+    $rows = @($PRs)
+    if ($SortByActionability) {
+        $rows = @($rows | ForEach-Object {
+            $action = Get-PRAction -PR $_
+            [PSCustomObject]@{
+                PR          = $_
+                Action      = $action
+                StatusRank  = switch ($action.Status) {
+                    'BLOCKED' { 0 }
+                    'WATCH'   { 1 }
+                    default   { 2 }
+                }
+                UpdatedAt   = ConvertTo-UtcDateTime -Value $_.updatedAt
+                Number      = $_.number
+            }
+        } | Sort-Object StatusRank, @{ Expression = { if ($_.UpdatedAt) { $_.UpdatedAt } else { [DateTime]::MinValue } }; Descending = $true }, Number)
+    } else {
+        $rows = @($rows | ForEach-Object {
+            [PSCustomObject]@{
+                PR     = $_
+                Action = Get-PRAction -PR $_
+            }
+        })
+    }
+
+    foreach ($row in @($rows | Select-Object -First $MaxRows)) {
+        $pr = $row.PR
         $author = Format-GitHubHandle -Login $pr.author.login
-        [void]$Builder.AppendLine("| [#$($pr.number)]($($pr.url)) | $(Format-MarkdownCell $pr.title) | $author | ``$($pr.baseRefName)`` | **$($action.Status)** | $($action.Age)d | $(Format-MarkdownCell $action.Action) |")
+        [void]$Builder.AppendLine("| [#$($pr.number)]($($pr.url)) | $(Format-MarkdownCell $pr.title) | $author | ``$($pr.baseRefName)`` | **$($row.Action.Status)** | $($row.Action.Age)d | $(Format-MarkdownCell $row.Action.Action) |")
     }
     if ($PRs.Count -gt $MaxRows) {
         [void]$Builder.AppendLine("")
-        [void]$Builder.AppendLine("_Showing $MaxRows of $($PRs.Count) PRs._")
+        $omittedCount = $PRs.Count - $MaxRows
+        if ($FullListUrl) {
+            [void]$Builder.AppendLine("_Showing $MaxRows of $($PRs.Count) PRs; [$omittedCount omitted]($FullListUrl)._")
+        } else {
+            [void]$Builder.AppendLine("_Showing $MaxRows of $($PRs.Count) PRs; $omittedCount omitted._")
+        }
     }
     [void]$Builder.AppendLine("")
 }
@@ -1902,6 +1974,12 @@ if ($surveyExists) {
 if ($SurveyRef -ne $mainBranch -and $inflightExists) {
     $inflightPRs = Get-OpenPullRequests -BaseBranch $mainBranch
 }
+$openPrMetadataUsedRest = [bool]$script:OpenPullRequestMetadataUsedRest
+$openPrMetadataRestBases = @($script:OpenPullRequestMetadataRestBases | Sort-Object)
+$openPrMetadataScope = Get-OpenPrMetadataScope -RestBases $openPrMetadataRestBases `
+    -TargetBase $SurveyRef -InflightBase $mainBranch
+$targetOpenPrMetadataUsedRest = $openPrMetadataScope.TargetUsedRest
+$inflightOpenPrMetadataUsedRest = $openPrMetadataScope.InflightUsedRest
 
 # Categorize PRs into mutually-exclusive blocker buckets with P/0 as the highest
 # precedence (a p/0-labelled Maestro or merge-up PR escalates to the P/0 category
@@ -1915,6 +1993,13 @@ $mergeUpPRs       = $prBuckets.MergeUpPRs
 $targetHumanPRs   = $prBuckets.TargetHumanPRs
 $inflightHumanPRs = $prBuckets.InflightHumanPRs
 
+if ($openPrMetadataUsedRest) {
+    $restBases = ($openPrMetadataRestBases | ForEach-Object { "``$_``" }) -join ', '
+    $checks += New-Check -Area "Open PR review/conflict metadata" -Status "INSUFFICIENT_DATA" `
+        -Details "Open PRs for $restBases used the REST fallback after GraphQL failed. REST preserves PR identity, author, labels, draft state, and refs, but does not provide review decisions or merge-conflict state; PR actions are conservative." `
+        -NextAction "Rerun when GraphQL is available; manually inspect review and merge-conflict status for release-relevant PRs."
+}
+
 if ($maestroPRs.Count -eq 0) {
     # Maestro is scoped to the survey ref (target) only. When the preview is
     # branched ($SurveyRef differs from the inflight $mainBranch), don't claim
@@ -1927,7 +2012,12 @@ if ($maestroPRs.Count -eq 0) {
     }
     $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details $maestroReadyDetails -NextAction "Continue monitoring for new dependency-flow PRs."
 } elseif (@($maestroPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count -gt 0) {
-    $checks += New-Check -Area "Maestro PRs" -Status "BLOCKED" -Details "$($maestroPRs.Count) open dependency-flow PR(s) (darc + manual component bumps), including blocked/conflicted PRs." -NextAction "Resolve blocked dependency-flow PRs before release."
+    $maestroBlockedDetail = if ($targetOpenPrMetadataUsedRest) {
+        "including PRs with do-not-merge labels (review/conflict metadata unavailable via REST)."
+    } else {
+        "including blocked/conflicted PRs."
+    }
+    $checks += New-Check -Area "Maestro PRs" -Status "BLOCKED" -Details "$($maestroPRs.Count) open dependency-flow PR(s) (darc + manual component bumps), $maestroBlockedDetail" -NextAction "Resolve blocked dependency-flow PRs before release."
 } else {
     $checks += New-Check -Area "Maestro PRs" -Status "WATCH" -Details "$($maestroPRs.Count) open dependency-flow PR(s) (darc + manual component bumps) need review/merge triage." -NextAction "Review dependency PRs and merge expected updates."
 }
@@ -1940,8 +2030,16 @@ if ($targetHumanPRs.Count -eq 0) {
     # PRs with merge conflicts or do-not-merge labels are normal queue
     # noise: the captain decides per-PR if any specific one MUST merge.
     $blockedCount = @($targetHumanPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count
-    $blockedNote = if ($blockedCount -gt 0) { " ($blockedCount with merge conflicts / do-not-merge label)" } else { "" }
-    $checks += New-Check -Area "Release branch PRs" -Status "WATCH" -Details "$($targetHumanPRs.Count) non-Maestro PR(s) target ``$SurveyRef``$blockedNote. Not auto-blocking — only P/0 issues and P/0-labelled PRs block shipment." -NextAction "Confirm which PRs (if any) must merge for the release; the rest can ride normal queue cadence."
+    $blockedNote = if ($blockedCount -gt 0) {
+        if ($targetOpenPrMetadataUsedRest) { " ($blockedCount with do-not-merge labels; review/conflict metadata unavailable via REST)" }
+        else { " ($blockedCount with merge conflicts / do-not-merge label)" }
+    } else { "" }
+    $releasePrAction = if ($targetOpenPrMetadataUsedRest) {
+        "Confirm which PRs (if any) must merge; manually inspect review/conflict status before acting because REST actions are conservative."
+    } else {
+        "Confirm which PRs (if any) must merge for the release; the rest can ride normal queue cadence."
+    }
+    $checks += New-Check -Area "Release branch PRs" -Status "WATCH" -Details "$($targetHumanPRs.Count) non-Maestro PR(s) target ``$SurveyRef``$blockedNote. Not auto-blocking — only P/0 issues and P/0-labelled PRs block shipment." -NextAction $releasePrAction
 }
 
 # P/0-labelled PRs targeting the release branch are blockers (parallel to P/0
@@ -1964,9 +2062,19 @@ if ($SurveyRef -ne $mainBranch) {
     if ($inflightHumanPRs.Count -eq 0) {
         $checks += New-Check -Area "$mainBranch inflight branch health" -Status "READY" -Details "No non-Maestro inflight PRs are open on ``$mainBranch``." -NextAction "Continue monitoring inflight branch health."
     } elseif (@($inflightHumanPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count -gt 0) {
-        $checks += New-Check -Area "$mainBranch inflight branch health" -Status "WATCH" -Details "$($inflightHumanPRs.Count) non-Maestro PR(s) are open on ``$mainBranch``, including blocked PRs." -NextAction "Track as preview-next/inflight work; do not treat every inflight PR as a direct blocker for this release branch."
+        $inflightBlockedDetail = if ($inflightOpenPrMetadataUsedRest) {
+            "including PRs with do-not-merge labels (review/conflict metadata unavailable via REST)."
+        } else {
+            "including blocked/conflicted PRs."
+        }
+        $checks += New-Check -Area "$mainBranch inflight branch health" -Status "WATCH" -Details "$($inflightHumanPRs.Count) non-Maestro PR(s) are open on ``$mainBranch``, $inflightBlockedDetail" -NextAction "Track as preview-next/inflight work; do not treat every inflight PR as a direct blocker for this release branch."
     } else {
-        $checks += New-Check -Area "$mainBranch inflight branch health" -Status "WATCH" -Details "$($inflightHumanPRs.Count) non-Maestro PR(s) are open on ``$mainBranch``." -NextAction "Review inflight queue for preview-next readiness."
+        $inflightAction = if ($inflightOpenPrMetadataUsedRest) {
+            "Review the inflight queue for preview-next readiness and manually inspect review/conflict status because REST metadata is incomplete."
+        } else {
+            "Review inflight queue for preview-next readiness."
+        }
+        $checks += New-Check -Area "$mainBranch inflight branch health" -Status "WATCH" -Details "$($inflightHumanPRs.Count) non-Maestro PR(s) are open on ``$mainBranch``." -NextAction $inflightAction
     }
 }
 
@@ -2113,6 +2221,7 @@ if ($PublicSafe -and $internalStatus -ne "READY") {
 $checks += New-Check -Area "Internal release pipelines" -Status $internalStatus -Details $internalDetails -NextAction $internalAction
 
 $overallStatus = Get-OverallStatus -Checks $checks
+$readinessVerdict = Get-ReadinessVerdict -Checks $checks
 
 # ===================================================================
 # REPORT ASSEMBLY
@@ -2130,6 +2239,7 @@ $report = [PSCustomObject]@{
     InflightBranch        = $mainBranch
     TrackerKey            = $TrackerKey
     OverallStatus         = $overallStatus
+    Verdict               = $readinessVerdict
     Checks                = $checks
     XcodeRequirements     = $xcodeRequirements
     MaestroPullRequests   = $maestroPRs
@@ -2137,6 +2247,8 @@ $report = [PSCustomObject]@{
     P0PullRequests        = $p0Prs
     MergeUpPullRequests   = $mergeUpPRs
     InflightPullRequests  = $inflightHumanPRs
+    OpenPullRequestMetadataUsedRest = $openPrMetadataUsedRest
+    OpenPullRequestMetadataRestBases = $openPrMetadataRestBases
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
     CiScanIssues          = $ciScanIssues
@@ -2189,10 +2301,18 @@ if ($Mode -eq 'candidate') {
     [void]$md.AppendLine("# Release Readiness — .NET $majorVersion.0 preview $previewNumber — $((Get-Date).ToString("yyyy-MM-dd"))")
 }
 [void]$md.AppendLine("")
-[void]$md.AppendLine("**Overall status:** **$overallStatus**")
+[void]$md.AppendLine("**Ship verdict:** **$readinessVerdict** (check state: ``$overallStatus``)")
 [void]$md.AppendLine("")
 if ($nightlyFeedBanner) {
     [void]$md.AppendLine($nightlyFeedBanner)
+    [void]$md.AppendLine("")
+}
+[void]$md.AppendLine("Generated at $generatedAt for ``$Repository``.")
+[void]$md.AppendLine("")
+[void]$md.AppendLine("**Tracker:** ``$TrackerKey`` · mode=``$Mode`` · branch=``$Branch`` · survey=``$SurveyRef``")
+[void]$md.AppendLine("")
+if ($Mode -eq 'candidate') {
+    [void]$md.AppendLine("> 🛫 **Pre-flight (candidate) mode.** Branch ``$Branch`` has not been cut yet. This report surveys ``$SurveyRef`` and shows what WOULD ship if the preview were cut today.")
     [void]$md.AppendLine("")
 }
 
@@ -2476,8 +2596,6 @@ if ($ciScanIssues.Count -eq 0) {
     Add-CiScanTable -Builder $md -Issues $ciScanIssues
 }
 
-[void]$md.AppendLine("Generated at $generatedAt for ``$Repository``.")
-[void]$md.AppendLine("")
 # Report freshness banner — DERIVED-AT-RENDER note of how long ago this report was generated,
 # with a ⏳ "may be stale" flag past the threshold. Pure presentation only. (The preview engine
 # emits no semantic hash and refreshes every run, so there is no no-op to protect here; the
@@ -2488,12 +2606,6 @@ if ($generatedAt -and (Get-Command Format-ReportFreshnessBanner -ErrorAction Sil
         [void]$md.AppendLine($previewFreshnessBanner)
         [void]$md.AppendLine("")
     }
-}
-[void]$md.AppendLine("**Tracker:** ``$TrackerKey`` · mode=``$Mode`` · branch=``$Branch`` · survey=``$SurveyRef``")
-[void]$md.AppendLine("")
-if ($Mode -eq 'candidate') {
-    [void]$md.AppendLine("> 🛫 **Pre-flight (candidate) mode.** Branch ``$Branch`` has not been cut yet. This report surveys ``$SurveyRef`` and shows what WOULD ship if the preview were cut today.")
-    [void]$md.AppendLine("")
 }
 [void]$md.AppendLine("## Target")
 [void]$md.AppendLine("")
@@ -2523,33 +2635,28 @@ if ($sdkBumpPrs.Count -gt 0) {
 }
 Add-PRTable -Builder $md -PRs $maestroPRs
 
+if ($openPrMetadataUsedRest) {
+    [void]$md.AppendLine("> [!CAUTION]")
+    [void]$md.AppendLine("> **Open PR review/conflict metadata is unavailable.** At least one open-PR query used the REST fallback after GraphQL failed. The rows retain author, labels, draft state, and refs, but REST does not provide review decisions or merge-conflict state; actions below are deliberately conservative. Inspect release-relevant PRs manually or rerun when GraphQL is available.")
+    [void]$md.AppendLine("")
+}
+
 [void]$md.AppendLine("## Release branch PRs")
 [void]$md.AppendLine("")
-Add-PRTable -Builder $md -PRs $targetHumanPRs
+$releasePullRequestListUrl = "https://github.com/$Repository/pulls?q=$([uri]::EscapeDataString("is:open is:pr base:$SurveyRef"))"
+Add-PRTable -Builder $md -PRs $targetHumanPRs -MaxRows 15 -SortByActionability -FullListUrl $releasePullRequestListUrl
 
 [void]$md.AppendLine("## $mainBranch inflight PRs")
 [void]$md.AppendLine("")
 Add-PRTable -Builder $md -PRs $inflightHumanPRs -MaxRows 30
 
-[void]$md.AppendLine("## Priority release blockers")
+[void]$md.AppendLine("## Priority release-blocking issues (p/0/p/1)")
 [void]$md.AppendLine("")
 Add-IssueTable -Builder $md -Issues $priorityIssues
 
 [void]$md.AppendLine("## Known Build Error watch list")
 [void]$md.AppendLine("")
 Add-IssueTable -Builder $md -Issues $kbeIssues
-
-[void]$md.AppendLine("## Maintainer next actions")
-[void]$md.AppendLine("")
-$nonReady = @($checks | Where-Object { $_.Status -ne "READY" })
-if ($nonReady.Count -eq 0) {
-    [void]$md.AppendLine("- No non-ready actions found by this public checklist.")
-} else {
-    foreach ($check in $nonReady) {
-        [void]$md.AppendLine("- **$($check.Area)**: $($check.NextAction)")
-    }
-}
-[void]$md.AppendLine("")
 
 [void]$md.AppendLine("## Public/internal data boundary")
 [void]$md.AppendLine("")
@@ -2578,7 +2685,8 @@ $markdownBody = [regex]::Replace(
 # fail `gh issue edit` and the tracker would silently stop updating. The body
 # has unbounded sections BOTH above the human-notes block (the itemized,
 # uncapped "🔴 High-priority items" table) AND below it (the Maestro / release /
-# inflight PR tables, rendered with Add-PRTable's default 100-row cap). A plain
+# inflight PR tables (the release-branch table is capped at 15 rows; other
+# Add-PRTable callers retain their own caps). A plain
 # byte-prefix cut could therefore drop the notes begin/end markers — and a
 # markerless fresh body makes the workflow skip the edit (freezing the tracker)
 # or, worse, overwrite live Release Captain Notes. So we mirror the SR engine:
