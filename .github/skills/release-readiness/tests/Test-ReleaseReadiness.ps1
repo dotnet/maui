@@ -993,6 +993,7 @@ if (-not $SkipE2E) {
     $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
     $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
     $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
+    $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
     try {
         function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'main' }
         function Get-StableTagsForMajor { param([int]$Major) ,@('10.0.0', '10.0.90') }
@@ -1013,6 +1014,12 @@ if (-not $SkipE2E) {
             param([string]$Ref, [int]$Days)
             if ($Ref -eq 'main') { return 1 }
             return 0
+        }
+        function Invoke-GitOrFail {
+            param([string[]]$ArgList, [string]$FailureMessage)
+            # Lane 4 probes net10.0 even though this fixture asserts only SR
+            # trackers. Keep the synthetic unit fully offline and deterministic.
+            return @()
         }
 
         $syntheticSr = Invoke-DetectionForMajor -Major 10
@@ -1038,6 +1045,7 @@ if (-not $SkipE2E) {
         Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
         Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
         Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
+        Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
     }
 
     # Synthetic dual-tracker window: shipped preview N has a tag, preview N+1
@@ -1127,6 +1135,65 @@ try {
     . $rrScript -SrBranch 'release/10.0.1xx-sr1'
 } finally {
     Remove-Item -Path Env:GET_RELEASE_READINESS_TEST_MODE -ErrorAction SilentlyContinue
+}
+
+# ─────────── Get-SrCommits: common-ancestry main revert coverage ───────────
+# A current SR can inherit both a source fix and its later main revert before
+# the SR cut. Both commits are then common ancestors of main and the SR, so the
+# old `main ^currentSr` bound hid the revert and could recommend re-backporting
+# code main deliberately backed out. The prior-SR release baseline must retain
+# that revert in the bounded scan.
+Write-Host "`n[Unit] Get-SrCommits common-ancestry main revert" -ForegroundColor Cyan
+$revertFixtureRepo = Join-Path ([System.IO.Path]::GetTempPath()) "rr-revert-fixture-$([guid]::NewGuid().ToString('N'))"
+$revertFixtureLocationPushed = $false
+try {
+    New-Item -ItemType Directory -Path $revertFixtureRepo -Force | Out-Null
+    git -C $revertFixtureRepo init -q 2>&1 | Out-Null
+    git -C $revertFixtureRepo config user.email 'rr-test@example.com' 2>&1 | Out-Null
+    git -C $revertFixtureRepo config user.name 'RR Test' 2>&1 | Out-Null
+    git -C $revertFixtureRepo config commit.gpgsign false 2>&1 | Out-Null
+    git -C $revertFixtureRepo config core.hooksPath (Join-Path (Join-Path $revertFixtureRepo '.git') '_disabled-hooks') 2>&1 | Out-Null
+
+    Set-Content -Path (Join-Path $revertFixtureRepo 'state.txt') -Value 'base'
+    git -C $revertFixtureRepo add -A 2>&1 | Out-Null
+    git -C $revertFixtureRepo commit -q -m 'Release baseline' 2>&1 | Out-Null
+    $priorSrBaselineSha = (& git -C $revertFixtureRepo rev-parse HEAD).Trim()
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/release/10.0.1xx-sr8 $priorSrBaselineSha 2>&1 | Out-Null
+
+    Set-Content -Path (Join-Path $revertFixtureRepo 'state.txt') -Value 'fix'
+    git -C $revertFixtureRepo add -A 2>&1 | Out-Null
+    git -C $revertFixtureRepo commit -q -m 'Fix regression (#35001)' 2>&1 | Out-Null
+    $sourceFixSha = (& git -C $revertFixtureRepo rev-parse HEAD).Trim()
+    git -C $revertFixtureRepo revert --no-edit $sourceFixSha 2>&1 | Out-Null
+    $revertSha = (& git -C $revertFixtureRepo rev-parse HEAD).Trim()
+
+    # Model an SR cut after the revert: main and current SR share the fix+revert,
+    # while the prior SR remains the stable release-window baseline.
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/main $revertSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/release/10.0.1xx-sr9 $revertSha 2>&1 | Out-Null
+
+    Push-Location $revertFixtureRepo
+    $revertFixtureLocationPushed = $true
+    $commonAncestryCtx = Resolve-Context `
+        -SrBranch 'release/10.0.1xx-sr9' `
+        -Repo 'synthetic/repo' `
+        -MainBranch 'main' `
+        -ExcludeBranches @('origin/main') `
+        -NoFetch
+
+    Assert-Eq -Label "common-ancestry revert: context uses prior SR as main-revert baseline" `
+              -Expected 'origin/release/10.0.1xx-sr8' -Actual $commonAncestryCtx.mainRevertBaselineRef
+    $oldCurrentSrBound = Invoke-Git 'log --format=%H origin/main ^origin/release/10.0.1xx-sr9 --regexp-ignore-case --grep=Revert'
+    Assert-Eq -Label "common-ancestry revert: current-SR bound hides the revert (fixture proves old bug)" `
+              -Expected $true -Actual ([string]::IsNullOrWhiteSpace(($oldCurrentSrBound -join '')))
+
+    $commonAncestryContents = Get-SrCommits -Ctx $commonAncestryCtx
+    $mainRevertedPrs = @($commonAncestryContents.mainReverts | ForEach-Object { $_.revertsPr })
+    Assert-Eq -Label "common-ancestry revert: prior-SR baseline keeps reverted source PR visible" `
+              -Expected $true -Actual ($mainRevertedPrs -contains 35001)
+} finally {
+    if ($revertFixtureLocationPushed) { Pop-Location }
+    if (Test-Path $revertFixtureRepo) { Remove-Item -Recurse -Force $revertFixtureRepo -ErrorAction SilentlyContinue }
 }
 
 # ───── gh-stubbed regression tests (cross-repo filter + author gate) ─────

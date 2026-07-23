@@ -1548,6 +1548,7 @@ function Resolve-Context {
     $mode = 'in-flight'
     $effectiveSrRef = "origin/$SrBranch"
     $effectiveExcludes = $ExcludeBranches
+    $priorSrRef = $null
 
     if ($Candidate) {
         $mode = 'candidate'
@@ -1567,6 +1568,34 @@ function Resolve-Context {
         # so the post-ship tracker doesn't misreport as in-flight.
         $mode = 'shipped'
         Write-Host "Shipped mode: surveying already-tagged SR branch $effectiveSrRef (display-only relabel)" -ForegroundColor Cyan
+    }
+
+    # Main-side revert detection needs a bounded release-window baseline, but the
+    # CURRENT SR tip is not a safe bound: candidate/inflight catch-up history can
+    # make a fix and its later main revert common ancestors of both refs, hiding
+    # the revert from `main ^srRef`. Use the prior SR (or GA for SR1) so reverts
+    # introduced during this release cycle remain visible even after the current
+    # SR inherits them. Candidate mode already names the prior SR explicitly.
+    $mainRevertBaselineRef = $null
+    if ($Candidate) {
+        $mainRevertBaselineRef = $priorSrRef
+    } elseif ($SrBranch -match '^release/(\d+)\.(\d+)\.(\d+)xx-sr(\d+)$') {
+        $baselineMajor = [int]$Matches[1]
+        $baselineMinor = [int]$Matches[2]
+        $baselineBand = [string]$Matches[3]
+        $currentSrNumber = [int]$Matches[4]
+        $baselineCandidate = if ($currentSrNumber -gt 1) {
+            "origin/release/$baselineMajor.$baselineMinor.${baselineBand}xx-sr$($currentSrNumber - 1)"
+        } else {
+            "$baselineMajor.$baselineMinor.0"
+        }
+        if (Invoke-Git "rev-parse $baselineCandidate") {
+            $mainRevertBaselineRef = $baselineCandidate
+        } else {
+            Write-Warn "Main-revert release baseline '$baselineCandidate' was not found; falling back to an unbounded correctness-first revert scan."
+        }
+    } else {
+        Write-Warn "Could not derive a main-revert release baseline from '$SrBranch'; falling back to an unbounded correctness-first revert scan."
     }
 
     if ($Candidate -and $InheritFromPriorSr) {
@@ -1605,6 +1634,7 @@ function Resolve-Context {
         mode = $mode
         priorSrBranch = if ($Candidate) { $SrBranch } else { $null }
         priorSrRef = if ($Candidate) { "origin/$SrBranch" } else { $null }
+        mainRevertBaselineRef = $mainRevertBaselineRef
         inheritFromPriorSr = [bool]($Candidate -and $InheritFromPriorSr)
         fetchedAt = (Get-Date).ToUniversalTime().ToString('o')
     }
@@ -1829,18 +1859,14 @@ function Get-SrCommits {
     # existing SR-content classifications stay unchanged.
     $mainReverts = @()
     if ($Ctx.mainBranch) {
-        # Bound the main-side revert scan to the current release cycle instead of
-        # scanning ALL of main's history. We only need reverts of PRs that could be
-        # backport candidates for THIS SR; such a fix and its revert both land in the
-        # window between the release baseline and main. An unbounded scan matches
-        # hundreds of reverts and Get-CommitsForRevSpec spawns a git subprocess per
-        # match (and per revert body) — that cost grows without bound (PR #36497
-        # review). In candidate mode main IS the SR-to-be, so bound by the prior-SR
-        # baseline (excludeBranches); in in-flight/shipped mode bound by the SR ref
-        # itself (reverts on main SINCE the SR forked from main).
-        $mainRevertBounds =
-            if ($Ctx.mode -eq 'candidate') { @($Ctx.excludeBranches | ForEach-Object { "^$_" }) }
-            else { @("^$($Ctx.srRef)") }
+        # Bound the scan by the PRIOR release baseline, not the current SR tip.
+        # Current SR catch-up history can contain both a source fix and its later
+        # main revert; `main ^srRef` would then exclude the common-ancestor revert
+        # and could recommend re-backporting code main deliberately backed out.
+        # If context resolution could not find a baseline, prefer the slower
+        # unbounded scan over a false-safe backport recommendation.
+        $mainRevertBaselineRef = Get-MetadataValue -Container $Ctx -Name 'mainRevertBaselineRef'
+        $mainRevertBounds = if ($mainRevertBaselineRef) { @("^$mainRevertBaselineRef") } else { @() }
         $mainRevertRevSpec = "origin/$($Ctx.mainBranch) $(($mainRevertBounds -join ' ')) --regexp-ignore-case --grep=Revert"
         $mainRevertScan = Get-CommitsForRevSpec -RevSpec $mainRevertRevSpec -OriginTag 'main'
         $mainReverts = @($mainRevertScan.reverts)
