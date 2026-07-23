@@ -2320,6 +2320,30 @@ function Get-VisualEvidenceBudgetDecision {
     }
 }
 
+function Get-VisualRequestTimeoutSeconds {
+    # Cap a single visual-evidence HTTP request's timeout by the wall-clock time left on the shared
+    # visual-evidence deadline. Each detail/attachments call otherwise uses the fixed default timeout,
+    # so a result entered with only seconds of budget left could overrun by the full default (twice,
+    # for the detail + attachments pair) before the per-result loop guard next runs. Never returns
+    # below MinimumTimeoutSec: a positive-but-tiny remainder still issues one bounded request, and the
+    # caller's own deadline recheck stops the loop.
+    param(
+        [Parameter(Mandatory = $true)]
+        [datetime]$Deadline,
+        [int]$DefaultTimeoutSec = 100,
+        [int]$MinimumTimeoutSec = 1
+    )
+
+    $remaining = [int][Math]::Floor(($Deadline - (Get-Date)).TotalSeconds)
+    if ($remaining -lt $MinimumTimeoutSec) {
+        return $MinimumTimeoutSec
+    }
+    if ($remaining -lt $DefaultTimeoutSec) {
+        return $remaining
+    }
+    return $DefaultTimeoutSec
+}
+
 $builds = New-Object System.Collections.Generic.List[object]
 $allLogFailures = New-Object System.Collections.Generic.List[object]
 $allLogExcerpts = New-Object System.Collections.Generic.List[object]
@@ -2990,15 +3014,28 @@ foreach ($buildRef in $buildRefsById.Values) {
 
                 try {
                     $resultUrl = "$baseUrl/_apis/test/Runs/$runId/Results/$resultId`?detailsToInclude=Iterations&api-version=7.1"
-                    $detail = Invoke-JsonUrl -Url $resultUrl -AllowAuth
+                    $detailTimeout = Get-VisualRequestTimeoutSeconds -Deadline $visualEvidenceDeadline
+                    $detail = Invoke-JsonUrl -Url $resultUrl -AllowAuth -TimeoutSec $detailTimeout
                     $message = [string](Get-ObjectValue -Object $detail -Names @("errorMessage"))
                     $snapshotInfo = Get-VisualSnapshotInfo -Message $message
                     if (-not $snapshotInfo) {
                         continue
                     }
 
+                    # Recheck the shared deadline before the second (attachments) request: a detail
+                    # response that consumed the remaining budget must not be followed by another
+                    # full-timeout call. Charge the elapsed time and stop the scan if it is now spent.
+                    if ((Get-Date) -ge $visualEvidenceDeadline) {
+                        if (-not $visualEvidenceBudgetTripped) {
+                            $visualEvidenceBudgetTripped = $true
+                            $visualEvidenceLimitations.Add("Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted.")
+                        }
+                        break
+                    }
+
                     $attachmentsUrl = "$baseUrl/_apis/test/Runs/$runId/Results/$resultId/attachments?api-version=7.1"
-                    $attachmentResponse = Invoke-JsonUrl -Url $attachmentsUrl -AllowAuth
+                    $attachmentTimeout = Get-VisualRequestTimeoutSeconds -Deadline $visualEvidenceDeadline
+                    $attachmentResponse = Invoke-JsonUrl -Url $attachmentsUrl -AllowAuth -TimeoutSec $attachmentTimeout
                     $selectedAttachments = Select-VisualAttachments `
                         -Attachments (ConvertTo-Array $attachmentResponse.value) `
                         -SnapshotFileName $snapshotInfo.snapshotFileName

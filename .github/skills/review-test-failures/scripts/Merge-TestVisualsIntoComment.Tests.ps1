@@ -73,6 +73,7 @@ BeforeAll {
             [int]$OmittedCount = 0,
             [int]$PreparationFailureCount = 0,
             [bool]$Published = $true,
+            [bool]$PublicationFailed = $false,
             [string[]]$Errors = @(),
             [string]$Commit = ('a' * 40),
             [int]$PrNumber = 123
@@ -89,6 +90,7 @@ BeforeAll {
             }
             visualAssets = [pscustomobject]@{
                 published = $Published
+                publicationFailed = $PublicationFailed
                 commit = $Commit
                 omittedCount = $OmittedCount
                 preparationFailureCount = $PreparationFailureCount
@@ -384,11 +386,11 @@ Investigate.
     }
 
     It 'renders a trusted publication-failure notice when publishing failed after preparation' {
-        # F-A: the Publish-GitAssets catch block writes published=false with a populated errors list
-        # and NO preparationFailureCount. Stripping the placeholder would make this Git/API publish
-        # failure indistinguishable from a run that produced no visual evidence at all. Surface a
-        # fixed trusted notice instead -- and never echo the raw (untrusted) exception text.
-        $context = New-VisualTestContext -Published $false -PreparationFailureCount 0 -Comparisons @() `
+        # F-A/F-B': the Publish-GitAssets catch block writes published=false with an EXPLICIT
+        # publicationFailed flag (and preserves omittedCount/preparationFailureCount). Detection now
+        # keys off that trusted flag -- not a non-empty error list -- so a real Git/API publish failure
+        # is surfaced with a fixed trusted notice, and never echoes the raw (untrusted) exception text.
+        $context = New-VisualTestContext -Published $false -PublicationFailed $true -PreparationFailureCount 0 -Comparisons @() `
             -Errors @('Visual asset publishing failed without changing the deterministic test verdict: fatal: could not read Password </dev/injected>')
         $body = "Analysis`n<!-- GH_AW_TRUSTED_VISUALS -->`nDone"
 
@@ -408,6 +410,58 @@ Investigate.
         $merged | Should -Not -Match 'dev/injected'
         # A publish failure is not "no visual evidence": the placeholder must be replaced by a section.
         $merged | Should -Not -Be "Analysis`n`nDone"
+    }
+
+    It 'does not misclassify a pre-publication budget omission as a Git/API publication failure' {
+        # F-B' regression: when the publish budget expires before the FIRST comparison is prepared, the
+        # publisher emits published=false, omittedCount>0, preparationFailureCount=0, a budget error,
+        # and NO publicationFailed flag. The prior heuristic (errors.Count>0 => publication failure)
+        # falsely rendered this as "prepared but Git/API publish failed". It must instead be surfaced
+        # as a publisher-bounds OMISSION, so the reader is not told images were prepared when they never
+        # were, and the placeholder is never stripped (which would look like a clean run).
+        $context = New-VisualTestContext -Published $false -PublicationFailed $false -PreparationFailureCount 0 -OmittedCount 3 -Comparisons @() `
+            -Errors @('Publish budget of 900s exhausted before preparing 3 remaining comparison(s); they were omitted.')
+        $body = "Analysis`n<!-- GH_AW_TRUSTED_VISUALS -->`nDone"
+
+        $merged = Merge-VisualsIntoBody `
+            -Body $body `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 60000
+
+        $merged | Should -Match 'Visual failure comparisons'
+        # Classified as an omission, NOT a Git/API publication failure.
+        $merged | Should -Match '3 additional visual comparison\(s\) were omitted by publisher bounds'
+        $merged | Should -Not -Match 'could not be published to the asset branch'
+        # The evidence caveat must be surfaced, not stripped into a clean-looking run.
+        $merged | Should -Not -Be "Analysis`n`nDone"
+    }
+
+    It 'preserves omission and preparation counts through a post-preparation publication failure' {
+        # F-A' regression: the real Git/API catch must preserve omittedCount/preparationFailureCount
+        # (the prior catch discarded them, rendering real omitted/failed comparisons as zero). With the
+        # explicit flag set AND those counts populated, the section shows the publish-failure notice
+        # AND the surviving omission and preparation-failure caveats.
+        $context = New-VisualTestContext -Published $false -PublicationFailed $true -PreparationFailureCount 1 -OmittedCount 2 -Comparisons @() `
+            -Errors @('Visual asset publishing failed without changing the deterministic test verdict: network unreachable')
+        $body = "Analysis`n<!-- GH_AW_TRUSTED_VISUALS -->`nDone"
+
+        $merged = Merge-VisualsIntoBody `
+            -Body $body `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 60000
+
+        $merged | Should -Match 'could not be published to the asset branch'
+        $merged | Should -Match '2 additional visual comparison\(s\) were omitted by publisher bounds'
+        $merged | Should -Match '1 visual comparison\(s\) could not be prepared from CI artifacts'
+        $merged | Should -Not -Match 'network unreachable'
     }
 
     It 'surfaces preparation failures alongside published comparisons in a mixed run' {

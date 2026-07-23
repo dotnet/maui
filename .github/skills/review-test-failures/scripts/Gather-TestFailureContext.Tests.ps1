@@ -51,7 +51,8 @@ BeforeAll {
             'Get-BuildErrorSignature',
             'Test-IsTransientBuildErrorCode',
             'Get-BuildErrorsFromLog',
-            'Get-VisualEvidenceBudgetDecision'
+            'Get-VisualEvidenceBudgetDecision',
+            'Get-VisualRequestTimeoutSeconds'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -168,6 +169,38 @@ Describe 'Get-VisualEvidenceBudgetDecision (elapsed-only visual budget accountin
         (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeFalse
         $elapsed += 400   # 800s of accumulated visual time now exceeds the 600s budget
         (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeTrue
+    }
+}
+
+Describe 'Get-VisualRequestTimeoutSeconds (per-request timeout capped by remaining visual budget)' {
+    It 'returns the full default when the deadline is far away' {
+        $t = Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(500)
+        $t | Should -Be 100
+    }
+
+    It 'caps the timeout to the remaining budget when less than the default' {
+        # ~30s left: the request must not be allowed its full 100s default, which would overrun the
+        # shared deadline by ~70s (and the following attachments request could add another ~100s).
+        $t = Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(30)
+        $t | Should -BeLessOrEqual 30
+        $t | Should -BeGreaterThan 0
+    }
+
+    It 'never returns below the minimum for a tiny-but-positive remainder' {
+        # A sub-second remainder still issues ONE bounded request (>=1s); the caller's own deadline
+        # recheck is what stops the loop, not a zero/negative timeout that would throw.
+        $t = Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddMilliseconds(200)
+        $t | Should -Be 1
+    }
+
+    It 'never returns below the minimum once the deadline has already passed' {
+        $t = Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(-50)
+        $t | Should -Be 1
+    }
+
+    It 'honors custom default and minimum bounds' {
+        (Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(999) -DefaultTimeoutSec 60) | Should -Be 60
+        (Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(-1) -MinimumTimeoutSec 5) | Should -Be 5
     }
 }
 

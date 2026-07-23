@@ -832,10 +832,20 @@ try {
     Write-Host "Published $($published.Count) visual comparison(s) at asset commit $assetCommit."
 }
 catch {
+    # A Git/API failure occurred AFTER images were prepared. Preserve the omission and preparation
+    # counters already computed above -- discarding them (the prior behavior) rendered real omitted or
+    # failed comparisons as zero -- and append this failure to the existing error list. Set an explicit
+    # publicationFailed flag so the merger classifies this as a post-preparation publication failure
+    # instead of inferring it from a non-empty error list, which also holds pre-publication budget and
+    # omission messages emitted before any image was prepared.
     $message = "Visual asset publishing failed without changing the deterministic test verdict: $($_.Exception.Message)"
+    $errors.Add($message)
     $context | Add-Member -NotePropertyName visualAssets -NotePropertyValue ([ordered]@{
         published = $false
-        errors = @($message)
+        publicationFailed = $true
+        omittedCount = $omittedCount
+        preparationFailureCount = $preparationFailureCount
+        errors = $errors.ToArray()
     }) -Force
     Save-Context -Context $context -Path $ContextJsonPath
     Write-Warning $message

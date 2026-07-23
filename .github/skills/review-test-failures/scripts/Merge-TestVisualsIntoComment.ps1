@@ -410,6 +410,10 @@ function New-InlineVisualSection {
         [void]$builder.AppendLine("Visual comparisons were detected, but none fit within the comment safety limits.")
         [void]$builder.AppendLine()
     }
+    if (@($Panels).Count -eq 0 -and $PublisherOmittedCount -gt 0 -and -not $PublicationFailed -and $PreparationFailureCount -eq 0 -and $CommentSafetyOmittedCount -eq 0) {
+        [void]$builder.AppendLine("Visual comparisons were detected, but none could be published within the publisher bounds.")
+        [void]$builder.AppendLine()
+    }
     if ($CommentSafetyOmittedCount -gt 0) {
         [void]$builder.AppendLine("Visual output was bounded for comment safety; $CommentSafetyOmittedCount additional comparison(s) were omitted.")
     }
@@ -479,12 +483,13 @@ function Merge-VisualsIntoBody {
     $baseBody = Remove-InlineVisualSection -Body $Body
     $placeholder = Get-InlineVisualPlaceholder
     if (-not $Context.visualAssets -or -not [bool]$Context.visualAssets.published) {
-        # Publishing produced no panels. Distinguish three sub-cases so a real failure is never
-        # rendered as "no visual evidence at all":
-        #   1. every comparison failed *preparation* (published=false, preparationFailureCount > 0)
-        #   2. images were prepared but *publication* failed afterwards (published=false, a populated
-        #      errors list, preparationFailureCount absent -- the Publish-GitAssets catch block)
-        #   3. genuinely no visual evidence (published=false, empty errors) -> strip the placeholder
+        # Publishing produced no panels. Distinguish the sub-cases so a real failure is never rendered
+        # as "no visual evidence at all", in priority order:
+        #   1. a post-preparation Git/API *publication* failure (explicit publicationFailed flag) --
+        #      the most severe; it also carries any surviving omission/preparation counts
+        #   2. every prepared comparison failed *preparation* (preparationFailureCount > 0)
+        #   3. comparisons were bounded away by publisher budget/dedup/cap (omittedCount > 0)
+        #   4. genuinely no visual evidence -> strip the placeholder
         $prepFailures = if ($Context.visualAssets -and $Context.visualAssets.preparationFailureCount) {
             [Math]::Max(0, [int]$Context.visualAssets.preparationFailureCount)
         }
@@ -499,22 +504,28 @@ function Merge-VisualsIntoBody {
         else {
             0
         }
+        # Post-preparation publication failure is signalled by an EXPLICIT trusted flag set only in the
+        # Publish-GitAssets catch block. Inferring it from a non-empty error list (the prior heuristic)
+        # misfired: the pre-publication path also emits published=false with a budget/omission error
+        # when the publish budget expires before the first comparison is prepared, which is an omission
+        # -- not a Git/API publication failure. Check it FIRST so a publish failure that ALSO had some
+        # preparation failures or omissions still shows the publish notice (never the raw exception
+        # text, which is untrusted CI output), plus the surviving caveats.
+        $publicationFailed = [bool]($Context.visualAssets -and $Context.visualAssets.publicationFailed)
+        if ($publicationFailed) {
+            $failureSection = New-InlineVisualSection -Panels @() -PublisherOmittedCount $publisherOmitted -CommentSafetyOmittedCount 0 -PreparationFailureCount $prepFailures -PublicationFailed $true
+            return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
+        }
         if ($prepFailures -gt 0) {
             $failureSection = New-InlineVisualSection -Panels @() -PublisherOmittedCount $publisherOmitted -CommentSafetyOmittedCount 0 -PreparationFailureCount $prepFailures
             return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
         }
-        # Post-preparation publication failure: published=false with a populated errors list but no
-        # preparation failures. Stripping the placeholder here would hide that visual evidence existed
-        # but could not be published. Render a fixed trusted notice (never the raw exception text,
-        # which is untrusted CI output).
-        $publishErrorCount = if ($Context.visualAssets -and $Context.visualAssets.errors) {
-            @($Context.visualAssets.errors).Count
-        }
-        else {
-            0
-        }
-        if ($publishErrorCount -gt 0) {
-            $failureSection = New-InlineVisualSection -Panels @() -PublisherOmittedCount $publisherOmitted -CommentSafetyOmittedCount 0 -PreparationFailureCount 0 -PublicationFailed $true
+        # No panels were published and no explicit publication or preparation failure occurred, but
+        # comparisons were detected and then bounded away by publisher budget/dedup/cap (e.g. the
+        # publish budget expiring before the first comparison). Surface that caveat instead of stripping
+        # the placeholder, so a non-empty-but-unpublished scan is never rendered as a genuinely clean run.
+        if ($publisherOmitted -gt 0) {
+            $failureSection = New-InlineVisualSection -Panels @() -PublisherOmittedCount $publisherOmitted -CommentSafetyOmittedCount 0 -PreparationFailureCount 0
             return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
         }
         return $baseBody.Replace($placeholder, "")
