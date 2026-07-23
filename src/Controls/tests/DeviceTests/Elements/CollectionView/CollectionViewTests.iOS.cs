@@ -49,6 +49,54 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Removing a grouped CollectionView section does not crash")]
+		public async Task RemovingGroupedCollectionViewSectionDoesNotCrash()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var data = new List<string> { "item 1", "item 2" };
+			var groupData = new ObservableCollection<CollectionViewStringGroup>
+			{
+				new("Header 1", data),
+				new("Header 2", data),
+				new("Header 3", data)
+			};
+
+			var collectionView = new CollectionView
+			{
+				WidthRequest = 300,
+				HeightRequest = 300,
+				IsGrouped = true,
+				ItemsSource = groupData,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			var initialFrame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(initialFrame, collectionView);
+
+				var uiCollectionView = handler.Controller.CollectionView;
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+
+				groupData.RemoveAt(groupData.Count - 1);
+
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+			});
+		}
+
 		class CollectionViewStringGroup : List<string>
 		{
 			public string GroupHeader { get; private set; }
