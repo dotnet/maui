@@ -173,6 +173,19 @@
         <!-- Test nested this. - method that takes another this. value -->
         <Label x:Name="nestedThisLabel" Text="{this.CalculateWithRate(this.TaxRate).ToString()}" />
         
+        <!-- XMLNS PREFIX IN EXPRESSIONS -->
+        
+        <!-- xmlns prefix: call static method on type via local: prefix -->
+        <Label x:Name="xmlnsPrefixMethodLabel" Text="{local:ExprHelper.GetStaticValue()}" />
+        
+        <!-- ATTACHED BINDABLE PROPERTY TESTS -->
+        
+        <!-- ABP: read Grid.Row from a named element -->
+        <Grid>
+            <Button x:Name="gridChild" Grid.Row="2" />
+        </Grid>
+        <Label x:Name="abpNamedElementLabel" Text="{$'{gridChild.(Grid.Row)}'}" />
+        
         <!-- CODE REVIEW EDGE CASE TESTS -->
         
         <!-- Test: Escaped double quotes inside single-quoted string -->

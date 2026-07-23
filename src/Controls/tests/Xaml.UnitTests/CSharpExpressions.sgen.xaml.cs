@@ -10,6 +10,12 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+// Static helper class for xmlns prefix expression tests
+public static class ExprHelper
+{
+	public static string GetStaticValue() => "Xmlns Prefix Value";
+}
+
 // ViewModel classes for TypedBinding tests
 public class UserInfo : INotifyPropertyChanged
 {
@@ -822,6 +828,27 @@ public partial class CSharpExpressions : ContentPage
 			{
 				DispatcherProvider.SetCurrent(null);
 			}
+		}
+
+		// XMLNS PREFIX IN EXPRESSIONS TESTS
+
+		[Fact]
+		public void XmlnsPrefixStaticMethodCall()
+		{
+			// {local:ExprHelper.GetStaticValue()} should resolve local: to CLR namespace
+			// and call the static method, not be treated as a markup extension
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			Assert.Equal("Xmlns Prefix Value", page.xmlnsPrefixMethodLabel.Text);
+		}
+
+		// ATTACHED BINDABLE PROPERTY TESTS
+
+		[Fact]
+		public void AttachedProperty_FromNamedElement()
+		{
+			// {$'{gridChild.(Grid.Row)}'} should read Grid.Row from gridChild (which is set to 2)
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			Assert.Equal("2", page.abpNamedElementLabel.Text);
 		}
 	}
 }
