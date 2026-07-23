@@ -113,16 +113,27 @@ Require-Command 'dotnet' 'Install the .NET SDK from https://dotnet.microsoft.com
 Write-Host "==> Signing in to dev tunnels (a browser window may open)…" -ForegroundColor Cyan
 devtunnel user login | Out-Host
 
-Write-Host "==> Ensuring tunnel '$TunnelId' exists (persistent domain)…" -ForegroundColor Cyan
-# Create is idempotent-ish; ignore 'already exists'.
-devtunnel create $TunnelId --allow-anonymous 2>$null | Out-Host
-devtunnel port create $TunnelId -p $Port --protocol http 2>$null | Out-Host
+Write-Host "==> Ensuring tunnel '$TunnelId' exists…" -ForegroundColor Cyan
+# IMPORTANT: `devtunnel create` always makes a NEW tunnel — running it when the tunnel already
+# exists creates a duplicate (in another cluster). So only create when `show` can't find it.
+$tunnelJson = devtunnel show $TunnelId --json 2>$null | ConvertFrom-Json
+if (-not $tunnelJson.tunnel) {
+    devtunnel create $TunnelId --allow-anonymous | Out-Host
+    $tunnelJson = devtunnel show $TunnelId --json 2>$null | ConvertFrom-Json
+}
+if (-not ($tunnelJson.tunnel.ports | Where-Object { $_.portNumber -eq $Port })) {
+    devtunnel port create $TunnelId -p $Port --protocol http | Out-Host
+}
 
 Write-Host "==> Resolving the public tunnel URL…" -ForegroundColor Cyan
 
-# Reads the persistent public URL for our port from `devtunnel show --json`. This is only assigned
-# once the tunnel has been hosted at least once (after that it persists), so a brand-new tunnel
-# returns $null here until it has been hosted.
+# Use the tunnel's own per-tunnel public URL (`portUri`), which is unique to this tunnel. We do NOT
+# use the tunnel-id-derived URL (https://<name>-<port>.<cluster>.devtunnels.ms): although it's nicer,
+# the tunnel name is a shared/global resource, so hardcoding it would collide across developers and
+# machines. The random-looking portUri is stable for the life of the tunnel and safe for everyone.
+#
+# `portUri` is only assigned after the tunnel has been hosted once (then it persists), so on a brand
+# new tunnel we briefly host it in the background to materialize the URL, then re-read it.
 function Get-PortUri($tunnelId, $port) {
     try {
         $json = devtunnel show $tunnelId --json 2>$null | ConvertFrom-Json
@@ -134,10 +145,7 @@ function Get-PortUri($tunnelId, $port) {
 }
 
 $uri = Get-PortUri $TunnelId $Port
-
 if (-not $uri) {
-    # First run for this tunnel: host it briefly in the background so the URL gets assigned, then
-    # re-read it (it persists afterwards).
     Write-Host "    New tunnel — starting a brief host session to obtain the URL…" -ForegroundColor DarkGray
     $job = Start-Job -ScriptBlock { param($t) devtunnel host $t } -ArgumentList $TunnelId
     try {
