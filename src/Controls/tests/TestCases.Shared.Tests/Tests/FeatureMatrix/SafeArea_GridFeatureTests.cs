@@ -1150,7 +1150,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 
@@ -1171,7 +1170,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"None: bottom edge ({bottomRect.Bottom}) should be = screenHeight ({screenHeight})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		[Test, Order(23)]
@@ -1185,7 +1183,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -1208,7 +1205,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"All: bottom edge ({bottomRect.Bottom}) should be = screenHeight - insetsLandscape.Bottom ({screenHeight - insetsLandscape.Bottom})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		[Test, Order(24)]
@@ -1222,7 +1218,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -1245,7 +1240,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Container: bottom edge ({bottomRect.Bottom}) should be = screenHeight - insetsLandscape.Bottom ({screenHeight - insetsLandscape.Bottom})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		[Test, Order(25)]
@@ -1259,7 +1253,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -1282,7 +1275,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"SoftInput: bottom edge ({bottomRect.Bottom}) should be = screenHeight ({screenHeight})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		[Test, Order(26)]
@@ -1296,7 +1288,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Default"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -1319,7 +1310,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Default: bottom edge ({bottomRect.Bottom}) should be ≈ screenHeight - insetsLandscape.Bottom ({screenHeight - insetsLandscape.Bottom}) (Default on Grid = Container)");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		// ──────────────────────────────────────────────
@@ -1340,7 +1330,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -1402,7 +1391,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom edge ({bottomAfterRect.Bottom}) should return to original ({bottomBeforeRect.Bottom})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		[Test, Order(28)]
@@ -1417,7 +1405,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -1479,7 +1466,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom edge ({bottomAfterRect.Bottom}) should return to original ({bottomBeforeRect.Bottom})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		[Test, Order(29)]
@@ -1494,7 +1480,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 
@@ -1552,7 +1537,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom edge ({bottomAfterRect.Bottom}) should return to original ({bottomBeforeRect.Bottom})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		[Test, Order(30)]
@@ -1567,7 +1551,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -1626,7 +1609,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom edge ({bottomAfterRect.Bottom}) should return to original ({bottomBeforeRect.Bottom})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		[Test, Order(31)]
@@ -1641,7 +1623,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Default"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -1692,7 +1673,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom edge ({bottomAfterRect.Bottom}) should return to original ({bottomBeforeRect.Bottom})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 #endif
 
@@ -1962,7 +1942,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:Container, T:None, R:None, B:None"));
 
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidth, screenHeight) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -1979,7 +1958,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Right (None): right edge ({rightEdge}) should be = screenWidth ({screenWidth})");
 
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 		}
 
 		// ──────────────────────────────────────────────
@@ -2011,7 +1989,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Rotate to landscape ──
 			App.SetOrientationLandscape();
-			Thread.Sleep(1000);
 
 			var (screenWidthLandscape, screenHeightLandscape) = GetScreenSize();
 			var insetsLandscape = GetSafeAreaInsets();
@@ -2032,7 +2009,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Rotate back to portrait ──
 			App.SetOrientationPortrait();
-			Thread.Sleep(1000);
 
 			var insetsAfter = GetSafeAreaInsets();
 			var (_, screenHeightAfter) = GetScreenSize();
