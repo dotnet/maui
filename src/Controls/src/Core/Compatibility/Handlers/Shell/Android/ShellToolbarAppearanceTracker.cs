@@ -34,7 +34,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
-			SetColors(toolbar, toolbarTracker, ShellRenderer.DefaultForegroundColor, ShellRenderer.DefaultBackgroundColor, ShellRenderer.DefaultTitleColor);
+			var context = _shellContext.AndroidContext;
+			SetColors(toolbar, toolbarTracker, ShellRenderer.GetForegroundColor(context), ShellRenderer.GetBackgroundColor(context), ShellRenderer.GetTitleColor(context));
 		}
 
 		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
@@ -47,9 +48,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (shellToolbar is null)
 				return;
 
-			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
-			shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
-			shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
+			var context = _shellContext.AndroidContext;
+			shellToolbar.BarTextColor = title ?? ShellRenderer.GetTitleColor(context);
+			shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.GetBackgroundColor(context));
+			shellToolbar.IconColor = foreground ?? ShellRenderer.GetForegroundColor(context);
 		}
 
 		#region IDisposable

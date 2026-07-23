@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AColor newColor;
 
 			if (color == null)
-				newColor = ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+				newColor = ShellRenderer.GetBottomNavigationViewBackgroundColor(bottomView.Context).ToPlatform();
 			else
 				newColor = color.ToPlatform();
 
@@ -131,11 +131,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return null;
 
 			var baseCSL = AppCompatResources.GetColorStateList(context, mTypedValue.ResourceId);
-			var colorPrimary = (ShellRenderer.IsDarkTheme) ? AColor.White : RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#625B71").ToPlatform() : ShellRenderer.DefaultBackgroundColor.ToPlatform();
-			int defaultColor = baseCSL.DefaultColor;
+
+			int selectedColor;
+			int unselectedColor;
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				// M3 already accounts for light/dark via theme attributes, so no need to branch on IsDarkTheme.
+				selectedColor = ShellRenderer.GetM3TitleColor(context).ToPlatform();
+				unselectedColor = ShellRenderer.GetM3UnselectedColor(context).ToPlatform();
+			}
+			else
+			{
+				selectedColor = ShellRenderer.IsDarkTheme ? AColor.White : ShellRenderer.GetM2BackgroundColor(context).ToPlatform();
+				unselectedColor = baseCSL.DefaultColor;
+			}
+
 			var disabledcolor = baseCSL.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray);
 
-			return MakeColorStateList(colorPrimary, disabledcolor, defaultColor);
+			return MakeColorStateList(selectedColor, disabledcolor, unselectedColor);
 		}
 
 		ColorStateList MakeColorStateList(Color titleColor, Color disabledColor, Color unselectedColor)
