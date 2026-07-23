@@ -50,7 +50,8 @@ BeforeAll {
             'Get-ErrorFingerprint',
             'Get-BuildErrorSignature',
             'Test-IsTransientBuildErrorCode',
-            'Get-BuildErrorsFromLog'
+            'Get-BuildErrorsFromLog',
+            'Get-VisualEvidenceBudgetDecision'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -124,6 +125,49 @@ Ensure new snapshot is correct.
 
         $mac = Get-VisualEnvironmentHintFromLog -Text 'Running TestCases.Mac.Tests for maccatalyst'
         $mac.environmentName | Should -Be 'mac'
+    }
+}
+
+Describe 'Get-VisualEvidenceBudgetDecision (elapsed-only visual budget accounting)' {
+    It 'reports remaining budget and does not trip while visual time is under budget' {
+        $d = Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds 250
+        $d.remainingSeconds | Should -Be 350
+        $d.exhausted | Should -BeFalse
+    }
+
+    It 'trips exactly at the budget boundary' {
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds 600).exhausted | Should -BeTrue
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds 601).exhausted | Should -BeTrue
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds 599).exhausted | Should -BeFalse
+    }
+
+    It 'does not let interleaved nonvisual work between uitests builds consume the budget' {
+        # Two maui-pr-uitests builds each spend 250s in visual discovery, with a NON-uitests build
+        # doing a very long (5000s) timeline/log/Helix read BETWEEN them. Because only visual-scan
+        # time is accumulated into $elapsed (the loop adds to it solely in the discovery finally),
+        # the nonvisual build must not advance the budget, so the SECOND uitests build still scans.
+        # This is the exact regression the absolute wall-clock deadline caused.
+        $elapsed = 0.0
+
+        $build1 = Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed
+        $build1.exhausted | Should -BeFalse   # first uitests build scans
+        $elapsed += 250                        # charge only its visual-discovery time
+
+        # Non-uitests build: 5000s of nonvisual processing. The loop NEVER adds this to $elapsed.
+        # (Modeled by leaving $elapsed unchanged.)
+
+        $build2 = Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed
+        $build2.exhausted | Should -BeFalse   # second uitests build STILL scans (250 < 600)
+        $build2.remainingSeconds | Should -Be 350
+    }
+
+    It 'trips a later uitests build once accumulated visual time exceeds the budget' {
+        $elapsed = 0.0
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeFalse
+        $elapsed += 400
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeFalse
+        $elapsed += 400   # 800s of accumulated visual time now exceeds the 600s budget
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeTrue
     }
 }
 

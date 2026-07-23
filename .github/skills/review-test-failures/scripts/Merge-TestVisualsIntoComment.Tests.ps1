@@ -73,6 +73,7 @@ BeforeAll {
             [int]$OmittedCount = 0,
             [int]$PreparationFailureCount = 0,
             [bool]$Published = $true,
+            [string[]]$Errors = @(),
             [string]$Commit = ('a' * 40),
             [int]$PrNumber = 123
         )
@@ -91,6 +92,7 @@ BeforeAll {
                 commit = $Commit
                 omittedCount = $OmittedCount
                 preparationFailureCount = $PreparationFailureCount
+                errors = $Errors
                 comparisons = $Comparisons
             }
         }
@@ -337,7 +339,7 @@ Investigate.
         $merged | Should -Not -Match 'none fit within the comment safety limits'
     }
 
-    It 'skips an invalid actual URL and reports the comparison as omitted' {
+    It 'skips an invalid actual URL and reports it as a publisher/validation omission, not a comment-fit drop' {
         $comparison = New-VisualTestComparison
         $comparison.actualUrl = 'https://evil.example/payload.png'
         $context = New-VisualTestContext -Comparisons @($comparison)
@@ -352,7 +354,60 @@ Investigate.
             -MaxCommentCharacters 60000
 
         $merged | Should -Not -Match 'evil\.example'
-        $merged | Should -Match '1 additional comparison\(s\) were omitted'
+        # The comparison was dropped by URL validation, not by the comment budget, so the wording must
+        # blame publisher/validation bounds and must NOT claim it was bounded for comment safety.
+        $merged | Should -Match '1 additional visual comparison\(s\) were omitted by publisher bounds'
+        $merged | Should -Match 'assets that failed validation'
+        $merged | Should -Not -Match 'bounded for comment safety'
+    }
+
+    It 'labels publisher omissions as publisher bounds even when every valid panel fits the comment' {
+        # F-C: when the publisher already dropped comparisons (dedup / MaxComparisons / budget) but
+        # every remaining valid panel fits the comment, the omission is NOT a comment-safety drop.
+        # Rendering "bounded for comment safety" here is factually wrong.
+        $context = New-VisualTestContext -Comparisons @((New-VisualTestComparison)) -OmittedCount 4
+
+        $merged = Merge-VisualsIntoBody `
+            -Body '<details><!-- GH_AW_TRUSTED_VISUALS --></details>' `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 60000
+
+        # The one valid panel fits, so there is no comment-safety omission...
+        $merged | Should -Match 'test-actual\.png'
+        $merged | Should -Not -Match 'bounded for comment safety'
+        # ...but the 4 publisher-dropped comparisons are still surfaced with cause-appropriate wording.
+        $merged | Should -Match '4 additional visual comparison\(s\) were omitted by publisher bounds'
+    }
+
+    It 'renders a trusted publication-failure notice when publishing failed after preparation' {
+        # F-A: the Publish-GitAssets catch block writes published=false with a populated errors list
+        # and NO preparationFailureCount. Stripping the placeholder would make this Git/API publish
+        # failure indistinguishable from a run that produced no visual evidence at all. Surface a
+        # fixed trusted notice instead -- and never echo the raw (untrusted) exception text.
+        $context = New-VisualTestContext -Published $false -PreparationFailureCount 0 -Comparisons @() `
+            -Errors @('Visual asset publishing failed without changing the deterministic test verdict: fatal: could not read Password </dev/injected>')
+        $body = "Analysis`n<!-- GH_AW_TRUSTED_VISUALS -->`nDone"
+
+        $merged = Merge-VisualsIntoBody `
+            -Body $body `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 60000
+
+        $merged | Should -Match 'Visual failure comparisons'
+        $merged | Should -Match 'could not be published to the asset branch'
+        # The raw exception text must never be injected into the comment.
+        $merged | Should -Not -Match 'could not read Password'
+        $merged | Should -Not -Match 'dev/injected'
+        # A publish failure is not "no visual evidence": the placeholder must be replaced by a section.
+        $merged | Should -Not -Be "Analysis`n`nDone"
     }
 
     It 'surfaces preparation failures alongside published comparisons in a mixed run' {

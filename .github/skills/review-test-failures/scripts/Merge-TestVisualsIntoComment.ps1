@@ -376,9 +376,18 @@ $descriptionLine
 function New-InlineVisualSection {
     param(
         [string[]]$Panels,
-        [int]$OmittedCount,
+        # Comparisons dropped by the PUBLISHER or by asset validation (dedup, the MaxComparisons cap,
+        # the discovery/publish time budget, or actual/baseline URLs that failed validation). These
+        # were never candidates for this comment, so they must NOT be described as comment-safety drops.
+        [int]$PublisherOmittedCount = 0,
+        # Valid, ready-to-render panels dropped ONLY to keep the comment within its URL / mention /
+        # character budget.
+        [int]$CommentSafetyOmittedCount = 0,
         [int]$PreparationFailureCount = 0,
-        [bool]$OmittedForCommentSafety = $true
+        # A Git/API failure occurred AFTER images were prepared, so nothing could be published. Render
+        # a fixed, trusted notice (never the untrusted raw exception text) so the reader can tell a
+        # publish failure apart from a run that produced no visual evidence.
+        [bool]$PublicationFailed = $false
     )
 
     $builder = [System.Text.StringBuilder]::new()
@@ -393,17 +402,19 @@ function New-InlineVisualSection {
         [void]$builder.Append($panel)
     }
 
-    if (@($Panels).Count -eq 0 -and $OmittedCount -gt 0 -and $OmittedForCommentSafety) {
+    if ($PublicationFailed) {
+        [void]$builder.AppendLine("Visual comparisons were prepared but could not be published to the asset branch because a Git or API error occurred after image preparation. The deterministic verdict is unaffected; no images are shown for this run.")
+        [void]$builder.AppendLine()
+    }
+    if (@($Panels).Count -eq 0 -and $CommentSafetyOmittedCount -gt 0) {
         [void]$builder.AppendLine("Visual comparisons were detected, but none fit within the comment safety limits.")
         [void]$builder.AppendLine()
     }
-    if ($OmittedCount -gt 0) {
-        if ($OmittedForCommentSafety) {
-            [void]$builder.AppendLine("Visual output was bounded for comment safety; $OmittedCount additional comparison(s) were omitted.")
-        }
-        else {
-            [void]$builder.AppendLine("$OmittedCount additional visual comparison(s) were omitted by publisher bounds (deduplication, the comparison cap, or the discovery/publish time budget).")
-        }
+    if ($CommentSafetyOmittedCount -gt 0) {
+        [void]$builder.AppendLine("Visual output was bounded for comment safety; $CommentSafetyOmittedCount additional comparison(s) were omitted.")
+    }
+    if ($PublisherOmittedCount -gt 0) {
+        [void]$builder.AppendLine("$PublisherOmittedCount additional visual comparison(s) were omitted by publisher bounds (deduplication, the comparison cap, the discovery/publish time budget, or assets that failed validation).")
     }
     if ($PreparationFailureCount -gt 0) {
         [void]$builder.AppendLine("$PreparationFailureCount visual comparison(s) could not be prepared from CI artifacts and are not shown.")
@@ -468,27 +479,42 @@ function Merge-VisualsIntoBody {
     $baseBody = Remove-InlineVisualSection -Body $Body
     $placeholder = Get-InlineVisualPlaceholder
     if (-not $Context.visualAssets -or -not [bool]$Context.visualAssets.published) {
-        # Publishing produced no panels. If that was because every comparison failed *preparation*
-        # (published=false with a positive preparationFailureCount), simply stripping the placeholder
-        # would make the comment indistinguishable from a run that had no visual evidence at all.
-        # Render a failure-only section so the count is still surfaced to the reader.
+        # Publishing produced no panels. Distinguish three sub-cases so a real failure is never
+        # rendered as "no visual evidence at all":
+        #   1. every comparison failed *preparation* (published=false, preparationFailureCount > 0)
+        #   2. images were prepared but *publication* failed afterwards (published=false, a populated
+        #      errors list, preparationFailureCount absent -- the Publish-GitAssets catch block)
+        #   3. genuinely no visual evidence (published=false, empty errors) -> strip the placeholder
         $prepFailures = if ($Context.visualAssets -and $Context.visualAssets.preparationFailureCount) {
             [Math]::Max(0, [int]$Context.visualAssets.preparationFailureCount)
         }
         else {
             0
         }
+        # Publisher/validation omissions (the MaxComparisons cap / dedup) are real even when nothing
+        # was published, so surface them here too rather than hardcoding zero.
+        $publisherOmitted = if ($Context.visualAssets -and $Context.visualAssets.omittedCount) {
+            [Math]::Max(0, [int]$Context.visualAssets.omittedCount)
+        }
+        else {
+            0
+        }
         if ($prepFailures -gt 0) {
-            # Surface the publisher's omittedCount here too: when every comparison failed preparation
-            # the MaxComparisons cap / dedup drops are still real omissions, and hardcoding zero would
-            # under-report how many comparisons the reader is not seeing.
-            $publisherOmitted = if ($Context.visualAssets.omittedCount) {
-                [Math]::Max(0, [int]$Context.visualAssets.omittedCount)
-            }
-            else {
-                0
-            }
-            $failureSection = New-InlineVisualSection -Panels @() -OmittedCount $publisherOmitted -PreparationFailureCount $prepFailures -OmittedForCommentSafety $false
+            $failureSection = New-InlineVisualSection -Panels @() -PublisherOmittedCount $publisherOmitted -CommentSafetyOmittedCount 0 -PreparationFailureCount $prepFailures
+            return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
+        }
+        # Post-preparation publication failure: published=false with a populated errors list but no
+        # preparation failures. Stripping the placeholder here would hide that visual evidence existed
+        # but could not be published. Render a fixed trusted notice (never the raw exception text,
+        # which is untrusted CI output).
+        $publishErrorCount = if ($Context.visualAssets -and $Context.visualAssets.errors) {
+            @($Context.visualAssets.errors).Count
+        }
+        else {
+            0
+        }
+        if ($publishErrorCount -gt 0) {
+            $failureSection = New-InlineVisualSection -Panels @() -PublisherOmittedCount $publisherOmitted -CommentSafetyOmittedCount 0 -PreparationFailureCount 0 -PublicationFailed $true
             return Insert-InlineVisualSection -Body $baseBody -Section $failureSection
         }
         return $baseBody.Replace($placeholder, "")
@@ -559,8 +585,10 @@ function Merge-VisualsIntoBody {
     $selectedPanels = New-Object System.Collections.Generic.List[string]
     foreach ($panel in $validPanels) {
         $trialPanels = @($selectedPanels.ToArray()) + @($panel)
-        $trialOmitted = $publisherOmitted + $invalidCount + ($validPanels.Count - $trialPanels.Count)
-        $trialSection = New-InlineVisualSection -Panels $trialPanels -OmittedCount $trialOmitted -PreparationFailureCount $preparationFailureCount
+        $trialSection = New-InlineVisualSection -Panels $trialPanels `
+            -PublisherOmittedCount ($publisherOmitted + $invalidCount) `
+            -CommentSafetyOmittedCount ($validPanels.Count - $trialPanels.Count) `
+            -PreparationFailureCount $preparationFailureCount
         $trialBody = Insert-InlineVisualSection -Body $baseBody -Section $trialSection
         if (Test-CommentWithinLimits `
                 -Body $trialBody `
@@ -571,8 +599,10 @@ function Merge-VisualsIntoBody {
         }
     }
 
-    $omittedCount = $publisherOmitted + $invalidCount + ($validPanels.Count - $selectedPanels.Count)
-    $section = New-InlineVisualSection -Panels $selectedPanels.ToArray() -OmittedCount $omittedCount -PreparationFailureCount $preparationFailureCount
+    $section = New-InlineVisualSection -Panels $selectedPanels.ToArray() `
+        -PublisherOmittedCount ($publisherOmitted + $invalidCount) `
+        -CommentSafetyOmittedCount ($validPanels.Count - $selectedPanels.Count) `
+        -PreparationFailureCount $preparationFailureCount
     $mergedBody = Insert-InlineVisualSection -Body $baseBody -Section $section
     if (-not (Test-CommentWithinLimits `
             -Body $mergedBody `

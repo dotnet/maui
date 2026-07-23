@@ -2303,6 +2303,23 @@ foreach ($ref in $manualBuildRefs.ToArray()) {
     }
 }
 
+function Get-VisualEvidenceBudgetDecision {
+    # Decide whether a maui-pr-uitests build may run visual discovery, given how much visual-discovery
+    # time has ALREADY been spent (accumulated in $ElapsedSeconds by prior builds' scans only). The
+    # budget is charged against elapsed *visual* time, never wall clock, so interleaved timeline/log/
+    # Helix work between uitests builds cannot exhaust it. Non-positive remaining == budget spent.
+    param(
+        [double]$BudgetSeconds,
+        [double]$ElapsedSeconds
+    )
+
+    $remaining = $BudgetSeconds - $ElapsedSeconds
+    return [pscustomobject]@{
+        remainingSeconds = $remaining
+        exhausted        = ($remaining -le 0)
+    }
+}
+
 $builds = New-Object System.Collections.Generic.List[object]
 $allLogFailures = New-Object System.Collections.Generic.List[object]
 $allLogExcerpts = New-Object System.Collections.Generic.List[object]
@@ -2325,6 +2342,12 @@ if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_VISUAL_BUDGET_SECONDS) -
 }
 $visualEvidenceDeadline = $null
 $visualEvidenceBudgetTripped = $false
+# Charge ONLY wall-clock time actually spent inside visual discovery against the budget. This
+# accumulates in the discovery block's finally; timeline/log/Helix processing on this and
+# interleaved builds between visual scans is never counted, so several maui-pr-uitests builds (or
+# reruns) each get a fair share and slow nonvisual work can no longer silently exhaust the budget
+# before a later build's responsive scan begins.
+$visualEvidenceElapsedSeconds = 0.0
 # Failed Task legs whose log was read but yielded NO extractable failure (test OR build
 # error). This is the backstop for the "never wrong again" guarantee: even if a novel
 # break shape escapes both extractors, a failed-but-unexplained leg forces the verdict
@@ -2912,25 +2935,29 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
-    if ($build.definition.name -eq "maui-pr-uitests" -and $null -eq $visualEvidenceDeadline) {
-        # Start the visual-evidence budget on the first maui-pr-uitests build we actually reach, so
-        # unrelated earlier work (timeline, log, and Helix reads on non-uitests builds) does not
-        # consume the visual-only budget before discovery has a chance to begin.
-        $visualEvidenceDeadline = (Get-Date).AddSeconds($visualEvidenceBudgetSeconds)
+    if ($build.definition.name -eq "maui-pr-uitests") {
+        # Recompute this build's scan deadline from the REMAINING budget (budget minus visual time
+        # already spent by earlier builds). Only wall-clock time actually inside the discovery block
+        # below is charged back (see the finally), so timeline/log/Helix work on this and interleaved
+        # builds between visual scans never shortens a later build's responsive scan.
+        $visualBudgetDecision = Get-VisualEvidenceBudgetDecision `
+            -BudgetSeconds $visualEvidenceBudgetSeconds `
+            -ElapsedSeconds $visualEvidenceElapsedSeconds
+        $visualScanStart = Get-Date
+        $visualEvidenceDeadline = $visualScanStart.AddSeconds([Math]::Max(0.0, $visualBudgetDecision.remainingSeconds))
     }
 
-    if ($build.definition.name -eq "maui-pr-uitests" -and (Get-Date) -ge $visualEvidenceDeadline -and -not $visualEvidenceBudgetTripped) {
-        # The visual budget was already exhausted before this maui-pr-uitests build's visual
-        # discovery could begin (an earlier maui-pr-uitests build's visual scan consumed the shared
-        # wall-clock budget). Without this, the discovery block below is skipped silently and an
-        # empty visual scan is indistinguishable from a genuinely clean one. Record the caveat
-        # exactly once -- the same limitation the inner per-result guard records when the budget
-        # trips mid-scan.
+    if ($build.definition.name -eq "maui-pr-uitests" -and $visualBudgetDecision.exhausted -and -not $visualEvidenceBudgetTripped) {
+        # The visual budget was already exhausted by EARLIER maui-pr-uitests builds' visual scans
+        # (measured as accumulated discovery time, not wall clock), so this build's discovery cannot
+        # begin. Without this, the discovery block below is skipped silently and an empty visual scan
+        # is indistinguishable from a genuinely clean one. Record the caveat exactly once -- the same
+        # limitation the inner per-result guard records when the budget trips mid-scan.
         $visualEvidenceBudgetTripped = $true
         $visualEvidenceLimitations.Add("Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted.")
     }
 
-    if ($build.definition.name -eq "maui-pr-uitests" -and (Get-Date) -lt $visualEvidenceDeadline) {
+    if ($build.definition.name -eq "maui-pr-uitests" -and -not $visualBudgetDecision.exhausted) {
         try {
             $failedResultPage = Get-AzDoFailedTestResultsByBuild `
                 -Org $buildRef.org `
@@ -3036,6 +3063,12 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
         catch {
             $visualEvidenceLimitations.Add("Visual result discovery failed for AzDO build $($buildRef.buildId): $($_.Exception.Message)")
+        }
+        finally {
+            # Charge ONLY the wall-clock time spent in THIS build's visual discovery to the shared
+            # budget. Accumulating here (not a running wall-clock deadline) is what keeps interleaved
+            # nonvisual work on other builds from consuming a later uitests build's scan budget.
+            $visualEvidenceElapsedSeconds += ((Get-Date) - $visualScanStart).TotalSeconds
         }
     }
 
