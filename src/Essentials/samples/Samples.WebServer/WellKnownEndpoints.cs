@@ -1,6 +1,6 @@
 using System;
 
-namespace Server;
+namespace Essentials.Samples.WebServer;
 
 /// <summary>
 /// Serves the platform domain-association documents so that real devices trust this relying party
