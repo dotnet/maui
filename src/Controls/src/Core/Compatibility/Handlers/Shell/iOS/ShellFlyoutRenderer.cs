@@ -265,11 +265,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && !_disposed)
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
+			if (disposing)
 			{
 				ShellController.RemoveAppearanceObserver(this);
-
-				_disposed = true;
 
 				Shell.PropertyChanged -= OnShellPropertyChanged;
 				((IShellController)Shell).RemoveFlyoutBehaviorObserver(this);

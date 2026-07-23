@@ -649,6 +649,16 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Shell Flyout Renderer Disposal Is Idempotent After Native Teardown")]
+		public Task ShellFlyoutRendererDisposalIsIdempotentAfterNativeTeardown() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				var renderer = new TestableShellFlyoutRenderer();
+
+				renderer.DisposeForTest(false);
+				renderer.DisposeForTest(true);
+			});
+
 		[Fact(DisplayName = "Disconnect Shell During Current Item Change Does Not Recreate Renderer")]
 		public async Task DisconnectShellDuringCurrentItemChangeDoesNotRecreateRenderer()
 		{
@@ -897,6 +907,11 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			public void Complete() => _completion.TrySetResult(true);
+		}
+
+		sealed class TestableShellFlyoutRenderer : ShellFlyoutRenderer
+		{
+			public void DisposeForTest(bool disposing) => base.Dispose(disposing);
 		}
 
 		interface IDelayedImageSource : IImageSource
