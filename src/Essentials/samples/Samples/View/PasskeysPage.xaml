@@ -21,10 +21,28 @@
             <Label Text="On a real device the server must be reachable at the same domain as the RP ID (use a dev tunnel). See the server README."
                    FontSize="12" TextColor="Gray" />
 
-            <Label Text="Username" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Entry Text="{Binding Username}" Placeholder="alice@example.com" Keyboard="Email" />
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,8" />
 
-            <Button Text="Register a passkey" Command="{Binding RegisterCommand}" IsEnabled="{Binding IsNotBusy}" />
+            <Label Text="① Account (username + password)" FontAttributes="Bold" />
+            <Label Text="The real bootstrap: sign in against your own ASP.NET Core Identity server. No browser — just a native form post that sets the session cookie."
+                   FontSize="12" TextColor="Gray" />
+            <Entry Text="{Binding Username}" Placeholder="alice@example.com" Keyboard="Email" />
+            <Entry Text="{Binding Password}" Placeholder="Password" IsPassword="True" />
+            <Button Text="Sign up (new account)" Command="{Binding SignUpCommand}" IsEnabled="{Binding IsNotBusy}" />
+            <Button Text="Sign in with password" Command="{Binding SignInPasswordCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,8" />
+
+            <Label Text="② Enroll a passkey (after signing in)" FontAttributes="Bold" />
+            <Label Text="Offered once you're authenticated — the server binds the new passkey to the logged-in user."
+                   FontSize="12" TextColor="Gray" />
+            <Button Text="Create a passkey" Command="{Binding RegisterCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,8" />
+
+            <Label Text="③ Fast sign-in with a passkey" FontAttributes="Bold" />
+            <Label Text="Leave the username blank for username-less sign-in — the OS account picker lists your passkeys and you just pick one. No password, no browser."
+                   FontSize="12" TextColor="Gray" />
             <Button Text="Sign in with a passkey" Command="{Binding LoginCommand}" IsEnabled="{Binding IsNotBusy}" />
 
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />

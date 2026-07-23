@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Essentials.Samples.WebServer.Data;
 
-namespace Essentials.Samples.WebServer;
+namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
 /// Native-app-facing passkey ceremony endpoints used by the .NET MAUI Essentials sample.
@@ -14,10 +14,11 @@ namespace Essentials.Samples.WebServer;
 /// Identity authentication cookie, so the native client MUST use a <c>CookieContainer</c> and send
 /// the cookie from the <c>/begin</c> response back on the matching <c>/finish</c> request.
 ///
-/// This is intentionally simplified for local testing: registering a passkey auto-creates the user
-/// when it does not already exist, and there is no password. Do NOT copy this pattern into
-/// production; it exists purely so the cross-platform Passkeys Essentials API can be exercised
-/// end to end against a spec-conformant relying party.
+/// Registration enrolls a passkey for the currently signed-in user (the recommended "add a passkey
+/// after you log in" flow); as a local test-harness convenience it falls back to auto-provisioning a
+/// passwordless user from the posted username. Do NOT copy that shortcut into production; it exists
+/// purely so the cross-platform Passkeys Essentials API can be exercised end to end against a
+/// spec-conformant relying party.
 /// </summary>
 internal static class PasskeyApiEndpoints
 {
@@ -26,25 +27,38 @@ internal static class PasskeyApiEndpoints
 		var group = endpoints.MapGroup("/passkeys");
 
 		// 1) Registration — begin: returns PublicKeyCredentialCreationOptions JSON (WebAuthn).
+		//
+		// Real flow: if the caller is already authenticated (they bootstrapped with a password via
+		// /account/login?useCookies=true), enroll the passkey for THAT user — the honest "add a
+		// passkey for faster sign-in after you've logged in" flow. No typed username needed.
+		//
+		// Harness fallback: if there is no session yet, fall back to the posted 'username' and
+		// auto-provision a passwordless test user so the API can still be exercised in isolation.
 		group.MapPost("/register/begin", async (
 			string? username,
+			HttpContext context,
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager) =>
 		{
-			if (string.IsNullOrWhiteSpace(username))
-				return Results.BadRequest("A 'username' query value is required.");
+			var user = await userManager.GetUserAsync(context.User);
 
-			var user = await userManager.FindByNameAsync(username);
 			if (user is null)
 			{
-				user = new ApplicationUser { UserName = username, Email = username, EmailConfirmed = true };
-				var created = await userManager.CreateAsync(user);
-				if (!created.Succeeded)
-					return Results.BadRequest(string.Join("; ", created.Errors.Select(e => e.Description)));
+				if (string.IsNullOrWhiteSpace(username))
+					return Results.BadRequest("Sign in first (POST /account/login), or pass a 'username' to auto-provision a test user.");
+
+				user = await userManager.FindByNameAsync(username);
+				if (user is null)
+				{
+					user = new ApplicationUser { UserName = username, Email = username, EmailConfirmed = true };
+					var created = await userManager.CreateAsync(user);
+					if (!created.Succeeded)
+						return Results.BadRequest(string.Join("; ", created.Errors.Select(e => e.Description)));
+				}
 			}
 
 			var userId = await userManager.GetUserIdAsync(user);
-			var userName = await userManager.GetUserNameAsync(user) ?? username;
+			var userName = await userManager.GetUserNameAsync(user) ?? user.UserName!;
 			var optionsJson = await signInManager.MakePasskeyCreationOptionsAsync(new PasskeyUserEntity
 			{
 				Id = userId,
@@ -56,16 +70,13 @@ internal static class PasskeyApiEndpoints
 		});
 
 		// 2) Registration — finish: validates the attestation response and stores the passkey.
+		// The WebAuthn credential JSON is bound straight from the request body by the framework.
 		group.MapPost("/register/finish", async (
-			HttpContext context,
+			JsonElement credential,
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager) =>
 		{
-			var credentialJson = await ReadBodyAsync(context);
-			if (string.IsNullOrWhiteSpace(credentialJson))
-				return Results.BadRequest("A JSON credential body is required.");
-
-			var attestation = await signInManager.PerformPasskeyAttestationAsync(credentialJson);
+			var attestation = await signInManager.PerformPasskeyAttestationAsync(credential.GetRawText());
 			if (!attestation.Succeeded)
 				return Results.BadRequest($"Attestation failed: {attestation.Failure?.Message}");
 
@@ -96,49 +107,26 @@ internal static class PasskeyApiEndpoints
 		});
 
 		// 4) Authentication — finish: validates the assertion and reports the signed-in user.
+		// The WebAuthn credential JSON is bound straight from the request body by the framework.
 		group.MapPost("/login/finish", async (
-			HttpContext context,
+			JsonElement credential,
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager) =>
 		{
-			var credentialJson = await ReadBodyAsync(context);
-			if (string.IsNullOrWhiteSpace(credentialJson))
-				return Results.BadRequest("A JSON credential body is required.");
-
-			var assertion = await signInManager.PerformPasskeyAssertionAsync(credentialJson);
+			var assertion = await signInManager.PerformPasskeyAssertionAsync(credential.GetRawText());
 			if (!assertion.Succeeded || assertion.User is null)
 				return Results.Unauthorized();
 
 			// The sign counter / backup flags may have changed; persist the updated passkey.
 			await userManager.AddOrUpdatePasskeyAsync(assertion.User, assertion.Passkey!);
 
+			// Establish a durable session so a passkey sign-in yields a real authenticated cookie,
+			// exactly like the password bootstrap does. Subsequent authenticated calls now work.
+			await signInManager.SignInAsync(assertion.User, isPersistent: true);
+
 			return Results.Ok(new { authenticated = true, username = assertion.User.UserName });
 		});
 
 		return endpoints;
-	}
-
-	static async Task<string> ReadBodyAsync(HttpContext context)
-	{
-		using var reader = new StreamReader(context.Request.Body);
-		var body = (await reader.ReadToEndAsync()).Trim();
-
-		// The native client may post either the raw WebAuthn credential JSON or a small envelope.
-		// Accept both: if the body has a "credential" property, unwrap it.
-		if (body.Length > 0 && body[0] == '{')
-		{
-			try
-			{
-				using var doc = JsonDocument.Parse(body);
-				if (doc.RootElement.TryGetProperty("credential", out var credential))
-					return credential.GetRawText();
-			}
-			catch (JsonException)
-			{
-				// fall through and return the raw body
-			}
-		}
-
-		return body;
 	}
 }
