@@ -42,10 +42,12 @@ namespace Microsoft.Maui.Platform
 			else if (brush is null)
 			{
 				textBox.Resources.RemoveKeys(BackgroundResourceKeys);
+				textBox.ClearValue(TextBox.BackgroundProperty);
 			}
 			else
 			{
 				textBox.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
+				textBox.ClearValue(TextBox.BackgroundProperty);
 			}
 
 			textBox.RefreshThemeResources();

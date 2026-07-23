@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				platformControl.ClearValue(AutoSuggestBox.BackgroundProperty);
 				UpdateColors(platformControl, platformControl.Resources, _backgroundColorKeys, background?.ToPlatform());
 			}
 		}

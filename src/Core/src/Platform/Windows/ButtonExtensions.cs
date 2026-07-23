@@ -95,10 +95,12 @@ namespace Microsoft.Maui.Platform
 			else if (brush is null)
 			{
 				platformButton.Resources.RemoveKeys(BackgroundResourceKeys);
+				platformButton.ClearValue(Button.BackgroundProperty);
 			}
 			else
 			{
 				platformButton.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
+				platformButton.ClearValue(Button.BackgroundProperty);
 			}
 
 			platformButton.RefreshThemeResources();
