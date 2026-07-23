@@ -256,6 +256,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					oldElement.BindingContext = bindingContext;
 				}
+
+				// This cell may have been unbound while off-screen (e.g. its previous item was
+				// removed from the ItemsSource, see ItemsViewController.CellDisplayingEndedFromDelegate),
+				// which detaches the view from the ItemsView's logical children (Parent becomes null).
+				// If the cell is now being reused/rebound with the same template, the view must be
+				// re-attached; otherwise it silently drops out of the logical tree even though it's
+				// visibly bound and displayed again. Mirrors TemplatedCell2.BindVirtualView().
+				if (oldElement is not null && oldElement.Parent is null)
+				{
+					itemsView.AddLogicalChild(oldElement);
+				}
 			}
 
 			CurrentTemplate = itemTemplate;
