@@ -676,7 +676,8 @@ if (-not $SkipE2E) {
     Write-Host "  Under the tag-existence rule + Lane 1 staleness guard, the SR set is asserted" -ForegroundColor DarkGray
     Write-Host "  STRUCTURALLY (drift-proof), not pinned: the highest shipped SR emits a 'shipped'" -ForegroundColor DarkGray
     Write-Host "  refresh tracker, plus >=0 in-flight SRs (branch cut, unshipped) and exactly one" -ForegroundColor DarkGray
-    Write-Host "  candidate SR (the next SR off main). Today: SR8 shipped, SR9 in-flight, SR10 candidate." -ForegroundColor DarkGray
+    Write-Host "  candidate SR (the next SR off main). Between ship and the next branch cut," -ForegroundColor DarkGray
+    Write-Host "  the valid shape is shipped + candidate with no in-flight SR." -ForegroundColor DarkGray
     Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark): e.g. SR2, SR3." -ForegroundColor DarkGray
     Write-Host "    RETIRED (shipped, below the highest shipped SR): e.g. SR7 (10.0.71)." -ForegroundColor DarkGray
 
@@ -700,9 +701,9 @@ if (-not $SkipE2E) {
             # cut. Assert the invariant SHAPE instead: >=1 SR tracker, exactly one
             # candidate (the next SR off main), at most one 'shipped' refresh tracker
             # (the highest shipped SR), and a clean shipped+in-flight+candidate
-            # partition. Today that's SR8 shipped + SR9 in-flight + SR10 candidate;
-            # when SR9 ships this stays green (SR9 shipped + SR10 in-flight + SR11
-            # candidate) with no per-cut edit.
+            # partition. During the ship-to-next-cut gap there is no in-flight SR:
+            # the highest shipped refresh tracker directly anchors the next candidate.
+            # Once that candidate branch is cut it becomes the in-flight anchor.
             $srTrackers   = @($detected.trackers | Where-Object branchType -eq 'sr')
             $shippedSrs   = @($srTrackers | Where-Object mode -eq 'shipped')
             $inflightSrs  = @($srTrackers | Where-Object mode -eq 'in-flight' | Sort-Object { [int]$_.srNumber })
@@ -769,22 +770,28 @@ if (-not $SkipE2E) {
                 Assert-Eq -Label "in-flight SR$($fl.srNumber) has no priorSrBranch"        -Expected $true       -Actual ([string]::IsNullOrEmpty($fl.priorSrBranch))
             }
 
-            # --- Candidate SR: off main, branch NOT cut, numbered one past the highest
-            #     in-flight SR, with priorSrBranch = that highest in-flight branch. ---
+            # --- Candidate SR: off main, branch NOT cut, numbered one past the prior
+            #     active SR. Prefer the highest in-flight SR; during the valid
+            #     ship-to-next-cut gap, fall back to the highest shipped refresh SR. ---
             $cand = $candidateSrs[0]
             $highestInflight = if ($inflightSrs.Count -gt 0) { $inflightSrs[-1] } else { $null }
+            $highestShipped = if ($shippedSrs.Count -gt 0) {
+                @($shippedSrs | Sort-Object { [int]$_.srNumber })[-1]
+            } else {
+                $null
+            }
+            $candidateAnchor = if ($highestInflight) { $highestInflight } else { $highestShipped }
             Assert-Eq -Label "candidate SR mode = candidate"                    -Expected 'candidate' -Actual $cand.mode
             Assert-Eq -Label "candidate SR surveyRef = main"                    -Expected 'main'      -Actual $cand.surveyRef
             Assert-Eq -Label "candidate SR branchExists = false (not cut yet)"  -Expected $false      -Actual $cand.branchExists
             Assert-Eq -Label "candidate SR canonicalKey"                        -Expected "net10-sr$($cand.srNumber)" -Actual $cand.canonicalKey
             Assert-Eq -Label "candidate SR branchName = canonical proposed slug" -Expected "release/10.0.1xx-sr$($cand.srNumber)" -Actual $cand.branchName
-            if ($highestInflight) {
-                Assert-Eq -Label "candidate SR number = highest in-flight SR + 1" `
-                          -Expected ([int]$highestInflight.srNumber + 1) -Actual ([int]$cand.srNumber)
-                Assert-Eq -Label "candidate SR priorSrBranch = highest in-flight branch" `
-                          -Expected $highestInflight.branchName -Actual $cand.priorSrBranch
-            } else {
-                Write-Host "  ❌ no in-flight SR to anchor candidate numbering" -ForegroundColor Red; $script:failed++
+            Assert-Eq -Label "candidate SR has an in-flight or shipped anchor" -Expected $true -Actual ($null -ne $candidateAnchor)
+            if ($candidateAnchor) {
+                Assert-Eq -Label "candidate SR number = prior SR anchor + 1" `
+                          -Expected ([int]$candidateAnchor.srNumber + 1) -Actual ([int]$cand.srNumber)
+                Assert-Eq -Label "candidate SR priorSrBranch = prior SR anchor branch" `
+                          -Expected $candidateAnchor.branchName -Actual $cand.priorSrBranch
             }
 
             # --- Per-SR invariants for BOTH modes (drift-proof). The regression-label
@@ -817,7 +824,8 @@ if (-not $SkipE2E) {
     #   - net10 -> ≥1 SR tracker + exactly one candidate SR, no preview lane
     #     (SR2/SR3 dropped by the Lane 1 staleness guard; shipped SRs dropped by
     #      shipped-exclusion; every net10 preview branch already shipped + net10.0
-    #      isn't in a preview cycle). Today: SR9 in-flight + SR10 candidate.
+    #      isn't in a preview cycle). The SR lane may be shipped + candidate during
+    #      the ship-to-next-cut gap, or shipped + in-flight + candidate after the cut.
     #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag) + a preview lane derived from
     #     the LIVE highestShippedPreviewTag: the detector always surfaces the NEXT preview
     #     (shipped + 1) as the candidate from net11.0 (PreReleaseVersionIteration), plus an
@@ -827,7 +835,7 @@ if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
     Write-Host "  Expected:" -ForegroundColor DarkGray
     Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
-    Write-Host "    - net10 trackers: >=1 SR + exactly 1 candidate, 0 preview (today SR9 in-flight + SR10 candidate)" -ForegroundColor DarkGray
+    Write-Host "    - net10 trackers: >=1 SR + exactly 1 candidate, 0 preview (in-flight SR optional)" -ForegroundColor DarkGray
     Write-Host "    - net11 trackers: 0 SR (pre-GA), preview lane = candidate (shipped+1) + optional in-flight" -ForegroundColor DarkGray
 
     $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
@@ -860,7 +868,7 @@ if (-not $SkipE2E) {
                 # Count is not pinned (advances every SR cut/ship). Assert the shape:
                 # ≥1 SR tracker, exactly one candidate SR, no preview lane (every net10
                 # preview shipped + net10.0 isn't in a preview cycle), and a clean SR-only
-                # partition. Today: SR9 in-flight + SR10 candidate.
+                # partition. The in-flight SR is optional during ship-to-next-cut.
                 Assert-Eq -Label "net10 has at least one SR tracker"      -Expected $true -Actual ($net10Sr.Count -ge 1)
                 Assert-Eq -Label "net10 has exactly one candidate SR"     -Expected 1     -Actual $net10Candidate.Count
                 Assert-Eq -Label "net10 has 0 preview trackers"          -Expected 0     -Actual $net10Preview.Count
@@ -971,6 +979,65 @@ if (-not $SkipE2E) {
         }
     } finally {
         if (Test-Path $multiOut) { Remove-Item -Force $multiOut }
+    }
+
+    # Synthetic ship-to-next-cut SR window: SR9 has shipped, its branch remains
+    # as the refresh tracker, SR10 has not been cut, and there is no in-flight SR.
+    # Candidate numbering and priorSrBranch must anchor to the shipped SR rather
+    # than treating this normal release transition as invalid.
+    Write-Host "`n[Unit] Tracker detection synthetic post-ship SR window" -ForegroundColor Cyan
+    $origGetMainBranchForVersion = (Get-Item function:Get-MainBranchForVersion).ScriptBlock
+    $origGetStableTagsForMajor = (Get-Item function:Get-StableTagsForMajor).ScriptBlock
+    $origGetPreviewTagsForMajor = (Get-Item function:Get-PreviewTagsForMajor).ScriptBlock
+    $origGetRemoteSrBranchesForMajor = (Get-Item function:Get-RemoteSrBranchesForMajor).ScriptBlock
+    $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
+    $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
+    $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
+    try {
+        function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'main' }
+        function Get-StableTagsForMajor { param([int]$Major) ,@('10.0.0', '10.0.90') }
+        function Get-PreviewTagsForMajor { param([int]$Major) ,@() }
+        function Get-RemoteSrBranchesForMajor {
+            param([int]$Major)
+            ,@([pscustomobject]@{ branch = 'release/10.0.1xx-sr9'; srNumber = 9 })
+        }
+        function Get-RemotePreviewBranchesForMajor { param([int]$Major) ,@() }
+        function Get-VersionFromGitRef {
+            param([string]$GitRef, [string]$Repo)
+            if ($GitRef -eq 'origin/release/10.0.1xx-sr9') {
+                return [pscustomobject]@{ Tag = '10.0.90'; PreLabel = ''; PreIter = 0 }
+            }
+            [pscustomobject]@{ Tag = '10.0.100'; PreLabel = 'ci.main'; PreIter = 0 }
+        }
+        function Get-RecentCommitCount {
+            param([string]$Ref, [int]$Days)
+            if ($Ref -eq 'main') { return 1 }
+            return 0
+        }
+
+        $syntheticSr = Invoke-DetectionForMajor -Major 10
+        $syntheticSrTrackers = @($syntheticSr.trackers | Where-Object branchType -eq 'sr')
+        $syntheticShipped9 = $syntheticSrTrackers | Where-Object { [int]$_.srNumber -eq 9 } | Select-Object -First 1
+        $syntheticInflight = @($syntheticSrTrackers | Where-Object mode -eq 'in-flight')
+        $syntheticCandidate10 = $syntheticSrTrackers | Where-Object { [int]$_.srNumber -eq 10 } | Select-Object -First 1
+
+        Assert-Eq -Label "synthetic post-ship window emits shipped SR9 refresh tracker" -Expected $true -Actual ($null -ne $syntheticShipped9)
+        Assert-Eq -Label "synthetic SR9 mode = shipped" -Expected 'shipped' -Actual $syntheticShipped9.mode
+        Assert-Eq -Label "synthetic post-ship window has no in-flight SR" -Expected 0 -Actual $syntheticInflight.Count
+        Assert-Eq -Label "synthetic post-ship window emits candidate SR10" -Expected $true -Actual ($null -ne $syntheticCandidate10)
+        Assert-Eq -Label "synthetic SR10 mode = candidate" -Expected 'candidate' -Actual $syntheticCandidate10.mode
+        Assert-Eq -Label "synthetic candidate number = shipped anchor + 1" `
+                  -Expected ([int]$syntheticShipped9.srNumber + 1) -Actual ([int]$syntheticCandidate10.srNumber)
+        Assert-Eq -Label "synthetic candidate priorSrBranch = shipped anchor branch" `
+                  -Expected $syntheticShipped9.branchName -Actual $syntheticCandidate10.priorSrBranch
+    } finally {
+        Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
+        Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
+        Set-Item function:Get-PreviewTagsForMajor $origGetPreviewTagsForMajor
+        Set-Item function:Get-RemoteSrBranchesForMajor $origGetRemoteSrBranchesForMajor
+        Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
+        Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
+        Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
     }
 
     # Synthetic dual-tracker window: shipped preview N has a tag, preview N+1
