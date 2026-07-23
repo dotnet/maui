@@ -149,7 +149,13 @@ function Get-CommentLimitCounts {
 
     return [pscustomobject]@{
         urls = [regex]::Matches($Body, 'https?://[^\s]+').Count
-        mentions = [regex]::Matches($Body, '@\w+').Count
+        # Count mentions with a permissive pattern that captures whole GitHub tokens: usernames may
+        # contain hyphens (@test-user) and team mentions carry a slash (@org/team). The narrower
+        # '@\w+' clipped those to their first segment (@test / @org). For the raw count each '@'
+        # still anchors one match, but the permissive form keeps counting conservative (it can only
+        # ever match >= as many tokens, never fewer) and captures the true token, which is the
+        # correct, robust basis for the mention-budget guard.
+        mentions = [regex]::Matches($Body, '@[\w-]+(?:/[\w-]+)?').Count
         characters = $Body.Length
     }
 }

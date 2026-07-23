@@ -168,6 +168,15 @@ Describe 'Inline visual input validation' {
         $counts.mentions | Should -Be 2
         $counts.characters | Should -Be $body.Length
     }
+
+    It 'counts hyphenated usernames and team mentions as single mentions' {
+        # A hyphenated username (@test-user) and a team mention (@org/team) are each one GitHub
+        # notification. The permissive pattern captures each whole token (rather than clipping to
+        # @test / @org) and counts three mentions here, so the budget guard operates on the true
+        # token set and can never count fewer mentions than the body would notify.
+        $body = 'ping @test-user and @org/team plus @plainuser'
+        (Get-CommentLimitCounts -Body $body).mentions | Should -Be 3
+    }
 }
 
 Describe 'Inline visual body merge' {
