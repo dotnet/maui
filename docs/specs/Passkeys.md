@@ -872,32 +872,54 @@ cancel must come from a different thread than the blocking call, using the pre-a
   association, so full end-to-end is hard to automate in CI. On-device tests verify `IsSupported`, request
   construction, and JSON translation; the interactive ceremony runs behind a manual/sample test with a
   reference RP server.
-- **Reference RP server (test backend)**: stand up an **ASP.NET Core Identity** app using the built-in
-  passkey support (available since .NET 10) as the relying party. The **Blazor Web App template with
-  "Individual Accounts"** scaffolds passkey registration/sign-in endpoints and UI out of the box, so we
-  get a spec-conformant `PublicKeyCredentialCreationOptions` / `RequestOptions` producer and response
-  verifier for free. Configuration is minimal:
+- **Reference RP server (test backend)**: the repo ships one at
+  [`src/Essentials/samples/Sample.Server`](../../src/Essentials/samples/Sample.Server).
+  It is the **default .NET Blazor Web App template with ASP.NET Core Identity "Individual Accounts"**
+  — which includes built-in passkey support since .NET 10 — so the browser passkey UI works out of the
+  box and provides a spec-conformant `PublicKeyCredentialCreationOptions` / `RequestOptions` producer
+  and response verifier for free. Because it's the *official* ASP.NET Core Identity implementation, it
+  doubles as an interop conformance check across Apple, Android, and Windows. The same server also
+  hosts the OAuth pass-through backend for the `WebAuthenticator` sample, so one web app backs both
+  Essentials auth samples.
+
+  On top of the template it adds a small **native-app-facing JSON API** (`PasskeyApiEndpoints.cs`) so
+  the MAUI native `CreateAsync` / `AssertAsync` calls can drive the ceremony directly — no browser,
+  no antiforgery:
+
+  ```
+  POST /passkeys/register/begin?username=…   -> PublicKeyCredentialCreationOptions JSON
+  POST /passkeys/register/finish  (body: attestation JSON)  -> { registered, username }
+  POST /passkeys/login/begin?username=…      -> PublicKeyCredentialRequestOptions JSON
+  POST /passkeys/login/finish     (body: assertion JSON)    -> { authenticated, username }
+  ```
+
+  The WebAuthn challenge state is correlated through the Identity auth cookie between `begin` and
+  `finish`, so the native client uses a cookie container. RP configuration is minimal:
 
   ```csharp
   builder.Services.Configure<IdentityPasskeyOptions>(options =>
   {
-      options.ServerDomain = "<rp-id>";                     // must match the app's domain association
-      options.AuthenticatorTimeout = TimeSpan.FromMinutes(3);
-      options.ChallengeSize = 32;
+      options.ServerDomain = "<rp-id>";                          // must match the app's domain association
+      options.ValidateOrigin = ctx => ValueTask.FromResult(allowedOrigins.Contains(ctx.Origin));
   });
   ```
 
-  Layout: a small test/sample web project (e.g. `src/Essentials/samples/…` or an integration
-  fixture) that the MAUI sample points at. Its `/begin` + `/finish` endpoints feed the `CreateAsync` /
-  `AssertAsync` calls directly, so the same backend validates all platforms. Because it's the *official*
-  ASP.NET Core Identity implementation, it doubles as an interop conformance check.
+  It is a local dev tool (auto-creates users, no password). It is part of the solution and builds in
+  CI, but you run it locally to test on devices:
+  `dotnet run --project src/Essentials/samples/Sample.Server`.
   Docs: [Passkeys in ASP.NET Core](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/) ·
   [Blazor Web App passkeys](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/blazor).
+- **Stable public domain (dev tunnels)**: passkeys are bound to a domain (the RP ID) and `localhost`
+  won't validate on a device. The server README documents exposing it via a **dev tunnel with a
+  persistent tunnel ID**, giving a stable `https://…devtunnels.ms` domain reused across all platform
+  apps. The MAUI sample's Passkeys page takes the server base URL at runtime.
 - **Native origins on the server**: the RP must accept the app's **native origin** — Android's
   `android:apk-key-hash:<hash>` and Apple's associated-domain `https://` origin — not just a web origin
-  (see §7.5.3). Origin/RP-ID validation must be configured accordingly, or ceremonies fail with an
-  origin-mismatch error.
-- **Sample**: add a Passkeys page to `Essentials.Sample` wired to the reference RP above.
+  (see §7.5.3), configured via `IdentityPasskeyOptions.ValidateOrigin`. The server also serves the
+  matching `/.well-known/assetlinks.json` (Android) and `/.well-known/apple-app-site-association`
+  (Apple) documents from config, or ceremonies fail with an origin-mismatch error.
+- **Sample**: the `Essentials.Sample` app includes a **Passkeys** page wired to the reference RP above
+  ([`View/PasskeysPage.xaml`](../../src/Essentials/samples/Samples/View/PasskeysPage.xaml)).
 
 ## 12. Key decisions
 
