@@ -18,10 +18,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(TabLayout tabLayout)
 		{
-			SetColors(tabLayout, ShellRenderer.DefaultForegroundColor,
-				ShellRenderer.DefaultBackgroundColor,
-				ShellRenderer.DefaultTitleColor,
-				ShellRenderer.DefaultUnselectedColor);
+			var context = _shellContext.AndroidContext;
+			SetColors(tabLayout,
+				ShellRenderer.GetForegroundColor(context),
+				ShellRenderer.GetBackgroundColor(context),
+				ShellRenderer.GetTitleColor(context),
+				ShellRenderer.GetUnselectedColor(context));
 		}
 
 		public virtual void SetAppearance(TabLayout tabLayout, ShellAppearance appearance)
@@ -36,12 +38,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetColors(TabLayout tabLayout, Color foreground, Color background, Color title, Color unselected)
 		{
-			var titleArgb = title.ToPlatform(ShellRenderer.DefaultTitleColor).ToArgb();
-			var unselectedArgb = unselected.ToPlatform(ShellRenderer.DefaultUnselectedColor).ToArgb();
+			var context = _shellContext.AndroidContext;
+			var titleArgb = title.ToPlatform(ShellRenderer.GetTitleColor(context)).ToArgb();
+			var unselectedArgb = unselected.ToPlatform(ShellRenderer.GetUnselectedColor(context)).ToArgb();
 
 			tabLayout.SetTabTextColors(unselectedArgb, titleArgb);
-			tabLayout.SetBackground(new ColorDrawable(background.ToPlatform(ShellRenderer.DefaultBackgroundColor)));
-			tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.DefaultForegroundColor));
+			tabLayout.SetBackground(new ColorDrawable(background.ToPlatform(ShellRenderer.GetBackgroundColor(context))));
+			tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.GetForegroundColor(context)));
 		}
 
 		#region IDisposable

@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// Apply background color from appearance, fallback to default if unavailable
 			if (_bottomView.Background is ColorDrawable background && appearance is IShellAppearanceElement appearanceElement)
 			{
-				background.Color = appearanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+				background.Color = appearanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.GetBottomNavigationViewBackgroundColor(ShellContext.AndroidContext).ToPlatform();
 			}
 			_appearanceSet = true;
 			_appearanceTracker.SetAppearance(_bottomView, appearance);

@@ -822,26 +822,21 @@ namespace Microsoft.Maui.Controls
 		}
 
 #if ANDROID
-		static Color DefaultBackgroundColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
-		static Color DefaultForegroundColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black,
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
-		static Color DefaultTitleColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
+		// Delegate to ShellRenderer's context-aware helpers so both this shared Toolbar handler
+		// path (used by PushAsync-ed pages) and the native ShellRenderer/trackers path read from
+		// the same Android theme attributes. No hardcoded hex values live here anymore.
+		static Color DefaultBackgroundColor => ResolveAndroidDefault(Handlers.Compatibility.ShellRenderer.GetBackgroundColor);
+		static Color DefaultForegroundColor => ResolveAndroidDefault(Handlers.Compatibility.ShellRenderer.GetForegroundColor);
+		static Color DefaultTitleColor => ResolveAndroidDefault(Handlers.Compatibility.ShellRenderer.GetTitleColor);
 
-		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
-
-		static Color ResolveThemeColor(Color light, Color dark)
+		static Color ResolveAndroidDefault(Func<global::Android.Content.Context, Color> resolve)
 		{
-			if (IsDarkTheme)
-			{
-				return dark;
-			}
-
-			return light;
+			// UpdateToolbarAppearanceFeatures can fire before any window's handler is attached,
+			// so fall back to the hardcoded default while there is no context to resolve against.
+			var context = Application.Current?.Windows?.FirstOrDefault()?.Handler?.MauiContext?.Context;
+			return context is null
+				? Handlers.Compatibility.ShellRenderer.DefaultBackgroundColor
+				: resolve(context);
 		}
 #else
 		static Color DefaultBackgroundColor => null;
