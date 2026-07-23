@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Controls.Handlers
         readonly static UITableViewCell[] EmptyUITableViewCellArray = Array.Empty<UITableViewCell>();
 
         IShellContext? _shellContext;
-        UITabBarController _tabBarController = null!;
-        IShellTabBarAppearanceTracker? _appearanceTracker;
+        internal UITabBarController _tabBarController = null!;
+        internal IShellTabBarAppearanceTracker? _appearanceTracker;
         readonly Dictionary<UIViewController, IShellSectionRenderer> _sectionRenderers = new Dictionary<UIViewController, IShellSectionRenderer>();
         ShellSection? _currentSection;
         Page? _displayedPage;
@@ -446,7 +446,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         #region Tab Bar Visibility
 
-        void UpdateTabBarHidden()
+        internal void UpdateTabBarHidden()
         {
             if (ShellItemController is null)
             {
@@ -616,7 +616,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection)
+        internal static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection)
         {
             var badgeText = shellSection.BadgeText;
             tabBarItem.BadgeValue = badgeText is null ? null : (badgeText.Length > 0 ? badgeText : "");

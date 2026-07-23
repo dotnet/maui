@@ -149,3 +149,51 @@ Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.HandledTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.Timestamp.get -> System.DateTimeOffset
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.UpdatedTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Handlers.ShellHandler
+Microsoft.Maui.Controls.Handlers.ShellHandler.ShellHandler() -> void
+Microsoft.Maui.Controls.Handlers.ShellItemHandler
+Microsoft.Maui.Controls.Handlers.ShellItemHandler.ShellItemHandler() -> void
+Microsoft.Maui.Controls.Handlers.ShellSectionHandler
+Microsoft.Maui.Controls.Handlers.ShellSectionHandler.ShellSectionHandler() -> void
+override Microsoft.Maui.Controls.Handlers.ShellHandler.ConnectHandler(UIKit.UIView! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellHandler.CreatePlatformView() -> UIKit.UIView!
+override Microsoft.Maui.Controls.Handlers.ShellHandler.DisconnectHandler(UIKit.UIView! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemHandler.ConnectHandler(UIKit.UIView! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemHandler.CreatePlatformElement() -> UIKit.UIView!
+override Microsoft.Maui.Controls.Handlers.ShellItemHandler.DisconnectHandler(UIKit.UIView! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.ConnectHandler(UIKit.UIView! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.CreatePlatformElement() -> UIKit.UIView!
+override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.DisconnectHandler(UIKit.UIView! platformView) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Shell!, Microsoft.Maui.Controls.Handlers.ShellHandler!>!
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlowDirection(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyout(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutBackdrop(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutBackground(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutBackgroundImage(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutBehavior(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutFooter(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutHeader(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutHeaderBehavior(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutVerticalScrollMode(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutWidth(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.MapIsPresented(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
+static Microsoft.Maui.Controls.Handlers.ShellHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.Shell!, Microsoft.Maui.Controls.Handlers.ShellHandler!>!
+static Microsoft.Maui.Controls.Handlers.ShellItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ShellItem!, Microsoft.Maui.Controls.Handlers.ShellItemHandler!>!
+static Microsoft.Maui.Controls.Handlers.ShellItemHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellItemHandler! handler, Microsoft.Maui.Controls.ShellItem! shellItem) -> void
+static Microsoft.Maui.Controls.Handlers.ShellItemHandler.MapTabBarIsVisible(Microsoft.Maui.Controls.Handlers.ShellItemHandler! handler, Microsoft.Maui.Controls.ShellItem! shellItem) -> void
+static Microsoft.Maui.Controls.Handlers.ShellItemHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ShellItem!, Microsoft.Maui.Controls.Handlers.ShellItemHandler!>!
+static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ShellSection!, Microsoft.Maui.Controls.Handlers.ShellSectionHandler!>!
+static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler, Microsoft.Maui.Controls.ShellSection! shellSection) -> void
+static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.MapIcon(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler, Microsoft.Maui.Controls.ShellSection! shellSection) -> void
+static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.MapTitle(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler, Microsoft.Maui.Controls.ShellSection! shellSection) -> void
+static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ShellSection!, Microsoft.Maui.Controls.Handlers.ShellSectionHandler!>!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateNavBarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellNavBarAppearanceTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreatePageRendererTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellPageRendererTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellFlyoutContentRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellItemRenderer(Microsoft.Maui.Controls.ShellItem! item) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellItemTransition() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemTransition!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellSearchResultsRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSearchResultsRenderer!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellSectionRenderer(Microsoft.Maui.Controls.ShellSection! shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateTabBarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellTabBarAppearanceTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellSectionHandler.CreateShellSectionRootHeader(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext! shellContext) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRootHeader!

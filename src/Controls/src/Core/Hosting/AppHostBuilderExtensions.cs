@@ -333,6 +333,13 @@ public static partial class AppHostBuilderExtensions
 		ImageButton.RemapForControls();
 
 		Slider.RemapForControls();
+
+#if IOS || MACCATALYST
+		Shell.RemapForControls();
+		ShellItem.RemapForControls();
+		ShellSection.RemapForControls();
+#endif
+
 		return builder;
 	}
 }
