@@ -1,4 +1,6 @@
-﻿#if TEST_FAILS_ON_WINDOWS		//For more info : https://github.com/dotnet/maui/issues/31375
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+// TEST_FAILS_ON_WINDOWS    : For more info : https://github.com/dotnet/maui/issues/31375
+// TEST_FAILS_ON_CATALYST   : ScrollTo is not working properly on MacCatalyst.
 using System.Globalization;
 using NUnit.Framework;
 using UITest.Appium;

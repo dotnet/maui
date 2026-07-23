@@ -225,7 +225,7 @@ public class Issue33307Page1 : ContentPage
 		var delButton = new Button
 		{
 			Text = "Delete",
-			AutomationId = "Delete"
+			AutomationId = "DeleteItem"
 		};
 		delButton.Clicked += ButtonDeleteRow_Clicked;
 

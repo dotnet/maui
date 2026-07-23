@@ -356,11 +356,11 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectContent = File.ReadAllText(expectedProjectFile);
 		Assert.True(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
 			"Project file should contain Aspire-specific properties.");
-		Assert.IsTrue(projectContent.Contains("<UseMauiCore>true</UseMauiCore>", StringComparison.Ordinal),
+		Assert.True(projectContent.Contains("<UseMauiCore>true</UseMauiCore>", StringComparison.Ordinal),
 			"Project file should contain UseMauiCore property.");
 
 		// Verify the project actually builds
-		Assert.IsTrue(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(expectedProjectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }

@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // Related issue: https://github.com/dotnet/maui/issues/29412
 using Microsoft.Maui.TestCases.Tests;
 using NUnit.Framework;
 using UITest.Appium;
@@ -59,3 +60,4 @@ public class Issue13323 : _IssuesUITest
 #endif
 	}
 }
+#endif
