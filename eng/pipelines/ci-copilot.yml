@@ -423,6 +423,16 @@ stages:
           - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
+            # A normal dotnet-buildtasks build takes <10 min. Without a task
+            # timeout it inherits the 360-min JOB timeout, so under heavy review
+            # concurrency (20+ simultaneous builds starving the agent pool) a
+            # hung build was observed running 1.5-3.3h before dying with
+            # "PowerShell exited with code '1'" (builds 14751470 #36657,
+            # 14753160 #36405 — both hung, then failed the whole gate stage).
+            # Bound it to 40 min (still 4-5x a healthy build) so a hang fails
+            # FAST and the retryCountOnTaskFailure retry gets a fresh-agent
+            # chance instead of holding the agent for hours.
+            timeoutInMinutes: 40
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
@@ -2185,6 +2195,11 @@ stages:
           - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
+            # Bound to 40 min (vs the inherited 360-min job timeout) so a build
+            # hung under heavy agent-pool contention fails fast and retries on a
+            # fresh agent instead of hanging for hours. See the gate-stage copy
+            # of this step for the full rationale (builds 14751470 / 14753160).
+            timeoutInMinutes: 40
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
