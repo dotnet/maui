@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 		//     stub stays connected without re-attempting the optional factory lookup;
 		//   * clearing the handler makes HandlerChanging call DisconnectGestures with a null manager
 		//     (GesturePlatformManager?.Dispose() must be null-safe);
-		//   * reconnecting the same stub re-runs setup, which skips the built-in manager again.
+		//   * reconnecting the same stub performs one fresh optional factory lookup without throwing.
 		[Fact]
 		public async Task GestureManagerSkipsBuiltInManagerWhenHandlerIsNotPlatformViewHandler()
 		{
@@ -48,8 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = new NonPlatformViewHandlerStub(new MauiContext(services));
 				view.Handler = handler;
 
-				// Initial connect: setting up gesture management for this handler must not throw and
-				// must not create the built-in platform gesture infrastructure.
+				// Initial connect must not throw and performs one optional factory lookup.
 				Assert.Equal(1, services.GestureFactoryRequestCount);
 
 				// Repeated same-handler event: raising WindowChanged (via the internal
@@ -66,8 +65,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(1, services.GestureFactoryRequestCount);
 
-				// Reconnect the same stub: setup runs again, the built-in manager is skipped again,
-				// and one new optional factory lookup occurs for the new connection.
+				// Reconnect the same stub: setup runs again and performs one new optional factory
+				// lookup for the new connection.
 				view.Handler = handler;
 
 				Assert.Equal(2, services.GestureFactoryRequestCount);
