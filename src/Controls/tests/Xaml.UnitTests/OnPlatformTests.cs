@@ -137,6 +137,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			image = new Image().LoadFromXaml(xaml);
 			Assert.Equal("Images/icon_twitter_preferred.png", (image.Source as FileImageSource).File);
 		}
+
+		[Theory]
+		[InlineData("GTK", "gtk")]
+		[InlineData("macOS", "macos")]
+		[InlineData("WPF", "wpf")]
+		// Issue 35695: custom/community backends can express platform-conditional
+		// values through the OnPlatform markup-extension form.
+		public void MarkupExtensionResolvesCustomPlatform(string platform, string expected)
+		{
+			var xaml = @"
+			<Label xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+				xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+				Text=""{OnPlatform Default=default, GTK=gtk, macOS=macos, WPF=wpf}"" />";
+
+			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
+			var label = new Label().LoadFromXaml(xaml);
+			Assert.Equal(expected, label.Text);
+		}
 	}
 
 	[Collection("Xaml Inflation")]

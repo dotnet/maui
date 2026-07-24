@@ -10,6 +10,28 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// <summary>
 	/// Provides a XAML markup extension that returns different values depending on the platform the app is running on.
 	/// </summary>
+	/// <remarks>
+	/// The value is resolved by matching the <see cref="Microsoft.Maui.Devices.DeviceInfo.Platform"/> identifier
+	/// (the <see cref="Microsoft.Maui.Devices.DevicePlatform"/> struct's <c>ToString()</c> value)
+	/// against the per-platform values, so a custom backend whose platform string matches one of the named
+	/// properties below (for example <c>GTK</c>) resolves correctly at runtime. Note that the compile-time
+	/// optimization (<c>SimplifyOnPlatformVisitor</c>) currently recognizes only the
+	/// <c>-android</c>/<c>-ios</c>/<c>-macos</c>/<c>-maccatalyst</c> target frameworks; every other target
+	/// framework (including <c>-windows</c> and <c>-tizen</c>) and any custom backend falls back to runtime
+	/// resolution.
+	/// <para>
+	/// Because a XAML markup extension maps each named argument to a CLR property, the inline
+	/// <c>{OnPlatform iOS=…, Android=…}</c> form can only express the platforms exposed as properties here.
+	/// To target an <em>arbitrary</em> custom platform (e.g. a backend reporting
+	/// <c>DevicePlatform.Create("Web")</c>), use the element form, which accepts any platform string:
+	/// <code>
+	/// &lt;OnPlatform x:TypeArguments="x:String"&gt;
+	///     &lt;On Platform="Web" Value="…" /&gt;
+	///     &lt;On Platform="iOS, Android" Value="…" /&gt;
+	/// &lt;/OnPlatform&gt;
+	/// </code>
+	/// </para>
+	/// </remarks>
 	[ContentProperty(nameof(Default))]
 	[RequireService(
 		[typeof(IProvideValueTarget),
@@ -31,14 +53,21 @@ namespace Microsoft.Maui.Controls.Xaml
 		/// </summary>
 		public object Android { get; set; } = s_notset;
 
-		internal object GTK { get; set; } = s_notset;
+		/// <summary>
+		/// Gets or sets the value to use on GTK.
+		/// </summary>
+		public object GTK { get; set; } = s_notset;
 
 		/// <summary>
 		/// Gets or sets the value to use on iOS.
 		/// </summary>
 		public object iOS { get; set; } = s_notset;
 
-		internal object macOS { get; set; } = s_notset;
+		/// <summary>
+		/// Gets or sets the value to use on macOS.
+		/// </summary>
+		/// <remarks>Note, this is different than <see cref="MacCatalyst"/>.</remarks>
+		public object macOS { get; set; } = s_notset;
 
 		/// <summary>
 		/// Gets or sets the value to use on Mac Catalyst.
@@ -56,7 +85,10 @@ namespace Microsoft.Maui.Controls.Xaml
 		[Obsolete("Use WinUI instead.")]
 		public object UWP { get; set; } = s_notset;
 
-		internal object WPF { get; set; } = s_notset;
+		/// <summary>
+		/// Gets or sets the value to use on WPF.
+		/// </summary>
+		public object WPF { get; set; } = s_notset;
 
 		/// <summary>
 		/// Gets or sets the value to use on Windows (WinUI).
