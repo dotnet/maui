@@ -1,0 +1,4 @@
+# Runtime SQLite database (recreated on startup from migrations).
+Data/app.db
+Data/app.db-shm
+Data/app.db-wal

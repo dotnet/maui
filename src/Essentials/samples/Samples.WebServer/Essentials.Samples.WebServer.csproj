@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Essentials.Samples.WebServer</RootNamespace>
+    <UserSecretsId>maui-essentials-auth-server</UserSecretsId>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <!-- This is a developer-facing reference relying-party (RP) server for the .NET MAUI Essentials
+         Passkeys sample: an ASP.NET Core Identity / WebAuthn backend the native app registers and
+         signs in against, so testing is "launch one web app, run the MAUI app". Build and run it
+         locally (see README.md). -->
+    <IsPackable>false</IsPackable>
+    <!-- EF Core packages are pinned to the same servicing band as the rest of the repo so they
+         restore from the repo's own feeds (no nuget.org needed for this project). -->
+    <_PasskeysEfCoreVersion>11.0.0-preview.6.26325.125</_PasskeysEfCoreVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="$(_PasskeysEfCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(_PasskeysEfCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(_PasskeysEfCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(_PasskeysEfCoreVersion)" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(_PasskeysEfCoreVersion)" />
+  </ItemGroup>
+
+</Project>
