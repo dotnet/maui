@@ -122,9 +122,11 @@ function Initialize-AzDoToken {
     }
 
     try {
-        $token = & az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv 2>$null
-        if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($token)) {
-            $env:AZDO_TOKEN = $token.Trim()
+        $tokenResult = Invoke-ProcessWithGatherDeadline `
+            -FileName "az" `
+            -Arguments @("account", "get-access-token", "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--query", "accessToken", "-o", "tsv")
+        if ($tokenResult.exitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace([string]$tokenResult.stdout)) {
+            $env:AZDO_TOKEN = ([string]$tokenResult.stdout).Trim()
             $script:AzDoAuthSource = "Azure CLI"
         }
     }
@@ -132,8 +134,6 @@ function Initialize-AzDoToken {
         $script:AzDoAuthSource = "none"
     }
 }
-
-Initialize-AzDoToken
 
 function ConvertTo-Array {
     param([object]$Value)
@@ -171,19 +171,86 @@ function Get-GatherRequestTimeoutSeconds {
     return [Math]::Min($RequestedTimeoutSec, $remaining)
 }
 
+function Invoke-ProcessWithGatherDeadline {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FileName,
+        [string[]]$Arguments = @(),
+        [int]$RequestedTimeoutSec = 100
+    )
+
+    $timeoutSec = Get-GatherRequestTimeoutSeconds -RequestedTimeoutSec $RequestedTimeoutSec
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $FileName
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($argument in $Arguments) {
+        [void]$startInfo.ArgumentList.Add([string]$argument)
+    }
+
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw "Process '$FileName' could not be started."
+        }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($timeoutSec * 1000)) {
+            try {
+                $process.Kill($true)
+                $process.WaitForExit()
+            }
+            catch {
+                # The process may exit between the timeout and termination request.
+            }
+            throw "Process '$FileName' exceeded the ${timeoutSec}s gather request timeout."
+        }
+        return [pscustomobject]@{
+            exitCode = $process.ExitCode
+            stdout = $stdoutTask.GetAwaiter().GetResult()
+            stderr = $stderrTask.GetAwaiter().GetResult()
+        }
+    }
+    finally {
+        $process.Dispose()
+    }
+}
+
+Initialize-AzDoToken
+
 function Invoke-GhJson {
     param([string[]]$Arguments)
 
-    $output = & gh @Arguments 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "gh $($Arguments -join ' ') failed: $output"
+    $result = Invoke-ProcessWithGatherDeadline -FileName "gh" -Arguments $Arguments
+    if ($result.exitCode -ne 0) {
+        throw "gh $($Arguments -join ' ') failed: $($result.stderr) $($result.stdout)"
     }
 
-    if ([string]::IsNullOrWhiteSpace(($output | Out-String))) {
+    if ([string]::IsNullOrWhiteSpace([string]$result.stdout)) {
         return $null
     }
 
-    return ($output | Out-String) | ConvertFrom-Json
+    return [string]$result.stdout | ConvertFrom-Json
+}
+
+function Get-BoundedFailureText {
+    param(
+        [object]$Text,
+        [int]$MaxChars = 4000
+    )
+
+    if ($null -eq $Text) {
+        return ""
+    }
+    $value = [string]$Text
+    if ($MaxChars -le 0 -or $value.Length -le $MaxChars) {
+        return $value
+    }
+    $marker = "...[truncated]"
+    $prefixLength = [Math]::Max(0, $MaxChars - $marker.Length)
+    return $value.Substring(0, $prefixLength) + $marker
 }
 
 function Invoke-JsonUrl {
@@ -670,7 +737,7 @@ function Resolve-VisualEnvironmentName {
         return [string]$directHint.environmentName
     }
 
-    if ($IncompletePlatforms -contains "unknown" -or $IncompletePlatforms -contains $Platform) {
+    if ($IncompletePlatforms -contains $Platform) {
         return $null
     }
     $environmentNames = @($Hints |
@@ -932,7 +999,7 @@ function Get-TestFailuresFromLog {
             source = "azdo-log"
             logId = $LogId
             recordName = $RecordName
-            message = $message
+            message = Get-BoundedFailureText -Text $message
             excerpt = $context
         })
     }
@@ -1225,6 +1292,7 @@ function Invoke-HelixFileText {
         return $content
     }
     catch {
+        if ($null -ne $Truncated) { $Truncated.Value = $true }
         return $null
     }
 }
@@ -1304,7 +1372,7 @@ function Get-XUnitFailures {
             $fNode = $t.SelectSingleNode('*[local-name()="failure"]')
             if ($fNode) {
                 $mNode = $fNode.SelectSingleNode('*[local-name()="message"]')
-                if ($mNode) { $msg = [string]$mNode.InnerText }
+                if ($mNode) { $msg = Get-BoundedFailureText -Text $mNode.InnerText }
             }
             $failed.Add([ordered]@{
                 name = [string]$t.GetAttribute('name')
@@ -1329,7 +1397,7 @@ function Get-XUnitFailures {
         $emsg = ''
         $efNode = $e.SelectSingleNode('*[local-name()="failure"]')
         $emNode = if ($efNode) { $efNode.SelectSingleNode('*[local-name()="message"]') } else { $e.SelectSingleNode('*[local-name()="message"]') }
-        if ($emNode) { $emsg = [string]$emNode.InnerText }
+        if ($emNode) { $emsg = Get-BoundedFailureText -Text $emNode.InnerText }
         $failed.Add([ordered]@{
             name = $en
             type = [string]$e.GetAttribute('type')
@@ -1617,8 +1685,8 @@ function Get-BuildErrorsFromLog {
             logId = $LogId
             recordName = $RecordName
             errorFingerprint = $fingerprint
-            message = $message
-            excerpt = @($message)
+            message = Get-BoundedFailureText -Text $message
+            excerpt = @(Get-BoundedFailureText -Text $message)
         })
 
         if ($failures.Count -ge $MaxErrors) {
@@ -2278,14 +2346,29 @@ $pr = Invoke-GhJson -Arguments @(
 )
 
 $changedFiles = @()
-$diffOutput = & gh pr diff $PrNumber --repo $Repository --name-only 2>$null
-if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace(($diffOutput | Out-String))) {
-    $changedFiles = @($diffOutput | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+$diffResult = $null
+try {
+    $diffResult = Invoke-ProcessWithGatherDeadline `
+        -FileName "gh" `
+        -Arguments @("pr", "diff", "$PrNumber", "--repo", $Repository, "--name-only")
+}
+catch {
+    $diffResult = $null
+}
+if ($diffResult -and $diffResult.exitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace([string]$diffResult.stdout)) {
+    $changedFiles = @(([string]$diffResult.stdout -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 }
 else {
-    $apiOutput = & gh api "repos/$Repository/pulls/$PrNumber/files" --paginate --jq '.[].filename' 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        $changedFiles = @($apiOutput | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    try {
+        $apiResult = Invoke-ProcessWithGatherDeadline `
+            -FileName "gh" `
+            -Arguments @("api", "repos/$Repository/pulls/$PrNumber/files", "--paginate", "--jq", ".[].filename")
+        if ($apiResult.exitCode -eq 0) {
+            $changedFiles = @(([string]$apiResult.stdout -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        }
+    }
+    catch {
+        $changedFiles = @()
     }
 }
 
@@ -2652,7 +2735,6 @@ foreach ($buildRef in $buildRefsById.Values) {
         $sampledLogIds[[string]$sampledRecord.log.id] = $true
     }
     foreach ($unsampledRecord in @($failedRecords | Where-Object {
-                $_.result -eq "failed" -and
                 $_.log -and
                 $_.log.id -and
                 -not $sampledLogIds.ContainsKey([string]$_.log.id)
@@ -3284,7 +3366,7 @@ foreach ($buildRef in $buildRefsById.Values) {
                         resultId = $resultId
                         completedDate = $detail.completedDate
                         resultUrl = $resultUrl
-                        message = $message
+                        message = Get-BoundedFailureText -Text $message
                         kind = $snapshotInfo.kind
                         snapshotFileName = $snapshotInfo.snapshotFileName
                         description = $snapshotInfo.description
@@ -3420,7 +3502,18 @@ foreach ($buildRef in $buildRefsById.Values) {
                     $resultsUrl = "$baseUrl/_apis/test/Runs/$($run.id)/results?outcomes=Failed&api-version=7.1"
                     $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $gatherHardDeadline
                     $results = Invoke-JsonUrl -Url $resultsUrl -AllowAuth -TimeoutSec $requestTimeoutSec
-                    foreach ($result in (ConvertTo-Array $results.value)) {
+                    $resultValuesAll = @(ConvertTo-Array $results.value)
+                    $resultValues = @($resultValuesAll | Select-Object -First 200)
+                    if ($resultValuesAll.Count -gt $resultValues.Count) {
+                        $allUnexplainedLegs.Add([ordered]@{
+                                buildId = $buildRef.buildId
+                                recordName = "test-run $($run.id) result overflow ($($resultValuesAll.Count) failures, only $($resultValues.Count) retained)"
+                                logId = $null
+                                uninspected = $true
+                                runResultsOverflow = $true
+                            })
+                    }
+                    foreach ($result in $resultValues) {
                         $failure = [ordered]@{
                             testName = $result.testCaseTitle
                             automatedTestName = $result.automatedTestName
@@ -3432,8 +3525,8 @@ foreach ($buildRef in $buildRefsById.Values) {
                             runName = $run.name
                             outcome = $result.outcome
                             durationInMs = $result.durationInMs
-                            message = $result.errorMessage
-                            stackTrace = $result.stackTrace
+                            message = Get-BoundedFailureText -Text $result.errorMessage -MaxChars 4000
+                            stackTrace = Get-BoundedFailureText -Text $result.stackTrace -MaxChars 8000
                         }
                         $buildSummary.testResults += @($failure)
                         $allLogFailures.Add($failure)

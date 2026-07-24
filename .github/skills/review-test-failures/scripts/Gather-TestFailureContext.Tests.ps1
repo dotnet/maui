@@ -39,7 +39,9 @@ BeforeAll {
             'ConvertTo-Array',
             'Get-ObjectValue',
             'Get-GatherRequestTimeoutSeconds',
+            'Invoke-ProcessWithGatherDeadline',
             'Invoke-JsonUrl',
+            'Get-BoundedFailureText',
             'Get-HeaderValue',
             'Get-AzDoTestRuns',
             'Get-AzDoFailedTestResultsByBuild',
@@ -178,6 +180,36 @@ Describe 'Shared gather request deadline' {
                 $script:GatherHardDeadline = $priorDeadline.Value
             }
         }
+    }
+
+    It 'terminates a child process that exceeds the remaining gather timeout' {
+        $priorDeadline = Get-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+        $script:GatherHardDeadline = (Get-Date).AddSeconds(2)
+        try {
+            {
+                Invoke-ProcessWithGatherDeadline `
+                    -FileName 'pwsh' `
+                    -Arguments @('-NoLogo', '-NoProfile', '-Command', 'Start-Sleep -Seconds 5') `
+                    -RequestedTimeoutSec 1
+            } | Should -Throw '*exceeded*timeout*'
+        }
+        finally {
+            if ($null -eq $priorDeadline) {
+                Remove-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+            }
+            else {
+                $script:GatherHardDeadline = $priorDeadline.Value
+            }
+        }
+    }
+}
+
+Describe 'Untrusted failure text bounds' {
+    It 'caps long messages while preserving short text' {
+        Get-BoundedFailureText -Text 'short' -MaxChars 20 | Should -Be 'short'
+        $bounded = Get-BoundedFailureText -Text ('x' * 10000) -MaxChars 100
+        $bounded.Length | Should -Be 100
+        $bounded | Should -Match '\[truncated\]$'
     }
 }
 
