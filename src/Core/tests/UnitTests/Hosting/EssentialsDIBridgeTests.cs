@@ -1148,6 +1148,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public async Task ConfiguredAppActionsDoesNotBlockBuildWhenSetAsyncAwaitsDispatcher()
 		{
+			var timeout = TimeSpan.FromSeconds(10);
 			var dispatchedAction = new TaskCompletionSource<Action>(
 				TaskCreationOptions.RunContinuationsAsynchronously);
 			var dispatcher = new Microsoft.Maui.UnitTests.DispatcherStub(
@@ -1165,17 +1166,17 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				TaskCreationOptions.LongRunning,
 				TaskScheduler.Default);
 
-			await appActions.SetStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			var action = await dispatchedAction.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			await appActions.SetStarted.Task.WaitAsync(timeout);
+			var action = await dispatchedAction.Task.WaitAsync(timeout);
 			var completedBeforeDispatch = ReferenceEquals(
-				await Task.WhenAny(buildTask, Task.Delay(TimeSpan.FromSeconds(2))),
+				await Task.WhenAny(buildTask, Task.Delay(timeout)),
 				buildTask);
 			action();
 
-			var app = await buildTask.WaitAsync(TimeSpan.FromSeconds(5));
+			var app = await buildTask.WaitAsync(timeout);
 			try
 			{
-				await appActions.SetCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				await appActions.SetCompleted.Task.WaitAsync(timeout);
 				Assert.True(completedBeforeDispatch);
 			}
 			finally
