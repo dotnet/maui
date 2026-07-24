@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 	internal class MauiDoneAccessoryView : UIView
 	{
 		const double AccessoryHeight = 44;
+		const double GlassButtonBottomSpacing = 4;
 		const string DoneAccessoryIdentifier = "DoneAccessory";
 
 		// UIKit's localized "Done" label, matching UIBarButtonSystemItem.Done so VoiceOver keeps reading
@@ -117,8 +118,9 @@ namespace Microsoft.Maui.Platform
 			AddSubview(toolbar);
 		}
 
-		// iOS 26+: a floating Liquid Glass close button pinned to the trailing layout margin. Keep the
-		// original accessory height so UIKit continues scrolling focused input above the keyboard.
+		// iOS 26+: a floating Liquid Glass close button pinned to the trailing layout margin and lifted
+		// above the keyboard. Keep the original accessory height so UIKit continues scrolling focused
+		// input above the keyboard.
 		void InitializeGlassButton(EventHandler doneClicked)
 		{
 			ClipsToBounds = false;
@@ -131,7 +133,7 @@ namespace Microsoft.Maui.Platform
 			{
 				button.WidthAnchor.ConstraintEqualTo((nfloat)AccessoryHeight),
 				button.HeightAnchor.ConstraintEqualTo((nfloat)AccessoryHeight),
-				button.CenterYAnchor.ConstraintEqualTo(CenterYAnchor),
+				button.CenterYAnchor.ConstraintEqualTo(CenterYAnchor, -(nfloat)GlassButtonBottomSpacing),
 				button.TrailingAnchor.ConstraintEqualTo(LayoutMarginsGuide.TrailingAnchor),
 			});
 		}
