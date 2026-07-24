@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
 using UIKit;
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The mapper is static shared handler metadata and is not retained by renderer instances.")]
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper)
 			{
@@ -26,6 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
 			= new CommandMapper<Frame, FrameRenderer>(VisualElementRendererCommandMapper);
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The frame content view is owned by the renderer and disposed in Dispose.")]
 		FrameView _actualView;
 		CGSize _previousSize;
 		bool _isDisposed;

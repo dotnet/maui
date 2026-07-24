@@ -509,6 +509,52 @@ public partial class TwoWayNoWarningPage : ContentPage
 	}
 
 	[Fact]
+	public void GetOnlyStructIntermediate_OnTwoWayProperty_ReportsMAUIX2017AndOmitsSetter()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.ReadOnlyStructIntermediatePage"
+             x:DataType="local:ReadOnlyStructViewModel">
+    <Entry Text="{ReadOnlyMargin.Top}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class ReadOnlyStructViewModel
+{
+	public Microsoft.Maui.Thickness ReadOnlyMargin { get; } = new Microsoft.Maui.Thickness(1, 2, 3, 4);
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class ReadOnlyStructIntermediatePage : ContentPage
+{
+	public ReadOnlyStructIntermediatePage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		var diagnostic = Assert.Single(result.Diagnostics.Where(d => d.Id == "MAUIX2017"));
+		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+		Assert.Contains("ReadOnlyMargin.Top", diagnostic.GetMessage(), StringComparison.Ordinal);
+
+		Assert.NotNull(output);
+		Assert.Contains("TypedBinding<global::TestApp.ReadOnlyStructViewModel, double>", output, StringComparison.Ordinal);
+		Assert.Matches(@"__source\s*=>\s*\(__source\.ReadOnlyMargin\.Top,\s*true\),\s*null,", output);
+		Assert.DoesNotContain("__source.ReadOnlyMargin.Top = __value", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void NullConditionalAccess_OnTwoWayProperty_IsSettable()
 	{
 		// Null-conditional access (?.) IS settable in C# 14+ (guaranteed on .NET 10+)
