@@ -19,7 +19,27 @@ public static class DataStreamsHelper
 	public static string[] GetFileLines(string fileName)
 	{
 		var path = GetFile(fileName);
-		return File.ReadAllLines(path);
+		return ReadAllLinesShared(path);
+	}
+
+	// Reads all lines from a file while allowing other readers/writers to keep the
+	// file open concurrently. Test classes run in parallel and multiple theories read
+	// the same shared TestData files, which can otherwise race and throw an IOException
+	// ("The process cannot access the file because it is being used by another process")
+	// on Windows. Opening with FileShare.ReadWrite makes the shared reads deterministic.
+	public static string[] ReadAllLinesShared(string path)
+	{
+		using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+		using var reader = new StreamReader(stream);
+
+		var lines = new List<string>();
+		string? line;
+		while ((line = reader.ReadLine()) is not null)
+		{
+			lines.Add(line);
+		}
+
+		return lines.ToArray();
 	}
 
 	public static IEnumerable<object[]> JsonlItineraries

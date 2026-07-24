@@ -20,7 +20,7 @@ public partial class JsonStreamChunkerTests
 
 			// Arrange
 			var chunker = new JsonStreamChunker();
-			var lines = File.ReadAllLines(filePath);
+			var lines = DataStreamsHelper.ReadAllLinesShared(filePath);
 
 			// Act
 			var chunks = new List<string>();

@@ -18,7 +18,7 @@ public partial class StreamingJsonDeserializerTests
 		{
 			_ = fileName; // Used for test display name
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
-			var chunks = File.ReadAllLines(filePath);
+			var chunks = DataStreamsHelper.ReadAllLinesShared(filePath);
 
 			Itinerary? lastItinerary = null;
 
@@ -41,7 +41,7 @@ public partial class StreamingJsonDeserializerTests
 		{
 			_ = fileName; // Used for test display name
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
-			var chunks = File.ReadAllLines(filePath);
+			var chunks = DataStreamsHelper.ReadAllLinesShared(filePath);
 
 			Itinerary? finalItinerary = null;
 
@@ -65,7 +65,7 @@ public partial class StreamingJsonDeserializerTests
 		public void ProcessChunk_TxtFile_ShouldProgressDaysArray(string fileName, string filePath)
 		{
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
-			var chunks = File.ReadAllLines(filePath);
+			var chunks = DataStreamsHelper.ReadAllLinesShared(filePath);
 
 			var daysProgression = new List<(int ChunkNumber, int? DaysCount, int? ActivitiesInFirstDay)>();
 
@@ -98,7 +98,7 @@ public partial class StreamingJsonDeserializerTests
 		public void ProcessChunk_TxtFile_ShouldProgressTitleField(string fileName, string filePath)
 		{
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
-			var chunks = File.ReadAllLines(filePath);
+			var chunks = DataStreamsHelper.ReadAllLinesShared(filePath);
 
 			var titleProgression = new List<string?>();
 
@@ -129,7 +129,7 @@ public partial class StreamingJsonDeserializerTests
 		{
 			_ = fileName; // Used for test display name
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
-			var chunks = File.ReadAllLines(filePath);
+			var chunks = DataStreamsHelper.ReadAllLinesShared(filePath);
 
 			foreach (var chunk in chunks)
 			{
@@ -152,7 +152,7 @@ public partial class StreamingJsonDeserializerTests
 			// partial property values, or unchanged content - 70% is a reasonable threshold.
 
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
-			var chunks = File.ReadAllLines(filePath);
+			var chunks = DataStreamsHelper.ReadAllLinesShared(filePath);
 
 			string? previousJson = null;
 			int totalChunks = 0;
