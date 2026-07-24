@@ -49,7 +49,7 @@ Phase 2 uses these 4 AI models (run SEQUENTIALLY — they modify the same files)
 
 | Order | Model |
 |-------|-------|
-| 1 | `claude-opus-4.8` |
+| 1 | `claude-opus-5` |
 | 2 | `claude-sonnet-5` |
 | 3 | `gpt-5.3-codex` |
 | 4 | `gpt-5.6-sol` |
@@ -108,7 +108,7 @@ The purpose is NOT to re-test the PR's fix, but to:
 
 ### Checklist (you MUST complete ALL of these)
 
-- [ ] Attempt 1 launched with claude-opus-4.8
+- [ ] Attempt 1 launched with claude-opus-5
 - [ ] `try-fix/content.md` updated with attempt 1 result
 - [ ] Attempt 2 launched with claude-sonnet-5
 - [ ] `try-fix/content.md` updated with attempt 2 result

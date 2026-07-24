@@ -53,7 +53,7 @@ permissions:
   issues: read
   pull-requests: read
 
-model: claude-opus-4.8
+model: claude-opus-5
 engine:
   id: copilot
   env:

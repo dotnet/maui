@@ -217,7 +217,7 @@ permissions:
   actions: read
   checks: read
 
-model: claude-opus-4.8
+model: claude-opus-5
 engine:
   id: copilot
   env:
