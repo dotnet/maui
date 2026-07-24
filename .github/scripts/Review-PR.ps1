@@ -121,6 +121,11 @@ $runGate          = -not $Phase -or $Phase -eq 'Gate'
 $runCopilotReview = -not $Phase -or $Phase -eq 'CopilotReview'
 $runPost          = -not $Phase -or $Phase -eq 'Post'
 
+function Test-PhaseRequiresReviewWorktree {
+    param([string]$PhaseName)
+    return $PhaseName -in @('Gate', 'CopilotReview')
+}
+
 # Resolve the scripts directory — use TrustedScriptsDir if provided (CI),
 # otherwise use the repo's own .github/ directory (local dev).
 $ScriptsDir    = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts' }     else { $PSScriptRoot }
@@ -402,7 +407,7 @@ if ($DryRun) {
 
 # End of Setup phase — write sentinel and exit early
 if ($Phase -eq 'Setup') {
-    # Sentinel signals to Tasks 2-4 that Setup completed successfully (PR merged).
+    # Sentinel signals to the Gate and CopilotReview phases that Setup completed successfully.
     $sentinelDir = if ($TrustedScriptsDir) {
         Split-Path $TrustedScriptsDir -Parent
     } else {
@@ -457,8 +462,8 @@ function Restore-TrustedScripts {
     }
 }
 
-# ─── Sentinel check: verify Setup completed before running later phases ───
-if ($Phase -and $Phase -ne 'Setup') {
+# ─── Sentinel check: verify Setup completed before running worktree phases ───
+if (Test-PhaseRequiresReviewWorktree -PhaseName $Phase) {
     $sentinelDir = if ($TrustedScriptsDir) {
         Split-Path $TrustedScriptsDir -Parent
     } else {

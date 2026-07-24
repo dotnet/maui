@@ -867,39 +867,6 @@ stages:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
 
-          # ─────────────────────────────────────────────────────────
-          #  Task 4 — POST: gate comment, AI summary, labels.
-          #  env: GH_TOKEN (for posting comments).
-          # ─────────────────────────────────────────────────────────
-          - bash: |
-              echo "═══ TASK 4: POST ═══"
-              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
-
-              set +e
-              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
-                -PRNumber "${PARAM_PR_NUMBER}" \
-                -Platform "${{ parameters.Platform }}" \
-                -Phase Post \
-                -TrustedScriptsDir "$TRUSTED" \
-                -TrustedGateResult "$(RunGate.gateResult)" \
-                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
-                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
-              POST_EXIT=$?
-              set -e
-
-              if [ $POST_EXIT -ne 0 ]; then
-                echo "##vso[task.logissue type=error]Post phase failed with exit code $POST_EXIT"
-                echo "##vso[task.setvariable variable=CopilotFailed]true"
-              fi
-
-              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
-            name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryReviewId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId']). Note: detectedCategories comes from RunGate, not RunPost.
-            displayName: 'Task 4: Post (comments + labels)'
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
-              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
-              DEFER_COMMENT_TO_STAGE3: "true"
-
           # Copy review artifacts into the CopilotLogs staging dir.
           # Uses pwsh (not bash) so paths resolve correctly on Windows.
           - pwsh: |
@@ -969,6 +936,105 @@ stages:
               fi
               exit $FAILED
             displayName: 'Check Review Result'
+            condition: succeededOrFailed()
+
+      - job: PostReview
+        displayName: 'Post review results'
+        dependsOn: CopilotReview
+        condition: in(dependencies.CopilotReview.result, 'Succeeded', 'SucceededWithIssues', 'Failed')
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 30
+        variables:
+          trustedGateResult: $[ dependencies.CopilotReview.outputs['RunGate.gateResult'] ]
+        steps:
+          - checkout: self
+            fetchDepth: 1
+            clean: true
+            persistCredentials: false
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download CopilotLogs'
+            inputs:
+              buildType: 'current'
+              artifactName: 'CopilotLogs'
+              targetPath: '$(Pipeline.Workspace)/CopilotLogs'
+            continueOnError: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $source = Join-Path "$(Pipeline.Workspace)/CopilotLogs" "CustomAgentLogsTmp"
+              $target = Join-Path "$(System.DefaultWorkingDirectory)" "CustomAgentLogsTmp"
+              if (Test-Path -LiteralPath $target) {
+                Remove-Item -LiteralPath $target -Recurse -Force
+              }
+
+              if (Test-Path -LiteralPath $source -PathType Container) {
+                $linkedItems = @(
+                  Get-Item -LiteralPath $source -Force
+                  Get-ChildItem -LiteralPath $source -Recurse -Force
+                ) | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
+                if ($linkedItems.Count -gt 0) {
+                  throw "CopilotLogs contains unsupported linked items."
+                }
+
+                Copy-Item -LiteralPath $source -Destination $target -Recurse
+              } else {
+                Write-Host "##vso[task.logissue type=warning]CustomAgentLogsTmp was not found in CopilotLogs."
+                New-Item -ItemType Directory -Force -Path $target | Out-Null
+              }
+
+              $gateResult = "$(trustedGateResult)"
+              if ($gateResult -notin @('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED')) {
+                $gateResult = 'INCONCLUSIVE'
+              }
+              $gateDir = Join-Path $target "PRState/${{ parameters.PRNumber }}/PRAgent/gate"
+              New-Item -ItemType Directory -Force -Path $gateDir | Out-Null
+              Set-Content -LiteralPath (Join-Path $gateDir "gate-result.txt") -Value $gateResult -Encoding utf8 -NoNewline
+              New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/copilot-logs" | Out-Null
+            displayName: 'Prepare review results'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $expectedCommit = "$(Build.SourceVersion)"
+              $actualCommit = (git rev-parse HEAD).Trim()
+              if ($actualCommit -ne $expectedCommit) {
+                throw "Unexpected pipeline revision."
+              }
+
+              git diff --exit-code -- .github/scripts .github/skills eng/scripts
+              if ($LASTEXITCODE -ne 0) {
+                throw "Pipeline scripts differ from the checked-out revision."
+              }
+            displayName: 'Check pipeline revision'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              & pwsh -NoProfile -File ./.github/scripts/Review-PR.ps1 `
+                -PRNumber "${env:PARAM_PR_NUMBER}" `
+                -Platform "${{ parameters.Platform }}" `
+                -Phase Post `
+                -TrustedGateResult "$(trustedGateResult)" `
+                -TokenUsageOutputDir "$(Pipeline.Workspace)/CopilotLogs/copilot-token-usage/raw" `
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              if ($LASTEXITCODE -ne 0) {
+                Write-Host "##vso[task.logissue type=error]Post phase failed with exit code $LASTEXITCODE"
+                exit $LASTEXITCODE
+              }
+            name: RunPost
+            displayName: 'Task 4: Post (comments + labels)'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              DEFER_COMMENT_TO_STAGE3: "true"
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Copilot Post Logs'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs'
+              artifact: 'CopilotPostLogs'
+              publishLocation: 'pipeline'
             condition: succeededOrFailed()
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -1617,7 +1683,7 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['CopilotReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
     jobs:
       - job: UpdateComment
         displayName: 'Post AI summary review with deep test results'
@@ -1626,7 +1692,7 @@ stages:
         # this just makes the value available as $(aiSummaryReviewId)
         # inside the steps.
         variables:
-          aiSummaryReviewId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId'] ]
+          aiSummaryReviewId: $[ stageDependencies.ReviewPR.PostReview.outputs['RunPost.aiSummaryReviewId'] ]
           # Trusted gate verdict from the Gate task (frozen pre-agent). Passed to the post script
           # so the APPROVE veto does not trust the agent-writable gate-result.txt in the artifact.
           trustedGateResult: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.gateResult'] ]
