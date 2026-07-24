@@ -142,7 +142,7 @@ on:
         if [ -n "${CHECK_NAME:-}" ]; then
           args+=(-CheckName "${CHECK_NAME}")
         fi
-        timeout 20m pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
+        timeout -k 30s 20m pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
     - name: Publish visual comparison assets
       if: >-
         steps.exact_command.outputs.should_run == 'true' &&
@@ -156,7 +156,7 @@ on:
       run: |
         set -euo pipefail
         context="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/context.json"
-        timeout 16m pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
+        timeout -k 30s 16m pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
           -PrNumber "${PR_NUMBER}" \
           -ContextJsonPath "${context}"
     - name: Upload test-failure context

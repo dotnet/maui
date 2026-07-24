@@ -187,16 +187,16 @@ function Remove-InlineVisualSection {
         if ($ReplaceExistingTrustedSection -and $hasTrustedHeading) {
             return ""
         }
-        # Marker text in fresh agent output is untrusted. Preserve the analysis, but neutralize a
-        # forged trusted heading so it cannot masquerade as the post-step section inserted below.
-        if (-not $ReplaceExistingTrustedSection -and $hasTrustedHeading) {
-            return [regex]::Replace(
-                $content,
-                '^\s*### Visual failure comparisons',
-                "### Agent-provided visual text (untrusted)",
-                [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-        }
-        return $content
+        # Marker text that did not come from a replaceable persisted trusted section is untrusted.
+        # Preserve it for diagnosis, but render it inert so forged labels, links, images, and HTML
+        # cannot masquerade as the trusted visual section inserted by this post-step.
+        $encoded = [System.Net.WebUtility]::HtmlEncode($content)
+        return @"
+
+> Agent-provided marker-wrapped text was neutralized and is not trusted visual evidence.
+<pre><code>$encoded</code></pre>
+
+"@
     }
     return $regex.Replace($Body, $evaluator)
 }
