@@ -62,9 +62,15 @@ namespace Microsoft.Maui.Platform
 
 			if (paint.IsNullOrEmpty())
 			{
-				// Reset to clear background for buttons when paint is null.
-				// UIColor.Clear ensures proper transparency when VisualState setters are unapplied.
-				platformButton.BackgroundColor = UIColor.Clear;
+				// Only reset to UIColor.Clear when the button is already attached to a window.
+				// During initial property mapping (ConnectHandler), Window is null because the view
+				// hasn't been added to the hierarchy yet — skipping here preserves native BackgroundColor
+				// set by custom UIButton subclasses. Once live on screen, null means a VisualState
+				// transition back to Normal, so we do reset. Mirrors the same guard in UpdateTextColor.
+				if (platformButton.Window is UIWindow window)
+				{
+					platformButton.BackgroundColor = UIColor.Clear;
+				}
 				return;
 			}
 
