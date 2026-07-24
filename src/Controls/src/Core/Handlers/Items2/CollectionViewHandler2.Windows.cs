@@ -36,6 +36,10 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 {
 	bool _ignorePlatformSelectionChange;
 	bool _selectionDirty;
+	// Prevents MapSelectedItem from calling UpdatePlatformSelection when
+	// UpdateVirtualSingleSelection is writing SelectedItem in response to a
+	// platform tap — otherwise the null-item WinUI selection gets undone.
+	bool _ignoreVirtualSelectionChange;
 
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
@@ -75,6 +79,13 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 	public static void MapSelectedItem(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+		// When UpdateVirtualSingleSelection sets SelectedItem in response to a platform
+		// tap, skip the round-trip back to UpdatePlatformSelection. Without this guard,
+		// tapping a null item causes: WinUI selects null → SelectedItem = null →
+		// MapSelectedItem → UpdatePlatformSelection → DeselectAll (undoes the selection).
+		if (handler._ignoreVirtualSelectionChange)
+			return;
+
 		handler.UpdatePlatformSelection();
 	}
 
@@ -277,7 +288,10 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			if (itemContainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
 			{
 				var actualItem = visualElement.BindingContext;
-				bool isSelected = object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem);
+				// Guard against false positives for null items: object.Equals(null, null) = true would
+				// mark every null-item container as Selected whenever SelectedItem is null (no selection).
+				bool isSelected = actualItem is not null &&
+					(object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem));
 				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
 
 				// When the item template defines a "Selected" visual state, MAUI
@@ -313,10 +327,24 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			? itemPair.Item
 			: PlatformView.SelectedItem;
 
+		// Detach the SelectionChanged event handler and set a flag to prevent MapSelectedItem
+		// from calling UpdatePlatformSelection when SelectedItem is set. This breaks the
+		// round-trip: WinUI selects item → SelectedItem = item → MapSelectedItem → 
+		// UpdatePlatformSelection (which would undo the selection). Both fire synchronously; 
+		// the flag and handler are restored after. Try/finally ensures the flag and event
+		// handler are always restored even if a BindableProperty callback or user
+		// PropertyChanged handler throws.
+		_ignoreVirtualSelectionChange = true;
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
-		ItemsView.SelectedItem = selectedItem;
-
-		ItemsView.SelectionChanged += VirtualSelectionChanged;
+		try
+		{
+			ItemsView.SelectedItem = selectedItem;
+		}
+		finally
+		{
+			ItemsView.SelectionChanged += VirtualSelectionChanged;
+			_ignoreVirtualSelectionChange = false;
+		}
 	}
 
 	void UpdateVirtualMultipleSelection()
