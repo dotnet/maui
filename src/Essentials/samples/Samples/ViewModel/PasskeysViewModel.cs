@@ -28,8 +28,8 @@ namespace Samples.ViewModel
 		// (localhost / 10.0.2.2 only exercises the round-trip and can be added back later.)
 		string serverBaseUrl = "https://your-tunnel-5177.devtunnels.ms";
 
-		string username = "alice@example.com";
-		string password = "Passw0rd!";
+		string username = string.Empty;
+		string password = string.Empty;
 		string status = string.Empty;
 
 		HttpClient httpClient;
