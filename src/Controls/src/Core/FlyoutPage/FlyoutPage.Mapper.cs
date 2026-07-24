@@ -1,5 +1,8 @@
 using System;
-using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Handlers;
+#if IOS || MACCATALYST
+using UIKit;
+#endif
 
 namespace Microsoft.Maui.Controls
 {
@@ -9,7 +12,20 @@ namespace Microsoft.Maui.Controls
 		internal new static void RemapForControls()
 		{
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(FlyoutLayoutBehavior), MapFlyoutLayoutBehavior);
-#if IOS
+#if IOS || MACCATALYST
+			// Fill configuration record (Core → Controls bridge)
+			FlyoutViewHandler.ControlsConfiguration = new(
+				OnPresentedChangedByGesture: FlyoutPage.OnPresentedChangedByGesture,
+				OnLayoutBoundsChanged: FlyoutPage.OnLayoutBoundsChanged,
+				OnLeftBarButtonNeedsUpdate: FlyoutPage.OnLeftBarButtonNeedsUpdate,
+				OnHandlerDisconnected: FlyoutPage.OnHandlerDisconnected
+			);
+
+			// iOS-specific property mappers
+			FlyoutViewHandler.Mapper.AppendToMapping(
+				PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName,
+				MapApplyShadow);
+			FlyoutViewHandler.Mapper.AppendToMapping(nameof(IView.FlowDirection), MapFlowDirection);
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty), MapPrefersHomeIndicatorAutoHiddenProperty);
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty), MapPrefersPrefersStatusBarHiddenProperty);
 #endif
@@ -23,15 +39,21 @@ namespace Microsoft.Maui.Controls
 			handler.UpdateValue(nameof(IFlyoutView.FlyoutBehavior));
 		}
 
-#if IOS
+#if IOS || MACCATALYST
 		internal static void MapPrefersHomeIndicatorAutoHiddenProperty(IFlyoutViewHandler handler, IFlyoutView view)
 		{
-			handler.UpdateValue(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty));
+			if (handler is IPlatformViewHandler { ViewController: { } vc })
+			{
+				vc.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			}
 		}
 
 		internal static void MapPrefersPrefersStatusBarHiddenProperty(IFlyoutViewHandler handler, IFlyoutView view)
 		{
-			handler.UpdateValue(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty));
+			if (handler is IPlatformViewHandler { ViewController: { } vc })
+			{
+				vc.SetNeedsStatusBarAppearanceUpdate();
+			}
 		}
 #endif
 
