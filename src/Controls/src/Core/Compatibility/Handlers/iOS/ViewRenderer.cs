@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using System.Diagnostics.CodeAnalysis;
+using CoreGraphics;
 using UIKit;
 using PlatformView = UIKit.UIView;
 
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		where TElement : View, IView
 		where TPlatformView : PlatformView
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The native view is cleared in DisconnectHandlerCore before the renderer disconnects.")]
 		TPlatformView? _nativeView;
 
 		public TPlatformView? Control
