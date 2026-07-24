@@ -48,6 +48,10 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	// This prevents Activity B from overwriting Activity A's pending request.
 	readonly ConditionalWeakTable<ComponentActivity, TaskCompletionSource<TResult>> _pendingRequests = new();
 
+	// Strong reference to the launching activity — prevents GC from collecting the CWT entry
+	// before Register() can migrate the TCS to the new activity after a config change.
+	volatile ComponentActivity _inFlightActivity;
+
 	/// <summary>
 	/// Gets a value indicating whether the request has a launcher registered for the
 	/// currently focused activity.
@@ -71,6 +75,9 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		if (_activityLaunchers.TryGetValue(componentActivity, out _))
 			return;
 
+		// Migrate pending TCS from the old activity to the new one on config change (e.g. rotation).
+		MigratePendingRequests(componentActivity);
+
 		var contract = new TContract();
 
 		// CRITICAL: capture the same `componentActivity` instance the launcher is being
@@ -83,6 +90,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		var registeredActivity = componentActivity;
 		var callback = new ActivityResultCallback<TResult>(result =>
 		{
+			_inFlightActivity = null;
 			if (_pendingRequests.TryGetValue(registeredActivity, out var tcs))
 			{
 				_pendingRequests.Remove(registeredActivity);
@@ -147,6 +155,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		var tcs = new TaskCompletionSource<TResult>();
 		_pendingRequests.Add(launchingActivity, tcs);
+		_inFlightActivity = launchingActivity;
 
 		// Get the launcher for this specific activity
 		if (!_activityLaunchers.TryGetValue(launchingActivity, out var launcher))
@@ -156,6 +165,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
 			                """);
 			_pendingRequests.Remove(launchingActivity);
+			_inFlightActivity = null;
 			tcs.SetCanceled();
 			return tcs.Task;
 		}
@@ -167,6 +177,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		catch (Exception ex)
 		{
 			_pendingRequests.Remove(launchingActivity);
+			_inFlightActivity = null;
 			tcs.TrySetException(ex);
 		}
 
@@ -197,5 +208,32 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 
 		return null;
+	}
+
+	/// <summary>
+	/// Migrates any pending TCS from the old (destroyed) activity to the new activity
+	/// during a configuration change, so the result callback can find the TCS under the
+	/// new activity's key.
+	/// </summary>
+	void MigratePendingRequests(ComponentActivity newActivity)
+	{
+		var oldActivity = _inFlightActivity;
+		if (oldActivity is null || ReferenceEquals(oldActivity, newActivity))
+		{
+			return;
+		}
+
+		// Only migrate on config change — not when the activity was finished normally.
+		if (!oldActivity.IsChangingConfigurations)
+		{
+			return;
+		}
+
+		if (_pendingRequests.TryGetValue(oldActivity, out var tcs))
+		{
+			_pendingRequests.Remove(oldActivity);
+			_pendingRequests.Add(newActivity, tcs);
+			_inFlightActivity = newActivity;
+		}
 	}
 }
