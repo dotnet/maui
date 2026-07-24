@@ -1,6 +1,5 @@
 using Android.Webkit;
 using Java.Interop;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Platform;
 
@@ -190,7 +189,7 @@ internal static class RefreshViewWebViewScrollCapture
 	// Returns null when the WebView is not inside a RefreshView.
 	internal static ScrollCaptureState? GetAttachedState(WebView? webView) => GetState(webView);
 
-	internal sealed class ScrollCaptureState : Java.Lang.Object
+	internal sealed class ScrollCaptureState : RefreshViewJavaScriptInterface
 	{
 		// These fields are written from the JavaBridge thread (via [JavascriptInterface])
 		// and read from the UI thread, so they must be volatile to ensure visibility on ARM.
@@ -205,9 +204,7 @@ internal static class RefreshViewWebViewScrollCapture
 		internal bool HasReportedState => _hasReportedState;
 
 		[JavascriptInterface]
-		[RequiresUnreferencedCode("Java.Interop.Export uses dynamic features.")]
-		[Export("setCanScrollUp")]
-		public void SetCanScrollUp(bool canScrollUp)
+		public override void SetCanScrollUp(bool canScrollUp)
 		{
 			if (_detached)
 			{
