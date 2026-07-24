@@ -2101,13 +2101,21 @@ No tests were detected in this PR.
     } else {
         $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "INCONCLUSIVE" { "⚠️" } default { "❌" } }
         $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
-        # When the report is missing because the CI agent could not boot a device (infra), say
-        # so plainly instead of the alarming "exited before writing a report" — the INCONCLUSIVE
-        # verdict is correct and the PR itself is fine. (PRs #35706 iOS, #36572 Android.)
+        # When the report is missing, explain WHY as specifically as the log allows
+        # instead of the alarming, generic "exited before writing a report". Each
+        # branch gives an honest root cause + a clear next step so an INCONCLUSIVE
+        # gate never looks like a PR problem. (PRs #35706 iOS, #36572 Android boot;
+        # #36109 exit-3 infra; #36209 device-test app crash before writing results.)
         $gateLeadIn = if ($gateLogTail -match '(?i)Failed to boot device|No (?:iPhone|iPad|iOS|Android)\b[^\n]*simulator found|Invalid runtime:|Failed to create (?:iPhone|iPad)') {
-            "> ⚠️ The gate could not run: the $($gatePlatform.ToUpper()) simulator/emulator failed to boot on the CI agent (transient infra). This is **not** a problem with the PR — comment ``/review rerun`` to try again."
+            "> ⚠️ The gate could not run: the $($gatePlatform.ToUpper()) simulator/emulator failed to boot on the CI agent (transient infra). This is **not** a problem with the PR — comment ``/review`` to try again."
+        } elseif ($gateLogTail -match '(?i)empty or not valid XML|likely crashed or exited before writing|app likely crashed|APP_CRASH|XHarness exit code:\s*80|test result file[^\n]*is empty') {
+            "> ⚠️ The gate launched the test app but it **crashed or exited before writing its results** on the CI agent, so no pass/fail could be recorded (the result file was empty/invalid). This is almost always a transient app/infrastructure flake — **not** a problem with your PR. Comment ``/review`` to retry on a fresh agent."
+        } elseif ($gateLogTail -match '(?i)APP_LAUNCH_FAILURE|XHarness exit code:\s*83|could not find/launch the app|package[^\n]*install[^\n]*fail|XHarness exit 78') {
+            "> ⚠️ The gate could not **launch** the test app on the CI agent (app install/launch failure — transient infra), so the fix could not be verified. This is **not** a problem with your PR. Comment ``/review`` to retry on a fresh agent."
+        } elseif ($gateExitCode -eq 3) {
+            "> ⚠️ The gate could not **conclusively** verify the fix on this run: it hit an environment/infrastructure error while building or running the tests (exit code 3 = INCONCLUSIVE), so no reliable pass/fail was produced. This is **not** a problem with your PR — comment ``/review`` to retry on a fresh agent. The diagnostics below show what was captured before it stopped."
         } else {
-            "> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report. Diagnostics below."
+            "> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report (exit code ``$gateExitCode``). This is usually a transient CI-agent issue, **not** a problem with your PR — comment ``/review`` to retry. Diagnostics below."
         }
         @"
 ### Gate Result: $resultIcon $gateResult

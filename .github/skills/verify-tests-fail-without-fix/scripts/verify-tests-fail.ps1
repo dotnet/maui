@@ -1919,6 +1919,17 @@ function Write-MarkdownReport {
         }
         # else: leave $failureClassification unset; the per-test table + Failure Details below tell the story.
     }
+    elseif ($hasEnvError -and -not $VerificationPassed) {
+        # The classification chain above is skipped when $hasEnvError is set, which
+        # previously left the INCONCLUSIVE report with no explanation — only bare
+        # "⚠️ ENV ERROR" cells (e.g. #36209: the Windows device-test app crashed
+        # before writing its result XML). Surface a clear, honest cause so the reader
+        # knows it is infrastructure, not a test/PR failure, and what to do next.
+        $envExcerpt = @($WithoutFixResultsList + $WithFixResultsList |
+            Where-Object { $_.EnvError -and $_.Error } | ForEach-Object { $_.Error } | Select-Object -First 1)
+        $envExcerptLine = if ($envExcerpt) { "`n> ``$envExcerpt``" } else { "" }
+        $failureClassification = "🩺 **Could not verify — environment/infrastructure error.** The gate ran the tests but hit an environment error (the test app crashed or exited before writing its results, an emulator/simulator/Appium/XHarness flake, or an empty/invalid result file), so it could not record a real pass/fail. The ⚠️ ENV ERROR marks below are **infrastructure**, not test failures — this is **not** a problem with your PR. Comment ``/review`` to retry on a fresh agent.$envExcerptLine"
+    }
 
     $lines = @()
     $lines += "### Gate Result: $status"
