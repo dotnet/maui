@@ -213,9 +213,9 @@ function Add-RegressionEvidenceFailure([string]$Context) {
 }
 
 function ConvertFrom-GhJsonArrayResult {
-    param($Raw, [string]$Context)
+    param($Raw, [string]$Context, [switch]$SuppressRegressionFailure)
     if ($null -eq $Raw) {
-        Add-RegressionEvidenceFailure $Context
+        if (-not $SuppressRegressionFailure) { Add-RegressionEvidenceFailure $Context }
         return [PSCustomObject]@{ Success = $false; Items = @() }
     }
     try {
@@ -225,7 +225,7 @@ function ConvertFrom-GhJsonArrayResult {
         if ($null -eq $items -or $items -isnot [System.Array]) { throw 'expected a JSON array' }
         return [PSCustomObject]@{ Success = $true; Items = @($items) }
     } catch {
-        Add-RegressionEvidenceFailure "$Context ($($_.Exception.Message))"
+        if (-not $SuppressRegressionFailure) { Add-RegressionEvidenceFailure "$Context ($($_.Exception.Message))" }
         return [PSCustomObject]@{ Success = $false; Items = @() }
     }
 }
@@ -2624,13 +2624,31 @@ function Test-PrNumberOnBranch {
 
 function Get-BackportPrsForSr {
     param($Repo, $SrBranch, $SourcePrNumber)
-    # Look for any PR targeting the SR branch that mentions the source PR
+    # Search broadly, then require explicit source→backport lineage before a
+    # result can prove fix presence. A bare contextual mention is not lineage.
     $raw = Invoke-Gh @('pr', 'list', '--repo', $Repo, '--base', $SrBranch,
                        '--state', 'all', '--search', "$SourcePrNumber in:title,body",
-                       '--json', 'number,title,state,mergedAt,closedAt', '--limit', '20')
+                       '--json', 'number,title,body,headRefName,state,mergedAt,closedAt', '--limit', '21')
     $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "backport lookup for source PR #$SourcePrNumber failed"
     if (-not $parsed.Success) { return @() }
-    return @($parsed.Items)
+    $items = @($parsed.Items)
+    if ($items.Count -gt 20) {
+        Add-RegressionEvidenceFailure "backport lookup for source PR #$SourcePrNumber exceeded the 20-result evidence cap"
+        $items = @($items | Select-Object -First 20)
+    }
+    return @($items | Where-Object { Test-IsExplicitBackportForSource -Pr $_ -SourcePrNumber $SourcePrNumber })
+}
+
+function Test-IsExplicitBackportForSource {
+    param($Pr, [int]$SourcePrNumber)
+    if (-not $Pr -or -not $SourcePrNumber) { return $false }
+
+    $body = [string](Get-MetadataValue -Container $Pr -Name 'body' -Default '')
+    $head = [string](Get-MetadataValue -Container $Pr -Name 'headRefName' -Default '')
+    if ($body -match "(?im)\bbackport\s+of\s+#$SourcePrNumber\b") { return $true }
+    if ($body -match "(?im)\bcherry[-\s]picked\s+from(?:\s+PR)?\s+#$SourcePrNumber\b") { return $true }
+    if ($head -match "(?i)^backport/pr-$SourcePrNumber-to-") { return $true }
+    return $false
 }
 
 function Resolve-ClosedFixUnlinked {
@@ -3461,10 +3479,20 @@ function Get-OpenSrPrs {
     param($Ctx)
     Write-Host "Listing open PRs targeting $($Ctx.srBranch)..." -ForegroundColor Cyan
     $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--base', $Ctx.srBranch,
-                       '--state', 'open', '--limit', '100',
+                       '--state', 'open', '--limit', '101',
                        '--json', 'number,title,author,isDraft,createdAt,updatedAt,labels,reviewDecision')
-    if (-not $raw) { return @() }
-    return @($raw | ConvertFrom-Json -ErrorAction SilentlyContinue)
+    $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "open PR lookup for $($Ctx.srBranch) failed" -SuppressRegressionFailure
+    if (-not $parsed.Success) {
+        return [PSCustomObject]@{ Items = @(); IsComplete = $false; Reason = "Open PR query failed for $($Ctx.srBranch)." }
+    }
+    $items = @($parsed.Items)
+    $truncated = ($items.Count -gt 100)
+    if ($truncated) { $items = @($items | Select-Object -First 100) }
+    return [PSCustomObject]@{
+        Items      = @($items)
+        IsComplete = -not $truncated
+        Reason     = if ($truncated) { "Open PR query for $($Ctx.srBranch) exceeded the 100-result cap." } else { $null }
+    }
 }
 
 function Test-IsP0Pr {
@@ -3508,10 +3536,17 @@ function Get-P0PrChecks {
     .OUTPUTS
         Array with exactly one check record (see New-ReadinessCheck).
     #>
-    param($OpenSrPrs, [string]$SrBranch, [switch]$Shipped)
+    param($OpenSrPrs, [string]$SrBranch, [switch]$Shipped, [switch]$Incomplete, [string]$IncompleteReason)
 
     $prs = @($OpenSrPrs)
     $p0 = @($prs | Where-Object { Test-IsP0Pr $_ })
+    if ($Incomplete) {
+        return @(New-ReadinessCheck `
+            -Area 'P/0 release-branch PRs' `
+            -Status 'WATCH' `
+            -Details $(if ($IncompleteReason) { $IncompleteReason } else { 'Open PR scan incomplete; P/0 status could not be confirmed.' }) `
+            -NextAction 'Rerun readiness with working GitHub access and a sufficient PR limit before treating P/0 status as clear.')
+    }
 
     if ($p0.Count -gt 0) {
         $nums = ($p0 | ForEach-Object { "#$($_.number)" }) -join ', '
@@ -5582,7 +5617,16 @@ function Invoke-Main {
     }
 
     if ($Phase -in 'all', 'open-prs') {
-        $data['openSrPrs'] = Get-OpenSrPrs -Ctx $ctx
+        $openPrScan = Get-OpenSrPrs -Ctx $ctx
+        $data['openSrPrs'] = @($openPrScan.Items)
+        $data['openPrScanIncomplete'] = -not $openPrScan.IsComplete
+        $data['openPrScanIncompleteReason'] = $openPrScan.Reason
+        if (-not $openPrScan.IsComplete) {
+            $data['surveyIncomplete'] = $true
+            $existingReason = Get-MetadataValue -Container $data -Name 'surveyIncompleteReason'
+            $data['surveyIncompleteReason'] = @($existingReason, $openPrScan.Reason |
+                Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }) -join ' '
+        }
     }
 
     # Run version + bug-template checks (cheap; included in all phases except 'ci'-only).
@@ -5604,7 +5648,9 @@ function Invoke-Main {
             }
             $data['shipChecks'] = @($data['shipChecks']) + @(Get-P0PrChecks -OpenSrPrs $data['openSrPrs'] `
                                                                                  -SrBranch $ctx.srBranch `
-                                                                                 -Shipped:($ctx.mode -eq 'shipped'))
+                                                                                 -Shipped:($ctx.mode -eq 'shipped') `
+                                                                                 -Incomplete:$data['openPrScanIncomplete'] `
+                                                                                 -IncompleteReason $data['openPrScanIncompleteReason'])
         }
     }
 

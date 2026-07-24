@@ -1526,6 +1526,54 @@ try {
     Assert-Eq -Label "PR evidence: scalar JSON rejection records evidence failure" -Expected 1 -Actual $Script:RegressionEvidenceFailures.Count
     $Script:RegressionEvidenceFailures.Clear()
 
+    # ── Backport lineage: bare mentions are not source→backport evidence ──
+    $backportSearchJson = @(
+        [pscustomobject]@{
+            number = 84001; title = 'Actual backport'; body = 'Backport of #400 to release/10.0.1xx-sr9'
+            headRefName = 'backport/pr-400-to-release/10.0.1xx-sr9'; state = 'MERGED'
+            mergedAt = '2026-01-02T00:00:00Z'; closedAt = '2026-01-02T00:00:00Z'
+        }
+        [pscustomobject]@{
+            number = 84002; title = 'Unrelated cleanup'; body = 'Context: source PR #400 changed the same area.'
+            headRefName = 'cleanup/docs'; state = 'MERGED'; mergedAt = '2026-01-03T00:00:00Z'; closedAt = '2026-01-03T00:00:00Z'
+        }
+        [pscustomobject]@{
+            number = 84003; title = 'Generated backport'; body = ''
+            headRefName = 'backport/pr-400-to-release/10.0.1xx-sr9'; state = 'OPEN'
+            mergedAt = $null; closedAt = $null
+        }
+    ) | ConvertTo-Json -Depth 5
+    $script:GhStub = { param([string[]]$GhArgs) return $backportSearchJson }
+    $explicitBackports = @(Get-BackportPrsForSr -Repo 'dotnet/maui' -SrBranch 'release/10.0.1xx-sr9' -SourcePrNumber 400)
+    Assert-Eq -Label "backport lineage: explicit body/branch matches are retained" -Expected '84001,84003' `
+        -Actual (($explicitBackports.number | Sort-Object) -join ',')
+    Assert-Eq -Label "backport lineage: unrelated merged mention is rejected" -Expected $false `
+        -Actual ($explicitBackports.number -contains 84002)
+
+    # ── Open SR PR scan: distinguish failure/verified-empty/cap truncation ──
+    $script:GhStub = { param([string[]]$GhArgs) return $null }
+    $failedOpenPrScan = Get-OpenSrPrs -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9' }
+    Assert-Eq -Label "open SR PR scan: query failure is incomplete" -Expected $false -Actual $failedOpenPrScan.IsComplete
+    $failedP0Check = @(Get-P0PrChecks -OpenSrPrs $failedOpenPrScan.Items -SrBranch 'release/10.0.1xx-sr9' `
+                                      -Incomplete -IncompleteReason $failedOpenPrScan.Reason)
+    Assert-Eq -Label "open SR PR scan: incomplete P/0 check is not READY" -Expected 'WATCH' -Actual $failedP0Check[0].Status
+
+    $script:GhStub = { param([string[]]$GhArgs) return '[]' }
+    $emptyOpenPrScan = Get-OpenSrPrs -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9' }
+    Assert-Eq -Label "open SR PR scan: verified empty result is complete" -Expected $true -Actual $emptyOpenPrScan.IsComplete
+
+    $openPrOverflowJson = @(1..101 | ForEach-Object {
+        [pscustomobject]@{
+            number = 85000 + $_; title = "PR $_"; author = @{ login = 'user' }; isDraft = $false
+            createdAt = '2026-01-01T00:00:00Z'; updatedAt = '2026-01-02T00:00:00Z'
+            labels = @(); reviewDecision = $null
+        }
+    }) | ConvertTo-Json -Depth 5
+    $script:GhStub = { param([string[]]$GhArgs) return $openPrOverflowJson }
+    $truncatedOpenPrScan = Get-OpenSrPrs -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9' }
+    Assert-Eq -Label "open SR PR scan: 101st result marks scan incomplete" -Expected $false -Actual $truncatedOpenPrScan.IsComplete
+    Assert-Eq -Label "open SR PR scan: processing remains capped at 100" -Expected 100 -Actual @($truncatedOpenPrScan.Items).Count
+
     # ── Get-CandidatePrChecks: maintainer author-gate via REST author_association ──
     # Regression: `gh pr list --json` does not support authorAssociation, so the
     # spoof-gate now fetches author_association per title-matched candidate from
