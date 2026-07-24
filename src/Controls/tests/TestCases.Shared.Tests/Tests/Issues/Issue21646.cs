@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || WINDOWS // Temporary net11 branch divergence: PR #35604 on main reverted this scenario.
+// When net11 syncs with main: either remove this guard if the fix is reintroduced, or delete this test if the full revert lands here.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,3 +24,4 @@ public class Issue21646: _IssuesUITest
 		App.WaitForFlyoutIcon(FlyoutIconAutomationId, false);
 	}
 }
+#endif

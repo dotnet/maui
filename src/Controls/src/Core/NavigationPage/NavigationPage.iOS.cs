@@ -1,17 +1,492 @@
 ﻿#nullable disable
+using System;
+using Microsoft.Maui.Controls.Platform;
 using UIKit;
+using iOSSpecificNavigationPage = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage
 	{
+		GradientBrush _currentBarBackgroundBrush;
+		NavigationType? _deferredNavigationType;
+		Page _deferredCurrentPage;
+
+		/// <summary>
+		/// Cleans up iOS-specific subscriptions and resources when the handler disconnects.
+		/// Matches the renderer's Dispose cleanup pattern.
+		/// </summary>
+		partial void OnHandlerDisconnected()
+		{
+			if (_currentBarBackgroundBrush is GradientBrush gb)
+			{
+				gb.InvalidateGradientBrushRequested -= OnBarBackgroundBrushInvalidated;
+				gb.Parent = null;
+			}
+
+			_currentBarBackgroundBrush = null;
+			_deferredNavigationType = null;
+			_deferredCurrentPage = null;
+		}
+
+		/// <summary>
+		/// On iOS, the handler connects before the Window parents the page,
+		/// so NavigationProxy.Inner is null during OnHandlerChangedCore.
+		/// If Inner is null, defer SendNavigated (NavigatedTo) to ViewDidAppear
+		/// when navigation infrastructure is fully wired.
+		/// See NavigationPage.cs partial method declarations for full explanation.
+		/// </summary>
+		partial void ShouldDeferNavigatedTo(ref bool defer)
+		{
+			if (((Internals.NavigationProxy)Navigation).Inner is null)
+			{
+				defer = true;
+				_deferredNavigationType = DetermineNavigationType();
+				_deferredCurrentPage = CurrentPage;
+			}
+		}
+
+		/// <summary>
+		/// Fires the deferred SendNavigated that was skipped in OnHandlerChangedCore.
+		/// Called from OnControllerAppeared (ViewDidAppear) in NavigationPage.Mapper.cs.
+		/// </summary>
+		partial void FireDeferredNavigatedTo()
+		{
+			if (_deferredNavigationType is NavigationType navType)
+			{
+				var page = _deferredCurrentPage;
+				_deferredNavigationType = null;
+				_deferredCurrentPage = null;
+
+				// Use the captured page, not CurrentPage — CurrentPage may have
+				// changed if navigation happened before ViewDidAppear fired.
+				if (page is not null)
+				{
+					page.SendNavigatedTo(new NavigatedToEventArgs(null, navType));
+				}
+			}
+		}
+
 		public static void MapPrefersLargeTitles(NavigationViewHandler handler, NavigationPage navigationPage) =>
 			MapPrefersLargeTitles((INavigationViewHandler)handler, navigationPage);
 
 		public static void MapPrefersLargeTitles(INavigationViewHandler handler, NavigationPage navigationPage)
 		{
 			if (handler is IPlatformViewHandler nvh && nvh.ViewController is UINavigationController navigationController)
-				Platform.NavigationPageExtensions.UpdatePrefersLargeTitles(navigationController, navigationPage);
+			{
+				NavigationPageExtensions.UpdatePrefersLargeTitles(navigationController, navigationPage);
+			}
+		}
+
+		/// <summary>
+		/// When NavigationPage.Title changes, refresh the current top VC's
+		/// NavigationItem.Title if the child page's own Title is null (R7-4).
+		/// </summary>
+		static void MapTitle(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			if (handler is IPlatformViewHandler nvh &&
+				nvh.ViewController is UINavigationController navController &&
+				navController.TopViewController is NavigationHandlerParentingViewController topVC)
+			{
+				topVC.RefreshTitleFromNavigationPage();
+			}
+		}
+
+		static void MapBarBackground(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			var navBar = handler.NavigationController?.NavigationBar;
+
+			if (navBar is null)
+			{
+				return;
+			}
+
+			var barBackgroundColor = navigationPage.BarBackgroundColor;
+			var barBackground = navigationPage.BarBackground;
+
+			// Manage GradientBrush subscription — matches renderer pattern
+			if (navigationPage._currentBarBackgroundBrush is GradientBrush oldGradientBrush)
+			{
+				oldGradientBrush.Parent = null;
+				oldGradientBrush.InvalidateGradientBrushRequested -= navigationPage.OnBarBackgroundBrushInvalidated;
+			}
+
+			navigationPage._currentBarBackgroundBrush = barBackground as GradientBrush;
+
+			if (navigationPage._currentBarBackgroundBrush is GradientBrush newGradientBrush)
+			{
+				newGradientBrush.Parent = navigationPage;
+				newGradientBrush.InvalidateGradientBrushRequested += navigationPage.OnBarBackgroundBrushInvalidated;
+			}
+
+			if (barBackground is SolidColorBrush scb)
+			{
+				barBackgroundColor = scb.Color;
+				barBackground = null;
+			}
+
+#pragma warning disable CS0618 // Type or member is obsolete
+			bool isTranslucentExplicitlySet = navigationPage.IsSet(iOSSpecificNavigationPage.IsNavigationBarTranslucentProperty);
+			bool userTranslucentValue = isTranslucentExplicitlySet && iOSSpecificNavigationPage.GetIsNavigationBarTranslucent(navigationPage);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			var navigationBarAppearance = navBar.StandardAppearance;
+
+			if (barBackgroundColor is null && barBackground is null)
+			{
+				navigationBarAppearance.ConfigureWithOpaqueBackground();
+				navigationBarAppearance.BackgroundColor = ColorExtensions.BackgroundColor;
+				// Match renderer: default translucency is driven by IsNavigationBarTranslucent (defaults to false)
+				navBar.Translucent = userTranslucentValue;
+
+				SetupDefaultNavigationBarAppearance(navBar, navigationBarAppearance);
+			}
+			else if (barBackgroundColor is null && barBackground is not null)
+			{
+				// Gradient/image brush with no explicit color — reset appearance
+				// to clear any stale BackgroundColor/Translucent from a previous call.
+				navigationBarAppearance.ConfigureWithOpaqueBackground();
+				navigationBarAppearance.BackgroundColor = null;
+				navBar.Translucent = userTranslucentValue;
+			}
+			else if (barBackgroundColor is not null)
+			{
+				// Match renderer: if IsNavigationBarTranslucent is explicitly set, respect it;
+				// otherwise base translucency on the background color alpha
+				if (isTranslucentExplicitlySet)
+				{
+					if (userTranslucentValue)
+					{
+						navigationBarAppearance.ConfigureWithTransparentBackground();
+						navBar.Translucent = true;
+					}
+					else
+					{
+						navigationBarAppearance.ConfigureWithOpaqueBackground();
+						navBar.Translucent = false;
+					}
+				}
+				else
+				{
+					if (barBackgroundColor.Alpha < 1f)
+					{
+						navigationBarAppearance.ConfigureWithTransparentBackground();
+						navBar.Translucent = true;
+					}
+					else
+					{
+						navigationBarAppearance.ConfigureWithOpaqueBackground();
+						navBar.Translucent = false;
+					}
+				}
+
+				navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
+			}
+
+			if (barBackground is not null)
+			{
+				navigationBarAppearance.BackgroundImage = ((UIView)navBar).GetBackgroundImage(barBackground);
+			}
+
+			navBar.CompactAppearance = navigationBarAppearance;
+			navBar.StandardAppearance = navigationBarAppearance;
+			navBar.ScrollEdgeAppearance = navigationBarAppearance;
+
+			MapHideNavigationBarSeparator(handler, navigationPage);
+		}
+
+		void OnBarBackgroundBrushInvalidated(object sender, EventArgs e)
+		{
+			if (Handler is NavigationViewHandler handler)
+			{
+				MapBarBackground(handler, this);
+			}
+		}
+
+		static void MapIsNavigationBarTranslucent(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			// Translucency affects both bar appearance and content layout;
+			// re-evaluate everything through MapBarBackground.
+			MapBarBackground(handler, navigationPage);
+		}
+
+		static void MapBarTextColor(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			var navBar = handler.NavigationController?.NavigationBar;
+
+			if (navBar is null)
+			{
+				return;
+			}
+
+			var barTextColor = navigationPage.BarTextColor;
+
+			var globalTitleTextAttributes = UINavigationBar.Appearance.TitleTextAttributes;
+			var titleTextAttributes = new UIStringAttributes
+			{
+				ForegroundColor = barTextColor is null
+					? globalTitleTextAttributes?.ForegroundColor
+					: barTextColor.ToPlatform(),
+				Font = globalTitleTextAttributes?.Font
+			};
+
+			var largeTitleTextAttributes = titleTextAttributes;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				var globalLargeTitleTextAttributes = UINavigationBar.Appearance.LargeTitleTextAttributes;
+				largeTitleTextAttributes = new UIStringAttributes
+				{
+					ForegroundColor = barTextColor is null
+						? globalLargeTitleTextAttributes?.ForegroundColor
+						: barTextColor.ToPlatform(),
+					Font = globalLargeTitleTextAttributes?.Font
+				};
+			}
+
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				// iOS 26 Liquid Glass: in-place mutation may not trigger updates;
+				// use copy/mutate/reassign pattern.
+				var titleCompact = navBar.CompactAppearance;
+				titleCompact.TitleTextAttributes = titleTextAttributes;
+				titleCompact.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.CompactAppearance = titleCompact;
+
+				var titleStandard = navBar.StandardAppearance;
+				titleStandard.TitleTextAttributes = titleTextAttributes;
+				titleStandard.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.StandardAppearance = titleStandard;
+
+				var titleScrollEdge = navBar.ScrollEdgeAppearance;
+				titleScrollEdge.TitleTextAttributes = titleTextAttributes;
+				titleScrollEdge.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.ScrollEdgeAppearance = titleScrollEdge;
+			}
+			else
+			{
+				navBar.CompactAppearance.TitleTextAttributes = titleTextAttributes;
+				navBar.CompactAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.StandardAppearance.TitleTextAttributes = titleTextAttributes;
+				navBar.StandardAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+				navBar.ScrollEdgeAppearance.TitleTextAttributes = titleTextAttributes;
+				navBar.ScrollEdgeAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+			}
+
+			var iconColor = navigationPage.CurrentPage is Page current ? GetIconColor(current) : null;
+			if (iconColor is null)
+			{
+				iconColor = barTextColor;
+			}
+
+			navBar.TintColor = iconColor is null || iOSSpecificNavigationPage.GetStatusBarTextColorMode(navigationPage) == PlatformConfiguration.iOSSpecific.StatusBarTextColorMode.DoNotAdjust
+				? UINavigationBar.Appearance.TintColor
+				: iconColor.ToPlatform();
+
+			// iOS 26+ Liquid Glass ignores TintColor for the back button; apply via appearance instead.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				var effectiveColor = iconColor ?? barTextColor;
+				var statusBarMode = iOSSpecificNavigationPage.GetStatusBarTextColorMode(navigationPage);
+				var useCustomColor = effectiveColor is not null && statusBarMode != PlatformConfiguration.iOSSpecific.StatusBarTextColorMode.DoNotAdjust;
+
+				if (handler.NavigationController?.VisibleViewController?.NavigationItem?.RightBarButtonItems is UIBarButtonItem[] items)
+				{
+					foreach (var item in items)
+					{
+						item.TintColor = navBar.TintColor;
+					}
+				}
+
+				if (useCustomColor)
+				{
+					var backColor = effectiveColor!.ToPlatform();
+					var colorAttributes = Foundation.NSDictionary<Foundation.NSString, Foundation.NSObject>.FromObjectsAndKeys(
+						new Foundation.NSObject[] { backColor }, new Foundation.NSString[] { UIStringAttributeKey.ForegroundColor });
+					var btnAppearance = new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
+					btnAppearance.Normal.TitleTextAttributes = colorAttributes;
+					btnAppearance.Highlighted.TitleTextAttributes = colorAttributes;
+
+					UIImage tintedImage = null;
+					var backImage = UIImage.GetSystemImage("chevron.backward");
+
+					if (backImage is not null)
+					{
+						tintedImage = backImage.ApplyTintColor(backColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+						navBar.BackIndicatorImage = tintedImage;
+						navBar.BackIndicatorTransitionMaskImage = tintedImage;
+					}
+
+					// Set BackButtonAppearance and back indicator on each appearance object,
+					// then reassign to the nav bar to force UIKit to process the changes.
+					// In-place mutation alone is not detected by UIKit on iOS 26 Liquid Glass.
+					var compactAppearance = navBar.CompactAppearance;
+					compactAppearance.BackButtonAppearance = btnAppearance;
+					if (tintedImage is not null)
+					{
+						compactAppearance.SetBackIndicatorImage(tintedImage, tintedImage);
+					}
+					navBar.CompactAppearance = compactAppearance;
+
+					var standardAppearance = navBar.StandardAppearance;
+					standardAppearance.BackButtonAppearance = btnAppearance;
+
+					if (tintedImage is not null)
+					{
+						standardAppearance.SetBackIndicatorImage(tintedImage, tintedImage);
+					}
+
+					navBar.StandardAppearance = standardAppearance;
+
+					var scrollEdgeAppearance = navBar.ScrollEdgeAppearance;
+					scrollEdgeAppearance.BackButtonAppearance = btnAppearance;
+
+					if (tintedImage is not null)
+					{
+						scrollEdgeAppearance.SetBackIndicatorImage(tintedImage, tintedImage);
+					}
+
+					navBar.ScrollEdgeAppearance = scrollEdgeAppearance;
+				}
+				else
+				{
+					// Reset to default/global back button appearance when color is cleared.
+					var defaultBtnAppearance = UINavigationBar.Appearance.CompactAppearance?.BackButtonAppearance
+						?? new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
+
+					navBar.BackIndicatorImage = UINavigationBar.Appearance.BackIndicatorImage;
+					navBar.BackIndicatorTransitionMaskImage = UINavigationBar.Appearance.BackIndicatorTransitionMaskImage;
+
+					var compactAppearance = navBar.CompactAppearance;
+					compactAppearance.BackButtonAppearance = defaultBtnAppearance;
+					compactAppearance.SetBackIndicatorImage(navBar.BackIndicatorImage, navBar.BackIndicatorTransitionMaskImage);
+					navBar.CompactAppearance = compactAppearance;
+
+					var standardAppearance = navBar.StandardAppearance;
+					standardAppearance.BackButtonAppearance = defaultBtnAppearance;
+					standardAppearance.SetBackIndicatorImage(navBar.BackIndicatorImage, navBar.BackIndicatorTransitionMaskImage);
+					navBar.StandardAppearance = standardAppearance;
+
+					var scrollEdgeAppearance = navBar.ScrollEdgeAppearance;
+					scrollEdgeAppearance.BackButtonAppearance = defaultBtnAppearance;
+					scrollEdgeAppearance.SetBackIndicatorImage(navBar.BackIndicatorImage, navBar.BackIndicatorTransitionMaskImage);
+					navBar.ScrollEdgeAppearance = scrollEdgeAppearance;
+				}
+			}
+
+			SetStatusBarStyle(navigationPage);
+		}
+
+		static void MapStatusBarTextColorMode(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			SetStatusBarStyle(navigationPage);
+
+			// Matches renderer: StatusBarTextColorMode gates IconColor/TintColor in
+			// MapBarTextColor. Toggling the mode must also refresh bar text appearance,
+			// otherwise the tint stays stale from the previous mode.
+			MapBarTextColor(handler, navigationPage);
+		}
+
+		static void SetStatusBarStyle(NavigationPage navigationPage)
+		{
+			var barTextColor = navigationPage.BarTextColor;
+			var statusBarColorMode = iOSSpecificNavigationPage.GetStatusBarTextColorMode(navigationPage);
+
+#pragma warning disable CA1416, CA1422 // 'UIApplication.StatusBarStyle' is unsupported on: 'ios' 9.0 and later
+			if (statusBarColorMode == PlatformConfiguration.iOSSpecific.StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+				{
+					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.DarkContent;
+				}
+				else
+				{
+					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
+				}
+			}
+			else
+			{
+				UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.LightContent;
+			}
+#pragma warning restore CA1416, CA1422
+		}
+
+		static void MapPrefersHomeIndicatorAutoHidden(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			if (handler is IPlatformViewHandler pvh && pvh.ViewController is UINavigationController navController)
+			{
+				navController.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			}
+		}
+
+		static void MapPrefersStatusBarHidden(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			if (handler is IPlatformViewHandler pvh && pvh.ViewController is UINavigationController navController)
+			{
+				navController.SetNeedsStatusBarAppearanceUpdate();
+			}
+		}
+
+		static void MapHideNavigationBarSeparator(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			var navBar = handler.NavigationController?.NavigationBar;
+
+			if (navBar is null)
+			{
+				return;
+			}
+
+			bool shouldHide = iOSSpecificNavigationPage.GetHideNavigationBarSeparator(navigationPage);
+			var shadowColor = shouldHide ? UIColor.Clear : UIColor.FromRGBA(0, 0, 0, 76);
+
+			// Use copy/mutate/reassign pattern — in-place mutation is not detected
+			// by UIKit on iOS 26 Liquid Glass.
+			var compact = navBar.CompactAppearance;
+			compact.ShadowColor = shadowColor;
+			navBar.CompactAppearance = compact;
+
+			var standard = navBar.StandardAppearance;
+			standard.ShadowColor = shadowColor;
+			navBar.StandardAppearance = standard;
+
+			var scrollEdge = navBar.ScrollEdgeAppearance;
+			scrollEdge.ShadowColor = shadowColor;
+			navBar.ScrollEdgeAppearance = scrollEdge;
+		}
+
+		/// <summary>
+		/// Bridges legacy UINavigationBar API values to the modern UINavigationBarAppearance API.
+		/// Matches renderer's SetupDefaultNavigationBarAppearance() — preserves native background,
+		/// shadow, and back-indicator images set via UINavigationBar.Appearance proxy (pre-iOS 13 pattern).
+		/// Only fills values that the appearance doesn't already have (null checks).
+		/// </summary>
+		static void SetupDefaultNavigationBarAppearance(UINavigationBar navBar, UINavigationBarAppearance appearance)
+		{
+			if (appearance.BackgroundColor is null)
+			{
+				appearance.BackgroundColor = navBar.BarTintColor;
+			}
+
+			if (appearance.BackgroundImage is null)
+			{
+				appearance.BackgroundImage = navBar.GetBackgroundImage(UIBarMetrics.Default);
+			}
+
+			if (appearance.ShadowImage is null)
+			{
+				var shadowImage = navBar.ShadowImage;
+				appearance.ShadowImage = shadowImage;
+
+				if (shadowImage is not null && shadowImage.Size == CoreGraphics.CGSize.Empty)
+				{
+					appearance.ShadowColor = UIColor.Clear;
+				}
+			}
+
+			var backIndicatorImage = navBar.BackIndicatorImage;
+			var backIndicatorMask = navBar.BackIndicatorTransitionMaskImage;
+
+			appearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorMask);
 		}
 	}
 }

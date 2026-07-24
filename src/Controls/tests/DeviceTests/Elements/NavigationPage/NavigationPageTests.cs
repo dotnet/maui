@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		void SetupBuilder(bool includeNavigationViewHandler = true)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -28,7 +28,14 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 #if IOS || MACCATALYST
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					if (includeNavigationViewHandler)
+					{
+						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					}
+					else
+					{
+						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					}
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 #else
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));

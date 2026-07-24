@@ -1652,7 +1652,7 @@ namespace Microsoft.Maui.Controls
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			
+
 			foreach (string key in keys)
 			{
 				if (innerKeys.Add(key))
@@ -1680,10 +1680,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			
+
 			if (mergedStyleClasses.Count > 0)
 				OnResourcesChanged(mergedStyleClasses);
-			
+
 			if (filteredKeys.Count != 0)
 				OnResourcesChangedKeys(filteredKeys);
 		}
@@ -1707,7 +1707,7 @@ namespace Microsoft.Maui.Controls
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			
+
 			foreach (string key in keys)
 			{
 				if (innerKeys.Add(key))
@@ -1733,10 +1733,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			
+
 			if (mergedStyleClasses.Count > 0)
 				OnResourcesChanged(mergedStyleClasses);
-			
+
 			if (filteredKeys.Count != 0)
 				OnResourcesChangedKeys(filteredKeys, resolver);
 		}
@@ -2570,6 +2570,16 @@ namespace Microsoft.Maui.Controls
 		}
 
 		partial void HandlePlatformUnloadedLoaded();
+
+#if IOS || MACCATALYST
+		/// <summary>
+		/// Re-evaluates the platform loaded/unloaded state for this element.
+		/// Called by handlers when the platform view enters the window asynchronously
+		/// (e.g., UINavigationController.ViewDidAppear under UITabBarController)
+		/// and the initial KVO-based loaded watcher may not have fired.
+		/// </summary>
+		internal void RefreshPlatformLoadedStatus() => HandlePlatformUnloadedLoaded();
+#endif
 
 		internal IView? ParentView => ((this as IView)?.Parent as IView);
 #nullable disable

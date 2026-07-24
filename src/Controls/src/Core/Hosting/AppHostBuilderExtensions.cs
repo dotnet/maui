@@ -203,7 +203,7 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if IOS || MACCATALYST
-		handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
+		handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 		handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
 		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
@@ -335,6 +335,11 @@ public static partial class AppHostBuilderExtensions
 		ImageButton.RemapForControls();
 
 		Slider.RemapForControls();
+
+#if IOS || MACCATALYST
+		NavigationPage.RemapForControls();
+#endif
+
 		return builder;
 	}
 }

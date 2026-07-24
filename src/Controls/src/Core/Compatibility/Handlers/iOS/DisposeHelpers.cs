@@ -12,9 +12,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (child is VisualElement ve)
 				{
-					ve.Handler?.DisconnectHandler();
+					// Capture handler before DisconnectHandler() — it nulls VirtualView.Handler.
+					var handler = ve.Handler;
+					handler?.DisconnectHandler();
 
-					if (ve.Handler is IDisposable disposable)
+					if (handler is IDisposable disposable)
 						disposable.Dispose();
 				}
 			}
@@ -32,8 +34,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					renderer.PlatformView?.RemoveFromSuperview();
 
-					if (view.Handler is IDisposable disposable)
+					// Capture handler before DisconnectHandler() — it nulls VirtualView.Handler.
+					var handler = visualElement.Handler;
+					handler?.DisconnectHandler();
+
+					if (handler is IDisposable disposable)
+					{
 						disposable.Dispose();
+					}
 				}
 			}
 		}

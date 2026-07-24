@@ -1,0 +1,1126 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using CoreGraphics;
+using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Layouts;
+using UIKit;
+using PointF = CoreGraphics.CGPoint;
+using RectangleF = CoreGraphics.CGRect;
+
+namespace Microsoft.Maui.Controls
+{
+    /// <summary>
+    /// Wrapper VC used by NavigationViewHandler (handler architecture).
+    /// Mirrors the renderer's ParentingViewController: manages toolbar items,
+    /// nav bar visibility, back button, title, and per-page property changes.
+    /// </summary>
+    sealed class NavigationHandlerParentingViewController : UIViewController
+    {
+        WeakReference<Page>? _childRef;
+        ToolbarTracker _tracker = new();
+        List<ToolbarItem> _trackedToolbarItems = new();
+        bool _toolbarUpdatePending;
+        bool _disposed;
+
+        static string? _defaultAccessibilityLabel;
+        static string? _defaultAccessibilityHint;
+
+        public NavigationHandlerParentingViewController()
+        {
+        }
+
+        public Page? Child
+        {
+            get => _childRef?.TryGetTarget(out var p) == true ? p : null;
+            set
+            {
+                var old = Child;
+
+                if (old == value)
+                {
+                    return;
+                }
+
+                old?.PropertyChanged -= HandleChildPropertyChanged;
+
+                if (value is not null)
+                {
+                    _childRef = new WeakReference<Page>(value);
+                    value.PropertyChanged += HandleChildPropertyChanged;
+                }
+                else
+                {
+                    _childRef = null;
+                }
+
+                UpdateHasBackButton();
+                UpdateLargeTitles();
+            }
+        }
+
+        public override void ViewDidLoad()
+        {
+            base.ViewDidLoad();
+
+            // Set a system background so this VC isn't transparent when the child
+            // view is hidden (e.g., FlyoutPage.IsVisible = false).
+            View!.BackgroundColor = UIColor.SystemBackground;
+
+            if (Child is Page child)
+            {
+                var parentPages = child.GetParentPages();
+                var flyoutPageWithToolbarItems = FindFlyoutPageWithToolbarItems(parentPages);
+
+                if (flyoutPageWithToolbarItems is not null)
+                {
+                    _tracker.Target = flyoutPageWithToolbarItems.Flyout;
+                    var additionalTargets = new List<Page>(parentPages) { child };
+                    _tracker.AdditionalTargets = additionalTargets;
+                }
+                else
+                {
+                    _tracker.Target = child;
+                    _tracker.AdditionalTargets = parentPages;
+                }
+
+                _tracker.CollectionChanged += TrackerOnCollectionChanged;
+
+                NavigationItem.Title = child.Title ?? GetNavigationPageTitle(child);
+                UpdateBackButtonTitle();
+                UpdateToolbarItems();
+                UpdateLeftBarButtonItem();
+            }
+        }
+
+        /// <summary>
+        /// Called by the handler after a mid-stack insert/remove to re-evaluate
+        /// the left bar button item (flyout icon vs back button).
+        /// </summary>
+        internal void NotifyStackChanged()
+        {
+            UpdateLeftBarButtonItem();
+        }
+
+        public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
+            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? this;
+
+        public override UIViewController ChildViewControllerForStatusBarHidden() =>
+            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? this;
+
+        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations()
+        {
+            if (Child?.Handler is IPlatformViewHandler ivh)
+                return ivh.ViewController!.GetSupportedInterfaceOrientations();
+            return base.GetSupportedInterfaceOrientations();
+        }
+
+        public override UIInterfaceOrientation PreferredInterfaceOrientationForPresentation()
+        {
+            if (Child?.Handler is IPlatformViewHandler ivh)
+                return ivh.ViewController!.PreferredInterfaceOrientationForPresentation();
+            return base.PreferredInterfaceOrientationForPresentation();
+        }
+
+#pragma warning disable CA1422 // ShouldAutorotate is deprecated on iOS 16+
+        public override bool ShouldAutorotate()
+        {
+            if (Child?.Handler is IPlatformViewHandler ivh)
+                return ivh.ViewController!.ShouldAutorotate();
+            return base.ShouldAutorotate();
+        }
+#pragma warning restore CA1422
+
+        [System.Runtime.Versioning.UnsupportedOSPlatform("ios6.0")]
+        [System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
+        public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
+        {
+            if (Child?.Handler is IPlatformViewHandler ivh)
+                return ivh.ViewController!.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+            return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+        }
+
+        public override bool ShouldAutomaticallyForwardRotationMethods => true;
+
+        public override void ViewWillAppear(bool animated)
+        {
+            UpdateNavigationBarVisibility(animated);
+
+            // Match renderer behavior: when the nav bar is opaque, prevent content
+            // from extending underneath it. When translucent, allow full extension.
+            var isTranslucent = NavigationController?.NavigationBar.Translucent ?? false;
+            EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+
+            // Re-evaluate per-page IconColor when this page becomes visible
+            // (push or pop-back). IconColor is already set before the push,
+            // so HandleChildPropertyChanged won't fire — we need this trigger.
+            UpdateIconColor();
+
+            // Override stale TintColor from UpdateIconColor — during native back pops,
+            // CurrentPage hasn't updated yet. Use this VC's Child page directly.
+            UpdateTintColorForPage();
+
+            // Re-evaluate flyout button when this page appears (e.g., Detail is switched
+            // back to an already-loaded NavigationPage in a FlyoutPage).
+            UpdateLeftBarButtonItem();
+
+            base.ViewWillAppear(animated);
+        }
+
+        public override void ViewWillLayoutSubviews()
+        {
+            base.ViewWillLayoutSubviews();
+
+            var childView = (Child?.Handler as IPlatformViewHandler)?.ViewController?.View;
+            childView?.Frame = View!.Bounds;
+        }
+
+        public override void ViewDidDisappear(bool animated)
+        {
+            base.ViewDidDisappear(animated);
+
+            // Force redraw for right toolbar items to prevent them being grayed out
+            // after canceling swipe-to-go-back
+            if (NavigationItem?.RightBarButtonItems is UIBarButtonItem[] items)
+            {
+                foreach (var item in items)
+                {
+                    if (item.Image is not null)
+                    {
+                        continue;
+                    }
+
+                    var tintColor = item.TintColor;
+                    item.TintColor = tintColor is null ? UIColor.Clear : null;
+                    item.TintColor = tintColor;
+                }
+            }
+        }
+
+        public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+        {
+            base.ViewWillTransitionToSize(toSize, coordinator);
+
+            if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad &&
+                (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+            {
+                coordinator.AnimateAlongsideTransition(_ =>
+                {
+                    UpdateTitleViewFrameForOrientation();
+                }, null);
+            }
+        }
+
+#pragma warning disable CA1422 // TraitCollectionDidChange is deprecated on iOS 17+
+        public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
+        {
+            base.TraitCollectionDidChange(previousTraitCollection);
+
+            if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) &&
+                (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||
+                 previousTraitCollection?.HorizontalSizeClass != TraitCollection.HorizontalSizeClass))
+            {
+                UpdateTitleViewFrameForOrientation();
+            }
+        }
+#pragma warning restore CA1422
+
+        void UpdateTitleViewFrameForOrientation()
+        {
+            if (NavigationItem?.TitleView is not UIView titleView)
+            {
+                return;
+            }
+
+            if (NavigationController?.NavigationBar is UINavigationBar navBar)
+            {
+                var frame = navBar.Frame;
+                titleView.Frame = new RectangleF(0, 0, frame.Width, frame.Height);
+                titleView.LayoutIfNeeded();
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            if (disposing)
+            {
+                ClearTitleViewContainer();
+                CleanToolbarItems();
+
+                // Properly detach child view controllers added via AddChildViewController
+                // in CreateForPage. The renderer's ParentingViewController.Disconnect
+                // explicitly removed each child VC before disposal. 
+                if (ChildViewControllers is UIViewController[] children)
+                {
+                    foreach (var childVC in children)
+                    {
+                        childVC.WillMoveToParentViewController(null);
+                        childVC.View?.RemoveFromSuperview();
+                        childVC.RemoveFromParentViewController();
+                    }
+                }
+
+                if (Child is Page child)
+                {
+                    child.PropertyChanged -= HandleChildPropertyChanged;
+                    _childRef = null;
+                }
+
+                if (_tracker is not null)
+                {
+                    _tracker.Target = null;
+                    _tracker.CollectionChanged -= TrackerOnCollectionChanged;
+                    _tracker = null!;
+                }
+            }
+
+            base.Dispose(disposing);
+        }
+
+        /// <summary>
+        /// Called by the NavigationPage Title mapper when NavigationPage.Title changes.
+        /// Updates the nav bar title if child.Title is null (uses NavigationPage.Title as fallback).
+        /// </summary>
+        internal void RefreshTitleFromNavigationPage()
+        {
+            if (Child is Page child && child.Title is null)
+            {
+                NavigationItem.Title = GetNavigationPageTitle(child);
+            }
+        }
+
+        void HandleChildPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
+            {
+                UpdateNavigationBarVisibility(true);
+            }
+            else if (e.PropertyName == Page.TitleProperty.PropertyName)
+            {
+                NavigationItem.Title = Child?.Title ?? GetNavigationPageTitle(Child);
+            }
+            else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
+            {
+                UpdateHasBackButton();
+            }
+            else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+            {
+                UpdateBackButtonTitle();
+            }
+            else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.LargeTitleDisplayProperty.PropertyName)
+            {
+                UpdateLargeTitles();
+            }
+            else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
+            {
+                UpdateIconColor();
+            }
+            else if (e.PropertyName == NavigationPage.BackButtonAccessibilityLabelProperty.PropertyName)
+            {
+                UpdateBackButtonTitle();
+            }
+            else if (e.PropertyName == NavigationPage.TitleViewProperty.PropertyName ||
+                     e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName)
+            {
+                UpdateTitleArea();
+            }
+        }
+
+        void UpdateNavigationBarVisibility(bool animated)
+        {
+            if (Child is not Page current || NavigationController is null)
+            {
+                return;
+            }
+
+            var hasNavBar = NavigationPage.GetHasNavigationBar(current);
+
+            if (NavigationController.NavigationBarHidden == hasNavBar)
+            {
+                current.IgnoresContainerArea = !hasNavBar;
+                NavigationController.SetNavigationBarHidden(!hasNavBar, animated);
+            }
+        }
+
+        static FlyoutPage? FindFlyoutPageWithToolbarItems(IEnumerable<Page> parentPages)
+        {
+            foreach (var page in parentPages)
+            {
+                if (page is FlyoutPage flyoutPage && flyoutPage.Flyout?.ToolbarItems?.Count > 0)
+                {
+                    return flyoutPage;
+                }
+            }
+
+            return null;
+        }
+
+        static string? GetNavigationPageTitle(Page? page)
+        {
+            if (page?.Parent is NavigationPage navPage)
+            {
+                return navPage.Title;
+            }
+
+            return null;
+        }
+
+        void UpdateLeftBarButtonItem()
+        {
+            if (Child is not Page child)
+            {
+                return;
+            }
+
+            var parentFlyoutPage = FindParentFlyoutPage(child);
+
+            if (parentFlyoutPage is null)
+            {
+                return;
+            }
+
+            // Use the MAUI NavigationStack to determine if this is the root page,
+            // not UIKit's ViewControllers — UIKit may not have committed a pending
+            // SetViewControllers yet (the property is event-queue-deferred on iOS).
+            // This matches the renderer's approach of passing pageBeingRemoved to
+            // compensate for stale ViewControllers.
+            // Guard with NavigationController != null to avoid evaluating during
+            // orientation re-hosting when the VC is temporarily disconnected.
+            var navPage = child.Parent as NavigationPage;
+            var isRootPage = NavigationController is not null
+                && navPage?.Navigation?.NavigationStack?.Count > 0
+                && navPage.Navigation.NavigationStack[0] == child;
+
+            if (!isRootPage && NavigationPage.GetHasBackButton(child))
+            {
+                NavigationItem.LeftBarButtonItem = null;
+                return;
+            }
+
+            SetFlyoutLeftBarButton(parentFlyoutPage);
+        }
+
+        void SetFlyoutLeftBarButton(FlyoutPage flyoutPage)
+        {
+            if (!flyoutPage.ShouldShowToolbarButton())
+            {
+                NavigationItem.LeftBarButtonItem = null;
+                return;
+            }
+
+            var mauiContext = flyoutPage.FindMauiContext(fallbackToAppMauiContext: true);
+            if (mauiContext is null)
+            {
+                return;
+            }
+
+            flyoutPage.Flyout.IconImageSource.LoadImage(mauiContext, result =>
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                var icon = result?.Value;
+                var originalImageSize = icon?.Size ?? CGSize.Empty;
+                var defaultIconHeight = 44f;
+                var buffer = 0.1;
+
+                if (icon is not null)
+                {
+                    if (originalImageSize.Height - defaultIconHeight > buffer)
+                    {
+                        if (flyoutPage.Flyout.IconImageSource is not FontImageSource fontImageSource || !fontImageSource.IsSet(FontImageSource.SizeProperty))
+                        {
+                            icon = icon.ResizeImageSource(originalImageSize.Width, defaultIconHeight, originalImageSize);
+                        }
+                    }
+
+                    try
+                    {
+                        NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnItemTapped);
+                    }
+                    catch (Exception)
+                    {
+                        // Throws Exception otherwise would catch more specific exception type
+                    }
+                }
+
+                if (icon is null || NavigationItem.LeftBarButtonItem is null)
+                {
+                    NavigationItem.LeftBarButtonItem = new UIBarButtonItem(flyoutPage.Flyout.Title, UIBarButtonItemStyle.Plain, OnItemTapped);
+                }
+
+                if (!string.IsNullOrEmpty(flyoutPage.AutomationId))
+                {
+                    NavigationItem.LeftBarButtonItem!.AccessibilityIdentifier = $"btn_{flyoutPage.AutomationId}";
+                }
+
+                SetAccessibilityHint(NavigationItem.LeftBarButtonItem, flyoutPage);
+                SetAccessibilityLabel(NavigationItem.LeftBarButtonItem, flyoutPage);
+            });
+
+            void OnItemTapped(object? sender, EventArgs e)
+            {
+                flyoutPage.IsPresented = !flyoutPage.IsPresented;
+            }
+        }
+
+#pragma warning disable CS0618 // AutomationProperties is obsolete
+        static void SetAccessibilityHint(UIBarButtonItem? uiBarButtonItem, Element? element)
+        {
+            if (uiBarButtonItem is null || element is null)
+            {
+                return;
+            }
+
+            _defaultAccessibilityHint ??= uiBarButtonItem.AccessibilityHint;
+            uiBarButtonItem.AccessibilityHint = (string?)element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
+        }
+
+        static void SetAccessibilityLabel(UIBarButtonItem? uiBarButtonItem, Element? element)
+        {
+            if (uiBarButtonItem is null || element is null)
+            {
+                return;
+            }
+
+            _defaultAccessibilityLabel ??= uiBarButtonItem.AccessibilityLabel;
+            uiBarButtonItem.AccessibilityLabel = (string?)element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
+        }
+#pragma warning restore CS0618
+
+        static FlyoutPage? FindParentFlyoutPage(Page page)
+        {
+            var parentPages = page.GetParentPages();
+            var flyoutDetail = parentPages.OfType<FlyoutPage>().FirstOrDefault();
+
+            if (flyoutDetail is not null)
+            {
+                // Verify this NavigationPage is the Detail of the FlyoutPage
+                var navPage = page.Parent as NavigationPage;
+                if (navPage is not null && flyoutDetail.Detail == navPage)
+                {
+                    return flyoutDetail;
+                }
+
+                // Also check if the NavigationPage is wrapped inside the Detail
+                if (navPage is not null && flyoutDetail.Detail is NavigationPage detailNav && detailNav == navPage)
+                {
+                    return flyoutDetail;
+                }
+
+                // Direct check: is the page (or its NavigationPage parent) the Detail?
+                if (parentPages.Append(page).Contains(flyoutDetail.Detail))
+                {
+                    return flyoutDetail;
+                }
+            }
+
+            return null;
+        }
+
+        void UpdateHasBackButton()
+        {
+            if (Child is not Page child)
+            {
+                return;
+            }
+
+            NavigationItem.HidesBackButton = !NavigationPage.GetHasBackButton(child);
+
+            // Refresh the left bar button (flyout icon vs back button) —
+            // matches the renderer which also called UpdateTitleArea here.
+            UpdateLeftBarButtonItem();
+        }
+
+        void UpdateBackButtonTitle()
+        {
+            if (Child is not Page child)
+            {
+                return;
+            }
+
+            var backButtonTitle = NavigationPage.GetBackButtonTitle(child);
+            var backButtonAccessibilityLabel = NavigationPage.GetBackButtonAccessibilityLabel(child);
+
+            if (backButtonTitle is not null)
+            {
+                // Only create a custom BackBarButtonItem when BackButtonTitle is explicitly set.
+                // Setting Title = null would suppress UIKit's default back-button text.
+                var barButtonItem = new UIBarButtonItem { Title = backButtonTitle, Style = UIBarButtonItemStyle.Plain };
+
+                if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
+                {
+                    barButtonItem.AccessibilityLabel = backButtonAccessibilityLabel;
+                }
+
+                NavigationItem.BackBarButtonItem = barButtonItem;
+            }
+            else if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
+            {
+                // Accessibility label only — preserve UIKit's default back-button text.
+                // When creating a new item, set Title from the current page's title
+                // to match the renderer's fallback (backButtonTitle ?? title).
+                var existing = NavigationItem.BackBarButtonItem;
+                if (existing is null)
+                {
+                    existing = new UIBarButtonItem { Title = child.Title };
+                }
+                existing.AccessibilityLabel = backButtonAccessibilityLabel;
+                NavigationItem.BackBarButtonItem = existing;
+            }
+            else
+            {
+                NavigationItem.BackBarButtonItem = null;
+            }
+        }
+
+        void UpdateLargeTitles()
+        {
+            if (Child is not Page page || !OperatingSystem.IsIOSVersionAtLeast(11))
+            {
+                return;
+            }
+
+            var mode = PlatformConfiguration.iOSSpecific.Page.GetLargeTitleDisplay(page);
+
+            NavigationItem.LargeTitleDisplayMode = mode switch
+            {
+                PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Always => UINavigationItemLargeTitleDisplayMode.Always,
+                PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Never => UINavigationItemLargeTitleDisplayMode.Never,
+                _ => UINavigationItemLargeTitleDisplayMode.Automatic,
+            };
+        }
+
+        void UpdateIconColor()
+        {
+            // Per-page IconColor changes the nav bar tint. Re-trigger the NavigationPage's
+            // BarTextColor mapper which handles both BarTextColor and per-page IconColor.
+            if (Child?.Parent is NavigationPage navPage && navPage.Handler is IElementHandler handler)
+            {
+                handler.UpdateValue(NavigationPage.BarTextColorProperty.PropertyName);
+            }
+        }
+
+        /// <summary>
+        /// Sets navBar.TintColor using this VC's own Child page, bypassing
+        /// NavigationPage.CurrentPage which may be stale during native back pops.
+        /// Matches renderer's ViewWillAppear → UpdateBarTextColor() behavior.
+        /// </summary>
+        void UpdateTintColorForPage()
+        {
+            if (Child is not Page page || page.Parent is not NavigationPage navPage)
+            {
+                return;
+            }
+
+            var navBar = NavigationController?.NavigationBar;
+
+            if (navBar is null)
+            {
+                return;
+            }
+
+            var iconColor = NavigationPage.GetIconColor(page);
+
+            if (iconColor is null)
+            {
+                iconColor = navPage.BarTextColor;
+            }
+
+            var statusBarMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage
+                .GetStatusBarTextColorMode(navPage);
+
+            navBar.TintColor = iconColor is null || statusBarMode == Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.StatusBarTextColorMode.DoNotAdjust
+                ? UINavigationBar.Appearance.TintColor
+                : iconColor.ToPlatform();
+        }
+
+        void UpdateTitleArea()
+        {
+            if (Child is not Page page)
+            {
+                return;
+            }
+
+            var titleView = NavigationPage.GetTitleView(page);
+            var titleIcon = NavigationPage.GetTitleIconImageSource(page);
+            bool needContainer = titleView is not null || titleIcon is not null;
+
+            ClearTitleViewContainer();
+
+            if (needContainer)
+            {
+                // Try the VC's NavigationController first; fall back to the
+                // NavigationPage handler's controller (available before push).
+                var navBar = NavigationController?.NavigationBar;
+                if (navBar is null &&
+                    page.Parent is NavigationPage navPage &&
+                    navPage.Handler is IPlatformViewHandler pvh &&
+                    pvh.ViewController is UINavigationController nc)
+                {
+                    navBar = nc.NavigationBar;
+                }
+
+                if (navBar is null)
+                {
+                    return;
+                }
+
+                var container = new TitleViewContainer(titleView, navBar);
+
+                if (titleIcon is not null && !titleIcon.IsEmpty)
+                {
+                    var mauiContext = page.FindMauiContext();
+                    if (mauiContext is not null)
+                    {
+                        titleIcon.LoadImage(mauiContext, result =>
+                        {
+                            var image = result?.Value;
+
+                            if (image is not null)
+                            {
+                                container.Icon = new UIImageView(image);
+                            }
+                        });
+                    }
+                }
+
+                NavigationItem.TitleView = container;
+            }
+        }
+
+        void ClearTitleViewContainer()
+        {
+            if (NavigationItem.TitleView is TitleViewContainer container)
+            {
+                container.Dispose();
+                NavigationItem.TitleView = null;
+            }
+        }
+
+        void TrackerOnCollectionChanged(object? sender, EventArgs e) => UpdateToolbarItems();
+
+        void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName ||
+                e.PropertyName == MenuItem.TextProperty.PropertyName ||
+                e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
+            {
+                if (!_toolbarUpdatePending)
+                {
+                    _toolbarUpdatePending = true;
+                    BeginInvokeOnMainThread(() =>
+                    {
+                        _toolbarUpdatePending = false;
+
+                        if (!_disposed)
+                        {
+                            UpdateToolbarItems();
+                        }
+                    });
+                }
+            }
+        }
+
+        void CleanToolbarItems()
+        {
+            foreach (var item in _trackedToolbarItems)
+            {
+                item.PropertyChanged -= OnToolbarItemPropertyChanged;
+            }
+
+            _trackedToolbarItems.Clear();
+        }
+
+        void UpdateToolbarItems()
+        {
+            CleanToolbarItems();
+
+            if (NavigationItem.RightBarButtonItems is UIBarButtonItem[] oldItems)
+            {
+                foreach (var item in oldItems)
+                {
+                    item.Dispose();
+                }
+            }
+
+            if (ToolbarItems is UIBarButtonItem[] oldToolbar)
+            {
+                foreach (var item in oldToolbar)
+                {
+                    item.Dispose();
+                }
+            }
+
+            List<UIBarButtonItem>? primaries = null;
+            List<UIMenuElement>? secondaries = null;
+            var toolbarItems = _tracker.ToolbarItems;
+
+            foreach (var item in toolbarItems)
+            {
+                item.PropertyChanged += OnToolbarItemPropertyChanged;
+                _trackedToolbarItems.Add(item);
+
+                if (item.Order == ToolbarItemOrder.Secondary)
+                {
+                    (secondaries ??= new()).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+                }
+                else
+                {
+                    (primaries ??= new()).Add(item.ToUIBarButtonItem());
+                }
+            }
+
+            primaries?.Reverse();
+
+            if (secondaries is not null && secondaries.Count > 0)
+            {
+                var menuIcon = UIImage.GetSystemImage("ellipsis.circle");
+                var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit,
+                    UIMenuOptions.DisplayInline, secondaries.ToArray());
+                var menuButton = new UIBarButtonItem(menuIcon, menu)
+                {
+                    AccessibilityIdentifier = "SecondaryToolbarMenuButton"
+                };
+
+                primaries ??= new();
+                primaries.Insert(0, menuButton);
+            }
+
+            NavigationItem.SetRightBarButtonItems(
+                primaries is not null ? primaries.ToArray() : Array.Empty<UIBarButtonItem>(), false);
+
+            // iOS 26+ tint fix
+            if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+                && primaries is not null
+                && NavigationController?.NavigationBar?.TintColor is UIColor tintColor)
+            {
+                foreach (var item in primaries)
+                {
+                    item.TintColor = tintColor;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Factory method: creates a ParentingViewController wrapping the given page.
+        /// Called from NavigationViewHandler.ConfigureViewController.
+        /// </summary>
+        internal static UIViewController CreateForPage(Page page, IMauiContext mauiContext)
+        {
+            _ = page.ToPlatform(mauiContext);
+
+            var parentingVC = new NavigationHandlerParentingViewController { Child = page };
+
+            parentingVC.UpdateTitleArea();
+
+            if (page.Handler is not IPlatformViewHandler pageHandler || pageHandler.ViewController is not UIViewController innerVC)
+            {
+                return parentingVC;
+            }
+
+            // Detach from any existing parent VC before re-parenting.
+            // This handles the case where a page is popped and then pushed again:
+            // the inner VC is still a child of the old (popped) pack, and UIKit
+            // requires the proper WillMove/Remove/Add/DidMove sequence.
+            if (innerVC.ParentViewController is not null)
+            {
+                innerVC.WillMoveToParentViewController(null);
+                innerVC.View?.RemoveFromSuperview();
+                innerVC.RemoveFromParentViewController();
+            }
+
+            if (parentingVC.View is UIView packView && innerVC.View is UIView innerView)
+            {
+                packView.AddSubview(innerView);
+            }
+
+            parentingVC.AddChildViewController(innerVC);
+            innerVC.DidMoveToParentViewController(parentingVC);
+
+            return parentingVC;
+        }
+    }
+
+    /// <summary>
+    /// Controls-layer bridge: provides the CreateViewControllerForPage callback to NavigationViewHandler.
+    /// </summary>
+    static class NavigationViewHandlerToolbarHelper
+    {
+        internal static UIViewController CreateViewControllerForPage(IView view, IMauiContext context)
+        {
+            if (view is Page page)
+            {
+                return NavigationHandlerParentingViewController.CreateForPage(page, context);
+            }
+
+            // Fallback for non-Page views
+            var handler = view.ToHandler(context);
+            return handler.ViewController ?? new Maui.Handlers.NavigationViewHandler.ContainerViewController(view, (IPlatformViewHandler)handler);
+        }
+    }
+
+    /// <summary>
+    /// UIView wrapper that hosts a MAUI TitleView (and optional TitleIcon) as UINavigationItem.TitleView.
+    /// Mirrors the renderer's Container class with simplified layout logic.
+    /// </summary>
+    sealed class TitleViewContainer : UIView
+    {
+        View? _view;
+        IPlatformViewHandler? _child;
+        UIImageView? _icon;
+        bool _disposed;
+
+        internal TitleViewContainer(View? view, UINavigationBar bar) : base(bar.Bounds)
+        {
+            if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+            {
+                TranslatesAutoresizingMaskIntoConstraints = true;
+                AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
+                var frame = bar.Frame;
+
+                if (frame != CGRect.Empty)
+                {
+                    Frame = new RectangleF(0, 0, frame.Width, frame.Height);
+                }
+            }
+            else if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false;
+            }
+            else
+            {
+                TranslatesAutoresizingMaskIntoConstraints = true;
+                AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
+            }
+
+            ClipsToBounds = true;
+
+            if (view is not null)
+            {
+                _view = view;
+                if (_view.Parent is null)
+                {
+                    _view.ParentSet += OnTitleViewParentSet;
+                }
+                else
+                {
+                    SetupTitleView();
+                }
+            }
+        }
+
+        internal UIImageView? Icon
+        {
+            get => _icon;
+            set
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _icon?.RemoveFromSuperview();
+                _icon?.Dispose();
+                _icon = value;
+
+                if (_icon is not null)
+                {
+                    AddSubview(_icon);
+                }
+
+                SetNeedsLayout();
+            }
+        }
+
+        void OnTitleViewParentSet(object? sender, EventArgs e)
+        {
+            if (sender is View view)
+            {
+                view.ParentSet -= OnTitleViewParentSet;
+            }
+
+            SetupTitleView();
+        }
+
+        void SetupTitleView()
+        {
+            var mauiContext = _view?.FindMauiContext();
+            if (_view is not null && mauiContext is not null)
+            {
+                var platformView = _view.ToPlatform(mauiContext);
+                _child = (IPlatformViewHandler?)_view.Handler;
+                AddSubview(platformView);
+            }
+        }
+
+        nfloat ToolbarHeight
+        {
+            get
+            {
+                if (Superview?.Bounds.Height > 0)
+                {
+                    return Superview.Bounds.Height;
+                }
+
+                return (Devices.DeviceInfo.Idiom == Devices.DeviceIdiom.Phone && Devices.DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
+            }
+        }
+
+        nfloat IconHeight => _icon?.Frame.Height ?? 0;
+        nfloat IconWidth => _icon?.Frame.Width ?? 0;
+
+        public override CGSize IntrinsicContentSize => UILayoutFittingExpandedSize;
+
+        public override CGSize SizeThatFits(CGSize size)
+        {
+            return new CGSize(size.Width, ToolbarHeight);
+        }
+
+        public override UIEdgeInsets AlignmentRectInsets
+        {
+            get
+            {
+                // On iOS 26+ with autoresizing masks, AlignmentRectInsets can cause UIKit
+                // to inflate the frame. Margins are applied in the Frame setter instead.
+                if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+                {
+                    return base.AlignmentRectInsets;
+                }
+
+                if (_child?.VirtualView is IView view)
+                {
+                    var margin = view.Margin;
+                    return new UIEdgeInsets(-(nfloat)margin.Top, -(nfloat)margin.Left, -(nfloat)margin.Bottom, -(nfloat)margin.Right);
+                }
+
+                return base.AlignmentRectInsets;
+            }
+        }
+
+        public override CGRect Frame
+        {
+            get => base.Frame;
+            set
+            {
+                if (Superview is not null)
+                {
+                    if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26) ||
+                        !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
+                    {
+                        value.Y = Superview.Bounds.Y;
+
+                        // On iOS 26+ with autoresizing masks, apply margins directly
+                        // in the Frame setter since AlignmentRectInsets is not used.
+                        if (_child?.VirtualView is IView view)
+                        {
+                            var margin = view.Margin;
+                            var newWidth = value.Width - (nfloat)(margin.Left + margin.Right);
+                            if (newWidth < 0)
+                                newWidth = 0;
+
+                            value = new RectangleF(
+                                value.X + (nfloat)margin.Left,
+                                value.Y + (nfloat)margin.Top,
+                                newWidth,
+                                value.Height
+                            );
+                        }
+                    }
+
+                    value.Height = ToolbarHeight;
+
+                    if (_child?.VirtualView is IView marginView)
+                    {
+                        var verticalMargin = (nfloat)(marginView.Margin.Top + marginView.Margin.Bottom);
+                        value.Height = (nfloat)Math.Max(0, value.Height - verticalMargin);
+                    }
+                }
+
+                base.Frame = value;
+            }
+        }
+
+        public override void LayoutSubviews()
+        {
+            base.LayoutSubviews();
+
+            if (Frame == CGRect.Empty || Frame.Width >= 10000 || Frame.Height >= 10000)
+            {
+                return;
+            }
+
+            nfloat toolbarHeight = ToolbarHeight;
+            double height = Math.Min(toolbarHeight, Bounds.Height);
+            nfloat iconWidth = IconWidth;
+
+            if (_icon is not null)
+            {
+                _icon.Frame = new RectangleF(0, 0, IconWidth, (nfloat)Math.Min(toolbarHeight, IconHeight));
+            }
+
+            if (_child?.VirtualView is IView view)
+            {
+                var layoutBounds = new Rect(iconWidth, 0, Bounds.Width - iconWidth, height);
+
+                if (view.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill ||
+                    view.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill)
+                {
+                    view.Measure(Bounds.Width, Bounds.Height);
+                    layoutBounds = view.ComputeFrame(new Rect(0, 0, Bounds.Width, Bounds.Height));
+                }
+
+                _child.PlatformArrangeHandler(layoutBounds);
+            }
+            else if (_icon is not null && Superview is not null)
+            {
+                _icon.Center = new PointF(Superview.Frame.Width / 2 - Frame.X, Superview.Frame.Height / 2);
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            if (disposing)
+            {
+                if (_child?.IsConnected() == true)
+                {
+                    (_child.ContainerView ?? _child.PlatformView)?.RemoveFromSuperview();
+                    _child.DisconnectHandler();
+                    _child = null;
+                }
+
+                if (_view is not null)
+                {
+                    _view.ParentSet -= OnTitleViewParentSet;
+                }
+                _view = null;
+
+                _icon?.Dispose();
+                _icon = null;
+            }
+
+            base.Dispose(disposing);
+        }
+    }
+}
