@@ -51,5 +51,6 @@
 		public const string View = "View";
 		public const string WebView = "WebView";
 		public const string Window = "Window";
+		public const string Lifecycle = "Lifecycle";
 	}
 }
