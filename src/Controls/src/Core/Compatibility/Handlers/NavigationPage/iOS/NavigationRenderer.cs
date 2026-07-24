@@ -16,6 +16,7 @@ using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
+using MauiLayout = Microsoft.Maui.Controls.Layout;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
@@ -547,6 +548,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
 			{
 				UpdateBarBackground();
+				UpdateCurrentPageLargeTitleSafeArea();
 			}
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName
 				  || e.PropertyName == StatusBarTextColorModeProperty.PropertyName)
@@ -567,6 +569,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == IsNavigationBarTranslucentProperty.PropertyName)
 			{
 				UpdateTranslucent();
+				UpdateCurrentPageLargeTitleSafeArea();
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
@@ -576,6 +579,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PrefersLargeTitlesProperty.PropertyName)
 			{
 				UpdateUseLargeTitles();
+				UpdateCurrentPageLargeTitleSafeArea();
 			}
 			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
 			{
@@ -676,6 +680,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateUseLargeTitles()
 		{
 			_viewHandlerWrapper.UpdateProperty(PrefersLargeTitlesProperty.PropertyName);
+		}
+
+		void UpdateCurrentPageLargeTitleSafeArea()
+		{
+			(TopViewController as ParentingViewController)?.UpdateLargeTitleSafeArea();
 		}
 
 		void UpdateTranslucent()
@@ -1386,6 +1395,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			readonly WeakReference<NavigationRenderer> _navigation;
 
 			WeakReference<Page> _child;
+			WeakReference<MauiLayout> _largeTitleSafeAreaRootLayout;
+			bool _largeTitleSafeAreaApplied;
+			bool _updatingLargeTitleSafeArea;
+			static readonly SafeAreaEdges LargeTitleRootLayoutSafeAreaEdges = new(SafeAreaRegions.Container, SafeAreaRegions.None, SafeAreaRegions.Container, SafeAreaRegions.Container);
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
@@ -1411,6 +1424,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (child is not null)
 					{
+						RestoreLargeTitleSafeArea();
+						child.DescendantAdded -= HandleChildDescendantChanged;
+						child.DescendantRemoved -= HandleChildDescendantChanged;
 						child.PropertyChanged -= HandleChildPropertyChanged;
 					}
 
@@ -1418,6 +1434,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					{
 						_child = new(value);
 						value.PropertyChanged += HandleChildPropertyChanged;
+						if (NeedsLargeTitleSafeAreaTracking())
+						{
+							value.DescendantAdded += HandleChildDescendantChanged;
+							value.DescendantRemoved += HandleChildDescendantChanged;
+						}
 					}
 					else
 					{
@@ -1549,6 +1570,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_navigation.TryGetTarget(out n))
 					isTranslucent = n.NavigationBar.Translucent;
 				EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+				UpdateLargeTitleSafeArea();
 
 				base.ViewWillAppear(animated);
 			}
@@ -1566,6 +1588,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Child is Page child)
 				{
 					child.SendDisappearing();
+					child.DescendantAdded -= HandleChildDescendantChanged;
+					child.DescendantRemoved -= HandleChildDescendantChanged;
 					child.PropertyChanged -= HandleChildPropertyChanged;
 					Child = null;
 				}
@@ -1640,13 +1664,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
 					UpdateNavigationBarVisibility(true);
 				else if (e.PropertyName == Page.TitleProperty.PropertyName)
-					NavigationItem.Title = Child.Title;
+					UpdateTitle(Child.Title);
 				else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
 					UpdateHasBackButton();
 				else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
 					UpdatePrefersStatusBarHidden();
 				else if (e.PropertyName == LargeTitleDisplayProperty.PropertyName)
+				{
 					UpdateLargeTitles();
+				}
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
@@ -1654,6 +1680,44 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
+				else if (e.PropertyName == ContentPage.ContentProperty.PropertyName)
+					UpdateLargeTitleSafeArea();
+			}
+
+			void HandleChildDescendantChanged(object sender, ElementEventArgs e)
+			{
+				if (!CanAffectLargeTitleSafeArea(e.Element))
+					return;
+
+				UpdateLargeTitleSafeArea();
+			}
+
+			static bool NeedsLargeTitleSafeAreaTracking()
+			{
+				return OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
+			}
+
+			static bool CanAffectLargeTitleSafeArea(Element element)
+			{
+				if (element is null || HasScrollableAncestor(element))
+					return false;
+
+#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
+				return element is MauiLayout or IContentView or ScrollView or ListView or ItemsView;
+#pragma warning restore CS0618
+			}
+
+			static bool HasScrollableAncestor(Element element)
+			{
+				for (var parent = element.RealParent; parent is not null; parent = parent.RealParent)
+				{
+#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
+					if (parent is ScrollView or ListView or ItemsView)
+						return true;
+#pragma warning restore CS0618
+				}
+
+				return false;
 			}
 
 			internal void SetupDefaultNavigationBarAppearance()
@@ -1803,10 +1867,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page));
 
+			void UpdateTitle(string title)
+			{
+				Title = title;
+				NavigationItem.Title = title;
+			}
+
 			internal void UpdateBackButtonTitle(string title, string backButtonTitle)
 			{
 				if (!string.IsNullOrWhiteSpace(title))
-					NavigationItem.Title = title;
+					UpdateTitle(title);
 
 				if (backButtonTitle != null)
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
@@ -2116,6 +2186,210 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							NavigationItem.LargeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Never;
 							break;
 					}
+				}
+
+				UpdateLargeTitleSafeArea();
+			}
+
+			internal void UpdateLargeTitleSafeArea()
+			{
+				if (_updatingLargeTitleSafeArea)
+					return;
+
+				_updatingLargeTitleSafeArea = true;
+				try
+				{
+					UpdateLargeTitleSafeAreaCore();
+				}
+				finally
+				{
+					_updatingLargeTitleSafeArea = false;
+				}
+			}
+
+			void UpdateLargeTitleSafeAreaCore()
+			{
+				var rootLayout = GetRootLayout();
+
+				if (!IsTrackedRootLayout(rootLayout))
+					RestoreLargeTitleSafeArea();
+
+				if (rootLayout is null)
+					return;
+
+				if (!ShouldExtendRootLayoutUnderNavigationBar(rootLayout))
+				{
+					RestoreLargeTitleSafeArea();
+					return;
+				}
+
+				TrackLargeTitleSafeAreaRootLayout(rootLayout);
+
+				if (HasUserSafeAreaEdges(rootLayout))
+				{
+					ClearLargeTitleSafeAreaOverride(rootLayout);
+					return;
+				}
+
+				if (_largeTitleSafeAreaApplied && rootLayout.SafeAreaEdges != LargeTitleRootLayoutSafeAreaEdges)
+					_largeTitleSafeAreaApplied = false;
+
+				if (!_largeTitleSafeAreaApplied)
+				{
+					rootLayout.SetValueFromRenderer(MauiLayout.SafeAreaEdgesProperty, LargeTitleRootLayoutSafeAreaEdges);
+					InvalidateSafeArea(rootLayout);
+					_largeTitleSafeAreaApplied = true;
+				}
+			}
+
+			void RestoreLargeTitleSafeArea()
+			{
+				if (_largeTitleSafeAreaRootLayout?.TryGetTarget(out var rootLayout) == true)
+				{
+					rootLayout.PropertyChanged -= HandleLargeTitleRootLayoutPropertyChanged;
+					ClearLargeTitleSafeAreaOverride(rootLayout);
+				}
+
+				_largeTitleSafeAreaRootLayout = null;
+				_largeTitleSafeAreaApplied = false;
+			}
+
+			void TrackLargeTitleSafeAreaRootLayout(MauiLayout rootLayout)
+			{
+				if (IsTrackedRootLayout(rootLayout))
+					return;
+
+				rootLayout.PropertyChanged += HandleLargeTitleRootLayoutPropertyChanged;
+				_largeTitleSafeAreaRootLayout = new(rootLayout);
+			}
+
+			void ClearLargeTitleSafeAreaOverride(MauiLayout rootLayout)
+			{
+				if (!_largeTitleSafeAreaApplied)
+					return;
+
+				rootLayout.ClearValue(MauiLayout.SafeAreaEdgesProperty, SetterSpecificity.FromHandler);
+				InvalidateSafeArea(rootLayout);
+				_largeTitleSafeAreaApplied = false;
+			}
+
+			void HandleLargeTitleRootLayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == MauiLayout.SafeAreaEdgesProperty.PropertyName)
+					UpdateLargeTitleSafeArea();
+			}
+
+			bool HasUserSafeAreaEdges(MauiLayout rootLayout)
+			{
+				if (rootLayout is not ISafeAreaView2 safeAreaView || !safeAreaView.HasExplicitSafeAreaEdges)
+					return false;
+
+				if (_largeTitleSafeAreaApplied && rootLayout.SafeAreaEdges == LargeTitleRootLayoutSafeAreaEdges)
+					return false;
+
+				return true;
+			}
+
+			bool IsTrackedRootLayout(MauiLayout rootLayout)
+			{
+				return rootLayout is not null &&
+					_largeTitleSafeAreaRootLayout?.TryGetTarget(out var trackedRootLayout) == true &&
+					ReferenceEquals(rootLayout, trackedRootLayout);
+			}
+
+			MauiLayout GetRootLayout()
+			{
+				if (Child is not IContentView contentView)
+					return null;
+
+				return GetRootLayout(contentView.PresentedContent);
+			}
+
+			MauiLayout GetRootLayout(IView view)
+			{
+				if (view is MauiLayout layout)
+					return layout;
+
+				if (view is IContentView contentView && contentView.PresentedContent is IView content)
+				{
+					if (view is ISafeAreaView2 safeAreaView && safeAreaView.HasExplicitSafeAreaEdges)
+						return null;
+
+					return GetRootLayout(content);
+				}
+
+				return null;
+			}
+
+			bool ShouldExtendRootLayoutUnderNavigationBar(MauiLayout rootLayout)
+			{
+				if (!NeedsLargeTitleSafeAreaTracking())
+					return false;
+
+				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+					return false;
+
+				if (!navigationRenderer.NavigationBar.Translucent || !navigationRenderer.NavigationBar.PrefersLargeTitles)
+					return false;
+
+				if (NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never)
+					return false;
+
+				if (rootLayout is not ISafeAreaView2 safeAreaView)
+					return false;
+
+				if (!HasScrollableContent(rootLayout))
+					return false;
+
+				return true;
+			}
+
+			bool HasScrollableContent(IView view)
+			{
+#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
+				if (view is ScrollView or ListView or ItemsView)
+					return true;
+#pragma warning restore CS0618
+
+				if (view is MauiLayout layout)
+				{
+					for (int i = 0; i < layout.Count; i++)
+					{
+						if (HasScrollableContent(layout[i]))
+							return true;
+					}
+				}
+
+				if (view is IContentView contentView && contentView.PresentedContent is IView content)
+				{
+					return HasScrollableContent(content);
+				}
+
+				return false;
+			}
+
+			void InvalidateSafeArea(IView view)
+			{
+				if (view.Handler?.PlatformView is MauiView mauiView)
+				{
+					mauiView.InvalidateSafeArea();
+				}
+				else if (view.Handler?.PlatformView is MauiScrollView scrollView)
+				{
+					scrollView.InvalidateSafeArea();
+				}
+
+				if (view is MauiLayout layout)
+				{
+					for (int i = 0; i < layout.Count; i++)
+					{
+						InvalidateSafeArea(layout[i]);
+					}
+				}
+
+				if (view is IContentView contentView && contentView.PresentedContent is IView content)
+				{
+					InvalidateSafeArea(content);
 				}
 			}
 
