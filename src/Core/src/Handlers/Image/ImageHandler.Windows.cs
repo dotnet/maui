@@ -142,23 +142,20 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (handler is ImageHandler imghandler)
+			if (handler is ImageHandler imghandler && !imghandler.PlatformView.IsLoaded)
 			{
+				// Defer container creation until the view is in the active visual tree.
+				// Manipulating the parent panel while the page is not loaded causes a
+				// COMException. See https://github.com/dotnet/maui/issues/36694
 				var platformView = imghandler.PlatformView;
-				if (platformView.IsLoaded)
-				{
-					handler.UpdateValue(nameof(IViewHandler.ContainerView));
-					handler.ToPlatform().UpdateBackground(image);
-				}
-				else
-				{
-					// Defer container creation until the view is in the active visual tree.
-					// Manipulating the parent panel while the page is not loaded causes a
-					// COMException. See https://github.com/dotnet/maui/issues/36694
-					platformView.Loaded -= imghandler.OnImageLoaded;
-					platformView.Loaded += imghandler.OnImageLoaded;
-				}
+				platformView.Loaded -= imghandler.OnImageLoaded;
+				platformView.Loaded += imghandler.OnImageLoaded;
+				return;
 			}
+
+			// Applies immediately for a loaded ImageHandler or any other IImageHandler implementation.
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.ToPlatform().UpdateBackground(image);
 		}
 
 		/// <summary>
