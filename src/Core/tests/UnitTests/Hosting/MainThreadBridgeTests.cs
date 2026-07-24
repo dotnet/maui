@@ -2,14 +2,19 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Storage;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
+	// Serialize mutations of MainThread and DispatcherProvider.Current with the
+	// other tests that modify the same process-wide state.
+	[Collection(MainThreadStaticStateCollection.Name)]
 	public class MainThreadBridgeTests : IDisposable
 	{
 		public MainThreadBridgeTests()
@@ -228,6 +233,64 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
+		[Fact]
+		public void OverlappingMauiAppsRestorePreviousMainThreadBridge()
+		{
+			var firstDispatcher = new DispatcherStub(
+				isInvokeRequired: () => false,
+				invokeOnMainThread: action => action());
+			var secondDispatcher = new DispatcherStub(
+				isInvokeRequired: () => true,
+				invokeOnMainThread: action => action());
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				DispatcherProvider.SetCurrent(new TestDispatcherProvider(firstDispatcher));
+				firstApp = MauiApp.CreateBuilder().Build();
+				Assert.True(MainThread.IsMainThread);
+
+				DispatcherProvider.SetCurrent(new TestDispatcherProvider(secondDispatcher));
+				secondApp = MauiApp.CreateBuilder().Build();
+				Assert.False(MainThread.IsMainThread);
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.True(MainThread.IsMainThread);
+
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Throws<NotImplementedInReferenceAssemblyException>(
+					() => _ = MainThread.IsMainThread);
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
+		[Fact]
+		public void ConfigureEssentialsWithoutDefaults_BridgesMainThreadBeforeResolvingServices()
+		{
+			var dispatcherStub = new DispatcherStub(
+				isInvokeRequired: () => false,
+				invokeOnMainThread: null);
+
+			DispatcherProvider.SetCurrent(new TestDispatcherProvider(dispatcherStub));
+
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IPreferences, MainThreadAwarePreferences>();
+			builder.ConfigureEssentials();
+
+			using var app = builder.Build();
+
+			var preferences = Assert.IsType<MainThreadAwarePreferences>(Preferences.Default);
+			Assert.True(preferences.WasCreatedOnMainThread);
+		}
+
 		class TestDispatcherProvider : IDispatcherProvider
 		{
 			readonly IDispatcher _dispatcher;
@@ -238,6 +301,32 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 
 			public IDispatcher? GetForCurrentThread() => _dispatcher;
+		}
+
+		sealed class MainThreadAwarePreferences : IPreferences
+		{
+			public MainThreadAwarePreferences()
+			{
+				WasCreatedOnMainThread = MainThread.IsMainThread;
+			}
+
+			public bool WasCreatedOnMainThread { get; }
+
+			public bool ContainsKey(string key, string? sharedName = null) => false;
+
+			public void Remove(string key, string? sharedName = null)
+			{
+			}
+
+			public void Clear(string? sharedName = null)
+			{
+			}
+
+			public void Set<T>(string key, T value, string? sharedName = null)
+			{
+			}
+
+			public T Get<T>(string key, T defaultValue, string? sharedName = null) => defaultValue;
 		}
 	}
 }

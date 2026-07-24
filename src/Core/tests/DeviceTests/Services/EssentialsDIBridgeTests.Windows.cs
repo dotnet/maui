@@ -1,0 +1,471 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Hosting;
+using Xunit;
+
+namespace Microsoft.Maui.DeviceTests.Services;
+
+[Category(TestCategory.Application)]
+[Collection(EssentialsStaticStateCollection.Name)]
+public class EssentialsDIBridgeTests
+{
+	[Fact]
+	public void MauiAppBuildWithoutMapTokenDoesNotInitializeGeocoding()
+	{
+		var field = typeof(Geocoding).GetField(
+			"defaultImplementation",
+			System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+			?? throw new InvalidOperationException("Geocoding backing field was not found.");
+		var original = field.GetValue(null);
+
+		try
+		{
+			field.SetValue(null, null);
+
+			var builder = MauiApp.CreateBuilder();
+			using var app = builder.Build();
+
+			Assert.Null(field.GetValue(null));
+		}
+		finally
+		{
+			field.SetValue(null, original);
+		}
+	}
+
+	[Fact]
+	public void ConfiguredMapServiceTokenIsForwardedToPlatform()
+	{
+		const string token = "test-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+
+		try
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(token));
+
+			using var app = builder.Build();
+
+			Assert.Equal(token, Microsoft.Maui.ApplicationModel.Platform.MapServiceToken);
+		}
+		finally
+		{
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Fact]
+	public void MapServiceTokenIsForwardedToDIPlatformGeocoding()
+	{
+		const string configuredToken = "configured-token";
+		const string existingToken = "existing-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+
+		try
+		{
+			var configured = new StubPlatformGeocoding();
+			var configuredBuilder = MauiApp.CreateBuilder();
+			configuredBuilder.Services.AddSingleton<IGeocoding>(configured);
+			configuredBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(configuredToken));
+
+			using (var app = configuredBuilder.Build())
+			{
+				Assert.Same(configured, Geocoding.Default);
+				Assert.Equal(configuredToken, configured.MapServiceToken);
+			}
+
+			Microsoft.Maui.ApplicationModel.Platform.MapServiceToken = existingToken;
+			var existing = new StubPlatformGeocoding();
+			var existingBuilder = MauiApp.CreateBuilder();
+			existingBuilder.Services.AddSingleton<IGeocoding>(existing);
+
+			using (var app = existingBuilder.Build())
+			{
+				Assert.Same(existing, Geocoding.Default);
+				Assert.Equal(existingToken, existing.MapServiceToken);
+			}
+		}
+		finally
+		{
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Fact]
+	public void ConfiguredMapServiceTokenIsNotAppliedWithoutPlatformContract()
+	{
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var replacement = new StubGeocoding();
+
+		try
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(replacement);
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken("test-token"));
+
+			using var app = builder.Build();
+
+			Assert.Same(replacement, Geocoding.Default);
+		}
+		finally
+		{
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Fact]
+	public void ThrowingMapServiceTokenSetterDoesNotLeakAssignment()
+	{
+		const string originalPlatformToken = "original-platform-token";
+		const string configuredToken = "throw-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var initialAssignmentCount = GetMapTokenAssignmentCount();
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var replacement = new ThrowingPlatformGeocoding();
+
+		try
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(replacement);
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(configuredToken));
+
+			var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+			Assert.Equal("map token failed", exception.Message);
+			Assert.Equal(initialAssignmentCount, GetMapTokenAssignmentCount());
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+			Assert.Same(original, Geocoding.Default);
+		}
+		finally
+		{
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Fact]
+	public void MapServiceTokenCleanupRestoresPlatformTokenWhenGeocoderRestoreThrows()
+	{
+		const string originalInstanceToken = "original-instance-token";
+		const string originalPlatformToken = "original-platform-token";
+		const string configuredToken = "configured-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var initialAssignmentCount = GetMapTokenAssignmentCount();
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var replacement = new ThrowingRestorePlatformGeocoding(originalInstanceToken);
+		MauiApp? app = null;
+
+		try
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(replacement);
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(configuredToken));
+			app = builder.Build();
+			platformToken.Value = configuredToken;
+			replacement.ThrowOnToken = originalInstanceToken;
+
+			var exception = Assert.Throws<InvalidOperationException>(() => app.Dispose());
+			app = null;
+
+			Assert.Equal("geocoder map token restore failed", exception.Message);
+			Assert.Equal(configuredToken, replacement.MapServiceToken);
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+			Assert.Equal(initialAssignmentCount, GetMapTokenAssignmentCount());
+			Assert.Same(original, Geocoding.Default);
+		}
+		finally
+		{
+			replacement.ThrowOnToken = null;
+			app?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Fact]
+	public void MapServiceTokenCleanupAggregatesGeocoderAndPlatformRestoreFailures()
+	{
+		const string originalInstanceToken = "original-instance-token";
+		const string originalPlatformToken = "original-platform-token";
+		const string configuredToken = "configured-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var initialAssignmentCount = GetMapTokenAssignmentCount();
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var replacement = new ThrowingRestorePlatformGeocoding(originalInstanceToken);
+		MauiApp? app = null;
+
+		try
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(replacement);
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(configuredToken));
+			app = builder.Build();
+			platformToken.Value = configuredToken;
+			replacement.ThrowOnToken = originalInstanceToken;
+			platformToken.ThrowOnToken = originalPlatformToken;
+
+			var aggregate = Assert.Throws<AggregateException>(() => app.Dispose());
+			app = null;
+
+			Assert.Collection(
+				aggregate.InnerExceptions,
+				exception => Assert.Equal("geocoder map token restore failed", exception.Message),
+				exception => Assert.Equal("platform map token restore failed", exception.Message));
+			Assert.Equal(configuredToken, replacement.MapServiceToken);
+			Assert.Equal(configuredToken, platformToken.Value);
+			Assert.Equal(initialAssignmentCount, GetMapTokenAssignmentCount());
+			Assert.Same(original, Geocoding.Default);
+		}
+		finally
+		{
+			replacement.ThrowOnToken = null;
+			platformToken.ThrowOnToken = null;
+			app?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void SharedMapServiceTokenRestoresAcrossOverlappingApps(bool disposeOlderFirst)
+	{
+		const string originalInstanceToken = "original-instance-token";
+		const string originalPlatformToken = "original-platform-token";
+		const string firstToken = "first-token";
+		const string secondToken = "second-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var shared = new StubPlatformGeocoding { MapServiceToken = originalInstanceToken };
+		MauiApp? firstApp = null;
+		MauiApp? secondApp = null;
+
+		try
+		{
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IGeocoding>(shared);
+			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(firstToken));
+			firstApp = firstBuilder.Build();
+			platformToken.Value = firstToken;
+
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IGeocoding>(shared);
+			secondBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(secondToken));
+			secondApp = secondBuilder.Build();
+			platformToken.Value = secondToken;
+
+			if (disposeOlderFirst)
+			{
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Equal(secondToken, shared.MapServiceToken);
+				Assert.Equal(secondToken, platformToken.Value);
+
+				secondApp.Dispose();
+				secondApp = null;
+			}
+			else
+			{
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Equal(firstToken, shared.MapServiceToken);
+				Assert.Equal(firstToken, platformToken.Value);
+
+				firstApp.Dispose();
+				firstApp = null;
+			}
+
+			Assert.Equal(originalInstanceToken, shared.MapServiceToken);
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+		}
+		finally
+		{
+			secondApp?.Dispose();
+			firstApp?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void DistinctGeocodingMapServiceTokenRestoresAcrossOverlappingApps(bool disposeOlderFirst)
+	{
+		const string originalPlatformToken = "original-platform-token";
+		const string firstToken = "first-token";
+		const string secondToken = "second-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var first = new StubPlatformGeocoding { MapServiceToken = "first-original-token" };
+		var second = new StubPlatformGeocoding { MapServiceToken = "second-original-token" };
+		MauiApp? firstApp = null;
+		MauiApp? secondApp = null;
+
+		try
+		{
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IGeocoding>(first);
+			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(firstToken));
+			firstApp = firstBuilder.Build();
+			platformToken.Value = firstToken;
+
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IGeocoding>(second);
+			secondBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(secondToken));
+			secondApp = secondBuilder.Build();
+			platformToken.Value = secondToken;
+
+			if (disposeOlderFirst)
+			{
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Equal("first-original-token", first.MapServiceToken);
+				Assert.Equal(secondToken, platformToken.Value);
+
+				secondApp.Dispose();
+				secondApp = null;
+			}
+			else
+			{
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Equal("second-original-token", second.MapServiceToken);
+				Assert.Equal(firstToken, platformToken.Value);
+
+				firstApp.Dispose();
+				firstApp = null;
+			}
+
+			Assert.Equal("first-original-token", first.MapServiceToken);
+			Assert.Equal("second-original-token", second.MapServiceToken);
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+		}
+		finally
+		{
+			secondApp?.Dispose();
+			firstApp?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	static int GetMapTokenAssignmentCount()
+	{
+		var field = typeof(EssentialsExtensions).GetField(
+			"s_mapTokenAssignments",
+			System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+			?? throw new InvalidOperationException("Map-token assignment field was not found.");
+
+		return ((System.Collections.ICollection)field.GetValue(null)!).Count;
+	}
+
+	sealed class WindowsMapServiceTokenScope : IDisposable
+	{
+		readonly Func<string?> _originalGetter = EssentialsExtensions.WindowsMapServiceTokenGetter;
+		readonly Action<string?> _originalSetter = EssentialsExtensions.WindowsMapServiceTokenSetter;
+
+		public WindowsMapServiceTokenScope(string? value)
+		{
+			Value = value;
+			EssentialsExtensions.WindowsMapServiceTokenGetter = () => Value;
+			EssentialsExtensions.WindowsMapServiceTokenSetter = token =>
+			{
+				if (ThrowOnToken is not null &&
+					string.Equals(token, ThrowOnToken, StringComparison.Ordinal))
+				{
+					throw new InvalidOperationException("platform map token restore failed");
+				}
+
+				Value = token;
+			};
+		}
+
+		public string? ThrowOnToken { get; set; }
+
+		public string? Value { get; set; }
+
+		public void Dispose()
+		{
+			EssentialsExtensions.WindowsMapServiceTokenGetter = _originalGetter;
+			EssentialsExtensions.WindowsMapServiceTokenSetter = _originalSetter;
+		}
+	}
+
+	static void RestoreGeocoding(IGeocoding original, string? originalToken)
+	{
+		var builder = MauiApp.CreateBuilder();
+		builder.Services.AddSingleton(original);
+
+		using var app = builder.Build();
+
+		if (original is IPlatformGeocoding platformGeocoding)
+			platformGeocoding.MapServiceToken = originalToken;
+	}
+
+	class StubGeocoding : IGeocoding
+	{
+		public Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude) =>
+			Task.FromResult<IEnumerable<Placemark>>(Array.Empty<Placemark>());
+
+		public Task<IEnumerable<Location>> GetLocationsAsync(string address) =>
+			Task.FromResult<IEnumerable<Location>>(Array.Empty<Location>());
+	}
+
+	sealed class StubPlatformGeocoding : StubGeocoding, IPlatformGeocoding
+	{
+		public string? MapServiceToken { get; set; }
+	}
+
+	sealed class ThrowingRestorePlatformGeocoding : StubGeocoding, IPlatformGeocoding
+	{
+		string? _mapServiceToken;
+
+		public ThrowingRestorePlatformGeocoding(string? mapServiceToken)
+		{
+			_mapServiceToken = mapServiceToken;
+		}
+
+		public string? ThrowOnToken { get; set; }
+
+		public string? MapServiceToken
+		{
+			get => _mapServiceToken;
+			set
+			{
+				if (ThrowOnToken is not null &&
+					string.Equals(value, ThrowOnToken, StringComparison.Ordinal))
+				{
+					throw new InvalidOperationException("geocoder map token restore failed");
+				}
+
+				_mapServiceToken = value;
+			}
+		}
+	}
+
+	sealed class ThrowingPlatformGeocoding : StubGeocoding, IPlatformGeocoding
+	{
+		string? _mapServiceToken;
+
+		public string? MapServiceToken
+		{
+			get => _mapServiceToken;
+			set
+			{
+				if (value == "throw-token")
+					throw new InvalidOperationException("map token failed");
+
+				_mapServiceToken = value;
+			}
+		}
+	}
+}

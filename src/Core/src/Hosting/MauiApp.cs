@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,25 +39,110 @@ namespace Microsoft.Maui.Hosting
 		/// <inheritdoc />
 		public void Dispose()
 		{
-			DisposeConfiguration();
+			var exceptions = new List<Exception>();
+			try
+			{
+				CleanupAppServices();
+			}
+			catch (Exception ex)
+			{
+				exceptions.Add(ex);
+			}
 
-			(_services as IDisposable)?.Dispose();
+			try
+			{
+				DisposeConfiguration();
+			}
+			catch (Exception ex)
+			{
+				exceptions.Add(ex);
+			}
+
+			try
+			{
+				if (_services is IDisposable disposable)
+				{
+					disposable.Dispose();
+				}
+				else if (_services is IAsyncDisposable asyncDisposable)
+				{
+					Task.Run(async () =>
+					{
+						await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+					}).GetAwaiter().GetResult();
+				}
+			}
+			catch (Exception ex)
+			{
+				exceptions.Add(ex);
+			}
+
+			ThrowIfDisposalFailed(exceptions);
 		}
 
 		/// <inheritdoc />
 		public async ValueTask DisposeAsync()
 		{
-			DisposeConfiguration();
+			var exceptions = new List<Exception>();
+			try
+			{
+				CleanupAppServices();
+			}
+			catch (Exception ex)
+			{
+				exceptions.Add(ex);
+			}
 
-			if (_services is IAsyncDisposable asyncDisposable)
+			try
 			{
-				// Fire and forget because this is called from a sync context
-				await asyncDisposable.DisposeAsync();
+				DisposeConfiguration();
 			}
-			else
+			catch (Exception ex)
 			{
-				(_services as IDisposable)?.Dispose();
+				exceptions.Add(ex);
 			}
+
+			try
+			{
+				if (_services is IAsyncDisposable asyncDisposable)
+				{
+					await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+				}
+				else
+				{
+					(_services as IDisposable)?.Dispose();
+				}
+			}
+			catch (Exception ex)
+			{
+				exceptions.Add(ex);
+			}
+
+			ThrowIfDisposalFailed(exceptions);
+		}
+
+		private void CleanupAppServices()
+		{
+			List<Exception>? exceptions = null;
+			foreach (var cleanupService in _services.GetServices<IMauiAppCleanupService>())
+			{
+				try
+				{
+					cleanupService.Cleanup();
+				}
+				catch (Exception ex)
+				{
+					(exceptions ??= new()).Add(ex);
+				}
+			}
+
+			if (exceptions is null)
+				return;
+
+			if (exceptions.Count == 1)
+				ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+			throw new AggregateException("One or more MauiApp cleanup services failed.", exceptions);
 		}
 
 		private void DisposeConfiguration()
@@ -64,5 +151,21 @@ namespace Microsoft.Maui.Hosting
 			// won't dispose.
 			(Configuration as IDisposable)?.Dispose();
 		}
+
+		private static void ThrowIfDisposalFailed(List<Exception> exceptions)
+		{
+			if (exceptions.Count == 0)
+				return;
+
+			if (exceptions.Count == 1)
+				ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+			throw new AggregateException("MauiApp cleanup and disposal failed.", exceptions);
+		}
+	}
+
+	internal interface IMauiAppCleanupService
+	{
+		void Cleanup();
 	}
 }
