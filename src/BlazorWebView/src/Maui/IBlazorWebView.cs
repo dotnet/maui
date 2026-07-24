@@ -16,6 +16,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		string? HostPage { get; }
 
 		/// <summary>
+		/// Gets the type of a root component that renders the entire host HTML document (the hybrid
+		/// equivalent of a Blazor Web App's <c>App.razor</c>). When set, this replaces the need for a
+		/// physical <see cref="HostPage"/> file.
+		/// </summary>
+		Type? AppType => null;
+
+		/// <summary>
 		/// Gets or sets the path for initial navigation within the Blazor navigation context when the Blazor component is finished loading.
 		/// </summary>
 		public string StartPath
