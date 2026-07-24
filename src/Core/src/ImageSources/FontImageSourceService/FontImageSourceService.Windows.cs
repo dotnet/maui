@@ -139,7 +139,9 @@ namespace Microsoft.Maui
 
 				// Now we can convert the URI to a `file://` scheme with the full file path.
 				var fontUri = new Uri(fontSource, UriKind.RelativeOrAbsolute);
-				var path = fontUri.LocalPath.TrimStart('/');
+				var path = fontUri.IsAbsoluteUri
+					? fontUri.LocalPath.TrimStart('/')
+					: fontSource;
 				if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
 				{
 					fontSource = uri + fragment;

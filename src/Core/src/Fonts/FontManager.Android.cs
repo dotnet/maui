@@ -81,16 +81,17 @@ namespace Microsoft.Maui
 
 		Typeface? GetFromAssets(string fontName)
 		{
-			fontName = _fontRegistrar.GetFont(fontName) ?? fontName;
-
-			// First check Alias
-			var asset = LoadTypefaceFromAsset(fontName, warning: true);
-			if (asset != null)
-				return asset;
+			var registeredFont = _fontRegistrar.GetFont(fontName);
+			fontName = registeredFont ?? fontName;
 
 			// The font might be a file, such as a temporary file extracted from EmbeddedResource
 			if (File.Exists(fontName))
 				return Typeface.CreateFromFile(fontName);
+
+			// First check Alias
+			var asset = LoadTypefaceFromAsset(fontName, warning: registeredFont != null);
+			if (asset != null)
+				return asset;
 
 			var fontFile = FontFile.FromString(fontName);
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))

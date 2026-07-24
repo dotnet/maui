@@ -55,6 +55,7 @@ namespace Microsoft.Maui
 			}
 		}
 
+
 		/// <inheritdoc/>
 		public double DefaultFontSize
 		{
@@ -170,7 +171,8 @@ namespace Microsoft.Maui
 #else
 			try
 			{
-				var fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
+				if (!TryGetFontUri(fontFile, out var fontUri))
+					return null;
 
 				// Win2D in unpackaged apps can't load files using packaged schemes, such as `ms-appx://`
 				// so we have to first convert it to a `file://` scheme will the full file path.
@@ -203,6 +205,22 @@ namespace Microsoft.Maui
 				return null;
 			}
 #endif
+		}
+
+		static bool TryGetFontUri(string fontFile, out Uri fontUri)
+		{
+			fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
+
+			if (!fontUri.IsAbsoluteUri)
+			{
+				if (!FileSystemUtils.TryGetAppPackageFileUri(fontFile, out var uri))
+					return false;
+
+				fontUri = new Uri(uri, UriKind.RelativeOrAbsolute);
+				return true;
+			}
+
+			return true;
 		}
 	}
 }
