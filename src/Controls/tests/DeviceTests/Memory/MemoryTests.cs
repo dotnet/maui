@@ -239,9 +239,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SearchBar))]
 	[InlineData(typeof(Slider))]
-#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Stepper))]
-#endif
 	[InlineData(typeof(SwipeView))]
 #if TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Switch))]
@@ -345,9 +343,23 @@ public class MemoryTests : ControlsHandlerTestBase
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
 			var handler = CreateHandler<LayoutHandler>(layout);
+			var viewHandler = view.Handler;
+
 			viewReference = new WeakReference(view);
-			handlerReference = new WeakReference(view.Handler);
-			platformViewReference = new WeakReference(view.Handler.PlatformView);
+			handlerReference = new WeakReference(viewHandler);
+			platformViewReference = new WeakReference(viewHandler.PlatformView);
+
+			// Explicitly disconnect the child view's handler before letting it fall out of
+			// scope. Real apps tear down handlers this way (e.g. when a page/element is
+			// removed), and some platform views (e.g. UIStepper on iOS 26+) rely on this
+			// deterministic teardown path to release native-side retains that a bare GC
+			// pass can't reach on its own.
+			if (viewHandler is IViewHandler disconnectableHandler)
+			{
+				disconnectableHandler.DisconnectHandler();
+			}
+
+			view.Handler = null;
 		});
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);

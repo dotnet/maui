@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using ObjCRuntime;
 using UIKit;
 using CoreGraphics;
@@ -7,6 +8,15 @@ namespace Microsoft.Maui.Platform
 {
 	public static class StepperExtensions
 	{
+		// Tracks, per UIStepper instance, whether its subviews were ever given an explicit
+		// mirrored Transform/SemanticContentAttribute (see UpdateFlowDirection below). This lets
+		// us reset those subviews when flow direction reverts to LTR, without having to walk
+		// (and thereby force UIKit to lazily realize) platformStepper.Subviews for steppers that
+		// have always been LTR - preserving the memory-leak fix for the common case while still
+		// correctly restoring subviews that were previously mirrored. Entries are automatically
+		// removed when the UIStepper is collected.
+		static readonly ConditionalWeakTable<UIStepper, StrongBox<bool>> s_subviewsMirrored = new();
+
 		public static void UpdateMinimum(this UIStepper platformStepper, IStepper stepper)
 		{
 			platformStepper.MinimumValue = stepper.Minimum;
@@ -52,16 +62,72 @@ namespace Microsoft.Maui.Platform
 			bool isIOS26 = OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
 			platformStepper.SemanticContentAttribute = contentAttribute;
 
-			// Apply transform to stepper subviews on iOS 26+.
+			// Apply transform to stepper subviews on iOS 26+, but only when mirroring is
+			// actually required (RTL). Touching UIStepper.Subviews forces UIKit to lazily
+			// realize the internal Liquid Glass button views (a native, render-server backed
+			// hierarchy). For the common LTR/identity-transform case this realization has no
+			// visual effect but leaves the UIStepper with a persistent native retain that
+			// outlives the .NET GC cycles used by the leak tests (see
+			// https://github.com/dotnet/maui/issues/35985). Skipping the subview walk entirely
+			// unless the control needs to be mirrored avoids triggering that retain in the
+			// overwhelmingly common non-RTL case.
 			if (isIOS26)
 			{
 				CGAffineTransform transform = GetCGAffineTransform(stepper);
-				platformStepper.Transform = transform;
+				bool needsMirroring = !transform.IsIdentity;
 
-				foreach (var subview in platformStepper.Subviews)
+				if (needsMirroring)
 				{
-					subview.SemanticContentAttribute = contentAttribute;
-					subview.Transform = transform;
+					// Setting Transform on UIStepper (and its internal Liquid Glass button subviews)
+					// implicitly creates a CoreAnimation animation on iOS 26+. That implicit
+					// animation retains the view via the render server for the animation's duration,
+					// which can outlast a GC cycle and delay/prevent collection. Wrapping the
+					// assignment in UIView.PerformWithoutAnimation disables the implicit animation
+					// so no extra native retain is taken.
+					UIView.PerformWithoutAnimation(() =>
+					{
+						platformStepper.Transform = transform;
+
+						foreach (var subview in platformStepper.Subviews)
+						{
+							subview.SemanticContentAttribute = contentAttribute;
+							subview.Transform = transform;
+						}
+					});
+
+					s_subviewsMirrored.GetOrCreateValue(platformStepper).Value = true;
+				}
+				else if (!platformStepper.Transform.IsIdentity)
+				{
+					// The stepper previously had a mirrored transform applied but no longer
+					// needs it (e.g. FlowDirection changed back to LTR) - restore identity
+					// without forcing a fresh subview realization pass beyond what UIKit
+					// already has in place.
+					UIView.PerformWithoutAnimation(() =>
+					{
+						platformStepper.Transform = transform;
+					});
+
+					// If this stepper's subviews were previously mirrored (see the `needsMirroring`
+					// branch above), their individual Transform/SemanticContentAttribute values are
+					// independent of the parent's and were never reset by the parent-only identity
+					// restore above. Reset them now so the glyphs don't stay visually mirrored.
+					// This only walks Subviews for steppers that actually were mirrored at some
+					// point - LTR-only steppers never hit this and never pay the subview-realization
+					// cost that the memory-leak fix avoids.
+					if (s_subviewsMirrored.TryGetValue(platformStepper, out var mirrored) && mirrored.Value)
+					{
+						UIView.PerformWithoutAnimation(() =>
+						{
+							foreach (var subview in platformStepper.Subviews)
+							{
+								subview.SemanticContentAttribute = contentAttribute;
+								subview.Transform = transform;
+							}
+						});
+
+						mirrored.Value = false;
+					}
 				}
 			}
 			else
