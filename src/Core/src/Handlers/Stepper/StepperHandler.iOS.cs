@@ -15,12 +15,11 @@ namespace Microsoft.Maui.Handlers
 		readonly StepperProxy _proxy = new();
 
 		// Guards against a second DisconnectHandler call touching an already-disposed
-		// native UIStepper. In practice ElementHandler.IElementHandler.DisconnectHandler()
-		// nulls out PlatformView before invoking this method, and a subsequent ConnectHandler
-		// only ever runs against a freshly created platform view (via CreatePlatformElement),
-		// so this handler instance never sees the disposed UIStepper again. The guard remains
-		// as defense-in-depth in case a caller re-invokes DisconnectHandler directly on the
-		// same platform view instance outside that normal lifecycle.
+		// native UIStepper (e.g. a caller re-invoking DisconnectHandler directly on the
+		// same platform view instance). This handler instance can be reused across
+		// multiple ConnectHandler/DisconnectHandler cycles with a fresh UIStepper each
+		// time, so the flag is reset in ConnectHandler to scope it to the current
+		// platform view rather than leaking across reconnects.
 		bool _platformViewDisposed;
 
 		protected override UIStepper CreatePlatformView()
@@ -66,6 +65,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
+			// Reset the disposed guard for this new platform view instance. Without this,
+			// a handler that previously disconnected (and disposed its UIStepper on iOS/Mac 26+)
+			// would incorrectly skip cleanup the next time it disconnects a newly connected,
+			// non-disposed UIStepper if the handler instance is reused.
+			_platformViewDisposed = false;
+
 			_proxy.Connect(VirtualView, platformView);
 		}
 
@@ -75,9 +80,7 @@ namespace Microsoft.Maui.Handlers
 
 			// Guard runs before touching platformView again, addressing the concern that a
 			// second DisconnectHandler call on an already-disposed platform view would throw
-			// ObjectDisposedException when _proxy.Disconnect unsubscribes ValueChanged. See the
-			// comment on _platformViewDisposed above for why this handler never actually
-			// re-enters this method with the disposed instance under the normal MAUI lifecycle.
+			// ObjectDisposedException when _proxy.Disconnect unsubscribes ValueChanged.
 			if (_platformViewDisposed)
 			{
 				return;
