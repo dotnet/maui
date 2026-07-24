@@ -108,12 +108,37 @@ namespace Microsoft.Maui.TestCases.Tests
 				app.DismissKeyboard();
 		}
 
+		// Polls for a keyboard-related element using the non-throwing FindElements API instead of a
+		// bare FindElement. On iOS the soft keyboard (and its buttons) can still be animating in when
+		// the lookup runs, so a bare FindElement throws NoSuchElementException intermittently. Returns
+		// null if the element never appears within the timeout so callers can react deterministically.
+		// See dotnet/maui#36396 and dotnet/maui#36393.
+		static AppiumElement? WaitForKeyboardElement(AppiumDriver? driver, OpenQA.Selenium.By locator, TimeSpan? timeout = null)
+		{
+			if (driver is null)
+				return null;
+
+			timeout ??= TimeSpan.FromSeconds(5);
+			var start = DateTime.Now;
+			while (true)
+			{
+				var elements = driver.FindElements(locator);
+				if (elements.Count > 0)
+					return elements[0];
+
+				if (DateTime.Now - start >= timeout.Value)
+					return null;
+
+				System.Threading.Thread.Sleep(200);
+			}
+		}
+
 		internal static System.Drawing.Point? FindiOSKeyboardLocation(AppiumDriver? driver)
 		{
 			if (driver?.IsKeyboardShown() == true)
 			{
-				var keyboard = driver.FindElement(MobileBy.ClassName("UIAKeyboard"));
-				return keyboard.Location;
+				var keyboard = WaitForKeyboardElement(driver, MobileBy.ClassName("UIAKeyboard"));
+				return keyboard?.Location;
 			}
 			return null;
 		}
@@ -121,7 +146,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		internal static void CloseiOSEditorKeyboard(IApp app, AppiumDriver? driver)
 		{
 			var doneButtonName = app is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
-			var keyboardDoneButton = driver?.FindElement(MobileBy.Name(doneButtonName));
+			var keyboardDoneButton = WaitForKeyboardElement(driver, MobileBy.Name(doneButtonName));
 			keyboardDoneButton?.Click();
 		}
 
@@ -148,7 +173,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Unintentionally types a 'V' but also presses the next keyboard key
 		internal static void NextiOSKeyboardPress(AppiumDriver? driver)
 		{
-			var keyboard = driver?.FindElement(MobileBy.ClassName("UIAKeyboard"));
+			var keyboard = WaitForKeyboardElement(driver, MobileBy.ClassName("UIAKeyboard"));
 			keyboard?.SendKeys("\n");
 		}
 
