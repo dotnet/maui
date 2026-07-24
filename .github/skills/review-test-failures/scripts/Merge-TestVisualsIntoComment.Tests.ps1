@@ -206,6 +206,33 @@ After
         $merged | Should -Not -Match 'Tests Failure Visuals Inline (Start|End)'
     }
 
+    It 'does not delete fresh agent analysis that mimics the trusted visual heading' {
+        $body = @"
+$(Get-InlineVisualStartMarker)
+### Visual failure comparisons
+**Overall verdict:** Not ready
+Required coverage evidence
+$(Get-InlineVisualEndMarker)
+$(Get-InlineVisualPlaceholder)
+"@
+        $context = New-VisualTestContext -Published $false
+
+        $merged = Merge-VisualsIntoBody `
+            -Body $body `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 60000 `
+            -ReplaceExistingTrustedSection $false
+
+        $merged | Should -Match '\*\*Overall verdict:\*\* Not ready'
+        $merged | Should -Match 'Required coverage evidence'
+        $merged | Should -Match 'Agent-provided visual text \(untrusted\)'
+        $merged | Should -Not -Match 'Tests Failure Visuals Inline (Start|End)'
+    }
+
     It 'replaces the trusted placeholder with escaped expandable panels inside one comment' {
         $comparison = New-VisualTestComparison -TestName '<b>@danger</b>'
         $failure = New-VisualTestFailure `

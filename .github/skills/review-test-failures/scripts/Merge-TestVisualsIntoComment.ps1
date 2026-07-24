@@ -161,7 +161,10 @@ function Get-CommentLimitCounts {
 }
 
 function Remove-InlineVisualSection {
-    param([string]$Body)
+    param(
+        [string]$Body,
+        [bool]$ReplaceExistingTrustedSection = $true
+    )
 
     if ([string]::IsNullOrEmpty($Body)) {
         return $Body
@@ -177,15 +180,22 @@ function Remove-InlineVisualSection {
     $evaluator = [System.Text.RegularExpressions.MatchEvaluator] {
         param($match)
         $content = $match.Groups['content'].Value
-        if ([regex]::IsMatch(
+        $hasTrustedHeading = [regex]::IsMatch(
                 $content,
                 '^\s*### Visual failure comparisons(?:\r?\n|$)',
-                [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
+                [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        if ($ReplaceExistingTrustedSection -and $hasTrustedHeading) {
             return ""
         }
-        # Marker text in fresh agent output is untrusted. Neutralize the marker comments but preserve
-        # arbitrary analysis between them; only a section with the trusted merger's exact heading is
-        # eligible for idempotent replacement.
+        # Marker text in fresh agent output is untrusted. Preserve the analysis, but neutralize a
+        # forged trusted heading so it cannot masquerade as the post-step section inserted below.
+        if (-not $ReplaceExistingTrustedSection -and $hasTrustedHeading) {
+            return [regex]::Replace(
+                $content,
+                '^\s*### Visual failure comparisons',
+                "### Agent-provided visual text (untrusted)",
+                [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        }
         return $content
     }
     return $regex.Replace($Body, $evaluator)
@@ -528,14 +538,17 @@ function Merge-VisualsIntoBody {
         [int]$PrNumber,
         [int]$MaxCommentUrls,
         [int]$MaxCommentMentions,
-        [int]$MaxCommentCharacters
+        [int]$MaxCommentCharacters,
+        [bool]$ReplaceExistingTrustedSection = $true
     )
 
     if ($null -eq $Body) {
         $Body = ""
     }
 
-    $baseBody = Remove-InlineVisualSection -Body $Body
+    $baseBody = Remove-InlineVisualSection `
+        -Body $Body `
+        -ReplaceExistingTrustedSection $ReplaceExistingTrustedSection
     $placeholder = Get-InlineVisualPlaceholder
     if (-not $Context.visualAssets -or -not [bool]$Context.visualAssets.published) {
         # Publishing produced no panels. Distinguish the sub-cases so a real failure is never rendered
@@ -752,7 +765,8 @@ function Update-AgentOutputFile {
             -PrNumber $PrNumber `
             -MaxCommentUrls $MaxCommentUrls `
             -MaxCommentMentions $MaxCommentMentions `
-            -MaxCommentCharacters $MaxCommentCharacters
+            -MaxCommentCharacters $MaxCommentCharacters `
+            -ReplaceExistingTrustedSection $false
         if ($mergedBody -ne $originalBody) {
             $item.body = $mergedBody
             $mergedComments++
@@ -804,7 +818,8 @@ function Update-CommentBodyFile {
         -PrNumber $PrNumber `
         -MaxCommentUrls $MaxCommentUrls `
         -MaxCommentMentions $MaxCommentMentions `
-        -MaxCommentCharacters $MaxCommentCharacters
+        -MaxCommentCharacters $MaxCommentCharacters `
+        -ReplaceExistingTrustedSection $true
     if ($mergedBody -eq $originalBody) {
         return [pscustomobject]@{ changed = $false; mergedComments = 0 }
     }
