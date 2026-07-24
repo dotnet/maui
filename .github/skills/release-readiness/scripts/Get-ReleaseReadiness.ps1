@@ -199,10 +199,35 @@ $Script:InternalPipelines = @(
 )
 
 $Script:Warnings = [System.Collections.Generic.List[string]]::new()
+$Script:RegressionEvidenceFailures = [System.Collections.Generic.List[string]]::new()
 
 function Write-Warn([string]$msg) {
     $Script:Warnings.Add($msg) | Out-Null
     Write-Host "warn: $msg" -ForegroundColor Yellow
+}
+
+function Add-RegressionEvidenceFailure([string]$Context) {
+    if (-not [string]::IsNullOrWhiteSpace($Context)) {
+        [void]$Script:RegressionEvidenceFailures.Add($Context)
+    }
+}
+
+function ConvertFrom-GhJsonArrayResult {
+    param($Raw, [string]$Context)
+    if ($null -eq $Raw) {
+        Add-RegressionEvidenceFailure $Context
+        return [PSCustomObject]@{ Success = $false; Items = @() }
+    }
+    try {
+        $rawJson = ($Raw | Out-String).Trim()
+        if ([string]::IsNullOrWhiteSpace($rawJson)) { throw 'empty response' }
+        $items = ConvertFrom-Json -InputObject $rawJson -NoEnumerate -ErrorAction Stop
+        if ($null -eq $items -or $items -isnot [System.Array]) { throw 'expected a JSON array' }
+        return [PSCustomObject]@{ Success = $true; Items = @($items) }
+    } catch {
+        Add-RegressionEvidenceFailure "$Context ($($_.Exception.Message))"
+        return [PSCustomObject]@{ Success = $false; Items = @() }
+    }
 }
 
 function Invoke-Git([string]$Cmd) {
@@ -612,9 +637,11 @@ function Test-IsCarryForwardRegression {
 
     # A structured milestone names a later SR / later major.
     $milestone = Get-MetadataValue -Container $Regression -Name 'milestone'
+    $milestoneMajor = Get-MauiReleaseMilestoneMajor -Milestone $milestone
+    if ($ShippedMajor -gt 0 -and $milestoneMajor -gt $ShippedMajor) { return $true }
+
     $milestoneParts = Get-SrMilestoneParts -Milestone $milestone
     if ($milestoneParts) {
-        if ($ShippedMajor -gt 0 -and $milestoneParts.Major -gt $ShippedMajor) { return $true }
         if ($milestoneParts.Major -eq $ShippedMajor -and $ShippedSrNumber -gt 0 -and $milestoneParts.SrNumber -gt $ShippedSrNumber) { return $true }
         if ($milestoneParts.Major -eq $ShippedMajor -and $milestoneParts.SrNumber -eq $ShippedSrNumber -and
             $milestoneParts.SubPatch -gt $ShippedSubPatch) { return $true }
@@ -645,6 +672,22 @@ function Get-SrSubPatchFromVersion {
     $patch = [int]$match.Groups[1].Value
     if ($patch -lt 10) { return 0 }
     return ($patch % 10)
+}
+
+function Get-MauiReleaseMilestoneMajor {
+    param([string]$Milestone)
+    if ([string]::IsNullOrWhiteSpace($Milestone)) { return 0 }
+
+    $patterns = @(
+        '(?i)^\.NET\s+(\d+)(?:\.0)?\s+SR\d+(?:\.\d+)?$',
+        '(?i)^\.NET\s+(\d+)(?:\.0)?-(?:preview|rc)\d+$',
+        '(?i)^\.NET\s+(\d+)(?:\.0)?\s+(?:GA|Servicing)$'
+    )
+    foreach ($pattern in $patterns) {
+        $match = [regex]::Match($Milestone, $pattern)
+        if ($match.Success) { return [int]$match.Groups[1].Value }
+    }
+    return 0
 }
 
 function New-ReadinessCheck {
@@ -2370,9 +2413,9 @@ function Get-RegressionLabelsAuto {
 function Get-IssueTimelinePrs {
     param($Repo, $IssueNumber)
     $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/timeline", '--paginate')
-    if (-not $raw) { return @() }
-    $events = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    if (-not $events) { return @() }
+    $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "issue #$IssueNumber timeline lookup failed"
+    if (-not $parsed.Success) { return @() }
+    $events = @($parsed.Items)
     $prs = @()
     foreach ($e in $events) {
         # Use PSObject.Properties checks because strict mode forbids accessing
@@ -2434,9 +2477,9 @@ function Get-IssueCommentPrs {
     #>
     param($Repo, $IssueNumber)
     $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/comments", '--paginate')
-    if (-not $raw) { return @() }
-    $comments = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    if (-not $comments) { return @() }
+    $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "issue #$IssueNumber comments lookup failed"
+    if (-not $parsed.Success) { return @() }
+    $comments = @($parsed.Items)
 
     # strongest evidence seen per PR number ('fix-phrase' beats 'mention')
     $byNum = @{}
@@ -2494,8 +2537,28 @@ function Get-PrInfo {
     param($Repo, $PrNumber)
     $json = Invoke-Gh @('pr', 'view', $PrNumber, '--repo', $Repo, '--json',
         'number,title,state,baseRefName,mergedAt,closedAt,body,mergeCommit,author,labels,isDraft,files')
-    if (-not $json) { return $null }
-    return ($json | ConvertFrom-Json -ErrorAction SilentlyContinue)
+    if ($null -eq $json) {
+        Add-RegressionEvidenceFailure "PR #$PrNumber details lookup failed"
+        return $null
+    }
+    try {
+        $rawJson = ($json | Out-String).Trim()
+        if ([string]::IsNullOrWhiteSpace($rawJson)) { throw 'empty response' }
+        $info = ConvertFrom-Json -InputObject $rawJson -ErrorAction Stop
+        if ($null -eq $info -or $info -is [System.Array] -or
+            $info -is [string] -or $info -is [ValueType]) {
+            throw 'expected a JSON object'
+        }
+        $requiredProperties = @('number', 'title', 'state', 'baseRefName', 'body', 'mergeCommit', 'files')
+        $missingProperties = @($requiredProperties | Where-Object { -not $info.PSObject.Properties[$_] })
+        if ($missingProperties.Count -gt 0) {
+            throw "PR JSON object missing required properties: $($missingProperties -join ', ')"
+        }
+        return $info
+    } catch {
+        Add-RegressionEvidenceFailure "PR #$PrNumber details lookup failed ($($_.Exception.Message))"
+        return $null
+    }
 }
 
 function Test-PrIsToolingOnly {
@@ -2565,9 +2628,9 @@ function Get-BackportPrsForSr {
     $raw = Invoke-Gh @('pr', 'list', '--repo', $Repo, '--base', $SrBranch,
                        '--state', 'all', '--search', "$SourcePrNumber in:title,body",
                        '--json', 'number,title,state,mergedAt,closedAt', '--limit', '20')
-    if (-not $raw) { return @() }
-    $list = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    return @($list)
+    $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "backport lookup for source PR #$SourcePrNumber failed"
+    if (-not $parsed.Success) { return @() }
+    return @($parsed.Items)
 }
 
 function Resolve-ClosedFixUnlinked {
@@ -2755,6 +2818,7 @@ function Classify-RegressionCandidate {
             return @{
                 classification    = 'in-sr-active'
                 confidence        = 'high'
+                verifiedFromSrContents = $true
                 evidence          = @("SR contents already include a fix for #$($Issue.number) via $prList (closing keyword on merged SR commit)")
                 candidateFixPrs   = @($unreverted | ForEach-Object {
                     @{ number = $_; baseRef = 'release/*'; state = 'MERGED'; onMain = $false; evidenceType = 'sr-direct-fix'; backports = @(); title = '' }
@@ -2768,6 +2832,7 @@ function Classify-RegressionCandidate {
             return @{
                 classification    = 'in-sr-reverted'
                 confidence        = 'high'
+                verifiedFromSrContents = $true
                 evidence          = @("All SR fixes for #$($Issue.number) were reverted on SR: $prList")
                 candidateFixPrs   = @()
                 recommendedAction = 'Investigate: SR fix was reverted; needs a new fix or revert-of-revert'
@@ -3140,6 +3205,8 @@ function Get-RegressionCandidates {
     $seen = @{}
     $failedLabels = [System.Collections.Generic.List[string]]::new()
     $truncatedLabels = [System.Collections.Generic.List[string]]::new()
+    $failedIssues = [System.Collections.Generic.List[int]]::new()
+    $Script:RegressionEvidenceFailures.Clear()
     $probeLimit = $MaxIssues + 1
 
     foreach ($label in $Labels) {
@@ -3341,9 +3408,27 @@ function Get-RegressionCandidates {
             }
         }
 
+        $evidenceFailureStart = $Script:RegressionEvidenceFailures.Count
         $candidatePrs = Get-IssueTimelinePrs -Repo $Ctx.repo -IssueNumber $iss.number
         $classify = Classify-RegressionCandidate -Issue $iss -CandidatePrs $candidatePrs `
                         -Ctx $Ctx -SrContents $SrContents
+        $issueEvidenceFailures = @($Script:RegressionEvidenceFailures | Select-Object -Skip $evidenceFailureStart)
+        if ($issueEvidenceFailures.Count -gt 0) {
+            [void]$failedIssues.Add([int]$iss.number)
+            # Verified active target contents are sufficient positive proof even if a
+            # secondary lookup failed. Every other verdict can be understated or
+            # over-confident when evidence is missing, so downgrade it for review.
+            $verifiedFromSrContents = [bool](Get-MetadataValue -Container $classify -Name 'verifiedFromSrContents' -Default $false)
+            if (-not $verifiedFromSrContents -and $classify.classification -ne 'in-sr-active') {
+                $classify = @{
+                    classification    = 'needs-human-review'
+                    confidence        = 'low'
+                    evidence          = @("Evidence lookup incomplete for issue #$($iss.number): $($issueEvidenceFailures -join '; ')")
+                    candidateFixPrs   = @()
+                    recommendedAction = 'Rerun readiness after GitHub API access recovers; do not treat missing PR/backport evidence as authoritative.'
+                }
+            }
+        }
 
         $results += @{
             issue = [int]$iss.number
@@ -3363,9 +3448,10 @@ function Get-RegressionCandidates {
     }
     return [PSCustomObject]@{
         Items           = @($results)
-        IsComplete      = ($failedLabels.Count -eq 0 -and $truncatedLabels.Count -eq 0)
+        IsComplete      = ($failedLabels.Count -eq 0 -and $truncatedLabels.Count -eq 0 -and $failedIssues.Count -eq 0)
         FailedLabels    = @($failedLabels)
         TruncatedLabels = @($truncatedLabels)
+        FailedIssues    = @($failedIssues)
     }
 }
 
@@ -4658,9 +4744,11 @@ function Format-MarkdownReport {
     if ($isShippedRender) {
         $regressionScanIncompleteRender = [bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)
         if ($regressionScanIncompleteRender) {
+            $incompleteReasons = @(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels'))
+            $incompleteReasonText = if ($incompleteReasons.Count -gt 0) { " ($($incompleteReasons -join ', '))" } else { '' }
             [void]$sb.AppendLine("## ⚠️ Urgent follow-ups unknown — regression scan incomplete")
             [void]$sb.AppendLine()
-            [void]$sb.AppendLine("_One or more regression-label queries failed. See the Verdict and Warnings above, then rerun before treating this shipped tracker as clean._")
+            [void]$sb.AppendLine("_Regression scan did not complete$incompleteReasonText. See the Verdict and Warnings above, then rerun with the appropriate labels, phase, or ``-MaxIssues`` before treating this shipped tracker as clean._")
             [void]$sb.AppendLine()
         }
         if ($blockingItems.Count -gt 0) {
@@ -5550,7 +5638,8 @@ function Invoke-Main {
             $data['regressions'] = @($regressionScan.Items)
             $data['regressionScanIncomplete'] = -not $regressionScan.IsComplete
             $data['regressionFailedLabels'] = @($regressionScan.FailedLabels) +
-                @($regressionScan.TruncatedLabels | ForEach-Object { "$_ (truncated at -MaxIssues $MaxIssues)" })
+                @($regressionScan.TruncatedLabels | ForEach-Object { "$_ (truncated at -MaxIssues $MaxIssues)" }) +
+                @($regressionScan.FailedIssues | ForEach-Object { "issue #$_ evidence lookup incomplete" })
 
             # Summary buckets
             $summary = @{}

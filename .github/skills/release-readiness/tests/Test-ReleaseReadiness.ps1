@@ -1441,6 +1441,91 @@ try {
                                             -SrContents $scanContents -MaxIssues 10
     Assert-Eq -Label "regression scan: exact MaxIssues response remains complete" -Expected $true -Actual $exactCapScan.IsComplete
 
+    $oneIssueJson = ConvertTo-Json -InputObject @(
+        [pscustomobject]@{
+            number = 82001; title = 'Needs evidence'; state = 'OPEN'; stateReason = $null
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = $null
+        }
+    ) -Depth 5
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $oneIssueJson }
+        if ($GhArgs[0] -eq 'api' -and $GhArgs[1] -match '/issues/82001/timeline') { return $null }
+        return '[]'
+    }
+    $timelineFailureScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                   -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: downstream timeline failure marks scan incomplete" -Expected $false -Actual $timelineFailureScan.IsComplete
+    Assert-Eq -Label "regression scan: downstream failure records affected issue" -Expected 82001 -Actual ([int]$timelineFailureScan.FailedIssues[0])
+    Assert-Eq -Label "regression scan: downstream failure never emits high-confidence no-fix-yet" -Expected $true `
+        -Actual ($timelineFailureScan.Items[0].classification -eq 'needs-human-review' -and $timelineFailureScan.Items[0].confidence -eq 'low')
+
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $oneIssueJson }
+        return '[]'
+    }
+    $timelineEmptyScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                 -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: successful empty timeline remains complete" -Expected $true -Actual $timelineEmptyScan.IsComplete
+    Assert-Eq -Label "regression scan: verified empty evidence can classify no-fix-yet" -Expected 'no-fix-yet' -Actual $timelineEmptyScan.Items[0].classification
+
+    $revertedIssueJson = ConvertTo-Json -InputObject @(
+        [pscustomobject]@{
+            number = 82002; title = 'Git-proven reverted fix'; state = 'OPEN'; stateReason = $null
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = $null
+        }
+    ) -Depth 5
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $revertedIssueJson }
+        if ($GhArgs[0] -eq 'api' -and $GhArgs[1] -match '/issues/82002/timeline') { return $null }
+        return '[]'
+    }
+    $gitProvenRevertedScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+        -SrContents @{
+            sourcePrs = @(100); mainReverts = @()
+            reverts = @(@{ revertsPr = 100; revertBackportPr = 101 })
+            commits = @(@{ backportPr = 100; sourcePr = $null; fixedIssues = @(82002); isRevert = $false })
+        } -MaxIssues 10
+    Assert-Eq -Label "regression scan: unused timeline failure still marks git-proven scan incomplete" -Expected $false -Actual $gitProvenRevertedScan.IsComplete
+    Assert-Eq -Label "regression scan: git-proven reverted verdict survives unrelated timeline failure" -Expected 'in-sr-reverted' -Actual $gitProvenRevertedScan.Items[0].classification
+    Assert-Eq -Label "regression scan: git-proven reverted verdict keeps high confidence" -Expected 'high' -Actual $gitProvenRevertedScan.Items[0].confidence
+
+    $badPrIssueJson = ConvertTo-Json -InputObject @(
+        [pscustomobject]@{
+            number = 82003; title = 'Bad PR JSON evidence'; state = 'OPEN'; stateReason = $null
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = $null
+        }
+    ) -Depth 5
+    $badPrTimelineJson = @'
+[
+  { "event": "cross-referenced", "source": { "type": "issue", "issue": {
+      "number": 83001, "pull_request": {"url":"x"}, "repository": { "full_name": "dotnet/maui" } } } }
+]
+'@
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $badPrIssueJson }
+        if ($GhArgs[0] -eq 'api' -and $GhArgs[1] -match '/issues/82003/timeline') { return $badPrTimelineJson }
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'view') { return '{}' }
+        return '[]'
+    }
+    $badPrObjectScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: empty PR JSON object marks scan incomplete" -Expected $false -Actual $badPrObjectScan.IsComplete
+    Assert-Eq -Label "regression scan: empty PR JSON object downgrades classification" -Expected 'needs-human-review' -Actual $badPrObjectScan.Items[0].classification
+
+    $Script:RegressionEvidenceFailures.Clear()
+    $script:GhStub = { param([string[]]$GhArgs) return '5' }
+    $scalarPrInfo = Get-PrInfo -Repo 'dotnet/maui' -PrNumber 83002
+    Assert-Eq -Label "PR evidence: scalar JSON root is rejected without throwing" -Expected $true -Actual ($null -eq $scalarPrInfo)
+    Assert-Eq -Label "PR evidence: scalar JSON rejection records evidence failure" -Expected 1 -Actual $Script:RegressionEvidenceFailures.Count
+    $Script:RegressionEvidenceFailures.Clear()
+
     # ── Get-CandidatePrChecks: maintainer author-gate via REST author_association ──
     # Regression: `gh pr list --json` does not support authorAssociation, so the
     # spoof-gate now fetches author_association per title-matched candidate from
@@ -3044,6 +3129,14 @@ Assert-Eq -Label "carry-forward: current hotfix milestone is not later than the 
     -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10.0 SR9.1' } -ShippedSrNumber 9 -ShippedMajor 10 -ShippedSubPatch 1)
 Assert-Eq -Label "carry-forward: a later hotfix milestone is future work" -Expected $true `
     -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10 SR9.2' } -ShippedSrNumber 9 -ShippedMajor 10 -ShippedSubPatch 1)
+Assert-Eq -Label "carry-forward: later-major preview milestone is future work" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 11.0-preview1' } -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: later-major GA milestone is future work" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 11.0 GA' } -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: later-major servicing milestone is future work" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 11 Servicing' } -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: same-major preview milestone is not future work" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10.0-preview7' } -ShippedSrNumber 9 -ShippedMajor 10)
 Assert-Eq -Label "SR version helper: base patch has sub-patch 0" -Expected 0 `
     -Actual (Get-SrSubPatchFromVersion -Version '10.0.90')
 Assert-Eq -Label "SR version helper: hotfix patch maps to sub-patch 1" -Expected 1 `
@@ -3755,6 +3848,20 @@ Assert-Eq -Label "shipped markdown: incomplete scan suppresses green urgent-foll
     -Actual ($mdIncompleteScan -match 'No urgent post-ship follow-ups')
 Assert-Eq -Label "shipped markdown: incomplete scan gets an explicit hoisted notice" -Expected $true `
     -Actual ($mdIncompleteScan -match 'Urgent follow-ups unknown — regression scan incomplete')
+
+$mdDataPartialScan = $mdDataIncompleteScan.Clone()
+$mdDataPartialScan['regressionFailedLabels'] = @('(regressions phase not run: -Phase ci)')
+$mdPartialScan = Format-MarkdownReport -Data $mdDataPartialScan -RepoUrl 'https://github.com/dotnet/maui' `
+                                      -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: partial-phase reason is rendered without false query-failure wording" -Expected $true `
+    -Actual ($mdPartialScan -match 'regressions phase not run: -Phase ci' -and $mdPartialScan -notmatch 'queries failed')
+
+$mdDataTruncatedScan = $mdDataIncompleteScan.Clone()
+$mdDataTruncatedScan['regressionFailedLabels'] = @('regressed-in-10.0.90 (truncated at -MaxIssues 100)')
+$mdTruncatedScan = Format-MarkdownReport -Data $mdDataTruncatedScan -RepoUrl 'https://github.com/dotnet/maui' `
+                                        -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: truncation reason is rendered without false query-failure wording" -Expected $true `
+    -Actual ($mdTruncatedScan -match 'truncated at -MaxIssues 100' -and $mdTruncatedScan -notmatch 'queries failed')
 
 $mdDataBlockedShipCheck = $mdDataShipped.Clone()
 $mdDataBlockedShipCheck['regressions'] = @()
