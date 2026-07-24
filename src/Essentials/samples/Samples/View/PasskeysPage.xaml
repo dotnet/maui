@@ -30,6 +30,7 @@
             <Entry Text="{Binding Password}" Placeholder="Password" IsPassword="True" />
             <Button Text="Sign up (new account)" Command="{Binding SignUpCommand}" IsEnabled="{Binding IsNotBusy}" />
             <Button Text="Sign in with password" Command="{Binding SignInPasswordCommand}" IsEnabled="{Binding IsNotBusy}" />
+            <Button Text="Sign out" Command="{Binding SignOutCommand}" IsEnabled="{Binding IsNotBusy}" />
 
             <BoxView HeightRequest="1" Color="LightGray" Margin="0,8" />
 

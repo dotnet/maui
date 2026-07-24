@@ -147,10 +147,13 @@ requests get a `401`; the server never creates an account from an arbitrary post
 
 ## Authentication & CSRF (why cookies here)
 
-The native `/passkeys/*` endpoints bind a JSON body, so ASP.NET Core's antiforgery middleware — which
-only guards *form* posts — never applies to them. Combined with the fact that the **login session** is a
-cookie (`/login/finish` calls `SignInAsync`), that's the classic CSRF-susceptible shape: a cookie-authed,
-state-changing POST with no antiforgery token. **Do not copy this pattern to non-WebAuthn endpoints.**
+The native `/passkeys/*` (and `/account/logout`) endpoints are driven by a native `HttpClient`, not a
+browser `<form>`, and a native client has no antiforgery token to send. They call `.DisableAntiforgery()`
+so the `app.UseAntiforgery()` middleware doesn't reject them. (Without it the middleware inconsistently
+blocks the endpoints that inject `HttpContext` with an opaque `400 "The request has an incorrect
+Content-type."`.) Combined with the fact that the **login session** is a cookie (`/login/finish` calls
+`SignInAsync`), that's the classic CSRF-susceptible shape: a cookie-authed, state-changing POST with no
+antiforgery token. **Do not copy this pattern to non-WebAuthn endpoints.**
 
 Why it's nonetheless safe *here*: a WebAuthn `finish` payload is a signature over
 `(challenge + origin + rpId)` from a private key that never leaves the authenticator, so it **cannot be

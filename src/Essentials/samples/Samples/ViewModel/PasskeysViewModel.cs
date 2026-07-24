@@ -38,6 +38,7 @@ namespace Samples.ViewModel
 		{
 			SignUpCommand = new Command(async () => await SignUpAsync());
 			SignInPasswordCommand = new Command(async () => await SignInPasswordAsync());
+			SignOutCommand = new Command(async () => await SignOutAsync());
 			RegisterCommand = new Command(async () => await RegisterAsync());
 			LoginCommand = new Command(async () => await LoginAsync());
 		}
@@ -75,6 +76,8 @@ namespace Samples.ViewModel
 		public ICommand SignUpCommand { get; }
 
 		public ICommand SignInPasswordCommand { get; }
+
+		public ICommand SignOutCommand { get; }
 
 		public ICommand RegisterCommand { get; }
 
@@ -115,6 +118,29 @@ namespace Samples.ViewModel
 				await PostJsonAsync("/account/login?useCookies=true", new { email = Username, password = Password });
 
 				Log("✅ Signed in with a password. You can now create a passkey for faster sign-in.");
+			}
+			catch (Exception ex)
+			{
+				HandleError(ex);
+			}
+			finally
+			{
+				IsBusy = false;
+			}
+		}
+
+		async Task SignOutAsync()
+		{
+			try
+			{
+				IsBusy = true;
+				Log("Signing out…");
+
+				// Clears the Identity session cookie on our CookieContainer. After this, "Create a
+				// passkey" will correctly report that you must sign in again first.
+				await PostJsonAsync("/account/logout", new { });
+
+				Log("✅ Signed out.");
 			}
 			catch (Exception ex)
 			{
@@ -220,7 +246,7 @@ namespace Samples.ViewModel
 
 			var body = await httpResponse.Content.ReadAsStringAsync();
 			if (!httpResponse.IsSuccessStatusCode)
-				throw new InvalidOperationException($"Server returned {(int)httpResponse.StatusCode}: {body}");
+				throw new InvalidOperationException($"Server returned {(int)httpResponse.StatusCode}: {ExtractServerMessage(body)}");
 
 			return body;
 		}
@@ -230,6 +256,34 @@ namespace Samples.ViewModel
 		// set by /account/login flows into the subsequent passkey ceremony calls.
 		Task<string> PostJsonAsync(string relativeUrl, object payload)
 			=> PostAsync(relativeUrl, JsonSerializer.Serialize(payload));
+
+		// Pulls a human-readable message out of an error body. Our endpoints return either a plain
+		// string or a small { "error": "…" } / { "title": "…" } JSON object; show that rather than
+		// dumping raw JSON at the user.
+		static string ExtractServerMessage(string body)
+		{
+			if (string.IsNullOrWhiteSpace(body))
+				return "(no details)";
+
+			var trimmed = body.Trim();
+			if (trimmed[0] == '{')
+			{
+				try
+				{
+					using var doc = JsonDocument.Parse(trimmed);
+					if (doc.RootElement.TryGetProperty("error", out var error))
+						return error.GetString() ?? trimmed;
+					if (doc.RootElement.TryGetProperty("title", out var title))
+						return title.GetString() ?? trimmed;
+				}
+				catch (JsonException)
+				{
+					// not JSON after all — fall through
+				}
+			}
+
+			return trimmed;
+		}
 
 		HttpClient GetClient()
 		{
