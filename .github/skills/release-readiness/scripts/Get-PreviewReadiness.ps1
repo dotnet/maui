@@ -187,6 +187,7 @@ $StatusRank = @{
 # downstream consumers still receive the same conservative properties either way.
 $script:OpenPullRequestMetadataUsedRest = $false
 $script:OpenPullRequestMetadataRestBases = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+$script:OpenPullRequestScanIncompleteBases = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
 
 # ===================================================================
 # HELPERS
@@ -308,7 +309,24 @@ function Get-PullRequestsViaRest {
             '-f', 'direction=desc',
             '-f', 'per_page=100'
         ) -Description "list open PRs for $BaseBranch via REST"
-        return @(ConvertFrom-RestPullRequests -Json $json)
+        $items = @(ConvertFrom-RestPullRequests -Json $json)
+        if ($items.Count -eq 100) {
+            try {
+                $overflowJson = Invoke-GitHubWithRetry -Arguments @(
+                    'api', '--method', 'GET', "repos/$Repository/pulls",
+                    '-f', 'state=open', '-f', "base=$BaseBranch",
+                    '-f', 'sort=updated', '-f', 'direction=desc',
+                    '-f', 'per_page=100', '-f', 'page=2'
+                ) -Description "probe open PR overflow for $BaseBranch via REST"
+                if (@(ConvertFrom-RestPullRequests -Json $overflowJson).Count -gt 0) {
+                    [void]$script:OpenPullRequestScanIncompleteBases.Add($BaseBranch)
+                }
+            } catch {
+                Write-Warning "Unable to verify whether the REST open-PR result for '$BaseBranch' exceeds 100 items: $($_.Exception.Message)"
+                [void]$script:OpenPullRequestScanIncompleteBases.Add($BaseBranch)
+            }
+        }
+        return $items
     }
 
     # REST has no `merged` list state. Page through closed PRs and filter each
@@ -648,11 +666,16 @@ function Get-OpenPullRequests {
             "--base",
             $BaseBranch,
             "--limit",
-            "100",
+            "101",
             "--json",
             "number,title,author,url,createdAt,updatedAt,isDraft,reviewDecision,mergeStateStatus,labels,headRefName,baseRefName"
         ) -Description "list open PRs for $BaseBranch"
-        return ConvertFrom-JsonOrEmptyArray $json
+        $items = @(ConvertFrom-JsonOrEmptyArray $json)
+        if ($items.Count -gt 100) {
+            [void]$script:OpenPullRequestScanIncompleteBases.Add($BaseBranch)
+            $items = @($items | Select-Object -First 100)
+        }
+        return $items
     } catch {
         Write-Warning "GraphQL open-PR query failed; falling back to REST: $($_.Exception.Message)"
         $script:OpenPullRequestMetadataUsedRest = $true
@@ -1976,10 +1999,13 @@ if ($SurveyRef -ne $mainBranch -and $inflightExists) {
 }
 $openPrMetadataUsedRest = [bool]$script:OpenPullRequestMetadataUsedRest
 $openPrMetadataRestBases = @($script:OpenPullRequestMetadataRestBases | Sort-Object)
+$openPrScanIncompleteBases = @($script:OpenPullRequestScanIncompleteBases | Sort-Object)
 $openPrMetadataScope = Get-OpenPrMetadataScope -RestBases $openPrMetadataRestBases `
     -TargetBase $SurveyRef -InflightBase $mainBranch
 $targetOpenPrMetadataUsedRest = $openPrMetadataScope.TargetUsedRest
 $inflightOpenPrMetadataUsedRest = $openPrMetadataScope.InflightUsedRest
+$targetOpenPrScanIncomplete = $openPrScanIncompleteBases -contains $SurveyRef
+$inflightOpenPrScanIncomplete = $openPrScanIncompleteBases -contains $mainBranch
 
 # Categorize PRs into mutually-exclusive blocker buckets with P/0 as the highest
 # precedence (a p/0-labelled Maestro or merge-up PR escalates to the P/0 category
@@ -1999,6 +2025,12 @@ if ($openPrMetadataUsedRest) {
         -Details "Open PRs for $restBases used the REST fallback after GraphQL failed. REST preserves PR identity, author, labels, draft state, and refs, but does not provide review decisions or merge-conflict state; PR actions are conservative." `
         -NextAction "Rerun when GraphQL is available; manually inspect review and merge-conflict status for release-relevant PRs."
 }
+if ($openPrScanIncompleteBases.Count -gt 0) {
+    $incompleteBases = ($openPrScanIncompleteBases | ForEach-Object { "``$_``" }) -join ', '
+    $checks += New-Check -Area "Open PR pagination" -Status "INSUFFICIENT_DATA" `
+        -Details "Open PR results reached the 100-item reporting cap for $incompleteBases; blockers beyond the cap may be omitted." `
+        -NextAction "Reduce the open PR queue or query the full base-branch PR list before treating P/0, merge-up, or dependency-flow status as clear."
+}
 
 if ($maestroPRs.Count -eq 0) {
     # Maestro is scoped to the survey ref (target) only. When the preview is
@@ -2010,7 +2042,11 @@ if ($maestroPRs.Count -eq 0) {
     } else {
         "No open Maestro PRs target ``$SurveyRef``."
     }
-    $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details $maestroReadyDetails -NextAction "Continue monitoring for new dependency-flow PRs."
+    $maestroReadyStatus = if ($targetOpenPrScanIncomplete) { 'INSUFFICIENT_DATA' } else { 'READY' }
+    $maestroReadyAction = if ($targetOpenPrScanIncomplete) {
+        'Inspect the full target-branch PR list; the capped scan cannot prove that no dependency-flow PR exists.'
+    } else { 'Continue monitoring for new dependency-flow PRs.' }
+    $checks += New-Check -Area "Maestro PRs" -Status $maestroReadyStatus -Details $maestroReadyDetails -NextAction $maestroReadyAction
 } elseif (@($maestroPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count -gt 0) {
     $maestroBlockedDetail = if ($targetOpenPrMetadataUsedRest) {
         "including PRs with do-not-merge labels (review/conflict metadata unavailable via REST)."
@@ -2023,7 +2059,11 @@ if ($maestroPRs.Count -eq 0) {
 }
 
 if ($targetHumanPRs.Count -eq 0) {
-    $checks += New-Check -Area "Release branch PRs" -Status "READY" -Details "No non-Maestro open PRs target ``$SurveyRef``." -NextAction "No direct release-branch PR action from this check."
+    $releasePrEmptyStatus = if ($targetOpenPrScanIncomplete) { 'INSUFFICIENT_DATA' } else { 'READY' }
+    $releasePrEmptyAction = if ($targetOpenPrScanIncomplete) {
+        'Inspect the full target-branch PR list; the capped scan cannot prove that no release PR exists.'
+    } else { 'No direct release-branch PR action from this check.' }
+    $checks += New-Check -Area "Release branch PRs" -Status $releasePrEmptyStatus -Details "No non-Maestro open PRs were found in the scanned results for ``$SurveyRef``." -NextAction $releasePrEmptyAction
 } else {
     # Generic open PRs are NOT release blockers — only P/0 issues block the
     # release (and those have a dedicated check above + hoisted section).
@@ -2053,14 +2093,22 @@ if ($targetHumanPRs.Count -eq 0) {
 if ($p0Prs.Count -gt 0) {
     $checks += New-Check -Area "P/0 release-branch PRs" -Status "BLOCKED" -Details "$($p0Prs.Count) open P/0-labelled PR(s) target ``$SurveyRef``. See 🔴 High-priority items at top." -NextAction "Land or de-prioritize each P/0 PR before shipping."
 } else {
-    $checks += New-Check -Area "P/0 release-branch PRs" -Status "READY" -Details "No open P/0-labelled PRs target ``$SurveyRef``." -NextAction "No action required."
+    $p0EmptyStatus = if ($targetOpenPrScanIncomplete) { 'INSUFFICIENT_DATA' } else { 'READY' }
+    $p0EmptyAction = if ($targetOpenPrScanIncomplete) {
+        'Inspect the full target-branch PR list before concluding that no P/0 PR is open.'
+    } else { 'No action required.' }
+    $checks += New-Check -Area "P/0 release-branch PRs" -Status $p0EmptyStatus -Details "No open P/0-labelled PRs were found in the scanned results for ``$SurveyRef``." -NextAction $p0EmptyAction
 }
 
 # Inflight watch only matters when survey != inflight (otherwise it
 # duplicates the target check).
 if ($SurveyRef -ne $mainBranch) {
     if ($inflightHumanPRs.Count -eq 0) {
-        $checks += New-Check -Area "$mainBranch inflight branch health" -Status "READY" -Details "No non-Maestro inflight PRs are open on ``$mainBranch``." -NextAction "Continue monitoring inflight branch health."
+        $inflightEmptyStatus = if ($inflightOpenPrScanIncomplete) { 'INSUFFICIENT_DATA' } else { 'READY' }
+        $inflightEmptyAction = if ($inflightOpenPrScanIncomplete) {
+            'Inspect the full inflight PR list; the capped scan cannot prove that no non-Maestro PR exists.'
+        } else { 'Continue monitoring inflight branch health.' }
+        $checks += New-Check -Area "$mainBranch inflight branch health" -Status $inflightEmptyStatus -Details "No non-Maestro inflight PRs were found in the scanned results on ``$mainBranch``." -NextAction $inflightEmptyAction
     } elseif (@($inflightHumanPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count -gt 0) {
         $inflightBlockedDetail = if ($inflightOpenPrMetadataUsedRest) {
             "including PRs with do-not-merge labels (review/conflict metadata unavailable via REST)."
@@ -2108,7 +2156,11 @@ if ($p1Issues.Count -gt 0) {
 if ($mergeUpPRs.Count -gt 0) {
     $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status "BLOCKED" -Details "$($mergeUpPRs.Count) open merge-up PR(s) in the ``$mergeUpChainLabel`` daily-flow chain. See 🔴 High-priority items at top. A stuck merge-up at any hop accumulates conflicts and starves the release of upstream fixes." -NextAction "Resolve and merge each before shipping."
 } else {
-    $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status "READY" -Details "No open merge-up PRs in the ``$mergeUpChainLabel`` daily-flow chain." -NextAction "Continue monitoring."
+    $mergeUpEmptyStatus = if ($targetOpenPrScanIncomplete) { 'INSUFFICIENT_DATA' } else { 'READY' }
+    $mergeUpEmptyAction = if ($targetOpenPrScanIncomplete) {
+        'Inspect the full target-branch PR list before concluding that no merge-up PR is open.'
+    } else { 'Continue monitoring.' }
+    $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status $mergeUpEmptyStatus -Details "No open merge-up PRs were found in the scanned results for the ``$mergeUpChainLabel`` daily-flow chain." -NextAction $mergeUpEmptyAction
 }
 
 if ($kbeIssues.Count -gt 0) {
@@ -2249,6 +2301,9 @@ $report = [PSCustomObject]@{
     InflightPullRequests  = $inflightHumanPRs
     OpenPullRequestMetadataUsedRest = $openPrMetadataUsedRest
     OpenPullRequestMetadataRestBases = $openPrMetadataRestBases
+    OpenPullRequestScanIncompleteBases = $openPrScanIncompleteBases
+    TargetOpenPullRequestScanIncomplete = $targetOpenPrScanIncomplete
+    InflightOpenPullRequestScanIncomplete = $inflightOpenPrScanIncomplete
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
     CiScanIssues          = $ciScanIssues
@@ -2554,6 +2609,9 @@ if ($blockingChecks.Count -gt 0) {
     foreach ($bc in $blockingChecks) {
         [void]$md.AppendLine("| $(Format-MarkdownCell $bc.Area) | $(Format-MarkdownCell $bc.Details) | $(Format-MarkdownCell $bc.NextAction) |")
     }
+    [void]$md.AppendLine("")
+} elseif ($openPrScanIncompleteBases.Count -gt 0) {
+    [void]$md.AppendLine("## ⚠️ Blocking status not fully verified — open PR scan incomplete")
     [void]$md.AppendLine("")
 } elseif ($highPriorityRows.Count -eq 0) {
     [void]$md.AppendLine("## 🟢 No blocking items")

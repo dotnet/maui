@@ -2646,8 +2646,10 @@ function Test-IsExplicitBackportForSource {
     $body = [string](Get-MetadataValue -Container $Pr -Name 'body' -Default '')
     $head = [string](Get-MetadataValue -Container $Pr -Name 'headRefName' -Default '')
     if ($body -match "(?im)\bbackport\s+of\s+#$SourcePrNumber\b") { return $true }
+    if ($body -match "(?im)\bbackport(?:s|ed|ing)?\b(?:(?!#\d+\b|pull/\d+\b)[^\r\n.!?;]){0,80}(?:(?:https://github\.com/dotnet/maui/)?pull/$SourcePrNumber\b|(?:PR\s*)?#$SourcePrNumber\b)") { return $true }
     if ($body -match "(?im)\bcherry[-\s]picked\s+from(?:\s+PR)?\s+#$SourcePrNumber\b") { return $true }
     if ($head -match "(?i)^backport/pr-$SourcePrNumber-to-") { return $true }
+    if ($head -match "(?i)^copilot/backport(?:[-/][a-z0-9._]+)*[-/]$SourcePrNumber$") { return $true }
     return $false
 }
 
@@ -3540,14 +3542,6 @@ function Get-P0PrChecks {
 
     $prs = @($OpenSrPrs)
     $p0 = @($prs | Where-Object { Test-IsP0Pr $_ })
-    if ($Incomplete) {
-        return @(New-ReadinessCheck `
-            -Area 'P/0 release-branch PRs' `
-            -Status 'WATCH' `
-            -Details $(if ($IncompleteReason) { $IncompleteReason } else { 'Open PR scan incomplete; P/0 status could not be confirmed.' }) `
-            -NextAction 'Rerun readiness with working GitHub access and a sufficient PR limit before treating P/0 status as clear.')
-    }
-
     if ($p0.Count -gt 0) {
         $nums = ($p0 | ForEach-Object { "#$($_.number)" }) -join ', '
         $nextAction = if ($Shipped) {
@@ -3555,11 +3549,25 @@ function Get-P0PrChecks {
         } else {
             'Land or de-prioritize each P/0 PR before shipping.'
         }
+        $incompleteSuffix = if ($Incomplete) {
+            $reason = if ($IncompleteReason) { $IncompleteReason } else { 'Open PR scan incomplete.' }
+            " $reason Additional P/0 PRs may be omitted."
+        } else { '' }
+        if ($Incomplete) {
+            $nextAction += ' Inspect the full release-branch PR queue because the retained results may omit additional P/0 PRs.'
+        }
         return @(New-ReadinessCheck `
             -Area 'P/0 release-branch PRs' `
             -Status 'BLOCKED' `
-            -Details "$($p0.Count) open P/0-labelled PR(s) target ``$SrBranch``: $nums." `
+            -Details "$($p0.Count) open P/0-labelled PR(s) target ``$SrBranch``: $nums.$incompleteSuffix" `
             -NextAction $nextAction)
+    }
+    if ($Incomplete) {
+        return @(New-ReadinessCheck `
+            -Area 'P/0 release-branch PRs' `
+            -Status 'WATCH' `
+            -Details $(if ($IncompleteReason) { $IncompleteReason } else { 'Open PR scan incomplete; P/0 status could not be confirmed.' }) `
+            -NextAction 'Rerun readiness with working GitHub access and a sufficient PR limit before treating P/0 status as clear.')
     }
     return @(New-ReadinessCheck `
         -Area 'P/0 release-branch PRs' `
@@ -4770,6 +4778,7 @@ function Format-MarkdownReport {
     $blockedShipCheckItems = New-Object System.Collections.Generic.List[hashtable]
     $releaseContentFollowUpItems = New-Object System.Collections.Generic.List[hashtable]
     $carryForwardItems = New-Object System.Collections.Generic.List[hashtable]
+    $regressionScanIncompleteRender = [bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
         foreach ($sc in $Data['shipChecks']) {
             if ($sc.Status -eq 'BLOCKED') {
@@ -4812,7 +4821,6 @@ function Format-MarkdownReport {
     }
 
     if ($isShippedRender) {
-        $regressionScanIncompleteRender = [bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)
         if ($regressionScanIncompleteRender) {
             $incompleteReasons = @(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels'))
             $incompleteReasonText = if ($incompleteReasons.Count -gt 0) { " ($($incompleteReasons -join ', '))" } else { '' }
@@ -4901,8 +4909,9 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine("| $area | $details | $action |")
         }
         [void]$sb.AppendLine()
-    } elseif ($surveyIncompleteRender) {
-        [void]$sb.AppendLine("## ⚠️ Blocking status incomplete — partial survey")
+    } elseif ($surveyIncompleteRender -or $regressionScanIncompleteRender) {
+        $incompleteLabel = if ($surveyIncompleteRender) { 'partial survey' } else { 'regression scan incomplete' }
+        [void]$sb.AppendLine("## ⚠️ Blocking status incomplete — $incompleteLabel")
         [void]$sb.AppendLine()
     } else {
         [void]$sb.AppendLine("## 🟢 No blocking items")

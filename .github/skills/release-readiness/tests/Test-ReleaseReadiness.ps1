@@ -1549,6 +1549,51 @@ try {
         -Actual (($explicitBackports.number | Sort-Object) -join ',')
     Assert-Eq -Label "backport lineage: unrelated merged mention is rejected" -Expected $false `
         -Actual ($explicitBackports.number -contains 84002)
+    Assert-Eq -Label "backport lineage: Copilot PR-number branch is explicit" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Please backport https://github.com/dotnet/maui/pull/32537'
+            headRefName = 'copilot/backport-pr-32537'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: verb-governed full PR URL is explicit" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Please backport https://github.com/dotnet/maui/pull/32537'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: verb-governed fix-from-PR body is explicit" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This PR backports the fix from PR #32660'
+            headRefName = 'copilot/backport-fix-from-pr-32660'
+        }) -SourcePrNumber 32660)
+    Assert-Eq -Label "backport lineage: concise Backports body is explicit" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backports #32295'
+            headRefName = 'copilot/backport-dotnet-maui-32295'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: bare contextual mention remains rejected" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Before PR #32080 the behavior was X. After PR #32080 it changed.'
+            headRefName = 'cleanup/context'
+        }) -SourcePrNumber 32080)
+    Assert-Eq -Label "backport lineage: Copilot branch requires exact source number" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = ''
+            headRefName = 'copilot/backport-pr-325370'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: body match cannot cross another PR reference" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999; contextual mention of #32295'
+            headRefName = 'cleanup/context'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: body match cannot cross a pull-path reference" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This PR backports pull/99999 as a quick fix, also related to #32295 for context'
+            headRefName = 'cleanup/context'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: body match cannot cross a full-URL reference" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This PR backports https://github.com/dotnet/maui/pull/99999, see https://github.com/dotnet/maui/pull/32295 for context'
+            headRefName = 'cleanup/context'
+        }) -SourcePrNumber 32295)
 
     # ── Open SR PR scan: distinguish failure/verified-empty/cap truncation ──
     $script:GhStub = { param([string[]]$GhArgs) return $null }
@@ -1573,6 +1618,13 @@ try {
     $truncatedOpenPrScan = Get-OpenSrPrs -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9' }
     Assert-Eq -Label "open SR PR scan: 101st result marks scan incomplete" -Expected $false -Actual $truncatedOpenPrScan.IsComplete
     Assert-Eq -Label "open SR PR scan: processing remains capped at 100" -Expected 100 -Actual @($truncatedOpenPrScan.Items).Count
+    $truncatedOpenPrScan.Items[0].labels = @([pscustomobject]@{ name = 'p/0' })
+    $retainedP0Check = @(Get-P0PrChecks -OpenSrPrs $truncatedOpenPrScan.Items -SrBranch 'release/10.0.1xx-sr9' `
+                                           -Incomplete -IncompleteReason $truncatedOpenPrScan.Reason)
+    Assert-Eq -Label "open SR PR scan: retained P/0 remains BLOCKED when scan is truncated" -Expected 'BLOCKED' `
+        -Actual $retainedP0Check[0].Status
+    Assert-Eq -Label "open SR PR scan: retained P/0 reports possible omitted blockers" -Expected $true `
+        -Actual ($retainedP0Check[0].Details -match 'Additional P/0 PRs may be omitted')
 
     # ── Get-CandidatePrChecks: maintainer author-gate via REST author_association ──
     # Regression: `gh pr list --json` does not support authorAssociation, so the
@@ -3844,6 +3896,21 @@ Assert-Eq -Label "partial survey markdown carries explicit non-global-verdict wa
     -Actual ($mdPartialSurvey -match 'Partial survey — not a global ship verdict')
 Assert-Eq -Label "partial survey markdown suppresses green no-blocking heading" -Expected $false `
     -Actual ($mdPartialSurvey -match '## 🟢 No blocking items')
+
+$mdDataIncompleteRegression = $mdData.Clone()
+$mdDataIncompleteRegression['metadata'] = $mdData.metadata.Clone()
+$mdDataIncompleteRegression.metadata.mode = 'in-flight'
+$mdDataIncompleteRegression['regressions'] = @()
+$mdDataIncompleteRegression['summary'] = @{}
+$mdDataIncompleteRegression['shipChecks'] = @()
+$mdDataIncompleteRegression['regressionScanIncomplete'] = $true
+$mdDataIncompleteRegression['regressionFailedLabels'] = @('regressed-in-10.0.70')
+$mdIncompleteRegression = Format-MarkdownReport -Data $mdDataIncompleteRegression -RepoUrl 'https://github.com/dotnet/maui' `
+                                               -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "in-flight incomplete regression scan suppresses green no-blocking heading" -Expected $false `
+    -Actual ($mdIncompleteRegression -match '## 🟢 No blocking items')
+Assert-Eq -Label "in-flight incomplete regression scan renders incomplete blocking status" -Expected $true `
+    -Actual ($mdIncompleteRegression -match 'Blocking status incomplete — regression scan incomplete')
 
 # Verdict appears
 Assert-Eq -Label "Body shows 🟡 verdict (backport-in-progress)" -Expected $true `
@@ -6555,6 +6622,9 @@ $origPreviewInvokeGitHubWithRetry = (Get-Item function:Invoke-GitHubWithRetry).S
 $origPreviewTestBranchExists = (Get-Item function:Test-BranchExists).ScriptBlock
 $script:PreviewFallbackCalls = @()
 $script:PreviewUsePagedClosedFixture = $false
+$script:PreviewGraphQlOpenJson = $null
+$script:PreviewOpenRestOverflowJson = '[]'
+$script:PreviewFailOpenRestOverflowProbe = $false
 $script:PreviewOpenRestJson = @'
 [
   {
@@ -6612,7 +6682,16 @@ try {
         )
         $script:PreviewFallbackCalls += ,@($Arguments)
         if ($Arguments[0] -eq 'pr') {
+            if ($null -ne $script:PreviewGraphQlOpenJson) {
+                return $script:PreviewGraphQlOpenJson
+            }
             throw "Failed to $Description after 3 attempt(s) (gh exit 1): HTTP 502: Bad Gateway"
+        }
+        if ($Arguments -contains 'state=open' -and $Arguments -contains 'page=2') {
+            if ($script:PreviewFailOpenRestOverflowProbe) {
+                throw 'simulated REST overflow probe outage'
+            }
+            return $script:PreviewOpenRestOverflowJson
         }
         if ($Arguments -contains 'state=open') { return $script:PreviewOpenRestJson }
         if ($Arguments -contains 'state=closed') {
@@ -6640,6 +6719,8 @@ try {
     Assert-Eq -Label "preview open-PR fallback: supplies reviewDecision property as null" -Expected $true -Actual ($null -eq $fallbackOpenPrs[0].reviewDecision)
     Assert-Eq -Label "preview open-PR fallback: records degraded metadata mode" -Expected $true -Actual $script:OpenPullRequestMetadataUsedRest
     Assert-Eq -Label "preview open-PR fallback: records affected base branch" -Expected $true -Actual $script:OpenPullRequestMetadataRestBases.Contains('net11.0')
+    Assert-Eq -Label "preview open-PR fallback: fewer than 100 REST results remain complete" -Expected $false `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('net11.0')
     $mixedFallbackBases = @($script:OpenPullRequestMetadataRestBases)
     $mixedFallbackScope = Get-OpenPrMetadataScope -RestBases $mixedFallbackBases `
         -TargetBase 'release/11.0.1xx-preview7' -InflightBase 'net11.0'
@@ -6665,12 +6746,56 @@ try {
     Assert-Eq -Label "preview merged-PR fallback: recovers page-2 merged PR" -Expected 70002 -Actual $pagedMergedPrs[0].number
     $page2Calls = @($script:PreviewFallbackCalls | Where-Object { $_ -contains 'page=2' })
     Assert-Eq -Label "preview merged-PR fallback: requests page 2 when page 1 is full" -Expected 1 -Actual $page2Calls.Count
+
+    $script:PreviewGraphQlOpenJson = @(1..100 | ForEach-Object {
+        [PSCustomObject]@{ number = $_ }
+    }) | ConvertTo-Json -Compress
+    $exactCapOpenPrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview7')
+    Assert-Eq -Label "preview open-PR GraphQL cap: exact 100 returns all results" -Expected 100 -Actual $exactCapOpenPrs.Count
+    Assert-Eq -Label "preview open-PR GraphQL cap: exact 100 remains complete" -Expected $false `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview7')
+
+    $script:PreviewGraphQlOpenJson = @(1..101 | ForEach-Object {
+        [PSCustomObject]@{ number = $_ }
+    }) | ConvertTo-Json -Compress
+    $overCapOpenPrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview8')
+    Assert-Eq -Label "preview open-PR GraphQL cap: 101 trims report rows to 100" -Expected 100 -Actual $overCapOpenPrs.Count
+    Assert-Eq -Label "preview open-PR GraphQL cap: 101 marks base incomplete" -Expected $true `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview8')
+
+    $script:PreviewGraphQlOpenJson = $null
+    $script:PreviewOpenRestJson = @(1..100 | ForEach-Object {
+        [PSCustomObject]@{
+            number = $_
+            title = "Open PR $_"
+            base = [PSCustomObject]@{ ref = 'release/11.0.1xx-preview9' }
+        }
+    }) | ConvertTo-Json -Depth 4 -Compress
+    $script:PreviewOpenRestOverflowJson = '[]'
+    $exactRestCapPrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview9')
+    Assert-Eq -Label "preview open-PR REST cap: exact 100 returns all first-page results" -Expected 100 -Actual $exactRestCapPrs.Count
+    Assert-Eq -Label "preview open-PR REST cap: empty page 2 remains complete" -Expected $false `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview9')
+
+    $script:PreviewOpenRestOverflowJson = '[{"number":101,"title":"Overflow PR"}]'
+    $overRestCapPrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview10')
+    Assert-Eq -Label "preview open-PR REST cap: overflow keeps first 100 report rows" -Expected 100 -Actual $overRestCapPrs.Count
+    Assert-Eq -Label "preview open-PR REST cap: non-empty page 2 marks base incomplete" -Expected $true `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview10')
+
+    $script:PreviewFailOpenRestOverflowProbe = $true
+    $probeFailurePrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview11')
+    Assert-Eq -Label "preview open-PR REST cap: failed overflow probe preserves first-page results" -Expected 100 `
+        -Actual $probeFailurePrs.Count
+    Assert-Eq -Label "preview open-PR REST cap: failed overflow probe marks base incomplete" -Expected $true `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview11')
 } finally {
     Set-Item function:Invoke-GitHubWithRetry $origPreviewInvokeGitHubWithRetry
     Set-Item function:Test-BranchExists $origPreviewTestBranchExists
     $script:OpenPullRequestMetadataUsedRest = $false
     $script:OpenPullRequestMetadataRestBases.Clear()
-    Remove-Variable -Name PreviewFallbackCalls,PreviewUsePagedClosedFixture,PreviewOpenRestJson,PreviewClosedRestJson -Scope Script -ErrorAction SilentlyContinue
+    $script:OpenPullRequestScanIncompleteBases.Clear()
+    Remove-Variable -Name PreviewFallbackCalls,PreviewUsePagedClosedFixture,PreviewGraphQlOpenJson,PreviewOpenRestJson,PreviewOpenRestOverflowJson,PreviewFailOpenRestOverflowProbe,PreviewClosedRestJson -Scope Script -ErrorAction SilentlyContinue
 }
 
 # Document-level Preview verdict vocabulary is distinct from per-check states.
