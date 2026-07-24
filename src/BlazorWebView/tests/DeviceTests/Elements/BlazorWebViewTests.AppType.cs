@@ -48,4 +48,36 @@ public partial class BlazorWebViewTests
 			Assert.Equal("1", counterValue.Trim('"'));
 		});
 	}
+
+	[Fact]
+	public async Task AppTypeSupportsDynamicHeadViaHeadOutlet()
+	{
+		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
+		{
+			appBuilder.Services.AddMauiBlazorWebView();
+		});
+
+		// The host document (TestHostAppWithHead) declares <HeadOutlet> and a component that sets
+		// <PageTitle>. BlazorWebView attaches HeadOutlet at head::after, so the PageTitle should
+		// update the live document title from its static initial value.
+		var bwv = new BlazorWebView
+		{
+			AppType = typeof(TestHostAppWithHead),
+		};
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var bwvHandler = CreateHandler<BlazorWebViewHandler>(bwv);
+			var platformWebView = bwvHandler.PlatformView;
+			await WebViewHelpers.WaitForWebViewReady(platformWebView);
+
+			// Wait for the interactive component to render.
+			await WebViewHelpers.WaitForControlDiv(platformWebView, controlValueToWaitFor: "ready");
+
+			// The document started with <title>Initial Title</title>; the interactive PageTitle,
+			// rendered into the attached HeadOutlet, should have updated it.
+			var title = await WebViewHelpers.ExecuteScriptAsync(platformWebView, "document.title");
+			Assert.Equal("Updated Title", title.Trim('"'));
+		});
+	}
 }

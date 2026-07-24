@@ -1,0 +1,6 @@
+@* Sets the document <title> via PageTitle. In hybrid this is rendered into the interactive
+   HeadOutlet (attached at head::after by BlazorWebView), so it updates the live document title.
+   Also renders a controlDiv so the test can wait for the component to be interactive. *@
+<PageTitle>Updated Title</PageTitle>
+
+<div id="controlDiv">ready</div>
