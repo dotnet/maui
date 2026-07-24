@@ -3661,10 +3661,19 @@ stages:
                         if (-not $commit.sha) { throw "commit create failed" }
                         $patchFile = Join-Path $stageDir '_patch.json'
                         @{ sha = [string]$commit.sha; force = $false } | ConvertTo-Json | Set-Content $patchFile -Encoding UTF8
-                        gh api -X PATCH "repos/$assetRepo/git/refs/heads/$assetBranch" --input $patchFile 2>&1 | Out-Null
-                        if ($LASTEXITCODE -ne 0) { throw "ref update raced (attempt $attempt)" }
+                        $patchOut = gh api -X PATCH "repos/$assetRepo/git/refs/heads/$assetBranch" --input $patchFile 2>&1
+                        if ($LASTEXITCODE -ne 0) {
+                          # Surface the REAL failure instead of blindly assuming a race —
+                          # review-tests-assets is NOT covered by any branch ruleset
+                          # (those only match main/release/net1*.0), so a persistent
+                          # failure here is a token/permission or API error, not
+                          # contention. Log the actual response on the 1st and last try.
+                          if ($attempt -eq 1 -or $attempt -eq $maxFf) { Write-Host "  [asset-ff attempt $attempt] PATCH refs/heads/$assetBranch failed: $patchOut" }
+                          throw "ref update failed (attempt $attempt): $patchOut"
+                        }
                         $commitSha = [string]$commit.sha
                       } catch {
+                        if ($attempt -eq 1 -or $attempt -ge $maxFf) { Write-Host "  [asset-ff attempt $attempt] failed: $($_.Exception.Message)" }
                         if ($attempt -ge $maxFf) { break }
                         # Jittered, capped backoff so concurrent racers don't re-collide
                         # in lockstep but the total wait stays bounded (~a minute worst case).
