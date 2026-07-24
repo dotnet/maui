@@ -3911,7 +3911,32 @@ stages:
                 # Find the PRAgent content dir from CopilotLogs artifact
                 $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
                 if (-not $prAgentDir) {
-                  Write-Host "PRAgent directory not found in CopilotLogs — falling back to posting deep results only"
+                  # The gate/review agent left no PRAgent content on this run (e.g. the
+                  # Review stage failed before the agent uploaded its logs), so there is
+                  # no AI summary to fold the deep results into. Previously this branch
+                  # only logged and posted NOTHING — a build that ran the full deep suite
+                  # left the author with no feedback at all (observed on #34136 build
+                  # 14755367: deep succeeded, review never posted). Post a standalone
+                  # deep-results review so the deep outcome is always surfaced. Best-effort
+                  # (try/catch + LASTEXITCODE reset) so it can never fail the Post task.
+                  Write-Host "PRAgent directory not found in CopilotLogs — posting a standalone deep-results review"
+                  if ($deepBlock) {
+                    try {
+                      $doBody = "## AI Review Summary" + [Environment]::NewLine + [Environment]::NewLine +
+                        "> ℹ️ The review agent did not produce a full summary on this run (an infrastructure issue on the CI agent), but the **deep UI tests completed** — their results are below. Re-comment ``/review`` for a fresh full review." +
+                        [Environment]::NewLine + [Environment]::NewLine + $deepBlock
+                      $doTmp = New-TemporaryFile
+                      @{ body = $doBody; event = 'COMMENT' } | ConvertTo-Json -Depth 4 | Set-Content $doTmp.FullName -Encoding UTF8
+                      gh api -X POST "repos/dotnet/maui/pulls/$prNumber/reviews" --input $doTmp.FullName | Out-Null
+                      if ($LASTEXITCODE -eq 0) { Write-Host "✅ Standalone deep-results review posted" }
+                      else { Write-Host "⚠️ Standalone deep-results review POST returned non-zero; skipping" }
+                    } catch {
+                      Write-Host "⚠️ Standalone deep-results review posting failed (non-fatal): $_"
+                    }
+                    $global:LASTEXITCODE = 0
+                  } else {
+                    Write-Host "No deep results either — nothing to post"
+                  }
                 } else {
                   # Replace in-process results with deep results in uitests/content.md (if available)
                   if ($deepBlock) {
