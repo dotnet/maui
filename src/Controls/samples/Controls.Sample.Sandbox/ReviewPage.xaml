@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ReviewPage"
+             Title="Review">
+    <VerticalStackLayout Padding="20" Spacing="15">
+        <Label Text="📝 Write a Review"
+               FontSize="24"
+               FontAttributes="Bold" />
+        <Label x:Name="SkuLabel"
+               Text="Product: (inherited from parent route)"
+               FontSize="18" />
+        <Label x:Name="StarsLabel"
+               Text="Rating: (from {stars=5} default)"
+               FontSize="18" />
+        <Label Text="The stars parameter uses {stars=5} — if you navigate without specifying stars, you get the default of 5."
+               FontSize="14"
+               TextColor="Gray" />
+    </VerticalStackLayout>
+</ContentPage>
