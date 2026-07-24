@@ -508,6 +508,24 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		return null;
 	}
 
+	// Compiles every source produced in a run together and returns the error diagnostics located inside a
+	// generated .xsg.cs file — both the InitializeComponent partial (".xsg.cs") and the UpdateComponent
+	// partial (".uc.xsg.cs", which also ends in ".xsg.cs"). Used to catch an UpdateComponent() that is
+	// re-emitted without its companion InitializeComponent partial (the __version declaration → CS0103).
+	static Diagnostic[] CompileGeneratedXsgErrors(GeneratorDriverRunResult result)
+	{
+		var compilation = CreateCompilation();
+		foreach (var gen in result.Results)
+			foreach (var src in gen.GeneratedSources)
+				compilation = compilation.AddSyntaxTrees(
+					CSharpSyntaxTree.ParseText(src.SourceText.ToString(), path: src.HintName));
+
+		return compilation.GetDiagnostics()
+			.Where(d => d.Severity == DiagnosticSeverity.Error
+				&& d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+			.ToArray();
+	}
+
 	// -----------------------------------------------------------------------
 	// Dispose: always reset static state to isolate tests
 	// -----------------------------------------------------------------------
@@ -847,6 +865,131 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		// Defensive: the broken pre-round-3 behavior would have produced no UC at all OR
 		// a UC that no longer references version 1.
 		Assert.DoesNotContain("__version == 1", run3Uc!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CSharpOnlyEdit_AfterPatch_KeepsUpdateComponentAlive()
+	{
+		// Regression for dotnet/roslyn#79898: once UpdateComponent() has been emitted, a generator
+		// re-run triggered by a C# Hot Reload edit (the compilation changes while the XAML is
+		// unchanged) must NOT drop the generated UpdateComponent() partial. A source-generated method
+		// that transiently disappears is seen by Edit-and-Continue as a member *deletion*, and deleting
+		// a method that only ever existed in EnC deltas crashes the EnC delta emitter
+		// (DefinitionMap.GetPreviousMethodHandle). Before the fix, run 3 below produced no UC at all.
+		XamlHotReloadState.Reset();
+
+		var compilation = CreateCompilation();
+		var fileV1 = MakeFile(PageXamlV1);
+		var fileV2 = MakeFile(PageXamlV2_PropertyChange);
+
+		ISourceGenerator generator = new XamlGenerator().AsSourceGenerator();
+		var options = new Microsoft.CodeAnalysis.GeneratorDriverOptions(
+			disabledOutputs: Microsoft.CodeAnalysis.IncrementalGeneratorOutputKind.None,
+			trackIncrementalGeneratorSteps: true);
+
+		Microsoft.CodeAnalysis.GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
+			.AddAdditionalTexts(System.Collections.Immutable.ImmutableArray.Create<Microsoft.CodeAnalysis.AdditionalText>(fileV1.Text))
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV1]));
+
+		// Run 1: seed at version 0 — no UC yet.
+		driver = driver.RunGenerators(compilation);
+		Assert.Null(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+
+		// Run 2: real property change → UpdateComponent() is emitted.
+		driver = driver
+			.ReplaceAdditionalText(fileV1.Text, fileV2.Text)
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV2]))
+			.RunGenerators(compilation);
+		Assert.NotNull(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+
+		// Run 3: XAML unchanged, but the compilation changes (a C# Hot Reload edit adds a type). The
+		// generator re-runs for the unchanged XAML; UpdateComponent() must survive, re-emitted with the
+		// same accumulated patch chain (version 0→1) rather than dropped.
+		var compilationAfterCSharpEdit = compilation.AddSyntaxTrees(
+			CSharpSyntaxTree.ParseText("namespace TestApp { class __CSharpEditMarker { } }"));
+		driver = driver.RunGenerators(compilationAfterCSharpEdit);
+
+		var run3Uc = FindUCSource(driver.GetRunResult(), "uc.xsg");
+		Assert.NotNull(run3Uc);
+		Assert.Contains("__version == 0", run3Uc!, StringComparison.Ordinal);
+		Assert.Contains("__version = 1", run3Uc!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void MalformedXamlEdit_AfterPatch_KeepsUpdateComponentAliveAndCompiles()
+	{
+		// Review follow-up for dotnet/roslyn#79898: a mid-edit that makes the XAML *malformed* (an XML
+		// well-formedness error) fails LoadXmlDocument inside ShouldGenerateSourceGenInitializeComponent, so
+		// the IC pipeline bails at the early return *before* the try/catch. A previously-emitted
+		// UpdateComponent() must still NOT silently disappear (EnC would read that as a member deletion and
+		// crash). The last-good InitializeComponent + UpdateComponent sources are re-emitted together, so the
+		// retained UpdateComponent() is never left referencing an undeclared __version field (CS0103).
+		XamlHotReloadState.Reset();
+
+		const string malformedXaml = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hi" />
+			    </Grid>
+			</ContentPage>
+			""";
+
+		// Seed → property change (UC emitted) → malformed XAML (mismatched </Grid> fails XML parsing).
+		var (_, run2, run3) = ThreeRuns(PageXamlV1, PageXamlV2_PropertyChange, malformedXaml);
+
+		Assert.NotNull(FindUCSource(run2, "uc.xsg"));
+
+		// UpdateComponent() must survive the malformed-XAML iteration, re-emitted as the last-good source...
+		var run3Uc = FindUCSource(run3, "uc.xsg");
+		Assert.NotNull(run3Uc);
+		Assert.Contains("__version == 0", run3Uc!, StringComparison.Ordinal);
+
+		// ...together with its companion InitializeComponent partial, so the retained UC does not orphan.
+		// Without the companion re-emit, __version would be undeclared and compiling run 3 would yield CS0103.
+		var run3Errors = CompileGeneratedXsgErrors(run3);
+		Assert.DoesNotContain(run3Errors, d => d.Id == "CS0103" && d.GetMessage().Contains("__version", StringComparison.Ordinal));
+	}
+
+	[Fact]
+	public void SemanticallyInvalidXamlEdit_AfterPatch_KeepsUpdateComponentAlive()
+	{
+		// Review follow-up for dotnet/roslyn#79898: a mid-edit whose XAML is well-formed XML but
+		// *semantically* invalid (here, an unknown element type) passes ShouldGenerateSourceGenInitializeComponent
+		// and enters the try block, where InitializeComponent generation throws — exercising the outer catch
+		// (distinct from the malformed-XML early return covered above). A previously-emitted UpdateComponent()
+		// must still survive that iteration, and its companion InitializeComponent partial is re-emitted so
+		// __version stays declared (no CS0103).
+		XamlHotReloadState.Reset();
+
+		const string semanticallyInvalidXaml = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ThisControlDoesNotExist />
+			</ContentPage>
+			""";
+
+		// Seed → property change (UC emitted) → well-formed but semantically invalid XAML (IC gen throws).
+		var (_, run2, run3) = ThreeRuns(PageXamlV1, PageXamlV2_PropertyChange, semanticallyInvalidXaml);
+
+		Assert.NotNull(FindUCSource(run2, "uc.xsg"));
+
+		// The generator must have reached the try/catch path (IC generation threw → a parser error is
+		// reported), not the malformed-XML early return.
+		Assert.Contains(run3.Diagnostics, d => d.Id == "MAUIG1001");
+
+		// UpdateComponent() must survive, re-emitted as the last-good source...
+		var run3Uc = FindUCSource(run3, "uc.xsg");
+		Assert.NotNull(run3Uc);
+		Assert.Contains("__version == 0", run3Uc!, StringComparison.Ordinal);
+
+		// ...with its companion InitializeComponent partial, so the retained UC is not orphaned (CS0103).
+		var run3Errors = CompileGeneratedXsgErrors(run3);
+		Assert.DoesNotContain(run3Errors, d => d.Id == "CS0103" && d.GetMessage().Contains("__version", StringComparison.Ordinal));
 	}
 
 	[Fact]
