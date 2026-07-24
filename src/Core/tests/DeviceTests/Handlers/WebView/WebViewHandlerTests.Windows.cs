@@ -1,16 +1,315 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Web.WebView2.Core;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WebViewHandlerTests
 	{
+		[Theory(DisplayName = "IsUriWithLocalScheme classifies URLs by parsed host")]
+		[InlineData("https://appdir/index.html", true)]        // exact appdir host
+		[InlineData("https://appdir/", true)]                   // appdir root
+		[InlineData("https://APPDIR/index.html", true)]         // host match is case-insensitive
+		[InlineData("http://appdir/index.html", false)]         // wrong scheme
+		[InlineData("https://appdir.example.com/page.html", false)] // host merely starts with "appdir"
+		[InlineData("https://appdir@host.example.com/page.html", false)] // "appdir" is userinfo, not host
+		[InlineData("https://user:pass@appdir/index.html", false)] // host is appdir but carries credentials (no auth on a virtual host)
+		[InlineData("https://example.com/index.html", false)]   // unrelated host
+		[InlineData("index.html", false)]                        // relative URL is not an absolute appdir URL
+		public void IsUriWithLocalSchemeClassifiesByParsedHost(string url, bool expected) =>
+			Assert.Equal(expected, MauiWebView.IsUriWithLocalScheme(url));
+
+		[Theory(DisplayName = "IsLocalAppDirUrl treats relative and appdir URLs as local")]
+		[InlineData("index.html", true)]                         // relative URLs stay local
+		[InlineData("assets/page.html", true)]                   // nested relative URLs stay local
+		[InlineData("https://appdir/index.html", true)]          // true appdir URLs are local
+		[InlineData("https://appdir.example.com/page.html", false)] // different host
+		[InlineData("https://appdir@host.example.com/page.html", false)] // appdir as userinfo
+		[InlineData("https://user:pass@appdir/index.html", false)] // appdir host but with credentials
+		[InlineData("https://example.com/index.html", false)]    // external host
+		public void IsLocalAppDirUrlClassifiesCorrectly(string url, bool expected) =>
+			Assert.Equal(expected, MauiWebView.IsLocalAppDirUrl(url));
+
+		[Fact(DisplayName = "Local sub-resource from appdir host loads")]
+		public async Task LocalSubResourceFromAppDirLoads()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub();
+				var handler = CreateHandler(webView);
+				var platformView = (MauiWebView)handler.PlatformView;
+
+				await AttachAndRun(webView, async (_) =>
+				{
+					await platformView.EnsureCoreWebView2Async();
+
+					var navigated = new TaskCompletionSource();
+					platformView.CoreWebView2.NavigationCompleted += (_, _) => navigated.TrySetResult();
+
+					// The page references appdir-subresource-test.js relative to the appdir
+					// host; the script sets document.title when it successfully loads.
+					((IWebViewDelegate)platformView).LoadUrl("https://appdir/appdir-subresource-test.html");
+
+					await navigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+					var title = await platformView.CoreWebView2.ExecuteScriptAsync("document.title");
+
+					// ExecuteScriptAsync returns a JSON-encoded string (quotes included).
+					Assert.Equal("\"subresource-loaded\"", title);
+				});
+			});
+		}
+
+		[Fact(DisplayName = "Non-appdir navigation does not receive local mapping")]
+		public async Task NonAppDirNavigationDoesNotReceiveLocalMapping()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub();
+				var handler = CreateHandler(webView);
+				var platformView = (MauiWebView)handler.PlatformView;
+
+				await AttachAndRun(webView, async (_) =>
+				{
+					await platformView.EnsureCoreWebView2Async();
+
+					// 1. Load a local appdir page so the mapping is applied and the
+					//    sub-resource loads.
+					var appDirNavigated = new TaskCompletionSource();
+					platformView.CoreWebView2.NavigationCompleted += (_, _) => appDirNavigated.TrySetResult();
+
+					((IWebViewDelegate)platformView).LoadUrl("https://appdir/appdir-subresource-test.html");
+					await appDirNavigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+					Assert.Equal(
+						"\"subresource-loaded\"",
+						await platformView.CoreWebView2.ExecuteScriptAsync("document.title"));
+
+					// 2. Navigate to a non-appdir page that references the appdir
+					//    sub-resource. Because the parsed host is not "appdir", the
+					//    NavigationStarting handler clears the mapping, so the script
+					//    must NOT load and must not override the title. A cache-busting
+					//    query ensures the request is not served from the cache populated
+					//    in step 1 - only a live mapping could serve it.
+					var otherNavigated = new TaskCompletionSource();
+					platformView.CoreWebView2.NavigationCompleted += (_, _) => otherNavigated.TrySetResult();
+
+					platformView.NavigateToString(
+						"<html><head><title>non-appdir</title>" +
+						"<script src=\"https://appdir/appdir-subresource-test.js?nocache=1\"></script>" +
+						"</head><body><p>non-appdir</p></body></html>");
+					await otherNavigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+					// The mapping was cleared, so the appdir sub-resource failed to load
+					// and the title kept its original value.
+					Assert.Equal(
+						"\"non-appdir\"",
+						await platformView.CoreWebView2.ExecuteScriptAsync("document.title"));
+				});
+			});
+		}
+
+		// Verifies that DOM sub-resource loading and same-origin script access to the
+		// appdir host both keep working with the DenyCors mapping. LoadHtml uses
+		// NavigateToString, which produces a document with an opaque/null origin, so a
+		// script fetch() of an https://appdir/ resource from that document is a
+		// cross-origin request and does not complete (DOM sub-resources like
+		// <script src> still load - this is the difference the existing sub-resource
+		// test does not cover). This asserts the current behavior: the fetch does not
+		// succeed.
+		[Fact(DisplayName = "LoadHtml script fetch of appdir resource does not succeed")]
+		public async Task LoadHtmlScriptFetchOfAppDirResourceDoesNotSucceed()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub();
+				var handler = CreateHandler(webView);
+				var platformView = (MauiWebView)handler.PlatformView;
+
+				await AttachAndRun(webView, async (_) =>
+				{
+					await platformView.EnsureCoreWebView2Async();
+
+					var navigated = new TaskCompletionSource();
+					platformView.CoreWebView2.NavigationCompleted += (_, _) => navigated.TrySetResult();
+
+					// null baseUrl => the appdir folder mapping is applied; NavigateToString
+					// gives the document a null origin, so the absolute appdir fetch below is
+					// cross-origin.
+					var html =
+						"<script>" +
+						"  fetch('https://appdir/appdir-subresource-test.js')" +
+						"    .then(function (r) { return r.ok ? r.text() : Promise.reject('status'); })" +
+						"    .then(function () { document.title = 'fetch-ok'; })" +
+						"    .catch(function () { document.title = 'fetch-failed'; });" +
+						"</script>";
+					((IWebViewDelegate)platformView).LoadHtml(html, null);
+
+					await navigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+					var title = await WaitForTitleAsync(
+						platformView,
+						TimeSpan.FromSeconds(5),
+						"\"fetch-ok\"", "\"fetch-failed\"");
+
+					// With the DenyCors mapping, a cross-origin fetch from the null-origin
+					// document does not complete. (If this ever returns "fetch-ok", the
+					// mapping is effectively Allow for the LoadHtml path.)
+					Assert.Equal("\"fetch-failed\"", title);
+				});
+			});
+		}
+
+		// Confirms that a script fetch/XHR is a sub-resource request and does NOT raise
+		// NavigationStarting (which only fires for document/frame navigations). This
+		// matters because it means NavigationStarting is not a place where a fetch can
+		// be influenced - only the folder-mapping access mode or a WebResourceRequested
+		// filter can. A real appdir page is loaded first (document origin IS
+		// https://appdir) so the fetch is same-origin and completes, isolating "does
+		// fetch navigate?" from "does fetch complete?".
+		[Fact(DisplayName = "Script fetch does not raise NavigationStarting")]
+		public async Task ScriptFetchDoesNotRaiseNavigationStarting()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub();
+				var handler = CreateHandler(webView);
+				var platformView = (MauiWebView)handler.PlatformView;
+
+				await AttachAndRun(webView, async (_) =>
+				{
+					await platformView.EnsureCoreWebView2Async();
+
+					var navigated = new TaskCompletionSource();
+					platformView.CoreWebView2.NavigationCompleted += (_, _) => navigated.TrySetResult();
+					((IWebViewDelegate)platformView).LoadUrl("https://appdir/appdir-subresource-test.html");
+					await navigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+					var navStartUris = new List<string>();
+					void OnNavStarting(CoreWebView2 s, CoreWebView2NavigationStartingEventArgs e) =>
+						navStartUris.Add(e.Uri);
+					platformView.CoreWebView2.NavigationStarting += OnNavStarting;
+
+					try
+					{
+						// Same-origin fetch (document origin is https://appdir), so it
+						// completes; we only care whether it triggers a navigation.
+						await platformView.CoreWebView2.ExecuteScriptAsync(
+							"fetch('https://appdir/appdir-subresource-test.js').then(function (r) { return r.text(); });");
+
+						// Give any (unexpected) navigation time to surface.
+						await Task.Delay(1500);
+					}
+					finally
+					{
+						platformView.CoreWebView2.NavigationStarting -= OnNavStarting;
+					}
+
+					// A fetch is a sub-resource request, not a navigation - NavigationStarting
+					// must not fire for it.
+					Assert.DoesNotContain(
+						navStartUris,
+						u => u.Contains("appdir-subresource-test.js", StringComparison.OrdinalIgnoreCase));
+				});
+			});
+		}
+
+		// Positive check: with the DenyCors mapping, a same-origin fetch from a real
+		// https://appdir/ page still completes normally. The page loads over the appdir
+		// host (so its origin IS https://appdir) and fetches another appdir file.
+		[Fact(DisplayName = "Same-origin fetch from an appdir page succeeds")]
+		public async Task SameOriginFetchFromAppDirPageSucceeds()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub();
+				var handler = CreateHandler(webView);
+				var platformView = (MauiWebView)handler.PlatformView;
+
+				await AttachAndRun(webView, async (_) =>
+				{
+					await platformView.EnsureCoreWebView2Async();
+
+					var navigated = new TaskCompletionSource();
+					platformView.CoreWebView2.NavigationCompleted += (_, _) => navigated.TrySetResult();
+					((IWebViewDelegate)platformView).LoadUrl("https://appdir/appdir-fetch-test.html");
+					await navigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+					var title = await WaitForTitleAsync(
+						platformView,
+						TimeSpan.FromSeconds(5),
+						"\"same-origin-ok\"", "\"same-origin-failed\"");
+
+					// The document's origin IS https://appdir, so a same-origin fetch of
+					// another appdir file still works under DenyCors.
+					Assert.Equal("\"same-origin-ok\"", title);
+				});
+			});
+		}
+
+		// Confirms the intended asymmetry: a nested browsing context whose origin is not
+		// https://appdir cannot read appdir files via fetch/XHR under DenyCors, even
+		// though the same appdir files load fine as same-origin fetches and as DOM
+		// sub-resources. The parent page (real appdir origin) embeds a data: URL iframe
+		// (opaque origin), the iframe fetches an appdir file cross-origin and reports the
+		// outcome back via postMessage.
+		[Fact(DisplayName = "Cross-origin iframe fetch of an appdir resource is denied")]
+		public async Task CrossOriginIframeFetchOfAppDirResourceIsDenied()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub();
+				var handler = CreateHandler(webView);
+				var platformView = (MauiWebView)handler.PlatformView;
+
+				await AttachAndRun(webView, async (_) =>
+				{
+					await platformView.EnsureCoreWebView2Async();
+
+					var navigated = new TaskCompletionSource();
+					platformView.CoreWebView2.NavigationCompleted += (_, _) => navigated.TrySetResult();
+					((IWebViewDelegate)platformView).LoadUrl("https://appdir/appdir-iframe-parent.html");
+					await navigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+					var title = await WaitForTitleAsync(
+						platformView,
+						TimeSpan.FromSeconds(8),
+						"\"child:ok\"", "\"child:status\"", "\"child:denied\"");
+
+					// The cross-origin (opaque-origin) iframe cannot read the appdir file
+					// via fetch under DenyCors.
+					Assert.Equal("\"child:denied\"", title);
+				});
+			});
+		}
+
+		// Polls document.title until it matches one of the expected JSON-encoded values or
+		// the timeout elapses, then returns whatever the last observed value was.
+		static async Task<string> WaitForTitleAsync(MauiWebView webView, TimeSpan timeout, params string[] until)
+		{
+			var deadline = DateTime.UtcNow + timeout;
+			string title = null;
+			while (DateTime.UtcNow < deadline)
+			{
+				title = await webView.CoreWebView2.ExecuteScriptAsync("document.title");
+				foreach (var expected in until)
+				{
+					if (title == expected)
+						return title;
+				}
+				await Task.Delay(200);
+			}
+			return title;
+		}
+
 		[Theory(DisplayName = "UrlSource Updates Correctly")]
 		[InlineData("<h1>Old Source</h1><br>", "<p>New Source</p>\"")]
 		[InlineData("<p>Old Source</p><br>", "<h1>New Source</h1>\"")]
