@@ -62,6 +62,25 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(File.Exists(file), $"File did not exist: {file}");
 		}
 
+		protected SKColor[] ReadPixels(string file)
+		{
+			file = Path.Combine(DestinationDirectory, file);
+			using var bitmap = SKBitmap.Decode(file);
+			Assert.NotNull(bitmap);
+			return bitmap.Pixels.ToArray();
+		}
+
+		protected internal static void AssertPixelsDiffer(SKColor[] expected, SKColor[] actual, string because)
+		{
+			Assert.Equal(expected.Length, actual.Length);
+
+			var differentPixels = expected.Where((pixel, index) => pixel != actual[index]).Count();
+			var minimumDifferentPixels = Math.Max(1, expected.Length / 100);
+
+			Assert.True(differentPixels > minimumDifferentPixels,
+				$"{because} Differing pixels: {differentPixels} of {expected.Length}; expected more than {minimumDifferentPixels}.");
+		}
+
 		protected void AssertFileNotExists(string file)
 		{
 			file = Path.Combine(DestinationDirectory, file);

@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Resizetizer
 		SKSvg svg;
 
 		public SkiaSharpSvgTools(ResizeImageInfo info, ILogger logger)
-			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, logger)
+			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, info.Quality, logger)
 		{
 		}
 
-		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
-			: base(filename, baseSize, backgroundColor, tintColor, logger)
+		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ResizeQuality quality, ILogger logger)
+			: base(filename, baseSize, backgroundColor, tintColor, quality, logger)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -40,27 +40,31 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				throw new InvalidOperationException($"Cannot draw SVG file '{Filename}'. The SVG has no size. Ensure the SVG includes a viewBox attribute or both width and height attributes with valid dimensions.");
 			}
-			if (scale >= 1)
+			if (scale >= 1 && Quality != ResizeQuality.Fastest)
 			{
-				// draw using default scaling
+				// Draw vectors directly for Auto/back-compat and Best/highest fidelity.
 				canvas.DrawPicture(svg.Picture, Paint);
 			}
 			else
 			{
-				// vector scaling has rounding issues, so first draw as intended
-				var info = new SKImageInfo((int)size.Width, (int)size.Height);
+				// Rasterize first so the final draw honors the selected sampling options.
+				var info = new SKImageInfo(
+					Math.Max(1, (int)Math.Ceiling(size.Width)),
+					Math.Max(1, (int)Math.Ceiling(size.Height)));
 				using var surface = SKSurface.Create(info);
 				var cvn = surface.Canvas;
 
-				// draw to a larger canvas first
 				cvn.Clear(SKColors.Transparent);
-				cvn.DrawPicture(svg.Picture, Paint);
+				if (Quality == ResizeQuality.Auto)
+					cvn.DrawPicture(svg.Picture, Paint);
+				else
+					cvn.DrawPicture(svg.Picture);
 
 				// convert it all into an image
 				using var img = surface.Snapshot();
 
 				// draw to the main canvas using the correct quality settings
-				canvas.DrawImage(img, 0, 0, SamplingOptions, Paint);
+				canvas.DrawImage(img, SKRect.Create(size.Width, size.Height), SamplingOptions, Paint);
 			}
 		}
 

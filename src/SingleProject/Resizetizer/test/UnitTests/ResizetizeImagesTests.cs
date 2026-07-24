@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			protected ITaskItem GetCopiedResource(ResizetizeImages task, string path) =>
 				task.CopiedResources.Single(c => c.ItemSpec.Replace('\\', '/').EndsWith(path, StringComparison.Ordinal));
+
 		}
 
 		public abstract class ExecuteForPlatformApp : ExecuteForApp
@@ -120,6 +121,10 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void GenerationSkippedOnIncrementalBuild()
 			{
+				var inputsFile = Path.Combine(DestinationDirectory, "mauiimage.inputs");
+				Directory.CreateDirectory(DestinationDirectory);
+				File.WriteAllText(inputsFile, "ResizeQuality=Auto");
+
 				var items = new[]
 				{
 					new TaskItem("images/dotnet_logo.svg", new Dictionary<string, string>
@@ -132,12 +137,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 				var task = GetNewTask(items);
+				task.InputsFile = inputsFile;
 				var success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+				File.SetLastWriteTimeUtc(inputsFile, DateTime.UtcNow.AddMinutes(-1));
 
 				LogErrorEvents.Clear();
 				LogMessageEvents.Clear();
 				task = GetNewTask(items);
+				task.InputsFile = inputsFile;
 				success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
@@ -506,6 +514,178 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertFileSize($"drawable-mdpi/{outputName}.png", 44, 44);
 				AssertFileSize($"drawable-xhdpi/{outputName}.png", 88, 88);
+			}
+
+			[Fact]
+			public void ResizeQualityMetadataIsRespectedEndToEnd()
+			{
+				// Run the full MSBuild task pipeline with ResizeQuality=Fastest
+				var itemsFastest = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["BaseSize"] = "100",
+						["Link"] = "camera_fastest",
+						["ResizeQuality"] = "Fastest",
+					}),
+				};
+
+				var taskFastest = GetNewTask(itemsFastest);
+				var successFastest = taskFastest.Execute();
+				Assert.True(successFastest, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("drawable-mdpi/camera_fastest.png", 100, 100);
+
+				// Save the Fastest output pixels
+				var fastestFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_fastest.png");
+				using var bmpFastest = SKBitmap.Decode(fastestFile);
+				var fastestPixels = bmpFastest.Pixels.ToArray();
+
+				// Run again with ResizeQuality=Auto (default)
+				var itemsAuto = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["BaseSize"] = "100",
+						["Link"] = "camera_auto",
+						["ResizeQuality"] = "Auto",
+					}),
+				};
+
+				var taskAuto = GetNewTask(itemsAuto);
+				var successAuto = taskAuto.Execute();
+				Assert.True(successAuto, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("drawable-mdpi/camera_auto.png", 100, 100);
+
+				var itemsBest = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["BaseSize"] = "100",
+						["Link"] = "camera_best",
+						["ResizeQuality"] = "Best",
+					}),
+				};
+
+				var taskBest = GetNewTask(itemsBest);
+				var successBest = taskBest.Execute();
+				Assert.True(successBest, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("drawable-mdpi/camera_best.png", 100, 100);
+
+				var bestPixels = ReadPixels("drawable-mdpi/camera_best.png");
+
+				// Compare: Fastest/Best vs Auto should differ when downscaling
+				var autoFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_auto.png");
+				using var bmpAuto = SKBitmap.Decode(autoFile);
+				var autoPixels = bmpAuto.Pixels.ToArray();
+
+				AssertPixelsDiffer(fastestPixels, autoPixels,
+					"End-to-end: Fastest and Auto must produce different pixel output.");
+				AssertPixelsDiffer(bestPixels, autoPixels,
+					"End-to-end: Best and Auto must produce different pixel output.");
+			}
+
+			[Fact]
+			public void AppIconResizeQualityMetadataChangeRegeneratesIncrementalOutputs()
+			{
+				var inputsFile = Path.Combine(DestinationDirectory, "mauiimage.inputs");
+				var appIconFile = "mipmap-mdpi/quality_icon.png";
+				var adaptiveForegroundFile = "mipmap-mdpi/quality_icon_foreground.png";
+
+				Directory.CreateDirectory(DestinationDirectory);
+				File.WriteAllText(inputsFile, "ResizeQuality=Fastest");
+				var itemsFastest = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = "quality_icon",
+						["ResizeQuality"] = "Fastest",
+					}),
+				};
+
+				var task = GetNewTask(itemsFastest);
+				task.InputsFile = inputsFile;
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				var fastestAppIconPixels = ReadPixels(appIconFile);
+				var fastestAdaptiveForegroundPixels = ReadPixels(adaptiveForegroundFile);
+				var appIconOutput = Path.Combine(DestinationDirectory, appIconFile);
+
+				File.WriteAllText(inputsFile, "ResizeQuality=Auto");
+				File.SetLastWriteTimeUtc(inputsFile, File.GetLastWriteTimeUtc(appIconOutput).AddSeconds(2));
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+
+				var itemsAuto = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = "quality_icon",
+						["ResizeQuality"] = "Auto",
+					}),
+				};
+
+				task = GetNewTask(itemsAuto);
+				task.InputsFile = inputsFile;
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertPixelsDiffer(fastestAppIconPixels, ReadPixels(appIconFile),
+					"App icon output should regenerate when only ResizeQuality metadata changes.");
+				AssertPixelsDiffer(fastestAdaptiveForegroundPixels, ReadPixels(adaptiveForegroundFile),
+					"Adaptive icon foreground output should regenerate when only ResizeQuality metadata changes.");
+			}
+
+			[Fact]
+			public void DefaultResizeQualityPreservesBaselineBehavior()
+			{
+				// No ResizeQuality metadata = default (Auto) behavior
+				var itemsDefault = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["BaseSize"] = "100",
+						["Link"] = "camera_default",
+					}),
+				};
+
+				var taskDefault = GetNewTask(itemsDefault);
+				var successDefault = taskDefault.Execute();
+				Assert.True(successDefault, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("drawable-mdpi/camera_default.png", 100, 100);
+
+				var defaultFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_default.png");
+				using var bmpDefault = SKBitmap.Decode(defaultFile);
+				var defaultPixels = bmpDefault.Pixels.ToArray();
+
+				// Explicit Auto should produce identical results
+				var itemsAuto = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["BaseSize"] = "100",
+						["Link"] = "camera_explicit_auto",
+						["ResizeQuality"] = "Auto",
+					}),
+				};
+
+				var taskAuto = GetNewTask(itemsAuto);
+				var successAuto = taskAuto.Execute();
+				Assert.True(successAuto, LogErrorEvents.FirstOrDefault()?.Message);
+
+				var autoFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_explicit_auto.png");
+				using var bmpAuto = SKBitmap.Decode(autoFile);
+				var autoPixels = bmpAuto.Pixels.ToArray();
+
+				// Every single pixel must match: default == explicit Auto
+				Assert.Equal(defaultPixels.Length, autoPixels.Length);
+				for (int i = 0; i < defaultPixels.Length; i++)
+				{
+					Assert.Equal(defaultPixels[i], autoPixels[i]);
+				}
 			}
 
 			[Theory]

@@ -333,5 +333,338 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal((SKColor)0xffe26b00, pixmap.GetPixelColor(20, 34));
 			}
 		}
+
+		public class ResizeQualityTests : IDisposable
+		{
+			readonly string DestinationFilename;
+			readonly string DestinationFilename2;
+			readonly TestLogger Logger;
+
+			public ResizeQualityTests()
+			{
+				DestinationFilename = Path.GetTempFileName();
+				DestinationFilename2 = Path.GetTempFileName();
+				Logger = new TestLogger();
+			}
+
+			public void Dispose()
+			{
+				File.Delete(DestinationFilename);
+				File.Delete(DestinationFilename2);
+			}
+
+			[Fact]
+			public void DefaultQualityMapsToLinearMipmapSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				var tools = new SkiaSharpSvgTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void BestQualityMapsToMitchellCubicSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.Quality = ResizeQuality.Best;
+				var tools = new SkiaSharpSvgTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKCubicResampler.Mitchell),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void FastestQualityMapsToNearestNeighborSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.Quality = ResizeQuality.Fastest;
+				var tools = new SkiaSharpSvgTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void ResizeWithFastestQualityProducesValidImage()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.Quality = ResizeQuality.Fastest;
+				info.BaseSize = new SKSize(100, 100);
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(100, resultImage.Width);
+				Assert.Equal(100, resultImage.Height);
+			}
+
+			[Fact]
+			public void ResizeWithBestQualityProducesValidImage()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.Quality = ResizeQuality.Best;
+				info.BaseSize = new SKSize(100, 100);
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(100, resultImage.Width);
+				Assert.Equal(100, resultImage.Height);
+			}
+
+			[Fact]
+			public void DefaultQualityProducesIdenticalOutputToExplicitAuto()
+			{
+				var dpiPath = new DpiPath("", 1);
+
+				var infoDefault = new ResizeImageInfo();
+				infoDefault.Filename = "images/camera.svg";
+				infoDefault.BaseSize = new SKSize(100, 100);
+				var toolsDefault = new SkiaSharpSvgTools(infoDefault, Logger);
+				toolsDefault.Resize(dpiPath, DestinationFilename);
+
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.svg";
+				infoAuto.BaseSize = new SKSize(100, 100);
+				infoAuto.Quality = ResizeQuality.Auto;
+				var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+				using var bmpDefault = SKBitmap.Decode(DestinationFilename);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+				Assert.Equal(bmpDefault.Width, bmpAuto.Width);
+				Assert.Equal(bmpDefault.Height, bmpAuto.Height);
+
+				for (int y = 0; y < bmpDefault.Height; y++)
+				{
+					for (int x = 0; x < bmpDefault.Width; x++)
+					{
+						Assert.Equal(bmpDefault.GetPixel(x, y), bmpAuto.GetPixel(x, y));
+					}
+				}
+			}
+
+			[Fact]
+			public void DifferentQualitiesProduceDifferentPixelOutput()
+			{
+				// SVG downscaling: Fastest (nearest) vs Auto (bilinear+mipmaps)
+				var dpiPath = new DpiPath("", 1);
+
+				var infoFastest = new ResizeImageInfo();
+				infoFastest.Filename = "images/camera.svg";
+				infoFastest.BaseSize = new SKSize(100, 100);
+				infoFastest.Quality = ResizeQuality.Fastest;
+				var toolsFastest = new SkiaSharpSvgTools(infoFastest, Logger);
+				toolsFastest.Resize(dpiPath, DestinationFilename);
+
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.svg";
+				infoAuto.BaseSize = new SKSize(100, 100);
+				infoAuto.Quality = ResizeQuality.Auto;
+				var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+				using var bmpFastest = SKBitmap.Decode(DestinationFilename);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+				Assert.Equal(bmpFastest.Width, bmpAuto.Width);
+				Assert.Equal(bmpFastest.Height, bmpAuto.Height);
+
+				BaseTest.AssertPixelsDiffer(bmpFastest.Pixels, bmpAuto.Pixels,
+					"SVG: Fastest and Auto should produce different pixel output when downscaling");
+			}
+
+			[Fact]
+			public void FastestQualityAffectsSvgUpscaling()
+			{
+				var sourceFilename = Path.GetTempFileName();
+
+				try
+				{
+					File.WriteAllText(sourceFilename,
+						"""
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+						  <rect width="16" height="16" fill="white"/>
+						  <circle cx="8" cy="8" r="5" fill="black"/>
+						</svg>
+						""");
+
+					var dpiPath = new DpiPath("", 1);
+
+					var infoFastest = new ResizeImageInfo();
+					infoFastest.Filename = sourceFilename;
+					infoFastest.BaseSize = new SKSize(64, 64);
+					infoFastest.Quality = ResizeQuality.Fastest;
+					var toolsFastest = new SkiaSharpSvgTools(infoFastest, Logger);
+					toolsFastest.Resize(dpiPath, DestinationFilename);
+
+					var infoAuto = new ResizeImageInfo();
+					infoAuto.Filename = sourceFilename;
+					infoAuto.BaseSize = new SKSize(64, 64);
+					infoAuto.Quality = ResizeQuality.Auto;
+					var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
+					toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+					using var bmpFastest = SKBitmap.Decode(DestinationFilename);
+					using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+					Assert.Equal(bmpFastest.Width, bmpAuto.Width);
+					Assert.Equal(bmpFastest.Height, bmpAuto.Height);
+					BaseTest.AssertPixelsDiffer(bmpFastest.Pixels, bmpAuto.Pixels,
+						"SVG: Fastest and Auto should produce different pixel output when upscaling.");
+				}
+				finally
+				{
+					File.Delete(sourceFilename);
+				}
+			}
+
+			[Fact]
+			public void BestQualityPreservesSvgVectorOutputWhenUpscaling()
+			{
+				var sourceFilename = Path.GetTempFileName();
+
+				try
+				{
+					File.WriteAllText(sourceFilename,
+						"""
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+						  <rect width="16" height="16" fill="white"/>
+						  <circle cx="8" cy="8" r="5" fill="black"/>
+						</svg>
+						""");
+
+					var dpiPath = new DpiPath("", 1);
+
+					var infoBest = new ResizeImageInfo();
+					infoBest.Filename = sourceFilename;
+					infoBest.BaseSize = new SKSize(64, 64);
+					infoBest.Quality = ResizeQuality.Best;
+					var toolsBest = new SkiaSharpSvgTools(infoBest, Logger);
+					toolsBest.Resize(dpiPath, DestinationFilename);
+
+					var infoAuto = new ResizeImageInfo();
+					infoAuto.Filename = sourceFilename;
+					infoAuto.BaseSize = new SKSize(64, 64);
+					infoAuto.Quality = ResizeQuality.Auto;
+					var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
+					toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+					using var bmpBest = SKBitmap.Decode(DestinationFilename);
+					using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+					Assert.Equal(bmpBest.Width, bmpAuto.Width);
+					Assert.Equal(bmpBest.Height, bmpAuto.Height);
+					Assert.Equal(bmpBest.Pixels, bmpAuto.Pixels);
+				}
+				finally
+				{
+					File.Delete(sourceFilename);
+				}
+			}
+
+			[Fact]
+			public void FastestQualityAppliesSvgTintOnceWhenUpscaling()
+			{
+				var sourceFilename = Path.GetTempFileName();
+
+				try
+				{
+					File.WriteAllText(sourceFilename,
+						"""
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+						  <rect width="16" height="16" fill="white"/>
+						</svg>
+						""");
+
+					var info = new ResizeImageInfo();
+					info.Filename = sourceFilename;
+					info.BaseSize = new SKSize(64, 64);
+					info.TintColor = SKColors.Red.WithAlpha(127);
+					info.Quality = ResizeQuality.Fastest;
+					var tools = new SkiaSharpSvgTools(info, Logger);
+					var dpiPath = new DpiPath("", 1);
+
+					tools.Resize(dpiPath, DestinationFilename);
+
+					using var resultImage = SKBitmap.Decode(DestinationFilename);
+					using var pixmap = resultImage.PeekPixels();
+					Assert.Equal(SKColors.Red.WithAlpha(127), pixmap.GetPixelColor(32, 32));
+				}
+				finally
+				{
+					File.Delete(sourceFilename);
+				}
+			}
+
+			[Fact]
+			public void FastestQualityHandlesFractionalSvgSizeWhenUpscaling()
+			{
+				var sourceFilename = Path.GetTempFileName();
+
+				try
+				{
+					File.WriteAllText(sourceFilename,
+						"""
+						<svg xmlns="http://www.w3.org/2000/svg" width="16.5" height="16.5" viewBox="0 0 16.5 16.5">
+						  <rect width="16.5" height="16.5" fill="black"/>
+						</svg>
+						""");
+
+					var info = new ResizeImageInfo();
+					info.Filename = sourceFilename;
+					info.BaseSize = new SKSize(33, 33);
+					info.Quality = ResizeQuality.Fastest;
+					var tools = new SkiaSharpSvgTools(info, Logger);
+					var dpiPath = new DpiPath("", 1);
+
+					tools.Resize(dpiPath, DestinationFilename);
+
+					using var resultImage = SKBitmap.Decode(DestinationFilename);
+					Assert.Equal(33, resultImage.Width);
+					Assert.Equal(33, resultImage.Height);
+					Assert.True(resultImage.GetPixel(32, 32).Alpha > 0);
+				}
+				finally
+				{
+					File.Delete(sourceFilename);
+				}
+			}
+
+			[Theory]
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void AllQualitiesProduceCorrectlySizedOutput(string qualityName)
+			{
+				var quality = Enum.Parse<ResizeQuality>(qualityName);
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.BaseSize = new SKSize(256, 256);
+				info.Quality = quality;
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(256, resultImage.Width);
+				Assert.Equal(256, resultImage.Height);
+			}
+		}
 	}
 }

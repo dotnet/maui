@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -52,6 +53,44 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			AssertFile($"{image}SplashScreen.scale-100.png", 620, 300);
 			AssertFile($"{image}SplashScreen.scale-125.png", 775, 375);
 			AssertFile($"{image}SplashScreen.scale-200.png", 1240, 600);
+		}
+
+		[Fact]
+		public void ResizeQualityMetadataIsRespected()
+		{
+			var fastestSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Link"] = "camera_fastest",
+				["ResizeQuality"] = "Fastest",
+			});
+
+			var task = GetNewTask(fastestSplash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			var fastestPixels = ReadPixels("camera_fastestSplashScreen.scale-100.png");
+
+			var autoSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Link"] = "camera_auto",
+				["ResizeQuality"] = "Auto",
+			});
+
+			task = GetNewTask(autoSplash);
+			success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertPixelsDiffer(fastestPixels, ReadPixels("camera_autoSplashScreen.scale-100.png"),
+				"Splash output should honor ResizeQuality metadata.");
+		}
+
+		[Fact]
+		public void SplashInputsIncludeResizeQualityMetadata()
+		{
+			var targetsFile = Path.Combine(AppContext.BaseDirectory, "nuget", "buildTransitive", "Microsoft.Maui.Resizetizer.After.targets");
+			var targets = File.ReadAllText(targetsFile);
+
+			Assert.Contains("FileHash=%(FileHash);ResizeQuality=%(ResizeQuality)", targets, StringComparison.Ordinal);
 		}
 
 		[Theory]
