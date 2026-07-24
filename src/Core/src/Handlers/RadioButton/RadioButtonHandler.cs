@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IRadioButton, IRadioButtonHandler> Mapper = new PropertyMapper<IRadioButton, IRadioButtonHandler>(ViewHandler.ViewMapper)
 		{
-#if ANDROID || WINDOWS
+#if !TIZEN
 			[nameof(IRadioButton.Background)] = MapBackground,
 #endif
 			[nameof(IRadioButton.IsChecked)] = MapIsChecked,

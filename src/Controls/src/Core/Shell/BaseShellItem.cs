@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty =
-			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BaseShellItem), true, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty =
@@ -57,11 +57,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
-			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), true);
+			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="FlyoutItemIsVisible"/>.</summary>
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
-			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
+			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox, propertyChanged: OnFlyoutItemIsVisibleChanged);
 
 		public BaseShellItem()
 		{
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get => (bool)GetValue(IsVisibleProperty);
-			set => SetValue(IsVisibleProperty, value);
+			set => SetValue(IsVisibleProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls
 		public bool FlyoutItemIsVisible
 		{
 			get => (bool)GetValue(FlyoutItemIsVisibleProperty);
-			set => SetValue(FlyoutItemIsVisibleProperty, value);
+			set => SetValue(FlyoutItemIsVisibleProperty, BooleanBoxes.Box(value));
 		}
 
 
@@ -271,19 +271,6 @@ namespace Microsoft.Maui.Controls
 		{
 			if (me == null || me.Parent == null)
 				return;
-
-			// For Shell.NavBarIsVisibleProperty, find the shell instance for more accurate propagation
-			if (property == Shell.NavBarIsVisibleProperty)
-			{
-				var shell = me.FindParentOfType<Shell>();
-				if (shell is not null && shell.IsSet(property))
-				{
-					// Get the value from the Shell directly
-					me.SetValue(property, shell.GetValue(property));
-					return;
-				}
-			}
-
 			Propagate(property, me.Parent, me, false);
 		}
 
@@ -523,21 +510,25 @@ namespace Microsoft.Maui.Controls
 
 				if (OperatingSystem.IsAndroid())
 				{
-					object textColor;
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 
+					// Apply the default flyout item text color at the lowest specificity (like a stylesheet default)
+					// instead of through the "Default_FlyoutItemLabelStyle" class, which is applied at StyleLocal
+					// specificity. This lets a user-provided implicit "Style TargetType=Label" (or any explicit style)
+					// override the flyout item text color, matching iOS/Windows where no default color is set.
 					if (Application.Current == null)
 					{
-						textColor = Colors.Black.MultiplyAlpha(0.87f);
+						label.SetValue(Label.TextColorProperty, Colors.Black.MultiplyAlpha(0.87f), new SetterSpecificity());
 					}
 					else
 					{
-						textColor = new AppThemeBinding { Light = Colors.Black.MultiplyAlpha(0.87f), Dark = Colors.White };
+						label.SetBinding(
+							Label.TextColorProperty,
+							new AppThemeBinding { Light = Colors.Black.MultiplyAlpha(0.87f), Dark = Colors.White },
+							new SetterSpecificity());
 					}
-
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = textColor });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 				}
 				else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
 				{

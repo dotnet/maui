@@ -18,7 +18,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _initialized;
 		bool _isVisible;
 		bool _disposed;
-
+		bool? _lastLoopValue;
+		bool _isInternalPositionUpdate;
+		readonly float _touchSlop;
+		float _initialTouchX;
+		float _initialTouchY;
+		bool _directionLocked;
+		bool _delegatingToChild;
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
 
@@ -28,18 +34,92 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_oldViews = new List<View>();
 			_carouselViewLoopManager = new CarouselViewLoopManager();
+			_touchSlop = ViewConfiguration.Get(context).ScaledTouchSlop;
 		}
 
+		// Gets or sets a value indicating whether swipe gestures are enabled for the carousel.
 		public bool IsSwipeEnabled { get; set; }
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
+			// If ItemsView is explicitly disabled, defer to the base implementation so it can
+			// intercept all touch events and block interaction. Returning false here (for either
+			// the swipe-disabled or off-axis delegation paths) would bypass that guard and allow
+			// a disabled CarouselView to delegate gestures to a nested child.
+			if (ItemsView?.IsEnabled == false && !ItemsView.IsExplicitlyEnabled)
+			{
+				return base.OnInterceptTouchEvent(ev);
+			}
+
 			if (!IsSwipeEnabled)
 			{
 				return false;
 			}
 
+			switch (ev.Action)
+			{
+				case MotionEventActions.Down:
+					_initialTouchX = ev.GetX();
+					_initialTouchY = ev.GetY();
+					_directionLocked = false;
+					_delegatingToChild = false;
+					break;
+
+				case MotionEventActions.Move:
+					// Once a gesture has been delegated to a nested child, keep delegating for the
+					// rest of the gesture. This prevents a later ambiguous move - or the child
+					// reaching its scroll boundary - from letting the carousel hijack the swipe and
+					// transition to the next item.
+					if (_delegatingToChild)
+					{
+						return false;
+					}
+
+					if (!_directionLocked)
+					{
+						float deltaX = ev.GetX() - _initialTouchX;
+						float deltaY = ev.GetY() - _initialTouchY;
+
+						// Lock the gesture direction the first time movement exceeds touch slop.
+						if (Math.Abs(deltaX) > _touchSlop || Math.Abs(deltaY) > _touchSlop)
+						{
+							_directionLocked = true;
+
+							if (IsOffAxisGesture(deltaX, deltaY))
+							{
+								// Perpendicular gesture (e.g. a vertical swipe on a horizontal carousel):
+								// it belongs to nested scrollable content, never the carousel.
+								_delegatingToChild = true;
+								return false;
+							}
+						}
+					}
+					break;
+
+				case MotionEventActions.Cancel:
+				case MotionEventActions.Up:
+					// Reset gesture state at the end of the gesture
+					// to prevent old values from being used if we don't get a Down event
+					_initialTouchX = 0;
+					_initialTouchY = 0;
+					_directionLocked = false;
+					_delegatingToChild = false;
+					break;
+			}
+
 			return base.OnInterceptTouchEvent(ev);
+		}
+
+		// Determines whether the gesture's dominant axis is the opposite of the carousel's scroll
+		// orientation (e.g. a vertical swipe on a horizontal carousel). Off-axis gestures belong to
+		// nested scrollable content, so the carousel must not intercept them.
+		bool IsOffAxisGesture(float deltaX, float deltaY)
+		{
+			float absDeltaX = Math.Abs(deltaX);
+			float absDeltaY = Math.Abs(deltaY);
+			bool isVerticalGesture = absDeltaY > absDeltaX;
+
+			return IsHorizontal ? isVerticalGesture : !isVerticalGesture;
 		}
 
 		protected virtual bool IsHorizontal => (Carousel?.ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
@@ -63,6 +143,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
+			if (!IsSwipeEnabled)
+			{
+				return false;
+			}
+
 			if (Carousel.Loop)
 				_carouselViewLoopManager.CenterIfNeeded(this, IsHorizontal);
 
@@ -89,6 +174,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void SetUpNewElement(CarouselView newElement)
 		{
 			base.SetUpNewElement(newElement);
+			_lastLoopValue = null;
 
 			AddLayoutListener();
 			UpdateItemSpacing();
@@ -103,6 +189,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView is not null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
+
+			// Reset lifecycle state so the next element setup starts cleanly.
+			_initialized = false;
+			_lastLoopValue = null;
 
 			ClearLayoutListener();
 			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
@@ -223,10 +313,51 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!(ItemsViewAdapter.ItemsSource is IItemsViewSource observableItemsSource))
 				return;
 
+			// Set flag to disable animation during collection changes
+			_isInternalPositionUpdate = true;
+
+			// Guard: Carousel, Handler, or MauiContext may be null during a teardown race (a
+			// background-thread collection change firing after TearDownOldElement begins, which
+			// clears ItemsView and makes Carousel null). Reset the flag before bailing out so
+			// future scroll interactions are not permanently blocked. All code paths below assume
+			// Carousel, Handler, and MauiContext are non-null; a single guard here is preferable
+			// to inconsistent null-checks scattered across individual paths.
+			if (Carousel?.Handler?.MauiContext is null)
+			{
+				_isInternalPositionUpdate = false;
+				return;
+			}
+
 			var carouselPosition = Carousel.Position;
 			var currentItemPosition = observableItemsSource.GetPosition(Carousel.CurrentItem);
 			var count = observableItemsSource.Count;
 			var savedScrollToCounter = _scrollToCounter;
+
+			// Equal-count Replace keeps the item count unchanged, so the position is preserved
+			// explicitly instead of relying on GetPosition(CurrentItem), which returns -1 for the
+			// replaced item and would otherwise be misread as a removal. Unequal-count Replace
+			// (Android's ObservableItemsSource falls back to a full refresh for these) can change
+			// the total count, so it falls through to the existing count-changing logic below,
+			// after clamping the position to avoid going out of range.
+			if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Replace)
+			{
+				var oldReplaceCount = e.OldItems?.Count ?? 0;
+				var newReplaceCount = e.NewItems?.Count ?? 0;
+
+				if (oldReplaceCount > 0 && oldReplaceCount == newReplaceCount)
+				{
+					HandleReplaceAction(e, carouselPosition, count, savedScrollToCounter, observableItemsSource);
+					return;
+				}
+
+				if (carouselPosition >= count)
+				{
+					// Clamp to 0 (not -1) when the unequal-count Replace leaves the collection
+					// empty; a negative position later reaches ScrollToPosition/UpdatePosition,
+					// and RecyclerView.ScrollToPosition(-1) can throw.
+					carouselPosition = count > 0 ? count - 1 : 0;
+				}
+			}
 
 			bool removingCurrentElement = currentItemPosition == -1;
 			bool removingLastElement = e.OldStartingIndex == count;
@@ -253,6 +384,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (Carousel.Loop)
 				{
 					UpdateAdapter();
+					// Sync the loop manager's source so GetGoToIndex uses the correct item count
+					// after the adapter is rebuilt. Without this, _itemsSource stays stale and
+					// GetNearestAdapterPosition produces wrong results
+					_carouselViewLoopManager.SetItemsSource(ItemsViewAdapter.ItemsSource);
 					ScrollToPosition(carouselPosition);
 				}
 			}
@@ -267,6 +402,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (removingAnyPrevious)
 			{
+				_isInternalPositionUpdate = false;
 				return;
 			}
 
@@ -294,23 +430,39 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				GetDispatcher()
 					.Dispatch(() =>
 					{
-						// If someone called explicit ScrollTo before the dispatched
-						// callback was delivered then don't override it.
-						if (_scrollToCounter == savedScrollToCounter)
+						try
 						{
-							SetCurrentItem(carouselPosition);
-							UpdatePosition(carouselPosition);
-							ScrollToPosition(carouselPosition);
-						}
-						
-						//If we are adding or removing the last item we need to update
-						//the inset that we give to items so they are centered
-						if (e.NewStartingIndex == count - 1 || removingLastElement)
-						{
-							UpdateItemDecoration();
-						}
+							// If someone called explicit ScrollTo before the dispatched
+							// callback was delivered then don't override it.
+							if (_scrollToCounter == savedScrollToCounter)
+							{
+								SetCurrentItem(carouselPosition);
+								UpdatePosition(carouselPosition);
+								//If we are adding or removing the last item we need to update
+								//the inset that we give to items so they are centered
+								if (e.NewStartingIndex == count - 1 || removingLastElement)
+								{
+									UpdateItemDecoration();
+								}
 
-						UpdateVisualStates();
+								if (Carousel.Loop)
+								{
+									UpdateLoopCentering(count);
+								}
+								else
+								{
+									ScrollToPosition(carouselPosition);
+								}
+
+								UpdateVisualStates();
+							}
+						}
+						finally
+						{
+							// Reset flag after collection operations complete,
+							// always reset even if ScrollTo was called or an exception occurred
+							_isInternalPositionUpdate = false;
+						}
 					});
 		}
 
@@ -320,6 +472,58 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				RemoveItemDecoration(_itemDecoration);
 			_itemDecoration = CreateSpacingDecoration(ItemsLayout);
 			AddItemDecoration(_itemDecoration);
+		}
+
+		internal void UpdateLoop()
+		{
+			if (Carousel is null)
+			{
+				return;
+			}
+
+			var loopValue = Carousel.Loop;
+			var previousLoopValue = _lastLoopValue;
+			_lastLoopValue = loopValue;
+
+			// Ignore startup mapper call and repeated same-value mapper calls.
+			if (!_initialized || !previousLoopValue.HasValue || previousLoopValue.Value == loopValue)
+			{
+				return;
+			}
+
+			// Preserve both the Position and the CurrentItem because UpdateAdapter() resets
+			// CarouselView.Position to 0 and CarouselView.CurrentItem to null on rebuild.
+			int currentPosition = Carousel.Position;
+			object currentItem = Carousel.CurrentItem;
+
+			UpdateAdapter();
+
+			// Restore the logical position and current item so bindings/MVVM observers
+			// see the same state after the loop change.
+			if (ItemsViewAdapter?.ItemsSource is not null && ItemsViewAdapter.ItemsSource.Count > 0)
+			{
+				if (currentPosition >= 0 && currentPosition < ItemsViewAdapter.ItemsSource.Count)
+				{
+					Carousel.SetValueFromRenderer(CarouselView.PositionProperty, currentPosition);
+
+					var restoredItem = currentItem ?? ItemsViewAdapter.ItemsSource.GetItem(currentPosition);
+					Carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, restoredItem);
+				}
+			}
+
+			// In Windows, the scrollbar is hidden when Loop is enabled.
+			// For platform consistency, apply the same behavior on Android.
+			UpdateScrollBarVisibility(Carousel);
+			if (Carousel.Loop)
+			{
+				var itemCount = ItemsViewAdapter.ItemsSource.Count;
+				int loopedPosition = LoopedPosition(itemCount) + currentPosition;
+				ScrollToPosition(loopedPosition);
+			}
+			else	
+			{
+				ScrollToPosition(currentPosition);
+			}
 		}
 
 		void UpdateInitialPosition()
@@ -358,8 +562,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			SetCurrentItem(_oldPosition);
 
-			var index = Carousel.Loop ? LoopedPosition(itemCount) + _oldPosition : _oldPosition;
-			ScrollHelper.JumpScrollToPosition(index, Microsoft.Maui.Controls.ScrollToPosition.Center);
+			if (Carousel.Loop)
+			{
+				UpdateLoopCentering(itemCount);
+			}
+			else
+			{
+				ScrollHelper.JumpScrollToPosition(_oldPosition, Microsoft.Maui.Controls.ScrollToPosition.Center);
+			}
 			_gotoPosition = -1;
 		}
 
@@ -374,12 +584,221 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return loopScale - (loopScale % itemCount);
 		}
 
+		void UpdateLoopCentering(int itemCount)
+		{
+			if (ItemsViewAdapter is null || itemCount == 0)
+			{
+				return;
+			}
+
+			var currentPosition = Carousel.Position;
+
+			// Calculate the proper looped index for centering
+			var index = LoopedPosition(itemCount) + currentPosition;
+			ScrollHelper.JumpScrollToPosition(index, Microsoft.Maui.Controls.ScrollToPosition.Center);
+		}
+
 		void UpdatePositionFromVisibilityChanges()
 		{
 			if (_isVisible != ItemsView.IsVisible)
 				UpdateInitialPosition();
 
 			_isVisible = ItemsView.IsVisible;
+		}
+
+		void UpdateScrollBarVisibility(CarouselView carouselView)
+		{
+			if (carouselView.Loop)
+			{
+				HorizontalScrollBarEnabled = false;
+				VerticalScrollBarEnabled = false;
+			}
+			else
+			{
+				UpdateHorizontalScrollBarVisibility();
+				UpdateVerticalScrollBarVisibility();
+			}
+		}
+
+		void HandleReplaceAction(
+			System.Collections.Specialized.NotifyCollectionChangedEventArgs e,
+			int carouselPosition,
+			int count,
+			int savedScrollToCounter,
+			IItemsViewSource observableItemsSource)
+		{
+			_noNeedForScroll = true;
+			_gotoPosition = -1;
+
+			if (Carousel.Loop)
+			{
+				// In Loop mode the on-screen cells live at virtual positions
+				// (virtualPosition % itemCount), so the NotifyItemChanged(realIndex) that the
+				// items source already raised never reaches the visible virtual cell. Rebind
+				// just the visible virtual cells that map to the replaced index so the new
+				// value is shown, WITHOUT rebuilding the adapter (UpdateAdapter resets
+				// Position/CurrentItem, which caused a visible flash to position 0 and a
+				// cascade of PositionChanged/CurrentItemChanged events).
+				// Iterate over the full replaced range in case the Replace event covers more
+				// than one item (e.g. from a custom INotifyCollectionChanged source).
+				var replaceCount = e.OldItems?.Count ?? 1;
+
+				// Some custom INotifyCollectionChanged sources raise an indexless Replace
+				// (OldStartingIndex == -1). Since Replace preserves position for an equal-count
+				// swap, the replaced item's current index can be recovered from the items source
+				// itself. This only resolves a single-item indexless Replace (the common case);
+				// a multi-item indexless Replace falls back to a full adapter refresh below.
+				var startIndex = e.OldStartingIndex;
+				if (startIndex < 0)
+				{
+					if (replaceCount == 1 && e.NewItems?.Count > 0)
+					{
+						startIndex = observableItemsSource.GetPosition(e.NewItems[0]);
+					}
+
+					if (startIndex < 0)
+					{
+						GetAdapter()?.NotifyDataSetChanged();
+						replaceCount = 0;
+					}
+				}
+
+				for (int i = 0; i < replaceCount; i++)
+				{
+					RebindVisibleLoopItem(startIndex + i, count);
+				}
+
+				var dispatched = Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
+				{
+					try
+					{
+						// Carousel can become null if TearDownOldElement runs between the
+						// Dispatch call above and this callback's execution (e.g. the user
+						// navigates away while a live collection change is in flight).
+						if (Carousel is null)
+						{
+							return;
+						}
+
+						if (_scrollToCounter == savedScrollToCounter)
+						{
+							// Position and the virtual scroll offset are unchanged, so we
+							// only refresh CurrentItem to the new value at the same position
+							// and update visual states. We must NOT ScrollToPosition here:
+							// the logical index maps to the start of the virtual range, which
+							// would jump the loop carousel away from its current location.
+							SetCurrentItem(carouselPosition);
+							UpdateVisualStates();
+						}
+					}
+					finally
+					{
+						_isInternalPositionUpdate = false;
+
+						// Replace doesn't change Position, so no PositionChanged-driven
+						// UpdateFromPosition call arrives to consume the flag. Reset it here
+						// so the next legitimate programmatic Position update isn't ignored.
+						_noNeedForScroll = false;
+					}
+				});
+
+				// Dispatch can refuse to queue work (e.g. during a teardown race). In that case the
+				// callback above (and its finally block) never runs, so reset the flags here to avoid
+				// leaving future position updates permanently blocked.
+				if (!dispatched)
+				{
+					_isInternalPositionUpdate = false;
+					_noNeedForScroll = false;
+				}
+
+				return;
+			}
+
+			// Handler and MauiContext are guaranteed non-null here — CollectionItemsSourceChanged
+			// guards for null at its entry point and returns early.
+			var replaceDispatched = Carousel.Handler.MauiContext.GetDispatcher().Dispatch(() =>
+			{
+				try
+				{
+					// Carousel can become null if TearDownOldElement runs between the
+					// Dispatch call above and this callback's execution (e.g. the user
+					// navigates away while a live collection change is in flight).
+					if (Carousel is null)
+					{
+						return;
+					}
+
+					// If someone called explicit ScrollTo before the dispatched
+					// callback was delivered then don't override it.
+					if (_scrollToCounter == savedScrollToCounter)
+					{
+						// Replace preserves the current position — no scroll needed.
+						SetCurrentItem(carouselPosition);
+						UpdatePosition(carouselPosition);
+						UpdateVisualStates();
+					}
+				}
+				finally
+				{
+					_isInternalPositionUpdate = false;
+
+					// Replace doesn't change Position, so no PositionChanged-driven
+					// UpdateFromPosition call arrives to consume the flag. Reset it here
+					// so the next legitimate programmatic Position update isn't ignored.
+					_noNeedForScroll = false;
+				}
+			});
+
+			// Dispatch can refuse to queue work (e.g. during a teardown race). In that case the
+			// callback above (and its finally block) never runs, so reset the flags here to avoid
+			// leaving future position updates permanently blocked.
+			if (!replaceDispatched)
+			{
+				_isInternalPositionUpdate = false;
+				_noNeedForScroll = false;
+			}
+		}
+
+		// Rebinds the visible virtual cells that currently display the replaced item so a Replace
+		// is reflected on screen without rebuilding the adapter. In Loop mode the visible cells
+		// live at virtual positions where (virtualPosition % itemCount) == changedIndex, so a plain
+		// NotifyItemChanged(changedIndex) never reaches them. Off-screen cells are not touched;
+		// they pick up the new value from the live items source when scrolled into view.
+		void RebindVisibleLoopItem(int changedIndex, int itemCount)
+		{
+			if (itemCount <= 0 || changedIndex < 0)
+			{
+				return;
+			}
+
+			var adapter = GetAdapter();
+			if (adapter is null)
+			{
+				return;
+			}
+
+			if (!(GetLayoutManager() is LinearLayoutManager layoutManager))
+			{
+				adapter.NotifyDataSetChanged();
+				return;
+			}
+
+			var firstVisibleItemPosition = layoutManager.FindFirstVisibleItemPosition();
+			var lastVisibleItemPosition = layoutManager.FindLastVisibleItemPosition();
+
+			if (firstVisibleItemPosition == RecyclerView.NoPosition || lastVisibleItemPosition == RecyclerView.NoPosition)
+			{
+				adapter.NotifyDataSetChanged();
+				return;
+			}
+
+			for (int virtualPosition = firstVisibleItemPosition; virtualPosition <= lastVisibleItemPosition; virtualPosition++)
+			{
+				if (virtualPosition % itemCount == changedIndex)
+				{
+					adapter.NotifyItemChanged(virtualPosition);
+				}
+			}
 		}
 
 		void UpdateVisualStates()
@@ -450,6 +869,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!_initialized || !_isVisible)
 				return;
 
+			// Do not process scroll events triggered by internal collection changes
+			// (e.g. item inserted at index 0 shifts RecyclerView scroll offset)
+			if (_isInternalPositionUpdate)
+				return;
+
 			_noNeedForScroll = false;
 			var index = e.CenterItemIndex;
 			if (Carousel?.Loop == true)
@@ -510,7 +934,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
 			{
 				_gotoPosition = currentItemPosition;
-				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
+				ScrollToItemPosition(currentItemPosition, Carousel.AnimateCurrentItemChanges);
 			}
 		}
 
@@ -530,7 +954,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_oldPosition = carouselPosition;
 				return;
 			}
-
 
 			if (carouselPosition >= itemCount || carouselPosition < 0)
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");
@@ -552,9 +975,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_gotoPosition = carouselPosition;
 				}
 
-				ItemsView.ScrollTo(carouselPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
+				ScrollToItemPosition(carouselPosition, Carousel.AnimatePositionChanges);
 			}
 			SetCurrentItem(carouselPosition);
+		}
+
+		void ScrollToItemPosition(int position, bool shouldAnimate)
+		{
+			if (position < 0 || position >= (ItemsViewAdapter?.ItemsSource?.Count ?? 0))
+				return;
+
+			// Disable animation during collection changes to prevent cascading scroll events
+			var animate = shouldAnimate && !_isInternalPositionUpdate;
+			ItemsView.ScrollTo(position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
 		}
 
 		void AddLayoutListener()
@@ -594,6 +1027,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ViewTreeObserver?.RemoveOnGlobalLayoutListener(_carouselViewLayoutListener);
 			_carouselViewLayoutListener = null;
+		}
+
+		// https://github.com/dotnet/maui/issues/13323
+		// CarouselView is a full-page pager; child-initiated rectangle scroll requests
+		// (e.g. EditText cursor positioning) must not scroll the carousel.
+		public override bool RequestChildRectangleOnScreen(
+			global::Android.Views.View child,
+			global::Android.Graphics.Rect rect,
+			bool immediate)
+		{
+			return false;
+		}
+
+		// https://github.com/dotnet/maui/issues/13323
+		// base.RequestChildFocus preserves normal focus propagation, but it may
+		// start a focus-driven scroll from an otherwise idle CarouselView.
+		public override void RequestChildFocus(
+			global::Android.Views.View child,
+			global::Android.Views.View focused)
+		{
+			var wasIdleBeforeFocus = ScrollState == RecyclerView.ScrollStateIdle;
+
+			base.RequestChildFocus(child, focused);
+
+			if (wasIdleBeforeFocus && ScrollState != RecyclerView.ScrollStateIdle)
+			{
+				StopScroll();
+			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Runtime.Versioning;
@@ -29,6 +30,9 @@ namespace Microsoft.Maui.Controls.Platform
 		WeakReference<PlatformView>? _platformView;
 		UIAccessibilityTrait _addedFlags;
 		bool? _defaultAccessibilityRespondsToUserInteraction;
+		bool? _defaultShouldGroupAccessibilityChildren;
+		bool _setShouldGroupAccessibilityChildren;
+		bool _setAccessibilityActivateCallback;
 
 		double _previousScale = 1.0;
 		ShouldReceiveTouchProxy? _proxy;
@@ -117,6 +121,11 @@ namespace Microsoft.Maui.Controls.Platform
 			_interactions.Clear();
 			_gestureRecognizers.Clear();
 
+			if (PlatformView is not null)
+			{
+				ResetAccessibilityPromotionFlags();
+			}
+
 			_dragAndDropDelegate?.Disconnect();
 			_dragAndDropDelegate = null;
 
@@ -194,7 +203,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (platformRecognizer == null)
 			{
 				if (virtualView == element)
-					return new Point((int)originPoint.X, (int)originPoint.Y);
+					return new Point(originPoint.X, originPoint.Y);
 
 				var targetViewScreenLocation = virtualView.GetLocationOnScreen();
 
@@ -229,7 +238,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (result == null)
 				return null;
 
-			return new Point((int)result.Value.X, (int)result.Value.Y);
+			return new Point(result.Value.X, result.Value.Y);
 		}
 
 		protected virtual List<UIGestureRecognizer?>? GetPlatformRecognizer(IGestureRecognizer recognizer)
@@ -658,6 +667,83 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				PlatformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 				_addedFlags |= UIAccessibilityTrait.Button;
+
+				// Ensure container views are marked as accessibility elements so VoiceOver
+				// can announce the Button trait and make the container focusable for VoiceOver.
+				// Skip if IsAccessibilityElement is already true (e.g. set by SemanticExtensions for a
+				// Hint/Description on this layout) — when the container is already a leaf accessibility
+				// element, ShouldGroupAccessibilityChildren is ignored by UIKit and would be redundant.
+				//
+				// LIMITATION (Path A — gesture-only, no Hint/Description): Setting
+				// ShouldGroupAccessibilityChildren = true alone does NOT make the layout focusable to
+				// VoiceOver; UIKit only focuses views whose IsAccessibilityElement is true. So for a
+				// tappable layout without any Semantics set, VoiceOver still navigates directly to the
+				// individual children, the Button trait above is silenced, and the
+				// AccessibilityActivateCallback registered below is never reached via VoiceOver.
+				// This is a pre-existing UIKit constraint, intentionally not addressed by this fix
+				// (which targets the Hint scenario from issue #34380).
+				if (!PlatformView.ShouldGroupAccessibilityChildren
+					&& !PlatformView.IsAccessibilityElement
+					&& _handler.VirtualView is global::Microsoft.Maui.ILayout)
+				{
+					// Capture the pre-existing value so cleanup can restore it (mirrors the
+					// _defaultAccessibilityRespondsToUserInteraction pattern below).
+					_defaultShouldGroupAccessibilityChildren = PlatformView.ShouldGroupAccessibilityChildren;
+					PlatformView.ShouldGroupAccessibilityChildren = true;
+					_setShouldGroupAccessibilityChildren = true;
+				}
+
+				// UIKit's default accessibilityActivate() simulates touch events which are intermittently
+				// unreliable for UITapGestureRecognizer (especially on macOS Catalyst Ctrl+Option+Space).
+				// Bypass that path by directly invoking SendTapped on the MAUI TapGestureRecognizer for
+				// both iOS and Catalyst. VoiceOver activation is a single semantic event — UIKit's
+				// simulated-touch path also does not honor NumberOfTapsRequired > 1 from a VoiceOver
+				// activation, so the direct path does not regress that scenario and makes activation
+				// reliable across both platforms.
+				// This block is decoupled from the grouping block above so it also registers when
+				// SemanticExtensions already promoted the container (layout with Hint + gesture).
+				// Note: Only Microsoft.Maui.Platform.MauiView exposes AccessibilityActivateCallback,
+				// so layouts whose platform view is not a MauiView (e.g. Border, ScrollView, custom
+				// container handlers) fall back to UIKit's default simulated-touch activation path.
+				if (PlatformView is Microsoft.Maui.Platform.MauiView mauiView &&
+					_handler.VirtualView is global::Microsoft.Maui.ILayout)
+				{
+					var weakThis = new WeakReference<GesturePlatformManager>(this);
+
+					mauiView.AccessibilityActivateCallback = () =>
+					{
+						if (!weakThis.TryGetTarget(out var manager))
+						{
+							return false;
+						}
+
+						var view = manager._handler?.VirtualView as View;
+
+						if (view is null)
+						{
+							return false;
+						}
+
+						// Honor the same gates UIKit's touch dispatch would have applied. VoiceOver
+						// activation bypasses UIKit's hit-testing/touch path, so without these
+						// guards a disabled or input-transparent layout would still fire its tap.
+						if (!view.IsEnabled || view.InputTransparent)
+						{
+							return false;
+						}
+
+						if (view.HasAccessibleTapGesture(out var tap))
+						{
+							tap.SendTapped(view);
+							return true;
+						}
+
+						return false;
+					};
+
+					_setAccessibilityActivateCallback = true;
+				}
+
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13)
 #if TVOS
 				|| OperatingSystem.IsTvOSVersionAtLeast(11)
@@ -879,6 +965,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				PlatformView.AccessibilityTraits &= ~_addedFlags;
 
+				ResetAccessibilityPromotionFlags();
+
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 				{
 					if (_defaultAccessibilityRespondsToUserInteraction != null)
@@ -889,6 +977,31 @@ namespace Microsoft.Maui.Controls.Platform
 			_addedFlags = UIAccessibilityTrait.None;
 			_defaultAccessibilityRespondsToUserInteraction = null;
 			LoadRecognizers();
+		}
+
+		// Reverts any accessibility-related state this manager set on the platform view when a
+		// tap gesture was wired up. Called from both Disconnect() and the gesture-collection-changed
+		// path so the two stay in sync.
+		void ResetAccessibilityPromotionFlags()
+		{
+			if (PlatformView is null)
+			{
+				return;
+			}
+
+			if (_setShouldGroupAccessibilityChildren)
+			{
+				PlatformView.ShouldGroupAccessibilityChildren = _defaultShouldGroupAccessibilityChildren ?? false;
+			}
+
+			if (_setAccessibilityActivateCallback && PlatformView is Microsoft.Maui.Platform.MauiView mv)
+			{
+				mv.AccessibilityActivateCallback = null;
+			}
+
+			_setShouldGroupAccessibilityChildren = false;
+			_setAccessibilityActivateCallback = false;
+			_defaultShouldGroupAccessibilityChildren = null;
 		}
 
 		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
@@ -957,6 +1070,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class FakeRightClickContextMenuInteraction : UIContextMenuInteraction
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The strong reference is required to keep the UIContextMenuInteractionDelegate alive for the interaction lifetime.")]
 			FakeRightClickDelegate? _dontCollectMePlease;
 
 			public FakeRightClickContextMenuInteraction(TapGestureRecognizer tapGestureRecognizer, GesturePlatformManager gestureManager)
@@ -995,6 +1109,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class FakeRightClickPointerInteraction : UIContextMenuInteraction
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The strong reference is required to keep the UIContextMenuInteractionDelegate alive for the interaction lifetime.")]
 			FakeRightClickPointerDelegate? _dontCollectMePlease;
 			bool _disposed;
 

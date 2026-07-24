@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
@@ -33,7 +34,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
+			[nameof(IView.IsEnabled)] = MapIsEnabled
 		};
 
 		UICollectionViewLayout _layout;
@@ -77,6 +79,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			MapItemsUpdatingScrollMode(handler, itemsView);
+#if MACCATALYST
+			// ItemsSource replacement: saved index may now resolve to different content even
+			// if still in range. Clear before applying the new source.
+			ClearMacCatalystPendingScrollRestore(handler);
+#endif
 			handler.Controller?.UpdateItemsSource();
 		}
 
@@ -121,6 +128,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.Controller?.UpdateVisibility();
 		}
 
+		internal static void MapIsEnabled(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			(handler.Controller as SelectableItemsViewController2<ReorderableItemsView>)?.UpdateSelectionMode();
+		}
+
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			if (handler.ItemsView is StructuredItemsView structuredItemsView && structuredItemsView.ItemsLayout is ItemsLayout itemsLayout)
@@ -134,10 +146,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			_layout = SelectLayout();
 			Controller?.UpdateLayout(_layout);
+
+#if MACCATALYST
+			// Layout swap (ItemTemplate / FlowDirection / etc.) may remap the saved
+			// section/item to a different visual position. Clear to avoid stale restore.
+			ClearMacCatalystPendingScrollRestore(this);
+#endif
 		}
+
+#if MACCATALYST
+		static void ClearMacCatalystPendingScrollRestore(ItemsViewHandler2<TItemsView> handler)
+		{
+			if (handler?.Controller?.CollectionView is MauiCollectionView mauiCV)
+			{
+				mauiCV.ClearPendingScrollRestore();
+			}
+		}
+#endif
 
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			int section = 0, item = 0;
+			UICollectionViewScrollPosition scrollPosition = UICollectionViewScrollPosition.None;
+
 			using (var indexPath = DetermineIndex(args))
 			{
 				if (!IsIndexPathValid(indexPath))
@@ -147,11 +178,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				var scrollDirection = Controller.GetScrollDirection();
-				var position = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, scrollDirection);
+				scrollPosition = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, scrollDirection);
+
+				// Capture section and item as ints before the using block disposes the indexPath
+				section = (int)indexPath.Section;
+				item = (int)indexPath.Item;
+
+				// Clear any previously armed restore before issuing the new scroll. Otherwise the
+				// synchronous KVO contentOffset notification fired by this ScrollToItem call could be
+				// evaluated against a stale armed target and queue a restore back to the old position.
+#if MACCATALYST
+				if (Controller?.CollectionView is MauiCollectionView mauiCVBeforeScroll)
+				{
+					mauiCVBeforeScroll.ClearPendingScrollRestore();
+				}
+#endif
 
 				Controller.CollectionView.ScrollToItem(indexPath,
-					position, args.IsAnimated);
+					scrollPosition, args.IsAnimated);
 			}
+
+			// After non-animated scroll, arm KVO restore to recover from silent Mac Catalyst contentOffset shift
+#if MACCATALYST
+			if (Controller?.CollectionView is MauiCollectionView mauiCV)
+			{
+				if (!args.IsAnimated)
+				{
+					mauiCV.SetPendingScrollRestore(section, item, scrollPosition);
+				}
+			}
+#endif
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
 			{
@@ -159,6 +215,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					if (args.GroupIndex == -1)
 					{
+						// When IsGrouped is set and no explicit group index is provided,
+						// convert the flat index to the correct section/item index path.
+						if (ItemsView is GroupableItemsView groupable && groupable.IsGrouped)
+						{
+							var itemsSource = Controller.ItemsSource;
+							if (itemsSource is not null)
+							{
+								return ConvertFlatIndexToGroupedIndexPath(args.Index, itemsSource);
+							}
+
+							return null;
+						}
+
 						return NSIndexPath.Create(0, args.Index);
 					}
 
@@ -166,6 +235,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				return Controller.GetIndexForItem(args.Item);
+			}
+
+			static NSIndexPath ConvertFlatIndexToGroupedIndexPath(int flatIndex, Items.IItemsViewSource itemsSource)
+			{
+				if (flatIndex < 0)
+				{
+					return null;
+				}
+
+				int remaining = flatIndex;
+				int groupCount = itemsSource.GroupCount;
+				for (int section = 0; section < groupCount; section++)
+				{
+					int itemCount = itemsSource.ItemCountInGroup(section);
+					if (remaining < itemCount)
+					{
+						return NSIndexPath.Create(section, remaining);
+					}
+					remaining -= itemCount;
+				}
+
+				return null;
 			}
 		}
 
@@ -201,13 +292,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height == 0) ||
 				(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width == 0))
 			{
+				// Empty CV should collapse to zero, not fire the expansive fallback.
+				if (VirtualView is CollectionView && Controller.IsEmpty)
+				{
+					return contentSize;
+				}
+
 				var collectionView = Controller.CollectionView;
+
+				// CV is mounted but its frame in the scroll direction is still 0
+				// because it was previously collapsed by the IsEmpty guard above.
+				// CompositionalLayout needs non-zero bounds to compute item sizes,
+				// so we force a temporary layout pass in the block below.
+				bool frameIsZeroInScrollDirection = VirtualView is CollectionView &&
+					((scrollDirection == UICollectionViewScrollDirection.Vertical && collectionView.Frame.Height == 0) ||
+					 (scrollDirection == UICollectionViewScrollDirection.Horizontal && collectionView.Frame.Width == 0));
 
 				// When the CollectionView has not yet been added to a window (pre-mount measurement),
 				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore
 				// CollectionViewContentSize is still zero. Force a layout pass with the given constraints
 				// so the layout can compute actual content size from its items.
-				if (collectionView.Window == null)
+				if (collectionView.Window == null || frameIsZeroInScrollDirection)
 				{
 					// Local helper to clamp layout constraints to finite, non-negative nfloat values.
 					nfloat ClampConstraint(double constraint, nfloat fallback)

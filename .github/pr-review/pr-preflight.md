@@ -4,9 +4,18 @@
 
 ---
 
+> ### ⚠️ Environment & Authentication — READ FIRST
+>
+> In the CI pipeline (the `CopilotReview` task) **all GitHub tokens are intentionally stripped** for security — `Review-PR.ps1` launches `copilot` with `--secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN`. Consequences:
+>
+> - **`gh` commands that require auth (`gh pr view`, `gh issue view`, `gh api`) WILL FAIL** with an authentication error. **This is expected — it is NOT an environment blocker.** Do not stop, do not record it as a blocker, and do **not** lower review confidence because of it.
+> - The PR branch is **already checked out locally** — get the changed files, diff, and commit messages from local `git`, which needs no token.
+> - `dotnet/maui` is a **public** repo, so issue/PR text and comments are readable through the **unauthenticated** public REST API with `curl` (rate-limited to 60 req/hr — plenty for one review).
+> - The `gh` recipes below work unchanged in **local** `pr-review` runs where a token is present. In CI, use the `curl` / local-`git` equivalents shown first.
+
 ## Part A: Context Gathering (Steps 1–6)
 
-1. **Read the issue** — full body + ALL comments via GitHub MCP tools
+1. **Read the issue** — full body + ALL comments (CI: unauthenticated `curl` recipe below; local runs: GitHub MCP / `gh`)
 2. **Find the PR** — read description, diff summary, review comments, inline feedback
 3. **Fetch PR discussion** — detect prior agent reviews, import findings if found
 4. **Classify files** — separate fix files from test files, identify test type (UI / Device / Unit)
@@ -15,6 +24,20 @@
 7. **Identify impacted UI test categories** — analyze which UI controls could be affected by this PR (see below)
 
 ```bash
+# ── Local-first (works in CI — NO token needed) ──
+# Changed files, diff, and commit messages — the PR branch is already checked out:
+git diff --name-status <base>..HEAD     # <base>: use the PR diff base; HEAD~1..HEAD for a squashed PR commit
+git log --oneline -20
+
+# PR + issue text and comments via the PUBLIC, unauthenticated REST API (dotnet/maui is public):
+curl -s https://api.github.com/repos/dotnet/maui/pulls/XXXXX
+curl -s https://api.github.com/repos/dotnet/maui/issues/ISSUE_NUMBER
+# Comment listings default to 30/page — ask for 100 (follow `Link: rel="next"` for longer threads) so you don't miss later feedback:
+curl -s "https://api.github.com/repos/dotnet/maui/issues/ISSUE_NUMBER/comments?per_page=100"
+# Inline review comments (CRITICAL — often contains key technical feedback):
+curl -s "https://api.github.com/repos/dotnet/maui/pulls/XXXXX/comments?per_page=100"
+
+# ── gh equivalents (LOCAL runs only — these FAIL in CI where the token is stripped) ──
 # Fetch PR metadata
 gh pr view XXXXX --json title,body,url,author,labels,files
 
@@ -138,7 +161,7 @@ Write `content.md`:
 **Errors:** {count} | **Warnings:** {count} | **Suggestions:** {count}
 
 Key code review findings:
-- {❌/⚠️/💡} {Brief finding with file:line reference}
+- {✗/⚠/ℹ} {Brief finding with file:line reference}
 - ...
 *(If SKIPPED: "Code review sub-agent failed or timed out. Reason: {details}")*
 

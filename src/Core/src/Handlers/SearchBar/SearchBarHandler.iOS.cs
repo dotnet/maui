@@ -2,6 +2,7 @@
 using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -18,7 +19,6 @@ namespace Microsoft.Maui.Handlers
 
 			_editor = searchBar.GetSearchTextField();
 
-
 			return searchBar;
 		}
 
@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Handlers
 			_proxy.Connect(this, VirtualView, platformView);
 
 			base.ConnectHandler(platformView);
+
+			// Prevent UIKit double safe-area inset (#34551)
+			platformView.InsetsLayoutMarginsFromSafeArea = false;
 		}
 
 		protected override void DisconnectHandler(MauiSearchBar platformView)
@@ -42,8 +45,17 @@ namespace Microsoft.Maui.Handlers
 			{
 				PlatformView.SizeToFit();
 
+				double intrinsicHeight = PlatformView.IntrinsicContentSize.Height;
 				double constrainedWidth = ViewHandlerExtensions.ResolveConstraints(PlatformView.Frame.Width, VirtualView.Width, VirtualView.MinimumWidth, VirtualView.MaximumWidth);
-				double constrainedHeight = ViewHandlerExtensions.ResolveConstraints(PlatformView.Frame.Height, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
+				double constrainedHeight = ViewHandlerExtensions.ResolveConstraints(intrinsicHeight, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
+
+				// On iOS/MacCatalyst 26, setting SearchBar height below its intrinsic size can shrink only the background
+				// while the internal UITextField keeps its native size (platform limitation). Clamp height to the intrinsic minimum.
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					constrainedHeight = Math.Max(constrainedHeight, intrinsicHeight);
+				}
+
 				return new Size(constrainedWidth, constrainedHeight);
 			}
 
@@ -154,6 +166,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButton(searchBar);
+			if (handler is SearchBarHandler searchBarHandler)
+				handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(searchBar.Text));
+
 		}
 
 		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
@@ -277,6 +292,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is SearchBarHandler handler)
 				{
 					handler.UpdateCancelButtonVisibility();
+					handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(VirtualView?.Text));
 				}
 			}
 

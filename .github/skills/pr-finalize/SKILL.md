@@ -39,7 +39,7 @@ Ensures PR title and description accurately reflect the implementation, and perf
 
 **Correct workflow:**
 1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
-2. **Review-PR.ps1** calls `post-pr-finalize-comment.ps1` to post the summary
+2. **Human-controlled follow-up**: PR finalization is not part of the automated `Review-PR.ps1` flow. Only post or use the summary when a user explicitly asks for PR finalization.
 
 **Only humans control when comments are posted.** Your job is to analyze and present findings.
 
@@ -366,7 +366,7 @@ gh pr diff XXXXX -- path/to/file.cs
 
 **Workflow:**
 1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
-2. **Review-PR.ps1** calls `post-pr-finalize-comment.ps1` to post the summary
+2. **Human-controlled follow-up**: PR finalization is not part of the automated `Review-PR.ps1` flow. Only post or use the summary when a user explicitly asks for PR finalization.
 
 The user controls when comments are posted. Your job is to analyze and present findings.
 

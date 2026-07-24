@@ -18,6 +18,12 @@ public partial class CollectionViewScrollPage : ContentPage
 		BindingContext = _viewModel = new CollectionViewViewModel(isScrollingFeatureTest: true);
 		_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT3;
 		_viewModel.ScrollToPosition = ScrollToPosition.MakeVisible;
+#if WINDOWS
+		// Wait for any deferred DispatcherQueue.TryEnqueue callbacks from OnItemsVectorChanged
+		// (introduced by the fix in ItemsViewHandler.Windows.cs) to fire before resetting the
+		// scroll event labels, so the reset isn't overwritten by the deferred scroll.
+		await Task.Delay(300);
+#endif
 		ResetScrollEventLabels();
 		await Navigation.PushAsync(new ScrollBehaviorOptionsPage(_viewModel));
 	}

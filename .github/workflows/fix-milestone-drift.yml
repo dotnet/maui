@@ -5,6 +5,34 @@ on:
     types: [closed]
     branches: [main, net*.0, inflight/*, release/*]
 
+  # When a release tag is pushed, audit the entire tag cohort and fix any
+  # milestone drift, closing issues fixed by PRs that shipped in this tag.
+  # Stable (10.0.80), preview (11.0.0-preview.5.26304.4) and rc
+  # (10.0.0-rc.1.25424.2) tags are all included. The globs match the
+  # MAJOR.0.PATCH shape that .NET MAUI actually ships — MAJOR pinned to a
+  # currently-supported major (10 or 11) and MINOR pinned to 0 — so a stray
+  # tag like 1.2.3, 7.0.0, 9.0.100-preview.1.9973 or 10.1.0 must NOT fire the
+  # bulk -Apply path. The minor pin matches the script's own contract: tag-mode
+  # only recognises MAJOR.0.PATCH tags (Test-IsReleaseTag is ^MAJOR\.0\.), so a
+  # non-.0 minor could never resolve a milestone anyway. GitHub Actions filter
+  # patterns match the whole ref, so each shape needs its own line: the bare
+  # pattern matches stable tags, and the -preview.* / -rc.* patterns match the
+  # prerelease suffixes.
+  # NOTE: bump these globs when a new major ships (the bash guard below is
+  # intentionally major-/minor-agnostic — it only validates tag *shape* as an
+  # anti-injection backstop, and never needs per-major changes).
+  #
+  # NOTE: a tag pushed using the default GITHUB_TOKEN does NOT trigger this
+  # workflow — GitHub suppresses workflow runs for events raised by the default
+  # token to avoid loops. Release tags must therefore be pushed by a human or by
+  # automation using a PAT / GitHub App token, otherwise this trigger will
+  # silently never fire (today SR tags are pushed by a maintainer, so it does).
+  push:
+    tags:
+      - '1[01].0.[0-9]+'             # stable SR / GA: 10.0.80, 11.0.0
+      - '1[01].0.[0-9]+-preview.*'   # preview: 11.0.0-preview.5.26304.4
+      - '1[01].0.[0-9]+-rc.*'        # rc: 10.0.0-rc.1.25424.2
+
   workflow_dispatch:
     inputs:
       pr_number:
@@ -25,6 +53,11 @@ on:
         required: false
         type: boolean
         default: false
+      close_fixed_issues:
+        description: '[PR-mode] Close issues linked as fixed by the PR (for PRs merged to net*.0 branches that GitHub does NOT auto-close). [Tag-mode] BULK: closes every linked open issue across the whole PrevTag..ReleaseTag range — use deliberately and with -apply only when you intend to fan out closures across the entire tag cohort.'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -33,8 +66,9 @@ permissions:
 
 jobs:
   manage-milestones:
-    # For PR merges: only run when actually merged (not just closed)
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    # For PR merges: only run when actually merged (not just closed).
+    # Tag pushes and manual dispatches always run.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout with full history
@@ -50,16 +84,49 @@ jobs:
           INPUT_TAG: ${{ inputs.tag }}
           INPUT_APPLY: ${{ inputs.apply }}
           INPUT_CREATE_ISSUE: ${{ inputs.create_issue }}
+          INPUT_CLOSE_FIXED_ISSUES: ${{ inputs.close_fixed_issues }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PUSH_TAG: ${{ github.ref_name }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           ARGS=()
 
-          if [ "$EVENT_NAME" = "pull_request_target" ]; then
+          if [ "$EVENT_NAME" = "push" ]; then
+            # Release tag pushed: audit the whole tag cohort, fix milestone
+            # drift, and close issues fixed by PRs that shipped in this tag.
+            # Defense-in-depth: the `on.push.tags` filter already restricts which
+            # tags reach this job (major-pinned), but re-validate the shape here
+            # so an unexpected ref can never be passed through to the script's
+            # tag-mode. This guard is intentionally major-agnostic — it only
+            # checks the tag shape (stable MAJOR.MINOR.PATCH, or a -preview.N /
+            # -rc.N prerelease with a numeric build tail). The major gate lives
+            # in the glob above; this guard is the anti-injection backstop.
+            if [[ ! "$PUSH_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(preview|rc)\.[0-9]+(\.[0-9]+)*)?$ ]]; then
+              echo "::error::push tag '$PUSH_TAG' is not a release tag (expected MAJOR.MINOR.PATCH, optionally -preview.N or -rc.N)"
+              exit 1
+            fi
+            ARGS+=('-Tag' "$PUSH_TAG" '-Apply' '-CloseFixedIssues')
+          elif [ "$EVENT_NAME" = "pull_request_target" ]; then
             # Auto-trigger: set milestone on the merged PR
             ARGS+=('-PrNumber' "$INPUT_PR_NUMBER" '-Apply')
+            # GitHub only auto-closes "fixes #N" issues for PRs merged to the
+            # default branch (main). For PRs merged to net*.0 development
+            # branches the issue stays open, so we close it ourselves.
+            # We deliberately do NOT auto-close for release/* or inflight/*
+            # branches — those need extra human judgment.
+            if [[ "$PR_BASE_REF" == net*.0 ]]; then
+              ARGS+=('-CloseFixedIssues')
+            fi
           else
             # Manual trigger: use provided inputs
             if [ -n "$INPUT_PR_NUMBER" ]; then
+              # The Fix-MilestoneDrift.ps1 -PrNumber param is [int]; fail fast with a
+              # clear message rather than letting PowerShell emit a parameter-binding
+              # error for a non-numeric input.
+              if [[ ! "$INPUT_PR_NUMBER" =~ ^[0-9]+$ ]]; then
+                echo "::error::pr_number input must be a positive integer (got: '$INPUT_PR_NUMBER')"
+                exit 1
+              fi
               ARGS+=('-PrNumber' "$INPUT_PR_NUMBER")
             fi
 
@@ -73,6 +140,10 @@ jobs:
 
             if [ "$INPUT_CREATE_ISSUE" = "true" ]; then
               ARGS+=('-CreateIssue')
+            fi
+
+            if [ "$INPUT_CLOSE_FIXED_ISSUES" = "true" ]; then
+              ARGS+=('-CloseFixedIssues')
             fi
           fi
 

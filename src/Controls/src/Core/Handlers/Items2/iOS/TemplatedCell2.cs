@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
@@ -68,8 +69,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public UICollectionViewScrollDirection ScrollDirection { get; set; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal IPlatformViewHandler PlatformHandler { get; set; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal UIView PlatformView { get; set; }
 
 		CollectionViewHandler2 CollectionViewHandler
@@ -116,9 +119,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						if (cachedSize != CGSize.Empty)
 						{
 							_measuredSize = cachedSize.ToSize();
-							// Even when we have a cached measurement, we still need to call Measure
-							// to update the virtual view's internal state and bookkeeping
-							virtualView.Measure(constraints.Width, _measuredSize.Height);
+							// For MeasureFirstItem, non-first cells reuse the cached first-item size.
+							// Mirroring CV1 (Items/TemplatedCell.cs): when ConstrainedSize is set, CV1
+							// calls NO virtualView.Measure() from PreferredLayoutAttributesFittingAttributes.
+							// We do the same — only call Measure when the layout constraints actually change
+							// (fresh cell: _cachedConstraints==default, or rotation/resize: new width/height).
+							// Checking the full Size (both width and height) handles both orientations:
+							//   - Vertical list:   constraints=(w, ∞) — width change drives the check.
+							//   - Horizontal list: constraints=(∞, h) — height change drives the check.
+							// Recycled cells at the same constraints skip Measure entirely, eliminating
+							// the per-scroll MeasureOverride invocation that PR #29496 introduced.
+							// The Measure return value is intentionally discarded; _measuredSize comes
+							// from the cache, not from this call.
+							if (_cachedConstraints != constraints)
+							{
+								virtualView.Measure(constraints.Width, constraints.Height);
+							}
 						}
 						else
 						{
@@ -267,7 +283,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				virtualView.BindingContext = bindingContext;
 				itemsView.AddLogicalChild(virtualView);
-				
+
 				if (this.Selected)
 				{
 					UpdateVisualStates();
@@ -369,9 +385,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (PlatformHandler?.VirtualView is VisualElement element)
 			{
-				VisualStateManager.GoToState(element, Selected
-					? VisualStateManager.CommonStates.Selected
-					: VisualStateManager.CommonStates.Normal);
+				element.IsItemSelected = Selected;
 			}
 		}
 

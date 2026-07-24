@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
@@ -9,12 +10,13 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public class ItemsViewDelegator<TItemsView, TViewController> : UICollectionViewDelegateFlowLayout
+	public class ItemsViewDelegator<TItemsView, TViewController> : UICollectionViewDelegateFlowLayout, IScrollTrackingDelegator
 		where TItemsView : ItemsView
 		where TViewController : ItemsViewController<TItemsView>
 	{
 		readonly WeakReference<TViewController> _viewController;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public ItemsViewLayout ItemsViewLayout { get; }
 		public TViewController ViewController => _viewController.TryGetTarget(out var vc) ? vc : null;
 
@@ -24,6 +26,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ItemsViewLayout = itemsViewLayout;
 			_viewController = new(itemsViewController);
+		}
+
+		void IScrollTrackingDelegator.ResetScrollTracking()
+		{
+			PreviousHorizontalOffset = 0;
+			PreviousVerticalOffset = 0;
 		}
 
 		public override void Scrolled(UIScrollView scrollView)

@@ -16,6 +16,18 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// <param name="Code">The C# expression code to emit (already has single quotes transformed to double quotes).</param>
 internal sealed record Expression(string Code);
 
+internal readonly struct InterpolatedStringIdentifier
+{
+	public string Identifier { get; }
+	public string TypeReferenceCandidate { get; }
+
+	public InterpolatedStringIdentifier(string identifier, string? typeReferenceCandidate = null)
+	{
+		Identifier = identifier;
+		TypeReferenceCandidate = typeReferenceCandidate ?? identifier;
+	}
+}
+
 /// <summary>
 /// Helper methods for detecting and transforming C# expressions embedded in XAML.
 /// </summary>
@@ -888,5 +900,226 @@ static class CSharpExpressionHelpers
 	{
 		// Use same extraction as expressions
 		return GetExpressionCode(value);
+	}
+
+	/// <summary>
+	/// Extracts identifiers from interpolated string holes.
+	/// E.g., for <c>$"Hello, {Name1}!"</c> returns ["Name1"].
+	/// For <c>$"Hello, {User.Name}!"</c> returns ["User"].
+	/// Only returns root identifiers (first segment before any dot).
+	/// </summary>
+	public static List<string> ExtractInterpolatedStringIdentifiers(string expressionCode)
+		=> ExtractInterpolatedStringIdentifierReferences(expressionCode)
+			.Select(reference => reference.Identifier)
+			.Distinct()
+			.ToList();
+
+	public static List<InterpolatedStringIdentifier> ExtractInterpolatedStringIdentifierReferences(string expressionCode)
+	{
+		var identifiers = new List<InterpolatedStringIdentifier>();
+		var seen = new HashSet<string>(StringComparer.Ordinal);
+
+		// Try parsing as a C# expression to extract interpolation holes
+		var tree = CSharpSyntaxTree.ParseText(expressionCode, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+
+		foreach (var interpolation in root.DescendantNodes().OfType<InterpolationSyntax>())
+		{
+			// Get the expression inside the interpolation hole
+			var expr = interpolation.Expression;
+			if (expr == null)
+				continue;
+
+			ExtractInterpolatedExpressionIdentifiers(expr, identifiers, seen);
+		}
+
+		return identifiers;
+	}
+
+	static void ExtractInterpolatedExpressionIdentifiers(ExpressionSyntax expression, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		switch (expression)
+		{
+			case IdentifierNameSyntax idName:
+				AddInterpolatedIdentifier(idName.Identifier.Text, idName.Identifier.Text, identifiers, seen);
+				break;
+			case MemberAccessExpressionSyntax memberAccess:
+				AddMemberAccessRoot(memberAccess, identifiers, seen);
+				break;
+			case InvocationExpressionSyntax invocation:
+				AddInvocationIdentifiers(invocation, identifiers, seen);
+				break;
+			case BinaryExpressionSyntax binary:
+				ExtractInterpolatedExpressionIdentifiers(binary.Left, identifiers, seen);
+				ExtractInterpolatedExpressionIdentifiers(binary.Right, identifiers, seen);
+				break;
+			case ConditionalExpressionSyntax conditional:
+				ExtractInterpolatedExpressionIdentifiers(conditional.Condition, identifiers, seen);
+				ExtractInterpolatedExpressionIdentifiers(conditional.WhenTrue, identifiers, seen);
+				ExtractInterpolatedExpressionIdentifiers(conditional.WhenFalse, identifiers, seen);
+				break;
+			case ParenthesizedExpressionSyntax parenthesized:
+				ExtractInterpolatedExpressionIdentifiers(parenthesized.Expression, identifiers, seen);
+				break;
+			case PrefixUnaryExpressionSyntax prefixUnary:
+				ExtractInterpolatedExpressionIdentifiers(prefixUnary.Operand, identifiers, seen);
+				break;
+			case PostfixUnaryExpressionSyntax postfixUnary:
+				ExtractInterpolatedExpressionIdentifiers(postfixUnary.Operand, identifiers, seen);
+				break;
+			case ConditionalAccessExpressionSyntax conditionalAccess:
+				ExtractInterpolatedExpressionIdentifiers(conditionalAccess.Expression, identifiers, seen);
+				ExtractConditionalAccessIdentifiers(conditionalAccess.WhenNotNull, identifiers, seen);
+				break;
+			case ElementAccessExpressionSyntax elementAccess:
+				ExtractInterpolatedExpressionIdentifiers(elementAccess.Expression, identifiers, seen);
+				foreach (var argument in elementAccess.ArgumentList.Arguments)
+					ExtractInterpolatedExpressionIdentifiers(argument.Expression, identifiers, seen);
+				break;
+			case CastExpressionSyntax cast:
+				ExtractInterpolatedExpressionIdentifiers(cast.Expression, identifiers, seen);
+				break;
+			case AwaitExpressionSyntax awaitExpression:
+				ExtractInterpolatedExpressionIdentifiers(awaitExpression.Expression, identifiers, seen);
+				break;
+		}
+	}
+
+	static void AddInvocationIdentifiers(InvocationExpressionSyntax invocation, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		switch (invocation.Expression)
+		{
+			case IdentifierNameSyntax identifier when IsNameOfInvocation(identifier):
+				return;
+			case IdentifierNameSyntax identifier:
+				AddInterpolatedIdentifier(identifier.Identifier.Text, identifier.Identifier.Text, identifiers, seen);
+				break;
+			case MemberAccessExpressionSyntax memberAccess:
+				if (!AddMemberAccessRoot(memberAccess, identifiers, seen))
+					ExtractInterpolatedExpressionIdentifiers(memberAccess.Expression, identifiers, seen);
+				break;
+			default:
+				ExtractInterpolatedExpressionIdentifiers(invocation.Expression, identifiers, seen);
+				break;
+		}
+
+		foreach (var argument in invocation.ArgumentList.Arguments)
+			ExtractInterpolatedExpressionIdentifiers(argument.Expression, identifiers, seen);
+	}
+
+	static bool IsNameOfInvocation(IdentifierNameSyntax identifier)
+		=> string.Equals(identifier.Identifier.Text, "nameof", StringComparison.Ordinal);
+
+	static void ExtractConditionalAccessIdentifiers(ExpressionSyntax expression, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		switch (expression)
+		{
+			case InvocationExpressionSyntax invocation:
+				foreach (var argument in invocation.ArgumentList.Arguments)
+					ExtractInterpolatedExpressionIdentifiers(argument.Expression, identifiers, seen);
+				break;
+			case MemberAccessExpressionSyntax memberAccess:
+				if (!AddMemberAccessRoot(memberAccess, identifiers, seen))
+					ExtractInterpolatedExpressionIdentifiers(memberAccess.Expression, identifiers, seen);
+				break;
+			default:
+				ExtractInterpolatedExpressionIdentifiers(expression, identifiers, seen);
+				break;
+		}
+	}
+
+	static bool AddMemberAccessRoot(MemberAccessExpressionSyntax memberAccess, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		if (!TryGetMemberAccessParts(memberAccess, out var parts) || parts.Count == 0)
+			return false;
+
+		var rootIdentifier = parts[0];
+		var typeReferenceCandidate = parts.Count > 1
+			? string.Join(".", parts.Take(parts.Count - 1))
+			: rootIdentifier;
+		AddInterpolatedIdentifier(rootIdentifier, typeReferenceCandidate, identifiers, seen);
+		return true;
+	}
+
+	static bool TryGetMemberAccessParts(ExpressionSyntax expression, out List<string> parts)
+	{
+		parts = new List<string>();
+		return TryAppendMemberAccessParts(expression, parts);
+	}
+
+	static bool TryAppendMemberAccessParts(ExpressionSyntax expression, List<string> parts)
+	{
+		switch (expression)
+		{
+			case IdentifierNameSyntax identifier:
+				parts.Add(identifier.Identifier.Text);
+				return true;
+			case MemberAccessExpressionSyntax memberAccess:
+				if (!TryAppendMemberAccessParts(memberAccess.Expression, parts))
+					return false;
+				parts.Add(memberAccess.Name.Identifier.Text);
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	static void AddInterpolatedIdentifier(string identifier, string typeReferenceCandidate, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		if (string.IsNullOrEmpty(identifier))
+			return;
+
+		var key = $"{identifier}|{typeReferenceCandidate}";
+		if (seen.Add(key))
+			identifiers.Add(new InterpolatedStringIdentifier(identifier, typeReferenceCandidate));
+	}
+
+	/// <summary>
+	/// Checks if a lambda expression body is a method group reference (member access without invocation).
+	/// E.g., <c>(s, e) => this.OnClicked</c> is a method group (missing parentheses).
+	/// Returns the method group expression and the lambda parameters if detected, null otherwise.
+	/// </summary>
+	public static (string methodGroup, string suggestion)? DetectLambdaMethodGroupReference(string expressionCode)
+	{
+		// Parse the expression as C#
+		var tree = CSharpSyntaxTree.ParseText(expressionCode, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+
+		// Find lambda expressions
+		var lambda = root.DescendantNodes().OfType<ParenthesizedLambdaExpressionSyntax>().FirstOrDefault();
+		if (lambda == null)
+			return null;
+
+		// Get the lambda body - should be an expression (not a block)
+		var body = lambda.ExpressionBody;
+		if (body == null)
+			return null;
+
+		// Check if the body is a member access (this.Method or just Method) without invocation
+		if (body is MemberAccessExpressionSyntax memberAccess)
+		{
+			// Check that the parent is NOT an InvocationExpression
+			// (If it were "this.Method()", the body would be InvocationExpressionSyntax, not MemberAccessExpressionSyntax)
+			var methodGroup = memberAccess.ToString();
+			return (methodGroup, CreateLambdaMethodGroupSuggestion(methodGroup, lambda.ParameterList.Parameters));
+		}
+
+		// Also check for bare identifier (e.g., (s, e) => OnClicked)
+		if (body is IdentifierNameSyntax identifier)
+		{
+			var methodGroup = identifier.Identifier.Text;
+			return (methodGroup, CreateLambdaMethodGroupSuggestion(methodGroup, lambda.ParameterList.Parameters));
+		}
+
+		return null;
+	}
+
+	static string CreateLambdaMethodGroupSuggestion(string methodGroup, SeparatedSyntaxList<ParameterSyntax> parameters)
+	{
+		var parameterNames = parameters.Select(p => p.Identifier.Text).ToList();
+		if (parameterNames.Any(name => string.IsNullOrEmpty(name) || name == "_"))
+			return string.Empty;
+
+		return $" Did you mean '{methodGroup}({string.Join(", ", parameterNames)})'?";
 	}
 }

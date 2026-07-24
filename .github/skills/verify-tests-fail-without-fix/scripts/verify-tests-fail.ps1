@@ -104,6 +104,28 @@ if ($Platform -eq "maccatalyst") {
     $Platform = "catalyst"
 }
 
+# ============================================================
+# Strip GH/Copilot tokens from environment for the duration of a
+# scriptblock that invokes PR-controlled code (dotnet test, MSBuild,
+# host-app, device tests). Trusted metadata fetches via `gh` CLI
+# (Detect-TestsInDiff, gh pr view) keep the token because they run
+# OUTSIDE this wrapper. See .github/instructions/ci-copilot-pipeline-security.instructions.md.
+# ============================================================
+function Invoke-WithoutGhTokens {
+    param([Parameter(Mandatory)][scriptblock]$ScriptBlock)
+    $saved = @{}
+    foreach ($n in @('GH_TOKEN','GITHUB_TOKEN','COPILOT_GITHUB_TOKEN')) {
+        $saved[$n] = [Environment]::GetEnvironmentVariable($n)
+        [Environment]::SetEnvironmentVariable($n, $null)
+    }
+    try { & $ScriptBlock }
+    finally {
+        foreach ($n in $saved.Keys) {
+            [Environment]::SetEnvironmentVariable($n, $saved[$n])
+        }
+    }
+}
+
 # Platform is required for UI and device tests, optional for unit/XAML tests
 if ($TestType -in @("UITest", "DeviceTest") -and -not $Platform) {
     throw "$TestType requires -Platform parameter (android, ios, catalyst, windows)."
@@ -191,7 +213,6 @@ $script:UnitTestProjectMap = @{
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
     "Compatibility.Core.UnitTests"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
-    "Essentials.AI.UnitTests"          = "src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj"
 }
 
 # Maps device test project keys to the -Project parameter of Run-DeviceTests.ps1
@@ -201,7 +222,6 @@ $script:DeviceTestProjectMap = @{
     "Essentials.DeviceTests"           = "Essentials"
     "Graphics.DeviceTests"             = "Graphics"
     "MauiBlazorWebView.DeviceTests"    = "BlazorWebView"
-    "Essentials.AI.DeviceTests"        = "AI"
 }
 
 function Get-TestTypeFromFiles {
@@ -354,7 +374,7 @@ function Invoke-TestRun {
                 $uiParams.DeviceUdid = $script:BootedDeviceUdid
             }
             # Capture all output — includes build, deploy, and test results
-            $scriptOutput = & $buildScript @uiParams 2>&1
+            $scriptOutput = Invoke-WithoutGhTokens { & $buildScript @uiParams 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -379,7 +399,7 @@ function Invoke-TestRun {
                 $testArgs += @("--filter", $Filter)
             }
 
-            $scriptOutput = & dotnet @testArgs 2>&1
+            $scriptOutput = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -417,7 +437,7 @@ function Invoke-TestRun {
                 $testArgs += @("--filter", $Filter)
             }
 
-            $scriptOutput = & dotnet @testArgs 2>&1
+            $scriptOutput = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -459,7 +479,7 @@ function Invoke-TestRun {
                 $deviceParams.DeviceUdid = $script:BootedDeviceUdid
             }
 
-            $scriptOutput = & $deviceTestScript @deviceParams 2>&1
+            $scriptOutput = Invoke-WithoutGhTokens { & $deviceTestScript @deviceParams 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -511,15 +531,29 @@ function Invoke-TestRunWithRetry {
         if ($attempt -lt $MaxRetries) {
             Write-Host "  ⚠️ Environment error (attempt $attempt/$MaxRetries): $($result.Error) — retrying in 30s..." -ForegroundColor Yellow
 
-            # On app launch failures, reboot the simulator/emulator to recover
-            if ($result.Error -match "APP_LAUNCH_FAILURE|exit code.*83|app.*crash" -and $script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
-                Write-Host "  🔄 Rebooting device ($($script:BootedDeviceUdid)) to recover from app launch failure..." -ForegroundColor Yellow
+            # Device test environment failures can leave the emulator/simulator in
+            # a bad package-manager state for the next without/with-fix attempt.
+            if ($result.Error -match "APP_LAUNCH_FAILURE|exit code.*83|app.*crash|package.*install|package.*operation|command timed out|XHarness exit 78" -and $script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
+                Write-Host "  🔄 Rebooting device ($($script:BootedDeviceUdid)) to recover from environment error: $($result.Error)" -ForegroundColor Yellow
                 if ($Platform -in @("ios", "catalyst", "maccatalyst")) {
                     xcrun simctl shutdown $script:BootedDeviceUdid 2>$null
-                    Start-Sleep -Seconds 5
-                    xcrun simctl boot $script:BootedDeviceUdid 2>$null
+                    # Boot and block until the simulator has finished booting (services ready),
+                    # not just powered on, before the next attempt.
+                    xcrun simctl bootstatus $script:BootedDeviceUdid -b 2>$null
                 } elseif ($Platform -eq "android") {
                     adb -s $script:BootedDeviceUdid reboot 2>$null
+                    adb -s $script:BootedDeviceUdid wait-for-device 2>$null
+                    # wait-for-device only waits for adbd to respond; the package manager,
+                    # installer and launcher aren't ready until boot actually completes, so
+                    # poll sys.boot_completed + bootanim (up to 180s) before retrying —
+                    # otherwise the next attempt hits the same install/launch failure.
+                    $bootDeadline = (Get-Date).AddSeconds(180)
+                    while ((Get-Date) -lt $bootDeadline) {
+                        $bootCompleted = (adb -s $script:BootedDeviceUdid shell getprop sys.boot_completed 2>$null | Out-String).Trim()
+                        $bootAnim = (adb -s $script:BootedDeviceUdid shell getprop init.svc.bootanim 2>$null | Out-String).Trim()
+                        if ($bootCompleted -eq '1' -and $bootAnim -eq 'stopped') { break }
+                        Start-Sleep -Seconds 3
+                    }
                 }
             }
 
@@ -610,6 +644,9 @@ function Get-TestResultFromOutput {
     $envErrorPatterns = @(
         @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
         @{ Pattern = "XHarness exit code:\s*83"; Message = "App failed to launch (XHarness exit 83)" }
+        @{ Pattern = "XHarness exit code:\s*78"; Message = "Package installation failed (XHarness exit 78)" }
+        @{ Pattern = "PACKAGE_INSTALLATION_FAILURE"; Message = "Package installation failed (XHarness package installation failure)" }
+        @{ Pattern = "Waiting for command timed out: execution may be compromised"; Message = "Device package operation timed out" }
         @{ Pattern = "Application test run crashed"; Message = "App crashed during test run" }
         @{ Pattern = "SIGABRT.*load_aot_module"; Message = "App crashed during AOT loading" }
         @{ Pattern = "AppiumServerHasNotBeenStartedLocally"; Message = "Appium server failed to start" }
@@ -624,10 +661,20 @@ function Get-TestResultFromOutput {
     # Check for build failures (before any test results)
     # Mark these explicitly with BuildError = $true so Write-MarkdownReport can
     # surface them as "Fix does not compile" instead of "Fix does not pass the tests".
-    if ($content -match "Build FAILED" -or $content -match "Build failed with exit code" -or $content -match "error MSB\d+" -or $content -match "error CS\d+") {
+    # Match coded build errors generally — `error <ABBR><NNNN>` — so the MAUI XAML
+    # compiler (MAUIX####, e.g. MAUIX2017 "set multiple times"), MSBuild (MSB####),
+    # C# (CS####), .NET SDK (NETSDK####), NuGet (NU####) and Android (XA####) diagnostics
+    # are all caught. This matters on branches where an unrelated test fixture fails to
+    # compile (e.g. the net11 Controls.Xaml.UnitTests MAUIX2017 baseline break): the whole
+    # test assembly won't build, so the PR's own test can't run — that is INCONCLUSIVE, not
+    # "the fix does not pass". The negative lookahead on `0 error(s)` avoids false positives
+    # on MSBuild summary lines like "Build succeeded. 0 Error(s)".
+    if ($content -match "Build FAILED" -or
+        $content -match "Build failed with exit code" -or
+        $content -match '(?im)\berror\s+[A-Z]{2,}\d+\b') {
         # Capture the first compile error so the diagnosis is concrete.
         $buildErrorExcerpt = $null
-        $errMatch = [regex]::Match($content, '(?m)^.*\b(error CS\d+|error MSB\d+)\b.*$')
+        $errMatch = [regex]::Match($content, '(?m)^.*\berror\s+[A-Z]{2,}\d+\b.*$')
         if ($errMatch.Success) {
             $excerpt = $errMatch.Value.Trim()
             if ($excerpt.Length -gt 200) { $excerpt = $excerpt.Substring(0, 200) + "..." }
@@ -1181,10 +1228,17 @@ function Write-MarkdownReport {
         [array]$ReportNewFiles
     )
     
-    # Check for environment errors in results
+    # Check for environment / build errors in results — a test that could not be built or
+    # run never verified anything, so the gate is INCONCLUSIVE (not a genuine FAILED).
     $hasEnvError = ($WithoutFixResultsList | Where-Object { $_.EnvError }) -or ($WithFixResultsList | Where-Object { $_.EnvError })
-    
-    $status = if ($hasEnvError) { "⚠️ ENV ERROR" } elseif ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
+    # Only a BASELINE (without-fix) build error, or an env error, leaves the gate genuinely
+    # unable to verify → INCONCLUSIVE. A with-fix-ONLY build error (baseline compiles, the PR's
+    # own fix does not) is a definitive FAILED — mirror the exit-code split (see $gateInfraError)
+    # so the report headline and the Gate status chip don't frame a non-compiling fix as a
+    # non-blocking infra flake.
+    $baselineBuildError = @($WithoutFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
+
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($hasEnvError -or $baselineBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     # ─── Improvement #2: classify the failure mode so the headline matches the cause ───
@@ -1468,22 +1522,40 @@ Write-Log "BaseBranch: $BaseBranchName"
 Write-Log "MergeBase: $MergeBase"
 Write-Log ""
 
-# Verify fix files exist
-Write-Log "Verifying fix files exist..."
+# Verify each fix file is usable. A PR can MODIFY, ADD, or DELETE a fix file:
+#   - modified → exists on disk (HEAD) and at merge-base
+#   - added    → exists on disk (HEAD), not at merge-base  → NewFiles (not reverted)
+#   - deleted  → does NOT exist on disk (HEAD), exists at merge-base
+# A PR-deleted file legitimately does not exist in the with-fix worktree, so a
+# plain Test-Path is NOT a valid existence gate — it wrongly aborted (→ infra
+# failure / INCONCLUSIVE, tests never run) PRs that delete a file as part of
+# their fix. Only a file present in NEITHER the worktree NOR the merge-base is
+# a genuine error.
+Write-Log "Verifying fix files are present (on disk or at merge-base)..."
+$missingFixFiles = @()
 foreach ($file in $FixFiles) {
     $fullPath = Join-Path $RepoRoot $file
-    if (-not (Test-Path $fullPath)) {
-        Write-Log "ERROR: Fix file not found: $file"
-        exit 1
+    if (Test-Path $fullPath) {
+        Write-Log "  ✓ $file exists"
+    } elseif (git ls-tree -r $MergeBase --name-only -- $file 2>$null) {
+        Write-Log "  ○ $file (deleted by PR — exists at merge-base, will be restored to form the baseline)"
+    } else {
+        Write-Log "ERROR: Fix file not found on disk or at merge-base: $file"
+        $missingFixFiles += $file
     }
-    Write-Log "  ✓ $file exists"
+}
+if ($missingFixFiles.Count -gt 0) {
+    Write-Log "ERROR: $($missingFixFiles.Count) fix file(s) exist in neither the worktree nor the merge-base ($($MergeBase.Substring(0, 8))) — cannot verify."
+    exit 1
 }
 
-# Determine which files exist at the merge-base (can be reverted)
+# Determine which files exist at the merge-base (can be reverted) and which of
+# those the PR DELETED (absent at HEAD) so STEP 3 restores them correctly.
 Write-Log ""
 Write-Log "Checking which fix files exist at merge-base ($($MergeBase.Substring(0, 8)))..."
 $RevertableFiles = @()
 $NewFiles = @()
+$DeletedByPrFiles = @()
 
 foreach ($file in $FixFiles) {
     # Check if file exists at merge-base commit
@@ -1491,7 +1563,13 @@ foreach ($file in $FixFiles) {
 
     if ($existsInBase) {
         $RevertableFiles += $file
-        Write-Log "  ✓ $file (exists at merge-base - will revert)"
+        $existsAtHead = git ls-tree -r HEAD --name-only -- $file 2>$null
+        if ($existsAtHead) {
+            Write-Log "  ✓ $file (exists at merge-base - will revert)"
+        } else {
+            $DeletedByPrFiles += $file
+            Write-Log "  ✓ $file (deleted by PR - restore from merge-base for baseline, re-delete with fix)"
+        }
     } else {
         $NewFiles += $file
         Write-Log "  ○ $file (new file - skipping revert)"
@@ -1631,12 +1709,23 @@ Write-Log "STEP 3: Restoring fix files from HEAD"
 Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
-    Write-Log "  Restoring: $file"
-    $gitOutput = git checkout HEAD -- $file 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Log "  ERROR: Failed to restore $file from HEAD"
-        Write-Log "  Git output: $gitOutput"
-        exit 1
+    if ($DeletedByPrFiles -contains $file) {
+        # The PR deleted this file; its with-fix state is "absent". STEP 1
+        # restored it from the merge-base for the baseline run, so re-delete it
+        # (worktree + index) to match HEAD — `git checkout HEAD -- $file` would
+        # fail here because HEAD has no copy of a PR-deleted file.
+        Write-Log "  Re-removing (deleted by PR): $file"
+        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
+        $wtPath = Join-Path $RepoRoot $file
+        if (Test-Path $wtPath) { Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue }
+    } else {
+        Write-Log "  Restoring: $file"
+        $gitOutput = git checkout HEAD -- $file 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log "  ERROR: Failed to restore $file from HEAD"
+            Write-Log "  Git output: $gitOutput"
+            exit 1
+        }
     }
 }
 
@@ -1756,6 +1845,17 @@ Write-Host ""
 
 $verificationPassed = $failedWithoutFix -and $passedWithFix
 
+# A test that hit an ENVIRONMENT error, or a BASELINE (without-fix) BUILD error, never
+# established whether the bug reproduces, so the gate could not verify anything — treat that
+# as INCONCLUSIVE (exit 3) so build/infra flakes don't masquerade as a broken fix.
+#
+# A with-fix-ONLY build error is different: the baseline compiles but the PR's own fix does
+# NOT, which is a definitive FAILED (exit 1), not infra noise — so it must not be downgraded.
+$baselineBuildError = (@($withoutFixResults) | Where-Object { $_.BuildError }).Count -gt 0
+$withFixBuildError  = (@($withFixResults)    | Where-Object { $_.BuildError }).Count -gt 0
+$anyEnvError        = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.EnvError }).Count -gt 0
+$gateInfraError     = $anyEnvError -or $baselineBuildError
+
 Write-Log ""
 Write-Log "Summary:"
 Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'ALL FAIL ✅ (expected)' } else { 'SOME PASS ❌ (should all fail!)' })"
@@ -1786,6 +1886,18 @@ if ($verificationPassed) {
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     exit 0
+} elseif ($gateInfraError) {
+    # The deciding tests could not be built/run (build or environment error), so the gate
+    # has NOT verified the fix. Report INCONCLUSIVE (exit 3) — not a real FAILED.
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+    Write-Host "║              VERIFICATION INCONCLUSIVE ⚠️                  ║" -ForegroundColor Yellow
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+    Write-Host "║  Tests could not be built/run (build or env error).       ║" -ForegroundColor Yellow
+    Write-Host "║  The gate could not verify the fix — this is NOT a         ║" -ForegroundColor Yellow
+    Write-Host "║  genuine test failure and must not block the PR.          ║" -ForegroundColor Yellow
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+    exit 3
 } else {
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
@@ -1798,6 +1910,10 @@ if ($verificationPassed) {
     if (-not $passedWithFix) {
         Write-Host "║  Tests FAILED with fix (should pass)                      ║" -ForegroundColor Red
         Write-Host "║  - Fix doesn't resolve the issue or test is broken        ║" -ForegroundColor Red
+    }
+    if ($withFixBuildError -and -not $baselineBuildError) {
+        Write-Host "║  - Fix does NOT compile (baseline builds fine) — this is  ║" -ForegroundColor Red
+        Write-Host "║    a definitive failure, not a build/infra flake.         ║" -ForegroundColor Red
     }
     Write-Host "║                                                           ║" -ForegroundColor Red
     Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red

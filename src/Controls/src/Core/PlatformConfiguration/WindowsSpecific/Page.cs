@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// </summary>
 		public static readonly BindableProperty ToolbarDynamicOverflowEnabledProperty =
 			BindableProperty.CreateAttached("ToolbarDynamicOverflowEnabled", typeof(bool),
-				typeof(FormsElement), true);
+				typeof(FormsElement), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Gets a value that indicates whether toolbar items automatically move to the overflow menu when space is limited.
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <param name="value">A value that indicates whether toolbar items automatically move to the overflow menu when space is limited</param>
 		public static void SetToolbarDynamicOverflowEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(ToolbarDynamicOverflowEnabledProperty, value);
+			element.SetValue(ToolbarDynamicOverflowEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -116,7 +117,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetToolbarDynamicOverflowEnabled(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{
-			config.Element.SetValue(ToolbarDynamicOverflowEnabledProperty, value);
+			config.Element.SetValue(ToolbarDynamicOverflowEnabledProperty, BooleanBoxes.Box(value));
 			return config;
 		}
 

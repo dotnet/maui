@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
@@ -10,12 +11,13 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public class ItemsViewDelegator2<TItemsView, TViewController> : UICollectionViewDelegateFlowLayout
+	public class ItemsViewDelegator2<TItemsView, TViewController> : UICollectionViewDelegateFlowLayout, IScrollTrackingDelegator
 		where TItemsView : ItemsView
 		where TViewController : ItemsViewController2<TItemsView>
 	{
 		readonly WeakReference<TViewController> _viewController;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public UICollectionViewLayout ItemsViewLayout { get; }
 		public TViewController ViewController => _viewController.TryGetTarget(out var vc) ? vc : null;
 
@@ -25,6 +27,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ItemsViewLayout = itemsViewLayout;
 			_viewController = new(ItemsViewController2);
+		}
+
+		void IScrollTrackingDelegator.ResetScrollTracking()
+		{
+			PreviousHorizontalOffset = 0;
+			PreviousVerticalOffset = 0;
 		}
 
 		public override void Scrolled(UIScrollView scrollView)
@@ -76,6 +84,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					break;
 			}
 		}
+
+#if MACCATALYST
+		public override void DraggingStarted(UIScrollView scrollView)
+		{
+			if (scrollView is MauiCollectionView mauiCV)
+			{
+				mauiCV.ClearPendingScrollRestore();
+			}
+		}
+#endif
 
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
