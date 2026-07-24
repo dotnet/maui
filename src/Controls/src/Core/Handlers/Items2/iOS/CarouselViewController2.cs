@@ -136,7 +136,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 				carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
-				// The Position=0 reset above sets _gotoPosition; clear it so later programmatic Position/CurrentItem changes aren't suppressed.
+				// The Position=0 reset above indirectly sets _gotoPosition via
+				// UpdateFromPosition -> ScrollToPosition(0, oldPos, ...); clear it so later
+				// programmatic Position/CurrentItem changes aren't suppressed.
 				_gotoPosition = -1;
 			}
 			_isUpdating = false;
@@ -480,6 +482,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			CollectionView.ReloadData();
 
 			ScrollToPosition(carouselPosition, carouselPosition, false, true);
+
+			// Symmetric to CollectionViewUpdated: this forced re-center may leave
+			// _gotoPosition stuck (no-op scroll, or dropped while another scroll was
+			// in-flight), so clear it to avoid blocking future programmatic scrolls.
+			_gotoPosition = -1;
 		}
 
 		void UpdateScrollBarVisibility()
