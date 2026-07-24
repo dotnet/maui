@@ -1,3 +1,4 @@
+#if IOS || MACCATALYST      //This is an iOS-specific issue and can be reproduced by extending UIButton. Therefore, the test was added only for iOS and Mac Catalyst.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
