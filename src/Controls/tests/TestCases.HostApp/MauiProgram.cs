@@ -41,7 +41,8 @@ namespace Maui.Controls.Sample
 				.Issue18720DatePickerAddMappers()
 				.Issue18720TimePickerAddMappers()
 				.Issue28945AddMappers()
-				.Issue25436RegisterNavigationService();
+				.Issue25436RegisterNavigationService()
+				.Issue34392AddHandlers();
 
 #if IOS || MACCATALYST
 			appBuilder.ConfigureCollectionViewHandlers();
