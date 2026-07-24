@@ -750,6 +750,70 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void OverlappingUseVersionTrackingAppsShareInitializedFacadeOwnership()
+		{
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			Preferences.SetDefault(new StubPreferences());
+			AppInfo.SetCurrent(new StubAppInfo());
+
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.ConfigureEssentials(essentials => essentials.UseVersionTracking());
+				firstApp = firstBuilder.Build();
+				var initializedVersionTracking = Assert.IsAssignableFrom<IVersionTracking>(
+					GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.ConfigureEssentials(essentials => essentials.UseVersionTracking());
+				secondApp = secondBuilder.Build();
+
+				Assert.Same(
+					initializedVersionTracking,
+					GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+				firstApp.Dispose();
+				firstApp = null;
+
+				Assert.Same(
+					initializedVersionTracking,
+					GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
+		public void UseVersionTrackingDoesNotOwnExternallyInitializedFacade()
+		{
+			Preferences.SetDefault(new StubPreferences());
+			AppInfo.SetCurrent(new StubAppInfo());
+			var externalVersionTracking = VersionTracking.Default;
+
+			var builder = MauiApp.CreateBuilder();
+			builder.ConfigureEssentials(essentials => essentials.UseVersionTracking());
+			using (builder.Build())
+			{
+				Assert.Same(
+					externalVersionTracking,
+					GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			}
+
+			Assert.Same(
+				externalVersionTracking,
+				GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+		}
+
+		[Fact]
 		public void LazyVersionTrackingIsRestoredBeforeBridgedServicesAreDisposed()
 		{
 			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));

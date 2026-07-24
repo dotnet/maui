@@ -232,6 +232,10 @@ namespace Microsoft.Maui.Hosting
 #endif
 
 					var versionTrackingDependencies = BridgeEssentialsFromDI(services, facadeCleanups);
+					var versionTrackingOwnedByApp =
+						versionTrackingDependencies.Preferences is not null ||
+						versionTrackingDependencies.AppInfo is not null ||
+						versionTrackingDependencies.VersionTracking is not null;
 					BridgeLazyVersionTrackingFromDI(versionTrackingDependencies, facadeCleanups);
 
 					// Resolve app-owned cleanup before registering AppActions handlers. Facade
@@ -285,9 +289,9 @@ namespace Microsoft.Maui.Hosting
 					{
 						var versionTrackingBeforeTrack = VersionTracking.GetDefault();
 						VersionTracking.Track();
-						if (versionTrackingBeforeTrack is null && VersionTracking.GetDefault() is { } initializedVersionTracking)
+						if (!versionTrackingOwnedByApp && VersionTracking.GetDefault() is { } initializedVersionTracking)
 						{
-							TrackInitialized(
+							TrackInitializedOrOwned(
 								initializedVersionTracking,
 								versionTrackingBeforeTrack,
 								VersionTracking.GetDefault,
@@ -595,7 +599,7 @@ namespace Microsoft.Maui.Hosting
 			}
 #endif
 
-			static void TrackInitialized<T>(
+			static void TrackInitializedOrOwned<T>(
 				T impl,
 				T? original,
 				Func<T?> getter,
@@ -608,6 +612,9 @@ namespace Microsoft.Maui.Hosting
 				lock (FacadeBridgeState<T>.SyncRoot)
 				{
 					var previousOwner = FacadeBridgeState<T>.FindOwner(original);
+					if (original is not null && previousOwner is null)
+						return;
+
 					assignment = new FacadeAssignment<T>(impl, original, previousOwner);
 					FacadeBridgeState<T>.Assignments.Add(assignment);
 				}
