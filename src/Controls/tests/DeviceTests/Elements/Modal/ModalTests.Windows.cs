@@ -7,7 +7,9 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Windowing;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
 namespace Microsoft.Maui.DeviceTests
@@ -239,6 +241,151 @@ namespace Microsoft.Maui.DeviceTests
 
 					// The modal should be removed
 					Assert.DoesNotContain(modalRootView, container.CachedChildren);
+				});
+		}
+
+		// In full-screen mode, the NavigationRootManager constructor unconditionally reserves 32px
+		// for the title bar. ModalNavigationManager must suppress this for modal pages.
+		[Fact]
+		public async Task ModalPageInFullScreenModeHasNoTitleBarReservation()
+		{
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					var platformWindow = handler.PlatformView;
+					var appWindow = platformWindow.GetAppWindow();
+
+					appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+
+					try
+					{
+						var modalPage = new ContentPage { BackgroundColor = Colors.Red };
+						await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+						await OnLoadedAsync(modalPage);
+
+						var modalWindowRootView = modalPage
+							.FindMauiContext()
+							.GetNavigationRootManager()
+							.RootView as WindowRootView;
+
+						Assert.NotNull(modalWindowRootView);
+
+						// In full-screen mode, the modal must NOT reserve any space for the title bar.
+						// Before the fix this was 32px, causing both a visual gap and an unclickable area.
+						Assert.Equal(0d, modalWindowRootView.WindowTitleBarContentControlMinHeight);
+
+						await navPage.CurrentPage.Navigation.PopModalAsync();
+						await OnUnloadedAsync(modalPage);
+					}
+					finally
+					{
+						// Restore windowed mode so subsequent tests are not affected.
+						appWindow.SetPresenter(AppWindowPresenterKind.Default);
+					}
+				});
+		}
+
+		// The full-screen fix must not suppress the title bar reservation in windowed mode.
+		[Fact]
+		public async Task ModalPageInWindowedModeRetainsTitleBarState()
+		{
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					var modalPage = new ContentPage { BackgroundColor = Colors.Red };
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var modalWindowRootView = modalPage
+						.FindMauiContext()
+						.GetNavigationRootManager()
+						.RootView as WindowRootView;
+
+					Assert.NotNull(modalWindowRootView);
+
+					// In windowed mode, the modal's title bar container must remain visible.
+					// The fix must not affect this path.
+					Assert.Equal(
+						UI.Xaml.Visibility.Visible,
+						modalWindowRootView.AppTitleBarContainer?.Visibility);
+
+					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
+				});
+		}
+
+		// Verifies that the AppWindow.Changed subscription fires and updates the modal's
+		// title bar reservation when the presenter changes while a modal is already visible.
+		[Fact]
+		public async Task ModalTitleBarUpdatesWhenPresenterChangesWhileModalIsVisible()
+		{
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					var platformWindow = handler.PlatformView;
+					var appWindow = platformWindow.GetAppWindow();
+
+					// Push a modal while the window is in windowed mode.
+					var modalPage = new ContentPage { BackgroundColor = Colors.Red };
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var modalWindowRootView = modalPage
+						.FindMauiContext()
+						.GetNavigationRootManager()
+						.RootView as WindowRootView;
+
+					Assert.NotNull(modalWindowRootView);
+
+					// In windowed mode the modal must reserve space for the title bar.
+					Assert.True(
+						modalWindowRootView.WindowTitleBarContentControlMinHeight > 0,
+						"Modal should reserve title bar space in windowed mode");
+
+					try
+					{
+						// Switch to full-screen while the modal is already visible.
+						// This exercises the AppWindow.Changed subscription path added by the fix.
+						appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+
+						// Wait deterministically for the AppWindow.Changed event to propagate and
+						// the DispatcherQueue.TryEnqueue callback to update WindowTitleBarContentControlMinHeight.
+						await AssertEventually(
+							() => modalWindowRootView.WindowTitleBarContentControlMinHeight == 0d,
+							timeout: 2000,
+							message: "Modal should clear title bar space after switching to full-screen");
+
+						// Restore windowed mode while the modal is still open.
+						appWindow.SetPresenter(AppWindowPresenterKind.Default);
+
+						// Wait deterministically for the AppWindow.Changed event to propagate and
+						// the DispatcherQueue.TryEnqueue callback to restore WindowTitleBarContentControlMinHeight.
+						await AssertEventually(
+							() => modalWindowRootView.WindowTitleBarContentControlMinHeight > 0,
+							timeout: 2000,
+							message: "Modal should restore title bar space when returning to windowed mode");
+					}
+					finally
+					{
+						appWindow.SetPresenter(AppWindowPresenterKind.Default);
+						await navPage.CurrentPage.Navigation.PopModalAsync();
+						await OnUnloadedAsync(modalPage);
+					}
 				});
 		}
 
