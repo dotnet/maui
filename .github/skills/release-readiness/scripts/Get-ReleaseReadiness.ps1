@@ -3139,10 +3139,12 @@ function Get-RegressionCandidates {
     $allIssues = @()
     $seen = @{}
     $failedLabels = [System.Collections.Generic.List[string]]::new()
+    $truncatedLabels = [System.Collections.Generic.List[string]]::new()
+    $probeLimit = $MaxIssues + 1
 
     foreach ($label in $Labels) {
         $raw = Invoke-Gh @('issue', 'list', '--repo', $Ctx.repo, '--label', $label,
-                           '--state', 'all', '--limit', $MaxIssues.ToString(),
+                           '--state', 'all', '--limit', $probeLimit.ToString(),
                            '--json', 'number,title,state,stateReason,labels,milestone,createdAt,closedAt')
         if ($null -eq $raw) {
             [void]$failedLabels.Add($label)
@@ -3164,6 +3166,11 @@ function Get-RegressionCandidates {
             [void]$failedLabels.Add($label)
             Write-Warn "Failed to parse regression issue query for label '$label': $($_.Exception.Message)"
             continue
+        }
+        if ($list.Count -gt $MaxIssues) {
+            [void]$truncatedLabels.Add($label)
+            Write-Warn "Regression issue query for label '$label' exceeded -MaxIssues $MaxIssues; results are truncated and incomplete."
+            $list = @($list | Select-Object -First $MaxIssues)
         }
         foreach ($iss in $list) {
             if (-not $seen.ContainsKey($iss.number)) {
@@ -3355,9 +3362,10 @@ function Get-RegressionCandidates {
         }
     }
     return [PSCustomObject]@{
-        Items        = @($results)
-        IsComplete   = ($failedLabels.Count -eq 0)
-        FailedLabels = @($failedLabels)
+        Items           = @($results)
+        IsComplete      = ($failedLabels.Count -eq 0 -and $truncatedLabels.Count -eq 0)
+        FailedLabels    = @($failedLabels)
+        TruncatedLabels = @($truncatedLabels)
     }
 }
 
@@ -3414,18 +3422,23 @@ function Get-P0PrChecks {
     .OUTPUTS
         Array with exactly one check record (see New-ReadinessCheck).
     #>
-    param($OpenSrPrs, [string]$SrBranch)
+    param($OpenSrPrs, [string]$SrBranch, [switch]$Shipped)
 
     $prs = @($OpenSrPrs)
     $p0 = @($prs | Where-Object { Test-IsP0Pr $_ })
 
     if ($p0.Count -gt 0) {
         $nums = ($p0 | ForEach-Object { "#$($_.number)" }) -join ', '
+        $nextAction = if ($Shipped) {
+            "``$SrBranch`` already shipped — decide whether to land each P/0 PR as a hotfix, carry it to the next SR, or explicitly de-prioritize it."
+        } else {
+            'Land or de-prioritize each P/0 PR before shipping.'
+        }
         return @(New-ReadinessCheck `
             -Area 'P/0 release-branch PRs' `
             -Status 'BLOCKED' `
             -Details "$($p0.Count) open P/0-labelled PR(s) target ``$SrBranch``: $nums." `
-            -NextAction 'Land or de-prioritize each P/0 PR before shipping.')
+            -NextAction $nextAction)
     }
     return @(New-ReadinessCheck `
         -Area 'P/0 release-branch PRs' `
@@ -4599,15 +4612,21 @@ function Format-MarkdownReport {
     # stay VISIBLE without implying the shipped release is broken.
     $blockingItems = New-Object System.Collections.Generic.List[hashtable]
     $blockedShipCheckItems = New-Object System.Collections.Generic.List[hashtable]
+    $releaseContentFollowUpItems = New-Object System.Collections.Generic.List[hashtable]
     $carryForwardItems = New-Object System.Collections.Generic.List[hashtable]
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
         foreach ($sc in $Data['shipChecks']) {
             if ($sc.Status -eq 'BLOCKED') {
-                [void]$blockedShipCheckItems.Add(@{
+                $shipCheckItem = @{
                     area = "🛠️ $($sc.Area)"
                     details = $sc.Details
                     action = $sc.NextAction
-                })
+                }
+                if ($isShippedRender -and $sc.Area -eq 'P/0 release-branch PRs') {
+                    [void]$releaseContentFollowUpItems.Add($shipCheckItem)
+                } else {
+                    [void]$blockedShipCheckItems.Add($shipCheckItem)
+                }
             }
         }
     }
@@ -4674,8 +4693,24 @@ function Format-MarkdownReport {
             }
             [void]$sb.AppendLine()
         }
+        if ($releaseContentFollowUpItems.Count -gt 0) {
+            [void]$sb.AppendLine("## 🚩 Post-ship release-content decisions — $($releaseContentFollowUpItems.Count) item(s)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_Release-critical content is still open after ship. Decide whether to land it as a hotfix, carry it to the next SR, or explicitly de-prioritize it._")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| Area | Details | Next action |')
+            [void]$sb.AppendLine('|---|---|---|')
+            foreach ($b in $releaseContentFollowUpItems) {
+                $area = Format-MarkdownTableCell $b.area
+                $details = Format-MarkdownTableCell $b.details
+                $action = Format-MarkdownTableCell $b.action
+                [void]$sb.AppendLine("| $area | $details | $action |")
+            }
+            [void]$sb.AppendLine()
+        }
         if (-not $regressionScanIncompleteRender -and $blockingItems.Count -eq 0 -and
-            $blockedShipCheckItems.Count -eq 0 -and $carryForwardItems.Count -eq 0) {
+            $blockedShipCheckItems.Count -eq 0 -and $releaseContentFollowUpItems.Count -eq 0 -and
+            $carryForwardItems.Count -eq 0) {
             [void]$sb.AppendLine("## 🟢 No urgent post-ship follow-ups")
             [void]$sb.AppendLine()
         }
@@ -4695,13 +4730,13 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine()
         }
     }
-    elseif (($blockingItems.Count + $blockedShipCheckItems.Count) -gt 0) {
-        $blockingCount = $blockingItems.Count + $blockedShipCheckItems.Count
+    elseif (($blockingItems.Count + $blockedShipCheckItems.Count + $releaseContentFollowUpItems.Count) -gt 0) {
+        $blockingCount = $blockingItems.Count + $blockedShipCheckItems.Count + $releaseContentFollowUpItems.Count
         [void]$sb.AppendLine("## 🔴 Blocking — $blockingCount item(s)")
         [void]$sb.AppendLine()
         [void]$sb.AppendLine('| Area | Details | Next action |')
         [void]$sb.AppendLine('|---|---|---|')
-        foreach ($b in @($blockedShipCheckItems) + @($blockingItems)) {
+        foreach ($b in @($blockedShipCheckItems) + @($releaseContentFollowUpItems) + @($blockingItems)) {
             $area = Format-MarkdownTableCell $b.area
             $details = Format-MarkdownTableCell $b.details
             $action = Format-MarkdownTableCell $b.action
@@ -5189,8 +5224,10 @@ function Format-MarkdownReport {
 
         $tier1Title = if ($isShippedRender) { '🔴 Tier 1 — Urgent follow-up' } else { '🔴 Tier 1 — Blocking' }
         $tier2Title = if ($isShippedRender) { '🟡 Tier 2 — Follow-up / Review' } else { '🟡 Tier 2 — Risk / Review' }
-        & $emitTier $tier1Title $tier1Classes '_No blocking regressions._' 'OPEN'
-        & $emitTier $tier2Title $tier2Classes '_No risk-tier regressions._' $null
+        $tier1Empty = if ($isShippedRender) { '_No urgent follow-up regressions._' } else { '_No blocking regressions._' }
+        $tier2Empty = if ($isShippedRender) { '_No follow-up/review regressions._' } else { '_No risk-tier regressions._' }
+        & $emitTier $tier1Title $tier1Classes $tier1Empty 'OPEN'
+        & $emitTier $tier2Title $tier2Classes $tier2Empty $null
         & $emitTier '🟢 Tier 3 — Informational' $tier3Classes $null 'CLOSED'
     }
 
@@ -5431,7 +5468,9 @@ function Invoke-Main {
             if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
                 $data['shipChecks'] = @()
             }
-            $data['shipChecks'] = @($data['shipChecks']) + @(Get-P0PrChecks -OpenSrPrs $data['openSrPrs'] -SrBranch $ctx.srBranch)
+            $data['shipChecks'] = @($data['shipChecks']) + @(Get-P0PrChecks -OpenSrPrs $data['openSrPrs'] `
+                                                                                 -SrBranch $ctx.srBranch `
+                                                                                 -Shipped:($ctx.mode -eq 'shipped'))
         }
     }
 
@@ -5510,7 +5549,8 @@ function Invoke-Main {
                                                     -SrContents $data['srContents'] -MaxIssues $MaxIssues
             $data['regressions'] = @($regressionScan.Items)
             $data['regressionScanIncomplete'] = -not $regressionScan.IsComplete
-            $data['regressionFailedLabels'] = @($regressionScan.FailedLabels)
+            $data['regressionFailedLabels'] = @($regressionScan.FailedLabels) +
+                @($regressionScan.TruncatedLabels | ForEach-Object { "$_ (truncated at -MaxIssues $MaxIssues)" })
 
             # Summary buckets
             $summary = @{}
@@ -5521,6 +5561,13 @@ function Invoke-Main {
             }
             $data['summary'] = $summary
         }
+    } else {
+        # Partial diagnostic phases intentionally skip regression discovery. Mark
+        # that absence explicitly so a focused `-Phase ci|commits|open-prs` run
+        # cannot emit a global Ready/Shipped-clean verdict for data never queried.
+        $data['regressions'] = @()
+        $data['regressionScanIncomplete'] = $true
+        $data['regressionFailedLabels'] = @("(regressions phase not run: -Phase $Phase)")
     }
 
     $data['warnings'] = @($Script:Warnings)

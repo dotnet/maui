@@ -173,6 +173,18 @@ if (-not $SkipE2E) {
                   -Expected $true -Actual ($srcPrs.Count -ge 40 -and $srcPrs.Count -le 100)
     }
 
+    $partialJsonPath = Join-Path $outDir 'release-readiness.json'
+    if (Test-Path $partialJsonPath) {
+        $partialReport = Get-Content $partialJsonPath -Raw | ConvertFrom-Json
+        Assert-Eq -Label "partial -Phase commits marks regression scan incomplete" `
+            -Expected $true -Actual $partialReport.regressionScanIncomplete
+        Assert-Eq -Label "partial -Phase commits cannot emit a global Ready verdict" `
+            -Expected $false -Actual ($partialReport.verdict.symbol -eq '🟢')
+    } else {
+        Write-Host "  ❌ partial-phase release-readiness.json was not created" -ForegroundColor Red
+        $script:failed++
+    }
+
     # Cleanup
     if (Test-Path $outDir) { Remove-Item -Recurse -Force $outDir }
 
@@ -1394,6 +1406,40 @@ try {
     $multilineEmptyScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
                                                   -SrContents $scanContents -MaxIssues 10
     Assert-Eq -Label "regression scan: multiline JSON array parses as a complete empty scan" -Expected $true -Actual $multilineEmptyScan.IsComplete
+
+    $capPlusOneJson = @(1..11 | ForEach-Object {
+        [pscustomobject]@{
+            number = 80000 + $_; title = "Duplicate $_"; state = 'CLOSED'; stateReason = 'DUPLICATE'
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = '2026-01-02T00:00:00Z'
+        }
+    }) | ConvertTo-Json -Depth 5
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $capPlusOneJson }
+        return '[]'
+    }
+    $truncatedScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                             -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: MaxIssues+1 response marks scan incomplete" -Expected $false -Actual $truncatedScan.IsComplete
+    Assert-Eq -Label "regression scan: truncated label is recorded" -Expected 'regressed-in-test' -Actual ($truncatedScan.TruncatedLabels -join ',')
+    Assert-Eq -Label "regression scan: processing remains capped at MaxIssues" -Expected 10 -Actual @($truncatedScan.Items).Count
+
+    $exactCapJson = @(1..10 | ForEach-Object {
+        [pscustomobject]@{
+            number = 81000 + $_; title = "Duplicate $_"; state = 'CLOSED'; stateReason = 'DUPLICATE'
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = '2026-01-02T00:00:00Z'
+        }
+    }) | ConvertTo-Json -Depth 5
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $exactCapJson }
+        return '[]'
+    }
+    $exactCapScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                            -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: exact MaxIssues response remains complete" -Expected $true -Actual $exactCapScan.IsComplete
 
     # ── Get-CandidatePrChecks: maintainer author-gate via REST author_association ──
     # Regression: `gh pr list --json` does not support authorAssociation, so the
@@ -3716,16 +3762,36 @@ $mdDataBlockedShipCheck['summary'] = @{}
 $mdDataBlockedShipCheck['ci'] = @{ overall = 'green'; pipelines = @() }
 $mdDataBlockedShipCheck['shipChecks'] = @(
     [pscustomobject]@{
-        Area = 'P/0 release-branch PRs'; Status = 'BLOCKED'; Details = 'One PR remains'
-        NextAction = 'Land or de-prioritize each P/0 PR before shipping.'
+        Area = 'Servicing flip'; Status = 'BLOCKED'; Details = 'Packages are not stable'
+        NextAction = 'Flip Versions.props.'
     }
 )
 $mdBlockedShipCheck = Format-MarkdownReport -Data $mdDataBlockedShipCheck -RepoUrl 'https://github.com/dotnet/maui' `
                                            -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
 Assert-Eq -Label "shipped markdown: BLOCKED ship check uses operational follow-up section" -Expected $true `
-    -Actual ($mdBlockedShipCheck -match 'Post-ship operational follow-ups' -and $mdBlockedShipCheck -match 'P/0 release-branch PRs')
+    -Actual ($mdBlockedShipCheck -match 'Post-ship operational follow-ups' -and $mdBlockedShipCheck -match 'Servicing flip')
 Assert-Eq -Label "shipped markdown: BLOCKED ship check is not placed under regression hotfix caption" -Expected $false `
     -Actual ($mdBlockedShipCheck -match 'Each needs a human hotfix-vs-next-SR decision')
+
+$mdDataP0ContentDecision = $mdDataShipped.Clone()
+$mdDataP0ContentDecision['regressions'] = @()
+$mdDataP0ContentDecision['summary'] = @{}
+$mdDataP0ContentDecision['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataP0ContentDecision['shipChecks'] = @(Get-P0PrChecks -OpenSrPrs @(
+    [pscustomobject]@{
+        number = 36030
+        labels = @([pscustomobject]@{ name = 'p/0' })
+    }
+) -SrBranch 'release/10.0.1xx-sr9' -Shipped)
+$mdP0ContentDecision = Format-MarkdownReport -Data $mdDataP0ContentDecision -RepoUrl 'https://github.com/dotnet/maui' `
+                                             -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: P/0 content check uses release-content decision section" -Expected $true `
+    -Actual ($mdP0ContentDecision -match 'Post-ship release-content decisions' -and
+             $mdP0ContentDecision -match 'hotfix, carry it to the next SR, or explicitly de-prioritize')
+Assert-Eq -Label "shipped markdown: P/0 content check is not categorized as operational" -Expected $false `
+    -Actual ($mdP0ContentDecision -match 'Post-ship operational follow-ups')
+Assert-Eq -Label "shipped markdown: production P/0 action is lifecycle-aware" -Expected $true `
+    -Actual ($mdP0ContentDecision -match 'land each P/0 PR as a hotfix' -and $mdP0ContentDecision -notmatch 'before shipping')
 
 $mdDataInflightMixedBlocking = $mdData.Clone()
 $mdDataInflightMixedBlocking['metadata'] = $mdData.metadata.Clone()
@@ -3743,6 +3809,22 @@ $mdInflightMixedBlocking = Format-MarkdownReport -Data $mdDataInflightMixedBlock
 Assert-Eq -Label "in-flight markdown: mixed ship-check and regression blockers share one two-item section" -Expected $true `
     -Actual ($mdInflightMixedBlocking -match '## 🔴 Blocking — 2 item\(s\)' -and
              $mdInflightMixedBlocking -match 'Servicing flip' -and $mdInflightMixedBlocking -match '#36010')
+
+$mdDataShippedTier3Only = $mdDataShipped.Clone()
+$mdDataShippedTier3Only['regressions'] = @(
+    @{ issue = 36020; title = 'Already fixed'; state = 'CLOSED'; classification = 'in-sr-active';
+       candidateFixPrs = @(); recommendedAction = 'No action' }
+)
+$mdDataShippedTier3Only['summary'] = @{ 'in-sr-active' = 1 }
+$mdDataShippedTier3Only['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataShippedTier3Only['shipChecks'] = @()
+$mdShippedTier3Only = Format-MarkdownReport -Data $mdDataShippedTier3Only -RepoUrl 'https://github.com/dotnet/maui' `
+                                           -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: empty Tier 1/2 placeholders use follow-up terminology" -Expected $true `
+    -Actual ($mdShippedTier3Only -match 'No urgent follow-up regressions' -and
+             $mdShippedTier3Only -match 'No follow-up/review regressions')
+Assert-Eq -Label "shipped markdown: empty Tier 1/2 placeholders avoid pre-ship blocking/risk language" -Expected $false `
+    -Actual ($mdShippedTier3Only -match 'No blocking regressions|No risk-tier regressions')
 
 # Report freshness banner (🕐/⏳) renders below **Generated** and is DERIVED-AT-RENDER,
 # so it must NOT perturb the semantic hash. Render the report TWICE with DIFFERENT
@@ -6186,6 +6268,14 @@ Assert-Eq -Label "Get-P0PrChecks: one record when p/0 present" -Expected 1 -Actu
 Assert-Eq -Label "Get-P0PrChecks: Area is 'P/0 release-branch PRs'" -Expected 'P/0 release-branch PRs' -Actual $srP0Checks[0].Area
 Assert-Eq -Label "Get-P0PrChecks: Status BLOCKED when p/0 present" -Expected 'BLOCKED' -Actual $srP0Checks[0].Status
 Assert-Eq -Label "Get-P0PrChecks: Details names #35970" -Expected $true -Actual ($srP0Checks[0].Details -like '*35970*')
+Assert-Eq -Label "Get-P0PrChecks: in-flight action retains before-shipping guidance" -Expected $true `
+    -Actual ($srP0Checks[0].NextAction -match 'before shipping')
+
+$srP0ShippedChecks = @(Get-P0PrChecks -OpenSrPrs @($srP0Pr) -SrBranch 'release/10.0.1xx-sr8' -Shipped)
+Assert-Eq -Label "Get-P0PrChecks: shipped action uses hotfix/carry-forward guidance" -Expected $true `
+    -Actual ($srP0ShippedChecks[0].NextAction -match 'hotfix' -and $srP0ShippedChecks[0].NextAction -match 'next SR')
+Assert-Eq -Label "Get-P0PrChecks: shipped action never says before shipping" -Expected $false `
+    -Actual ($srP0ShippedChecks[0].NextAction -match 'before shipping')
 
 # Multiple p/0 PRs: the count and the comma-joined "#a, #b" naming the release
 # captain sees must both be exercised (single-PR fixture above never hits the join).
