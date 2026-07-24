@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
@@ -13,8 +14,14 @@ namespace Microsoft.Maui.Controls
 			SearchCommandProperty.DependsOn(SearchCommandParameterProperty);
 		}
 
-		internal static new void RemapForControls()
+		static int s_remappedForControls;
+		internal override void RemapForControls()
 		{
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+				return;
+
+			base.RemapForControls();
+
 			// Adjust the mappings to preserve Controls.SearchBar legacy behaviors
 #if IOS
 			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(PlatformConfiguration.iOSSpecific.SearchBar.SearchBarStyleProperty.PropertyName, MapSearchBarStyle);

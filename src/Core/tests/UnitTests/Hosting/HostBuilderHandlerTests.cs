@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -275,6 +279,356 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Type handlerType = mauiHandlersFactory.GetHandlerType(typeof(ViewStub));
 			Assert.Null(handlerType);
+		}
+
+		[Fact]
+		public void HostBuilderResolvesHandlerDeclaredWithElementHandlerAttribute()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(AttributedViewStub));
+
+			Assert.IsType<AttributedViewHandlerStub>(handler);
+		}
+
+		[Fact]
+		public void HostBuilderResolvesBaseElementHandlerAttribute()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(DerivedAttributedViewStub));
+
+			Assert.IsType<AttributedViewHandlerStub>(handler);
+		}
+
+		[Fact]
+		public void HostBuilderPrefersRegisteredHandlerOverElementHandlerAttribute()
+		{
+			var registeredHandler = new ViewHandlerStub();
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<AttributedViewStub>(_ => registeredHandler))
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(AttributedViewStub));
+
+			Assert.Same(registeredHandler, handler);
+		}
+
+		[Fact]
+		public void HostBuilderCannotResolveHandlerTypeForAttributedServiceRegisteredWithFactory()
+		{
+			var registeredHandler = new AlternateAttributedViewHandlerStub();
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<AttributedViewStub>(_ => registeredHandler))
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(AttributedViewStub));
+			var handlerType = mauiHandlersFactory.GetHandlerType(typeof(AttributedViewStub));
+
+			Assert.Same(registeredHandler, handler);
+			Assert.Null(handlerType);
+		}
+
+		[Fact]
+		public void HostBuilderCannotResolveHandlerTypeForAttributedAssignableServiceRegisteredWithFactory()
+		{
+			var registeredHandler = new AlternateAttributedViewHandlerStub();
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub>(_ => registeredHandler))
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(AttributedViewStub));
+			var handlerType = mauiHandlersFactory.GetHandlerType(typeof(AttributedViewStub));
+
+			Assert.Same(registeredHandler, handler);
+			Assert.Null(handlerType);
+		}
+
+		[Fact]
+		public void HostBuilderPrefersRegisteredBaseHandlerOverBaseElementHandlerAttribute()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<AttributedViewStub, AlternateAttributedViewHandlerStub>())
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(DerivedAttributedViewStub));
+			var handlerType = mauiHandlersFactory.GetHandlerType(typeof(DerivedAttributedViewStub));
+
+			Assert.IsType<AlternateAttributedViewHandlerStub>(handler);
+			Assert.Same(typeof(AlternateAttributedViewHandlerStub), handlerType);
+		}
+
+		[Fact]
+		public void HostBuilderPrefersRegisteredInterfaceHandlerOverElementHandlerAttribute()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, AlternateAttributedViewHandlerStub>())
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(AttributedViewStub));
+			var handlerType = mauiHandlersFactory.GetHandlerType(typeof(AttributedViewStub));
+
+			Assert.IsType<AlternateAttributedViewHandlerStub>(handler);
+			Assert.Same(typeof(AlternateAttributedViewHandlerStub), handlerType);
+		}
+
+		[Fact]
+		public void HostBuilderThrowsActionableExceptionForElementHandlerAttributeWithoutDefaultConstructor()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var exception = Assert.Throws<HandlerNotFoundException>(() => mauiHandlersFactory.GetHandler(typeof(AttributedViewHandlerWithoutDefaultConstructorViewStub)));
+
+			Assert.IsType<MissingMethodException>(exception.InnerException);
+			Assert.Contains("public parameterless constructor", exception.Message, StringComparison.Ordinal);
+			Assert.Contains(nameof(IMauiHandlersFactory.GetHandler), exception.Message, StringComparison.Ordinal);
+			Assert.Contains("ToHandler()", exception.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void ToHandlerUsesActivatorUtilitiesForElementHandlerAttributeWithoutDefaultConstructor()
+		{
+			var dependency = new ConstructorDependency();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton(dependency);
+			var mauiApp = builder.Build();
+			var mauiContext = new MauiContext(mauiApp.Services);
+
+			var handler = Assert.IsType<AttributedViewHandlerWithoutDefaultConstructorStub>(
+				new AttributedViewHandlerWithoutDefaultConstructorViewStub().ToHandler(mauiContext));
+
+			Assert.Same(dependency, handler.Dependency);
+		}
+
+		[Fact]
+		public void HostBuilderThrowsActionableExceptionForElementHandlerAttributeWithNonHandlerType()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var exception = Assert.Throws<HandlerNotFoundException>(() => mauiHandlersFactory.GetHandler(typeof(AttributedNonHandlerViewStub)));
+
+			Assert.Contains(nameof(IElementHandler), exception.Message, StringComparison.Ordinal);
+			Assert.Contains(typeof(NonHandler).FullName!, exception.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void HostBuilderThrowsActionableExceptionWhenGettingHandlerTypeForElementHandlerAttributeWithNonHandlerType()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var exception = Assert.Throws<HandlerNotFoundException>(() => mauiHandlersFactory.GetHandlerType(typeof(AttributedNonHandlerViewStub)));
+
+			Assert.Contains(nameof(IElementHandler), exception.Message, StringComparison.Ordinal);
+			Assert.Contains(typeof(NonHandler).FullName!, exception.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void HostBuilderUsesOverriddenElementHandlerAttributeHandlerType()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(OverrideAttributedViewStub));
+			var handlerType = mauiHandlersFactory.GetHandlerType(typeof(OverrideAttributedViewStub));
+
+			Assert.IsType<AlternateAttributedViewHandlerStub>(handler);
+			Assert.Same(typeof(AlternateAttributedViewHandlerStub), handlerType);
+		}
+
+		[Fact]
+		public void HostBuilderThrowsForElementHandlerAttributeWithoutHandlerType()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.Throws<InvalidOperationException>(() => mauiHandlersFactory.GetHandler(typeof(MissingHandlerTypeAttributedViewStub)));
+		}
+
+		[Fact]
+		public void HostBuilderCachesElementHandlerAttributeLookup()
+		{
+			CountingElementHandlerAttribute.Reset();
+
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.IsType<AttributedViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(CountingAttributedViewStub)));
+			Assert.IsType<AttributedViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(CountingAttributedViewStub)));
+			Assert.Same(typeof(AttributedViewHandlerStub), mauiHandlersFactory.GetHandlerType(typeof(CountingAttributedViewStub)));
+			Assert.Same(typeof(AttributedViewHandlerStub), mauiHandlersFactory.GetHandlerType(typeof(CountingAttributedViewStub)));
+			Assert.Equal(1, CountingElementHandlerAttribute.InstanceCount);
+		}
+
+		[Fact]
+		public void SetVirtualViewRunsControlsMapperRemapOncePerKey()
+		{
+			RemappableViewStub.Reset();
+
+			new ViewHandlerStub().SetVirtualView(new RemappableViewStub());
+			new ViewHandlerStub().SetVirtualView(new DerivedRemappableViewStub());
+			new ViewHandlerStub().SetVirtualView(new DerivedRemappableViewStub());
+
+			Assert.Equal(1, RemappableViewStub.RemapCount);
+			Assert.Equal(1, RemappableViewStub.DerivedRemapCount);
+			Assert.Equal(new[] { "base", "derived" }, RemappableViewStub.RemapOrder);
+		}
+
+		[Fact]
+		public void DiRegisteredHandlerOverrideStillRunsControlsMapperRemapOnAttach()
+		{
+			RemappableViewStub.Reset();
+
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<AttributedRemappableViewStub, AlternateAttributedViewHandlerStub>();
+				})
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			var handler = Assert.IsType<AlternateAttributedViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(AttributedRemappableViewStub)));
+
+			Assert.Equal(0, RemappableViewStub.RemapCount);
+
+			handler.SetVirtualView(new AttributedRemappableViewStub());
+
+			Assert.Equal(1, RemappableViewStub.RemapCount);
+			Assert.Equal(new[] { "base" }, RemappableViewStub.RemapOrder);
+		}
+
+		[ElementHandler(typeof(AttributedViewHandlerStub))]
+		class AttributedViewStub : ViewStub { }
+		class DerivedAttributedViewStub : AttributedViewStub { }
+		class AttributedViewHandlerStub : ViewHandlerStub { }
+
+		[ElementHandler(typeof(AttributedViewHandlerWithoutDefaultConstructorStub))]
+		class AttributedViewHandlerWithoutDefaultConstructorViewStub : ViewStub { }
+		class AttributedViewHandlerWithoutDefaultConstructorStub : ViewHandlerStub
+		{
+			public AttributedViewHandlerWithoutDefaultConstructorStub(ConstructorDependency dependency)
+			{
+				Dependency = dependency;
+			}
+
+			public ConstructorDependency Dependency { get; }
+		}
+
+		class ConstructorDependency { }
+
+		[ElementHandler(typeof(NonHandler))]
+		class AttributedNonHandlerViewStub : ViewStub { }
+		class NonHandler { }
+
+		[OverrideElementHandler]
+		class OverrideAttributedViewStub : ViewStub { }
+		class AlternateAttributedViewHandlerStub : ViewHandlerStub { }
+		class OverrideElementHandlerAttribute : ElementHandlerAttribute
+		{
+			public OverrideElementHandlerAttribute()
+			{
+			}
+
+			public override Type GetHandlerType() => typeof(AlternateAttributedViewHandlerStub);
+		}
+
+		[MissingHandlerTypeElementHandler]
+		class MissingHandlerTypeAttributedViewStub : ViewStub { }
+		class MissingHandlerTypeElementHandlerAttribute : ElementHandlerAttribute { }
+
+		[ElementHandler(typeof(AttributedViewHandlerStub))]
+		class AttributedRemappableViewStub : RemappableViewStub { }
+
+		[CountingElementHandler]
+		class CountingAttributedViewStub : ViewStub { }
+		class CountingElementHandlerAttribute : ElementHandlerAttribute
+		{
+			public static int InstanceCount { get; private set; }
+
+			public CountingElementHandlerAttribute()
+			{
+				InstanceCount++;
+			}
+
+			public static void Reset() => InstanceCount = 0;
+
+			public override Type GetHandlerType() => typeof(AttributedViewHandlerStub);
+		}
+
+		class RemappableViewStub : ViewStub, IControlsMapperRemappable
+		{
+			static int s_remappedForControls;
+
+			public static int RemapCount { get; private set; }
+			public static int DerivedRemapCount { get; protected set; }
+			public static List<string> RemapOrder { get; } = new();
+
+			void IControlsMapperRemappable.RemapForControls() => RemapForControls();
+
+			protected virtual void RemapForControls()
+			{
+				if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+					return;
+
+				RemapCount++;
+				RemapOrder.Add("base");
+			}
+
+			public static void Reset()
+			{
+				s_remappedForControls = 0;
+				RemapCount = 0;
+				DerivedRemapCount = 0;
+				RemapOrder.Clear();
+				DerivedRemappableViewStub.ResetDerived();
+			}
+		}
+
+		class DerivedRemappableViewStub : RemappableViewStub
+		{
+			static int s_remappedForControls;
+
+			public static void ResetDerived() => s_remappedForControls = 0;
+
+			protected override void RemapForControls()
+			{
+				if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+					return;
+
+				base.RemapForControls();
+				DerivedRemapCount++;
+				RemapOrder.Add("derived");
+			}
 		}
 	}
 }

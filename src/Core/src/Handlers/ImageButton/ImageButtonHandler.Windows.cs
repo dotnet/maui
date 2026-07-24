@@ -152,5 +152,7 @@ namespace Microsoft.Maui.Handlers
 				button.UpdateImageSource(platformImage);
 			}
 		}
+
+		internal override bool PreventGestureBubbling => true;
 	}
 }

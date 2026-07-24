@@ -6,7 +6,9 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -23,8 +25,27 @@ namespace Microsoft.Maui.Controls
 	/// The visual representation is similar to an <see cref="Entry"/>, but displays a picker interface instead of a keyboard.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+#if ANDROID
+	[PickerHandler]
+#else
+	[ElementHandler(typeof(PickerHandler))]
+#endif
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
+#if ANDROID
+		internal sealed class PickerHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(PickerHandler2);
+
+				return typeof(PickerHandler);
+			}
+		}
+#endif
+
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 

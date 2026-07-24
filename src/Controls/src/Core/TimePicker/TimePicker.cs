@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -16,8 +18,27 @@ namespace Microsoft.Maui.Controls
 	/// The visual representation is similar to an <see cref="Entry"/>, but displays a time picker interface instead of a keyboard.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+#if ANDROID
+	[TimePickerHandler]
+#else
+	[ElementHandler(typeof(TimePickerHandler))]
+#endif
 	public partial class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>, ITimePicker
 	{
+#if ANDROID
+		internal sealed class TimePickerHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(TimePickerHandler2);
+
+				return typeof(TimePickerHandler);
+			}
+		}
+#endif
+
 		/// <summary>Bindable property for <see cref="Format"/>.</summary>
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(TimePicker), "t");
 
@@ -249,6 +270,17 @@ namespace Microsoft.Maui.Controls
 		private protected override string GetDebuggerDisplay()
 		{
 			return $"{base.GetDebuggerDisplay()}, Time = {Time}";
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (TimeSpan.TryParse(text, out TimeSpan tpResult))
+			{
+				Time = tpResult;
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

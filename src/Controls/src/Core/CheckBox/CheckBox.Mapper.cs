@@ -1,6 +1,6 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
+using System.Threading;
 using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
@@ -14,12 +14,15 @@ namespace Microsoft.Maui.Controls
 			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
 			// See https://github.com/dotnet/maui/issues/31939
 			CommandProperty.DependsOn(CommandParameterProperty);
-			RemapForControls();
 		}
 
-		private new static void RemapForControls()
+		static int s_remappedForControls;
+		internal override void RemapForControls()
 		{
-			VisualElement.RemapForControls();
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+				return;
+
+			base.RemapForControls();
 
 			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
 		}
