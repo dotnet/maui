@@ -148,9 +148,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var platformFileProvider = ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
 
 			// Load the bundled static web assets manifest (if present) so that @Assets fingerprinting
-			// and fingerprinted-route serving work. Absent (or on platforms without a readable file
-			// provider), fingerprinting simply stays off and behaviour is unchanged.
-			var manifest = StaticWebAssetsManifest.TryLoad(platformFileProvider);
+			// and fingerprinted-route serving work. The manifest lives outside the web root and is read
+			// from the app package, so it is never served to the web view. Absent (or on platforms
+			// without app-package access), fingerprinting simply stays off and behaviour is unchanged.
+			var manifest = StaticWebAssetsManifest.TryLoad();
 
 			string? hostPageRelativePath = null;
 			if (AppType is not null)

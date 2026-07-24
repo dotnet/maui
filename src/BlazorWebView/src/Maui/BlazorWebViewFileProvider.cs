@@ -11,10 +11,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// behaviour on top of it:
 	/// <list type="bullet">
 	/// <item><description>serves the in-memory rendered host page (the <see cref="BlazorWebView.AppType"/>
-	/// document) at the host page path, when provided;</description></item>
+	/// document) at the host page path, when provided; and</description></item>
 	/// <item><description>resolves fingerprinted request routes (for example <c>app.abc123.css</c>) to
-	/// their physical asset files, when a manifest is provided; and</description></item>
-	/// <item><description>hides the bundled asset manifest from being served to the web view.</description></item>
+	/// their physical asset files, when a manifest is provided.</description></item>
 	/// </list>
 	/// All other requests are delegated unchanged, so existing behaviour is preserved.
 	/// </summary>
@@ -50,12 +49,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				string.Equals(normalized, _hostPageRelativePath, StringComparison.Ordinal))
 			{
 				return new InMemoryFileInfo(Path.GetFileName(_hostPageRelativePath!), _hostPageContents);
-			}
-
-			// Never expose the bundled asset manifest to the web view.
-			if (string.Equals(normalized, StaticWebAssetsManifest.ManifestRelativePath, StringComparison.OrdinalIgnoreCase))
-			{
-				return new NotFoundFileInfo(subpath);
 			}
 
 			// If the file exists as requested, serve it directly (preserves existing behaviour).
