@@ -3584,7 +3584,15 @@ stages:
                     #    render. The unique ref is only created under real contention.
                     $commitSha = $null
                     $commit = $null
-                    $maxFf = 8
+                    # Fast-forward is the ONLY write the dotnet/maui rulesets allow on
+                    # the shared asset branch: creating a new ref 404s and a
+                    # non-fast-forward (force) update 404s too (both blocked by the
+                    # "MAUI protection" ruleset), so winning this CAS is the sole way
+                    # to publish. It works fine at normal review volume; it only loses
+                    # under a heavy simultaneous-Post burst. Retry generously with
+                    # jittered backoff so concurrent racers de-sync and each eventually
+                    # lands its fast-forward.
+                    $maxFf = 20
                     for ($attempt = 1; $attempt -le $maxFf -and -not $commitSha; $attempt++) {
                       try {
                         $tip = (gh api "repos/$assetRepo/git/ref/heads/$assetBranch" | ConvertFrom-Json)
@@ -3605,35 +3613,22 @@ stages:
                         $commitSha = [string]$commit.sha
                       } catch {
                         if ($attempt -ge $maxFf) { break }
-                        # Jittered backoff so concurrent racers don't re-collide in lockstep.
-                        Start-Sleep -Milliseconds (400 * $attempt + (Get-Random -Minimum 0 -Maximum 600))
+                        # Jittered, capped backoff so concurrent racers don't re-collide
+                        # in lockstep but the total wait stays bounded (~a minute worst case).
+                        Start-Sleep -Milliseconds ([Math]::Min(300 * $attempt, 2500) + (Get-Random -Minimum 0 -Maximum 700))
                       }
                     }
                     if ([string]::IsNullOrWhiteSpace($commitSha)) {
-                      # Shared-branch fast-forward lost every attempt under heavy
-                      # concurrency. We CANNOT publish on a new unique ref: dotnet/maui
-                      # rulesets block the bot from CREATING refs/heads/* branches
-                      # (POST git/refs returns 404 — verified: zero review-tests-assets-b*
-                      # branches ever got created; PATCH of the EXISTING asset branch is
-                      # the only ref write allowed). So force-update the shared branch to
-                      # this build's commit as a last resort. Each fast-forward attempt
-                      # rebuilt $commit on the freshly-read tip (base_tree = that tip's
-                      # tree) just ~1-2s before the racing PATCH lost, so force-updating
-                      # to it discards only the couple of seconds of sibling commits that
-                      # landed in between — and those unreachable commits still resolve
-                      # via raw.githubusercontent through GitHub's GC grace window, so
-                      # other in-flight builds' images keep rendering. Uses the same
-                      # (proven-working) update permission, so it always lands.
-                      if ($commit -and $commit.sha) {
-                        Write-Host "Shared asset branch contended after $maxFf fast-forward attempts; force-updating it to this build's commit $($commit.sha)."
-                        $forceFile = Join-Path $stageDir '_force.json'
-                        @{ sha = [string]$commit.sha; force = $true } | ConvertTo-Json | Set-Content $forceFile -Encoding UTF8
-                        $forceOut = gh api -X PATCH "repos/$assetRepo/git/refs/heads/$assetBranch" --input $forceFile 2>&1
-                        if ($LASTEXITCODE -eq 0) { $commitSha = [string]$commit.sha }
-                        else { Write-Host "Force-update also failed: $forceOut" }
-                      } else {
-                        Write-Host "No commit object available to force-update the asset branch; skipping embed."
-                      }
+                      # Every fast-forward attempt lost the CAS under an unusually heavy
+                      # simultaneous-Post burst. We have no other lever: the rulesets
+                      # block both creating a unique ref (POST git/refs -> 404) and
+                      # force-updating the shared branch (non-ff PATCH -> 404), so a
+                      # fast-forward that keeps losing leaves nothing to publish. Skip
+                      # the inline embed for this run only — the review still posts and
+                      # links the drop-deep-uitests artifact, which contains every diff
+                      # PNG. This is rare and self-corrects (contention clears as the
+                      # burst drains); re-running the review re-attempts the embed.
+                      throw "asset branch fast-forward lost after $maxFf attempts (heavy concurrency); embed skipped, artifact link retained"
                     }
                     if ([string]::IsNullOrWhiteSpace($commitSha)) { throw "asset ref publish failed" }
                     $rawBase = "https://raw.githubusercontent.com/$assetRepo/$commitSha/$assetPrefix"
