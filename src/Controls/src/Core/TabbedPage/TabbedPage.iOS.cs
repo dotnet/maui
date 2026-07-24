@@ -468,6 +468,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				view._previousPages?.Remove(page);
+				view._tabBarItemGeneration?.Remove(page);
 				page.Handler?.DisconnectHandler();
 			}
 
@@ -545,6 +546,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (!currentPages.Contains(oldPage))
 					{
+						view._tabBarItemGeneration?.Remove(oldPage);
 						oldPage.Handler?.DisconnectHandler();
 					}
 				}

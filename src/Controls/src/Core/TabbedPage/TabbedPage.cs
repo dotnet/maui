@@ -36,6 +36,10 @@ namespace Microsoft.Maui.Controls
 		// only that page's tab bar item instead of all children.
 		internal Page _pendingPropertyChangedPage;
 
+		// Tracks pages with active PropertyChanged subscriptions so they can be
+		// unsubscribed on Reset (where Children is already empty and e.OldItems is null).
+		HashSet<Page> _subscribedPages;
+
 		/// <summary>Gets or sets the background color of the tab bar. This is a bindable property.</summary>
 		public Color BarBackgroundColor
 		{
@@ -119,14 +123,29 @@ namespace Microsoft.Maui.Controls
 			{
 				WireUnwireChanges(false);
 
-				// Unsubscribe removed pages — they're no longer in Children after mutation
+				// Unsubscribe removed pages — they're no longer in Children after mutation.
+				// On Reset, e.OldItems is null and Children is already empty, so use _subscribedPages.
 				if (e.OldItems is not null)
 				{
 					foreach (var item in e.OldItems)
 					{
 						if (item is Page page)
+						{
 							page.PropertyChanged -= OnPagePropertyChanged;
+							_subscribedPages?.Remove(page);
+						}
 					}
+				}
+				else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset
+					&& _subscribedPages is not null)
+				{
+					// Reset path: Children is already empty, e.OldItems is null.
+					// Unsubscribe all previously tracked pages.
+					foreach (var page in _subscribedPages)
+					{
+						page.PropertyChanged -= OnPagePropertyChanged;
+					}
+					_subscribedPages.Clear();
 				}
 
 				_pendingPagesChangedArgs = e;
@@ -143,9 +162,16 @@ namespace Microsoft.Maui.Controls
 				foreach (var page in Children)
 				{
 					if (wire)
+					{
 						page.PropertyChanged += OnPagePropertyChanged;
+						_subscribedPages ??= new HashSet<Page>();
+						_subscribedPages.Add(page);
+					}
 					else
+					{
 						page.PropertyChanged -= OnPagePropertyChanged;
+						_subscribedPages?.Remove(page);
+					}
 				}
 			}
 
