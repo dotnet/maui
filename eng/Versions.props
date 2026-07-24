@@ -97,11 +97,11 @@
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>11.0.0-preview.7.26365.101</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>11.0.0-preview.7.26365.101</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>11.0.0-preview.7.26365.101</MicrosoftJSInteropPackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>11.0.0-preview.7.26326.101</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>11.0.0-preview.7.26326.101</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>11.0.0-preview.7.26326.101</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreDesignPackageVersion>11.0.0-preview.7.26326.101</MicrosoftEntityFrameworkCoreDesignPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>11.0.0-preview.7.26326.101</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>11.0.0-preview.7.26365.101</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>11.0.0-preview.7.26365.101</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>11.0.0-preview.7.26365.101</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreDesignPackageVersion>11.0.0-preview.7.26365.101</MicrosoftEntityFrameworkCoreDesignPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>11.0.0-preview.7.26365.101</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <!-- Everything else (previous edition) -->
     <MicrosoftAspNetCorePackageVersion>10.0.2</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>
