@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Handlers
 
 			_editor = searchBar.GetSearchTextField();
 
-
 			return searchBar;
 		}
 
@@ -167,6 +166,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButton(searchBar);
+			if (handler is SearchBarHandler searchBarHandler)
+				handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(searchBar.Text));
+
 		}
 
 		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
@@ -290,6 +292,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is SearchBarHandler handler)
 				{
 					handler.UpdateCancelButtonVisibility();
+					handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(VirtualView?.Text));
 				}
 			}
 
