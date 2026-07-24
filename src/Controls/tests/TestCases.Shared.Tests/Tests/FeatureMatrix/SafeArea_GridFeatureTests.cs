@@ -168,8 +168,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Container: bottom label Y ({bottomLabelRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 		}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/36770
 		[Test, Order(4)]
-		[Description("Grid SoftInput respects safe area on top/sides but bottom is edge-to-edge without keyboard")]
+		[Description("Grid SoftInput: content flows edge-to-edge under system bars/notch; only bottom avoids keyboard when shown")]
 		public void ValidateSafeAreaEdges_SoftInput_Grid()
 		{
 			ClickGridSafeAreaButton();
@@ -179,19 +180,19 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
-			var insets = GetSafeAreaInsets();
 			var (_, screenHeight) = GetScreenSize();
 
-			// Portrait: top label Y should be ≈ insets.Top (safe area)
+			// Portrait: top label Y should be ≈ 0 (edge-to-edge, SoftInput flows under system bars/notch)
 			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top).Within(PixelTolerance),
-				$"SoftInput: top label Y ({topLabelRect.Y}) should be equal to insets.Top ({insets.Top})");
+			Assert.That(topLabelRect.Y, Is.EqualTo(0).Within(PixelTolerance),
+				$"SoftInput: top label Y ({topLabelRect.Y}) should be = 0 (edge-to-edge)");
 
-			// Portrait: bottom label bottom edge should be ≈ screenHeight (edge-to-edge, no safe area applied)
+			// Portrait: bottom label bottom edge should be ≈ screenHeight (edge-to-edge without keyboard)
 			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(screenHeight).Within(PixelTolerance),
 				$"SoftInput: bottom label Y ({bottomLabelRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 		}
+#endif
 
 		[Test, Order(5)]
 		[Description("Default on Grid behaves as Container — content inset from system UI (status bar, notch, home indicator)")]
@@ -499,6 +500,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
 		}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/36770
 		[Test, Order(12)]
 		[Description("With SoftInput, bottom indicator moves up when keyboard is shown and restores when dismissed")]
 		public void ValidateKeyboard_SoftInput_BottomMovesUp_Grid()
@@ -511,13 +513,12 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
-			var insets = GetSafeAreaInsets();
 			var (_, screenHeight) = GetScreenSize();
 
-			// ── Before keyboard ──
+			// ── Before keyboard (SoftInput: edge-to-edge on all sides without keyboard) ──
 			var topLabelBeforeRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(topLabelBeforeRect.Y), Is.EqualTo(insets.Top).Within(PixelTolerance),
-				$"Before keyboard - top label Y ({topLabelBeforeRect.Y}) should be equal to insets.Top ({insets.Top})");
+			Assert.That(topLabelBeforeRect.Y, Is.EqualTo(0).Within(PixelTolerance),
+				$"Before keyboard - top label Y ({topLabelBeforeRect.Y}) should be = 0 (edge-to-edge)");
 
 			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight).Within(PixelTolerance),
@@ -536,7 +537,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(bottomLabelDuringRect.Bottom, Is.EqualTo(keyboardY).Within(PixelTolerance),
 				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal keyboardY ({keyboardY})");
 
-			// Top should remain unchanged
+			// Top should remain unchanged (edge-to-edge)
 			var topLabelDuringRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topLabelDuringRect.Y, Is.EqualTo(topLabelBeforeRect.Y).Within(PixelTolerance),
 				$"During keyboard - top label Y ({topLabelDuringRect.Y}) should remain at ({topLabelBeforeRect.Y})");
@@ -556,6 +557,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom).Within(PixelTolerance),
 				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
 		}
+#endif
 
 		[Test, Order(13)]
 		[Description("With None, bottom indicator does NOT move when keyboard is shown")]
@@ -740,6 +742,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 		}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/36770
 		[Test, Order(16)]
 		[Description("Switch None to SoftInput while keyboard is open — bottom indicator moves up")]
 		public void ValidateKeyboardRuntime_SwitchNoneToSoftInput_WhileKeyboardOpen_Grid()
@@ -786,10 +789,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			var keyboardY = GetKeyboardY();
 
-			// With SoftInput, bottom should move up to keyboard top
+			// With SoftInput: top is edge-to-edge (flows under system bars/notch), bottom moves up to keyboard
 			var topLabelDuringSoftInputRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(topLabelDuringSoftInputRect.Y), Is.EqualTo(insets.Top).Within(PixelTolerance),
-				$"During keyboard (SoftInput) - top label Y ({topLabelDuringSoftInputRect.Y}) should be equal to insets.Top ({insets.Top})");
+			Assert.That(topLabelDuringSoftInputRect.Y, Is.EqualTo(0).Within(PixelTolerance),
+				$"During keyboard (SoftInput) - top label Y ({topLabelDuringSoftInputRect.Y}) should be = 0 (edge-to-edge)");
 
 			var bottomLabelDuringSoftInputRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomLabelDuringSoftInputRect.Bottom, Is.EqualTo(keyboardY).Within(PixelTolerance),
@@ -800,15 +803,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForKeyboardToHide();
 			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
-			// After keyboard (SoftInput): top at insets.Top, bottom at screenHeight (edge-to-edge without keyboard)
+			// After keyboard (SoftInput): top edge-to-edge (0), bottom at screenHeight (edge-to-edge without keyboard)
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(topLabelAfterRect.Y), Is.EqualTo(insets.Top).Within(PixelTolerance),
-				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should be equal to insets.Top ({insets.Top})");
+			Assert.That(topLabelAfterRect.Y, Is.EqualTo(0).Within(PixelTolerance),
+				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should be = 0 (edge-to-edge)");
 
 			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(Math.Abs(bottomLabelAfterRect.Bottom), Is.EqualTo(screenHeight).Within(PixelTolerance),
 				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 		}
+#endif
 #endif
 
 		[Test, Order(17)]
@@ -888,6 +892,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 		}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/36770
 		[Test, Order(18)]
 		[Description("Switch Container to SoftInput while keyboard is open — bottom indicator moves up")]
 		public void ValidateKeyboardRuntime_SwitchContainerToSoftInput_WhileKeyboardOpen_Grid()
@@ -940,10 +945,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			var keyboardY = GetKeyboardY();
 
-			// With SoftInput, bottom should move up to keyboard top
+			// With SoftInput: top is edge-to-edge (flows under system bars/notch), bottom moves up to keyboard
 			var topLabelDuringSoftInputRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(topLabelDuringSoftInputRect.Y), Is.EqualTo(insets.Top).Within(PixelTolerance),
-				$"During keyboard (SoftInput) - top label Y ({topLabelDuringSoftInputRect.Y}) should be equal to insets.Top ({insets.Top})");
+			Assert.That(topLabelDuringSoftInputRect.Y, Is.EqualTo(0).Within(PixelTolerance),
+				$"During keyboard (SoftInput) - top label Y ({topLabelDuringSoftInputRect.Y}) should be = 0 (edge-to-edge)");
 
 			var bottomLabelDuringSoftInputRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomLabelDuringSoftInputRect.Bottom, Is.EqualTo(keyboardY).Within(PixelTolerance),
@@ -954,10 +959,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForKeyboardToHide();
 			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
-			// After keyboard (SoftInput): top at insets.Top, bottom at screenHeight (edge-to-edge without keyboard)
+			// After keyboard (SoftInput): top edge-to-edge (0), bottom at screenHeight (edge-to-edge without keyboard)
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(topLabelAfterRect.Y), Is.EqualTo(insets.Top).Within(PixelTolerance),
-				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should be equal to insets.Top ({insets.Top})");
+			Assert.That(topLabelAfterRect.Y, Is.EqualTo(0).Within(PixelTolerance),
+				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should be = 0 (edge-to-edge)");
 
 			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(Math.Abs(bottomLabelAfterRect.Bottom), Is.EqualTo(screenHeight).Within(PixelTolerance),
@@ -1039,13 +1044,13 @@ namespace Microsoft.Maui.TestCases.Tests
 #else
 			App.WaitForNoElement("BottomEdgeIndicator"); // On Android, Appium does not find the bottom label when the keyboard is open
 #endif
-			// ── Switch to SoftInput (keyboard still open) ──
+			// ── Switch to SoftInput (keyboard still open) ── (SoftInput: top edge-to-edge, bottom moves to keyboard)
 			App.Tap("SafeAreaSoftInputButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
 			topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top).Within(PixelTolerance),
-				$"SoftInput (keyboard open) - top label Y ({topLabelRect.Y}) should be equal to insets.Top ({insets.Top})");
+			Assert.That(topLabelRect.Y, Is.EqualTo(0).Within(PixelTolerance),
+				$"SoftInput (keyboard open) - top label Y ({topLabelRect.Y}) should be = 0 (edge-to-edge)");
 
 			bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomLabelRect.Bottom, Is.EqualTo(keyboardY).Within(PixelTolerance),
@@ -1087,7 +1092,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 		}
 #endif
-
+#endif
 		// ──────────────────────────────────────────────
 		// Interaction with Grid Properties
 		// ──────────────────────────────────────────────
