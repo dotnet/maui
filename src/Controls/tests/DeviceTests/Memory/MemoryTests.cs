@@ -344,14 +344,19 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning restore CS0618 // Type or member is obsolete
 			var handler = CreateHandler<LayoutHandler>(layout);
 			var viewHandler = view.Handler;
+			Assert.NotNull(viewHandler);
+
+			bool isWindowsHybridWebView = false;
 
 			if (view is HybridWebView)
 			{
 #if WINDOWS
+				isWindowsHybridWebView = true;
+
 				// Await WebView2's own readiness API instead of polling or using a fixed delay.
 				// EnsureCoreWebView2Async completes exactly when initialization finishes (or
 				// immediately if already initialized), so there's no magic timeout/interval to tune.
-				if (viewHandler?.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 webView2)
+				if (viewHandler.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 webView2)
 				{
 					await webView2.EnsureCoreWebView2Async();
 				}
@@ -362,12 +367,13 @@ public class MemoryTests : ControlsHandlerTestBase
 			handlerReference = new WeakReference(viewHandler);
 			platformViewReference = new WeakReference(viewHandler.PlatformView);
 
-			// Explicitly disconnect the child view's handler before letting it fall out of
-			// scope. Real apps tear down handlers this way (e.g. when a page/element is
-			// removed), and some platform views (e.g. UIStepper on iOS 26+) rely on this
-			// deterministic teardown path to release native-side retains that a bare GC
-			// pass can't reach on its own.
-			if (viewHandler is IViewHandler disconnectableHandler)
+			// Windows HybridWebView's WebView2-backed platform view can still be completing
+			// async initialization work that holds a live reference even after the await above,
+			// so explicitly disconnect its handler before letting it fall out of scope. Other
+			// controls are left to rely on the passive GC pass (their existing/original
+			// contract) so this scoped teardown doesn't weaken leak coverage for unrelated
+			// handlers.
+			if (isWindowsHybridWebView && viewHandler is IViewHandler disconnectableHandler)
 			{
 				disconnectableHandler.DisconnectHandler();
 			}
