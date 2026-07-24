@@ -31,6 +31,9 @@ namespace Samples.ViewModel
 		string username = string.Empty;
 		string password = string.Empty;
 		string status = string.Empty;
+		bool isSignedIn;
+		string currentUsername;
+		int passkeyCount;
 
 		HttpClient httpClient;
 
@@ -41,6 +44,7 @@ namespace Samples.ViewModel
 			SignOutCommand = new Command(async () => await SignOutAsync());
 			RegisterCommand = new Command(async () => await RegisterAsync());
 			LoginCommand = new Command(async () => await LoginAsync());
+			EditServerUrlCommand = new Command(async () => await EditServerUrlAsync());
 		}
 
 		public bool IsSupported => Passkeys.IsSupported;
@@ -73,6 +77,45 @@ namespace Samples.ViewModel
 			set => SetProperty(ref status, value);
 		}
 
+		public bool IsSignedIn
+		{
+			get => isSignedIn;
+			set => SetProperty(ref isSignedIn, value, onChanged: () =>
+			{
+				OnPropertyChanged(nameof(IsLoggedOut));
+				OnPropertyChanged(nameof(AccountStatusText));
+			});
+		}
+
+		public bool IsLoggedOut => !IsSignedIn;
+
+		public string CurrentUsername
+		{
+			get => currentUsername;
+			set => SetProperty(ref currentUsername, value, onChanged: () => OnPropertyChanged(nameof(AccountStatusText)));
+		}
+
+		public int PasskeyCount
+		{
+			get => passkeyCount;
+			set => SetProperty(ref passkeyCount, value, onChanged: () =>
+			{
+				OnPropertyChanged(nameof(HasPasskey));
+				OnPropertyChanged(nameof(PasskeyStatusText));
+				OnPropertyChanged(nameof(CreatePasskeyButtonText));
+			});
+		}
+
+		public bool HasPasskey => PasskeyCount > 0;
+
+		public string AccountStatusText => $"Signed in as {CurrentUsername}";
+
+		public string PasskeyStatusText => HasPasskey
+			? (PasskeyCount == 1 ? "✓ 1 passkey on this account." : $"✓ {PasskeyCount} passkeys on this account.")
+			: "No passkey yet — add one for faster sign-in.";
+
+		public string CreatePasskeyButtonText => HasPasskey ? "Add another passkey" : "Create a passkey";
+
 		public ICommand SignUpCommand { get; }
 
 		public ICommand SignInPasswordCommand { get; }
@@ -82,6 +125,8 @@ namespace Samples.ViewModel
 		public ICommand RegisterCommand { get; }
 
 		public ICommand LoginCommand { get; }
+
+		public ICommand EditServerUrlCommand { get; }
 
 		async Task SignUpAsync()
 		{
@@ -93,7 +138,12 @@ namespace Samples.ViewModel
 				// ASP.NET Core Identity's MapIdentityApi: POST /account/register { email, password }.
 				await PostJsonAsync("/account/register", new { email = Username, password = Password });
 
-				Log("✅ Account created. Now sign in with the password.");
+				// /register does NOT sign you in, so immediately bootstrap a cookie session. This mirrors a
+				// real app where "create account" lands you logged in and ready to add a passkey.
+				Log("Account created. Signing in…");
+				await PostJsonAsync("/account/login?useCookies=true", new { email = Username, password = Password });
+
+				await RefreshAndOfferPasskeyAsync();
 			}
 			catch (Exception ex)
 			{
@@ -110,14 +160,13 @@ namespace Samples.ViewModel
 			try
 			{
 				IsBusy = true;
-				Log($"Signing in as '{Username}' with a password…");
+				Log($"Signing in as '{Username}'…");
 
-				// The native "bootstrap": POST /account/login?useCookies=true sets the Identity auth
-				// cookie on our CookieContainer. No browser, no webview — just a form post. Once signed
-				// in, "Create a passkey" enrolls a credential bound to THIS user (server reads the cookie).
+				// The native "bootstrap": POST /account/login?useCookies=true sets the Identity auth cookie
+				// on our CookieContainer. No browser, no webview — just a form post.
 				await PostJsonAsync("/account/login?useCookies=true", new { email = Username, password = Password });
 
-				Log("✅ Signed in with a password. You can now create a passkey for faster sign-in.");
+				await RefreshAndOfferPasskeyAsync();
 			}
 			catch (Exception ex)
 			{
@@ -136,11 +185,11 @@ namespace Samples.ViewModel
 				IsBusy = true;
 				Log("Signing out…");
 
-				// Clears the Identity session cookie on our CookieContainer. After this, "Create a
-				// passkey" will correctly report that you must sign in again first.
+				// Clears the Identity session cookie on our CookieContainer.
 				await PostJsonAsync("/account/logout", new { });
+				SetSignedOutState();
 
-				Log("✅ Signed out.");
+				Log("Signed out.");
 			}
 			catch (Exception ex)
 			{
@@ -173,9 +222,10 @@ namespace Samples.ViewModel
 
 				// 3) Send the attestation back to the RP server to verify + store.
 				Log("Verifying attestation with the server…");
-				var result = await PostAsync("/passkeys/register/finish", response.ToString());
+				await PostAsync("/passkeys/register/finish", response.ToString());
 
-				Log($"✅ Registered. Server said: {result}");
+				await RefreshAccountStateAsync();
+				Log("✅ Passkey created. You can now sign in with it.");
 			}
 			catch (Exception ex)
 			{
@@ -211,9 +261,10 @@ namespace Samples.ViewModel
 
 				// 3) Send the assertion back to the RP server to verify + sign in.
 				Log("Verifying assertion with the server…");
-				var result = await PostAsync("/passkeys/login/finish", response.ToString());
+				await PostAsync("/passkeys/login/finish", response.ToString());
 
-				Log($"✅ Signed in. Server said: {result}");
+				await RefreshAccountStateAsync();
+				Log($"✅ Signed in with a passkey as {CurrentUsername}.");
 			}
 			catch (Exception ex)
 			{
@@ -223,6 +274,78 @@ namespace Samples.ViewModel
 			{
 				IsBusy = false;
 			}
+		}
+
+		// After any password sign-in, ask the server what this account has and — if there's no passkey
+		// yet — offer to set one up. This is the "make it feel real" moment: a normal app nudges you to
+		// enroll a passkey right after you log in with a password.
+		async Task RefreshAndOfferPasskeyAsync()
+		{
+			await RefreshAccountStateAsync();
+			if (!IsSignedIn)
+				return;
+
+			Log($"✅ Signed in as {CurrentUsername}.");
+
+			if (!HasPasskey && Passkeys.IsSupported)
+			{
+				var wantsPasskey = await DisplayConfirmAsync(
+					"Set up a passkey?",
+					"Sign in faster next time using your fingerprint, face, or device PIN — no password needed. Create a passkey now?",
+					"Set up",
+					"Not now");
+
+				if (wantsPasskey)
+					await RegisterAsync();
+			}
+		}
+
+		// Single source of truth for "am I signed in, and do I have a passkey?" — GET /passkeys/list
+		// returns { username, passkeyCount } for the cookie-authenticated user, or 401 when signed out.
+		// The Identity session cookie rides along on this GET via the shared CookieContainer.
+		async Task RefreshAccountStateAsync()
+		{
+			var client = GetClient();
+			using var httpResponse = await client.GetAsync("/passkeys/list");
+
+			if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+			{
+				SetSignedOutState();
+				return;
+			}
+
+			var body = await httpResponse.Content.ReadAsStringAsync();
+			if (!httpResponse.IsSuccessStatusCode)
+				throw new InvalidOperationException($"Server returned {(int)httpResponse.StatusCode}: {ExtractServerMessage(body)}");
+
+			using var doc = JsonDocument.Parse(body);
+			var root = doc.RootElement;
+			CurrentUsername = root.TryGetProperty("username", out var u) ? u.GetString() : Username;
+			PasskeyCount = root.TryGetProperty("passkeyCount", out var c) ? c.GetInt32() : 0;
+			IsSignedIn = true;
+		}
+
+		void SetSignedOutState()
+		{
+			IsSignedIn = false;
+			CurrentUsername = null;
+			PasskeyCount = 0;
+		}
+
+		async Task EditServerUrlAsync()
+		{
+			var url = await DisplayPromptAsync(
+				"Server URL",
+				"Base URL of the relying-party server (a public HTTPS dev-tunnel domain). See the server README.",
+				ServerBaseUrl);
+
+			if (string.IsNullOrWhiteSpace(url))
+				return;
+
+			ServerBaseUrl = url.Trim();
+			// A new server means a fresh HttpClient with an empty cookie jar, i.e. a new session.
+			SetSignedOutState();
+			Log($"Server set to {ServerBaseUrl}");
 		}
 
 		bool EnsureSupported()
@@ -336,8 +459,9 @@ namespace Samples.ViewModel
 
 		void Log(string message)
 		{
+			// Only the latest message is shown (one-line status strip at the bottom of the page).
 			MainThread.BeginInvokeOnMainThread(() =>
-				Status = $"{DateTime.Now:HH:mm:ss}  {message}{Environment.NewLine}{Status}");
+				Status = $"{DateTime.Now:HH:mm:ss}  {message}");
 		}
 	}
 }

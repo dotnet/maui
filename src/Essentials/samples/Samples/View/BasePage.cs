@@ -33,6 +33,8 @@ namespace Samples.View
 			if (bindingContext is BaseViewModel vm)
 			{
 				vm.DoDisplayAlert += OnDisplayAlert;
+				vm.DoDisplayConfirm += OnDisplayConfirm;
+				vm.DoDisplayPrompt += OnDisplayPrompt;
 				vm.DoNavigate += OnNavigate;
 				vm.OnAppearing();
 			}
@@ -44,6 +46,8 @@ namespace Samples.View
 			{
 				vm.OnDisappearing();
 				vm.DoDisplayAlert -= OnDisplayAlert;
+				vm.DoDisplayConfirm -= OnDisplayConfirm;
+				vm.DoDisplayPrompt -= OnDisplayPrompt;
 				vm.DoNavigate -= OnNavigate;
 			}
 		}
@@ -51,6 +55,16 @@ namespace Samples.View
 		Task OnDisplayAlert(string message)
 		{
 			return DisplayAlertAsync(Title, message, "OK");
+		}
+
+		Task<bool> OnDisplayConfirm(string title, string message, string accept, string cancel)
+		{
+			return DisplayAlertAsync(title, message, accept, cancel);
+		}
+
+		Task<string> OnDisplayPrompt(string title, string message, string initialValue)
+		{
+			return DisplayPromptAsync(title, message, initialValue: initialValue);
 		}
 
 		Task OnNavigate(BaseViewModel vm, bool showModal)
