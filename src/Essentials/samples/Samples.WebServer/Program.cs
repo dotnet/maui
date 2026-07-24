@@ -28,6 +28,27 @@ authBuilder.AddIdentityCookies();
 // requires the bearer token services to be registered.
 authBuilder.AddBearerToken(IdentityConstants.BearerScheme);
 
+// The Identity application cookie, by default, answers an unauthenticated request to an [Authorize]
+// endpoint with a 302 redirect to the HTML login page. That is meaningless to the native MAUI client,
+// which speaks JSON over HttpClient. Translate the challenge into a clean 401 for the native API paths
+// (/passkeys/*) so endpoints can be guarded declaratively with .RequireAuthorization() and the client
+// gets a real status code instead of following a redirect to a web page. (Security-stamp validation on
+// OnValidatePrincipal is untouched.)
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnRedirectToLogin = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/passkeys", StringComparison.Ordinal))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        }
+
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
+});
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));

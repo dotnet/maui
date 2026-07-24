@@ -32,18 +32,43 @@ internal static class PasskeyApiEndpoints
 		// over challenge+origin+rpId and cannot be forged or replayed — see README "Authentication & CSRF".)
 		var group = endpoints.MapGroup("/passkeys").DisableAntiforgery();
 
+		// 0) Account state — after signing in, a native client can learn whether the current user already
+		// has a passkey (so the sample can offer to enroll one). WebAuthn deliberately offers no way to
+		// check this for an arbitrary username BEFORE login (that would be account enumeration), so this is
+		// a post-authentication probe scoped to the signed-in user.
+		//
+		// Guarded declaratively with .RequireAuthorization(): the Identity session cookie is carried by the
+		// native HttpClient's CookieContainer on every request — including this GET — so an authenticated
+		// client passes and an anonymous one is challenged. That challenge is turned into a clean 401
+		// (instead of an HTML login redirect) for /passkeys/* by ConfigureApplicationCookie in Program.cs.
+		group.MapGet("/list", async (
+			HttpContext context,
+			UserManager<ApplicationUser> userManager) =>
+		{
+			// RequireAuthorization guarantees an authenticated principal; this null-guard only covers the
+			// edge case where the account was deleted after the cookie was issued.
+			var user = await userManager.GetUserAsync(context.User);
+			if (user is null)
+				return Results.Json(new { error = "Not signed in." }, statusCode: StatusCodes.Status401Unauthorized);
+
+			var passkeys = await userManager.GetPasskeysAsync(user);
+			return Results.Ok(new { username = user.UserName, passkeyCount = passkeys.Count });
+		}).RequireAuthorization();
+
 		// 1) Registration — begin: returns PublicKeyCredentialCreationOptions JSON (WebAuthn).
 		//
 		// Enrolls a passkey for the currently signed-in user — the honest "add a passkey for faster
-		// sign-in after you've logged in" flow. The caller must first authenticate (POST
-		// /account/login?useCookies=true) so the request carries the Identity session cookie. Anonymous
-		// requests are rejected: a relying party must never mint an account just because someone asked to
-		// register a passkey for an arbitrary username.
+		// sign-in after you've logged in" flow. Guarded with .RequireAuthorization() (same cookie→401
+		// translation as /list), so an anonymous request is rejected with a clean 401: a relying party
+		// must never mint an account just because someone asked to register a passkey for an arbitrary
+		// username.
 		group.MapPost("/register/begin", async (
 			HttpContext context,
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager) =>
 		{
+			// RequireAuthorization guarantees an authenticated principal; this null-guard only covers the
+			// edge case where the account was deleted after the cookie was issued.
 			var user = await userManager.GetUserAsync(context.User);
 			if (user is null)
 				return Results.Json(new { error = "Sign in first (POST /account/login?useCookies=true) — a passkey is enrolled for the signed-in user." }, statusCode: StatusCodes.Status401Unauthorized);
@@ -58,7 +83,7 @@ internal static class PasskeyApiEndpoints
 			});
 
 			return Results.Content(optionsJson, "application/json");
-		});
+		}).RequireAuthorization();
 
 		// 2) Registration — finish: validates the attestation response and stores the passkey.
 		// The WebAuthn credential JSON is bound straight from the request body by the framework.
