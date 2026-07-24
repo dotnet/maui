@@ -56,6 +56,31 @@ Describe 'Visual asset input validation' {
             -AttachmentId 56 | Should -BeFalse
     }
 
+    It 'rejects the expected attachment path when the URL is adorned with userinfo, a port, a query, or a fragment' {
+        # The allowlist gate must reject anything beyond the bare https://dev.azure.com/<path> form
+        # even when the path itself matches, so a crafted attachment URL cannot smuggle credentials,
+        # redirect to a non-default port, or tack on a query/fragment that changes what is fetched.
+        $base = 'dev.azure.com/dnceng-public/public/_apis/test/Runs/12/Results/34/Attachments/56'
+        foreach ($adorned in @(
+            "https://attacker@$base",
+            "https://$($base -replace 'dev\.azure\.com','dev.azure.com:8443')",
+            "https://$base?download=true",
+            "https://$base#frag")) {
+            Test-AzDoAttachmentUrl `
+                -Url $adorned `
+                -RunId 12 `
+                -ResultId 34 `
+                -AttachmentId 56 | Should -BeFalse -Because "adorned URL '$adorned' must not pass the allowlist"
+        }
+
+        # An explicit default port (:443) is still the canonical endpoint and must remain accepted.
+        Test-AzDoAttachmentUrl `
+            -Url "https://dev.azure.com:443/dnceng-public/public/_apis/test/Runs/12/Results/34/Attachments/56" `
+            -RunId 12 `
+            -ResultId 34 `
+            -AttachmentId 56 | Should -BeTrue
+    }
+
     It 'validates the PNG signature and size bound without decoding untrusted image data' {
         $valid = Join-Path $TestDrive 'valid.png'
         [System.IO.File]::WriteAllBytes(
