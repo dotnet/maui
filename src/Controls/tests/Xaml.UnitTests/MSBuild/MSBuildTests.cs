@@ -281,6 +281,47 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Theory]
+		[InlineData(null, false)]
+		[InlineData("false", false)]
+		[InlineData("true", true)]
+		public void MauiEnableFullReadyToRunPublishing_ConfiguresPartialFlagCorrectly(string mauiEnableFullReadyToRunPublishingValue, bool fullReadyToRunPublishingEnabled)
+		{
+			SetUp();
+			var project = NewProject();
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetPlatformIdentifier").WithValue("android"));
+			propertyGroup.Add(NewElement("UseMonoRuntime").WithValue("false"));
+			propertyGroup.Add(NewElement("Configuration").WithValue("Release"));
+			propertyGroup.Add(NewElement("PublishReadyToRun").WithValue("true"));
+			project.Add(propertyGroup);
+			var target = NewElement("Target").WithAttribute("Name", "TestReadyToRunPublishing");
+			target.Add(NewElement("Message")
+				.WithAttribute("Text", "MauiEnableFullReadyToRunPublishing = $(MauiEnableFullReadyToRunPublishing)")
+				.WithAttribute("Importance", "high"));
+			target.Add(NewElement("Message")
+				.WithAttribute("Text", "PublishReadyToRunCrossgen2ExtraArgs = $(PublishReadyToRunCrossgen2ExtraArgs)")
+				.WithAttribute("Importance", "high"));
+			project.Add(target);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			var fullReadyToRunMSBuildArg = mauiEnableFullReadyToRunPublishingValue is null
+				? string.Empty
+				: $"-p:MauiEnableFullReadyToRunPublishing={mauiEnableFullReadyToRunPublishingValue}";
+
+			var log = Build(
+				projectFile,
+				target: "TestReadyToRunPublishing",
+				additionalArgs: fullReadyToRunMSBuildArg);
+
+			Assert.Contains($"MauiEnableFullReadyToRunPublishing = {fullReadyToRunPublishingEnabled.ToString().ToLowerInvariant()}", log, StringComparison.Ordinal);
+			if (fullReadyToRunPublishingEnabled)
+				Assert.DoesNotContain("--partial", log, StringComparison.Ordinal);
+			else
+				Assert.Contains("PublishReadyToRunCrossgen2ExtraArgs = ;--partial", log, StringComparison.Ordinal);
+		}
+
+		[Theory]
 		[InlineData("Debug")]
 		[InlineData("Release")]
 		public void HotReloadSupportForXSG(string configuration)
