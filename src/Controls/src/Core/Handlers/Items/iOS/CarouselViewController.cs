@@ -134,6 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ViewDidLoad();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void OnDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
 		{
 			_isRotating = true;

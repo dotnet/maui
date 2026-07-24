@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -458,6 +459,118 @@ public class MemoryTests : ControlsHandlerTestBase
 		WeakReference HandlerReference,
 		WeakReference PlatformViewReference,
 		PointCollection RootedOriginalPoints);
+
+#if IOS || MACCATALYST
+	[Fact("TableView Source Replacement Unsubscribes Previous Source")]
+	public async Task TableViewSourceReplacementUnsubscribesPreviousSource()
+	{
+		SetupBuilder();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			var tableView = new TableView(new TableRoot());
+			var renderer = CreateHandler<TableViewRenderer>(tableView);
+#pragma warning restore CS0618 // Type or member is obsolete
+			var platformView = (UIKit.UITableView)((IElementHandler)renderer).PlatformView;
+			var previousSource = platformView.Source;
+			var initialSubscribers = GetModelChangedSubscribers(tableView);
+
+			Assert.NotNull(previousSource);
+			Assert.Single(initialSubscribers);
+			previousSource.NumberOfSections(platformView);
+			var previousSourceGestureCount = platformView.GestureRecognizers?.Length ?? 0;
+#pragma warning disable CS0618 // Type or member is obsolete
+			tableView.HasUnevenRows = true;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			var replacementSubscribers = GetModelChangedSubscribers(tableView);
+			var replacementSource = platformView.Source;
+			replacementSource.NumberOfSections(platformView);
+			Assert.NotSame(previousSource, platformView.Source);
+			Assert.Single(replacementSubscribers);
+			Assert.NotSame(initialSubscribers[0].Target, replacementSubscribers[0].Target);
+			Assert.Equal(previousSourceGestureCount, platformView.GestureRecognizers?.Length ?? 0);
+
+			renderer.Dispose();
+		});
+	}
+
+	[Fact("ContextActionsCell Disposal Unsubscribes Cell")]
+	public async Task ContextActionsCellDisposalUnsubscribesCell()
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			var cell = new ViewCell();
+			cell.ContextActions.Add(new MenuItem { Text = "Action" });
+#pragma warning restore CS0618 // Type or member is obsolete
+			using var tableView = new UIKit.UITableView();
+			using var nativeCell = new CellTableViewCell(UIKit.UITableViewCellStyle.Default, "ContextActionsCellTest")
+			{
+				Cell = cell
+			};
+			var contextActionsCell = new ContextActionsCell();
+
+			contextActionsCell.Update(tableView, cell, nativeCell);
+			Assert.Contains(GetPropertyChangedSubscribers(cell), subscriber => ReferenceEquals(subscriber.Target, contextActionsCell));
+
+			contextActionsCell.Dispose();
+			Assert.DoesNotContain(GetPropertyChangedSubscribers(cell), subscriber => ReferenceEquals(subscriber.Target, contextActionsCell));
+			Assert.Same(cell, ((Microsoft.Maui.Controls.Compatibility.INativeElementView)contextActionsCell).Element);
+			contextActionsCell.SizeThatFits(new CoreGraphics.CGSize(100, 44));
+		});
+	}
+
+	[Fact("Secondary Toolbar Item Disposal Unsubscribes After Custom View Replacement")]
+	public async Task SecondaryToolbarItemDisposalUnsubscribesAfterCustomViewReplacement()
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var item = new ToolbarItem
+			{
+				Order = ToolbarItemOrder.Secondary
+			};
+			var nativeItem = Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(item);
+			using var originalContent = Assert.IsAssignableFrom<UIKit.UIControl>(nativeItem.CustomView);
+			using var replacementView = new UIKit.UIView();
+			var activationCount = 0;
+			item.Command = new Command(() => activationCount++);
+
+			Assert.Contains(GetPropertyChangedSubscribers(item), subscriber => ReferenceEquals(subscriber.Target, nativeItem));
+			originalContent.SendActionForControlEvents(UIKit.UIControlEvent.TouchUpInside);
+			Assert.Equal(1, activationCount);
+
+			nativeItem.CustomView = replacementView;
+			item.Text = "Updated";
+			item.IconImageSource = new FileImageSource();
+			item.IsEnabled = false;
+			Assert.True(originalContent.Enabled);
+			Assert.Same(replacementView, nativeItem.CustomView);
+			nativeItem.Dispose();
+
+			Assert.DoesNotContain(GetPropertyChangedSubscribers(item), subscriber => ReferenceEquals(subscriber.Target, nativeItem));
+			originalContent.SendActionForControlEvents(UIKit.UIControlEvent.TouchUpInside);
+			Assert.Equal(1, activationCount);
+		});
+	}
+
+	static Delegate[] GetModelChangedSubscribers(object tableView)
+	{
+#pragma warning disable CS0618 // Type or member is obsolete
+		var eventField = typeof(TableView).GetField("ModelChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+#pragma warning restore CS0618 // Type or member is obsolete
+		Assert.NotNull(eventField);
+		return (eventField.GetValue(tableView) as MulticastDelegate)?.GetInvocationList() ?? [];
+	}
+
+	static Delegate[] GetPropertyChangedSubscribers(BindableObject bindable)
+	{
+		var eventField = typeof(BindableObject).GetField("PropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+		Assert.NotNull(eventField);
+		return (eventField.GetValue(bindable) as MulticastDelegate)?.GetInvocationList() ?? [];
+	}
+#endif
 
 	[Theory("CollectionView Header/Footer Doesn't Leak")]
 	[InlineData(typeof(CollectionView))]
