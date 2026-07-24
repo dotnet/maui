@@ -419,6 +419,51 @@ stages:
             condition: and(succeeded(), eq('${{ parameters.Platform }}', 'windows'))
             continueOnError: true
 
+          # A recurring android/mac gate failure is DotNet.csproj MSB6003
+          # "System.IO.Pipes.dll ... cannot find the file": the shared
+          # Microsoft.NETCore.App pack was provisioned WITHOUT System.IO.Pipes.dll
+          # (an assembly that always ships in that framework). 'dotnet --version'
+          # still succeeds — it never loads that assembly — and the SDK carries a
+          # valid cake stamp, so cake REUSES the corrupt SDK. Every build that
+          # spawns a process (DotNet.csproj Exec 'sh') then dies, which on the gate
+          # stage means setup never completes, the sentinel is never written, and
+          # NO review is posted at all (observed: #34136 build 14753151, and
+          # #36657). The Windows 'Prepare .dotnet' step above doesn't help here
+          # (it's windows-only and its --version probe can't see this). Detect an
+          # incomplete runtime pack and remove ./.dotnet so the build step below
+          # reinstalls a complete SDK. Best-effort (continueOnError) — it only ever
+          # deletes a provably-incomplete SDK, and can never fail the build itself.
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $dotnetDir = Join-Path (Get-Location).Path ".dotnet"
+              $sharedRoot = Join-Path $dotnetDir "shared/Microsoft.NETCore.App"
+              if (-not (Test-Path $sharedRoot)) {
+                Write-Host "No local shared runtime present yet — nothing to verify (cake will install fresh)."
+                exit 0
+              }
+              $incomplete = $false
+              foreach ($p in @(Get-ChildItem -Path $sharedRoot -Directory -ErrorAction SilentlyContinue)) {
+                if (-not (Test-Path (Join-Path $p.FullName 'System.IO.Pipes.dll'))) {
+                  Write-Host "Runtime pack $($p.Name) is INCOMPLETE (System.IO.Pipes.dll missing) — corrupt install."
+                  $incomplete = $true
+                }
+              }
+              if (-not $incomplete) {
+                Write-Host "Local .dotnet shared runtime looks complete."
+                exit 0
+              }
+              Write-Host "Removing corrupt ./.dotnet so the build step reinstalls a complete SDK."
+              for ($i = 0; $i -lt 6 -and (Test-Path $dotnetDir); $i++) {
+                try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop }
+                catch { Start-Sleep -Seconds 2 }
+              }
+              if (Test-Path $dotnetDir) { Write-Host "WARNING: ./.dotnet could not be fully removed; cake's reinstall may still be affected." }
+              else { Write-Host "Removed ./.dotnet; cake will reinstall it cleanly." }
+              exit 0
+            displayName: 'Verify .dotnet runtime completeness'
+            condition: and(succeeded(), ne('${{ parameters.Platform }}', 'windows'))
+            continueOnError: true
+
           # Build MSBuild tasks (required for MAUI builds)
           - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
             displayName: 'Build MSBuild Tasks'
