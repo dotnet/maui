@@ -47,6 +47,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
+		Dictionary<string, (BitmapDescriptor Icon, DateTime ExpiresAtUtc)>? _clusterIconCache;
+		Queue<string>? _clusterIconCacheOrder;
+		// Bounds icon memory when a provider derives a distinct image per cluster (e.g. count-based glyphs); FIFO evict-oldest when full.
+		const int MaxClusterIconCacheSize = 64;
 
 		CancellationTokenSource? _addPinsCts;
 
@@ -100,6 +104,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_clusters?.Clear();
 			_clusterMarkers?.Clear();
+			_clusterIconCache?.Clear();
+			_clusterIconCacheOrder?.Clear();
 			_mapReady = null;
 		}
 
@@ -337,6 +343,10 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (handler is MapHandler mapHandler)
 			{
 				mapHandler.DisconnectPins();
+				// A pins rebuild is also how ClusterImageSource/ClusterImageProvider changes reach the
+				// handler, so icons keyed to the previous source must not survive.
+				mapHandler._clusterIconCache?.Clear();
+				mapHandler._clusterIconCacheOrder?.Clear();
 
 				if (mapHandler._markers != null)
 				{
@@ -690,23 +700,8 @@ namespace Microsoft.Maui.Maps.Handlers
 					}
 					else
 					{
-						// Multiple pins - create cluster marker
-						var options = new MarkerOptions();
-						options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
-						options.SetTitle($"{cluster.Pins.Count} items");
-						options.Anchor(0.5f, 0.5f);
-						
-						// Create a circular cluster icon with count
-						var icon = CreateClusterIcon(cluster.Pins.Count);
-						if (icon != null)
-							options.SetIcon(icon);
-						
-						var marker = Map.AddMarker(options);
-						if (marker != null)
-						{
-							_markers.Add(marker);
-							_clusterMarkers[marker.Id] = cluster;
-						}
+						// Multiple pins - create a cluster marker (custom image if provided, else default bubble).
+						AddClusterMarkerAsync(cluster, ct).FireAndForget();
 					}
 				}
 				
@@ -922,6 +917,80 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
 				return null;
+			}
+		}
+
+		async Task AddClusterMarkerAsync(MapCluster cluster, CancellationToken ct)
+		{
+			if (Map == null || MauiContext == null || VirtualView == null)
+				return;
+
+			var center = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
+
+			var options = new MarkerOptions();
+			options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
+			options.SetTitle($"{cluster.Pins.Count} items");
+			options.Anchor(0.5f, 0.5f);
+
+			// Resolve a custom cluster image (provider -> static), falling back to the default bubble.
+			var image = VirtualView.GetClusterImage(cluster.Pins, cluster.Pins.Count, center);
+			BitmapDescriptor? icon = null;
+			if (image != null)
+			{
+				// Cache by a stable key (file/URI/glyph) so a provider that returns a fresh ImageSource
+				// per recluster still reuses the decoded bitmap instead of re-decoding and leaking one
+				// entry per call. Unkeyable sources (key == null) are loaded fresh, never cached.
+				var cacheKey = GetClusterIconCacheKey(image);
+				var cacheHit = false;
+				if (cacheKey != null && _clusterIconCache != null && _clusterIconCache.TryGetValue(cacheKey, out var cached))
+				{
+					if (DateTime.UtcNow < cached.ExpiresAtUtc)
+					{
+						icon = cached.Icon;
+						cacheHit = true;
+					}
+					else
+					{
+						// CacheValidity window elapsed (URI source) - evict and reload as a miss.
+						_clusterIconCache.Remove(cacheKey);
+					}
+				}
+
+				if (!cacheHit)
+				{
+					icon = await LoadPinIconAsync(image, MauiContext, ct);
+					if (ct.IsCancellationRequested || MauiContext == null)
+						return;
+					if (icon != null && cacheKey != null)
+					{
+						_clusterIconCache ??= new Dictionary<string, (BitmapDescriptor Icon, DateTime ExpiresAtUtc)>();
+						_clusterIconCacheOrder ??= new Queue<string>();
+						// Evict oldest-first until there is room. Skip keys already gone (e.g. expired and removed on
+						// lookup) so a stale order entry just falls through instead of dropping a live one.
+						while (_clusterIconCache.Count >= MaxClusterIconCacheSize && _clusterIconCacheOrder.Count > 0)
+						{
+							var oldest = _clusterIconCacheOrder.Dequeue();
+							_clusterIconCache.Remove(oldest);
+						}
+						_clusterIconCache[cacheKey] = (icon, GetClusterIconCacheExpiry(image));
+						_clusterIconCacheOrder.Enqueue(cacheKey);
+					}
+				}
+			}
+
+			if (ct.IsCancellationRequested || Map == null)
+				return;
+
+			icon ??= CreateClusterIcon(cluster.Pins.Count);
+			if (icon != null)
+				options.SetIcon(icon);
+
+			var marker = Map.AddMarker(options);
+			if (marker != null)
+			{
+				_markers ??= new List<Marker>();
+				_markers.Add(marker);
+				_clusterMarkers?[marker.Id] = cluster;
 			}
 		}
 

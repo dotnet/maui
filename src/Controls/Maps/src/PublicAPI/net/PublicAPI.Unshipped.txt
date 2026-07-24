@@ -1,5 +1,11 @@
 ﻿#nullable enable
 Microsoft.Maui.Controls.Maps.Circle.CircleClicked -> System.EventHandler?
+Microsoft.Maui.Controls.Maps.ClusterInfo
+Microsoft.Maui.Controls.Maps.ClusterInfo.ClusterInfo(int count, string! clusteringIdentifier, System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> void
+Microsoft.Maui.Controls.Maps.ClusterInfo.ClusteringIdentifier.get -> string!
+Microsoft.Maui.Controls.Maps.ClusterInfo.Count.get -> int
+Microsoft.Maui.Controls.Maps.ClusterInfo.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Controls.Maps.ClusterInfo.Pins.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>!
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.ClusterClickedEventArgs(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> void
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.Handled.get -> bool
@@ -7,6 +13,10 @@ Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.Handled.set -> void
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.Pins.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>!
 Microsoft.Maui.Controls.Maps.Map.ClusterClicked -> System.EventHandler<Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs!>?
+Microsoft.Maui.Controls.Maps.Map.ClusterImageProvider.get -> System.Func<Microsoft.Maui.Controls.Maps.ClusterInfo!, Microsoft.Maui.Controls.ImageSource?>?
+Microsoft.Maui.Controls.Maps.Map.ClusterImageProvider.set -> void
+Microsoft.Maui.Controls.Maps.Map.ClusterImageSource.get -> Microsoft.Maui.Controls.ImageSource?
+Microsoft.Maui.Controls.Maps.Map.ClusterImageSource.set -> void
 Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabled.get -> bool
 Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabled.set -> void
 Microsoft.Maui.Controls.Maps.Map.LastUserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
@@ -33,6 +43,7 @@ Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs
 Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.UserLocationChangedEventArgs(Microsoft.Maui.Devices.Sensors.Location! location) -> void
 const Microsoft.Maui.Controls.Maps.Pin.DefaultClusteringIdentifier = "maui_default_cluster" -> string!
+static readonly Microsoft.Maui.Controls.Maps.Map.ClusterImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.MapStyleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.RegionProperty -> Microsoft.Maui.Controls.BindableProperty!

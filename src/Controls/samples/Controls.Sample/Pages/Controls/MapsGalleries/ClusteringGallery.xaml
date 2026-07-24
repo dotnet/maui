@@ -8,33 +8,45 @@
     mc:Ignorable="d"
     x:Class="Maui.Controls.Sample.Pages.MapsGalleries.ClusteringGallery"
     Title="Pin Clustering">
-    <Grid RowDefinitions="Auto, Auto, *">
-        <HorizontalStackLayout Grid.Row="0" Spacing="5" Padding="5">
-            <Button 
-                Text="Add 50 Pins" 
-                Clicked="OnAdd50PinsClicked" />
-            <Button
-                Text="Add 100 Pins"
-                Clicked="OnAdd100PinsClicked" />
-            <Button
-                Text="Add Custom-Icon Pins"
-                Clicked="OnAddCustomPinsClicked" />
-            <Button
-                Text="Clear Pins"
-                Clicked="OnClearPinsClicked" />
-        </HorizontalStackLayout>
-        <HorizontalStackLayout Grid.Row="1" Spacing="5" Padding="5" VerticalOptions="Center">
+    <Grid RowDefinitions="Auto, Auto, Auto, *">
+        <ScrollView Grid.Row="0" Orientation="Horizontal">
+            <HorizontalStackLayout Spacing="5" Padding="5">
+                <Button
+                    Text="Add 50 Pins"
+                    Clicked="OnAdd50PinsClicked" />
+                <Button
+                    Text="Add 100 Pins"
+                    Clicked="OnAdd100PinsClicked" />
+                <Button
+                    Text="Add Custom-Icon Pins"
+                    Clicked="OnAddCustomPinsClicked" />
+                <Button
+                    Text="Clear Pins"
+                    Clicked="OnClearPinsClicked" />
+            </HorizontalStackLayout>
+        </ScrollView>
+        <ScrollView Grid.Row="1" Orientation="Horizontal">
+            <HorizontalStackLayout Spacing="5" Padding="5">
+                <Button
+                    Text="Custom Cluster Icon (provider)"
+                    Clicked="OnUseClusterProviderClicked" />
+                <Button
+                    Text="Static Cluster Icon"
+                    Clicked="OnUseStaticClusterIconClicked" />
+            </HorizontalStackLayout>
+        </ScrollView>
+        <HorizontalStackLayout Grid.Row="2" Spacing="5" Padding="5" VerticalOptions="Center">
             <Label Text="Clustering:" VerticalOptions="Center" />
-            <Switch 
+            <Switch
                 x:Name="clusteringSwitch"
-                IsToggled="True" 
+                IsToggled="True"
                 Toggled="OnClusteringToggled"
                 VerticalOptions="Center" />
             <Label x:Name="statusLabel" VerticalOptions="Center" />
         </HorizontalStackLayout>
-        <maps:Map 
-            x:Name="clusterMap" 
-            Grid.Row="2"
+        <maps:Map
+            x:Name="clusterMap"
+            Grid.Row="3"
             IsClusteringEnabled="True"
             ClusterClicked="OnClusterClicked"
             MapClicked="OnMapClicked" />

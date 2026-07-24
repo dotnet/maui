@@ -34,6 +34,10 @@ namespace Microsoft.Maui.Controls.Maps
 		/// <summary>Bindable property for <see cref="IsClusteringEnabled"/>.</summary>
 		public static readonly BindableProperty IsClusteringEnabledProperty = BindableProperty.Create(nameof(IsClusteringEnabled), typeof(bool), typeof(Map), default(bool));
 
+		/// <summary>Bindable property for <see cref="ClusterImageSource"/>.</summary>
+		public static readonly BindableProperty ClusterImageSourceProperty = BindableProperty.Create(nameof(ClusterImageSource), typeof(ImageSource), typeof(Map), default(ImageSource),
+			propertyChanged: (b, o, n) => ((Map)b).OnClusterImageChanged());
+
 		/// <summary>Bindable property for <see cref="MapStyle"/>.</summary>
 		public static readonly BindableProperty MapStyleProperty = BindableProperty.Create(nameof(MapStyle), typeof(string), typeof(Map), default(string));
 
@@ -58,6 +62,7 @@ namespace Microsoft.Maui.Controls.Maps
 		MapSpan? _visibleRegion;
 		MapSpan? _lastMoveToRegion;
 		Location? _lastUserLocation;
+		Func<ClusterInfo, ImageSource?>? _clusterImageProvider;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Map"/> class with a region.
@@ -139,7 +144,50 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets the style of the map. Default value is <see cref="MapType.Street"/>. 
+		/// Gets or sets a static custom icon used for every cluster marker when clustering is enabled.
+		/// Ignored if <see cref="ClusterImageProvider"/> returns a non-null image for a cluster.
+		/// When <see langword="null"/> (and no provider image is returned) the default cluster marker is used.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// No pin count is drawn over the image. Each platform scales it to a marker-sized icon
+		/// (Android fits within 64 pixels, iOS within 32 points), matching <see cref="Pin.ImageSource"/>.
+		/// Changing this value rebuilds existing cluster markers immediately.
+		/// </remarks>
+		public ImageSource? ClusterImageSource
+		{
+			get => (ImageSource?)GetValue(ClusterImageSourceProperty);
+			set => SetValue(ClusterImageSourceProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets a callback that returns a custom icon for a cluster marker, computed from the
+		/// supplied <see cref="ClusterInfo"/> (count, clustering identifier, pins, location).
+		/// Return <see langword="null"/> to fall back to <see cref="ClusterImageSource"/>, then to the
+		/// default cluster marker. Only used when clustering is enabled.
+		/// </summary>
+		/// <remarks>
+		/// The callback returns the complete icon (draw the count yourself if desired). The returned
+		/// <see cref="ImageSource"/> is loaded asynchronously by the platform handler, like
+		/// <see cref="Pin.ImageSource"/>. Setting this value rebuilds existing cluster markers immediately.
+		/// </remarks>
+		public Func<ClusterInfo, ImageSource?>? ClusterImageProvider
+		{
+			get => _clusterImageProvider;
+			set
+			{
+				// Delegate.Equals compares target+method, so re-assigning the same method group
+				// (e.g. from OnAppearing on every navigation) short-circuits instead of rebuilding
+				// every cluster marker.
+				if (Equals(_clusterImageProvider, value))
+					return;
+				_clusterImageProvider = value;
+				OnClusterImageChanged();
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the style of the map. Default value is <see cref="MapType.Street"/>.
 		/// This is a bindable property.
 		/// </summary>
 		public MapType MapType
@@ -331,6 +379,19 @@ namespace Microsoft.Maui.Controls.Maps
 			{
 				MoveToRegion(newRegion);
 			}
+		}
+
+		// Rebuild pins/clusters so a changed ClusterImageSource/ClusterImageProvider is reflected
+		// immediately, instead of waiting for the next unrelated recluster (e.g. a zoom).
+		void OnClusterImageChanged()
+		{
+			// Cluster images are only consumed while clustering is on; enabling clustering later
+			// re-runs the pins mapper anyway (MapIsClusteringEnabled calls MapPins on both
+			// platforms), so nothing is lost by skipping the rebuild here.
+			if (!IsClusteringEnabled)
+				return;
+
+			Handler?.UpdateValue(nameof(IMap.Pins));
 		}
 
 		void PinsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

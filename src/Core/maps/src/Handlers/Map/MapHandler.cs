@@ -9,6 +9,7 @@ using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
+using System;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -98,6 +99,35 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (arg is IMapPin pin && handler is MapHandler mapHandler)
 				mapHandler.HideInfoWindow(pin);
+		}
+
+		// Builds a stable cache key for a cluster icon so logically identical images (same file, URI,
+		// or font glyph) share one decoded/rasterized bitmap even when the provider hands back a fresh
+		// ImageSource instance on every recluster. Returns null for sources that can't be keyed stably
+		// (e.g. streams), so those are simply loaded fresh instead of being cached forever.
+		// A URI source with CachingEnabled == false has explicitly opted out of caching, so it must not
+		// be frozen by this handler-level cache either.
+		internal static string? GetClusterIconCacheKey(IImageSource? source) =>
+			source switch
+			{
+				IFileImageSource file when !string.IsNullOrEmpty(file.File) => $"file:{file.File}",
+				// A source that opted out of caching must not be frozen by the handler-level cache either.
+				IUriImageSource uri when uri.Uri is not null && uri.CachingEnabled => $"uri:{uri.Uri}",
+				IFontImageSource font when !string.IsNullOrEmpty(font.Glyph) =>
+					$"font:{font.Glyph}|{font.Font.Family}|{font.Font.Size}|{font.Font.Weight}|{font.Font.Slant}|{font.Color?.ToArgbHex()}",
+				_ => null,
+			};
+
+		// URI sources carry an explicit CacheValidity; other stable sources never expire on their own
+		// (the cache is already bounded and cleared on pins rebuild / cleanup). Clamped so a large
+		// validity like TimeSpan.MaxValue ("cache forever") can't overflow DateTime arithmetic.
+		internal static DateTime GetClusterIconCacheExpiry(IImageSource? source)
+		{
+			if (source is not IUriImageSource uri)
+				return DateTime.MaxValue;
+
+			var now = DateTime.UtcNow;
+			return uri.CacheValidity < DateTime.MaxValue - now ? now + uri.CacheValidity : DateTime.MaxValue;
 		}
 	}
 }
