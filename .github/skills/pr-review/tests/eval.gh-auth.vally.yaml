@@ -137,8 +137,8 @@ stimuli:
       max_duration: 5m
 
 scoring:
-  # @microsoft/vally@0.6.0 ignores scoring.weights — only scoring.threshold is
-  # active. Trial score = unweighted mean of the two graders' [0,1] scores;
+  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # unweighted mean of the two graders' [0,1] scores;
   # the stimulus passes when the mean across runs >= threshold. Two graders
   # (a structural yes/no floor + one LLM judge) put the judge at ~50% of every
   # score. Threshold is 0.7 (above the house 0.6) on purpose: because the floor
