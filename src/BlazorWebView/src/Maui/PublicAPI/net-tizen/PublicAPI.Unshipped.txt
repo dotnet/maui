@@ -1,1 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler.CreateFileProvider(string! contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider!
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions.UsePlatformHandler(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler!>! factory) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!
+static Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions.UsePlatformHandler<THandler>(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!
