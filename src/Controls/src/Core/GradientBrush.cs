@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(GradientStops))]
 	public abstract class GradientBrush : Brush
 	{
-		readonly Dictionary<GradientStop, int> _subscriptionRefCounts = new();
+		readonly Dictionary<GradientStop, int> _subscriptionRefCounts = new(ReferenceEqualityComparer.Instance);
 
 		/// <summary>Initializes a new instance of the <see cref="GradientBrush"/> class.</summary>
 		public GradientBrush()
