@@ -34,6 +34,7 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Core.*.{nupkg,snupkg}",
     "Microsoft.Maui.Essentials.*.{nupkg,snupkg}",
     "Microsoft.Maui.Graphics.*.{nupkg,snupkg}",
+    "Microsoft.Maui.ApplicationArtifacts.Windows.*.{nupkg,snupkg}",
     "Microsoft.Maui.Maps.*.{nupkg,snupkg}",
     "Microsoft.Maui.Resizetizer.*.{nupkg,snupkg}",
     "Microsoft.AspNetCore.Components.WebView.*.{nupkg,snupkg}",

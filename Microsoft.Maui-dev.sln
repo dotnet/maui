@@ -273,6 +273,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{50442BCE-D01
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maui25871Library", "src\Controls\tests\Maui25871Library\Maui25871Library.csproj", "{8820D95F-EB6D-4B70-4985-759AAC83CF68}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.ApplicationArtifacts.Windows", "src\Workload\Microsoft.Maui.ApplicationArtifacts.Windows\Microsoft.Maui.ApplicationArtifacts.Windows.csproj", "{3BC53DE7-90E7-47FB-9A70-D913782E07D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -690,6 +692,10 @@ Global
 		{8820D95F-EB6D-4B70-4985-759AAC83CF68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8820D95F-EB6D-4B70-4985-759AAC83CF68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8820D95F-EB6D-4B70-4985-759AAC83CF68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -815,6 +821,7 @@ Global
 		{5E0D0ACD-EA38-448D-B643-30B966A41922} = {1A031B27-6EE7-35A8-5C38-EB7370E6029E}
 		{50442BCE-D01E-36E8-5392-D3166C7E5B47} = {6A5A18F7-8A4B-639B-2D50-68074424D750}
 		{8820D95F-EB6D-4B70-4985-759AAC83CF68} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
+		{3BC53DE7-90E7-47FB-9A70-D913782E07D6} = {EC63FD88-5E12-46D7-B440-68F70241D987}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
