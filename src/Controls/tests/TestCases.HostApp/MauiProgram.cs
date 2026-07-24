@@ -56,6 +56,7 @@ namespace Maui.Controls.Sample
 #endif
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
+				handlers.AddHandler(typeof(Issue36749Button), typeof(Issue36749ButtonHandler));
 #endif
 #if IOS || MACCATALYST || ANDROID
 				handlers.AddHandler(typeof(UITestEditor), typeof(UITestEditorHandler));
