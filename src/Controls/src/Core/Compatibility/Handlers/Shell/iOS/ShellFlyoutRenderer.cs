@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
@@ -50,6 +51,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override UIStatusBarAnimation PreferredStatusBarUpdateAnimation => Detail.PreferredStatusBarUpdateAnimation;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "AttachFlyout subscriptions are torn down in Dispose: Shell.PropertyChanged is unsubscribed and the pan gesture recognizer is removed and disposed.")]
 		void IShellFlyoutRenderer.AttachFlyout(IShellContext context, UIViewController content)
 		{
 			Context = context;
@@ -128,6 +130,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		FlyoutBehavior _flyoutBehavior;
 		bool _gestureActive;
 		bool _isOpen;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The flyout animation is stopped and cleared when replaced, when completed, and in Dispose.")]
 		UIViewPropertyAnimator _flyoutAnimation;
 		Brush _backdropBrush;
 		bool _layoutOccured;
@@ -150,10 +153,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		SlideFlyoutTransition SlideFlyoutTransition { get; set; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The shell context is retained for the flyout renderer lifetime and released in Dispose after observers are removed.")]
 		IShellContext Context { get; set; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The detail controller is owned by the flyout renderer while attached and released in Dispose.")]
 		UIViewController Detail { get; set; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The flyout content renderer is owned by this renderer and released in Dispose.")]
 		IShellFlyoutContentRenderer Flyout { get; set; }
 
 		bool IsOpen
@@ -203,12 +209,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Detail.View.AccessibilityElementsHidden = detailsElementsHidden;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The pan gesture recognizer is attached to this renderer's view and removed and disposed in Dispose.")]
 		UIPanGestureRecognizer PanGestureRecognizer { get; set; }
 
 		Shell Shell { get; set; }
 
 		IShellController ShellController => Shell;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The tap-off view is owned by this renderer and removed and disposed in Dispose.")]
 		UIView TapoffView { get; set; }
 
 		public override void ViewDidLayoutSubviews()
@@ -257,26 +265,47 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
+			if (_disposed)
+				return;
+
+			_disposed = true;
 
 			if (disposing)
 			{
-				if (!_disposed)
+				if (Shell is not null)
 				{
 					ShellController.RemoveAppearanceObserver(this);
-
-					_disposed = true;
-
 					Shell.PropertyChanged -= OnShellPropertyChanged;
 					((IShellController)Shell).RemoveFlyoutBehaviorObserver(this);
-
-					Context = null;
-					Shell = null;
-					Detail = null;
 				}
+
+				_flyoutAnimation?.StopAnimation(true);
+				_flyoutAnimation = null;
+				if (PanGestureRecognizer != null)
+				{
+					View?.RemoveGestureRecognizer(PanGestureRecognizer);
+					PanGestureRecognizer.Dispose();
+					PanGestureRecognizer = null;
+				}
+				RemoveTapoffView();
+				if (Flyout?.ViewController is UIViewController flyoutController)
+				{
+					flyoutController.View?.RemoveFromSuperview();
+					flyoutController.RemoveFromParentViewController();
+					flyoutController.Dispose();
+				}
+				Flyout = null;
+				_flyoutTransition = null;
+				SlideFlyoutTransition = null;
+				Context = null;
+				Shell = null;
+				Detail = null;
 			}
+
+			base.Dispose(disposing);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The Shell.PropertyChanged subscription is removed in Dispose before the shell reference is released.")]
 		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
@@ -362,6 +391,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			TapoffView.AddGestureRecognizer(recognizer);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The flyout transition is retained for the renderer lifetime and cleared in Dispose.")]
 		private IShellFlyoutTransition _flyoutTransition;
 
 		public UIView NativeView => throw new NotImplementedException();
@@ -514,6 +544,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			TapoffView.RemoveFromSuperview();
+			TapoffView.Dispose();
 			TapoffView = null;
 		}
 	}

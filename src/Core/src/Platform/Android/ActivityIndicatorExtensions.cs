@@ -7,28 +7,28 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsRunning(this ProgressBar progressBar, IActivityIndicator activityIndicator)
 		{
-			// Guard: check IsDisposed() before accessing any view properties to avoid ObjectDisposedException
-			// on a ProgressBar whose native handle has already been released (see ViewExtensions pattern).
+			// Guard: check IsDisposed() before touching any view properties to avoid an
+			// ObjectDisposedException on a ProgressBar whose native handle was already released.
 			if (progressBar.IsDisposed())
 			{
 				return;
 			}
 
-			// Pre-compute the desired visibility from the current activityIndicator state before deferring,
-			// so the lambda performs a simple write with no risk of reading stale handler state.
-			// Defer via Post() only when a layout traversal is in progress OR the view is not yet attached
-			// (RecyclerView header collapse scenario, see https://github.com/dotnet/maui/issues/33780).
-			// On the common path (attached, idle), apply synchronously so that existing tests and callers
-			// that read state immediately after update continue to work correctly.
+			// Defer via Post() only when a layout traversal is in progress OR the view is not yet
+			// attached (RecyclerView header collapse scenario). On the common path (attached, idle),
+			// apply synchronously so existing tests and callers that read state immediately after the
+			// update continue to work correctly.
 			if (progressBar.IsInLayout || !progressBar.IsAttachedToWindow)
 			{
-				var targetVisibility = GetActivityIndicatorVisibility(activityIndicator);
 				progressBar.Post(() =>
 				{
-					// Guard: skip if the view was recycled/disposed or detached before the runnable fired.
+					// Guard: skip if the view was disposed before the runnable fired.
 					if (!progressBar.IsDisposed())
 					{
-						progressBar.Visibility = targetVisibility;
+						// Re-read the LIVE visibility here instead of capturing a snapshot before the
+						// Post(). Capturing a stale "show" value caused this deferred runnable to
+						// resurrect an indicator that was hidden after it was queued.
+						progressBar.Visibility = GetActivityIndicatorVisibility(activityIndicator);
 					}
 				});
 			}

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -17,9 +18,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// Keep out header measurement cells for iOS handy so we don't have to
 		// create new ones all the time. For other versions, the reusable cells
 		// queueing mechanism does this for us.
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		TemplatedCell _measurementCellTemplated;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		DefaultCell _measurementCellDefault;
 
+		// Transient: set immediately before a scroll animation and cleared (set to null)
+		// as soon as it is invoked (see SetScrollAnimationEndedCallback / the ScrollAnimationEnded
+		// path below), so it is not retained beyond a single scroll animation.
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Transient: cleared (set to null) immediately after it is invoked, so it is not retained.")]
 		Action _scrollAnimationEndedCallback;
 
 		public GroupableItemsViewController(TItemsView groupableItemsView, ItemsViewLayout layout)

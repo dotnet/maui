@@ -317,12 +317,45 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor LambdaMethodGroupReference = new DiagnosticDescriptor(
+			id: "MAUIX2017",
+			title: "Lambda body is a method group reference",
+			messageFormat: "Lambda body '{0}' is a method group reference, not a method invocation.{1}",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		// x:Code diagnostics
+		public static DiagnosticDescriptor XCodeNotChildOfRoot = new DiagnosticDescriptor(
+			id: "MAUIX2015",
+			title: "x:Code must be an immediate child of the root element",
+			messageFormat: "x:Code must be an immediate child of the root element.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor XCodeRequiresXClass = new DiagnosticDescriptor(
+			id: "MAUIX2016",
+			title: "x:Code requires x:Class on the root element",
+			messageFormat: "x:Code requires x:Class to be specified on the root element.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor MissingEventHandler = new DiagnosticDescriptor(
 			id: "MAUIX2014",
 			title: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandlerTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandler), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
 			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor StructIntermediateNotSettable = new DiagnosticDescriptor(
+			id: "MAUIX2017",
+			title: "Value type property in path has no setter",
+			messageFormat: "Expression '{0}' contains a value type property without a setter, so two-way binding to '{1}' will be one-way. To enable two-way binding through a struct, add a setter to the intermediate property.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
@@ -384,4 +417,3 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 	}
 }
-
