@@ -97,7 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		class CollectionViewStringGroup : List<string>
+		class CollectionViewStringGroup : ObservableCollection<string>
 		{
 			public string GroupHeader { get; private set; }
 			public CollectionViewStringGroup(string header, IEnumerable<string> data) : base(data)
