@@ -30,6 +30,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning disable CS0618 // Type or member is obsolete
 		WeakReference<TableView> _tableView;
 #pragma warning restore CS0618 // Type or member is obsolete
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Gesture is removed from its view and disposed in Dispose(bool).")]
+		UILongPressGestureRecognizer _longPressGestureRecognizer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Gesture is removed from its view and disposed in Dispose(bool).")]
+		UITapGestureRecognizer _tapGestureRecognizer;
 
 		UITableView PlatformView
 		{
@@ -46,15 +50,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 #pragma warning disable CS0618 // Type or member is obsolete
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ModelChanged subscription is removed in Dispose(bool).")]
 		public TableViewModelRenderer(TableView model)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
 			TableView = model;
-			model.ModelChanged += (s, e) => PlatformView?.ReloadData();
+			model.ModelChanged += OnModelChanged;
 			AutomaticallyDeselect = true;
 		}
 
 		public bool AutomaticallyDeselect { get; set; }
+
+		void OnModelChanged(object sender, EventArgs e) =>
+			PlatformView?.ReloadData();
 
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
@@ -174,13 +182,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			HasBoundGestures = true;
 
-			var gesture = new UILongPressGestureRecognizer(LongPress);
-			gesture.MinimumPressDuration = 2;
-			tableview.AddGestureRecognizer(gesture);
+			_longPressGestureRecognizer = new UILongPressGestureRecognizer(LongPress)
+			{
+				MinimumPressDuration = 2
+			};
+			tableview.AddGestureRecognizer(_longPressGestureRecognizer);
 
-			var dismissGesture = new UITapGestureRecognizer(Tap);
-			dismissGesture.CancelsTouchesInView = false;
-			tableview.AddGestureRecognizer(dismissGesture);
+			_tapGestureRecognizer = new UITapGestureRecognizer(Tap)
+			{
+				CancelsTouchesInView = false
+			};
+			tableview.AddGestureRecognizer(_tapGestureRecognizer);
 
 			PlatformView = tableview;
 		}
@@ -188,6 +200,31 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void Tap(UITapGestureRecognizer gesture)
 		{
 			gesture.View.EndEditing(true);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (TableView is TableView tableView)
+					tableView.ModelChanged -= OnModelChanged;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+				_longPressGestureRecognizer?.View?.RemoveGestureRecognizer(_longPressGestureRecognizer);
+				_longPressGestureRecognizer?.Dispose();
+				_longPressGestureRecognizer = null;
+
+				_tapGestureRecognizer?.View?.RemoveGestureRecognizer(_tapGestureRecognizer);
+				_tapGestureRecognizer?.Dispose();
+				_tapGestureRecognizer = null;
+				HasBoundGestures = false;
+
+				PlatformView = null;
+				TableView = null;
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 
