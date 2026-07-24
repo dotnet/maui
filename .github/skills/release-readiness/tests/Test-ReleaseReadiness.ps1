@@ -3636,6 +3636,34 @@ $pscoHashInflight = Get-ReportSemanticHash -Data $dataPscoInflight -Verdict $psc
 Assert-Eq -Label "hash: pscustomobject mode is actually read (candidate vs in-flight differ)" `
     -Expected $false -Actual ($pscoHash -eq $pscoHashInflight)
 
+$dataTopPscoInflight = $dataPscoInflight | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+$topPscoVerdictThrew = $false; $topPscoVerdict = $null
+try { $topPscoVerdict = Get-OverallVerdict -Data $dataTopPscoInflight } catch { $topPscoVerdictThrew = $true }
+Assert-Eq -Label "Get-OverallVerdict does NOT throw on top-level PSCustomObject" -Expected $false -Actual $topPscoVerdictThrew
+$topPscoHashThrew = $false; $topPscoHash = $null
+try { $topPscoHash = Get-ReportSemanticHash -Data $dataTopPscoInflight -Verdict $topPscoVerdict } catch { $topPscoHashThrew = $true }
+Assert-Eq -Label "Get-ReportSemanticHash does NOT throw on top-level PSCustomObject" -Expected $false -Actual $topPscoHashThrew
+Assert-Eq -Label "top-level PSCustomObject hash is valid SHA-256" -Expected $true -Actual ($topPscoHash -match '^[0-9a-f]{64}$')
+
+$partialInflightData = @{
+    metadata = @{ mode = 'in-flight'; mainBranch = 'main'; srHeadSha = ('c' * 40) }
+    surveyIncomplete = $true
+    surveyIncompleteReason = 'Partial survey (-Phase regressions) did not query every readiness axis.'
+    regressions = @()
+    ci = @{ overall = 'green' }
+}
+$partialInflightVerdict = Get-OverallVerdict -Data $partialInflightData
+Assert-Eq -Label "partial regressions-phase in-flight survey cannot report Ready" -Expected '🟡' -Actual $partialInflightVerdict.symbol
+$partialShippedData = $partialInflightData.Clone()
+$partialShippedData['metadata'] = @{ mode = 'shipped'; mainBranch = 'main'; srHeadSha = ('c' * 40) }
+$partialShippedVerdict = Get-OverallVerdict -Data $partialShippedData
+Assert-Eq -Label "partial regressions-phase shipped survey cannot report clean" -Expected '🟡' -Actual $partialShippedVerdict.symbol
+$completeInflightData = $partialInflightData.Clone()
+$completeInflightData['surveyIncomplete'] = $false
+$completeInflightHash = Get-ReportSemanticHash -Data $completeInflightData -Verdict @{ symbol = '🟢' }
+$partialInflightHash = Get-ReportSemanticHash -Data $partialInflightData -Verdict $partialInflightVerdict
+Assert-Eq -Label "hash: partial survey differs from complete survey" -Expected $false -Actual ($completeInflightHash -eq $partialInflightHash)
+
 # ───── Regression guard (PR #36497 re-review): srHead read must be shape-safe ─────
 # Get-ReportSemanticHash folds metadata.srHeadSha into the idempotency payload. On a
 # slim or JSON-round-tripped report whose [pscustomobject] metadata OMITS srHeadSha,
@@ -3706,6 +3734,18 @@ $mdData = @{
 
 $md = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
                             -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$mdTopPscoData = $mdData | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+$mdTopPscoThrew = $false; $mdTopPsco = $null
+try {
+    $mdTopPsco = Format-MarkdownReport -Data $mdTopPscoData -RepoUrl 'https://github.com/dotnet/maui' `
+                                      -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+} catch {
+    $mdTopPscoThrew = $true
+    Write-Host "    top-level PSCustomObject render threw: $($_.Exception.Message)" -ForegroundColor Red
+}
+Assert-Eq -Label "Format-MarkdownReport does NOT throw on top-level JSON-roundtripped PSCustomObject" -Expected $false -Actual $mdTopPscoThrew
+Assert-Eq -Label "top-level JSON-roundtripped report preserves tracker marker" -Expected $true `
+    -Actual ($mdTopPsco -match '<!-- release-readiness-tracker: net10-sr7 -->')
 
 # Tracker marker (hidden)
 Assert-Eq -Label "Body contains tracker marker comment" -Expected $true `
@@ -3718,6 +3758,18 @@ Assert-Eq -Label "Body contains semantic-hash marker comment" -Expected $true `
 # Visible tracker line
 Assert-Eq -Label "Body contains visible Tracker: line" -Expected $true `
     -Actual ($md -match '\*\*Tracker:\*\* `net10-sr7`')
+
+$mdDataPartialSurvey = $mdData.Clone()
+$mdDataPartialSurvey['metadata'] = $mdData.metadata.Clone()
+$mdDataPartialSurvey.metadata.mode = 'in-flight'
+$mdDataPartialSurvey['surveyIncomplete'] = $true
+$mdDataPartialSurvey['surveyIncompleteReason'] = 'Partial survey (-Phase regressions) did not query every readiness axis.'
+$mdPartialSurvey = Format-MarkdownReport -Data $mdDataPartialSurvey -RepoUrl 'https://github.com/dotnet/maui' `
+                                        -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "partial survey markdown carries explicit non-global-verdict warning" -Expected $true `
+    -Actual ($mdPartialSurvey -match 'Partial survey — not a global ship verdict')
+Assert-Eq -Label "partial survey markdown suppresses green no-blocking heading" -Expected $false `
+    -Actual ($mdPartialSurvey -match '## 🟢 No blocking items')
 
 # Verdict appears
 Assert-Eq -Label "Body shows 🟡 verdict (backport-in-progress)" -Expected $true `
@@ -6549,6 +6601,14 @@ try {
 
 # Document-level Preview verdict vocabulary is distinct from per-check states.
 Write-Host "`n[Unit] Preview document verdict mapping" -ForegroundColor Cyan
+Assert-Eq -Label "preview overall status: WATCH outranks CLEANUP regardless of order" -Expected 'WATCH' `
+    -Actual (Get-OverallStatus -Checks @([pscustomobject]@{ Status = 'CLEANUP' }, [pscustomobject]@{ Status = 'WATCH' }))
+Assert-Eq -Label "preview overall status: reversed WATCH/CLEANUP order is stable" -Expected 'WATCH' `
+    -Actual (Get-OverallStatus -Checks @([pscustomobject]@{ Status = 'WATCH' }, [pscustomobject]@{ Status = 'CLEANUP' }))
+Assert-Eq -Label "preview overall status: INSUFFICIENT_DATA outranks UNKNOWN regardless of order" -Expected 'INSUFFICIENT_DATA' `
+    -Actual (Get-OverallStatus -Checks @([pscustomobject]@{ Status = 'UNKNOWN' }, [pscustomobject]@{ Status = 'INSUFFICIENT_DATA' }))
+Assert-Eq -Label "preview overall status: reversed INSUFFICIENT_DATA/UNKNOWN order is stable" -Expected 'INSUFFICIENT_DATA' `
+    -Actual (Get-OverallStatus -Checks @([pscustomobject]@{ Status = 'INSUFFICIENT_DATA' }, [pscustomobject]@{ Status = 'UNKNOWN' }))
 Assert-Eq -Label "preview verdict: BLOCKED check maps to Not Ready" -Expected 'Not Ready' `
     -Actual (Get-ReadinessVerdict -Checks @([pscustomobject]@{ Status = 'BLOCKED' }))
 Assert-Eq -Label "preview verdict: WATCH maps to Conditionally Ready" -Expected 'Conditionally Ready' `

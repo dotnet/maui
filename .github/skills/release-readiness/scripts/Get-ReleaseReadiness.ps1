@@ -3826,6 +3826,19 @@ function Get-MetadataValue {
     return $Default
 }
 
+function ConvertTo-TopLevelDictionary {
+    param($Container)
+    if ($Container -is [System.Collections.IDictionary]) { return $Container }
+
+    $result = @{}
+    if ($null -ne $Container -and $Container.PSObject) {
+        foreach ($property in $Container.PSObject.Properties) {
+            $result[$property.Name] = $property.Value
+        }
+    }
+    return $result
+}
+
 function Get-NonEmptyStringValues {
     param($Value)
     @($Value) |
@@ -3857,6 +3870,11 @@ function Get-ShippedVerdict {
 
     $reasons = New-Object System.Collections.Generic.List[string]
     $followUp = $false
+    if ([bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)) {
+        $followUp = $true
+        $partialReason = Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason' -Default 'Partial survey did not query every readiness axis.'
+        $reasons.Add("[Follow-up] $partialReason Rerun with ``-Phase all`` before treating the tracker as clean.") | Out-Null
+    }
     if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
         $followUp = $true
         $failedLabels = @(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels'))
@@ -3965,6 +3983,7 @@ function Get-OverallVerdict {
           reasons  = string[] explaining each contributing factor
     #>
     param($Data)
+    $Data = ConvertTo-TopLevelDictionary -Container $Data
 
     $mode = Get-MetadataValue -Container $Data.metadata -Name 'mode'
     $isCandidate = ($mode -eq 'candidate')
@@ -3983,6 +4002,11 @@ function Get-OverallVerdict {
     $reasons = New-Object System.Collections.Generic.List[string]
     $tier1 = $false
     $tier2 = $false
+    if ([bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)) {
+        $tier2 = $true
+        $partialReason = Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason' -Default 'Partial survey did not query every readiness axis.'
+        $reasons.Add("[Tier 2] $partialReason Rerun with ``-Phase all`` for a global verdict.") | Out-Null
+    }
     if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
         $tier2 = $true
         $failedLabels = @(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels'))
@@ -4267,6 +4291,7 @@ function Get-ReportSemanticHash {
         ago" relative times, and any other field that drifts on every run.
     #>
     param($Data, $Verdict)
+    $Data = ConvertTo-TopLevelDictionary -Container $Data
 
     # MUST be [ordered]: a plain [hashtable] enumerates keys in an order derived
     # from per-process String.GetHashCode(), which .NET Core randomizes on every
@@ -4321,6 +4346,9 @@ function Get-ReportSemanticHash {
         regressionScan = if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
             $failedLabels = @(@(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels')) | Sort-Object)
             "incomplete|$($failedLabels -join ',')"
+        } else { 'complete' }
+        survey = if ([bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)) {
+            "partial|$(Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason')"
         } else { 'complete' }
         srHead = Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha'
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
@@ -4511,6 +4539,7 @@ function Select-OpenMainFixPr {
 
 function Format-MarkdownReport {
     param($Data, [string]$RepoUrl, [string]$TrackerKey, [int]$MaxBodyBytes = 60000)
+    $Data = ConvertTo-TopLevelDictionary -Container $Data
 
     $ctx = $Data.metadata
     $srBranch = $ctx.srBranch
@@ -4689,6 +4718,12 @@ function Format-MarkdownReport {
         foreach ($w in $Data['warnings']) { [void]$sb.AppendLine("> - $w") }
         [void]$sb.AppendLine()
     }
+    $surveyIncompleteRender = [bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)
+    if ($surveyIncompleteRender) {
+        $partialReason = Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason' -Default 'Partial survey did not query every readiness axis.'
+        [void]$sb.AppendLine("> ⚠️ **Partial survey — not a global ship verdict.** $partialReason Rerun with ``-Phase all`` for the complete assessment.")
+        [void]$sb.AppendLine()
+    }
 
     # === BLOCKING / POST-SHIP FOLLOW-UP SUMMARY (hoisted to top, under verdict) ===
     # In-flight/candidate: every BLOCKED ship-check + Tier 1 regression is a ship
@@ -4796,7 +4831,7 @@ function Format-MarkdownReport {
             }
             [void]$sb.AppendLine()
         }
-        if (-not $regressionScanIncompleteRender -and $blockingItems.Count -eq 0 -and
+        if (-not $surveyIncompleteRender -and -not $regressionScanIncompleteRender -and $blockingItems.Count -eq 0 -and
             $blockedShipCheckItems.Count -eq 0 -and $releaseContentFollowUpItems.Count -eq 0 -and
             $carryForwardItems.Count -eq 0) {
             [void]$sb.AppendLine("## 🟢 No urgent post-ship follow-ups")
@@ -4830,6 +4865,9 @@ function Format-MarkdownReport {
             $action = Format-MarkdownTableCell $b.action
             [void]$sb.AppendLine("| $area | $details | $action |")
         }
+        [void]$sb.AppendLine()
+    } elseif ($surveyIncompleteRender) {
+        [void]$sb.AppendLine("## ⚠️ Blocking status incomplete — partial survey")
         [void]$sb.AppendLine()
     } else {
         [void]$sb.AppendLine("## 🟢 No blocking items")
@@ -5253,8 +5291,13 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine('### Summary')
         [void]$sb.AppendLine('| Verdict | Count |')
         [void]$sb.AppendLine('|---|---|')
-        foreach ($k in $summary.Keys | Sort-Object) {
-            [void]$sb.AppendLine("| ``$k`` | $($summary[$k]) |")
+        $summaryEntries = if ($summary -is [System.Collections.IDictionary]) {
+            @($summary.Keys | ForEach-Object { [PSCustomObject]@{ Name = [string]$_; Value = $summary[$_] } })
+        } else {
+            @($summary.PSObject.Properties | ForEach-Object { [PSCustomObject]@{ Name = $_.Name; Value = $_.Value } })
+        }
+        foreach ($entry in $summaryEntries | Sort-Object Name) {
+            [void]$sb.AppendLine("| ``$($entry.Name)`` | $($entry.Value) |")
         }
         [void]$sb.AppendLine()
 
@@ -5487,10 +5530,13 @@ function Invoke-Main {
 
     $ctx['regressionLabels'] = $labels
     $ctx['labelInferenceMode'] = $labelMode
+    $ctx['phase'] = $Phase
 
     $data = @{
         metadata = $ctx
         warnings = @()
+        surveyIncomplete = ($Phase -ne 'all')
+        surveyIncompleteReason = if ($Phase -ne 'all') { "Partial survey (-Phase $Phase) did not query every readiness axis." } else { $null }
     }
 
     # Shipped mode: prefer the GitHub Release publication time for the report's

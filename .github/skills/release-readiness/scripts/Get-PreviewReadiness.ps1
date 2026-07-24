@@ -175,10 +175,10 @@ if ([string]::IsNullOrWhiteSpace($TrackerKey)) {
 $StatusRank = @{
     "READY"             = 0
     "CLEANUP"           = 1
-    "WATCH"             = 1
-    "UNKNOWN"           = 2
-    "INSUFFICIENT_DATA" = 2
-    "BLOCKED"           = 3
+    "WATCH"             = 2
+    "UNKNOWN"           = 3
+    "INSUFFICIENT_DATA" = 4
+    "BLOCKED"           = 5
 }
 
 # GraphQL supplies the review and merge-conflict metadata used to prioritize PR
