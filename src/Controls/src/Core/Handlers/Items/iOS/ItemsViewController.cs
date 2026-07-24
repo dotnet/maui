@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public const int EmptyTag = 333;
 		readonly WeakReference<TItemsView> _itemsView;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public IItemsViewSource ItemsSource { get; protected set; }
 		public TItemsView ItemsView => _itemsView.GetTargetOrDefault();
 
@@ -193,6 +194,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CollectionView = collectionView;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)
 		{
 			if (CollectionView?.Window != null)
