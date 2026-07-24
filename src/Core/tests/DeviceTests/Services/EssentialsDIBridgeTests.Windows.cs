@@ -150,6 +150,89 @@ public class EssentialsDIBridgeTests
 		}
 	}
 
+	[Fact]
+	public void MapServiceTokenCleanupRestoresPlatformTokenWhenGeocoderRestoreThrows()
+	{
+		const string originalInstanceToken = "original-instance-token";
+		const string originalPlatformToken = "original-platform-token";
+		const string configuredToken = "configured-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var initialAssignmentCount = GetMapTokenAssignmentCount();
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var replacement = new ThrowingRestorePlatformGeocoding(originalInstanceToken);
+		MauiApp? app = null;
+
+		try
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(replacement);
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(configuredToken));
+			app = builder.Build();
+			platformToken.Value = configuredToken;
+			replacement.ThrowOnToken = originalInstanceToken;
+
+			var exception = Assert.Throws<InvalidOperationException>(() => app.Dispose());
+			app = null;
+
+			Assert.Equal("geocoder map token restore failed", exception.Message);
+			Assert.Equal(configuredToken, replacement.MapServiceToken);
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+			Assert.Equal(initialAssignmentCount, GetMapTokenAssignmentCount());
+			Assert.Same(original, Geocoding.Default);
+		}
+		finally
+		{
+			replacement.ThrowOnToken = null;
+			app?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Fact]
+	public void MapServiceTokenCleanupAggregatesGeocoderAndPlatformRestoreFailures()
+	{
+		const string originalInstanceToken = "original-instance-token";
+		const string originalPlatformToken = "original-platform-token";
+		const string configuredToken = "configured-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var initialAssignmentCount = GetMapTokenAssignmentCount();
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var replacement = new ThrowingRestorePlatformGeocoding(originalInstanceToken);
+		MauiApp? app = null;
+
+		try
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IGeocoding>(replacement);
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(configuredToken));
+			app = builder.Build();
+			platformToken.Value = configuredToken;
+			replacement.ThrowOnToken = originalInstanceToken;
+			platformToken.ThrowOnToken = originalPlatformToken;
+
+			var aggregate = Assert.Throws<AggregateException>(() => app.Dispose());
+			app = null;
+
+			Assert.Collection(
+				aggregate.InnerExceptions,
+				exception => Assert.Equal("geocoder map token restore failed", exception.Message),
+				exception => Assert.Equal("platform map token restore failed", exception.Message));
+			Assert.Equal(configuredToken, replacement.MapServiceToken);
+			Assert.Equal(configuredToken, platformToken.Value);
+			Assert.Equal(initialAssignmentCount, GetMapTokenAssignmentCount());
+			Assert.Same(original, Geocoding.Default);
+		}
+		finally
+		{
+			replacement.ThrowOnToken = null;
+			platformToken.ThrowOnToken = null;
+			app?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -294,8 +377,19 @@ public class EssentialsDIBridgeTests
 		{
 			Value = value;
 			EssentialsExtensions.WindowsMapServiceTokenGetter = () => Value;
-			EssentialsExtensions.WindowsMapServiceTokenSetter = token => Value = token;
+			EssentialsExtensions.WindowsMapServiceTokenSetter = token =>
+			{
+				if (ThrowOnToken is not null &&
+					string.Equals(token, ThrowOnToken, StringComparison.Ordinal))
+				{
+					throw new InvalidOperationException("platform map token restore failed");
+				}
+
+				Value = token;
+			};
 		}
+
+		public string? ThrowOnToken { get; set; }
 
 		public string? Value { get; set; }
 
@@ -329,6 +423,33 @@ public class EssentialsDIBridgeTests
 	sealed class StubPlatformGeocoding : StubGeocoding, IPlatformGeocoding
 	{
 		public string? MapServiceToken { get; set; }
+	}
+
+	sealed class ThrowingRestorePlatformGeocoding : StubGeocoding, IPlatformGeocoding
+	{
+		string? _mapServiceToken;
+
+		public ThrowingRestorePlatformGeocoding(string? mapServiceToken)
+		{
+			_mapServiceToken = mapServiceToken;
+		}
+
+		public string? ThrowOnToken { get; set; }
+
+		public string? MapServiceToken
+		{
+			get => _mapServiceToken;
+			set
+			{
+				if (ThrowOnToken is not null &&
+					string.Equals(value, ThrowOnToken, StringComparison.Ordinal))
+				{
+					throw new InvalidOperationException("geocoder map token restore failed");
+				}
+
+				_mapServiceToken = value;
+			}
+		}
 	}
 
 	sealed class ThrowingPlatformGeocoding : StubGeocoding, IPlatformGeocoding

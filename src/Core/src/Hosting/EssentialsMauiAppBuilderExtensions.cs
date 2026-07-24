@@ -584,18 +584,41 @@ namespace Microsoft.Maui.Hosting
 
 				s_mapTokenAssignments.RemoveAt(index);
 
-				if (implementationSuccessor is null &&
-					string.Equals(assignment.Implementation.MapServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+				List<Exception>? exceptions = null;
+				if (implementationSuccessor is null)
 				{
-					assignment.Implementation.MapServiceToken = assignment.PreviousToken;
+					try
+					{
+						if (string.Equals(assignment.Implementation.MapServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+							assignment.Implementation.MapServiceToken = assignment.PreviousToken;
+					}
+					catch (Exception ex)
+					{
+						(exceptions ??= new()).Add(ex);
+					}
 				}
 #if WINDOWS
-				if (platformSuccessor is null &&
-					string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
+				if (platformSuccessor is null)
 				{
-					WindowsMapServiceTokenSetter(assignment.PreviousPlatformToken);
+					try
+					{
+						if (string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
+							WindowsMapServiceTokenSetter(assignment.PreviousPlatformToken);
+					}
+					catch (Exception ex)
+					{
+						(exceptions ??= new()).Add(ex);
+					}
 				}
 #endif
+
+				if (exceptions is null)
+					return;
+
+				if (exceptions.Count == 1)
+					ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+				throw new AggregateException("Map service token restoration failed.", exceptions);
 			}
 #endif
 
