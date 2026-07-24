@@ -1150,8 +1150,8 @@ function Invoke-CopilotStep {
     # --secret-env-vars: defense-in-depth — strips named tokens from copilot's
     # shell/MCP subprocess env even if they somehow appear (e.g., via variable groups).
     # Model is overridable via $env:COPILOT_REVIEW_MODEL so contributors without internal-model access
-    # can run this script (e.g., with 'claude-opus-4.6' or 'claude-sonnet-4.6').
-    $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.5' }
+    # can run this script (e.g., with 'claude-opus-4.8' or 'claude-sonnet-5').
+    $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.6-sol' }
     if ([string]::IsNullOrWhiteSpace($modelName)) {
         $modelName = $copilotModel
     }
@@ -1177,7 +1177,10 @@ function Invoke-CopilotStep {
             $env:OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT = 'false'
         }
 
-        & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
+        # The review orchestrator spans pre-flight, multi-model try-fix, and final
+        # comparison. Force the 1M context tier so earlier attempts are not compacted
+        # away before the final recommendation.
+        & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --context long_context --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
             $line = $_.ToString()
             try {
                 $event = $line | ConvertFrom-Json -ErrorAction Stop

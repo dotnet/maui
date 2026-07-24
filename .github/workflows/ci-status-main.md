@@ -28,7 +28,7 @@ on:
   workflow_dispatch:
   permissions: {}
 
-model: claude-sonnet-4.6
+model: gpt-5.6-sol
 engine:
   id: copilot
   env:

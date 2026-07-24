@@ -669,14 +669,14 @@ Rules:
 
 Set-Content -Path $PromptPath -Value $prompt -Encoding UTF8
 
-$model = if ($env:COPILOT_REVIEW_TESTS_MODEL) { $env:COPILOT_REVIEW_TESTS_MODEL } else { "gpt-5.5" }
+$model = if ($env:COPILOT_REVIEW_TESTS_MODEL) { $env:COPILOT_REVIEW_TESTS_MODEL } else { "gpt-5.6-sol" }
 Write-Host "Invoking Copilot CLI with model $model..."
 if ($AllowAllTools) {
     Write-Host "AllowAllTools enabled: Copilot CLI will run with --allow-all against untrusted PR/log evidence." -ForegroundColor Yellow
 }
 
 $outputLines = New-Object System.Collections.Generic.List[string]
-$copilotArgs = @("-p", $prompt, "--output-format", "json", "--model", $model)
+$copilotArgs = @("-p", $prompt, "--output-format", "json", "--model", $model, "--context", "long_context")
 if ($AllowAllTools) {
     $copilotArgs += "--allow-all"
 }
