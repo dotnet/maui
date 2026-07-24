@@ -104,9 +104,13 @@ namespace Microsoft.Maui.ApplicationModel
 			internal static PermissionStatus GetAddressBookPermissionStatus()
 			{
 				var status = global::Contacts.CNContactStore.GetAuthorizationStatus(global::Contacts.CNEntityType.Contacts);
+
+				// CNAuthorizationStatus.Limited is only available on iOS 18+.
+				if (OperatingSystem.IsIOSVersionAtLeast(18) && status == global::Contacts.CNAuthorizationStatus.Limited)
+					return PermissionStatus.Limited;
+
 				return status switch
 				{
-					global::Contacts.CNAuthorizationStatus.Limited => PermissionStatus.Limited,
 					global::Contacts.CNAuthorizationStatus.Authorized => PermissionStatus.Granted,
 					global::Contacts.CNAuthorizationStatus.Denied => PermissionStatus.Denied,
 					global::Contacts.CNAuthorizationStatus.Restricted => PermissionStatus.Restricted,
@@ -303,19 +307,22 @@ namespace Microsoft.Maui.ApplicationModel
 
 				UNUserNotificationCenter.Current.GetNotificationSettings(settings =>
 				{
-					switch (settings.AuthorizationStatus)
+					var authStatus = settings.AuthorizationStatus;
+
+					// UNAuthorizationStatus.Ephemeral is only available on iOS 14+.
+					if (authStatus == UNAuthorizationStatus.Authorized ||
+						authStatus == UNAuthorizationStatus.Provisional ||
+						(OperatingSystem.IsIOSVersionAtLeast(14) && authStatus == UNAuthorizationStatus.Ephemeral))
 					{
-						case UNAuthorizationStatus.Authorized:
-						case UNAuthorizationStatus.Provisional:
-						case UNAuthorizationStatus.Ephemeral:
-							tcs.TrySetResult(PermissionStatus.Granted);
-							break;
-						case UNAuthorizationStatus.Denied:
-							tcs.TrySetResult(PermissionStatus.Denied);
-							break;
-						default:
-							tcs.TrySetResult(PermissionStatus.Unknown);
-							break;
+						tcs.TrySetResult(PermissionStatus.Granted);
+					}
+					else if (authStatus == UNAuthorizationStatus.Denied)
+					{
+						tcs.TrySetResult(PermissionStatus.Denied);
+					}
+					else
+					{
+						tcs.TrySetResult(PermissionStatus.Unknown);
 					}
 				});
 

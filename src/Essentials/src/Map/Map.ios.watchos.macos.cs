@@ -25,6 +25,26 @@ namespace Microsoft.Maui.ApplicationModel
 			if (string.IsNullOrWhiteSpace(options.Name))
 				options.Name = string.Empty;
 
+			// MKPlacemark is unsupported on iOS 26+; route coordinate opens through the
+			// Apple Maps URL scheme there (the same mechanism already used as a fallback below).
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				var ll = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1}", latitude, longitude);
+				var uri = $"http://maps.apple.com/?ll={ll}";
+
+				var dirflg = options.NavigationMode switch
+				{
+					NavigationMode.Driving => "d",
+					NavigationMode.Transit => "r",
+					NavigationMode.Walking => "w",
+					_ => null,
+				};
+				if (dirflg is not null)
+					uri += $"&dirflg={dirflg}";
+
+				return Launcher.Default.TryOpenAsync(NSUrl.FromString(uri));
+			}
+
 			NSDictionary dictionary = null;
 			var placemark = new MKPlacemark(new CLLocationCoordinate2D(latitude, longitude), dictionary);
 			return OpenPlacemark(placemark, options);
