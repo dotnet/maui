@@ -108,9 +108,12 @@ override Microsoft.Maui.Controls.FontAttributesConverter.CanConvertTo(System.Com
 override Microsoft.Maui.Controls.FontAttributesConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.FontAttributesConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.AddSubview(UIKit.UIView! view) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.UpdateFlowDirection() -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ViewDidAppear(bool animated) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 override Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
