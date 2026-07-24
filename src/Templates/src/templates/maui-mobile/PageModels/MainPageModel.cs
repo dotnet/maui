@@ -98,7 +98,6 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 		}
 
 		Preferences.Default.Set("is_seeded", true);
-		await Refresh();
 	}
 
 	[RelayCommand]
