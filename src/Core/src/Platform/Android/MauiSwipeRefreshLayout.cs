@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Platform
 
 		public override bool OnInterceptTouchEvent(MotionEvent? ev)
 		{
-			if (ev is null)
+			if (ev is null || !Enabled)
 				return false;
 
 			switch (ev.ActionMasked)
