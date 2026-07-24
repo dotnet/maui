@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Platform
 				// hasn't been added to the hierarchy yet — skipping here preserves native BackgroundColor
 				// set by custom UIButton subclasses. Once live on screen, null means a VisualState
 				// transition back to Normal, so we do reset. Mirrors the same guard in UpdateTextColor.
-				if (platformButton.Window is UIWindow window)
+				if (platformButton.Window is not null)
 				{
 					platformButton.BackgroundColor = UIColor.Clear;
 				}
