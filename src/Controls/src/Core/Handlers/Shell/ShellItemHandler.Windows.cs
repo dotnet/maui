@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -338,6 +338,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.UpdateSearchHandlerPlaceholder(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerIsEnabled(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerCharacterSpacing(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerFont(_currentSearchHandler, this.GetRequiredService<IFontManager>());
 					autoSuggestBox.UpdateSearchHandlerTextColor(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerPlaceholderColor(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
@@ -542,6 +543,11 @@ namespace Microsoft.Maui.Controls.Handlers
 					break;
 				case nameof(SearchHandler.VerticalTextAlignment):
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.FontFamily):
+				case nameof(SearchHandler.FontSize):
+				case nameof(SearchHandler.FontAttributes):
+					autoSuggestBox.UpdateSearchHandlerFont(_currentSearchHandler, this.GetRequiredService<IFontManager>());
 					break;
 			}
 		}
