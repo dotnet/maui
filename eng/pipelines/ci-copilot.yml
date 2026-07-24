@@ -3597,11 +3597,26 @@ stages:
                       $b64 = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($f.FullName))
                       $blobFile = Join-Path $stageDir '_blob.json'
                       @{ content = $b64; encoding = 'base64' } | ConvertTo-Json | Set-Content $blobFile -Encoding UTF8
-                      $blobOut = gh api -X POST "repos/$assetRepo/git/blobs" --input $blobFile 2>&1
-                      $blob = $null; try { $blob = ($blobOut | ConvertFrom-Json) } catch { }
+                      # A single run uploads hundreds of blobs (≈3 per diff), so an
+                      # occasional TRANSIENT GitHub 5xx/429 is likely and previously
+                      # aborted the ENTIRE embed on the first hit (observed: build
+                      # 14756076 lost a 288-diff embed to one HTTP 502 "Server Error").
+                      # Retry transient failures with jittered backoff; fail fast only
+                      # on a permanent auth/permission error (404/403) since a retry
+                      # can never fix that.
+                      $blob = $null; $blobOut = $null
+                      for ($bAttempt = 1; $bAttempt -le 4 -and (-not $blob -or -not $blob.sha); $bAttempt++) {
+                        $blobOut = gh api -X POST "repos/$assetRepo/git/blobs" --input $blobFile 2>&1
+                        $blob = $null; try { $blob = ($blobOut | ConvertFrom-Json) } catch { }
+                        if ($blob -and $blob.sha) { break }
+                        if ("$blobOut" -match '404|403|Not Found|Resource not accessible') {
+                          $hint = " — ASSET_WRITE_TOKEN lacks Contents:write on $assetRepo. Provision a token with Contents:write on the asset repo (e.g. the dotnet-bot repo PAT the loc pipeline uses, or a dedicated fine-grained PAT scoped to a public assets repo) and wire it as ASSET_WRITE_TOKEN on the Post task"
+                          throw "blob upload failed for $($f.Name): $blobOut$hint"
+                        }
+                        if ($bAttempt -lt 4) { Start-Sleep -Milliseconds (500 * $bAttempt + (Get-Random -Minimum 0 -Maximum 500)) }
+                      }
                       if (-not $blob -or -not $blob.sha) {
-                        $hint = if ("$blobOut" -match '404|403|Not Found|Resource not accessible') { " — ASSET_WRITE_TOKEN lacks Contents:write on $assetRepo. Provision a token with Contents:write on the asset repo (e.g. the dotnet-bot repo PAT the loc pipeline uses, or a dedicated fine-grained PAT scoped to a public assets repo) and wire it as ASSET_WRITE_TOKEN on the Post task" } else { '' }
-                        throw "blob upload failed for $($f.Name): $blobOut$hint"
+                        throw "blob upload failed for $($f.Name) after 4 attempts (last transient error): $blobOut"
                       }
                       $treeEntries.Add([ordered]@{ path = "$assetPrefix/$($f.Name)"; mode = '100644'; type = 'blob'; sha = [string]$blob.sha })
                     }
