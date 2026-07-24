@@ -198,12 +198,12 @@ namespace Samples.ViewModel
 				Log("Requesting request options…");
 
 				// 1) Ask the RP server for PublicKeyCredentialRequestOptions (WebAuthn JSON).
-				//    Leave the username blank for username-less / discoverable-credential sign-in —
-				//    the passkey itself carries the user handle and the OS account picker lists it.
-				var beginUrl = string.IsNullOrWhiteSpace(Username)
-					? "/passkeys/login/begin"
-					: $"/passkeys/login/begin?username={Uri.EscapeDataString(Username)}";
-				var requestOptionsJson = await PostAsync(beginUrl);
+				//    Username-less / discoverable-credential sign-in: we deliberately do NOT send a
+				//    username. The passkey itself carries the user handle and the OS account picker lets
+				//    you choose which account to sign into — the credential is the identity. (Passing a
+				//    username here would pin the ceremony to that one account and reject a passkey that
+				//    belongs to a different user, which is a confusing failure in a multi-account demo.)
+				var requestOptionsJson = await PostAsync("/passkeys/login/begin");
 
 				// 2) Assert with the platform authenticator (biometric / PIN prompt).
 				Log("Asserting passkey with the platform authenticator…");

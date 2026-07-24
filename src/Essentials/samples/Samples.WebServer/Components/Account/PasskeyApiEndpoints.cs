@@ -130,7 +130,14 @@ internal static class PasskeyApiEndpoints
 			}
 
 			if (!assertion.Succeeded || assertion.User is null)
-				return Results.Unauthorized();
+			{
+				// e.g. "The provided credential does not belong to the specified user." — happens when
+				// login/begin specified a username but the picked passkey belongs to a different account.
+				// Prefer the username-less flow (omit username on login/begin) so any passkey is accepted.
+				return Results.Json(
+					new { error = $"Sign-in failed: {assertion.Failure?.Message ?? "the passkey could not be verified."}" },
+					statusCode: StatusCodes.Status401Unauthorized);
+			}
 
 			// The sign counter / backup flags may have changed; persist the updated passkey.
 			await userManager.AddOrUpdatePasskeyAsync(assertion.User, assertion.Passkey!);
