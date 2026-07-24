@@ -7,9 +7,10 @@ namespace Microsoft.Maui.Controls.Platform
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// The framework creates an instance whenever a handler connects to a view and disposes it when
-	/// the handler disconnects or changes. A new instance is created for every connection, so
-	/// implementations must be prepared for multiple connect/disconnect cycles.
+	/// The framework creates an instance when platform gesture support is needed for a handler
+	/// connection and disposes it when the handler disconnects or changes. A new instance is created
+	/// for every such connection, so implementations must be prepared for multiple connect/disconnect
+	/// cycles.
 	/// </para>
 	/// <para>
 	/// To replace the built-in gesture handling for all views in an application, register a custom

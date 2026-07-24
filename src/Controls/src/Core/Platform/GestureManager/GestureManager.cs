@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -106,7 +107,12 @@ namespace Microsoft.Maui.Controls.Platform
 			// IPlatformViewHandler. Skip them for custom/third-party handlers that use
 			// a different platform-view contract and provide their own gesture handling. (#35044)
 			if (handler is not IPlatformViewHandler)
+			{
+				handler.MauiContext?.CreateLogger<GestureManager>()?.LogDebug(
+					"Skipping the built-in gesture manager because handler {HandlerType} does not implement IPlatformViewHandler.",
+					handler.GetType());
 				return null;
+			}
 #endif
 
 			return new GesturePlatformManager(handler);
