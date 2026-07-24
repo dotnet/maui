@@ -1,0 +1,216 @@
+# CI-fix capability suite
+#
+# The fixtures are hermetic snapshots of actual CI-fixer incidents. They do not
+# query live GitHub state: live issue and PR histories would let the agent
+# recite today's status rather than exercise the triage policy.
+
+name: ci-fix-capabilities
+description: >-
+  Capability suite for the CI-fix triage skill. It verifies exact human-PR
+  ownership checks, keep-one-PR behavior, stale-failure suppression,
+  visual-regression safety, stack-grounded diagnosis, deterministic
+  de-flaking, and the autonomous attempt bound.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 5m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # Source: live CI-fixer run 30118934440, issue #36051, PR #36657.
+  - name: comment-only-pr-reference-does-not-stop-triage
+    tags: { source_issue: "36051", source_pr: "36657", kind: false-dedup }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
+
+      Tracking issue #36051 is open, has the ci-scan label, and has no open or
+      merged [ci-fix] PR. A search for #36051 found open human PR #36657.
+      PR #36657 has this title and body:
+
+      Title: "Forward-port Essentials DI service registration"
+      Body: "Forward-ports the Essentials dependency-injection service registration change to net11.0."
+
+      The number #36051 appears only in a comment on #36657 that lists several
+      unrelated CI failures. It does not appear in the title or body.
+
+      Return the terminal decision and the next safe triage action. Do not query
+      GitHub; the snapshot above is complete.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Continue" }
+      - type: output-not-contains
+        config: { substring: "human PR #36657 already addressing" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent continues triage rather than treating PR #36657 as human ownership.
+      - The agent explains that a comment-only or status-list reference is not a direct declaration by the PR.
+      - The next action is current-evidence validation, not an immediate code change or PR creation.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  - name: explicit-human-reference-stops-competing-fix
+    tags: { kind: human-ownership }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
+
+      Tracking issue #48100 is open, in scope, and has no [ci-fix] PR. Open
+      human PR #48115 has this body:
+
+      "Fixes dotnet/maui#48100 by serializing access to the shared dispatcher."
+
+      No other dedup gate applies. Return the terminal decision and safe next
+      action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Stop" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent recognizes the explicit closing reference as evidence that the human PR owns the issue.
+      - The agent does not propose a competing CI-fix PR or a source edit.
+      - The explanation identifies the actual PR number and explicit reference.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  # Source: open net11 CI-fix PR #36604 for issue #36452.
+  - name: existing-ci-fix-pr-enters-watch-mode
+    tags: { source_issue: "36452", source_pr: "36604", kind: keep-one-pr }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen net11.0 snapshot.
+
+      Issue #36452 is in scope. Open PR #36604 is titled
+      "[ci-fix-net11] De-flake Essentials.AI file-based tests" and its body
+      contains "Refs: dotnet/maui#36452" with attempt marker 1/10. Its current
+      head CI is still pending.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Watch" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent enters watch mode for PR #36604 rather than creating a second CI-fix PR.
+      - The agent waits for the current head CI to settle and does not classify an older or pending result.
+      - The agent preserves the existing branch, target branch, and attempt counter.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  # Source: merged main CI-fix PR #36429 for issue #36259.
+  - name: merged-fix-suppresses-stale-reopen
+    tags: { source_issue: "36259", source_pr: "36429", kind: stale-regression }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
+
+      Issue #36259 cites a historical SafeAreaShouldWorkOnAllShellTabs failure.
+      CI-fix PR #36429 is merged and its body contains
+      "Refs: dotnet/maui#36259". There is no current failing build proving a new
+      regression.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Skip" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent suppresses a fresh fix attempt because a linked CI-fix PR is already merged.
+      - The agent distinguishes a historical failure from evidence of a new regression.
+      - The agent does not reopen or duplicate the merged fix.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  - name: visual-regression-never-modifies-baseline
+    tags: { kind: visual-safety }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
+
+      Issue #48200 is in scope, but its cited maui-pr-uitests failure is named
+      "VerifyScreenshot ShellTabbedPage baseline image mismatch". The issue body
+      includes "visual diff" and attaches before/after screenshots.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Skip" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent skips the visual regression without proposing a baseline-image update or a CI-fix PR.
+      - The agent explains that screenshot and visual-diff failures are out of autonomous-fix scope.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  # Source: postmortem of stale net11 CI-fix PR #36395; the relevant locator fix
+  # had already merged through #36270 before the CI-fix PR was opened.
+  - name: current-stack-evidence-prevents-stale-adjacent-fix
+    tags: { source_pr: "36395", superseding_pr: "36270", kind: stack-grounding }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen net11.0 snapshot.
+
+      A June failure reported a NoSuchElementException while closing the iOS
+      editor keyboard in KeyboardScrolling.CloseiOSEditorKeyboard. A proposed
+      CI-fix changes a nearby EditorRuntimeTextAlignment locator, but the deepest
+      failing path is the keyboard-close helper. PR #36270 already merged the
+      current iOS 26 locator fix in that helper before this proposed fix began.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Skip" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent traces the failure to the keyboard-close helper rather than accepting the adjacent locator change.
+      - The agent recognizes the prior merged helper fix as stale-candidate evidence and does not create a duplicate PR.
+      - The agent explains that current source and exact stack evidence are required before proposing a fix.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  # Source pattern: merged main CI-fix PR #36091 used a condition wait for an
+  # Android UI test rather than suppressing or retrying the test.
+  - name: deterministic-deflake-never-mutes-or-retries
+    tags: { source_pr: "36091", kind: de-flake-safety }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
+
+      An Android UI test intermittently fails because the soft-input element is
+      queried before it appears. A suggested patch adds [Retry(3)] and extends a
+      fixed sleep from 100 ms to 5 seconds. Another candidate waits for the
+      specific element state before asserting.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Continue" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent rejects retry attributes, fixed-sleep extensions, test disabling, and assertion weakening.
+      - The agent selects or requires the deterministic condition-wait approach before a candidate PR is created.
+      - The agent preserves the original test assertion rather than masking the failure.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  - name: effective-attempt-cap-defers-instead-of-replacing-pr
+    tags: { kind: autonomy-bound }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
+
+      Issue #48300 has open CI-fix PR #48305 with exact
+      "Refs: dotnet/maui#48300". Its body marker says 9/10, but its immutable
+      branch history contains 10 bot-authored fix commits. The latest head CI is
+      red because the target test still fails.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Skip" }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent uses the effective attempt count rather than trusting the stale body marker.
+      - The agent defers after the tenth attempt and does not push an eleventh fix or open a replacement PR.
+      - The explanation identifies the existing PR as the hand-off surface.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+scoring:
+  threshold: 0.6

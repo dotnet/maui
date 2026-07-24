@@ -346,6 +346,14 @@ leakage or ordering) is encouraged: see Step 4.7. Visual-regression / screenshot
 issues are always skipped silently. The agent runs read-only; all writes go
 through `safe-outputs`.
 
+## Shared CI-fix triage policy
+
+Before processing an issue, read and follow
+`.github/skills/ci-fix/SKILL.md`. It contains the common safety and
+decision-making rules shared by both CI-fixer twins. The branch-specific
+instructions and safe-output restrictions in this workflow remain authoritative
+where they are more specific.
+
 ## Hard rules — non-negotiable
 
 1. **This workflow is main-only.** Process ONLY issues labelled `ci-scan`. Every
@@ -735,12 +743,27 @@ Leave the tracking issue open; scanner closure is out of scope here.
 
 #### Step 3.3 — Human (non-`[ci-fix]`) PR already addressing
 
+Search only the PR title and body. GitHub's default issue search also indexes
+comments, check summaries, and other incidental references: a numeric mention in
+one of those locations is not evidence that a human PR owns this failure.
+
 ```bash
-url="https://api.github.com/search/issues?q=repo%3Adotnet%2Fmaui+is%3Apr+is%3Aopen+%22%23${N}%22+-label%3Aagentic-workflows"
+url="https://api.github.com/search/issues?q=repo%3Adotnet%2Fmaui+is%3Apr+is%3Aopen+-label%3Aagentic-workflows+in%3Atitle%2Cbody+%22%23${N}%22"
 curl -s "$url" | tee /tmp/gh-aw/agent/human_${N}.json
 ```
 
-If > 0 → `skipped: human PR #<P> already addressing` and stop.
+Validate the search response, then inspect every returned PR's **title and
+body**. Stop only when a PR itself declares that it addresses this issue, using
+an explicit tracker reference such as:
+
+- `Refs: dotnet/maui#<N>`; or
+- `Fix`, `Fixes`, `Fixed`, `Close`, `Closes`, `Closed`, `Resolve`, `Resolves`,
+  or `Resolved` followed by `#<N>` or `dotnet/maui#<N>`.
+
+If such a declaration exists → `skipped: human PR #<P> already addressing` and
+stop. A raw issue number in a comment, check-status summary, commit/diff, or an
+incidental title/body mention is **not** a stop condition. When every result is
+incidental, record that conclusion in the run log and continue to Step 3.4.
 
 #### Step 3.4 — Fresh issue: prior-closed guard, else attempt 1
 
