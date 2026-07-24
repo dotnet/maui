@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Platform
 			// stops announcing stale content and its children become navigable again.
 			if (semantics is null)
 			{
-				if (view is ILayout && platformView is not UIControl && platformView.IsAccessibilityElement)
+				if ((view is ILayout || view is IContentView) && platformView is not UIControl && platformView.IsAccessibilityElement)
 				{
 					platformView.IsAccessibilityElement = false;
 					platformView.AccessibilityLabel = null;
@@ -96,6 +96,7 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 
+				ClearContainerAccessibility(platformView);
 				return;
 			}
 
@@ -174,7 +175,57 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
+			// IContentView containers (ContentView, Border, Frame, etc.) don't get #35590 synthesis.
+			// Left alone they'd hit the generic UpdateSemantics below and collapse into one leaf,
+			// hiding children (root cause of #33612). So never collapse them; instead announce
+			// Description/Hint via a phantom element (MauiView.AccessibilityElements) while keeping
+			// children reachable. Skip (fall through to a normal leaf) when empty (Guard 1) or when
+			// the container owns its own gesture recognizer, i.e. is itself the actionable unit
+			// (Guard 2).
+			if (view is IContentView contentView
+				&& view is not ILayout
+				&& contentView.PresentedContent is not null
+				&& platformView.GestureRecognizers is not { Length: > 0 })
+			{
+				// Keep the container's own AccessibilityLabel/Hint set too (even though it never
+				// becomes the accessibility element itself, IsAccessibilityElement stays false).
+				// Testing showed VoiceOver's traversal order goes wrong (jumps to the last child
+				// instead of the first) if these are left nil while a custom accessibilityElements
+				// array is also returned — so don't treat this assignment as dead code.
+				platformView.AccessibilityLabel = semantics.Description;
+				platformView.AccessibilityHint = semantics.Hint;
+				platformView.IsAccessibilityElement = false;
+
+				if (platformView is MauiView containerMauiView)
+				{
+					containerMauiView.AccessibilityContainerLabel = semantics.Description;
+					containerMauiView.AccessibilityContainerHint = semantics.Hint;
+				}
+
+				UpdateSemanticsHeading(platformView, semantics);
+				return;
+			}
+
+			// Falling through: this container has no content, or owns its own gesture (Guard 2).
+			// Clear any stale phantom label so it doesn't linger once this view becomes a leaf.
+			ClearContainerAccessibility(platformView);
+
 			UpdateSemantics(platformView, semantics);
+		}
+
+		/// <summary>
+		/// Clears any phantom container accessibility state (label, hint, and cached phantom
+		/// element) set by the IContentView container branch above. Shared by both the
+		/// null-semantics reset path and the fallthrough-to-leaf path so the two don't drift.
+		/// </summary>
+		static void ClearContainerAccessibility(UIView platformView)
+		{
+			if (platformView is MauiView mauiView)
+			{
+				mauiView.AccessibilityContainerLabel = null;
+				mauiView.AccessibilityContainerHint = null;
+				mauiView.ClearAccessibilityContainerElement();
+			}
 		}
 
 		internal static void UpdateSemantics(this UIView platformView, Semantics? semantics)
