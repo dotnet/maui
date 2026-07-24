@@ -87,6 +87,7 @@ if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_GATHER_BUDGET_SECONDS) -
     $gatherBudgetSeconds = $parsedGatherBudget
 }
 $gatherHardDeadline = $gatherStartedAt.AddSeconds($gatherBudgetSeconds)
+$script:GatherHardDeadline = $gatherHardDeadline
 
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     $Repository = "dotnet/maui"
@@ -146,6 +147,30 @@ function ConvertTo-Array {
     return @($Value)
 }
 
+function Get-GatherRequestTimeoutSeconds {
+    param(
+        [int]$RequestedTimeoutSec = 100,
+        [int]$MinimumTimeoutSec = 1
+    )
+
+    $deadlineVariable = Get-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+    if ($null -eq $deadlineVariable -or
+        $null -eq $deadlineVariable.Value -or
+        [datetime]$deadlineVariable.Value -eq [datetime]::MaxValue) {
+        return $RequestedTimeoutSec
+    }
+
+    $deadline = [datetime]$deadlineVariable.Value
+    if ((Get-Date) -ge $deadline) {
+        throw "Overall gather deadline was exhausted before the next network request."
+    }
+    $remaining = [int][Math]::Floor(($deadline - (Get-Date)).TotalSeconds)
+    if ($remaining -lt $MinimumTimeoutSec) {
+        return $MinimumTimeoutSec
+    }
+    return [Math]::Min($RequestedTimeoutSec, $remaining)
+}
+
 function Invoke-GhJson {
     param([string[]]$Arguments)
 
@@ -173,6 +198,7 @@ function Invoke-JsonUrl {
         [int]$TimeoutSec = 100
     )
 
+    $TimeoutSec = Get-GatherRequestTimeoutSeconds -RequestedTimeoutSec $TimeoutSec
     $headers = @{
         Accept = "application/json"
     }
@@ -354,6 +380,7 @@ function Invoke-TextUrl {
         [int]$TimeoutSec = 100
     )
 
+    $TimeoutSec = Get-GatherRequestTimeoutSeconds -RequestedTimeoutSec $TimeoutSec
     $headers = @{
         Accept = "text/plain"
     }
@@ -623,6 +650,38 @@ function Get-VisualEnvironmentHintFromLog {
         environmentName = $environmentName
         apiVersion = $version
     }
+}
+
+function Resolve-VisualEnvironmentName {
+    param(
+        [object[]]$Hints,
+        [string]$Platform,
+        [string]$ResultText,
+        [string[]]$IncompletePlatforms = @()
+    )
+
+    $directHint = Get-VisualEnvironmentHintFromLog -Text $ResultText
+    $directIsSpecific = $directHint -and (
+        [string]$directHint.platform -notin @("ios", "android") -or
+        -not [string]::IsNullOrWhiteSpace([string]$directHint.apiVersion) -or
+        [string]$directHint.environmentName -in @("ios-iphonex", "ios-26", "android-notch-36")
+    )
+    if ($directIsSpecific -and [string]$directHint.platform -eq $Platform) {
+        return [string]$directHint.environmentName
+    }
+
+    if ($IncompletePlatforms -contains "unknown" -or $IncompletePlatforms -contains $Platform) {
+        return $null
+    }
+    $environmentNames = @($Hints |
+        Where-Object { [string]$_.platform -eq $Platform } |
+        ForEach-Object { [string]$_.environmentName } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        Select-Object -Unique)
+    if ($environmentNames.Count -eq 1) {
+        return $environmentNames[0]
+    }
+    return $null
 }
 
 function Get-AreaHintsFromPath {
@@ -1136,7 +1195,8 @@ function Invoke-HelixFileText {
     param([string]$Url, [int]$MaxChars = 4000000, $Truncated = $null)
     if ([string]::IsNullOrWhiteSpace($Url)) { return $null }
     try {
-        $resp = Invoke-WebRequest -Uri $Url -UseBasicParsing -MaximumRedirection 5 -TimeoutSec 100 -ErrorAction Stop
+        $requestTimeoutSec = Get-GatherRequestTimeoutSeconds -RequestedTimeoutSec 100
+        $resp = Invoke-WebRequest -Uri $Url -UseBasicParsing -MaximumRedirection 5 -TimeoutSec $requestTimeoutSec -ErrorAction Stop
         # Azure blob serves the uploaded .xml result files as application/octet-stream, so
         # Invoke-WebRequest returns $resp.Content as a byte[] (a plain [string] cast would
         # stringify it as space-joined decimal byte values -- e.g. "60 63 120 ..." -- and
@@ -2483,6 +2543,7 @@ foreach ($buildRef in $buildRefsById.Values) {
         testFailuresFromLogs = @()
         testResults = @()
         visualEnvironmentHints = @()
+        visualEnvironmentHintCoverageIncompletePlatforms = @()
         visualEvidence = @()
         helix = [ordered]@{
             checked = $false
@@ -2586,6 +2647,21 @@ foreach ($buildRef in $buildRefsById.Values) {
     }
 
     $logsToRead = @($failedRecords | Where-Object { $_.result -eq "failed" -and $_.log -and $_.log.id } | Select-Object -First 12)
+    $sampledLogIds = @{}
+    foreach ($sampledRecord in $logsToRead) {
+        $sampledLogIds[[string]$sampledRecord.log.id] = $true
+    }
+    foreach ($unsampledRecord in @($failedRecords | Where-Object {
+                $_.result -eq "failed" -and
+                $_.log -and
+                $_.log.id -and
+                -not $sampledLogIds.ContainsKey([string]$_.log.id)
+            })) {
+        $unsampledPlatform = Get-PlatformFromText -Text ([string]$unsampledRecord.name)
+        if ($unsampledPlatform -notin $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms) {
+            $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms += @($unsampledPlatform)
+        }
+    }
     # Track which failed Task records we actually inspected (read a log AND either extracted
     # a failure or recorded an unexplained leg). Failed Task legs NOT in this set after the
     # loop -- no log id, beyond the 12-read cap, or a read that threw -- are uninspected and
@@ -2605,12 +2681,26 @@ foreach ($buildRef in $buildRefsById.Values) {
 
             $visualEnvironmentHint = Get-VisualEnvironmentHintFromLog -Text $logText
             if ($visualEnvironmentHint) {
+                $visualEnvironmentHint = [ordered]@{
+                    platform = $visualEnvironmentHint.platform
+                    environmentName = $visualEnvironmentHint.environmentName
+                    apiVersion = $visualEnvironmentHint.apiVersion
+                    sourceRecordName = [string]$record.name
+                    logId = $logId
+                }
                 $existingHint = @($buildSummary.visualEnvironmentHints | Where-Object {
                     $_.platform -eq $visualEnvironmentHint.platform -and
-                    $_.environmentName -eq $visualEnvironmentHint.environmentName
+                    $_.environmentName -eq $visualEnvironmentHint.environmentName -and
+                    $_.sourceRecordName -eq $visualEnvironmentHint.sourceRecordName
                 })
                 if ($existingHint.Count -eq 0) {
                     $buildSummary.visualEnvironmentHints += @($visualEnvironmentHint)
+                }
+            }
+            else {
+                $hintlessPlatform = Get-PlatformFromText -Text ([string]$record.name)
+                if ($hintlessPlatform -notin $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms) {
+                    $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms += @($hintlessPlatform)
                 }
             }
 
@@ -2708,6 +2798,10 @@ foreach ($buildRef in $buildRefsById.Values) {
             $resolvedFailedRecordIds[[string]$record.id] = $true
         }
         catch {
+            $failedHintPlatform = Get-PlatformFromText -Text ([string]$record.name)
+            if ($failedHintPlatform -notin $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms) {
+                $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms += @($failedHintPlatform)
+            }
             $buildSummary.logExcerpts += @([ordered]@{
                 logId = $logId
                 recordName = $record.name
@@ -3171,8 +3265,11 @@ foreach ($buildRef in $buildRefsById.Values) {
                     $runName = [string](Get-ObjectValue -Object $detail.testRun -Names @("name"))
                     $platform = Get-PlatformFromText -Text "$runName $automatedTestName $($detail.automatedTestStorage)"
                     $environmentHints = @($buildSummary.visualEnvironmentHints | Where-Object { $_.platform -eq $platform })
-                    $environmentNames = @($environmentHints | ForEach-Object { $_.environmentName } | Where-Object { $_ } | Select-Object -Unique)
-                    $environmentName = if ($environmentNames.Count -eq 1) { $environmentNames[0] } else { $null }
+                    $environmentName = Resolve-VisualEnvironmentName `
+                        -Hints $environmentHints `
+                        -Platform $platform `
+                        -ResultText "$runName $automatedTestName $($detail.automatedTestStorage)" `
+                        -IncompletePlatforms @($buildSummary.visualEnvironmentHintCoverageIncompletePlatforms)
 
                     $evidence = [ordered]@{
                         testName = $testName

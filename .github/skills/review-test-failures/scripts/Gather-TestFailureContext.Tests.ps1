@@ -38,12 +38,15 @@ BeforeAll {
     foreach ($functionName in @(
             'ConvertTo-Array',
             'Get-ObjectValue',
+            'Get-GatherRequestTimeoutSeconds',
+            'Invoke-JsonUrl',
             'Get-HeaderValue',
             'Get-AzDoTestRuns',
             'Get-AzDoFailedTestResultsByBuild',
             'Get-VisualSnapshotInfo',
             'Select-VisualAttachments',
             'Get-VisualEnvironmentHintFromLog',
+            'Resolve-VisualEnvironmentName',
             'Get-HelixWorkItemCounts',
             'Get-XUnitFailures',
             'Get-ConsoleFailureReason',
@@ -130,6 +133,51 @@ Ensure new snapshot is correct.
 
         $mac = Get-VisualEnvironmentHintFromLog -Text 'Running TestCases.Mac.Tests for maccatalyst'
         $mac.environmentName | Should -Be 'mac'
+    }
+
+    It 'does not reuse a sampled environment when platform hint coverage was incomplete' {
+        Resolve-VisualEnvironmentName `
+            -Hints @([pscustomobject]@{ platform = 'ios'; environmentName = 'ios-26' }) `
+            -Platform 'ios' `
+            -ResultText 'TestCases.iOS.Tests' `
+            -IncompletePlatforms @('ios') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'prefers a result-level environment hint even when build-log sampling was incomplete' {
+        Resolve-VisualEnvironmentName `
+            -Hints @([pscustomobject]@{ platform = 'ios'; environmentName = 'ios-26' }) `
+            -Platform 'ios' `
+            -ResultText 'Running TestCases.iOS.Tests --apiversion="26.0"' `
+            -IncompletePlatforms @('ios') |
+            Should -Be 'ios-26'
+    }
+}
+
+Describe 'Shared gather request deadline' {
+    It 'caps ordinary JSON requests by the remaining overall gather budget' {
+        $priorDeadline = Get-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+        $script:GatherHardDeadline = (Get-Date).AddSeconds(3)
+        Mock Invoke-WebRequest {
+            return [pscustomobject]@{
+                Content = '{}'
+                StatusCode = 200
+            }
+        }
+        try {
+            Invoke-JsonUrl -Url 'https://dev.azure.com/dnceng-public/public/_apis/example' | Out-Null
+            Should -Invoke Invoke-WebRequest -Times 1 -Exactly -ParameterFilter {
+                $TimeoutSec -gt 0 -and $TimeoutSec -le 3
+            }
+        }
+        finally {
+            if ($null -eq $priorDeadline) {
+                Remove-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+            }
+            else {
+                $script:GatherHardDeadline = $priorDeadline.Value
+            }
+        }
     }
 }
 
@@ -240,23 +288,6 @@ Describe 'Get-AzDoFailedTestResultsByBuild request budgeting' {
                 Content = '{"value":[]}'
                 Headers = @{}
             }
-
-            Describe 'Get-AzDoTestRuns overall deadline enforcement' {
-                It 'returns an incomplete result without a request after the gather deadline' {
-                    Mock Invoke-WebRequest {
-                        throw 'request should not run'
-                    }
-
-                    $result = Get-AzDoTestRuns `
-                        -BaseUrl 'https://dev.azure.com/dnceng-public/public' `
-                        -BuildId 123 `
-                        -Deadline ((Get-Date).AddSeconds(-1))
-
-                    Should -Invoke Invoke-WebRequest -Times 0 -Exactly
-                    $result.truncated | Should -BeTrue
-                    $result.deadlineExhausted | Should -BeTrue
-                }
-            }
         }
     }
 
@@ -308,6 +339,23 @@ Describe 'Get-AzDoFailedTestResultsByBuild request budgeting' {
 
         Should -Invoke -CommandName Invoke-WebRequest -Times 0 -Exactly
         $result.truncated | Should -BeTrue
+    }
+}
+
+Describe 'Get-AzDoTestRuns overall deadline enforcement' {
+    It 'returns an incomplete result without a request after the gather deadline' {
+        Mock Invoke-WebRequest {
+            throw 'request should not run'
+        }
+
+        $result = Get-AzDoTestRuns `
+            -BaseUrl 'https://dev.azure.com/dnceng-public/public' `
+            -BuildId 123 `
+            -Deadline ((Get-Date).AddSeconds(-1))
+
+        Should -Invoke Invoke-WebRequest -Times 0 -Exactly
+        $result.truncated | Should -BeTrue
+        $result.deadlineExhausted | Should -BeTrue
     }
 }
 
