@@ -588,52 +588,63 @@ function Test-IsCarryForwardRegression {
         Decides whether a regression record is a POST-SHIP carry-forward for an
         already-shipped SR (and therefore non-gating in -Shipped mode).
     .DESCRIPTION
-        Deterministic, evidence-only. A regression is carry-forward when EITHER:
-          (1) The issue was created AFTER the SR's public release timestamp (or,
-              when unavailable, its tagged-commit content anchor) — it could not
-              have been part of what shipped, so it's follow-up work for the next
-              SR / a hotfix decision, not a retroactive ship blocker; OR
-          (2) The issue's milestone explicitly names a LATER SR (same major, higher
-              SR number) or a later major — a triager has assigned it to a future
-              cycle.
+        Deterministic, evidence-only. A regression is carry-forward only when its
+        milestone explicitly names a LATER SR (same major, higher SR number) or a
+        later major — structured evidence that a triager assigned it to a future
+        cycle. Issue creation time is not sufficient: a defect in shipped binaries
+        can be reported after publication and may still require a hotfix decision.
 
         Does NOT parse free-text human notes, comments, or labels beyond the
         structured milestone. Returns $false when it cannot make a positive
-        determination (missing ship date + no later-SR milestone) so the caller
-        keeps the conservative "still a follow-up to review" stance.
+        determination (unknown shipped cycle or no later-SR milestone) so the
+        caller keeps the conservative "still a follow-up to review" stance.
 
-        StrictMode/shape-safe: reads `createdAt` and `milestone` through
-        Get-MetadataValue so a hashtable (live survey) and a pscustomobject (JSON
-        round-trip) both work.
+        StrictMode/shape-safe: reads `milestone` through Get-MetadataValue so a
+        hashtable (live survey) and a pscustomobject (JSON round-trip) both work.
     #>
     param(
         $Regression,
-        $ShipDate,
         [int]$ShippedSrNumber = 0,
-        [int]$ShippedMajor = 0
+        [int]$ShippedMajor = 0,
+        [int]$ShippedSubPatch = 0
     )
     if ($null -eq $Regression) { return $false }
 
-    # Signal (1): created after ship.
-    $shipUtc = ConvertTo-Utc -Value $ShipDate
-    if ($shipUtc) {
-        $created = ConvertTo-Utc -Value (Get-MetadataValue -Container $Regression -Name 'createdAt')
-        if ($created -and $created -gt $shipUtc) { return $true }
-    }
-
-    # Signal (2): milestone names a later SR / later major.
+    # A structured milestone names a later SR / later major.
     $milestone = Get-MetadataValue -Container $Regression -Name 'milestone'
-    if ($milestone) {
-        $mm = [regex]::Match([string]$milestone, '^\.NET\s+(\d+)(?:\.0)?\s+SR(\d+)$')
-        if ($mm.Success) {
-            $mMajor = [int]$mm.Groups[1].Value
-            $mSr    = [int]$mm.Groups[2].Value
-            if ($mMajor -gt $ShippedMajor) { return $true }
-            if ($mMajor -eq $ShippedMajor -and $ShippedSrNumber -gt 0 -and $mSr -gt $ShippedSrNumber) { return $true }
-        }
+    $milestoneParts = Get-SrMilestoneParts -Milestone $milestone
+    if ($milestoneParts) {
+        if ($ShippedMajor -gt 0 -and $milestoneParts.Major -gt $ShippedMajor) { return $true }
+        if ($milestoneParts.Major -eq $ShippedMajor -and $ShippedSrNumber -gt 0 -and $milestoneParts.SrNumber -gt $ShippedSrNumber) { return $true }
+        if ($milestoneParts.Major -eq $ShippedMajor -and $milestoneParts.SrNumber -eq $ShippedSrNumber -and
+            $milestoneParts.SubPatch -gt $ShippedSubPatch) { return $true }
     }
 
     return $false
+}
+
+function Get-SrMilestoneParts {
+    param([string]$Milestone)
+    if ([string]::IsNullOrWhiteSpace($Milestone)) { return $null }
+
+    $match = [regex]::Match($Milestone, '^\.NET\s+(\d+)(?:\.0)?\s+SR(\d+)(?:\.(\d+))?$')
+    if (-not $match.Success) { return $null }
+
+    return [PSCustomObject]@{
+        Major    = [int]$match.Groups[1].Value
+        SrNumber = [int]$match.Groups[2].Value
+        SubPatch = if ($match.Groups[3].Success) { [int]$match.Groups[3].Value } else { 0 }
+    }
+}
+
+function Get-SrSubPatchFromVersion {
+    param([string]$Version)
+    $match = [regex]::Match([string]$Version, '^\d+\.\d+\.(\d+)$')
+    if (-not $match.Success) { return 0 }
+
+    $patch = [int]$match.Groups[1].Value
+    if ($patch -lt 10) { return 0 }
+    return ($patch % 10)
 }
 
 function New-ReadinessCheck {
@@ -1809,7 +1820,7 @@ function Get-ClosingIssueNumbers {
 
     $matches = [regex]::Matches(
         $Text,
-        '(?im)(?:fixes|closes|resolves)\s+(?:dotnet/maui#|#|https?://github\.com/dotnet/maui/issues/)(\d+)\b')
+        '(?im)\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?)\s*:?\s+(?:dotnet/maui#|#|https?://github\.com/dotnet/maui/issues/)(\d+)\b')
     return @($matches | ForEach-Object { [int]$_.Groups[1].Value } | Sort-Object -Unique)
 }
 
@@ -2472,8 +2483,10 @@ function Classify-RegressionCandidate {
     foreach ($n in $SrContents.sourcePrs) { $sourcePrSet[$n] = $true }
     $revertedPrSet = @{}
     foreach ($r in $SrContents.reverts) {
+        # `revertsPr` is the PR whose content this commit backs out.
+        # `revertBackportPr` is the PR number of the revert commit itself; adding it
+        # here would incorrectly mark a revert-as-fix (e.g. #36498) as reverted.
         if ($r.revertsPr) { $revertedPrSet[$r.revertsPr] = $true }
-        if ($r.revertBackportPr) { $revertedPrSet[$r.revertBackportPr] = $true }
     }
     # sourcePrSet intentionally contains both a backport PR number and the source
     # PR named by "Backport of #N". Preserve that mapping so a later revert of the
@@ -2503,7 +2516,6 @@ function Classify-RegressionCandidate {
     if ($mainReverts) {
         foreach ($r in @($mainReverts)) {
             if ($r.revertsPr) { $mainRevertedPrSet[[int]$r.revertsPr] = $true }
-            if ($r.revertBackportPr) { $mainRevertedPrSet[[int]$r.revertBackportPr] = $true }
         }
     }
 
@@ -2693,7 +2705,16 @@ function Classify-RegressionCandidate {
                 $mappedBackports = @($sourceToBackportPrs[[int]$pr.number])
             }
             $activeMappedBackports = @($mappedBackports | Where-Object { -not $revertedPrSet.ContainsKey([int]$_) })
-            if ($mappedBackports.Count -gt 0 -and $activeMappedBackports.Count -eq 0) {
+            $directSourceActive = $pr.onTarget -and -not $revertedPrSet.ContainsKey([int]$pr.number)
+            if ($directSourceActive -or $activeMappedBackports.Count -gt 0) {
+                $verdict = 'in-sr-active'
+                if ($directSourceActive) {
+                    $evidence += "PR #$($pr.number) merge commit is directly present and active on $($Ctx.srBranch)"
+                } else {
+                    $mappedList = ($activeMappedBackports | ForEach-Object { "#$_" }) -join ', '
+                    $evidence += "PR #$($pr.number) source-PR is active in the SR through mapped backport(s) $mappedList"
+                }
+            } elseif ($mappedBackports.Count -gt 0) {
                 $verdict = 'in-sr-reverted'
                 $mappedList = ($mappedBackports | ForEach-Object { "#$_" }) -join ', '
                 $evidence += "PR #$($pr.number) reached the SR through mapped backport(s) $mappedList, but every mapped backport was reverted"
@@ -2702,12 +2723,7 @@ function Classify-RegressionCandidate {
                 $evidence += "PR #$($pr.number) source-PR in SR but reverted"
             } else {
                 $verdict = 'in-sr-active'
-                if ($activeMappedBackports.Count -gt 0) {
-                    $mappedList = ($activeMappedBackports | ForEach-Object { "#$_" }) -join ', '
-                    $evidence += "PR #$($pr.number) source-PR is active in the SR through mapped backport(s) $mappedList"
-                } else {
-                    $evidence += "PR #$($pr.number) source-PR in SR contents (active)"
-                }
+                $evidence += "PR #$($pr.number) source-PR in SR contents (active)"
             }
         }
         else {
@@ -3078,10 +3094,10 @@ function Get-RegressionCandidates {
 
                 # --- Signal (2): explicit milestone for a different SR ---
                 if (-not $evidence -and $issueMilestone) {
-                    $mm = [regex]::Match($issueMilestone, '^\.NET\s+(\d+)(?:\.0)?\s+SR(\d+)$')
-                    if ($mm.Success) {
-                        $milestoneMajor    = [int]$mm.Groups[1].Value
-                        $milestoneCycleNum = [int]$mm.Groups[2].Value
+                    $milestoneParts = Get-SrMilestoneParts -Milestone $issueMilestone
+                    if ($milestoneParts) {
+                        $milestoneMajor    = $milestoneParts.Major
+                        $milestoneCycleNum = $milestoneParts.SrNumber
                         if ($milestoneMajor -ne $scopeMajor -or $milestoneCycleNum -ne $scopeCycleNum) {
                             $evidence = "Milestone ``$issueMilestone`` is a different SR cycle than this readiness scope (.NET $scopeMajor SR$scopeCycleNum). The triager assigned it to a different SR — treat as out of scope here."
                         }
@@ -3514,30 +3530,30 @@ function Get-ShippedVerdict {
         An SR that has tagged cannot be un-shipped, so this NEVER returns 🔴 Not
         Ready. It surfaces the same regression/CI/ship-check signals the in-flight
         verdict uses, but reframes them:
-          - Actionable Tier-1/Tier-2 regressions that are NOT carry-forward, and any
-            BLOCKED ship check, drive a 🟡 "Shipped — follow-up required".
-          - Regressions created after ship (or milestoned to a later SR) are
-            carry-forward → advisory, non-gating.
-          - CI red/stale/unknown is advisory only (the release already published).
-          - Otherwise 🟢 "Shipped — clean".
+          - Any actionable Tier-1/Tier-2 regression — carry-forward or not — and
+            any BLOCKED ship check drive a 🟡 "Shipped — follow-up required".
+          - Regressions milestoned to a later SR are carry-forward: non-gating for
+            the shipped release (never 🔴), but still yellow until forward-tracking
+            is acknowledged.
+          - CI red/stale/unknown is advisory only and does not change the symbol.
+          - Otherwise the verdict is 🟢 "Shipped — clean".
 
-        Reads the actual stable-tag ship date + shipped SR number/major from
-        $Data.shippedInfo (populated by Invoke-Main) to classify carry-forward.
-        Absent shippedInfo → carry-forward detection simply finds nothing and every
-        actionable signal is treated as a follow-up (conservative).
+        Reads the shipped SR number/major from $Data.shippedInfo (populated by
+        Invoke-Main) to classify carry-forward. Absent shippedInfo → carry-forward
+        detection finds nothing and every actionable signal stays a follow-up.
     #>
     param($Data)
 
     $reasons = New-Object System.Collections.Generic.List[string]
     $followUp = $false
 
-    # Ship anchor for carry-forward classification.
-    $shipDate = $null; $shippedSr = 0; $shippedMajor = 0
+    # Shipped cycle anchor for carry-forward classification.
+    $shippedSr = 0; $shippedMajor = 0; $shippedSubPatch = 0
     if ($Data.ContainsKey('shippedInfo') -and $Data['shippedInfo']) {
         $si = $Data['shippedInfo']
-        $shipDate     = ConvertTo-Utc -Value (Get-MetadataValue -Container $si -Name 'tagDate')
         $shippedSr    = [int](Get-MetadataValue -Container $si -Name 'srNumber' -Default 0)
         $shippedMajor = [int](Get-MetadataValue -Container $si -Name 'major' -Default 0)
+        $shippedSubPatch = Get-SrSubPatchFromVersion -Version (Get-MetadataValue -Container $si -Name 'version')
     }
 
     if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
@@ -3549,8 +3565,8 @@ function Get-ShippedVerdict {
             # in-flight verdict's downgrade).
             if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') { $tier = 3 }
             if ($tier -ge 3) { continue }
-            if (Test-IsCarryForwardRegression -Regression $r -ShipDate $shipDate `
-                    -ShippedSrNumber $shippedSr -ShippedMajor $shippedMajor) {
+            if (Test-IsCarryForwardRegression -Regression $r `
+                    -ShippedSrNumber $shippedSr -ShippedMajor $shippedMajor -ShippedSubPatch $shippedSubPatch) {
                 $carryCount++
                 continue
             }
@@ -3563,7 +3579,7 @@ function Get-ShippedVerdict {
         }
         if ($carryCount -gt 0) {
             $followUp = $true
-            $reasons.Add("[Advisory] $carryCount regression(s) created after ship or milestoned to a later SR — carry-forward, non-gating") | Out-Null
+            $reasons.Add("[Advisory] $carryCount regression(s) milestoned to a later SR — carry-forward, non-gating") | Out-Null
         }
     }
 
@@ -3637,9 +3653,9 @@ function Get-OverallVerdict {
     # The SR already tagged. Nothing surfaced here can un-ship it, so we NEVER
     # return 🔴 Not Ready. Newly discovered regressions and signals become
     # post-ship FOLLOW-UPS (carry-forward / hotfix decisions). CI red is advisory.
-    # Regressions created after ship (or milestoned to a later SR) are carry-forward
-    # and non-gating. Verdict is 🟡 "Shipped — follow-up required" when there's an
-    # actionable follow-up, else 🟢 "Shipped — clean".
+    # Regressions milestoned to a later SR are carry-forward and non-gating.
+    # Carry-forward still requires tracking, so it produces a yellow follow-up
+    # verdict; only a report with no actionable or carry-forward work is green.
     if ($mode -eq 'shipped') {
         return (Get-ShippedVerdict -Data $Data)
     }
@@ -3953,6 +3969,9 @@ function Get-ReportSemanticHash {
     $shipMajorForHash = if ($shippedInfoForHash) {
         [int](Get-MetadataValue -Container $shippedInfoForHash -Name 'major' -Default 0)
     } else { 0 }
+    $shipSubPatchForHash = if ($shippedInfoForHash) {
+        Get-SrSubPatchFromVersion -Version $shipVersionForHash
+    } else { 0 }
 
     $semantic = [ordered]@{
         verdict = $Verdict.symbol
@@ -4005,8 +4024,8 @@ function Get-ReportSemanticHash {
                               }
                               $lifecycleBucket = ''
                               if ($modeForHash -eq 'shipped') {
-                                  $isCarryForward = Test-IsCarryForwardRegression -Regression $_ -ShipDate $shipDateForHash `
-                                      -ShippedSrNumber $shipSrForHash -ShippedMajor $shipMajorForHash
+                                  $isCarryForward = Test-IsCarryForwardRegression -Regression $_ `
+                                      -ShippedSrNumber $shipSrForHash -ShippedMajor $shipMajorForHash -ShippedSubPatch $shipSubPatchForHash
                                   $lifecycleBucket = if ($isCarryForward) { 'carry-forward' } else { 'follow-up' }
                               }
                               # `no-fix-yet` is the ONLY classification whose rendered tier
@@ -4030,6 +4049,35 @@ function Get-ReportSemanticHash {
         openSrPrs = if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs']) {
                         @($Data['openSrPrs'] | Sort-Object number | ForEach-Object { $_.number }) -join ','
                     } else { '' }
+        candidatePr = if ($Data.ContainsKey('candidatePr') -and $Data['candidatePr']) {
+                          $candidateResolution = $Data['candidatePr']
+                          [ordered]@{
+                              mode = Get-MetadataValue -Container $candidateResolution -Name 'mode'
+                              nextSr = Get-MetadataValue -Container $candidateResolution -Name 'nextSr'
+                              versionBase = Get-MetadataValue -Container $candidateResolution -Name 'versionBase'
+                              spoofers = Get-MetadataValue -Container $candidateResolution -Name 'spoofers' -Default 0
+                              unverifiable = Get-MetadataValue -Container $candidateResolution -Name 'unverifiable' -Default 0
+                              candidates = @(
+                                  @(Get-MetadataValue -Container $candidateResolution -Name 'candidates') |
+                                      Sort-Object { Get-MetadataValue -Container $_ -Name 'number' } |
+                                      ForEach-Object {
+                                          $candidate = $_
+                                          $candidateAuthor = Get-MetadataValue -Container $candidate -Name 'author'
+                                          [ordered]@{
+                                              number = Get-MetadataValue -Container $candidate -Name 'number'
+                                              title = Get-MetadataValue -Container $candidate -Name 'title'
+                                              author = Get-MetadataValue -Container $candidateAuthor -Name 'login'
+                                              state = Get-MetadataValue -Container $candidate -Name 'state'
+                                              isDraft = [bool](Get-MetadataValue -Container $candidate -Name 'isDraft' -Default $false)
+                                              mergeable = Get-MetadataValue -Container $candidate -Name 'mergeable'
+                                              reviewDecision = Get-MetadataValue -Container $candidate -Name 'reviewDecision'
+                                              createdAt = Get-MetadataValue -Container $candidate -Name 'createdAt'
+                                              updatedAt = Get-MetadataValue -Container $candidate -Name 'updatedAt'
+                                          }
+                                      }
+                              )
+                          }
+                      } else { $null }
         shipChecks = if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
                          @($Data['shipChecks'] | Sort-Object Area | ForEach-Object {
                              $na = ''
@@ -4169,6 +4217,7 @@ function Format-MarkdownReport {
     $shipTagDateSource = if ($shippedInfoRender) { Get-MetadataValue -Container $shippedInfoRender -Name 'dateSource' } else { $null }
     $shipTagSrNum      = if ($shippedInfoRender) { [int](Get-MetadataValue -Container $shippedInfoRender -Name 'srNumber' -Default 0) } else { 0 }
     $shipTagMajor      = if ($shippedInfoRender) { [int](Get-MetadataValue -Container $shippedInfoRender -Name 'major' -Default 0) } else { 0 }
+    $shipTagSubPatch   = if ($shippedInfoRender) { Get-SrSubPatchFromVersion -Version $shipTagVersion } else { 0 }
 
     if ($mode -eq 'candidate') {
         if ($inherits) {
@@ -4306,10 +4355,9 @@ function Format-MarkdownReport {
     # === BLOCKING / POST-SHIP FOLLOW-UP SUMMARY (hoisted to top, under verdict) ===
     # In-flight/candidate: every BLOCKED ship-check + Tier 1 regression is a ship
     # blocker. Shipped: the SR already tagged, so the same items become post-ship
-    # FOLLOW-UPS (hotfix / next-SR decisions), and Tier-1 regressions that are
-    # carry-forward (created after ship or milestoned to a later SR) are split into
-    # a separate, explicitly non-gating list so they stay VISIBLE without implying
-    # the shipped release is broken.
+    # FOLLOW-UPS (hotfix / next-SR decisions), and Tier-1 regressions explicitly
+    # milestoned to a later SR are split into a separate, non-gating list so they
+    # stay VISIBLE without implying the shipped release is broken.
     $blockingItems = New-Object System.Collections.Generic.List[hashtable]
     $carryForwardItems = New-Object System.Collections.Generic.List[hashtable]
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
@@ -4339,7 +4387,7 @@ function Format-MarkdownReport {
                     action = $r.recommendedAction
                 }
                 if ($isShippedRender -and (Test-IsCarryForwardRegression -Regression $r `
-                        -ShipDate $shipTagDateRender -ShippedSrNumber $shipTagSrNum -ShippedMajor $shipTagMajor)) {
+                        -ShippedSrNumber $shipTagSrNum -ShippedMajor $shipTagMajor -ShippedSubPatch $shipTagSubPatch)) {
                     [void]$carryForwardItems.Add($item)
                 } else {
                     [void]$blockingItems.Add($item)
@@ -4370,7 +4418,7 @@ function Format-MarkdownReport {
         if ($carryForwardItems.Count -gt 0) {
             [void]$sb.AppendLine("## 🔁 Carry-forward — $($carryForwardItems.Count) item(s)")
             [void]$sb.AppendLine()
-            [void]$sb.AppendLine("_Regressions created after ship or milestoned to a later SR. Non-gating for this shipped SR — tracked forward to the next cycle._")
+            [void]$sb.AppendLine("_Regressions explicitly milestoned to a later SR. Non-gating for this shipped SR — tracked forward to the next cycle._")
             [void]$sb.AppendLine()
             [void]$sb.AppendLine('| Area | Details | Next action |')
             [void]$sb.AppendLine('|---|---|---|')
@@ -5056,8 +5104,8 @@ function Invoke-Main {
     }
 
     # Shipped mode: prefer the GitHub Release publication time for the report's
-    # "shipped on" date and carry-forward cutoff. If release metadata is unavailable,
-    # use the stable tag's content date as an explicitly labeled conservative anchor.
+    # "shipped on" date. If release metadata is unavailable, use the stable tag's
+    # content date as an explicitly labeled conservative display anchor.
     # The stable tag is Versions.props FullVersion at the current branch tip (including
     # hotfix patches). Fail-open: no usable date keeps every item as a follow-up.
     if ($ctx.mode -eq 'shipped') {

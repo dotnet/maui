@@ -1751,6 +1751,18 @@ Assert-Eq -Label "PR evidence: full issue URL with closing keyword is recognized
 Assert-Eq -Label "PR evidence: full URL for a different issue is ignored" `
     -Expected 'none' `
     -Actual (Get-PrEvidenceType -PrBody 'Closes https://github.com/dotnet/maui/issues/99999' -IssueNumber 35615)
+Assert-Eq -Label "PR evidence: GitHub 'Fixed:' keyword form is recognized" `
+    -Expected 'closing-keyword' `
+    -Actual (Get-PrEvidenceType -PrBody 'Fixed: #35615' -IssueNumber 35615)
+Assert-Eq -Label "PR evidence: GitHub singular uppercase keyword form is recognized" `
+    -Expected 'closing-keyword' `
+    -Actual (Get-PrEvidenceType -PrBody 'CLOSE dotnet/maui#35615' -IssueNumber 35615)
+Assert-Eq -Label "PR evidence: issue-number prefixes remain rejected" `
+    -Expected 'none' `
+    -Actual (Get-PrEvidenceType -PrBody 'Resolved #356150' -IssueNumber 35615)
+Assert-Eq -Label "PR evidence: closing-keyword substrings in ordinary words are rejected" `
+    -Expected $false `
+    -Actual ((Get-PrEvidenceType -PrBody 'This hotfix leaves #35615 unresolved' -IssueNumber 35615) -eq 'closing-keyword')
 $directSrUrlIssues = @(Get-ClosingIssueNumbers -Text 'Fixes https://github.com/dotnet/maui/issues/35615')
 Assert-Eq -Label "commit evidence: full issue URL is parsed by the shared closing-reference parser" `
     -Expected $true -Actual ($directSrUrlIssues -contains 35615)
@@ -1829,8 +1841,10 @@ $verifiedRevertFix = Classify-RegressionCandidate `
     -CandidatePrs @(36495) `
     -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'in-flight'; srRef = 'origin/release/10.0.1xx-sr9' } `
     -SrContents @{
-        sourcePrs = @(36495, 36498); reverts = @(); mainReverts = @()
-        commits = @(@{ sourcePr = 36495; backportPr = 36498; fixedIssues = @(); isRevert = $false })
+        sourcePrs = @(36495, 36498)
+        reverts = @(@{ revertsPr = $null; revertBackportPr = 36498 })
+        mainReverts = @()
+        commits = @(@{ sourcePr = 36495; backportPr = 36498; fixedIssues = @(); isRevert = $true })
     }
 Assert-Eq -Label "classifier: merged closing revert verified through target backport is an active fix" `
     -Expected 'in-sr-active' -Actual $verifiedRevertFix.classification
@@ -1847,6 +1861,23 @@ $revertedMappedBackport = Classify-RegressionCandidate `
     }
 Assert-Eq -Label "classifier guard: reverting a mapped backport reverts its source fix" `
     -Expected 'in-sr-reverted' -Actual $revertedMappedBackport.classification
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return ($BranchRef -in @('origin/main', 'origin/release/10.0.1xx-sr9'))
+}
+$directSourceWithRevertedMappedCopy = Classify-RegressionCandidate `
+    -Issue @{ number = 36249 } `
+    -CandidatePrs @(36495) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'in-flight'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{
+        sourcePrs = @(36495, 36498)
+        reverts = @(@{ revertsPr = 36498; revertBackportPr = 36500 })
+        mainReverts = @()
+        commits = @(@{ sourcePr = 36495; backportPr = 36498; fixedIssues = @(); isRevert = $false })
+    }
+Assert-Eq -Label "classifier guard: directly-present source stays active when a mapped copy is reverted" `
+    -Expected 'in-sr-active' -Actual $directSourceWithRevertedMappedCopy.classification
 
 function Test-CommitOnBranch {
     param([string]$Sha, [string]$BranchRef)
@@ -2086,7 +2117,7 @@ Assert-Eq -Label "SR-direct fix → recommendedAction says no action" `
 $srContentsWithRevertedFix = @{
     sourcePrs    = @(35768)
     backportPrs  = @()
-    reverts      = @(@{ revertsPr = $null; revertBackportPr = 35768 })
+    reverts      = @(@{ revertsPr = 35768; revertBackportPr = 35769 })
     fixedIssues  = @(35756)
     commits      = @(
         @{ backportPr = 35768; sourcePr = $null; fixedIssues = @(35756); isRevert = $false }
@@ -2806,15 +2837,26 @@ try {
     Set-Item function:Invoke-Git $origStableTagInvokeGit
 }
 
-$shipInstant = [DateTime]::Parse('2026-07-14T00:00:00Z').ToUniversalTime()
-Assert-Eq -Label "carry-forward: issue created after ship" -Expected $true `
-    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = '2026-07-23T00:00:00Z'; milestone = $null } -ShipDate $shipInstant -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: issue reported after ship without later milestone stays a hotfix follow-up" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = '2026-07-23T00:00:00Z'; milestone = $null } -ShippedSrNumber 9 -ShippedMajor 10)
 Assert-Eq -Label "carry-forward: issue created before ship without later milestone" -Expected $false `
-    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = '2026-07-01T00:00:00Z'; milestone = $null } -ShipDate $shipInstant -ShippedSrNumber 9 -ShippedMajor 10)
+    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = '2026-07-01T00:00:00Z'; milestone = $null } -ShippedSrNumber 9 -ShippedMajor 10)
 Assert-Eq -Label "carry-forward: later-SR milestone" -Expected $true `
-    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = '2026-07-01T00:00:00Z'; milestone = '.NET 10 SR10' } -ShipDate $shipInstant -ShippedSrNumber 9 -ShippedMajor 10)
+    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = '2026-07-01T00:00:00Z'; milestone = '.NET 10 SR10' } -ShippedSrNumber 9 -ShippedMajor 10)
 Assert-Eq -Label "carry-forward: same-SR milestone is not future work" -Expected $false `
-    -Actual (Test-IsCarryForwardRegression -Regression ([pscustomobject]@{ createdAt = $null; milestone = '.NET 10 SR9' }) -ShipDate $shipInstant -ShippedSrNumber 9 -ShippedMajor 10)
+    -Actual (Test-IsCarryForwardRegression -Regression ([pscustomobject]@{ createdAt = $null; milestone = '.NET 10 SR9' }) -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: unknown shipped cycle does not treat any SR milestone as future work" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = $null; milestone = '.NET 10 SR10' } -ShippedSrNumber 0 -ShippedMajor 0)
+Assert-Eq -Label "carry-forward: hotfix milestone is future work from the base SR" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10 SR9.1' } -ShippedSrNumber 9 -ShippedMajor 10 -ShippedSubPatch 0)
+Assert-Eq -Label "carry-forward: current hotfix milestone is not later than the shipped hotfix" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10.0 SR9.1' } -ShippedSrNumber 9 -ShippedMajor 10 -ShippedSubPatch 1)
+Assert-Eq -Label "carry-forward: a later hotfix milestone is future work" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10 SR9.2' } -ShippedSrNumber 9 -ShippedMajor 10 -ShippedSubPatch 1)
+Assert-Eq -Label "SR version helper: base patch has sub-patch 0" -Expected 0 `
+    -Actual (Get-SrSubPatchFromVersion -Version '10.0.90')
+Assert-Eq -Label "SR version helper: hotfix patch maps to sub-patch 1" -Expected 1 `
+    -Actual (Get-SrSubPatchFromVersion -Version '10.0.91')
 
 $shippedClean = Get-OverallVerdict -Data @{
     metadata = @{ mode = 'shipped' }
@@ -3014,6 +3056,36 @@ $dataShippedNewAnchorHash['shippedInfo'] = @{
 $hShippedNewAnchor = Get-ReportSemanticHash -Data $dataShippedNewAnchorHash -Verdict @{ symbol = '🟡' }
 Assert-Eq -Label "hash: shipped version/date anchor change refreshes tracker" `
     -Expected $false -Actual ($hShippedFollowUp -eq $hShippedNewAnchor)
+
+$dataCandidateStatusReady = @{
+    metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'candidate'; mainBranch = 'main' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @() }
+    regressions = @()
+    openSrPrs = @(@{ number = 36411 })
+    candidatePr = @{
+        mode = 'resolved'; nextSr = 'SR10'; versionBase = '10.0.100'; spoofers = 0; unverifiable = 0
+        candidates = @(@{
+            number = 36411; title = 'July Candidate'; author = @{ login = 'release-owner' }
+            state = 'OPEN'; isDraft = $false; mergeable = 'MERGEABLE'; reviewDecision = 'REVIEW_REQUIRED'
+            createdAt = '2026-07-06T00:00:00Z'; updatedAt = '2026-07-20T00:00:00Z'
+        })
+    }
+}
+$dataCandidateStatusBlocked = $dataCandidateStatusReady.Clone()
+$dataCandidateStatusBlocked['candidatePr'] = @{
+    mode = 'resolved'; nextSr = 'SR10'; versionBase = '10.0.100'; spoofers = 0; unverifiable = 0
+    candidates = @(@{
+        number = 36411; title = 'July Candidate'; author = @{ login = 'release-owner' }
+        state = 'OPEN'; isDraft = $false; mergeable = 'CONFLICTING'; reviewDecision = 'CHANGES_REQUESTED'
+        createdAt = '2026-07-06T00:00:00Z'; updatedAt = '2026-07-20T00:00:00Z'
+    })
+}
+$candidateReadyHash = Get-ReportSemanticHash -Data $dataCandidateStatusReady -Verdict @{ symbol = '🟡' }
+$candidateBlockedHash = Get-ReportSemanticHash -Data $dataCandidateStatusBlocked -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: Candidate conflict/review status change refreshes tracker" `
+    -Expected $false -Actual ($candidateReadyHash -eq $candidateBlockedHash)
+
 # Absent mode defaults to 'in-flight' → SAME as an explicit 'in-flight'.
 $dataNoMode = @{
     metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z' }
