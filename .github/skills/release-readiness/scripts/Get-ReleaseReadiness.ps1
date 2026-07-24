@@ -3148,7 +3148,23 @@ function Get-RegressionCandidates {
             [void]$failedLabels.Add($label)
             continue
         }
-        $list = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+        try {
+            $rawJson = ($raw | Out-String).Trim()
+            if ([string]::IsNullOrWhiteSpace($rawJson)) {
+                throw "gh returned an empty response"
+            }
+            $list = ConvertFrom-Json -InputObject $rawJson -NoEnumerate -ErrorAction Stop
+            if ($null -eq $list) {
+                throw "expected a JSON array but received null"
+            }
+            if ($list -isnot [System.Array]) {
+                throw "expected a JSON array but received $($list.GetType().Name)"
+            }
+        } catch {
+            [void]$failedLabels.Add($label)
+            Write-Warn "Failed to parse regression issue query for label '$label': $($_.Exception.Message)"
+            continue
+        }
         foreach ($iss in $list) {
             if (-not $seen.ContainsKey($iss.number)) {
                 $seen[$iss.number] = $true
@@ -4582,11 +4598,12 @@ function Format-MarkdownReport {
     # milestoned to a later SR are split into a separate, non-gating list so they
     # stay VISIBLE without implying the shipped release is broken.
     $blockingItems = New-Object System.Collections.Generic.List[hashtable]
+    $blockedShipCheckItems = New-Object System.Collections.Generic.List[hashtable]
     $carryForwardItems = New-Object System.Collections.Generic.List[hashtable]
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
         foreach ($sc in $Data['shipChecks']) {
             if ($sc.Status -eq 'BLOCKED') {
-                [void]$blockingItems.Add(@{
+                [void]$blockedShipCheckItems.Add(@{
                     area = "🛠️ $($sc.Area)"
                     details = $sc.Details
                     action = $sc.NextAction
@@ -4620,8 +4637,15 @@ function Format-MarkdownReport {
     }
 
     if ($isShippedRender) {
+        $regressionScanIncompleteRender = [bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)
+        if ($regressionScanIncompleteRender) {
+            [void]$sb.AppendLine("## ⚠️ Urgent follow-ups unknown — regression scan incomplete")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_One or more regression-label queries failed. See the Verdict and Warnings above, then rerun before treating this shipped tracker as clean._")
+            [void]$sb.AppendLine()
+        }
         if ($blockingItems.Count -gt 0) {
-            [void]$sb.AppendLine("## 📌 Post-ship follow-ups — $($blockingItems.Count) item(s)")
+            [void]$sb.AppendLine("## 📌 Post-ship regression follow-ups — $($blockingItems.Count) item(s)")
             [void]$sb.AppendLine()
             [void]$sb.AppendLine("_``$srBranch`` already shipped — these did NOT block the release. Each needs a human hotfix-vs-next-SR decision._")
             [void]$sb.AppendLine()
@@ -4634,7 +4658,24 @@ function Format-MarkdownReport {
                 [void]$sb.AppendLine("| $area | $details | $action |")
             }
             [void]$sb.AppendLine()
-        } elseif ($carryForwardItems.Count -eq 0) {
+        }
+        if ($blockedShipCheckItems.Count -gt 0) {
+            [void]$sb.AppendLine("## 🛠️ Post-ship operational follow-ups — $($blockedShipCheckItems.Count) item(s)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_Lifecycle or configuration checks still need direct remediation after ship. Follow each row's specific next action; these are not regression hotfix-vs-next-SR decisions._")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| Area | Details | Next action |')
+            [void]$sb.AppendLine('|---|---|---|')
+            foreach ($b in $blockedShipCheckItems) {
+                $area = Format-MarkdownTableCell $b.area
+                $details = Format-MarkdownTableCell $b.details
+                $action = Format-MarkdownTableCell $b.action
+                [void]$sb.AppendLine("| $area | $details | $action |")
+            }
+            [void]$sb.AppendLine()
+        }
+        if (-not $regressionScanIncompleteRender -and $blockingItems.Count -eq 0 -and
+            $blockedShipCheckItems.Count -eq 0 -and $carryForwardItems.Count -eq 0) {
             [void]$sb.AppendLine("## 🟢 No urgent post-ship follow-ups")
             [void]$sb.AppendLine()
         }
@@ -4654,12 +4695,13 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine()
         }
     }
-    elseif ($blockingItems.Count -gt 0) {
-        [void]$sb.AppendLine("## 🔴 Blocking — $($blockingItems.Count) item(s)")
+    elseif (($blockingItems.Count + $blockedShipCheckItems.Count) -gt 0) {
+        $blockingCount = $blockingItems.Count + $blockedShipCheckItems.Count
+        [void]$sb.AppendLine("## 🔴 Blocking — $blockingCount item(s)")
         [void]$sb.AppendLine()
         [void]$sb.AppendLine('| Area | Details | Next action |')
         [void]$sb.AppendLine('|---|---|---|')
-        foreach ($b in $blockingItems) {
+        foreach ($b in @($blockedShipCheckItems) + @($blockingItems)) {
             $area = Format-MarkdownTableCell $b.area
             $details = Format-MarkdownTableCell $b.details
             $action = Format-MarkdownTableCell $b.action

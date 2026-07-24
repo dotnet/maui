@@ -1369,6 +1369,32 @@ try {
     Assert-Eq -Label "regression scan: successful empty query remains complete" -Expected $true -Actual $emptySuccessfulScan.IsComplete
     Assert-Eq -Label "regression scan: successful empty query has no failed labels" -Expected 0 -Actual @($emptySuccessfulScan.FailedLabels).Count
 
+    $script:GhStub = { param([string[]]$GhArgs) return 'not-json' }
+    $malformedScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                              -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: malformed exit-0 JSON marks scan incomplete" -Expected $false -Actual $malformedScan.IsComplete
+
+    $script:GhStub = { param([string[]]$GhArgs) return '{}' }
+    $wrongRootScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                              -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: non-array JSON root marks scan incomplete" -Expected $false -Actual $wrongRootScan.IsComplete
+
+    $script:GhStub = { param([string[]]$GhArgs) return '   ' }
+    $whitespaceScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                              -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: whitespace exit-0 response marks scan incomplete" -Expected $false -Actual $whitespaceScan.IsComplete
+    Assert-Eq -Label "regression scan: whitespace response preserves failed label" -Expected 'regressed-in-test' -Actual ($whitespaceScan.FailedLabels -join ',')
+
+    $script:GhStub = { param([string[]]$GhArgs) return 'null' }
+    $jsonNullScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                            -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: JSON null root marks scan incomplete" -Expected $false -Actual $jsonNullScan.IsComplete
+
+    $script:GhStub = { param([string[]]$GhArgs) return @('[', ']') }
+    $multilineEmptyScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                  -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: multiline JSON array parses as a complete empty scan" -Expected $true -Actual $multilineEmptyScan.IsComplete
+
     # ── Get-CandidatePrChecks: maintainer author-gate via REST author_association ──
     # Regression: `gh pr list --json` does not support authorAssociation, so the
     # spoof-gate now fetches author_association per title-matched candidate from
@@ -3636,7 +3662,7 @@ Assert-Eq -Label "shipped markdown: verdict is shipped follow-up, never Not Read
 Assert-Eq -Label "shipped markdown: actual shipped date replaces expected-window warning" -Expected $true `
     -Actual ($mdShipped -match '\*\*Shipped\*\*:.*Friday July 10, 2026' -and $mdShipped -notmatch '\*\*Expected ship date\*\*')
 Assert-Eq -Label "shipped markdown: Tier 2 appears in post-ship follow-up summary" -Expected $true `
-    -Actual ($mdShipped -match '(?s)📌 Post-ship follow-ups.*36001')
+    -Actual ($mdShipped -match '(?s)📌 Post-ship regression follow-ups.*36001')
 Assert-Eq -Label "shipped markdown: post-ship regressions appear in carry-forward summary" -Expected $true `
     -Actual ($mdShipped -match '(?s)🔁 Carry-forward.*36002' -and $mdShipped -match '(?s)🔁 Carry-forward.*36003')
 Assert-Eq -Label "shipped markdown: inbound section is post-ship and avoids current-SR backport command" -Expected $true `
@@ -3669,6 +3695,54 @@ Assert-Eq -Label "shipped markdown: cleanup-only report uses scoped urgent-follo
     -Actual ($mdCleanupOnly -match 'No urgent post-ship follow-ups' -and $mdCleanupOnly -match '🧹 Cleanup follow-ups')
 Assert-Eq -Label "shipped markdown: cleanup-only report never claims unqualified no follow-ups" -Expected $false `
     -Actual ($mdCleanupOnly -match 'No post-ship follow-ups')
+
+$mdDataIncompleteScan = $mdDataShipped.Clone()
+$mdDataIncompleteScan['regressions'] = @()
+$mdDataIncompleteScan['summary'] = @{}
+$mdDataIncompleteScan['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataIncompleteScan['shipChecks'] = @()
+$mdDataIncompleteScan['regressionScanIncomplete'] = $true
+$mdDataIncompleteScan['regressionFailedLabels'] = @('regressed-in-10.0.90')
+$mdIncompleteScan = Format-MarkdownReport -Data $mdDataIncompleteScan -RepoUrl 'https://github.com/dotnet/maui' `
+                                         -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: incomplete scan suppresses green urgent-followup heading" -Expected $false `
+    -Actual ($mdIncompleteScan -match 'No urgent post-ship follow-ups')
+Assert-Eq -Label "shipped markdown: incomplete scan gets an explicit hoisted notice" -Expected $true `
+    -Actual ($mdIncompleteScan -match 'Urgent follow-ups unknown — regression scan incomplete')
+
+$mdDataBlockedShipCheck = $mdDataShipped.Clone()
+$mdDataBlockedShipCheck['regressions'] = @()
+$mdDataBlockedShipCheck['summary'] = @{}
+$mdDataBlockedShipCheck['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataBlockedShipCheck['shipChecks'] = @(
+    [pscustomobject]@{
+        Area = 'P/0 release-branch PRs'; Status = 'BLOCKED'; Details = 'One PR remains'
+        NextAction = 'Land or de-prioritize each P/0 PR before shipping.'
+    }
+)
+$mdBlockedShipCheck = Format-MarkdownReport -Data $mdDataBlockedShipCheck -RepoUrl 'https://github.com/dotnet/maui' `
+                                           -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: BLOCKED ship check uses operational follow-up section" -Expected $true `
+    -Actual ($mdBlockedShipCheck -match 'Post-ship operational follow-ups' -and $mdBlockedShipCheck -match 'P/0 release-branch PRs')
+Assert-Eq -Label "shipped markdown: BLOCKED ship check is not placed under regression hotfix caption" -Expected $false `
+    -Actual ($mdBlockedShipCheck -match 'Each needs a human hotfix-vs-next-SR decision')
+
+$mdDataInflightMixedBlocking = $mdData.Clone()
+$mdDataInflightMixedBlocking['metadata'] = $mdData.metadata.Clone()
+$mdDataInflightMixedBlocking.metadata.mode = 'in-flight'
+$mdDataInflightMixedBlocking['regressions'] = @(
+    @{ issue = 36010; title = 'Unfixed regression'; state = 'OPEN'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Investigate' }
+)
+$mdDataInflightMixedBlocking['summary'] = @{ 'no-fix-yet' = 1 }
+$mdDataInflightMixedBlocking['shipChecks'] = @(
+    [pscustomobject]@{ Area = 'Servicing flip'; Status = 'BLOCKED'; Details = 'Not stable'; NextAction = 'Flip versions' }
+)
+$mdInflightMixedBlocking = Format-MarkdownReport -Data $mdDataInflightMixedBlocking -RepoUrl 'https://github.com/dotnet/maui' `
+                                                -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "in-flight markdown: mixed ship-check and regression blockers share one two-item section" -Expected $true `
+    -Actual ($mdInflightMixedBlocking -match '## 🔴 Blocking — 2 item\(s\)' -and
+             $mdInflightMixedBlocking -match 'Servicing flip' -and $mdInflightMixedBlocking -match '#36010')
 
 # Report freshness banner (🕐/⏳) renders below **Generated** and is DERIVED-AT-RENDER,
 # so it must NOT perturb the semantic hash. Render the report TWICE with DIFFERENT
