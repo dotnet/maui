@@ -2900,6 +2900,20 @@ $shippedBlockedCheck = Get-OverallVerdict -Data @{
 }
 Assert-Eq -Label "shipped BLOCKED check becomes yellow follow-up, never Not Ready" -Expected '🟡' -Actual $shippedBlockedCheck.symbol
 
+$shippedPscoData = [pscustomobject]@{
+    metadata = [pscustomobject]@{ mode = 'shipped' }
+    shippedInfo = [pscustomobject]@{ version = '10.0.90'; srNumber = 9; major = 10 }
+    regressions = @([pscustomobject]@{
+        classification = 'no-fix-yet'; state = 'OPEN'; milestone = '.NET 10 SR9'
+    })
+    ci = [pscustomobject]@{ overall = 'green' }
+    shipChecks = @()
+}
+$shippedPscoThrew = $false; $shippedPscoVerdict = $null
+try { $shippedPscoVerdict = Get-OverallVerdict -Data $shippedPscoData } catch { $shippedPscoThrew = $true }
+Assert-Eq -Label "shipped verdict: top-level PSCustomObject does not throw" -Expected $false -Actual $shippedPscoThrew
+Assert-Eq -Label "shipped verdict: top-level PSCustomObject preserves follow-up result" -Expected '🟡' -Actual $shippedPscoVerdict.symbol
+
 # ───── ConvertTo-LinkedSha / ConvertTo-LinkedPr ─────
 Write-Host "`n[Unit] Markdown linkification helpers" -ForegroundColor Cyan
 
@@ -3058,7 +3072,7 @@ Assert-Eq -Label "hash: shipped version/date anchor change refreshes tracker" `
     -Expected $false -Actual ($hShippedFollowUp -eq $hShippedNewAnchor)
 
 $dataCandidateStatusReady = @{
-    metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'candidate'; mainBranch = 'main' }
+    metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'candidate'; mainBranch = 'main'; fetchedAt = '2026-07-19T00:00:00Z' }
     ci = @{ overall = 'green' }
     srContents = @{ sourcePrs = @() }
     regressions = @()
@@ -3085,6 +3099,30 @@ $candidateReadyHash = Get-ReportSemanticHash -Data $dataCandidateStatusReady -Ve
 $candidateBlockedHash = Get-ReportSemanticHash -Data $dataCandidateStatusBlocked -Verdict @{ symbol = '🟡' }
 Assert-Eq -Label "hash: Candidate conflict/review status change refreshes tracker" `
     -Expected $false -Actual ($candidateReadyHash -eq $candidateBlockedHash)
+
+$dataCandidateTouched = $dataCandidateStatusReady.Clone()
+$dataCandidateTouched['candidatePr'] = @{
+    mode = 'resolved'; nextSr = 'SR10'; versionBase = '10.0.100'; spoofers = 0; unverifiable = 0
+    candidates = @(@{
+        number = 36411; title = 'July Candidate'; author = @{ login = 'release-owner' }
+        state = 'OPEN'; isDraft = $false; mergeable = 'MERGEABLE'; reviewDecision = 'REVIEW_REQUIRED'
+        createdAt = '2026-07-06T00:00:00Z'; updatedAt = '2026-07-20T23:59:59Z'
+    })
+}
+$candidateTouchedHash = Get-ReportSemanticHash -Data $dataCandidateTouched -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: Candidate updatedAt-only activity does not churn tracker" `
+    -Expected $candidateReadyHash -Actual $candidateTouchedHash
+
+$dataCandidateDay13 = $dataCandidateStatusReady.Clone()
+$dataCandidateDay13['metadata'] = $dataCandidateStatusReady.metadata.Clone()
+$dataCandidateDay13.metadata.fetchedAt = '2026-07-19T00:00:00Z'
+$dataCandidateDay14 = $dataCandidateStatusReady.Clone()
+$dataCandidateDay14['metadata'] = $dataCandidateStatusReady.metadata.Clone()
+$dataCandidateDay14.metadata.fetchedAt = '2026-07-20T00:00:00Z'
+$candidateDay13Hash = Get-ReportSemanticHash -Data $dataCandidateDay13 -Verdict @{ symbol = '🟡' }
+$candidateDay14Hash = Get-ReportSemanticHash -Data $dataCandidateDay14 -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: Candidate crossing 14-day stale threshold refreshes tracker" `
+    -Expected $false -Actual ($candidateDay13Hash -eq $candidateDay14Hash)
 
 # Absent mode defaults to 'in-flight' → SAME as an explicit 'in-flight'.
 $dataNoMode = @{

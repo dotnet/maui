@@ -1512,6 +1512,26 @@ function Get-CandidatePrResolution {
     return $res
 }
 
+function Get-CandidatePrAge {
+    <#
+    .SYNOPSIS
+        Returns the stable age decision used by both Candidate rendering and hashing.
+    #>
+    param($Candidate, $Now)
+
+    $created = ConvertTo-Utc -Value (Get-MetadataValue -Container $Candidate -Name 'createdAt')
+    $nowUtc = ConvertTo-Utc -Value $Now
+    if (-not $created -or -not $nowUtc) {
+        return [PSCustomObject]@{ AgeDays = $null; Bucket = 'unknown' }
+    }
+
+    $ageDays = [int][Math]::Floor(($nowUtc - $created).TotalDays)
+    return [PSCustomObject]@{
+        AgeDays = $ageDays
+        Bucket  = if ($ageDays -ge 14) { 'stale' } else { 'fresh' }
+    }
+}
+
 function Get-CandidatePrChecks {
     <#
     .SYNOPSIS
@@ -3549,17 +3569,18 @@ function Get-ShippedVerdict {
 
     # Shipped cycle anchor for carry-forward classification.
     $shippedSr = 0; $shippedMajor = 0; $shippedSubPatch = 0
-    if ($Data.ContainsKey('shippedInfo') -and $Data['shippedInfo']) {
-        $si = $Data['shippedInfo']
+    $si = Get-MetadataValue -Container $Data -Name 'shippedInfo'
+    if ($si) {
         $shippedSr    = [int](Get-MetadataValue -Container $si -Name 'srNumber' -Default 0)
         $shippedMajor = [int](Get-MetadataValue -Container $si -Name 'major' -Default 0)
         $shippedSubPatch = Get-SrSubPatchFromVersion -Version (Get-MetadataValue -Container $si -Name 'version')
     }
 
-    if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
+    $shippedRegressions = Get-MetadataValue -Container $Data -Name 'regressions'
+    if ($shippedRegressions) {
         $followCounts = @{}
         $carryCount = 0
-        foreach ($r in $Data['regressions']) {
+        foreach ($r in $shippedRegressions) {
             $tier = Get-VerdictTier -Classification $r.classification
             # `no-fix-yet` only counts while the issue is still OPEN (parity with the
             # in-flight verdict's downgrade).
@@ -3584,15 +3605,17 @@ function Get-ShippedVerdict {
     }
 
     # CI is advisory in shipped mode — the tag already published.
-    if ($Data.ContainsKey('ci') -and $Data['ci'] -and
-        $Data['ci'].overall -in @('red-needs-review', 'stale', 'partial-unknown', 'unknown')) {
-        $reasons.Add("[Advisory] Post-ship CI on the SR branch is ``$($Data['ci'].overall)`` — informational; it does not affect the already-shipped release.") | Out-Null
+    $shippedCi = Get-MetadataValue -Container $Data -Name 'ci'
+    $shippedCiOverall = Get-MetadataValue -Container $shippedCi -Name 'overall'
+    if ($shippedCiOverall -in @('red-needs-review', 'stale', 'partial-unknown', 'unknown')) {
+        $reasons.Add("[Advisory] Post-ship CI on the SR branch is ``$shippedCiOverall`` — informational; it does not affect the already-shipped release.") | Out-Null
     }
 
     # BLOCKED ship checks post-ship are follow-ups (they should already be satisfied),
     # not retroactive ship blockers.
-    if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
-        $blockedShipChecks = @($Data['shipChecks'] | Where-Object { $_.Status -eq 'BLOCKED' })
+    $shippedChecks = Get-MetadataValue -Container $Data -Name 'shipChecks'
+    if ($shippedChecks) {
+        $blockedShipChecks = @($shippedChecks | Where-Object { $_.Status -eq 'BLOCKED' })
         foreach ($sc in $blockedShipChecks) {
             $followUp = $true
             $reasons.Add("[Follow-up] Ship check needs post-ship attention: $($sc.Area)") | Out-Null
@@ -4051,14 +4074,20 @@ function Get-ReportSemanticHash {
                     } else { '' }
         candidatePr = if ($Data.ContainsKey('candidatePr') -and $Data['candidatePr']) {
                           $candidateResolution = $Data['candidatePr']
+                          $candidateItems = @(Get-MetadataValue -Container $candidateResolution -Name 'candidates')
+                          $primaryCandidate = $candidateItems | Select-Object -First 1
+                          $candidateNow = ConvertTo-Utc -Value (Get-MetadataValue -Container $Data.metadata -Name 'fetchedAt')
+                          $primaryAge = Get-CandidatePrAge -Candidate $primaryCandidate -Now $candidateNow
                           [ordered]@{
                               mode = Get-MetadataValue -Container $candidateResolution -Name 'mode'
                               nextSr = Get-MetadataValue -Container $candidateResolution -Name 'nextSr'
                               versionBase = Get-MetadataValue -Container $candidateResolution -Name 'versionBase'
                               spoofers = Get-MetadataValue -Container $candidateResolution -Name 'spoofers' -Default 0
                               unverifiable = Get-MetadataValue -Container $candidateResolution -Name 'unverifiable' -Default 0
+                              primaryNumber = Get-MetadataValue -Container $primaryCandidate -Name 'number'
+                              primaryAgeBucket = $primaryAge.Bucket
                               candidates = @(
-                                  @(Get-MetadataValue -Container $candidateResolution -Name 'candidates') |
+                                  $candidateItems |
                                       Sort-Object { Get-MetadataValue -Container $_ -Name 'number' } |
                                       ForEach-Object {
                                           $candidate = $_
@@ -4071,8 +4100,6 @@ function Get-ReportSemanticHash {
                                               isDraft = [bool](Get-MetadataValue -Container $candidate -Name 'isDraft' -Default $false)
                                               mergeable = Get-MetadataValue -Container $candidate -Name 'mergeable'
                                               reviewDecision = Get-MetadataValue -Container $candidate -Name 'reviewDecision'
-                                              createdAt = Get-MetadataValue -Container $candidate -Name 'createdAt'
-                                              updatedAt = Get-MetadataValue -Container $candidate -Name 'updatedAt'
                                           }
                                       }
                               )
@@ -4549,8 +4576,8 @@ function Format-MarkdownReport {
             # version base and the ship window. A cut PR that has sat open a long time
             # likely points at a now-stale `main` commit and should be re-confirmed.
             $primary = @($cpr.candidates)[0]
-            $pCreated = ConvertTo-Utc -Value $primary.createdAt
-            $pAge = if ($pCreated -and $nowRef) { [int][Math]::Floor(($nowRef - $pCreated).TotalDays) } else { $null }
+            $primaryAge = Get-CandidatePrAge -Candidate $primary -Now $nowRef
+            $pAge = $primaryAge.AgeDays
             $shipBit = if ($shipDate -and $shipDate.FormattedLong) {
                 if ($shipDate.DaysFromNow -ge 0) { " Ship target: **$($shipDate.FormattedLong)** (in $($shipDate.DaysFromNow) day(s))." }
                 else { " Ship target **$($shipDate.FormattedLong)** has passed." }
