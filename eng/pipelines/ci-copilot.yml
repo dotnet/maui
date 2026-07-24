@@ -480,6 +480,24 @@ stages:
               $ErrorActionPreference = 'Continue'
               $timeoutMin = 40
               $buildArgs = @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic')
+              # A recurring android failure is a CORRUPT local .dotnet: the shared
+              # Microsoft.NETCore.App pack ships a System.IO.Pipes.dll the build can't
+              # LOAD (MSB6003 "could not be run"), so DotNet.csproj's Exec 'sh' dies and
+              # the gate never finishes setup (review blocked — #36657, #34136). A
+              # pre-build FILE check ("Verify .dotnet") can't catch it: the file is
+              # present but unloadable, and/or cake reinstalls .dotnet AFTER the check.
+              # So on a RETRY, wipe ./.dotnet first to force a fully fresh reinstall.
+              # The marker persists across AzDO retryCountOnTaskFailure retries (same
+              # agent/job); a healthy first attempt never wipes, so no regression.
+              $wipeMarker = Join-Path "$(Agent.TempDirectory)" 'buildtasks-wipe-dotnet'
+              $dotnetDir  = Join-Path (Get-Location).Path '.dotnet'
+              if (Test-Path $wipeMarker) {
+                Write-Host "A prior Build MSBuild Tasks attempt failed — wiping ./.dotnet so this retry reinstalls a clean SDK."
+                Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue
+                for ($i = 0; $i -lt 6 -and (Test-Path $dotnetDir); $i++) {
+                  try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop } catch { Start-Sleep -Seconds 2 }
+                }
+              }
               try {
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
                 $psi.FileName = 'pwsh'
@@ -489,14 +507,18 @@ stages:
               } catch {
                 Write-Host "Watchdog could not launch child pwsh ($($_.Exception.Message)); running build directly (no wall-clock bound)."
                 ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+                if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
                 exit $LASTEXITCODE
               }
               if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
                 Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
                 try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
                 Start-Sleep -Seconds 3
+                New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
                 exit 1
               }
+              if ($proc.ExitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
+              else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue }
               exit $proc.ExitCode
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
@@ -2266,6 +2288,18 @@ stages:
               $ErrorActionPreference = 'Continue'
               $timeoutMin = 40
               $buildArgs = @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic')
+              # Retry wipes ./.dotnet to recover from a corrupt local SDK (unloadable
+              # System.IO.Pipes.dll); marker persists across retryCountOnTaskFailure.
+              # See the gate-stage copy of this step for the full rationale.
+              $wipeMarker = Join-Path "$(Agent.TempDirectory)" 'buildtasks-wipe-dotnet-deep'
+              $dotnetDir  = Join-Path (Get-Location).Path '.dotnet'
+              if (Test-Path $wipeMarker) {
+                Write-Host "A prior Build MSBuild Tasks attempt failed — wiping ./.dotnet so this retry reinstalls a clean SDK."
+                Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue
+                for ($i = 0; $i -lt 6 -and (Test-Path $dotnetDir); $i++) {
+                  try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop } catch { Start-Sleep -Seconds 2 }
+                }
+              }
               try {
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
                 $psi.FileName = 'pwsh'
@@ -2275,14 +2309,18 @@ stages:
               } catch {
                 Write-Host "Watchdog could not launch child pwsh ($($_.Exception.Message)); running build directly (no wall-clock bound)."
                 ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+                if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
                 exit $LASTEXITCODE
               }
               if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
                 Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
                 try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
                 Start-Sleep -Seconds 3
+                New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
                 exit 1
               }
+              if ($proc.ExitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
+              else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue }
               exit $proc.ExitCode
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
