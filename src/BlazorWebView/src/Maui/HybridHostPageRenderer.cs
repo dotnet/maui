@@ -39,11 +39,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal const string HeadOutletSelector = "head::after";
 
 		private readonly List<HybridRootComponentRegistration> _registrations = new();
+		private readonly ResourceAssetCollection _assets;
 
-		private HybridHostPageRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+		private HybridHostPageRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, ResourceAssetCollection assets)
 			: base(serviceProvider, loggerFactory)
 		{
+			_assets = assets;
 		}
+
+		/// <summary>
+		/// Supplies the fingerprint-aware asset collection so that <c>@Assets["logical"]</c> resolves to
+		/// the fingerprinted URL during the static host render. The base <c>Renderer.Assets</c> property is
+		/// <c>protected internal virtual</c>, which makes this override the supported extension point
+		/// (declared as <c>protected</c> here because the override is in a different assembly).
+		/// </summary>
+		protected override ResourceAssetCollection Assets => _assets;
 
 		/// <summary>
 		/// Renders <paramref name="appComponentType"/> to a full HTML document and returns the markup
@@ -51,22 +61,25 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		/// <param name="services">The application service provider.</param>
 		/// <param name="appComponentType">The host component type to render (the <c>App.razor</c> equivalent).</param>
+		/// <param name="assets">The fingerprint-aware asset collection, or <c>null</c> to disable <c>@Assets</c> fingerprinting.</param>
 		/// <returns>The rendered document markup and the collected interactive attach registrations.</returns>
 		public static HybridHostPageResult Render(
 			IServiceProvider services,
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type appComponentType)
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type appComponentType,
+			ResourceAssetCollection? assets = null)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentNullException.ThrowIfNull(appComponentType);
 
 			var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+			var resolvedAssets = assets ?? ResourceAssetCollection.Empty;
 
 			// Render on a thread-pool thread so the renderer's dispatcher never contends with the UI
 			// synchronization context. The render is synchronous (interactive components are replaced
 			// with static placeholders), so this completes without real blocking.
 			return Task.Run(() =>
 			{
-				var renderer = new HybridHostPageRenderer(services, loggerFactory);
+				var renderer = new HybridHostPageRenderer(services, loggerFactory, resolvedAssets);
 				return renderer.Dispatcher.InvokeAsync(() =>
 				{
 					var rootComponent = renderer.BeginRenderingComponent(appComponentType, ParameterView.Empty);

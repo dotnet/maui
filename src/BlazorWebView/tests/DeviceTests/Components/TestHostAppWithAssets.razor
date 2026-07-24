@@ -1,0 +1,22 @@
+@* A full-document host that references a static asset via @Assets. When the manifest is bundled,
+   @Assets resolves to the fingerprinted URL, and BlazorWebView serves the physical file for that
+   fingerprinted request. The asset comes from the WebViewAppShared RCL (_content/...). *@
+<!DOCTYPE html>
+<html>
+
+<head testhtmlloaded="true">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Assets app</title>
+    <base href="/" />
+</head>
+
+<body>
+    <TestComponent1 @rendermode="RenderMode.InteractiveAuto" />
+
+    <img id="assetImg" alt="bg" src="@Assets["_content/WebViewAppShared/background.png"]" />
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+</body>
+
+</html>

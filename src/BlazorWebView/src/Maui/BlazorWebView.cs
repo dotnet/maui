@@ -147,23 +147,34 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// Call into the platform-specific code to get that platform's asset file provider
 			var platformFileProvider = ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
 
-			if (AppType is null)
+			// Load the bundled static web assets manifest (if present) so that @Assets fingerprinting
+			// and fingerprinted-route serving work. Absent (or on platforms without a readable file
+			// provider), fingerprinting simply stays off and behaviour is unchanged.
+			var manifest = StaticWebAssetsManifest.TryLoad(platformFileProvider);
+
+			string? hostPageRelativePath = null;
+			if (AppType is not null)
+			{
+				// When AppType is set, render the host document once. This also collects any interactive
+				// components declared with a render mode and registers them so they attach to the live
+				// document, and resolves @Assets using the manifest.
+				EnsureAppTypeRendered(manifest?.Assets);
+				hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
+			}
+
+			// If there is nothing to add (no AppType document and no manifest), return the platform
+			// provider unchanged to preserve existing behaviour exactly.
+			if (hostPageRelativePath is null && manifest is null)
 			{
 				return platformFileProvider;
 			}
 
-			// When AppType is set, render the host document once and overlay it onto the platform
-			// provider at the host page relative path. This also collects any interactive components
-			// declared with a render mode and registers them so they attach to the live document.
-			EnsureAppTypeRendered();
-
-			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
-			return new HostPageFileProvider(platformFileProvider, hostPageRelativePath, _renderedHostPageHtml!);
+			return new BlazorWebViewFileProvider(platformFileProvider, hostPageRelativePath, _renderedHostPageHtml, manifest);
 		}
 
 		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072",
 			Justification = "Blazor components referenced by AppType are preserved by the Razor SDK trimming roots, consistent with RootComponent.ComponentType.")]
-		private void EnsureAppTypeRendered()
+		private void EnsureAppTypeRendered(ResourceAssetCollection? assets)
 		{
 			if (_appTypeRendered || AppType is null)
 			{
@@ -175,7 +186,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var services = Handler?.MauiContext?.Services
 				?? throw new InvalidOperationException($"Cannot render {nameof(AppType)} because no service provider is available.");
 
-			var result = HybridHostPageRenderer.Render(services, AppType);
+			var result = HybridHostPageRenderer.Render(services, AppType, assets);
 			_renderedHostPageHtml = result.Html;
 
 			foreach (var registration in result.Registrations)

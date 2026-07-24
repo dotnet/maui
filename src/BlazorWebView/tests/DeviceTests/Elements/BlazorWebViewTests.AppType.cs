@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,8 +37,8 @@ public partial class BlazorWebViewTests
 			// The static document authored in AppType (TestHostApp) should be the served host page.
 			var hostMarker = await WebViewHelpers.ExecuteScriptAsync(
 				platformWebView,
-				"document.body.innerText.indexOf('coming from AppType') >= 0");
-			Assert.Equal("true", hostMarker.Trim('"'));
+				"(document.body.innerText.indexOf('coming from AppType') >= 0 ? 'yes' : 'no')");
+			Assert.Equal("yes", hostMarker.Trim('"'));
 
 			// Clicking the button in the attached component increments the counter, proving the
 			// converted <TestComponent1 @rendermode> is interactive.
@@ -78,6 +79,54 @@ public partial class BlazorWebViewTests
 			// rendered into the attached HeadOutlet, should have updated it.
 			var title = await WebViewHelpers.ExecuteScriptAsync(platformWebView, "document.title");
 			Assert.Equal("Updated Title", title.Trim('"'));
+		});
+	}
+
+	[Fact]
+	public async Task AppTypeResolvesFingerprintedAssetsViaAssets()
+	{
+		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
+		{
+			appBuilder.Services.AddMauiBlazorWebView();
+		});
+
+		// The host document references a static asset via @Assets. With the bundled manifest,
+		// @Assets should resolve to the fingerprinted URL, and requesting that URL should serve the
+		// physical asset file.
+		var bwv = new BlazorWebView
+		{
+			AppType = typeof(TestHostAppWithAssets),
+		};
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var bwvHandler = CreateHandler<BlazorWebViewHandler>(bwv);
+			var platformWebView = bwvHandler.PlatformView;
+			await WebViewHelpers.WaitForWebViewReady(platformWebView);
+			await WebViewHelpers.WaitForControlDiv(platformWebView, controlValueToWaitFor: "0");
+
+			// @Assets should have emitted the fingerprinted URL, not the plain asset path.
+			var src = await WebViewHelpers.ExecuteScriptAsync(platformWebView, "document.getElementById('assetImg').getAttribute('src')");
+			src = src.Trim('"');
+			Assert.Contains("_content/WebViewAppShared/background.", src, StringComparison.Ordinal);
+			Assert.DoesNotContain("background.png", src, StringComparison.Ordinal); // fingerprinted, e.g. background.<hash>.png
+			Assert.EndsWith(".png", src, StringComparison.Ordinal);
+
+			// The fingerprinted URL must actually serve the physical asset: the image should load
+			// (non-zero natural size proves real image bytes were served for the fingerprinted route).
+			var loaded = false;
+			for (var i = 0; i < 30 && !loaded; i++)
+			{
+				var result = await WebViewHelpers.ExecuteScriptAsync(
+					platformWebView,
+					"(function(){ var img = document.getElementById('assetImg'); return (img.complete && img.naturalWidth > 0) ? 'yes' : 'no'; })()");
+				loaded = result.Trim('"').Equals("yes", StringComparison.OrdinalIgnoreCase);
+				if (!loaded)
+				{
+					await Task.Delay(500);
+				}
+			}
+			Assert.True(loaded, "The fingerprinted asset URL should serve the physical image file.");
 		});
 	}
 }
