@@ -733,7 +733,9 @@ internal class TabbedViewManager
             var tab = Element.Tabs[i];
             // ITab.Icon is IImageSource; convert to ImageSource if possible for BottomNavigationViewUtils
             var icon = tab.Icon as ImageSource;
-            items.Add((tab.Title, icon, tab.IsEnabled));
+            // Fallback for null/whitespace Title to avoid a blank bottom tab label.
+            var title = !string.IsNullOrWhiteSpace(tab.Title) ? tab.Title : $"Tab {i + 1}";
+            items.Add((title, icon, tab.IsEnabled));
         }
 
         return items;
@@ -747,11 +749,13 @@ internal class TabbedViewManager
         }
 
         var menu = _bottomNavigationView.Menu;
-        menu.Clear();
 
         var tabs = Element.Tabs;
         if (tabs is null || tabs.Count == 0)
         {
+            menu.Clear();
+            _bottomNavigationView.SetOnItemSelectedListener(null);
+            _bottomNavigationView.SetOnItemReselectedListener(null);
             return;
         }
 
@@ -765,43 +769,21 @@ internal class TabbedViewManager
 
         _bottomNavigationView.Visibility = ViewStates.Visible;
 
-        int maxItems = Math.Min(_bottomNavigationView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
-        bool showMore = tabs.Count > maxItems;
-        int end = showMore ? maxItems - 1 : tabs.Count;
+        // Use BottomNavigationViewUtils.SetupMenu which does incremental in-place updates
+        // (reuses existing IMenuItem objects at unchanged positions, preserving identity).
+        // This matches the renderer's ShellItemRenderer.SetupMenu behavior and avoids
+        // menu.Clear() which destroys all IMenuItem references on every tab add/remove.
+        var items = CreateTabList();
 
-        for (int i = 0; i < end; i++)
-        {
-            var tab = tabs[i];
-            var title = !string.IsNullOrWhiteSpace(tab.Title) ? tab.Title : $"Tab {i + 1}";
-            var menuItem = menu.Add(0, i, i, title);
-
-            if (menuItem is null)
-            {
-                continue;
-            }
-
-            if (!tab.IsEnabled)
-            {
-                menuItem.SetEnabled(false);
-            }
-
-            LoadBottomNavIconAsync(menuItem, tab);
-        }
-
-        // Add "More" overflow item if needed
-        if (showMore)
-        {
-            var moreItem = menu.Add(0, BottomNavigationViewUtils.MoreTabId, maxItems - 1, "More");
-            moreItem?.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
-        }
-
-        // Set initial selection using pre-computed index (avoids wrapper comparison issues)
         var currentIndex = Element.CurrentTabIndex;
-        if (currentIndex >= 0 && currentIndex < tabs.Count)
-        {
-            int targetId = currentIndex >= end ? BottomNavigationViewUtils.MoreTabId : currentIndex;
-            _bottomNavigationView.SelectedItemId = targetId;
-        }
+        BottomNavigationViewUtils.SetupMenu(
+            menu,
+            _bottomNavigationView.MaxItemCount,
+            items,
+            currentIndex,
+            _bottomNavigationView,
+            _context,
+            onIconLoaded: menuItem => SetupBottomNavigationViewIconColor(menuItem.ItemId, menuItem));
 
         _bottomNavigationView.SetShiftMode(false, false);
 
@@ -821,23 +803,20 @@ internal class TabbedViewManager
     {
         try
         {
-            if (tab.Icon is not ImageSource icon)
-            {
-                return;
-            }
-
-            var result = await icon.GetPlatformImageAsync(_context);
-            if (result?.Value is not null && menuItem.IsAlive())
-            {
-                menuItem.SetIcon(result.Value);
-
+            // Route through BottomNavigationViewUtils.SetMenuItemIcon instead of loading
+            // the icon directly here. SetMenuItemIcon guards against a reused IMenuItem
+            // being repurposed (by SetupMenu) for a different tab while this load is still
+            // in flight -- without that guard, this call could win a race against a newer
+            // SetupMenu-driven icon load and overwrite the wrong tab's icon.
+            await BottomNavigationViewUtils.SetMenuItemIcon(
+                menuItem,
+                tab.Icon as ImageSource,
+                _context,
                 // Apply per-item icon tint after loading so that:
                 // 1. FontImageSource with explicit Color shows its own color (tint cleared)
                 // 2. FontImageSource without Color gets SelectedTabColor/UnselectedTabColor tint
                 // Without this, the global ItemIconTintList overrides baked-in colors.
-                var tabIndex = menuItem.ItemId;
-                SetupBottomNavigationViewIconColor(tabIndex, menuItem);
-            }
+                onIconLoaded: loadedMenuItem => SetupBottomNavigationViewIconColor(loadedMenuItem.ItemId, loadedMenuItem));
         }
         catch (Exception ex)
         {
