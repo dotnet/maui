@@ -331,6 +331,9 @@ internal struct CompiledBindingMarkup
 				if (previousPartIsNullable)
 				{
 					memberAccess = new ConditionalAccess(memberAccess);
+					// Accessing a member through a possibly-null receiver produces a value
+					// that can itself be null, so the overall binding value is nullable.
+					isNullable = true;
 				}
 
 				bindingPathParts.Add(memberAccess);
@@ -350,7 +353,10 @@ internal struct CompiledBindingMarkup
 					AcceptsNullValue: memberIsNullable);
 
 				previousPartType = currentPropertyType;
-				previousPartIsNullable = memberIsNullable;
+				// A reference type (or nullable value type) can be null at runtime regardless of its
+				// nullable annotation, so treat it as nullable for null-conditional access of the next
+				// part. This keeps generated bindings null-tolerant like runtime/XamlC bindings.
+				previousPartIsNullable = currentPropertyType.CanBeNullAtRuntime();
 			}
 
 			if (indexArg != null)
@@ -371,10 +377,12 @@ internal struct CompiledBindingMarkup
 					if (previousPartIsNullable)
 					{
 						indexAccess = new ConditionalAccess(indexAccess);
+						isNullable = true;
 					}
 					bindingPathParts.Add(indexAccess);
 
 					previousPartType = arrayType.ElementType;
+					previousPartIsNullable = previousPartType.CanBeNullAtRuntime();
 
 					setterOptions = new SetterOptions(
 						IsWritable: true, // arrays are writable by index
@@ -506,10 +514,12 @@ internal struct CompiledBindingMarkup
 						if (previousPartIsNullable)
 						{
 							indexAccess = new ConditionalAccess(indexAccess);
+							isNullable = true;
 						}
 						bindingPathParts.Add(indexAccess);
 
 						previousPartType = indexer.Type;
+						previousPartIsNullable = previousPartType.CanBeNullAtRuntime();
 
 						setterOptions = new SetterOptions(
 							IsWritable: indexer.SetMethod != null && indexer.SetMethod.IsPublic() && !indexer.SetMethod.IsStatic,

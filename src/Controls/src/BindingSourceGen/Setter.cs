@@ -20,11 +20,14 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 			accessAccumulator = tmpVariableName;
 		}
 
-		foreach (var part in path)
+		var parts = path as IReadOnlyList<IPathPart> ?? path.ToArray();
+
+		for (int i = 0; i < parts.Count; i++)
 		{
+			var part = parts[i];
 			var skipConditionalAccess = skipNextConditionalAccess;
 			skipNextConditionalAccess = false;
-			bool isLastPart = part == path.Last();
+			bool isLastPart = i == parts.Count - 1;
 
 			if (part is Cast { TargetType: var targetType })
 			{
@@ -42,6 +45,18 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 				}
 
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
+
+				// A value-type member (that is not a field) accessed mid-path through a possibly-null
+				// receiver is an rvalue, so a following inline member/index assignment would fail with
+				// CS1612 ("cannot modify the return value ... because it is not a variable"). Capture it
+				// into a local first. If the next part is itself a conditional access, it introduces its
+				// own local, so no extra capture is needed. Fields are variables (lvalues) and never need this.
+				if (!isLastPart
+					&& parts[i + 1] is not ConditionalAccess
+					&& innerPart is MemberAccess { IsValueType: true, Kind: not AccessorKind.Field })
+				{
+					AddPatternMatchingExpression("{}");
+				}
 			}
 			else if (part is MemberAccess { IsValueType: true } && !isLastPart)
 			{
@@ -61,7 +76,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
 		return new Setter(
 			patternMatchingExpressions.ToArray(),
-			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, assignedValueExpression));
+			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, parts.Count > 0 ? parts[parts.Count - 1] : null, assignedValueExpression));
 	}
 
 	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>

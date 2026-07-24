@@ -121,22 +121,27 @@ public partial class TestPage
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
 		static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
 		{
-			global::System.Action<global::Test.TestPage, string>? setter = static (source, value) =>
+			global::System.Action<global::Test.TestPage, string?>? setter = static (source, value) =>
 			{
-				if (source.Foo.Bar is {} p0)
+				if (value is null)
 				{
-					p0.Title = value;
+					return;
+				}
+				if (source.Foo is {} p0
+				&& p0.Bar is {} p1)
+				{
+					p1.Title = value;
 				}
 			};
 
-			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
-				getter: source => (source.Foo.Bar.Title, true),
+			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string?>(
+				getter: source => (source.Foo?.Bar.Title, true),
 				setter,
 				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
 				{
 					new(static source => source, "Foo"),
 					new(static source => source.Foo, "Bar"),
-					new(static source => source.Foo.Bar, "Title"),
+					new(static source => source.Foo?.Bar, "Title"),
 				})
 				{
 					Mode = extension.Mode,
@@ -996,5 +1001,70 @@ public class Container
 		var isNullEarlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
 		Assert.DoesNotMatch(hasValueEarlyReturnPattern, generated);
 		Assert.DoesNotMatch(isNullEarlyReturnPattern, generated);
+	}
+
+	[Fact]
+	public void NullTolerantThroughNonNullableReferenceIntermediates()
+	{
+		// Regression test for https://github.com/dotnet/maui/issues/36313
+		// A binding path through *non-nullable-declared* reference-type intermediates must still
+		// generate null-conditional access, because reference types can be null at runtime
+		// regardless of their nullable annotation. Runtime and XamlC bindings tolerated this;
+		// the source generator must too (otherwise it throws NullReferenceException at runtime).
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Label Text="{Binding A.B.C.Text}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public A A { get; set; } = new A();
+}
+
+public class A
+{
+	public B B { get; set; } = new B();
+}
+
+public class B
+{
+	public C C { get; set; } = new C();
+}
+
+public class C
+{
+	public string Text { get; set; } = "";
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+
+		// The getter must use null-conditional access for the intermediate reference-type members
+		// so that a null A, B, or C at runtime yields null instead of a NullReferenceException.
+		Assert.Contains("getter: source => (source.A?.B?.C?.Text, true)", generated, StringComparison.Ordinal);
+
+		// The non-null-conditional form would NRE at runtime and must not be emitted.
+		Assert.DoesNotContain("source.A.B.C.Text", generated, StringComparison.Ordinal);
 	}
 }
