@@ -184,6 +184,24 @@
         "displayName": "_Include sample content",
         "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns."
       },
+      "WithAvalonia": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "displayName": "_Use Avalonia handlers",
+        "description": "Adds the Avalonia.Controls.Maui handlers and an Avalonia desktop target framework, rendering the app with Avalonia on desktop and embedding Avalonia on mobile and Windows. Ignored when sample content is included."
+      },
+      "UseAvaloniaHandlers": {
+        "type": "computed",
+        "value": "(WithAvalonia && !IncludeSampleContent)"
+      },
+      "avaloniaControlsMauiVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "AVALONIA_CONTROLS_MAUI_VERSION",
+        "defaultValue": "11.0.0-preview.*",
+        "description": "Overrides the Avalonia.Controls.Maui package version referenced when --with-avalonia is used."
+      },
       "skipRestore": {
         "type": "parameter",
         "datatype": "bool",

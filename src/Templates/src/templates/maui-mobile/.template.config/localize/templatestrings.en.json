@@ -10,5 +10,7 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Include sample content",
   "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns.",
+  "symbols/WithAvalonia/displayName": "_Use Avalonia handlers",
+  "symbols/WithAvalonia/description": "Adds the Avalonia.Controls.Maui handlers and an Avalonia desktop target framework, rendering the app with Avalonia on desktop and embedding Avalonia on the mobile and Windows heads. Ignored when sample content is included.",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create."
 }

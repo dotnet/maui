@@ -342,4 +342,62 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.True(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
 			"Project file should contain Aspire-specific properties.");
 	}
+
+	[Fact]
+	public void WithAvaloniaAddsHandlersAndDesktopHead()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia", output: _output),
+			"Unable to create template maui with --with-avalonia. Check test output for errors.");
+
+		var csproj = File.ReadAllText(projectFile);
+		// The standard (non-platform) TFM is added as the Avalonia desktop head.
+		AssertContains($"<TargetFrameworks>{DotNetCurrent};$(TargetFrameworks)</TargetFrameworks>", csproj);
+		// Handlers reference is added for all heads; the Desktop package only targets the desktop head.
+		AssertContains("Include=\"Avalonia.Controls.Maui\"", csproj);
+		AssertContains("Include=\"Avalonia.Controls.Maui.Desktop\"", csproj);
+		AssertContains($"Condition=\"'$(TargetFramework)' == '{DotNetCurrent}'\"", csproj);
+
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertContains("CreateMauiApp(bool useSingleAppLifetime = false)", mauiProgram);
+		// Desktop renders with the Avalonia app lifetime; the platform heads embed Avalonia.
+		AssertContains(".UseAvaloniaApp(useSingleAppLifetime)", mauiProgram);
+		AssertContains(".UseAvaloniaEmbedding<AvaloniaApp>()", mauiProgram);
+	}
+
+	[Fact]
+	public void WithoutAvaloniaHasNoAvaloniaContent()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			"Unable to create template maui. Check test output for errors.");
+
+		var csproj = File.ReadAllText(projectFile);
+		AssertDoesNotContain("Avalonia.Controls.Maui", csproj);
+
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertDoesNotContain("UseAvalonia", mauiProgram);
+		AssertContains("public static MauiApp CreateMauiApp()", mauiProgram);
+	}
+
+	[Fact]
+	public void WithAvaloniaIsIgnoredWhenSampleContentIncluded()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		// --with-avalonia is gated on the blank app: combining it with sample content must not wire Avalonia in.
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia --sample-content", output: _output),
+			"Unable to create template maui with --with-avalonia --sample-content. Check test output for errors.");
+
+		var csproj = File.ReadAllText(projectFile);
+		AssertDoesNotContain("Avalonia.Controls.Maui", csproj);
+
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertDoesNotContain("UseAvalonia", mauiProgram);
+	}
 }
