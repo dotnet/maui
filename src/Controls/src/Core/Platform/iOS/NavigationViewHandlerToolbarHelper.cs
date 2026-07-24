@@ -161,6 +161,10 @@ namespace Microsoft.Maui.Controls
             // so HandleChildPropertyChanged won't fire — we need this trigger.
             UpdateIconColor();
 
+            // Override stale TintColor from UpdateIconColor — during native back pops,
+            // CurrentPage hasn't updated yet. Use this VC's Child page directly.
+            UpdateTintColorForPage();
+
             // Re-evaluate flyout button when this page appears (e.g., Detail is switched
             // back to an already-loaded NavigationPage in a FlyoutPage).
             UpdateLeftBarButtonItem();
@@ -424,6 +428,11 @@ namespace Microsoft.Maui.Controls
 
             flyoutPage.Flyout.IconImageSource.LoadImage(mauiContext, result =>
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 var icon = result?.Value;
                 var originalImageSize = icon?.Size ?? CGSize.Empty;
                 var defaultIconHeight = 44f;
@@ -562,10 +571,14 @@ namespace Microsoft.Maui.Controls
             }
             else if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
             {
-                // Accessibility label only — preserve UIKit's default back-button text
-                // by setting the label on the existing BackBarButtonItem (or creating one
-                // with the previous page's title).
-                var existing = NavigationItem.BackBarButtonItem ?? new UIBarButtonItem();
+                // Accessibility label only — preserve UIKit's default back-button text.
+                // When creating a new item, set Title from the current page's title
+                // to match the renderer's fallback (backButtonTitle ?? title).
+                var existing = NavigationItem.BackBarButtonItem;
+                if (existing is null)
+                {
+                    existing = new UIBarButtonItem { Title = child.Title };
+                }
                 existing.AccessibilityLabel = backButtonAccessibilityLabel;
                 NavigationItem.BackBarButtonItem = existing;
             }
@@ -600,6 +613,40 @@ namespace Microsoft.Maui.Controls
             {
                 handler.UpdateValue(NavigationPage.BarTextColorProperty.PropertyName);
             }
+        }
+
+        /// <summary>
+        /// Sets navBar.TintColor using this VC's own Child page, bypassing
+        /// NavigationPage.CurrentPage which may be stale during native back pops.
+        /// Matches renderer's ViewWillAppear → UpdateBarTextColor() behavior.
+        /// </summary>
+        void UpdateTintColorForPage()
+        {
+            if (Child is not Page page || page.Parent is not NavigationPage navPage)
+            {
+                return;
+            }
+
+            var navBar = NavigationController?.NavigationBar;
+
+            if (navBar is null)
+            {
+                return;
+            }
+
+            var iconColor = NavigationPage.GetIconColor(page);
+
+            if (iconColor is null)
+            {
+                iconColor = navPage.BarTextColor;
+            }
+
+            var statusBarMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage
+                .GetStatusBarTextColorMode(navPage);
+
+            navBar.TintColor = iconColor is null || statusBarMode == Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.StatusBarTextColorMode.DoNotAdjust
+                ? UINavigationBar.Appearance.TintColor
+                : iconColor.ToPlatform();
         }
 
         void UpdateTitleArea()

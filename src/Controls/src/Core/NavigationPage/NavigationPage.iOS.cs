@@ -348,6 +348,30 @@ namespace Microsoft.Maui.Controls
 
 					navBar.ScrollEdgeAppearance = scrollEdgeAppearance;
 				}
+				else
+				{
+					// Reset to default/global back button appearance when color is cleared.
+					var defaultBtnAppearance = UINavigationBar.Appearance.CompactAppearance?.BackButtonAppearance
+						?? new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
+
+					navBar.BackIndicatorImage = UINavigationBar.Appearance.BackIndicatorImage;
+					navBar.BackIndicatorTransitionMaskImage = UINavigationBar.Appearance.BackIndicatorTransitionMaskImage;
+
+					var compactAppearance = navBar.CompactAppearance;
+					compactAppearance.BackButtonAppearance = defaultBtnAppearance;
+					compactAppearance.SetBackIndicatorImage(navBar.BackIndicatorImage, navBar.BackIndicatorTransitionMaskImage);
+					navBar.CompactAppearance = compactAppearance;
+
+					var standardAppearance = navBar.StandardAppearance;
+					standardAppearance.BackButtonAppearance = defaultBtnAppearance;
+					standardAppearance.SetBackIndicatorImage(navBar.BackIndicatorImage, navBar.BackIndicatorTransitionMaskImage);
+					navBar.StandardAppearance = standardAppearance;
+
+					var scrollEdgeAppearance = navBar.ScrollEdgeAppearance;
+					scrollEdgeAppearance.BackButtonAppearance = defaultBtnAppearance;
+					scrollEdgeAppearance.SetBackIndicatorImage(navBar.BackIndicatorImage, navBar.BackIndicatorTransitionMaskImage);
+					navBar.ScrollEdgeAppearance = scrollEdgeAppearance;
+				}
 			}
 
 			SetStatusBarStyle(navigationPage);
