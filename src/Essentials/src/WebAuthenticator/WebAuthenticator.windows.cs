@@ -97,6 +97,8 @@ namespace Microsoft.Maui.Authentication
 			var callbackUrl = webAuthenticatorOptions.CallbackUrl ??
 				throw new ArgumentNullException(nameof(webAuthenticatorOptions.CallbackUrl));
 
+			cancellationToken.ThrowIfCancellationRequested();
+
 			ValidateCallbackUrl(callbackUrl);
 
 			var response = new TaskCompletionSource<WebAuthenticatorResult>();

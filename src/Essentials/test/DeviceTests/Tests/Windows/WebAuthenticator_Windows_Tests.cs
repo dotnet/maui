@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Maui.Authentication;
 using Xunit;
 
@@ -7,6 +9,26 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("WebAuthenticator")]
 	public class WebAuthenticator_Windows_Tests
 	{
+		// Pre-canceled authentication should eventually behave consistently across all
+		// WebAuthenticator platforms. This regression test is currently Windows-only
+		// because the other platforms still start their native browser session.
+		[Fact]
+		public async Task AuthenticateAsyncWithPreCanceledTokenStopsBeforePlatformValidation()
+		{
+			var options = new WebAuthenticatorOptions
+			{
+				Url = new Uri("https://example.com/auth"),
+				CallbackUrl = new Uri("https://example.com/callback"),
+			};
+
+			var cancellationToken = new CancellationToken(canceled: true);
+
+			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+				WebAuthenticator.Default.AuthenticateAsync(options, cancellationToken));
+
+			Assert.Equal(cancellationToken, exception.CancellationToken);
+		}
+
 		[Theory]
 		[InlineData("maui-auth://", "Microsoft.Maui.WebAuthenticator:maui-auth")]
 		[InlineData("MAUI-AUTH://", "Microsoft.Maui.WebAuthenticator:maui-auth")]
