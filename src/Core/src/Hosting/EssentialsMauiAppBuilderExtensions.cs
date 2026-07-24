@@ -707,7 +707,25 @@ namespace Microsoft.Maui.Hosting
 						if (ownsCurrent)
 							setter(assignment.Previous);
 					}
+
+					if (typeof(T) == typeof(IPreferences) ||
+						typeof(T) == typeof(IAppInfo))
+					{
+						InvalidateLazyVersionTrackingStates();
+					}
 				});
+			}
+
+			static void InvalidateLazyVersionTrackingStates()
+			{
+				lock (FacadeBridgeState<IVersionTracking>.SyncRoot)
+				{
+					foreach (var assignment in FacadeBridgeState<IVersionTracking>.Assignments)
+					{
+						if (assignment.Implementation is LazyVersionTracking lazyVersionTracking)
+							lazyVersionTracking.Invalidate();
+					}
+				}
 			}
 
 			sealed class FacadeAssignment<T> where T : class
@@ -800,6 +818,12 @@ namespace Microsoft.Maui.Hosting
 							}
 						}
 					}
+				}
+
+				public void Invalidate()
+				{
+					lock (_sync)
+						_state = null;
 				}
 
 				public bool IsFirstLaunchEver => Implementation.IsFirstLaunchEver;

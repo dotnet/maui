@@ -920,22 +920,18 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void OverlappingMauiAppsRefreshLazyVersionTrackingFallbackOwner()
+		public async Task OverlappingMauiAppsRefreshLazyVersionTrackingFallbackOwner()
 		{
 			var originalAppInfo = AppInfo.Current;
 			var fallbackAppInfo = new StubAppInfo("3.0.0", "3");
 			AppInfo.SetCurrent(fallbackAppInfo);
 			MauiApp? appInfoApp = null;
 			MauiApp? preferencesApp = null;
+			WeakReference? providerAppInfoReference = null;
 
 			try
 			{
-				var appInfoBuilder = MauiApp.CreateBuilder();
-				appInfoBuilder.Services.AddSingleton<IAppInfo>(
-					_ => new DisposableStubAppInfo("1.0.0", "1"));
-				appInfoApp = appInfoBuilder.Build();
-				var providerAppInfo = Assert.IsType<DisposableStubAppInfo>(
-					appInfoApp.Services.GetRequiredService<IAppInfo>());
+				(appInfoApp, providerAppInfoReference) = BuildDisposableAppInfoApp();
 
 				var preferencesBuilder = MauiApp.CreateBuilder();
 				preferencesBuilder.Services.AddSingleton<IPreferences>(new StubPreferences());
@@ -946,7 +942,9 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				appInfoApp.Dispose();
 				appInfoApp = null;
 
-				Assert.True(providerAppInfo.IsDisposed);
+				Assert.False(
+					await TestHelpers.WaitForCollect(providerAppInfoReference),
+					"Disposed AppInfo should not remain rooted by VersionTracking.");
 				Assert.Equal("3.0.0", VersionTracking.CurrentVersion);
 			}
 			finally
@@ -955,6 +953,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				appInfoApp?.Dispose();
 				AppInfo.SetCurrent(originalAppInfo);
 			}
+		}
+
+		static (MauiApp App, WeakReference AppInfoReference) BuildDisposableAppInfoApp()
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppInfo>(
+				_ => new DisposableStubAppInfo("1.0.0", "1"));
+			var app = builder.Build();
+			return (app, new WeakReference(app.Services.GetRequiredService<IAppInfo>()));
 		}
 
 		[Fact]
