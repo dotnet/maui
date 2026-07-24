@@ -23,7 +23,14 @@ internal static class PasskeyApiEndpoints
 {
 	public static IEndpointRouteBuilder MapNativePasskeyApi(this IEndpointRouteBuilder endpoints)
 	{
-		var group = endpoints.MapGroup("/passkeys");
+		// These are native JSON APIs driven by an HttpClient, not browser <form> posts, so the
+		// antiforgery middleware (app.UseAntiforgery()) does not apply — a native client has no
+		// antiforgery token to send. Disable it explicitly on the whole group so every endpoint
+		// behaves consistently; otherwise the middleware rejects some of them (the ones that inject
+		// HttpContext) with an opaque 400 "The request has an incorrect Content-type." before the
+		// handler ever runs. (CSRF is not a concern here: a WebAuthn attestation/assertion is signed
+		// over challenge+origin+rpId and cannot be forged or replayed — see README "Authentication & CSRF".)
+		var group = endpoints.MapGroup("/passkeys").DisableAntiforgery();
 
 		// 1) Registration — begin: returns PublicKeyCredentialCreationOptions JSON (WebAuthn).
 		//
@@ -39,7 +46,7 @@ internal static class PasskeyApiEndpoints
 		{
 			var user = await userManager.GetUserAsync(context.User);
 			if (user is null)
-				return Results.Unauthorized();
+				return Results.Json(new { error = "Sign in first (POST /account/login?useCookies=true) — a passkey is enrolled for the signed-in user." }, statusCode: StatusCodes.Status401Unauthorized);
 
 			var userId = await userManager.GetUserIdAsync(user);
 			var userName = await userManager.GetUserNameAsync(user) ?? user.UserName!;
@@ -60,7 +67,19 @@ internal static class PasskeyApiEndpoints
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager) =>
 		{
-			var attestation = await signInManager.PerformPasskeyAttestationAsync(credential.GetRawText());
+			PasskeyAttestationResult attestation;
+			try
+			{
+				attestation = await signInManager.PerformPasskeyAttestationAsync(credential.GetRawText());
+			}
+			catch (InvalidOperationException ex)
+			{
+				// Thrown when there is no attestation ceremony in progress (e.g. /finish was called
+				// without a preceding /begin, or the challenge cookie was lost). Return a clean 400
+				// instead of surfacing an unhandled 500.
+				return Results.BadRequest($"No passkey registration is in progress. Call /passkeys/register/begin first (and send its cookie). {ex.Message}");
+			}
+
 			if (!attestation.Succeeded)
 				return Results.BadRequest($"Attestation failed: {attestation.Failure?.Message}");
 
@@ -97,7 +116,19 @@ internal static class PasskeyApiEndpoints
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager) =>
 		{
-			var assertion = await signInManager.PerformPasskeyAssertionAsync(credential.GetRawText());
+			PasskeyAssertionResult<ApplicationUser> assertion;
+			try
+			{
+				assertion = await signInManager.PerformPasskeyAssertionAsync(credential.GetRawText());
+			}
+			catch (InvalidOperationException ex)
+			{
+				// Thrown when there is no assertion ceremony in progress (e.g. /finish was called
+				// without a preceding /begin, or the challenge cookie was lost). Return a clean 400
+				// instead of surfacing an unhandled 500.
+				return Results.BadRequest($"No passkey sign-in is in progress. Call /passkeys/login/begin first (and send its cookie). {ex.Message}");
+			}
+
 			if (!assertion.Succeeded || assertion.User is null)
 				return Results.Unauthorized();
 

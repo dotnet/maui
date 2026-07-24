@@ -114,6 +114,14 @@ app.MapAdditionalIdentityEndpoints();
 // This is the "bootstrap" the native app uses BEFORE enrolling a passkey — no browser required.
 app.MapGroup("/account").MapIdentityApi<ApplicationUser>();
 
+// MapIdentityApi has no logout endpoint, so add a native one that clears the Identity cookie.
+// DisableAntiforgery: driven by a native HttpClient, not a browser form (see MapNativePasskeyApi).
+app.MapPost("/account/logout", async (SignInManager<ApplicationUser> signInManager) =>
+{
+    await signInManager.SignOutAsync();
+    return Results.Ok(new { signedOut = true });
+}).DisableAntiforgery();
+
 // Native-app-facing passkey ceremony API (used by the .NET MAUI Essentials sample).
 app.MapNativePasskeyApi();
 
