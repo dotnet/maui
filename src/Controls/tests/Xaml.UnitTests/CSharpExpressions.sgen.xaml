@@ -145,6 +145,14 @@
             
             <!-- Two-way binding: Entry.Text (string) to decimal property via C# expression -->
             <Entry x:Name="twoWayDecimalEntry" Text="{Price}" />
+            
+            <!-- Nested struct property binding: Thickness.Top via C# expression.
+                 Source gen emits a copy-modify-writeback setter when the binding mode writes to the source;
+                 HeightRequest remains a one-way target, so this verifies getter updates. -->
+            <Grid x:Name="thicknessSubGrid" HeightRequest="{Margin.Top}" />
+
+            <!-- Two-way target exercises the copy-modify-writeback setter and preserves the other Thickness edges. -->
+            <Slider x:Name="marginTopSlider" Minimum="0" Maximum="100" Value="{Margin.Top}" />
         </VerticalStackLayout>
         
         <!-- CDATA EXPRESSION TESTS -->
