@@ -16,7 +16,9 @@ BeforeAll {
             'Test-PngFile',
             'Test-AzDoAttachmentUrl',
             'Get-SnapshotRoot',
+            'Get-ValidatedSnapshotPathHint',
             'Get-SnapshotCandidatePaths',
+            'Select-BaselineCandidate',
             'Get-VisualEvidenceDedupKey',
             'Invoke-DownloadFile',
             'Get-AssetBranchRef',
@@ -108,6 +110,48 @@ Describe 'Snapshot baseline candidates' {
             -EnvironmentName 'ios' `
             -BaselinePathHint '../../payload.png' `
             -RepositoryRoot $TestDrive).Count | Should -Be 0
+    }
+
+    It 'does not substitute another environment when a preferred path was unavailable' {
+        $selection = Select-BaselineCandidate `
+            -PreferredPath 'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26/Sample.png' `
+            -CandidateFiles @(
+                [pscustomobject]@{
+                    repositoryPath = 'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios/Sample.png'
+                    localPath = '/tmp/ios/Sample.png'
+                }
+            )
+
+        $selection.localPath | Should -BeNullOrEmpty
+        $selection.repositoryPath | Should -BeNullOrEmpty
+        $selection.status | Should -Match 'preferred runtime environment'
+    }
+
+    It 'uses a sole candidate only when no preferred environment is known' {
+        $selection = Select-BaselineCandidate `
+            -PreferredPath $null `
+            -CandidateFiles @(
+                [pscustomobject]@{
+                    repositoryPath = 'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios/Sample.png'
+                    localPath = '/tmp/ios/Sample.png'
+                }
+            )
+
+        $selection.repositoryPath | Should -Be 'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios/Sample.png'
+    }
+
+    It 'validates a missing-baseline repository path hint for exact attribution' {
+        Get-ValidatedSnapshotPathHint `
+            -Platform 'android' `
+            -SnapshotFileName 'Sample.png' `
+            -PathHint 'src/Controls/tests/TestCases.Android.Tests/snapshots/android-notch-36/Sample.png' |
+            Should -Be 'src/Controls/tests/TestCases.Android.Tests/snapshots/android-notch-36/Sample.png'
+
+        Get-ValidatedSnapshotPathHint `
+            -Platform 'android' `
+            -SnapshotFileName 'Sample.png' `
+            -PathHint '../other-environment/Sample.png' |
+            Should -BeNullOrEmpty
     }
 }
 

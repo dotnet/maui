@@ -141,12 +141,14 @@ function Invoke-SealedVisualMerge {
     $savedTokens = @{}
     $mergeExitCode = 1
     $mergeOutput = @()
+    foreach ($tokenName in $tokenNames) {
+        $savedTokens[$tokenName] = [Environment]::GetEnvironmentVariable($tokenName, "Process")
+    }
     try {
         New-Item -ItemType Directory -Path $sealedMergeDirectory | Out-Null
         [System.IO.File]::WriteAllText($sealedMergeScriptPath, $MergeScriptContent, [System.Text.UTF8Encoding]::new($false))
         [System.IO.File]::WriteAllText($sealedContextJsonPath, $ContextJsonContent, [System.Text.UTF8Encoding]::new($false))
         foreach ($tokenName in $tokenNames) {
-            $savedTokens[$tokenName] = [Environment]::GetEnvironmentVariable($tokenName, "Process")
             [Environment]::SetEnvironmentVariable($tokenName, $null, "Process")
         }
 
@@ -228,19 +230,34 @@ function Get-EmbeddedTestFailureReport {
     $report = $Content.Substring($startIndex)
     $insideCodeFence = ([regex]::Matches($prefix, '(?m)^[ \t]*```').Count % 2) -eq 1
 
-    $lastDetails = $report.LastIndexOf("</details>", [StringComparison]::OrdinalIgnoreCase)
-    if ($lastDetails -lt 0) {
+    $detailsMatches = [regex]::Matches(
+        $report,
+        '<details(?:\s[^>]*)?>|</details>',
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $detailsDepth = 0
+    $sawDetails = $false
+    $reportEnd = -1
+    foreach ($match in $detailsMatches) {
+        if ($match.Value.StartsWith("</", [StringComparison]::Ordinal)) {
+            if (-not $sawDetails -or $detailsDepth -le 0) {
+                return $null
+            }
+            $detailsDepth--
+            if ($detailsDepth -eq 0) {
+                $reportEnd = $match.Index + $match.Length
+                break
+            }
+        }
+        else {
+            $sawDetails = $true
+            $detailsDepth++
+        }
+    }
+    if ($reportEnd -lt 0) {
         return $null
     }
 
-    $reportEnd = $lastDetails + "</details>".Length
     $completeReport = $report.Substring(0, $reportEnd)
-    $openDetailsCount = [regex]::Matches($completeReport, '<details(?:\s[^>]*)?>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
-    $closeDetailsCount = [regex]::Matches($completeReport, '</details>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
-    if ($openDetailsCount -eq 0 -or $openDetailsCount -ne $closeDetailsCount) {
-        return $null
-    }
-
     $innerFenceCount = [regex]::Matches($completeReport, '(?m)^[ \t]*```[^\r\n]*$').Count
     if (($innerFenceCount % 2) -ne 0) {
         return $null
@@ -248,7 +265,7 @@ function Get-EmbeddedTestFailureReport {
 
     if ($insideCodeFence) {
         $afterReport = $report.Substring($reportEnd)
-        if (-not [regex]::IsMatch($afterReport, '(?m)^[ \t]*```[ \t]*$')) {
+        if (-not [regex]::IsMatch($afterReport, '\A\s*```[ \t]*(?:\r?\n|$)')) {
             return $null
         }
     }

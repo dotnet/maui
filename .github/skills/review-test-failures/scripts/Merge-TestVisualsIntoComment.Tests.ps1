@@ -679,6 +679,29 @@ Describe 'Inline visual relationship classification' {
             Should -Be 'Likely unrelated'
     }
 
+    It 'uses a missing-baseline path hint to avoid another environment with the same name' {
+        $comparison = New-VisualTestComparison `
+            -TestName 'MissingEnvironmentSnapshot' `
+            -Platform 'android' `
+            -SnapshotFileName 'MissingEnvironmentSnapshot.png' `
+            -BaselineRepositoryPath 'src/Controls/tests/TestCases.Android.Tests/snapshots/android-notch-36/MissingEnvironmentSnapshot.png' `
+            -ActualOnly
+        $context = New-VisualTestContext `
+            -Comparisons @($comparison) `
+            -Failures @(
+                (New-VisualTestFailure `
+                        -TestName 'MissingEnvironmentSnapshot' `
+                        -Platform 'android' `
+                        -DeterministicAttribution 'pre-existing-on-base')
+            ) `
+            -ChangedFiles @(
+                'src/Controls/tests/TestCases.Android.Tests/snapshots/android/MissingEnvironmentSnapshot.png'
+            )
+
+        (Get-VisualRelationship -Comparison $comparison -Context $context).label |
+            Should -Be 'Likely unrelated'
+    }
+
     It 'marks the exact changed visual test class as likely PR-caused' {
         $comparison = New-VisualTestComparison `
             -TestName 'VerifySearch' `

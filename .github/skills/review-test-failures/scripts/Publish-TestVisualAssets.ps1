@@ -289,6 +289,27 @@ function Get-SnapshotRoot {
     }
 }
 
+function Get-ValidatedSnapshotPathHint {
+    param(
+        [string]$Platform,
+        [string]$SnapshotFileName,
+        [string]$PathHint
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PathHint)) {
+        return $null
+    }
+    $snapshotRoot = Get-SnapshotRoot -Platform $Platform
+    $normalized = $PathHint -replace '\\', '/'
+    if (-not $snapshotRoot -or
+        $normalized.Contains("..") -or
+        -not $normalized.StartsWith("$snapshotRoot/", [StringComparison]::Ordinal) -or
+        [System.IO.Path]::GetFileName($normalized) -ne $SnapshotFileName) {
+        return $null
+    }
+    return $normalized
+}
+
 function Get-SnapshotCandidatePaths {
     param(
         [string]$Platform,
@@ -323,8 +344,12 @@ function Get-SnapshotCandidatePaths {
         $paths.Add($normalized)
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($BaselinePathHint)) {
-        & $addPath $BaselinePathHint
+    $validatedPathHint = Get-ValidatedSnapshotPathHint `
+        -Platform $Platform `
+        -SnapshotFileName $SnapshotFileName `
+        -PathHint $BaselinePathHint
+    if ($validatedPathHint) {
+        & $addPath $validatedPathHint
     }
     if (-not [string]::IsNullOrWhiteSpace($EnvironmentName) -and
         $EnvironmentName -match '^[a-z0-9][a-z0-9._-]*$') {
@@ -339,6 +364,53 @@ function Get-SnapshotCandidatePaths {
     }
 
     return $paths.ToArray()
+}
+
+function Select-BaselineCandidate {
+    param(
+        [object[]]$CandidateFiles,
+        [string]$PreferredPath
+    )
+
+    $files = @($CandidateFiles | Where-Object { $null -ne $_ })
+    if (-not [string]::IsNullOrWhiteSpace($PreferredPath)) {
+        $preferred = @($files | Where-Object {
+                [string]::Equals(
+                    [string]$_.repositoryPath,
+                    $PreferredPath,
+                    [StringComparison]::Ordinal)
+            })
+        if ($preferred.Count -eq 1) {
+            return [pscustomobject]@{
+                localPath = [string]$preferred[0].localPath
+                repositoryPath = [string]$preferred[0].repositoryPath
+                status = "resolved from the tested runtime environment"
+            }
+        }
+        return [pscustomobject]@{
+            localPath = $null
+            repositoryPath = $null
+            status = "preferred runtime environment snapshot was unavailable at the tested merge commit"
+        }
+    }
+
+    if ($files.Count -eq 1) {
+        return [pscustomobject]@{
+            localPath = [string]$files[0].localPath
+            repositoryPath = [string]$files[0].repositoryPath
+            status = "only matching snapshot at the tested merge commit"
+        }
+    }
+    return [pscustomobject]@{
+        localPath = $null
+        repositoryPath = $null
+        status = $(if ($files.Count -gt 1) {
+                "ambiguous across multiple snapshot environments"
+            }
+            else {
+                "not found at the tested merge commit"
+            })
+    }
 }
 
 function Invoke-GhApiJson {
@@ -777,22 +849,18 @@ foreach ($evidence in $selectedEvidence) {
                 }
             }
 
-            $preferred = @($candidateFiles | Where-Object { $_.repositoryPath -eq $preferredPath })
-            if ($preferred.Count -eq 1) {
-                $baselinePath = [string]$preferred[0].localPath
-                $baselineRepositoryPath = [string]$preferred[0].repositoryPath
-                $baselineStatus = "resolved from the tested runtime environment"
-            }
-            elseif ($candidateFiles.Count -eq 1) {
-                $baselinePath = [string]$candidateFiles[0].localPath
-                $baselineRepositoryPath = [string]$candidateFiles[0].repositoryPath
-                $baselineStatus = "only matching snapshot at the tested merge commit"
-            }
-            elseif ($candidateFiles.Count -gt 1) {
-                $baselineStatus = "ambiguous across multiple snapshot environments"
-            }
+            $baselineSelection = Select-BaselineCandidate `
+                -CandidateFiles $candidateFiles.ToArray() `
+                -PreferredPath $preferredPath
+            $baselinePath = [string]$baselineSelection.localPath
+            $baselineRepositoryPath = [string]$baselineSelection.repositoryPath
+            $baselineStatus = [string]$baselineSelection.status
         }
         elseif ($evidence.kind -eq "missing-baseline") {
+            $baselineRepositoryPath = Get-ValidatedSnapshotPathHint `
+                -Platform ([string]$evidence.platform) `
+                -SnapshotFileName $snapshotFileName `
+                -PathHint ([string]$evidence.baselinePathHint)
             $baselineStatus = "baseline was not present in CI"
         }
 

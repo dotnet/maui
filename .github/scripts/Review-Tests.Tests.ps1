@@ -59,21 +59,30 @@ Set-Content -LiteralPath $CommentBodyPath -Value "$tokenState|$context" -NoNewli
     }
 
     It 'returns a nonzero result when sealed merge setup fails' {
+        $priorToken = [Environment]::GetEnvironmentVariable('GH_TOKEN', 'Process')
+        [Environment]::SetEnvironmentVariable('GH_TOKEN', 'secret-for-setup-failure', 'Process')
         Mock New-Item {
             throw 'simulated setup failure'
         } -ParameterFilter {
             $ItemType -eq 'Directory'
         }
 
-        $result = Invoke-SealedVisualMerge `
-            -MergeScriptContent 'throw "should not run"' `
-            -ContextJsonContent '{}' `
-            -CommentBodyPath (Join-Path $TestDrive 'comment.md') `
-            -PrNumber 123 `
-            -Repository 'dotnet/maui'
+        try {
+            $result = Invoke-SealedVisualMerge `
+                -MergeScriptContent 'throw "should not run"' `
+                -ContextJsonContent '{}' `
+                -CommentBodyPath (Join-Path $TestDrive 'comment.md') `
+                -PrNumber 123 `
+                -Repository 'dotnet/maui'
 
-        $result.exitCode | Should -Be 1
-        ($result.output -join "`n") | Should -Match 'simulated setup failure'
+            $result.exitCode | Should -Be 1
+            ($result.output -join "`n") | Should -Match 'simulated setup failure'
+            [Environment]::GetEnvironmentVariable('GH_TOKEN', 'Process') |
+                Should -Be 'secret-for-setup-failure'
+        }
+        finally {
+            [Environment]::SetEnvironmentVariable('GH_TOKEN', $priorToken, 'Process')
+        }
     }
 }
 
@@ -259,5 +268,28 @@ Partial analysis
 Complete-looking analysis
 </details>
 '@ | Should -BeNullOrEmpty
+    }
+
+    It 'stops at the first balanced outer details block before trailing details chatter' {
+        $report = Get-EmbeddedTestFailureReport -Content @'
+<!-- Tests Failure -->
+## Tests Failure Analysis
+<details>
+<summary>Review</summary>
+<details>
+<summary>Evidence</summary>
+Expected evidence
+</details>
+</details>
+
+Trailing note:
+<details>
+<summary>Not part of the report</summary>
+Unexpected chatter
+</details>
+'@
+
+        $report | Should -Match 'Expected evidence'
+        $report | Should -Not -Match 'Unexpected chatter|Not part of the report'
     }
 }
