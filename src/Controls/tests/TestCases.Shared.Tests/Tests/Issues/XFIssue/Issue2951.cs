@@ -21,16 +21,20 @@ public class Issue2951 : _IssuesUITest
 		var initialButtonCount = App.FindElements("btnChangeStatus").Count();
 		Assert.That(initialButtonCount, Is.EqualTo(3));
 
+		App.WaitForElementTillPageNavigationSettled("btnChangeStatus");
 		var buttonToClick = App.FindElements("btnChangeStatus").ElementAt(1);
 		buttonToClick.Click();
 
+		App.WaitForElementTillPageNavigationSettled("btnChangeStatus");
 		var updatedButton = App.FindElements("btnChangeStatus").ElementAt(1);
 		Assert.That(updatedButton.GetText(), Is.EqualTo("B"));
 
+		App.WaitForElementTillPageNavigationSettled("btnChangeStatus");
 		updatedButton.Click();
 		var updatedButtonCount = App.FindElements("btnChangeStatus").Count();
 		Assert.That(updatedButtonCount, Is.EqualTo(2));
 
+		App.WaitForElementTillPageNavigationSettled("btnChangeStatus");
 		var newSecondButton = App.FindElements("btnChangeStatus").ElementAt(1);
 		newSecondButton.Click();
 

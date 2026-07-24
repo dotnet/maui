@@ -10,6 +10,8 @@ public class Bugzilla52419 : _IssuesUITest
 	const string TabPage2 = "Tab Page 2";
 #if ANDROID
 	const string BackButtonIdentifier = "";
+#elif MACCATALYST
+	const string BackButtonIdentifier = "BackButton";
 #else
 	const string BackButtonIdentifier = "Tab Page 1";
 #endif

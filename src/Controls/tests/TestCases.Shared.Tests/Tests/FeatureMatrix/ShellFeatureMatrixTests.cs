@@ -40,7 +40,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutHeader");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Header);
 		App.Tap(OpenFlyout);
@@ -56,7 +56,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutHeaderTemplate");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(HeaderTemplate);
 		App.Tap(OpenFlyout);
@@ -72,7 +72,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutFooter");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Footer);
 		App.Tap(OpenFlyout);
@@ -88,7 +88,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutFooterTemplate");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(FooterTemplate);
 		App.Tap(OpenFlyout);
@@ -106,7 +106,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutFooterTemplate");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(FooterTemplate);
 		App.WaitForElement(HeaderTemplate);
@@ -126,7 +126,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutFooterTemplate");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(FooterTemplate);
 		App.WaitForElement(Header);
@@ -146,7 +146,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutFooter");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Footer);
 		App.WaitForElement(HeaderTemplate);
@@ -169,7 +169,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutWidthEntry", "250");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Footer);
 		App.WaitForElement(Header);
@@ -192,7 +192,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutHeightEntry", "350");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Footer);
 		App.WaitForElement(Header);
@@ -215,7 +215,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutWidthEntry", "250");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(FooterTemplate);
 		App.WaitForElement(HeaderTemplate);
@@ -238,7 +238,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutHeightEntry", "350");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(FooterTemplate);
 		App.WaitForElement(HeaderTemplate);
@@ -256,7 +256,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutVerticalScrollModeEnabled");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem4");
 		var initialMenuItem4Rect = App.WaitForElement("MenuItem4").GetRect();
@@ -285,7 +285,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutHeaderBehaviorFixed");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Header);
 		float startingHeight = App.WaitForElement(Header).GetRect().Y; 
@@ -313,7 +313,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutHeaderBehaviorScroll");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Header);
 		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
@@ -341,7 +341,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutHeaderBehaviorCollapseOnScroll");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
@@ -366,6 +366,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutTemplateFlyoutContent");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("FlyoutContent");
 		App.Tap("CloseFlyoutContentButton");
@@ -381,6 +382,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutTemplateFlyoutContentTemplate");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("FlyoutContentTemplate");
 		App.Tap("CloseFlyoutContentTemplateButton");
@@ -398,7 +400,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutFooter");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Footer);
 		App.WaitForElement(Header);
@@ -416,6 +418,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutItemVisibilityFalse");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000); // FlyoutItems are scrolled down, when changing the FlyoutContent
 		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
@@ -435,7 +438,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutDisplayOptionsAsMultipleItems");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -454,7 +457,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutWidthEntry", "150");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -473,7 +476,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutHeightEntry", "300");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -491,7 +494,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackgroundColorBlue");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -509,7 +512,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackdropGradient");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -529,7 +532,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackgroundColorBlue");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -549,7 +552,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackgroundImageAspectFit");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -569,7 +572,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackgroundImageFill");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -593,7 +596,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutHeightEntry", "400");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -613,7 +616,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackdropGradient");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -632,7 +635,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutVerticalScrollModeDisabled");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(OpenFlyout);
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
@@ -654,7 +657,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackgroundNoneImage");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -675,7 +678,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("ItemTemplateBasic");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -739,6 +742,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutDisplayOptionsAsMultipleItems");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("Home");
 		App.Tap("Home");
@@ -786,6 +790,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutTemplateFlyoutContent");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
@@ -804,6 +809,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutTemplateFlyoutContent");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
@@ -820,7 +826,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackgroundDotnetImage");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -842,7 +848,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackgroundDotnetImage");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -864,7 +870,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutBackgroundColorBlue");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -886,7 +892,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutDisplayOptionsAsMultipleItems");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -908,7 +914,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlyoutDisplayOptionsAsMultipleItems");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -932,7 +938,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutHeightEntry", "400");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(Options);
+		App.WaitForElementTillPageNavigationSettled(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));

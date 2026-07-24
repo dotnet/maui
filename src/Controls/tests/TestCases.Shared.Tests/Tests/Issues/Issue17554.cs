@@ -18,6 +18,6 @@ public class Issue17554 : _IssuesUITest
 		App.WaitForElement("NonDropTarget");
 
 		App.DragAndDrop("DragSource", "NonDropTarget");
-		App.WaitForElement("DropCompleted");
+		App.WaitForElementTillPageNavigationSettled("DropCompleted");
 	}
 }

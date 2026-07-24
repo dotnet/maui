@@ -22,6 +22,9 @@ public class Issue33356 : _IssuesUITest
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
 		searchHandler.SendKeys("A");
+#if MACCATALYST
+		App.WaitForElement("SearchResultName");
+#endif
 		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
 		App.WaitForElement("Issue33356CatNameLabel");
 		if (iOS26OrHigher)
@@ -33,7 +36,7 @@ public class Issue33356 : _IssuesUITest
 			App.TapBackArrow(Device == TestDevice.Android ? "" : "Cats");
 		}
 		App.WaitForElement("Issue33356CatsCollectionView");
-		App.WaitForElement("Abyssinian");
+		App.WaitForElementTillPageNavigationSettled("Abyssinian");
 		App.Tap("Abyssinian");
 		App.WaitForElement("Issue33356CatNameLabel");
 		if (iOS26OrHigher)

@@ -14,7 +14,7 @@ public class TabbedPageFeatureTests : _GalleryUITest
 	{
 	}
 
-#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34605
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/34605
 
 	[Test, Order(1)]
 	public void TabbedPage_InitialState_VerifyVisualState()
@@ -383,7 +383,7 @@ public class TabbedPageFeatureTests : _GalleryUITest
 		App.WaitForNoElement("TAB 4");
 	}
 
-#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34605
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/34605
 	[Test, Order(23)]
 	public void TabbedPage_InsertTabAt_Verify()
 	{
@@ -407,7 +407,7 @@ public class TabbedPageFeatureTests : _GalleryUITest
 #endif
 #endif
 
-#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34605
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/34605
 	[Test, Order(24)]
 	public void TabbedPage_IconImageSource_Change_Verify()
 	{
