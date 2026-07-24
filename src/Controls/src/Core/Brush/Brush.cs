@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using GraphicsGradientStop = Microsoft.Maui.Graphics.PaintGradientStop;
 
@@ -11,10 +13,16 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 	public abstract partial class Brush : Element
 	{
+		static readonly ICache<Color, ImmutableBrush> _cache = new CacheWithSwitch(51);
+
 		public static implicit operator Brush(Paint paint)
 		{
 			if (paint is SolidPaint solidPaint)
-				return new SolidColorBrush { Color = solidPaint.Color };
+			{
+				var color = solidPaint.Color;
+				return color is null ? Default : _cache.Get(solidPaint.Color);
+			}
+
 
 			if (paint is GradientPaint gradientPaint)
 			{
@@ -100,7 +108,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static Brush Default => defaultBrush ??= new(null);
 
-		public static implicit operator Brush(Color color) => new SolidColorBrush(color);
+		public static implicit operator Brush(Color color) => color is null ? Default : _cache.Get(color);
 
 		/// <summary>
 		/// When overridden in a derived class, indicates whether the given brush represents the empty brush.
