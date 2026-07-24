@@ -648,9 +648,11 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					if (platformView.Interactions is not null)
+					// Cache Interactions; each access marshals the whole native array (see #34396).
+					var interactions = platformView.Interactions;
+					if (interactions is not null)
 					{
-						foreach (var ia in platformView.Interactions)
+						foreach (var ia in interactions)
 						{
 							if (ia is UIToolTipInteraction toolTipInteraction)
 							{
