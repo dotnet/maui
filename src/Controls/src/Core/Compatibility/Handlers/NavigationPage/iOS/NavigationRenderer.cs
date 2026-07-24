@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -33,7 +34,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _appeared;
 		bool _ignorePopCall;
 		FlyoutPage _parentFlyoutPage;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The controllers-to-remove array is transient navigation state cleared after UIKit removal completes.")]
 		UIViewController[] _removeControllers;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The secondary toolbar is owned by the renderer and disposed in Dispose.")]
 		UIToolbar _secondaryToolbar;
 		bool _hasNavigationBar;
 		UIImage _defaultNavBarShadowImage;
@@ -41,8 +44,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		Brush _currentBarBackgroundBrush;
 		Color _currentBarBackgroundColor;
 		bool _disposed;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The Maui context is required for the compatibility renderer lifetime and is not exposed outside the handler.")]
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The mapper is static shared handler metadata and is not retained by renderer instances.")]
 		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper)
 		{
 			[PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName] = NavigationPage.MapPrefersLargeTitles,
@@ -77,6 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public VisualElement Element { get => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault(); }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "ElementChanged is a legacy public compatibility renderer event kept for API compatibility.")]
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -203,6 +209,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			(Element as IView).Arrange(View.Bounds.ToRectangle());
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "NavigationPage request and PropertyChanged subscriptions added in ViewDidLoad are removed in Dispose.")]
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
@@ -251,6 +258,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		class GestureDelegate : UIGestureRecognizerDelegate
 		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The should-pop callback is owned by the gesture delegate while InteractivePopGestureRecognizer.Delegate is set and released in NavigationRenderer.Dispose.")]
 			readonly Func<bool> _shouldPop;
 
 			public GestureDelegate(Func<bool> shouldPop)
@@ -810,6 +818,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			RefreshBarBackground();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Gradient brush InvalidateGradientBrushRequested is removed before replacing the brush and in Dispose.")]
 		void UpdateBarBackground()
 		{
 			if (_currentBarBackgroundBrush is GradientBrush oldGradientBrush)
@@ -1400,6 +1409,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_navigation = new WeakReference<NavigationRenderer>(navigation);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Child PropertyChanged subscriptions are removed when Child changes and in Disconnect.")]
 			public Page Child
 			{
 				get => _child?.GetTargetOrDefault();
@@ -1430,6 +1440,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Appearing is a legacy ParentingViewController event consumed by the navigation renderer lifecycle.")]
 			public event EventHandler Appearing;
 
 			[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
@@ -1441,6 +1452,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				View.SetNeedsLayout();
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Disappearing is a legacy ParentingViewController event consumed by the navigation renderer lifecycle.")]
 			public event EventHandler Disappearing;
 
 			public override void ViewDidAppear(bool animated)
@@ -1516,6 +1528,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateFrames();
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Toolbar tracker CollectionChanged is removed in Disconnect.")]
 			public override void ViewDidLoad()
 			{
 				base.ViewDidLoad();
@@ -2024,6 +2037,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_trackedToolbarItems.Clear();
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ToolbarItem PropertyChanged subscriptions are removed by CleanToolbarItems before replacement and in Disconnect.")]
 			void UpdateToolbarItems()
 			{
 				// Unsubscribe from previous toolbar item property changes
@@ -2278,6 +2292,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			public RectangleF BackButtonFrameSize { get; private set; }
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The navigation bar label is a cached native subview reference updated or cleared during LayoutSubviews.")]
 			public UILabel NavBarLabel { get; private set; }
 
 			public override void LayoutSubviews()
@@ -2315,8 +2330,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		class Container : UIView
 		{
 			View _view;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The navigation bar reference is used only for title layout while the container is attached and released with the container.")]
 			MauiControlsNavigationBar _bar;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The title view child handler is disconnected and cleared in Dispose.")]
 			IPlatformViewHandler _child;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The title icon view is owned by the container and disposed in Dispose.")]
 			UIImageView _icon;
 			bool _disposed;
 			nfloat? _navigationBarHeight;
@@ -2343,6 +2361,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				InitializeContainer(view, bar, navigationBarFrame.Height);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The title view ParentSet subscription is removed when it fires and in Dispose.")]
 			void InitializeContainer(View view, UINavigationBar bar, nfloat? navigationBarHeight)
 			{
 				// iOS 26+ and MacCatalyst 26+ require autoresizing masks instead of constraints
