@@ -366,10 +366,26 @@ namespace Microsoft.Maui.TestCases.Tests
 			bool dragDropSuccess = false;
 			for (int i = 0; i < 3; i++)
 			{
+				if (i > 0)
+				{
+					// A degenerate first gesture still fires OnDrop, which moves "Blue" into the
+					// target layout. Reset to a clean state before retrying; otherwise the retry would
+					// drag "Blue" within the same layout and OnDrop would ignore it (Source == layout).
+					App.Tap("ResetButton");
+					App.WaitForElement("Blue");
+					App.WaitForElement("Green");
+				}
+
 				App.DragAndDrop("Blue", "Green");
 				Thread.Sleep(500);
 				App.WaitForElement("DropRelativeLayout");
-				if (GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText()) != null)
+
+				// Only treat the drag-and-drop as successful once the drop reports valid, positive
+				// coordinates (the same condition asserted below). On iOS 18.5 the first synthesized
+				// gesture can land with degenerate (0,0)/negative coordinates; retry from a clean
+				// state instead of accepting the first invalid reading.
+				var dropCoordinates = GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText());
+				if (dropCoordinates is not null && dropCoordinates.Value.X > 0 && dropCoordinates.Value.Y > 0)
 				{
 					dragDropSuccess = true;
 					break;
