@@ -11,10 +11,15 @@ namespace Microsoft.Maui.Graphics
 	/// <summary>
 	/// Represents an RGBA color with floating-point components in the range of 0.0 to 1.0.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="Color"/> is a sealed record type, so equality (via <see cref="Equals(Color?)"/>, <c>==</c>, and <c>!=</c>)
+	/// is always value-based, comparing the underlying ARGB representation regardless of how the instance was created.
+	/// Sealing prevents subclassing, which guarantees this value-based equality can never be silently broken by a derived type.
+	/// </remarks>
 	[DebuggerDisplay("Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}")]
 	[TypeConverter(typeof(Converters.ColorTypeConverter))]
 	[ImmutableObject(true)]
-	public record class Color
+	public sealed record class Color
 	{
 		/// <summary>
 		/// The red component of the color, ranging from 0.0 to 1.0.
@@ -119,7 +124,7 @@ namespace Microsoft.Maui.Graphics
 		/// <summary>
 		/// Determines whether the specified <see cref="Color"/> is equal to the current color using byte-precision comparison.
 		/// </summary>
-		public virtual bool Equals(Color? other)
+		public bool Equals(Color? other)
 		{
 			if (other is null)
 				return false;
