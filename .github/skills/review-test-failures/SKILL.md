@@ -340,6 +340,8 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 > @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]).
 
+> Maintainers can request a fresh review after new comments, commits, or CI runs by commenting `/review tests`.
+
 <p align="left">
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">

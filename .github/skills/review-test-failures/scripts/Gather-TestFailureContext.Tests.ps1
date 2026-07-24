@@ -39,6 +39,7 @@ BeforeAll {
             'ConvertTo-Array',
             'Get-ObjectValue',
             'Get-HeaderValue',
+            'Get-AzDoTestRuns',
             'Get-AzDoFailedTestResultsByBuild',
             'Get-VisualSnapshotInfo',
             'Select-VisualAttachments',
@@ -238,6 +239,23 @@ Describe 'Get-AzDoFailedTestResultsByBuild request budgeting' {
             return [pscustomobject]@{
                 Content = '{"value":[]}'
                 Headers = @{}
+            }
+
+            Describe 'Get-AzDoTestRuns overall deadline enforcement' {
+                It 'returns an incomplete result without a request after the gather deadline' {
+                    Mock Invoke-WebRequest {
+                        throw 'request should not run'
+                    }
+
+                    $result = Get-AzDoTestRuns `
+                        -BaseUrl 'https://dev.azure.com/dnceng-public/public' `
+                        -BuildId 123 `
+                        -Deadline ((Get-Date).AddSeconds(-1))
+
+                    Should -Invoke Invoke-WebRequest -Times 0 -Exactly
+                    $result.truncated | Should -BeTrue
+                    $result.deadlineExhausted | Should -BeTrue
+                }
             }
         }
     }
@@ -718,6 +736,18 @@ Describe 'New-DeviceWorkItemFailureRecords (classify ONE failed work item — ne
 }
 
 Describe 'Get-AggregatedBaseLegMap (multi-build base leg diff — network-free via pre-seeded cache)' {
+    It 'stops base timeline sampling after the overall gather deadline' {
+        $result = Get-AggregatedBaseLegMap `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BaseBuilds @([pscustomobject]@{ id = 100 }) `
+            -Cache @{} `
+            -Deadline ((Get-Date).AddSeconds(-1))
+
+        $result.truncated | Should -BeTrue
+        $result.sampledBuilds | Should -Be 0
+    }
+
     # The aggregator only calls Get-TimelineRecordResultMap on a CACHE MISS, so pre-seeding $Cache with
     # entries keyed "org|project|buildId" is a fully network-free seam: each case supplies its own base
     # single-build leg maps and asserts the green/red tallies that decide whether a PR leg is a clean

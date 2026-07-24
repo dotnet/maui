@@ -204,6 +204,34 @@ function Get-FinalAssistantMessage {
     return $messages[$messages.Count - 1]
 }
 
+function Get-MarkdownFenceState {
+    param([string]$Text)
+
+    $activeCharacter = $null
+    $activeLength = 0
+    foreach ($lineMatch in [regex]::Matches([string]$Text, '(?m)^[ \t]*(?<fence>`{3,}|~{3,})(?<suffix>[^\r\n]*)\r?$')) {
+        $fence = $lineMatch.Groups['fence'].Value
+        $character = $fence[0]
+        if ($null -eq $activeCharacter) {
+            $activeCharacter = $character
+            $activeLength = $fence.Length
+            continue
+        }
+        if ($character -eq $activeCharacter -and
+            $fence.Length -ge $activeLength -and
+            [string]::IsNullOrWhiteSpace($lineMatch.Groups['suffix'].Value)) {
+            $activeCharacter = $null
+            $activeLength = 0
+        }
+    }
+
+    return [pscustomobject]@{
+        active = ($null -ne $activeCharacter)
+        character = $activeCharacter
+        length = $activeLength
+    }
+}
+
 function Get-EmbeddedTestFailureReport {
     param([string]$Content)
 
@@ -228,21 +256,34 @@ function Get-EmbeddedTestFailureReport {
 
     $prefix = $Content.Substring(0, $startIndex)
     $report = $Content.Substring($startIndex)
-    $insideCodeFence = ([regex]::Matches($prefix, '(?m)^[ \t]*```').Count % 2) -eq 1
+    $outerFence = Get-MarkdownFenceState -Text $prefix
 
     # The report contract uses structural <details> tags on their own lines. Ignore tag-looking
     # evidence inside fenced or four-space-indented code so a logged literal "</details>" cannot
     # terminate the outer report and silently drop the verdict/recommendation that follows.
     $structuralDetails = New-Object System.Collections.Generic.List[object]
-    $insideInnerFence = $false
+    $innerFenceCharacter = $null
+    $innerFenceLength = 0
     foreach ($lineMatch in [regex]::Matches($report, '(?m)^(?<indent>[ \t]*)(?<content>[^\r\n]*)\r?$')) {
         $line = $lineMatch.Groups['content'].Value
-        if ($line -match '^[ \t]*```') {
-            $insideInnerFence = -not $insideInnerFence
+        $fenceMatch = [regex]::Match($line, '^[ \t]*(?<fence>`{3,}|~{3,})(?<suffix>.*)$')
+        if ($fenceMatch.Success) {
+            $fence = $fenceMatch.Groups['fence'].Value
+            $character = $fence[0]
+            if ($null -eq $innerFenceCharacter) {
+                $innerFenceCharacter = $character
+                $innerFenceLength = $fence.Length
+            }
+            elseif ($character -eq $innerFenceCharacter -and
+                $fence.Length -ge $innerFenceLength -and
+                [string]::IsNullOrWhiteSpace($fenceMatch.Groups['suffix'].Value)) {
+                $innerFenceCharacter = $null
+                $innerFenceLength = 0
+            }
             continue
         }
         $indent = $lineMatch.Groups['indent'].Value
-        if ($insideInnerFence -or $indent.Contains("`t") -or $indent.Length -ge 4) {
+        if ($null -ne $innerFenceCharacter -or $indent.Contains("`t") -or $indent.Length -ge 4) {
             continue
         }
         $tagMatch = [regex]::Match(
@@ -281,14 +322,16 @@ function Get-EmbeddedTestFailureReport {
     }
 
     $completeReport = $report.Substring(0, $reportEnd)
-    $innerFenceCount = [regex]::Matches($completeReport, '(?m)^[ \t]*```[^\r\n]*$').Count
-    if (($innerFenceCount % 2) -ne 0) {
+    if ((Get-MarkdownFenceState -Text $completeReport).active) {
         return $null
     }
 
-    if ($insideCodeFence) {
+    if ($outerFence.active) {
         $afterReport = $report.Substring($reportEnd)
-        if (-not [regex]::IsMatch($afterReport, '\A\s*```[ \t]*(?:\r?\n|$)')) {
+        $closingFencePattern = '\A\s*' +
+            [regex]::Escape([string]$outerFence.character) +
+            "{$($outerFence.length),}[ \t]*(?:\r?\n|$)"
+        if (-not [regex]::IsMatch($afterReport, $closingFencePattern)) {
             return $null
         }
     }
@@ -449,6 +492,8 @@ $marker
 ## Tests Failure Analysis
 
 $authorPing
+
+> Maintainers can request a fresh review after new comments, commits, or CI runs by commenting `/review tests`.
 
 <p align="left">
 $badges

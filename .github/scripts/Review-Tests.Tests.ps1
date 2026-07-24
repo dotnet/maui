@@ -13,6 +13,11 @@ BeforeAll {
     foreach ($functionName in @(
             'Invoke-SealedVisualMerge',
             'Get-EmbeddedTestFailureReport',
+            'Get-MarkdownFenceState',
+            'Escape-Html',
+            'Get-ReportVerdict',
+            'Get-VerdictColor',
+            'New-Badge',
             'Collapse-OpenDetails',
             'New-TestFailureReviewBody'
         )) {
@@ -243,6 +248,22 @@ Generated report:
         $body | Should -Not -Match 'Generated report:'
     }
 
+    It 'keeps the refresh command discoverable in synthesized reports' {
+        Mock gh {
+            $global:LASTEXITCODE = 0
+            return '{"author":{"login":"author"},"headRefOid":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'
+        }
+
+        $body = New-TestFailureReviewBody `
+            -PRNumber 123 `
+            -Repository 'dotnet/maui' `
+            -ReportContent 'Short incomplete analysis.' `
+            -ContextJsonPath (Join-Path $TestDrive 'missing.json')
+
+        $body | Should -Match 'Maintainers can request a fresh review'
+        $body | Should -Match '/review tests'
+    }
+
     It 'returns null when no complete report is embedded' {
         Get-EmbeddedTestFailureReport -Content 'Only a short analysis sentence.' |
             Should -BeNullOrEmpty
@@ -316,5 +337,29 @@ Keep the recommendation.
 
         $report | Should -Match '\*\*Overall verdict:\*\* Not ready'
         $report | Should -Match 'Keep the recommendation'
+    }
+
+    It 'tracks tilde and longer backtick fences before reading structural details tags' {
+        $report = Get-EmbeddedTestFailureReport -Content @'
+~~~markdown
+<!-- Tests Failure -->
+## Tests Failure Analysis
+<details>
+<summary>Review</summary>
+
+~~~~text
+</details>
+~~~~
+
+~~~text
+</details>
+~~~
+
+**Overall verdict:** Not ready
+</details>
+~~~
+'@
+
+        $report | Should -Match '\*\*Overall verdict:\*\* Not ready'
     }
 }

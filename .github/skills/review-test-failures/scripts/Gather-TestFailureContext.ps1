@@ -223,11 +223,16 @@ function Get-AzDoTestRuns {
     # device build that retried publishes a NEW run per attempt, so a >1-page run count is realistic.
     # Returns the COMPLETE run set plus a 'truncated' flag (true only if paging was abandoned at the page
     # guard with a token still pending) so the caller can REFUSE positive confirmation on an incomplete set.
-    param([string]$BaseUrl, [string]$BuildId)
+    param(
+        [string]$BaseUrl,
+        [string]$BuildId,
+        [datetime]$Deadline = [datetime]::MaxValue
+    )
 
     $runs = New-Object System.Collections.Generic.List[object]
     $continuation = $null
     $truncated = $false
+    $deadlineExhausted = $false
     $page = 0
     # Scope by buildUri, NOT buildIds: the _apis/test/runs 'List' endpoint SILENTLY IGNORES a
     # buildIds filter and returns project-wide runs from the beginning of time (verified against a
@@ -238,12 +243,18 @@ function Get-AzDoTestRuns {
     # a clean device-test build (deviceTestFailedConfirmedZero) over the REAL build that actually failed.
     $buildUri = "vstfs:///Build/Build/$BuildId"
     do {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $truncated = $true
+            $deadlineExhausted = $true
+            break
+        }
         $page++
         $url = "$BaseUrl/_apis/test/runs?buildUri=$([uri]::EscapeDataString($buildUri))&`$top=100&api-version=7.1"
         if ($continuation) { $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))" }
         $headers = @{ Accept = "application/json" }
         if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) { $headers.Authorization = "Bearer $env:AZDO_TOKEN" }
-        $resp = Invoke-WebRequest -Uri $url -Headers $headers -UseBasicParsing -TimeoutSec 100 -ErrorAction Stop
+        $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $Deadline
+        $resp = Invoke-WebRequest -Uri $url -Headers $headers -UseBasicParsing -TimeoutSec $requestTimeoutSec -ErrorAction Stop
         $body = if ([string]::IsNullOrWhiteSpace([string]$resp.Content)) { $null } else { [string]$resp.Content | ConvertFrom-Json }
         foreach ($r in (ConvertTo-Array $body.value)) {
             # Defense in depth: drop any run that carries an explicit, MISMATCHED build id. The list view
@@ -257,7 +268,11 @@ function Get-AzDoTestRuns {
         if ($page -ge 50) { $truncated = ($null -ne $continuation); break }
     } while ($continuation)
 
-    return [ordered]@{ runs = $runs.ToArray(); truncated = $truncated }
+    return [ordered]@{
+        runs = $runs.ToArray()
+        truncated = $truncated
+        deadlineExhausted = $deadlineExhausted
+    }
 }
 
 function Get-AzDoFailedTestResultsByBuild {
@@ -723,7 +738,8 @@ function Invoke-AzDoJsonWithProjectFallback {
         [string]$Org,
         [string]$Project,
         [string]$RelativePath,
-        [switch]$AllowAuth
+        [switch]$AllowAuth,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     $attempts = New-Object System.Collections.Generic.List[string]
@@ -734,10 +750,15 @@ function Invoke-AzDoJsonWithProjectFallback {
 
     $lastError = $null
     foreach ($base in $attempts) {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $lastError = "Overall gather deadline reached before '$RelativePath' could be read."
+            break
+        }
         $url = "$base/$RelativePath"
         try {
+            $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $Deadline
             return [ordered]@{
-                value = Invoke-JsonUrl -Url $url -AllowAuth:$AllowAuth
+                value = Invoke-JsonUrl -Url $url -AllowAuth:$AllowAuth -TimeoutSec $requestTimeoutSec
                 baseUrl = $base
                 error = $null
             }
@@ -1680,7 +1701,8 @@ function Get-RecentBaseBuilds {
         [string]$Project,
         [int]$DefinitionId,
         [string]$BaseBranch,
-        [int]$Top
+        [int]$Top,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     if ($DefinitionId -le 0 -or $Top -le 0) {
@@ -1693,7 +1715,7 @@ function Get-RecentBaseBuilds {
     }
     $encodedBranch = [Uri]::EscapeDataString($branch)
     $relative = "_apis/build/builds?definitions=$DefinitionId&branchName=$encodedBranch&`$top=$Top&queryOrder=finishTimeDescending&api-version=7.1"
-    $result = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath $relative
+    $result = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath $relative -Deadline $Deadline
     if ($result.error -or -not $result.value) {
         return @()
     }
@@ -1721,13 +1743,14 @@ function Get-TimelineRecordResultMap {
     param(
         [string]$Org,
         [string]$Project,
-        [int]$BuildId
+        [int]$BuildId,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     $map = @{}
     $result = [ordered]@{ accessible = $false; records = $map }
 
-    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1"
+    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1" -Deadline $Deadline
     if ($timelineResult.error -or -not $timelineResult.value) {
         return $result
     }
@@ -1769,18 +1792,24 @@ function Get-AggregatedBaseLegMap {
         [string]$Org,
         [string]$Project,
         [object[]]$BaseBuilds,   # completed base builds, newest-first
-        [hashtable]$Cache        # memoized single-build maps keyed "org|project|buildId"
+        [hashtable]$Cache,       # memoized single-build maps keyed "org|project|buildId"
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     $agg = @{}
     $sampled = 0
+    $truncated = $false
     $ids = New-Object System.Collections.Generic.List[int]
     foreach ($base in @($BaseBuilds)) {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $truncated = $true
+            break
+        }
         $bid = [int]$base.id
         if ($bid -le 0) { continue }
         $key = "$Org|$Project|$bid"
         if (-not $Cache.ContainsKey($key)) {
-            $Cache[$key] = Get-TimelineRecordResultMap -Org $Org -Project $Project -BuildId $bid
+            $Cache[$key] = Get-TimelineRecordResultMap -Org $Org -Project $Project -BuildId $bid -Deadline $Deadline
         }
         $single = $Cache[$key]
         if (-not $single.accessible) { continue }
@@ -1798,12 +1827,18 @@ function Get-AggregatedBaseLegMap {
             elseif ($rec.hasSucceeded) { $agg[$norm].greenCount++ }
         }
     }
+    if ($Deadline -ne [datetime]::MaxValue -and
+        (Get-Date) -ge $Deadline -and
+        $sampled -lt @($BaseBuilds).Count) {
+        $truncated = $true
+    }
 
     return [ordered]@{
         accessible = ($sampled -gt 0)
         records = $agg
         sampledBuilds = $sampled
         baseBuildIds = @($ids.ToArray())
+        truncated = $truncated
     }
 }
 
@@ -2078,7 +2113,8 @@ function Get-BuildLogTestFailures {
         [string]$Org,
         [string]$Project,
         [int]$BuildId,
-        [int]$MaxLogs = 8
+        [int]$MaxLogs = 8,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     $result = [ordered]@{
@@ -2093,7 +2129,7 @@ function Get-BuildLogTestFailures {
         error = $null
     }
 
-    $buildResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId`?api-version=7.1"
+    $buildResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId`?api-version=7.1" -Deadline $Deadline
     if ($buildResult.error -or -not $buildResult.value) {
         $result.error = if ($buildResult.error) { $buildResult.error } else { "Build $BuildId metadata was not accessible." }
         return $result
@@ -2106,7 +2142,7 @@ function Get-BuildLogTestFailures {
     $result.result = $build.result
     $result.status = $build.status
 
-    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1"
+    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1" -Deadline $Deadline
     if ($timelineResult.error -or -not $timelineResult.value) {
         # Record the failure so the caller can distinguish "couldn't read the baseline"
         # from "the baseline had zero failures". Otherwise an inaccessible timeline looks
@@ -2130,9 +2166,14 @@ function Get-BuildLogTestFailures {
     $failures = New-Object System.Collections.Generic.List[object]
     $logReadFailures = 0
     foreach ($record in $failedRecords) {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $result.error = "Overall gather deadline reached before all baseline logs could be inspected."
+            break
+        }
         $logId = [int]$record.log.id
         try {
-            $logText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$BuildId/logs/$logId`?api-version=7.1"
+            $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $Deadline
+            $logText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$BuildId/logs/$logId`?api-version=7.1" -TimeoutSec $requestTimeoutSec
             $lines = @($logText -split "`r?`n")
             $recordFailures = @(Get-TestFailuresFromLog -Lines $lines -LogId $logId -RecordName $record.name)
             # Mirror the PR-side build-error extraction (GPT F2): always scan base Task logs for coded
@@ -2416,6 +2457,7 @@ $allUnexplainedLegs = New-Object System.Collections.Generic.List[object]
 
 foreach ($buildRef in $buildRefsById.Values) {
     Write-Host "Inspecting AzDO build $($buildRef.buildId)..."
+    $gatherDeadlineRecordedForBuild = $false
 
     # Reset per-build so a build whose timeline read FAILS cannot inherit the PREVIOUS build's
     # timeline records. $records is only (re)assigned inside the timeline-readable branch below; the
@@ -3203,7 +3245,10 @@ foreach ($buildRef in $buildRefsById.Values) {
             # failedTests over JUST the first page falsely confirmed Failed==0 when a failing run sat in
             # the tail (round-7 Opus F1 / GPT F1). Get-AzDoTestRuns follows the continuation token to
             # completion and reports whether the set was truncated.
-            $runsPaged = Get-AzDoTestRuns -BaseUrl $baseUrl -BuildId $buildRef.buildId
+            $runsPaged = Get-AzDoTestRuns `
+                -BaseUrl $baseUrl `
+                -BuildId $buildRef.buildId `
+                -Deadline $gatherHardDeadline
             $allRuns = @($runsPaged.runs)
             # If paging was abandoned with a continuation token still pending, the run set is INCOMPLETE.
             # Record an unexplained leg so the verdict caps to NHI and a truncated set never reads clean.
@@ -3215,6 +3260,9 @@ foreach ($buildRef in $buildRefsById.Values) {
                     uninspected = $true
                     runOverflow = $true
                 })
+                if ($runsPaged.deadlineExhausted) {
+                    $gatherDeadlineRecordedForBuild = $true
+                }
             }
             $candidateRunsAll = @($allRuns | Where-Object {
                 ($_.failedTests -gt 0) -or
@@ -3258,9 +3306,23 @@ foreach ($buildRef in $buildRefsById.Values) {
             }
 
             foreach ($run in $candidateRuns) {
+                if ((Get-Date) -ge $gatherHardDeadline) {
+                    if (-not $gatherDeadlineRecordedForBuild) {
+                        $allUnexplainedLegs.Add([ordered]@{
+                                buildId = $buildRef.buildId
+                                recordName = "overall gather deadline reached before authenticated test results completed"
+                                logId = $null
+                                uninspected = $true
+                                runResultsError = $true
+                            })
+                        $gatherDeadlineRecordedForBuild = $true
+                    }
+                    break
+                }
                 try {
                     $resultsUrl = "$baseUrl/_apis/test/Runs/$($run.id)/results?outcomes=Failed&api-version=7.1"
-                    $results = Invoke-JsonUrl -Url $resultsUrl -AllowAuth
+                    $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $gatherHardDeadline
+                    $results = Invoke-JsonUrl -Url $resultsUrl -AllowAuth -TimeoutSec $requestTimeoutSec
                     foreach ($result in (ConvertTo-Array $results.value)) {
                         $failure = [ordered]@{
                             testName = $result.testCaseTitle
@@ -3306,6 +3368,23 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
+    if ((Get-Date) -ge $gatherHardDeadline) {
+        $deadlineMessage = "Overall gather budget of ${gatherBudgetSeconds}s was exhausted before base-build enrichment for AzDO build $($buildRef.buildId)."
+        $buildSummary.error = $deadlineMessage
+        if (-not $gatherDeadlineRecordedForBuild) {
+            $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $buildRef.buildId
+                    recordName = "overall gather deadline reached before base-build enrichment"
+                    recordType = "Task"
+                    result = "failed"
+                    logId = $null
+                    reason = $deadlineMessage
+                })
+        }
+        $builds.Add($buildSummary)
+        continue
+    }
+
     $definitionId = 0
     if ($build.definition -and $build.definition.id) {
         $definitionId = [int]$build.definition.id
@@ -3315,7 +3394,7 @@ foreach ($buildRef in $buildRefsById.Values) {
     # $LookbackBuilds would silently cap the leg diff (e.g. -RegressionBaseBuilds 10 with the default
     # -LookbackBuilds 5 could sample at most 5 and miss a base failure in an omitted build).
     $baseFetchTop = [Math]::Max($LookbackBuilds, $RegressionBaseBuilds)
-    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildRef.org -Project $buildRef.project -DefinitionId $definitionId -BaseBranch $pr.baseRefName -Top $baseFetchTop)
+    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildRef.org -Project $buildRef.project -DefinitionId $definitionId -BaseBranch $pr.baseRefName -Top $baseFetchTop -Deadline $gatherHardDeadline)
 
     $builds.Add($buildSummary)
 }
@@ -3346,6 +3425,17 @@ $baseRecordMapCache = @{}
 
 if ($BaselineBuildsPerDefinition -gt 0) {
     foreach ($build in $buildArray) {
+        if ((Get-Date) -ge $gatherHardDeadline) {
+            $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $build.id
+                    recordName = "overall gather deadline reached during base-branch sampling"
+                    recordType = "Task"
+                    result = "failed"
+                    logId = $null
+                    reason = "Base-branch enrichment was stopped so primary findings could be serialized."
+                })
+            break
+        }
         if (-not $build.accessible -or -not $build.metadata) {
             continue
         }
@@ -3380,7 +3470,17 @@ if ($BaselineBuildsPerDefinition -gt 0) {
         # look "all-green on base" -> a false regressed-vs-base signal. (The most-recent-tip baseline
         # above is unaffected: it only early-returns on result -eq 'succeeded'.)
         $legSampleBuilds = @($completed | Where-Object { $_.result -ne 'canceled' } | Select-Object -First $RegressionBaseBuilds)
-        $baseAgg = Get-AggregatedBaseLegMap -Org $build.org -Project $build.project -BaseBuilds $legSampleBuilds -Cache $baseRecordMapCache
+        $baseAgg = Get-AggregatedBaseLegMap -Org $build.org -Project $build.project -BaseBuilds $legSampleBuilds -Cache $baseRecordMapCache -Deadline $gatherHardDeadline
+        if ($baseAgg.truncated) {
+            $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $build.id
+                    recordName = "base leg sampling truncated at overall gather deadline"
+                    recordType = "Task"
+                    result = "failed"
+                    logId = $null
+                    reason = "Not all base-build timelines were inspected before finalization."
+                })
+        }
         if ($baseAgg.accessible) {
             $prBuildToBaseMap[[string]$build.id] = [ordered]@{
                 baseBuildId = [int]$mostRecent.id
@@ -3428,6 +3528,17 @@ if ($BaselineBuildsPerDefinition -gt 0) {
         # the base branch can be flagged as pre-existing.
         $notSucceeded = @($completed | Where-Object { $_.result -in @('failed', 'partiallySucceeded', 'canceled') })
         foreach ($base in @($notSucceeded | Select-Object -First $BaselineBuildsPerDefinition)) {
+            if ((Get-Date) -ge $gatherHardDeadline) {
+                $allUnexplainedLegs.Add([ordered]@{
+                        buildId = $build.id
+                        recordName = "baseline log sampling truncated at overall gather deadline"
+                        recordType = "Task"
+                        result = "failed"
+                        logId = $null
+                        reason = "Not all baseline logs were inspected before finalization."
+                    })
+                break
+            }
             $baseKey = "$($build.org)|$($build.project)|$($base.id)"
             if ($baselineInspected.ContainsKey($baseKey)) {
                 continue
@@ -3435,7 +3546,7 @@ if ($BaselineBuildsPerDefinition -gt 0) {
             $baselineInspected[$baseKey] = $true
 
             Write-Host "Inspecting baseline build $($base.id) for $defName..."
-            $extract = Get-BuildLogTestFailures -Org $build.org -Project $build.project -BuildId ([int]$base.id)
+            $extract = Get-BuildLogTestFailures -Org $build.org -Project $build.project -BuildId ([int]$base.id) -Deadline $gatherHardDeadline
             # Opus R10 #1: ONLY the most-recent completed base build is authoritative for the DISMISSAL
             # decision (matching the doc and the leg-map, which both use $mostRecent). An OLDER
             # not-succeeded build in the lookback window may carry a failure that was since FIXED and is
