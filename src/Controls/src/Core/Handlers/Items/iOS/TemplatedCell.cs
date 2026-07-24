@@ -85,10 +85,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 
+			DetachFromItemsView();
+		}
+
+		// Managed-only cleanup: clears the bound view's BindingContext and removes it from the
+		// ItemsView's logical children (mirrors TemplatedCell2.Unbind()). Without this, a view
+		// created for this cell's DataTemplate stays reachable via the ItemsView's internal
+		// children list even after the cell stops being visible/bound, which prevents the view
+		// (and its handler/platform view) from ever being collected.
+		void DetachFromItemsView()
+		{
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.BindingContext = null;
+				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			// Ensure the logical-child link back to the ItemsView is always cleaned up when this
+			// cell is deallocated, even if PrepareForReuse/Unbind was never called for this
+			// instance (e.g. the cell was discarded rather than recycled by UICollectionView).
+			DetachFromItemsView();
+
+			base.Dispose(disposing);
 		}
 
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
@@ -216,6 +237,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (oldElement != null && !ReferenceEquals(bindingContext, oldElement.BindingContext))
 				{
 					oldElement.BindingContext = bindingContext;
+				}
+
+				// This cell may have been unbound while off-screen (e.g. its previous item was
+				// removed from the ItemsSource, see ItemsViewController.CellDisplayingEndedFromDelegate),
+				// which detaches the view from the ItemsView's logical children (Parent becomes null).
+				// If the cell is now being reused/rebound with the same template, the view must be
+				// re-attached; otherwise it silently drops out of the logical tree even though it's
+				// visibly bound and displayed again. Mirrors TemplatedCell2.BindVirtualView().
+				if (oldElement is not null && oldElement.Parent is null)
+				{
+					itemsView.AddLogicalChild(oldElement);
 				}
 			}
 

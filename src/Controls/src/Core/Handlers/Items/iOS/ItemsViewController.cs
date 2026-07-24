@@ -76,7 +76,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal virtual void Disconnect()
 		{
+			UnbindVisibleCells();
 			DisposeItemsSource();
+		}
+
+		// Deterministically unbind every currently-visible templated cell when this controller's
+		// handler disconnects (e.g. the page hosting this CollectionView is being removed/popped).
+		// Without this, cleanup (clearing BindingContext and removing the bound view from the
+		// ItemsView's logical children, see TemplatedCell.Unbind/DetachFromItemsView) relies on
+		// either CellDisplayingEndedFromDelegate's item-equality heuristic (which intentionally
+		// skips cells whose bound item hasn't changed - the common case when the whole CollectionView
+		// is being torn down rather than an individual item being replaced) or on the cell's own
+		// native deallocation, whose timing relative to this handler disconnecting is not guaranteed
+		// to happen promptly on every platform. Calling Unbind() here is idempotent (safe even if a
+		// cell was already unbound) and ensures the leak-prone reference is always released as soon
+		// as the CollectionView itself goes away.
+		void UnbindVisibleCells()
+		{
+			if (CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
+			{
+				foreach (var cell in visibleCells)
+				{
+					if (cell is TemplatedCell templatedCell)
+					{
+						templatedCell.Unbind();
+					}
+				}
+			}
 		}
 
 		protected override void Dispose(bool disposing)
