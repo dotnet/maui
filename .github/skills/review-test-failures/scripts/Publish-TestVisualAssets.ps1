@@ -174,6 +174,16 @@ function Test-AzDoAttachmentUrl {
     if ($uri.Scheme -ne "https" -or $uri.Host -ine "dev.azure.com") {
         return $false
     }
+    # Strict allowlist: reject any URL that carries userinfo, a non-default port, a query, or a
+    # fragment. This gate authorizes downloading an untrusted CI attachment, so the URL must be an
+    # unadorned https://dev.azure.com/<expected path> with nothing that could change, redirect, or
+    # add ambiguity to what is actually fetched.
+    if (-not [string]::IsNullOrEmpty($uri.UserInfo) -or
+        -not $uri.IsDefaultPort -or
+        -not [string]::IsNullOrEmpty($uri.Query) -or
+        -not [string]::IsNullOrEmpty($uri.Fragment)) {
+        return $false
+    }
     $expectedPath = "/dnceng-public/public/_apis/test/Runs/$RunId/Results/$ResultId/Attachments/$AttachmentId"
     return $uri.AbsolutePath -ieq $expectedPath
 }
