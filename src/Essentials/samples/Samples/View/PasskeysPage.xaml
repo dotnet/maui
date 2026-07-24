@@ -26,7 +26,7 @@
             <Label Text="① Account (username + password)" FontAttributes="Bold" />
             <Label Text="The real bootstrap: sign in against your own ASP.NET Core Identity server. No browser — just a native form post that sets the session cookie."
                    FontSize="12" TextColor="Gray" />
-            <Entry Text="{Binding Username}" Placeholder="alice@example.com" Keyboard="Email" />
+            <Entry Text="{Binding Username}" Placeholder="Email" Keyboard="Email" />
             <Entry Text="{Binding Password}" Placeholder="Password" IsPassword="True" />
             <Button Text="Sign up (new account)" Command="{Binding SignUpCommand}" IsEnabled="{Binding IsNotBusy}" />
             <Button Text="Sign in with password" Command="{Binding SignInPasswordCommand}" IsEnabled="{Binding IsNotBusy}" />

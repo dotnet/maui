@@ -136,7 +136,7 @@ native client **must** use a cookie container (the MAUI sample does).
 ```
 POST /passkeys/register/begin    (signed-in session required)  -> PublicKeyCredentialCreationOptions JSON
 POST /passkeys/register/finish   (body: attestation JSON)      -> { registered, username }
-POST /passkeys/login/begin?username=alice@example.com          -> PublicKeyCredentialRequestOptions JSON
+POST /passkeys/login/begin?username=<email>                    -> PublicKeyCredentialRequestOptions JSON
 POST /passkeys/login/finish      (body: assertion JSON)        -> { authenticated, username }
 ```
 
