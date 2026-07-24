@@ -217,6 +217,10 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning restore CS0618 // Type or member is obsolete
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Grid))]
+	[InlineData(typeof(StackLayout))]
+	[InlineData(typeof(VerticalStackLayout))]
+	[InlineData(typeof(HorizontalStackLayout))]
+	[InlineData(typeof(AbsoluteLayout))]
 #if TESTS_FAILS_ON_WINDOWS //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(HybridWebView))]
 #endif

@@ -673,14 +673,12 @@ function Get-ExpectedHighestShippedTag {
 
 if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection against live repo" -ForegroundColor Cyan
-    Write-Host "  Under the tag-existence rule + Lane 1 staleness guard we expect TWO trackers:" -ForegroundColor DarkGray
-    Write-Host "    - SR8 (patch=80, tag 10.0.80 exists)    - shipped, refresh-until-closed (highest shipped SR)" -ForegroundColor DarkGray
-    Write-Host "    - SR9 (candidate off main)              - active" -ForegroundColor DarkGray
-    Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark 80):" -ForegroundColor DarkGray
-    Write-Host "    - SR2 (patch=21, no tag 10.0.21)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
-    Write-Host "    - SR3 (patch=33, no tag 10.0.33)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
-    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71); NOT the highest shipped SR -> retired (no tracker)." -ForegroundColor DarkGray
-    Write-Host "    NOTE: SR8 shipped 2026-06-22 (tag 10.0.80); as the HIGHEST shipped SR it emits a 'shipped' tracker that refreshes until a human closes it." -ForegroundColor DarkGray
+    Write-Host "  Under the tag-existence rule + Lane 1 staleness guard, the SR set is asserted" -ForegroundColor DarkGray
+    Write-Host "  STRUCTURALLY (drift-proof), not pinned: the highest shipped SR emits a 'shipped'" -ForegroundColor DarkGray
+    Write-Host "  refresh tracker, plus >=0 in-flight SRs (branch cut, unshipped) and exactly one" -ForegroundColor DarkGray
+    Write-Host "  candidate SR (the next SR off main). Today: SR8 shipped, SR9 in-flight, SR10 candidate." -ForegroundColor DarkGray
+    Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark): e.g. SR2, SR3." -ForegroundColor DarkGray
+    Write-Host "    RETIRED (shipped, below the highest shipped SR): e.g. SR7 (10.0.71)." -ForegroundColor DarkGray
 
     $detectOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -698,8 +696,21 @@ if (-not $SkipE2E) {
                       -Expected $expectedHighestShipped -Actual $detected.highestShippedTag
             Assert-Eq -Label "highestShippedPreviewTag carries net10's last preview" `
                       -Expected '10.0.0-preview.7.25406.3' -Actual $detected.highestShippedPreviewTag
-            Assert-Eq -Label "tracker count is 2 (SR8 shipped+refresh, SR9 candidate; SR7 retired; SR2/SR3 stale-dropped)" `
-                      -Expected 2 -Actual $detected.trackers.Count
+            # Tracker COUNT is not pinned — it advances every time an SR ships or is
+            # cut. Assert the invariant SHAPE instead: >=1 SR tracker, exactly one
+            # candidate (the next SR off main), at most one 'shipped' refresh tracker
+            # (the highest shipped SR), and a clean shipped+in-flight+candidate
+            # partition. Today that's SR8 shipped + SR9 in-flight + SR10 candidate;
+            # when SR9 ships this stays green (SR9 shipped + SR10 in-flight + SR11
+            # candidate) with no per-cut edit.
+            $srTrackers   = @($detected.trackers | Where-Object branchType -eq 'sr')
+            $shippedSrs   = @($srTrackers | Where-Object mode -eq 'shipped')
+            $inflightSrs  = @($srTrackers | Where-Object mode -eq 'in-flight' | Sort-Object { [int]$_.srNumber })
+            $candidateSrs = @($srTrackers | Where-Object mode -eq 'candidate')
+            Assert-Eq -Label "at least one SR tracker detected"                    -Expected $true -Actual ($srTrackers.Count -ge 1)
+            Assert-Eq -Label "exactly one candidate SR (the next SR off main)"     -Expected 1     -Actual $candidateSrs.Count
+            Assert-Eq -Label "at most one shipped refresh SR (the highest shipped SR)" -Expected $true -Actual ($shippedSrs.Count -le 1)
+            Assert-Eq -Label "SR trackers partition into shipped + in-flight + candidate" -Expected $srTrackers.Count -Actual ($shippedSrs.Count + $inflightSrs.Count + $candidateSrs.Count)
             # All trackers in single-major net10 mode must be SR-flavored. (Net10's
             # previews 1–7 all shipped + no in-flight preview branch -> no preview tracker.)
             foreach ($t in $detected.trackers) {
@@ -723,78 +734,76 @@ if (-not $SkipE2E) {
             Assert-Eq -Label "SR7 tracker absent (shipped as 10.0.71)" `
                       -Expected $false -Actual ($bySr.ContainsKey(7))
 
-            # SR8 (SHIPPED — highest shipped SR (tag 10.0.80) -> emits a
-            # 'shipped' tracker that refreshes until a human closes it).
-            if ($bySr.ContainsKey(8)) {
-                $sr8 = $bySr[8]
-                Assert-Eq -Label "SR8 mode = shipped"           -Expected 'shipped' -Actual $sr8.mode
-                Assert-Eq -Label "SR8 canonicalKey"             -Expected 'net10-sr8' -Actual $sr8.canonicalKey
-                Assert-Eq -Label "SR8 branchName"               -Expected 'release/10.0.1xx-sr8' -Actual $sr8.branchName
-                Assert-Eq -Label "SR8 branchExists = true"      -Expected $true -Actual $sr8.branchExists
-                Assert-Eq -Label "SR8 surveyRef = its own branch (shipped surveys the SR branch)" `
-                          -Expected 'release/10.0.1xx-sr8' -Actual $sr8.surveyRef
-                Assert-Eq -Label "SR8 issue title = shipped format" `
-                          -Expected '[Release Readiness] .NET 10 SR8 — shipped (release/10.0.1xx-sr8)' `
-                          -Actual $sr8.issueTitle
-                Assert-Eq -Label "SR8 expectedTag = 10.0.80"    -Expected '10.0.80' -Actual $sr8.expectedTag
-                # hasRecentActivity is a 7-day-window signal (git log --since=7.days
-                # against the live branch), so its VALUE is wall-clock dependent and
-                # MUST NOT be pinned here — SR8 idling >7 days at the tail of a cycle
-                # is a NORMAL state that would (correctly) report $false. Assert only
-                # that the detector emits it as a real [bool]. The window math itself
-                # is covered deterministically by the synthetic-fixture unit test
-                # ([Unit] Get-RecentCommitCount recency window).
-                Assert-Eq -Label "SR8 hasRecentActivity is a [bool] (value is date-dependent)" `
-                          -Expected $true -Actual ($sr8.hasRecentActivity -is [bool])
-                Assert-Eq -Label "SR8 regression labels"        `
-                          -Expected 'regressed-in-10.0.70,regressed-in-10.0.80' `
-                          -Actual ($sr8.regressionLabels -join ',')
-            } else {
-                Write-Host "  ❌ SR8 tracker missing" -ForegroundColor Red; $script:failed++
+            # SR8 (shipped 2026-07-03 as 10.0.80) is the HIGHEST shipped SR, so under
+            # main's model it does NOT retire — it emits a 'shipped' refresh tracker
+            # (refresh-until-closed) while SR9's branch is in-flight and SR10 is the
+            # candidate off main. Assert this structurally from the detector's own
+            # shipped set so it survives the next ship (SR9 shipped, SR10 in-flight, ...).
+            foreach ($sh in $shippedSrs) {
+                Assert-Eq -Label "shipped SR$($sh.srNumber) mode = shipped"                     -Expected 'shipped'      -Actual $sh.mode
+                Assert-Eq -Label "shipped SR$($sh.srNumber) branchExists = true"                -Expected $true          -Actual $sh.branchExists
+                Assert-Eq -Label "shipped SR$($sh.srNumber) surveys its own branch"             -Expected $sh.branchName -Actual $sh.surveyRef
+                Assert-Eq -Label "shipped SR$($sh.srNumber) ship tag $($sh.expectedTag) EXISTS"  -Expected $true         -Actual ([bool](& git -C $detected.repo tag --list $sh.expectedTag))
             }
 
-            # SR9 (candidate from main, ACTIVE)
-            if ($bySr.ContainsKey(9)) {
-                $sr9 = $bySr[9]
-                Assert-Eq -Label "SR9 mode = candidate"         -Expected 'candidate' -Actual $sr9.mode
-                Assert-Eq -Label "SR9 canonicalKey"             -Expected 'net10-sr9' -Actual $sr9.canonicalKey
-                Assert-Eq -Label "SR9 branchName = canonical proposed slug" `
-                          -Expected 'release/10.0.1xx-sr9' -Actual $sr9.branchName
-                Assert-Eq -Label "SR9 branchExists = false (not cut yet)" `
-                          -Expected $false -Actual $sr9.branchExists
-                Assert-Eq -Label "SR9 surveyRef = main"         -Expected 'main' -Actual $sr9.surveyRef
-                Assert-Eq -Label "SR9 priorSrBranch = SR8 branch" `
-                          -Expected 'release/10.0.1xx-sr8' -Actual $sr9.priorSrBranch
-                Assert-Eq -Label "SR9 expectedPatch = 90"       -Expected 90 -Actual $sr9.expectedPatch
-                # Same 7-day-window caveat as SR8: don't pin the value, assert the type.
-                Assert-Eq -Label "SR9 hasRecentActivity is a [bool] (value is date-dependent)" `
-                          -Expected $true -Actual ($sr9.hasRecentActivity -is [bool])
-                Assert-Eq -Label "SR9 regression labels"        `
-                          -Expected 'regressed-in-10.0.80,regressed-in-10.0.90' `
-                          -Actual ($sr9.regressionLabels -join ',')
-            } else {
-                Write-Host "  ❌ SR9 tracker missing" -ForegroundColor Red; $script:failed++
+            # Drift-proof invariant: every in-flight/candidate SR does NOT yet have its
+            # ship tag in git (only the 'shipped' refresh tracker carries an existing
+            # ship tag). Uses each tracker's own expectedTag so the non-uniform patch
+            # convention (SR7 shipped as 10.0.71, SR8 as 10.0.80) is honored.
+            foreach ($active in @($inflightSrs + $candidateSrs)) {
+                Assert-Eq -Label "active SR$($active.srNumber) has no ship tag $($active.expectedTag) yet [unshipped invariant]" `
+                          -Expected $false `
+                          -Actual ([bool](& git -C $detected.repo tag --list $active.expectedTag))
             }
 
-            # Every active SR tracker must EXPOSE a hasRecentActivity flag, but that
-            # flag is a 7-day-window signal (git log --since=7.days), NOT a synonym
-            # for "active": an active SR can legitimately sit idle for >7 days near
-            # the tail of a cycle and report hasRecentActivity=$false. So assert the
-            # flag is a real [bool] — never a hardcoded, date-dependent $true. SR7
-            # shipped 2026-06-05 and (no longer the highest shipped SR) is retired;
-            # SR8 (shipped, highest -> refresh-until-closed) + SR9 (candidate) are
-            # the tracked set.
-            foreach ($srNum in @(8, 9)) {
-                if ($bySr.ContainsKey($srNum)) {
-                    Assert-Eq -Label "SR$srNum hasRecentActivity is a [bool] (active SR; value date-dependent)" `
-                              -Expected $true -Actual ($bySr[$srNum].hasRecentActivity -is [bool])
-                    # Pin the detector's count->flag WIRING (hasRecentActivity = recentCommitCount > 0)
-                    # without pinning the date-dependent value: both fields come off the SAME tracker
-                    # computed at the SAME instant, so this invariant holds no matter how active the
-                    # branch is, yet still catches an inverted/hardcoded mapping.
-                    Assert-Eq -Label "SR$srNum hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
-                              -Expected $true -Actual ($bySr[$srNum].hasRecentActivity -eq ([int]$bySr[$srNum].recentCommitCount -gt 0))
-                }
+            # --- In-flight SRs: branch cut, survey their OWN branch, no priorSrBranch. ---
+            #     (Derived from the detector's output, so this survives future SR cuts
+            #     instead of pinning "SR9". Real bugs still caught: mode<->branchExists
+            #     wiring, surveyRef routing, canonical slug, and priorSrBranch emptiness.)
+            foreach ($fl in $inflightSrs) {
+                Assert-Eq -Label "in-flight SR$($fl.srNumber) mode = in-flight"           -Expected 'in-flight' -Actual $fl.mode
+                Assert-Eq -Label "in-flight SR$($fl.srNumber) branchExists = true"         -Expected $true       -Actual $fl.branchExists
+                Assert-Eq -Label "in-flight SR$($fl.srNumber) surveys its own branch"      -Expected $fl.branchName -Actual $fl.surveyRef
+                Assert-Eq -Label "in-flight SR$($fl.srNumber) canonicalKey"                -Expected "net10-sr$($fl.srNumber)" -Actual $fl.canonicalKey
+                Assert-Eq -Label "in-flight SR$($fl.srNumber) branchName = canonical slug" -Expected "release/10.0.1xx-sr$($fl.srNumber)" -Actual $fl.branchName
+                Assert-Eq -Label "in-flight SR$($fl.srNumber) has no priorSrBranch"        -Expected $true       -Actual ([string]::IsNullOrEmpty($fl.priorSrBranch))
+            }
+
+            # --- Candidate SR: off main, branch NOT cut, numbered one past the highest
+            #     in-flight SR, with priorSrBranch = that highest in-flight branch. ---
+            $cand = $candidateSrs[0]
+            $highestInflight = if ($inflightSrs.Count -gt 0) { $inflightSrs[-1] } else { $null }
+            Assert-Eq -Label "candidate SR mode = candidate"                    -Expected 'candidate' -Actual $cand.mode
+            Assert-Eq -Label "candidate SR surveyRef = main"                    -Expected 'main'      -Actual $cand.surveyRef
+            Assert-Eq -Label "candidate SR branchExists = false (not cut yet)"  -Expected $false      -Actual $cand.branchExists
+            Assert-Eq -Label "candidate SR canonicalKey"                        -Expected "net10-sr$($cand.srNumber)" -Actual $cand.canonicalKey
+            Assert-Eq -Label "candidate SR branchName = canonical proposed slug" -Expected "release/10.0.1xx-sr$($cand.srNumber)" -Actual $cand.branchName
+            if ($highestInflight) {
+                Assert-Eq -Label "candidate SR number = highest in-flight SR + 1" `
+                          -Expected ([int]$highestInflight.srNumber + 1) -Actual ([int]$cand.srNumber)
+                Assert-Eq -Label "candidate SR priorSrBranch = highest in-flight branch" `
+                          -Expected $highestInflight.branchName -Actual $cand.priorSrBranch
+            } else {
+                Write-Host "  ❌ no in-flight SR to anchor candidate numbering" -ForegroundColor Red; $script:failed++
+            }
+
+            # --- Per-SR invariants for BOTH modes (drift-proof). The regression-label
+            #     pair mirrors New-RegressionLabelList exactly ({prior, own} at N*10, or
+            #     the GA label when prior is 0); expectedTag is the detector's own
+            #     "10.0.<expectedPatch>" construction; hasRecentActivity is a real [bool]
+            #     wired to recentCommitCount (never a hardcoded, date-dependent $true). ---
+            foreach ($t in $srTrackers) {
+                $priorSr = [int]$t.srNumber - 1
+                $priorLabel = if ($priorSr -le 0) { 'regressed-in-10.0.0' } else { "regressed-in-10.0.$($priorSr * 10)" }
+                $expectedLabels = "$priorLabel,regressed-in-10.0.$([int]$t.srNumber * 10)"
+                Assert-Eq -Label "SR$($t.srNumber) regression labels = prior + own patch" `
+                          -Expected $expectedLabels -Actual ($t.regressionLabels -join ',')
+                Assert-Eq -Label "SR$($t.srNumber) expectedTag = 10.0.<expectedPatch>" `
+                          -Expected "10.0.$([int]$t.expectedPatch)" -Actual $t.expectedTag
+                Assert-Eq -Label "SR$($t.srNumber) hasRecentActivity is a [bool] (value date-dependent)" `
+                          -Expected $true -Actual ($t.hasRecentActivity -is [bool])
+                Assert-Eq -Label "SR$($t.srNumber) hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
+                          -Expected $true -Actual ($t.hasRecentActivity -eq ([int]$t.recentCommitCount -gt 0))
             }
         }
     } finally {
@@ -803,12 +812,12 @@ if (-not $SkipE2E) {
 
     # ──────────── E2E: -AllActiveMajors multi-major envelope ────────────
     # In the unified post-consolidation shape, one invocation must surface every
-    # active major (main's + any net<N>.0 ≥ main). Expected current state:
-    #   - net10 -> 2 SR trackers (SR8 shipped+refresh, SR9 candidate), no preview tracker
-    #     (SR7 shipped 2026-06-05 and is no longer the highest shipped SR -> retired;
-    #      SR8 shipped 2026-06-22 as the HIGHEST shipped SR -> 'shipped' tracker that
-    #      refreshes until closed; SR2/SR3 dropped by the Lane 1 staleness guard;
-    #      every net10 preview branch already shipped + net10.0 isn't in preview cycle)
+    # active major (main's + any net<N>.0 ≥ main). Expected current state (asserted
+    # structurally so it survives SR cuts/ships and preview transitions):
+    #   - net10 -> ≥1 SR tracker + exactly one candidate SR, no preview lane
+    #     (SR2/SR3 dropped by the Lane 1 staleness guard; shipped SRs dropped by
+    #      shipped-exclusion; every net10 preview branch already shipped + net10.0
+    #      isn't in a preview cycle). Today: SR9 in-flight + SR10 candidate.
     #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 2 preview trackers
     #     (preview6 in-flight: release/11.0.1xx-preview6 was cut, tag not yet published;
     #      preview7 candidate: net11.0 bumped to PreReleaseVersionIteration=7, so the
@@ -818,8 +827,8 @@ if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
     Write-Host "  Expected:" -ForegroundColor DarkGray
     Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
-    Write-Host "    - net10 trackers: 2 SR (sr8 shipped/sr9 candidate), 0 preview (SR7 retired; SR2/SR3 stale-dropped)" -ForegroundColor DarkGray
-    Write-Host "    - net11 trackers: 0 SR (pre-GA), 2 preview (preview6 in-flight + preview7 candidate from net11.0)" -ForegroundColor DarkGray
+    Write-Host "    - net10 trackers: >=1 SR + exactly 1 candidate, 0 preview (today SR9 in-flight + SR10 candidate)" -ForegroundColor DarkGray
+    Write-Host "    - net11 trackers: 0 SR (pre-GA), 2 preview (preview6 in-flight, preview7 candidate)" -ForegroundColor DarkGray
 
     $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -845,11 +854,17 @@ if (-not $SkipE2E) {
                 $expectedNet10Highest = Get-ExpectedHighestShippedTag -RepoPath $multi.repo -Major 10
                 Assert-Eq -Label "net10 highestShippedTag matches highest stable 10.0.M tag (derived)" `
                           -Expected $expectedNet10Highest -Actual $net10.highestShippedTag
-                Assert-Eq -Label "net10 tracker count is 2 (no preview lane; SR8 shipped+refresh, SR9 candidate; SR7 retired, SR2/SR3 stale-dropped)" -Expected 2 -Actual $net10.trackers.Count
-                $srCount = @($net10.trackers | Where-Object branchType -eq 'sr').Count
-                $previewCount = @($net10.trackers | Where-Object branchType -eq 'preview').Count
-                Assert-Eq -Label "net10 has 2 SR trackers"      -Expected 2 -Actual $srCount
-                Assert-Eq -Label "net10 has 0 preview trackers" -Expected 0 -Actual $previewCount
+                $net10Sr        = @($net10.trackers | Where-Object branchType -eq 'sr')
+                $net10Preview   = @($net10.trackers | Where-Object branchType -eq 'preview')
+                $net10Candidate = @($net10Sr | Where-Object mode -eq 'candidate')
+                # Count is not pinned (advances every SR cut/ship). Assert the shape:
+                # ≥1 SR tracker, exactly one candidate SR, no preview lane (every net10
+                # preview shipped + net10.0 isn't in a preview cycle), and a clean SR-only
+                # partition. Today: SR9 in-flight + SR10 candidate.
+                Assert-Eq -Label "net10 has at least one SR tracker"      -Expected $true -Actual ($net10Sr.Count -ge 1)
+                Assert-Eq -Label "net10 has exactly one candidate SR"     -Expected 1     -Actual $net10Candidate.Count
+                Assert-Eq -Label "net10 has 0 preview trackers"          -Expected 0     -Actual $net10Preview.Count
+                Assert-Eq -Label "net10 trackers are all SR (partition)"  -Expected $net10.trackers.Count -Actual $net10Sr.Count
             } else {
                 Write-Host "  ❌ majors[] missing net10 entry" -ForegroundColor Red; $script:failed++
             }
@@ -1771,6 +1786,99 @@ $clsRevertTitle = Classify-RegressionCandidate `
 Assert-Eq -Label "Comment-cited 'Revert ...' PR is a rollback, not a fix → stays no-fix-yet" `
     -Expected 'no-fix-yet' -Actual $clsRevertTitle.classification
 
+# ───── Classify-RegressionCandidate (CLOSED issue never open-on-main) ─────
+# Real-world case: SR9 tracker #35876 flagged CLOSED issue #35615 as `open-on-main`
+# (an ACTIVE Tier-2 regression) because a giant still-OPEN 'Candidate' changelog PR
+# (#35716) `Fixes`-listed dozens of issues. That is contradictory — an unmerged PR
+# cannot have closed a completed issue. The guard reroutes open-on-main + CLOSED to
+# a Tier-3 class: `closed-fix-unlinked` when a merged fix is verifiably on the SR, or
+# the honest `no-fix-yet` fallback otherwise. It must NOT change behavior for
+# genuinely-OPEN issues.
+Write-Host "`n[Unit] Classify-RegressionCandidate (CLOSED issue never open-on-main)" -ForegroundColor Cyan
+
+# A single OPEN 'Candidate' changelog PR on main that survives the evidence filter
+# (body `Fixes #35615` → closing-keyword; base=main; a real product file so it is
+# NOT tooling-only; not a Revert title) → the strong-PR walk verdict is open-on-main.
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+function Test-CommitOnBranch  { param([string]$Sha, [string]$BranchRef) return $false }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    if ([int]$PrNumber -eq 35716) {
+        return [pscustomobject]@{
+            number      = 35716
+            title       = '[Candidate] SR9 changelog'
+            state       = 'OPEN'
+            baseRefName = 'main'
+            mergedAt    = $null
+            closedAt    = $null
+            body        = 'Fixes #35615'
+            mergeCommit = $null
+            files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/Something.cs'; additions = 1; deletions = 0 })
+        }
+    }
+    # The comment-cited fix PR (used only in the recovery test below): MERGED into
+    # inflight/candidate, present on SR9 via the (#num) subject token.
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix the actual regression'
+        state       = 'MERGED'
+        baseRefName = 'inflight/candidate'
+        mergedAt    = '2026-06-01T00:00:00Z'
+        closedAt    = '2026-06-01T00:00:00Z'
+        body        = 'Fixes #35104'   # deliberately a DIFFERENT issue: recovery fires on the COMMENT citation, not this PR body
+        mergeCommit = [pscustomobject]@{ oid = 'c1d6d72768c0ffee' }
+        files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/CollectionView.cs'; additions = 4; deletions = 0 })
+    }
+}
+
+# Test 1 — CLOSED issue + OPEN candidate on main + NO comment-cited fix →
+# reroute to `no-fix-yet` (NOT `open-on-main`).
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+$clsClosedNoFix = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35615; state = 'CLOSED' }) `
+    -CandidatePrs @(35716) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "CLOSED issue + OPEN candidate PR → no-fix-yet, never open-on-main" `
+    -Expected 'no-fix-yet' -Actual $clsClosedNoFix.classification
+# `no-fix-yet` is raw Tier 1 via Get-VerdictTier, but Get-OverallVerdict downgrades a
+# CLOSED no-fix-yet to non-blocking (🟢). That downgrade is the whole point: it turns
+# the false blocking Tier-2 `open-on-main` into a Tier-3 (non-blocking) outcome.
+$vClosedNoFix = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @(@{ classification = $clsClosedNoFix.classification; state = 'CLOSED' })
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "CLOSED no-fix-yet is non-blocking (Tier 3 effective → 🟢)" `
+    -Expected '🟢' -Actual $vClosedNoFix.symbol
+
+# Test 2 — CLOSED issue + same OPEN candidate on main, BUT a comment cites a MERGED
+# fix that is on the SR branch → the recovery wins → `closed-fix-unlinked`.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 35028; evidence = 'fix-phrase' }) }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return ($PrNumber -eq 35028 -and $BranchRef -eq 'origin/release/10.0.1xx-sr9') }
+$clsClosedRecovered = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35615; state = 'CLOSED' }) `
+    -CandidatePrs @(35716) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "CLOSED issue + OPEN candidate + comment-cited merged fix on SR → closed-fix-unlinked (recovery wins)" `
+    -Expected 'closed-fix-unlinked' -Actual $clsClosedRecovered.classification
+Assert-Eq -Label "closed-fix-unlinked recovery is Tier 3 (non-blocking)" `
+    -Expected 3 -Actual (Get-VerdictTier -Classification $clsClosedRecovered.classification)
+
+# Test 3 — REGRESSION GUARD: OPEN issue + OPEN candidate on main → the guard is
+# gated on CLOSED, so a genuinely-open regression STAYS `open-on-main`.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+$clsOpenIssue = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35615; state = 'OPEN' }) `
+    -CandidatePrs @(35716) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "OPEN issue + OPEN candidate PR → stays open-on-main (guard is CLOSED-only)" `
+    -Expected 'open-on-main' -Actual $clsOpenIssue.classification
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 
@@ -2222,6 +2330,30 @@ $genIdx = $mdBan.IndexOf('**Generated**')
 $banIdx = $mdBan.IndexOf('Nightly dogfood feed is STALE')
 Assert-Eq -Label "Banner appears after the **Generated** line" -Expected $true `
     -Actual ($genIdx -ge 0 -and $banIdx -gt $genIdx)
+
+# Report freshness banner (🕐/⏳) renders below **Generated** and is DERIVED-AT-RENDER,
+# so it must NOT perturb the semantic hash. Render the report TWICE with DIFFERENT
+# metadata.fetchedAt values: this changes both the **Generated** line AND the freshness
+# banner text, yet the sha= marker MUST stay identical (fetchedAt is excluded from the
+# hash). If the render-time banner ever leaked into Get-ReportSemanticHash, the two
+# hashes would diverge and the workflow's idempotent no-op would churn every run.
+$mdFreshOld = $mdData.Clone(); $mdFreshOld.metadata = $mdData.metadata.Clone(); $mdFreshOld.metadata.fetchedAt = '2025-01-01T00:00:00Z'
+$mdFreshNew = $mdData.Clone(); $mdFreshNew.metadata = $mdData.metadata.Clone(); $mdFreshNew.metadata.fetchedAt = '2026-07-06T12:00:00Z'
+$mdRenderOld = Format-MarkdownReport -Data $mdFreshOld -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$mdRenderNew = Format-MarkdownReport -Data $mdFreshNew -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$shaRenderOld = ([regex]::Match($mdRenderOld, 'release-readiness-hash: sha=([0-9a-f]{64})')).Groups[1].Value
+$shaRenderNew = ([regex]::Match($mdRenderNew, 'release-readiness-hash: sha=([0-9a-f]{64})')).Groups[1].Value
+# Guard against a vacuous pass: if the sha marker were ever renamed/reformatted, BOTH
+# extractions would yield '' and the equality assertion below would pass on ''=='' while
+# silently masking a real regression. Require a genuine 64-hex digest on each render first.
+Assert-Eq -Label "Hash-stability: old render emits a 64-hex sha" -Expected $true -Actual ($shaRenderOld -match '^[0-9a-f]{64}$')
+Assert-Eq -Label "Hash-stability: new render emits a 64-hex sha" -Expected $true -Actual ($shaRenderNew -match '^[0-9a-f]{64}$')
+$banRenderOld = (($mdRenderOld -split "`n") | Where-Object { $_ -match 'Report generated' }) -join ''
+$banRenderNew = (($mdRenderNew -split "`n") | Where-Object { $_ -match 'Report generated' }) -join ''
+Assert-Eq -Label "Freshness banner text differs when fetchedAt differs" -Expected $true `
+    -Actual ($banRenderOld -ne '' -and $banRenderNew -ne '' -and $banRenderOld -ne $banRenderNew)
+Assert-Eq -Label "Semantic hash is STABLE despite freshness-banner/fetchedAt change (no-op intact)" `
+    -Expected $shaRenderOld -Actual $shaRenderNew
 
 # Without TrackerKey: no tracker marker, no visible Tracker line
 $mdNoTracker = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
@@ -4056,12 +4188,19 @@ $prMergeP0   = [PSCustomObject]@{ number = 3; author = $humanLogin;   labels = $
 $prMaestro   = [PSCustomObject]@{ number = 4; author = $maestroLogin; labels = $plainLbl; headRefName = 'darc-net11.0-def';       title = 'Update dependencies' }
 $prHuman     = [PSCustomObject]@{ number = 5; author = $humanLogin;   labels = $plainLbl; headRefName = 'fix/y';                  title = 'Fix Y' }
 $prMergeUp   = [PSCustomObject]@{ number = 6; author = $humanLogin;   labels = $plainLbl; headRefName = 'merge/main-to-net11.0';  title = "[automated] Merge branch 'main' => 'net11.0'" }
-# Inflight (net<major>.0) PRs: a Maestro one (must still bucket as Maestro) and a
+# Human-authored component-bump PR targeting the survey ref (models #36433: rmarinho
+# "[release/11.0.1xx-preview6] Bump dotnet/dotnet (BAR ...)", head `update-<id>`).
+# Author is NOT dotnet-maestro, so author-only detection missed it; it must now
+# bucket as a dependency-flow PR (and hoist to 🔴 High-priority items), NOT as a
+# generic human release-branch PR.
+$prHumanBump = [PSCustomObject]@{ number = 9; author = $humanLogin;   labels = $plainLbl; headRefName = 'update-321614';           title = '[release/11.0.1xx-preview6] Bump dotnet/dotnet (BAR 321614), dotnet/android (BAR 321622) and dotnet/macios (BAR 321780)' }
+# Inflight (net<major>.0) PRs: a Maestro one (must NOT bucket as Maestro — a
+# branched preview only reports dependency bumps against its own branch) and a
 # p/0-labelled one (must NOT escalate — only survey-ref PRs block).
 $prInflightMaestro = [PSCustomObject]@{ number = 7; author = $maestroLogin; labels = $plainLbl; headRefName = 'darc-main-xyz'; title = 'Update dependencies' }
 $prInflightP0      = [PSCustomObject]@{ number = 8; author = $humanLogin;   labels = $p0Lbl;    headRefName = 'fix/z';          title = 'Fix Z' }
 
-$targetSet   = @($prHumanP0, $prMaestroP0, $prMergeP0, $prMaestro, $prHuman, $prMergeUp)
+$targetSet   = @($prHumanP0, $prMaestroP0, $prMergeP0, $prMaestro, $prHuman, $prMergeUp, $prHumanBump)
 $inflightSet = @($prInflightMaestro, $prInflightP0)
 
 $buckets = Get-CategorizedPullRequests -TargetPRs $targetSet -InflightPRs $inflightSet
@@ -4076,15 +4215,395 @@ Assert-Eq -Label "precedence: p/0 set includes the Maestro p/0 (#2)"       -Expe
 Assert-Eq -Label "precedence: p/0 set includes the merge-up p/0 (#3)"      -Expected $true -Actual ($bP0 -contains 3)
 Assert-Eq -Label "precedence: p/0 set EXCLUDES inflight p/0 (#8 never blocks)" -Expected $false -Actual ($bP0 -contains 8)
 Assert-Eq -Label "precedence: Maestro bucket excludes the p/0 Maestro (#2)" -Expected $false -Actual ($bMaestro -contains 2)
-Assert-Eq -Label "precedence: Maestro bucket = plain target + inflight Maestro" -Expected 2  -Actual $buckets.MaestroPRs.Count
-Assert-Eq -Label "precedence: Maestro bucket keeps the plain target Maestro (#4)" -Expected $true -Actual ($bMaestro -contains 4)
-Assert-Eq -Label "precedence: Maestro bucket keeps the inflight Maestro (#7)" -Expected $true -Actual ($bMaestro -contains 7)
+Assert-Eq -Label "precedence: dependency-flow bucket = target darc (#4) + human bump (#9)" -Expected 2  -Actual $buckets.MaestroPRs.Count
+Assert-Eq -Label "precedence: dependency-flow bucket keeps the plain target Maestro (#4)" -Expected $true -Actual ($bMaestro -contains 4)
+Assert-Eq -Label "precedence: dependency-flow bucket keeps the human component bump (#9)" -Expected $true -Actual ($bMaestro -contains 9)
+Assert-Eq -Label "precedence: human bump (#9) is NOT downgraded to generic release-branch PRs" -Expected $false -Actual ($bHuman -contains 9)
+Assert-Eq -Label "precedence: Maestro bucket EXCLUDES inflight Maestro (#7) — net<major>.0 bumps not reported" -Expected $false -Actual ($bMaestro -contains 7)
 Assert-Eq -Label "precedence: merge-up bucket excludes the p/0 merge-up (#3)" -Expected $false -Actual ($bMergeUp -contains 3)
 Assert-Eq -Label "precedence: merge-up bucket = only the plain merge-up (#6)" -Expected 1   -Actual $buckets.MergeUpPRs.Count
 Assert-Eq -Label "precedence: generic human = only the plain human (#5)"   -Expected 1     -Actual $buckets.TargetHumanPRs.Count
 Assert-Eq -Label "precedence: generic human keeps #5"                      -Expected $true -Actual ($bHuman -contains 5)
 Assert-Eq -Label "precedence: inflight-human = the inflight p/0 human (#8)" -Expected $true -Actual ($bInflight -contains 8)
 Assert-Eq -Label "precedence: inflight-human excludes inflight Maestro (#7)" -Expected $false -Actual ($bInflight -contains 7)
+# #7 (net<major>.0 Maestro) is now dropped from EVERY rendered bucket — a branched
+# preview reports only dependency bumps against its own branch.
+$bAll7 = @($bP0 + $bMaestro + $bMergeUp + $bHuman + $bInflight)
+Assert-Eq -Label "precedence: inflight Maestro (#7) appears in NO bucket" -Expected $false -Actual ($bAll7 -contains 7)
+
+# --- Test-IsDependencyFlowPr helper: dual-signal detection (author OR title/head) ---
+# A branched preview must surface human-authored component-bump PRs (like #36433)
+# alongside automated darc PRs, but must NOT swallow unrelated human PRs.
+$dfMaestro   = [PSCustomObject]@{ author = [PSCustomObject]@{ login = 'dotnet-maestro[bot]' }; title = 'Update dependencies'; headRefName = 'darc-net11.0-abc' }
+$dfHumanBump = [PSCustomObject]@{ author = [PSCustomObject]@{ login = 'rmarinho' }; title = '[release/11.0.1xx-preview6] Bump dotnet/dotnet (BAR 321614), dotnet/android (BAR 321622) and dotnet/macios (BAR 321780)'; headRefName = 'update-321614' }
+$dfHeadOnly  = [PSCustomObject]@{ author = [PSCustomObject]@{ login = 'rmarinho' }; title = 'Roll components forward'; headRefName = 'update-999' }
+$dfTitleOnly = [PSCustomObject]@{ author = [PSCustomObject]@{ login = 'rmarinho' }; title = 'Bump dotnet/android to latest BAR 321622'; headRefName = 'fix/roll' }
+$dfPlain     = [PSCustomObject]@{ author = [PSCustomObject]@{ login = 'someDev' }; title = 'Fix Y'; headRefName = 'fix/y' }
+$dfMergeUp   = [PSCustomObject]@{ author = [PSCustomObject]@{ login = 'someDev' }; title = "[automated] Merge branch 'main' => 'net11.0'"; headRefName = 'merge/main-to-net11.0' }
+Assert-Eq -Label "dep-flow helper: darc author → true"                       -Expected $true  -Actual (Test-IsDependencyFlowPr $dfMaestro)
+Assert-Eq -Label "dep-flow helper: human component bump (#36433 shape) → true" -Expected $true -Actual (Test-IsDependencyFlowPr $dfHumanBump)
+Assert-Eq -Label "dep-flow helper: head-ref update-<id> alone → true"         -Expected $true  -Actual (Test-IsDependencyFlowPr $dfHeadOnly)
+Assert-Eq -Label "dep-flow helper: title 'Bump dotnet/... BAR' alone → true"  -Expected $true  -Actual (Test-IsDependencyFlowPr $dfTitleOnly)
+Assert-Eq -Label "dep-flow helper: plain human 'Fix Y' → false"              -Expected $false -Actual (Test-IsDependencyFlowPr $dfPlain)
+Assert-Eq -Label "dep-flow helper: merge-up PR → false"                      -Expected $false -Actual (Test-IsDependencyFlowPr $dfMergeUp)
+Assert-Eq -Label "dep-flow helper: null PR → false"                          -Expected $false -Actual (Test-IsDependencyFlowPr $null)
+
+# --- Test-IsSdkBumpPr helper: the VMR/SDK-bump subset (dotnet/dotnet or dotnet/sdk) ---
+# Only VMR/SDK bumps earn the "confirm blessed locally" emphasis; android/macios/
+# runtime bumps do NOT (their pins aren't the SDK). Dual-shape + StrictMode-safe.
+$sbVmr  = [PSCustomObject]@{ title = 'Bump dotnet/dotnet from 11.0.0-preview.6.26325.125 to 11.0.0-preview.6.26356.105 (BAR 321614)' }
+$sbSdk  = [PSCustomObject]@{ title = 'Bump dotnet/sdk to 11.0.100-preview.6.26356.105' }
+$sbDict = @{ title = 'Bump dotnet/dotnet (BAR 322000)' }   # IDictionary shape (mock)
+Assert-Eq -Label "sdk-bump: dotnet/dotnet bump → true"             -Expected $true  -Actual (Test-IsSdkBumpPr $sbVmr)
+Assert-Eq -Label "sdk-bump: combined bump w/ dotnet/dotnet → true" -Expected $true  -Actual (Test-IsSdkBumpPr $dfHumanBump)
+Assert-Eq -Label "sdk-bump: dotnet/sdk bump → true"                -Expected $true  -Actual (Test-IsSdkBumpPr $sbSdk)
+Assert-Eq -Label "sdk-bump: IDictionary shape → true"              -Expected $true  -Actual (Test-IsSdkBumpPr $sbDict)
+Assert-Eq -Label "sdk-bump: dotnet/android bump → false (not SDK)"  -Expected $false -Actual (Test-IsSdkBumpPr $dfTitleOnly)
+Assert-Eq -Label "sdk-bump: merge-up PR → false"                   -Expected $false -Actual (Test-IsSdkBumpPr $dfMergeUp)
+Assert-Eq -Label "sdk-bump: plain human PR → false"                -Expected $false -Actual (Test-IsSdkBumpPr $dfPlain)
+Assert-Eq -Label "sdk-bump: null PR → false"                       -Expected $false -Actual (Test-IsSdkBumpPr $null)
+# Boundary regression: a hyphenated sibling repo must NOT collide with the SDK/VMR
+# bump. A bare `\b` sat between `t` and `-` and misclassified `dotnet/dotnet-
+# optimization` as an SDK bump; the `(?![\w-])` look-ahead fixes it. This mirrors
+# the Get-ComponentFlowSignal collision guard below (which was tested, while this
+# sibling matcher was not — the exact gap the follow-up closes).
+$sbVmrOptColl = [PSCustomObject]@{ title = 'Bump dotnet/dotnet-optimization from 1.0 to 1.2 (BAR 3)' }
+$sbSdkTrail   = [PSCustomObject]@{ title = 'Bump dotnet/dotnet-optimization then dotnet/sdk (BAR 4)' }
+Assert-Eq -Label "sdk-bump: dotnet/dotnet-optimization does NOT collide → false" -Expected $false -Actual (Test-IsSdkBumpPr $sbVmrOptColl)
+Assert-Eq -Label "sdk-bump: real dotnet/sdk later in title still matches → true" -Expected $true  -Actual (Test-IsSdkBumpPr $sbSdkTrail)
+
+# --- Get-ComponentFlowSignal: infer subscription health from the public PR trail ---
+# A working sub leaves a public trail of dep-flow PRs; classify open/fresh/stale/missing.
+$flowNow = [datetime]::new(2026, 7, 8, 0, 0, 0, [System.DateTimeKind]::Utc)
+$fOpenAndroid  = [PSCustomObject]@{ number = 101; title = '[release/11.0.1xx-preview6] Update dependencies from dotnet/android'; url = 'u101'; createdAt = '2026-07-06T00:00:00Z'; mergedAt = $null }
+$fStaleAndroid = [PSCustomObject]@{ number = 100; title = 'Bump dotnet/android to old (BAR 0)'; url = 'u100'; createdAt = '2026-05-01T00:00:00Z'; mergedAt = '2026-05-01T00:00:00Z' }
+$fFreshMacios  = [PSCustomObject]@{ number = 102; title = 'Bump dotnet/macios to 26.5 (BAR 1)'; url = 'u102'; createdAt = '2026-07-05T00:00:00Z'; mergedAt = '2026-07-05T00:00:00Z' }
+$fStaleVmr     = [PSCustomObject]@{ number = 103; title = 'Bump dotnet/dotnet (VMR) to preview.6 (BAR 2)'; url = 'u103'; createdAt = '2026-06-01T00:00:00Z'; mergedAt = '2026-06-01T00:00:00Z' }
+$fVmrOptColl   = [PSCustomObject]@{ number = 104; title = 'Bump dotnet/dotnet-optimization to 1.2 (BAR 3)'; url = 'u104'; createdAt = '2026-07-07T00:00:00Z'; mergedAt = '2026-07-07T00:00:00Z' }
+$fBatched      = [PSCustomObject]@{ number = 105; title = 'Update dependencies from dotnet/android, dotnet/macios'; url = 'u105'; createdAt = '2026-07-04T00:00:00Z'; mergedAt = '2026-07-04T00:00:00Z' }
+$fDictFresh    = @{ number = 110; title = 'Bump dotnet/android (BAR 9)'; url = 'u110'; createdAt = '2026-07-06T00:00:00Z'; mergedAt = '2026-07-06T00:00:00Z' }  # IDictionary shape
+
+$sigOpen  = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @($fStaleAndroid, $fOpenAndroid, $fFreshMacios) -Now $flowNow
+Assert-Eq -Label "flow: open dep-flow PR preferred over stale merge → open" -Expected 'open'   -Actual $sigOpen.Status
+Assert-Eq -Label "flow: open picks the open PR number"                      -Expected 101      -Actual $sigOpen.Number
+$sigFresh = Get-ComponentFlowSignal -Repo 'dotnet/macios' -DepFlowPRs @($fFreshMacios) -Now $flowNow
+Assert-Eq -Label "flow: recent merge → fresh"                              -Expected 'fresh'  -Actual $sigFresh.Status
+Assert-Eq -Label "flow: fresh age computed (3 days)"                        -Expected 3        -Actual $sigFresh.AgeDays
+$sigStale = Get-ComponentFlowSignal -Repo 'dotnet/dotnet' -DepFlowPRs @($fStaleVmr) -Now $flowNow
+Assert-Eq -Label "flow: old-only merge → stale"                           -Expected 'stale'  -Actual $sigStale.Status
+$sigMissing = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @() -Now $flowNow
+Assert-Eq -Label "flow: no PRs → missing"                                 -Expected 'missing' -Actual $sigMissing.Status
+$sigColl = Get-ComponentFlowSignal -Repo 'dotnet/dotnet' -DepFlowPRs @($fVmrOptColl) -Now $flowNow
+Assert-Eq -Label "flow: dotnet/dotnet does NOT collide w/ dotnet-optimization → missing" -Expected 'missing' -Actual $sigColl.Status
+$sigBatchA = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @($fBatched) -Now $flowNow
+$sigBatchM = Get-ComponentFlowSignal -Repo 'dotnet/macios' -DepFlowPRs @($fBatched) -Now $flowNow
+Assert-Eq -Label "flow: batched PR counts for android"                     -Expected 'fresh'  -Actual $sigBatchA.Status
+Assert-Eq -Label "flow: batched PR counts for macios"                      -Expected 'fresh'  -Actual $sigBatchM.Status
+$sigDict = Get-ComponentFlowSignal -Repo 'dotnet/android' -DepFlowPRs @($fDictFresh) -Now $flowNow
+Assert-Eq -Label "flow: IDictionary-shaped PR → fresh"                     -Expected 'fresh'  -Actual $sigDict.Status
+Assert-Eq -Label "flow: IDictionary-shaped PR number"                      -Expected 110      -Actual $sigDict.Number
+
+# --- Format-FlowSignalCell: render a flow-signal result to a table cell ---
+# The 'missing' status must render differently when merged-PR history could NOT be
+# fetched (transient gh failure) — an honest "couldn't check" instead of a false
+# "none seen — sub may be missing" absence claim.
+$cellOpen  = Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='open';  Number=1; Url='u'; AgeDays=$null })
+$cellFresh = Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='fresh'; Number=2; Url='u'; AgeDays=1 })
+$cellStale = Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='stale'; Number=3; Url='u'; AgeDays=40 })
+$cellMiss  = Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='missing'; Number=$null; Url=$null; AgeDays=$null })
+$cellMissHU= Format-FlowSignalCell -Flow ([pscustomobject]@{ Status='missing'; Number=$null; Url=$null; AgeDays=$null }) -HistoryUnavailable
+Assert-Eq -Label "flowcell: open → flowing"                 -Expected $true -Actual ([bool]($cellOpen  -match '🔄' -and $cellOpen  -match 'flowing'))
+Assert-Eq -Label "flowcell: fresh → merged 1 day ago"       -Expected $true -Actual ([bool]($cellFresh -match '✅' -and $cellFresh -match '1 day ago'))
+Assert-Eq -Label "flowcell: stale → stale + 40 days ago"    -Expected $true -Actual ([bool]($cellStale -match '⚠️' -and $cellStale -match '40 days ago'))
+Assert-Eq -Label "flowcell: missing (history ok) → none seen absence claim" -Expected $true -Actual ([bool]($cellMiss -match 'none seen'))
+# The crux: on a merged-history-fetch failure the cell must NOT assert absence.
+Assert-Eq -Label "flowcell: missing + HistoryUnavailable → no false 'none seen'" -Expected $true -Actual ([bool]($cellMissHU -notmatch 'none seen'))
+Assert-Eq -Label "flowcell: missing + HistoryUnavailable → honest 'unavailable'" -Expected $true -Actual ([bool]($cellMissHU -match 'unavailable'))
+
+# --- Get-UpstreamDriftSignal: has the component's same-named branch advanced past our pin? ---
+# Complementary to the Flow signal: a hard git fact (public compare API), not an inference.
+# Tested via the injectable -Fetcher seam (same idiom as Get-NightlyFeedFreshness) so no
+# live network. Mock distinguishes the matching-refs probe from the compare call by path.
+$drBranch = 'release/11.0.1xx-preview6'
+$drSha    = 'abc1234def5678'
+
+# Fetcher factory: branch-exists (exact ref) + a compare shape (ahead/behind counts).
+function New-DriftFetcher {
+    param([string]$RefName, [object]$Compare, [string]$ThrowOn)
+    return {
+        param($ApiPath)
+        if ($ThrowOn -eq 'refs'    -and $ApiPath -match '/git/matching-refs/heads/') { throw 'boom-refs' }
+        if ($ThrowOn -eq 'compare' -and $ApiPath -match '/compare/')                 { throw 'boom-compare' }
+        if ($ApiPath -match '/git/matching-refs/heads/') {
+            if ($null -eq $RefName) { return @() }
+            return @([pscustomobject]@{ ref = $RefName })
+        }
+        if ($ApiPath -match '/compare/') { return $Compare }
+        throw "unexpected api path $ApiPath"
+    }.GetNewClosure()
+}
+
+# (a) current — our pin IS the branch tip (ahead 0, behind 0).
+$fCurrent = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 0; behind_by = 0 })
+$drCur = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fCurrent
+Assert-Eq -Label "drift: pin == branch tip → current"        -Expected 'current' -Actual $drCur.Status
+Assert-Eq -Label "drift: current has ahead_by 0"             -Expected 0         -Actual $drCur.AheadBy
+Assert-Eq -Label "drift: url points at compare base...head"  -Expected "https://github.com/dotnet/macios/compare/$drSha...$drBranch" -Actual $drCur.Url
+
+# (b) ahead — branch has newer commits than our pin (ahead N, behind 0).
+$fAhead = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 3; behind_by = 0 })
+$drAhead = Get-UpstreamDriftSignal -Repo 'dotnet/android' -Sha $drSha -BranchName $drBranch -Fetcher $fAhead
+Assert-Eq -Label "drift: branch moved ahead → ahead"         -Expected 'ahead' -Actual $drAhead.Status
+Assert-Eq -Label "drift: ahead surfaces the count"           -Expected 3       -Actual $drAhead.AheadBy
+
+# (c) diverged — our pin isn't a clean ancestor of the branch tip (behind > 0).
+$fDiverged = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 5; behind_by = 2 })
+$drDiv = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fDiverged
+Assert-Eq -Label "drift: behind_by > 0 → diverged (not ahead)" -Expected 'diverged' -Actual $drDiv.Status
+Assert-Eq -Label "drift: diverged surfaces behind_by"          -Expected 2          -Actual $drDiv.BehindBy
+
+# (c2) pure-behind — behind_by > 0 AND ahead_by == 0 must still classify diverged,
+# locking the classifier's check order (behind is tested before ahead).
+$fBehindOnly = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 0; behind_by = 4 })
+$drBehind = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fBehindOnly
+Assert-Eq -Label "drift: pure-behind (ahead 0, behind 4) → diverged" -Expected 'diverged' -Actual $drBehind.Status
+Assert-Eq -Label "drift: pure-behind surfaces behind_by"            -Expected 4          -Actual $drBehind.BehindBy
+
+# (c3) symmetric guard — a compare payload with ahead_by but MISSING behind_by must
+# degrade to unknown, never throw under StrictMode (guards the behind_by dereference).
+$fNoBehind = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = 1 })
+$drNoBehind = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNoBehind
+Assert-Eq -Label "drift: compare missing behind_by → unknown (no throw)" -Expected 'unknown' -Actual $drNoBehind.Status
+Assert-Eq -Label "drift: missing-behind reason"                         -Expected 'compare returned no counts' -Actual $drNoBehind.Reason
+
+# (c4) present-but-null counts — a compare payload where ahead_by/behind_by exist
+# but are null must ALSO degrade to unknown (not misclassify as 'current', which
+# would be falsely reassuring). Guards against [int]$null → 0 → current.
+$fNullCounts = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ ahead_by = $null; behind_by = $null })
+$drNull = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNullCounts
+Assert-Eq -Label "drift: null counts → unknown (not falsely 'current')" -Expected 'unknown' -Actual $drNull.Status
+Assert-Eq -Label "drift: null-counts reason"                           -Expected 'compare returned no counts' -Actual $drNull.Reason
+
+# (d) unknown — no pin SHA (soft-fail, never calls the fetcher).
+$drNoSha = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha '' -BranchName $drBranch -Fetcher $fCurrent
+Assert-Eq -Label "drift: empty SHA → unknown"                -Expected 'unknown'  -Actual $drNoSha.Status
+Assert-Eq -Label "drift: empty SHA reason"                   -Expected 'no pin SHA' -Actual $drNoSha.Reason
+
+# (e) unknown — component has no same-named branch (matching-refs empty).
+$fNoBranch = New-DriftFetcher -RefName $null -Compare $null
+$drNoBr = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNoBranch
+Assert-Eq -Label "drift: no upstream branch → unknown"       -Expected 'unknown' -Actual $drNoBr.Status
+Assert-Eq -Label "drift: no-branch reason"                   -Expected 'no same-named upstream branch' -Actual $drNoBr.Reason
+
+# (f) exact-ref discipline — a longer-named branch (preview60) must NOT satisfy preview6.
+$fPrefix = New-DriftFetcher -RefName "refs/heads/${drBranch}0" -Compare ([pscustomobject]@{ ahead_by = 9; behind_by = 0 })
+$drPfx = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fPrefix
+Assert-Eq -Label "drift: prefix-only ref (preview60) rejected → unknown" -Expected 'unknown' -Actual $drPfx.Status
+
+# (g) unknown — branch lookup throws (soft-fail, never bubbles).
+$fRefsThrow = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare $null -ThrowOn 'refs'
+$drRT = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fRefsThrow
+Assert-Eq -Label "drift: refs lookup throws → unknown (soft-fail)" -Expected 'unknown' -Actual $drRT.Status
+Assert-Eq -Label "drift: refs-throw reason"                        -Expected 'branch lookup failed' -Actual $drRT.Reason
+
+# (h) unknown — compare throws (soft-fail).
+$fCmpThrow = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare $null -ThrowOn 'compare'
+$drCT = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fCmpThrow
+Assert-Eq -Label "drift: compare throws → unknown (soft-fail)"    -Expected 'unknown' -Actual $drCT.Status
+Assert-Eq -Label "drift: compare-throw reason"                    -Expected 'compare failed' -Actual $drCT.Reason
+
+# (i) unknown — compare returns a shape with no counts.
+$fNoCounts = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscustomobject]@{ status = 'identical' })
+$drNC = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNoCounts
+Assert-Eq -Label "drift: compare missing ahead_by → unknown"     -Expected 'unknown' -Actual $drNC.Status
+Assert-Eq -Label "drift: no-counts reason"                       -Expected 'compare returned no counts' -Actual $drNC.Reason
+
+# --- Remove-JsoncComments (dependency-flow access gate): STRING-AWARE JSONC comment
+#     strip. Must remove real // and /* */ comments but must NOT delete a genuinely-
+#     enabled plugin entry whose neighbouring string VALUES contain stray /* */ // .
+$gateScript = Join-Path $PSScriptRoot '..' '..' 'dependency-flow' 'scripts' 'Get-PreviewReleaseReadiness.ps1'
+Write-Host "`n[Unit] Remove-JsoncComments (string-aware JSONC scrub)" -ForegroundColor Cyan
+if (-not (Test-Path -LiteralPath $gateScript)) {
+    Assert-Eq -Label "jsonc: access-gate script exists" -Expected $true -Actual $false
+} else {
+    . $gateScript   # dot-source guard skips the gate body + exit; only loads helpers
+    $pluginPat = '(?m)^\s*"dotnet-release-tracker(@[^"]+)?"\s*:\s*true'
+
+    # 1. Regression case: live entry straddled by /* and */ inside string VALUES.
+    $jLive = "{`n  `"before`": `"https://ex.com/api/*`",`n  `"dotnet-release-tracker`": true,`n  `"after`": `"glob*/tail`"`n}"
+    $sLive = Remove-JsoncComments $jLive
+    Assert-Eq -Label "jsonc: straddling /* */ in string values keeps live entry" -Expected $true -Actual ([bool]($sLive -match $pluginPat))
+
+    # 2. Genuinely block-commented entry → stripped → not enabled.
+    $jBlock = "{`n  /* `"dotnet-release-tracker`": true */`n  `"other`": 1`n}"
+    Assert-Eq -Label "jsonc: block-commented entry stripped → not enabled" -Expected $false -Actual ([bool]((Remove-JsoncComments $jBlock) -match $pluginPat))
+
+    # 3. // line-commented entry → stripped → not enabled.
+    $jLine = "{`n  // `"dotnet-release-tracker`": true`n  `"other`": 1`n}"
+    Assert-Eq -Label "jsonc: // line-commented entry stripped → not enabled" -Expected $false -Actual ([bool]((Remove-JsoncComments $jLine) -match $pluginPat))
+
+    # 4. Real entry with a trailing inline // comment → still enabled.
+    $jInline = "{`n  `"dotnet-release-tracker`": true // opted in`n}"
+    Assert-Eq -Label "jsonc: inline // after real entry keeps it enabled" -Expected $true -Actual ([bool]((Remove-JsoncComments $jInline) -match $pluginPat))
+
+    # 5. // inside a URL string value must NOT be treated as a comment.
+    $jUrl = "{`n  `"docs`": `"https://example.com/a`",`n  `"dotnet-release-tracker`": true`n}"
+    Assert-Eq -Label "jsonc: // inside a URL string value preserved (entry enabled)" -Expected $true -Actual ([bool]((Remove-JsoncComments $jUrl) -match $pluginPat))
+
+    # 6. Empty/null input is returned as-is (no throw).
+    Assert-Eq -Label "jsonc: empty input returned unchanged" -Expected '' -Actual (Remove-JsoncComments '')
+}
+
+# --- Test-PluginEnabled: reads the enabled-plugin opt-in out of the user-scope
+#     Copilot settings.json. Regression guard for the minified-JSON false negative:
+#     the matcher was anchored to the start of a physical line ((?m)^\s*), so a
+#     single-line/minified settings.json reported an *enabled* plugin as NOT enabled
+#     (→ wrong AVAILABLE_NOT_ENABLED degradation). The look-behind key-boundary
+#     anchor now tolerates minified JSON. Hermetic: writes fixtures into a throwaway
+#     HOME/USERPROFILE, restores them in finally; no gh/network dependency.
+Write-Host "`n[Unit] Test-PluginEnabled (minified + pretty settings.json)" -ForegroundColor Cyan
+if (Get-Command Test-PluginEnabled -ErrorAction SilentlyContinue) {
+    $savedHome = $env:HOME; $savedProfile = $env:USERPROFILE
+    $tmpHome = Join-Path ([System.IO.Path]::GetTempPath()) ("rr_plugintest_" + [guid]::NewGuid().ToString('N'))
+    try {
+        $cfgDir = Join-Path $tmpHome '.copilot'
+        New-Item -ItemType Directory -Force -Path $cfgDir | Out-Null
+        $cfgPath = Join-Path $cfgDir 'settings.json'
+        $env:HOME = $tmpHome; $env:USERPROFILE = $tmpHome
+
+        # 1. Minified (single-line) settings — the regression case.
+        Set-Content -LiteralPath $cfgPath -Value '{"enabledPlugins":{"dotnet-release-tracker@dotnet-release":true}}' -NoNewline
+        $rMin = Test-PluginEnabled -Plugin 'dotnet-release-tracker'
+        Assert-Eq -Label "plugin: minified single-line settings → enabled"       -Expected $true    -Actual $rMin.Enabled
+        Assert-Eq -Label "plugin: minified reports the fixture as Source"         -Expected $cfgPath -Actual $rMin.Source
+
+        # 2. Pretty-printed settings — must still work (no marketplace suffix).
+        Set-Content -LiteralPath $cfgPath -Value "{`n  `"enabledPlugins`": {`n    `"dotnet-release-tracker`": true`n  }`n}"
+        Assert-Eq -Label "plugin: pretty multi-line settings → enabled"          -Expected $true    -Actual (Test-PluginEnabled -Plugin 'dotnet-release-tracker').Enabled
+
+        # 3. A different key that merely ends with the plugin name must NOT match.
+        Set-Content -LiteralPath $cfgPath -Value '{"enabledPlugins":{"my-dotnet-release-tracker":true}}' -NoNewline
+        Assert-Eq -Label "plugin: suffix-only key does NOT false-positive"        -Expected $false   -Actual (Test-PluginEnabled -Plugin 'dotnet-release-tracker').Enabled
+
+        # 4. Plugin absent entirely → not enabled, null Source.
+        Set-Content -LiteralPath $cfgPath -Value '{"enabledPlugins":{}}' -NoNewline
+        $rNone = Test-PluginEnabled -Plugin 'dotnet-release-tracker'
+        Assert-Eq -Label "plugin: absent entry → not enabled"                    -Expected $false   -Actual $rNone.Enabled
+        Assert-Eq -Label "plugin: absent entry → null Source"                    -Expected $true    -Actual ($null -eq $rNone.Source)
+    } finally {
+        if ($null -eq $savedHome)    { Remove-Item Env:HOME -ErrorAction SilentlyContinue }        else { $env:HOME = $savedHome }
+        if ($null -eq $savedProfile) { Remove-Item Env:USERPROFILE -ErrorAction SilentlyContinue } else { $env:USERPROFILE = $savedProfile }
+        if (Test-Path -LiteralPath $tmpHome) { Remove-Item -LiteralPath $tmpHome -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+} else {
+    Assert-Eq -Label "plugin: Test-PluginEnabled loaded from gate script" -Expected $true -Actual $false
+}
+
+# --- Access-gate dot-source guard: must skip the driver body (return before any
+#     side effect / exit) ONLY when dot-sourced, and must NOT wrongly skip a real
+#     `&`/`-File` invocation that follows a dot-source on the same command line.
+#     Regression guard for the fragile `$MyInvocation.Line -match '^\.\s'` fallback
+#     (would suppress the second call because the whole command-line text starts
+#     with the earlier dot-source).
+#     Hermetic: builds a throwaway fixture from the REAL guard line (read out of the
+#     gate script, so this test cannot drift from it) plus a sentinel, then exercises
+#     the exact guard semantics with NO `gh`/network dependency. The fixture path is
+#     passed through an env var (not string-interpolated) so paths with spaces or
+#     apostrophes are safe.
+Write-Host "`n[Unit] Access-gate dot-source guard (line-match false-skip regression)" -ForegroundColor Cyan
+if (-not (Test-Path -LiteralPath $gateScript)) {
+    Assert-Eq -Label "guard: access-gate script exists" -Expected $true -Actual $false
+} else {
+    $guardLine = @(Get-Content -LiteralPath $gateScript |
+        Where-Object { $_ -match "^\s*if \(\`$MyInvocation\.InvocationName -eq '\.'" }) |
+        Select-Object -First 1
+    if (-not $guardLine) {
+        Assert-Eq -Label "guard: real dot-source guard line located in gate script" -Expected $true -Actual $false
+    } else {
+        $guardFixture = Join-Path ([System.IO.Path]::GetTempPath()) ('rr_guard_{0}.ps1' -f [guid]::NewGuid().ToString('N'))
+        Set-Content -LiteralPath $guardFixture -Value ($guardLine + "`n'GUARD_SENTINEL_RAN'")
+        $env:RR_GUARD_FIXTURE = $guardFixture
+        try {
+            # (a) Pure dot-source: the guard returns before the sentinel → sentinel absent.
+            $dotOnly = & pwsh -NoProfile -Command '. $env:RR_GUARD_FIXTURE; "DONE"' 2>$null
+            Assert-Eq -Label "guard: pure dot-source skips the body (no sentinel)" `
+                -Expected $false -Actual ([bool](($dotOnly -join "`n") -match 'GUARD_SENTINEL_RAN'))
+
+            # (b) Dot-source THEN a real `&` call on the SAME command line: the `&` call
+            #     must run the body → sentinel present. The old fallback wrongly skipped it
+            #     (verified: restoring the `-or ... -match '^\.\s'` form flips this to absent).
+            $dotThenCall = & pwsh -NoProfile -Command '. $env:RR_GUARD_FIXTURE; & $env:RR_GUARD_FIXTURE' 2>$null
+            Assert-Eq -Label "guard: `& call after dot-source still runs the body (sentinel present)" `
+                -Expected $true -Actual ([bool](($dotThenCall -join "`n") -match 'GUARD_SENTINEL_RAN'))
+        } finally {
+            Remove-Item -LiteralPath $guardFixture -Force -ErrorAction SilentlyContinue
+            Remove-Item Env:\RR_GUARD_FIXTURE -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+# --- Get-BranchComponentPins: git-pin fallback for the Action-owned best-effort
+#     component-build section. Parses eng/Version.Details.xml (public git, always
+#     readable in CI) to report the dotnet/dotnet, dotnet/android and dotnet/macios
+#     builds CURRENTLY BUNDLED on the branch. Covers the [xml] attribute-vs-child
+#     gotcha (Name/Version are attributes; Uri/Sha are child elements), the
+#     name-preference + Uri-fallback selection, and the unreadable-file → $null path.
+$fixtureVd = @'
+<?xml version="1.0" encoding="utf-8"?>
+<Dependencies>
+  <ProductDependencies>
+    <Dependency Name="Microsoft.NET.Sdk" Version="11.0.100-preview.6.26325.125">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>a512c3ad43185e96fc2c2769a4f02af689e3fb99</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.26325.125">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>a512c3ad43185e96fc2c2769a4f02af689e3fb99</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="37.0.0-ci.main.51">
+      <Uri>https://github.com/dotnet/android</Uri>
+      <Sha>7ab8bac563839df778de1b91409cf4099cc76940</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.macOS.Sdk.net11.0_26.5" Version="26.5.11717-net11-p6">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>5bf7d00bec4a09ba623398bea41429ab1be795a1</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.iOS.Sdk.net11.0_26.5" Version="26.5.11717-net11-p6">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>5bf7d00bec4a09ba623398bea41429ab1be795a1</Sha>
+    </Dependency>
+  </ProductDependencies>
+</Dependencies>
+'@
+
+$script:_origGetContent = Get-Command Get-ContentFromRepo -CommandType Function -ErrorAction SilentlyContinue
+$script:_mockVdText = $fixtureVd
+function global:Get-ContentFromRepo {
+    param([string]$Path, [string]$Ref)
+    if ($Path -eq 'eng/Version.Details.xml') {
+        if ($script:_mockVdText -eq '__THROW__') { throw "boom" }
+        return $script:_mockVdText
+    }
+    return $null
+}
+try {
+    $pins = Get-BranchComponentPins -Ref 'release/11.0.1xx-preview6' -Major 11
+    Assert-Eq -Label "component-pins: object returned"          -Expected $true -Actual ($null -ne $pins)
+    Assert-Eq -Label "component-pins: VMR name = Microsoft.NET.Sdk (not Arcade)" -Expected 'Microsoft.NET.Sdk' -Actual $pins.Vmr.Name
+    Assert-Eq -Label "component-pins: VMR version"              -Expected '11.0.100-preview.6.26325.125' -Actual $pins.Vmr.Version
+    Assert-Eq -Label "component-pins: VMR sha"                  -Expected 'a512c3ad43185e96fc2c2769a4f02af689e3fb99' -Actual $pins.Vmr.Sha
+    Assert-Eq -Label "component-pins: Android version"         -Expected '37.0.0-ci.main.51' -Actual $pins.Android.Version
+    Assert-Eq -Label "component-pins: Android sha"             -Expected '7ab8bac563839df778de1b91409cf4099cc76940' -Actual $pins.Android.Sha
+    Assert-Eq -Label "component-pins: macios prefers net11.0 SDK" -Expected 'Microsoft.macOS.Sdk.net11.0_26.5' -Actual $pins.Macios.Name
+    Assert-Eq -Label "component-pins: macios version exact"    -Expected '26.5.11717-net11-p6' -Actual $pins.Macios.Version
+
+    # Unreadable Version.Details.xml (gh api throws) → $null, no crash.
+    $script:_mockVdText = '__THROW__'
+    $nullPins = Get-BranchComponentPins -Ref 'release/11.0.1xx-preview6' -Major 11
+    Assert-Eq -Label "component-pins: unreadable file → \$null (no throw)" -Expected $true -Actual ($null -eq $nullPins)
+} finally {
+    Remove-Item function:global:Get-ContentFromRepo -ErrorAction SilentlyContinue
+}
 
 # Inflight merge-up hoist (#36085 scenario): a main → net<N>.0 automated merge PR
 # (base = inflight branch) must be carved into the merge-up bucket — hoisted to
@@ -4121,14 +4640,26 @@ $nullFromGh    = ConvertFrom-JsonOrEmptyArray '[]'   # AutomationNull, exactly l
 $maestroPrMock = [PSCustomObject]@{ number = 9001; title = 'Bump deps'; author = [PSCustomObject]@{ login = 'dotnet-maestro' }; headRefName = 'darc-x'; labels = @(); url = 'u'; isDraft = $false }
 
 # (a) The reachable in-flight shape: AutomationNull target (existing branch, 0 PRs)
-#     + non-empty inflight Maestro list. Must not throw; Maestro PR still counted.
+#     + non-empty inflight Maestro list. Must not throw. A branched preview reports
+#     ONLY its own-branch dependency bumps, so the inflight (net<major>.0) Maestro
+#     PR is DROPPED from every bucket — it belongs to net<major>.0's own readiness.
 $nullTargetThrew = $false
 $nullTargetBuckets = $null
 try { $nullTargetBuckets = Get-CategorizedPullRequests -TargetPRs $nullFromGh -InflightPRs @($maestroPrMock) }
 catch { $nullTargetThrew = $true }
 Assert-Eq -Label "AutomationNull target + inflight Maestro → no throw" -Expected $false -Actual $nullTargetThrew
 Assert-Eq -Label "AutomationNull target → 0 target-human"             -Expected 0     -Actual $nullTargetBuckets.TargetHumanPRs.Count
-Assert-Eq -Label "AutomationNull target → inflight Maestro counted"   -Expected 1     -Actual $nullTargetBuckets.MaestroPRs.Count
+Assert-Eq -Label "AutomationNull target → inflight Maestro DROPPED (target-only)" -Expected 0 -Actual $nullTargetBuckets.MaestroPRs.Count
+
+# (a2) Positive iteration path: a non-null TARGET Maestro PR still buckets as Maestro
+#      even when the inflight slot collapses to AutomationNull (proves the null-safety
+#      guard doesn't suppress real bucketing on the surviving list).
+$nullInflightThrew = $false
+$nullInflightBuckets = $null
+try { $nullInflightBuckets = Get-CategorizedPullRequests -TargetPRs @($maestroPrMock) -InflightPRs $nullFromGh }
+catch { $nullInflightThrew = $true }
+Assert-Eq -Label "AutomationNull inflight + target Maestro → no throw" -Expected $false -Actual $nullInflightThrew
+Assert-Eq -Label "AutomationNull inflight → target Maestro counted"    -Expected 1     -Actual $nullInflightBuckets.MaestroPRs.Count
 
 # (b) Both inputs AutomationNull → five empty buckets, no throw.
 $bothNullThrew = $false
@@ -4341,6 +4872,45 @@ Assert-Eq -Label "banner: future publish → clamped to 'today'" -Expected $true
 # Caller-tunable thresholds: a 4-day-old build is ⚠️ by default but ✅ under a wider window.
 $bWide = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,18,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow -AgingDays 10 -StaleDays 20
 Assert-Eq -Label "banner: custom AgingDays=10 → 4d build is ✅ fresh" -Expected $true -Actual ($bWide -match '✅')
+
+# ───── Format-ReportFreshnessBanner: report's own DERIVED-AT-RENDER freshness note ─────
+# PURE (caller passes -Now), so the fresh AND the ⏳-stale paths are both tested offline by
+# injecting a past -GeneratedAt. This banner MUST NOT feed Get-ReportSemanticHash — the
+# render-twice-with-different-fetchedAt hash test below enforces that at the report level.
+Write-Host "`n[Unit] Format-ReportFreshnessBanner (report freshness — pure renderer)" -ForegroundColor Cyan
+$rfGen = [datetime]::new(2026, 6, 22, 12, 0, 0, [System.DateTimeKind]::Utc)
+
+# Fresh (< threshold) → 🕐, no ⏳.
+$rfFresh = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddMinutes(2)
+Assert-Eq -Label "freshness: 2m → 🕐, no ⏳"        -Expected $true  -Actual ($rfFresh -match '🕐' -and $rfFresh -notmatch '⏳' -and $rfFresh -match '2 minutes ago')
+# Zero age clamps to 'moments ago' (no negative / no throw).
+$rfNow = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen
+Assert-Eq -Label "freshness: 0 → 'moments ago'"     -Expected $true  -Actual ($rfNow -match 'moments ago' -and $rfNow -notmatch '⏳')
+# Just under threshold (3h < 4h default) → still fresh.
+$rf3h = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(3)
+Assert-Eq -Label "freshness: 3h → 🕐 (under 4h), no ⏳" -Expected $true -Actual ($rf3h -match '3 hours ago' -and $rf3h -notmatch '⏳')
+# At/over threshold → ⏳ stale flag.
+$rf5h = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(5)
+Assert-Eq -Label "freshness: 5h → ⏳ may be stale"   -Expected $true  -Actual ($rf5h -match '⏳' -and $rf5h -match '5 hours ago' -and $rf5h -match 'older than 4h')
+$rf2d = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddDays(2)
+Assert-Eq -Label "freshness: 2d → ⏳ may be stale"   -Expected $true  -Actual ($rf2d -match '⏳' -and $rf2d -match '2 days ago')
+# Singular/plural correctness.
+$rf1m = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddMinutes(1)
+Assert-Eq -Label "freshness: 1m → singular 'minute'" -Expected $true -Actual ($rf1m -match '1 minute ago' -and $rf1m -notmatch 'minutes')
+$rf1h = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(1)
+Assert-Eq -Label "freshness: 1h → singular 'hour'"   -Expected $true -Actual ($rf1h -match '1 hour ago' -and $rf1h -notmatch 'hours')
+# Custom threshold is honored.
+$rfCustom = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddHours(3) -StaleHours 2
+Assert-Eq -Label "freshness: custom StaleHours=2 → 3h is ⏳" -Expected $true -Actual ($rfCustom -match '⏳' -and $rfCustom -match 'older than 2h')
+# ISO-8601 string input (the shape both engines actually store) parses.
+$rfIso = Format-ReportFreshnessBanner -GeneratedAt '2026-06-22T12:00:00Z' -Now $rfGen.AddHours(5)
+Assert-Eq -Label "freshness: ISO-8601 string → ⏳ stale"  -Expected $true -Actual ($rfIso -match '⏳' -and $rfIso -match '5 hours ago')
+# Fail-open: null / unparseable → '' (renderer appends nothing).
+Assert-Eq -Label "freshness: null → empty string"        -Expected '' -Actual (Format-ReportFreshnessBanner -GeneratedAt $null -Now $rfGen)
+Assert-Eq -Label "freshness: unparseable → empty string"  -Expected '' -Actual (Format-ReportFreshnessBanner -GeneratedAt 'not-a-date' -Now $rfGen)
+# Future generation (clock skew) clamps to 'moments ago', never negative / never ⏳.
+$rfFuture = Format-ReportFreshnessBanner -GeneratedAt $rfGen -Now $rfGen.AddMinutes(-30)
+Assert-Eq -Label "freshness: future gen → clamped 'moments ago', no ⏳" -Expected $true -Actual ($rfFuture -match 'moments ago' -and $rfFuture -notmatch '⏳')
 
 Write-Host "`n[Unit] Nightly-feed freshness query (Get-NightlyFeedFreshness — mocked fetcher)" -ForegroundColor Cyan
 # Self-contained fetcher: emulates the Azure Artifacts service index + a SemVer2

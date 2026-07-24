@@ -13,21 +13,26 @@ jobs:
     name: Validate Copilot PAT Pool
     if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
     runs-on: ubuntu-latest
-    env:
-      VALIDATE_PAT: |
-        if [ -z "$COPILOT_GITHUB_TOKEN" ]; then echo "status=empty" >> "$GITHUB_OUTPUT"; exit 0; fi
-        set +e; timeout 30 copilot --prompt "Say OK" --available-tools="" --silent --effort=low; rc=$?; set -e
-        if [ $rc -eq 0 ]; then echo "status=valid" >> "$GITHUB_OUTPUT"
-        elif [ $rc -eq 124 ]; then echo "status=unknown" >> "$GITHUB_OUTPUT"
-        else echo "status=invalid" >> "$GITHUB_OUTPUT"; fi
     steps:
       - name: Setup gh-aw scripts
-        uses: github/gh-aw-actions/setup@8c7d04ebf1ece56cd381446125da3e0f6896294a # v0.80.9
+        uses: github/gh-aw-actions/setup@b6d1443e05b8716267fa19425b99aa4f12006b4a # v0.82.14
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
 
       - name: Install Copilot CLI
-        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.63
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.71
+
+      - name: Create PAT validator script
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/validate-pat.sh" <<'EOF'
+          if [ -z "$COPILOT_GITHUB_TOKEN" ]; then echo "status=empty" >> "$GITHUB_OUTPUT"; exit 0; fi
+          set +e; timeout 30 copilot --prompt "Say OK" --available-tools="" --silent --effort=low; rc=$?; set -e
+          if [ $rc -eq 0 ]; then echo "status=valid" >> "$GITHUB_OUTPUT"
+          elif [ $rc -eq 124 ]; then echo "status=unknown" >> "$GITHUB_OUTPUT"
+          else echo "status=invalid" >> "$GITHUB_OUTPUT"; fi
+          EOF
+          chmod +x "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_0
         id: pat0
@@ -35,8 +40,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_1
         id: pat1
@@ -44,8 +48,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_1 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_2
         id: pat2
@@ -53,8 +56,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_2 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_3
         id: pat3
@@ -62,8 +64,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_3 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_4
         id: pat4
@@ -71,8 +72,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_4 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_5
         id: pat5
@@ -80,8 +80,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_5 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_6
         id: pat6
@@ -89,8 +88,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_6 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_7
         id: pat7
@@ -98,8 +96,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_7 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_8
         id: pat8
@@ -107,8 +104,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_8 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Validate COPILOT_PAT_9
         id: pat9
@@ -116,8 +112,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_9 }}
         shell: bash
-        run: |
-          eval "$VALIDATE_PAT"
+        run: bash "$RUNNER_TEMP/validate-pat.sh"
 
       - name: Build summary
         if: always()

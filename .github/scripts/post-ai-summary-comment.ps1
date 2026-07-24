@@ -171,8 +171,8 @@ function Add-MissingUITestResultsNote {
 > [!WARNING]
 > **No UI test results were produced for the detected categories.** The platform-pool run
 > returned no results — most often because the PR build failed (see the **Gate** section) or
-> the deep UI test stage was skipped. Fix the build/gate issues and comment `/review rerun`
-> to get UI test results.
+> the deep UI test stage was skipped. Fix the build/gate issues and push again; the review
+> re-runs on new commits (a maintainer can also re-run it).
 '@
     return ($Content.TrimEnd() + [Environment]::NewLine + $note)
 }
@@ -743,7 +743,6 @@ if ($existingRaw) {
 $authorPing = ""
 if ($prAuthor) {
     $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>."
-    $authorPing += ' To request a fresh review after new comments or commits, comment `/review rerun`.'
 }
 
 $summaryContent = @($gateContent) + @($phaseContentByKey.Values)

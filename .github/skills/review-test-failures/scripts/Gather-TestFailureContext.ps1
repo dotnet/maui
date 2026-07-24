@@ -22,6 +22,20 @@
 .PARAMETER LookbackBuilds
     Number of recent base-branch builds to include for each AzDO definition.
 
+.PARAMETER RegressionBaseBuilds
+    Number of recent completed base-branch builds to SAMPLE for the job-level
+    regression diff. A failing leg is only called a clean `regressed-vs-base`
+    regression when it is GREEN across several recent base builds and red on none
+    of them -- a single base sample cannot tell a real regression from a base
+    branch flake (a UI test that merely happened to pass its one sampled base run).
+
+.PARAMETER MinBaseGreenSamples
+    Minimum number of recent base builds on which a (non-deterministic) failing
+    leg must be GREEN -- with zero base failures in the sampled window -- before it
+    is asserted as a clean `regressed-vs-base` regression. Deterministic build-error
+    legs (crossgen/NativeAOT/linker/MSBuild) compile or they don't, so one green
+    base build is proof enough for those.
+
 .PARAMETER OutputDirectory
     Root directory for output. A PR-number subdirectory is created below it.
 
@@ -43,6 +57,12 @@ param(
 
     [Parameter(Mandatory = $false)]
     [int]$LookbackBuilds = 5,
+
+    [Parameter(Mandatory = $false)]
+    [int]$RegressionBaseBuilds = 5,
+
+    [Parameter(Mandatory = $false)]
+    [int]$MinBaseGreenSamples = 2,
 
     [Parameter(Mandatory = $false)]
     [int]$BaselineBuildsPerDefinition = 1,
@@ -608,6 +628,27 @@ function Get-BuildErrorSignature {
     return $null
 }
 
+function Test-IsTransientBuildErrorCode {
+    # Returns $true when a coded build-error signature (from Get-BuildErrorSignature) denotes a
+    # TRANSIENT restore/network or file-lock break rather than a deterministic compile-or-it-doesn't
+    # toolchain error. This is the boundary for the single-green-base regression shortcut: a
+    # deterministic compiler/linker/SDK break reproduces build-to-build, so ONE green base sample is
+    # proof it is PR-introduced; a transient infra break does NOT reproduce, so one lucky green base
+    # sample must not flip it to 'regressed-vs-base' and hard-cap the verdict to 'Not ready' -- those
+    # stay subject to MinBaseGreenSamples (multi-sample flake protection), exactly like a crash/OOM.
+    #
+    # Conservative, explicit blocklist (unknown coded errors default to deterministic, since genuine
+    # compile breaks are the overwhelming majority and DO reproduce). Only whole-code, unambiguously
+    # non-deterministic infra codes are listed -- NOT whole prefixes: most NUxxxx (NU1101 package not
+    # found, NU1605 downgrade) and most MSBxxxx are deterministic and MUST keep the shortcut.
+    param([string]$Signature)
+    if ([string]::IsNullOrWhiteSpace($Signature)) { return $false }
+    # NU1301 : "Unable to load the service index for source" -- feed unreachable / restore network.
+    # MSB3021: "Unable to copy file ... The process cannot access the file" -- build-output file lock.
+    # MSB3027: "Could not copy ... exceeded retry count ... file is locked" -- build-output file lock.
+    return ($Signature -in @('NU1301', 'MSB3021', 'MSB3027'))
+}
+
 function Get-FailureReasonSignature {
     # Extracts a STABLE, low-cardinality "why did it fail" token from a failure's message(s) so two
     # failures of the SAME test that fail for DIFFERENT reasons (e.g. a PR-introduced
@@ -1169,10 +1210,21 @@ function Get-BuildErrorsFromLog {
 
         $message = ([string]$line).Trim()
         $platform = Get-PlatformFromText -Text "$RecordName $message"
+        # Crash/OOM signatures (native-crash, test-host-crash, unhandled-exception, no-space-left) are
+        # NONDETERMINISTIC: a green base sample does not prove the PR caused them. So are TRANSIENT
+        # restore/network + file-lock coded breaks (NU1301, MSB3021, MSB3027 -- see
+        # Test-IsTransientBuildErrorCode): they emit a coded 'error XXnnnn:' line but vary run-to-run.
+        # Only deterministic compile/toolchain breaks (coded MSBuild/C#/SDK/linker errors,
+        # 'Failed to load assembly', CrossGen/R2R) reproduce build-to-build, so only THOSE may later
+        # take the single-green-base regression shortcut; crashes and transient infra breaks stay
+        # subject to MinBaseGreenSamples.
+        $isDeterministicBuildBreak = ($signature -notin @('native-crash', 'unhandled-exception', 'test-host-crash', 'no-space-left')) -and
+            (-not (Test-IsTransientBuildErrorCode -Signature $signature))
         $failures.Add([ordered]@{
             testName = "$RecordName - $signature"
             platform = $platform
             source = "azdo-build-error"
+            deterministicBuildError = $isDeterministicBuildBreak
             logId = $LogId
             recordName = $RecordName
             errorFingerprint = $fingerprint
@@ -1191,6 +1243,7 @@ function Get-BuildErrorsFromLog {
             testName = "$RecordName - build error"
             platform = $platform
             source = "azdo-build-error"
+            deterministicBuildError = $false
             logId = $LogId
             recordName = $RecordName
             errorFingerprint = Get-ErrorFingerprint -Text $fallbackErrorLine
@@ -1352,8 +1405,9 @@ function Get-RecentBaseBuilds {
 
 function Get-TimelineRecordResultMap {
     # Builds a deterministic map of leg/record name -> pass/fail outcome for ONE build's
-    # timeline. Used for the job-level baseline diff: a build leg that is red on the PR but
-    # GREEN on the most recent base build is the strongest possible PR-caused signal, and
+    # timeline. This is the single-build primitive that Get-AggregatedBaseLegMap samples across
+    # several base builds for the job-level baseline diff: a build leg that is red on the PR but
+    # GREEN across recent base builds is the strongest possible PR-caused signal, and
     # unlike a test-name match it works for build-job breaks (crossgen/NativeAOT/linker)
     # that carry no test name. Fully mechanical -- no LLM judgment.
     param(
@@ -1389,6 +1443,60 @@ function Get-TimelineRecordResultMap {
     }
 
     return $result
+}
+
+function Get-AggregatedBaseLegMap {
+    # Builds a MULTI-BUILD deterministic leg map for the job-level regression diff. For each
+    # normalized leg/record name it counts, across the last N completed base-branch builds,
+    # how many ran the leg purely GREEN vs how many ran it RED (failed/partiallySucceeded).
+    #
+    # Why not a single build: the one-build diff (Get-TimelineRecordResultMap on the tip base
+    # build alone) cannot tell a real regression from a base-branch flake. MAUI's UI suite is
+    # intermittently red on the base branch, so a flaky test is green on SOME base builds and
+    # red on others; comparing against the ONE most-recent base build that happened to be
+    # green mislabels it "regressed vs base / Likely PR-caused". Sampling several base builds
+    # removes that false positive: a leg is a clean regression only when it is green across
+    # MULTIPLE recent base builds and red on NONE of them. Fully mechanical -- no LLM judgment.
+    param(
+        [string]$Org,
+        [string]$Project,
+        [object[]]$BaseBuilds,   # completed base builds, newest-first
+        [hashtable]$Cache        # memoized single-build maps keyed "org|project|buildId"
+    )
+
+    $agg = @{}
+    $sampled = 0
+    $ids = New-Object System.Collections.Generic.List[int]
+    foreach ($base in @($BaseBuilds)) {
+        $bid = [int]$base.id
+        if ($bid -le 0) { continue }
+        $key = "$Org|$Project|$bid"
+        if (-not $Cache.ContainsKey($key)) {
+            $Cache[$key] = Get-TimelineRecordResultMap -Org $Org -Project $Project -BuildId $bid
+        }
+        $single = $Cache[$key]
+        if (-not $single.accessible) { continue }
+        $sampled++
+        $ids.Add($bid)
+        foreach ($norm in @($single.records.Keys)) {
+            $rec = $single.records[$norm]
+            if (-not $agg.ContainsKey($norm)) {
+                $agg[$norm] = [ordered]@{ name = $rec.name; greenCount = 0; failedCount = 0 }
+            }
+            # Per base build, classify the leg once: a leg that failed even one attempt that
+            # build counts as RED for that build (a retry that later passed does not clear a
+            # base-branch flake); a leg that only ever succeeded that build counts as GREEN.
+            if ($rec.hasFailed) { $agg[$norm].failedCount++ }
+            elseif ($rec.hasSucceeded) { $agg[$norm].greenCount++ }
+        }
+    }
+
+    return [ordered]@{
+        accessible = ($sampled -gt 0)
+        records = $agg
+        sampledBuilds = $sampled
+        baseBuildIds = @($ids.ToArray())
+    }
 }
 
 function Get-KnownBuildIssues {
@@ -1502,11 +1610,11 @@ function Get-CiScanIssues {
     # Loads the repo's open '[ci-scan]' issues -- the MAUI-specific CI Failure Scanner
     # registry (an agentic 'ci-status-*' workflow) that tracks RECURRING flakes,
     # REGRESSIONS, and BUILD BREAKS on the main / net11.0 base branches across MANY builds.
-    # Unlike the single-base-build leg diff (which sees only the ONE most recent base build),
-    # this is multi-build, branch-scoped base-branch history. We parse each issue into a
+    # Unlike the few-build leg diff (which samples only the last few base builds), this is
+    # deeper multi-build, branch-scoped base-branch history. We parse each issue into a
     # matcher (branch family + class + the set of test-name tokens it documents + affected
     # leg tokens + occurrence text) so a PR failure that matches a documented base-branch
-    # failure can be DEMOTED off a single-base 'regressed-vs-base' claim to 'indeterminate'
+    # failure can be DEMOTED off a few-build 'regressed-vs-base' claim to 'indeterminate'
     # (NHI). This is a false-RED reduction only: a ci-scan match can never turn a red check
     # green (it is an LLM-generated hint, never a dismissal-to-green signal).
     param([string]$Repository)
@@ -1808,7 +1916,7 @@ else {
 
 # ci-scan registry: MAUI's multi-build base-branch failure history (recurring flakes,
 # regressions, build breaks on main / net11.0), scoped to the PR's base branch family. Used
-# ONLY to demote a single-base 'regressed-vs-base' claim to NHI when the same failure is
+# ONLY to demote a few-build 'regressed-vs-base' claim to NHI when the same failure is
 # documented on the base branch -- a false-RED reduction, never a dismissal-to-green.
 $prBaseBranchFamily = Get-BranchFamily -Branch ([string]$pr.baseRefName)
 Write-Host "Loading ci-scan registry ('ci-scan' issues) for branch family '$prBaseBranchFamily'..."
@@ -2595,7 +2703,12 @@ foreach ($buildRef in $buildRefsById.Values) {
     if ($build.definition -and $build.definition.id) {
         $definitionId = [int]$build.definition.id
     }
-    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildRef.org -Project $buildRef.project -DefinitionId $definitionId -BaseBranch $pr.baseRefName -Top $LookbackBuilds)
+    # Fetch enough recent base builds to satisfy BOTH the baseline lookback AND the regression-diff
+    # sampling window: RegressionBaseBuilds only trims an already-fetched list, so fetching just
+    # $LookbackBuilds would silently cap the leg diff (e.g. -RegressionBaseBuilds 10 with the default
+    # -LookbackBuilds 5 could sample at most 5 and miss a base failure in an omitted build).
+    $baseFetchTop = [Math]::Max($LookbackBuilds, $RegressionBaseBuilds)
+    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildRef.org -Project $buildRef.project -DefinitionId $definitionId -BaseBranch $pr.baseRefName -Top $baseFetchTop)
 
     $builds.Add($buildSummary)
 }
@@ -2615,10 +2728,11 @@ $baselineRaw = New-Object System.Collections.Generic.List[object]
 $baselineSummary = New-Object System.Collections.Generic.List[object]
 $baselineInspected = @{}
 # Deterministic job-level baseline diff state. $prBuildToBaseMap maps each inspected PR
-# build id -> the most recent completed base build's per-leg pass/fail map, so each PR
-# failed leg can be compared to the SAME leg on base in code (no LLM judgment).
-# $baseRecordMapCache memoizes the base timeline fetch so PR builds that share a base
-# build (e.g. retried runs of one pipeline) don't re-fetch it.
+# build id -> an AGGREGATED per-leg pass/fail count map over the last few completed base
+# builds, so each PR failed leg can be compared to the SAME leg across several base builds
+# in code (no LLM judgment). $baseRecordMapCache memoizes each base build's single-build
+# timeline fetch so PR builds that share a base window (e.g. retried runs of one pipeline)
+# don't re-fetch it.
 $prBuildToBaseMap = @{}
 $baseRecordMapCache = @{}
 
@@ -2641,24 +2755,32 @@ if ($BaselineBuildsPerDefinition -gt 0) {
         $mostRecent = $completed[0]
 
         # --- Deterministic job-level baseline diff (fetch base leg map) ---
-        # Fetch the most recent completed base build's per-leg pass/fail map ONCE so each PR
-        # failed leg can later be compared to the SAME leg on base. This runs BEFORE the
-        # succeeded-base early-return below precisely because the strongest regression signal
-        # (leg red on PR, GREEN on a fully-succeeded base) lives in that branch. Unlike a
-        # test-name match this also catches build-job breaks (crossgen/NativeAOT/linker) that
-        # carry no test name -- the class of break that previously slipped through.
+        # Sample the last few completed base builds' per-leg pass/fail maps so each PR failed
+        # leg can later be compared to the SAME leg across MULTIPLE base builds. This runs
+        # BEFORE the succeeded-base early-return below precisely because the strongest
+        # regression signal (leg red on PR, GREEN across recent base builds) lives in that
+        # branch. Unlike a test-name match this also catches build-job breaks
+        # (crossgen/NativeAOT/linker) that carry no test name -- the class of break that
+        # previously slipped through.
         $isDeviceTestsDef = $defName -like '*devicetest*'
-        $baseMapKey = "$($build.org)|$($build.project)|$($mostRecent.id)"
-        if (-not $baseRecordMapCache.ContainsKey($baseMapKey)) {
-            $baseRecordMapCache[$baseMapKey] = Get-TimelineRecordResultMap -Org $build.org -Project $build.project -BuildId ([int]$mostRecent.id)
-        }
-        $baseMap = $baseRecordMapCache[$baseMapKey]
-        if ($baseMap.accessible) {
+        # Sample the last few completed base builds (not just the tip) so the job-level diff
+        # can tell a real regression from a base-branch flake. $baseRecordMapCache memoizes
+        # each build's single-build timeline map so PR builds sharing a base window don't
+        # re-fetch it (and so the tip build fetched here is reused below).
+        # Exclude canceled base builds from the regression-diff window: a canceled build has an
+        # incomplete timeline, so its missing legs count as neither green nor red and can make a leg
+        # look "all-green on base" -> a false regressed-vs-base signal. (The most-recent-tip baseline
+        # above is unaffected: it only early-returns on result -eq 'succeeded'.)
+        $legSampleBuilds = @($completed | Where-Object { $_.result -ne 'canceled' } | Select-Object -First $RegressionBaseBuilds)
+        $baseAgg = Get-AggregatedBaseLegMap -Org $build.org -Project $build.project -BaseBuilds $legSampleBuilds -Cache $baseRecordMapCache
+        if ($baseAgg.accessible) {
             $prBuildToBaseMap[[string]$build.id] = [ordered]@{
                 baseBuildId = [int]$mostRecent.id
                 baseBuildResult = [string]$mostRecent.result
                 isDeviceTests = $isDeviceTestsDef
-                records = $baseMap.records
+                records = $baseAgg.records
+                sampledBaseBuilds = [int]$baseAgg.sampledBuilds
+                baseBuildIds = @($baseAgg.baseBuildIds)
             }
         }
 
@@ -2879,20 +3001,24 @@ foreach ($failure in $dedupedFailures) {
     # multi-build base-branch failure registry for THIS PR's base branch family? A hit means the
     # failure is documented to occur on the base branch independent of this PR (recurring flake,
     # known regression, or env instability across many builds) -- stronger and broader than the
-    # single most-recent base build the leg diff can see. Surfaced for the human on every failure;
-    # used below ONLY to demote a single-base 'regressed-vs-base' to NHI (never to dismiss-to-green).
+    # few recent base builds the leg diff samples. Surfaced for the human on every failure;
+    # used below ONLY to demote a few-build 'regressed-vs-base' to NHI (never to dismiss-to-green).
     $ciScanLegNames = @(@($failure.occurrences) | ForEach-Object { [string](Get-ObjectValue -Object $_ -Names @("recordName")) } | Where-Object { $_ })
     $failure['matchesCiScan'] = Test-CiScanMatch -Matchers $ciScanIssues.matchers -TestName ([string]$failure.testName) -LegNames $ciScanLegNames -BranchFamily $prBaseBranchFamily
 
     # Deterministic job-level baseline diff: compare each occurrence's failing leg to the
-    # SAME leg on the most recent completed base build. base green + PR red = regressed
-    # (PR-caused); base also red = pre-existing. Device-test legs are surfaced via
-    # legBaselineResult but never set legRegressedVsBase (XHarness exit-0 blind spot), so
-    # the hard ceiling cap only fires on trustworthy maui-pr build results.
+    # SAME leg across the last few completed base builds. Green across several base builds +
+    # red on none + PR red = clean regression (PR-caused); red on any sampled base build =
+    # pre-existing / base-branch flake. Device-test legs are surfaced via legBaselineResult
+    # but never set legRegressedVsBase (XHarness exit-0 blind spot), so the hard ceiling cap
+    # only fires on trustworthy maui-pr build results.
     $legBaselineResult = $null
     $legRegressed = $false
     $legAlsoFails = $false
     $legInconclusive = $false
+    $baseSampleCount = 0
+    $baseGreenCount = 0
+    $baseFailedCount = 0
     # Provisioning/infrastructure failures (Android SDK package fetch, emulator/avdmanager
     # setup, disk exhaustion) are ENVIRONMENTAL and nondeterministic -- the same flake lands on
     # different legs run-to-run. They must never establish a *deterministic* regression vs base:
@@ -2911,55 +3037,94 @@ foreach ($failure in $dedupedFailures) {
             continue
         }
         $baseInfo = $prBuildToBaseMap[$occBuildId]
+        $sampled = [int]$baseInfo.sampledBaseBuilds
+        if ($sampled -gt $baseSampleCount) { $baseSampleCount = $sampled }
         $norm = ($occRecord -replace '\s+', ' ').Trim().ToLowerInvariant()
         if (-not $baseInfo.records.ContainsKey($norm)) {
             if (-not $legBaselineResult) { $legBaselineResult = 'absent-on-base' }
             continue
         }
         $baseRec = $baseInfo.records[$norm]
-        if ($baseRec.hasFailed -and $baseRec.hasSucceeded) {
-            # The same normalized leg name both FAILED and SUCCEEDED on base -- duplicate
-            # records share a leaf name across stages/jobs, or the leg was retried. The base
-            # outcome for THIS leg is ambiguous, so assert neither pre-existing nor regressed
-            # and let the failure fall through to 'indeterminate' (the gate then refuses a
-            # green verdict on it via unattributedFailures). This prevents both a false
-            # pre-existing subtraction (false green) and a false regression (false red).
-            if (-not $legBaselineResult) { $legBaselineResult = 'inconclusive-on-base' }
-            $legInconclusive = $true
-        }
-        elseif ($baseRec.hasFailed) {
-            # Same leg already failed on base -> pre-existing, regardless of any green attempt.
+        $green = [int]$baseRec.greenCount
+        $failed = [int]$baseRec.failedCount
+        if ($green -gt $baseGreenCount) { $baseGreenCount = $green }
+        if ($failed -gt $baseFailedCount) { $baseFailedCount = $failed }
+        if ($failed -ge 1) {
+            # The SAME leg failed on the base branch in at least one of the sampled base builds
+            # -> the break is present on base independent of this PR (pre-existing, or a
+            # base-branch flake), never a clean PR-introduced regression. This subsumes the old
+            # single-build "also-red" and, critically, catches the intermittently-failing UI
+            # legs a one-build diff would have mislabelled "regressed vs base".
             $legAlsoFails = $true
             $legBaselineResult = 'failed-on-base'
+            if ($green -ge 1) {
+                # Failed on some sampled base builds, green on others -> demonstrably FLAKY ON
+                # BASE. Mark inconclusive so a matching PR-red occurrence is not read as a
+                # regression even if another leg happened to see it green (the cross-leg veto
+                # below then suppresses any competing clean-regression claim).
+                $legInconclusive = $true
+                $legBaselineResult = 'flaky-on-base'
+            }
         }
-        elseif ($baseRec.hasSucceeded) {
+        elseif ($green -ge 1 -and -not $legAlsoFails) {
+            # Green on at least one sampled base build and red on none (failedCount == 0), and no
+            # earlier occurrence saw it red on base. The `-not $legAlsoFails` guard is order-independent: once
+            # ANY occurrence observed the leg red on base, a later green occurrence can no longer
+            # downgrade legBaselineResult to succeeded-on-base or re-arm legRegressed.
+            # Candidate regression -- but
+            # only CONFIRM it with enough base samples. A single green base build cannot
+            # distinguish a real regression from a UI test that merely happened to pass its one
+            # sampled base run; requiring several green base builds (MinBaseGreenSamples) removes
+            # that false positive. Deterministic build-error legs (crossgen/NativeAOT/linker/
+            # MSBuild) compile or they don't, so one green base build is proof enough for those.
             $legBaselineResult = 'succeeded-on-base'
-            # Device-test TEST results suffer the XHarness exit-0 blind spot, so a test
-            # regression vs base is not trustworthy. A device-test BUILD break
-            # (crossgen/NativeAOT/linker/MSBuild) is deterministic -- the leg either compiled
-            # or it didn't -- so it IS a real regression even on a device-test pipeline.
             $legSource = [string](Get-ObjectValue -Object $occ -Names @("source"))
-            if (((-not $baseInfo.isDeviceTests) -or ($legSource -eq 'azdo-build-error')) -and (-not $isInfraProvisioning)) {
+            $eligible = (((-not $baseInfo.isDeviceTests) -or ($legSource -eq 'azdo-build-error')) -and (-not $isInfraProvisioning))
+            $legIsDeterministicBuild = [bool](Get-ObjectValue -Object $occ -Names @("deterministicBuildError"))
+            # Only a DETERMINISTIC compile/toolchain break earns the single-green-base shortcut. A
+            # crash/OOM also carries source 'azdo-build-error' but is flaky, so it stays subject to
+            # MinBaseGreenSamples -- one lucky green base sample must not flip a flaky device-test crash
+            # to 'regressed-vs-base'.
+            $requiredGreen = if ($legSource -eq 'azdo-build-error' -and $legIsDeterministicBuild) { 1 } else { $MinBaseGreenSamples }
+            if ($eligible -and $green -ge $requiredGreen) {
                 $legRegressed = $true
+            }
+            elseif ($eligible) {
+                # Green on base but too few green samples to rule out flakiness -> NOT a
+                # confident regression. Leave legRegressed false so it flows to 'indeterminate'
+                # (NHI), and record why so the report can say "green on base, only N sample(s)".
+                $legBaselineResult = 'succeeded-on-base-unconfirmed'
             }
         }
     }
-    # Cross-leg conflict veto: a failure that regressed cleanly in ONE leg (green on base) but
-    # was flaky on base in ANOTHER leg (inconclusive-on-base: failed an attempt, passed on
-    # retry) is NOT a trustworthy deterministic regression. The same failure text landing on a
-    # leg that is demonstrably flaky on base means the PR-red occurrence is most likely that
-    # same nondeterministic flake sprayed onto a different leg -- not a PR break. Suppress the
+    # Cross-leg conflict veto: a failure that regressed cleanly in ONE leg (green across base)
+    # but was ALSO red on base in ANOTHER leg (or in an earlier occurrence of the same leg) is
+    # NOT a trustworthy deterministic regression. Firing on $legAlsoFails (not just the flaky
+    # $legInconclusive) also closes the iteration-order hole where a later green occurrence set
+    # legRegressed=true after an earlier occurrence already saw the leg red on base. The same
+    # failure text landing on a leg that is red on base means the PR-red occurrence is most likely
+    # that same nondeterministic flake sprayed onto a different leg -- not a PR break. Suppress the
     # clean-regression claim and defer to a human (-> indeterminate / NHI). This never yields a
     # false green (the failure still forbids 'Ready to merge' via the indeterminate path); it
     # only stops over-claiming "regressed vs base" on flaky/environmental failures (e.g. an
     # Android 'platform-tools' provisioning flake that sprays across several legs at once).
-    if ($legInconclusive -and $legRegressed) {
+    # ($legInconclusive implies $legAlsoFails, so this subsumes the old flaky-only veto.)
+    if ($legAlsoFails -and $legRegressed) {
         $legRegressed = $false
-        $legBaselineResult = 'inconclusive-on-base'
+        $legBaselineResult = if ($legInconclusive) { 'flaky-on-base' } else { 'failed-on-base' }
     }
     $failure['legBaselineResult'] = $legBaselineResult
     $failure['legRegressedVsBase'] = [bool]$legRegressed
     $failure['legAlsoFailsOnBase'] = [bool]$legAlsoFails
+    # Base-sampling evidence for the report. baseSampleCount = how many recent base builds were read.
+    # baseGreenCount / baseFailedCount are the PER-LEG MAXIMA across this failure's occurrences (so on
+    # a multi-leg failure they may come from different legs and need not sum to baseSampleCount); the
+    # report labels them "per-leg max" for that reason. A confident 'regressed-vs-base' comes from a
+    # single clean leg, where the maxima equal that leg's counts: baseGreenCount >= MinBaseGreenSamples
+    # and baseFailedCount == 0 (any red on base trips the $legAlsoFails veto above).
+    $failure['baseSampleCount'] = [int]$baseSampleCount
+    $failure['baseGreenCount'] = [int]$baseGreenCount
+    $failure['baseFailedCount'] = [int]$baseFailedCount
 
     # Deterministic attribution prior the classifier MUST start from. Conservative precedence built to
     # never DISMISS a real PR break: only an EXACT test+platform match on base ('alsoFailsOnBaseline')
@@ -2974,12 +3139,13 @@ foreach ($failure in $dedupedFailures) {
         if ($failure['matchesCiScan']) {
             # ...UNLESS the ci-scan registry documents this exact test (or its failing leg) as a
             # recurring/regressed/unstable failure on this base branch across MANY builds. The leg
-            # diff only saw the ONE most recent base build, which happened to be green; ci-scan's
-            # multi-build history shows the failure occurs on the base branch independent of this PR.
-            # DEMOTE the single-base regression claim to 'indeterminate' (NHI). This is a false-RED
-            # reduction ONLY: the failure still forbids a green verdict (it caps the ceiling at NHI),
-            # so a ci-scan hit -- an LLM-generated, possibly-stale hint -- can NEVER turn a red check
-            # green here; it can only move an over-confident 'Not ready' down to 'needs a human'.
+            # diff sampled only the last few base builds (on which the leg was green); ci-scan's
+            # deeper multi-build history shows the failure occurs on the base branch independent of
+            # this PR. DEMOTE the few-build regression claim to 'indeterminate' (NHI). This is a
+            # false-RED reduction ONLY: the failure still forbids a green verdict (it caps the ceiling
+            # at NHI), so a ci-scan hit -- an LLM-generated, possibly-stale hint -- can NEVER turn a
+            # red check green here; it can only move an over-confident 'Not ready' down to 'needs a
+            # human'.
             $failure['deterministicAttribution'] = 'indeterminate'
             $failure['ciScanDemoted'] = $true
         }
@@ -3181,12 +3347,14 @@ $legsRegressedList = @($dedupedFailures | Where-Object { [string]$_.deterministi
 $legsRegressedVsBase = $legsRegressedList.Count
 $legsRegressedVsBaseNames = @($legsRegressedList | ForEach-Object { [string]$_.testName } | Select-Object -Unique)
 # Failures the deterministic prior could attribute NEITHER way: not a clean regression vs
-# base, not pre-existing on base, not a known issue ('indeterminate'). Causes: the base leg
-# outcome was ambiguous (a duplicate/retried leaf name -> 'inconclusive-on-base'), the base
-# build was missing or unreadable, or a device-test TEST result outside the deterministic
-# build-error class. We cannot prove these are PR-caused, but we equally cannot dismiss them
-# as pre-existing/known -- so a green verdict is forbidden and they cap the ceiling at
-# 'Needs human investigation' (softer than a proven regression's 'Not ready').
+# base, not pre-existing on base, not a known issue ('indeterminate'). Causes: the leg was
+# flaky on base (red on some sampled base builds, green on others -> 'flaky-on-base'), the
+# leg was green on base but on too few samples to confirm a regression
+# ('succeeded-on-base-unconfirmed'), the base build was missing or unreadable, or a
+# device-test TEST result outside the deterministic build-error class. We cannot prove these
+# are PR-caused, but we equally cannot dismiss them as pre-existing/known -- so a green
+# verdict is forbidden and they cap the ceiling at 'Needs human investigation' (softer than a
+# proven regression's 'Not ready').
 $unattributedList = @($dedupedFailures | Where-Object { [string]$_.deterministicAttribution -eq 'indeterminate' })
 $unattributedFailures = $unattributedList.Count
 $unattributedFailureNames = @($unattributedList | ForEach-Object { [string]$_.testName } | Select-Object -Unique)
@@ -3255,7 +3423,7 @@ elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $u
         $ceilingReasons.Add("$($unaccountedFailingChecks.Count) failing check(s) are backed by an accessible build that produced NO extractable failure and NO unexplained-leg record (a build/infra break whose log was unreadable, had no log id, or fell past the per-build cap); a 'Ready to merge' verdict is forbidden until a human reads them: $((@($unaccountedFailingChecks) | Select-Object -First 8) -join ', ').")
     }
     if ($unattributedFailures -gt 0) {
-        $ceilingReasons.Add("$unattributedFailures failure(s) could not be attributed deterministically (base outcome ambiguous, base build missing/unreadable, or a device-test result outside the build-error class); they are neither provably PR-caused nor dismissible as pre-existing/known, so a 'Ready to merge' verdict is forbidden until a human classifies them: $((@($unattributedFailureNames) | Select-Object -First 8) -join ', ').")
+        $ceilingReasons.Add("$unattributedFailures failure(s) could not be attributed deterministically (flaky on base, green on too few base samples to confirm a regression, base build missing/unreadable, or a device-test result outside the build-error class); they are neither provably PR-caused nor dismissible as pre-existing/known, so a 'Ready to merge' verdict is forbidden until a human classifies them: $((@($unattributedFailureNames) | Select-Object -First 8) -join ', ').")
     }
     if ($abortedFailingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($abortedFailingChecks.Count) failing check(s) did not finish cleanly (cancelled/timed-out/startup-failure/stale/action-required); the result is not a trustworthy pass and the aborted legs may carry no extractable failure, so a 'Ready to merge' verdict is forbidden until a human reads them: $((@($abortedFailingChecks) | Select-Object -First 8) -join ', ').")
@@ -3283,7 +3451,7 @@ else {
 # spot), so this fires only on trustworthy maui-pr build results -- exactly the crossgen/R2R class.
 if ($legsRegressedVsBase -gt 0 -and $verdictCeiling -in @('No failures found', 'Ready to merge', 'Needs human investigation')) {
     $verdictCeiling = "Not ready"
-    $ceilingReasons.Add("$legsRegressedVsBase leg/failure(s) are red on the PR but GREEN on the most recent completed base build (deterministic regression vs base): $((@($legsRegressedVsBaseNames) | Select-Object -First 8) -join ', '). A 'Ready to merge'/'No failures found' verdict is forbidden; the PR is at best 'Not ready'.")
+    $ceilingReasons.Add("$legsRegressedVsBase leg/failure(s) are red on the PR but GREEN on the sampled base builds and red on none (deterministic regression vs base): $((@($legsRegressedVsBaseNames) | Select-Object -First 8) -join ', '). A 'Ready to merge'/'No failures found' verdict is forbidden; the PR is at best 'Not ready'.")
 }
 if ($baselineInconclusiveRows -gt 0 -and $verdictCeiling -eq "Ready to merge") {
     $ceilingReasons.Add("$baselineInconclusiveRows baseline row(s) are inconclusive; do not subtract unmatched failures as pre-existing on baseline grounds alone.")
@@ -3347,7 +3515,7 @@ if ($knownIssues.error) {
     $limitations.Add($knownIssues.error + " Known-issue cross-referencing was skipped; do not treat the absence of a known-issue match as evidence a failure is PR-caused.")
 }
 if ($ciScanIssues.error) {
-    $limitations.Add($ciScanIssues.error + " ci-scan multi-build base-branch cross-referencing was skipped; a single-base 'regressed-vs-base' could not be demoted by branch history, so treat such regressions as possibly-flaky pending a human check.")
+    $limitations.Add($ciScanIssues.error + " ci-scan multi-build base-branch cross-referencing was skipped; a few-build 'regressed-vs-base' could not be demoted by deeper branch history, so treat such regressions as possibly-flaky pending a human check.")
 }
 
 $context = [ordered]@{
@@ -3550,7 +3718,10 @@ else {
             $tag = if ($failure.ciScanDemoted) { " ⤵︎demoted" } else { "" }
             "[#$($failure.matchesCiScan.number)]($($failure.matchesCiScan.url)) ($($failure.matchesCiScan.class)/$($failure.matchesCiScan.matchKind))$tag"
         } else { "no" }
-        $legCell = if ($failure.legRegressedVsBase) { "REGRESSED" } elseif ($failure.legAlsoFailsOnBase) { "also-red" } elseif ($failure.legBaselineResult) { [string]$failure.legBaselineResult } else { "-" }
+        $legLabel = if ($failure.legRegressedVsBase) { "REGRESSED" } elseif ([string]$failure.legBaselineResult -eq 'flaky-on-base') { "flaky-on-base" } elseif ($failure.legAlsoFailsOnBase) { "also-red" } elseif ($failure.legBaselineResult) { [string]$failure.legBaselineResult } else { "-" }
+        $legCell = if ([int]$failure.baseSampleCount -gt 0) {
+            "$legLabel (per-leg max green $([int]$failure.baseGreenCount), max red $([int]$failure.baseFailedCount) across $([int]$failure.baseSampleCount) sampled base builds)"
+        } else { $legLabel }
         $attrCell = if ($failure.deterministicAttribution) { [string]$failure.deterministicAttribution } else { "indeterminate" }
         $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $baseFlag | $legCell | $attrCell | $retryFlag | $knownIssueCell | $ciScanCell | $messages |")
     }

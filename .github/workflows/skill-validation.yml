@@ -4,7 +4,13 @@
 #   1. Static checks  — run automatically on every PR that touches skills.
 #   2. LLM evaluation — runs automatically for contributor PRs, or can be
 #      triggered by a repo contributor posting "/evaluate-skills" on any PR.
-#      Requires COPILOT_GITHUB_TOKEN secret (Copilot API access).
+#      Requires the COPILOT_PAT_* secret pool in the `copilot-pat-pool`
+#      environment (Copilot API access). Jobs that need model auth declare
+#      `environment: copilot-pat-pool` and randomly pick one populated PAT.
+#      NOTE: keep `copilot-pat-pool` free of required-reviewer / wait-timer
+#      protection rules. These jobs run on `pull_request_target`, so such a
+#      rule would pause every auto-eval pending manual approval and hang the
+#      whole workflow (the `comment` / `report-status` jobs `needs:` them).
 #
 # Trigger model:
 #   - pull_request_target: runs in the base repo context with full permissions
@@ -73,9 +79,8 @@ permissions:
 
 env:
   # Vally CLI is run via npx from npm. Pinned for reproducibility.
-  # @github/copilot-sdk (vally's executor) requires Node ^20.19 || >=22.12,
-  # so we pin Node 22 on the runners.
-  VALLY_VERSION: "0.6.0"
+  # Vally 0.10 requires Node >=22, so we pin Node 22 on the runners.
+  VALLY_VERSION: "0.10.0"
   NODE_VERSION: "22"
 
 jobs:
@@ -92,6 +97,7 @@ jobs:
       pull-requests: read
     outputs:
       head_sha: ${{ github.event.pull_request.head.sha }}
+      base_sha: ${{ github.event.pull_request.base.sha }}
       head_repo: ${{ github.event.pull_request.head.repo.full_name }}
       pr_number: ${{ github.event.pull_request.number }}
       is_contributor: ${{ steps.perms.outputs.is_contributor }}
@@ -155,6 +161,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       head_sha: ${{ steps.pr.outputs.head_sha }}
+      base_sha: ${{ steps.pr.outputs.base_sha }}
       head_repo: ${{ steps.pr.outputs.head_repo }}
       pr_number: ${{ steps.pr.outputs.pr_number }}
     steps:
@@ -181,8 +188,10 @@ jobs:
           PR_DATA=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}")
           HEAD_SHA=$(echo "$PR_DATA" | jq -r '.head.sha')
           HEAD_REPO=$(echo "$PR_DATA" | jq -r '.head.repo.full_name')
+          BASE_SHA=$(echo "$PR_DATA" | jq -r '.base.sha')
           echo "head_sha=${HEAD_SHA}" >> $GITHUB_OUTPUT
           echo "head_repo=${HEAD_REPO}" >> $GITHUB_OUTPUT
+          echo "base_sha=${BASE_SHA}" >> $GITHUB_OUTPUT
           echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
 
       - name: Add reaction to comment
@@ -240,8 +249,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       # ── Lint eval specs with Vally ────────────────────────────────
-      # Lint ONLY the *.vally.yaml eval specs. `vally lint --eval-spec <file>`
-      # validates the spec and SKIPS SKILL.md structural linting. We do NOT
+      # Lint ONLY the explicitly enumerated *.vally.yaml eval specs. Vally's
+      # directory discovery only recognizes eval.yaml/eval.yml, so pass each
+      # nonstandard filename with --eval-spec. This also SKIPS SKILL.md structural
+      # linting. We do NOT
       # lint SKILL.md / *.agent.md here on purpose: vally's skill linter flags
       # two PRE-EXISTING repo issues unrelated to this migration (try-fix
       # SKILL.md exceeds the 500-line limit; find-regression-risk is missing
@@ -446,6 +457,7 @@ jobs:
       needs.discover-eval.result == 'success' &&
       needs.discover-eval.outputs.has_entries == 'true'
     runs-on: ubuntu-latest
+    environment: copilot-pat-pool
     permissions:
       contents: read
     timeout-minutes: 120
@@ -494,31 +506,34 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # ── Select Copilot token ──────────────────────────────────────
+      # ── Select Copilot token (from the copilot-pat-pool PAT pool) ──
       - name: Select Copilot token
         id: select-token
         env:
-          TOKEN_1: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          TOKEN_2: ${{ secrets.COPILOT_GITHUB_TOKEN_2 }}
-          TOKEN_3: ${{ secrets.COPILOT_GITHUB_TOKEN_3 }}
+          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
+          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
+          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
+          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
+          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
+          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
+          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
+          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
+          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
+          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
         run: |
           TOKENS=()
           NAMES=()
-          for i in 1 2 3; do
+          for i in 0 1 2 3 4 5 6 7 8 9; do
             var="TOKEN_$i"
             val="${!var}"
             if [ -n "$val" ]; then
               TOKENS+=("$val")
-              if [ "$i" -eq 1 ]; then
-                NAMES+=("COPILOT_GITHUB_TOKEN")
-              else
-                NAMES+=("COPILOT_GITHUB_TOKEN_$i")
-              fi
+              NAMES+=("COPILOT_PAT_$i")
             fi
           done
 
           if [ ${#TOKENS[@]} -eq 0 ]; then
-            echo "::error::No COPILOT_GITHUB_TOKEN secrets are configured"
+            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
             exit 1
           fi
 
@@ -531,12 +546,179 @@ jobs:
           else
             IDX=$((RANDOM % ${#TOKENS[@]}))
           fi
-          echo "Selected ${NAMES[$IDX]} (1 of ${#TOKENS[@]} available tokens, job-index=${JOB_INDEX:-random})"
+          echo "Selected ${NAMES[$IDX]} (1 of ${#TOKENS[@]} available PATs, job-index=${JOB_INDEX:-random})"
 
           echo "::add-mask::${TOKENS[$IDX]}"
           echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
 
       # ── Run LLM evaluation (Vally) ───────────────────────────────
+      # ── Baseline (pre-PR) evaluation ─────────────────────────────
+      # Run the SAME specs against the skill's instruction files as they exist
+      # on the PR base, so the results comment can show before → after and prove
+      # a reviewer change actually moved the needle. Only reviewer instructions
+      # (SKILL.md / *.md, NOT tests/) are reverted to base; the PR's eval specs
+      # and frozen fixtures are kept. Informational only — it never gates (the
+      # gate uses the authoritative "after" run below). Skipped when there is no
+      # base (manual dispatch), the skill is new on this branch, or its
+      # instructions are unchanged versus base, or non-Markdown reviewer assets
+      # changed (either case cannot produce a useful comparison).
+      - name: Run Vally evaluation (baseline)
+        id: eval-baseline
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+          RESULTS_PATH: eval-results-baseline/${{ matrix.entry.name }}
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+          RUNS: ${{ github.event.inputs.runs }}
+          BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+        run: |
+          set -e
+          if [ -z "${BASE_SHA:-}" ]; then
+            echo "No base SHA (manual dispatch?) — skipping baseline run."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          SKILL_DIR="${TESTS_PATH%/tests}"
+
+          # Ensure the base commit is available locally (fork PRs may need it
+          # fetched from the base repo, added as `upstream` by the fixture step).
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 upstream "$BASE_SHA" 2>/dev/null || true
+          fi
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "::warning::Base commit ${BASE_SHA} unavailable — skipping baseline run."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Skill is new on this branch ⇒ no pre-change reviewer to compare to.
+          if ! git cat-file -e "${BASE_SHA}:${SKILL_DIR}/SKILL.md" 2>/dev/null; then
+            echo "No base SKILL.md under ${SKILL_DIR} — new skill; skipping baseline."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Compare the union of base and PR Markdown instructions. This catches
+          # deleted/renamed files while keeping the PR's eval specs and scripts.
+          mapfile -t INSTR < <(
+            {
+              git ls-tree -r --name-only "$BASE_SHA" -- "$SKILL_DIR"
+              git ls-tree -r --name-only HEAD -- "$SKILL_DIR"
+            } | awk -v prefix="${SKILL_DIR}/" '
+              index($0, prefix) == 1 &&
+              index($0, prefix "tests/") != 1 &&
+              /\.md$/ { print }
+            ' | sort -u
+          )
+          if [ ${#INSTR[@]} -eq 0 ]; then
+            echo "No instruction files under ${SKILL_DIR} — skipping baseline."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # If reviewer instructions are identical to base, before == after.
+          if git diff --quiet "$BASE_SHA" HEAD -- "${INSTR[@]}"; then
+            echo "Skill instructions unchanged vs base — before == after; skipping baseline."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # An invoked script or other non-Markdown asset changed with the
+          # instructions would make this a hybrid base/PR reviewer. Skip instead.
+          mapfile -t NON_MARKDOWN_ASSETS < <(
+            {
+              git ls-tree -r --name-only "$BASE_SHA" -- "$SKILL_DIR"
+              git ls-tree -r --name-only HEAD -- "$SKILL_DIR"
+            } | awk -v prefix="${SKILL_DIR}/" '
+              index($0, prefix) == 1 &&
+              index($0, prefix "tests/") != 1 &&
+              !/\.md$/ { print }
+            ' | sort -u
+          )
+          if [ ${#NON_MARKDOWN_ASSETS[@]} -gt 0 ] &&
+             ! git diff --quiet "$BASE_SHA" HEAD -- "${NON_MARKDOWN_ASSETS[@]}"; then
+            echo "Non-Markdown reviewer assets changed — skipping partial baseline."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Reverting ${#INSTR[@]} instruction file(s) under ${SKILL_DIR} to base ${BASE_SHA} for the baseline run"
+          # Always restore PR content when this step exits, even on error, so the
+          # authoritative "after" run below never sees base content.
+          restore() { git restore --staged --worktree --source=HEAD -- "$SKILL_DIR"; }
+          trap restore EXIT
+          for f in "${INSTR[@]}"; do
+            if git cat-file -e "${BASE_SHA}:${f}" 2>/dev/null; then
+              git checkout "$BASE_SHA" -- "$f"
+            else
+              # File was added by the PR; it did not exist pre-change.
+              rm -f "$f"
+            fi
+          done
+
+          SPECS=()
+          for f in "$TESTS_PATH"/eval*.vally.yaml; do
+            [ -e "$f" ] || continue
+            SPECS+=("-e" "$f")
+          done
+          if [ ${#SPECS[@]} -eq 0 ]; then
+            echo "No eval*.vally.yaml specs — skipping baseline."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          RUNS_ARGS=()
+          if [ -n "${RUNS:-}" ]; then
+            RUNS_N=$(printf '%s' "$RUNS" | tr -cd '0-9')
+            [ -n "$RUNS_N" ] && RUNS_ARGS=(--runs "$RUNS_N")
+          fi
+
+          # Advisory exit — the baseline number is informational; do not fail.
+          set +e
+          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+            "${SPECS[@]}" \
+            --skill-dir .github/skills \
+            --output-dir "$RESULTS_PATH" \
+            --junit \
+            --model claude-opus-4.6 \
+            --judge-model claude-opus-4.6 \
+            "${RUNS_ARGS[@]}" \
+            --workers 4 \
+            --verbose
+          BASELINE_RC=$?
+          set -e
+          echo "baseline vally exit: $BASELINE_RC (advisory)"
+
+          # A threshold miss is a valid before score. Execution errors or
+          # incomplete output are not comparable and must not produce a trend.
+          JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
+          if [ -z "$JUNIT" ]; then
+            echo "::warning::No baseline JUnit report under $RESULTS_PATH — skipping baseline."
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+          else
+            ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
+            if [ -z "$ROOT" ]; then
+              echo "::warning::Baseline JUnit report contains no <testsuites> element — skipping baseline."
+              echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            else
+              FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
+              ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
+              echo "Baseline JUnit aggregate: failures=$FAILS errors=$ERRS"
+              if [ "$ERRS" -ne 0 ] || { [ "$BASELINE_RC" -ne 0 ] && [ "$FAILS" -eq 0 ]; }; then
+                echo "::warning::Baseline evaluation had execution errors or incomplete output — skipping baseline."
+                echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+              else
+                echo "baseline_ran=true" >> "$GITHUB_OUTPUT"
+              fi
+            fi
+          fi
+
+      # Belt-and-suspenders: guarantee the PR's skill content is restored before
+      # the authoritative run, regardless of how the baseline step exited.
+      - name: Restore PR skill content
+        if: always()
+        run: git restore --staged --worktree --source=HEAD -- .github/skills
+
       - name: Run Vally evaluation
         id: eval-run
         env:
@@ -551,8 +733,10 @@ jobs:
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
         run: |
-          # Collect this skill's capability specs. The eval*.vally.yaml glob
-          # EXCLUDES hermeticity.vally.yaml (run by its own gate job).
+          # Collect this skill's capability specs. Pass every nonstandard
+          # eval*.vally.yaml filename explicitly because Vally directory discovery
+          # only recognizes eval.yaml/eval.yml. This EXCLUDES hermeticity.vally.yaml
+          # (run by its own gate job).
           SPECS=()
           for f in "$TESTS_PATH"/eval*.vally.yaml; do
             [ -e "$f" ] || continue
@@ -638,6 +822,15 @@ jobs:
           include-hidden-files: true
           retention-days: 14
 
+      - name: Upload baseline results
+        if: always() && steps.eval-baseline.outputs.baseline_ran == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-eval-baseline-${{ matrix.entry.name }}
+          path: eval-results-baseline/${{ matrix.entry.name }}/
+          include-hidden-files: true
+          retention-days: 14
+
   # ==========================================================================
   # HERMETICITY GATE (positive assertion)
   # Runs hermeticity.vally.yaml — a single stimulus that passes only when
@@ -655,6 +848,7 @@ jobs:
       needs.discover-eval.result == 'success' &&
       needs.discover-eval.outputs.has_entries == 'true'
     runs-on: ubuntu-latest
+    environment: copilot-pat-pool
     permissions:
       contents: read
     timeout-minutes: 30
@@ -677,18 +871,25 @@ jobs:
       - name: Select Copilot token
         id: select-token
         env:
-          TOKEN_1: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          TOKEN_2: ${{ secrets.COPILOT_GITHUB_TOKEN_2 }}
-          TOKEN_3: ${{ secrets.COPILOT_GITHUB_TOKEN_3 }}
+          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
+          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
+          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
+          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
+          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
+          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
+          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
+          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
+          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
+          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
         run: |
           TOKENS=()
-          for i in 1 2 3; do
+          for i in 0 1 2 3 4 5 6 7 8 9; do
             var="TOKEN_$i"
             val="${!var}"
             [ -n "$val" ] && TOKENS+=("$val")
           done
           if [ ${#TOKENS[@]} -eq 0 ]; then
-            echo "::error::No COPILOT_GITHUB_TOKEN secrets are configured"
+            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
             exit 1
           fi
           IDX=$((RANDOM % ${#TOKENS[@]}))
@@ -810,6 +1011,15 @@ jobs:
         with:
           pattern: skill-eval-results-*
           path: eval-results/
+          merge-multiple: false
+        continue-on-error: true
+
+      - name: Download baseline eval result artifacts
+        if: needs.evaluate.result == 'success' || needs.evaluate.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: skill-eval-baseline-*
+          path: eval-results-baseline/
           merge-multiple: false
         continue-on-error: true
 
@@ -979,6 +1189,15 @@ jobs:
               const m = (tag || '').match(new RegExp(key + '="([^"]*)"'));
               return m ? xmlDecode(m[1]) : null;
             }
+            function artifactScope(file, root, artifactPrefix) {
+              const [artifact] = path.relative(root, file).split(path.sep);
+              return artifact && artifact.startsWith(artifactPrefix)
+                ? artifact.slice(artifactPrefix.length)
+                : '';
+            }
+            function suiteKey(scope, label) {
+              return `${scope}\u0000${label}`;
+            }
 
             const suites = [];
             let evalPassed = true;
@@ -986,6 +1205,7 @@ jobs:
             if (fs.existsSync('eval-results')) {
               const junitFiles = findFilesByName('eval-results', 'eval-results.junit.xml');
               for (const jf of junitFiles) {
+                const scope = artifactScope(jf, 'eval-results', 'skill-eval-results-');
                 let xml = '';
                 try { xml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
                 const blocks = xml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
@@ -1013,7 +1233,7 @@ jobs:
                       if (!failures.has(tcName)) failures.set(tcName, { kind, msg });
                     }
                   }
-                  suites.push({ label, score, threshold, passed, failures: [...failures.entries()] });
+                  suites.push({ scope, label, score, threshold, passed, failures: [...failures.entries()] });
                 }
               }
             }
@@ -1040,16 +1260,59 @@ jobs:
               lines.push('');
 
               // ── Per-suite results table ─────────────────────────
-              lines.push('| Suite | Score | Threshold | Verdict |');
-              lines.push('|-------|-------|-----------|---------|');
+              // Baseline scores are keyed by skill artifact and eval name, so
+              // equal suite names in different skills remain distinct.
+              const baselineScores = new Map();
+              if (fs.existsSync('eval-results-baseline')) {
+                const bFiles = findFilesByName('eval-results-baseline', 'eval-results.junit.xml');
+                for (const jf of bFiles) {
+                  const bScope = artifactScope(jf, 'eval-results-baseline', 'skill-eval-baseline-');
+                  let bxml = '';
+                  try { bxml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
+                  const bblocks = bxml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
+                  for (const block of bblocks) {
+                    const bOpen = (block.match(/<testsuite\b[^>]*>/) || [''])[0];
+                    const bLabel = suiteProp(block, 'evalName') || tagAttr(bOpen, 'name') || '(unnamed)';
+                    baselineScores.set(suiteKey(bScope, bLabel), {
+                      score: suiteProp(block, 'overallScore'),
+                      passed: suiteProp(block, 'passed') === 'true',
+                    });
+                  }
+                }
+              }
+              const hasBaseline = baselineScores.size > 0;
+
+              if (hasBaseline) {
+                lines.push('| Suite | Before | After | Threshold | Verdict |');
+                lines.push('|-------|--------|-------|-----------|---------|');
+              } else {
+                lines.push('| Suite | Score | Threshold | Verdict |');
+                lines.push('|-------|-------|-----------|---------|');
+              }
               for (const s of suites) {
                 const sc = s.score != null && s.score !== '' ? Number(s.score).toFixed(2) : '—';
                 const th = s.threshold != null && s.threshold !== '' ? Number(s.threshold).toFixed(2) : '—';
                 const v = s.passed ? '✅' : '❌';
                 const label = (s.label || '').replace(/\|/g, '\\|');
-                lines.push(`| ${label} | ${sc} | ${th} | ${v} |`);
+                if (hasBaseline) {
+                  const b = baselineScores.get(suiteKey(s.scope, s.label));
+                  const bsc = b && b.score != null && b.score !== '' ? Number(b.score).toFixed(2) : '—';
+                  let trend = '';
+                  if (b && b.score != null && b.score !== '' && s.score != null && s.score !== '') {
+                    const d = Number(s.score) - Number(b.score);
+                    if (d > 0.001) trend = ' 📈';
+                    else if (d < -0.001) trend = ' 📉';
+                  }
+                  lines.push(`| ${label} | ${bsc} | ${sc}${trend} | ${th} | ${v} |`);
+                } else {
+                  lines.push(`| ${label} | ${sc} | ${th} | ${v} |`);
+                }
               }
               lines.push('');
+              if (hasBaseline) {
+                lines.push('_**Before** = these specs run against the skill on the PR base (the pre-change reviewer); **After** = with this PR. A rise (📈) means the change made the reviewer catch a regression it previously missed. The Before run is informational and never gates._');
+                lines.push('');
+              }
 
               // ── Failing stimuli detail ──────────────────────────
               for (const s of suites.filter(x => x.failures.length > 0)) {

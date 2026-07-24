@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -21,13 +22,36 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			handler.PlatformView.CachedChildren.Clear();
-
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
-				// Detach the old handler if it exists (prevents WinUI COM exception on reuse)
-				view.Handler?.DisconnectHandler();
-				handler.PlatformView.CachedChildren.Add(view.ToPlatform(handler.MauiContext));
+				var platformView = view.ToPlatform(handler.MauiContext);
+
+				// Detach from existing parent — mirrors Android RemoveFromParent / iOS RemoveFromSuperview.
+				// Always remove via CachedChildren directly: Content = null is a no-op when _content
+				// is null (e.g. ScrollViewHandler adds via paddingShim.CachedChildren.Add, not the
+				// Content setter), leaving the element with a live parent and causing a COM exception
+				// when we try to reparent it. Only clear _content when it actually tracks fwElement.
+				if (platformView is FrameworkElement fwElement && fwElement.Parent is not null)
+				{
+					if (fwElement.Parent is ContentPanel existingContentPanel)
+					{
+						existingContentPanel.CachedChildren.Remove(fwElement);
+						if (existingContentPanel.Content == fwElement)
+						{
+							existingContentPanel.Content = null;
+						}
+					}
+					else if (fwElement.Parent is MauiPanel existingPanel)
+					{
+						existingPanel.CachedChildren.Remove(fwElement);
+					}
+				}
+
+				handler.PlatformView.Content = platformView;
+			}
+			else
+			{
+				handler.PlatformView.Content = null;
 			}
 		}
 

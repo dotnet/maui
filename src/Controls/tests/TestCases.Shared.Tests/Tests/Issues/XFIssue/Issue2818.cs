@@ -34,7 +34,7 @@ public class Issue2818 : _IssuesUITest
 		Assert.That(positionStart, Is.Not.EqualTo(secondPosition));
 	}
 
-	[Test]  
+	[Test]
 	public async Task RootViewSizeDoesntChangeAfterBackground()
 	{
 		var idiom = App.WaitForElement("Idiom");
@@ -55,15 +55,17 @@ public class Issue2818 : _IssuesUITest
 		// Poll until the width stabilizes. After foregrounding, some platforms (esp. Android/iOS)
 		// may momentarily report an intermediate layout size while the window / flyout re-applies
 		// RTL + orientation constraints. This loop prevents test flakiness by waiting for the
-		// final (restored) size instead of asserting too early
+		// final (restored) size instead of asserting too early. A small tolerance accounts for
+		// sub-pixel rounding differences that can leave the restored size off by ~1px.
+		const double tolerance = 1.0;
 		int retries = 50;
-		while (newWindowSize.GetRect().Width != windowSize.GetRect().Width && retries-- > 0)
+		while (Math.Abs(newWindowSize.GetRect().Width - windowSize.GetRect().Width) > tolerance && retries-- > 0)
 		{
 			await Task.Delay(100);
 		}
 
-		Assert.That(newWindowSize.GetRect().Width, Is.EqualTo(windowSize.GetRect().Width));
-		Assert.That(newWindowSize.GetRect().Height, Is.EqualTo(windowSize.GetRect().Height));
+		Assert.That(newWindowSize.GetRect().Width, Is.EqualTo(windowSize.GetRect().Width).Within(tolerance));
+		Assert.That(newWindowSize.GetRect().Height, Is.EqualTo(windowSize.GetRect().Height).Within(tolerance));
 	}
 
 	[TearDown]

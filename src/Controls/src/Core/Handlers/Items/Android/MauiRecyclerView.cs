@@ -444,10 +444,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateAdapter();
 
 			// Set up any properties which require observing data changes in the adapter
-			UpdateItemsUpdatingScrollMode();
-
 			UpdateEmptyView();
 			AddOrUpdateScrollListener();
+			UpdateItemsUpdatingScrollMode();
 			UpdateSnapBehavior();
 		}
 
@@ -455,6 +454,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsViewAdapter == null || ItemsView == null)
 				return;
+
+			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				ScrollHelper.AddScrollListener();
+			}
+			else
+			{
+				ScrollHelper.RemoveScrollListener();
+			}
 
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
@@ -717,6 +725,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollHelper?.AdjustScroll();
 		}
 
+		protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
+		{
+			base.OnSizeChanged(w, h, oldw, oldh);
+
+			// When the RecyclerView's size changes (e.g., after an orientation change while
+			// the CollectionView was not visible), we need to invalidate all visible item views
+			// to ensure they are re-measured with the new dimensions.
+			if (oldw > 0 && oldh > 0 && (Math.Abs(w - oldw) > 1 || Math.Abs(h - oldh) > 1))
+			{
+				InvalidateItemMeasures();
+			}
+		}
+
+		void InvalidateItemMeasures()
+		{
+			// Clear the adapter's static size cache (used by MeasureFirstItem strategy)
+			ItemsViewAdapter?.ClearMeasureCache();
+
+			// Force all visible children to invalidate their cached sizes and re-measure
+			for (int i = 0; i < ChildCount; i++)
+			{
+				if (GetChildAt(i) is ItemContentView itemContentView)
+				{
+					itemContentView.InvalidateCachedSize();
+					itemContentView.ForceLayout();
+				}
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -739,17 +776,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		class ParentScrollGestureDispatcher : IDisposable
 		{
 			readonly MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> _owner;
+			readonly DescendantDisallowInterceptListener _disallowInterceptListener;
 			readonly int[] _targetLocation = new int[2];
 			MotionEvent _downEvent;
 			AView _parentScrollTarget;
 			float _touchStartX;
 			float _touchStartY;
 			int? _scaledTouchSlop;
+			bool _descendantDisallowedIntercept;
 			GestureOwner _gestureOwner;
 
 			public ParentScrollGestureDispatcher(MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> owner)
 			{
 				_owner = owner;
+				_disallowInterceptListener = new DescendantDisallowInterceptListener(this);
+				_owner.AddOnItemTouchListener(_disallowInterceptListener);
 			}
 
 			public bool TryDispatchToParent(MotionEvent e, Func<MotionEvent, bool> dispatchToRecyclerView, out bool handled)
@@ -797,7 +838,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			public void Dispose()
 			{
+				_owner.RemoveOnItemTouchListener(_disallowInterceptListener);
+				_disallowInterceptListener.Dispose();
 				Reset();
+			}
+
+			public void RequestDisallowInterceptTouchEvent(bool disallowIntercept)
+			{
+				if (_gestureOwner != GestureOwner.Parent)
+				{
+					_descendantDisallowedIntercept = disallowIntercept;
+				}
 			}
 
 			void TrackDown(MotionEvent e)
@@ -852,6 +903,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (target is null)
 				{
 					return false;
+				}
+
+				var recyclerViewHandled = dispatchToRecyclerView(e);
+
+				if (_descendantDisallowedIntercept)
+				{
+					handled = recyclerViewHandled;
+					return true;
 				}
 
 				_parentScrollTarget = target;
@@ -942,6 +1001,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_owner.Parent?.RequestDisallowInterceptTouchEvent(false);
 				_parentScrollTarget = null;
+				_descendantDisallowedIntercept = false;
 				_gestureOwner = GestureOwner.Undecided;
 
 				if (_downEvent is not null)
@@ -961,6 +1021,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Undecided,
 				RecyclerView,
 				Parent
+			}
+
+			sealed class DescendantDisallowInterceptListener : Java.Lang.Object, RecyclerView.IOnItemTouchListener
+			{
+				readonly ParentScrollGestureDispatcher _dispatcher;
+
+				public DescendantDisallowInterceptListener(ParentScrollGestureDispatcher dispatcher)
+				{
+					_dispatcher = dispatcher;
+				}
+
+				public bool OnInterceptTouchEvent(RecyclerView rv, MotionEvent e)
+				{
+					return false;
+				}
+
+				public void OnTouchEvent(RecyclerView rv, MotionEvent e)
+				{
+				}
+
+				public void OnRequestDisallowInterceptTouchEvent(bool disallowIntercept)
+				{
+					_dispatcher.RequestDisallowInterceptTouchEvent(disallowIntercept);
+				}
 			}
 		}
 
@@ -1068,8 +1152,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (RecyclerViewScrollListener == null)
 				return;
 
+			RemoveOnScrollListener(RecyclerViewScrollListener);
 			RecyclerViewScrollListener.Dispose();
-			ClearOnScrollListeners();
 			RecyclerViewScrollListener = null;
 		}
 	}
