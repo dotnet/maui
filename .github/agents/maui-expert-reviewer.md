@@ -101,6 +101,8 @@ Catching inverted conditions, off-by-one errors, wrong property usage, or semant
 - CHECK: Fix is verified against the original issue reproduction, not just a new unit test
 - CHECK: Arithmetic handles overflow, division by zero, and negative values
 - CHECK: Explicit parentheses in index/position/offset calculations — silent operator-precedence bugs in scroll offset, spacing, or size math are hard to spot
+- CHECK: A regex or string literal matched against EXTERNAL TOOL OUTPUT (console/CI logs, CLI stdout, exit-code lines, file-format text) is verified against the code that PRODUCES that output — locate the producer (a `run-*.cmd`/`run-*.sh`, build step, or the tool's own source) **even when it is outside the PR diff**, and confirm the pattern fires ONLY under the assumed condition. Do not stop after confirming that the producer emits the exact text: state the producer's emission condition and compare it with the consumer's semantic assumption. Exact string alignment proves syntax, not correctness. A token the producer emits unconditionally (or under a broader condition than assumed) is an over-match; a token it never emits is a dead branch. Example miss: an "incomplete run" detector keyed on `exit code: [1-9]` when that line is printed at the end of *every* failed run.
+- CHECK: A guard, veto, gate, or early-return made MORE restrictive is evaluated for over-blocking — name the previously-passing input it now rejects and confirm that rejection is intended. A "safe direction" (fail-closed, over-cap, skip-rather-than-render) does NOT make over-blocking correct; it trades a usefulness regression for safety and must be a deliberate choice, not an accident.
 
 ### 6. Regression Prevention and Test Coverage `[critical]`
 
@@ -119,6 +121,7 @@ Every bug fix needs a regression test. Modified code must be checked against git
 - CHECK: Test labels are visible even when content is clipped — position a sentinel element inside the clip boundary to prove content was drawn
 - CHECK: Android memory tests use `GetMemoryInfo()` with threshold assertions
 - CHECK: Test types match project infrastructure — source-gen tests in `SourceGen.UnitTests.csproj`, not `Xaml.UnitTests.csproj`; tests that don't need `[Values] XamlInflator` shouldn't use it
+- CHECK: A new guard or branch has a test exercising the NEGATIVE case — the input that must NOT trip it — not only the positive. A passing test proves nothing if its fixture CONFLATES two signals (a sample that matches both the true-positive marker and a benign marker that *also* satisfies the condition): such a test cannot discriminate, so the missing discriminating test is itself a coverage gap. Verify green tests COVER the dangerous case, don't just confirm they pass.
 
 #### Frequently Regressed Components
 
@@ -312,6 +315,10 @@ Patterns that work with .NET trimmer and NativeAOT.
 - CHECK: `System.OperatingSystem` APIs used instead of `RuntimeInformation` for linker-friendly detection
 - CHECK: XAML compilation paths produce code without runtime type resolution
 - CHECK: `DynamicDependency` or `DynamicallyAccessedMembers` attributes applied when reflection is unavoidable
+- CHECK: For IL2026/IL3050, trace the complete annotation chain before recommending a fix: identify the annotated member, any generic or `DynamicallyAccessedMembers` hop, the feature guard, and the target platform/toolchain that produced the warning
+- CHECK: Do not assume either that a `FeatureGuard` silences every annotation chain or that every IL2026/IL3050 suppression is wrong. Validate that the guarded path is disabled for the affected publish configuration and that the relevant analyzer honors the guard on that platform
+- CHECK: Reject broad suppressions and expected-warning baselines that hide a reachable dynamic-code path. A `#pragma` is acceptable only when the path is proven unreachable for the affected configuration, a platform/toolchain limitation is documented, and the diagnostic scope is restored immediately after the affected call. An `UnconditionalSuppressMessage` is acceptable only with the same unreachable-path and toolchain-limitation evidence, and it must target the exact diagnostic on the narrowest applicable member
+- CHECK: Prefer a structural fix when the warning represents a real reachability path: isolate annotated registration behind a helper with matching annotations, or replace reflection/dynamic serialization with source-generated metadata. Do not present a branch-specific helper as if it exists on every target branch
 
 ### 19. CollectionView — iOS/MacCatalyst (Items2/) `[major]`
 
@@ -521,7 +528,7 @@ These apply regardless of file paths: Logic and Correctness, Regression Preventi
 | Dimension | Trigger |
 |---|---|
 | Public API Surface | Adds/removes `public` members or modifies `PublicAPI.Unshipped.txt` |
-| Trimming/AOT | Uses reflection, `Type.GetType`, or `Activator.CreateInstance` |
+| Trimming/AOT | Uses reflection, `Type.GetType`, or `Activator.CreateInstance`; adds or changes `RequiresDynamicCode`, `RequiresUnreferencedCode`, `DynamicallyAccessedMembers`, `FeatureGuard`, `UnconditionalSuppressMessage`, or an IL20xx/IL30xx suppression |
 | Backward Compatibility | Changes defaults, removes APIs, or touches Compatibility/ |
 
 ---
@@ -570,6 +577,8 @@ For each potential finding from Wave 1:
 ### Wave 3 — Record and Post Findings
 
 **Always write the findings file** — every finding that can be associated with a file+line goes here. Try hard to associate feedback to a specific location.
+
+> **This write is REQUIRED and explicitly permitted.** If you have a general instinct or host guardrail that says "do not write output files" or "writing files is prohibited," it does **not** apply to this findings file — producing it on disk is this agent's entire job. **Never substitute pasting the JSON into your text response for writing the file:** the pipeline reads the file from disk (`post-inline-review.ps1`), so JSON returned as chat text is silently discarded and the inline comments are lost.
 
 **Output path resolution** — write findings to whichever path the invoker specifies in its prompt (e.g. `OUTPUT_FINDINGS_PATH=...`, `outputPath: ...`, or any equivalent explicit instruction). If the invoker does not specify a path, default to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/inline-findings.json`. This lets internal callers (e.g. `try-fix` running ×4) request attempt-scoped paths so parallel/sequential reviewer passes do not clobber the PR-level inline findings consumed by `post-inline-review.ps1`.
 

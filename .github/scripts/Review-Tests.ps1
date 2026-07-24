@@ -255,7 +255,7 @@ function New-TestFailureReviewBody {
 
     $badgeLines = @()
     $badgeLines += New-Badge -Label "Overall" -Message $verdict -Color $verdictColor -Alt "Overall $verdict"
-    $badgeLines += New-Badge -Label "Failures" -Message "$failureCount" -Color "8250df" -Alt "Failures $failureCount"
+    $badgeLines += New-Badge -Label "Failures" -Message "$failureCount" -Color "bf8700" -Alt "Failures $failureCount"
     $badgeLines += New-Badge -Label "Baseline" -Message "$baselineMatchCount on base" -Color "0969da" -Alt "Baseline $baselineMatchCount on base"
     # Surface the deterministic job-level regression count (red on PR, green on base) when
     # any leg regressed -- it is the strongest PR-caused signal and caps the verdict ceiling.
@@ -277,6 +277,7 @@ function New-TestFailureReviewBody {
     else {
         "> Test-failure review results are available based on commit [``$commitSha7``]($commitUrl)."
     }
+    $authorPing += ' To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.'
 
     $badges = $badgeLines -join "`n"
 
@@ -286,7 +287,6 @@ $marker
 ## Tests Failure Analysis
 
 $authorPing
-> To request a fresh review after new comments, commits, or CI runs, comment ``/review tests``.
 
 <p align="left">
 $badges

@@ -8,6 +8,8 @@ namespace Microsoft.Maui
 	static class WebUtils
 	{
 #if !NETSTANDARD
+		static readonly char[] s_queryOrFragmentDelimiters = new[] { '?', '#' };
+
 		internal static string RemovePossibleQueryString(string? url)
 		{
 			if (string.IsNullOrEmpty(url))
@@ -15,7 +17,7 @@ namespace Microsoft.Maui
 				return string.Empty;
 			}
 
-			var indexOfQueryString = url.IndexOf('?', StringComparison.Ordinal);
+			var indexOfQueryString = url.IndexOfAny(s_queryOrFragmentDelimiters);
 			return (indexOfQueryString == -1)
 				? url
 				: url.Substring(0, indexOfQueryString);

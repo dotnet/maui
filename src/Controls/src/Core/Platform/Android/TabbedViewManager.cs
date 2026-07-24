@@ -235,6 +235,17 @@ internal class TabbedViewManager
             Element.TabsChanged -= OnTabsCollectionChanged;
             RemoveTabs();
 
+            if (_currentBarBackground is GradientBrush currentGradientBrush)
+            {
+                if (ReferenceEquals(currentGradientBrush.Parent, Element.Owner))
+                {
+                    currentGradientBrush.Parent = null;
+                }
+
+                currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+            }
+            _currentBarBackground = null;
+
             // Detach TabLayoutMediator and remove tab listener during full cleanup only.
             // This prevents stale callbacks after the handler is disconnected.
             // Must NOT be in RemoveTabs() because that's also called during runtime
@@ -286,7 +297,7 @@ internal class TabbedViewManager
                 {
                     _tabLayout = new TabLayout(_context.Context)
                     {
-                        TabMode = TabLayout.ModeFixed,
+                        TabMode = _managesViewPager ? TabLayout.ModeAuto : TabLayout.ModeFixed,
                         TabGravity = TabLayout.GravityFill,
                         LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
                     };

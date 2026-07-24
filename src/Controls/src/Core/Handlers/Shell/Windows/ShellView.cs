@@ -207,6 +207,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void SwitchShellItem(ShellItem newItem, bool animate = true)
 		{
+			if (newItem is null)
+				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
+
+			if (newItem.CurrentItem is null)
+				throw new InvalidOperationException($"Content not found for active {newItem}. Title: {newItem.Title}. Route: {newItem.Route}.");
+
 			var navItems = FlyoutItems.OfType<NavigationViewItemViewModel>();
 
 			// Implicit items aren't items that are surfaced to the user 

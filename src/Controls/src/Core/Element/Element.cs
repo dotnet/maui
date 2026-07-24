@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls
 		// if available.
 		//
 		// Ultimately I don't think we'll need these to be virtual but some controls (layout)
-		// are going to take a more focused effort so I'd rather just do that in a 
+		// are going to take a more focused effort so I'd rather just do that in a
 		// separate PR. I don't think there's ever a scenario where a subclass needs
 		// to replace the backing store.
 		// If everyone just uses AddLogicalChildren and RemoveLogicalChildren
@@ -440,6 +440,27 @@ namespace Microsoft.Maui.Controls
 			OnPropertyChanged(nameof(Parent));
 		}
 
+		IEnumerable<KeyValuePair<string, object>> GetParentResourcesForParentSet()
+		{
+			// Existing resource-change listeners observe the full parent snapshot during parent set.
+			// Preserve that payload; the filtered path below is only for this element's own DynamicResources.
+			if (_changeHandlers?.Count > 0)
+				return RealParent.GetMergedResources();
+
+			if (_dynamicResources == null || _dynamicResources.Count == 0)
+				return null;
+
+			HashSet<string> dynamicResourceKeys = null;
+			foreach (var dynamicResource in _dynamicResources)
+			{
+				var dynamicResourceKey = dynamicResource.Value.Item1;
+				if (!string.IsNullOrEmpty(dynamicResourceKey))
+					(dynamicResourceKeys ??= new HashSet<string>(StringComparer.Ordinal)).Add(dynamicResourceKey);
+			}
+
+			return RealParent.GetMergedResourcesForKeys(dynamicResourceKeys);
+		}
+
 		internal bool IsTemplateRoot { get; set; }
 
 		/// <inheritdoc/>
@@ -688,7 +709,7 @@ namespace Microsoft.Maui.Controls
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			// If OnPropertyChanged is being called from a SetValue call on the BO we want the handler update to happen after
-			// the PropertyChanged Delegate on the BP and this OnPropertyChanged has fired. 
+			// the PropertyChanged Delegate on the BP and this OnPropertyChanged has fired.
 			// if you look at BO you'll see the order is this
 			//
 			// OnPropertyChanged(property.PropertyName);
@@ -696,7 +717,7 @@ namespace Microsoft.Maui.Controls
 			//
 			// It can cause somewhat confusing behavior if the handler update happens between these two calls
 			// And the user has placed reacting code inside the BP.PropertyChanged callback
-			// 
+			//
 			// If the OnPropertyChanged is being called from user code, we still want that to propagate to the mapper
 			bool waitForHandlerUpdateToFireFromBP = _pendingHandlerUpdatesFromBPSet.Contains(propertyName);
 
@@ -869,7 +890,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (keys == null)
 				return;
-			
+
 			// Notify change handlers with keys + resolver (they can resolve on-demand)
 			if (_changeHandlers != null)
 			{
@@ -877,7 +898,7 @@ namespace Microsoft.Maui.Controls
 				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
 					handler(this, e);
 			}
-			
+
 			if (_dynamicResources == null)
 				return;
 			if (_bindableResources == null)
@@ -897,12 +918,12 @@ namespace Microsoft.Maui.Controls
 				}
 				if (changedResources == null)
 					continue;
-				
+
 				// Only now do we look up the value - on demand
 				object value = resolver(key);
 				if (value == null)
 					continue;
-					
+
 				foreach ((BindableProperty, SetterSpecificity) changedResource in changedResources)
 					OnResourceChanged(changedResource.Item1, value, changedResource.Item2);
 
@@ -1171,7 +1192,7 @@ namespace Microsoft.Maui.Controls
 
 				// Only call disconnect if the previous handler is still connected to this virtual view.
 				// If a handler is being reused for a different VirtualView then the virtual
-				// view would have already rolled 
+				// view would have already rolled
 				if (_previousHandler?.VirtualView == this)
 					_previousHandler?.DisconnectHandler();
 

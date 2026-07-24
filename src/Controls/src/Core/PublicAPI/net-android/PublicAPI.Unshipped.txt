@@ -229,3 +229,11 @@ Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.HandledTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.Timestamp.get -> System.DateTimeOffset
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.UpdatedTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+*REMOVED*override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.JavaFinalize() -> void
+override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.Dispose(bool disposing) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.DispatchTouchEvent(Android.Views.MotionEvent e) -> bool
+override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnAttachedToWindow() -> void
+override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnDetachedFromWindow() -> void
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnVisibilityChanged(Android.Views.View changedView, Android.Views.ViewStates visibility) -> void
+~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
+Microsoft.Maui.Controls.Label.~Label() -> void

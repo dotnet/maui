@@ -1,0 +1,171 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# expert-review — inline-findings.json write regression guard
+#
+# Provenance: mined from 64 real maui-copilot CI reviewer sessions. In 34/64
+# the maui-expert-reviewer REFUSED to write its findings to
+# CustomAgentLogsTmp/PRState/<PR>/PRAgent/inline-findings.json — it
+# over-generalized a host "don't write output files" guardrail, declared the
+# write "prohibited", and dumped the raw JSON into chat instead. The pipeline
+# only reads that file FROM DISK (post-inline-review.ps1 `Test-Path`); when
+# it is missing, every inline review comment is SILENTLY dropped. PR #36002
+# fixes this by making the write an explicit REQUIRED, authorized deliverable
+# in Review-PR.ps1 (STEP 5b) and .github/agents/maui-expert-reviewer.md.
+#
+# This eval is the regression guard for that fix. It pins a worktree to a real
+# regression-introducing commit (the gradient-alpha bug — four GetGradientData
+# (1.0f) call sites in MauiDrawable.Android.cs) so the agent has a genuine
+# diff to produce a grounded finding from, then must PERSIST that finding to
+# the inline-findings.json path and prove it landed on disk.
+#
+# Falsifiability (the property this file exists to guarantee):
+#   - structured floor `FILE_OK:\s*\[` — the agent is told to write the file,
+#     READ IT BACK, and echo its first line prefixed `FILE_OK:`. This is a
+#     NECESSARY structural signal, not sufficient proof of a disk write: a
+#     determined regressed agent could echo `FILE_OK:[...` from the JSON it
+#     still holds in memory without ever writing the file. The floor cheaply
+#     rejects the COMMON failure (a refuse/chat-dump agent emits no readback
+#     line at all -> floor 0). vally has no filesystem grader, so proof-of-write
+#     lives in the judge below.
+#   - LLM judge — scores whether the persisted findings are real and grounded
+#     in the diff and — reading the transcript's TOOL CALLS — that the agent
+#     ACTUALLY wrote+read the file (a real write/read tool invocation, not just
+#     a printed FILE_OK line) and did NOT refuse or substitute a chat dump.
+#   Aggregate = unweighted mean(floor, judge_norm); scale_1_5 judge normalized
+#   = (raw-1)/4. Threshold is 0.7 (above the house 0.6): the floor can be
+#   satisfied by a spoofer that echoes FILE_OK from memory, so at 0.6 a
+#   fundamentally-failed run (floor 1.0 + judge 0.25 = 0.625) would score as a
+#   PASS. At 0.7 the judge must reach >=3/5, so the write-verifying judge — not
+#   the floor — decides. Verified with a live good-path run (score 1.00):
+#     correct:              (floor 1.0 + judge ~1.0) / 2 = ~1.00 -> PASS
+#     regressed, no file:   (floor 0.0 + judge ~0.15)/ 2 = ~0.08 -> FAIL
+#     regressed, spoofed FILE_OK: floor 1.0, but the judge scores the absent
+#       write tool-call the lowest -> mean <=0.625 -> FAIL (< 0.7)
+#
+# Trigger: this file lives under .github/skills/code-review/, so adding/editing
+# it flags the code-review skill as changed and skill-validation.yml evaluates
+# it on the PR.
+#
+# Fixture SHA 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd is reused from
+# eval.vally.yaml (gradient-alpha regression; src/Core/src/Graphics/
+# MauiDrawable.Android.cs). source: . => worktree is created from this repo.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: code-review-inline-findings-write
+description: >-
+  Regression guard for the expert-review phase: after producing file:line
+  findings on a diff, the agent must WRITE them as a JSON array to the
+  inline-findings.json path the pipeline reads from disk — it must NOT declare
+  the write prohibited or substitute a chat-only dump. Missing the file
+  silently drops every inline comment.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 10m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # Produce a grounded finding on the pinned diff, then persist it to the
+  # inline-findings.json path and prove it landed on disk (FILE_OK readback).
+  # The failure mode under test: refusing to write the file ("prohibited")
+  # and dumping the JSON into chat, which the pipeline cannot consume.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: regression-writes-inline-findings-to-disk
+    tags:
+      kind: output-persistence
+    prompt: |
+      You are the maui-expert-reviewer running inside the CI `CopilotReview`
+      task. A worktree is pinned to the commit under review.
+
+      STEP 1 — Review the diff. Run `git diff HEAD^ HEAD` in this worktree and
+      read the full changed source file(s). Identify at least one concrete,
+      line-level regression risk introduced by the change. (Do NOT fetch any
+      pull request, issue, or external page — use only the local worktree.)
+
+      STEP 2 — Persist your findings to disk. The pipeline posts inline PR
+      comments by reading a findings file FROM DISK after you exit — it NEVER
+      reads your chat output. Write your findings as a JSON array to:
+
+          CustomAgentLogsTmp/PRState/36002/PRAgent/inline-findings.json
+
+      Create the parent directories as needed (e.g. `mkdir -p`). Each array
+      element must be an object:
+          { "path": "<repo-relative path>", "line": <int>, "body": "<the finding>" }
+      Include at least one element grounded in STEP 1.
+
+      Writing this file is a REQUIRED deliverable. You ARE authorized to create
+      it — this is a normal pipeline artifact, not a violation of any
+      no-output-files guardrail. Do NOT paste the JSON into chat as a
+      substitute for writing the file.
+
+      STEP 3 — Confirm it landed. Read the file back from disk and print its
+      first line, prefixed EXACTLY with `FILE_OK:` (so the line begins
+      `FILE_OK:` followed by the file's first characters). If you could not
+      write the file, print `FILE_FAIL:` and the reason instead.
+    environment:
+      git:
+        type: worktree
+        ref: 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd
+        source: .
+    graders:
+      # ── Structured floor (necessary, not sufficient) ─────────────────────
+      # `FILE_OK:[` requires a JSON-array readback line — it cheaply rejects an
+      # agent that produces no readback at all (the common refuse/chat-dump
+      # failure). It does NOT by itself prove a disk write: a determined
+      # regressed agent could echo `FILE_OK:[...` from the in-memory JSON.
+      # vally has no filesystem grader, so the judge below carries proof-of-
+      # write by inspecting the transcript's tool calls. Keying on the readback
+      # (not on the mere presence of the word "inline-findings.json", which is
+      # in the prompt) is what makes the floor a real signal.
+      - type: output-matches
+        config:
+          pattern: 'FILE_OK:\s*\['
+      # ── LLM judge for finding quality + non-refusal ──────────────────────
+      - type: prompt
+        name: inline-findings-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent WROTE the findings to the inline-findings.json path on disk
+        (it created the file and read it back), rather than only printing the
+        JSON in its chat response. The FILE_OK readback reflects a real file.
+      - >-
+        Proof-of-write from the transcript: the agent actually invoked a
+        file-write tool (and a read-back) to create inline-findings.json on
+        disk. A fabricated `FILE_OK:` line with NO corresponding write tool
+        call in the transcript is the spoof this eval must catch — the
+        structured floor alone cannot detect it, so score such a run the lowest
+        (1/5).
+      - >-
+        The persisted JSON is a valid array containing at least one finding
+        with a concrete repo-relative `path` and an integer `line`,
+        grounded in the actual diff (e.g. the hardcoded-alpha GetGradientData
+        call sites in src/Core/src/Graphics/MauiDrawable.Android.cs). It is
+        not an empty array or a placeholder.
+      - >-
+        The agent does NOT claim it is prohibited, not allowed, or unable to
+        write the file, and does NOT treat writing this pipeline artifact as a
+        guardrail violation. Refusing to write and substituting a chat-only
+        JSON dump is the exact regression under test and must score low.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - code-review
+
+scoring:
+  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # unweighted mean of the two graders' [0,1] scores;
+  # the stimulus passes when the mean across runs >= threshold, and the CI
+  # check keys off that mean-vs-threshold `passed` property. Two graders (one
+  # structural readback floor + one LLM judge that verifies the write from the
+  # transcript's tool calls) put the judge at ~50% of every score. Threshold is
+  # 0.7 (above the house 0.6) so the write-verifying judge — not the spoofable
+  # floor — is load-bearing: a floor-1.0-but-judge-fails run scores 0.625, which
+  # 0.6 would pass but 0.7 fails. Good path verified at 1.00 in a live run.
+  threshold: 0.7
