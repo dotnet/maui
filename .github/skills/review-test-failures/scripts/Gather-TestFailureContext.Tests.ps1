@@ -36,7 +36,19 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
+            'ConvertTo-Array',
             'Get-ObjectValue',
+            'Get-GatherRequestTimeoutSeconds',
+            'Invoke-ProcessWithGatherDeadline',
+            'Invoke-JsonUrl',
+            'Get-BoundedFailureText',
+            'Get-HeaderValue',
+            'Get-AzDoTestRuns',
+            'Get-AzDoFailedTestResultsByBuild',
+            'Get-VisualSnapshotInfo',
+            'Select-VisualAttachments',
+            'Get-VisualEnvironmentHintFromLog',
+            'Resolve-VisualEnvironmentName',
             'Get-HelixWorkItemCounts',
             'Get-XUnitFailures',
             'Get-ConsoleFailureReason',
@@ -46,7 +58,10 @@ BeforeAll {
             'Get-ErrorFingerprint',
             'Get-BuildErrorSignature',
             'Test-IsTransientBuildErrorCode',
-            'Get-BuildErrorsFromLog'
+            'Get-BuildErrorsFromLog',
+            'Get-VisualEvidenceBudgetDecision',
+            'Get-BoundedVisualDeadline',
+            'Get-VisualRequestTimeoutSeconds'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -54,6 +69,334 @@ BeforeAll {
             }, $true)
         if (-not $function) { throw "Function '$functionName' not found in $scriptPath" }
         Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'Visual snapshot evidence helpers' {
+    It 'parses a snapshot difference and its percentage' {
+        $info = Get-VisualSnapshotInfo -Message @'
+VisualTestUtils.VisualTestFailedException :
+Snapshot different than baseline: EntryClearButtonColorShouldUpdateOnThemeChange.png (2.08% difference)
+If the correct baseline has changed, update it.
+'@
+        $info.kind | Should -Be 'different'
+        $info.snapshotFileName | Should -Be 'EntryClearButtonColorShouldUpdateOnThemeChange.png'
+        $info.description | Should -Be '2.08% difference'
+        $info.differencePercent | Should -Be 2.08
+    }
+
+    It 'parses a missing baseline and preserves a repository path hint' {
+        $info = Get-VisualSnapshotInfo -Message @'
+Baseline snapshot not yet created: /agent/_work/1/s/src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26/NewSnapshot.png
+Ensure new snapshot is correct.
+'@
+        $info.kind | Should -Be 'missing-baseline'
+        $info.snapshotFileName | Should -Be 'NewSnapshot.png'
+        $info.baselinePathHint | Should -Be 'src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26/NewSnapshot.png'
+    }
+
+    It 'rejects an unsafe snapshot filename from untrusted test output' {
+        Get-VisualSnapshotInfo -Message 'Snapshot different than baseline: ../../payload.png (1.00% difference)' | Should -BeNullOrEmpty
+    }
+
+    It 'selects the highest complete visual retry and ignores teardown screenshots' {
+        $attachments = @(
+            [pscustomobject]@{ id = 7; fileName = 'Sample-diff.png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/7' },
+            [pscustomobject]@{ id = 9; fileName = 'Sample-diff[1].png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/9' },
+            [pscustomobject]@{ id = 13; fileName = 'Sample-iOS-UITestBaseTearDown-ScreenShot-guid.png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/13' },
+            [pscustomobject]@{ id = 15; fileName = 'Sample.png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/15' },
+            [pscustomobject]@{ id = 17; fileName = 'Sample[1].png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/17' }
+        )
+
+        $selected = Select-VisualAttachments -Attachments $attachments -SnapshotFileName 'Sample.png'
+        $selected.selectedRetry | Should -Be 1
+        $selected.actual.id | Should -Be 17
+        $selected.diff.id | Should -Be 9
+        $selected.candidateCount | Should -Be 2
+    }
+
+    It 'keeps an actual-only attachment for a missing baseline' {
+        $selected = Select-VisualAttachments -Attachments @(
+            [pscustomobject]@{ id = 4; fileName = 'NewSnapshot.png'; size = 10; url = 'https://dev.azure.com/o/p/_apis/test/Runs/1/Results/2/Attachments/4' }
+        ) -SnapshotFileName 'NewSnapshot.png'
+
+        $selected.actual.id | Should -Be 4
+        $selected.diff | Should -BeNullOrEmpty
+    }
+
+    It 'maps current UI runtime logs to snapshot environment directories' {
+        $ios = Get-VisualEnvironmentHintFromLog -Text 'Running TestCases.iOS.Tests --device="ios-simulator-64" --apiversion="26.0"'
+        $ios.platform | Should -Be 'ios'
+        $ios.environmentName | Should -Be 'ios-26'
+
+        $android = Get-VisualEnvironmentHintFromLog -Text 'Running TestCases.Android.Tests --device="android-emulator-64" --apiversion="36"'
+        $android.platform | Should -Be 'android'
+        $android.environmentName | Should -Be 'android-notch-36'
+
+        $mac = Get-VisualEnvironmentHintFromLog -Text 'Running TestCases.Mac.Tests for maccatalyst'
+        $mac.environmentName | Should -Be 'mac'
+    }
+
+    It 'does not reuse a sampled environment when platform hint coverage was incomplete' {
+        Resolve-VisualEnvironmentName `
+            -Hints @([pscustomobject]@{ platform = 'ios'; environmentName = 'ios-26' }) `
+            -Platform 'ios' `
+            -ResultText 'TestCases.iOS.Tests' `
+            -IncompletePlatforms @('ios') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'does not reuse a sampled environment when an unsampled leg has unknown platform' {
+        Resolve-VisualEnvironmentName `
+            -Hints @([pscustomobject]@{ platform = 'ios'; environmentName = 'ios-26' }) `
+            -Platform 'ios' `
+            -ResultText 'TestCases.iOS.Tests' `
+            -IncompletePlatforms @('unknown') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'prefers a result-level environment hint even when build-log sampling was incomplete' {
+        Resolve-VisualEnvironmentName `
+            -Hints @([pscustomobject]@{ platform = 'ios'; environmentName = 'ios-26' }) `
+            -Platform 'ios' `
+            -ResultText 'Running TestCases.iOS.Tests --apiversion="26.0"' `
+            -IncompletePlatforms @('ios') |
+            Should -Be 'ios-26'
+    }
+}
+
+Describe 'Shared gather request deadline' {
+    It 'caps ordinary JSON requests by the remaining overall gather budget' {
+        $priorDeadline = Get-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+        $script:GatherHardDeadline = (Get-Date).AddSeconds(3)
+        Mock Invoke-WebRequest {
+            return [pscustomobject]@{
+                Content = '{}'
+                StatusCode = 200
+            }
+        }
+        try {
+            Invoke-JsonUrl -Url 'https://dev.azure.com/dnceng-public/public/_apis/example' | Out-Null
+            Should -Invoke Invoke-WebRequest -Times 1 -Exactly -ParameterFilter {
+                $TimeoutSec -gt 0 -and $TimeoutSec -le 3
+            }
+        }
+        finally {
+            if ($null -eq $priorDeadline) {
+                Remove-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+            }
+            else {
+                $script:GatherHardDeadline = $priorDeadline.Value
+            }
+        }
+    }
+
+    It 'terminates a child process that exceeds the remaining gather timeout' {
+        $priorDeadline = Get-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+        $script:GatherHardDeadline = (Get-Date).AddSeconds(2)
+        try {
+            {
+                Invoke-ProcessWithGatherDeadline `
+                    -FileName 'pwsh' `
+                    -Arguments @('-NoLogo', '-NoProfile', '-Command', 'Start-Sleep -Seconds 5') `
+                    -RequestedTimeoutSec 1
+            } | Should -Throw '*exceeded*timeout*'
+        }
+        finally {
+            if ($null -eq $priorDeadline) {
+                Remove-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+            }
+            else {
+                $script:GatherHardDeadline = $priorDeadline.Value
+            }
+        }
+    }
+}
+
+Describe 'Untrusted failure text bounds' {
+    It 'caps long messages while preserving short text' {
+        Get-BoundedFailureText -Text 'short' -MaxChars 20 | Should -Be 'short'
+        $bounded = Get-BoundedFailureText -Text ('x' * 10000) -MaxChars 100
+        $bounded.Length | Should -Be 100
+        $bounded | Should -Match '\[truncated\]$'
+    }
+}
+
+Describe 'Get-VisualEvidenceBudgetDecision (elapsed-only visual budget accounting)' {
+    It 'reports remaining budget and does not trip while visual time is under budget' {
+        $d = Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds 250
+        $d.remainingSeconds | Should -Be 350
+        $d.exhausted | Should -BeFalse
+    }
+
+    It 'trips exactly at the budget boundary' {
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds 600).exhausted | Should -BeTrue
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds 601).exhausted | Should -BeTrue
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds 599).exhausted | Should -BeFalse
+    }
+
+    It 'does not let interleaved nonvisual work between uitests builds consume the budget' {
+        # Two maui-pr-uitests builds each spend 250s in visual discovery, with a NON-uitests build
+        # doing a very long (5000s) timeline/log/Helix read BETWEEN them. Because only visual-scan
+        # time is accumulated into $elapsed (the loop adds to it solely in the discovery finally),
+        # the nonvisual build must not advance the budget, so the SECOND uitests build still scans.
+        # This is the exact regression the absolute wall-clock deadline caused.
+        $elapsed = 0.0
+
+        $build1 = Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed
+        $build1.exhausted | Should -BeFalse   # first uitests build scans
+        $elapsed += 250                        # charge only its visual-discovery time
+
+        # Non-uitests build: 5000s of nonvisual processing. The loop NEVER adds this to $elapsed.
+        # (Modeled by leaving $elapsed unchanged.)
+
+        $build2 = Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed
+        $build2.exhausted | Should -BeFalse   # second uitests build STILL scans (250 < 600)
+        $build2.remainingSeconds | Should -Be 350
+    }
+
+    It 'trips a later uitests build once accumulated visual time exceeds the budget' {
+        $elapsed = 0.0
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeFalse
+        $elapsed += 400
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeFalse
+        $elapsed += 400   # 800s of accumulated visual time now exceeds the 600s budget
+        (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeTrue
+    }
+}
+
+Describe 'Get-BoundedVisualDeadline (overall gather finalization reserve)' {
+    It 'preserves the visual-only quota when the gather deadline is farther away' {
+        $start = [datetime]'2026-07-23T00:00:00Z'
+        Get-BoundedVisualDeadline `
+            -VisualStart $start `
+            -RemainingVisualSeconds 600 `
+            -GatherHardDeadline $start.AddSeconds(900) |
+            Should -Be $start.AddSeconds(600)
+    }
+
+    It 'caps a late visual scan at the overall gather deadline' {
+        $start = [datetime]'2026-07-23T00:17:00Z'
+        $gatherDeadline = [datetime]'2026-07-23T00:18:00Z'
+        Get-BoundedVisualDeadline `
+            -VisualStart $start `
+            -RemainingVisualSeconds 600 `
+            -GatherHardDeadline $gatherDeadline |
+            Should -Be $gatherDeadline
+    }
+}
+
+Describe 'Get-VisualRequestTimeoutSeconds (per-request timeout capped by remaining visual budget)' {
+    It 'returns the default for an unbudgeted deadline sentinel' {
+        Get-VisualRequestTimeoutSeconds -Deadline ([datetime]::MaxValue) | Should -Be 100
+    }
+
+    It 'returns the full default when the deadline is far away' {
+        $t = Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(500)
+        $t | Should -Be 100
+    }
+
+    It 'caps the timeout to the remaining budget when less than the default' {
+        # ~30s left: the request must not be allowed its full 100s default, which would overrun the
+        # shared deadline by ~70s (and the following attachments request could add another ~100s).
+        $t = Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(30)
+        $t | Should -BeLessOrEqual 30
+        $t | Should -BeGreaterThan 0
+    }
+
+    It 'never returns below the minimum for a tiny-but-positive remainder' {
+        # A sub-second remainder still issues ONE bounded request (>=1s); the caller's own deadline
+        # recheck is what stops the loop, not a zero/negative timeout that would throw.
+        $t = Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddMilliseconds(200)
+        $t | Should -Be 1
+    }
+
+    It 'never returns below the minimum once the deadline has already passed' {
+        $t = Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(-50)
+        $t | Should -Be 1
+    }
+
+    It 'honors custom default and minimum bounds' {
+        (Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(999) -DefaultTimeoutSec 60) | Should -Be 60
+        (Get-VisualRequestTimeoutSeconds -Deadline (Get-Date).AddSeconds(-1) -MinimumTimeoutSec 5) | Should -Be 5
+    }
+}
+
+Describe 'Get-AzDoFailedTestResultsByBuild request budgeting' {
+    BeforeEach {
+        Mock Invoke-WebRequest {
+            return [pscustomobject]@{
+                Content = '{"value":[]}'
+                Headers = @{}
+            }
+        }
+    }
+
+    It 'caps the first page request by the remaining visual budget' {
+        Get-AzDoFailedTestResultsByBuild `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BuildId 123 `
+            -Deadline ((Get-Date).AddSeconds(3)) | Out-Null
+
+        Should -Invoke -CommandName Invoke-WebRequest -Times 1 -Exactly -ParameterFilter {
+            $TimeoutSec -gt 0 -and $TimeoutSec -le 3
+        }
+    }
+
+    It 'still issues a bounded first page when the deadline is near-expiry (sub-second remaining)' {
+        # Near-expiry regression: the deadline has NOT yet passed when the first page's top-of-loop
+        # guard runs, so exactly one request must fire -- but its timeout has to be clamped to the
+        # minimum (1s) rather than the 100s default, otherwise a first page issued with a few hundred
+        # milliseconds of budget left could overrun the shared visual deadline by ~100s.
+        Get-AzDoFailedTestResultsByBuild `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BuildId 123 `
+            -Deadline ((Get-Date).AddMilliseconds(300)) | Out-Null
+
+        Should -Invoke -CommandName Invoke-WebRequest -Times 1 -Exactly -ParameterFilter {
+            $TimeoutSec -eq 1
+        }
+    }
+
+    It 'keeps the default timeout for the unbudgeted deadline sentinel' {
+        Get-AzDoFailedTestResultsByBuild `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BuildId 123 | Out-Null
+
+        Should -Invoke -CommandName Invoke-WebRequest -Times 1 -Exactly -ParameterFilter {
+            $TimeoutSec -eq 100
+        }
+    }
+
+    It 'does not issue a request after the visual budget is exhausted' {
+        $result = Get-AzDoFailedTestResultsByBuild `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BuildId 123 `
+            -Deadline ((Get-Date).AddSeconds(-1))
+
+        Should -Invoke -CommandName Invoke-WebRequest -Times 0 -Exactly
+        $result.truncated | Should -BeTrue
+    }
+}
+
+Describe 'Get-AzDoTestRuns overall deadline enforcement' {
+    It 'returns an incomplete result without a request after the gather deadline' {
+        Mock Invoke-WebRequest {
+            throw 'request should not run'
+        }
+
+        $result = Get-AzDoTestRuns `
+            -BaseUrl 'https://dev.azure.com/dnceng-public/public' `
+            -BuildId 123 `
+            -Deadline ((Get-Date).AddSeconds(-1))
+
+        Should -Invoke Invoke-WebRequest -Times 0 -Exactly
+        $result.truncated | Should -BeTrue
+        $result.deadlineExhausted | Should -BeTrue
     }
 }
 
@@ -482,6 +825,18 @@ Describe 'New-DeviceWorkItemFailureRecords (classify ONE failed work item — ne
 }
 
 Describe 'Get-AggregatedBaseLegMap (multi-build base leg diff — network-free via pre-seeded cache)' {
+    It 'stops base timeline sampling after the overall gather deadline' {
+        $result = Get-AggregatedBaseLegMap `
+            -Org 'dnceng-public' `
+            -Project 'public' `
+            -BaseBuilds @([pscustomobject]@{ id = 100 }) `
+            -Cache @{} `
+            -Deadline ((Get-Date).AddSeconds(-1))
+
+        $result.truncated | Should -BeTrue
+        $result.sampledBuilds | Should -Be 0
+    }
+
     # The aggregator only calls Get-TimelineRecordResultMap on a CACHE MISS, so pre-seeding $Cache with
     # entries keyed "org|project|buildId" is a fully network-free seam: each case supplies its own base
     # single-build leg maps and asserts the green/red tallies that decide whether a PR leg is a clean
