@@ -3584,7 +3584,7 @@ stages:
                     #    render. The unique ref is only created under real contention.
                     $commitSha = $null
                     $commit = $null
-                    $maxFf = 6
+                    $maxFf = 8
                     for ($attempt = 1; $attempt -le $maxFf -and -not $commitSha; $attempt++) {
                       try {
                         $tip = (gh api "repos/$assetRepo/git/ref/heads/$assetBranch" | ConvertFrom-Json)
@@ -3610,47 +3610,29 @@ stages:
                       }
                     }
                     if ([string]::IsNullOrWhiteSpace($commitSha)) {
-                      # Shared-branch CAS lost every attempt (heavy concurrency). The
-                      # blobs and (usually) the commit are already created; publish
-                      # the commit on a UNIQUE per-build ref that cannot race. We
-                      # reference it by COMMIT SHA in the raw URL, so the ref only has
-                      # to keep the commit reachable (not be a "current" branch).
-                      Write-Host "Shared asset branch contended after $maxFf attempts; publishing on a unique per-build ref."
-                      $buildRef = "$assetBranch-b$(Build.BuildId)"
-                      for ($fb = 1; $fb -le 3 -and -not $commitSha; $fb++) {
-                        try {
-                          if (-not $commit -or -not $commit.sha) {
-                            $tip = (gh api "repos/$assetRepo/git/ref/heads/$assetBranch" | ConvertFrom-Json)
-                            $parentSha = [string]$tip.object.sha
-                            $parentCommit = (gh api "repos/$assetRepo/git/commits/$parentSha" | ConvertFrom-Json)
-                            $treeFile = Join-Path $stageDir '_tree.json'
-                            @{ base_tree = $parentCommit.tree.sha; tree = $treeEntries.ToArray() } | ConvertTo-Json -Depth 8 | Set-Content $treeFile -Encoding UTF8
-                            $tree = (gh api -X POST "repos/$assetRepo/git/trees" --input $treeFile | ConvertFrom-Json)
-                            if (-not $tree.sha) { throw "tree create failed" }
-                            $commitFile = Join-Path $stageDir '_commit.json'
-                            @{ message = "snapshot diffs for PR #$prNumber build $(Build.BuildId)"; tree = [string]$tree.sha; parents = @($parentSha) } | ConvertTo-Json -Depth 4 | Set-Content $commitFile -Encoding UTF8
-                            $commit = (gh api -X POST "repos/$assetRepo/git/commits" --input $commitFile | ConvertFrom-Json)
-                            if (-not $commit.sha) { throw "commit create failed" }
-                          }
-                          $newRefFile = Join-Path $stageDir '_buildref.json'
-                          @{ ref = "refs/heads/$buildRef"; sha = [string]$commit.sha } | ConvertTo-Json | Set-Content $newRefFile -Encoding UTF8
-                          $refOut = gh api -X POST "repos/$assetRepo/git/refs" --input $newRefFile 2>&1
-                          if ($LASTEXITCODE -ne 0) {
-                            if ("$refOut" -match 'Reference already exists|already exists|422') {
-                              # This build's own ref exists (task re-run) — force it to our commit.
-                              $patchFile = Join-Path $stageDir '_patch.json'
-                              @{ sha = [string]$commit.sha; force = $true } | ConvertTo-Json | Set-Content $patchFile -Encoding UTF8
-                              gh api -X PATCH "repos/$assetRepo/git/refs/heads/$buildRef" --input $patchFile 2>&1 | Out-Null
-                              if ($LASTEXITCODE -ne 0) { throw "unique-ref publish failed (attempt $fb)" }
-                            } else {
-                              throw "unique-ref publish failed (attempt $fb): $refOut"
-                            }
-                          }
-                          $commitSha = [string]$commit.sha
-                        } catch {
-                          if ($fb -ge 3) { throw }
-                          Start-Sleep -Milliseconds (400 * $fb + (Get-Random -Minimum 0 -Maximum 600))
-                        }
+                      # Shared-branch fast-forward lost every attempt under heavy
+                      # concurrency. We CANNOT publish on a new unique ref: dotnet/maui
+                      # rulesets block the bot from CREATING refs/heads/* branches
+                      # (POST git/refs returns 404 — verified: zero review-tests-assets-b*
+                      # branches ever got created; PATCH of the EXISTING asset branch is
+                      # the only ref write allowed). So force-update the shared branch to
+                      # this build's commit as a last resort. Each fast-forward attempt
+                      # rebuilt $commit on the freshly-read tip (base_tree = that tip's
+                      # tree) just ~1-2s before the racing PATCH lost, so force-updating
+                      # to it discards only the couple of seconds of sibling commits that
+                      # landed in between — and those unreachable commits still resolve
+                      # via raw.githubusercontent through GitHub's GC grace window, so
+                      # other in-flight builds' images keep rendering. Uses the same
+                      # (proven-working) update permission, so it always lands.
+                      if ($commit -and $commit.sha) {
+                        Write-Host "Shared asset branch contended after $maxFf fast-forward attempts; force-updating it to this build's commit $($commit.sha)."
+                        $forceFile = Join-Path $stageDir '_force.json'
+                        @{ sha = [string]$commit.sha; force = $true } | ConvertTo-Json | Set-Content $forceFile -Encoding UTF8
+                        $forceOut = gh api -X PATCH "repos/$assetRepo/git/refs/heads/$assetBranch" --input $forceFile 2>&1
+                        if ($LASTEXITCODE -eq 0) { $commitSha = [string]$commit.sha }
+                        else { Write-Host "Force-update also failed: $forceOut" }
+                      } else {
+                        Write-Host "No commit object available to force-update the asset branch; skipping embed."
                       }
                     }
                     if ([string]::IsNullOrWhiteSpace($commitSha)) { throw "asset ref publish failed" }
