@@ -32,12 +32,23 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this TextBox textBox, IView view)
 		{
-			var brush = view.Background?.ToPlatform();
+			var background = view.Background;
+			var brush = background?.ToPlatform();
 
-			if (brush is null)
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				textBox.UpdateBackgroundImageForAllStates(sourcePaint.ImageSource, view.Handler, BackgroundResourceKeys);
+			}
+			else if (brush is null)
+			{
 				textBox.Resources.RemoveKeys(BackgroundResourceKeys);
+				textBox.ClearValue(TextBox.BackgroundProperty);
+			}
 			else
+			{
 				textBox.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
+				textBox.ClearValue(TextBox.BackgroundProperty);
+			}
 
 			textBox.RefreshThemeResources();
 		}

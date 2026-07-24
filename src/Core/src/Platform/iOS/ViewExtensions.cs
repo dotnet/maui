@@ -73,7 +73,16 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this UIView platformView, IView view)
 		{
-			platformView.UpdateBackground(view.Background, view as IButtonStroke);
+			var background = view.Background;
+
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				platformView.UpdateBackgroundImageSource(sourcePaint.ImageSource, view.Handler);
+			}
+			else
+			{
+				platformView.UpdateBackground(background, view as IButtonStroke);
+			}
 		}
 
 		public static void UpdateBackground(this UIView platformView, Paint? paint, IButtonStroke? stroke = null)
@@ -443,6 +452,49 @@ namespace Microsoft.Maui.Platform
 				if (shouldDisposeCGImage)
 					cgImage?.Dispose();
 			}
+		}
+
+		internal static void UpdateBackgroundImageSource(this UIView platformView, IImageSource? imageSource, IElementHandler? handler)
+		{
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateBackgroundImageSourceAsync(imageSource, provider).FireAndForget(handler);
+		}
+
+		internal static void UpdateBorderImageBackground(this UIView platformView, IImageSource? imageSource, IElementHandler? handler, CoreAnimation.CALayer mauiCALayer)
+		{
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			UpdateBorderImageBackgroundAsync(platformView, imageSource, provider, mauiCALayer).FireAndForget(handler);
+		}
+
+		static async Task UpdateBorderImageBackgroundAsync(UIView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider, CoreAnimation.CALayer mauiCALayer)
+		{
+			if (provider is null)
+			{
+				return;
+			}
+
+			if (mauiCALayer is not MauiCALayer mauiLayer)
+			{
+				return;
+			}
+
+			if (imageSource is null)
+			{
+				mauiLayer.SetBackgroundImage(null);
+				return;
+			}
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var scale = platformView.GetDisplayDensity();
+			var result = await service.GetImageAsync(imageSource, scale);
+			var backgroundImage = result?.Value;
+
+			if (backgroundImage is null)
+			{
+				return;
+			}
+
+			mauiLayer.SetBackgroundImage(backgroundImage);
 		}
 
 		public static int IndexOfSubview(this UIView platformView, UIView subview)

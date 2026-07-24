@@ -2,6 +2,7 @@
 using Google.Android.Material.ImageView;
 using Google.Android.Material.Shape;
 using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
@@ -62,24 +63,32 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
 		{
-			platformView.UpdateMauiRippleDrawableBackground(
-				button.Background ?? new SolidPaint(Colors.Transparent), // transparent to force some background
-				button,
-				beforeSet: () =>
-				{
-					// We have a background, so we need to remove the things that were set on the
-					// platform view as they are now in the drawable.
+			if (button.Background is ImageSourcePaint sourcePaint)
+			{
+				((AView)platformView).UpdateButtonBackgroundImageSource(
+					sourcePaint.ImageSource,
+					button.Handler,
+					button,
+					beforeSet: ResetPlatformViewProperties);
+			}
+			else
+			{
+				platformView.UpdateMauiRippleDrawableBackground(
+					button.Background ?? new SolidPaint(Colors.Transparent),
+					button,
+					beforeSet: ResetPlatformViewProperties);
+			}
 
-					platformView.StrokeColor = null;
-
-					platformView.StrokeWidth = 0;
-
-					platformView.ShapeAppearanceModel =
-						platformView.ShapeAppearanceModel
-							.ToBuilder()
-							.SetAllCornerSizes(0)
-							.Build();
-				});
+			void ResetPlatformViewProperties()
+			{
+				platformView.StrokeColor = null;
+				platformView.StrokeWidth = 0;
+				platformView.ShapeAppearanceModel =
+					platformView.ShapeAppearanceModel
+						.ToBuilder()
+						.SetAllCornerSizes(0)
+						.Build();
+			}
 		}
 
 		public static void UpdateRippleColor(this ShapeableImageView platformView, Color rippleColor)

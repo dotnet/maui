@@ -1,5 +1,7 @@
-﻿using AndroidX.AppCompat.Widget;
+﻿using Android.Graphics.Drawables;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBorderDrawable(this AppCompatRadioButton platformView, IRadioButton radioButton)
 		{
-			BorderDrawable? mauiDrawable = platformView.Background as BorderDrawable;
+			BorderDrawable? mauiDrawable = ((AView)platformView).GetBorderDrawable();
 
 			if (mauiDrawable == null)
 			{
@@ -46,7 +48,21 @@ namespace Microsoft.Maui.Platform
 				platformView.Background = mauiDrawable;
 			}
 
-			mauiDrawable.SetBackground(radioButton.Background);
+			if (radioButton.Background is ImageSourcePaint sourcePaint)
+			{
+				mauiDrawable.SetBackground(new SolidPaint(Colors.Transparent));
+				platformView.UpdateBorderImageBackground(sourcePaint.ImageSource, radioButton.Handler, mauiDrawable);
+			}
+			else
+			{
+				// Remove LayerDrawable wrapper if switching away from image
+				if (platformView.Background is LayerDrawable)
+				{
+					platformView.Background = mauiDrawable;
+				}
+
+				mauiDrawable.SetBackground(radioButton.Background);
+			}
 
 			if (radioButton.StrokeColor != null)
 				mauiDrawable.SetBorderBrush(new SolidPaint { Color = radioButton.StrokeColor });

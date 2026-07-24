@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
+using WImageBrush = Microsoft.UI.Xaml.Media.ImageBrush;
 using WinPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.Platform
@@ -118,7 +119,16 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this FrameworkElement platformView, IView view)
 		{
-			platformView?.UpdatePlatformViewBackground(view);
+			var background = view.Background;
+
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				platformView?.UpdateBackgroundImageSource(sourcePaint.ImageSource, view.Handler);
+			}
+			else
+			{
+				platformView?.UpdatePlatformViewBackground(view);
+			}
 		}
 
 		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
@@ -237,7 +247,17 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
 		{
 			if (border is IView view)
-				(platformView as ContentPanel)?.UpdateBackground(view.Background);
+			{
+				if (view.Background is ImageSourcePaint sourcePaint)
+				{
+					(platformView as ContentPanel)?.UpdateBackground((Paint?)null);
+					platformView.UpdateBorderBackgroundImageSource(sourcePaint.ImageSource, view.Handler);
+				}
+				else
+				{
+					(platformView as ContentPanel)?.UpdateBackground(view.Background);
+				}
+			}
 
 			if (platformView is Control control)
 				control.UpdateBackground((Paint?)null);
@@ -279,6 +299,61 @@ namespace Microsoft.Maui.Platform
 				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
 		}
 
+		internal static async Task UpdateBackgroundImageForAllStatesAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider, string[] resourceKeys)
+		{
+			if (provider is null || imageSource is null)
+			{
+				return;
+			}
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+			var imageBrush = new WImageBrush { ImageSource = nativeImageSource?.Value };
+
+			if (platformView is Control control)
+			{
+				control.Resources.SetValueForAllKey(resourceKeys, imageBrush);
+				control.Background = imageBrush;
+			}
+		}
+
+		internal static void UpdateBackgroundImageForAllStates(this FrameworkElement platformView, IImageSource? imageSource, IElementHandler? handler, string[] resourceKeys)
+		{
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateBackgroundImageForAllStatesAsync(imageSource, provider, resourceKeys).FireAndForget(handler);
+		}
+
+		internal static void UpdateBackgroundImageSource(this FrameworkElement platformView, IImageSource? imageSource, IElementHandler? handler)
+		{
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			platformView.UpdateBackgroundImageSourceAsync(imageSource, provider).FireAndForget(handler);
+		}
+
+		internal static void UpdateBorderBackgroundImageSource(this FrameworkElement platformView, IImageSource? imageSource, IElementHandler? handler)
+		{
+			var provider = handler?.GetRequiredService<IImageSourceServiceProvider>();
+			UpdateBorderBackgroundImageSourceAsync(platformView, imageSource, provider).FireAndForget(handler);
+		}
+
+		static async Task UpdateBorderBackgroundImageSourceAsync(FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			if (platformView is not ContentPanel contentPanel)
+			{
+				return;
+			}
+
+			if (provider is null || imageSource is null)
+			{
+				contentPanel.UpdateBackgroundImage(null);
+				return;
+			}
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var result = await service.GetImageSourceAsync(imageSource);
+
+			contentPanel.UpdateBackgroundImage(result?.Value);
+		}
+
 		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
 		{
 			ToolTipService.SetToolTip(platformView, tooltip?.Content);
@@ -290,7 +365,16 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
 		{
-			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
+			var background = layout.Background;
+
+			if (background is ImageSourcePaint sourcePaint)
+			{
+				layoutPanel?.UpdateBackgroundImageSource(sourcePaint.ImageSource, layout.Handler);
+			}
+			else
+			{
+				layoutPanel.UpdateInputTransparent(layout.InputTransparent, background?.ToPlatform());
+			}
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)

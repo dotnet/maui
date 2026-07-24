@@ -2,6 +2,7 @@
 using Google.Android.Material.Button;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
+using AView = Android.Views.View;
 using R = Android.Resource;
 
 namespace Microsoft.Maui.Platform
@@ -60,33 +61,45 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateButtonBackground(this MaterialButton platformView, IButton button)
 		{
-			platformView.UpdateMauiRippleDrawableBackground(
-				button.Background,
-				button,
-				() =>
-				{
-					// Copy the tints from a temporary button.
-					// TODO: optimize this to avoid creating a new button every time.
+			if (button.Background is ImageSourcePaint sourcePaint)
+			{
+				((AView)platformView).UpdateButtonBackgroundImageSource(
+					sourcePaint.ImageSource,
+					button.Handler,
+					button,
+					() => platformView.RippleColor,
+					() => { platformView.BackgroundTintList = null; });
+			}
+			else
+			{
+				platformView.UpdateMauiRippleDrawableBackground(
+					button.Background,
+					button,
+					() =>
+					{
+						// Copy the tints from a temporary button.
+						// TODO: optimize this to avoid creating a new button every time.
 
-					var context = platformView.Context!;
-					using var btn = new MaterialButton(context);
-					var defaultTintList = btn.BackgroundTintList;
-					var defaultColor = defaultTintList?.GetColorForState([R.Attribute.StateEnabled], AColor.Black);
+						var context = platformView.Context!;
+						using var btn = new MaterialButton(context);
+						var defaultTintList = btn.BackgroundTintList;
+						var defaultColor = defaultTintList?.GetColorForState([R.Attribute.StateEnabled], AColor.Black);
 
-					return defaultColor ?? AColor.Black;
-				},
-				() =>
-				{
-					// If some theme or user value has been set, we can override the default, white
-					// ripple color using this button property.
-					return platformView.RippleColor;
-				},
-				() =>
-				{
-					// We have a background, so we need to null out the tint list to avoid the tint
-					// overriding the background.
-					platformView.BackgroundTintList = null;
-				});
+						return defaultColor ?? AColor.Black;
+					},
+					() =>
+					{
+						// If some theme or user value has been set, we can override the default, white
+						// ripple color using this button property.
+						return platformView.RippleColor;
+					},
+					() =>
+					{
+						// We have a background, so we need to null out the tint list to avoid the tint
+						// overriding the background.
+						platformView.BackgroundTintList = null;
+					});
+			}
 		}
 
 		public static void UpdateRippleColor(this MaterialButton platformView, Color? rippleColor)
