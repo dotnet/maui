@@ -57,7 +57,11 @@ namespace Microsoft.Maui.Platform
 		// TODO: Make this public in .NET 11
 		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
 		{
-			// Remove previous background gradient layer if any
+			// Remove previous background gradient layer if any.
+			// Safe to call unconditionally even when Window is null (initial-render path): at that
+			// point MAUI has not yet inserted a named gradient layer, so this is a no-op.
+			// Running it before the Window/paint guard ensures any previously-applied gradient is
+			// cleaned up regardless of the new paint value.
 			platformButton.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())

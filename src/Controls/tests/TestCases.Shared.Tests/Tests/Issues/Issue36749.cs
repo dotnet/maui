@@ -15,10 +15,6 @@ public class Issue36749 : _IssuesUITest
     [Category(UITestCategories.Button)]
     public void NativeStyledButtonShouldPreserveBackgroundColorOnInitialRender()
     {
-        // This regression is iOS-only: the fix is in ButtonExtensions.UpdateBackground (iOS).
-        if (Device != TestDevice.iOS)
-            Assert.Ignore("Test is iOS-only: validates that UpdateBackground preserves native UIButton styling when Background is null.");
-
         App.WaitForElement("Issue36749Result");
 
         var resultText = App.FindElement("Issue36749Result").GetText();
@@ -30,3 +26,4 @@ public class Issue36749 : _IssuesUITest
             "on the initial null-paint mapping, wiping native styling.");
     }
 }
+#endif
