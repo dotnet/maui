@@ -5251,9 +5251,10 @@ function Format-MarkdownReport {
         $sc = $Data['srContents']
         [void]$sb.AppendLine("## What's New in SR — $($sc.commitCount) commits")
         [void]$sb.AppendLine()
-        if ($inherits -and $sc.ContainsKey('inheritedCommitCount') -and $sc['inheritedCommitCount'] -gt 0) {
+        $inheritedCommitCount = [int](Get-MetadataValue -Container $sc -Name 'inheritedCommitCount' -Default 0)
+        if ($inherits -and $inheritedCommitCount -gt 0) {
             [void]$sb.AppendLine("- **From main** (since prior SR): $($sc.primaryCommitCount) commits / $($sc.primarySourcePrs.Count) source PRs")
-            [void]$sb.AppendLine("- **Inherited from $($ctx.priorSrBranch)** (will be merged in after cut): $($sc.inheritedCommitCount) commits / $($sc.inheritedSourcePrs.Count) source PRs")
+            [void]$sb.AppendLine("- **Inherited from $($ctx.priorSrBranch)** (will be merged in after cut): $inheritedCommitCount commits / $($sc.inheritedSourcePrs.Count) source PRs")
             [void]$sb.AppendLine("- **Total source PRs** (deduplicated): **$($sc.sourcePrs.Count)** (see ``sr-source-prs.txt``)")
         } else {
             [void]$sb.AppendLine("- Source PRs included: **$($sc.sourcePrs.Count)** (see ``sr-source-prs.txt``)")
@@ -5268,7 +5269,7 @@ function Format-MarkdownReport {
                 $rs = ConvertTo-LinkedSha -Sha $r.revertCommit -RepoUrl $RepoUrl
                 $rc = ConvertTo-LinkedSha -Sha $r.revertsCommit -RepoUrl $RepoUrl
                 $rp = ConvertTo-LinkedPr -PrNumber $r.revertsPr -RepoUrl $RepoUrl
-                $ro = if ($r.ContainsKey('origin')) { $r.origin } else { '?' }
+                $ro = Get-MetadataValue -Container $r -Name 'origin' -Default '?'
                 [void]$sb.AppendLine("| $rs | $rp | $rc | $ro |")
             }
         }

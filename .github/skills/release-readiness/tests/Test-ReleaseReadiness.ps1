@@ -3795,6 +3795,32 @@ Assert-Eq -Label "Format-MarkdownReport does NOT throw on top-level JSON-roundtr
 Assert-Eq -Label "top-level JSON-roundtripped report preserves tracker marker" -Expected $true `
     -Actual ($mdTopPsco -match '<!-- release-readiness-tracker: net10-sr7 -->')
 
+$mdNestedRoundtripData = $mdData.Clone()
+$mdNestedRoundtripData['metadata'] = $mdData.metadata.Clone()
+$mdNestedRoundtripData.metadata.mode = 'candidate'
+$mdNestedRoundtripData.metadata.inheritFromPriorSr = $true
+$mdNestedRoundtripData.metadata.priorSrBranch = 'release/10.0.1xx-sr7'
+$mdNestedRoundtripData['srContents'] = @{
+    commitCount = 3; primaryCommitCount = 2; primarySourcePrs = @(35001)
+    inheritedCommitCount = 1; inheritedSourcePrs = @(35002); sourcePrs = @(35001, 35002)
+    reverts = @(
+        @{ revertCommit = 'bbbbbbbb2222cccccccc3333dddddddd'; revertsPr = 34999;
+           revertsCommit = 'aaaaaaaa1111bbbbbbbb2222cccccccc'; origin = 'inherited' }
+    )
+}
+$mdNestedRoundtripPsco = $mdNestedRoundtripData | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+$mdNestedRoundtripThrew = $false; $mdNestedRoundtrip = $null
+try {
+    $mdNestedRoundtrip = Format-MarkdownReport -Data $mdNestedRoundtripPsco -RepoUrl 'https://github.com/dotnet/maui' `
+                                              -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
+} catch {
+    $mdNestedRoundtripThrew = $true
+    Write-Host "    nested PSCustomObject render threw: $($_.Exception.Message)" -ForegroundColor Red
+}
+Assert-Eq -Label "Format-MarkdownReport handles nested inherited/revert PSCustomObjects" -Expected $false -Actual $mdNestedRoundtripThrew
+Assert-Eq -Label "nested roundtrip report renders inherited commit summary and revert origin" -Expected $true `
+    -Actual ($mdNestedRoundtrip -match 'Inherited from release/10\.0\.1xx-sr7' -and $mdNestedRoundtrip -match '\| inherited \|')
+
 # Tracker marker (hidden)
 Assert-Eq -Label "Body contains tracker marker comment" -Expected $true `
     -Actual ($md -match '<!-- release-readiness-tracker: net10-sr7 -->')
