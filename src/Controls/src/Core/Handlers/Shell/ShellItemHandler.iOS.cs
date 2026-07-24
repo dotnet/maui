@@ -100,6 +100,10 @@ namespace Microsoft.Maui.Controls.Handlers
                     }
 
                     accept = ((IShellItemController)VirtualView).ProposeSection(renderer.ShellSection, false);
+                    if (accept)
+                    {
+                        VirtualView.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
+                    }
                 }
 
                 return accept;

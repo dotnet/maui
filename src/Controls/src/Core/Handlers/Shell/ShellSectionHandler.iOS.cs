@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers
         internal const int HeaderHeight = 35;
 
         IShellContext? _shellContext;
-        internal UINavigationController _navigationController = null!;
+        internal ShellSectionNavController _navigationController = null!;
         internal IShellNavBarAppearanceTracker? _appearanceTracker;
 
         // Navigation completion tracking (previously in NavigationControllerManager)
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected override UIView CreatePlatformElement()
         {
-            _navigationController = new UINavigationController(typeof(MauiNavigationBar), null!);
+            _navigationController = new ShellSectionNavController(this, typeof(MauiNavigationBar), null!);
             _navigationController.Delegate = new NavDelegate(this);
             return _navigationController.View!;
         }
@@ -583,6 +583,11 @@ namespace Microsoft.Maui.Controls.Handlers
             var page = e.Page;
             var animated = e.Animated;
 
+            if (page is null)
+            {
+                return;
+            }
+
             var taskSource = new TaskCompletionSource<bool>();
             PushPage(page, animated, taskSource);
 
@@ -731,8 +736,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 if (tracker.Value.ViewController == topViewController)
                 {
                     var behavior = Shell.GetEffectiveBackButtonBehavior(tracker.Value.Page);
+                    var enabled = behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true);
                     var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null!);
                     var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null!);
+
+                    if (!enabled)
+                    {
+                        return false;
+                    }
 
                     if (command is not null)
                     {
@@ -861,7 +872,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
         internal void UpdateTabBarItem()
         {
-            _navigationController.Title = VirtualView.Title;
+            // Set title on both the navigation controller and the root view controller so that
+            // UITabBarController shows the correct tab label for this section.
+            _rootViewController?.Title = _navigationController.Title = VirtualView.Title;
 
             VirtualView.Icon.LoadImage(VirtualView.FindMauiContext()!, icon =>
             {
@@ -896,6 +909,21 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_navigationController.TabBarController?.TabBar is { } tabBar)
                 tabBar.UpdateFlowDirection(shell);
+
+            // Sync tracked pages' FlowDirection with Shell to trigger MAUI layout re-arrangement.
+            // Shell section pages have a disconnected visual tree so MatchParent cannot auto-resolve.
+            if (_rootTracker?.Page is { } rootPage)
+            {
+                rootPage.FlowDirection = shell.FlowDirection;
+            }
+
+            foreach (var tracker in _trackers.Values)
+            {
+                if (tracker.Page is { } page)
+                {
+                    page.FlowDirection = shell.FlowDirection;
+                }
+            }
         }
 
         void UpdateNavigationBarHidden()
@@ -1369,11 +1397,60 @@ namespace Microsoft.Maui.Controls.Handlers
 
         [Export("navigationBar:shouldPopItem:")]
         bool ShouldPopItem(UINavigationBar bar, UINavigationItem item)
-        {
-            return ShouldPop();
-        }
+            => SendPop();
 
         #endregion
+
+        /// <summary>
+        /// Custom UINavigationController that receives UINavigationBarDelegate callbacks
+        /// (ShouldPopItem, DidPopItem) and routes them to ShellSectionHandler.
+        /// UINavigationController acts as its own NavigationBar.Delegate, so these methods
+        /// must live on the nav controller itself — an external object cannot receive them.
+        /// </summary>
+        internal sealed class ShellSectionNavController : UINavigationController
+        {
+            readonly WeakReference<ShellSectionHandler> _handlerRef;
+
+            public ShellSectionNavController(ShellSectionHandler handler, Type navigationBarClass, Type? toolbarClass)
+                : base(navigationBarClass, toolbarClass!)
+            {
+                _handlerRef = new WeakReference<ShellSectionHandler>(handler);
+            }
+
+            [Export("navigationBar:shouldPopItem:")]
+            bool ShouldPopItem(UINavigationBar bar, UINavigationItem item)
+            {
+                if (!_handlerRef.TryGetTarget(out var handler))
+                {
+                    return true;
+                }
+
+                return handler.SendPop();
+            }
+
+            [Export("navigationBar:didPopItem:")]
+            bool DidPopItem(UINavigationBar bar, UINavigationItem item)
+            {
+                if (!_handlerRef.TryGetTarget(out var handler))
+                {
+                    return true;
+                }
+
+                if (handler.VirtualView?.Stack is null || NavigationBar?.Items is null)
+                {
+                    return true;
+                }
+
+                // If stacks are in sync, nothing to do.
+                if (handler.VirtualView.Stack.Count == NavigationBar.Items.Length)
+                {
+                    return true;
+                }
+
+                // Stacks out of sync: treat as user-initiated back (e.g. swipe-back).
+                return handler.SendPop();
+            }
+        }
 
         /// <summary>
         /// Adapter that wraps ShellSectionHandler to implement the IShellSectionRenderer interface.
