@@ -196,6 +196,7 @@ override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnCreat
 override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnDestroyView() -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnDestroyView() -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnViewCreated(Android.Views.View! view, Android.OS.Bundle? savedInstanceState) -> void
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreate(Android.OS.Bundle? savedInstanceState) -> void

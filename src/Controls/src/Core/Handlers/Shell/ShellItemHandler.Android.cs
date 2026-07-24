@@ -27,15 +27,15 @@ namespace Microsoft.Maui.Controls.Handlers
         internal ViewPager2? _viewPager;
         internal BottomNavigationView? _bottomNavigationView;
         internal TabbedViewManager? _tabbedViewManager;
-        ShellItemTabbedViewAdapter? _shellItemAdapter;
-        ShellSectionFragmentAdapter? _adapter;
-        ShellItemPageChangeCallback? _pageChangeCallback;
+        internal ShellSectionFragmentAdapter? _adapter;
+        internal ShellItemTabbedViewAdapter? _shellItemAdapter;
+        internal ShellItemPageChangeCallback? _pageChangeCallback;
         IShellContext? _shellContext;
         Fragment? _parentFragment; // The wrapper fragment that hosts this handler
         IShellBottomNavViewAppearanceTracker? _appearanceTracker;
-        Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable RemoveAppearanceObserver
-        ShellSection? _shellSection;
-        Page? _displayedPage;
+        internal Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable RemoveAppearanceObserver
+        internal ShellSection? _shellSection;
+        internal Page? _displayedPage;
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
         bool _switchingShellItem; // During SwitchToShellItem, suppress mapper-triggered SwitchToSection
         bool _pendingAdapterUpdate; // After adapter rebuild, suppress next smooth scroll to avoid VP2 overshoot
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers
         internal Toolbar? _shellToolbar; // Virtual Toolbar view
         internal AToolbar? _toolbar; // Native platform toolbar
         internal IShellToolbarTracker? _toolbarTracker;
-        IShellToolbarAppearanceTracker? _toolbarAppearanceTracker;
+        internal IShellToolbarAppearanceTracker? _toolbarAppearanceTracker;
         internal AppBarLayout? _appBarLayout;
 
         /// <summary>
@@ -299,7 +299,9 @@ namespace Microsoft.Maui.Controls.Handlers
             // Track the current section
             _shellSection = newSection;
 
-            // Track displayed page changes
+            // Remove before adding to guard against duplicate observers from re-entrant calls
+            // (SwitchToShellItem triggers SwitchToSection twice for the same section).
+            ((IShellSectionController)newSection).RemoveDisplayedPageObserver(this);
             ((IShellSectionController)newSection).AddDisplayedPageObserver(this, UpdateDisplayedPage);
         }
 

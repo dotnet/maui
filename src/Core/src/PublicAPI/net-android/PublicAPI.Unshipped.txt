@@ -337,5 +337,4 @@ override Microsoft.Maui.Platform.MauiDrawerLayout.OnInterceptTouchEvent(Android.
 virtual Microsoft.Maui.Platform.MauiDrawerLayout.Disconnect() -> void
 virtual Microsoft.Maui.Platform.MauiDrawerLayout.LayoutAsFlyout() -> void
 virtual Microsoft.Maui.Platform.MauiDrawerLayout.LayoutSideBySide() -> void
-*REMOVED*virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IView! navigationView) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IView! navigationView, AndroidX.Fragment.App.FragmentContainerView? fragmentContainerView = null) -> void
