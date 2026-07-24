@@ -1,27 +1,42 @@
-#nullable enable
-Microsoft.Maui.Graphics.Color.Color(Microsoft.Maui.Graphics.Color! original) -> void
-override Microsoft.Maui.Graphics.Color.Equals(object? obj) -> bool
-static Microsoft.Maui.Graphics.Color.operator !=(Microsoft.Maui.Graphics.Color? left, Microsoft.Maui.Graphics.Color? right) -> bool
-static Microsoft.Maui.Graphics.Color.operator ==(Microsoft.Maui.Graphics.Color? left, Microsoft.Maui.Graphics.Color? right) -> bool
-virtual Microsoft.Maui.Graphics.Color.<Clone>$() -> Microsoft.Maui.Graphics.Color!
-virtual Microsoft.Maui.Graphics.Color.EqualityContract.get -> System.Type!
-virtual Microsoft.Maui.Graphics.Color.Equals(Microsoft.Maui.Graphics.Color? other) -> bool
-virtual Microsoft.Maui.Graphics.Color.PrintMembers(System.Text.StringBuilder! builder) -> bool
-Microsoft.Maui.Graphics.Color.AsPaint() -> Microsoft.Maui.Graphics.Paint!
-Microsoft.Maui.Graphics.Color.MultiplyAlpha(float multiplyBy) -> Microsoft.Maui.Graphics.Color!
-Microsoft.Maui.Graphics.Color.WithAlpha(float alpha) -> Microsoft.Maui.Graphics.Color!
-override Microsoft.Maui.Graphics.Color.ToString() -> string!
-static Microsoft.Maui.Graphics.Color.FromHex(string! colorAsArgbHex) -> Microsoft.Maui.Graphics.Color!
+﻿#nullable enable
 Microsoft.Maui.Graphics.Color.AddLuminosity(float delta) -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.Color.AsPaint() -> Microsoft.Maui.Graphics.Paint!
+Microsoft.Maui.Graphics.Color.Color(Microsoft.Maui.Graphics.Color! original) -> void
 Microsoft.Maui.Graphics.Color.GetComplementary() -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.Color.MultiplyAlpha(float multiplyBy) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.ToArgbHex(bool includeAlpha = false) -> string!
 Microsoft.Maui.Graphics.Color.ToHex() -> string!
 Microsoft.Maui.Graphics.Color.ToHex(bool includeAlpha) -> string!
 Microsoft.Maui.Graphics.Color.ToRgbaHex(bool includeAlpha = false) -> string!
+Microsoft.Maui.Graphics.Color.WithAlpha(float alpha) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.WithHue(float hue) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.WithLuminosity(float luminosity) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.WithSaturation(float saturation) -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.IImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata?
+~Microsoft.Maui.Graphics.IImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
+~Microsoft.Maui.Graphics.IImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Graphics.IImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
+Microsoft.Maui.Graphics.IImageMetadata
+Microsoft.Maui.Graphics.ImageLoadOptions
+Microsoft.Maui.Graphics.ImageLoadOptions.DisableRotationNormalization.get -> bool
+Microsoft.Maui.Graphics.ImageLoadOptions.DisableRotationNormalization.set -> void
+Microsoft.Maui.Graphics.ImageLoadOptions.ImageLoadOptions() -> void
+Microsoft.Maui.Graphics.ImageLoadOptions.PreserveMetadata.get -> bool
+Microsoft.Maui.Graphics.ImageLoadOptions.PreserveMetadata.set -> void
+Microsoft.Maui.Graphics.ImageSaveOptions
+Microsoft.Maui.Graphics.ImageSaveOptions.ImageSaveOptions() -> void
+Microsoft.Maui.Graphics.ImageSaveOptions.PreserveMetadata.get -> bool
+Microsoft.Maui.Graphics.ImageSaveOptions.PreserveMetadata.set -> void
+Microsoft.Maui.Graphics.ImageSaveOptions.Quality.get -> float
+Microsoft.Maui.Graphics.ImageSaveOptions.Quality.set -> void
+Microsoft.Maui.Graphics.Platform.PlatformImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata?
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
+override Microsoft.Maui.Graphics.Color.Equals(object? obj) -> bool
+override Microsoft.Maui.Graphics.Color.ToString() -> string!
 static Microsoft.Maui.Graphics.Color.FromArgb(string! colorAsHex) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromHex(string! colorAsArgbHex) -> Microsoft.Maui.Graphics.Color!
 static Microsoft.Maui.Graphics.Color.FromHsla(double h, double s, double l, double a = 1) -> Microsoft.Maui.Graphics.Color!
 static Microsoft.Maui.Graphics.Color.FromHsla(float h, float s, float l, float a = 1) -> Microsoft.Maui.Graphics.Color!
 static Microsoft.Maui.Graphics.Color.FromHsv(float h, float s, float v) -> Microsoft.Maui.Graphics.Color!
@@ -42,3 +57,10 @@ static Microsoft.Maui.Graphics.Color.FromUint(uint argb) -> Microsoft.Maui.Graph
 static Microsoft.Maui.Graphics.Color.Parse(string! value) -> Microsoft.Maui.Graphics.Color!
 static Microsoft.Maui.Graphics.Color.TryParse(string! value, out Microsoft.Maui.Graphics.Color! color) -> bool
 static Microsoft.Maui.Graphics.Color.implicit operator Microsoft.Maui.Graphics.Color!(System.Numerics.Vector4 color) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.operator !=(Microsoft.Maui.Graphics.Color? left, Microsoft.Maui.Graphics.Color? right) -> bool
+static Microsoft.Maui.Graphics.Color.operator ==(Microsoft.Maui.Graphics.Color? left, Microsoft.Maui.Graphics.Color? right) -> bool
+~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
+virtual Microsoft.Maui.Graphics.Color.<Clone>$() -> Microsoft.Maui.Graphics.Color!
+virtual Microsoft.Maui.Graphics.Color.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Graphics.Color.Equals(Microsoft.Maui.Graphics.Color? other) -> bool
+virtual Microsoft.Maui.Graphics.Color.PrintMembers(System.Text.StringBuilder! builder) -> bool

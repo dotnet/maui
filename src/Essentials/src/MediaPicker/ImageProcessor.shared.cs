@@ -2,305 +2,171 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Maui.Media;
-#if IOS || ANDROID || WINDOWS
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
-#endif
+using Microsoft.Maui.Media;
+using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Essentials;
 
 /// <summary>
-/// Unified image processing helper using MAUI Graphics for cross-platform consistency.
+/// The resolved set of image transformations the <see cref="IMediaPicker"/> applies to a picked or
+/// captured photo.
 /// </summary>
-internal static partial class ImageProcessor
+internal readonly record struct ImageProcessingOptions
 {
-    /// <summary>
-    /// Determines if the image needs rotation based on the provided options.
-    /// </summary>
-    /// <param name="options">The media picker options.</param>
-    /// <returns>True if rotation is needed based on the provided options.</returns>
-    public static bool IsRotationNeeded(MediaPickerOptions? options)
-    {
-        return options?.RotateImage ?? false;
-    }
+	public ImageProcessingOptions(
+		int? maximumWidth,
+		int? maximumHeight,
+		int compressionQuality,
+		bool rotateImage,
+		bool preserveMetadata)
+	{
+		MaximumWidth = maximumWidth;
+		MaximumHeight = maximumHeight;
+		CompressionQuality = compressionQuality;
+		RotateImage = rotateImage;
+		PreserveMetadata = preserveMetadata;
+	}
 
-    /// <summary>
-    /// Platform-specific EXIF rotation implementation.
-    /// </summary>
-    public static partial Task<Stream> RotateImageAsync(Stream inputStream, string? originalFileName);
+	public int? MaximumWidth { get; }
+	public int? MaximumHeight { get; }
+	public int CompressionQuality { get; }
+	public bool RotateImage { get; }
+	public bool PreserveMetadata { get; }
+}
 
-    /// <summary>
-    /// Platform-specific metadata extraction implementation.
-    /// </summary>
-    public static partial Task<byte[]?> ExtractMetadataAsync(Stream inputStream, string? originalFileName);
+/// <summary>
+/// Cross-platform image processing for the <see cref="IMediaPicker"/>, built entirely on the
+/// MAUI Graphics image pipeline (<see cref="IImageLoadingService"/> / <see cref="IImage"/>).
+///
+/// The processing itself is shared across every platform; only the small amount of I/O plumbing
+/// (obtaining the source stream and, on Android, the output location) lives in the platform-specific
+/// MediaPicker code.
+/// </summary>
+internal static class ImageProcessor
+{
+	/// <summary>
+	/// Whether the caller asked for EXIF rotation normalization.
+	/// </summary>
+	public static bool IsRotationNeeded(MediaPickerOptions? options) =>
+		options?.RotateImage ?? false;
 
-    /// <summary>
-    /// Platform-specific metadata application implementation.
-    /// </summary>
-    public static partial Task<Stream> ApplyMetadataAsync(Stream processedStream, byte[] metadata, string? originalFileName);
+	/// <summary>
+	/// Whether any processing (resize or recompress) is required.
+	/// </summary>
+	public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent) =>
+		maxWidth.HasValue || maxHeight.HasValue || qualityPercent < 100;
 
-    /// <summary>
-    /// Processes an image by applying EXIF rotation, resizing and compression using MAUI Graphics.
-    /// </summary>
-    /// <param name="inputStream">The input image stream.</param>
-    /// <param name="maxWidth">Maximum width constraint (null for no constraint).</param>
-    /// <param name="maxHeight">Maximum height constraint (null for no constraint).</param>
-    /// <param name="qualityPercent">Compression quality percentage (0-100).</param>
-    /// <param name="originalFileName">Original filename to determine format preservation logic.</param>
-    /// <param name="rotateImage">Whether to apply EXIF rotation correction.</param>
-    /// <param name="preserveMetaData">Whether to preserve metadata (including EXIF data) in the processed image.</param>
-    /// <returns>A new stream containing the processed image.</returns>
-    public static async Task<Stream?> ProcessImageAsync(Stream inputStream,
-        int? maxWidth, int? maxHeight, int qualityPercent, string? originalFileName = null, bool rotateImage = false, bool preserveMetaData = true)
-    {
-#if !(IOS || ANDROID || WINDOWS)
-        await Task.CompletedTask; // Avoid async warning
-        return null;
+	/// <summary>
+	/// Whether any processing (rotation, resize, or recompress) is required.
+	/// </summary>
+	public static bool IsProcessingNeeded(MediaPickerOptions? options) =>
+		IsRotationNeeded(options) ||
+		IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
+
+	/// <summary>
+	/// Determines the output container. Deterministic: PNG stays PNG, everything else becomes JPEG.
+	/// </summary>
+	public static ImageFormat GetOutputFormat(string? originalFileName)
+	{
+		var extension = string.IsNullOrEmpty(originalFileName) ? null : Path.GetExtension(originalFileName);
+		return string.Equals(extension, FileExtensions.Png, StringComparison.OrdinalIgnoreCase)
+			? ImageFormat.Png
+			: ImageFormat.Jpeg;
+	}
+
+	/// <summary>
+	/// The file extension for a given <see cref="ImageFormat"/>.
+	/// </summary>
+	public static string GetOutputExtension(ImageFormat format) =>
+		format == ImageFormat.Png ? FileExtensions.Png : FileExtensions.Jpg;
+
+	/// <summary>
+	/// Loads the <paramref name="input"/> through MAUI Graphics (normalizing EXIF orientation and/or
+	/// capturing metadata per the options), applies any resize, and writes the encoded result directly
+	/// to <paramref name="output"/>. No intermediate in-memory buffering of the encoded image is done.
+	/// </summary>
+	public static async Task ProcessImageAsync(Stream input, Stream output, ImageFormat format, ImageProcessingOptions options)
+	{
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+		var loadingService = new Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService();
+
+		var loadOptions = new ImageLoadOptions
+		{
+			// RotateImage == true means "normalize the EXIF orientation into the pixels".
+			DisableRotationNormalization = !options.RotateImage,
+			PreserveMetadata = options.PreserveMetadata,
+		};
+
+		using var image = loadingService.FromStream(input, loadOptions)
+			?? throw new InvalidOperationException("Failed to load image from stream.");
+
+		await SaveImageAsync(image, output, format, options).ConfigureAwait(false);
 #else
-        if (inputStream is null)
-        {
-            throw new ArgumentNullException(nameof(inputStream));
-        }
-
-        // Ensure we can read from the beginning of the stream
-        if (inputStream.CanSeek)
-        {
-            inputStream.Position = 0;
-        }
-
-        // Apply EXIF rotation first if requested
-        Stream processedStream = inputStream;
-        if (rotateImage)
-        {
-            processedStream = await RotateImageAsync(inputStream, originalFileName);
-            // Reset position for subsequent processing
-            if (processedStream.CanSeek)
-            {
-                processedStream.Position = 0;
-            }
-        }
-
-        // Extract metadata from original stream if needed
-        byte[]? originalMetadata = null;
-        if (preserveMetaData)
-        {
-            originalMetadata = await ExtractMetadataAsync(inputStream, originalFileName);
-            // Reset position after metadata extraction
-            if (inputStream.CanSeek)
-            {
-                inputStream.Position = 0;
-            }
-        }
-
-        IImage? image = null;
-        try
-        {
-            // Load the image using MAUI Graphics
-            var imageLoadingService = new PlatformImageLoadingService();
-            image = imageLoadingService.FromStream(processedStream);
-
-            if (image is null)
-            {
-                throw new InvalidOperationException("Failed to load image from stream");
-            }
-
-            // Apply resizing if needed
-            if (maxWidth.HasValue || maxHeight.HasValue)
-            {
-                image = ApplyResizing(image, maxWidth, maxHeight);
-            }
-
-            // Determine output format and quality
-            var format = ShouldUsePngFormat(originalFileName, qualityPercent) 
-                ? ImageFormat.Png : ImageFormat.Jpeg;
-            var quality = Math.Max(0f, Math.Min(1f, qualityPercent / 100.0f));
-
-            // Save to new stream
-            var outputStream = new MemoryStream();
-            await image.SaveAsync(outputStream, format, quality);
-            outputStream.Position = 0;
-
-            // Apply preserved metadata to the output stream if requested
-            if (preserveMetaData && originalMetadata != null)
-            {
-                var finalStream = await ApplyMetadataAsync(outputStream, originalMetadata, originalFileName);
-                
-                // Only dispose outputStream if finalStream is a different object
-                // On Windows, ApplyMetadataAsync returns the same stream, so we shouldn't dispose it
-                if (finalStream != outputStream)
-                {
-                    outputStream.Dispose();
-                }
-                
-                return finalStream;
-            }
-
-            return outputStream;
-        }
-        finally
-        {
-            image?.Dispose();
-            
-            // Clean up the rotated stream if it's different from the input
-            if (rotateImage && processedStream != inputStream)
-            {
-                processedStream?.Dispose();
-            }
-        }
+		await Task.CompletedTask.ConfigureAwait(false);
+		throw new PlatformNotSupportedException();
 #endif
-    }
+	}
 
-#if IOS || ANDROID || WINDOWS
-    /// <summary>
-    /// Applies resizing constraints to an image while preserving aspect ratio.
-    /// </summary>
-    private static IImage ApplyResizing(IImage image, int? maxWidth, int? maxHeight)
-    {
-        var currentWidth = image.Width;
-        var currentHeight = image.Height;
+	/// <summary>
+	/// Applies any resize and writes the encoded result of an already-loaded <paramref name="image"/>
+	/// to <paramref name="output"/>. Shared by the stream-based entry point above and by platform code
+	/// that already holds a decoded image (for example an in-memory camera capture on iOS). The source
+	/// image is never disposed here.
+	/// </summary>
+	public static async Task SaveImageAsync(IImage image, Stream output, ImageFormat format, ImageProcessingOptions options)
+	{
+		var current = image;
+		if (options.MaximumWidth.HasValue || options.MaximumHeight.HasValue)
+		{
+			// Downsize preserves aspect ratio and only ever scales down.
+			current = image.Downsize(options.MaximumWidth ?? int.MaxValue, options.MaximumHeight ?? int.MaxValue, disposeOriginal: false);
+		}
 
-        // Calculate new dimensions while preserving aspect ratio
-        var newDimensions = CalculateResizedDimensions(currentWidth, currentHeight, maxWidth, maxHeight);
+		try
+		{
+			var saveOptions = new ImageSaveOptions
+			{
+				Quality = Math.Max(0, Math.Min(100, options.CompressionQuality)) / 100f,
+				PreserveMetadata = options.PreserveMetadata,
+			};
 
-        // Only resize if dimensions actually changed
-        if (Math.Abs(newDimensions.Width - currentWidth) > 0.1f || 
-            Math.Abs(newDimensions.Height - currentHeight) > 0.1f)
-        {
-            return image.Downsize(newDimensions.Width, newDimensions.Height, disposeOriginal: true);
-        }
+			await current.SaveAsync(output, format, saveOptions).ConfigureAwait(false);
+		}
+		finally
+		{
+			if (current != image)
+			{
+				current.Dispose();
+			}
+		}
+	}
 
-        return image;
-    }
+	/// <summary>
+	/// Processes the <paramref name="input"/> and writes the result to a new file in the app cache
+	/// directory, preserving the original file name (with a corrected extension). The source is only
+	/// ever read, never modified. Returns the path to the new file.
+	/// </summary>
+	public static async Task<string> ProcessImageToCacheFileAsync(Stream input, string? originalFileName, ImageProcessingOptions options)
+	{
+		var format = GetOutputFormat(originalFileName);
+		var extension = GetOutputExtension(format);
 
-    /// <summary>
-    /// Calculates new image dimensions while preserving aspect ratio.
-    /// </summary>
-    private static (float Width, float Height) CalculateResizedDimensions(
-        float originalWidth, float originalHeight, int? maxWidth, int? maxHeight)
-    {
-        if (!maxWidth.HasValue && !maxHeight.HasValue)
-        {
-            return (originalWidth, originalHeight);
-        }
+		var baseName = string.IsNullOrEmpty(originalFileName)
+			? Guid.NewGuid().ToString("N")
+			: Path.GetFileNameWithoutExtension(originalFileName);
 
-        var targetWidth = maxWidth ?? float.MaxValue;
-        var targetHeight = maxHeight ?? float.MaxValue;
+		// Write into a unique sub-directory of the app cache so the original file name can be preserved
+		// exactly (issue #33258) without ever colliding with another picked file of the same name.
+		var outputDirectory = Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(outputDirectory);
+		var outputPath = Path.Combine(outputDirectory, baseName + extension);
 
-        var scaleX = targetWidth / originalWidth;
-        var scaleY = targetHeight / originalHeight;
-        var scale = Math.Min(scaleX, scaleY);
+		using (var output = File.Create(outputPath))
+		{
+			await ProcessImageAsync(input, output, format, options).ConfigureAwait(false);
+		}
 
-        // Only scale down, never scale up
-        if (scale >= 1.0f)
-            return (originalWidth, originalHeight);
-
-        return (originalWidth * scale, originalHeight * scale);
-    }
-
-    /// <summary>
-    /// Determines whether to use PNG format based on the original filename and quality settings.
-    /// </summary>
-    private static bool ShouldUsePngFormat(string? originalFileName, int qualityPercent)
-    {
-        var originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
-                                Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
-
-        // High quality (>=95): Prefer PNG for lossless quality
-        // High quality (>=90) + original was PNG: preserve PNG format
-        // Otherwise: Use JPEG for better compression
-        return qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng);
-    }
-#endif
-
-    /// <summary>
-    /// Determines if image processing is needed based on the provided options.
-    /// </summary>
-    public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent)
-    {
-#if !(IOS || ANDROID || WINDOWS)
-        // On platforms without MAUI Graphics support, always return false - no processing available
-        return false;
-#else
-        return (maxWidth.HasValue || maxHeight.HasValue) || qualityPercent < 100;
-#endif
-    }
-
-    /// <summary>
-    /// Determines the output file extension based on processed image data and quality settings.
-    /// </summary>
-    /// <param name="imageData">The processed image stream to analyze</param>
-    /// <param name="qualityPercent">Compression quality percentage</param>
-    /// <param name="originalFileName">Original filename for format hints (optional)</param>
-    /// <returns>File extension including the dot (e.g., ".jpg", ".png")</returns>
-    public static string DetermineOutputExtension(Stream? imageData, int qualityPercent, string? originalFileName = null)
-    {
-#if !(IOS || ANDROID)
-        // On platforms without MAUI Graphics support, fall back to simple logic
-        bool originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
-                              originalFileName!.EndsWith(".png", StringComparison.OrdinalIgnoreCase);
-        return (qualityPercent >= 95 || originalWasPng) ? ".png" : ".jpg";
-#else
-        // Try to detect format from the actual processed image data
-        var detectedFormat = DetectImageFormat(imageData);
-        if (!string.IsNullOrEmpty(detectedFormat))
-        {
-            return detectedFormat;
-        }
-
-        // Fallback: Use quality-based decision with original format consideration
-        var originalWasPng = !string.IsNullOrEmpty(originalFileName) && 
-                                Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
-        
-        // High quality (>=90) and original was PNG: keep PNG
-        // Very high quality (>=95): prefer PNG for maximum quality
-        // Otherwise: use JPEG for better compression
-        return (qualityPercent >= 95 || (qualityPercent >= 90 && originalWasPng)) ? ".png" : ".jpg";
-#endif
-    }
-
-#if IOS || ANDROID || WINDOWS
-    /// <summary>
-    /// Detects image format from stream using magic numbers.
-    /// </summary>
-    private static string? DetectImageFormat(Stream? imageData)
-    {
-        if (imageData is null || imageData.Length < 4)
-        {
-            return null;
-        }
-
-        var originalPosition = imageData.Position;
-        try
-        {
-            imageData.Position = 0;
-            var bytes = new byte[8];
-            var bytesRead = imageData.Read(bytes, 0, Math.Min(8, (int)imageData.Length));
-            
-            if (bytesRead < 3)
-            {
-                return null;
-            }
-
-            // PNG: 89 50 4E 47
-            if (bytesRead >= 4 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
-            {
-                return ".png";
-            }
-
-            // JPEG: FF D8 FF
-            if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
-            {
-                return ".jpg";
-            }
-
-            return null;
-        }
-        finally
-        {
-            imageData.Position = originalPosition;
-        }
-    }
-#endif
-
+		return outputPath;
+	}
 }
