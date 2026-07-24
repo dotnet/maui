@@ -1,9 +1,16 @@
 // Handle navigation menu toggle
-const navScrollable = document.getElementById("nav-scrollable");
-const navToggler = document.querySelector(".navbar-toggler");
+if (!globalThis.__mauiNavMenuCollapseInitialized) {
+    globalThis.__mauiNavMenuCollapseInitialized = true;
 
-if (navScrollable && navToggler) {
-    navScrollable.addEventListener("click", function() {
-        navToggler.click();
+    document.addEventListener("click", function(event) {
+        const target = event.target;
+
+        if (target instanceof Element && target.closest("#nav-scrollable")) {
+            const navToggler = document.querySelector(".navbar-toggler");
+
+            if (navToggler instanceof HTMLInputElement && navToggler.checked) {
+                navToggler.click();
+            }
+        }
     });
 }
