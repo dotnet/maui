@@ -1,4 +1,46 @@
 <Project>
+  <PropertyGroup>
+    <!-- Shipping projects use published N-1 packages during previews; tests use current N. At GA, all projects use stable N. -->
+    <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == '' and ('$(IsTestProject)' == 'true' or '$(MauiTestProject)' == 'true')">false</UseN1PackageVersions>
+    <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == ''">true</UseN1PackageVersions>
+    <MicrosoftDotNetNPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftDotNetNPackageVersion>
+    <MicrosoftDotNetN1PackageVersion>11.0.0-preview.6.26359.118</MicrosoftDotNetN1PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UseN1PackageVersions)' == 'true' and $(MicrosoftDotNetNPackageVersion.Contains('-'))">
+    <MicrosoftNETCoreAppRefPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftNETCoreAppRefPackageVersion>
+    <SystemTextJsonPackageVersion>$(MicrosoftDotNetN1PackageVersion)</SystemTextJsonPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>$(MicrosoftDotNetN1PackageVersion)</SystemTextEncodingsWebPackageVersion>
+    <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
+    <SystemCodeDomPackageVersion>$(MicrosoftDotNetN1PackageVersion)</SystemCodeDomPackageVersion>
+    <MicrosoftExtensionsConfigurationVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsHttpVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsHttpVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsPrimitivesVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreComponentsFormsPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsFormsPackageVersion>
+    <MicrosoftAspNetCoreComponentsPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreMetadataPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreMetadataPackageVersion>
+    <MicrosoftJSInteropPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftJSInteropPackageVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference
         Update="HarfBuzzSharp"
@@ -187,6 +229,18 @@
         Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion)"
     />
     <PackageReference
+        Update="Microsoft.AspNetCore.Components.Analyzers"
+        Version="$(MicrosoftAspNetCoreComponentsAnalyzersPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Forms"
+        Version="$(MicrosoftAspNetCoreComponentsFormsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components"
+        Version="$(MicrosoftAspNetCoreComponentsPackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
         Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)"
     />
@@ -201,6 +255,10 @@
     <PackageReference
         Update="Microsoft.AspNetCore.Components.WebAssembly.Server"
         Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Metadata"
+        Version="$(MicrosoftAspNetCoreMetadataPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.JSInterop"
@@ -227,6 +285,21 @@
         Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
     />
     <PackageReference
+        Update="Microsoft.AspNetCore.Components.Analyzers"
+        Version="$(MicrosoftAspNetCoreComponentsAnalyzersPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Forms"
+        Version="$(MicrosoftAspNetCoreComponentsFormsPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components"
+        Version="$(MicrosoftAspNetCoreComponentsPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
         Version="$(MicrosoftAspNetCoreComponentsWebViewPreviousPackageVersion)"
         Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
@@ -244,6 +317,11 @@
     <PackageReference
         Update="Microsoft.AspNetCore.Components.WebAssembly.Server"
         Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Metadata"
+        Version="$(MicrosoftAspNetCoreMetadataPreviousPackageVersion)"
         Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
     />
     <PackageReference

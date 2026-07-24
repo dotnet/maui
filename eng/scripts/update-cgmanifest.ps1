@@ -2,9 +2,9 @@
 
 <#
 .SYNOPSIS
-    Updates the cgmanifest.json file with package versions from Versions.props
+    Updates cgmanifest.json with centrally managed package versions
 .DESCRIPTION
-    This script reads the Versions.props file to extract NuGet package versions
+    This script reads the central package version files to extract NuGet package versions
     and updates the cgmanifest.json file with these versions.
 .NOTES
     This ensures that the Component Governance manifest is kept in sync with the actual package versions used in the project.
@@ -17,7 +17,7 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "../..")
 $versionsPropsPath = Join-Path $repoRoot "eng/Versions.props"
 $cgManifestPath = Join-Path $repoRoot "src/Templates/src/cgmanifest.json"
 
-# Read the Versions.props file
+# Read the central package version files
 Write-Host "Reading versions from: $versionsPropsPath"
 [xml]$versionsProps = Get-Content $versionsPropsPath -Raw
 
@@ -35,7 +35,7 @@ else {
     } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
 }
 
-# Create a mapping of package names to version property names in Versions.props
+# Create a mapping of package names to central version property names
 $packageVersionMappings = @{
     # Microsoft.NET.Test.Sdk and test-related packages
     'Microsoft.NET.Test.Sdk' = 'MicrosoftNETTestSdkPackageVersion'
@@ -60,6 +60,10 @@ $packageVersionMappings = @{
     'SQLitePCLRaw.bundle_green' = 'SQLitePCLRawBundleGreenPackageVersion'
     'CommunityToolkit.Mvvm' = 'CommunityToolkitMvvmPackageVersion'
 }
+
+# Microsoft.Extensions template dependencies use published N-1 during previews, then stable N at GA.
+$n1PackageVersionNode = ([xml](Get-Content (Join-Path $repoRoot "eng/NuGetVersions.targets") -Raw)).SelectSingleNode('//MicrosoftDotNetN1PackageVersion')
+$n1PackageVersion = if ($null -eq $n1PackageVersionNode) { $null } else { $n1PackageVersionNode.InnerText.Trim() }
 
 # Initialize new registrations list
 $newRegistrations = New-Object System.Collections.ArrayList
@@ -122,6 +126,12 @@ foreach ($package in $packageVersionMappings.GetEnumerator()) {
     foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
         if ($propertyGroup.$versionPropertyName) {
             $version = $propertyGroup.$versionPropertyName.ToString().Trim()
+            if ($packageName.StartsWith('Microsoft.Extensions.') -and $version.Contains('-')) {
+                if ([string]::IsNullOrEmpty($n1PackageVersion)) {
+                    throw "Could not find required N-1 version for $packageName (property: MicrosoftDotNetN1PackageVersion)"
+                }
+                $version = $n1PackageVersion
+            }
             if (-not [string]::IsNullOrEmpty($version)) {
                 Write-Host "Found $packageName version: $version"
                 [void]$newRegistrations.Add((New-PackageEntry -PackageName $packageName -PackageVersion $version))
