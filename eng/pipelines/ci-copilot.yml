@@ -3966,14 +3966,26 @@ stages:
                       $doTmp = New-TemporaryFile
                       @{ body = $doBody; event = 'COMMENT' } | ConvertTo-Json -Depth 4 | Set-Content $doTmp.FullName -Encoding UTF8
                       gh api -X POST "repos/dotnet/maui/pulls/$prNumber/reviews" --input $doTmp.FullName | Out-Null
-                      if ($LASTEXITCODE -eq 0) { Write-Host "✅ Standalone deep-results review posted" }
+                      if ($LASTEXITCODE -eq 0) {
+                        Write-Host "✅ Standalone deep-results review posted"
+                        # The Review stage already posted a bare 'review could not
+                        # complete' notice (aiSummaryReviewId was empty). Now that we've
+                        # posted a real review with the deep results, collapse that notice
+                        # so the PR is FINISHED with an actual summary instead of a
+                        # contradictory warning. Best-effort; never fatal.
+                        try {
+                          . ".github/scripts/shared/Remove-StaleMauiBotComments.ps1"
+                          Hide-StaleMauiBotIssueComments -PRNumber ([int]$prNumber) -IncludeReviewIncomplete -Reason "superseded by standalone deep-results review"
+                          Write-Host "Collapsed the earlier review-incomplete notice."
+                        } catch { Write-Host "ℹ️ Could not collapse review-incomplete notice (non-fatal): $_" }
+                      }
                       else { Write-Host "⚠️ Standalone deep-results review POST returned non-zero; skipping" }
                     } catch {
                       Write-Host "⚠️ Standalone deep-results review posting failed (non-fatal): $_"
                     }
                     $global:LASTEXITCODE = 0
                   } else {
-                    Write-Host "No deep results either — nothing to post"
+                    Write-Host "No deep results either — leaving the review-incomplete notice as the honest outcome"
                   }
                 } else {
                   # Replace in-process results with deep results in uitests/content.md (if available)
