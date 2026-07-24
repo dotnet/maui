@@ -460,10 +460,10 @@ namespace Microsoft.Maui.Hosting
 				// Install an app-owned lazy wrapper so a later static call cannot retain provider-owned
 				// services after this MauiApp is disposed.
 				Func<VersionTrackingDependency<IPreferences>> getPreferences = dependencies.Preferences is { } preferences
-					? () => new(preferences, owner: null)
+					? CreateOwnedVersionTrackingDependency(preferences, static () => Preferences.Default)
 					: static () => CaptureVersionTrackingDependency(static () => Preferences.Default);
 				Func<VersionTrackingDependency<IAppInfo>> getAppInfo = dependencies.AppInfo is { } appInfo
-					? () => new(appInfo, owner: null)
+					? CreateOwnedVersionTrackingDependency(appInfo, static () => AppInfo.Current)
 					: static () => CaptureVersionTrackingDependency(static () => AppInfo.Current);
 				var implementation = new LazyVersionTracking(getPreferences, getAppInfo);
 				TrackAndSet(
@@ -643,6 +643,28 @@ namespace Microsoft.Maui.Hosting
 				}
 
 				AddFacadeCleanup(assignment, getter, setter, facadeCleanups);
+			}
+
+			static Func<VersionTrackingDependency<T>> CreateOwnedVersionTrackingDependency<T>(
+				T implementation,
+				Func<T> fallbackGetter)
+				where T : class
+			{
+				var reference = new WeakReference<T>(implementation);
+				return () =>
+				{
+					lock (FacadeBridgeState<T>.SyncRoot)
+					{
+						if (reference.TryGetTarget(out var target) &&
+							FacadeBridgeState<T>.FindOwner(target) is { } owner)
+						{
+							return new(target, owner);
+						}
+
+						var fallback = fallbackGetter();
+						return new(fallback, FacadeBridgeState<T>.FindOwner(fallback));
+					}
+				};
 			}
 
 			static VersionTrackingDependency<T> CaptureVersionTrackingDependency<T>(Func<T> getter)

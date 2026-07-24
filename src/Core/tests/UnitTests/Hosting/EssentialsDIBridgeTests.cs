@@ -793,6 +793,52 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void OverlappingUseVersionTrackingAppRefreshesDisposedLazyDependencies()
+		{
+			var fallbackPreferences = new StubPreferences();
+			Preferences.SetDefault(fallbackPreferences);
+			AppInfo.SetCurrent(new StubAppInfo("3.0.0", "3"));
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+				firstBuilder.Services.AddSingleton<IAppInfo>(
+					_ => new DisposableStubAppInfo("1.0.0", "1"));
+				firstApp = firstBuilder.Build();
+				var providerPreferences = Assert.IsType<DisposableStubPreferences>(
+					firstApp.Services.GetRequiredService<IPreferences>());
+				var providerAppInfo = Assert.IsType<DisposableStubAppInfo>(
+					firstApp.Services.GetRequiredService<IAppInfo>());
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.ConfigureEssentials(essentials => essentials.UseVersionTracking());
+				secondApp = secondBuilder.Build();
+
+				Assert.Equal("1.0.0", VersionTracking.CurrentVersion);
+
+				firstApp.Dispose();
+				firstApp = null;
+
+				Assert.True(providerPreferences.IsDisposed);
+				Assert.True(providerAppInfo.IsDisposed);
+				Assert.Same(fallbackPreferences, Preferences.Default);
+				Assert.Equal("3.0.0", VersionTracking.CurrentVersion);
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
 		public void UseVersionTrackingDoesNotOwnExternallyInitializedFacade()
 		{
 			Preferences.SetDefault(new StubPreferences());
