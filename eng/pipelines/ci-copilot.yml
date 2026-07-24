@@ -464,20 +464,45 @@ stages:
             condition: and(succeeded(), ne('${{ parameters.Platform }}', 'windows'))
             continueOnError: true
 
-          # Build MSBuild tasks (required for MAUI builds)
-          - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+          # Build MSBuild tasks (required for MAUI builds). Wrapped in a
+          # wall-clock WATCHDOG because AzDO's step-level timeoutInMinutes does
+          # NOT reliably kill a hung dotnet/cake process tree — build 14754622
+          # ran 82+ min past a 40-min step timeout without being cancelled. Under
+          # heavy agent-pool contention the buildtasks build can hang for hours
+          # (observed 1.5-3.3h: 14751470 #36657, 14753160 #36405, 14753158
+          # #36328), holding the agent and reddening the gate. Run the build as a
+          # child process and, if it exceeds the budget, kill the ENTIRE tree so
+          # the retryCountOnTaskFailure retry starts fresh. build.ps1 forwards all
+          # --x=y args to cake via $ScriptArgs, so the -File child invocation is
+          # behaviourally identical to the old inline call. Falls back to a direct
+          # build if the child process can't be launched (never worse than before).
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $timeoutMin = 40
+              $buildArgs = @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic')
+              try {
+                $psi = New-Object System.Diagnostics.ProcessStartInfo
+                $psi.FileName = 'pwsh'
+                foreach ($a in $buildArgs) { [void]$psi.ArgumentList.Add($a) }
+                $psi.UseShellExecute = $false
+                $proc = [System.Diagnostics.Process]::Start($psi)
+              } catch {
+                Write-Host "Watchdog could not launch child pwsh ($($_.Exception.Message)); running build directly (no wall-clock bound)."
+                ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+                exit $LASTEXITCODE
+              }
+              if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
+                Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
+                try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
+                Start-Sleep -Seconds 3
+                exit 1
+              }
+              exit $proc.ExitCode
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
-            # A normal dotnet-buildtasks build takes <10 min. Without a task
-            # timeout it inherits the 360-min JOB timeout, so under heavy review
-            # concurrency (20+ simultaneous builds starving the agent pool) a
-            # hung build was observed running 1.5-3.3h before dying with
-            # "PowerShell exited with code '1'" (builds 14751470 #36657,
-            # 14753160 #36405 — both hung, then failed the whole gate stage).
-            # Bound it to 40 min (still 4-5x a healthy build) so a hang fails
-            # FAST and the retryCountOnTaskFailure retry gets a fresh-agent
-            # chance instead of holding the agent for hours.
-            timeoutInMinutes: 40
+            # Outer AzDO backstop above the 40-min watchdog (the watchdog should
+            # always fire first; this only matters if the wrapper itself wedges).
+            timeoutInMinutes: 50
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
@@ -2237,14 +2262,34 @@ stages:
                 echo "##vso[task.prependpath]$em"
               displayName: 'Add Android SDK tools to PATH'
 
-          - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $timeoutMin = 40
+              $buildArgs = @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic')
+              try {
+                $psi = New-Object System.Diagnostics.ProcessStartInfo
+                $psi.FileName = 'pwsh'
+                foreach ($a in $buildArgs) { [void]$psi.ArgumentList.Add($a) }
+                $psi.UseShellExecute = $false
+                $proc = [System.Diagnostics.Process]::Start($psi)
+              } catch {
+                Write-Host "Watchdog could not launch child pwsh ($($_.Exception.Message)); running build directly (no wall-clock bound)."
+                ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+                exit $LASTEXITCODE
+              }
+              if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
+                Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
+                try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
+                Start-Sleep -Seconds 3
+                exit 1
+              }
+              exit $proc.ExitCode
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
-            # Bound to 40 min (vs the inherited 360-min job timeout) so a build
-            # hung under heavy agent-pool contention fails fast and retries on a
-            # fresh agent instead of hanging for hours. See the gate-stage copy
-            # of this step for the full rationale (builds 14751470 / 14753160).
-            timeoutInMinutes: 40
+            # Wall-clock watchdog (see the gate-stage copy for the full rationale):
+            # AzDO's step timeout can't kill a hung dotnet/cake tree, so bound it
+            # to 40 min in-script; 50-min AzDO timeout is the outer backstop.
+            timeoutInMinutes: 50
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
