@@ -148,11 +148,14 @@ namespace Microsoft.Maui.Controls.Platform
 					if (windowManager is not null)
 					{
 						// The NavigationRootManager constructor unconditionally reserves 32px for the
-						// title bar based on ExtendsContentIntoTitleBar (true by default). In full-screen
-						// mode there are no OS window controls to avoid, so suppress this reservation.
+						// title bar based on ExtendsContentIntoTitleBar (true by default). Suppress
+						// this reservation when the app has hidden the title bar (IsVisible = false)
+						// or when running in full-screen mode (no OS window controls to avoid).
 						// This also clears the InputNonClientPointerSource passthrough regions, fixing
 						// the unclickable top area that would otherwise remain in full-screen mode.
-						if (IsWindowFullScreen())
+						// Use the same predicate as the pop/presenter-change paths so all paths agree.
+						bool showTitleBarOnPush = !IsWindowFullScreen() && ((_window.TitleBar as TitleBar)?.IsVisible ?? true);
+						if (!showTitleBarOnPush)
 						{
 							windowManager.SetTitleBarVisibility(false);
 						}
