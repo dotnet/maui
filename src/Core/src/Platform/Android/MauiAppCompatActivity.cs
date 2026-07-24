@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 				: Resource.Style.Maui_MainTheme_NoActionBar);
 
 			base.OnCreate(savedInstanceState);
-			WindowCompat.SetDecorFitsSystemWindows(Window, false);
+			WindowCompat.EnableEdgeToEdge(Window);
 
 			if (IPlatformApplication.Current?.Application is not null)
 			{
