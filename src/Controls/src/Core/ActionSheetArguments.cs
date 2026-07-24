@@ -1,13 +1,16 @@
 #nullable disable
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Internals
 {
 	/// <summary>Arguments for an action sheet dialog.</summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
+	/// <remarks>
+	/// This type is part of the stable public API contract for <see cref="Microsoft.Maui.Controls.Platform.IAlertManager"/>
+	/// and <see cref="Microsoft.Maui.Controls.Platform.IAlertManagerSubscription"/>, despite residing in the
+	/// <c>Microsoft.Maui.Controls.Internals</c> namespace.
+	/// </remarks>
 	public class ActionSheetArguments
 	{
 		/// <summary>Creates a new <see cref="ActionSheetArguments"/> with the specified parameters.</summary>

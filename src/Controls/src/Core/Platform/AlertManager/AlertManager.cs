@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public void RequestPrompt(Page page, PromptArguments arguments) =>
 			_subscription?.OnPromptRequested(page, arguments);
 
-		[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET11.")]
+		[Obsolete("Page busy notifications are obsolete and have no replacement. Remove usage or leave an empty implementation. This method will be removed in a future release.")]
 		public void RequestPageBusy(Page page, bool isBusy) =>
 			_subscription?.OnPageBusy(page, isBusy);
 
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public partial void OnPromptRequested(Page sender, PromptArguments arguments);
 
-			[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET11.")]
+			[Obsolete("Page busy notifications are obsolete and have no replacement. Remove usage or leave an empty implementation. This method will be removed in a future release.")]
 			public partial void OnPageBusy(Page sender, bool enabled);
 		}
 	}
