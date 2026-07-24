@@ -19,7 +19,7 @@ public class Issue32723 : _IssuesUITest
 	public void Issue32723PickerTitleDisplaysAsPlaceholder()
 	{
 		App.WaitForElement("issue32723Picker");
-		VerifyScreenshot(cropTop: 100);
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -29,7 +29,7 @@ public class Issue32723 : _IssuesUITest
 		App.WaitForElement("issue32723Button");
 		App.Tap("issue32723Button");
 		App.WaitForElement("issue32723Picker");
-		VerifyScreenshot(cropTop: 100);
+		VerifyScreenshot();
 	}
 }
 #endif

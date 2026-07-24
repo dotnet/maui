@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.SelectionChanged -= OnControlSelectionChanged;
 			platformView.DropDownOpened -= OnMauiComboBoxDropDownOpened;
 			platformView.DropDownClosed -= OnMauiComboBoxDropDownClosed;
-			platformView.DisconnectPlaceholderCharacterSpacing();
 		}
 
 		// Updating ItemSource Resets the SelectedIndex.

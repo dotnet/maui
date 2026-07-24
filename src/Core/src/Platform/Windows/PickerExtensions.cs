@@ -87,27 +87,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (nativeComboBox.IsLoaded)
 			{
-				nativeComboBox.Loaded -= OnPlaceholderCharacterSpacingLoaded;
 				ApplyPlaceholderCharacterSpacing(nativeComboBox);
 			}
 			else
 			{
-				nativeComboBox.Loaded -= OnPlaceholderCharacterSpacingLoaded;
-				nativeComboBox.Loaded += OnPlaceholderCharacterSpacingLoaded;
-			}
-		}
-
-		internal static void DisconnectPlaceholderCharacterSpacing(this ComboBox nativeComboBox)
-		{
-			nativeComboBox.Loaded -= OnPlaceholderCharacterSpacingLoaded;
-		}
-
-		static void OnPlaceholderCharacterSpacingLoaded(object sender, RoutedEventArgs e)
-		{
-			if (sender is ComboBox nativeComboBox)
-			{
-				nativeComboBox.Loaded -= OnPlaceholderCharacterSpacingLoaded;
-				ApplyPlaceholderCharacterSpacing(nativeComboBox);
+				nativeComboBox.OnLoaded(() => ApplyPlaceholderCharacterSpacing(nativeComboBox));
 			}
 		}
 
