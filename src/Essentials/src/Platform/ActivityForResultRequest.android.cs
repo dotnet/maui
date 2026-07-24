@@ -50,7 +50,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 	// Strong reference to the launching activity — prevents GC from collecting the CWT entry
 	// before Register() can migrate the TCS to the new activity after a config change.
-	volatile ComponentActivity _inFlightActivity;
+	ComponentActivity _inFlightActivity;
 
 	/// <summary>
 	/// Gets a value indicating whether the request has a launcher registered for the
@@ -195,6 +195,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		if (_pendingRequests.TryGetValue(componentActivity, out var tcs))
 		{
 			_pendingRequests.Remove(componentActivity);
+			_inFlightActivity = null;
 			tcs?.TrySetCanceled();
 		}
 	}
