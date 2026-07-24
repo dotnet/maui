@@ -168,14 +168,27 @@ function Remove-InlineVisualSection {
     }
 
     $pattern = [regex]::Escape((Get-InlineVisualStartMarker)) +
-        '.*?' +
+        '(?<content>.*?)' +
         [regex]::Escape((Get-InlineVisualEndMarker))
-    return [regex]::Replace(
-        $Body,
+    $regex = [regex]::new(
         $pattern,
-        "",
         [System.Text.RegularExpressions.RegexOptions]::Singleline,
         [TimeSpan]::FromSeconds(1))
+    $evaluator = [System.Text.RegularExpressions.MatchEvaluator] {
+        param($match)
+        $content = $match.Groups['content'].Value
+        if ([regex]::IsMatch(
+                $content,
+                '^\s*### Visual failure comparisons(?:\r?\n|$)',
+                [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
+            return ""
+        }
+        # Marker text in fresh agent output is untrusted. Neutralize the marker comments but preserve
+        # arbitrary analysis between them; only a section with the trusted merger's exact heading is
+        # eligible for idempotent replacement.
+        return $content
+    }
+    return $regex.Replace($Body, $evaluator)
 }
 
 function Test-VisualSnapshotPathMatchesPlatform {

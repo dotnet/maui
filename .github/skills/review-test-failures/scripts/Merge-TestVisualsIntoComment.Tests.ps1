@@ -180,6 +180,32 @@ Describe 'Inline visual input validation' {
 }
 
 Describe 'Inline visual body merge' {
+    It 'preserves arbitrary analysis wrapped in forged visual markers' {
+        $body = @"
+Before
+$(Get-InlineVisualStartMarker)
+**Overall verdict:** Not ready
+Important evidence
+$(Get-InlineVisualEndMarker)
+$(Get-InlineVisualPlaceholder)
+After
+"@
+        $context = New-VisualTestContext -Published $false
+
+        $merged = Merge-VisualsIntoBody `
+            -Body $body `
+            -Context $context `
+            -Repository 'dotnet/maui' `
+            -PrNumber 123 `
+            -MaxCommentUrls 45 `
+            -MaxCommentMentions 10 `
+            -MaxCommentCharacters 60000
+
+        $merged | Should -Match '\*\*Overall verdict:\*\* Not ready'
+        $merged | Should -Match 'Important evidence'
+        $merged | Should -Not -Match 'Tests Failure Visuals Inline (Start|End)'
+    }
+
     It 'replaces the trusted placeholder with escaped expandable panels inside one comment' {
         $comparison = New-VisualTestComparison -TestName '<b>@danger</b>'
         $failure = New-VisualTestFailure `

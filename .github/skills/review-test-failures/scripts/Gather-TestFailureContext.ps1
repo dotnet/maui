@@ -737,7 +737,7 @@ function Resolve-VisualEnvironmentName {
         return [string]$directHint.environmentName
     }
 
-    if ($IncompletePlatforms -contains $Platform) {
+    if ($IncompletePlatforms -contains "unknown" -or $IncompletePlatforms -contains $Platform) {
         return $null
     }
     $environmentNames = @($Hints |

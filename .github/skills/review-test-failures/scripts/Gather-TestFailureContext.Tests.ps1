@@ -146,6 +146,15 @@ Ensure new snapshot is correct.
             Should -BeNullOrEmpty
     }
 
+    It 'does not reuse a sampled environment when an unsampled leg has unknown platform' {
+        Resolve-VisualEnvironmentName `
+            -Hints @([pscustomobject]@{ platform = 'ios'; environmentName = 'ios-26' }) `
+            -Platform 'ios' `
+            -ResultText 'TestCases.iOS.Tests' `
+            -IncompletePlatforms @('unknown') |
+            Should -BeNullOrEmpty
+    }
+
     It 'prefers a result-level environment hint even when build-log sampling was incomplete' {
         Resolve-VisualEnvironmentName `
             -Hints @([pscustomobject]@{ platform = 'ios'; environmentName = 'ios-26' }) `
