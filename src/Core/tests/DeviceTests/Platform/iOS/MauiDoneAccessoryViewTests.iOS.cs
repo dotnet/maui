@@ -84,10 +84,15 @@ namespace Microsoft.Maui.DeviceTests
 				if (UsesGlassButton)
 				{
 					var button = Assert.IsType<UIButton>(accessoryView.DoneButton);
+					const double expectedBottomSpacing = 4;
+
 					Assert.True(button.Frame.Width >= 44, $"Unexpected button width: {button.Frame.Width}");
 					Assert.True(button.Frame.Height >= 44, $"Unexpected button height: {button.Frame.Height}");
-					Assert.True(button.Frame.GetMinY() >= accessoryView.Bounds.GetMinY());
-					Assert.True(button.Frame.GetMaxY() <= accessoryView.Bounds.GetMaxY());
+					Assert.Equal(accessoryView.Bounds.GetMinY() - expectedBottomSpacing, button.Frame.GetMinY());
+					Assert.Equal(accessoryView.Bounds.GetMaxY() - expectedBottomSpacing, button.Frame.GetMaxY());
+
+					var bottomGapPoint = new CGPoint(button.Frame.GetMidX(), accessoryView.Bounds.GetMaxY() - 1);
+					Assert.Null(accessoryView.HitTest(bottomGapPoint, null));
 				}
 			});
 		}
