@@ -3463,10 +3463,24 @@ stages:
                       $treeEntries.Add([ordered]@{ path = "$assetPrefix/$($f.Name)"; mode = '100644'; type = 'blob'; sha = [string]$blob.sha })
                     }
                     if ($treeEntries.Count -eq 0) { throw "no blobs uploaded" }
-                    # 3) create a tree + commit on the branch tip and fast-forward the ref.
-                    #    Retry on a raced update - the /review tests GHA writes here too.
+                    # 3) create a tree + commit, then publish it so the raw URL (keyed
+                    #    off the commit SHA) stays alive. Fast-forwarding the SHARED
+                    #    asset branch is a compare-and-swap that LOSES THE RACE under
+                    #    review concurrency: many builds push here at once (the
+                    #    /review tests GHA writes it too), and a burst of ~24 builds
+                    #    was observed exhausting the retries with "ref update raced",
+                    #    silently dropping the ENTIRE snapshot embed (198 diffs → 0
+                    #    shown). So: try the shared-branch fast-forward first (keeps
+                    #    the branch current with no ref proliferation when there's no
+                    #    contention), with more attempts + jittered backoff to
+                    #    de-sync racers; if the CAS is still exhausted, fall back to a
+                    #    UNIQUE per-build ref (a POST of a fresh name can never race),
+                    #    which guarantees the commit is published and the images
+                    #    render. The unique ref is only created under real contention.
                     $commitSha = $null
-                    for ($attempt = 1; $attempt -le 3 -and -not $commitSha; $attempt++) {
+                    $commit = $null
+                    $maxFf = 6
+                    for ($attempt = 1; $attempt -le $maxFf -and -not $commitSha; $attempt++) {
                       try {
                         $tip = (gh api "repos/$assetRepo/git/ref/heads/$assetBranch" | ConvertFrom-Json)
                         $parentSha = [string]$tip.object.sha
@@ -3485,11 +3499,56 @@ stages:
                         if ($LASTEXITCODE -ne 0) { throw "ref update raced (attempt $attempt)" }
                         $commitSha = [string]$commit.sha
                       } catch {
-                        if ($attempt -ge 3) { throw }
-                        Start-Sleep -Seconds $attempt
+                        if ($attempt -ge $maxFf) { break }
+                        # Jittered backoff so concurrent racers don't re-collide in lockstep.
+                        Start-Sleep -Milliseconds (400 * $attempt + (Get-Random -Minimum 0 -Maximum 600))
                       }
                     }
-                    if ([string]::IsNullOrWhiteSpace($commitSha)) { throw "asset branch update failed" }
+                    if ([string]::IsNullOrWhiteSpace($commitSha)) {
+                      # Shared-branch CAS lost every attempt (heavy concurrency). The
+                      # blobs and (usually) the commit are already created; publish
+                      # the commit on a UNIQUE per-build ref that cannot race. We
+                      # reference it by COMMIT SHA in the raw URL, so the ref only has
+                      # to keep the commit reachable (not be a "current" branch).
+                      Write-Host "Shared asset branch contended after $maxFf attempts; publishing on a unique per-build ref."
+                      $buildRef = "$assetBranch-b$(Build.BuildId)"
+                      for ($fb = 1; $fb -le 3 -and -not $commitSha; $fb++) {
+                        try {
+                          if (-not $commit -or -not $commit.sha) {
+                            $tip = (gh api "repos/$assetRepo/git/ref/heads/$assetBranch" | ConvertFrom-Json)
+                            $parentSha = [string]$tip.object.sha
+                            $parentCommit = (gh api "repos/$assetRepo/git/commits/$parentSha" | ConvertFrom-Json)
+                            $treeFile = Join-Path $stageDir '_tree.json'
+                            @{ base_tree = $parentCommit.tree.sha; tree = $treeEntries.ToArray() } | ConvertTo-Json -Depth 8 | Set-Content $treeFile -Encoding UTF8
+                            $tree = (gh api -X POST "repos/$assetRepo/git/trees" --input $treeFile | ConvertFrom-Json)
+                            if (-not $tree.sha) { throw "tree create failed" }
+                            $commitFile = Join-Path $stageDir '_commit.json'
+                            @{ message = "snapshot diffs for PR #$prNumber build $(Build.BuildId)"; tree = [string]$tree.sha; parents = @($parentSha) } | ConvertTo-Json -Depth 4 | Set-Content $commitFile -Encoding UTF8
+                            $commit = (gh api -X POST "repos/$assetRepo/git/commits" --input $commitFile | ConvertFrom-Json)
+                            if (-not $commit.sha) { throw "commit create failed" }
+                          }
+                          $newRefFile = Join-Path $stageDir '_buildref.json'
+                          @{ ref = "refs/heads/$buildRef"; sha = [string]$commit.sha } | ConvertTo-Json | Set-Content $newRefFile -Encoding UTF8
+                          $refOut = gh api -X POST "repos/$assetRepo/git/refs" --input $newRefFile 2>&1
+                          if ($LASTEXITCODE -ne 0) {
+                            if ("$refOut" -match 'Reference already exists|already exists|422') {
+                              # This build's own ref exists (task re-run) — force it to our commit.
+                              $patchFile = Join-Path $stageDir '_patch.json'
+                              @{ sha = [string]$commit.sha; force = $true } | ConvertTo-Json | Set-Content $patchFile -Encoding UTF8
+                              gh api -X PATCH "repos/$assetRepo/git/refs/heads/$buildRef" --input $patchFile 2>&1 | Out-Null
+                              if ($LASTEXITCODE -ne 0) { throw "unique-ref publish failed (attempt $fb)" }
+                            } else {
+                              throw "unique-ref publish failed (attempt $fb): $refOut"
+                            }
+                          }
+                          $commitSha = [string]$commit.sha
+                        } catch {
+                          if ($fb -ge 3) { throw }
+                          Start-Sleep -Milliseconds (400 * $fb + (Get-Random -Minimum 0 -Maximum 600))
+                        }
+                      }
+                    }
+                    if ([string]::IsNullOrWhiteSpace($commitSha)) { throw "asset ref publish failed" }
                     $rawBase = "https://raw.githubusercontent.com/$assetRepo/$commitSha/$assetPrefix"
                     } finally { $env:GH_TOKEN = $reviewTok }
                     # 3) render the collapsible baseline|actual|diff image section
