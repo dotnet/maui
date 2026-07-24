@@ -113,13 +113,28 @@
 
     <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True'">
         <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
+    </PropertyGroup>
 
+    <!-- External backends opt in by setting ResizetizerPlatformType in their targets. -->
+    <PropertyGroup Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''">
+        <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_ResizetizerIsCompatibleApp)' == 'True'">
         <ResizetizeDependsOnTargets>
             $(ResizetizeDependsOnTargets);
             ResizetizeCollectItems;
             ProcessMauiSplashScreens;
             _ReadResizetizeImagesOutputs;
         </ResizetizeDependsOnTargets>
+        <!-- Ensures project-reference MauiAsset items are collected before ProcessMauiAssets
+             for backends that opt in at evaluation time (ResizetizerPlatformType set in props
+             or the project body). The execution-time _PrepareExternalMauiAssets fallback only
+             handles the late-import case where _ResizetizerIsCompatibleApp was not yet True. -->
+        <ProcessMauiAssetsDependsOnTargets>
+            $(ProcessMauiAssetsDependsOnTargets);
+            ResizetizeCollectItems;
+        </ProcessMauiAssetsDependsOnTargets>
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);
             ResizetizeCollectItems;
@@ -252,9 +267,9 @@
     </Target>
 
 
-    <!-- Collect images from referenced projects -->
+    <!-- Collect MAUI resources from referenced projects -->
     <Target Name="ResizetizeCollectItems"
-        Condition="'$(_ResizetizerIsCompatibleApp)' == 'True' And '$(DisableResizetizer)' != 'true'"
+        Condition="'$(DisableResizetizer)' != 'true'"
         BeforeTargets="$(ResizetizeCollectItemsBeforeTargets)"
         AfterTargets="$(ResizetizeCollectItemsAfterTargets)">
 
@@ -264,7 +279,7 @@
                 ItemName="_ImportedMauiItem" />
         </CallTarget>
 
-        <!-- Invoke the GetMauiItems target on all project references. This will accumulate images into our MauiImage group -->
+        <!-- Invoke GetMauiItems on all project references to accumulate supported MAUI resource items. -->
         <ItemGroup>
             <!-- Filter out the items missing the OriginalProjectReferenceItemSpec because this is essential -->
             <_ResizetizeCollectItemsProjectWithOIS Include="@(_ResolvedProjectReferencePaths->HasMetadata('OriginalProjectReferenceItemSpec'))" />
@@ -359,8 +374,29 @@
         </ItemGroup>
     </Target>
 
+    <!--
+      A backend may set ResizetizerPlatformType in a .targets file imported after
+      this file. In that case the evaluation-time dependency properties above were
+      not populated, so wire the required prerequisites at execution time.
+    -->
+    <Target Name="_PrepareExternalMauiAssets"
+        BeforeTargets="ProcessMauiAssets"
+        DependsOnTargets="ResizetizeCollectItems"
+        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''" />
+
+    <Target Name="_PrepareExternalMauiFonts"
+        BeforeTargets="ProcessMauiFonts"
+        DependsOnTargets="ResizetizeCollectItems;ProcessMauiAssets;ProcessMauiSplashScreens"
+        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''" />
+
+    <Target Name="_PrepareExternalMauiImages"
+        BeforeTargets="ResizetizeImages"
+        DependsOnTargets="ResizetizeCollectItems;ProcessMauiSplashScreens;_ReadResizetizeImagesOutputs"
+        Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''" />
+
     <Target Name="ProcessMauiAssets"
-        Condition="'$(EnableMauiAssetProcessing)' == 'true'">
+        Condition="'$(EnableMauiAssetProcessing)' == 'true'"
+        DependsOnTargets="$(ProcessMauiAssetsDependsOnTargets)">
         <ItemGroup>
             <!--
                 The GetMauiAssetPath task uses the Link metadata or the ItemSpec, so make
@@ -375,6 +411,7 @@
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsiOSApp)' == 'True'">Link</_MauiAssetItemMetadata>
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">TargetPath</_MauiAssetItemMetadata>
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsTizenApp)' == 'True'">TizenTpkFileName</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_MauiAssetItemMetadata)' == ''">Link</_MauiAssetItemMetadata>
         </PropertyGroup>
         <GetMauiAssetPath
             ProjectDirectory="$(MSBuildProjectDirectory)"
@@ -382,7 +419,7 @@
             Input="@(_MauiAssetWithLinkMetadata)">
             <Output ItemName="_MauiAssetItemWithMetadata" TaskParameter="Output" />
         </GetMauiAssetPath>
-        <!-- add the processed assets to the correct itme groups and add any additional properties -->
+        <!-- add the processed assets to the correct item groups and add any additional properties -->
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
             <AndroidAsset Include="@(_MauiAssetItemWithMetadata)" />
         </ItemGroup>
@@ -395,7 +432,16 @@
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
             <TizenResource Include="@(_MauiAssetItemWithMetadata)" />
         </ItemGroup>
+        <ItemGroup>
+            <MauiProcessedAsset Include="@(_MauiAssetItemWithMetadata)" />
+        </ItemGroup>
     </Target>
+
+    <!-- External backends add packaging targets to ResizetizerAfterAssetProcessingTargets. -->
+    <Target Name="ResizetizerAfterAssetProcessing"
+        AfterTargets="ProcessMauiAssets"
+        DependsOnTargets="$(ResizetizerAfterAssetProcessingTargets)"
+        Condition="'$(EnableMauiAssetProcessing)' == 'true' And '$(ResizetizerAfterAssetProcessingTargets)' != ''" />
 
     <Target Name="ProcessMauiSplashScreens"
         Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
@@ -533,6 +579,7 @@
 
         <ItemGroup>
             <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
+            <MauiProcessedFont Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)'->Distinct())" />
         </ItemGroup>
 
         <!-- iOS -->
@@ -606,6 +653,12 @@
         </ItemGroup>
     </Target>
 
+    <!-- External backends add packaging targets to ResizetizerAfterFontProcessingTargets. -->
+    <Target Name="ResizetizerAfterFontProcessing"
+        AfterTargets="ProcessMauiFonts"
+        DependsOnTargets="$(ResizetizerAfterFontProcessingTargets)"
+        Condition="'$(EnableMauiFontProcessing)' == 'true' And '$(ResizetizerAfterFontProcessingTargets)' != ''" />
+
     <Target Name="_ReadResizetizeImagesOutputs">
         <ReadLinesFromFile File="$(_ResizetizerOutputsFile)" Condition="Exists ('$(_ResizetizerOutputsFile)')">
             <Output TaskParameter="Lines" ItemName="_ResizetizerOutputs" />
@@ -615,7 +668,7 @@
     <Target Name="ResizetizeImages"
         Condition="'$(EnableMauiImageProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
-        Outputs="$(_ResizetizerStampFile);@(_ResizetizerOutputs)"
+        Outputs="$(_ResizetizerStampFile);$(_ResizetizerOutputsFile);@(_ResizetizerOutputs)"
         AfterTargets="$(ResizetizeAfterTargets)"
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
@@ -642,12 +695,15 @@
         </ResizetizeImages>
 
         <ItemGroup>
-            <!-- Get Images that were generated -->
-            <!-- Either from the task, or if the task was skipped (up to date), use the wildcard lookup -->
+            <!-- Fresh build: use the task output directly -->
             <_ResizetizerCollectedImages Condition="'@(_CopiedResources->Count())' != '0'" Include="@(_CopiedResources)" />
+            <!-- Up-to-date path: restore from the persisted output list so that non-image artifacts
+                 written into the intermediate folder by external backends (e.g. *.items files) are
+                 never surfaced through MauiProcessedImage / _ResizetizerCollectedImages. -->
+            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == '' And '@(_MauiImageToProcess)' != ''" Include="@(_ResizetizerOutputs)" />
+            <!-- Wildcard is kept solely for stale-file detection and cleanup. -->
             <_ResizetizerExistingImages Include="$(_MauiIntermediateImages)\**\*" />
             <_ResizetizerImagesToDelete Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
-            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == ''" Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
             <_ResizetizerImagesToDelete Remove="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
@@ -657,9 +713,41 @@
             Files="@(_ResizetizerImagesToDelete)"
         />
 
+        <ItemGroup>
+            <MauiProcessedImage Include="@(_ResizetizerCollectedImages)" />
+        </ItemGroup>
+
+        <!-- Touch/create our stamp file for outputs -->
+        <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
+        <WriteLinesToFile
+            File="$(_ResizetizerOutputsFile)"
+            Lines="@(_ResizetizerCollectedImages->'%(Identity)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+        />
+
+        <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
+        <ItemGroup>
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
+            <FileWrites Include="$(_ResizetizerStampFile)" />
+            <FileWrites Include="$(_ResizetizerOutputsFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- External backends add packaging targets to ResizetizerAfterImageProcessingTargets. -->
+    <Target Name="ResizetizerAfterImageProcessing"
+        AfterTargets="ResizetizeImages"
+        BeforeTargets="_ResizetizeInjectPlatformItems"
+        DependsOnTargets="$(ResizetizerAfterImageProcessingTargets)"
+        Condition="'$(EnableMauiImageProcessing)' == 'true' And '$(ResizetizerAfterImageProcessingTargets)' != ''" />
+
+    <Target Name="_ResizetizeInjectPlatformItems"
+        AfterTargets="ResizetizeImages"
+        Condition="'$(EnableMauiImageProcessing)' == 'true' And ('$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True')">
+
         <!-- iOS -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
-            <!-- Batch the collectd items into BundleResource which iOS expects -->
+            <!-- Batch the collected items into BundleResource which iOS expects -->
             <_ResizetizerCollectedBundleResourceImages Include="@(_ResizetizerCollectedImages->'%(FullPath)')">
                 <LogicalName>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</LogicalName>
                 <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
@@ -675,8 +763,6 @@
                 <TargetPath>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</TargetPath>
                 <Link>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</Link>
             </ImageAsset>
-
-            <FileWrites Include="@(_ResizetizerCollectedBundleResourceImages)" />
         </ItemGroup>
 
         <!-- Android -->
@@ -685,8 +771,6 @@
             <LibraryResourceDirectories Condition="Exists ('$(_MauiIntermediateImages)')" Include="$(_MauiIntermediateImages)">
                 <StampFile>$(_ResizetizerStampFile)</StampFile>
             </LibraryResourceDirectories>
-
-            <FileWrites Include="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
         <!-- Windows App SDK -->
@@ -695,9 +779,6 @@
                 <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
                 <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
-
-            <FileWrites Include="@(_ResizetizerCollectedImages)" />
-
             <_MauiAppIconFile Include="@(_ResizetizerCollectedImages)"
                               Condition="'%(Extension)' == '.ico'" />
         </ItemGroup>
@@ -712,7 +793,6 @@
                 <LogicalName>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</LogicalName>
                 <Link>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</Link>
             </Resource>
-            <FileWrites Include="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
         <!-- Tizen -->
@@ -721,28 +801,13 @@
         </PropertyGroup>
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(_ResizetizerCollectedImages)' != ''">
             <TizenTpkUserIncludeFiles Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml" TizenTpkSubDir="res\" />
-            <FileWrites Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml)" />
+            <FileWrites Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml" />
 
             <TizenTpkUserIncludeFiles Include="@(_ResizetizerCollectedImages)">
                 <TizenTpkSubDir>$([MSBuild]::MakeRelative($(ResizetizerIntermediateOutputAbsolutePath), $([System.IO.Path]::GetFullPath('%(_ResizetizerCollectedImages.RelativeDir)'))))</TizenTpkSubDir>
             </TizenTpkUserIncludeFiles>
-            <FileWrites Include="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
-        <!-- Touch/create our stamp file for outputs -->
-        <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
-        <WriteLinesToFile
-            File="$(_ResizetizerOutputsFile)"
-            Lines="@(_ResizetizerCollectedImages->'%(Identity)')"
-            Overwrite="true"
-            WriteOnlyWhenDifferent="true"
-        />
-
-        <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
-        <ItemGroup>
-            <FileWrites Include="$(_ResizetizerStampFile)" />
-            <FileWrites Include="$(_ResizetizerOutputsFile)" />
-        </ItemGroup>
     </Target>
 
     <!--

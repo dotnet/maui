@@ -1824,5 +1824,26 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(resize, size.Resize);
 			}
 		}
+
+		public class ExecuteForCustomPlatform : ExecuteForApp
+		{
+			public ExecuteForCustomPlatform(ITestOutputHelper output)
+				: base(output)
+			{
+			}
+
+			[Fact]
+			public void UsesGenericDesktopFallback()
+			{
+				var task = GetNewTask("custom-platform", new TaskItem("images/camera.svg", ResizeMetadata));
+
+				var success = task.Execute();
+
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("camera.png", 1792, 1792);
+				AssertFileSize("camera@2x.png", 3584, 3584);
+				Assert.Equal(2, task.CopiedResources.Length);
+			}
+		}
 	}
 }
