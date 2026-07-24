@@ -1,3 +1,5 @@
+using Microsoft.Maui.Controls.Internals;
+
 namespace Maui.Controls.Sample;
 
 public class ButtonControlPage : NavigationPage
@@ -51,5 +53,18 @@ public partial class ButtonControlMainPage : ContentPage
 		{
 			ReleasedEventLabel.Text = "Released Event Executed";
 		}
+	}
+
+	void MainLabel_Tapped(object sender, TappedEventArgs e)
+	{
+		// Recreate the page to verify initial mappers
+		ToolbarItems.Clear();
+		Content = new ContentView();
+		INameScope scope = this;
+		scope.UnregisterName("ClickedEventLabel");
+		scope.UnregisterName("ReleasedEventLabel");
+		scope.UnregisterName("PressedEventLabel");
+		scope.UnregisterName("ButtonShadow");
+		InitializeComponent();
 	}
 }

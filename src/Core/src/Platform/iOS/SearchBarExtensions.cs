@@ -80,8 +80,8 @@ namespace Microsoft.Maui.Platform
 
 			var placeholder = searchBar.Placeholder ?? string.Empty;
 			var placeholderColor = searchBar.PlaceholderColor is Color color ? color.ToPlatform() : ColorExtensions.PlaceholderColor;
-			textField.AttributedPlaceholder = new NSAttributedString(str: placeholder, foregroundColor: placeholderColor);
-			textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
+			var attributed = new NSAttributedString(str: placeholder, foregroundColor: placeholderColor);
+			textField.AttributedPlaceholder = attributed.WithCharacterSpacing(searchBar.CharacterSpacing) ?? attributed;
 		}
 
 		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager)

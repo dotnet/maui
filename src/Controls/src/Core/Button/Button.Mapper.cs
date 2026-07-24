@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 #endif
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Text), MapText);
 
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(TextTransform), MapText);
+			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(TextTransform), MapTextTransform);
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Button.LineBreakMode), MapLineBreakMode);
 		}
 
@@ -44,5 +44,16 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapContentLayout(ButtonHandler handler, Button button) =>
 			MapContentLayout((IButtonHandler)handler, button);
+
+		static void MapTextTransform(IButtonHandler handler, Button button)
+		{
+			if (button.IsConnectingHandler())
+			{
+				// If we're connecting the handler, we don't want to map the text multiple times.
+				return;
+			}
+
+			MapText(handler, button);
+		}
 	}
 }

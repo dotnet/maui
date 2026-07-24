@@ -442,6 +442,12 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);
+
+			if (!handler.IsConnectingHandler())
+			{
+				// Any text update requires that we update any attributed string formatting
+				ButtonHandler.MapFormatting(handler, button);
+			}
 		}
 
 		internal static void MapBorderWidth(IButtonHandler handler, Button button)

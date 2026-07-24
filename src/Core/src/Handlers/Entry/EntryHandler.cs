@@ -17,20 +17,26 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : IEntryHandler
 	{
-		private static readonly IPropertyMapper<IEntry, IEntryHandler> EntryPriorityMapper = new PropertyMapper<IEntry, IEntryHandler>()
+		private static readonly IPropertyMapper<IEntry, IEntryHandler> TextMapper = new PropertyMapper<IEntry, IEntryHandler>
 		{
-			[nameof(IEntry.MaxLength)] = MapMaxLength,
-		};
-
-		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(ViewHandler.ViewMapper, EntryPriorityMapper)
-		{
-			[nameof(IEntry.Background)] = MapBackground,
-			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
-			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
-			[nameof(IEntry.Font)] = MapFont,
+			// Ensure IsPassword is mapped before Text so the native field is secured before
+			// text (and any TextTransform) is applied on initial attachment
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
+			// Ensure Text is mapped before LineHeight/Decorations/CharacterSpacing/HorizontalTextAlignment/TextColor/Font
+			// due to them being applied to the native object (i.e. AttributedText on iOS) created by mapping Text
+			[nameof(IEntry.Text)] = MapText,
+			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
+			[nameof(IEntry.MaxLength)] = MapMaxLength,
+			[nameof(IEntry.Font)] = MapFont,
+			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(IEntry.TextColor)] = MapTextColor,
 			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
+		};
+
+		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(TextMapper, ViewHandler.ViewMapper)
+		{
+			[nameof(IEntry.Background)] = MapBackground,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.IsSpellCheckEnabled)] = MapIsSpellCheckEnabled,
@@ -38,8 +44,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
 			[nameof(IEntry.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEntry.ReturnType)] = MapReturnType,
-			[nameof(IEntry.Text)] = MapText,
-			[nameof(IEntry.TextColor)] = MapTextColor,
 			[nameof(IEntry.CursorPosition)] = MapCursorPosition,
 			[nameof(IEntry.SelectionLength)] = MapSelectionLength
 		};
