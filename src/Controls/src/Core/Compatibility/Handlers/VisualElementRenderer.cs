@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -28,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		where TElement : Element, IView
 #endif
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The mapper is static shared handler metadata and is not retained by renderer instances.")]
 		public static IPropertyMapper<TElement, IPlatformViewHandler> VisualElementRendererMapper = new PropertyMapper<TElement, IPlatformViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
@@ -48,13 +50,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 #if IOS || MACCATALYST
 		WeakReference<TElement>? _virtualView;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The temporary element is cleared immediately after SetVirtualView completes on iOS and Mac Catalyst.")]
 		TElement? _tempElement;
 #else
 		TElement? _virtualView;
 #endif
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The Maui context is required for the compatibility renderer lifetime and is not exposed outside the handler.")]
 		IMauiContext? _mauiContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The active mapper is handler metadata reset during SetVirtualView and used for renderer property updates.")]
 		internal IPropertyMapper _mapper;
 		internal readonly CommandMapper? _commandMapper;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The default mapper is handler metadata retained for the renderer lifetime to reset property mapping.")]
 		internal readonly IPropertyMapper _defaultMapper;
 		protected IMauiContext MauiContext => _mauiContext ?? throw new InvalidOperationException("MauiContext not set");
 #if IOS || MACCATALYST
@@ -95,7 +101,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_commandMapper = commandMapper;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "ElementChanged is a legacy public compatibility renderer event kept for API compatibility.")]
 		public event EventHandler<ElementChangedEventArgs<TElement>>? ElementChanged;
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "ElementPropertyChanged is a legacy public compatibility renderer event kept for API compatibility.")]
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
 		public void SetElement(IView view)
