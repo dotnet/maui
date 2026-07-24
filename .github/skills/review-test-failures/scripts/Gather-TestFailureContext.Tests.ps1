@@ -54,6 +54,7 @@ BeforeAll {
             'Test-IsTransientBuildErrorCode',
             'Get-BuildErrorsFromLog',
             'Get-VisualEvidenceBudgetDecision',
+            'Get-BoundedVisualDeadline',
             'Get-VisualRequestTimeoutSeconds'
         )) {
         $function = $ast.Find({
@@ -171,6 +172,27 @@ Describe 'Get-VisualEvidenceBudgetDecision (elapsed-only visual budget accountin
         (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeFalse
         $elapsed += 400   # 800s of accumulated visual time now exceeds the 600s budget
         (Get-VisualEvidenceBudgetDecision -BudgetSeconds 600 -ElapsedSeconds $elapsed).exhausted | Should -BeTrue
+    }
+}
+
+Describe 'Get-BoundedVisualDeadline (overall gather finalization reserve)' {
+    It 'preserves the visual-only quota when the gather deadline is farther away' {
+        $start = [datetime]'2026-07-23T00:00:00Z'
+        Get-BoundedVisualDeadline `
+            -VisualStart $start `
+            -RemainingVisualSeconds 600 `
+            -GatherHardDeadline $start.AddSeconds(900) |
+            Should -Be $start.AddSeconds(600)
+    }
+
+    It 'caps a late visual scan at the overall gather deadline' {
+        $start = [datetime]'2026-07-23T00:17:00Z'
+        $gatherDeadline = [datetime]'2026-07-23T00:18:00Z'
+        Get-BoundedVisualDeadline `
+            -VisualStart $start `
+            -RemainingVisualSeconds 600 `
+            -GatherHardDeadline $gatherDeadline |
+            Should -Be $gatherDeadline
     }
 }
 

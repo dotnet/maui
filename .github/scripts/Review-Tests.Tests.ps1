@@ -292,4 +292,29 @@ Unexpected chatter
         $report | Should -Match 'Expected evidence'
         $report | Should -Not -Match 'Unexpected chatter|Not part of the report'
     }
+
+    It 'ignores details-like evidence inside fenced and indented code blocks' {
+        $report = Get-EmbeddedTestFailureReport -Content @'
+<!-- Tests Failure -->
+## Tests Failure Analysis
+<details>
+<summary>Review</summary>
+
+```text
+expected closing tag:
+</details>
+```
+
+    </details>
+
+**Overall verdict:** Not ready
+
+### Recommended action
+Keep the recommendation.
+</details>
+'@
+
+        $report | Should -Match '\*\*Overall verdict:\*\* Not ready'
+        $report | Should -Match 'Keep the recommendation'
+    }
 }

@@ -75,6 +75,18 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$gatherStartedAt = Get-Date
+# The workflow enforces a 20-minute hard stop. Finish optional enrichment by 18 minutes so the
+# deterministic context and Markdown have time to serialize before the outer `timeout` terminates
+# the process. Local callers may override this bounded budget explicitly.
+$gatherBudgetSeconds = 1080
+$parsedGatherBudget = 0
+if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_GATHER_BUDGET_SECONDS) -and
+    [int]::TryParse($env:REVIEW_TESTS_GATHER_BUDGET_SECONDS, [ref]$parsedGatherBudget) -and
+    $parsedGatherBudget -gt 0) {
+    $gatherBudgetSeconds = $parsedGatherBudget
+}
+$gatherHardDeadline = $gatherStartedAt.AddSeconds($gatherBudgetSeconds)
 
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     $Repository = "dotnet/maui"
@@ -2326,6 +2338,20 @@ function Get-VisualEvidenceBudgetDecision {
     }
 }
 
+function Get-BoundedVisualDeadline {
+    param(
+        [datetime]$VisualStart,
+        [double]$RemainingVisualSeconds,
+        [datetime]$GatherHardDeadline
+    )
+
+    $visualQuotaDeadline = $VisualStart.AddSeconds([Math]::Max(0.0, $RemainingVisualSeconds))
+    if ($GatherHardDeadline -lt $visualQuotaDeadline) {
+        return $GatherHardDeadline
+    }
+    return $visualQuotaDeadline
+}
+
 function Get-VisualRequestTimeoutSeconds {
     # Cap a single visual-evidence HTTP request's timeout by the wall-clock time left on the shared
     # visual-evidence deadline. Each detail/attachments call otherwise uses the fixed default timeout,
@@ -2423,6 +2449,21 @@ foreach ($buildRef in $buildRefsById.Values) {
             error = $null
         }
         recentBaseBuilds = @()
+    }
+
+    if ((Get-Date) -ge $gatherHardDeadline) {
+        $deadlineMessage = "Overall gather budget of ${gatherBudgetSeconds}s was exhausted before AzDO build $($buildRef.buildId) could be inspected."
+        $buildSummary.error = $deadlineMessage
+        $allUnexplainedLegs.Add([ordered]@{
+                buildId = $buildRef.buildId
+                recordName = "overall gather deadline reached before build inspection"
+                recordType = "Task"
+                result = "failed"
+                logId = $null
+                reason = $deadlineMessage
+            })
+        $builds.Add($buildSummary)
+        continue
     }
 
     $buildResult = Invoke-AzDoJsonWithProjectFallback -Org $buildRef.org -Project $buildRef.project -RelativePath "_apis/build/builds/$($buildRef.buildId)?api-version=7.1"
@@ -2969,6 +3010,7 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
+    $visualDeadlineLimitedByGather = $false
     if ($build.definition.name -eq "maui-pr-uitests") {
         # Recompute this build's scan deadline from the REMAINING budget (budget minus visual time
         # already spent by earlier builds). Only wall-clock time actually inside the discovery block
@@ -2978,7 +3020,16 @@ foreach ($buildRef in $buildRefsById.Values) {
             -BudgetSeconds $visualEvidenceBudgetSeconds `
             -ElapsedSeconds $visualEvidenceElapsedSeconds
         $visualScanStart = Get-Date
-        $visualEvidenceDeadline = $visualScanStart.AddSeconds([Math]::Max(0.0, $visualBudgetDecision.remainingSeconds))
+        $visualQuotaDeadline = $visualScanStart.AddSeconds([Math]::Max(0.0, $visualBudgetDecision.remainingSeconds))
+        $visualEvidenceDeadline = Get-BoundedVisualDeadline `
+            -VisualStart $visualScanStart `
+            -RemainingVisualSeconds $visualBudgetDecision.remainingSeconds `
+            -GatherHardDeadline $gatherHardDeadline
+        $visualDeadlineLimitedByGather = $visualEvidenceDeadline -lt $visualQuotaDeadline
+        if ($visualEvidenceDeadline -le $visualScanStart -and -not $visualEvidenceBudgetTripped) {
+            $visualEvidenceBudgetTripped = $true
+            $visualEvidenceLimitations.Add("Visual result discovery was skipped at the overall ${gatherBudgetSeconds}s gather deadline so primary findings could be serialized.")
+        }
     }
 
     if ($build.definition.name -eq "maui-pr-uitests" -and $visualBudgetDecision.exhausted -and -not $visualEvidenceBudgetTripped) {
@@ -2991,7 +3042,9 @@ foreach ($buildRef in $buildRefsById.Values) {
         $visualEvidenceLimitations.Add("Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted.")
     }
 
-    if ($build.definition.name -eq "maui-pr-uitests" -and -not $visualBudgetDecision.exhausted) {
+    if ($build.definition.name -eq "maui-pr-uitests" -and
+        -not $visualBudgetDecision.exhausted -and
+        $visualEvidenceDeadline -gt $visualScanStart) {
         try {
             $failedResultPage = Get-AzDoFailedTestResultsByBuild `
                 -Org $buildRef.org `
@@ -3012,7 +3065,12 @@ foreach ($buildRef in $buildRefsById.Values) {
                 if ((Get-Date) -ge $visualEvidenceDeadline) {
                     if (-not $visualEvidenceBudgetTripped) {
                         $visualEvidenceBudgetTripped = $true
-                        $visualEvidenceLimitations.Add("Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted.")
+                        $visualEvidenceLimitations.Add($(if ($visualDeadlineLimitedByGather) {
+                                    "Visual result discovery stopped at the overall ${gatherBudgetSeconds}s gather deadline so primary findings could be serialized; some screenshot comparisons may be omitted."
+                                }
+                                else {
+                                    "Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted."
+                                }))
                     }
                     break
                 }
@@ -3038,7 +3096,12 @@ foreach ($buildRef in $buildRefsById.Values) {
                     if ((Get-Date) -ge $visualEvidenceDeadline) {
                         if (-not $visualEvidenceBudgetTripped) {
                             $visualEvidenceBudgetTripped = $true
-                            $visualEvidenceLimitations.Add("Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted.")
+                            $visualEvidenceLimitations.Add($(if ($visualDeadlineLimitedByGather) {
+                                        "Visual result discovery stopped at the overall ${gatherBudgetSeconds}s gather deadline so primary findings could be serialized; some screenshot comparisons may be omitted."
+                                    }
+                                    else {
+                                        "Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted."
+                                    }))
                         }
                         break
                     }
@@ -3117,6 +3180,21 @@ foreach ($buildRef in $buildRefsById.Values) {
             # nonvisual work on other builds from consuming a later uitests build's scan budget.
             $visualEvidenceElapsedSeconds += ((Get-Date) - $visualScanStart).TotalSeconds
         }
+    }
+
+    if ((Get-Date) -ge $gatherHardDeadline) {
+        $deadlineMessage = "Overall gather budget of ${gatherBudgetSeconds}s was exhausted after primary evidence for AzDO build $($buildRef.buildId) was collected; remaining enrichment was skipped."
+        $buildSummary.error = $deadlineMessage
+        $allUnexplainedLegs.Add([ordered]@{
+                buildId = $buildRef.buildId
+                recordName = "overall gather deadline reached before enrichment completed"
+                recordType = "Task"
+                result = "failed"
+                logId = $null
+                reason = $deadlineMessage
+            })
+        $builds.Add($buildSummary)
+        continue
     }
 
     if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {

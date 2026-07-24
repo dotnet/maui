@@ -230,14 +230,37 @@ function Get-EmbeddedTestFailureReport {
     $report = $Content.Substring($startIndex)
     $insideCodeFence = ([regex]::Matches($prefix, '(?m)^[ \t]*```').Count % 2) -eq 1
 
-    $detailsMatches = [regex]::Matches(
-        $report,
-        '<details(?:\s[^>]*)?>|</details>',
-        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    # The report contract uses structural <details> tags on their own lines. Ignore tag-looking
+    # evidence inside fenced or four-space-indented code so a logged literal "</details>" cannot
+    # terminate the outer report and silently drop the verdict/recommendation that follows.
+    $structuralDetails = New-Object System.Collections.Generic.List[object]
+    $insideInnerFence = $false
+    foreach ($lineMatch in [regex]::Matches($report, '(?m)^(?<indent>[ \t]*)(?<content>[^\r\n]*)\r?$')) {
+        $line = $lineMatch.Groups['content'].Value
+        if ($line -match '^[ \t]*```') {
+            $insideInnerFence = -not $insideInnerFence
+            continue
+        }
+        $indent = $lineMatch.Groups['indent'].Value
+        if ($insideInnerFence -or $indent.Contains("`t") -or $indent.Length -ge 4) {
+            continue
+        }
+        $tagMatch = [regex]::Match(
+            $line,
+            '^[ \t]*(?<tag><details(?:\s[^>]*)?>|</details>)[ \t]*$',
+            [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        if ($tagMatch.Success) {
+            $structuralDetails.Add([pscustomobject]@{
+                    Value = $tagMatch.Groups['tag'].Value
+                    Index = $lineMatch.Index + $tagMatch.Groups['tag'].Index
+                    Length = $tagMatch.Groups['tag'].Length
+                })
+        }
+    }
     $detailsDepth = 0
     $sawDetails = $false
     $reportEnd = -1
-    foreach ($match in $detailsMatches) {
+    foreach ($match in $structuralDetails) {
         if ($match.Value.StartsWith("</", [StringComparison]::Ordinal)) {
             if (-not $sawDetails -or $detailsDepth -le 0) {
                 return $null
