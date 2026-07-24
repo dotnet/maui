@@ -1250,6 +1250,23 @@ try {
     Assert-Eq -Label "timeline with only foreign cross-refs yields 0 candidates" `
         -Expected 0 -Actual $foreignOnly.Count
 
+    # ── Get-RegressionCandidates: distinguish verified-empty from query failure ──
+    Write-Host "`n[Unit] Get-RegressionCandidates scan completeness" -ForegroundColor Cyan
+    $scanCtx = @{ repo = 'dotnet/maui'; srBranch = 'nonstandard'; mainBranch = 'main' }
+    $scanContents = @{ sourcePrs = @(); reverts = @(); mainReverts = @(); commits = @() }
+    $script:GhStub = { param([string[]]$GhArgs) return $null }
+    $failedScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                           -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: failed label query marks scan incomplete" -Expected $false -Actual $failedScan.IsComplete
+    Assert-Eq -Label "regression scan: failed label is preserved" -Expected 'regressed-in-test' -Actual ($failedScan.FailedLabels -join ',')
+    Assert-Eq -Label "regression scan: failed query yields no fabricated results" -Expected 0 -Actual @($failedScan.Items).Count
+
+    $script:GhStub = { param([string[]]$GhArgs) return '[]' }
+    $emptySuccessfulScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                    -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: successful empty query remains complete" -Expected $true -Actual $emptySuccessfulScan.IsComplete
+    Assert-Eq -Label "regression scan: successful empty query has no failed labels" -Expected 0 -Actual @($emptySuccessfulScan.FailedLabels).Count
+
     # ── Get-CandidatePrChecks: maintainer author-gate via REST author_association ──
     # Regression: `gh pr list --json` does not support authorAssociation, so the
     # spoof-gate now fetches author_association per title-matched candidate from
@@ -2914,6 +2931,55 @@ try { $shippedPscoVerdict = Get-OverallVerdict -Data $shippedPscoData } catch { 
 Assert-Eq -Label "shipped verdict: top-level PSCustomObject does not throw" -Expected $false -Actual $shippedPscoThrew
 Assert-Eq -Label "shipped verdict: top-level PSCustomObject preserves follow-up result" -Expected '🟡' -Actual $shippedPscoVerdict.symbol
 
+$shippedIncompleteScan = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    regressionFailedLabels = @('regressed-in-10.0.90')
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "shipped incomplete regression scan cannot report clean" -Expected '🟡' -Actual $shippedIncompleteScan.symbol
+Assert-Eq -Label "shipped incomplete regression scan reason is explicit" -Expected $true `
+    -Actual ([bool](@($shippedIncompleteScan.reasons) -match 'Regression scan incomplete'))
+
+$inflightIncompleteScan = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'in-flight' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    regressionFailedLabels = @('regressed-in-10.0.90')
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "in-flight incomplete regression scan is conditionally ready" -Expected '🟡' -Actual $inflightIncompleteScan.symbol
+
+$shippedIncompleteMissingLabels = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "shipped incomplete scan with missing labels has no dangling parentheses" -Expected $false `
+    -Actual ([bool](@($shippedIncompleteMissingLabels.reasons) -match '\(\)'))
+
+$inflightIncompleteNullLabels = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'in-flight' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    regressionFailedLabels = $null
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "in-flight incomplete scan with null labels has no dangling parentheses" -Expected $false `
+    -Actual ([bool](@($inflightIncompleteNullLabels.reasons) -match '\(\)'))
+
+$shippedIncompleteScalarLabel = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    regressionFailedLabels = 'regressed-in-10.0.90'
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "shipped incomplete scan accepts scalar failed-label detail" -Expected $true `
+    -Actual ([bool](@($shippedIncompleteScalarLabel.reasons) -match 'regressed-in-10\.0\.90'))
+
 # ───── ConvertTo-LinkedSha / ConvertTo-LinkedPr ─────
 Write-Host "`n[Unit] Markdown linkification helpers" -ForegroundColor Cyan
 
@@ -3006,6 +3072,13 @@ Assert-Eq -Label "Hash changes when verdict.symbol changes" -Expected $false -Ac
 $hashAgain = Get-ReportSemanticHash -Data $dataA -Verdict $verdictA
 Assert-Eq -Label "Hash is deterministic across runs" -Expected $hashA -Actual $hashAgain
 
+$dataIncompleteScanHash = $dataA.Clone()
+$dataIncompleteScanHash['regressionScanIncomplete'] = $true
+$dataIncompleteScanHash['regressionFailedLabels'] = @('regressed-in-10.0.90')
+$incompleteScanHash = Get-ReportSemanticHash -Data $dataIncompleteScanHash -Verdict $verdictA
+Assert-Eq -Label "hash: incomplete regression scan differs from verified scan" `
+    -Expected $false -Actual ($hashA -eq $incompleteScanHash)
+
 # Lifecycle mode flip → DIFFERENT hash, even with byte-identical content.
 # This guards the in-flight -> shipped transition: `-Shipped` surveys the SAME
 # SR branch, so without folding `mode` into the hash the shipped run would
@@ -3062,6 +3135,25 @@ $hShippedFollowUp = Get-ReportSemanticHash -Data $dataShippedFollowUpHash -Verdi
 $hShippedCarry = Get-ReportSemanticHash -Data $dataShippedCarryHash -Verdict @{ symbol = '🟡' }
 Assert-Eq -Label "hash: shipped regression moving follow-up → carry-forward refreshes tracker" `
     -Expected $false -Actual ($hShippedFollowUp -eq $hShippedCarry)
+
+$dataTier3CurrentMilestone = @{
+    metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'shipped'; mainBranch = 'main' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(36001) }
+    shippedInfo = @{ version = '10.0.90'; tagDate = '2026-07-22T15:50:52Z'; dateSource = 'github-release'; srNumber = 9; major = 10 }
+    regressions = @(
+        @{ issue = 36001; classification = 'in-sr-active'; state = 'CLOSED'; milestone = '.NET 10 SR9'; recommendedAction = 'No action' }
+    )
+    openSrPrs = @()
+}
+$dataTier3FutureMilestone = $dataTier3CurrentMilestone.Clone()
+$dataTier3FutureMilestone['regressions'] = @(
+    @{ issue = 36001; classification = 'in-sr-active'; state = 'CLOSED'; milestone = '.NET 10 SR10'; recommendedAction = 'No action' }
+)
+$tier3CurrentHash = Get-ReportSemanticHash -Data $dataTier3CurrentMilestone -Verdict @{ symbol = '🟢' }
+$tier3FutureHash = Get-ReportSemanticHash -Data $dataTier3FutureMilestone -Verdict @{ symbol = '🟢' }
+Assert-Eq -Label "hash: Tier-3 milestone edit does not churn non-rendered lifecycle bucket" `
+    -Expected $tier3CurrentHash -Actual $tier3FutureHash
 
 $dataShippedNewAnchorHash = $dataShippedFollowUpHash.Clone()
 $dataShippedNewAnchorHash['shippedInfo'] = @{
@@ -3462,6 +3554,20 @@ $mdCarryOnly = Format-MarkdownReport -Data $mdDataCarryOnly -RepoUrl 'https://gi
 Assert-Eq -Label "shipped markdown: carry-forward-only report has no contradictory no-follow-ups heading" -Expected $true `
     -Actual ($mdCarryOnly -match 'Shipped — follow-up required' -and $mdCarryOnly -match '🔁 Carry-forward' -and $mdCarryOnly -notmatch 'No post-ship follow-ups')
 
+$mdDataCleanupOnly = $mdDataShipped.Clone()
+$mdDataCleanupOnly['regressions'] = @()
+$mdDataCleanupOnly['summary'] = @{}
+$mdDataCleanupOnly['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataCleanupOnly['shipChecks'] = @(
+    [pscustomobject]@{ Area = 'Bug template versions'; Status = 'CLEANUP'; Details = 'Missing shipped version'; NextAction = 'Add version' }
+)
+$mdCleanupOnly = Format-MarkdownReport -Data $mdDataCleanupOnly -RepoUrl 'https://github.com/dotnet/maui' `
+                                      -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: cleanup-only report uses scoped urgent-follow-up wording" -Expected $true `
+    -Actual ($mdCleanupOnly -match 'No urgent post-ship follow-ups' -and $mdCleanupOnly -match '🧹 Cleanup follow-ups')
+Assert-Eq -Label "shipped markdown: cleanup-only report never claims unqualified no follow-ups" -Expected $false `
+    -Actual ($mdCleanupOnly -match 'No post-ship follow-ups')
+
 # Report freshness banner (🕐/⏳) renders below **Generated** and is DERIVED-AT-RENDER,
 # so it must NOT perturb the semantic hash. Render the report TWICE with DIFFERENT
 # metadata.fetchedAt values: this changes both the **Generated** line AND the freshness
@@ -3547,9 +3653,8 @@ Assert-Eq -Label "Truncated body retains the semantic-hash marker" -Expected $tr
     -Actual ($mdCapped -match '<!-- release-readiness-hash: sha=[0-9a-f]{64} -->')
 
 # ───── Regression header count = candidate count, not hashtable key count ─────
-# Get-RegressionCandidates returns its $results accumulator; when exactly ONE candidate
-# matches, PowerShell unwraps the single-element array on return, so $Data['regressions']
-# arrives as a LONE hashtable (not a 1-element array). The header rendered
+# Historical/partial callers and JSON reconstruction can supply exactly one regression
+# as a LONE hashtable (not a 1-element array). The header previously rendered
 #   $regs = $Data['regressions']; "... $($regs.Count) issues scanned"
 # and .Count on a scalar hashtable returns its KEY count — the exact live symptom on
 # tracker #35867: "Regression Candidates — 13 issues scanned" with a single candidate.
@@ -3566,7 +3671,7 @@ $singleReg = @{
     labels = @(); stateReason = $null
 }
 $mdDataOneReg = @{} + $mdData
-$mdDataOneReg['regressions'] = $singleReg          # scalar hashtable → mimics the N=1 return-unwrap
+$mdDataOneReg['regressions'] = $singleReg          # scalar hashtable → guards the N=1 compatibility shape
 $mdDataOneReg['summary'] = @{ 'no-fix-yet' = 1 }
 # Lock the reproduction precondition: the value must be a scalar hashtable, NOT a list —
 # otherwise the bug can't manifest and a future edit could silently neuter this test.

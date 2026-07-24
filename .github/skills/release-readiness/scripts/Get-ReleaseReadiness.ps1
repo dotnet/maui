@@ -2977,12 +2977,16 @@ function Get-RegressionCandidates {
     Write-Host "Scanning regression issues for labels: $($Labels -join ', ')" -ForegroundColor Cyan
     $allIssues = @()
     $seen = @{}
+    $failedLabels = [System.Collections.Generic.List[string]]::new()
 
     foreach ($label in $Labels) {
         $raw = Invoke-Gh @('issue', 'list', '--repo', $Ctx.repo, '--label', $label,
                            '--state', 'all', '--limit', $MaxIssues.ToString(),
                            '--json', 'number,title,state,stateReason,labels,milestone,createdAt,closedAt')
-        if (-not $raw) { continue }
+        if ($null -eq $raw) {
+            [void]$failedLabels.Add($label)
+            continue
+        }
         $list = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
         foreach ($iss in $list) {
             if (-not $seen.ContainsKey($iss.number)) {
@@ -3173,7 +3177,11 @@ function Get-RegressionCandidates {
             recommendedAction = $classify.recommendedAction
         }
     }
-    return $results
+    return [PSCustomObject]@{
+        Items        = @($results)
+        IsComplete   = ($failedLabels.Count -eq 0)
+        FailedLabels = @($failedLabels)
+    }
 }
 
 # region ────────────────────── 6. OPEN SR-TARGETING PRs ───────────────────
@@ -3542,6 +3550,13 @@ function Get-MetadataValue {
     return $Default
 }
 
+function Get-NonEmptyStringValues {
+    param($Value)
+    @($Value) |
+        Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+        ForEach-Object { ([string]$_).Trim() }
+}
+
 function Get-ShippedVerdict {
     <#
     .SYNOPSIS
@@ -3566,6 +3581,12 @@ function Get-ShippedVerdict {
 
     $reasons = New-Object System.Collections.Generic.List[string]
     $followUp = $false
+    if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
+        $followUp = $true
+        $failedLabels = @(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels'))
+        $failedLabelText = if ($failedLabels.Count -gt 0) { " ($($failedLabels -join ', '))" } else { '' }
+        $reasons.Add("[Follow-up] Regression scan incomplete$failedLabelText — results may be understated; rerun before treating the tracker as clean.") | Out-Null
+    }
 
     # Shipped cycle anchor for carry-forward classification.
     $shippedSr = 0; $shippedMajor = 0; $shippedSubPatch = 0
@@ -3634,7 +3655,7 @@ function Get-ShippedVerdict {
         symbol = '🟢'
         tier = 3
         label = 'Shipped — clean'
-        reasons = if ($reasons.Count -gt 0) { $reasons.ToArray() } else { @('Shipped — no post-ship follow-ups detected.') }
+        reasons = if ($reasons.Count -gt 0) { $reasons.ToArray() } else { @('Shipped — no urgent or gating post-ship follow-ups detected.') }
     }
 }
 
@@ -3686,6 +3707,12 @@ function Get-OverallVerdict {
     $reasons = New-Object System.Collections.Generic.List[string]
     $tier1 = $false
     $tier2 = $false
+    if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
+        $tier2 = $true
+        $failedLabels = @(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels'))
+        $failedLabelText = if ($failedLabels.Count -gt 0) { " ($($failedLabels -join ', '))" } else { '' }
+        $reasons.Add("[Tier 2] Regression scan incomplete$failedLabelText — results may be understated") | Out-Null
+    }
 
     # Regression classifications
     if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
@@ -4015,6 +4042,10 @@ function Get-ReportSemanticHash {
             $shipDateToken = if ($shipDateForHash) { $shipDateForHash.ToString('o') } else { '' }
             "$shipVersionForHash|$shipDateToken|$shipDateSourceForHash"
         } else { '' }
+        regressionScan = if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
+            $failedLabels = @(@(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels')) | Sort-Object)
+            "incomplete|$($failedLabels -join ',')"
+        } else { 'complete' }
         srHead = Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha'
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
         srPrs = if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
@@ -4047,9 +4078,13 @@ function Get-ReportSemanticHash {
                               }
                               $lifecycleBucket = ''
                               if ($modeForHash -eq 'shipped') {
-                                  $isCarryForward = Test-IsCarryForwardRegression -Regression $_ `
-                                      -ShippedSrNumber $shipSrForHash -ShippedMajor $shipMajorForHash -ShippedSubPatch $shipSubPatchForHash
-                                  $lifecycleBucket = if ($isCarryForward) { 'carry-forward' } else { 'follow-up' }
+                                  $effectiveTier = Get-VerdictTier -Classification $_.classification
+                                  if ($_.classification -eq 'no-fix-yet' -and $_.state -ne 'OPEN') { $effectiveTier = 3 }
+                                  if ($effectiveTier -lt 3) {
+                                      $isCarryForward = Test-IsCarryForwardRegression -Regression $_ `
+                                          -ShippedSrNumber $shipSrForHash -ShippedMajor $shipMajorForHash -ShippedSubPatch $shipSubPatchForHash
+                                      $lifecycleBucket = if ($isCarryForward) { 'carry-forward' } else { 'follow-up' }
+                                  }
                               }
                               # `no-fix-yet` is the ONLY classification whose rendered tier
                               # depends on issue state (OPEN -> Tier 1, CLOSED -> Tier 3; see
@@ -4439,7 +4474,7 @@ function Format-MarkdownReport {
             }
             [void]$sb.AppendLine()
         } elseif ($carryForwardItems.Count -eq 0) {
-            [void]$sb.AppendLine("## 🟢 No post-ship follow-ups")
+            [void]$sb.AppendLine("## 🟢 No urgent post-ship follow-ups")
             [void]$sb.AppendLine()
         }
         if ($carryForwardItems.Count -gt 0) {
@@ -5265,9 +5300,14 @@ function Invoke-Main {
         if ($labels.Count -eq 0) {
             Write-Warn "No regression labels provided/inferred; skipping regressions phase. Pass -RegressionLabels or -InferRegressionLabels."
             $data['regressions'] = @()
+            $data['regressionScanIncomplete'] = $true
+            $data['regressionFailedLabels'] = @('(no labels provided)')
         } else {
-            $data['regressions'] = Get-RegressionCandidates -Ctx $ctx -Labels $labels `
-                                       -SrContents $data['srContents'] -MaxIssues $MaxIssues
+            $regressionScan = Get-RegressionCandidates -Ctx $ctx -Labels $labels `
+                                                    -SrContents $data['srContents'] -MaxIssues $MaxIssues
+            $data['regressions'] = @($regressionScan.Items)
+            $data['regressionScanIncomplete'] = -not $regressionScan.IsComplete
+            $data['regressionFailedLabels'] = @($regressionScan.FailedLabels)
 
             # Summary buckets
             $summary = @{}
