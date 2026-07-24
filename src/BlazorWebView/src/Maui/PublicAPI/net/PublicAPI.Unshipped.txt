@@ -1,4 +1,11 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.StaticContentCacheControlProvider.get -> System.Func<Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest!, string?>?
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.StaticContentCacheControlProvider.set -> void
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest.BlazorWebViewStaticContentRequest(System.Uri! uri, string! contentType) -> void
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest.ContentType.get -> string!
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest.Uri.get -> System.Uri!
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.StaticContentCacheControlProvider.get -> System.Func<Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest!, string?>?
 Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions
 static Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions.UsePlatformHandler(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder, System.Func<System.IServiceProvider!, Microsoft.Maui.IViewHandler!>! factory) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!
 static Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions.UsePlatformHandler<THandler>(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!

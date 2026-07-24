@@ -4,6 +4,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
@@ -48,6 +50,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		static private Dictionary<string, WeakReference<BlazorWebViewHandler>> s_webviewHandlerTable = new(StringComparer.Ordinal);
 
 		private TizenWebViewManager? _webviewManager;
+
+		private ILogger? _logger;
+		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
 
 		private bool RequiredStartupPropertiesSet =>
 			//_webview != null &&
@@ -122,9 +127,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (url.StartsWith(AppOrigin))
 			{
 				var allowFallbackOnHostPage = url.EndsWith("/");
+				var originalUrl = url;
 				url = QueryStringHelper.RemovePossibleQueryString(url);
 				if (_webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 				{
+					// By default local caching is disabled so that user scripts are always re-executed. Applications can
+					// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
+					// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
+					// See https://github.com/dotnet/maui/issues/8279
+					var contentType = headers.TryGetValue("Content-Type", out var resolvedContentType) ? resolvedContentType : string.Empty;
+					var cacheControlOverride = StaticContentCacheControl.ResolveOverride(VirtualView, originalUrl, contentType, Logger);
+					if (cacheControlOverride is not null)
+					{
+						headers["Cache-Control"] = cacheControlOverride;
+					}
+
 					var header = $"HTTP/1.0 200 OK\r\n";
 					foreach (var item in headers)
 					{
