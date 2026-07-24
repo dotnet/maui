@@ -42,7 +42,7 @@
             <BoxView HeightRequest="1" Color="LightGray" Margin="0,8" />
 
             <Label Text="③ Fast sign-in with a passkey" FontAttributes="Bold" />
-            <Label Text="Leave the username blank for username-less sign-in — the OS account picker lists your passkeys and you just pick one. No password, no browser."
+            <Label Text="Username-less: the username/password above are ignored here. The OS account picker lists your passkeys and you just pick one — the passkey carries the identity. No password, no browser."
                    FontSize="12" TextColor="Gray" />
             <Button Text="Sign in with a passkey" Command="{Binding LoginCommand}" IsEnabled="{Binding IsNotBusy}" />
 
