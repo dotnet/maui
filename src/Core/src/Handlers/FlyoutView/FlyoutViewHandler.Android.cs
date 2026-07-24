@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.App.Roles;
+using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
@@ -19,7 +20,9 @@ namespace Microsoft.Maui.Handlers
 		View? _navigationRoot;
 		LinearLayoutCompat? _sideBySideView;
 		DrawerLayout DrawerLayout => (DrawerLayout)PlatformView;
-		ScopedFragment? _detailViewFragment;
+		FlyoutDetailFragment? _detailHostFragment;
+
+		ScopedFragment? DetailViewFragment => _detailHostFragment?.DetailFragment;
 
 		protected override View CreatePlatformView()
 		{
@@ -58,68 +61,116 @@ namespace Microsoft.Maui.Handlers
 		{
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
+			_detailHostFragment?.CancelPendingDetail();
 		}
 
 		void UpdateDetailsFragmentView()
 		{
-			CancelPendingFragment();
-
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
-			if (_detailViewFragment is not null &&
-				_detailViewFragment?.DetailView == VirtualView.Detail &&
-				!_detailViewFragment.IsDestroyed)
-			{
-				return;
-			}
 
 			var context = MauiContext.Context;
 			if (context is null)
 				return;
 
-			if (_detailViewFragment?.DetailView is IView previousDetail &&
+			var detailHost = EnsureDetailHost(context);
+			if (detailHost is null)
+				return;
+
+			var currentDetailFragment = detailHost.DetailFragment;
+
+			if (currentDetailFragment is not null &&
+				currentDetailFragment.DetailView == VirtualView.Detail &&
+				!currentDetailFragment.IsDestroyed)
+			{
+				return;
+			}
+
+			if (currentDetailFragment?.DetailView is IView previousDetail &&
 				previousDetail != VirtualView.Detail)
 			{
 				previousDetail.Handler?.DisconnectHandler();
 			}
 
-			var fragmentManager = MauiContext.GetFragmentManager();
+			// The detail page is hosted in the FlyoutDetailFragment's ChildFragmentManager rather
+			// than the activity FragmentManager, so a queued detail swap can't orphan against the
+			// activity when the FlyoutView is torn down. See FlyoutDetailFragment for the rationale.
+			detailHost.SetDetail(VirtualView.Detail, MauiContext);
+		}
 
-			if (VirtualView.Detail is null)
-			{
-				if (_detailViewFragment is not null)
-				{
-					_pendingFragment =
-						fragmentManager
-							.RunOrWaitForResume(context, (fm) =>
-							{
-								if (_detailViewFragment is null)
-								{
-									return;
-								}
+		// Adds the long-lived detail host fragment to navigationlayout_content exactly once.
+		FlyoutDetailFragment? EnsureDetailHost(Context context)
+		{
+			if (_detailHostFragment is not null)
+				return _detailHostFragment;
 
-								fm
-									.BeginTransactionEx()
-									.RemoveEx(_detailViewFragment)
-									.SetReorderingAllowed(true)
-									.Commit();
-							});
-				}
-			}
-			else
+			var fragmentManager = MauiContext?.GetFragmentManager();
+			if (fragmentManager is null)
+				return null;
+
+			var detailHost = new FlyoutDetailFragment();
+			_detailHostFragment = detailHost;
+
+			_pendingFragment =
+				fragmentManager
+					.RunOrWaitForResume(context, (fm) =>
+					{
+						fm
+							.BeginTransactionEx()
+							.ReplaceEx(Resource.Id.navigationlayout_content, detailHost)
+							.SetReorderingAllowed(true)
+							.Commit();
+					});
+
+			return _detailHostFragment;
+		}
+
+		// Removes the detail host (and with it the ChildFragmentManager hosting the detail page) when
+		// the FlyoutView is disconnected, so the detail graph is released and no host fragment is
+		// left orphaned in the activity FragmentManager.
+		//
+		// The Remove is committed with SetReorderingAllowed(true). This matters when the host's own
+		// add is still pending (committed but not yet executed): queuing a reorder-allowed Remove in
+		// the same looper cycle lets the FragmentManager collapse the pending Add+Remove, so the
+		// host view is never created and never calls findViewById(navigationlayout_content) against a
+		// container that NavigationRootManager may have synchronously detached. Contains() stays true
+		// across that window (FragmentManager.FindFragmentById resolves a fragment as soon as its add
+		// is committed), so the guard below does not skip the Remove. IsStateSaved IS skipped, because
+		// committing after onSaveInstanceState throws; on that path the activity FragmentManager is
+		// itself being torn down, so the host is reclaimed with it.
+		void RemoveDetailHost()
+		{
+			var detailHost = _detailHostFragment;
+			_detailHostFragment = null;
+			if (detailHost is null)
+				return;
+
+			var context = MauiContext?.Context;
+			if (context is null)
+				return;
+
+			FragmentManager? fragmentManager = null;
+			try
 			{
-				_pendingFragment =
-					fragmentManager
-						.RunOrWaitForResume(context, (fm) =>
-						{
-							_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
-							fm
-								.BeginTransaction()
-								.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
-								.SetReorderingAllowed(true)
-								.Commit();
-						});
+				fragmentManager = MauiContext?.GetFragmentManager();
 			}
+			catch (InvalidOperationException)
+			{
+				// No FragmentManager available (context already torn down); nothing to remove from.
+			}
+
+			if (fragmentManager is null ||
+				fragmentManager.IsDestroyed(context) ||
+				fragmentManager.IsStateSaved ||
+				!fragmentManager.Contains(detailHost))
+			{
+				return;
+			}
+
+			fragmentManager
+				.BeginTransactionEx()
+				.RemoveEx(detailHost)
+				.SetReorderingAllowed(true)
+				.Commit();
 		}
 
 		void UpdateDetail()
@@ -281,7 +332,7 @@ namespace Microsoft.Maui.Handlers
 		void UpdateFlyoutBehavior()
 		{
 			var behavior = VirtualView.FlyoutBehavior;
-			if (_detailViewFragment?.DetailView?.Handler?.PlatformView == null)
+			if (DetailViewFragment?.DetailView?.Handler?.PlatformView == null)
 				return;
 
 			// Important to create the layout views before setting the lock mode
@@ -319,6 +370,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(View platformView)
 		{
 			CancelPendingFragment();
+			RemoveDetailHost();
 
 			MauiWindowInsetListener.UnregisterView(platformView);
 			if (_navigationRoot is CoordinatorLayout cl)
