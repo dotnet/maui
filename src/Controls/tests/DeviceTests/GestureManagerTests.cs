@@ -26,14 +26,12 @@ namespace Microsoft.Maui.DeviceTests
 		// view, so GestureManager must skip it (returning null) instead of throwing an
 		// invalid-cast exception.
 		//
-		// The test also covers null-manager lifecycle safety: when CreateGesturePlatformManager
-		// returns null, the GestureManager must survive the ordinary connect/disconnect/reconnect
-		// event churn without ever dereferencing the null manager:
+		// The test also covers the completed no-op lifecycle:
 		//   * a repeated same-handler event (WindowChanged) re-enters SetupGestureManager while the
 		//     stub stays connected without re-attempting the optional factory lookup;
-		//   * clearing the handler makes HandlerChanging call DisconnectGestures with a null manager
-		//     (GesturePlatformManager?.Dispose() must be null-safe);
+		//   * disconnecting is explicitly asserted not to throw while the manager is null;
 		//   * reconnecting the same stub performs one fresh optional factory lookup without throwing.
+		// The lookup counts encode the per-connection factory-resolution contract.
 		[Fact]
 		public async Task GestureManagerSkipsBuiltInManagerWhenHandlerIsNotPlatformViewHandler()
 		{
@@ -59,10 +57,10 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, services.GestureFactoryRequestCount);
 
 				// Disconnect: clearing the handler raises HandlerChanging, which invokes
-				// DisconnectGestures while GesturePlatformManager is null. Disposing/clearing a null
-				// manager must not throw.
-				view.Handler = null;
+				// DisconnectGestures while GesturePlatformManager is null.
+				var disconnectException = Record.Exception(() => view.Handler = null);
 
+				Assert.Null(disconnectException);
 				Assert.Equal(1, services.GestureFactoryRequestCount);
 
 				// Reconnect the same stub: setup runs again and performs one new optional factory
