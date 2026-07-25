@@ -25,9 +25,20 @@ Create an environment for the agentic workflows:
   - _Configuring these settings requires repo admin permission_
   - https://github.com/dotnet/{repo}/settings/environments
   - Recommended Name: **copilot-pat-pool**
-  - Recommended Deployment branches and tags: **Protected branches only**
+  - Recommended Deployment branches and tags: **Selected branches and tags**
+    - Add exact rules for each trusted branch that contains active workflow definitions.
+    - For `dotnet/maui`, allow `main` and `net11.0`.
 
-This environment is used for all agentic workflows, restricting agentic workflows to the repo's protected branches and preventing the workflows from accessing secrets defined for other environments.
+This environment is used for all agentic workflows, restricting agentic
+workflows to explicitly trusted branches and preventing the workflows from
+accessing secrets defined for other environments.
+
+Do not use **Protected branches only** when branch protection is provided by
+repository rulesets instead of classic branch protection. GitHub environment
+deployment protection does not recognize ruleset-only branches as protected,
+so it rejects the workflow before any job steps run. Exact selected-branch
+rules preserve the same trust boundary without relying on classic branch
+protection.
 
 ## PAT Management
 
