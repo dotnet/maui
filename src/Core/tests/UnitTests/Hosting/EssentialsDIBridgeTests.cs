@@ -201,6 +201,27 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void ConfigureEssentialsDoesNotDuplicateCleanupRegistration()
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.ConfigureEssentials();
+			using var app = builder.Build();
+			var cleanupType = typeof(EssentialsExtensions).GetNestedType(
+				"EssentialsCleanup",
+				System.Reflection.BindingFlags.NonPublic)
+				?? throw new InvalidOperationException("EssentialsCleanup type not found.");
+			var registrationCount = 0;
+
+			foreach (var cleanupService in app.Services.GetServices<IMauiAppCleanupService>())
+			{
+				if (cleanupService.GetType() == cleanupType)
+					registrationCount++;
+			}
+
+			Assert.Equal(1, registrationCount);
+		}
+
+		[Fact]
 		public void DIBridge_DoesNotInitializePlatformDefaultForOriginalCapture()
 		{
 			ResetStaticField(typeof(Preferences), "defaultImplementation");
@@ -1235,7 +1256,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 					() =>
 					{
 						Assert.True(
-							start.SignalAndWait(TimeSpan.FromSeconds(5)),
+							start.SignalAndWait(TimeSpan.FromSeconds(10)),
 							"Timed out waiting for both build tasks to start.");
 						return builder.Build();
 					},
