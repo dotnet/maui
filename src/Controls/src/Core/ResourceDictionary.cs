@@ -15,6 +15,47 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <summary>
+	/// A "proxy" class for subscribing <see cref="Internals.IResourceDictionary.ValuesChanged"/> via WeakReference,
+	/// so that a long-lived / shared merged <see cref="ResourceDictionary"/> does not strongly retain the
+	/// transient dictionary (and its owning element tree) that merged it in.
+	/// </summary>
+	class WeakResourcesChangedProxy : WeakEventProxy<IResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+	{
+		void OnValuesChanged(object sender, ResourcesChangedEventArgs e)
+		{
+			if (TryGetHandler(out var handler))
+			{
+				handler(sender, e);
+			}
+			else
+			{
+				Unsubscribe();
+			}
+		}
+
+		public override void Subscribe(IResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+		{
+			if (TryGetSource(out var s))
+			{
+				s.ValuesChanged -= OnValuesChanged;
+			}
+
+			source.ValuesChanged += OnValuesChanged;
+			base.Subscribe(source, handler);
+		}
+
+		public override void Unsubscribe()
+		{
+			if (TryGetSource(out var s))
+			{
+				s.ValuesChanged -= OnValuesChanged;
+			}
+
+			base.Unsubscribe();
+		}
+	}
+
 	/// <summary>A dictionary that maps identifier strings to arbitrary resource objects.</summary>
 	public class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
 	{
@@ -133,6 +174,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 		IList<ResourceDictionary> _collectionTrack;
+		List<WeakResourcesChangedProxy> _mergedProxies;
+		EventHandler<ResourcesChangedEventArgs> _itemValuesChanged;
 
 		void MergedDictionaries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -141,12 +184,16 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_collectionTrack = _collectionTrack ?? new List<ResourceDictionary>();
+			_mergedProxies = _mergedProxies ?? new List<WeakResourcesChangedProxy>();
+			_itemValuesChanged ??= Item_ValuesChanged;
+
 			// Collection has been cleared
 			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
-				foreach (var dictionary in _collectionTrack)
-					dictionary.ValuesChanged -= Item_ValuesChanged;
+				foreach (var proxy in _mergedProxies)
+					proxy.Unsubscribe();
 
+				_mergedProxies.Clear();
 				_collectionTrack.Clear();
 				return;
 			}
@@ -158,7 +205,9 @@ namespace Microsoft.Maui.Controls
 				{
 					var rd = (ResourceDictionary)item;
 					_collectionTrack.Add(rd);
-					rd.ValuesChanged += Item_ValuesChanged;
+					var proxy = new WeakResourcesChangedProxy();
+					proxy.Subscribe(rd, _itemValuesChanged);
+					_mergedProxies.Add(proxy);
 					OnValuesChanged(rd.ToArray());
 				}
 			}
@@ -169,8 +218,13 @@ namespace Microsoft.Maui.Controls
 				foreach (var item in e.OldItems)
 				{
 					var rd = (ResourceDictionary)item;
-					rd.ValuesChanged -= Item_ValuesChanged;
-					_collectionTrack.Remove(rd);
+					var index = _collectionTrack.IndexOf(rd);
+					if (index >= 0)
+					{
+						_mergedProxies[index].Unsubscribe();
+						_mergedProxies.RemoveAt(index);
+						_collectionTrack.RemoveAt(index);
+					}
 				}
 			}
 		}

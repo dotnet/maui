@@ -602,6 +602,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async System.Threading.Tasks.Task RootedMergedDictionaryDoesNotLeakElement()
+		{
+			// A ResourceDictionary rooted by something longer-lived than the element
+			// (here a local variable kept alive to end of test) that is merged into a
+			// transient element's Resources must not retain that element.
+			var sharedDictionary = new ResourceDictionary { { "primary", "value" } };
+
+			WeakReference weakElement;
+			{
+				var element = new ContentView();
+				element.Resources.MergedDictionaries.Add(sharedDictionary);
+				weakElement = new WeakReference(element);
+			}
+
+			Assert.False(await weakElement.WaitForCollect(), "ContentView should not be alive!");
+			GC.KeepAlive(sharedDictionary);
+		}
+
+		[Fact]
 		public void AddingResourceInMergedRDTriggersValueChanged()
 		{
 			var rd0 = new ResourceDictionary();
