@@ -3083,6 +3083,12 @@ foreach ($case in @(
         -Expected $case.Tier `
         -Actual (Get-VerdictTier -Classification $case.Cls)
 }
+Assert-Eq -Label "candidate merged-on-main-no-backport is informational" -Expected 3 `
+    -Actual (Get-EffectiveVerdictTier -Classification 'merged-on-main-no-backport' -Mode 'candidate' -State 'CLOSED')
+Assert-Eq -Label "in-flight merged-on-main-no-backport remains a risk" -Expected 2 `
+    -Actual (Get-EffectiveVerdictTier -Classification 'merged-on-main-no-backport' -Mode 'in-flight' -State 'CLOSED')
+Assert-Eq -Label "candidate open no-fix-yet remains blocking" -Expected 1 `
+    -Actual (Get-EffectiveVerdictTier -Classification 'no-fix-yet' -Mode 'candidate' -State 'OPEN')
 
 # ───── Get-OverallVerdict (the readiness gate) ─────
 Write-Host "`n[Unit] Get-OverallVerdict (readiness gate)" -ForegroundColor Cyan
@@ -3179,6 +3185,18 @@ $dataCandidateUnknown = @{
 }
 $v = Get-OverallVerdict -Data $dataCandidateUnknown
 Assert-Eq -Label "candidate + partial-unknown does NOT block → 🟢" -Expected '🟢' -Actual $v.symbol
+
+$dataCandidateIncludedFix = @{
+    metadata = @{ mode = 'candidate' }
+    regressions = @(
+        @{ classification = 'merged-on-main-no-backport'; state = 'CLOSED' }
+    )
+    ci = @{ overall = 'green' }
+}
+$v = Get-OverallVerdict -Data $dataCandidateIncludedFix
+Assert-Eq -Label "candidate + fix already on main is Ready" -Expected '🟢' -Actual $v.symbol
+Assert-Eq -Label "candidate + fix already on main has no Tier 2 regression reason" -Expected $false `
+    -Actual (@($v.reasons | Where-Object { $_ -match 'merged-on-main-no-backport' }).Count -gt 0)
 
 # Shipped lifecycle semantics: the release already tagged, so all signals become
 # visible follow-up/advisory rather than retroactive ship gates.
@@ -3583,6 +3601,33 @@ $candidateDay14Hash = Get-ReportSemanticHash -Data $dataCandidateDay14 -Verdict 
 Assert-Eq -Label "hash: Candidate crossing 14-day stale threshold refreshes tracker" `
     -Expected $false -Actual ($candidateDay13Hash -eq $candidateDay14Hash)
 
+$dataCandidateIncludedTierHash = @{
+    metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'candidate'; mainBranch = 'main' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35615, 36749) }
+    regressions = @(
+        @{ issue = 35615; classification = 'merged-on-main-no-backport'; state = 'CLOSED'; recommendedAction = 'Included when cut' }
+        @{ issue = 36749; classification = 'open-on-main'; state = 'OPEN'; recommendedAction = 'Review before cut' }
+    )
+    openSrPrs = @()
+}
+$candidateIncludedTier3Hash = Get-ReportSemanticHash -Data $dataCandidateIncludedTierHash -Verdict @{ symbol = '🟡' }
+$originalEffectiveTierFunction = (Get-Item function:Get-EffectiveVerdictTier).ScriptBlock
+try {
+    function Get-EffectiveVerdictTier {
+        param([string]$Classification, [string]$Mode = 'in-flight', [string]$State = 'OPEN')
+        if ($Mode -eq 'candidate' -and $Classification -eq 'merged-on-main-no-backport') {
+            return 2
+        }
+        return (& $originalEffectiveTierFunction -Classification $Classification -Mode $Mode -State $State)
+    }
+    $candidateIncludedTier2Hash = Get-ReportSemanticHash -Data $dataCandidateIncludedTierHash -Verdict @{ symbol = '🟡' }
+} finally {
+    Set-Item function:Get-EffectiveVerdictTier $originalEffectiveTierFunction
+}
+Assert-Eq -Label "hash: candidate included-fix Tier 2→3 transition refreshes tracker while verdict stays yellow" `
+    -Expected $false -Actual ($candidateIncludedTier3Hash -eq $candidateIncludedTier2Hash)
+
 # Absent mode defaults to 'in-flight' → SAME as an explicit 'in-flight'.
 $dataNoMode = @{
     metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z' }
@@ -3911,6 +3956,46 @@ Assert-Eq -Label "in-flight incomplete regression scan suppresses green no-block
     -Actual ($mdIncompleteRegression -match '## 🟢 No blocking items')
 Assert-Eq -Label "in-flight incomplete regression scan renders incomplete blocking status" -Expected $true `
     -Actual ($mdIncompleteRegression -match 'Blocking status incomplete — regression scan incomplete')
+
+$mdCandidateIncludedData = $mdData.Clone()
+$mdCandidateIncludedData['metadata'] = $mdData.metadata.Clone()
+$mdCandidateIncludedData.metadata.mode = 'candidate'
+$mdCandidateIncludedData.metadata.mainBranch = 'main'
+$mdCandidateIncludedData.metadata.priorSrBranch = 'release/10.0.1xx-sr9'
+$mdCandidateIncludedData.metadata.nextSr = 10
+$mdCandidateIncludedData['regressions'] = @(
+    @{ issue = 35615; title = 'Fix already merged on main'; state = 'CLOSED';
+       classification = 'merged-on-main-no-backport'; candidateFixPrs = @(@{ number = 35716 });
+       recommendedAction = 'Included when the candidate branch is cut from main.' }
+)
+$mdCandidateIncludedData['summary'] = @{ 'merged-on-main-no-backport' = 1 }
+$mdCandidateIncludedData['shipChecks'] = @()
+$mdCandidateIncluded = Format-MarkdownReport -Data $mdCandidateIncludedData -RepoUrl 'https://github.com/dotnet/maui' `
+                                              -TrackerKey 'net10-sr10' -MaxBodyBytes 60000
+Assert-Eq -Label "candidate markdown puts merged-on-main-no-backport in Tier 3" -Expected $true `
+    -Actual ($mdCandidateIncluded -match 'Tier 3 — Informational[\s\S]*merged-on-main-no-backport')
+Assert-Eq -Label "candidate markdown excludes merged-on-main-no-backport from Tier 2" -Expected $false `
+    -Actual ($mdCandidateIncluded -match 'Tier 2 — Risk / Review(?:(?!Tier 3 — Informational)[\s\S])*merged-on-main-no-backport')
+
+$mdCandidateMissingStateData = $mdCandidateIncludedData.Clone()
+$mdCandidateMissingStateData['regressions'] = @(
+    @{ issue = 36744; title = 'Missing state defaults to open'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Investigate' }
+)
+$mdCandidateMissingStateData['summary'] = @{ 'no-fix-yet' = 1 }
+$mdCandidateMissingState = $mdCandidateMissingStateData | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+$mdCandidateMissingStateThrew = $false; $mdCandidateMissingStateText = $null
+try {
+    $mdCandidateMissingStateText = Format-MarkdownReport -Data $mdCandidateMissingState `
+        -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr10' -MaxBodyBytes 60000
+} catch {
+    $mdCandidateMissingStateThrew = $true
+    Write-Host "    candidate missing-state render threw: $($_.Exception.Message)" -ForegroundColor Red
+}
+Assert-Eq -Label "candidate markdown defaults missing no-fix-yet state to OPEN without throwing" `
+    -Expected $false -Actual $mdCandidateMissingStateThrew
+Assert-Eq -Label "candidate markdown renders missing-state no-fix-yet in Tier 1" -Expected $true `
+    -Actual ($mdCandidateMissingStateText -match 'Tier 1 — Blocking[\s\S]*no-fix-yet')
 
 # Verdict appears
 Assert-Eq -Label "Body shows 🟡 verdict (backport-in-progress)" -Expected $true `

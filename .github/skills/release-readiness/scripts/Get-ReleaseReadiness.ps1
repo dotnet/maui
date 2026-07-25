@@ -3847,6 +3847,29 @@ function Get-VerdictTier {
     }
 }
 
+function Get-EffectiveVerdictTier {
+    <#
+    .SYNOPSIS
+        Applies lifecycle-specific tier adjustments to a regression classification.
+    #>
+    param(
+        [string]$Classification,
+        [string]$Mode = 'in-flight',
+        [string]$State = 'OPEN'
+    )
+
+    $tier = Get-VerdictTier -Classification $Classification
+    if ($Classification -eq 'no-fix-yet' -and $State -ne 'OPEN') {
+        return 3
+    }
+    if ($Mode -eq 'candidate' -and $Classification -eq 'merged-on-main-no-backport') {
+        # Candidate reports survey main itself. A fix already on main is included
+        # when the new SR branch is cut, so the row is evidence, not a risk signal.
+        return 3
+    }
+    return $tier
+}
+
 # Shape-safe accessor for report metadata (and any maybe-hashtable /
 # maybe-pscustomobject payload). Report data is a live [hashtable] during a
 # survey but a [pscustomobject] once round-tripped through JSON (renderer /
@@ -3939,10 +3962,8 @@ function Get-ShippedVerdict {
         $followCounts = @{}
         $carryCount = 0
         foreach ($r in $shippedRegressions) {
-            $tier = Get-VerdictTier -Classification $r.classification
-            # `no-fix-yet` only counts while the issue is still OPEN (parity with the
-            # in-flight verdict's downgrade).
-            if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') { $tier = 3 }
+            $regressionState = [string](Get-MetadataValue -Container $r -Name 'state' -Default 'OPEN')
+            $tier = Get-EffectiveVerdictTier -Classification $r.classification -Mode 'shipped' -State $regressionState
             if ($tier -ge 3) { continue }
             if (Test-IsCarryForwardRegression -Regression $r `
                     -ShippedSrNumber $shippedSr -ShippedMajor $shippedMajor -ShippedSubPatch $shippedSubPatch) {
@@ -4062,11 +4083,8 @@ function Get-OverallVerdict {
         $t1Counts = @{}
         $t2Counts = @{}
         foreach ($r in $Data['regressions']) {
-            $tier = Get-VerdictTier -Classification $r.classification
-            # `no-fix-yet` only blocks if the issue is still OPEN
-            if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') {
-                $tier = 3
-            }
+            $regressionState = [string](Get-MetadataValue -Container $r -Name 'state' -Default 'OPEN')
+            $tier = Get-EffectiveVerdictTier -Classification $r.classification -Mode $mode -State $regressionState
             if ($tier -eq 1) {
                 if (-not $t1Counts.ContainsKey($r.classification)) { $t1Counts[$r.classification] = 0 }
                 $t1Counts[$r.classification]++
@@ -4424,9 +4442,9 @@ function Get-ReportSemanticHash {
                                   $recAct = [string]$_.recommendedAction
                               }
                               $lifecycleBucket = ''
+                              $regressionState = [string](Get-MetadataValue -Container $_ -Name 'state' -Default 'OPEN')
                               if ($modeForHash -eq 'shipped') {
-                                  $effectiveTier = Get-VerdictTier -Classification $_.classification
-                                  if ($_.classification -eq 'no-fix-yet' -and $_.state -ne 'OPEN') { $effectiveTier = 3 }
+                                  $effectiveTier = Get-EffectiveVerdictTier -Classification $_.classification -Mode $modeForHash -State $regressionState
                                   if ($effectiveTier -lt 3) {
                                       $isCarryForward = Test-IsCarryForwardRegression -Regression $_ `
                                           -ShippedSrNumber $shipSrForHash -ShippedMajor $shipMajorForHash -ShippedSubPatch $shipSubPatchForHash
@@ -4443,11 +4461,17 @@ function Get-ReportSemanticHash {
                               # state-insensitive, so unrelated state transitions (e.g. a
                               # Tier-3 in-sr-active issue closing) do NOT churn the hash or
                               # spam issue watchers — preserving the conservative design above.
+                              $modeTierSuffix = if ($modeForHash -eq 'candidate' -and
+                                  $_.classification -eq 'merged-on-main-no-backport') {
+                                  $effectiveTier = Get-EffectiveVerdictTier -Classification $_.classification `
+                                      -Mode $modeForHash -State $regressionState
+                                  ":tier$effectiveTier"
+                              } else { '' }
                               if ($_.classification -eq 'no-fix-yet') {
-                                  $nfyTier = if ($_.state -eq 'OPEN') { 't1' } else { 't3' }
-                                  "$($_.issue):$($_.classification):$($nfyTier):$($lifecycleBucket):$($selPrNum):$recAct"
+                                  $nfyTier = if ($regressionState -eq 'OPEN') { 't1' } else { 't3' }
+                                  "$($_.issue):$($_.classification):$($nfyTier):$($lifecycleBucket):$($selPrNum):$recAct$modeTierSuffix"
                               } else {
-                                  "$($_.issue):$($_.classification):$($lifecycleBucket):$($selPrNum):$recAct"
+                                  "$($_.issue):$($_.classification):$($lifecycleBucket):$($selPrNum):$recAct$modeTierSuffix"
                               }
                           }) -join '|'
                       } else { '' }
@@ -4797,8 +4821,8 @@ function Format-MarkdownReport {
     }
     if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
         foreach ($r in $Data['regressions']) {
-            $tier = Get-VerdictTier -Classification $r.classification
-            if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') { $tier = 3 }
+            $regressionState = [string](Get-MetadataValue -Container $r -Name 'state' -Default 'OPEN')
+            $tier = Get-EffectiveVerdictTier -Classification $r.classification -Mode $mode -State $regressionState
             # In normal release modes only Tier 1 belongs in the hoisted blocking
             # summary. After ship, Tier 1 and Tier 2 are follow-ups/hotfix decisions,
             # so hoist both; otherwise the report can claim "No post-ship follow-ups"
@@ -5346,12 +5370,25 @@ function Format-MarkdownReport {
         }
         [void]$sb.AppendLine()
 
-        # Three deterministic tiers. Order within a tier is alphabetical
-        # over the classification name for stable diffs across runs.
-        $tier1Classes = @('in-sr-reverted', 'no-fix-yet') | Sort-Object
-        $tier2Classes = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
-                          'merged-non-main-only', 'open-on-main', 'needs-human-review') | Sort-Object
-        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'closed-fix-unlinked', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
+        # Derive detail-section membership from the same lifecycle-aware tier
+        # helper used by verdicts and the hoisted summary. `no-fix-yet` appears
+        # in Tier 1 for OPEN issues and Tier 3 for CLOSED issues.
+        $knownClasses = @(
+            'in-sr-reverted', 'no-fix-yet', 'rejected-from-sr',
+            'backport-in-progress', 'merged-on-main-no-backport',
+            'merged-non-main-only', 'open-on-main', 'needs-human-review',
+            'in-sr-active', 'closed-as-duplicate', 'closed-fix-unlinked',
+            'out-of-scope-future-sr'
+        )
+        $tier1Classes = @($knownClasses | Where-Object {
+            (Get-EffectiveVerdictTier -Classification $_ -Mode $mode -State 'OPEN') -eq 1
+        } | Sort-Object)
+        $tier2Classes = @($knownClasses | Where-Object {
+            (Get-EffectiveVerdictTier -Classification $_ -Mode $mode -State 'OPEN') -eq 2
+        } | Sort-Object)
+        $tier3Classes = @($knownClasses | Where-Object {
+            (Get-EffectiveVerdictTier -Classification $_ -Mode $mode -State 'CLOSED') -eq 3
+        } | Sort-Object)
 
         $emitTier = {
             param([string]$Header, [string[]]$Classes, [string]$EmptyLine, [string]$NoFixYetState)
@@ -5364,9 +5401,13 @@ function Format-MarkdownReport {
                 # entries are counted in the Summary yet rendered in no tier at all.
                 if ($cls -eq 'no-fix-yet') {
                     if ($NoFixYetState -eq 'OPEN') {
-                        $items = @($items | Where-Object { $_.state -eq 'OPEN' })
+                        $items = @($items | Where-Object {
+                            [string](Get-MetadataValue -Container $_ -Name 'state' -Default 'OPEN') -eq 'OPEN'
+                        })
                     } elseif ($NoFixYetState -eq 'CLOSED') {
-                        $items = @($items | Where-Object { $_.state -ne 'OPEN' })
+                        $items = @($items | Where-Object {
+                            [string](Get-MetadataValue -Container $_ -Name 'state' -Default 'OPEN') -ne 'OPEN'
+                        })
                     }
                 }
                 if ($items.Count -eq 0) { continue }
