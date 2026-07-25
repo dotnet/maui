@@ -546,7 +546,12 @@ function Get-ValidatedAssetBranchState {
         -Endpoint "repos/$Repository/git/trees/$treeSha" `
         -Deadline $Deadline
     if ($tree.truncated) {
-        throw "Asset branch '$Branch' root tree was truncated and could not be validated."
+        throw ("Asset branch '$Branch' root tree was truncated by the GitHub trees API and could " +
+            "not be validated, so publishing was stopped fail-closed. This happens when the branch " +
+            "accumulates too many top-level entries (typically many 'pr-<number>' directories over " +
+            "time). Recover by pruning old 'pr-<number>' directories from '$Branch' (or rotating to " +
+            "a fresh marker-only asset branch); screenshot publishing resumes automatically once the " +
+            "root tree fits in a single, non-truncated response.")
     }
 
     $unexpected = @(

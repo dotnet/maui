@@ -620,6 +620,35 @@ Describe 'Git publication budget enforcement' {
         } | Should -Throw "*Asset branch 'review-tests-assets-v2' must contain only pr-<number> directories*"
     }
 
+    It 'fails closed with an actionable message when the root tree is truncated' {
+        # A truncated trees API response means the branch grew too many top-level entries; the guard
+        # must fail closed (can't validate what it can't see) AND tell oncall how to recover
+        # (prune pr-<n> dirs / rotate the branch) rather than emitting a dead-end error.
+        Mock Get-AssetBranchRef {
+            return [pscustomobject]@{
+                object = [pscustomobject]@{ sha = 'truncated-commit' }
+            }
+        }
+        Mock Invoke-GhApiJson {
+            if ($Endpoint -like '*/git/commits/truncated-commit') {
+                return [pscustomobject]@{ tree = [pscustomobject]@{ sha = 'truncated-tree' } }
+            }
+            if ($Endpoint -like '*/git/trees/truncated-tree') {
+                return [pscustomobject]@{
+                    truncated = $true
+                    tree = @()
+                }
+            }
+            throw "Unexpected API call: $Method $Endpoint"
+        }
+
+        {
+            Initialize-AssetBranch `
+                -Repository 'dotnet/maui' `
+                -Branch 'review-tests-assets-v2'
+        } | Should -Throw "*truncated*prun*"
+    }
+
     It 'accepts a concurrently-created branch only after validating its tree' {
         $script:refReadCount = 0
         Mock Get-AssetBranchRef {
