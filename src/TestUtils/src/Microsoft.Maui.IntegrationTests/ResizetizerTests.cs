@@ -22,7 +22,7 @@ public class ResizetizerTests : BaseBuildTest
 	[InlineData("maui", "mauilib", true)] // net9.0-xxx
 	[InlineData("maui-blazor", "classlib", true)] // net9.0
 	[InlineData("maui-blazor", "mauilib", true)] // net9.0-xxx
-											   // windows packaged/msix
+												 // windows packaged/msix
 	[InlineData("maui", "classlib", false)] // net9.0
 	[InlineData("maui", "mauilib", false)] // net9.0-xxx
 	[InlineData("maui-blazor", "classlib", false)] // net9.0
@@ -32,7 +32,8 @@ public class ResizetizerTests : BaseBuildTest
 		SetTestIdentifier(id, libid, unpackaged);
 		// TODO: fix the tests as they have been disabled too long!
 		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true)
+				return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -405,7 +406,8 @@ public class ResizetizerTests : BaseBuildTest
 		SetTestIdentifier(id, libid, unpackaged);
 		// TODO: fix the tests as they have been disabled too long!
 		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true)
+				return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -480,7 +482,8 @@ public class ResizetizerTests : BaseBuildTest
 		SetTestIdentifier(id, libid, unpackaged);
 		// TODO: fix the tests as they have been disabled too long!
 		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true)
+				return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
