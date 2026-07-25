@@ -2645,11 +2645,67 @@ function Test-IsExplicitBackportForSource {
 
     $body = [string](Get-MetadataValue -Container $Pr -Name 'body' -Default '')
     $head = [string](Get-MetadataValue -Container $Pr -Name 'headRefName' -Default '')
-    if ($body -match "(?im)\bbackport\s+of\s+#$SourcePrNumber\b") { return $true }
-    if ($body -match "(?im)\bbackport(?:s|ed|ing)?\b(?:(?!#\d+\b|pull/\d+\b)[^\r\n.!?;]){0,80}(?:(?:https://github\.com/dotnet/maui/)?pull/$SourcePrNumber\b|(?:PR\s*)?#$SourcePrNumber\b)") { return $true }
+
+    # Copilot backport branches encode one or more source PR numbers. Restrict
+    # this to PR-sized numeric tokens so release-band numbers (10, 100, etc.)
+    # cannot become lineage evidence.
+    if ($head -match '(?i)^copilot/backport[-/]') {
+        $headPrNumbers = @([regex]::Matches($head, '(?<!\d)\d{4,}(?!\d)') |
+            ForEach-Object { [int]$_.Value })
+        if ($headPrNumbers -contains $SourcePrNumber) { return $true }
+    }
+
+    # Parse each backport clause independently. A source number may be the first
+    # reference or a later member of an explicit comma/and list, but prose
+    # between references ("contextual mention") breaks the lineage chain.
+    $backportVerbs = [regex]::Matches($body, '(?im)\bbackport(?:s|ed|ing)?\b')
+    foreach ($verb in $backportVerbs) {
+        $prefixStart = [Math]::Max(0, $verb.Index - 48)
+        $prefix = $body.Substring($prefixStart, $verb.Index - $prefixStart)
+        if ($prefix -match "(?i)(?:\b(?:do(?:es)?|did|should|must|will|would|can)\s+not\s+|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|cannot)\s+|\bnever\s+|\bno\s+need\s+to\s+|\bnot\s+(?:a\s+)?|\brevert(?:s|ed|ing)?\b[^.!?;\r\n]{0,24})$") {
+            continue
+        }
+
+        $clauseStart = $verb.Index + $verb.Length
+        $remaining = $body.Substring($clauseStart)
+        # Do not use '.' as a terminator: full GitHub PR URLs contain dots.
+        # A later sentence still cannot bind because the inter-reference text
+        # must be a pure list separator.
+        $terminator = [regex]::Match($remaining, '[!?;\r\n]')
+        $clauseLength = if ($terminator.Success) { $terminator.Index } else { $remaining.Length }
+        $clauseLength = [Math]::Min($clauseLength, 200)
+        $clause = $remaining.Substring(0, $clauseLength)
+        $references = @([regex]::Matches($clause,
+            '(?i)(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)(?<number>\d+)'))
+        if ($references.Count -eq 0) { continue }
+
+        for ($i = 0; $i -lt $references.Count; $i++) {
+            $reference = $references[$i]
+            if ([int]$reference.Groups['number'].Value -ne $SourcePrNumber) { continue }
+
+            $beforeReference = $clause.Substring(0, $reference.Index)
+            if ($beforeReference -match "(?i)\b(?:not|never)\b|\bno\s+need\b|\brevert(?:s|ed|ing)?\b") {
+                continue
+            }
+            if ($i -eq 0) { return $true }
+
+            $isExplicitList = $true
+            for ($j = 1; $j -le $i; $j++) {
+                $previous = $references[$j - 1]
+                $current = $references[$j]
+                $betweenStart = $previous.Index + $previous.Length
+                $between = $clause.Substring($betweenStart, $current.Index - $betweenStart)
+                if ($between -notmatch '^\s*(?:(?:,|/|&)\s*(?:and\s+)?|(?:and|plus)\s+)(?:PRs?\s*)?$') {
+                    $isExplicitList = $false
+                    break
+                }
+            }
+            if ($isExplicitList) { return $true }
+        }
+    }
+
     if ($body -match "(?im)\bcherry[-\s]picked\s+from(?:\s+PR)?\s+#$SourcePrNumber\b") { return $true }
     if ($head -match "(?i)^backport/pr-$SourcePrNumber-to-") { return $true }
-    if ($head -match "(?i)^copilot/backport(?:[-/][a-z0-9._]+)*[-/]$SourcePrNumber$") { return $true }
     return $false
 }
 
@@ -3159,10 +3215,10 @@ function Classify-RegressionCandidate {
     $isCandidateMode = $ctxMode -eq 'candidate' -or $Ctx.srBranch -eq $Ctx.mainBranch
     $isShippedMode = $ctxMode -eq 'shipped'
     $backportCommand = "/backport to $($Ctx.srBranch)"
-    # Candidate mode surveys main BEFORE the SR is cut. For a fix already merged on
-    # main, do NOT say it "must land on main" (it already has) — say it will be
-    # included when the SR is cut.
-    $candidateMergedGuidance = 'Fix is already merged on main and will be included when the next SR is cut; rerun readiness after the release/...-srN branch exists to confirm and get the exact backport command if any follow-up is needed.'
+    # Candidate mode surveys current main, but an already-selected Candidate cut
+    # commit can lag it. Keep the row as a risk until the SR branch exists and
+    # ancestry can prove the fix was included.
+    $candidateMergedGuidance = 'Fix is already merged on main, but the selected Candidate cut can lag current main. Rerun readiness after the release/...-srN branch exists to verify inclusion and get the exact backport command if needed.'
     $candidateOpenGuidance = 'Wait for the main merge before the SR cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
     # Shipped mode: the SR already tagged, so the current-SR `/backport` command no
     # longer applies. Reframe as a human hotfix/next-SR decision (never an automatic
@@ -3860,11 +3916,6 @@ function Get-EffectiveVerdictTier {
 
     $tier = Get-VerdictTier -Classification $Classification
     if ($Classification -eq 'no-fix-yet' -and $State -ne 'OPEN') {
-        return 3
-    }
-    if ($Mode -eq 'candidate' -and $Classification -eq 'merged-on-main-no-backport') {
-        # Candidate reports survey main itself. A fix already on main is included
-        # when the new SR branch is cut, so the row is evidence, not a risk signal.
         return 3
     }
     return $tier

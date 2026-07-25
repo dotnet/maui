@@ -696,6 +696,24 @@ function Get-OpenPrMetadataScope {
     }
 }
 
+function Get-MergeUpEmptyCheckState {
+    param(
+        [bool]$TargetScanIncomplete,
+        [bool]$InflightScanIncomplete
+    )
+
+    if ($TargetScanIncomplete -or $InflightScanIncomplete) {
+        return [PSCustomObject]@{
+            Status = 'INSUFFICIENT_DATA'
+            Action = 'Inspect the full target and inflight PR lists before concluding that no merge-up PR is open.'
+        }
+    }
+    return [PSCustomObject]@{
+        Status = 'READY'
+        Action = 'Continue monitoring.'
+    }
+}
+
 function Get-MergedPullRequests {
     <#
     .SYNOPSIS
@@ -2156,11 +2174,10 @@ if ($p1Issues.Count -gt 0) {
 if ($mergeUpPRs.Count -gt 0) {
     $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status "BLOCKED" -Details "$($mergeUpPRs.Count) open merge-up PR(s) in the ``$mergeUpChainLabel`` daily-flow chain. See 🔴 High-priority items at top. A stuck merge-up at any hop accumulates conflicts and starves the release of upstream fixes." -NextAction "Resolve and merge each before shipping."
 } else {
-    $mergeUpEmptyStatus = if ($targetOpenPrScanIncomplete) { 'INSUFFICIENT_DATA' } else { 'READY' }
-    $mergeUpEmptyAction = if ($targetOpenPrScanIncomplete) {
-        'Inspect the full target-branch PR list before concluding that no merge-up PR is open.'
-    } else { 'Continue monitoring.' }
-    $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status $mergeUpEmptyStatus -Details "No open merge-up PRs were found in the scanned results for the ``$mergeUpChainLabel`` daily-flow chain." -NextAction $mergeUpEmptyAction
+    $mergeUpEmptyState = Get-MergeUpEmptyCheckState `
+        -TargetScanIncomplete $targetOpenPrScanIncomplete `
+        -InflightScanIncomplete $inflightOpenPrScanIncomplete
+    $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status $mergeUpEmptyState.Status -Details "No open merge-up PRs were found in the scanned results for the ``$mergeUpChainLabel`` daily-flow chain." -NextAction $mergeUpEmptyState.Action
 }
 
 if ($kbeIssues.Count -gt 0) {

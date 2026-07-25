@@ -1594,6 +1594,36 @@ try {
             body = 'This PR backports https://github.com/dotnet/maui/pull/99999, see https://github.com/dotnet/maui/pull/32295 for context'
             headRefName = 'cleanup/context'
         }) -SourcePrNumber 32295)
+    foreach ($negatedBody in @(
+        'Do not backport #32537',
+        "don't backport #32537",
+        'no need to backport #32537',
+        'This is not a backport of #32537',
+        'This reverts the backport of #32537',
+        'Backport should not include #32537'
+    )) {
+        Assert-Eq -Label "backport lineage: negated prose is rejected — $negatedBody" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $negatedBody
+                headRefName = 'cleanup/context'
+            }) -SourcePrNumber 32537)
+    }
+    $multiSourceHead = [pscustomobject]@{
+        body = ''
+        headRefName = 'copilot/backport-prs-32610-32694-32779'
+    }
+    foreach ($sourcePr in @(32610, 32694, 32779)) {
+        Assert-Eq -Label "backport lineage: Copilot multi-source head includes #$sourcePr" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr $multiSourceHead -SourcePrNumber $sourcePr)
+    }
+    $multiSourceBody = [pscustomobject]@{
+        body = 'Backport of #32610, #32694 and #32779'
+        headRefName = 'manual/multi-backport'
+    }
+    foreach ($sourcePr in @(32610, 32694, 32779)) {
+        Assert-Eq -Label "backport lineage: explicit multi-source body includes #$sourcePr" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr $multiSourceBody -SourcePrNumber $sourcePr)
+    }
 
     # ── Open SR PR scan: distinguish failure/verified-empty/cap truncation ──
     $script:GhStub = { param([string[]]$GhArgs) return $null }
@@ -2111,8 +2141,8 @@ $candidateOpenBackportGuidance = Classify-RegressionCandidate `
 
 Assert-Eq -Label "candidate merged-on-main guidance does NOT emit /backport to main" `
     -Expected $false -Actual ($candidateMergedBackportGuidance.recommendedAction -match '/backport to main')
-Assert-Eq -Label "candidate merged-on-main guidance says already on main + included when cut + rerun" `
-    -Expected $true -Actual ($candidateMergedBackportGuidance.recommendedAction -match 'already merged on main' -and $candidateMergedBackportGuidance.recommendedAction -match 'when the next SR is cut' -and $candidateMergedBackportGuidance.recommendedAction -match 'rerun readiness')
+Assert-Eq -Label "candidate merged-on-main guidance warns selected cut can lag + requires ancestry rerun" `
+    -Expected $true -Actual ($candidateMergedBackportGuidance.recommendedAction -match 'already merged on main' -and $candidateMergedBackportGuidance.recommendedAction -match 'selected Candidate cut can lag' -and $candidateMergedBackportGuidance.recommendedAction -match 'verify inclusion')
 Assert-Eq -Label "candidate merged-on-main guidance never says fix must land on main" `
     -Expected $false -Actual ($candidateMergedBackportGuidance.recommendedAction -match 'must land on main')
 Assert-Eq -Label "candidate open-on-main guidance does NOT emit /backport to main" `
@@ -3083,7 +3113,7 @@ foreach ($case in @(
         -Expected $case.Tier `
         -Actual (Get-VerdictTier -Classification $case.Cls)
 }
-Assert-Eq -Label "candidate merged-on-main-no-backport is informational" -Expected 3 `
+Assert-Eq -Label "candidate merged-on-main-no-backport remains a risk until cut ancestry is known" -Expected 2 `
     -Actual (Get-EffectiveVerdictTier -Classification 'merged-on-main-no-backport' -Mode 'candidate' -State 'CLOSED')
 Assert-Eq -Label "in-flight merged-on-main-no-backport remains a risk" -Expected 2 `
     -Actual (Get-EffectiveVerdictTier -Classification 'merged-on-main-no-backport' -Mode 'in-flight' -State 'CLOSED')
@@ -3194,8 +3224,8 @@ $dataCandidateIncludedFix = @{
     ci = @{ overall = 'green' }
 }
 $v = Get-OverallVerdict -Data $dataCandidateIncludedFix
-Assert-Eq -Label "candidate + fix already on main is Ready" -Expected '🟢' -Actual $v.symbol
-Assert-Eq -Label "candidate + fix already on main has no Tier 2 regression reason" -Expected $false `
+Assert-Eq -Label "candidate + fix on current main remains conditional until cut ancestry is known" -Expected '🟡' -Actual $v.symbol
+Assert-Eq -Label "candidate + fix on current main retains Tier 2 regression reason" -Expected $true `
     -Actual (@($v.reasons | Where-Object { $_ -match 'merged-on-main-no-backport' }).Count -gt 0)
 
 # Shipped lifecycle semantics: the release already tagged, so all signals become
@@ -3611,17 +3641,17 @@ $dataCandidateIncludedTierHash = @{
     )
     openSrPrs = @()
 }
-$candidateIncludedTier3Hash = Get-ReportSemanticHash -Data $dataCandidateIncludedTierHash -Verdict @{ symbol = '🟡' }
+$candidateIncludedTier2Hash = Get-ReportSemanticHash -Data $dataCandidateIncludedTierHash -Verdict @{ symbol = '🟡' }
 $originalEffectiveTierFunction = (Get-Item function:Get-EffectiveVerdictTier).ScriptBlock
 try {
     function Get-EffectiveVerdictTier {
         param([string]$Classification, [string]$Mode = 'in-flight', [string]$State = 'OPEN')
         if ($Mode -eq 'candidate' -and $Classification -eq 'merged-on-main-no-backport') {
-            return 2
+            return 3
         }
         return (& $originalEffectiveTierFunction -Classification $Classification -Mode $Mode -State $State)
     }
-    $candidateIncludedTier2Hash = Get-ReportSemanticHash -Data $dataCandidateIncludedTierHash -Verdict @{ symbol = '🟡' }
+    $candidateIncludedTier3Hash = Get-ReportSemanticHash -Data $dataCandidateIncludedTierHash -Verdict @{ symbol = '🟡' }
 } finally {
     Set-Item function:Get-EffectiveVerdictTier $originalEffectiveTierFunction
 }
@@ -3972,10 +4002,10 @@ $mdCandidateIncludedData['summary'] = @{ 'merged-on-main-no-backport' = 1 }
 $mdCandidateIncludedData['shipChecks'] = @()
 $mdCandidateIncluded = Format-MarkdownReport -Data $mdCandidateIncludedData -RepoUrl 'https://github.com/dotnet/maui' `
                                               -TrackerKey 'net10-sr10' -MaxBodyBytes 60000
-Assert-Eq -Label "candidate markdown puts merged-on-main-no-backport in Tier 3" -Expected $true `
+Assert-Eq -Label "candidate markdown keeps merged-on-main-no-backport in Tier 2" -Expected $true `
+    -Actual ($mdCandidateIncluded -match 'Tier 2 — Risk / Review[\s\S]*merged-on-main-no-backport')
+Assert-Eq -Label "candidate markdown excludes merged-on-main-no-backport from Tier 3" -Expected $false `
     -Actual ($mdCandidateIncluded -match 'Tier 3 — Informational[\s\S]*merged-on-main-no-backport')
-Assert-Eq -Label "candidate markdown excludes merged-on-main-no-backport from Tier 2" -Expected $false `
-    -Actual ($mdCandidateIncluded -match 'Tier 2 — Risk / Review(?:(?!Tier 3 — Informational)[\s\S])*merged-on-main-no-backport')
 
 $mdCandidateMissingStateData = $mdCandidateIncludedData.Clone()
 $mdCandidateMissingStateData['regressions'] = @(
@@ -6813,6 +6843,14 @@ try {
         -Expected $false -Actual $mixedFallbackScope.TargetUsedRest
     Assert-Eq -Label "preview mixed fallback: affected inflight base is identified precisely" `
         -Expected $true -Actual $mixedFallbackScope.InflightUsedRest
+    Assert-Eq -Label "preview merge-up empty state: complete target and inflight scans are READY" -Expected 'READY' `
+        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $false -InflightScanIncomplete $false).Status
+    Assert-Eq -Label "preview merge-up empty state: incomplete target scan is insufficient" -Expected 'INSUFFICIENT_DATA' `
+        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $true -InflightScanIncomplete $false).Status
+    Assert-Eq -Label "preview merge-up empty state: incomplete inflight scan is insufficient" -Expected 'INSUFFICIENT_DATA' `
+        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $false -InflightScanIncomplete $true).Status
+    Assert-Eq -Label "preview merge-up empty state: action covers both scanned bases" -Expected $true `
+        -Actual ((Get-MergeUpEmptyCheckState -TargetScanIncomplete $false -InflightScanIncomplete $true).Action -match 'target and inflight')
 
     $fallbackMergedPrs = @(Get-MergedPullRequests -BaseBranch 'net11.0')
     Assert-Eq -Label "preview merged-PR fallback: excludes closed-unmerged PRs" -Expected 1 -Actual $fallbackMergedPrs.Count

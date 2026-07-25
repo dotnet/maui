@@ -253,7 +253,7 @@ Each candidate fix PR is classified with confidence + evidence:
 | `in-sr-reverted` | Backport landed but a later commit reverts it |
 | `rejected-from-sr` | A backport PR targeting the release branch was opened and CLOSED unmerged |
 | `backport-in-progress` | A backport PR targeting the release branch is OPEN |
-| `merged-on-main-no-backport` | Fix merged to `main`, no backport PR exists. Tier 2 for an existing SR branch; Tier 3 informational in candidate mode because cutting the new SR from `main` includes the fix automatically. |
+| `merged-on-main-no-backport` | Fix merged to `main`, no backport PR exists. Remains Tier 2 in candidate mode because an already-selected Candidate cut commit can lag current `main`; rerun after the SR branch is cut to verify inclusion. |
 | `merged-non-main-only` | Fix merged but only to `inflight/current` (or similar), not `main` |
 | `open-on-main` | Fix PR is OPEN against main, not yet merged |
 | `no-fix-yet` | No fix PR cross-referenced from the regression issue |
