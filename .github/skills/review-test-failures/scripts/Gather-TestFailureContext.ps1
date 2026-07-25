@@ -75,6 +75,19 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$gatherStartedAt = Get-Date
+# The workflow enforces a 20-minute hard stop. Finish optional enrichment by 18 minutes so the
+# deterministic context and Markdown have time to serialize before the outer `timeout` terminates
+# the process. Local callers may override this bounded budget explicitly.
+$gatherBudgetSeconds = 1080
+$parsedGatherBudget = 0
+if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_GATHER_BUDGET_SECONDS) -and
+    [int]::TryParse($env:REVIEW_TESTS_GATHER_BUDGET_SECONDS, [ref]$parsedGatherBudget) -and
+    $parsedGatherBudget -gt 0) {
+    $gatherBudgetSeconds = $parsedGatherBudget
+}
+$gatherHardDeadline = $gatherStartedAt.AddSeconds($gatherBudgetSeconds)
+$script:GatherHardDeadline = $gatherHardDeadline
 
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     $Repository = "dotnet/maui"
@@ -109,9 +122,11 @@ function Initialize-AzDoToken {
     }
 
     try {
-        $token = & az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv 2>$null
-        if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($token)) {
-            $env:AZDO_TOKEN = $token.Trim()
+        $tokenResult = Invoke-ProcessWithGatherDeadline `
+            -FileName "az" `
+            -Arguments @("account", "get-access-token", "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--query", "accessToken", "-o", "tsv")
+        if ($tokenResult.exitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace([string]$tokenResult.stdout)) {
+            $env:AZDO_TOKEN = ([string]$tokenResult.stdout).Trim()
             $script:AzDoAuthSource = "Azure CLI"
         }
     }
@@ -119,8 +134,6 @@ function Initialize-AzDoToken {
         $script:AzDoAuthSource = "none"
     }
 }
-
-Initialize-AzDoToken
 
 function ConvertTo-Array {
     param([object]$Value)
@@ -134,19 +147,110 @@ function ConvertTo-Array {
     return @($Value)
 }
 
+function Get-GatherRequestTimeoutSeconds {
+    param(
+        [int]$RequestedTimeoutSec = 100,
+        [int]$MinimumTimeoutSec = 1
+    )
+
+    $deadlineVariable = Get-Variable -Name GatherHardDeadline -Scope Script -ErrorAction SilentlyContinue
+    if ($null -eq $deadlineVariable -or
+        $null -eq $deadlineVariable.Value -or
+        [datetime]$deadlineVariable.Value -eq [datetime]::MaxValue) {
+        return $RequestedTimeoutSec
+    }
+
+    $deadline = [datetime]$deadlineVariable.Value
+    if ((Get-Date) -ge $deadline) {
+        throw "Overall gather deadline was exhausted before the next network request."
+    }
+    $remaining = [int][Math]::Floor(($deadline - (Get-Date)).TotalSeconds)
+    if ($remaining -lt $MinimumTimeoutSec) {
+        return $MinimumTimeoutSec
+    }
+    return [Math]::Min($RequestedTimeoutSec, $remaining)
+}
+
+function Invoke-ProcessWithGatherDeadline {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FileName,
+        [string[]]$Arguments = @(),
+        [int]$RequestedTimeoutSec = 100
+    )
+
+    $timeoutSec = Get-GatherRequestTimeoutSeconds -RequestedTimeoutSec $RequestedTimeoutSec
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $FileName
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($argument in $Arguments) {
+        [void]$startInfo.ArgumentList.Add([string]$argument)
+    }
+
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw "Process '$FileName' could not be started."
+        }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($timeoutSec * 1000)) {
+            try {
+                $process.Kill($true)
+                $process.WaitForExit()
+            }
+            catch {
+                # The process may exit between the timeout and termination request.
+            }
+            throw "Process '$FileName' exceeded the ${timeoutSec}s gather request timeout."
+        }
+        return [pscustomobject]@{
+            exitCode = $process.ExitCode
+            stdout = $stdoutTask.GetAwaiter().GetResult()
+            stderr = $stderrTask.GetAwaiter().GetResult()
+        }
+    }
+    finally {
+        $process.Dispose()
+    }
+}
+
+Initialize-AzDoToken
+
 function Invoke-GhJson {
     param([string[]]$Arguments)
 
-    $output = & gh @Arguments 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "gh $($Arguments -join ' ') failed: $output"
+    $result = Invoke-ProcessWithGatherDeadline -FileName "gh" -Arguments $Arguments
+    if ($result.exitCode -ne 0) {
+        throw "gh $($Arguments -join ' ') failed: $($result.stderr) $($result.stdout)"
     }
 
-    if ([string]::IsNullOrWhiteSpace(($output | Out-String))) {
+    if ([string]::IsNullOrWhiteSpace([string]$result.stdout)) {
         return $null
     }
 
-    return ($output | Out-String) | ConvertFrom-Json
+    return [string]$result.stdout | ConvertFrom-Json
+}
+
+function Get-BoundedFailureText {
+    param(
+        [object]$Text,
+        [int]$MaxChars = 4000
+    )
+
+    if ($null -eq $Text) {
+        return ""
+    }
+    $value = [string]$Text
+    if ($MaxChars -le 0 -or $value.Length -le $MaxChars) {
+        return $value
+    }
+    $marker = "...[truncated]"
+    $prefixLength = [Math]::Max(0, $MaxChars - $marker.Length)
+    return $value.Substring(0, $prefixLength) + $marker
 }
 
 function Invoke-JsonUrl {
@@ -154,9 +258,14 @@ function Invoke-JsonUrl {
         [Parameter(Mandatory = $true)]
         [string]$Url,
 
-        [switch]$AllowAuth
+        [switch]$AllowAuth,
+
+        # Bound each request so a single stalled AzDO/Helix response cannot hold the gather
+        # step near the job ceiling (the visual-evidence loop issues ~200 of these calls).
+        [int]$TimeoutSec = 100
     )
 
+    $TimeoutSec = Get-GatherRequestTimeoutSeconds -RequestedTimeoutSec $TimeoutSec
     $headers = @{
         Accept = "application/json"
     }
@@ -166,7 +275,7 @@ function Invoke-JsonUrl {
         $headers.Authorization = "Bearer $env:AZDO_TOKEN"
     }
 
-    $response = Invoke-WebRequest -Uri $Url -Headers $headers -UseBasicParsing -ErrorAction Stop
+    $response = Invoke-WebRequest -Uri $Url -Headers $headers -UseBasicParsing -TimeoutSec $TimeoutSec -ErrorAction Stop
     $content = $response.Content
     if ([string]::IsNullOrWhiteSpace($content)) {
         return $null
@@ -207,11 +316,16 @@ function Get-AzDoTestRuns {
     # device build that retried publishes a NEW run per attempt, so a >1-page run count is realistic.
     # Returns the COMPLETE run set plus a 'truncated' flag (true only if paging was abandoned at the page
     # guard with a token still pending) so the caller can REFUSE positive confirmation on an incomplete set.
-    param([string]$BaseUrl, [string]$BuildId)
+    param(
+        [string]$BaseUrl,
+        [string]$BuildId,
+        [datetime]$Deadline = [datetime]::MaxValue
+    )
 
     $runs = New-Object System.Collections.Generic.List[object]
     $continuation = $null
     $truncated = $false
+    $deadlineExhausted = $false
     $page = 0
     # Scope by buildUri, NOT buildIds: the _apis/test/runs 'List' endpoint SILENTLY IGNORES a
     # buildIds filter and returns project-wide runs from the beginning of time (verified against a
@@ -222,12 +336,18 @@ function Get-AzDoTestRuns {
     # a clean device-test build (deviceTestFailedConfirmedZero) over the REAL build that actually failed.
     $buildUri = "vstfs:///Build/Build/$BuildId"
     do {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $truncated = $true
+            $deadlineExhausted = $true
+            break
+        }
         $page++
         $url = "$BaseUrl/_apis/test/runs?buildUri=$([uri]::EscapeDataString($buildUri))&`$top=100&api-version=7.1"
         if ($continuation) { $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))" }
         $headers = @{ Accept = "application/json" }
         if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) { $headers.Authorization = "Bearer $env:AZDO_TOKEN" }
-        $resp = Invoke-WebRequest -Uri $url -Headers $headers -UseBasicParsing -ErrorAction Stop
+        $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $Deadline
+        $resp = Invoke-WebRequest -Uri $url -Headers $headers -UseBasicParsing -TimeoutSec $requestTimeoutSec -ErrorAction Stop
         $body = if ([string]::IsNullOrWhiteSpace([string]$resp.Content)) { $null } else { [string]$resp.Content | ConvertFrom-Json }
         foreach ($r in (ConvertTo-Array $body.value)) {
             # Defense in depth: drop any run that carries an explicit, MISMATCHED build id. The list view
@@ -241,15 +361,93 @@ function Get-AzDoTestRuns {
         if ($page -ge 50) { $truncated = ($null -ne $continuation); break }
     } while ($continuation)
 
-    return [ordered]@{ runs = $runs.ToArray(); truncated = $truncated }
+    return [ordered]@{
+        runs = $runs.ToArray()
+        truncated = $truncated
+        deadlineExhausted = $deadlineExhausted
+    }
+}
+
+function Get-AzDoFailedTestResultsByBuild {
+    # The public vstmr endpoint exposes the failed-result identifiers that the ordinary
+    # _apis/test/runs list hides behind authentication. Those identifiers are enough to
+    # retrieve the public result detail and attachment metadata for visual failures.
+    param(
+        [string]$Org,
+        [string]$Project,
+        [int]$BuildId,
+        [int]$MaxPages = 10,
+        # Optional wall-clock bound shared with the caller's visual-evidence budget. Paging stops
+        # once this deadline passes so a build with many failed-result pages cannot hold the gather
+        # past its budget. Defaults to MaxValue so unbudgeted callers behave exactly as before.
+        [datetime]$Deadline = [datetime]::MaxValue
+    )
+
+    $results = New-Object System.Collections.Generic.List[object]
+    $continuation = $null
+    $truncated = $false
+    $page = 0
+    do {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $truncated = $true
+            break
+        }
+
+        $page++
+        # $top is bounded well above the 100-result cap the caller inspects (and above any
+        # realistic per-build failure count) so paging + counting behave exactly as before
+        # without pulling a multi-megabyte payload on pathological builds.
+        $url = "https://vstmr.dev.azure.com/$Org/$Project/_apis/testresults/resultsbybuild?buildId=$BuildId&outcomes=Failed&`$top=500&api-version=7.1-preview.1"
+        if ($continuation) {
+            $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))"
+        }
+
+        $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $Deadline
+        $response = Invoke-WebRequest -Uri $url -Headers @{ Accept = "application/json" } -UseBasicParsing -TimeoutSec $requestTimeoutSec -ErrorAction Stop
+        $body = if ([string]::IsNullOrWhiteSpace([string]$response.Content)) {
+            $null
+        }
+        else {
+            [string]$response.Content | ConvertFrom-Json
+        }
+
+        foreach ($result in (ConvertTo-Array $body.value)) {
+            $results.Add($result)
+        }
+
+        $continuation = Get-HeaderValue -Headers $response.Headers -Name 'x-ms-continuationtoken'
+        if ([string]::IsNullOrWhiteSpace($continuation)) {
+            $continuation = $null
+        }
+        if ($page -ge $MaxPages) {
+            $truncated = ($null -ne $continuation)
+            break
+        }
+        if ($null -ne $continuation -and (Get-Date) -ge $Deadline) {
+            # Remaining-budget guard: more pages exist but the shared visual-evidence deadline has
+            # passed. Stop paging and report truncation so the caller records the omission caveat
+            # instead of blocking on further network round-trips.
+            $truncated = $true
+            break
+        }
+    } while ($continuation)
+
+    return [ordered]@{
+        results = $results.ToArray()
+        truncated = $truncated
+    }
 }
 
 function Invoke-TextUrl {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$Url
+        [string]$Url,
+
+        # Bound each request so a single stalled response cannot hold the gather step.
+        [int]$TimeoutSec = 100
     )
 
+    $TimeoutSec = Get-GatherRequestTimeoutSeconds -RequestedTimeoutSec $TimeoutSec
     $headers = @{
         Accept = "text/plain"
     }
@@ -258,7 +456,7 @@ function Invoke-TextUrl {
         $headers.Authorization = "Bearer $env:AZDO_TOKEN"
     }
 
-    $response = Invoke-WebRequest -Uri $Url -Headers $headers -UseBasicParsing -ErrorAction Stop
+    $response = Invoke-WebRequest -Uri $Url -Headers $headers -UseBasicParsing -TimeoutSec $TimeoutSec -ErrorAction Stop
     return [string]$response.Content
 }
 
@@ -300,6 +498,257 @@ function Get-PlatformFromText {
     if ($Text -match '(?i)\b(maccatalyst|catalyst|macos|mac)\b') { return "macos" }
     if ($Text -match '(?i)\b(windows|winui|win)\b') { return "windows" }
     return "unknown"
+}
+
+function Get-VisualSnapshotInfo {
+    param([string]$Message)
+
+    if ([string]::IsNullOrWhiteSpace($Message)) {
+        return $null
+    }
+
+    $different = [regex]::Match(
+        $Message,
+        '(?im)^\s*Snapshot different than baseline:\s*(?<path>[^\r\n]*?\.png)\s*\((?<description>[^\r\n)]*)\)')
+    $missing = [regex]::Match(
+        $Message,
+        '(?im)^\s*Baseline snapshot not yet created:\s*(?<path>[^\r\n]*?\.png)\s*$')
+
+    $kind = $null
+    $path = $null
+    $description = $null
+    if ($different.Success) {
+        $kind = "different"
+        $path = $different.Groups["path"].Value.Trim()
+        $description = $different.Groups["description"].Value.Trim()
+    }
+    elseif ($missing.Success) {
+        $kind = "missing-baseline"
+        $path = $missing.Groups["path"].Value.Trim()
+    }
+    else {
+        return $null
+    }
+
+    $fileName = [System.IO.Path]::GetFileName($path)
+    if ([string]::IsNullOrWhiteSpace($fileName) -or
+        $fileName -notmatch '^[A-Za-z0-9][A-Za-z0-9._ -]*\.png$' -or
+        $fileName.Contains("..") -or
+        ($kind -eq "different" -and $path -ne $fileName)) {
+        return $null
+    }
+
+    $differencePercent = $null
+    $baselineWidth = $null
+    $baselineHeight = $null
+    $actualWidth = $null
+    $actualHeight = $null
+    if ($description) {
+        $percentMatch = [regex]::Match($description, '^(?<value>\d+(?:\.\d+)?)%\s+difference$')
+        if ($percentMatch.Success) {
+            $parsed = 0.0
+            if ([double]::TryParse(
+                    $percentMatch.Groups["value"].Value,
+                    [System.Globalization.NumberStyles]::Float,
+                    [System.Globalization.CultureInfo]::InvariantCulture,
+                    [ref]$parsed)) {
+                $differencePercent = $parsed
+            }
+        }
+
+        $sizeMatch = [regex]::Match(
+            $description,
+            '^size differs - baseline is (?<bw>\d+)x(?<bh>\d+) pixels, actual is (?<aw>\d+)x(?<ah>\d+) pixels$')
+        if ($sizeMatch.Success) {
+            $baselineWidth = [int]$sizeMatch.Groups["bw"].Value
+            $baselineHeight = [int]$sizeMatch.Groups["bh"].Value
+            $actualWidth = [int]$sizeMatch.Groups["aw"].Value
+            $actualHeight = [int]$sizeMatch.Groups["ah"].Value
+        }
+    }
+
+    $pathHint = $null
+    $normalizedPath = $path -replace '\\', '/'
+    $snapshotPathMatch = [regex]::Match(
+        $normalizedPath,
+        '(?i)(?<path>src/Controls/tests/TestCases\.[^/]+\.Tests/snapshots/[^/]+/[^/]+\.png)$')
+    if ($snapshotPathMatch.Success) {
+        $pathHint = $snapshotPathMatch.Groups["path"].Value
+    }
+
+    return [ordered]@{
+        kind = $kind
+        snapshotFileName = $fileName
+        description = $description
+        differencePercent = $differencePercent
+        baselineWidth = $baselineWidth
+        baselineHeight = $baselineHeight
+        actualWidth = $actualWidth
+        actualHeight = $actualHeight
+        baselinePathHint = $pathHint
+    }
+}
+
+function Select-VisualAttachments {
+    param(
+        [object[]]$Attachments,
+        [string]$SnapshotFileName
+    )
+
+    if ([string]::IsNullOrWhiteSpace($SnapshotFileName)) {
+        return [ordered]@{ actual = $null; diff = $null; selectedRetry = $null; candidateCount = 0 }
+    }
+
+    $stem = [System.IO.Path]::GetFileNameWithoutExtension($SnapshotFileName)
+    $escapedStem = [regex]::Escape($stem)
+    $actualByRetry = @{}
+    $diffByRetry = @{}
+
+    foreach ($attachment in (ConvertTo-Array $Attachments)) {
+        $fileName = [string](Get-ObjectValue -Object $attachment -Names @("fileName", "name"))
+        $id = Get-ObjectValue -Object $attachment -Names @("id")
+        $url = [string](Get-ObjectValue -Object $attachment -Names @("url"))
+        if ([string]::IsNullOrWhiteSpace($fileName) -or
+            [string]::IsNullOrWhiteSpace($url) -or
+            $null -eq $id) {
+            continue
+        }
+
+        $actualMatch = [regex]::Match($fileName, "(?i)^$escapedStem(?:\[(?<retry>\d+)\])?\.png$")
+        $diffMatch = [regex]::Match($fileName, "(?i)^$escapedStem-diff(?:\[(?<retry>\d+)\])?\.png$")
+        if (-not $actualMatch.Success -and -not $diffMatch.Success) {
+            continue
+        }
+
+        $match = if ($actualMatch.Success) { $actualMatch } else { $diffMatch }
+        $retry = if ($match.Groups["retry"].Success) { [int]$match.Groups["retry"].Value } else { 0 }
+        $metadata = [ordered]@{
+            id = [int]$id
+            fileName = $fileName
+            size = Get-ObjectValue -Object $attachment -Names @("size")
+            url = $url
+        }
+        if ($actualMatch.Success) {
+            $actualByRetry[$retry] = $metadata
+        }
+        else {
+            $diffByRetry[$retry] = $metadata
+        }
+    }
+
+    $allRetries = @($actualByRetry.Keys + $diffByRetry.Keys | Sort-Object -Unique -Descending)
+    $selectedRetry = $null
+    foreach ($retry in $allRetries) {
+        if ($actualByRetry.ContainsKey($retry) -and $diffByRetry.ContainsKey($retry)) {
+            $selectedRetry = [int]$retry
+            break
+        }
+    }
+    if ($null -eq $selectedRetry -and $actualByRetry.Count -gt 0) {
+        $selectedRetry = [int](@($actualByRetry.Keys | Sort-Object -Descending)[0])
+    }
+
+    return [ordered]@{
+        actual = $(if ($null -ne $selectedRetry -and $actualByRetry.ContainsKey($selectedRetry)) { $actualByRetry[$selectedRetry] } else { $null })
+        diff = $(if ($null -ne $selectedRetry -and $diffByRetry.ContainsKey($selectedRetry)) { $diffByRetry[$selectedRetry] } else { $null })
+        selectedRetry = $selectedRetry
+        candidateCount = $allRetries.Count
+    }
+}
+
+function Get-VisualEnvironmentHintFromLog {
+    param([string]$Text)
+
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        return $null
+    }
+
+    $platform = if ($Text -match '(?i)TestCases\.iOS\.Tests|ios-simulator') {
+        "ios"
+    }
+    elseif ($Text -match '(?i)TestCases\.Android\.Tests|android-emulator') {
+        "android"
+    }
+    elseif ($Text -match '(?i)TestCases\.Mac\.Tests|maccatalyst') {
+        "macos"
+    }
+    elseif ($Text -match '(?i)TestCases\.WinUI\.Tests|winui_ui_tests') {
+        "windows"
+    }
+    else {
+        return $null
+    }
+
+    $environmentName = $null
+    $version = $null
+    if ($platform -eq "ios" -or $platform -eq "android") {
+        $versionMatch = [regex]::Match($Text, '(?im)--apiversion(?:=|\s+)["'']*(?<version>\d+(?:\.\d+)*)')
+        if ($versionMatch.Success) {
+            $version = $versionMatch.Groups["version"].Value
+        }
+    }
+
+    switch ($platform) {
+        "ios" {
+            if ($version -match '^26(?:\.|$)') {
+                $environmentName = "ios-26"
+            }
+            elseif ($Text -match '(?i)iPhone X \(iOS 16\.4\)') {
+                $environmentName = "ios-iphonex"
+            }
+            else {
+                $environmentName = "ios"
+            }
+        }
+        "android" {
+            if ($version -match '^36(?:\.|$)') {
+                $environmentName = "android-notch-36"
+            }
+            else {
+                $environmentName = "android"
+            }
+        }
+        "macos" { $environmentName = "mac" }
+        "windows" { $environmentName = "windows" }
+    }
+
+    return [ordered]@{
+        platform = $platform
+        environmentName = $environmentName
+        apiVersion = $version
+    }
+}
+
+function Resolve-VisualEnvironmentName {
+    param(
+        [object[]]$Hints,
+        [string]$Platform,
+        [string]$ResultText,
+        [string[]]$IncompletePlatforms = @()
+    )
+
+    $directHint = Get-VisualEnvironmentHintFromLog -Text $ResultText
+    $directIsSpecific = $directHint -and (
+        [string]$directHint.platform -notin @("ios", "android") -or
+        -not [string]::IsNullOrWhiteSpace([string]$directHint.apiVersion) -or
+        [string]$directHint.environmentName -in @("ios-iphonex", "ios-26", "android-notch-36")
+    )
+    if ($directIsSpecific -and [string]$directHint.platform -eq $Platform) {
+        return [string]$directHint.environmentName
+    }
+
+    if ($IncompletePlatforms -contains "unknown" -or $IncompletePlatforms -contains $Platform) {
+        return $null
+    }
+    $environmentNames = @($Hints |
+        Where-Object { [string]$_.platform -eq $Platform } |
+        ForEach-Object { [string]$_.environmentName } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        Select-Object -Unique)
+    if ($environmentNames.Count -eq 1) {
+        return $environmentNames[0]
+    }
+    return $null
 }
 
 function Get-AreaHintsFromPath {
@@ -415,7 +864,8 @@ function Invoke-AzDoJsonWithProjectFallback {
         [string]$Org,
         [string]$Project,
         [string]$RelativePath,
-        [switch]$AllowAuth
+        [switch]$AllowAuth,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     $attempts = New-Object System.Collections.Generic.List[string]
@@ -426,10 +876,15 @@ function Invoke-AzDoJsonWithProjectFallback {
 
     $lastError = $null
     foreach ($base in $attempts) {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $lastError = "Overall gather deadline reached before '$RelativePath' could be read."
+            break
+        }
         $url = "$base/$RelativePath"
         try {
+            $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $Deadline
             return [ordered]@{
-                value = Invoke-JsonUrl -Url $url -AllowAuth:$AllowAuth
+                value = Invoke-JsonUrl -Url $url -AllowAuth:$AllowAuth -TimeoutSec $requestTimeoutSec
                 baseUrl = $base
                 error = $null
             }
@@ -544,7 +999,7 @@ function Get-TestFailuresFromLog {
             source = "azdo-log"
             logId = $LogId
             recordName = $RecordName
-            message = $message
+            message = Get-BoundedFailureText -Text $message
             excerpt = $context
         })
     }
@@ -807,7 +1262,8 @@ function Invoke-HelixFileText {
     param([string]$Url, [int]$MaxChars = 4000000, $Truncated = $null)
     if ([string]::IsNullOrWhiteSpace($Url)) { return $null }
     try {
-        $resp = Invoke-WebRequest -Uri $Url -UseBasicParsing -MaximumRedirection 5 -ErrorAction Stop
+        $requestTimeoutSec = Get-GatherRequestTimeoutSeconds -RequestedTimeoutSec 100
+        $resp = Invoke-WebRequest -Uri $Url -UseBasicParsing -MaximumRedirection 5 -TimeoutSec $requestTimeoutSec -ErrorAction Stop
         # Azure blob serves the uploaded .xml result files as application/octet-stream, so
         # Invoke-WebRequest returns $resp.Content as a byte[] (a plain [string] cast would
         # stringify it as space-joined decimal byte values -- e.g. "60 63 120 ..." -- and
@@ -836,6 +1292,7 @@ function Invoke-HelixFileText {
         return $content
     }
     catch {
+        if ($null -ne $Truncated) { $Truncated.Value = $true }
         return $null
     }
 }
@@ -915,7 +1372,7 @@ function Get-XUnitFailures {
             $fNode = $t.SelectSingleNode('*[local-name()="failure"]')
             if ($fNode) {
                 $mNode = $fNode.SelectSingleNode('*[local-name()="message"]')
-                if ($mNode) { $msg = [string]$mNode.InnerText }
+                if ($mNode) { $msg = Get-BoundedFailureText -Text $mNode.InnerText }
             }
             $failed.Add([ordered]@{
                 name = [string]$t.GetAttribute('name')
@@ -940,7 +1397,7 @@ function Get-XUnitFailures {
         $emsg = ''
         $efNode = $e.SelectSingleNode('*[local-name()="failure"]')
         $emNode = if ($efNode) { $efNode.SelectSingleNode('*[local-name()="message"]') } else { $e.SelectSingleNode('*[local-name()="message"]') }
-        if ($emNode) { $emsg = [string]$emNode.InnerText }
+        if ($emNode) { $emsg = Get-BoundedFailureText -Text $emNode.InnerText }
         $failed.Add([ordered]@{
             name = $en
             type = [string]$e.GetAttribute('type')
@@ -1228,8 +1685,8 @@ function Get-BuildErrorsFromLog {
             logId = $LogId
             recordName = $RecordName
             errorFingerprint = $fingerprint
-            message = $message
-            excerpt = @($message)
+            message = Get-BoundedFailureText -Text $message
+            excerpt = @(Get-BoundedFailureText -Text $message)
         })
 
         if ($failures.Count -ge $MaxErrors) {
@@ -1372,7 +1829,8 @@ function Get-RecentBaseBuilds {
         [string]$Project,
         [int]$DefinitionId,
         [string]$BaseBranch,
-        [int]$Top
+        [int]$Top,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     if ($DefinitionId -le 0 -or $Top -le 0) {
@@ -1385,7 +1843,7 @@ function Get-RecentBaseBuilds {
     }
     $encodedBranch = [Uri]::EscapeDataString($branch)
     $relative = "_apis/build/builds?definitions=$DefinitionId&branchName=$encodedBranch&`$top=$Top&queryOrder=finishTimeDescending&api-version=7.1"
-    $result = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath $relative
+    $result = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath $relative -Deadline $Deadline
     if ($result.error -or -not $result.value) {
         return @()
     }
@@ -1413,13 +1871,14 @@ function Get-TimelineRecordResultMap {
     param(
         [string]$Org,
         [string]$Project,
-        [int]$BuildId
+        [int]$BuildId,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     $map = @{}
     $result = [ordered]@{ accessible = $false; records = $map }
 
-    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1"
+    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1" -Deadline $Deadline
     if ($timelineResult.error -or -not $timelineResult.value) {
         return $result
     }
@@ -1461,18 +1920,24 @@ function Get-AggregatedBaseLegMap {
         [string]$Org,
         [string]$Project,
         [object[]]$BaseBuilds,   # completed base builds, newest-first
-        [hashtable]$Cache        # memoized single-build maps keyed "org|project|buildId"
+        [hashtable]$Cache,       # memoized single-build maps keyed "org|project|buildId"
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     $agg = @{}
     $sampled = 0
+    $truncated = $false
     $ids = New-Object System.Collections.Generic.List[int]
     foreach ($base in @($BaseBuilds)) {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $truncated = $true
+            break
+        }
         $bid = [int]$base.id
         if ($bid -le 0) { continue }
         $key = "$Org|$Project|$bid"
         if (-not $Cache.ContainsKey($key)) {
-            $Cache[$key] = Get-TimelineRecordResultMap -Org $Org -Project $Project -BuildId $bid
+            $Cache[$key] = Get-TimelineRecordResultMap -Org $Org -Project $Project -BuildId $bid -Deadline $Deadline
         }
         $single = $Cache[$key]
         if (-not $single.accessible) { continue }
@@ -1490,12 +1955,18 @@ function Get-AggregatedBaseLegMap {
             elseif ($rec.hasSucceeded) { $agg[$norm].greenCount++ }
         }
     }
+    if ($Deadline -ne [datetime]::MaxValue -and
+        (Get-Date) -ge $Deadline -and
+        $sampled -lt @($BaseBuilds).Count) {
+        $truncated = $true
+    }
 
     return [ordered]@{
         accessible = ($sampled -gt 0)
         records = $agg
         sampledBuilds = $sampled
         baseBuildIds = @($ids.ToArray())
+        truncated = $truncated
     }
 }
 
@@ -1770,7 +2241,8 @@ function Get-BuildLogTestFailures {
         [string]$Org,
         [string]$Project,
         [int]$BuildId,
-        [int]$MaxLogs = 8
+        [int]$MaxLogs = 8,
+        [datetime]$Deadline = [datetime]::MaxValue
     )
 
     $result = [ordered]@{
@@ -1785,7 +2257,7 @@ function Get-BuildLogTestFailures {
         error = $null
     }
 
-    $buildResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId`?api-version=7.1"
+    $buildResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId`?api-version=7.1" -Deadline $Deadline
     if ($buildResult.error -or -not $buildResult.value) {
         $result.error = if ($buildResult.error) { $buildResult.error } else { "Build $BuildId metadata was not accessible." }
         return $result
@@ -1798,7 +2270,7 @@ function Get-BuildLogTestFailures {
     $result.result = $build.result
     $result.status = $build.status
 
-    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1"
+    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1" -Deadline $Deadline
     if ($timelineResult.error -or -not $timelineResult.value) {
         # Record the failure so the caller can distinguish "couldn't read the baseline"
         # from "the baseline had zero failures". Otherwise an inaccessible timeline looks
@@ -1822,9 +2294,14 @@ function Get-BuildLogTestFailures {
     $failures = New-Object System.Collections.Generic.List[object]
     $logReadFailures = 0
     foreach ($record in $failedRecords) {
+        if ($Deadline -ne [datetime]::MaxValue -and (Get-Date) -ge $Deadline) {
+            $result.error = "Overall gather deadline reached before all baseline logs could be inspected."
+            break
+        }
         $logId = [int]$record.log.id
         try {
-            $logText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$BuildId/logs/$logId`?api-version=7.1"
+            $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $Deadline
+            $logText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$BuildId/logs/$logId`?api-version=7.1" -TimeoutSec $requestTimeoutSec
             $lines = @($logText -split "`r?`n")
             $recordFailures = @(Get-TestFailuresFromLog -Lines $lines -LogId $logId -RecordName $record.name)
             # Mirror the PR-side build-error extraction (GPT F2): always scan base Task logs for coded
@@ -1869,14 +2346,29 @@ $pr = Invoke-GhJson -Arguments @(
 )
 
 $changedFiles = @()
-$diffOutput = & gh pr diff $PrNumber --repo $Repository --name-only 2>$null
-if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace(($diffOutput | Out-String))) {
-    $changedFiles = @($diffOutput | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+$diffResult = $null
+try {
+    $diffResult = Invoke-ProcessWithGatherDeadline `
+        -FileName "gh" `
+        -Arguments @("pr", "diff", "$PrNumber", "--repo", $Repository, "--name-only")
+}
+catch {
+    $diffResult = $null
+}
+if ($diffResult -and $diffResult.exitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace([string]$diffResult.stdout)) {
+    $changedFiles = @(([string]$diffResult.stdout -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 }
 else {
-    $apiOutput = & gh api "repos/$Repository/pulls/$PrNumber/files" --paginate --jq '.[].filename' 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        $changedFiles = @($apiOutput | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    try {
+        $apiResult = Invoke-ProcessWithGatherDeadline `
+            -FileName "gh" `
+            -Arguments @("api", "repos/$Repository/pulls/$PrNumber/files", "--paginate", "--jq", ".[].filename")
+        if ($apiResult.exitCode -eq 0) {
+            $changedFiles = @(([string]$apiResult.stdout -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        }
+    }
+    catch {
+        $changedFiles = @()
     }
 }
 
@@ -2013,9 +2505,93 @@ foreach ($ref in $manualBuildRefs.ToArray()) {
     }
 }
 
+function Get-VisualEvidenceBudgetDecision {
+    # Decide whether a maui-pr-uitests build may run visual discovery, given how much visual-discovery
+    # time has ALREADY been spent (accumulated in $ElapsedSeconds by prior builds' scans only). The
+    # budget is charged against elapsed *visual* time, never wall clock, so interleaved timeline/log/
+    # Helix work between uitests builds cannot exhaust it. Non-positive remaining == budget spent.
+    param(
+        [double]$BudgetSeconds,
+        [double]$ElapsedSeconds
+    )
+
+    $remaining = $BudgetSeconds - $ElapsedSeconds
+    return [pscustomobject]@{
+        remainingSeconds = $remaining
+        exhausted        = ($remaining -le 0)
+    }
+}
+
+function Get-BoundedVisualDeadline {
+    param(
+        [datetime]$VisualStart,
+        [double]$RemainingVisualSeconds,
+        [datetime]$GatherHardDeadline
+    )
+
+    $visualQuotaDeadline = $VisualStart.AddSeconds([Math]::Max(0.0, $RemainingVisualSeconds))
+    if ($GatherHardDeadline -lt $visualQuotaDeadline) {
+        return $GatherHardDeadline
+    }
+    return $visualQuotaDeadline
+}
+
+function Get-VisualRequestTimeoutSeconds {
+    # Cap a single visual-evidence HTTP request's timeout by the wall-clock time left on the shared
+    # visual-evidence deadline. Each detail/attachments call otherwise uses the fixed default timeout,
+    # so a result entered with only seconds of budget left could overrun by the full default (twice,
+    # for the detail + attachments pair) before the per-result loop guard next runs. Never returns
+    # below MinimumTimeoutSec: a positive-but-tiny remainder still issues one bounded request, and the
+    # caller's own deadline recheck stops the loop.
+    param(
+        [Parameter(Mandatory = $true)]
+        [datetime]$Deadline,
+        [int]$DefaultTimeoutSec = 100,
+        [int]$MinimumTimeoutSec = 1
+    )
+
+    if ($Deadline -eq [datetime]::MaxValue) {
+        return $DefaultTimeoutSec
+    }
+
+    $remaining = [int][Math]::Floor(($Deadline - (Get-Date)).TotalSeconds)
+    if ($remaining -lt $MinimumTimeoutSec) {
+        return $MinimumTimeoutSec
+    }
+    if ($remaining -lt $DefaultTimeoutSec) {
+        return $remaining
+    }
+    return $DefaultTimeoutSec
+}
+
 $builds = New-Object System.Collections.Generic.List[object]
 $allLogFailures = New-Object System.Collections.Generic.List[object]
 $allLogExcerpts = New-Object System.Collections.Generic.List[object]
+$allVisualEvidence = New-Object System.Collections.Generic.List[object]
+$visualEvidenceLimitations = New-Object System.Collections.Generic.List[string]
+# Bound the total wall-clock time spent discovering visual evidence. The per-build inner loop
+# below issues up to ~2 requests for each of the first 100 failed results; across several
+# maui-pr-uitests builds a stalled AzDO response (even with a per-request TimeoutSec) could
+# otherwise hold the pre-activation gather near the job ceiling before continue-on-error can
+# fall back. Once the budget is exhausted we stop issuing new visual-evidence requests.
+# The deadline is started lazily on the first maui-pr-uitests build that visual discovery actually
+# reaches (see below), so unrelated timeline/log/Helix work on earlier builds cannot consume the
+# visual-only budget before discovery has begun.
+$visualEvidenceBudgetSeconds = 600
+$parsedVisualBudget = 0
+if (-not [string]::IsNullOrWhiteSpace($env:REVIEW_TESTS_VISUAL_BUDGET_SECONDS) -and
+    [int]::TryParse($env:REVIEW_TESTS_VISUAL_BUDGET_SECONDS, [ref]$parsedVisualBudget) -and
+    $parsedVisualBudget -gt 0) {
+    $visualEvidenceBudgetSeconds = $parsedVisualBudget
+}
+$visualEvidenceDeadline = $null
+$visualEvidenceBudgetTripped = $false
+# Charge ONLY wall-clock time actually spent inside visual discovery against the budget. This
+# accumulates in the discovery block's finally; timeline/log/Helix processing on this and
+# interleaved builds between visual scans is never counted, so several maui-pr-uitests builds (or
+# reruns) each get a fair share and slow nonvisual work can no longer silently exhaust the budget
+# before a later build's responsive scan begins.
+$visualEvidenceElapsedSeconds = 0.0
 # Failed Task legs whose log was read but yielded NO extractable failure (test OR build
 # error). This is the backstop for the "never wrong again" guarantee: even if a novel
 # break shape escapes both extractors, a failed-but-unexplained leg forces the verdict
@@ -2024,6 +2600,7 @@ $allUnexplainedLegs = New-Object System.Collections.Generic.List[object]
 
 foreach ($buildRef in $buildRefsById.Values) {
     Write-Host "Inspecting AzDO build $($buildRef.buildId)..."
+    $gatherDeadlineRecordedForBuild = $false
 
     # Reset per-build so a build whose timeline read FAILS cannot inherit the PREVIOUS build's
     # timeline records. $records is only (re)assigned inside the timeline-readable branch below; the
@@ -2048,6 +2625,9 @@ foreach ($buildRef in $buildRefsById.Values) {
         logExcerpts = @()
         testFailuresFromLogs = @()
         testResults = @()
+        visualEnvironmentHints = @()
+        visualEnvironmentHintCoverageIncompletePlatforms = @()
+        visualEvidence = @()
         helix = [ordered]@{
             checked = $false
             jobIds = @()
@@ -2055,6 +2635,21 @@ foreach ($buildRef in $buildRefsById.Values) {
             error = $null
         }
         recentBaseBuilds = @()
+    }
+
+    if ((Get-Date) -ge $gatherHardDeadline) {
+        $deadlineMessage = "Overall gather budget of ${gatherBudgetSeconds}s was exhausted before AzDO build $($buildRef.buildId) could be inspected."
+        $buildSummary.error = $deadlineMessage
+        $allUnexplainedLegs.Add([ordered]@{
+                buildId = $buildRef.buildId
+                recordName = "overall gather deadline reached before build inspection"
+                recordType = "Task"
+                result = "failed"
+                logId = $null
+                reason = $deadlineMessage
+            })
+        $builds.Add($buildSummary)
+        continue
     }
 
     $buildResult = Invoke-AzDoJsonWithProjectFallback -Org $buildRef.org -Project $buildRef.project -RelativePath "_apis/build/builds/$($buildRef.buildId)?api-version=7.1"
@@ -2135,6 +2730,20 @@ foreach ($buildRef in $buildRefsById.Values) {
     }
 
     $logsToRead = @($failedRecords | Where-Object { $_.result -eq "failed" -and $_.log -and $_.log.id } | Select-Object -First 12)
+    $sampledLogIds = @{}
+    foreach ($sampledRecord in $logsToRead) {
+        $sampledLogIds[[string]$sampledRecord.log.id] = $true
+    }
+    foreach ($unsampledRecord in @($failedRecords | Where-Object {
+                $_.log -and
+                $_.log.id -and
+                -not $sampledLogIds.ContainsKey([string]$_.log.id)
+            })) {
+        $unsampledPlatform = Get-PlatformFromText -Text ([string]$unsampledRecord.name)
+        if ($unsampledPlatform -notin $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms) {
+            $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms += @($unsampledPlatform)
+        }
+    }
     # Track which failed Task records we actually inspected (read a log AND either extracted
     # a failure or recorded an unexplained leg). Failed Task legs NOT in this set after the
     # loop -- no log id, beyond the 12-read cap, or a read that threw -- are uninspected and
@@ -2151,6 +2760,31 @@ foreach ($buildRef in $buildRefsById.Values) {
         try {
             $logText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$($buildRef.buildId)/logs/$logId`?api-version=7.1"
             $lines = @($logText -split "`r?`n")
+
+            $visualEnvironmentHint = Get-VisualEnvironmentHintFromLog -Text $logText
+            if ($visualEnvironmentHint) {
+                $visualEnvironmentHint = [ordered]@{
+                    platform = $visualEnvironmentHint.platform
+                    environmentName = $visualEnvironmentHint.environmentName
+                    apiVersion = $visualEnvironmentHint.apiVersion
+                    sourceRecordName = [string]$record.name
+                    logId = $logId
+                }
+                $existingHint = @($buildSummary.visualEnvironmentHints | Where-Object {
+                    $_.platform -eq $visualEnvironmentHint.platform -and
+                    $_.environmentName -eq $visualEnvironmentHint.environmentName -and
+                    $_.sourceRecordName -eq $visualEnvironmentHint.sourceRecordName
+                })
+                if ($existingHint.Count -eq 0) {
+                    $buildSummary.visualEnvironmentHints += @($visualEnvironmentHint)
+                }
+            }
+            else {
+                $hintlessPlatform = Get-PlatformFromText -Text ([string]$record.name)
+                if ($hintlessPlatform -notin $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms) {
+                    $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms += @($hintlessPlatform)
+                }
+            }
 
             $excerpts = @(Get-LogExcerpts -Lines $lines -LogId $logId -RecordName $record.name)
             foreach ($excerpt in $excerpts) {
@@ -2246,6 +2880,10 @@ foreach ($buildRef in $buildRefsById.Values) {
             $resolvedFailedRecordIds[[string]$record.id] = $true
         }
         catch {
+            $failedHintPlatform = Get-PlatformFromText -Text ([string]$record.name)
+            if ($failedHintPlatform -notin $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms) {
+                $buildSummary.visualEnvironmentHintCoverageIncompletePlatforms += @($failedHintPlatform)
+            }
             $buildSummary.logExcerpts += @([ordered]@{
                 logId = $logId
                 recordName = $record.name
@@ -2590,13 +3228,206 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
+    $visualDeadlineLimitedByGather = $false
+    if ($build.definition.name -eq "maui-pr-uitests") {
+        # Recompute this build's scan deadline from the REMAINING budget (budget minus visual time
+        # already spent by earlier builds). Only wall-clock time actually inside the discovery block
+        # below is charged back (see the finally), so timeline/log/Helix work on this and interleaved
+        # builds between visual scans never shortens a later build's responsive scan.
+        $visualBudgetDecision = Get-VisualEvidenceBudgetDecision `
+            -BudgetSeconds $visualEvidenceBudgetSeconds `
+            -ElapsedSeconds $visualEvidenceElapsedSeconds
+        $visualScanStart = Get-Date
+        $visualQuotaDeadline = $visualScanStart.AddSeconds([Math]::Max(0.0, $visualBudgetDecision.remainingSeconds))
+        $visualEvidenceDeadline = Get-BoundedVisualDeadline `
+            -VisualStart $visualScanStart `
+            -RemainingVisualSeconds $visualBudgetDecision.remainingSeconds `
+            -GatherHardDeadline $gatherHardDeadline
+        $visualDeadlineLimitedByGather = $visualEvidenceDeadline -lt $visualQuotaDeadline
+        if ($visualEvidenceDeadline -le $visualScanStart -and -not $visualEvidenceBudgetTripped) {
+            $visualEvidenceBudgetTripped = $true
+            $visualEvidenceLimitations.Add("Visual result discovery was skipped at the overall ${gatherBudgetSeconds}s gather deadline so primary findings could be serialized.")
+        }
+    }
+
+    if ($build.definition.name -eq "maui-pr-uitests" -and $visualBudgetDecision.exhausted -and -not $visualEvidenceBudgetTripped) {
+        # The visual budget was already exhausted by EARLIER maui-pr-uitests builds' visual scans
+        # (measured as accumulated discovery time, not wall clock), so this build's discovery cannot
+        # begin. Without this, the discovery block below is skipped silently and an empty visual scan
+        # is indistinguishable from a genuinely clean one. Record the caveat exactly once -- the same
+        # limitation the inner per-result guard records when the budget trips mid-scan.
+        $visualEvidenceBudgetTripped = $true
+        $visualEvidenceLimitations.Add("Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted.")
+    }
+
+    if ($build.definition.name -eq "maui-pr-uitests" -and
+        -not $visualBudgetDecision.exhausted -and
+        $visualEvidenceDeadline -gt $visualScanStart) {
+        try {
+            $failedResultPage = Get-AzDoFailedTestResultsByBuild `
+                -Org $buildRef.org `
+                -Project $buildRef.project `
+                -BuildId $buildRef.buildId `
+                -Deadline $visualEvidenceDeadline
+            $failedResultsAll = @($failedResultPage.results)
+            $failedResults = @($failedResultsAll | Select-Object -First 100)
+
+            if ($failedResultPage.truncated) {
+                $visualEvidenceLimitations.Add("Visual result discovery for AzDO build $($buildRef.buildId) stopped at the pagination guard; some screenshot comparisons may be omitted.")
+            }
+            if ($failedResultsAll.Count -gt $failedResults.Count) {
+                $visualEvidenceLimitations.Add("Visual result discovery for AzDO build $($buildRef.buildId) inspected the first $($failedResults.Count) of $($failedResultsAll.Count) failed test results.")
+            }
+
+            foreach ($failedResult in $failedResults) {
+                if ((Get-Date) -ge $visualEvidenceDeadline) {
+                    if (-not $visualEvidenceBudgetTripped) {
+                        $visualEvidenceBudgetTripped = $true
+                        $visualEvidenceLimitations.Add($(if ($visualDeadlineLimitedByGather) {
+                                    "Visual result discovery stopped at the overall ${gatherBudgetSeconds}s gather deadline so primary findings could be serialized; some screenshot comparisons may be omitted."
+                                }
+                                else {
+                                    "Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted."
+                                }))
+                    }
+                    break
+                }
+                $runId = [int](Get-ObjectValue -Object $failedResult -Names @("runId"))
+                $resultId = [int](Get-ObjectValue -Object $failedResult -Names @("id"))
+                if ($runId -le 0 -or $resultId -le 0) {
+                    continue
+                }
+
+                try {
+                    $resultUrl = "$baseUrl/_apis/test/Runs/$runId/Results/$resultId`?detailsToInclude=Iterations&api-version=7.1"
+                    $detailTimeout = Get-VisualRequestTimeoutSeconds -Deadline $visualEvidenceDeadline
+                    $detail = Invoke-JsonUrl -Url $resultUrl -AllowAuth -TimeoutSec $detailTimeout
+                    $message = [string](Get-ObjectValue -Object $detail -Names @("errorMessage"))
+                    $snapshotInfo = Get-VisualSnapshotInfo -Message $message
+                    if (-not $snapshotInfo) {
+                        continue
+                    }
+
+                    # Recheck the shared deadline before the second (attachments) request: a detail
+                    # response that consumed the remaining budget must not be followed by another
+                    # full-timeout call. Charge the elapsed time and stop the scan if it is now spent.
+                    if ((Get-Date) -ge $visualEvidenceDeadline) {
+                        if (-not $visualEvidenceBudgetTripped) {
+                            $visualEvidenceBudgetTripped = $true
+                            $visualEvidenceLimitations.Add($(if ($visualDeadlineLimitedByGather) {
+                                        "Visual result discovery stopped at the overall ${gatherBudgetSeconds}s gather deadline so primary findings could be serialized; some screenshot comparisons may be omitted."
+                                    }
+                                    else {
+                                        "Visual result discovery stopped after the ${visualEvidenceBudgetSeconds}s gather budget was exhausted; some screenshot comparisons may be omitted."
+                                    }))
+                        }
+                        break
+                    }
+
+                    $attachmentsUrl = "$baseUrl/_apis/test/Runs/$runId/Results/$resultId/attachments?api-version=7.1"
+                    $attachmentTimeout = Get-VisualRequestTimeoutSeconds -Deadline $visualEvidenceDeadline
+                    $attachmentResponse = Invoke-JsonUrl -Url $attachmentsUrl -AllowAuth -TimeoutSec $attachmentTimeout
+                    $selectedAttachments = Select-VisualAttachments `
+                        -Attachments (ConvertTo-Array $attachmentResponse.value) `
+                        -SnapshotFileName $snapshotInfo.snapshotFileName
+
+                    if (-not $selectedAttachments.actual) {
+                        $visualEvidenceLimitations.Add("Visual result $runId/$resultId in AzDO build $($buildRef.buildId) named '$($snapshotInfo.snapshotFileName)' but exposed no matching actual-image attachment.")
+                        continue
+                    }
+
+                    $testName = [string](Get-ObjectValue -Object $detail -Names @("testCaseTitle") -Default (
+                        Get-ObjectValue -Object $detail.testCase -Names @("name") -Default (
+                            Get-ObjectValue -Object $failedResult -Names @("testCaseTitle") -Default $snapshotInfo.snapshotFileName
+                        )
+                    ))
+                    $automatedTestName = [string](Get-ObjectValue -Object $detail -Names @("automatedTestName") -Default (
+                        Get-ObjectValue -Object $failedResult -Names @("automatedTestName")
+                    ))
+                    $runName = [string](Get-ObjectValue -Object $detail.testRun -Names @("name"))
+                    $platform = Get-PlatformFromText -Text "$runName $automatedTestName $($detail.automatedTestStorage)"
+                    $environmentHints = @($buildSummary.visualEnvironmentHints | Where-Object { $_.platform -eq $platform })
+                    $environmentName = Resolve-VisualEnvironmentName `
+                        -Hints $environmentHints `
+                        -Platform $platform `
+                        -ResultText "$runName $automatedTestName $($detail.automatedTestStorage)" `
+                        -IncompletePlatforms @($buildSummary.visualEnvironmentHintCoverageIncompletePlatforms)
+
+                    $evidence = [ordered]@{
+                        testName = $testName
+                        automatedTestName = $automatedTestName
+                        platform = $platform
+                        buildId = $buildRef.buildId
+                        buildDefinition = $build.definition.name
+                        buildUrl = $build._links.web.href
+                        buildSourceVersion = $build.sourceVersion
+                        runId = $runId
+                        runName = $runName
+                        resultId = $resultId
+                        completedDate = $detail.completedDate
+                        resultUrl = $resultUrl
+                        message = Get-BoundedFailureText -Text $message
+                        kind = $snapshotInfo.kind
+                        snapshotFileName = $snapshotInfo.snapshotFileName
+                        description = $snapshotInfo.description
+                        differencePercent = $snapshotInfo.differencePercent
+                        baselineWidth = $snapshotInfo.baselineWidth
+                        baselineHeight = $snapshotInfo.baselineHeight
+                        actualWidth = $snapshotInfo.actualWidth
+                        actualHeight = $snapshotInfo.actualHeight
+                        baselinePathHint = $snapshotInfo.baselinePathHint
+                        environmentName = $environmentName
+                        environmentHints = $environmentHints
+                        attachmentsListUrl = $attachmentsUrl
+                        selectedRetry = $selectedAttachments.selectedRetry
+                        actual = $selectedAttachments.actual
+                        diff = $selectedAttachments.diff
+                    }
+
+                    $buildSummary.visualEvidence += @($evidence)
+                    $allVisualEvidence.Add($evidence)
+                }
+                catch {
+                    $visualEvidenceLimitations.Add("Visual result detail $runId/$resultId in AzDO build $($buildRef.buildId) could not be inspected: $($_.Exception.Message)")
+                }
+            }
+        }
+        catch {
+            $visualEvidenceLimitations.Add("Visual result discovery failed for AzDO build $($buildRef.buildId): $($_.Exception.Message)")
+        }
+        finally {
+            # Charge ONLY the wall-clock time spent in THIS build's visual discovery to the shared
+            # budget. Accumulating here (not a running wall-clock deadline) is what keeps interleaved
+            # nonvisual work on other builds from consuming a later uitests build's scan budget.
+            $visualEvidenceElapsedSeconds += ((Get-Date) - $visualScanStart).TotalSeconds
+        }
+    }
+
+    if ((Get-Date) -ge $gatherHardDeadline) {
+        $deadlineMessage = "Overall gather budget of ${gatherBudgetSeconds}s was exhausted after primary evidence for AzDO build $($buildRef.buildId) was collected; remaining enrichment was skipped."
+        $buildSummary.error = $deadlineMessage
+        $allUnexplainedLegs.Add([ordered]@{
+                buildId = $buildRef.buildId
+                recordName = "overall gather deadline reached before enrichment completed"
+                recordType = "Task"
+                result = "failed"
+                logId = $null
+                reason = $deadlineMessage
+            })
+        $builds.Add($buildSummary)
+        continue
+    }
+
     if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
         try {
             # Page through ALL test runs. The endpoint returns only one ~100-run page per call; summing
             # failedTests over JUST the first page falsely confirmed Failed==0 when a failing run sat in
             # the tail (round-7 Opus F1 / GPT F1). Get-AzDoTestRuns follows the continuation token to
             # completion and reports whether the set was truncated.
-            $runsPaged = Get-AzDoTestRuns -BaseUrl $baseUrl -BuildId $buildRef.buildId
+            $runsPaged = Get-AzDoTestRuns `
+                -BaseUrl $baseUrl `
+                -BuildId $buildRef.buildId `
+                -Deadline $gatherHardDeadline
             $allRuns = @($runsPaged.runs)
             # If paging was abandoned with a continuation token still pending, the run set is INCOMPLETE.
             # Record an unexplained leg so the verdict caps to NHI and a truncated set never reads clean.
@@ -2608,6 +3439,9 @@ foreach ($buildRef in $buildRefsById.Values) {
                     uninspected = $true
                     runOverflow = $true
                 })
+                if ($runsPaged.deadlineExhausted) {
+                    $gatherDeadlineRecordedForBuild = $true
+                }
             }
             $candidateRunsAll = @($allRuns | Where-Object {
                 ($_.failedTests -gt 0) -or
@@ -2651,10 +3485,35 @@ foreach ($buildRef in $buildRefsById.Values) {
             }
 
             foreach ($run in $candidateRuns) {
+                if ((Get-Date) -ge $gatherHardDeadline) {
+                    if (-not $gatherDeadlineRecordedForBuild) {
+                        $allUnexplainedLegs.Add([ordered]@{
+                                buildId = $buildRef.buildId
+                                recordName = "overall gather deadline reached before authenticated test results completed"
+                                logId = $null
+                                uninspected = $true
+                                runResultsError = $true
+                            })
+                        $gatherDeadlineRecordedForBuild = $true
+                    }
+                    break
+                }
                 try {
                     $resultsUrl = "$baseUrl/_apis/test/Runs/$($run.id)/results?outcomes=Failed&api-version=7.1"
-                    $results = Invoke-JsonUrl -Url $resultsUrl -AllowAuth
-                    foreach ($result in (ConvertTo-Array $results.value)) {
+                    $requestTimeoutSec = Get-VisualRequestTimeoutSeconds -Deadline $gatherHardDeadline
+                    $results = Invoke-JsonUrl -Url $resultsUrl -AllowAuth -TimeoutSec $requestTimeoutSec
+                    $resultValuesAll = @(ConvertTo-Array $results.value)
+                    $resultValues = @($resultValuesAll | Select-Object -First 200)
+                    if ($resultValuesAll.Count -gt $resultValues.Count) {
+                        $allUnexplainedLegs.Add([ordered]@{
+                                buildId = $buildRef.buildId
+                                recordName = "test-run $($run.id) result overflow ($($resultValuesAll.Count) failures, only $($resultValues.Count) retained)"
+                                logId = $null
+                                uninspected = $true
+                                runResultsOverflow = $true
+                            })
+                    }
+                    foreach ($result in $resultValues) {
                         $failure = [ordered]@{
                             testName = $result.testCaseTitle
                             automatedTestName = $result.automatedTestName
@@ -2666,8 +3525,8 @@ foreach ($buildRef in $buildRefsById.Values) {
                             runName = $run.name
                             outcome = $result.outcome
                             durationInMs = $result.durationInMs
-                            message = $result.errorMessage
-                            stackTrace = $result.stackTrace
+                            message = Get-BoundedFailureText -Text $result.errorMessage -MaxChars 4000
+                            stackTrace = Get-BoundedFailureText -Text $result.stackTrace -MaxChars 8000
                         }
                         $buildSummary.testResults += @($failure)
                         $allLogFailures.Add($failure)
@@ -2699,6 +3558,23 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
+    if ((Get-Date) -ge $gatherHardDeadline) {
+        $deadlineMessage = "Overall gather budget of ${gatherBudgetSeconds}s was exhausted before base-build enrichment for AzDO build $($buildRef.buildId)."
+        $buildSummary.error = $deadlineMessage
+        if (-not $gatherDeadlineRecordedForBuild) {
+            $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $buildRef.buildId
+                    recordName = "overall gather deadline reached before base-build enrichment"
+                    recordType = "Task"
+                    result = "failed"
+                    logId = $null
+                    reason = $deadlineMessage
+                })
+        }
+        $builds.Add($buildSummary)
+        continue
+    }
+
     $definitionId = 0
     if ($build.definition -and $build.definition.id) {
         $definitionId = [int]$build.definition.id
@@ -2708,13 +3584,14 @@ foreach ($buildRef in $buildRefsById.Values) {
     # $LookbackBuilds would silently cap the leg diff (e.g. -RegressionBaseBuilds 10 with the default
     # -LookbackBuilds 5 could sample at most 5 and miss a base failure in an omitted build).
     $baseFetchTop = [Math]::Max($LookbackBuilds, $RegressionBaseBuilds)
-    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildRef.org -Project $buildRef.project -DefinitionId $definitionId -BaseBranch $pr.baseRefName -Top $baseFetchTop)
+    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildRef.org -Project $buildRef.project -DefinitionId $definitionId -BaseBranch $pr.baseRefName -Top $baseFetchTop -Deadline $gatherHardDeadline)
 
     $builds.Add($buildSummary)
 }
 
 $allFailuresArray = $allLogFailures.ToArray()
 $allExcerptsArray = $allLogExcerpts.ToArray()
+$visualEvidenceArray = $allVisualEvidence.ToArray()
 $buildArray = $builds.ToArray()
 $dedupedFailures = @(Get-DeduplicatedFailures -Failures $allFailuresArray)
 
@@ -2738,6 +3615,17 @@ $baseRecordMapCache = @{}
 
 if ($BaselineBuildsPerDefinition -gt 0) {
     foreach ($build in $buildArray) {
+        if ((Get-Date) -ge $gatherHardDeadline) {
+            $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $build.id
+                    recordName = "overall gather deadline reached during base-branch sampling"
+                    recordType = "Task"
+                    result = "failed"
+                    logId = $null
+                    reason = "Base-branch enrichment was stopped so primary findings could be serialized."
+                })
+            break
+        }
         if (-not $build.accessible -or -not $build.metadata) {
             continue
         }
@@ -2772,7 +3660,17 @@ if ($BaselineBuildsPerDefinition -gt 0) {
         # look "all-green on base" -> a false regressed-vs-base signal. (The most-recent-tip baseline
         # above is unaffected: it only early-returns on result -eq 'succeeded'.)
         $legSampleBuilds = @($completed | Where-Object { $_.result -ne 'canceled' } | Select-Object -First $RegressionBaseBuilds)
-        $baseAgg = Get-AggregatedBaseLegMap -Org $build.org -Project $build.project -BaseBuilds $legSampleBuilds -Cache $baseRecordMapCache
+        $baseAgg = Get-AggregatedBaseLegMap -Org $build.org -Project $build.project -BaseBuilds $legSampleBuilds -Cache $baseRecordMapCache -Deadline $gatherHardDeadline
+        if ($baseAgg.truncated) {
+            $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $build.id
+                    recordName = "base leg sampling truncated at overall gather deadline"
+                    recordType = "Task"
+                    result = "failed"
+                    logId = $null
+                    reason = "Not all base-build timelines were inspected before finalization."
+                })
+        }
         if ($baseAgg.accessible) {
             $prBuildToBaseMap[[string]$build.id] = [ordered]@{
                 baseBuildId = [int]$mostRecent.id
@@ -2820,6 +3718,17 @@ if ($BaselineBuildsPerDefinition -gt 0) {
         # the base branch can be flagged as pre-existing.
         $notSucceeded = @($completed | Where-Object { $_.result -in @('failed', 'partiallySucceeded', 'canceled') })
         foreach ($base in @($notSucceeded | Select-Object -First $BaselineBuildsPerDefinition)) {
+            if ((Get-Date) -ge $gatherHardDeadline) {
+                $allUnexplainedLegs.Add([ordered]@{
+                        buildId = $build.id
+                        recordName = "baseline log sampling truncated at overall gather deadline"
+                        recordType = "Task"
+                        result = "failed"
+                        logId = $null
+                        reason = "Not all baseline logs were inspected before finalization."
+                    })
+                break
+            }
             $baseKey = "$($build.org)|$($build.project)|$($base.id)"
             if ($baselineInspected.ContainsKey($baseKey)) {
                 continue
@@ -2827,7 +3736,7 @@ if ($BaselineBuildsPerDefinition -gt 0) {
             $baselineInspected[$baseKey] = $true
 
             Write-Host "Inspecting baseline build $($base.id) for $defName..."
-            $extract = Get-BuildLogTestFailures -Org $build.org -Project $build.project -BuildId ([int]$base.id)
+            $extract = Get-BuildLogTestFailures -Org $build.org -Project $build.project -BuildId ([int]$base.id) -Deadline $gatherHardDeadline
             # Opus R10 #1: ONLY the most-recent completed base build is authoritative for the DISMISSAL
             # decision (matching the doc and the leg-map, which both use $mostRecent). An OLDER
             # not-succeeded build in the lookback window may carry a failure that was since FIXED and is
@@ -3519,13 +4428,13 @@ if ($ciScanIssues.error) {
 }
 
 $context = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     repository = $Repository
     azdo = [ordered]@{
         authenticated = -not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)
         authSource = $script:AzDoAuthSource
-        dataSourceGuidance = "Uses AzDO build, timeline, and build log REST APIs as the primary data source; authenticated _apis/test queries are optional and only attempted when an AzDO bearer token is available."
+        dataSourceGuidance = "Uses AzDO build, timeline, and build log REST APIs as the primary data source; public vstmr failed-result metadata is used for UI visual evidence; authenticated _apis/test queries remain optional."
     }
     pr = [ordered]@{
         number = $pr.number
@@ -3566,6 +4475,11 @@ $context = [ordered]@{
     }
     buildRefs = @($buildRefsById.Values)
     builds = $buildArray
+    visualEvidence = [ordered]@{
+        detected = $visualEvidenceArray.Count
+        comparisons = $visualEvidenceArray
+        limitations = $visualEvidenceLimitations.ToArray()
+    }
     failures = [ordered]@{
         unique = $dedupedFailures
         baseline = $baselineDeduped
@@ -3623,6 +4537,23 @@ $md.Add("- Platform labels: $(@($platformLabels) -join ', ')")
 $md.Add("- Inferred platforms from files: $(@($inferredPlatforms) -join ', ')")
 $md.Add("- Area labels: $(@($areaLabels) -join ', ')")
 $md.Add("- Area hints from files: $(@($areaHints) -join ', ')")
+$md.Add("")
+$md.Add("## Visual snapshot evidence")
+$md.Add("")
+$md.Add("- Visual comparisons detected: $($visualEvidenceArray.Count)")
+if ($visualEvidenceArray.Count -gt 0) {
+    foreach ($visual in $visualEvidenceArray) {
+        $description = if ($visual.description) { $visual.description } else { $visual.kind }
+        $environment = if ($visual.environmentName) { " · baseline environment $($visual.environmentName)" } else { "" }
+        $md.Add("  - $($visual.snapshotFileName) on $($visual.platform) (build $($visual.buildId), run $($visual.runId), result $($visual.resultId)): $description$environment")
+    }
+}
+if ($visualEvidenceLimitations.Count -gt 0) {
+    $md.Add("- Visual evidence limitations:")
+    foreach ($visualLimitation in $visualEvidenceLimitations) {
+        $md.Add("  - $visualLimitation")
+    }
+}
 $md.Add("")
 $md.Add("## Interesting checks")
 $md.Add("")

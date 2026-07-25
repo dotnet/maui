@@ -323,8 +323,6 @@ PUSH BACK), make no commit.
   - lists what you **applied** (per finding) and the re-validation result, and
   - for each **PUSH BACK** finding, states plainly why you did not change it (technical reason +
     evidence). Be courteous and specific; it is fine to disagree with a review when you are right.
-  - If the reviewer's instructions mention a rerun trigger (e.g. `/review rerun`), you may include
-    it so the review re-runs against your new commit.
 
 > **Dry-run gate:** if `dry_run == "true"`, do NOT emit — print what you would push (diff --stat)
 > and the comment body to the run log instead.
