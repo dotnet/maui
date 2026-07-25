@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -9,6 +10,8 @@ using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
+using PasskeysApi = Microsoft.Maui.Authentication.Passkeys;
 
 namespace Samples.ViewModel
 {
@@ -37,6 +40,8 @@ namespace Samples.ViewModel
 
 		HttpClient httpClient;
 
+		public ObservableCollection<PasskeyItem> Passkeys { get; } = new();
+
 		public PasskeysViewModel()
 		{
 			SignUpCommand = new Command(async () => await SignUpAsync());
@@ -47,7 +52,7 @@ namespace Samples.ViewModel
 			EditServerUrlCommand = new Command(async () => await EditServerUrlAsync());
 		}
 
-		public bool IsSupported => Passkeys.IsSupported;
+		public bool IsSupported => PasskeysApi.IsSupported;
 
 		public string SupportedText => IsSupported
 			? "Passkeys are supported on this device."
@@ -208,6 +213,13 @@ namespace Samples.ViewModel
 
 			try
 			{
+				// Let the user name the passkey up front (so it isn't stored "Unnamed"). A sensible default
+				// is the device name; if they clear it or cancel, the server falls back to the AAGUID-inferred
+				// authenticator name (e.g. "Google Password Manager").
+				var suggestedName = string.IsNullOrWhiteSpace(DeviceInfo.Name) ? "My passkey" : DeviceInfo.Name;
+				var name = await DisplayPromptAsync("Name this passkey", "A label to recognise it later (e.g. your device or password manager).", suggestedName);
+				var nameQuery = string.IsNullOrWhiteSpace(name) ? string.Empty : $"?name={Uri.EscapeDataString(name.Trim())}";
+
 				IsBusy = true;
 				Log("Requesting creation options…");
 
@@ -218,14 +230,51 @@ namespace Samples.ViewModel
 
 				// 2) Create the passkey with the platform authenticator (biometric / PIN prompt).
 				Log("Creating passkey with the platform authenticator…");
-				var response = await Passkeys.CreateAsync(creationOptionsJson, CancellationToken.None);
+				var response = await PasskeysApi.CreateAsync(creationOptionsJson, CancellationToken.None);
 
-				// 3) Send the attestation back to the RP server to verify + store.
+				// 3) Send the attestation back to the RP server to verify + store (with the chosen name).
 				Log("Verifying attestation with the server…");
-				await PostAsync("/passkeys/register/finish", response.ToString());
+				await PostAsync($"/passkeys/register/finish{nameQuery}", response.ToString());
 
 				await RefreshAccountStateAsync();
 				Log("✅ Passkey created. You can now sign in with it.");
+			}
+			catch (Exception ex)
+			{
+				HandleError(ex);
+			}
+			finally
+			{
+				IsBusy = false;
+			}
+		}
+
+		async Task DeletePasskeyAsync(PasskeyItem passkey)
+		{
+			if (passkey is null)
+				return;
+
+			try
+			{
+				var confirmed = await DisplayConfirmAsync(
+					"Remove passkey?",
+					$"“{passkey.Name}” will be removed from your account. You won't be able to sign in with it anymore.",
+					"Remove",
+					"Cancel");
+				if (!confirmed)
+					return;
+
+				IsBusy = true;
+				Log($"Removing passkey “{passkey.Name}”…");
+
+				var client = GetClient();
+				using var httpResponse = await client.DeleteAsync($"/passkeys/delete?credentialId={Uri.EscapeDataString(passkey.Id)}");
+				var body = await httpResponse.Content.ReadAsStringAsync();
+				if (!httpResponse.IsSuccessStatusCode)
+					throw new InvalidOperationException($"Server returned {(int)httpResponse.StatusCode}: {ExtractServerMessage(body)}");
+
+				await RefreshAccountStateAsync();
+				Log("✅ Passkey removed.");
 			}
 			catch (Exception ex)
 			{
@@ -257,7 +306,7 @@ namespace Samples.ViewModel
 
 				// 2) Assert with the platform authenticator (biometric / PIN prompt).
 				Log("Asserting passkey with the platform authenticator…");
-				var response = await Passkeys.AssertAsync(requestOptionsJson, CancellationToken.None);
+				var response = await PasskeysApi.AssertAsync(requestOptionsJson, CancellationToken.None);
 
 				// 3) Send the assertion back to the RP server to verify + sign in.
 				Log("Verifying assertion with the server…");
@@ -287,7 +336,7 @@ namespace Samples.ViewModel
 
 			Log($"✅ Signed in as {CurrentUsername}.");
 
-			if (!HasPasskey && Passkeys.IsSupported)
+			if (!HasPasskey && PasskeysApi.IsSupported)
 			{
 				var wantsPasskey = await DisplayConfirmAsync(
 					"Set up a passkey?",
@@ -300,9 +349,9 @@ namespace Samples.ViewModel
 			}
 		}
 
-		// Single source of truth for "am I signed in, and do I have a passkey?" — GET /passkeys/list
-		// returns { username, passkeyCount } for the cookie-authenticated user, or 401 when signed out.
-		// The Identity session cookie rides along on this GET via the shared CookieContainer.
+		// Single source of truth for "am I signed in, and what passkeys do I have?" — GET /passkeys/list
+		// returns { username, passkeyCount, passkeys[] } for the cookie-authenticated user, or 401 when
+		// signed out. The Identity session cookie rides along on this GET via the shared CookieContainer.
 		async Task RefreshAccountStateAsync()
 		{
 			var client = GetClient();
@@ -322,6 +371,25 @@ namespace Samples.ViewModel
 			var root = doc.RootElement;
 			CurrentUsername = root.TryGetProperty("username", out var u) ? u.GetString() : Username;
 			PasskeyCount = root.TryGetProperty("passkeyCount", out var c) ? c.GetInt32() : 0;
+
+			Passkeys.Clear();
+			if (root.TryGetProperty("passkeys", out var list) && list.ValueKind == JsonValueKind.Array)
+			{
+				foreach (var pk in list.EnumerateArray())
+				{
+					var item = new PasskeyItem
+					{
+						Id = pk.TryGetProperty("id", out var id) ? id.GetString() : null,
+						Name = pk.TryGetProperty("name", out var n) ? n.GetString() : "Unnamed passkey",
+						CreatedAt = pk.TryGetProperty("createdAt", out var ca) && ca.TryGetDateTimeOffset(out var dto)
+							? dto.ToLocalTime().ToString("MMM d, yyyy")
+							: null,
+					};
+					item.DeleteCommand = new Command(async () => await DeletePasskeyAsync(item));
+					Passkeys.Add(item);
+				}
+			}
+
 			IsSignedIn = true;
 		}
 
@@ -330,6 +398,7 @@ namespace Samples.ViewModel
 			IsSignedIn = false;
 			CurrentUsername = null;
 			PasskeyCount = 0;
+			Passkeys.Clear();
 		}
 
 		async Task EditServerUrlAsync()
@@ -352,7 +421,7 @@ namespace Samples.ViewModel
 		{
 			OnPropertyChanged(nameof(IsSupported));
 			OnPropertyChanged(nameof(SupportedText));
-			if (!Passkeys.IsSupported)
+			if (!PasskeysApi.IsSupported)
 			{
 				Log("Passkeys are not supported on this device/OS version.");
 				return false;
@@ -459,9 +528,23 @@ namespace Samples.ViewModel
 
 		void Log(string message)
 		{
-			// Only the latest message is shown (one-line status strip at the bottom of the page).
+			// Only the latest message is shown (status strip at the bottom of the page).
 			MainThread.BeginInvokeOnMainThread(() =>
 				Status = $"{DateTime.Now:HH:mm:ss}  {message}");
 		}
+	}
+
+	// One row in the signed-in passkey list. Id is the Base64Url credential id used to delete it.
+	public class PasskeyItem
+	{
+		public string Id { get; set; }
+
+		public string Name { get; set; }
+
+		public string CreatedAt { get; set; }
+
+		public string CreatedAtText => string.IsNullOrEmpty(CreatedAt) ? string.Empty : $"Added {CreatedAt}";
+
+		public ICommand DeleteCommand { get; set; }
 	}
 }

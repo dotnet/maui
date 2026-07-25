@@ -1,6 +1,8 @@
+using System.Buffers.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Essentials.Samples.WebServer.Data;
+using Essentials.Samples.WebServer.Components.Account;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -52,7 +54,20 @@ internal static class PasskeyApiEndpoints
 				return Results.Json(new { error = "Not signed in." }, statusCode: StatusCodes.Status401Unauthorized);
 
 			var passkeys = await userManager.GetPasskeysAsync(user);
-			return Results.Ok(new { username = user.UserName, passkeyCount = passkeys.Count });
+			return Results.Ok(new
+			{
+				username = user.UserName,
+				passkeyCount = passkeys.Count,
+				// CredentialId is the stable per-passkey handle; Base64Url-encode it so the native client
+				// can round-trip it back on /delete. Name uses the template's display rules (explicit name,
+				// else AAGUID-inferred authenticator, else "Unnamed passkey").
+				passkeys = passkeys.Select(pk => new
+				{
+					id = Base64Url.EncodeToString(pk.CredentialId),
+					name = PasskeyAuthenticators.GetDisplayName(pk),
+					createdAt = pk.CreatedAt,
+				}),
+			});
 		}).RequireAuthorization();
 
 		// 1) Registration — begin: returns PublicKeyCredentialCreationOptions JSON (WebAuthn).
@@ -86,9 +101,12 @@ internal static class PasskeyApiEndpoints
 		}).RequireAuthorization();
 
 		// 2) Registration — finish: validates the attestation response and stores the passkey.
-		// The WebAuthn credential JSON is bound straight from the request body by the framework.
+		// The WebAuthn credential JSON is bound straight from the request body by the framework; an
+		// optional ?name= query gives the passkey a friendly label (mirrors the template's "name your
+		// passkey" step). If omitted, we fall back to the AAGUID-inferred authenticator name.
 		group.MapPost("/register/finish", async (
 			JsonElement credential,
+			string? name,
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager) =>
 		{
@@ -113,12 +131,51 @@ internal static class PasskeyApiEndpoints
 			if (user is null)
 				return Results.BadRequest("Unable to resolve the user for this passkey.");
 
+			// Give the passkey a name so it isn't "Unnamed": prefer the caller-supplied label, otherwise
+			// infer it from the authenticator's AAGUID (e.g. "Google Password Manager"), same as the
+			// browser template's AddPasskey flow.
+			if (!string.IsNullOrWhiteSpace(name))
+				attestation.Passkey.Name = name.Trim();
+			else if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestation.Passkey, out var inferred))
+				attestation.Passkey.Name = inferred;
+
 			var stored = await userManager.AddOrUpdatePasskeyAsync(user, attestation.Passkey);
 			if (!stored.Succeeded)
 				return Results.BadRequest("Failed to store passkey.");
 
-			return Results.Ok(new { registered = true, username = user.UserName });
+			return Results.Ok(new { registered = true, username = user.UserName, name = attestation.Passkey.Name });
 		});
+
+		// 2b) Delete a passkey the signed-in user owns. credentialId is the Base64Url id returned by
+		// /list. Guarded with .RequireAuthorization() so only the owner can remove their own passkeys.
+		group.MapDelete("/delete", async (
+			string? credentialId,
+			HttpContext context,
+			UserManager<ApplicationUser> userManager) =>
+		{
+			var user = await userManager.GetUserAsync(context.User);
+			if (user is null)
+				return Results.Json(new { error = "Not signed in." }, statusCode: StatusCodes.Status401Unauthorized);
+
+			if (string.IsNullOrWhiteSpace(credentialId))
+				return Results.BadRequest(new { error = "A credentialId is required." });
+
+			byte[] id;
+			try
+			{
+				id = Base64Url.DecodeFromChars(credentialId);
+			}
+			catch (FormatException)
+			{
+				return Results.BadRequest(new { error = "The credentialId is not valid Base64Url." });
+			}
+
+			var result = await userManager.RemovePasskeyAsync(user, id);
+			if (!result.Succeeded)
+				return Results.BadRequest(new { error = "The passkey could not be removed (it may not belong to this account)." });
+
+			return Results.Ok(new { removed = true });
+		}).RequireAuthorization();
 
 		// 3) Authentication — begin: returns PublicKeyCredentialRequestOptions JSON (WebAuthn).
 		// Omit 'username' for username-less / discoverable-credential sign-in.
