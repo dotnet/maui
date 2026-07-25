@@ -8,6 +8,19 @@ namespace Microsoft.Maui.Controls.Internals
 	/// This type is part of the stable public API contract for <see cref="Microsoft.Maui.Controls.Platform.IAlertManager"/>
 	/// and <see cref="Microsoft.Maui.Controls.Platform.IAlertManagerSubscription"/>, despite residing in the
 	/// <c>Microsoft.Maui.Controls.Internals</c> namespace.
+	/// <para>
+	/// Third-party platform backends may supply a custom alert implementation by registering a
+	/// keyed <see cref="System.Func{T1, T2, TResult}"/> of
+	/// <c>Func&lt;Microsoft.Maui.Controls.Page, AlertArguments, System.Threading.Tasks.Task&lt;bool&gt;&gt;</c>
+	/// in the application's <see cref="System.IServiceProvider"/> with the service key
+	/// <c>Microsoft.Maui.Controls.DisplayAlert</c>. The delegate should return <see langword="true"/>
+	/// when the user accepts the alert, or <see langword="false"/> when the user cancels or dismisses
+	/// it. Unkeyed delegates are not considered by this convention.
+	/// </para>
+	/// <para>
+	/// Note: the keyed registration is reserved for MAUI alert handling. Do not reuse this service
+	/// key for unrelated services in the same service collection.
+	/// </para>
 	/// </remarks>
 	public class AlertArguments
 	{

@@ -24,3 +24,10 @@ Microsoft.Maui.ITab.Title.get -> string!
 Microsoft.Maui.TabBarPlacement
 Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
 Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
+override Microsoft.Maui.MauiUIApplicationDelegate.ValidateCommand(UIKit.UICommand! command) -> void
+override Microsoft.Maui.Platform.MauiTextField.LayoutSubviews() -> void
+override Microsoft.Maui.Platform.NoCaretField.LayoutSubviews() -> void
+override Microsoft.Maui.Platform.MauiView.AccessibilityActivate() -> bool
+override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.get -> string?
+override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.set -> void
+override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void

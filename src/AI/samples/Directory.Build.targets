@@ -1,3 +1,0 @@
-<Project>
-  <Import Project="$(MauiRootDirectory)Directory.Build.targets" />
-</Project>

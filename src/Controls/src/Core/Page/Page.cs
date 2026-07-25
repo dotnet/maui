@@ -276,6 +276,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
+		// Base Page uses legacy IgnoreSafeArea behavior, not the SafeAreaEdges property.
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => false;
+
 		/// <summary>
 		/// Raised when the children of this page, and thus potentially the layout, have changed.
 		/// </summary>
@@ -699,6 +703,15 @@ namespace Microsoft.Maui.Controls
 			OnAppearing();
 			Appearing?.Invoke(this, EventArgs.Empty);
 
+			// Refresh Enabled on the predictive back callback so the animation preview reflects the new state.
+			// Guard with Window.Page check so only the outermost SendAppearing in a recursive chain fires
+			// once, avoiding redundant re-walks in deep hierarchies (e.g. Window → Shell → NavigationPage → ContentPage).
+			var mauiWindow = this.Window as Window;
+			if (mauiWindow?.Page == this)
+			{
+				mauiWindow.NotifyNavigationStateChanged();
+			}
+
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendAppearing();
 
@@ -840,6 +853,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
+			// Prevent duplicate OnNavigatedTo during a single navigation burst (fixes #23902).
 			if (HasNavigatedTo)
 			{
 				return;
@@ -848,7 +862,21 @@ namespace Microsoft.Maui.Controls
 			HasNavigatedTo = true;
 			NavigatedTo?.Invoke(this, args);
 			OnNavigatedTo(args);
-			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
+
+			// Cascade to child page (e.g. TabbedPage → CurrentPage).
+			// On Pop, reset the child flag first — a prior tab change while a modal was open
+			// can leave it true, which would incorrectly block the pop-return (fixes #35756).
+			// PopToRoot is excluded: SendNavigatedFrom already resets all flags before PopToRoot cascades.
+			var containerChild = (this as IPageContainer<Page>)?.CurrentPage;
+			if (containerChild is not null)
+			{
+				if (args.NavigationType == NavigationType.Pop)
+				{
+					containerChild.HasNavigatedTo = false;
+				}
+
+				containerChild.SendNavigatedTo(args);
+			}
 		}
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)

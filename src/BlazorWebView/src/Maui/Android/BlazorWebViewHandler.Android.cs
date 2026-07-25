@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Android.Window;
 using Android.Webkit;
 using Android.Widget;
+using AndroidX.Activity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.LifecycleEvents;
 using static global::Android.Views.ViewGroup;
 using AWebView = global::Android.Webkit.WebView;
 using Path = System.IO.Path;
@@ -23,26 +22,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private WebChromeClient? _webChromeClient;
 		private AndroidWebKitWebViewManager? _webviewManager;
 		internal AndroidWebKitWebViewManager? WebviewManager => _webviewManager;
-		private AndroidLifecycle.OnBackPressed? _onBackPressedHandler;
-		BlazorWebViewPredictiveBackCallback? _predictiveBackCallback;
+		private OnBackPressedCallback? _backPressedCallback;
 
 		private ILogger? _logger;
 		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
-
-		/// <summary>
-		/// Gets the concrete LifecycleEventService to access internal RemoveEvent method.
-		/// RemoveEvent is internal because it's not part of the public ILifecycleEventService contract,
-		/// but is needed for proper cleanup of lifecycle event handlers.
-		/// </summary>
-		private LifecycleEventService? TryGetLifecycleEventService()
-		{
-			var services = MauiContext?.Services;
-			if (services != null)
-			{
-				return services.GetService<ILifecycleEventService>() as LifecycleEventService;
-			}
-			return null;
-		}
 
 		protected override AWebView CreatePlatformView()
 		{
@@ -80,63 +63,45 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		/// <summary>
-		/// Connects the handler to the Android <see cref="AWebView"/> and registers platform-specific
-		/// back navigation handling so that the WebView can consume back presses before the page is popped.
+		/// Connects the handler to the Android <see cref="AWebView"/> and registers a
+		/// <see cref="OnBackPressedCallback"/> so the WebView can consume back presses
+		/// before the containing page is popped or the back-to-home animation plays.
 		/// </summary>
 		/// <param name="platformView">The native Android <see cref="AWebView"/> instance associated with this handler.</param>
 		/// <remarks>
-		/// This override calls the base implementation and then registers an <see cref="AndroidLifecycle.OnBackPressed"/>
-		/// lifecycle event handler. The handler checks <see cref="AWebView.CanGoBack"/> and, when possible, navigates
-		/// back within the WebView instead of allowing the back press (or predictive back gesture on Android 13+)
-		/// to propagate and pop the containing page.
+		/// Uses AndroidX <see cref="OnBackPressedCallback"/> with <c>Enabled</c> as the sole
+		/// authority for whether this callback intercepts back presses. When <c>Enabled = false</c>
+		/// (WebView has no back history), the system predictive back-to-home animation plays naturally.
+		/// <c>Enabled</c> is updated after every navigation via <see cref="UpdateBackNavigationState"/>.
 		/// <para>
-		/// When multiple BlazorWebView instances exist, the handler includes focus and visibility checks to ensure
-		/// only the currently visible and focused WebView handles the back navigation, preventing conflicts between instances.
+		/// The callback is lifecycle-scoped to the <see cref="AndroidX.Activity.ComponentActivity"/>
+		/// so it is automatically removed when the activity is destroyed.
 		/// </para>
-		/// Inheritors that override this method should call the base implementation to preserve this back navigation
-		/// behavior unless they intentionally replace it.
+		/// <para>
+		/// <b>Multiple instances:</b> The <see cref="AndroidX.Activity.OnBackPressedDispatcher"/>
+		/// is LIFO; the last-added callback fires first. If that WebView can't handle the back press
+		/// (e.g. it lost focus or was detached), <see cref="BlazorWebViewBackCallback.HandleOnBackPressed"/>
+		/// disables itself so the next callback in the stack gets a chance.
+		/// </para>
+		/// <para>
+		/// <b>Note:</b> This requires <see cref="Microsoft.Maui.ApplicationModel.Platform.CurrentActivity"/>
+		/// to be a <see cref="AndroidX.Activity.ComponentActivity"/> (which all MAUI apps use via
+		/// <c>MauiAppCompatActivity</c>). Custom activities not extending <c>ComponentActivity</c>
+		/// will not register this callback.
+		/// </para>
 		/// </remarks>
 		protected override void ConnectHandler(AWebView platformView)
 		{
 			base.ConnectHandler(platformView);
 
-			// Register OnBackPressed lifecycle event handler to check WebView's back navigation
-			// This ensures predictive back gesture (Android 13+) checks WebView.CanGoBack() before popping page
-			var lifecycleService = TryGetLifecycleEventService();
-			if (lifecycleService != null)
+			// Use OnBackPressedCallback (AndroidX) so that when the WebView has no back history
+			// (Enabled = false), the system predictive back-to-home animation plays naturally.
+			// Note: requires ComponentActivity — all MAUI apps satisfy this via MauiAppCompatActivity.
+			if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is ComponentActivity activity)
 			{
-				// Create a weak reference to avoid memory leaks
 				var weakPlatformView = new WeakReference<AWebView>(platformView);
-
-				AndroidLifecycle.OnBackPressed handler = (activity) =>
-				{
-					// Check if WebView is still alive, attached to window, and has focus
-					// This prevents non-visible or unfocused BlazorWebView instances from
-					// incorrectly intercepting back navigation when multiple instances exist
-					if (weakPlatformView.TryGetTarget(out var webView) &&
-						webView.IsAttachedToWindow &&
-						webView.HasWindowFocus &&
-						webView.CanGoBack())
-					{
-						webView.GoBack();
-						return true; // Prevent back propagation - handled by WebView
-					}
-
-					return false; // Allow back propagation - let page be popped
-				};
-
-				// Register with lifecycle service - will be invoked by HandleBackNavigation in MauiAppCompatActivity
-				lifecycleService.AddEvent(nameof(AndroidLifecycle.OnBackPressed), handler);
-				_onBackPressedHandler = handler;
-			}
-
-			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is null)
-			{
-				if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is not null)
-				{
-					_predictiveBackCallback = new BlazorWebViewPredictiveBackCallback(this);
-					Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.OnBackInvokedDispatcher?.RegisterOnBackInvokedCallback(0, _predictiveBackCallback);
-				}
+				_backPressedCallback = new BlazorWebViewBackCallback(weakPlatformView, activity.OnBackPressedDispatcher);
+				activity.OnBackPressedDispatcher.AddCallback(activity, _backPressedCallback);
 			}
 		}
 
@@ -144,23 +109,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
-			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is not null)
-			{
-				Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.OnBackInvokedDispatcher?.UnregisterOnBackInvokedCallback(_predictiveBackCallback);
-				_predictiveBackCallback.Dispose();
-				_predictiveBackCallback = null;
-			}
-
-			// Clean up lifecycle event handler to prevent memory leaks
-			if (_onBackPressedHandler != null)
-			{
-				var lifecycleService = TryGetLifecycleEventService();
-				if (lifecycleService != null)
-				{
-					lifecycleService.RemoveEvent(nameof(AndroidLifecycle.OnBackPressed), _onBackPressedHandler);
-					_onBackPressedHandler = null;
-				}
-			}
+			_backPressedCallback?.Remove();
+			_backPressedCallback?.Dispose();
+			_backPressedCallback = null;
 
 			platformView.StopLoading();
 
@@ -281,41 +232,51 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return await _webviewManager.TryDispatchAsync(workItem);
 		}
 
-		sealed class BlazorWebViewPredictiveBackCallback : Java.Lang.Object, IOnBackInvokedCallback
+		/// <summary>
+		/// Updates the back navigation callback's enabled state based on the WebView's current
+		/// <see cref="AWebView.CanGoBack"/> status. Call this after any navigation that may
+		/// change the WebView's history.
+		/// </summary>
+		internal void UpdateBackNavigationState()
 		{
-			WeakReference<BlazorWebViewHandler> _weakBlazorWebViewHandler;
-
-			public BlazorWebViewPredictiveBackCallback(BlazorWebViewHandler handler)
+			if (_backPressedCallback is not null && PlatformView is not null)
 			{
-				_weakBlazorWebViewHandler = new WeakReference<BlazorWebViewHandler>(handler);
+				_backPressedCallback.Enabled = PlatformView.CanGoBack();
+			}
+		}
+
+		sealed class BlazorWebViewBackCallback : OnBackPressedCallback
+		{
+			readonly WeakReference<AWebView> _weakWebView;
+			readonly OnBackPressedDispatcher _dispatcher;
+
+			public BlazorWebViewBackCallback(WeakReference<AWebView> weakWebView, OnBackPressedDispatcher dispatcher) : base(false)
+			{
+				_weakWebView = weakWebView;
+				_dispatcher = dispatcher;
 			}
 
-			public void OnBackInvoked()
+			public override void HandleOnBackPressed()
 			{
-				// KeyDown for Back button is handled in BlazorAndroidWebView.
-				// Here we just need to check if it was handled there.
-				// If not, we propagate the back press to the Activity's OnBackPressedDispatcher.
-				if (_weakBlazorWebViewHandler is not null && _weakBlazorWebViewHandler.TryGetTarget(out var handler))
+				if (_weakWebView.TryGetTarget(out var webView) &&
+					webView.IsAttachedToWindow &&
+					webView.HasWindowFocus &&
+					webView.CanGoBack())
 				{
-					var webView = handler.PlatformView as BlazorAndroidWebView;
-					if (webView is not null)
-					{
-						var wasBackNavigationHandled = webView.BackNavigationHandled;
-						// reset immediately for next back event
-						webView.BackNavigationHandled = false;
-
-						if (!wasBackNavigationHandled)
-						{
-							if (webView.CanGoBack()) // If we can go back in WeView, Navigate back
-							{
-								webView.GoBack();
-								return;
-							}
-							// Otherwise propagate back press to Activity
-							(Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity)?.OnBackPressedDispatcher?.OnBackPressed();
-						}
-					}
+					webView.GoBack();
+					return;
 				}
+
+				// Conditions not met (detached, unfocused, or no history) — disable so the next
+				// callback in the LIFO dispatcher stack can handle this back press. This is important
+				// for multiple BlazorWebView instances: the last-added callback fires first; if it
+				// can't handle the press it must yield rather than silently consuming the event.
+				// UpdateBackNavigationState() will re-enable this callback on the next navigation.
+				Enabled = false;
+
+				// Redispatch this same back press so it is not swallowed when this callback was
+				// stale-enabled and no longer able to handle.
+				_dispatcher.OnBackPressed();
 			}
 		}
 	}
