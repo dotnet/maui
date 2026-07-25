@@ -551,14 +551,17 @@ function Get-ValidatedAssetBranchState {
 
     $unexpected = @(
         @($tree.tree) | Where-Object {
-            # Only a top-level *directory* can carry workflow content (.github/workflows/...),
-            # which is the inherited-repo-tree case that trips the workflow-scope 403 this guard
-            # defends against. A top-level *blob* (README.md, LICENSE, .gitattributes, or the
-            # .review-tests-assets marker itself) can never contain a workflow, so tolerate any
-            # blob and reject only unexpected trees. This keeps the 403 defense fully intact while
-            # avoiding a repo-wide publish lockout if a maintainer adds a plain file to the branch.
-            [string]$_.type -eq 'tree' -and
-                [string]$_.path -notmatch '^pr-[1-9][0-9]*$'
+            # Fail CLOSED: an entry is allowed ONLY IF it is a top-level blob (README.md, LICENSE,
+            # .gitattributes, or the .review-tests-assets marker -- none can carry a workflow) or a
+            # pr-<number> directory. Everything else is rejected: an unexpected `tree` (.github) is
+            # the inherited-repo-tree case that trips the workflow-scope 403 this guard defends
+            # against; a submodule gitlink (type 'commit') or a malformed/$null entry must also be
+            # refused rather than slipping through, so a non-blob top-level entry can never
+            # re-introduce the 403. This keeps the defense intact while still tolerating plain files.
+            $isBlob = [string]$_.type -eq 'blob'
+            $isAssetDirectory = [string]$_.type -eq 'tree' -and
+                [string]$_.path -match '^pr-[1-9][0-9]*$'
+            -not ($isBlob -or $isAssetDirectory)
         }
     )
     if ($unexpected.Count -gt 0) {
@@ -569,7 +572,7 @@ function Get-ValidatedAssetBranchState {
                     if ([string]::IsNullOrWhiteSpace([string]$_.path)) { '<invalid>' } else { [string]$_.path }
                 }
         ) -join ', '
-        throw "Asset branch '$Branch' must contain only pr-<number> directories (alongside optional top-level files); unexpected top-level directory(ies): $paths"
+        throw "Asset branch '$Branch' must contain only pr-<number> directories (alongside optional top-level files); unexpected top-level entry(ies): $paths"
     }
 
     return [pscustomobject]@{

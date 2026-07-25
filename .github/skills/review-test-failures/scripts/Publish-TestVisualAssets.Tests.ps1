@@ -492,7 +492,7 @@ Describe 'Git publication budget enforcement' {
             Initialize-AssetBranch `
                 -Repository 'dotnet/maui' `
                 -Branch 'review-tests-assets-v2'
-        } | Should -Throw "*unexpected top-level directory(ies): .github*"
+        } | Should -Throw "*unexpected top-level entry(ies): .github*"
     }
 
     It 'tolerates arbitrary top-level files (a blob cannot carry a workflow)' {
@@ -556,6 +556,68 @@ Describe 'Git publication budget enforcement' {
             -Repository 'dotnet/maui' `
             -Branch 'review-tests-assets-v2'
         $state.ref.object.sha | Should -Be 'empty-commit'
+    }
+
+    It 'fails closed on a non-blob, non-pr-N entry (submodule gitlink cannot slip through)' {
+        # A top-level submodule gitlink is a tree entry of type 'commit', not 'tree'/'blob'. It is
+        # neither a plain file nor a pr-<number> directory, so the allowlist must reject it rather
+        # than let an unexpected top-level path back in under a different entry type.
+        Mock Get-AssetBranchRef {
+            return [pscustomobject]@{
+                object = [pscustomobject]@{ sha = 'gitlink-commit' }
+            }
+        }
+        Mock Invoke-GhApiJson {
+            if ($Endpoint -like '*/git/commits/gitlink-commit') {
+                return [pscustomobject]@{ tree = [pscustomobject]@{ sha = 'gitlink-tree' } }
+            }
+            if ($Endpoint -like '*/git/trees/gitlink-tree') {
+                return [pscustomobject]@{
+                    truncated = $false
+                    tree = @(
+                        [pscustomobject]@{ path = '.github'; type = 'commit' }
+                    )
+                }
+            }
+            throw "Unexpected API call: $Method $Endpoint"
+        }
+
+        {
+            Initialize-AssetBranch `
+                -Repository 'dotnet/maui' `
+                -Branch 'review-tests-assets-v2'
+        } | Should -Throw "*unexpected top-level entry(ies): .github*"
+    }
+
+    It 'fails closed on a malformed tree containing a null entry' {
+        # A $null element in the tree array (malformed API response) is neither a blob nor a pr-N
+        # directory, so it must be rejected (surfaced as <invalid>) rather than silently passing.
+        Mock Get-AssetBranchRef {
+            return [pscustomobject]@{
+                object = [pscustomobject]@{ sha = 'malformed-commit' }
+            }
+        }
+        Mock Invoke-GhApiJson {
+            if ($Endpoint -like '*/git/commits/malformed-commit') {
+                return [pscustomobject]@{ tree = [pscustomobject]@{ sha = 'malformed-tree' } }
+            }
+            if ($Endpoint -like '*/git/trees/malformed-tree') {
+                return [pscustomobject]@{
+                    truncated = $false
+                    tree = @(
+                        [pscustomobject]@{ path = 'pr-7'; type = 'tree' }
+                        $null
+                    )
+                }
+            }
+            throw "Unexpected API call: $Method $Endpoint"
+        }
+
+        {
+            Initialize-AssetBranch `
+                -Repository 'dotnet/maui' `
+                -Branch 'review-tests-assets-v2'
+        } | Should -Throw "*Asset branch 'review-tests-assets-v2' must contain only pr-<number> directories*"
     }
 
     It 'accepts a concurrently-created branch only after validating its tree' {
