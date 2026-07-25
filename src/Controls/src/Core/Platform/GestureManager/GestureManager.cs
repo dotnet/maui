@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// a different platform-view contract and provide their own gesture handling. (#35044)
 			if (handler is not IPlatformViewHandler)
 			{
-				handler.MauiContext?.CreateLogger<GestureManager>()?.LogWarning(
+				handler.MauiContext?.CreateLogger<GestureManager>()?.LogDebug(
 					"Skipping the built-in gesture manager because handler {HandlerType} does not implement IPlatformViewHandler.",
 					handler.GetType());
 				return null;
