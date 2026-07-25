@@ -470,7 +470,8 @@ namespace Microsoft.Maui.Hosting
 					implementation,
 					VersionTracking.GetDefault,
 					VersionTracking.SetDefault,
-					facadeCleanups);
+					facadeCleanups,
+					allowsSharedOwnership: true);
 			}
 
 			/// <summary>
@@ -494,7 +495,8 @@ namespace Microsoft.Maui.Hosting
 				T impl,
 				Func<T?> currentGetter,
 				Action<T?> setter,
-				List<Action> facadeCleanups)
+				List<Action> facadeCleanups,
+				bool allowsSharedOwnership = false)
 				where T : class
 			{
 				FacadeAssignment<T> assignment;
@@ -503,7 +505,11 @@ namespace Microsoft.Maui.Hosting
 				{
 					var previous = currentGetter();
 					var previousOwner = FacadeBridgeState<T>.FindOwner(previous);
-					assignment = new FacadeAssignment<T>(impl, previous, previousOwner);
+					assignment = new FacadeAssignment<T>(
+						impl,
+						previous,
+						previousOwner,
+						allowsSharedOwnership);
 					FacadeBridgeState<T>.Assignments.Add(assignment);
 					setter(impl);
 				}
@@ -670,7 +676,16 @@ namespace Microsoft.Maui.Hosting
 					if (original is not null && previousOwner is null)
 						return;
 
-					assignment = new FacadeAssignment<T>(impl, original, previousOwner);
+					// Direct DI implementations belong to the app that resolved them. Only
+					// framework-owned defaults and owner-aware wrappers can outlive that app.
+					if (previousOwner is not null && !previousOwner.AllowsSharedOwnership)
+						return;
+
+					assignment = new FacadeAssignment<T>(
+						impl,
+						original,
+						previousOwner,
+						allowsSharedOwnership: true);
 					FacadeBridgeState<T>.Assignments.Add(assignment);
 				}
 
@@ -765,13 +780,17 @@ namespace Microsoft.Maui.Hosting
 				public FacadeAssignment(
 					T implementation,
 					T? previous,
-					FacadeAssignment<T>? previousOwner)
+					FacadeAssignment<T>? previousOwner,
+					bool allowsSharedOwnership)
 				{
 					Implementation = implementation;
+					AllowsSharedOwnership = allowsSharedOwnership;
 					SetPrevious(previous, previousOwner);
 				}
 
 				public T Implementation { get; }
+
+				public bool AllowsSharedOwnership { get; }
 
 				public T? Previous { get; private set; }
 

@@ -793,6 +793,52 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void OverlappingUseVersionTrackingAppDoesNotRetainDisposedRegisteredFacade()
+		{
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			Preferences.SetDefault(new StubPreferences());
+			AppInfo.SetCurrent(new StubAppInfo());
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IVersionTracking, DisposableStubVersionTracking>();
+				firstBuilder.ConfigureEssentials(essentials => essentials.UseVersionTracking());
+				firstApp = firstBuilder.Build();
+				var registeredVersionTracking = Assert.IsType<DisposableStubVersionTracking>(
+					firstApp.Services.GetRequiredService<IVersionTracking>());
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.ConfigureEssentials(essentials => essentials.UseVersionTracking());
+				secondApp = secondBuilder.Build();
+
+				Assert.Equal(2, registeredVersionTracking.TrackCount);
+				Assert.Same(
+					registeredVersionTracking,
+					GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+				firstApp.Dispose();
+				firstApp = null;
+
+				Assert.True(registeredVersionTracking.IsDisposed);
+				Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+
+				VersionTracking.Track();
+
+				Assert.NotSame(
+					registeredVersionTracking,
+					GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
 		public void OverlappingUseVersionTrackingAppRefreshesDisposedLazyDependencies()
 		{
 			var fallbackPreferences = new StubPreferences();
@@ -1616,6 +1662,78 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
 
 			public Task SetAsync(IEnumerable<AppAction> actions) => Task.CompletedTask;
+		}
+
+		sealed class DisposableStubVersionTracking : IVersionTracking, IDisposable
+		{
+			public bool IsDisposed { get; private set; }
+
+			public int TrackCount { get; private set; }
+
+			public bool IsFirstLaunchEver
+			{
+				get
+				{
+					ThrowIfDisposed();
+					return false;
+				}
+			}
+
+			public bool IsFirstLaunchForCurrentVersion => IsFirstLaunchEver;
+
+			public bool IsFirstLaunchForCurrentBuild => IsFirstLaunchEver;
+
+			public string CurrentVersion
+			{
+				get
+				{
+					ThrowIfDisposed();
+					return "1.0";
+				}
+			}
+
+			public string CurrentBuild => CurrentVersion;
+
+			public string? PreviousVersion => null;
+
+			public string? PreviousBuild => null;
+
+			public string? FirstInstalledVersion => null;
+
+			public string? FirstInstalledBuild => null;
+
+			public IReadOnlyList<string> VersionHistory => Array.Empty<string>();
+
+			public IReadOnlyList<string> BuildHistory => Array.Empty<string>();
+
+			public void Track()
+			{
+				ThrowIfDisposed();
+				TrackCount++;
+			}
+
+			public bool IsFirstLaunchForVersion(string version)
+			{
+				ThrowIfDisposed();
+				return false;
+			}
+
+			public bool IsFirstLaunchForBuild(string build)
+			{
+				ThrowIfDisposed();
+				return false;
+			}
+
+			public void Dispose()
+			{
+				IsDisposed = true;
+			}
+
+			void ThrowIfDisposed()
+			{
+				if (IsDisposed)
+					throw new ObjectDisposedException(nameof(DisposableStubVersionTracking));
+			}
 		}
 
 		sealed class ThrowingVersionTracking : IVersionTracking
