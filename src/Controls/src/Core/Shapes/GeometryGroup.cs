@@ -53,11 +53,16 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public event EventHandler InvalidateGeometryRequested;
 
+		readonly WeakNotifyCollectionChangedProxy _childrenProxy = new();
+		NotifyCollectionChangedEventHandler _childrenChanged;
+
+		~GeometryGroup() => _childrenProxy.Unsubscribe();
+
 		void UpdateChildren(GeometryCollection oldCollection, GeometryCollection newCollection)
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnChildrenCollectionChanged;
+				_childrenProxy.Unsubscribe();
 
 				foreach (var oldChildren in oldCollection)
 				{
@@ -68,7 +73,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnChildrenCollectionChanged;
+			_childrenChanged ??= OnChildrenCollectionChanged;
+			_childrenProxy.Subscribe(newCollection, _childrenChanged);
 
 			foreach (var newChildren in newCollection)
 			{
