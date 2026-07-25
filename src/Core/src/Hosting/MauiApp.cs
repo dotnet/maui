@@ -37,6 +37,12 @@ namespace Microsoft.Maui.Hosting
 		public static MauiAppBuilder CreateBuilder(bool useDefaults = true) => new(useDefaults);
 
 		/// <inheritdoc />
+		/// <remarks>
+		/// When <see cref="Services"/> implements only <see cref="IAsyncDisposable"/>,
+		/// this method blocks until asynchronous provider disposal completes. If provider
+		/// disposal requires the calling thread to remain responsive, such as explicitly
+		/// dispatching work to the UI thread, use <see cref="DisposeAsync"/> instead.
+		/// </remarks>
 		public void Dispose()
 		{
 			var exceptions = new List<Exception>();
