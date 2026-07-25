@@ -14,6 +14,7 @@
   <x:Boolean x:Key="MicrosoftMauiCoreIncluded">true</x:Boolean>
 
   <windows:ColorConverter x:Key="ColorConverter" />
+  <windows:CharacterSpacingConverter x:Key="CharacterSpacingConverter"/>
 
   <x:Double x:Key="FlyoutMinWidth">350</x:Double>
 

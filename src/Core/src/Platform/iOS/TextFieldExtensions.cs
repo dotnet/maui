@@ -227,26 +227,40 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
 			{
-				UIImage defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
-
 				if (entry.TextColor is null)
 				{
 					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
 					clearButton.TintColor = null;
+					// SetImage(null) releases the custom tinted bitmap so UIKit restores its system default.
+					// The color path (else branch) reads ImageForState(.Highlighted) to get that original
+					// image as the source for tinting. Without these calls, TintColor=null has no visual effect.
+					clearButton.SetImage(null, UIControlState.Normal);
+					clearButton.SetImage(null, UIControlState.Highlighted);
 				}
 				else
 				{
+					// On a null→color transition, UIKit restores the system image after SetImage(null),
+					// so ImageForState(Highlighted) returns the system clear button image as the tinting source.
+					UIImage? defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
 					clearButton.TintColor = entry.TextColor.ToPlatform();
 
 					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, entry.TextColor.ToPlatform());
-					clearButton.SetImage(tintedClearImage, UIControlState.Normal);
-					clearButton.SetImage(tintedClearImage, UIControlState.Highlighted);
+					if (tintedClearImage is not null)
+					{
+						clearButton.SetImage(tintedClearImage, UIControlState.Normal);
+						clearButton.SetImage(tintedClearImage, UIControlState.Highlighted);
+					}
 				}
 			}
 		}
 
-		internal static UIImage? GetClearButtonTintImage(UIImage image, UIColor color)
+		internal static UIImage? GetClearButtonTintImage(UIImage? image, UIColor color)
 		{
+			if (image is null)
+			{
+				return null;
+			}
+
 			var size = image.Size;
 
 			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat()

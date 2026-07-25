@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static AutomationPeer GetOrCreateAutomationPeer(ContentPanel contentPanel)
-			=> new ContentPanel.ContentPanelAutomationPeer(contentPanel);
+			=> new ContentPanelAutomationPeer(contentPanel);
 
 		[Fact(DisplayName = "ContentView With Description Prevents Duplicate Narrator Announcements")]
 		public async Task ContentViewWithDescriptionHidesChildrenFromNarrator()
