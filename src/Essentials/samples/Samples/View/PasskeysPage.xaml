@@ -40,6 +40,25 @@
                 <VerticalStackLayout Spacing="8" IsVisible="{Binding IsSignedIn}">
                     <Label Text="{Binding AccountStatusText}" FontAttributes="Bold" FontSize="16" />
                     <Label Text="{Binding PasskeyStatusText}" TextColor="Gray" />
+
+                    <!-- The user's passkeys, each with a name, date and a Remove button. -->
+                    <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Passkeys}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Stroke="LightGray" StrokeThickness="1" Padding="10" StrokeShape="RoundRectangle 8">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" FontAttributes="Bold" />
+                                            <Label Text="{Binding CreatedAtText}" FontSize="12" TextColor="Gray" />
+                                        </VerticalStackLayout>
+                                        <Button Grid.Column="1" Text="Remove" Command="{Binding DeleteCommand}"
+                                                BackgroundColor="#C62828" TextColor="White" Padding="12,6" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
                     <Button Text="{Binding CreatePasskeyButtonText}" Command="{Binding RegisterCommand}" IsEnabled="{Binding IsNotBusy}" />
                     <Button Text="Sign out" Command="{Binding SignOutCommand}" IsEnabled="{Binding IsNotBusy}" />
                 </VerticalStackLayout>
@@ -49,9 +68,9 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- One-line status strip: only the latest message is kept. -->
+        <!-- Status strip: only the latest message is kept, shown across up to 5 lines. -->
         <Label Grid.Row="1" Text="{Binding Status}" FontFamily="Monospace" FontSize="11"
-               TextColor="Gray" LineBreakMode="TailTruncation" MaxLines="2" />
+               TextColor="Gray" LineBreakMode="WordWrap" MaxLines="5" />
 
     </Grid>
 
