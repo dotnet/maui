@@ -528,12 +528,17 @@ namespace Microsoft.Maui.Hosting
 				string mapServiceToken,
 				List<Action> facadeCleanups)
 			{
+#if WINDOWS
+				var previousPlatformToken = WindowsMapServiceTokenGetter();
+				var previousPlatformOwner = FindMapTokenOwner(previousPlatformToken);
+#endif
 				var assignment = new MapTokenAssignment(
 					implementation,
 					mapServiceToken,
 					implementation.MapServiceToken
 #if WINDOWS
-					, WindowsMapServiceTokenGetter()
+					, previousPlatformToken
+					, previousPlatformOwner
 #endif
 				);
 
@@ -550,15 +555,25 @@ namespace Microsoft.Maui.Hosting
 				facadeCleanups.Add(() => CleanupMapServiceToken(assignment));
 			}
 
+#if WINDOWS
+			static MapTokenAssignment? FindMapTokenOwner(string? token)
+			{
+				for (int i = s_mapTokenAssignments.Count - 1; i >= 0; i--)
+				{
+					if (string.Equals(s_mapTokenAssignments[i].AppliedToken, token, StringComparison.Ordinal))
+						return s_mapTokenAssignments[i];
+				}
+
+				return null;
+			}
+#endif
+
 			static void CleanupMapServiceToken(MapTokenAssignment assignment)
 			{
 				var index = s_mapTokenAssignments.IndexOf(assignment);
 				if (index < 0)
 					return;
 
-				var platformSuccessor = index + 1 < s_mapTokenAssignments.Count
-					? s_mapTokenAssignments[index + 1]
-					: null;
 				MapTokenAssignment? implementationSuccessor = null;
 				for (int i = index + 1; i < s_mapTokenAssignments.Count; i++)
 				{
@@ -575,10 +590,27 @@ namespace Microsoft.Maui.Hosting
 					implementationSuccessor.PreviousToken = assignment.PreviousToken;
 				}
 #if WINDOWS
-				if (platformSuccessor is not null &&
-					string.Equals(platformSuccessor.PreviousPlatformToken, assignment.AppliedToken, StringComparison.Ordinal))
+				MapTokenAssignment? platformSuccessor = null;
+				MapTokenAssignment? previousDependent = null;
+				for (int i = index + 1; i < s_mapTokenAssignments.Count; i++)
 				{
-					platformSuccessor.PreviousPlatformToken = assignment.PreviousPlatformToken;
+					var candidate = s_mapTokenAssignments[i];
+					platformSuccessor = candidate;
+					if (!ReferenceEquals(candidate.PreviousPlatformOwner, assignment))
+						continue;
+
+					if (previousDependent is null)
+					{
+						candidate.PreviousPlatformToken = assignment.PreviousPlatformToken;
+						candidate.PreviousPlatformOwner = assignment.PreviousPlatformOwner;
+					}
+					else
+					{
+						candidate.PreviousPlatformToken = previousDependent.AppliedToken;
+						candidate.PreviousPlatformOwner = previousDependent;
+					}
+
+					previousDependent = candidate;
 				}
 #endif
 
@@ -598,17 +630,17 @@ namespace Microsoft.Maui.Hosting
 					}
 				}
 #if WINDOWS
-				if (platformSuccessor is null)
+				try
 				{
-					try
+					if (string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
 					{
-						if (string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
-							WindowsMapServiceTokenSetter(assignment.PreviousPlatformToken);
+						WindowsMapServiceTokenSetter(
+							platformSuccessor?.AppliedToken ?? assignment.PreviousPlatformToken);
 					}
-					catch (Exception ex)
-					{
-						(exceptions ??= new()).Add(ex);
-					}
+				}
+				catch (Exception ex)
+				{
+					(exceptions ??= new()).Add(ex);
 				}
 #endif
 
@@ -940,6 +972,7 @@ namespace Microsoft.Maui.Hosting
 				string? previousToken
 #if WINDOWS
 				, string? previousPlatformToken
+				, MapTokenAssignment? previousPlatformOwner
 #endif
 			)
 			{
@@ -948,6 +981,7 @@ namespace Microsoft.Maui.Hosting
 				PreviousToken = previousToken;
 #if WINDOWS
 				PreviousPlatformToken = previousPlatformToken;
+				PreviousPlatformOwner = previousPlatformOwner;
 #endif
 			}
 
@@ -959,6 +993,8 @@ namespace Microsoft.Maui.Hosting
 
 #if WINDOWS
 			public string? PreviousPlatformToken { get; set; }
+
+			public MapTokenAssignment? PreviousPlatformOwner { get; set; }
 #endif
 		}
 #endif

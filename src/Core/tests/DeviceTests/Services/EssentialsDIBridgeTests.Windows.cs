@@ -298,6 +298,84 @@ public class EssentialsDIBridgeTests
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
+	public void OlderMapServiceTokenCleanupAppliesLatestUnappliedSuccessorToken(bool disposeSecondFirst)
+	{
+		const string originalInstanceToken = "original-instance-token";
+		const string originalPlatformToken = "original-platform-token";
+		const string firstToken = "first-token";
+		const string secondToken = "second-token";
+		const string thirdToken = "third-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var shared = new StubPlatformGeocoding { MapServiceToken = originalInstanceToken };
+		MauiApp? firstApp = null;
+		MauiApp? secondApp = null;
+		MauiApp? thirdApp = null;
+
+		try
+		{
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IGeocoding>(shared);
+			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(firstToken));
+			firstApp = firstBuilder.Build();
+			platformToken.Value = firstToken;
+
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IGeocoding>(shared);
+			secondBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(secondToken));
+			secondApp = secondBuilder.Build();
+
+			var thirdBuilder = MauiApp.CreateBuilder();
+			thirdBuilder.Services.AddSingleton<IGeocoding>(shared);
+			thirdBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(thirdToken));
+			thirdApp = thirdBuilder.Build();
+
+			Assert.Equal(thirdToken, shared.MapServiceToken);
+			Assert.Equal(firstToken, platformToken.Value);
+
+			firstApp.Dispose();
+			firstApp = null;
+
+			Assert.Equal(thirdToken, shared.MapServiceToken);
+			Assert.Equal(thirdToken, platformToken.Value);
+
+			if (disposeSecondFirst)
+			{
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Equal(thirdToken, shared.MapServiceToken);
+				Assert.Equal(thirdToken, platformToken.Value);
+
+				thirdApp.Dispose();
+				thirdApp = null;
+			}
+			else
+			{
+				thirdApp.Dispose();
+				thirdApp = null;
+				Assert.Equal(secondToken, shared.MapServiceToken);
+				Assert.Equal(secondToken, platformToken.Value);
+
+				secondApp.Dispose();
+				secondApp = null;
+			}
+
+			Assert.Equal(originalInstanceToken, shared.MapServiceToken);
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+		}
+		finally
+		{
+			thirdApp?.Dispose();
+			secondApp?.Dispose();
+			firstApp?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
 	public void DistinctGeocodingMapServiceTokenRestoresAcrossOverlappingApps(bool disposeOlderFirst)
 	{
 		const string originalPlatformToken = "original-platform-token";
