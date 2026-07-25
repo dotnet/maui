@@ -1,6 +1,3 @@
-using Microsoft.Build.Framework;
-using Microsoft.Build.Logging.StructuredLogger;
-
 namespace Microsoft.Maui.IntegrationTests;
 
 [Trait("Category", "Build")]
@@ -147,12 +144,14 @@ public class ResizetizerTests : BaseBuildTest
 		// persisted Resizetizer output list, not backend-written files from the folder.
 		var resizetizerStampFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.stamp");
 		Assert.True(File.Exists(resizetizerStampFile), $"Resizetizer stamp does not exist: {resizetizerStampFile}");
-		var incrementalStampWriteTime = File.GetLastWriteTimeUtc(resizetizerStampFile);
+		var originalStampWriteTime = File.GetLastWriteTimeUtc(resizetizerStampFile);
+		File.SetLastWriteTimeUtc(resizetizerStampFile, DateTime.UtcNow.AddMinutes(1));
+		var noOpStampWriteTime = File.GetLastWriteTimeUtc(resizetizerStampFile);
 		File.Delete(outputsFile);
-		System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
 		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
 			"Custom backend project failed on incremental rebuild. Check test output for errors.");
-		Assert.Equal(incrementalStampWriteTime, File.GetLastWriteTimeUtc(resizetizerStampFile));
+		Assert.Equal(noOpStampWriteTime, File.GetLastWriteTimeUtc(resizetizerStampFile));
+		File.SetLastWriteTimeUtc(resizetizerStampFile, originalStampWriteTime);
 
 		var processedImagesIncremental = File.ReadAllLines(outputsFile);
 		Assert.Equal(2, processedImagesIncremental.Length);
@@ -393,11 +392,6 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.NotEmpty(processedAssets);
 	}
 
-	static bool WasTargetSkippedAsUpToDate(string binlogPath, string targetName) =>
-		new BinLogReader().ReadRecords(binlogPath).Any(record =>
-			record.Args is TargetSkippedEventArgs skipped &&
-			skipped.TargetName == targetName &&
-			skipped.SkipReason == TargetSkipReason.OutputsUpToDate);
 	[Theory]
 	[InlineData("maui", "mauilib", true)]
 	[InlineData("maui", "mauilib", false)]
