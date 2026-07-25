@@ -492,7 +492,70 @@ Describe 'Git publication budget enforcement' {
             Initialize-AssetBranch `
                 -Repository 'dotnet/maui' `
                 -Branch 'review-tests-assets-v2'
-        } | Should -Throw "*unexpected top-level path(s): .github*"
+        } | Should -Throw "*unexpected top-level directory(ies): .github*"
+    }
+
+    It 'tolerates arbitrary top-level files (a blob cannot carry a workflow)' {
+        # A top-level blob (README.md, LICENSE, .gitattributes, or the .review-tests-assets marker)
+        # can never contain a workflow, so it must not trip the guard -- otherwise a maintainer
+        # adding a README to the long-lived asset branch would lock out screenshot publishing
+        # repo-wide with no in-code recovery path.
+        Mock Get-AssetBranchRef {
+            return [pscustomobject]@{
+                object = [pscustomobject]@{ sha = 'blobs-commit' }
+            }
+        }
+        Mock Invoke-GhApiJson {
+            if ($Endpoint -like '*/git/commits/blobs-commit') {
+                return [pscustomobject]@{ tree = [pscustomobject]@{ sha = 'blobs-tree' } }
+            }
+            if ($Endpoint -like '*/git/trees/blobs-tree') {
+                return [pscustomobject]@{
+                    truncated = $false
+                    tree = @(
+                        [pscustomobject]@{ path = '.review-tests-assets'; type = 'blob'; mode = '100644' }
+                        [pscustomobject]@{ path = 'README.md'; type = 'blob'; mode = '100644' }
+                        [pscustomobject]@{ path = 'LICENSE'; type = 'blob'; mode = '100644' }
+                        [pscustomobject]@{ path = 'pr-42'; type = 'tree' }
+                    )
+                }
+            }
+            throw "Unexpected API call: $Method $Endpoint"
+        }
+
+        $state = Initialize-AssetBranch `
+            -Repository 'dotnet/maui' `
+            -Branch 'review-tests-assets-v2'
+        $state.ref.object.sha | Should -Be 'blobs-commit'
+    }
+
+    It 'accepts an empty root tree (JSON [] maps to zero entries, not one <invalid>)' {
+        # Refactor-safety pin: pwsh maps a JSON empty tree ([]) to @() -> zero elements, which must
+        # pass validation. The distinction from a $null tree property (which @(...) turns into a
+        # single $null element the predicate would flag) is subtle and lives on a dense multi-line
+        # predicate, so lock the empty-tree pass-through against a future refactor of that line.
+        Mock Get-AssetBranchRef {
+            return [pscustomobject]@{
+                object = [pscustomobject]@{ sha = 'empty-commit' }
+            }
+        }
+        Mock Invoke-GhApiJson {
+            if ($Endpoint -like '*/git/commits/empty-commit') {
+                return [pscustomobject]@{ tree = [pscustomobject]@{ sha = 'empty-tree' } }
+            }
+            if ($Endpoint -like '*/git/trees/empty-tree') {
+                return [pscustomobject]@{
+                    truncated = $false
+                    tree = @()
+                }
+            }
+            throw "Unexpected API call: $Method $Endpoint"
+        }
+
+        $state = Initialize-AssetBranch `
+            -Repository 'dotnet/maui' `
+            -Branch 'review-tests-assets-v2'
+        $state.ref.object.sha | Should -Be 'empty-commit'
     }
 
     It 'accepts a concurrently-created branch only after validating its tree' {
