@@ -92,6 +92,13 @@
     <!-- Benchmark comparison: with and without LazyRD -->
     <MauiXaml Update="Benchmark.xaml" LazyRD="true" />
     <MauiXaml Update="BenchmarkNoLazy.xaml" LazyRD="false" />
+
+    <!-- These tests exercise the legacy ResourceProvider2 hot-reload fallback (InitializeComponentRuntime),
+         which XAML Incremental Hot Reload intentionally supersedes when enabled. Pin them off so they keep
+         covering the legacy path regardless of the default; XIHR-on codegen is covered by SourceGen.UnitTests.
+         See dotnet/maui#36682. -->
+    <MauiXaml Update="HotReload.xaml" EnableIncrementalHotReload="false" />
+    <MauiXaml Update="InflatorSwitch\XamlInflatorSourceGen.sgen.xaml" EnableIncrementalHotReload="false" />
   </ItemGroup>
 
   <ItemGroup>
