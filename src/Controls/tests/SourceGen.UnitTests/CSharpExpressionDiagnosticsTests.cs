@@ -509,7 +509,7 @@ public partial class TwoWayNoWarningPage : ContentPage
 	}
 
 	[Fact]
-	public void GetOnlyStructIntermediate_OnTwoWayProperty_ReportsMAUIX2017AndOmitsSetter()
+	public void GetOnlyStructIntermediate_OnTwoWayProperty_ReportsMAUIX2018AndOmitsSetter()
 	{
 		var xaml =
 """
@@ -544,7 +544,7 @@ public partial class ReadOnlyStructIntermediatePage : ContentPage
 
 		var (result, output) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
 
-		var diagnostic = Assert.Single(result.Diagnostics.Where(d => d.Id == "MAUIX2017"));
+		var diagnostic = Assert.Single(result.Diagnostics.Where(d => d.Id == "MAUIX2018"));
 		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
 		Assert.Contains("ReadOnlyMargin.Top", diagnostic.GetMessage(), StringComparison.Ordinal);
 

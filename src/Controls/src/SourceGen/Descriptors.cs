@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor StructIntermediateNotSettable = new DiagnosticDescriptor(
-			id: "MAUIX2017",
+			id: "MAUIX2018",
 			title: "Value type property in path has no setter",
 			messageFormat: "Expression '{0}' contains a value type property without a setter, so two-way binding to '{1}' will be one-way. To enable two-way binding through a struct, add a setter to the intermediate property.",
 			category: "XamlParsing",
