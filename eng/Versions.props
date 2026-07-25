@@ -89,7 +89,7 @@
     <MicrosoftAspNetCoreMetadataPackageVersion>10.0.13</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>10.0.13</MicrosoftJSInteropPackageVersion>
     <!-- Everything else (previous edition) -->
-    <MicrosoftAspNetCorePackageVersion>8.0.16</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCorePackageVersion>10.0.10</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion>
     <MicrosoftAspNetCoreAuthenticationGooglePreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthenticationGooglePreviousPackageVersion>
