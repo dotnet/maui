@@ -813,6 +813,15 @@ internal class KnownMarkups
 	/// </summary>
 	internal static bool ProvideValueForAppThemeBindingExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
+		// AppThemeBinding is internal on netstandard; let the generic markup-extension path call
+		// AppThemeBindingExtension.ProvideValue instead of generating an inaccessible constructor call.
+		if (context.ProjectItem.TargetFramework?.StartsWith("netstandard", StringComparison.OrdinalIgnoreCase) == true)
+		{
+			returnType = null;
+			value = string.Empty;
+			return false;
+		}
+
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.AppThemeBinding")!;
 
 		if (getNodeValue is null)

@@ -870,4 +870,52 @@ public partial class StaticRefPage : ContentPage
 		// And the compilation must succeed (no compiler errors leaked through).
 		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
 	}
+
+	[Fact]
+	public void TernaryInsideInterpolationHole_CompilesCleanly()
+	{
+		// Issue #36155: a ternary directly inside an interpolation hole must be
+		// auto-parenthesized so the ':' is not consumed as a format specifier.
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.InterpolationTernaryPage"
+             x:DataType="local:InterpolationTernaryViewModel">
+    <Label Text="{$'You clicked {Count} {Count == 1 ? 'time' : 'times'}.'}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class InterpolationTernaryViewModel : INotifyPropertyChanged
+{
+	public int Count { get; set; }
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class InterpolationTernaryPage : ContentPage
+{
+	public InterpolationTernaryPage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+
+		Assert.NotNull(output);
+		// The ternary must be parenthesized in the generated interpolated string
+		// (the 'Count' identifier is rewritten to a binding source path, e.g. __source.Count).
+		Assert.Contains("== 1 ? \"time\" : \"times\")", output!, StringComparison.Ordinal);
+		// And the compilation must succeed (no CS8076/CS8361/CS1003/CS0103 leaked through).
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+	}
 }
