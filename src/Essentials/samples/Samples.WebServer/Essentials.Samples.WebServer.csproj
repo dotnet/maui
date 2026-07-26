@@ -20,4 +20,14 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
   </ItemGroup>
 
+  <!-- External OAuth sign-in providers. Each is only activated when its credentials are supplied via
+       configuration (see appsettings.json / user-secrets), so the sample runs with none, some, or all
+       of them. This mirrors the set demonstrated by the Web Authenticator sample. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" />
+    <PackageReference Include="AspNet.Security.OAuth.Apple" Version="9.2.0" />
+  </ItemGroup>
+
 </Project>
