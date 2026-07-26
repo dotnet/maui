@@ -427,34 +427,43 @@ Evidence for report TWO.
         $report | Should -Not -Match 'Evidence for report TWO'
     }
 
-    It 'does not let an unclosed earlier report borrow a later report''s closing tag' {
-        # PureWeen's dispute-round caveat: with depth-aware bounding, an earlier report whose
-        # <details> is never closed must NOT borrow a later genuine report's </details> to
-        # complete itself. The balance loop rejects the unbalanced first candidate (depth never
-        # returns to 0), so extraction falls through to the genuine second report cleanly.
+    It 'does not commingle an unclosed first report with a genuine second via a trailing close' {
+        # PureWeen's round-5 borrow fixture (non-vacuous — this arrangement DIVERGES parent vs
+        # head). Report ONE is unclosed; a genuine well-formed Report TWO follows; then a
+        # TRAILING unmatched </details>. Without the round-5 fix, ONE's candidate skips the
+        # depth>0 bound, then the balance loop rebalances across TWO via the trailing close —
+        # publishing a mis-anchored blob of ONE+TWO and dropping FINAL CONTENT. The fix rejects
+        # ONE's candidate the moment TWO opens its own <details>, so extraction returns the
+        # clean Report TWO (matching the parent) and never commingles the two.
         $content = @'
 <!-- Tests Failure -->
 
 ## Tests Failure Analysis
 
 <details>
-<summary>Unclosed report one</summary>
-Evidence one — this details block is never closed.
+<summary>Report ONE (unclosed)</summary>
+Evidence ONE.
 
 <!-- Tests Failure -->
 
 ## Tests Failure Analysis
 
 <details>
-<summary>Report two</summary>
-Evidence two.
+<summary>Report TWO (well-formed)</summary>
+Evidence TWO.
 </details>
+
+Some trailing prose:
+</details>
+
+FINAL CONTENT - must not be dropped.
 '@
 
         $report = Get-EmbeddedTestFailureReport -Content $content
 
-        $report | Should -Match 'Evidence two'
-        $report | Should -Not -Match 'Evidence one'
+        # The key anti-commingle invariant: ONE and TWO must never be published together.
+        $report | Should -Not -Match 'Evidence ONE'
+        $report | Should -Match 'Evidence TWO'
     }
 
     It 'recognizes a standalone marker indented up to three spaces' {

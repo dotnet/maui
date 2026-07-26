@@ -251,8 +251,18 @@ function Get-EmbeddedTestFailureReportCandidate {
     $innerFenceCharacter = $null
     $innerFenceLength = 0
     # Running depth of the report's OWN open <details> blocks (structural only). A later
-    # same-tier anchor bounds this candidate only at depth 0 — see the bound check below.
+    # same-tier anchor bounds this candidate only at depth 0 (a genuine sibling report). At
+    # depth > 0 the anchor is the report quoting the marker inside its own <details>; we note
+    # the crossing so a following <details> open — a real second report — is rejected rather
+    # than commingled (round-5 borrow fix).
     $openDetailsDepth = 0
+    $siblingCrossedInsideDetails = $false
+    # Monotonic cursor into the ascending $AnchorIndices: start past this candidate's own and
+    # earlier anchors, then only ever advance — keeps the per-line sibling scan amortized O(1).
+    $anchorCursor = 0
+    while ($anchorCursor -lt $AnchorIndices.Count -and $AnchorIndices[$anchorCursor] -le $startIndex) {
+        $anchorCursor++
+    }
     foreach ($lineMatch in [regex]::Matches($report, '(?m)^(?<indent>[ \t]*)(?<content>[^\r\n]*)\r?$')) {
         $line = $lineMatch.Groups['content'].Value
         $fenceMatch = [regex]::Match($line, '^[ \t]*(?<fence>`{3,}|~{3,})(?<suffix>.*)$')
@@ -286,6 +296,18 @@ function Get-EmbeddedTestFailureReportCandidate {
             $tagValue = $tagMatch.Groups['tag'].Value
             if ($tagValue.StartsWith("</", [StringComparison]::Ordinal)) {
                 if ($openDetailsDepth -gt 0) { $openDetailsDepth-- }
+                # Our own block closed cleanly — anything past here is separate content, so a
+                # quoted-marker crossing we noted earlier no longer implies a commingle.
+                if ($openDetailsDepth -eq 0) { $siblingCrossedInsideDetails = $false }
+            }
+            elseif ($siblingCrossedInsideDetails) {
+                # A <details> opening AFTER we crossed a later same-tier anchor (while still
+                # inside our own block) means that anchor began a DISTINCT sibling report. Its
+                # structure — and any trailing unmatched </details> — would otherwise let the
+                # balance loop rebalance across it and publish a mis-anchored, commingled report
+                # with silent tail loss (round-5). A legitimate self-quote opens no <details>,
+                # so it is safe to reject the whole candidate here.
+                return $null
             }
             else {
                 $openDetailsDepth++
@@ -297,25 +319,26 @@ function Get-EmbeddedTestFailureReportCandidate {
                 })
             continue
         }
-        # Not a tag. A later same-tier anchor bounds this candidate ONLY when we are OUTSIDE
-        # the report's own <details> block ($openDetailsDepth -eq 0): a genuine sibling report
-        # starts here. A marker the report QUOTES inside its own still-open <details> — fenced,
-        # indented, OR a bare standalone line (the round-4 unfenced sub-case) — is the report's
-        # content, not a sibling, so it must not truncate it. The unclosed-earlier-report case
-        # can't borrow a later report either: if this report's details never rebalance to depth
-        # 0, the balance loop below rejects the candidate entirely.
-        if ($openDetailsDepth -eq 0 -and $AnchorIndices.Count -gt 0) {
+        # Not a tag. Find whether a later same-tier anchor sits on this structural line.
+        if ($AnchorIndices.Count -gt 0) {
             $lineStart = $startIndex + $lineMatch.Index
             $lineEnd = $lineStart + $lineMatch.Value.Length
-            $boundedHere = $false
-            # $AnchorIndices is ascending: skip this candidate's own/earlier anchors, and stop
-            # once past this line (keeps the bound scan near O(1) per line rather than O(N)).
-            foreach ($anchorIndex in $AnchorIndices) {
-                if ($anchorIndex -le $startIndex) { continue }
-                if ($anchorIndex -ge $lineEnd) { break }
-                if ($anchorIndex -ge $lineStart) { $boundedHere = $true; break }
+            while ($anchorCursor -lt $AnchorIndices.Count -and $AnchorIndices[$anchorCursor] -lt $lineStart) {
+                $anchorCursor++
             }
-            if ($boundedHere) { break }
+            if ($anchorCursor -lt $AnchorIndices.Count -and $AnchorIndices[$anchorCursor] -lt $lineEnd) {
+                if ($openDetailsDepth -eq 0) {
+                    # OUTSIDE the report's own <details>: a genuine sibling report starts here.
+                    # Bound — an earlier example/quote can't borrow a later report's structure,
+                    # and a real report is never displaced by a later structurally-valid one.
+                    break
+                }
+                # INSIDE the report's own still-open <details>: the report is quoting the marker
+                # (fenced, indented, or a bare standalone line). Keep it as the report's content,
+                # but note the crossing so a following <details> open (a real second report) is
+                # rejected above rather than commingled into this one.
+                $siblingCrossedInsideDetails = $true
+            }
         }
     }
     $detailsDepth = 0
