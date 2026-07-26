@@ -18,7 +18,7 @@ public class Issue19883 : _IssuesUITest
 		App.WaitForElement("TestSwitch");
 
 		// Initial state: ThumbColor is Orange, no OnColor set
-		VerifyScreenshotOrSetException(ref exception, "Issue19883_ThumbColorOrange");
+		VerifyScreenshotOrSetException(ref exception, "Issue19883_ThumbColorBlue");
 
 		// Reset ThumbColor to null: switch should revert to the default thumb color
 		App.Tap("ResetThumbColorButton");

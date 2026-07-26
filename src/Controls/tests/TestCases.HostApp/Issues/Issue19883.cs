@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 19883, "Switch OnColor not applied correctly and ThumbColor not reset when toggled off", PlatformAffected.Android | PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 19883, "Switch OnColor not applied correctly and ThumbColor not reset when toggled off", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.UWP)]
 public class Issue19883 : ContentPage
 {
 	public Issue19883()
@@ -14,7 +14,7 @@ public class Issue19883 : ContentPage
 		var testSwitch = new Switch
 		{
 			IsToggled = false,
-			ThumbColor = Colors.Orange,
+			ThumbColor = Colors.Blue,
 			AutomationId = "TestSwitch",
 			Margin = new Thickness(10, 20, 15, 0),
 			VerticalOptions = LayoutOptions.Center
