@@ -10,7 +10,11 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(GradientStops))]
 	public abstract class GradientBrush : Brush
 	{
-		readonly Dictionary<GradientStop, int> _subscriptionRefCounts = new(ReferenceEqualityComparer.Instance);
+		// Keyed by reference identity so distinct GradientStop instances that compare equal by value
+		// still get independent subscription ref-counts. System.Collections.Generic.ReferenceEqualityComparer
+		// is .NET 5+ only, but Controls.Core also targets netstandard2.0/2.1, so use a small
+		// cross-TFM reference-equality comparer instead (avoids a netstandard build break).
+		readonly Dictionary<GradientStop, int> _subscriptionRefCounts = new(GradientStopReferenceComparer.Instance);
 
 		/// <summary>Initializes a new instance of the <see cref="GradientBrush"/> class.</summary>
 		public GradientBrush()
@@ -211,6 +215,16 @@ namespace Microsoft.Maui.Controls
 		void Invalidate()
 		{
 			InvalidateGradientBrushRequested?.Invoke(this, EventArgs.Empty);
+		}
+
+		// Reference-identity comparer usable on every Controls.Core TFM (netstandard2.0/2.1 lack the
+		// BCL System.Collections.Generic.ReferenceEqualityComparer). Matches its semantics: equality by
+		// object reference, hash from RuntimeHelpers.GetHashCode.
+		sealed class GradientStopReferenceComparer : IEqualityComparer<GradientStop>
+		{
+			public static readonly GradientStopReferenceComparer Instance = new();
+			public bool Equals(GradientStop x, GradientStop y) => ReferenceEquals(x, y);
+			public int GetHashCode(GradientStop obj) => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
 		}
 	}
 }
