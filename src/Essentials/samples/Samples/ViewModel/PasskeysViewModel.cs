@@ -49,6 +49,8 @@ namespace Samples.ViewModel
 			SignOutCommand = new Command(async () => await SignOutAsync());
 			RegisterCommand = new Command(async () => await RegisterAsync());
 			LoginCommand = new Command(async () => await LoginAsync());
+			ExternalSignInCommand = new Command(async () => await ExternalSignInAsync());
+			GetExternalProfileCommand = new Command(async () => await GetExternalProfileAsync());
 			EditServerUrlCommand = new Command(async () => await EditServerUrlAsync());
 		}
 
@@ -130,6 +132,10 @@ namespace Samples.ViewModel
 		public ICommand RegisterCommand { get; }
 
 		public ICommand LoginCommand { get; }
+
+		public ICommand ExternalSignInCommand { get; }
+
+		public ICommand GetExternalProfileCommand { get; }
 
 		public ICommand EditServerUrlCommand { get; }
 
@@ -399,6 +405,97 @@ namespace Samples.ViewModel
 			CurrentUsername = null;
 			PasskeyCount = 0;
 			Passkeys.Clear();
+		}
+
+		async Task ExternalSignInAsync()
+		{
+			try
+			{
+				IsBusy = true;
+				Log("Opening the external sign-in page in the browser…");
+
+				// Flow 1 (BFF): the browser hits the server's /native-auth/external/start; the SERVER runs the
+				// whole OAuth exchange with the provider, creates/links a LOCAL Identity account, and redirects
+				// back to our custom scheme with a single-use code. We never see the provider's token.
+				var callback = new Uri("xamarinessentials://");
+				var startUrl = new Uri($"{NormalizeBaseUrl()}native-auth/external/start?provider=Dev&returnUri={Uri.EscapeDataString(callback.ToString())}");
+
+				var result = await WebAuthenticator.AuthenticateAsync(startUrl, callback);
+
+				if (result.Properties.TryGetValue("error", out var error) && !string.IsNullOrEmpty(error))
+				{
+					Log($"❌ External sign-in failed: {error}");
+					return;
+				}
+
+				if (!result.Properties.TryGetValue("code", out var code) || string.IsNullOrEmpty(code))
+				{
+					Log("❌ The server did not return a sign-in code.");
+					return;
+				}
+
+				// Exchange the one-time code over OUR HttpClient so the Identity session cookie lands in this
+				// app's CookieContainer (the browser's cookies are a separate jar). After this we're signed in
+				// exactly like a password/passkey sign-in — same account, so passkeys can be added too.
+				Log("Exchanging the code for a session…");
+				await PostJsonAsync("/native-auth/external/exchange", new { code });
+
+				await RefreshAndOfferPasskeyAsync();
+			}
+			catch (Exception ex)
+			{
+				HandleError(ex);
+			}
+			finally
+			{
+				IsBusy = false;
+			}
+		}
+
+		async Task GetExternalProfileAsync()
+		{
+			try
+			{
+				IsBusy = true;
+				Log("Asking the server for your external profile (BFF relay)…");
+
+				// The "do something" step: WE never hold the provider token — the server does. So we ask our
+				// own API, and the server uses its stored provider token to fetch the profile and relay it back.
+				var client = GetClient();
+				using var httpResponse = await client.GetAsync("/me/external");
+				var body = await httpResponse.Content.ReadAsStringAsync();
+				if (!httpResponse.IsSuccessStatusCode)
+					throw new InvalidOperationException($"Server returned {(int)httpResponse.StatusCode}: {ExtractServerMessage(body)}");
+
+				using var doc = JsonDocument.Parse(body);
+				var root = doc.RootElement;
+
+				if (root.TryGetProperty("message", out var message))
+				{
+					Log(message.GetString());
+					return;
+				}
+
+				var provider = root.TryGetProperty("provider", out var p) ? p.GetString() : "?";
+				var details = body;
+				if (root.TryGetProperty("profile", out var profile))
+				{
+					var name = profile.TryGetProperty("name", out var n) ? n.GetString() : string.Empty;
+					var email = profile.TryGetProperty("email", out var e) ? e.GetString() : string.Empty;
+					details = $"Provider: {provider}{Environment.NewLine}Name: {name}{Environment.NewLine}Email: {email}";
+				}
+
+				await DisplayAlertAsync($"Fetched by the server on your behalf:{Environment.NewLine}{Environment.NewLine}{details}");
+				Log($"✅ Server relayed your {provider} profile (you never saw the provider token).");
+			}
+			catch (Exception ex)
+			{
+				HandleError(ex);
+			}
+			finally
+			{
+				IsBusy = false;
+			}
 		}
 
 		async Task EditServerUrlAsync()
