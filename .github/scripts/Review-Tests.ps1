@@ -251,12 +251,11 @@ function Get-EmbeddedTestFailureReportCandidate {
     $innerFenceCharacter = $null
     $innerFenceLength = 0
     # Running depth of the report's OWN open <details> blocks (structural only). A later
-    # same-tier anchor bounds this candidate only at depth 0 (a genuine sibling report). At
-    # depth > 0 the anchor is the report quoting the marker inside its own <details>; we note
-    # the crossing so a following <details> open — a real second report — is rejected rather
-    # than commingled (round-5 borrow fix).
+    # same-tier anchor bounds this candidate only at depth 0 (a genuine sibling report); at
+    # depth > 0 the anchor is the report quoting the marker inside its own <details> (fenced,
+    # indented, or a bare standalone line) and must not truncate it — the report keeps its
+    # nested evidence and the verdict after it.
     $openDetailsDepth = 0
-    $siblingCrossedInsideDetails = $false
     # Monotonic cursor into the ascending $AnchorIndices: start past this candidate's own and
     # earlier anchors, then only ever advance — keeps the per-line sibling scan amortized O(1).
     $anchorCursor = 0
@@ -296,18 +295,6 @@ function Get-EmbeddedTestFailureReportCandidate {
             $tagValue = $tagMatch.Groups['tag'].Value
             if ($tagValue.StartsWith("</", [StringComparison]::Ordinal)) {
                 if ($openDetailsDepth -gt 0) { $openDetailsDepth-- }
-                # Our own block closed cleanly — anything past here is separate content, so a
-                # quoted-marker crossing we noted earlier no longer implies a commingle.
-                if ($openDetailsDepth -eq 0) { $siblingCrossedInsideDetails = $false }
-            }
-            elseif ($siblingCrossedInsideDetails) {
-                # A <details> opening AFTER we crossed a later same-tier anchor (while still
-                # inside our own block) means that anchor began a DISTINCT sibling report. Its
-                # structure — and any trailing unmatched </details> — would otherwise let the
-                # balance loop rebalance across it and publish a mis-anchored, commingled report
-                # with silent tail loss (round-5). A legitimate self-quote opens no <details>,
-                # so it is safe to reject the whole candidate here.
-                return $null
             }
             else {
                 $openDetailsDepth++
@@ -319,25 +306,20 @@ function Get-EmbeddedTestFailureReportCandidate {
                 })
             continue
         }
-        # Not a tag. Find whether a later same-tier anchor sits on this structural line.
-        if ($AnchorIndices.Count -gt 0) {
+        # Not a tag. At depth 0 (outside the report's own <details>), a later same-tier anchor
+        # is a genuine sibling report and bounds this candidate. At depth > 0 the anchor is the
+        # report quoting the marker inside its own block (which the production template's nested
+        # evidence <details> is structurally indistinguishable from), so it is ignored rather
+        # than truncating the report. A genuinely unclosed earlier report can't borrow a later
+        # one either: its details never rebalance to 0, so the balance loop rejects it.
+        if ($openDetailsDepth -eq 0 -and $AnchorIndices.Count -gt 0) {
             $lineStart = $startIndex + $lineMatch.Index
             $lineEnd = $lineStart + $lineMatch.Value.Length
             while ($anchorCursor -lt $AnchorIndices.Count -and $AnchorIndices[$anchorCursor] -lt $lineStart) {
                 $anchorCursor++
             }
             if ($anchorCursor -lt $AnchorIndices.Count -and $AnchorIndices[$anchorCursor] -lt $lineEnd) {
-                if ($openDetailsDepth -eq 0) {
-                    # OUTSIDE the report's own <details>: a genuine sibling report starts here.
-                    # Bound — an earlier example/quote can't borrow a later report's structure,
-                    # and a real report is never displaced by a later structurally-valid one.
-                    break
-                }
-                # INSIDE the report's own still-open <details>: the report is quoting the marker
-                # (fenced, indented, or a bare standalone line). Keep it as the report's content,
-                # but note the crossing so a following <details> open (a real second report) is
-                # rejected above rather than commingled into this one.
-                $siblingCrossedInsideDetails = $true
+                break
             }
         }
     }

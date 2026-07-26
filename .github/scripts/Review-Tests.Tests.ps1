@@ -427,43 +427,111 @@ Evidence for report TWO.
         $report | Should -Not -Match 'Evidence for report TWO'
     }
 
-    It 'does not commingle an unclosed first report with a genuine second via a trailing close' {
-        # PureWeen's round-5 borrow fixture (non-vacuous — this arrangement DIVERGES parent vs
-        # head). Report ONE is unclosed; a genuine well-formed Report TWO follows; then a
-        # TRAILING unmatched </details>. Without the round-5 fix, ONE's candidate skips the
-        # depth>0 bound, then the balance loop rebalances across TWO via the trailing close —
-        # publishing a mis-anchored blob of ONE+TWO and dropping FINAL CONTENT. The fix rejects
-        # ONE's candidate the moment TWO opens its own <details>, so extraction returns the
-        # clean Report TWO (matching the parent) and never commingles the two.
+    It 'keeps a full self-quoting report that also opens a nested details block (depth 1)' {
+        # Round-6 regression guard. The production report template ALWAYS contains a nested
+        # <details> evidence sub-block, and self-quoting the marker inside the outer <details>
+        # is the realistic behavior round-4 exists for. The round-5 eager "reject on the next
+        # <details> open" broke exactly this: it dropped Evidence + the Verdict/Recommendation
+        # (a genuine sibling report and a report's own nested evidence are structurally
+        # identical, so eager rejection can't tell them apart). The depth-aware bound must keep
+        # the whole report — evidence AND verdict.
+        $content = @'
+<!-- Tests Failure -->
+
+<details>
+<summary>Analysis</summary>
+Evidence ONE (the root cause).
+
+The required marker the model was told to emit:
+
+<!-- Tests Failure -->
+
+<details>
+<summary>Stack trace</summary>
+at Foo.Bar()
+</details>
+
+Verdict: real product bug. Recommendation: fix Foo.Bar.
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Not -BeNullOrEmpty
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match 'Evidence ONE'
+        $report | Should -Match 'at Foo\.Bar'
+        $report | Should -Match 'Verdict: real product bug'
+    }
+
+    It 'keeps a full self-quoting report when the quote is nested at depth two' {
+        # Worse round-6 variant: the marker is quoted inside a nested <details> (depth 2), and
+        # the report then opens a SECOND nested evidence block. Under round-5 the flag was reset
+        # only at depth 0, so it stayed armed across the sibling nested block and the second
+        # <details> open returned the WHOLE report as $null (a "couldn't extract" skeleton).
+        # The report and its verdict must survive.
+        $content = @'
+<!-- Tests Failure -->
+
+<details>
+<summary>Analysis</summary>
+Root cause established.
+
+<details>
+<summary>Inner evidence A</summary>
+The template the model must emit begins with:
+
+<!-- Tests Failure -->
+
+and more inner evidence.
+</details>
+
+<details>
+<summary>Inner evidence B</summary>
+at Baz.Qux().
+</details>
+
+Verdict: real product bug. Recommendation: fix Baz.Qux.
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Not -BeNullOrEmpty
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match 'Root cause established'
+        $report | Should -Match 'at Baz\.Qux'
+        $report | Should -Match 'Verdict: real product bug'
+    }
+
+    It 'falls through to a genuine second report when the first is truly unclosed' {
+        # The REAL borrow protection (distinct from the round-5 trailing-close fixture, which is
+        # structurally a single nested report). Here Report ONE's <details> is genuinely never
+        # closed, so its candidate's balance never returns to depth 0 and it is rejected —
+        # extraction falls through to the well-formed Report TWO without commingling.
         $content = @'
 <!-- Tests Failure -->
 
 ## Tests Failure Analysis
 
 <details>
-<summary>Report ONE (unclosed)</summary>
-Evidence ONE.
+<summary>Report ONE (truly unclosed)</summary>
+Evidence ONE — this block is never closed.
 
 <!-- Tests Failure -->
 
 ## Tests Failure Analysis
 
 <details>
-<summary>Report TWO (well-formed)</summary>
+<summary>Report TWO</summary>
 Evidence TWO.
 </details>
-
-Some trailing prose:
-</details>
-
-FINAL CONTENT - must not be dropped.
 '@
 
         $report = Get-EmbeddedTestFailureReport -Content $content
 
-        # The key anti-commingle invariant: ONE and TWO must never be published together.
-        $report | Should -Not -Match 'Evidence ONE'
         $report | Should -Match 'Evidence TWO'
+        $report | Should -Not -Match 'Evidence ONE'
     }
 
     It 'recognizes a standalone marker indented up to three spaces' {
