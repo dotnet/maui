@@ -748,7 +748,7 @@ comments, check summaries, and other incidental references: a numeric mention in
 one of those locations is not evidence that a human PR owns this failure.
 
 ```bash
-url="https://api.github.com/search/issues?q=repo%3Adotnet%2Fmaui+is%3Apr+is%3Aopen+-label%3Aagentic-workflows+in%3Atitle%2Cbody+%22%23${N}%22"
+url="https://api.github.com/search/issues?per_page=100&q=repo%3Adotnet%2Fmaui+is%3Apr+is%3Aopen+-label%3Aagentic-workflows+in%3Atitle%2Cbody+%22%23${N}%22"
 curl -s "$url" | tee /tmp/gh-aw/agent/human_${N}.json
 ```
 
@@ -758,12 +758,16 @@ an explicit tracker reference such as:
 
 - `Refs: dotnet/maui#<N>`; or
 - `Fix`, `Fixes`, `Fixed`, `Close`, `Closes`, `Closed`, `Resolve`, `Resolves`,
-  or `Resolved` followed by `#<N>` or `dotnet/maui#<N>`.
+  or `Resolved` followed by `#<N>`, `dotnet/maui#<N>`, or
+  `https://github.com/dotnet/maui/issues/<N>`.
 
 If such a declaration exists → `skipped: human PR #<P> already addressing` and
 stop. A raw issue number in a comment, check-status summary, commit/diff, or an
 incidental title/body mention is **not** a stop condition. When every result is
-incidental, record that conclusion in the run log and continue to Step 3.4.
+incidental, first confirm that `total_count` does not exceed the number of
+returned `items`. If the result is truncated, record `skipped: human-PR dedup
+search inconclusive` and stop; do not risk opening a competing CI-fix PR. Only
+then record the incidental conclusion and continue to Step 3.4.
 
 #### Step 3.4 — Fresh issue: prior-closed guard, else attempt 1
 
