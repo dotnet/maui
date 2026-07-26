@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
@@ -61,17 +62,33 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				{
 					var pooledNullContainer = _nullItemPool[^1];
 					_nullItemPool.RemoveAt(_nullItemPool.Count - 1);
+					// Re-apply the transparent hit-test surface. ApplyDragAffordance may
+					// have set a card Background on this container while it was live, and
+					// ElementClearing / drag cleanup call ClearValue(BackgroundProperty),
+					// which reverts the DP to the theme resource default. Neither guarantees
+					// a transparent brush — so restore it explicitly here so the recycled
+					// blank row remains pointer-hit-testable.
+					pooledNullContainer.Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
 					return pooledNullContainer;
 				}
 
 				// CV2 has no ListViewItem wrapper, so we set both MinHeight and MinWidth on ItemContainer.
 				// Default sizing hints for null-data item containers in CV2, based on CV1 behavior.
+				//
+				// A transparent Background is required so the blank row exposes a WinUI hit-test
+				// surface: WinUI Controls with a null Background do NOT receive pointer input
+				// over empty regions, which means null-data rows would otherwise silently swallow
+				// taps, drag-start, and drop-target events. SolidColorBrush(Transparent) keeps the
+				// row visually blank (preserving CV1 null-row semantics) while ensuring pointer
+				// events reach it — needed both for selection and for drag/drop reorder over
+				// null rows (Issue #36068).
 				return new ItemContainer
 				{
 					MinHeight = 32,
 					MinWidth = 88,
 					VerticalAlignment = VerticalAlignment.Stretch,
-					HorizontalAlignment = HorizontalAlignment.Stretch
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent)
 				};
 			}
 

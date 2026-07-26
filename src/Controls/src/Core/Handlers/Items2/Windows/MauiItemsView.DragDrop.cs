@@ -353,6 +353,14 @@ internal partial class MauiItemsView
 			itemContainer.DragStarting += ItemContainer_DragStarting;
 		}
 
+		// A blank null-data ItemContainer has no ElementWrapper Child. ItemFactory
+		// gives those containers a transparent Background so they still receive
+		// pointer input; overwriting that here with the Fluent card brush would
+		// paint the row solid and break the "blank null row" contract (CV1 parity).
+		// Leave the transparent hit-test surface in place — the drag ghost for a
+		// null row is intentionally empty, matching the blank cell.
+		bool isNullDataContainer = itemContainer.Child is null;
+
 		// Set the Fluent card background as a LOCAL dependency-property value so that:
 		//   1. The drag ghost (captured by the compositor BEFORE DragStarting fires)
 		//      always carries a visible card background regardless of DataTemplate content.
@@ -361,6 +369,7 @@ internal partial class MauiItemsView
 		// RemoveDragGhostAppearance calls ClearValue(BackgroundProperty) to undo this,
 		// letting the transparent ThemeResource resume when drag-reorder is disabled.
 		if (!isHeaderOrFooter
+			&& !isNullDataContainer
 			&& WApp.Current?.Resources?.TryGetValue("CardBackgroundFillColorDefaultBrush", out var cardBg) == true
 			&& cardBg is Microsoft.UI.Xaml.Media.Brush cardBrush)
 		{
