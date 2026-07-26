@@ -42,6 +42,8 @@ namespace Samples.ViewModel
 
 		public ObservableCollection<PasskeyItem> Passkeys { get; } = new();
 
+		public ObservableCollection<ExternalProviderItem> ExternalProviders { get; } = new();
+
 		public PasskeysViewModel()
 		{
 			SignUpCommand = new Command(async () => await SignUpAsync());
@@ -49,9 +51,10 @@ namespace Samples.ViewModel
 			SignOutCommand = new Command(async () => await SignOutAsync());
 			RegisterCommand = new Command(async () => await RegisterAsync());
 			LoginCommand = new Command(async () => await LoginAsync());
-			ExternalSignInCommand = new Command(async () => await ExternalSignInAsync());
 			GetExternalProfileCommand = new Command(async () => await GetExternalProfileAsync());
 			EditServerUrlCommand = new Command(async () => await EditServerUrlAsync());
+
+			_ = LoadProvidersAsync();
 		}
 
 		public bool IsSupported => PasskeysApi.IsSupported;
@@ -133,11 +136,13 @@ namespace Samples.ViewModel
 
 		public ICommand LoginCommand { get; }
 
-		public ICommand ExternalSignInCommand { get; }
-
 		public ICommand GetExternalProfileCommand { get; }
 
 		public ICommand EditServerUrlCommand { get; }
+
+		public bool HasExternalProviders => ExternalProviders.Count > 0;
+
+		public bool NoExternalProviders => ExternalProviders.Count == 0;
 
 		async Task SignUpAsync()
 		{
@@ -407,18 +412,59 @@ namespace Samples.ViewModel
 			Passkeys.Clear();
 		}
 
-		async Task ExternalSignInAsync()
+		// Loads the external providers the server has configured, so the UI shows a button per provider —
+		// no provider is hard-coded here. Called at startup and whenever the server URL changes.
+		async Task LoadProvidersAsync()
+		{
+			try
+			{
+				var client = GetClient();
+				using var httpResponse = await client.GetAsync("/native-auth/external/providers");
+				if (!httpResponse.IsSuccessStatusCode)
+					return;
+
+				var body = await httpResponse.Content.ReadAsStringAsync();
+				using var doc = JsonDocument.Parse(body);
+
+				MainThread.BeginInvokeOnMainThread(() =>
+				{
+					ExternalProviders.Clear();
+					foreach (var element in doc.RootElement.EnumerateArray())
+					{
+						var name = element.TryGetProperty("name", out var n) ? n.GetString() : null;
+						if (string.IsNullOrEmpty(name))
+							continue;
+						var displayName = element.TryGetProperty("displayName", out var d) ? d.GetString() : name;
+						var provider = name;
+						ExternalProviders.Add(new ExternalProviderItem
+						{
+							Name = name,
+							DisplayName = displayName,
+							SignInCommand = new Command(async () => await ExternalSignInAsync(provider)),
+						});
+					}
+					OnPropertyChanged(nameof(HasExternalProviders));
+					OnPropertyChanged(nameof(NoExternalProviders));
+				});
+			}
+			catch
+			{
+				// Best-effort: if the server is unreachable, just show no external providers.
+			}
+		}
+
+		async Task ExternalSignInAsync(string provider)
 		{
 			try
 			{
 				IsBusy = true;
-				Log("Opening the external sign-in page in the browser…");
+				Log($"Opening {provider} sign-in in the browser…");
 
 				// Flow 1 (BFF): the browser hits the server's /native-auth/external/start; the SERVER runs the
 				// whole OAuth exchange with the provider, creates/links a LOCAL Identity account, and redirects
 				// back to our custom scheme with a single-use code. We never see the provider's token.
 				var callback = new Uri("xamarinessentials://");
-				var startUrl = new Uri($"{NormalizeBaseUrl()}native-auth/external/start?provider=Dev&returnUri={Uri.EscapeDataString(callback.ToString())}");
+				var startUrl = new Uri($"{NormalizeBaseUrl()}native-auth/external/start?provider={Uri.EscapeDataString(provider)}&returnUri={Uri.EscapeDataString(callback.ToString())}");
 
 				var result = await WebAuthenticator.AuthenticateAsync(startUrl, callback);
 
@@ -512,6 +558,7 @@ namespace Samples.ViewModel
 			// A new server means a fresh HttpClient with an empty cookie jar, i.e. a new session.
 			SetSignedOutState();
 			Log($"Server set to {ServerBaseUrl}");
+			await LoadProvidersAsync();
 		}
 
 		bool EnsureSupported()
@@ -643,5 +690,17 @@ namespace Samples.ViewModel
 		public string CreatedAtText => string.IsNullOrEmpty(CreatedAt) ? string.Empty : $"Added {CreatedAt}";
 
 		public ICommand DeleteCommand { get; set; }
+	}
+
+	// One external OAuth provider the server has configured (e.g. Google, Microsoft, Apple, Facebook).
+	public class ExternalProviderItem
+	{
+		public string Name { get; set; }
+
+		public string DisplayName { get; set; }
+
+		public string ButtonText => $"Continue with {DisplayName}";
+
+		public ICommand SignInCommand { get; set; }
 	}
 }
