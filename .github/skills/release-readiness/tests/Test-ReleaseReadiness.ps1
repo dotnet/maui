@@ -5084,9 +5084,9 @@ Assert-Eq -Label "M20b: NextAction creates rc1, not preview8" -Expected $true `
 
 # ── Scenario M20c: preview0 branch → UNKNOWN, NOT a silent skip ──
 # `preview(\d+)` syntactically accepts 0, mapping to ordinal 0 which has no train
-# member. The lane must not silently drop the current-cycle signal for a
-# misconfigured branch name (SKILL.md: "never silently skips") — it emits UNKNOWN,
-# distinct from the legitimate past-rc2 empty result asserted by M20d.
+# member. A matched branch shape with an out-of-range ordinal is a misconfiguration,
+# so it must surface as UNKNOWN rather than silently dropping the current-cycle
+# signal — distinct from the legitimate past-rc2 empty result asserted by M20d.
 $m20c = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview0' -MilestonesResponse @()
 $m20cHygiene = Get-MilestoneCheckByPrefix -Checks $m20c -Prefix 'Milestone hygiene'
 Assert-Eq -Label "M20c: preview0 ordinal → UNKNOWN (not silent skip)" -Expected 'UNKNOWN' -Actual $m20cHygiene.Status

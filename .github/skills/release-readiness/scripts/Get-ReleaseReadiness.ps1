@@ -1279,12 +1279,13 @@ function Get-MilestoneHygieneChecks {
             if ($cycleNum -lt 1) {
                 # Nonsensical ordinal (e.g. a `release/<major>.0.1xx-preview0`
                 # branch — the `\d+` capture syntactically accepts 0). The
-                # pre-release train has no member below 1, but we must NOT
-                # silently drop the current-cycle signal: this lane's contract
-                # is that it never silently skips a misconfiguration (SKILL.md),
-                # unlike the legitimate past-rc2 case just below where no
-                # milestone exists by design. Surface UNKNOWN so the bad branch
-                # name is visible instead of masquerading as "all clear".
+                # pre-release train has no member below 1. This is a MATCHED
+                # branch shape with an out-of-range ordinal — a misconfiguration,
+                # not the legitimate end of the train — so surface UNKNOWN rather
+                # than silently dropping the current-cycle signal, which would let
+                # a bad branch name masquerade as "all clear". Distinct from the
+                # past-rc2 case just below, where no milestone exists by design and
+                # an empty result is correct.
                 return @(New-ReadinessCheck -Area "Milestone hygiene" -Status 'UNKNOWN' `
                     -Details "Unrecognized pre-release ordinal ``$cycleNum`` derived from branch ``$branchToParse`` — cannot map it to a preview/rc milestone title." `
                     -NextAction "Verify the branch follows the ``release/<major>.0.<feature>xx-preview<n>`` convention with ``n >= 1``.")
