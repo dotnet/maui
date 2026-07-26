@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// Non-UIControl views (like UICollectionView) only get interaction disable
+				// Non-UIControl views (like UICollectionView) have no native enabled state, so
+				// disable interaction when the view is disabled or input-transparent
 				platformView.UserInteractionEnabled = view.IsEnabled && !view.InputTransparent;
 			}
 		}

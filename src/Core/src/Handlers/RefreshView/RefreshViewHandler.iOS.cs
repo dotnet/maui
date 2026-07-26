@@ -62,7 +62,10 @@ namespace Microsoft.Maui.Handlers
 			=> handler.PlatformView.UpdateIsRefreshEnabled(refreshView.IsRefreshEnabled);
 
 		public static void MapIsEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.PlatformView.UpdateIsEnabled(refreshView.IsEnabled);
+		{
+			handler.PlatformView.UpdateIsEnabled(refreshView.IsEnabled);
+			ViewHandler.MapInputTransparentToContainer(handler, refreshView);
+		}
 
 		static void UpdateContent(IRefreshViewHandler handler)
 		{

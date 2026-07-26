@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.PlatformView?.UpdateIsEnabled(scrollView);
+			ViewHandler.MapInputTransparentToContainer(handler, scrollView);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
