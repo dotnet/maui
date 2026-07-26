@@ -237,5 +237,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			Assert.True(Brush.HasTransparency(allSemiTransparentBrush));
 		}
+
+		[Fact]
+		public void ClearUnsubscribesPreviousGradientStopsFromPropertyChanged()
+		{
+			var brush = new LinearGradientBrush();
+			var oldStop = new GradientStop { Color = Colors.Red, Offset = 0.0f };
+			var newStop = new GradientStop { Color = Colors.Blue, Offset = 1.0f };
+			var invalidations = 0;
+
+			brush.InvalidateGradientBrushRequested += (_, _) => invalidations++;
+
+			brush.GradientStops.Add(oldStop);
+			invalidations = 0;
+
+			brush.GradientStops.Clear();
+			invalidations = 0;
+
+			// If Reset handling does not unsubscribe old stops, mutating oldStop
+			// would incorrectly invalidate the brush.
+			oldStop.Color = Colors.Green;
+			Assert.Equal(0, invalidations);
+
+			brush.GradientStops.Add(newStop);
+			invalidations = 0;
+
+			newStop.Color = Colors.Purple;
+			Assert.Equal(1, invalidations);
+		}
 	}
 }
