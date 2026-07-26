@@ -5021,6 +5021,90 @@ Assert-Eq -Label "M16: API fail → UNKNOWN status" -Expected 'UNKNOWN' -Actual 
 Assert-Eq -Label "M16: API fail action mentions gh auth status" -Expected $true `
     -Actual ($m16Unk.NextAction -match 'gh auth status')
 
+# ── Scenario M17: preview7 is the FINAL preview → next cycle is rc1, NOT preview8 ──
+# Regression guard. .NET ships preview1..preview7 → rc1 → rc2 → GA; there is no
+# preview8. Naively incrementing the preview number told release captains to
+# create a `.NET 11.0-preview8` milestone that .NET never ships.
+$m17Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+)
+$m17 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m17Data
+$m17Next = Get-MilestoneCheckByPrefix -Checks $m17 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M17: preview7 missing next → CLEANUP" -Expected 'CLEANUP' -Actual $m17Next.Status
+Assert-Eq -Label "M17: next cycle after preview7 is rc1" -Expected $true `
+    -Actual ($m17Next.Area -match '\.NET 11\.0-rc1')
+Assert-Eq -Label "M17: next cycle after preview7 is NOT preview8" -Expected $false `
+    -Actual ($m17Next.Area -match 'preview8')
+Assert-Eq -Label "M17: NextAction creates the rc1 milestone" -Expected $true `
+    -Actual ($m17Next.NextAction -match 'title="\.NET 11\.0-rc1"')
+
+# ── Scenario M18: preview7 + rc1 both present → no next-cycle check ──
+$m18Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1' -Number 301 -DueOn $daysAhead30)
+)
+$m18 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m18Data
+Assert-Eq -Label "M18: preview7 + rc1 present → 0 checks" -Expected 0 -Actual @($m18).Count
+
+# ── Scenario M19: preview6 still increments normally (cadence untouched below 7) ──
+$m19Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview6' -Number 302 -DueOn $daysAhead30)
+)
+$m19 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview6' -MilestonesResponse $m19Data
+$m19Next = Get-MilestoneCheckByPrefix -Checks $m19 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M19: next cycle after preview6 is still preview7" -Expected $true `
+    -Actual ($m19Next.Area -match '\.NET 11\.0-preview7')
+
+# ── Scenario M20: candidate mode off preview7 → current=rc1, next=rc2 ──
+# Candidate mode increments the ordinal, so "candidate after preview7" is rc1
+# and its roll-forward is rc2 — neither may render as a preview.
+$m20Data = @(
+    (New-MockMilestone -Title '.NET 11.0-rc1' -Number 301 -DueOn $daysAhead30)
+)
+$m20 = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m20Data
+$m20Current = Get-MilestoneCheckByPrefix -Checks $m20 -Prefix 'Milestone for current cycle'
+$m20Next = Get-MilestoneCheckByPrefix -Checks $m20 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M20: candidate off preview7 → rc1 exists, no current-cycle BLOCK" -Expected $true -Actual ($null -eq $m20Current)
+Assert-Eq -Label "M20: candidate off preview7 → next cycle is rc2" -Expected $true `
+    -Actual ($m20Next.Area -match '\.NET 11\.0-rc2')
+
+# ── Scenario M21: rc2 is the end of the train → no next-cycle check (GA follows) ──
+$m21Data = @(
+    (New-MockMilestone -Title '.NET 11.0-rc2' -Number 303 -DueOn $daysAhead30)
+)
+$m21 = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview8' -MilestonesResponse $m21Data
+$m21Next = Get-MilestoneCheckByPrefix -Checks $m21 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M21: rc2 has no roll-forward milestone (GA is next) → no next check" -Expected $true -Actual ($null -eq $m21Next)
+
+# ── Scenario M22: stale rc milestones flagged alongside stale previews ──
+# preview and rc are one continuous pre-release train, so a stale rc1 is the
+# same housekeeping debt as a stale preview5.
+$m22Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1' -Number 301 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-preview5' -State 'open' -Number 304 -OpenIssues 3 -DueOn $daysAgo60)
+)
+$m22 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22Data
+$m22Stale = Get-MilestoneCheckByPrefix -Checks $m22 -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22: stale preview5 flagged when surveying preview7" -Expected 'CLEANUP' -Actual $m22Stale.Status
+
+$m22bData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1' -State 'open' -Number 301 -OpenIssues 2 -DueOn $daysAgo60)
+)
+$m22b = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22bData
+$m22bStale = Get-MilestoneCheckByPrefix -Checks $m22b -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22b: stale rc1 also flagged on the preview train" -Expected 'CLEANUP' -Actual $m22bStale.Status
+
+# ── Scenario M23: Get-PreviewTrainMilestoneTitle pure-function mapping ──
+Assert-Eq -Label "M23: ordinal 1 → preview1" -Expected '.NET 11.0-preview1' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 1)
+Assert-Eq -Label "M23: ordinal 7 → preview7" -Expected '.NET 11.0-preview7' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 7)
+Assert-Eq -Label "M23: ordinal 8 → rc1 (not preview8)" -Expected '.NET 11.0-rc1' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 8)
+Assert-Eq -Label "M23: ordinal 9 → rc2" -Expected '.NET 11.0-rc2' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 9)
+Assert-Eq -Label "M23: ordinal 10 → null (GA, no milestone)" -Expected $true -Actual ($null -eq (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 10))
+Assert-Eq -Label "M23: ordinal 0 → null (invalid)" -Expected $true -Actual ($null -eq (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 0))
+Assert-Eq -Label "M23: major is honoured (10 → rc1)" -Expected '.NET 10.0-rc1' -Actual (Get-PreviewTrainMilestoneTitle -Major 10 -Ordinal 8)
+
 Set-Item function:Get-AllMilestones $script:OrigGetAllMilestonesForHygiene
 $script:MilestoneStub = $null
 

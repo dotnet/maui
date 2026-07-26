@@ -1170,6 +1170,56 @@ function Get-AllMilestones {
     }
 }
 
+# .NET ships preview1..preview7, then rc1, rc2, then GA. There is NO preview8 —
+# preview7 is the FINAL preview of a major, and the milestone that follows it is
+# `.NET <major>.0-rc1`. Verified against dotnet/maui's own history:
+#   .NET 9  → 9.0.0-preview.7.24407.4  → 9.0.0-rc.1.24453.9  → 9.0.0-rc.2.24503.2
+#   .NET 10 → 10.0.0-preview.7.25406.3 → 10.0.0-rc.1.25424.2 → 10.0.0-rc.2.25504.7
+# and the matching milestones `.NET 10.0-preview7` → `.NET 10.0-rc1` → `.NET 10.0-rc2`.
+# (.NET 5 shipped 8 previews; the 7-preview cadence has held for every major since
+# .NET 6. If that ever changes, this constant is the single place to update.)
+$script:FinalPreviewNumber = 7
+$script:RcCountPerMajor    = 2
+
+function Get-PreviewTrainMilestoneTitle {
+    <#
+    .SYNOPSIS
+        PURE. Maps a 1-based preview-train ordinal to its GitHub milestone title,
+        honouring the preview→rc transition.
+    .DESCRIPTION
+        The pre-release train for a major is a single ordered sequence, so
+        "the cycle after preview7" is rc1 — not the non-existent preview8.
+        Naively incrementing the preview number is the bug this replaces: it
+        told release captains to create a `.NET <major>.0-preview8` milestone
+        that .NET never ships.
+
+            ordinal 1..7  → ".NET <major>.0-preview<ordinal>"
+            ordinal 8     → ".NET <major>.0-rc1"
+            ordinal 9     → ".NET <major>.0-rc2"
+            ordinal 10+   → $null   (GA — no further pre-release milestone)
+
+        Returning $null for post-rc2 ordinals lets callers skip the roll-forward
+        check rather than inventing an "rc3" that will never exist.
+    .OUTPUTS
+        [string] milestone title, or $null when the ordinal runs past rc2.
+    #>
+    param(
+        [Parameter(Mandatory)][int]$Major,
+        [Parameter(Mandatory)][int]$Ordinal
+    )
+
+    if ($Ordinal -lt 1) { return $null }
+    if ($Ordinal -le $script:FinalPreviewNumber) {
+        return ".NET $Major.0-preview$Ordinal"
+    }
+
+    $rcNumber = $Ordinal - $script:FinalPreviewNumber
+    if ($rcNumber -le $script:RcCountPerMajor) {
+        return ".NET $Major.0-rc$rcNumber"
+    }
+    return $null
+}
+
 function Get-MilestoneHygieneChecks {
     <#
     .SYNOPSIS
@@ -1220,9 +1270,23 @@ function Get-MilestoneHygieneChecks {
         $major = [int]$previewMatch.Groups[1].Value
         $cycleNum = [int]$previewMatch.Groups[2].Value
         if ($Ctx.mode -eq 'candidate') { $cycleNum++ }
-        $expectedTitlesCurrent = @(".NET $major.0-preview$cycleNum")
-        $expectedTitlesNext    = @(".NET $major.0-preview$($cycleNum + 1)")
-        $cycleLabel = "preview$cycleNum"
+        # Walk the preview train (preview1..preview7 → rc1 → rc2), NOT a naive
+        # preview number increment — .NET has no preview8, so the cycle after
+        # preview7 is rc1.
+        $currentTrainTitle = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal $cycleNum
+        $nextTrainTitle    = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal ($cycleNum + 1)
+        if (-not $currentTrainTitle) {
+            # Past rc2 — the pre-release train is over and GA milestones don't
+            # follow this naming convention. Skip silently rather than guess.
+            return @()
+        }
+        $expectedTitlesCurrent = @($currentTrainTitle)
+        # NOTE: assign via a statement, not `= if (...) { @($x) } else { @() }` —
+        # an if-expression unrolls a single-element array back to a scalar, which
+        # then blows up on `.Count` under `Set-StrictMode -Version Latest`.
+        $expectedTitlesNext = @()
+        if ($nextTrainTitle) { $expectedTitlesNext = @($nextTrainTitle) }
+        $cycleLabel = $currentTrainTitle -replace "^\.NET $major\.0-", ''
     } else {
         # Unknown branch shape — can't derive milestone names. Skip silently.
         return @()
@@ -1254,12 +1318,17 @@ function Get-MilestoneHygieneChecks {
     # create it any time before the next cycle starts. In candidate mode this
     # is especially conservative: SR9 candidate would otherwise BLOCK on
     # missing SR10, even though we're not yet ready to cut SR9.
-    $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
-    $nextTitle = $expectedTitlesNext[0]
-    if ($nextMs.Count -eq 0) {
-        $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'CLEANUP' `
-            -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to — but ``$cycleLabel`` can ship first." `
-            -NextAction "Create the milestone before the next cycle begins: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+    #
+    # $expectedTitlesNext is empty when the pre-release train has no successor
+    # (i.e. we're on rc2, after which comes GA) — skip rather than invent one.
+    if ($expectedTitlesNext.Count -gt 0) {
+        $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
+        $nextTitle = $expectedTitlesNext[0]
+        if ($nextMs.Count -eq 0) {
+            $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'CLEANUP' `
+                -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to — but ``$cycleLabel`` can ship first." `
+                -NextAction "Create the milestone before the next cycle begins: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+        }
     }
 
     # === Check 3: Stale open milestones with past due_on ===
@@ -1279,8 +1348,10 @@ function Get-MilestoneHygieneChecks {
         # Match ".NET <major> SR<n>" and ".NET <major>.0 SR<n>" (and SR<n>.<patch>)
         "^\.NET\s+$major(\.0)?\s+SR\d+(\.\d+)?$"
     } else {
-        # Match ".NET <major>.0-preview<n>"
-        "^\.NET\s+$major\.0-preview\d+$"
+        # Match ".NET <major>.0-preview<n>" AND ".NET <major>.0-rc<n>" — preview
+        # and rc are one continuous pre-release train, so a stale rc1 milestone
+        # is the same class of housekeeping debt as a stale preview6 one.
+        "^\.NET\s+$major\.0-(preview|rc)\d+$"
     }
     $staleMs = @($allMs | Where-Object {
         $_.state -eq 'open' -and
