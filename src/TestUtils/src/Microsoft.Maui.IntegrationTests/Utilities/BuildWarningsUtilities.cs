@@ -27,6 +27,17 @@ namespace Microsoft.Maui.IntegrationTests
 
 		private static string NormalizeFilePath(string file) => file.Replace("\\\\", "/", StringComparison.Ordinal).Replace('\\', '/');
 
+		// Roslyn names compiler-generated local functions as "<Method>g__Local|<ordinal>_<slot>". The
+		// "|<ordinal>_<slot>" segment is positional and shifts whenever unrelated code in the containing
+		// type changes (for example as dotnet/android dependencies flow), so matching the AOT-warning
+		// baseline on the exact string flakes even though the same member still produces the same warning.
+		// Normalizing only that volatile segment keeps the assertion meaningful. See https://github.com/dotnet/maui/issues/36142.
+		private static readonly System.Text.RegularExpressions.Regex s_compilerGeneratedOrdinal =
+			new System.Text.RegularExpressions.Regex(@"\|\d+_\d+", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+		private static string NormalizeCompilerGeneratedOrdinals(string message) =>
+			s_compilerGeneratedOrdinal.Replace(message, "|N_N");
+
 		/// <summary>
 		/// Reads build errors from a binlog file and outputs them to the test output.
 		/// This makes errors visible in Azure DevOps logs instead of requiring artifact downloads.
@@ -143,8 +154,14 @@ namespace Microsoft.Maui.IntegrationTests
 
 					foreach (var expectedWarningsMessage in expectedWarningsPerCode.Messages)
 					{
-						if (!actualWarningsPerCode!.Messages.Remove(expectedWarningsMessage))
+						// Match while ignoring the volatile compiler-generated local-function ordinal so the
+						// baseline does not flake when a dependency shifts it (see dotnet/maui#36142).
+						var normalizedExpected = NormalizeCompilerGeneratedOrdinals(expectedWarningsMessage);
+						var actualMessageIndex = actualWarningsPerCode!.Messages.FindIndex(
+							actualMessage => NormalizeCompilerGeneratedOrdinals(actualMessage) == normalizedExpected);
+						if (actualMessageIndex < 0)
 							Assert.Fail($"Expected warning message '{expectedWarningsMessage}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'");
+						actualWarningsPerCode!.Messages.RemoveAt(actualMessageIndex);
 					}
 
 					if (actualWarningsPerCode!.Messages.Count != 0)
