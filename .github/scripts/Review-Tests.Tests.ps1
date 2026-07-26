@@ -332,6 +332,131 @@ Final evidence line.
         $report | Should -Match 'Final evidence line'
     }
 
+    It 'keeps a real report that quotes the marker as a bare unfenced line in its own details (tier 1)' {
+        # Round-4 follow-up: the quoted marker is a STANDALONE UNFENCED line (0-3 space indent),
+        # not fenced or 4-space-indented, sitting inside the report's own still-open <details>.
+        # The structural (non-depth-aware) bound treated it as a sibling and collapsed the
+        # report to $null; the depth-aware bound recognizes depth > 0 means it's the report's
+        # own content and continues to the report's real closing </details>.
+        $content = @'
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Actual review</summary>
+Actual evidence.
+
+The report must begin with this exact line:
+
+<!-- Tests Failure -->
+
+and everything after it is analysis. More real evidence follows.
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Not -BeNullOrEmpty
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match 'Actual evidence'
+        $report | Should -Match 'More real evidence follows'
+    }
+
+    It 'keeps a heading-anchored report that quotes the heading as a bare unfenced line in its own details (tier 2)' {
+        $content = @'
+## Tests Failure Analysis
+
+<details>
+<summary>Actual review</summary>
+Actual evidence.
+
+Every report opens with the heading:
+
+## Tests Failure Analysis
+
+which is just quoted here. Final evidence line.
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Not -BeNullOrEmpty
+        $report | Should -Match '^## Tests Failure Analysis'
+        $report | Should -Match 'Actual evidence'
+        $report | Should -Match 'Final evidence line'
+    }
+
+    It 'returns the earliest report when a self-quoting first report precedes a genuine second (no silent substitution)' {
+        # The sharpest round-4 case: a self-quoting report #1 (bare unfenced marker inside its
+        # own <details>) FOLLOWED by a genuine report #2. The structural bound truncated #1 to
+        # $null, then returned #2 — silently dropping #1 and violating earliest-wins. Depth-aware
+        # bounding keeps #1 intact and returns it.
+        $content = @'
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Report ONE</summary>
+Evidence for report ONE.
+
+Template reference line:
+
+<!-- Tests Failure -->
+
+end of the quoted template.
+</details>
+
+Then, later, a genuinely separate second report:
+
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Report TWO</summary>
+Evidence for report TWO.
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match 'Evidence for report ONE'
+        $report | Should -Not -Match 'Evidence for report TWO'
+    }
+
+    It 'does not let an unclosed earlier report borrow a later report''s closing tag' {
+        # PureWeen's dispute-round caveat: with depth-aware bounding, an earlier report whose
+        # <details> is never closed must NOT borrow a later genuine report's </details> to
+        # complete itself. The balance loop rejects the unbalanced first candidate (depth never
+        # returns to 0), so extraction falls through to the genuine second report cleanly.
+        $content = @'
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Unclosed report one</summary>
+Evidence one — this details block is never closed.
+
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Report two</summary>
+Evidence two.
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Match 'Evidence two'
+        $report | Should -Not -Match 'Evidence one'
+    }
+
     It 'recognizes a standalone marker indented up to three spaces' {
         # Column-0-only anchoring missed markers re-indented by list nesting / wrapping.
         # 0-3 spaces is still a paragraph-level standalone line, so it must anchor.
