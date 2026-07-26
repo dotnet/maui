@@ -230,6 +230,72 @@ Actual evidence
         $report | Should -Not -Match 'only explains'
     }
 
+    It 'prefers the earliest real report over a later structurally-valid fenced duplicate' {
+        # Regression guard for the reverse-iteration tie-break: a real report FOLLOWED by a
+        # complete, fenced copy of the template must still return the first (real) block. The
+        # extracted content is published and can quote untrusted material, so a trailing
+        # well-formed duplicate must never displace the real verdict.
+        $content = @'
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Actual review</summary>
+Actual evidence
+</details>
+
+Then the assistant echoes the expected shape as a fenced example:
+
+```markdown
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Template example</summary>
+Example evidence
+</details>
+```
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match 'Actual evidence'
+        $report | Should -Not -Match 'Template example|Example evidence'
+    }
+
+    It 'recognizes a standalone marker indented up to three spaces' {
+        # Column-0-only anchoring missed markers re-indented by list nesting / wrapping.
+        # 0-3 spaces is still a paragraph-level standalone line, so it must anchor.
+        $content = @'
+   <!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Indented marker</summary>
+Indented evidence
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match 'Indented evidence'
+    }
+
+    It 'ignores a marker indented four or more spaces (indented code block)' {
+        # 4-space indent = CommonMark indented code block; must NOT anchor. Guards against
+        # loosening the anchor to an unbounded [ \t]* (which would match markers in code).
+        $content = "Example, shown as an indented code block:`n`n    <!-- Tests Failure -->`n`n<details>`n<summary>Code sample</summary>`nSample evidence`n</details>"
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -BeNullOrEmpty
+    }
+
     It 'preserves code fences inside an unfenced report and trims trailing prose' {
         $content = @'
 The write was denied, so the report is below.

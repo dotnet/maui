@@ -235,12 +235,22 @@ function Get-MarkdownFenceState {
 function Get-EmbeddedTestFailureReportCandidate {
     param(
         [string]$Content,
-        [System.Text.RegularExpressions.Match]$AnchorMatch
+        [System.Text.RegularExpressions.Match]$AnchorMatch,
+        [int]$EndIndex = -1
     )
 
     $startIndex = $AnchorMatch.Groups['anchor'].Index
     $prefix = $Content.Substring(0, $startIndex)
-    $report = $Content.Substring($startIndex)
+    # Bound the candidate to the next same-tier anchor (when supplied) so an earlier
+    # example/quote block cannot borrow a LATER report's <details> structure. Without
+    # the bound, an anchor whose own segment has no valid report would greedily span
+    # forward and swallow the real report that follows it.
+    if ($EndIndex -ge 0) {
+        $report = $Content.Substring($startIndex, $EndIndex - $startIndex)
+    }
+    else {
+        $report = $Content.Substring($startIndex)
+    }
     $outerFence = Get-MarkdownFenceState -Text $prefix
 
     # The report contract uses structural <details> tags on their own lines. Ignore tag-looking
@@ -332,14 +342,30 @@ function Get-EmbeddedTestFailureReport {
     }
 
     foreach ($anchorPattern in @(
-            '(?m)^(?<anchor><!-- Tests Failure \(local\) -->|<!-- Tests Failure -->)[ \t]*\r?$',
-            '(?m)^(?<anchor>## Tests Failure Analysis)[ \t]*\r?$'
+            # Anchors may be indented up to THREE spaces (CommonMark paragraph indentation);
+            # four+ spaces or a leading tab is an indented code block, so those are excluded
+            # to avoid matching a marker quoted inside code. Blockquoted markers ('>' …) are
+            # likewise excluded since '>' is not a space. (Bounded per review — an unbounded
+            # `[ \t]*` would start matching markers inside genuinely-indented code.)
+            '(?m)^[ ]{0,3}(?<anchor><!-- Tests Failure \(local\) -->|<!-- Tests Failure -->)[ \t]*\r?$',
+            '(?m)^[ ]{0,3}(?<anchor>## Tests Failure Analysis)[ \t]*\r?$'
         )) {
         $anchorMatches = [regex]::Matches($Content, $anchorPattern)
-        for ($index = $anchorMatches.Count - 1; $index -ge 0; $index--) {
+        # Prefer the EARLIEST anchor that yields a self-contained valid report.
+        # Each candidate is bounded to the next anchor of the same tier (see
+        # Get-EmbeddedTestFailureReportCandidate), so an earlier example/quote block
+        # can't borrow a later report's <details> structure, and — restoring the
+        # safety property that reverse iteration had lost — a real report is never
+        # displaced by a later structurally-valid duplicate (including a fenced one).
+        for ($index = 0; $index -lt $anchorMatches.Count; $index++) {
+            $endIndex = -1
+            if ($index + 1 -lt $anchorMatches.Count) {
+                $endIndex = $anchorMatches[$index + 1].Groups['anchor'].Index
+            }
             $report = Get-EmbeddedTestFailureReportCandidate `
                 -Content $Content `
-                -AnchorMatch $anchorMatches[$index]
+                -AnchorMatch $anchorMatches[$index] `
+                -EndIndex $endIndex
             if (-not [string]::IsNullOrWhiteSpace($report)) {
                 return $report
             }

@@ -556,13 +556,15 @@ function Get-ValidatedAssetBranchState {
 
     $unexpected = @(
         @($tree.tree) | Where-Object {
-            # Fail CLOSED: an entry is allowed ONLY IF it is a top-level blob (README.md, LICENSE,
-            # .gitattributes, or the .review-tests-assets marker -- none can carry a workflow) or a
-            # pr-<number> directory. Everything else is rejected: an unexpected `tree` (.github) is
-            # the inherited-repo-tree case that trips the workflow-scope 403 this guard defends
-            # against; a submodule gitlink (type 'commit') or a malformed/$null entry must also be
-            # refused rather than slipping through, so a non-blob top-level entry can never
-            # re-introduce the 403. This keeps the defense intact while still tolerating plain files.
+            # Fail CLOSED: an entry is allowed ONLY IF it is a top-level blob (a plain file of
+            # ANY mode -- the examples README.md, LICENSE, .gitattributes and the
+            # .review-tests-assets marker are illustrative, NOT an exhaustive permitted set;
+            # a flat top-level blob structurally cannot materialize a nested .github/workflows/
+            # path regardless of its blob mode) or a pr-<number> directory. Everything else is
+            # rejected: an unexpected `tree` (.github) is the inherited-repo-tree case that trips
+            # the workflow-scope 403 this guard defends against; a submodule gitlink (type
+            # 'commit') or a malformed/$null entry must also be refused rather than slipping
+            # through, so a non-blob top-level entry can never re-introduce the 403.
             $isBlob = [string]$_.type -eq 'blob'
             $isAssetDirectory = [string]$_.type -eq 'tree' -and
                 [string]$_.path -match '^pr-[1-9][0-9]*$'
