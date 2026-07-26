@@ -623,7 +623,12 @@ namespace Microsoft.Maui.Platform
 			// because this prevents users from scrolling the content inside an editor.
 			if (view is not IEditor && view is ITextInput textInput)
 			{
-				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
+				// A non-editor text input (Entry/SearchBar) loses interaction when it is read-only or
+				// input-transparent -- but a disabled view (and its WrapperView container) must also
+				// lose hit-testing, so IsEnabled has to be part of the calculation. Without it, calling
+				// this from the container-sync path re-enabled a disabled SearchBar's container.
+				platformView.UserInteractionEnabled =
+					view.IsEnabled && !(textInput.IsReadOnly || view.InputTransparent);
 				return;
 			}
 
