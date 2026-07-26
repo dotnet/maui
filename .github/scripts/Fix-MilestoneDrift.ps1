@@ -239,29 +239,33 @@ function Get-OnBranchShaFromLog([string[]]$LogLines, [int]$PrNum) {
     return $null
 }
 
-function Get-PrNumbersBetweenTags([string]$TagFrom, [string]$TagTo, [string]$Repo) {
-    $output = git -C $Repo --no-pager log --oneline "$TagFrom..$TagTo" 2>&1
-    if ($LASTEXITCODE -ne 0) { throw "git log failed: $output" }
+function Get-PrNumbersFromGitLog([string[]]$LogLines) {
+    <# GitHub squash and merge commit subjects end with the merged PR token.
+       Earlier parenthesized references may be linked issues and must not be
+       treated as PRs. #>
     $prs = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($line in ($output -split "`n")) {
-        foreach ($m in [regex]::Matches($line, '\(#(\d+)\)')) {
-            [void]$prs.Add([int]$m.Groups[1].Value)
+    foreach ($line in $LogLines) {
+        if ($line -match '\(#(\d+)\)\s*$') {
+            $prNumber = 0
+            if ([int]::TryParse($Matches[1], [ref]$prNumber)) {
+                [void]$prs.Add($prNumber)
+            }
         }
     }
     return ($prs | Sort-Object)
+}
+
+function Get-PrNumbersBetweenTags([string]$TagFrom, [string]$TagTo, [string]$Repo) {
+    $output = git -C $Repo --no-pager log --oneline "$TagFrom..$TagTo" 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "git log failed: $output" }
+    return Get-PrNumbersFromGitLog ($output -split "`n")
 }
 
 function Get-PrNumbersReachableFromTag([string]$TagName, [string]$Repo) {
     <# Returns PR numbers reachable from a tag (all commits up to and including the tag). #>
     $output = git -C $Repo --no-pager log --oneline $TagName 2>&1
     if ($LASTEXITCODE -ne 0) { throw "git log failed: $output" }
-    $prs = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($line in ($output -split "`n")) {
-        foreach ($m in [regex]::Matches($line, '\(#(\d+)\)')) {
-            [void]$prs.Add([int]$m.Groups[1].Value)
-        }
-    }
-    return ($prs | Sort-Object)
+    return Get-PrNumbersFromGitLog ($output -split "`n")
 }
 
 function Find-TagContainingPr([int]$PrNum, [string]$Repo, [int]$Major) {

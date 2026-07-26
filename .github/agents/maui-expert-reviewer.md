@@ -101,6 +101,8 @@ Catching inverted conditions, off-by-one errors, wrong property usage, or semant
 - CHECK: Fix is verified against the original issue reproduction, not just a new unit test
 - CHECK: Arithmetic handles overflow, division by zero, and negative values
 - CHECK: Explicit parentheses in index/position/offset calculations — silent operator-precedence bugs in scroll offset, spacing, or size math are hard to spot
+- CHECK: A regex or string literal matched against EXTERNAL TOOL OUTPUT (console/CI logs, CLI stdout, exit-code lines, file-format text) is verified against the code that PRODUCES that output — locate the producer (a `run-*.cmd`/`run-*.sh`, build step, or the tool's own source) **even when it is outside the PR diff**, and confirm the pattern fires ONLY under the assumed condition. Do not stop after confirming that the producer emits the exact text: state the producer's emission condition and compare it with the consumer's semantic assumption. Exact string alignment proves syntax, not correctness. A token the producer emits unconditionally (or under a broader condition than assumed) is an over-match; a token it never emits is a dead branch. Example miss: an "incomplete run" detector keyed on `exit code: [1-9]` when that line is printed at the end of *every* failed run.
+- CHECK: A guard, veto, gate, or early-return made MORE restrictive is evaluated for over-blocking — name the previously-passing input it now rejects and confirm that rejection is intended. A "safe direction" (fail-closed, over-cap, skip-rather-than-render) does NOT make over-blocking correct; it trades a usefulness regression for safety and must be a deliberate choice, not an accident.
 
 ### 6. Regression Prevention and Test Coverage `[critical]`
 
@@ -119,6 +121,7 @@ Every bug fix needs a regression test. Modified code must be checked against git
 - CHECK: Test labels are visible even when content is clipped — position a sentinel element inside the clip boundary to prove content was drawn
 - CHECK: Android memory tests use `GetMemoryInfo()` with threshold assertions
 - CHECK: Test types match project infrastructure — source-gen tests in `SourceGen.UnitTests.csproj`, not `Xaml.UnitTests.csproj`; tests that don't need `[Values] XamlInflator` shouldn't use it
+- CHECK: A new guard or branch has a test exercising the NEGATIVE case — the input that must NOT trip it — not only the positive. A passing test proves nothing if its fixture CONFLATES two signals (a sample that matches both the true-positive marker and a benign marker that *also* satisfies the condition): such a test cannot discriminate, so the missing discriminating test is itself a coverage gap. Verify green tests COVER the dangerous case, don't just confirm they pass.
 
 #### Frequently Regressed Components
 

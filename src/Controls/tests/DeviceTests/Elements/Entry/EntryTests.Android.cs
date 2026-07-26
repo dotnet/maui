@@ -207,5 +207,79 @@ namespace Microsoft.Maui.DeviceTests
 				AssertTranslationMatches(nativeView, entry.TranslationX, entry.TranslationY);
 			});
 		}
+
+		[Fact]
+		[Category(TestCategory.Entry)]
+		public async Task KeyboardPasswordDoesNotForcePasswordVisibilityWhenIsPasswordFalse()
+		{
+			var entry = new Entry
+			{
+				Keyboard = Keyboard.Password,
+				IsPassword = false,
+				Text = "Password"
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
+				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.NumberVariationPassword));
+			});
+		}
+
+		[Fact]
+		[Category(TestCategory.Entry)]
+		public async Task KeyboardPasswordRespectsIsPasswordToggle()
+		{
+			var entry = new Entry
+			{
+				Keyboard = Keyboard.Password,
+				IsPassword = false,
+				Text = "Password"
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
+
+				entry.IsPassword = true;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
+
+				entry.IsPassword = false;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
+				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.NumberVariationPassword));
+			});
+		}
+
+		[Fact]
+		[Category(TestCategory.Entry)]
+		public async Task KeyboardUrlPreservesUrlInputTypeWhenIsPasswordFalse()
+		{
+			var entry = new Entry
+			{
+				Keyboard = Keyboard.Url,
+				IsPassword = false,
+				Text = "https://dot.net"
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.ClassText));
+				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationUri));
+				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
+			});
+		}
 	}
 }

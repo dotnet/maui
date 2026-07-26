@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -53,39 +54,50 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public event EventHandler InvalidateGeometryRequested;
 
+		ChildrenSubscriptions _childrenSubscriptions;
+		NotifyCollectionChangedEventHandler _childrenCollectionChanged;
+		PropertyChangedEventHandler _childrenPropertyChanged;
+
 		void UpdateChildren(GeometryCollection oldCollection, GeometryCollection newCollection)
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnChildrenCollectionChanged;
-
-				foreach (var oldChildren in oldCollection)
-				{
-					oldChildren.PropertyChanged -= OnChildrenPropertyChanged;
-				}
+				_childrenSubscriptions?.UnsubscribeAll();
 			}
 
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnChildrenCollectionChanged;
+			_childrenCollectionChanged ??= OnChildrenCollectionChanged;
+			_childrenPropertyChanged ??= OnChildrenPropertyChanged;
+
+			var subscriptions = _childrenSubscriptions ??= new ChildrenSubscriptions();
+			subscriptions.Subscribe(newCollection, _childrenCollectionChanged);
 
 			foreach (var newChildren in newCollection)
 			{
-				newChildren.PropertyChanged += OnChildrenPropertyChanged;
+				if (newChildren is not null)
+				{
+					subscriptions.Add(newChildren, _childrenPropertyChanged);
+				}
 			}
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.OldItems != null)
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				// GeometryCollection is sealed, so Reset follows Clear after the collection is empty.
+				_childrenSubscriptions?.ResetChildren();
+			}
+			else if (e.OldItems != null)
 			{
 				foreach (var oldItem in e.OldItems)
 				{
 					if (!(oldItem is Geometry oldGeometry))
 						continue;
 
-					oldGeometry.PropertyChanged -= OnChildrenPropertyChanged;
+					_childrenSubscriptions?.Remove(oldGeometry);
 				}
 			}
 
@@ -96,11 +108,62 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (!(newItem is Geometry newGeometry))
 						continue;
 
-					newGeometry.PropertyChanged += OnChildrenPropertyChanged;
+					_childrenSubscriptions?.Add(newGeometry, _childrenPropertyChanged);
 				}
 			}
 
 			Invalidate();
+		}
+
+		sealed class ChildrenSubscriptions
+		{
+			readonly WeakNotifyCollectionChangedProxy _collectionProxy = new();
+			readonly List<WeakNotifyPropertyChangedProxy> _childProxies = new();
+
+			~ChildrenSubscriptions() => UnsubscribeAll();
+
+			public void Subscribe(GeometryCollection source, NotifyCollectionChangedEventHandler handler)
+			{
+				_collectionProxy.Subscribe(source, handler);
+			}
+
+			public void Add(Geometry source, PropertyChangedEventHandler handler)
+			{
+				_childProxies.Add(new WeakNotifyPropertyChangedProxy(source, handler));
+			}
+
+			public void Remove(Geometry source)
+			{
+				for (int i = _childProxies.Count - 1; i >= 0; i--)
+				{
+					var proxy = _childProxies[i];
+					if (proxy.TryGetSource(out var proxySource) && ReferenceEquals(proxySource, source))
+					{
+						proxy.Unsubscribe();
+						_childProxies.RemoveAt(i);
+						break;
+					}
+				}
+			}
+
+			public void ResetChildren()
+			{
+				UnsubscribeChildren();
+			}
+
+			public void UnsubscribeAll()
+			{
+				_collectionProxy.Unsubscribe();
+				UnsubscribeChildren();
+			}
+
+			void UnsubscribeChildren()
+			{
+				for (int i = 0; i < _childProxies.Count; i++)
+					_childProxies[i].Unsubscribe();
+
+				_childProxies.Clear();
+			}
 		}
 
 		void OnChildrenPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -115,9 +178,13 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public override void AppendPath(Graphics.PathF path)
 		{
-			foreach (var c in Children)
+			var children = Children;
+			if (children is null)
+				return;
+
+			foreach (var c in children)
 			{
-				c.AppendPath(path);
+				c?.AppendPath(path);
 			}
 		}
 	}

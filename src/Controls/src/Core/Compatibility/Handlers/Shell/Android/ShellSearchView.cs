@@ -68,17 +68,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			SearchHandler.SetValue(SearchHandler.QueryProperty, text);
 
-			if (SearchHandler.ShowsResults)
-			{
-				if (string.IsNullOrEmpty(text))
-				{
-					_textBlock.DismissDropDown();
-				}
-				else
-				{
-					_textBlock.ShowDropDown();
-				}
-			}
+			UpdateShowsResults();
 		}
 
 		void ITextWatcher.BeforeTextChanged(ICharSequence s, int start, int count, int after)
@@ -184,7 +174,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			int padding = (int)context.ToPixels(8);
 
-			_searchButton = CreateImageButton(context, searchHandler, SearchHandler.QueryIconProperty, Resource.Drawable.abc_ic_search_api_material, padding, 0, "SearchIcon");
+			_searchButton = CreateImageButton(context, searchHandler, SearchHandler.QueryIconProperty, Resource.Drawable.abc_ic_search_api_material, padding, 0, "SearchIcon", searchHandler.TextColor?.ToPlatform());
 
 			lp = new LinearLayout.LayoutParams(0, LP.MatchParent)
 			{
@@ -205,14 +195,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_textBlock.SetSingleLine(true);
 			_textBlock.Threshold = 1;
 			_textBlock.Adapter = new ShellSearchViewAdapter(SearchHandler, _shellContext);
+			UpdateShowsResults();
 			_textBlock.ItemClick += OnTextBlockItemClicked;
 			_textBlock.SetDropDownBackgroundDrawable(new ClipDrawableWrapper(_textBlock.DropDownBackground));
 
 			// A note on accessibility. The _textBlocks hint is what android defaults to reading in the screen
 			// reader. Therefore, we do not need to set something else.
 
-			_clearButton = CreateImageButton(context, searchHandler, SearchHandler.ClearIconProperty, Resource.Drawable.abc_ic_clear_material, 0, padding, nameof(SearchHandler.ClearIcon));
-			_clearPlaceholderButton = CreateImageButton(context, searchHandler, SearchHandler.ClearPlaceholderIconProperty, -1, 0, padding, nameof(SearchHandler.ClearPlaceholderIcon));
+			_clearButton = CreateImageButton(context, searchHandler, SearchHandler.ClearIconProperty, Resource.Drawable.abc_ic_clear_material, 0, padding, nameof(SearchHandler.ClearIcon), searchHandler.CancelButtonColor?.ToPlatform());
+			_clearPlaceholderButton = CreateImageButton(context, searchHandler, SearchHandler.ClearPlaceholderIconProperty, -1, 0, padding, nameof(SearchHandler.ClearPlaceholderIcon), searchHandler.TextColor?.ToPlatform());
 
 			linearLayout.AddView(_searchButton);
 			linearLayout.AddView(_textBlock);
@@ -236,9 +227,105 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnSearchHandlerPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (SearchHandler is null || _textBlock is null)
+			{
+				return;
+			}
+
 			if (e.PropertyName == SearchHandler.IsSearchEnabledProperty.PropertyName)
 			{
 				_textBlock.Enabled = SearchHandler.IsSearchEnabled;
+			}
+			else if (e.PropertyName == SearchHandler.ShowsResultsProperty.PropertyName)
+			{
+				UpdateShowsResults();
+			}
+			else if (e.PropertyName == SearchHandler.QueryIconProperty.PropertyName)
+			{
+				ApplyImageSource(
+					_searchButton,
+					SearchHandler.QueryIcon,
+					Resource.Drawable.abc_ic_search_api_material,
+					SearchHandler.TextColor?.ToPlatform());
+			}
+			else if (e.PropertyName == SearchHandler.ClearIconProperty.PropertyName)
+			{
+				ApplyImageSource(
+					_clearButton,
+					SearchHandler.ClearIcon,
+					Resource.Drawable.abc_ic_clear_material,
+					SearchHandler.CancelButtonColor?.ToPlatform());
+			}
+			else if (e.PropertyName == SearchHandler.ClearPlaceholderIconProperty.PropertyName)
+			{
+				ApplyImageSource(
+					_clearPlaceholderButton,
+					SearchHandler.ClearPlaceholderIcon,
+					-1,
+					SearchHandler.TextColor?.ToPlatform());
+
+				UpdateClearButtonState();
+			}
+		}
+
+		void UpdateShowsResults()
+		{
+			// Prevent AutoCompleteTextView from triggering filtering/suggestions
+			// when results are disabled.
+			_textBlock.Threshold = SearchHandler.ShowsResults ? 1 : int.MaxValue;
+
+			if (!SearchHandler.ShowsResults || string.IsNullOrEmpty(_textBlock.Text))
+			{
+				_textBlock.DismissDropDown();
+				return;
+			}
+
+			if (_textBlock.IsAttachedToWindow)
+			{
+				_textBlock.ShowDropDown();
+			}
+		}
+
+		void ApplyImageSource(AImageButton button, ImageSource image, int defaultImage, AColor? tint = null)
+		{
+			if (button is null)
+			{
+				return;
+			}
+
+			void ApplyTint()
+			{
+				if (tint.HasValue)
+				{
+					button.Drawable?.Mutate();
+					button.Drawable?.SetColorFilter(tint.Value, FilterMode.SrcIn);
+				}
+			}
+
+			if (image is not null)
+			{
+				AutomationPropertiesProvider.SetContentDescription(button, image, null, null);
+
+				image.LoadImage(MauiContext, r =>
+				{
+					if (_disposed)
+					{
+						return;
+					}
+
+					button.SetImageDrawable(r?.Value);
+					ApplyTint();
+				});
+			}
+			else if (defaultImage > 0 &&
+				ContextCompat.GetDrawable(Context, defaultImage) is Drawable defaultDrawable)
+			{
+				button.SetImageDrawable(defaultDrawable);
+				ApplyTint();
+			}
+			else
+			{
+				button.SetImageDrawable(null);
 			}
 		}
 
@@ -254,6 +341,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_disposed)
 				return;
+
+			UpdateShowsResults();
 		}
 
 		protected virtual void OnClearButtonClicked(object sender, EventArgs e)
@@ -308,7 +397,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 		}
 
-		AImageButton CreateImageButton(Context context, BindableObject bindable, BindableProperty property, int defaultImage, int leftMargin, int rightMargin, string tag)
+		AImageButton CreateImageButton(Context context, BindableObject bindable, BindableProperty property, int defaultImage, int leftMargin, int rightMargin, string tag, AColor? tint = null)
 		{
 			var result = new AImageButton(context);
 			result.Tag = tag;
@@ -316,23 +405,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			result.Focusable = false;
 			result.SetScaleType(ImageView.ScaleType.FitCenter);
 
-			if (bindable.GetValue(property) is ImageSource image)
-			{
-				AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
-
-				image.LoadImage(MauiContext, (r) =>
-				{
-					result.SetImageDrawable(r?.Value);
-				});
-			}
-			else if (defaultImage > 0 && ContextCompat.GetDrawable(Context, defaultImage) is Drawable defaultDrawable)
-			{
-				result.SetImageDrawable(defaultDrawable);
-			}
-			else
-			{
-				result.SetImageDrawable(null);
-			}
+			ApplyImageSource(result, bindable.GetValue(property) as ImageSource, defaultImage, tint);
 
 			var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(22), LP.MatchParent)
 			{
