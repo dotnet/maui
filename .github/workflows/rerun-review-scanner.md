@@ -1,5 +1,17 @@
 ---
-environment: gh-aw-agents
+# ###############################################################
+# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Run agentic jobs in an isolated `copilot-pat-pool` environment.
+#
+# When org-level billing is available, this will be removed.
+# See `shared/pat_pool.README.md` for more information.
+# ###############################################################
+imports:
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
+
+environment: copilot-pat-pool
 
 on:
   schedule:
@@ -18,7 +30,7 @@ on:
         default: 5
   steps:
     - name: Checkout repository scripts
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
     - name: Build rerun candidate context
@@ -69,7 +81,10 @@ concurrency:
   group: "gh-aw-${{ github.workflow }}"
   cancel-in-progress: false
 
-engine: "copilot"
+engine:
+  id: copilot
+  env:
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 safe-outputs:
   # gh-aw compiles this safe-output job into the `trigger_rerun_review` tool
   # called by the agent below. The hyphenated job key is converted to the
@@ -104,8 +119,9 @@ safe-outputs:
           type: string
       steps:
         - name: Checkout repository scripts
-          uses: actions/checkout@v4
+          uses: actions/checkout@v7.0.1
           with:
+            ref: main
             persist-credentials: false
         - name: Download rerun candidate context
           uses: actions/download-artifact@v8.0.1
@@ -131,7 +147,7 @@ safe-outputs:
           # here. We dispatch the same review-trigger.yml workflow a maintainer
           # `/review` runs; it owns PR validation, the s/agent-review-in-progress
           # lock, platform inference, OIDC, and the AzDO pipeline trigger.
-          uses: actions/github-script@v8
+          uses: actions/github-script@v9.0.0
           with:
             github-token: ${{ secrets.GITHUB_TOKEN }}
             script: |

@@ -339,6 +339,12 @@ public class TabbedPageFeatureTests : _GalleryUITest
 		App.WaitForElement("More");
 		App.Tap("More");
 #endif
+#if ANDROID
+		// After fix, tab titles are not truncated so Tab7 is off-screen to the right.
+		// Drag the tab bar from right to left to reveal it (DragCoordinates spans multiple tab widths).
+		var tabRect = App.WaitForElement("TAB 1").GetRect();
+		App.DragCoordinates(tabRect.X + tabRect.Width * 4, tabRect.CenterY(), tabRect.X + 10, tabRect.CenterY());
+#endif
 		App.WaitForElement("TAB 7");
 		App.Tap("TAB 7");
 		App.WaitForElement("Tab7Label");
