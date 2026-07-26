@@ -5069,6 +5069,11 @@ Assert-Eq -Label "M20: candidate off preview7 → next cycle is rc2" -Expected $
     -Actual ($m20Next.Area -match '\.NET 11\.0-rc2')
 
 # ── Scenario M21: rc2 is the end of the train → no next-cycle check (GA follows) ──
+# NOTE: 'preview8' below is deliberately NOT a real cycle — this PR removes preview8 as a
+# roll-forward target. It is a synthetic PriorSrBranch used only to drive the candidate-mode
+# ordinal math onto rc2 so this test can exercise the "rc2 is the end of the train" path.
+# Real RC branch shapes are intentionally skipped by the parser, so a preview-shaped input is
+# the only way to reach rc2 here; do not read this as implying preview8 exists.
 $m21Data = @(
     (New-MockMilestone -Title '.NET 11.0-rc2' -Number 303 -DueOn $daysAhead30)
 )
