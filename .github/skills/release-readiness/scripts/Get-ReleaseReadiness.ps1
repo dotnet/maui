@@ -1286,7 +1286,7 @@ function Get-MilestoneHygieneChecks {
                 # a bad branch name masquerade as "all clear". Distinct from the
                 # past-rc2 case just below, where no milestone exists by design and
                 # an empty result is correct.
-                return @(New-ReadinessCheck -Area "Milestone hygiene" -Status 'UNKNOWN' `
+                return @(New-ReadinessCheck -Area "Milestone hygiene (branch shape)" -Status 'UNKNOWN' `
                     -Details "Unrecognized pre-release ordinal ``$cycleNum`` derived from branch ``$branchToParse`` — cannot map it to a preview/rc milestone title." `
                     -NextAction "Verify the branch follows the ``release/<major>.0.<feature>xx-preview<n>`` convention with ``n >= 1``.")
             }
@@ -1308,7 +1308,7 @@ function Get-MilestoneHygieneChecks {
 
     $milestonesResult = Get-AllMilestones -Repo $Ctx.repo
     if (-not $milestonesResult.Success) {
-        return @(New-ReadinessCheck -Area "Milestone hygiene" -Status 'UNKNOWN' `
+        return @(New-ReadinessCheck -Area "Milestone hygiene (API failure)" -Status 'UNKNOWN' `
             -Details "Failed to query milestones from GitHub API for ``$($Ctx.repo)``." `
             -NextAction "Re-run with valid 'gh' auth: ``gh auth status`` and ``gh api repos/$($Ctx.repo)/milestones``")
     }
@@ -1354,9 +1354,11 @@ function Get-MilestoneHygieneChecks {
     # Also excluded:
     #   - the current cycle (still being prepped)
     #   - the next cycle (the roll-forward target Check 2 may have just told the
-    #     captain to create; a slipped-but-upcoming rc1 milestone whose due_on
-    #     passed is NOT "already-shipped debt" — it's the survey's own next
-    #     target, and flagging it would contradict Check 2's "create it" advice)
+    #     captain to create; a slipped next-cycle milestone whose due_on passed is
+    #     NOT "already-shipped debt" — flagging it here would contradict Check 2's
+    #     "create it" advice. It is instead re-classified by Check 3b below, so the
+    #     signal is preserved rather than dropped. Lane-agnostic: this holds for an
+    #     SR next-cycle milestone as much as a preview/rc one.)
     #   - "Backlog" (intentional long-running)
     #   - ".NET N Planning" (intentional long-running planning ms)
     #   - milestones without due_on (caller has no schedule, no signal)
@@ -1392,6 +1394,35 @@ function Get-MilestoneHygieneChecks {
         $checks += New-ReadinessCheck -Area "Stale open milestones ($($staleMs.Count))" -Status 'CLEANUP' `
             -Details "$($staleMs.Count) milestone(s) in the .NET $major cycle are past due (>7 days) and still open: $list. These represent already-shipped releases that were never closed out — accumulating open issues that should have been rolled forward." `
             -NextAction "For each: triage the open issues (close-as-fixed, move to current cycle, or move to Backlog), then close the milestone: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
+    }
+
+    # === Check 3b: Next-cycle milestone exists but has slipped past its due date ===
+    # Check 3 deliberately excludes the next-cycle (roll-forward target) milestone
+    # from the "already-shipped debt" bucket — calling it that would contradict
+    # Check 2's advice to create it. But an EXISTING next-cycle milestone that is
+    # well past due must not become invisible: an unbounded slip usually means the
+    # schedule moved, or the cycle was skipped and the milestone abandoned. Re-classify
+    # it into its own row with accurate wording so the signal is preserved without the
+    # misleading "already shipped" framing. Lane-agnostic — fires for an SR next-cycle
+    # milestone (e.g. a long-overdue SR9 while surveying SR8) exactly as for a slipped
+    # preview/rc one, which is the SR-lane signal the bare Check-3 exclusion had dropped.
+    $slippedNext = @($allMs | Where-Object {
+        $_.state -eq 'open' -and
+        $_.due_on -and
+        ([datetime]$_.due_on).ToUniversalTime() -lt $graceCutoff -and
+        ($expectedTitlesNext -contains $_.title)
+    } | Sort-Object { [datetime]$_.due_on })
+
+    if ($slippedNext.Count -gt 0) {
+        $slippedList = ($slippedNext | ForEach-Object {
+            $dueDate = ([datetime]$_.due_on).ToUniversalTime().ToString('yyyy-MM-dd')
+            "[$($_.title)](https://github.com/$($Ctx.repo)/milestone/$($_.number)) (due $dueDate, $($_.open_issues) open)"
+        }) -join '; '
+        # CLEANUP, not BLOCKED — like stale debt, a slipped roll-forward target is
+        # housekeeping, not a blocker on THIS cycle shipping.
+        $checks += New-ReadinessCheck -Area "Next-cycle milestone past due ($($slippedNext.Count))" -Status 'CLEANUP' `
+            -Details "The next-cycle roll-forward milestone(s) exist but are past due (>7 days) and still open: $slippedList. This is NOT already-shipped debt — it's the target open issues roll forward to after ``$cycleLabel`` ships. A slip usually means the schedule moved, or the cycle was skipped and the milestone was abandoned." `
+            -NextAction "If the schedule slipped, update the milestone's ``due_on``; if the cycle was skipped, triage its open issues and close it: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
     }
 
     return $checks
