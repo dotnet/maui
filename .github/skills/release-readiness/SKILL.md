@@ -47,6 +47,8 @@ The trackers detector is grounded in **tag existence as the source of truth for 
 
 **Post-ship lifecycle (`shipped` mode).** Most shipped SRs are retired the moment their tag exists. The **one exception** is the *most-recently-shipped* SR (highest shipped patch), which keeps emitting as `mode='shipped'` so its tracker issue stays useful through post-ship follow-up — adding the new build to the GitHub issue version dropdown, publishing release notes, closing out the milestone. Shipped reports never retroactively return `Not Ready`: unresolved work is split into urgent hotfix-vs-next-SR follow-ups and structured carry-forward items. The workflow treats `shipped` as **refresh-only**: it updates the tracker issue while it stays open, but **never (re)creates it**. Once a human closes the tracker, it stays closed and is not resurrected on the next scheduled run. This implements "keep updating until closed manually" without spamming a fresh issue after sign-off. Older shipped SRs are still retired.
 
+Shipped commit inventory and fix ancestry are evaluated against the immutable stable tag and the prior stable tag, never against the mutable SR branch or current `main`. If the published tag does not resolve locally, generation fails with an explicit fetch instruction rather than emitting a falsely empty/clean tracker.
+
 ## Quick Start
 
 ### One-shot daily report (matches what the workflow runs)

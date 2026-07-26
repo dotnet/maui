@@ -1305,6 +1305,56 @@ try {
     $mainRevertedPrs = @($commonAncestryContents.mainReverts | ForEach-Object { $_.revertsPr })
     Assert-Eq -Label "common-ancestry revert: prior-SR baseline keeps reverted source PR visible" `
               -Expected $true -Actual ($mainRevertedPrs -contains 35001)
+
+    git -C $revertFixtureRepo tag 0.0.1 $priorSrBaselineSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 9.0.500 $priorSrBaselineSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 10.0.0 $revertSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 10.0.80 $priorSrBaselineSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 10.0.999999999999999999 $priorSrBaselineSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 10.0.90 $revertSha 2>&1 | Out-Null
+    Set-Content -Path (Join-Path $revertFixtureRepo 'post-tag.txt') -Value 'post-tag-fix'
+    git -C $revertFixtureRepo add -A 2>&1 | Out-Null
+    git -C $revertFixtureRepo commit -q -m 'Post-tag branch fix (#36000)' -m 'Backport of #36000' 2>&1 | Out-Null
+    $postTagFixSha = (& git -C $revertFixtureRepo rev-parse HEAD).Trim()
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/release/10.0.1xx-sr9 $postTagFixSha 2>&1 | Out-Null
+    # Model the shipped SR flowing forward to main. A mutable `tag ^main`
+    # inventory would now collapse, while stable tag-to-tag contents must not.
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/main $postTagFixSha 2>&1 | Out-Null
+
+    $shippedTagCtx = Resolve-Context `
+        -SrBranch 'release/10.0.1xx-sr9' `
+        -Repo 'synthetic/repo' `
+        -MainBranch 'main' `
+        -ExcludeBranches @('origin/main') `
+        -Shipped `
+        -NoFetch
+    $resolvedShippedRefs = Resolve-ShippedContentsRefs -Version '10.0.90'
+    Assert-Eq -Label "shipped contents: stable tag resolves locally" -Expected '10.0.90' -Actual $resolvedShippedRefs.ContentsRef
+    Assert-Eq -Label "shipped contents: prior immutable stable tag is selected" -Expected '10.0.80' -Actual $resolvedShippedRefs.PreviousTag
+    $firstBandRefs = Resolve-ShippedContentsRefs -Version '10.0.0'
+    Assert-Eq -Label "shipped contents: first stable tag in a band uses prior major's latest stable tag" `
+        -Expected '9.0.500' -Actual $firstBandRefs.PreviousTag
+    $noPriorTagThrew = $false
+    try {
+        Resolve-ShippedContentsRefs -Version '0.0.1' | Out-Null
+    } catch {
+        $noPriorTagThrew = $true
+    }
+    Assert-Eq -Label "shipped contents: no prior stable floor fails explicitly" -Expected $true -Actual $noPriorTagThrew
+    $missingTagThrew = $false
+    try {
+        Resolve-ShippedContentsRefs -Version '10.0.999' | Out-Null
+    } catch {
+        $missingTagThrew = $true
+    }
+    Assert-Eq -Label "shipped contents: remotely-known but locally-missing tag fails explicitly" -Expected $true -Actual $missingTagThrew
+    $shippedTagCtx['contentsRef'] = $resolvedShippedRefs.ContentsRef
+    $shippedTagCtx['excludeBranches'] = @($resolvedShippedRefs.ExcludeRefs)
+    $shippedTagContents = Get-SrCommits -Ctx $shippedTagCtx
+    Assert-Eq -Label "shipped contents: post-tag branch fix is excluded from immutable release contents" `
+        -Expected $false -Actual ($shippedTagContents.sourcePrs -contains 36000)
+    Assert-Eq -Label "shipped contents: forward-flow to mutable main does not erase tagged source PRs" `
+        -Expected $true -Actual ($shippedTagContents.sourcePrs -contains 35001)
 } finally {
     if ($revertFixtureLocationPushed) { Pop-Location }
     if (Test-Path $revertFixtureRepo) { Remove-Item -Recurse -Force $revertFixtureRepo -ErrorAction SilentlyContinue }
@@ -1569,6 +1619,11 @@ try {
             body = 'Backports #32295'
             headRefName = 'copilot/backport-dotnet-maui-32295'
         }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: background-only parenthetical is not a source list" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999, (for background only), and #32295'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
     Assert-Eq -Label "backport lineage: bare contextual mention remains rejected" -Expected $false `
         -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
             body = 'Before PR #32080 the behavior was X. After PR #32080 it changed.'
@@ -1600,7 +1655,25 @@ try {
         'no need to backport #32537',
         'This is not a backport of #32537',
         'This reverts the backport of #32537',
-        'Backport should not include #32537'
+        'Backport should not include #32537',
+        'We do not plan to backport #32537',
+        "We don’t plan to backport #32537",
+        'We should not ever backport #32537',
+        "We can't safely backport #32537",
+        'We decided not to backport #32537',
+        'There is no reason to backport #32537',
+        "I don't think we should backport #32537",
+        "We won’t backport #32537",
+        'Never backport #32537',
+        'We cannot backport #32537',
+        'We agreed not to backport #32537',
+        'We never intended to backport #32537',
+        "This isn’t intended to be cherry-picked from #32537",
+        "This wasn’t cherry-picked from #32537",
+        'No backport of #32537',
+        'Without backporting #32537',
+        ("We do not " + ('really ' * 350) + 'plan to backport #32537'),
+        'This was not cherry-picked from #32537'
     )) {
         Assert-Eq -Label "backport lineage: negated prose is rejected — $negatedBody" -Expected $false `
             -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
@@ -1623,6 +1696,189 @@ try {
     foreach ($sourcePr in @(32610, 32694, 32779)) {
         Assert-Eq -Label "backport lineage: explicit multi-source body includes #$sourcePr" -Expected $true `
             -Actual (Test-IsExplicitBackportForSource -Pr $multiSourceBody -SourcePrNumber $sourcePr)
+    }
+    foreach ($positiveBody in @(
+        'This is a clean backport (no conflicts, tested without issues) of #32610',
+        'Backport (verified against upstream, cannot repro any regressions) of #32610',
+        'Backport of #1234, (no other changes), and #32610',
+        'This backport addresses #32610',
+        'Backport for #32610',
+        'Backport for issue #32610',
+        'Backport targeting #32610',
+        'Backport resolving #32610',
+        'Backport that fixes #32610',
+        'Backport of the change in #32610',
+        'Backport of this PR: #32610',
+        'Backport of the following: #32610',
+        'Cannot reproduce on release, so backport #32610',
+        'Tests never fail, so backport #32610',
+        'The revert queue is empty and this backports #32610',
+        "This isn't the prettiest fix, but it backports #32610 correctly",
+        'Backport (this has never failed CI) of #32610'
+    )) {
+        Assert-Eq -Label "backport lineage: incidental negative vocabulary stays positive — $positiveBody" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $positiveBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    Assert-Eq -Label "backport lineage: later sentence contextual reference does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This backport updates tests. See PR #32295 for context.'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: same-sentence contextual first reference does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This backport updates tests, see PR #32537 for context'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32537)
+    foreach ($relationalBody in @(
+        'This backport updates tests, consult PR #32537',
+        'This backport has details in PR #32537',
+        'This backport also fixes an issue introduced by #32537',
+        'This backport depends on #32537',
+        'This backport conflicts with #32537',
+        'This backport supersedes #32537',
+        'This backport blocks #32537'
+    )) {
+        Assert-Eq -Label "backport lineage: relational/contextual first reference is rejected — $relationalBody" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $relationalBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32537)
+    }
+    Assert-Eq -Label "backport lineage: contextual later list reference does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999, see the related discussion and #32295'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: alternate contextual later reference does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999, described above and #32295'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: free-form design-note separator does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999, look at the design notes and #32295 for background'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: post-reference negation does not prove inclusion" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #32537 was not included'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32537)
+    foreach ($postNegatedBody in @(
+        'Backport of #32537 was never included',
+        'Backport of #32537 did not land',
+        'Backport #32537 which should not be included',
+        'Backport of #32537 was reverted',
+        "Backport of #32537 wasn't actually applied",
+        "Backport of #32537 (wasn't applied)",
+        'Backport of #32537 (not yet applied)',
+        "Backport of #32537 which wasn't actually applied",
+        'Backport of #32537 which was ultimately not included',
+        'Backport of #32537 was omitted',
+        'Backport of #32537 was excluded',
+        'Backport of #32537 is no longer included',
+        'Backport of #32537 has been rolled back'
+    )) {
+        Assert-Eq -Label "backport lineage: post-reference non-inclusion is rejected — $postNegatedBody" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $postNegatedBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32537)
+    }
+    foreach ($qualifiedListBody in @(
+        'Backport of #1234, (verified on device), and #32610',
+        'Backport of #1234, (tested thoroughly), and #32610',
+        'Backport of #1234, (reviewed by two engineers), and #32610',
+        'Backport of #1234, (no regressions found), and #32610',
+        'Backport of #1234, (without any regressions), and #32610'
+    )) {
+        Assert-Eq -Label "backport lineage: qualified explicit list preserves later source — $qualifiedListBody" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $qualifiedListBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    Assert-Eq -Label "backport lineage: identifier suffix is not truncated into a PR number" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #32537abc'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: Copilot head identifier suffix is rejected" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = ''
+            headRefName = 'copilot/backport-pr-32537abc'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: Copilot build/date suffix is not treated as a source list" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = ''
+            headRefName = 'copilot/backport-pr-32537-build-20260726'
+        }) -SourcePrNumber 32537)
+    $overflowLineage = [pscustomobject]@{
+        body = 'Backport of #99999999999999, #32537'
+        headRefName = 'copilot/backport-pr-32537-build-999999999999'
+    }
+    $overflowLineageThrew = $false; $overflowLineageMatched = $false
+    try {
+        $overflowLineageMatched = Test-IsExplicitBackportForSource -Pr $overflowLineage -SourcePrNumber 32537
+    } catch {
+        $overflowLineageThrew = $true
+    }
+    Assert-Eq -Label "backport lineage: oversized numeric tokens do not throw" -Expected $false -Actual $overflowLineageThrew
+    Assert-Eq -Label "backport lineage: valid source survives adjacent oversized tokens" -Expected $true -Actual $overflowLineageMatched
+
+    $originalLineageInvokeGit = (Get-Item function:Invoke-Git).ScriptBlock
+    $script:LineageCommitBody = ''
+    $script:LineageCommitSubject = 'Synthetic backport commit (#40000)'
+    try {
+        function Invoke-Git {
+            param([string]$Cmd)
+            if ($Cmd -like 'log --format=%H*') {
+                return @('aaaaaaaa1111bbbbbbbb2222cccccccc3333dddd')
+            }
+            if ($Cmd -like 'show --no-patch*') {
+                return @(
+                    'aaaaaaaa1111bbbbbbbb2222cccccccc3333dddd',
+                    'Test Author',
+                    '2026-07-25T00:00:00Z',
+                    $script:LineageCommitSubject,
+                    '--BODY-START--',
+                    $script:LineageCommitBody
+                )
+            }
+            return $null
+        }
+
+        $script:LineageCommitBody = 'This is not a backport of #32537'
+        $negatedBackportCommit = Get-CommitsForRevSpec -RevSpec 'synthetic-ref'
+        Assert-Eq -Label "commit lineage: negated backport prose is not a source PR" -Expected $false `
+            -Actual ($negatedBackportCommit.sourcePrs -contains 32537)
+
+        $script:LineageCommitBody = 'This was not cherry-picked from #32537'
+        $negatedCherryCommit = Get-CommitsForRevSpec -RevSpec 'synthetic-ref'
+        Assert-Eq -Label "commit lineage: negated cherry-pick prose is not a source PR" -Expected $false `
+            -Actual ($negatedCherryCommit.sourcePrs -contains 32537)
+
+        $script:LineageCommitBody = 'Backport of #32610, #32694 and #32779'
+        $multiSourceCommit = Get-CommitsForRevSpec -RevSpec 'synthetic-ref'
+        Assert-Eq -Label "commit lineage: shared parser preserves all explicit source PRs" `
+            -Expected '32610,32694,32779,40000' -Actual (($multiSourceCommit.sourcePrs | Sort-Object) -join ',')
+
+        $script:LineageCommitSubject = 'Synthetic malformed PR (#999999999999999999999)'
+        $script:LineageCommitBody = 'Fixes #999999999999999999999'
+        $oversizedCommitThrew = $false; $oversizedCommit = $null
+        try {
+            $oversizedCommit = Get-CommitsForRevSpec -RevSpec 'synthetic-ref'
+        } catch {
+            $oversizedCommitThrew = $true
+        }
+        Assert-Eq -Label "commit scanner: oversized PR/issue numbers do not throw" -Expected $false -Actual $oversizedCommitThrew
+        Assert-Eq -Label "commit scanner: oversized PR number is not added" -Expected 0 -Actual @($oversizedCommit.sourcePrs).Count
+    } finally {
+        Set-Item function:Invoke-Git $originalLineageInvokeGit
+        Remove-Variable -Name LineageCommitBody,LineageCommitSubject -Scope Script -ErrorAction SilentlyContinue
     }
 
     # ── Open SR PR scan: distinguish failure/verified-empty/cap truncation ──
@@ -2172,6 +2428,14 @@ Assert-Eq -Label "PR evidence: closing-keyword substrings in ordinary words are 
 $directSrUrlIssues = @(Get-ClosingIssueNumbers -Text 'Fixes https://github.com/dotnet/maui/issues/35615')
 Assert-Eq -Label "commit evidence: full issue URL is parsed by the shared closing-reference parser" `
     -Expected $true -Actual ($directSrUrlIssues -contains 35615)
+$oversizedClosingThrew = $false; $oversizedClosingIssues = @()
+try {
+    $oversizedClosingIssues = @(Get-ClosingIssueNumbers -Text 'Fixes #999999999999999999999 and Fixes #35615abc')
+} catch {
+    $oversizedClosingThrew = $true
+}
+Assert-Eq -Label "closing-reference parser: oversized issue number does not throw" -Expected $false -Actual $oversizedClosingThrew
+Assert-Eq -Label "closing-reference parser: oversized/suffixed issue numbers are rejected" -Expected 0 -Actual $oversizedClosingIssues.Count
 $directSrUrlFix = Classify-RegressionCandidate `
     -Issue @{ number = 35615 } `
     -CandidatePrs @() `
@@ -2213,6 +2477,21 @@ $inheritedTargetFix = Classify-RegressionCandidate `
     -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
 Assert-Eq -Label "classifier: common-ancestor fix verified on target is in-sr-active" `
     -Expected 'in-sr-active' -Actual $inheritedTargetFix.classification
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return ($BranchRef -in @('origin/main', 'origin/release/10.0.1xx-sr9'))
+}
+$postTagOnlyFix = Classify-RegressionCandidate `
+    -Issue @{ number = 35615 } `
+    -CandidatePrs @(35662) `
+    -Ctx @{
+        repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'
+        mode = 'shipped'; srRef = 'origin/release/10.0.1xx-sr9'; contentsRef = '10.0.90'
+    } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+Assert-Eq -Label "classifier: post-tag branch ancestry does not mark shipped release fixed" `
+    -Expected 'merged-on-main-no-backport' -Actual $postTagOnlyFix.classification
 
 $candidateTargetIsMain = Classify-RegressionCandidate `
     -Issue @{ number = 35615 } `
@@ -2803,6 +3082,21 @@ Assert-Eq -Label "closed-fix-unlinked → action is to add a closing reference (
 Assert-Eq -Label "closed-fix-unlinked is Tier 3 (non-blocking)" `
     -Expected 3 -Actual (Get-VerdictTier -Classification 'closed-fix-unlinked')
 
+function Test-PrNumberOnBranch {
+    param([int]$PrNumber, [string]$BranchRef)
+    return ($PrNumber -eq 35028 -and $BranchRef -eq 'origin/release/10.0.1xx-sr8')
+}
+$clsPostTagUnlinked = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35254; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{
+        repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main'
+        mode = 'shipped'; srRef = 'origin/release/10.0.1xx-sr8'; contentsRef = '10.0.80'
+    } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "closed-fix-unlinked: post-tag branch-only fix stays unresolved for shipped contents" `
+    -Expected 'no-fix-yet' -Actual $clsPostTagUnlinked.classification
+
 # Guard A — bare 'mention' (no fix verb) must STAY no-fix-yet. Regression issues
 # routinely name the CAUSE PR for context ("Before PR #X ... After PR #X"); the
 # cause naturally sits on the branch, so the branch gate alone can't distinguish
@@ -3285,6 +3579,16 @@ Assert-Eq -Label "carry-forward: later-major servicing milestone is future work"
     -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 11 Servicing' } -ShippedSrNumber 9 -ShippedMajor 10)
 Assert-Eq -Label "carry-forward: same-major preview milestone is not future work" -Expected $false `
     -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10.0-preview7' } -ShippedSrNumber 9 -ShippedMajor 10)
+$malformedMilestoneThrew = $false; $malformedMilestoneCarry = $true
+try {
+    $malformedMilestoneCarry = Test-IsCarryForwardRegression `
+        -Regression @{ milestone = '.NET 999999999999999999 SR999999999999999999' } `
+        -ShippedSrNumber 9 -ShippedMajor 10
+} catch {
+    $malformedMilestoneThrew = $true
+}
+Assert-Eq -Label "carry-forward: oversized milestone numbers do not throw" -Expected $false -Actual $malformedMilestoneThrew
+Assert-Eq -Label "carry-forward: oversized milestone numbers are unrecognized" -Expected $false -Actual $malformedMilestoneCarry
 Assert-Eq -Label "SR version helper: base patch has sub-patch 0" -Expected 0 `
     -Actual (Get-SrSubPatchFromVersion -Version '10.0.90')
 Assert-Eq -Label "SR version helper: hotfix patch maps to sub-patch 1" -Expected 1 `
@@ -5014,7 +5318,8 @@ function Invoke-ShipChecksWithMockedVersions {
         [hashtable]$MainVersion,  # @{Major;Minor;Patch [;PreReleaseVersionLabel;StabilizePackageVersion]} for main
         [string]$SrBranch = 'release/10.0.1xx-sr8',
         [string]$MainBranch = 'main',
-        [switch]$Candidate
+        [switch]$Candidate,
+        [switch]$Shipped
     )
     # Wrap Get-FileFromRef so the script's existing Get-VersionsPropsState /
     # Get-BugTemplateVersions read from these in-memory blobs.
@@ -5045,8 +5350,10 @@ function Invoke-ShipChecksWithMockedVersions {
         $ctx = @{
             srBranch   = if ($Candidate) { $MainBranch } else { $SrBranch }
             srRef      = if ($Candidate) { "origin/$MainBranch" } else { "origin/$SrBranch" }
+            contentsRef = if ($Shipped) { $srRef } else { $null }
+            previousStableTag = if ($Shipped) { '10.0.71' } else { $null }
             mainBranch = $MainBranch
-            mode       = if ($Candidate) { 'candidate' } else { 'in-flight' }
+            mode       = if ($Candidate) { 'candidate' } elseif ($Shipped) { 'shipped' } else { 'in-flight' }
             priorSrBranch = if ($Candidate) { $SrBranch } else { $null }
         }
         return Get-ReleaseShipChecks -Ctx $ctx
@@ -5243,6 +5550,20 @@ Assert-Eq -Label "Existing SR-branch check still emitted alongside new main-bump
     -Actual ($null -ne $srBranchCheck)
 Assert-Eq -Label "Existing SR-branch check stays READY when SR is at 80" -Expected 'READY' -Actual $srBranchCheck.Status
 
+$shippedMainNotBumpedChecks = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8' `
+    -Shipped
+$shippedMainBumpCheck = Get-CheckByAreaPrefix -Checks $shippedMainNotBumpedChecks -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "shipped main-not-bumped remains a follow-up signal" -Expected 'BLOCKED' -Actual $shippedMainBumpCheck.Status
+Assert-Eq -Label "shipped main-not-bumped details acknowledge release already shipped" -Expected $true `
+    -Actual ($shippedMainBumpCheck.Details -match 'already shipped')
+Assert-Eq -Label "shipped main-not-bumped requests immediate containment" -Expected $true `
+    -Actual ($shippedMainBumpCheck.NextAction -match 'immediately')
+Assert-Eq -Label "shipped main-not-bumped does not say merge before shipping" -Expected $false `
+    -Actual ($shippedMainBumpCheck.NextAction -match 'before shipping')
+
 # ───── Get-ReleaseShipChecks: 'Servicing-release flip' check ─────
 # When an SR branch is cut from main, eng/Versions.props MUST be flipped to
 # servicing-release mode (PreReleaseVersionLabel=servicing, StabilizePackageVersion=true).
@@ -5315,6 +5636,46 @@ $flipChecksE = Invoke-ShipChecksWithMockedVersions `
 $flipCheckE = Get-CheckByAreaPrefix -Checks $flipChecksE -Prefix 'Versions.props servicing flip'
 Assert-Eq -Label "Candidate mode: servicing-flip check NOT emitted" -Expected $true `
     -Actual ($null -eq $flipCheckE)
+
+# Scenario F: shipped release-content checks must read the immutable tag, not
+# a post-tag branch state that could make the shipped release look corrected.
+$script:GetFileFromRefStub = {
+    param([string]$Path, [string]$Ref)
+    if ($Path -eq 'eng/Versions.props') {
+        if ($Ref -eq $script:_mockSrRef)   { return $script:_mockSrXml }
+        if ($Ref -eq $script:_mockMainRef) { return $script:_mockMainXml }
+        return $null
+    }
+    if ($Path -eq '.github/ISSUE_TEMPLATE/bug-report.yml') {
+        return $script:_mockBugYaml
+    }
+    return $null
+}
+$script:_mockSrRef = '10.0.80'
+$script:_mockMainRef = 'origin/main'
+$script:_mockSrXml = Build-VersionsPropsXml -Major 10 -Minor 0 -Patch 80 `
+    -PreReleaseVersionLabel 'ci.main' -StabilizePackageVersion 'false'
+$script:_mockMainXml = Build-VersionsPropsXml -Major 10 -Minor 0 -Patch 90 `
+    -PreReleaseVersionLabel 'ci.main' -StabilizePackageVersion 'false'
+$script:_mockBugYaml = $bugYamlAllowsAll
+$shippedContentChecks = Get-ReleaseShipChecks -Ctx @{
+    srBranch = 'release/10.0.1xx-sr8'
+    srRef = 'origin/release/10.0.1xx-sr8'
+    contentsRef = '10.0.80'
+    previousStableTag = '10.0.71'
+    mainBranch = 'main'
+    mode = 'shipped'
+}
+$shippedFlipCheck = Get-CheckByAreaPrefix -Checks $shippedContentChecks -Prefix 'Versions.props servicing flip (SR8)'
+Assert-Eq -Label "shipped servicing check reads immutable tag misconfiguration" -Expected 'BLOCKED' -Actual $shippedFlipCheck.Status
+Assert-Eq -Label "shipped servicing check names immutable tag ref" -Expected $true `
+    -Actual ($shippedFlipCheck.Details -match '10\.0\.80')
+Assert-Eq -Label "shipped servicing check says published tag cannot be repaired retroactively" -Expected $true `
+    -Actual ($shippedFlipCheck.Details -match 'cannot be repaired retroactively')
+Assert-Eq -Label "shipped servicing check recommends hotfix/rebuild investigation" -Expected $true `
+    -Actual ($shippedFlipCheck.NextAction -match 'hotfix/rebuild')
+Assert-Eq -Label "shipped servicing check does not prescribe a pre-ship branch PR" -Expected $false `
+    -Actual ($shippedFlipCheck.NextAction -match 'focused PR targeting')
 
 Set-Item function:Get-FileFromRef $script:OrigGetFileFromRefForShipChecks
 $script:GetFileFromRefStub = $null

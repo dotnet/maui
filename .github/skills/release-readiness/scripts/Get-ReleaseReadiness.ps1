@@ -607,6 +607,48 @@ function Get-StableTagInfo {
     }
 }
 
+function Test-GitRefResolves {
+    param([string]$Ref)
+    if ([string]::IsNullOrWhiteSpace($Ref)) { return $false }
+    return [bool](Invoke-Git "rev-parse --verify --quiet $Ref`^{commit}")
+}
+
+function Get-PreviousStableTag {
+    param([string]$Version)
+
+    [version]$current = $null
+    if (-not [version]::TryParse($Version, [ref]$current)) { return $null }
+    $parsedTags = @()
+    foreach ($tag in @(Invoke-Git 'tag --list')) {
+        if ($tag -notmatch '^\d+\.\d+\.\d+$') { continue }
+        [version]$parsedTag = $null
+        if (-not [version]::TryParse([string]$tag, [ref]$parsedTag)) { continue }
+        if ($parsedTag -lt $current) {
+            $parsedTags += [PSCustomObject]@{ Name = [string]$tag; Version = $parsedTag }
+        }
+    }
+    $prior = @($parsedTags | Sort-Object Version -Descending | Select-Object -First 1)
+    if ($prior.Count -gt 0) { return [string]$prior[0].Name }
+    return $null
+}
+
+function Resolve-ShippedContentsRefs {
+    param([string]$Version)
+
+    if (-not (Test-GitRefResolves -Ref $Version)) {
+        throw "Stable tag '$Version' is published but does not resolve locally. Rerun without -NoFetch (or fetch refs/tags/$Version) before generating a shipped tracker."
+    }
+    $previousTag = Get-PreviousStableTag -Version $Version
+    if (-not $previousTag -or -not (Test-GitRefResolves -Ref $previousTag)) {
+        throw "Cannot resolve a prior stable tag to bound shipped contents for '$Version'. Fetch stable tags before generating a shipped tracker."
+    }
+    return [PSCustomObject]@{
+        ContentsRef = $Version
+        ExcludeRefs = @($previousTag)
+        PreviousTag = $previousTag
+    }
+}
+
 function Test-IsCarryForwardRegression {
     <#
     .SYNOPSIS
@@ -657,11 +699,17 @@ function Get-SrMilestoneParts {
     $match = [regex]::Match($Milestone, '^\.NET\s+(\d+)(?:\.0)?\s+SR(\d+)(?:\.(\d+))?$')
     if (-not $match.Success) { return $null }
 
-    return [PSCustomObject]@{
-        Major    = [int]$match.Groups[1].Value
-        SrNumber = [int]$match.Groups[2].Value
-        SubPatch = if ($match.Groups[3].Success) { [int]$match.Groups[3].Value } else { 0 }
-    }
+    $major = ConvertTo-PrNumber -Value $match.Groups[1].Value
+    $srNumber = ConvertTo-PrNumber -Value $match.Groups[2].Value
+    [long]$parsedSubPatch = 0
+    $subPatch = if ($match.Groups[3].Success) {
+        if ([long]::TryParse($match.Groups[3].Value, [ref]$parsedSubPatch) -and
+            $parsedSubPatch -ge 0 -and $parsedSubPatch -le [int]::MaxValue) {
+            [int]$parsedSubPatch
+        } else { $null }
+    } else { 0 }
+    if ($null -eq $major -or $null -eq $srNumber -or $null -eq $subPatch) { return $null }
+    return [PSCustomObject]@{ Major = $major; SrNumber = $srNumber; SubPatch = $subPatch }
 }
 
 function Get-SrSubPatchFromVersion {
@@ -685,7 +733,11 @@ function Get-MauiReleaseMilestoneMajor {
     )
     foreach ($pattern in $patterns) {
         $match = [regex]::Match($Milestone, $pattern)
-        if ($match.Success) { return [int]$match.Groups[1].Value }
+        if ($match.Success) {
+            $major = ConvertTo-PrNumber -Value $match.Groups[1].Value
+            if ($null -ne $major) { return $major }
+            return 0
+        }
     }
     return 0
 }
@@ -738,6 +790,7 @@ function Get-ReleaseShipChecks {
 
     $checks = @()
     $isCandidate = ($Ctx.mode -eq 'candidate')
+    $isShipped = ($Ctx.mode -eq 'shipped')
 
     # Determine the SR number from the SR branch name. In live-SR mode (not
     # candidate), srBranch IS the release branch (release/X.Y.Zxx-srN). In
@@ -758,9 +811,15 @@ function Get-ReleaseShipChecks {
     $expectedPatchPrefix = $targetSr * 10   # SR8 → 80, SR9 → 90, SR10 → 100
 
     # Which ref do we read Versions.props from?
-    # Shipped mode: the SR branch itself.
+    # Shipped mode: the immutable stable-tag contents.
     # Candidate mode: main (which would carry the bump once SR-prior cuts).
-    $versionsRef = if ($isCandidate) { "origin/$($Ctx.mainBranch)" } else { $Ctx.srRef }
+    $versionsRef = if ($isCandidate) {
+        "origin/$($Ctx.mainBranch)"
+    } elseif ($isShipped) {
+        Get-MetadataValue -Container $Ctx -Name 'contentsRef' -Default $Ctx.srRef
+    } else {
+        $Ctx.srRef
+    }
     $vp = Get-VersionsPropsState -Ref $versionsRef
 
     if (-not $vp) {
@@ -818,7 +877,11 @@ function Get-ReleaseShipChecks {
             # produce stable packages, but worth surfacing so the release
             # captain knows there was no deliberate SR-direct flip PR).
             $prevSrBranch = "release/$major.$minor.1xx-sr$($targetSr - 1)"
-            $prevSrRef    = "origin/$prevSrBranch"
+            $prevSrRef    = if ($isShipped) {
+                Get-MetadataValue -Container $Ctx -Name 'previousStableTag'
+            } else {
+                "origin/$prevSrBranch"
+            }
             $mainRef      = if ($Ctx -is [hashtable]) {
                 if ($Ctx.ContainsKey('mainBranch')) { "origin/$($Ctx['mainBranch'])" } else { 'origin/main' }
             } elseif ($Ctx.PSObject.Properties.Name -contains 'mainBranch') {
@@ -826,7 +889,12 @@ function Get-ReleaseShipChecks {
             } else { 'origin/main' }
             $flipDirectSha = $null
             try {
-                $shas = git log --no-merges --pretty='%H' "origin/$($Ctx.srBranch)" "^$prevSrRef" "^$mainRef" -- eng/Versions.props 2>$null
+                $releaseContentRef = if ($isShipped) { $versionsRef } else { "origin/$($Ctx.srBranch)" }
+                $logArgs = @('log', '--no-merges', '--pretty=%H', $releaseContentRef)
+                if ($prevSrRef) { $logArgs += "^$prevSrRef" }
+                if (-not $isShipped) { $logArgs += "^$mainRef" }
+                $logArgs += @('--', 'eng/Versions.props')
+                $shas = & git @logArgs 2>$null
                 foreach ($s in @($shas)) {
                     $sTrim = $s.Trim(); if (-not $sTrim) { continue }
                     $diff = git show --no-color --format= $sTrim -- eng/Versions.props 2>$null
@@ -844,13 +912,14 @@ function Get-ReleaseShipChecks {
                 # Find the merge commit on this SR branch that brought in `prevSrBranch`.
                 $mergeShaShort = $null
                 try {
-                    $mergeSha = git log --merges --pretty='%H' --first-parent "origin/$($Ctx.srBranch)" -- eng/Versions.props 2>$null | Select-Object -First 1
+                    $mergeSha = git log --merges --pretty='%H' --first-parent $versionsRef -- eng/Versions.props 2>$null | Select-Object -First 1
                     if ($mergeSha) { $mergeShaShort = $mergeSha.Trim().Substring(0, 10) }
                 } catch { }
+                $provenanceLabel = if ($isShipped -and $prevSrRef) { $prevSrRef } else { $prevSrBranch }
                 $provenance = if ($mergeShaShort) {
-                    "inherited from ``$prevSrBranch`` via catch-up merge ``$mergeShaShort``"
+                    "inherited from ``$provenanceLabel`` via catch-up merge ``$mergeShaShort``"
                 } else {
-                    "inherited from ``$prevSrBranch``"
+                    "inherited from ``$provenanceLabel``"
                 }
                 $details = "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` — branch IS configured to produce stable release packages. The values were $provenance, rather than from an SR-direct flip PR; this is the valid cut-then-merge pattern used by .NET 10 SR8."
             }
@@ -862,9 +931,19 @@ function Get-ReleaseShipChecks {
             $missing = @()
             if (-not $labelOk) { $missing += "``PreReleaseVersionLabel=$actualLabel`` (expected ``servicing``)" }
             if (-not $stabilizeOk) { $missing += "``StabilizePackageVersion=$actualStabilize`` (expected ``true``)" }
+            $flipDetails = if ($isShipped) {
+                "The published stable tag ``$versionsRef`` records an invalid servicing configuration: $($missing -join '; '). This cannot be repaired retroactively in the shipped tag; verify the published assets and decide whether a hotfix/rebuild or documented follow-up is required."
+            } else {
+                "``$versionsRef`` is NOT flipped to servicing-release mode: $($missing -join '; '). Without these flips the branch builds prerelease packages and will not ship as a stable .NET release — CI stays green so nothing else catches it."
+            }
+            $flipNextAction = if ($isShipped) {
+                "Inspect the published ``$versionsRef`` packages and release metadata. If stable assets are wrong, coordinate the release-owner hotfix/rebuild path; otherwise document why the tag is safe despite the configuration."
+            } else {
+                "After the last required backport, open a focused PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion``; replace the base ``ci.main`` label and remove its ``inflight/current`` conditional with ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>``, then set ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. Keep ``main`` on its next-cycle version and rerun final CI after the SR PR merges."
+            }
             $checks += New-ReadinessCheck -Area $flipArea -Status 'BLOCKED' `
-                -Details "``$versionsRef`` is NOT flipped to servicing-release mode: $($missing -join '; '). Without these flips the branch builds prerelease packages and will not ship as a stable .NET release — CI stays green so nothing else catches it." `
-                -NextAction "After the last required backport, open a focused PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion``; replace the base ``ci.main`` label and remove its ``inflight/current`` conditional with ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>``, then set ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. Keep ``main`` on its next-cycle version and rerun final CI after the SR PR merges."
+                -Details $flipDetails `
+                -NextAction $flipNextAction
         }
     }
 
@@ -947,9 +1026,19 @@ function Get-ReleaseShipChecks {
                     if (-not $mainStabilizeOk) { $mainFixNeeded += "``StabilizePackageVersion`` (currently ``$($vpMain.StabilizePackageVersion)``)" }
                     $mainlineKeepClause = "Keep ``SdkBandVersion`` unchanged, and in the SAME PR restore the dev-main mainline settings that are currently misconfigured for a stable/servicing build ($($mainFixNeeded -join ' and ')): set ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false`` — leaving them as-is would keep ``$($Ctx.mainBranch)`` emitting servicing/stable packages"
                 }
+                $mainBumpDetails = if ($isShipped) {
+                    "``$mainRef`` still reports ``$($vpMain.FullVersion)`` even though SR$targetSr already shipped. New PR builds can continue claiming the shipped version until main advances to SR$nextSr."
+                } else {
+                    "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. Once SR$targetSr tags, every PR currently merging to main as ``$($vpMain.FullVersion)`` would falsely claim to ship in SR$targetSr."
+                }
+                $mainBumpNextAction = if ($isShipped) {
+                    "Open the focused ``$mainBumpTitle`` PR against ``$($Ctx.mainBranch)`` immediately. Change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``; $mainlineKeepClause. This is post-ship containment, not a pre-ship gate."
+                } else {
+                    "Open a focused PR targeting ``$($Ctx.mainBranch)`` titled ``$mainBumpTitle``. In ``eng/Versions.props``, change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``. $mainlineKeepClause; do not combine this main bump with the SR servicing-flip PR. This is the one-line pattern used by #35433 and #35879. Merge it before shipping SR$targetSr."
+                }
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
-                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. Once SR$targetSr tags, every PR currently merging to main as ``$($vpMain.FullVersion)`` would falsely claim to ship in SR$targetSr." `
-                    -NextAction "Open a focused PR targeting ``$($Ctx.mainBranch)`` titled ``$mainBumpTitle``. In ``eng/Versions.props``, change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``. $mainlineKeepClause; do not combine this main bump with the SR servicing-flip PR. This is the one-line pattern used by #35433 and #35879. Merge it before shipping SR$targetSr."
+                    -Details $mainBumpDetails `
+                    -NextAction $mainBumpNextAction
             }
         }
     }
@@ -2006,16 +2095,16 @@ function Get-RevertedPrFromSubject {
     param([string]$Subject)
     if (-not $Subject) { return $null }
     # Explicit "Revert PR #NNNN" form.
-    $m = [regex]::Match($Subject, '(?i)Revert\s+PR\s+#(\d+)')
-    if ($m.Success) { return [int]$m.Groups[1].Value }
+    $m = [regex]::Match($Subject, '(?i)Revert\s+PR\s+#(\d+)(?![\p{L}\p{N}_])')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
     # Standard GitHub revert: the (#N) INSIDE the quoted original title, e.g.
     # Revert "Original title (#1234)" (#5678). Greedy .* anchored to the closing
     # quote captures the original PR (1234): it tolerates internal quotes in the
     # title (the old [^"]* halted at the first inner quote and returned null) and,
     # because the trailing revert PR is NOT followed by a quote, never reaches it.
     # Case-insensitive to also match hand-typed lowercase 'revert "..."' subjects.
-    $m = [regex]::Match($Subject, '(?i)Revert\s+".*\(#(\d+)\)"')
-    if ($m.Success) { return [int]$m.Groups[1].Value }
+    $m = [regex]::Match($Subject, '(?i)Revert\s+".*\(#(\d+)(?![\p{L}\p{N}_])\)"')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
     # Manual/hand-authored revert form (no GitHub quotes, and the body carries no
     # "This reverts commit <sha>" line, so the SHA-override in the caller can't
     # recover it either): "Revert - <original title> #<reverted> (#<revertPR>)".
@@ -2029,8 +2118,8 @@ function Get-RevertedPrFromSubject {
     # (#M) is never returned, and (c) incidental #refs earlier in the title are
     # ignored. A rare misfire only ever marks a PR as reverted (safe direction —
     # never a false "shipped").
-    $m = [regex]::Match($Subject, '(?i)^(?:\[[^\]]+\]\s+)?Revert\b.*#(\d+)\s+\(#\d+\)\s*$')
-    if ($m.Success) { return [int]$m.Groups[1].Value }
+    $m = [regex]::Match($Subject, '(?i)^(?:\[[^\]]+\]\s+)?Revert\b.*#(\d+)(?![\p{L}\p{N}_])\s+\(#\d+\)\s*$')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
     return $null
 }
 
@@ -2044,8 +2133,151 @@ function Get-ClosingIssueNumbers {
 
     $matches = [regex]::Matches(
         $Text,
-        '(?im)\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?)\s*:?\s+(?:dotnet/maui#|#|https?://github\.com/dotnet/maui/issues/)(\d+)\b')
-    return @($matches | ForEach-Object { [int]$_.Groups[1].Value } | Sort-Object -Unique)
+        '(?im)\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?)\s*:?\s+(?:dotnet/maui#|#|https?://github\.com/dotnet/maui/issues/)(\d+)(?![\p{L}\p{N}_])')
+    return @($matches | ForEach-Object {
+        ConvertTo-PrNumber -Value $_.Groups[1].Value
+    } | Where-Object { $null -ne $_ } | Sort-Object -Unique)
+}
+
+function ConvertTo-PrNumber {
+    param([string]$Value)
+
+    [long]$parsed = 0
+    if (-not [long]::TryParse($Value, [ref]$parsed)) { return $null }
+    if ($parsed -lt 1 -or $parsed -gt [int]::MaxValue) { return $null }
+    return [int]$parsed
+}
+
+function Test-IsLineageVerbNegated {
+    param(
+        [string]$Prefix,
+        [string]$Between
+    )
+
+    $prefix = $Prefix -replace '[\u2018\u2019]', "'"
+    $between = $Between -replace '[\u2018\u2019]', "'"
+    $preVerbNegation = "(?i)(?:\b(?:no|without|never|cannot)\s+$|\bnever\s+(?:\w+\s+){0,3}to\s+$|\b(?:do(?:es)?|did|should|must|will|would|can|could)\s+not\s+$|\b(?:do(?:es)?|did)\s+not(?:\s+\w+){0,4}\s+to\s+$|\b(?:should|must|will|would|can|could)\s+not(?:\s+\w+){0,4}\s+$|\b(?:can't|couldn't|shouldn't|mustn't|won't|wouldn't)\s+(?:\w+\s+){0,3}$|\b(?:don't|doesn't|didn't)\s+(?:\w+\s+){0,4}to\s+$|\b(?:isn't|wasn't|aren't|weren't)\s+(?:\w+\s+){0,4}intended\s+to\s+(?:be\s+)?$|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+$|\bdon't\s+think\s+(?:we\s+)?should\s+$|\bnot\s+to\s+$|\bno\s+(?:need|reason|plan|intention)\b[\s\S]*?\bto\s+$|\bnot\s+(?:a\s+)?$|\brevert(?:s|ed|ing)?\s+(?:the\s+)?$)"
+    $postVerbNegation = "(?i)(?:\bnot\b|\bnever\s+(?:include|apply|land|ship|use)\w*\b|\bcannot\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\bno\s+(?:need|reason|plan|intention)\b|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\brevert(?:s|ed|ing)?\s+(?:the\s+)?)"
+    return ($prefix -match $preVerbNegation) -or ($between -match $postVerbNegation)
+}
+
+function Test-IsLineageReferenceNegated {
+    param([string]$Suffix)
+
+    $suffix = $Suffix -replace '[\u2018\u2019]', "'"
+    $lead = '(?:was|is|were|are|did|should|must|will|would|can|could)'
+    $contraction = "(?:wasn't|isn't|weren't|aren't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't)"
+    $effect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied)|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
+    $negatedEffect = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:(?:$lead\s+(?:\w+\s+){0,3}?(?:not|never))|(?:$contraction))(?:\s+\w+){0,3}?\s+(?:be\s+)?$effect\b"
+    $directNegatedEffect = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:not|never)\s+(?:\w+\s+){0,3}?$effect\b"
+    $rollback = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:$lead\s+)?(?:\w+\s+){0,3}?revert(?:s|ed|ing)?\b"
+    $omitted = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:$lead\s+)?(?:\w+\s+){0,3}?(?:omit(?:ted)?|exclude(?:d)?)\b"
+    $noLongerEffect = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:$lead\s+)?no\s+longer\s+$effect\b"
+    $rolledBack = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:has|had|was|is)?\s*(?:been\s+)?rolled\s+back\b"
+    return ($suffix -match $negatedEffect) -or ($suffix -match $directNegatedEffect) -or
+        ($suffix -match $rollback) -or ($suffix -match $omitted) -or
+        ($suffix -match $noLongerEffect) -or ($suffix -match $rolledBack)
+}
+
+function Get-ExplicitBackportSourceNumbers {
+    <#
+    .SYNOPSIS
+        Extracts non-negated source PR lineage from backport/cherry-pick prose.
+    .DESCRIPTION
+        Shared by commit scanning and PR lookup so both evidence paths apply
+        identical negation, multi-source-list, repository, and overflow rules.
+    #>
+    param([string]$Text)
+
+    if ([string]::IsNullOrWhiteSpace($Text)) { return @() }
+    $result = [System.Collections.Generic.HashSet[int]]::new()
+    # A period terminates only when followed by whitespace/end, preserving dots
+    # inside github.com URLs while preventing a later sentence's PR mention from
+    # binding to an earlier lineage verb.
+    $clauses = @([regex]::Split($Text, '(?:[!?;](?:\s+|$)|\.(?=\s|$)(?:\s+|$)|\r?\n+)'))
+    $processedVerbs = 0
+    foreach ($clause in $clauses) {
+        if ([string]::IsNullOrWhiteSpace($clause)) { continue }
+        $verbs = [regex]::Matches(
+            $clause,
+            '(?im)\b(?:backport(?:s|ed|ing)?|cherry[-\s]pick(?:ed|ing)?(?:\s+from)?)\b')
+        foreach ($verb in $verbs) {
+            $processedVerbs++
+            if ($processedVerbs -gt 200) { break }
+            # When a single prose clause has an extreme prefix, fail closed
+            # rather than silently ignoring a distant negator outside the
+            # bounded analysis window.
+            if ($verb.Index -gt 2048) { continue }
+            $prefixStart = [Math]::Max(0, $verb.Index - 2048)
+            $prefix = $clause.Substring($prefixStart, $verb.Index - $prefixStart)
+            $clauseStart = $verb.Index + $verb.Length
+            $windowLength = [Math]::Min(512, $clause.Length - $clauseStart)
+            $window = $clause.Substring($clauseStart, $windowLength)
+            $references = @([regex]::Matches($window,
+                '(?i)(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)(?<number>\d+)(?![\p{L}\p{N}_])'))
+            if ($references.Count -eq 0) { continue }
+
+            for ($i = 0; $i -lt $references.Count; $i++) {
+                $reference = $references[$i]
+                $number = ConvertTo-PrNumber -Value $reference.Groups['number'].Value
+                if ($null -eq $number) { continue }
+                $between = $window.Substring(0, $reference.Index)
+                if (Test-IsLineageVerbNegated -Prefix $prefix -Between $between) {
+                    continue
+                }
+                $suffixStart = $reference.Index + $reference.Length
+                $suffix = $window.Substring($suffixStart)
+                if (Test-IsLineageReferenceNegated -Suffix $suffix) { continue }
+
+                if ($i -eq 0) {
+                    # The first reference must be syntactically governed by the
+                    # lineage verb. Arbitrary prose such as "updates tests, see
+                    # PR #N for context" is not lineage.
+                    $firstShapeOk = $between -match '(?i)^\s*[:\-]?\s*(?:\([^)]{0,200}\)\s*)?(?:(?:(?:of|from|for(?:\s+issue)?|targeting|resolving|addresses)|(?:the\s+)?(?:fix|changes?)\s+from|that\s+fixes|of\s+(?:the\s+change\s+in|the\s+following|this)|(?:the\s+following|this))\s*:?\s+)?(?:PRs?\s*)?:?\s*$'
+                    if (-not $firstShapeOk) { continue }
+                    [void]$result.Add($number)
+                    continue
+                }
+
+                $isExplicitList = $true
+                for ($j = 1; $j -le $i; $j++) {
+                    $previous = $references[$j - 1]
+                    $current = $references[$j]
+                    $betweenStart = $previous.Index + $previous.Length
+                    $listSeparator = $window.Substring($betweenStart, $current.Index - $betweenStart)
+                    # Multi-source prose is deliberately structured-only:
+                    # direct separators, conjunctions, or a bounded parenthetical
+                    # qualifier followed by a conjunction. Ambiguous free text is
+                    # rejected rather than risking false shipped-lineage evidence.
+                    $listShapeOk = $listSeparator -match '^\s*(?:(?:,|/|&)\s*(?:PRs?\s*)?|(?:,\s*)?(?:and|plus)\s+(?:PRs?\s*)?|(?:,\s*)?\([^#\r\n]{0,80}\)\s*,?\s*(?:and|plus)\s+(?:PRs?\s*)?)$'
+                    $listNegated = Test-IsLineageVerbNegated -Prefix '' -Between $listSeparator
+                    $listIsContextual = $listSeparator -match '(?i)\b(?:see|consult|details?|context|background|related|discussion|reference|compare|mention|describ(?:e|ed)|above|below|introduced\s+by|caused\s+by|regressed\s+by|depends?\s+on|conflicts?\s+with|supersed(?:e|es|ed)|blocks?|unblocks?|affected\s+by|reverted\s+by)\b'
+                    if (-not $listShapeOk -or $listNegated -or $listIsContextual -or [string]::IsNullOrWhiteSpace($listSeparator)) {
+                        $isExplicitList = $false
+                        break
+                    }
+                }
+                if ($isExplicitList) { [void]$result.Add($number) }
+            }
+        }
+        if ($processedVerbs -gt 200) { break }
+    }
+    return @($result | Sort-Object)
+}
+
+function Get-CopilotBackportSourceNumbers {
+    param([string]$HeadRefName)
+
+    $match = [regex]::Match(
+        $HeadRefName,
+        '(?i)^copilot/backport-(?:(?:prs?|fix-from-pr|dotnet-maui)-)?(?<numbers>\d{4,7}(?:-\d{4,7})*)$')
+    if (-not $match.Success) { return @() }
+    $result = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($token in $match.Groups['numbers'].Value -split '-') {
+        $number = ConvertTo-PrNumber -Value $token
+        if ($null -ne $number) { [void]$result.Add($number) }
+    }
+    return @($result | Sort-Object)
 }
 
 # Internal scanner — extracts source PRs / backports / reverts from commits
@@ -2089,17 +2321,19 @@ function Get-CommitsForRevSpec {
         $backportPr = $null
         $subjMatches = [regex]::Matches($subject, '\(#(\d+)\)')
         if ($subjMatches.Count -gt 0) {
-            $backportPr = [int]$subjMatches[$subjMatches.Count - 1].Groups[1].Value
-            $allBackportPrs.Add($backportPr) | Out-Null
-            $allSourcePrs.Add($backportPr) | Out-Null   # greedy: backport # also resolves
+            $backportPr = ConvertTo-PrNumber -Value $subjMatches[$subjMatches.Count - 1].Groups[1].Value
+            if ($backportPr) {
+                $allBackportPrs.Add($backportPr) | Out-Null
+                $allSourcePrs.Add($backportPr) | Out-Null   # greedy: backport # also resolves
+            }
         }
 
-        # Source PR strong signal: "Backport of #NNNN" / "cherry picked from PR #NNNN"
-        $sourcePr = $null
-        $sourceMatch = [regex]::Match($body, '(?im)(?:backport\s+of|cherry[-\s]picked\s+from(?:\s+PR)?)\s+#(\d+)')
-        if ($sourceMatch.Success) {
-            $sourcePr = [int]$sourceMatch.Groups[1].Value
-            $allSourcePrs.Add($sourcePr) | Out-Null
+        # Source PR strong signals share the same bounded, negation-aware parser
+        # used by PR lookup.
+        $sourcePrs = @(Get-ExplicitBackportSourceNumbers -Text $body)
+        $sourcePr = if ($sourcePrs.Count -gt 0) { $sourcePrs[0] } else { $null }
+        foreach ($sourcePrNumber in $sourcePrs) {
+            $allSourcePrs.Add($sourcePrNumber) | Out-Null
         }
 
         # cherry-pick source SHA: "(cherry picked from commit <sha>)"
@@ -2134,7 +2368,7 @@ function Get-CommitsForRevSpec {
                 if ($revSubj) {
                     $rsM = [regex]::Matches($revSubj, '\(#(\d+)\)')
                     if ($rsM.Count -gt 0) {
-                        $revertsPr = [int]$rsM[$rsM.Count - 1].Groups[1].Value
+                        $revertsPr = ConvertTo-PrNumber -Value $rsM[$rsM.Count - 1].Groups[1].Value
                     }
                 }
             }
@@ -2155,6 +2389,7 @@ function Get-CommitsForRevSpec {
             isRevert = $isRevert
             backportPr = $backportPr
             sourcePr = $sourcePr
+            sourcePrs = $sourcePrs
             cherrySourceSha = $cherrySourceSha
             fixedIssues = $fixesList
             origin = $OriginTag
@@ -2175,7 +2410,8 @@ function Get-SrCommits {
 
     Write-Host "Computing SR-only commits..." -ForegroundColor Cyan
     $excludeArgs = $Ctx.excludeBranches | ForEach-Object { "^$_" }
-    $primaryRevSpec = "$($Ctx.srRef) $($excludeArgs -join ' ')"
+    $contentsRef = Get-MetadataValue -Container $Ctx -Name 'contentsRef' -Default $Ctx.srRef
+    $primaryRevSpec = "$contentsRef $($excludeArgs -join ' ')"
     $primary = Get-CommitsForRevSpec -RevSpec $primaryRevSpec -OriginTag 'primary'
     Write-Host "  Found $($primary.commits.Count) primary SR commits" -ForegroundColor Gray
 
@@ -2494,7 +2730,7 @@ function Get-IssueCommentPrs {
         # URLs/paths, bare `#123` and `PR#123` are all accepted. The
         # `qual`/`urlrepo`/`pathrepo` groups capture any owner/repo qualifier so a
         # foreign one can be skipped.
-        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|(?<pathrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(\d+)')
+        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|(?<pathrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(\d+)(?![\p{L}\p{N}_])')
         foreach ($m in $refs) {
             $qual     = $m.Groups['qual'].Value
             $urlRepo  = $m.Groups['urlrepo'].Value
@@ -2502,7 +2738,8 @@ function Get-IssueCommentPrs {
             if ($qual     -and $qual     -ne $Repo) { continue }   # cross-repo owner/repo#N shorthand
             if ($urlRepo  -and $urlRepo  -ne $Repo) { continue }   # cross-repo github.com/.../pull/N URL
             if ($pathRepo -and $pathRepo -ne $Repo) { continue }   # cross-repo scheme-less owner/repo/pull/N
-            $num = [int]$m.Groups[1].Value
+            $num = ConvertTo-PrNumber -Value $m.Groups[1].Value
+            if ($null -eq $num) { continue }
             # Does THIS comment pair the reference with fix/resolve/close language
             # within a short window (tolerates the long ".../pull/" URL prefix)?
             # The negative lookbehind drops ADJACENTLY-negated fix phrases ("not
@@ -2646,65 +2883,8 @@ function Test-IsExplicitBackportForSource {
     $body = [string](Get-MetadataValue -Container $Pr -Name 'body' -Default '')
     $head = [string](Get-MetadataValue -Container $Pr -Name 'headRefName' -Default '')
 
-    # Copilot backport branches encode one or more source PR numbers. Restrict
-    # this to PR-sized numeric tokens so release-band numbers (10, 100, etc.)
-    # cannot become lineage evidence.
-    if ($head -match '(?i)^copilot/backport[-/]') {
-        $headPrNumbers = @([regex]::Matches($head, '(?<!\d)\d{4,}(?!\d)') |
-            ForEach-Object { [int]$_.Value })
-        if ($headPrNumbers -contains $SourcePrNumber) { return $true }
-    }
-
-    # Parse each backport clause independently. A source number may be the first
-    # reference or a later member of an explicit comma/and list, but prose
-    # between references ("contextual mention") breaks the lineage chain.
-    $backportVerbs = [regex]::Matches($body, '(?im)\bbackport(?:s|ed|ing)?\b')
-    foreach ($verb in $backportVerbs) {
-        $prefixStart = [Math]::Max(0, $verb.Index - 48)
-        $prefix = $body.Substring($prefixStart, $verb.Index - $prefixStart)
-        if ($prefix -match "(?i)(?:\b(?:do(?:es)?|did|should|must|will|would|can)\s+not\s+|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|cannot)\s+|\bnever\s+|\bno\s+need\s+to\s+|\bnot\s+(?:a\s+)?|\brevert(?:s|ed|ing)?\b[^.!?;\r\n]{0,24})$") {
-            continue
-        }
-
-        $clauseStart = $verb.Index + $verb.Length
-        $remaining = $body.Substring($clauseStart)
-        # Do not use '.' as a terminator: full GitHub PR URLs contain dots.
-        # A later sentence still cannot bind because the inter-reference text
-        # must be a pure list separator.
-        $terminator = [regex]::Match($remaining, '[!?;\r\n]')
-        $clauseLength = if ($terminator.Success) { $terminator.Index } else { $remaining.Length }
-        $clauseLength = [Math]::Min($clauseLength, 200)
-        $clause = $remaining.Substring(0, $clauseLength)
-        $references = @([regex]::Matches($clause,
-            '(?i)(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)(?<number>\d+)'))
-        if ($references.Count -eq 0) { continue }
-
-        for ($i = 0; $i -lt $references.Count; $i++) {
-            $reference = $references[$i]
-            if ([int]$reference.Groups['number'].Value -ne $SourcePrNumber) { continue }
-
-            $beforeReference = $clause.Substring(0, $reference.Index)
-            if ($beforeReference -match "(?i)\b(?:not|never)\b|\bno\s+need\b|\brevert(?:s|ed|ing)?\b") {
-                continue
-            }
-            if ($i -eq 0) { return $true }
-
-            $isExplicitList = $true
-            for ($j = 1; $j -le $i; $j++) {
-                $previous = $references[$j - 1]
-                $current = $references[$j]
-                $betweenStart = $previous.Index + $previous.Length
-                $between = $clause.Substring($betweenStart, $current.Index - $betweenStart)
-                if ($between -notmatch '^\s*(?:(?:,|/|&)\s*(?:and\s+)?|(?:and|plus)\s+)(?:PRs?\s*)?$') {
-                    $isExplicitList = $false
-                    break
-                }
-            }
-            if ($isExplicitList) { return $true }
-        }
-    }
-
-    if ($body -match "(?im)\bcherry[-\s]picked\s+from(?:\s+PR)?\s+#$SourcePrNumber\b") { return $true }
+    if (@(Get-CopilotBackportSourceNumbers -HeadRefName $head) -contains $SourcePrNumber) { return $true }
+    if (@(Get-ExplicitBackportSourceNumbers -Text $body) -contains $SourcePrNumber) { return $true }
     if ($head -match "(?i)^backport/pr-$SourcePrNumber-to-") { return $true }
     return $false
 }
@@ -2766,12 +2946,15 @@ function Resolve-ClosedFixUnlinked {
         # Skip agent/skill/workflow PRs that only mention the issue for context.
         if (Test-PrIsToolingOnly -Files $info.files) { continue }
         $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
-        # Gate 2: presence on the SR branch via EITHER signal — direct SHA
+        # Gate 2: presence in the release contents via EITHER signal — direct SHA
         # ancestry (fix merged straight to SR) OR the `(#<num>)` subject token
         # (fix flowed in from inflight/main under a different SHA — the common
-        # case).
-        $onSr = (Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.srBranch)") `
-                -or (Test-PrNumberOnBranch -PrNumber ([int]$info.number) -BranchRef "origin/$($Ctx.srBranch)")
+        # case). Shipped mode supplies an immutable stable tag as contentsRef;
+        # other modes fall back to the live SR ref.
+        $fixTargetRef = Get-MetadataValue -Container $Ctx -Name 'contentsRef' `
+            -Default (Get-MetadataValue -Container $Ctx -Name 'srRef' -Default "origin/$($Ctx.srBranch)")
+        $onSr = (Test-CommitOnBranch -Sha $mergeSha -BranchRef $fixTargetRef) `
+                -or (Test-PrNumberOnBranch -PrNumber ([int]$info.number) -BranchRef $fixTargetRef)
         if (-not $onSr) { continue }
         $verifiedFixes += @{
             number = [int]$info.number
@@ -2815,14 +2998,23 @@ function Classify-RegressionCandidate {
     $sourceToBackportPrs = @{}
     $srCommitsForMapping = Get-MetadataValue -Container $SrContents -Name 'commits'
     foreach ($commit in @($srCommitsForMapping)) {
-        $sourcePr = [int](Get-MetadataValue -Container $commit -Name 'sourcePr' -Default 0)
-        $backportPr = [int](Get-MetadataValue -Container $commit -Name 'backportPr' -Default 0)
-        if (-not $sourcePr -or -not $backportPr) { continue }
-        if (-not $sourceToBackportPrs.ContainsKey($sourcePr)) {
-            $sourceToBackportPrs[$sourcePr] = [System.Collections.Generic.List[int]]::new()
+        $sourcePrs = @((Get-MetadataValue -Container $commit -Name 'sourcePrs') |
+            Where-Object { $null -ne $_ -and [int]$_ -gt 0 })
+        if ($sourcePrs.Count -eq 0) {
+            $legacySourcePr = [int](Get-MetadataValue -Container $commit -Name 'sourcePr' -Default 0)
+            if ($legacySourcePr) { $sourcePrs = @($legacySourcePr) }
         }
-        if (-not $sourceToBackportPrs[$sourcePr].Contains($backportPr)) {
-            [void]$sourceToBackportPrs[$sourcePr].Add($backportPr)
+        $backportPr = [int](Get-MetadataValue -Container $commit -Name 'backportPr' -Default 0)
+        if (-not $backportPr) { continue }
+        foreach ($sourcePr in $sourcePrs) {
+            $sourcePr = [int]$sourcePr
+            if (-not $sourcePr) { continue }
+            if (-not $sourceToBackportPrs.ContainsKey($sourcePr)) {
+                $sourceToBackportPrs[$sourcePr] = [System.Collections.Generic.List[int]]::new()
+            }
+            if (-not $sourceToBackportPrs[$sourcePr].Contains($backportPr)) {
+                [void]$sourceToBackportPrs[$sourcePr].Add($backportPr)
+            }
         }
     }
     $mainRevertedPrSet = @{}
@@ -2847,7 +3039,8 @@ function Classify-RegressionCandidate {
     # this override when the target is a GENUINE SR branch distinct from main — in
     # candidate mode the target IS main, so common ancestry proves nothing.
     $ctxModeEarly = Get-MetadataValue -Container $Ctx -Name 'mode'
-    $targetSrRef  = Get-MetadataValue -Container $Ctx -Name 'srRef'
+    $targetSrRef  = Get-MetadataValue -Container $Ctx -Name 'contentsRef' `
+        -Default (Get-MetadataValue -Container $Ctx -Name 'srRef')
     $targetIsDistinct = ($ctxModeEarly -ne 'candidate') -and [bool]$targetSrRef
 
     # === EARLY-EXIT: issue is already fixed by a commit IN the SR contents ===
@@ -2882,7 +3075,16 @@ function Classify-RegressionCandidate {
         $fixPrs = @()
         foreach ($c in $fixingSrCommits) {
             if ($c.backportPr) { $fixPrs += [int]$c.backportPr }
-            elseif ($c.sourcePr) { $fixPrs += [int]$c.sourcePr }
+            else {
+                $commitSourcePrs = @((Get-MetadataValue -Container $c -Name 'sourcePrs') |
+                    Where-Object { $null -ne $_ -and [int]$_ -gt 0 })
+                if ($commitSourcePrs.Count -gt 0) {
+                    $fixPrs += @($commitSourcePrs | ForEach-Object { [int]$_ })
+                } else {
+                    $legacyCommitSourcePr = [int](Get-MetadataValue -Container $c -Name 'sourcePr' -Default 0)
+                    if ($legacyCommitSourcePr) { $fixPrs += $legacyCommitSourcePr }
+                }
+            }
         }
         $fixPrs = @($fixPrs | Sort-Object -Unique)
 
@@ -5668,6 +5870,7 @@ function Invoke-Main {
     $ctx['regressionLabels'] = $labels
     $ctx['labelInferenceMode'] = $labelMode
     $ctx['phase'] = $Phase
+    $ctx['contentsRef'] = $ctx.srRef
 
     $data = @{
         metadata = $ctx
@@ -5697,7 +5900,22 @@ function Invoke-Main {
                 $shippedInfo.tagDate = $tagInfo.Date.ToString('o')
                 $shippedInfo.dateSource = $tagInfo.DateSource
                 $shippedInfo.tagFound = $true
+                # The shipped report's release contents are immutable at this
+                # tag. Keep operational/CI checks on the live SR branch, but use
+                # the tag for commit inventory and fix ancestry so post-tag
+                # branch changes cannot make the shipped release look cleaner.
+                $shippedRefs = Resolve-ShippedContentsRefs -Version $vpShipped.FullVersion
+                $ctx['contentsRef'] = $shippedRefs.ContentsRef
+                # Never subtract mutable main from immutable shipped contents.
+                # Compare stable tag-to-tag so the inventory cannot shrink after
+                # release when SR commits flow forward to main.
+                $ctx['excludeBranches'] = @($shippedRefs.ExcludeRefs)
+                $ctx['previousStableTag'] = $shippedRefs.PreviousTag
+                $shippedInfo.previousTag = $shippedRefs.PreviousTag
             }
+        }
+        if (-not $shippedInfo.tagFound) {
+            throw "Cannot resolve the immutable stable tag for shipped branch '$($ctx.srBranch)'. Rerun with tag access before generating a shipped tracker."
         }
         $data['shippedInfo'] = $shippedInfo
     }
