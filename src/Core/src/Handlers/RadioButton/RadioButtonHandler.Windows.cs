@@ -71,5 +71,7 @@ namespace Microsoft.Maui.Handlers
 
 			VirtualView.IsChecked = PlatformView.IsChecked == true;
 		}
+
+		internal override bool PreventGestureBubbling => true;
 	}
 }

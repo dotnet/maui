@@ -57,7 +57,9 @@ namespace Maui.Controls.Sample.Controls
 				}
 			}
 
+#pragma warning disable CS0618 // Obsolete
 			BordelessEntryServiceBuilder.HandlersCollection ??= services.GetRequiredService<IMauiHandlersFactory>().GetCollection();
+#pragma warning restore CS0618
 
 			if (BordelessEntryServiceBuilder.PendingHandlers.Count > 0)
 			{

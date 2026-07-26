@@ -86,6 +86,12 @@ namespace Microsoft.Maui.Platform
 					if (handler != null)
 						handlersWithConstructors.Add(view.GetType());
 				}
+				catch (HandlerNotFoundException ex) when (ex.InnerException is MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+						handlersWithConstructors.Add(view.GetType());
+				}
 			}
 
 			if (handler == null)

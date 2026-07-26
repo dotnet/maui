@@ -1,6 +1,6 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
+using System.Threading;
 using System.Text;
 using Microsoft.Maui.Controls.Compatibility;
 
@@ -8,8 +8,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class TabbedPage
 	{
-		internal new static void RemapForControls()
+		static int s_remappedForControls;
+		internal override void RemapForControls()
 		{
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+				return;
+
+			base.RemapForControls();
+
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(BarBackground), MapBarBackground);
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(BarBackgroundColor), MapBarBackgroundColor);
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(BarTextColor), MapBarTextColor);

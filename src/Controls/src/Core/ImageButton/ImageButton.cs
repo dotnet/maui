@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -17,6 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// <see cref="ImageButton"/> is similar to <see cref="Button"/> but displays an image instead of text.
 	/// It supports all standard button features including commands, events, borders, and visual states.
 	/// </remarks>
+	[ElementHandler(typeof(ImageButtonHandler))]
 	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, ICommandElement, IImageElement, IImageButton
 	{
 		const int DefaultCornerRadius = -1;

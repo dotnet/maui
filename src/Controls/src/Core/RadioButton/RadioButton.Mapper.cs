@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
@@ -11,8 +12,14 @@ namespace Microsoft.Maui.Controls
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		internal new static void RemapForControls()
+		static int s_remappedForControls;
+		internal override void RemapForControls()
 		{
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+				return;
+
+			base.RemapForControls();
+
 			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(IRadioButton.Content), MapContent);
 #if ANDROID || WINDOWS
 			//On iOS, since a custom approach is used for RadioButton, TextTransform is applied through the Label control.

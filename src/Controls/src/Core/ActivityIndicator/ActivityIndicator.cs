@@ -1,8 +1,10 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,8 +15,27 @@ namespace Microsoft.Maui.Controls
 	/// This control gives a visual clue to the user that something is happening, without information about its progress.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+#if ANDROID
+	[ActivityIndicatorHandler]
+#else
+	[ElementHandler(typeof(ActivityIndicatorHandler))]
+#endif
 	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>, IActivityIndicator
 	{
+#if ANDROID
+		internal sealed class ActivityIndicatorHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(ActivityIndicatorHandler2);
+
+				return typeof(ActivityIndicatorHandler);
+			}
+		}
+#endif
+
 		/// <summary>Bindable property for <see cref="IsRunning"/>.</summary>
 		public static readonly BindableProperty IsRunningProperty = BindableProperty.Create(nameof(IsRunning), typeof(bool), typeof(ActivityIndicator), default(bool));
 

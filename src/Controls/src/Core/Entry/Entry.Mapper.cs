@@ -1,13 +1,20 @@
 ﻿#nullable disable
 using System;
+using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Entry
 	{
-		internal static new void RemapForControls()
+		static int s_remappedForControls;
+		internal override void RemapForControls()
 		{
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+				return;
+
+			base.RemapForControls();
+
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors
 #if ANDROID
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
