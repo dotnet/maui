@@ -916,7 +916,10 @@ function Invoke-DetectionForMajor {
 
 # Guard: skip the driver when dot-sourced (tests dot-source to access helpers
 # like New-RegressionLabelList and the strict regex constants).
-if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') { return }
+# `InvocationName -eq '.'` alone reliably detects dot-sourcing across every form;
+# matching `$MyInvocation.Line` against a leading dot is avoided because that text
+# can be the whole command line and would wrongly skip a later `&`/`-File` call.
+if ($MyInvocation.InvocationName -eq '.') { return }
 
 if (-not (Test-Path (Join-Path $Repo '.git'))) {
     throw "Fail-closed: $Repo is not a git repository. Pass -Repo <checkout>."
