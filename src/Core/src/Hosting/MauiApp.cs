@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Hosting
 	public sealed class MauiApp : IDisposable, IAsyncDisposable
 	{
 		private readonly IServiceProvider _services;
+		private bool _disposed;
 
 		internal MauiApp(IServiceProvider services)
 		{
@@ -45,6 +46,13 @@ namespace Microsoft.Maui.Hosting
 		/// </remarks>
 		public void Dispose()
 		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
 			var exceptions = new List<Exception>();
 			try
 			{
@@ -89,6 +97,13 @@ namespace Microsoft.Maui.Hosting
 		/// <inheritdoc />
 		public async ValueTask DisposeAsync()
 		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
 			var exceptions = new List<Exception>();
 			try
 			{
