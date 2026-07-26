@@ -266,6 +266,72 @@ Example evidence
         $report | Should -Not -Match 'Template example|Example evidence'
     }
 
+    It 'keeps a real report that quotes the marker inside its own details block (tier 1)' {
+        # Round-3 regression guard (❌ 3/3). A real report that quotes the required template
+        # marker inside its own fenced code — before its closing </details> — must NOT be
+        # truncated. Bounding at the raw next anchor sliced off the report's own </details>,
+        # the details-balance never returned to 0, and the candidate collapsed to $null —
+        # which New-TestFailureReviewBody silently replaces with a synthesized skeleton,
+        # the exact content-loss this PR exists to prevent. The quoted marker sits inside
+        # code, so it is not a structural sibling and must never bound the report.
+        $content = @'
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Actual review</summary>
+Actual evidence.
+
+The expected template shape is:
+
+```markdown
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+```
+
+More real evidence after the example.
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Not -BeNullOrEmpty
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match 'Actual evidence'
+        $report | Should -Match 'More real evidence after the example'
+    }
+
+    It 'keeps a heading-anchored report that quotes the heading inside its own details block (tier 2)' {
+        # Tier-2 counterpart: with no HTML marker, `## Tests Failure Analysis` anchors the
+        # report. A heading quoted inside the report's own fenced code must not bound it
+        # either — the same structural-anchor rule applies to the heading tier.
+        $content = @'
+## Tests Failure Analysis
+
+<details>
+<summary>Actual review</summary>
+Actual evidence.
+
+Reports must start with:
+
+```markdown
+## Tests Failure Analysis
+```
+
+Final evidence line.
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Not -BeNullOrEmpty
+        $report | Should -Match '^## Tests Failure Analysis'
+        $report | Should -Match 'Actual evidence'
+        $report | Should -Match 'Final evidence line'
+    }
+
     It 'recognizes a standalone marker indented up to three spaces' {
         # Column-0-only anchoring missed markers re-indented by list nesting / wrapping.
         # 0-3 spaces is still a paragraph-level standalone line, so it must anchor.

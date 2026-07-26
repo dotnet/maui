@@ -236,21 +236,12 @@ function Get-EmbeddedTestFailureReportCandidate {
     param(
         [string]$Content,
         [System.Text.RegularExpressions.Match]$AnchorMatch,
-        [int]$EndIndex = -1
+        [int[]]$SubsequentAnchorIndices = @()
     )
 
     $startIndex = $AnchorMatch.Groups['anchor'].Index
     $prefix = $Content.Substring(0, $startIndex)
-    # Bound the candidate to the next same-tier anchor (when supplied) so an earlier
-    # example/quote block cannot borrow a LATER report's <details> structure. Without
-    # the bound, an anchor whose own segment has no valid report would greedily span
-    # forward and swallow the real report that follows it.
-    if ($EndIndex -ge 0) {
-        $report = $Content.Substring($startIndex, $EndIndex - $startIndex)
-    }
-    else {
-        $report = $Content.Substring($startIndex)
-    }
+    $report = $Content.Substring($startIndex)
     $outerFence = Get-MarkdownFenceState -Text $prefix
 
     # The report contract uses structural <details> tags on their own lines. Ignore tag-looking
@@ -280,6 +271,21 @@ function Get-EmbeddedTestFailureReportCandidate {
         $indent = $lineMatch.Groups['indent'].Value
         if ($null -ne $innerFenceCharacter -or $indent.Contains("`t") -or $indent.Length -ge 4) {
             continue
+        }
+        # This line is STRUCTURAL (not inside inner fenced/four-space-indented code). If it
+        # is a later same-tier anchor, it bounds this candidate: a genuine sibling report at
+        # column 0 stops the scan here, but a marker quoted inside THIS report's own fenced
+        # or indented code was skipped by the guard above and can never truncate it. This is
+        # the round-3 fix — bounding at the raw next anchor collapsed a self-quoting report
+        # to $null (its own closing </details> got sliced off), silently dropping the report.
+        if ($SubsequentAnchorIndices.Count -gt 0) {
+            $lineStart = $startIndex + $lineMatch.Index
+            $lineEnd = $lineStart + $lineMatch.Value.Length
+            $boundedHere = $false
+            foreach ($anchorIndex in $SubsequentAnchorIndices) {
+                if ($anchorIndex -ge $lineStart -and $anchorIndex -lt $lineEnd) { $boundedHere = $true; break }
+            }
+            if ($boundedHere) { break }
         }
         $tagMatch = [regex]::Match(
             $line,
@@ -352,20 +358,23 @@ function Get-EmbeddedTestFailureReport {
         )) {
         $anchorMatches = [regex]::Matches($Content, $anchorPattern)
         # Prefer the EARLIEST anchor that yields a self-contained valid report.
-        # Each candidate is bounded to the next anchor of the same tier (see
-        # Get-EmbeddedTestFailureReportCandidate), so an earlier example/quote block
-        # can't borrow a later report's <details> structure, and — restoring the
-        # safety property that reverse iteration had lost — a real report is never
-        # displaced by a later structurally-valid duplicate (including a fenced one).
+        # Each candidate is bounded to the next *structural* same-tier anchor (see
+        # Get-EmbeddedTestFailureReportCandidate): an earlier example/quote block can't
+        # borrow a later report's <details> structure, a real report is never displaced
+        # by a later structurally-valid duplicate, AND a marker quoted inside a report's
+        # own fenced/indented code no longer truncates that report.
         for ($index = 0; $index -lt $anchorMatches.Count; $index++) {
-            $endIndex = -1
-            if ($index + 1 -lt $anchorMatches.Count) {
-                $endIndex = $anchorMatches[$index + 1].Groups['anchor'].Index
+            # Pass every LATER same-tier anchor; the candidate bounds itself at the first
+            # one that lands on a STRUCTURAL line, ignoring markers nested in this report's
+            # own code while still letting a genuine sibling report at column 0 bound it.
+            $subsequentAnchors = @()
+            for ($next = $index + 1; $next -lt $anchorMatches.Count; $next++) {
+                $subsequentAnchors += $anchorMatches[$next].Groups['anchor'].Index
             }
             $report = Get-EmbeddedTestFailureReportCandidate `
                 -Content $Content `
                 -AnchorMatch $anchorMatches[$index] `
-                -EndIndex $endIndex
+                -SubsequentAnchorIndices $subsequentAnchors
             if (-not [string]::IsNullOrWhiteSpace($report)) {
                 return $report
             }
