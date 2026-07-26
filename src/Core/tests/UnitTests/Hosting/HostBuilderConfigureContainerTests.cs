@@ -124,6 +124,36 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task RepeatedDisposeAsyncRunsCleanupOnce()
+		{
+			var cleanupCount = 0;
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() => cleanupCount++));
+			var app = builder.Build();
+
+			await app.DisposeAsync();
+			await app.DisposeAsync();
+
+			Assert.Equal(1, cleanupCount);
+		}
+
+		[Fact]
+		public async Task MixedDisposeAsyncAndDisposeRunsCleanupOnce()
+		{
+			var cleanupCount = 0;
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() => cleanupCount++));
+			var app = builder.Build();
+
+			await app.DisposeAsync();
+			app.Dispose();
+
+			Assert.Equal(1, cleanupCount);
+		}
+
+		[Fact]
 		public void MauiAppDisposeDisposesAsyncOnlyServiceProvider()
 		{
 			var factory = new AsyncOnlyServiceProviderFactory();

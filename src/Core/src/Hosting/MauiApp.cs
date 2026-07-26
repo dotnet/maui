@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Hosting
 	public sealed class MauiApp : IDisposable, IAsyncDisposable
 	{
 		private readonly IServiceProvider _services;
-		private bool _disposed;
+		private int _disposeStarted;
 
 		internal MauiApp(IServiceProvider services)
 		{
@@ -46,12 +47,8 @@ namespace Microsoft.Maui.Hosting
 		/// </remarks>
 		public void Dispose()
 		{
-			if (_disposed)
-			{
+			if (Interlocked.Exchange(ref _disposeStarted, 1) != 0)
 				return;
-			}
-
-			_disposed = true;
 
 			var exceptions = new List<Exception>();
 			try
@@ -97,12 +94,8 @@ namespace Microsoft.Maui.Hosting
 		/// <inheritdoc />
 		public async ValueTask DisposeAsync()
 		{
-			if (_disposed)
-			{
+			if (Interlocked.Exchange(ref _disposeStarted, 1) != 0)
 				return;
-			}
-
-			_disposed = true;
 
 			var exceptions = new List<Exception>();
 			try

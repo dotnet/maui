@@ -233,6 +233,56 @@ public class EssentialsDIBridgeTests
 		}
 	}
 
+	[Fact]
+	public void NewerMapServiceTokenCleanupRestoresOlderUnpushedPlatformToken()
+	{
+		const string originalInstanceToken = "original-instance-token";
+		const string originalPlatformToken = "original-platform-token";
+		const string firstToken = "first-token";
+		const string secondToken = "second-token";
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var shared = new StubPlatformGeocoding { MapServiceToken = originalInstanceToken };
+		MauiApp? firstApp = null;
+		MauiApp? secondApp = null;
+
+		try
+		{
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IGeocoding>(shared);
+			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(firstToken));
+			firstApp = firstBuilder.Build();
+
+			Assert.Equal(firstToken, shared.MapServiceToken);
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IGeocoding>(shared);
+			secondBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(secondToken));
+			secondApp = secondBuilder.Build();
+			platformToken.Value = secondToken;
+
+			secondApp.Dispose();
+			secondApp = null;
+
+			Assert.Equal(firstToken, shared.MapServiceToken);
+			Assert.Equal(firstToken, platformToken.Value);
+
+			firstApp.Dispose();
+			firstApp = null;
+
+			Assert.Equal(originalInstanceToken, shared.MapServiceToken);
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+		}
+		finally
+		{
+			secondApp?.Dispose();
+			firstApp?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
