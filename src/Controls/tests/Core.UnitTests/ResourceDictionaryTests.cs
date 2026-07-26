@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 using Xunit.Sdk;
 
@@ -621,6 +624,48 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			rd0.Add("foo", "Foo");
 			Assert.Equal("Foo", label.Text);
+		}
+
+		sealed class LeakSubject : ContentView
+		{
+			readonly byte[] _payload = new byte[1024 * 1024];
+		}
+
+		[Fact]
+		public async Task RootedMergedDictionaryDoesNotLeakElement()
+		{
+			// A ResourceDictionary kept alive past the element (simulating a static/singleton
+			// or an instance reused across pages) that is merged into a transient element.
+			var sharedRoot = new ResourceDictionary { { "primary", Colors.Red } };
+
+			WeakReference weakSubject;
+			{
+				var subject = new LeakSubject();
+				subject.Resources.MergedDictionaries.Add(sharedRoot);
+				weakSubject = new WeakReference(subject);
+				// Drop the only strong reference to `subject`; `sharedRoot` stays alive.
+			}
+
+			Assert.False(await weakSubject.WaitForCollect(), "LeakSubject should not be alive!");
+			GC.KeepAlive(sharedRoot);
+		}
+
+		[Fact]
+		public void MergedDictionaryStillPropagatesChangesAfterGC()
+		{
+			var sharedRoot = new ResourceDictionary();
+			var host = new ResourceDictionary { MergedDictionaries = { sharedRoot } };
+
+			int changes = 0;
+			((IResourceDictionary)host).ValuesChanged += (s, e) => changes++;
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			sharedRoot.Add("foo", "bar");
+			Assert.True(changes > 0, "Change from a merged dictionary should still propagate to the host.");
+			GC.KeepAlive(host);
 		}
 	}
 }

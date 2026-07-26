@@ -133,6 +133,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 		IList<ResourceDictionary> _collectionTrack;
+		// Parallel to _collectionTrack: the weak proxy subscribing this dictionary to each merged
+		// dictionary's ValuesChanged event. Held strongly here so a merged dictionary only holds
+		// the proxy (and this owner weakly), never this owner strongly.
+		IList<WeakResourcesChangedProxy> _mergedProxies;
+		EventHandler<ResourcesChangedEventArgs> _itemValuesChangedHandler;
 
 		void MergedDictionaries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -141,12 +146,14 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_collectionTrack = _collectionTrack ?? new List<ResourceDictionary>();
+			_mergedProxies = _mergedProxies ?? new List<WeakResourcesChangedProxy>();
 			// Collection has been cleared
 			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
-				foreach (var dictionary in _collectionTrack)
-					dictionary.ValuesChanged -= Item_ValuesChanged;
+				foreach (var proxy in _mergedProxies)
+					proxy.Unsubscribe();
 
+				_mergedProxies.Clear();
 				_collectionTrack.Clear();
 				return;
 			}
@@ -158,7 +165,11 @@ namespace Microsoft.Maui.Controls
 				{
 					var rd = (ResourceDictionary)item;
 					_collectionTrack.Add(rd);
-					rd.ValuesChanged += Item_ValuesChanged;
+
+					var proxy = new WeakResourcesChangedProxy();
+					proxy.Subscribe(rd, ItemValuesChangedHandler);
+					_mergedProxies.Add(proxy);
+
 					OnValuesChanged(rd.ToArray());
 				}
 			}
@@ -169,15 +180,58 @@ namespace Microsoft.Maui.Controls
 				foreach (var item in e.OldItems)
 				{
 					var rd = (ResourceDictionary)item;
-					rd.ValuesChanged -= Item_ValuesChanged;
-					_collectionTrack.Remove(rd);
+					var index = _collectionTrack.IndexOf(rd);
+					if (index >= 0)
+					{
+						_mergedProxies[index].Unsubscribe();
+						_mergedProxies.RemoveAt(index);
+						_collectionTrack.RemoveAt(index);
+					}
 				}
 			}
 		}
 
+		// Cached so the proxy holds a live strong reference somewhere (this dictionary) while
+		// referencing it only weakly. When this dictionary is collected the delegate goes with it
+		// and the proxy self-unsubscribes.
+		EventHandler<ResourcesChangedEventArgs> ItemValuesChangedHandler =>
+			_itemValuesChangedHandler ??= Item_ValuesChanged;
+
 		void Item_ValuesChanged(object sender, ResourcesChangedEventArgs e)
 		{
 			OnValuesChanged(e.Values.ToArray());
+		}
+
+		// A weak "proxy" subscribing this dictionary to a merged dictionary's ValuesChanged event.
+		// The merged (possibly long-lived/shared) dictionary strongly holds this proxy, but the
+		// proxy holds both the merged dictionary and the owning handler only weakly, so a shared
+		// merged dictionary no longer roots the transient owner and its element subtree.
+		sealed class WeakResourcesChangedProxy : WeakEventProxy<ResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+		{
+			void OnValuesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+					handler(sender, e);
+				else
+					Unsubscribe();
+			}
+
+			public override void Subscribe(ResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				if (TryGetSource(out var s))
+					s.ValuesChanged -= OnValuesChanged;
+
+				source.ValuesChanged += OnValuesChanged;
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var s))
+					s.ValuesChanged -= OnValuesChanged;
+
+				base.Unsubscribe();
+			}
 		}
 
 		void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
