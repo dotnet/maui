@@ -13,6 +13,7 @@ BeforeAll {
     foreach ($functionName in @(
             'Invoke-SealedVisualMerge',
             'Get-EmbeddedTestFailureReport',
+            'Get-EmbeddedTestFailureReportCandidate',
             'Get-MarkdownFenceState',
             'Escape-Html',
             'Get-ReportVerdict',
@@ -124,6 +125,109 @@ Trailing assistant prose.
         $report | Should -Not -Match 'Trailing assistant prose'
         ([regex]::Matches($report, '<details>').Count) |
             Should -Be ([regex]::Matches($report, '</details>').Count)
+    }
+
+    It 'ignores a marker quoted in assistant prose before the standalone report marker' {
+        $content = @'
+The report could not be written. Per the fallback rule ("return the report beginning with
+`<!-- Tests Failure -->`"), here is the complete report:
+
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Review</summary>
+Evidence
+</details>
+'@
+
+        $body = New-TestFailureReviewBody `
+            -PRNumber 1 `
+            -Repository 'dotnet/maui' `
+            -ReportContent $content `
+            -ContextJsonPath 'unused.json'
+
+        $body | Should -Not -Match 'fallback rule|here is the complete report'
+        $body | Should -Match '^<!-- Tests Failure \(local\) -->'
+        ([regex]::Matches($body, '<!-- Tests Failure \(local\) -->').Count) | Should -Be 1
+    }
+
+    It 'continues past a standalone marker in an earlier fenced example' {
+        $content = @'
+The required output shape is:
+
+```markdown
+<!-- Tests Failure -->
+Example only.
+```
+
+The actual report follows.
+
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Actual review</summary>
+Actual evidence
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match 'Actual evidence'
+        $report | Should -Not -Match 'Example only|actual report follows'
+    }
+
+    It 'does not let an earlier unfenced example marker borrow the later report structure' {
+        $content = @'
+<!-- Tests Failure -->
+Example only.
+
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Actual review</summary>
+Actual evidence
+</details>
+'@
+
+        $body = New-TestFailureReviewBody `
+            -PRNumber 1 `
+            -Repository 'dotnet/maui' `
+            -ReportContent $content `
+            -ContextJsonPath 'unused.json'
+
+        $body | Should -Not -Match 'Example only'
+        $body | Should -Match 'Actual evidence'
+        ([regex]::Matches($body, '<!-- Tests Failure \(local\) -->').Count) | Should -Be 1
+    }
+
+    It 'prefers a standalone marker over an earlier explanatory report heading' {
+        $content = @'
+## Tests Failure Analysis
+
+This heading only explains the output that follows.
+
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Actual review</summary>
+Actual evidence
+</details>
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Match '^<!-- Tests Failure -->'
+        $report | Should -Match 'Actual evidence'
+        $report | Should -Not -Match 'only explains'
     }
 
     It 'preserves code fences inside an unfenced report and trims trailing prose' {

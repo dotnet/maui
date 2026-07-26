@@ -232,28 +232,13 @@ function Get-MarkdownFenceState {
     }
 }
 
-function Get-EmbeddedTestFailureReport {
-    param([string]$Content)
+function Get-EmbeddedTestFailureReportCandidate {
+    param(
+        [string]$Content,
+        [System.Text.RegularExpressions.Match]$AnchorMatch
+    )
 
-    if ([string]::IsNullOrWhiteSpace($Content)) {
-        return $null
-    }
-
-    $startIndex = -1
-    foreach ($anchor in @(
-            "<!-- Tests Failure (local) -->",
-            "<!-- Tests Failure -->",
-            "## Tests Failure Analysis"
-        )) {
-        $candidateIndex = $Content.IndexOf($anchor, [StringComparison]::Ordinal)
-        if ($candidateIndex -ge 0 -and ($startIndex -lt 0 -or $candidateIndex -lt $startIndex)) {
-            $startIndex = $candidateIndex
-        }
-    }
-    if ($startIndex -lt 0) {
-        return $null
-    }
-
+    $startIndex = $AnchorMatch.Groups['anchor'].Index
     $prefix = $Content.Substring(0, $startIndex)
     $report = $Content.Substring($startIndex)
     $outerFence = Get-MarkdownFenceState -Text $prefix
@@ -337,6 +322,31 @@ function Get-EmbeddedTestFailureReport {
     }
 
     return $completeReport.Trim()
+}
+
+function Get-EmbeddedTestFailureReport {
+    param([string]$Content)
+
+    if ([string]::IsNullOrWhiteSpace($Content)) {
+        return $null
+    }
+
+    foreach ($anchorPattern in @(
+            '(?m)^(?<anchor><!-- Tests Failure \(local\) -->|<!-- Tests Failure -->)[ \t]*\r?$',
+            '(?m)^(?<anchor>## Tests Failure Analysis)[ \t]*\r?$'
+        )) {
+        $anchorMatches = [regex]::Matches($Content, $anchorPattern)
+        for ($index = $anchorMatches.Count - 1; $index -ge 0; $index--) {
+            $report = Get-EmbeddedTestFailureReportCandidate `
+                -Content $Content `
+                -AnchorMatch $anchorMatches[$index]
+            if (-not [string]::IsNullOrWhiteSpace($report)) {
+                return $report
+            }
+        }
+    }
+
+    return $null
 }
 
 function Escape-Html {
