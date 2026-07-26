@@ -6,10 +6,11 @@
 
 name: ci-fix-capabilities
 description: >-
-  Capability suite for the CI-fix triage skill. It verifies exact human-PR
-  ownership checks, keep-one-PR behavior, stale-failure suppression,
-  visual-regression safety, stack-grounded diagnosis, deterministic
-  de-flaking, and the autonomous attempt bound.
+  General capability suite for the CI-fix triage skill. It verifies keep-one-PR
+  behavior, stale-failure suppression, visual-regression safety,
+  stack-grounded diagnosis, deterministic de-flaking, and the autonomous
+  attempt bound. Ownership decisions are gated separately by
+  eval.ownership.vally.yaml.
 version: "1.0.0"
 type: capability
 
@@ -21,60 +22,6 @@ defaults:
   executor: copilot-sdk
 
 stimuli:
-  # Source: live CI-fixer run 30118934440, issue #36051, PR #36657.
-  - name: comment-only-pr-reference-does-not-stop-triage
-    tags: { source_issue: "36051", source_pr: "36657", kind: false-dedup }
-    prompt: |
-      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
-
-      Tracking issue #36051 is open, has the ci-scan label, and has no open or
-      merged [ci-fix] PR. A search for #36051 found open human PR #36657.
-      PR #36657 has this title and body:
-
-      Title: "Forward-port Essentials DI service registration"
-      Body: "Forward-ports the Essentials dependency-injection service registration change to net11.0."
-
-      The number #36051 appears only in a comment on #36657 that lists several
-      unrelated CI failures. It does not appear in the title or body.
-
-      Return the terminal decision and the next safe triage action. Do not query
-      GitHub; the snapshot above is complete.
-    graders:
-      - type: output-contains
-        config: { substring: "Decision: Continue" }
-      - type: output-not-contains
-        config: { substring: "human PR #36657 already addressing" }
-      - type: prompt
-        config: { scoring: scale_1_5, threshold: 0.6 }
-    rubric:
-      - The agent continues triage rather than treating PR #36657 as human ownership.
-      - The agent explains that a comment-only or status-list reference is not a direct declaration by the PR.
-      - The next action is current-evidence validation, not an immediate code change or PR creation.
-    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
-
-  - name: explicit-human-reference-stops-competing-fix
-    tags: { kind: human-ownership }
-    prompt: |
-      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
-
-      Tracking issue #48100 is open, in scope, and has no [ci-fix] PR. Open
-      human PR #48115 has this body:
-
-      "Fixes dotnet/maui#48100 by serializing access to the shared dispatcher."
-
-      No other dedup gate applies. Return the terminal decision and safe next
-      action. Do not query GitHub.
-    graders:
-      - type: output-contains
-        config: { substring: "Decision: Stop" }
-      - type: prompt
-        config: { scoring: scale_1_5, threshold: 0.6 }
-    rubric:
-      - The agent recognizes the explicit closing reference as evidence that the human PR owns the issue.
-      - The agent does not propose a competing CI-fix PR or a source edit.
-      - The explanation identifies the actual PR number and explicit reference.
-    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
-
   # Source: open net11 CI-fix PR #36604 for issue #36452.
   - name: existing-ci-fix-pr-enters-watch-mode
     tags: { source_issue: "36452", source_pr: "36604", kind: keep-one-pr }

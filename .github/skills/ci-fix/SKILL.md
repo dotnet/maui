@@ -33,8 +33,9 @@ inspect, not a decision by itself.
    human closing the PR is a stop signal for the keep-one-PR loop.
 4. An open human PR is a **Stop** case only when its own title or body explicitly
    declares that it addresses the tracking issue. Accept a `Refs:` declaration or
-   a closing/reference keyword such as `Fixes`, `Closes`, `Resolves`, or `Refs`
-   followed by the issue reference.
+   a closing/reference keyword such as `Fix`, `Fixes`, `Fixed`, `Close`,
+   `Closes`, `Closed`, `Resolve`, `Resolves`, or `Resolved` followed by the
+   issue reference.
 
 GitHub search normally includes comments and incidental status text. Do not
 treat a raw issue number in a comment, check summary, commit message, diff, or
