@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -11,7 +10,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTitle(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.PlaceholderText = picker.Title ?? string.Empty;
-			nativeComboBox.UpdatePlaceholderCharacterSpacing();
+			nativeComboBox.ApplyCharacterSpacingWhenLoaded();
 		}
 
 		public static void UpdateTitleColor(this ComboBox nativeComboBox, IPicker picker)
@@ -20,6 +19,8 @@ namespace Microsoft.Maui.Platform
 				nativeComboBox.ClearValue(ComboBox.PlaceholderForegroundProperty);
 			else
 				nativeComboBox.PlaceholderForeground = picker.TitleColor.ToPlatform();
+
+			nativeComboBox.RefreshThemeResources();
 		}
 
 		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
@@ -80,22 +81,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this ComboBox nativeComboBox, IPicker picker)
 		{
-			var characterSpacing = picker.CharacterSpacing.ToEm();
-			nativeComboBox.CharacterSpacing = characterSpacing;
-
-			// Apply directly to the selected item's TextBlock so the closed picker reflects spacing.
-			// If the control isn't loaded yet, defer until Loaded so the visual tree exists.
-			if (nativeComboBox.IsLoaded)
-			{
-				ApplyCharacterSpacingToSelectedItem(nativeComboBox, characterSpacing);
-			}
-			else
-			{
-				nativeComboBox.OnLoaded(() =>
-					ApplyCharacterSpacingToSelectedItem(nativeComboBox, nativeComboBox.CharacterSpacing));
-			}
-
-			nativeComboBox.UpdatePlaceholderCharacterSpacing();
+			nativeComboBox.CharacterSpacing = picker.CharacterSpacing.ToEm();
+			nativeComboBox.ApplyCharacterSpacingWhenLoaded();
 		}
 
 		internal static void ApplyCharacterSpacingToSelectedItem(this ComboBox nativeComboBox, int characterSpacing)
@@ -109,25 +96,29 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static void UpdatePlaceholderCharacterSpacing(this ComboBox nativeComboBox)
+		static void ApplyCharacterSpacingWhenLoaded(this ComboBox nativeComboBox)
 		{
 			if (nativeComboBox.IsLoaded)
 			{
-				ApplyPlaceholderCharacterSpacing(nativeComboBox);
+				ApplyCharacterSpacingToTemplateParts(nativeComboBox);
 			}
 			else
 			{
-				nativeComboBox.OnLoaded(() => ApplyPlaceholderCharacterSpacing(nativeComboBox));
+				nativeComboBox.OnLoaded(() => ApplyCharacterSpacingToTemplateParts(nativeComboBox));
 			}
 		}
 
-		static void ApplyPlaceholderCharacterSpacing(ComboBox nativeComboBox)
+		static void ApplyCharacterSpacingToTemplateParts(ComboBox nativeComboBox)
 		{
+			var characterSpacing = nativeComboBox.CharacterSpacing;
+
+			nativeComboBox.ApplyCharacterSpacingToSelectedItem(characterSpacing);
+
 			var placeholderTextBlock = nativeComboBox.GetDescendantByName<TextBlock>("PlaceholderTextBlock");
 
 			if (placeholderTextBlock is not null)
 			{
-				placeholderTextBlock.CharacterSpacing = nativeComboBox.CharacterSpacing;
+				placeholderTextBlock.CharacterSpacing = characterSpacing;
 				placeholderTextBlock.RefreshThemeResources();
 			}
 		}
