@@ -1276,6 +1276,19 @@ function Get-MilestoneHygieneChecks {
         $currentTrainTitle = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal $cycleNum
         $nextTrainTitle    = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal ($cycleNum + 1)
         if (-not $currentTrainTitle) {
+            if ($cycleNum -lt 1) {
+                # Nonsensical ordinal (e.g. a `release/<major>.0.1xx-preview0`
+                # branch — the `\d+` capture syntactically accepts 0). The
+                # pre-release train has no member below 1, but we must NOT
+                # silently drop the current-cycle signal: this lane's contract
+                # is that it never silently skips a misconfiguration (SKILL.md),
+                # unlike the legitimate past-rc2 case just below where no
+                # milestone exists by design. Surface UNKNOWN so the bad branch
+                # name is visible instead of masquerading as "all clear".
+                return @(New-ReadinessCheck -Area "Milestone hygiene" -Status 'UNKNOWN' `
+                    -Details "Unrecognized pre-release ordinal ``$cycleNum`` derived from branch ``$branchToParse`` — cannot map it to a preview/rc milestone title." `
+                    -NextAction "Verify the branch follows the ``release/<major>.0.<feature>xx-preview<n>`` convention with ``n >= 1``.")
+            }
             # Past rc2 — the pre-release train is over and GA milestones don't
             # follow this naming convention. Skip silently rather than guess.
             return @()
@@ -1339,6 +1352,10 @@ function Get-MilestoneHygieneChecks {
     # triggering BLOCKED.
     # Also excluded:
     #   - the current cycle (still being prepped)
+    #   - the next cycle (the roll-forward target Check 2 may have just told the
+    #     captain to create; a slipped-but-upcoming rc1 milestone whose due_on
+    #     passed is NOT "already-shipped debt" — it's the survey's own next
+    #     target, and flagging it would contradict Check 2's "create it" advice)
     #   - "Backlog" (intentional long-running)
     #   - ".NET N Planning" (intentional long-running planning ms)
     #   - milestones without due_on (caller has no schedule, no signal)
@@ -1358,6 +1375,7 @@ function Get-MilestoneHygieneChecks {
         $_.due_on -and
         ([datetime]$_.due_on).ToUniversalTime() -lt $graceCutoff -and
         ($expectedTitlesCurrent -notcontains $_.title) -and
+        ($expectedTitlesNext -notcontains $_.title) -and
         ($_.title -match $cycleFilter)
     } | Sort-Object { [datetime]$_.due_on })
 
