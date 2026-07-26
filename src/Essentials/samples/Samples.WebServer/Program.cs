@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Text.Json;
 using Essentials.Samples.WebServer;
 using Essentials.Samples.WebServer.Components;
 using Essentials.Samples.WebServer.Components.Account;
@@ -28,6 +30,51 @@ authBuilder.AddIdentityCookies();
 // requires the bearer token services to be registered.
 authBuilder.AddBearerToken(IdentityConstants.BearerScheme);
 
+// Flow 1 (BFF) external OAuth: register a self-contained "Development Test Login" provider so the
+// server-brokered external-login flow works end to end WITHOUT real Google keys. It uses the generic
+// OAuth handler pointed at this same app's /dev-oauth/* mock endpoints (see ExternalAuthEndpoints).
+// SaveTokens=true keeps the provider access token SERVER-SIDE so /me/external can relay provider data —
+// the native client never sees the provider token (that is the whole point of BFF).
+// To use real Google instead: add the Microsoft.AspNetCore.Authentication.Google package and call
+// authBuilder.AddGoogle(o => { o.ClientId = ...; o.ClientSecret = ...; o.SaveTokens = true; }).
+var externalDomain = builder.Configuration["Passkeys:ServerDomain"];
+var externalPublicBase = string.IsNullOrEmpty(externalDomain) ? "http://localhost:5177" : $"https://{externalDomain}";
+authBuilder.AddOAuth(ExternalAuthEndpoints.DevProvider, "Development Test Login", options =>
+{
+    options.ClientId = "dev-client";
+    options.ClientSecret = "dev-secret";
+    options.CallbackPath = "/signin-dev";
+    // The browser hits the authorization endpoint, so it must be the public (tunnel) host. The token and
+    // userinfo calls are server-to-server, so they use localhost — robust and independent of tunnel DNS
+    // (the host may not even resolve the tunnel domain; only the device's browser needs to).
+    options.AuthorizationEndpoint = $"{externalPublicBase}/dev-oauth/authorize";
+    options.TokenEndpoint = "http://localhost:5177/dev-oauth/token";
+    options.UserInformationEndpoint = "http://localhost:5177/dev-oauth/userinfo";
+    options.SaveTokens = true;
+    options.Scope.Add("email");
+    options.Scope.Add("profile");
+    options.Events.OnCreatingTicket = async context =>
+    {
+        // The generic OAuth handler doesn't call the userinfo endpoint for us; fetch it and add claims.
+        using var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+        request.Headers.Authorization = new("Bearer", context.AccessToken);
+        using var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
+        response.EnsureSuccessStatusCode();
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var root = json.RootElement;
+
+        void AddClaim(string type, string property)
+        {
+            if (root.TryGetProperty(property, out var value) && value.GetString() is { Length: > 0 } text)
+                context.Identity?.AddClaim(new Claim(type, text));
+        }
+
+        AddClaim(ClaimTypes.NameIdentifier, "sub");
+        AddClaim(ClaimTypes.Email, "email");
+        AddClaim(ClaimTypes.Name, "name");
+    };
+});
+
 // The Identity application cookie, by default, answers an unauthenticated request to an [Authorize]
 // endpoint with a 302 redirect to the HTML login page. That is meaningless to the native MAUI client,
 // which speaks JSON over HttpClient. Translate the challenge into a clean 401 for the native API paths
@@ -38,7 +85,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Events.OnRedirectToLogin = context =>
     {
-        if (context.Request.Path.StartsWithSegments("/passkeys", StringComparison.Ordinal))
+        if (context.Request.Path.StartsWithSegments("/passkeys", StringComparison.Ordinal) ||
+            context.Request.Path.StartsWithSegments("/me", StringComparison.Ordinal))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return Task.CompletedTask;
@@ -67,6 +115,9 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+// Used by /me/external to call the external provider's userinfo endpoint (the BFF relay).
+builder.Services.AddHttpClient();
 
 // Passkey (WebAuthn) relying-party configuration. ServerDomain is the RP ID and MUST match the
 // public host the apps talk to (e.g. the dev tunnel domain). ValidateOrigin must additionally
@@ -145,6 +196,9 @@ app.MapPost("/account/logout", async (SignInManager<ApplicationUser> signInManag
 
 // Native-app-facing passkey ceremony API (used by the .NET MAUI Essentials sample).
 app.MapNativePasskeyApi();
+
+// Flow 1 (BFF) external OAuth: mock provider + native server-brokered sign-in + the /me/external relay.
+app.MapExternalAuthApi();
 
 // Platform domain-association documents (Android assetlinks.json / Apple AASA).
 app.MapDomainAssociation(app.Configuration);

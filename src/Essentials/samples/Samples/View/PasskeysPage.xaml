@@ -34,6 +34,12 @@
                     <Button Text="Sign in with a passkey" Command="{Binding LoginCommand}" IsEnabled="{Binding IsNotBusy}" />
                     <Label Text="Username-less: no email needed. Your device lists the passkeys you've saved and you just pick one — the passkey carries the identity."
                            FontSize="12" TextColor="Gray" />
+
+                    <Label Text="— or —" HorizontalOptions="Center" TextColor="Gray" Margin="0,4" />
+
+                    <Button Text="Sign in with an external account (OAuth)" Command="{Binding ExternalSignInCommand}" IsEnabled="{Binding IsNotBusy}" />
+                    <Label Text="Server-brokered (BFF): the server runs the OAuth exchange and creates a local account — your app only ever gets the server's session, never the provider's token. Uses a built-in 'Development Test Login' stand-in until real provider keys are configured."
+                           FontSize="12" TextColor="Gray" />
                 </VerticalStackLayout>
 
                 <!-- Signed IN: account summary + passkey management. -->
@@ -60,6 +66,7 @@
                     </VerticalStackLayout>
 
                     <Button Text="{Binding CreatePasskeyButtonText}" Command="{Binding RegisterCommand}" IsEnabled="{Binding IsNotBusy}" />
+                    <Button Text="Show my external profile (server relay)" Command="{Binding GetExternalProfileCommand}" IsEnabled="{Binding IsNotBusy}" />
                     <Button Text="Sign out" Command="{Binding SignOutCommand}" IsEnabled="{Binding IsNotBusy}" />
                 </VerticalStackLayout>
 
