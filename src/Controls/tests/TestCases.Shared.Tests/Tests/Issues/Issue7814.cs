@@ -99,7 +99,7 @@ public class Issue7814 : _IssuesUITest
 	int GetOffset(string automationId)
 	{
 		var text = App.FindElement(automationId).GetText();
-		var separatorIndex = text?.LastIndexOf(':') ?? -1;
+		var separatorIndex = text?.LastIndexOf(':', StringComparison.Ordinal) ?? -1;
 
 		Assert.That(separatorIndex, Is.GreaterThanOrEqualTo(0), $"Offset label {automationId} should contain a ':' separator.");
 

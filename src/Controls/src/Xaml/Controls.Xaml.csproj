@@ -5,6 +5,12 @@
 		<TargetFrameworks Condition="'$(IncludePreviousTfms)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiPreviousPlatforms)</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
+		<!--
+			Microsoft.Maui.Controls.Xaml is AOT-compatible (see <IsAotCompatible> below) but is currently
+			kept opted-out of trimming until the Windows packaged Controls.DeviceTests hang seen on
+			https://github.com/dotnet/maui/pull/34573 is rooted out. Tracking issue: enable trimming for
+			Microsoft.Maui.Controls.Xaml.
+		-->
 		<IsTrimmable>false</IsTrimmable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
 		<NoWarn>$(NoWarn);CA2200;RS0041</NoWarn>

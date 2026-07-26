@@ -10,7 +10,7 @@
 			InitializeComponent();
 		}
 
-		public async void OnPushModalClicked(object sender, EventArgs args)
+		public async void OnPushModalClicked(object? sender, EventArgs args)
 		{
 			await Navigation.PushModalAsync(new ContentPage()
 			{

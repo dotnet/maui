@@ -13,7 +13,11 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<!-- ILRepack this assembly and add a strong name and version -->
 		<ILRepackBeforePack>true</ILRepackBeforePack>
+		<!-- MIBC optimization data for R2R -->
+		<_MibcOptimizationDataDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'mibc'))</_MibcOptimizationDataDir>
 	</PropertyGroup>
+
+	<Import Project="$(MauiRootDirectory)eng\optimizationData.targets" />
 
 	<PropertyGroup>
 		<!-- NuGet package information -->
@@ -34,6 +38,7 @@
 		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj" />
 		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\BindingSourceGen\Controls.BindingSourceGen.csproj" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\..\..\Core\src\HybridWebViewSourceGen\Core.HybridWebViewSourceGen.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -50,6 +55,8 @@
 		<None Include="$(ArtifactsBinDir)Controls.SourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Core.HybridWebViewSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Core.HybridWebViewSourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Core.HybridWebViewSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Core.HybridWebViewSourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Remove="$(OutputPath)*.xml" />
 		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
 	</ItemGroup>
@@ -72,8 +79,10 @@
 			<_CopyItems Include="nuget\buildTransitive\netstandard2.0\**" />
 			<_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll;$(TargetDir)Microsoft.Build.*" />
 			<_CopyItems Include="$(TargetDir)*.pdb" Exclude="$(TargetDir)System.*.pdb;$(TargetDir)Microsoft.Build.*" />
+			<_MibcCopyItems Include="$(_MibcOptimizationDataDir)**\*.mibc" Condition="'$(_MibcOptimizationDataDir)' != '' and Exists('$(_MibcOptimizationDataDir)')" />
 		</ItemGroup>
 		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
+		<Copy SourceFiles="@(_MibcCopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)mibc\%(RecursiveDir)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" Condition="'@(_MibcCopyItems)' != ''" />
 	</Target>
 
 	<ItemGroup>

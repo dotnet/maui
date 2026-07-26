@@ -69,14 +69,12 @@ static class GeneratorHelpers
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
-		if (assemblyCaches.AllowImplicitXmlns)
-		{
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-		}
+		nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+		foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
+			nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
 		using var reader = XmlReader.Create(new StringReader(xaml),
-											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+											new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
 											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
 		{
 			while (reader.Read())
@@ -161,14 +159,12 @@ static class GeneratorHelpers
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
-		if (assemblyCaches.AllowImplicitXmlns)
-		{
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-		}
+		nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+		foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
+			nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
 		using var reader = XmlReader.Create(new StringReader(text.ToString()),
-											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+											new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
 											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
 
 
@@ -200,10 +196,6 @@ static class GeneratorHelpers
 		INamedTypeSymbol? xmlnsPrefixAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsPrefixAttribute).FullName)
 			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
 
-		// [assembly: AllowImplicitXmlnsDeclaration]
-		INamedTypeSymbol? allowImplicitXmlnsAttribute = compilation.GetTypesByMetadataName(typeof(Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName)
-			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
-
 		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
 			return AssemblyAttributes.Empty;
 
@@ -211,10 +203,6 @@ static class GeneratorHelpers
 		var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 		var internalsVisible = new List<IAssemblySymbol>();
 		var xmlnsPrefixes = new List<XmlnsPrefixAttribute>();
-		var allowImplicitXmlns = compilation.Assembly.GetAttributes()
-			.Any(a =>
-				   SymbolEqualityComparer.Default.Equals(a.AttributeClass, allowImplicitXmlnsAttribute)
-				&& (a.ConstructorArguments.Length == 0 || a.ConstructorArguments[0].Value is bool b && b));
 		internalsVisible.Add(compilation.Assembly);
 
 		IList<IAssemblySymbol> assemblies = [compilation.Assembly];
@@ -294,7 +282,7 @@ static class GeneratorHelpers
 			}
 		}
 
-		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns, allowImplicitXmlns);
+		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns);
 	}
 
 	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)

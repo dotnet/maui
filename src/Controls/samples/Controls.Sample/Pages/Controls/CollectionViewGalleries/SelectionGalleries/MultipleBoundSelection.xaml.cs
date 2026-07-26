@@ -17,14 +17,14 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 			InitializeComponent();
 		}
 
-		private void ClearAndAdd(object sender, EventArgs e)
+		private void ClearAndAdd(object? sender, EventArgs e)
 		{
 			_vm.SelectedItems!.Clear();
 			_vm.SelectedItems!.Add(_vm.Items![1]);
 			_vm.SelectedItems!.Add(_vm.Items![2]);
 		}
 
-		private void ResetClicked(object sender, EventArgs e)
+		private void ResetClicked(object? sender, EventArgs e)
 		{
 			_vm.SelectedItems = new ObservableCollection<object>
 			{
@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 			};
 		}
 
-		private void DirectUpdateClicked(object sender, EventArgs e)
+		private void DirectUpdateClicked(object? sender, EventArgs e)
 		{
 			CollectionView.SelectedItems.Clear();
 			CollectionView.SelectedItems.Add(_vm.Items![0]);
