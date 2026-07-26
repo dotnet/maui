@@ -139,6 +139,10 @@ param(
     # recently-shipped SR, whose tracker refreshes until a human closes it.
     # Mutually exclusive with -Candidate.
     [switch]$Shipped,
+    # Optional immutable published tag override for -Shipped mode.
+    # Prevents a live branch hotfix bump from moving the shipped content anchor
+    # before the newer hotfix tag is actually published.
+    [string]$ShippedTag,
     # When set in -Candidate mode, model the dotnet/maui workflow where, after
     # cutting SRn+1 from main, the prior SR (-SrBranch) is merged in. The
     # candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits.
@@ -613,13 +617,75 @@ function Test-GitRefResolves {
     return [bool](Invoke-Git "rev-parse --verify --quiet $Ref`^{commit}")
 }
 
+function Get-PublishedStableTags {
+    param([string]$Repo = 'dotnet/maui')
+
+    $raw = Invoke-Gh @(
+        'api', "repos/$Repo/releases", '--paginate',
+        '--jq', '.[] | select(.draft == false and .published_at != null) | .tag_name'
+    ) -Quiet
+    if ($null -eq $raw) { return $null }
+    $values = @()
+    foreach ($item in @($raw)) {
+        foreach ($line in ([string]$item -split '\r?\n')) {
+            $tag = $line.Trim()
+            if ($tag -match '^\d+\.\d+\.\d+$') { $values += $tag }
+        }
+    }
+    return @($values | Sort-Object -Unique)
+}
+
+function Select-LatestPublishedTagForSr {
+    param(
+        [string]$SrBranch,
+        [string[]]$PublishedTags
+    )
+
+    $match = [regex]::Match($SrBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
+    if (-not $match.Success) { return $null }
+    $major = [int]$match.Groups[1].Value
+    $minor = [int]$match.Groups[2].Value
+    $patchFloor = [int]$match.Groups[3].Value * 10
+    $matches = @()
+    foreach ($tag in @($PublishedTags)) {
+        [version]$parsed = $null
+        if (-not [version]::TryParse([string]$tag, [ref]$parsed)) { continue }
+        if ($parsed.Major -eq $major -and $parsed.Minor -eq $minor -and
+            $parsed.Build -ge $patchFloor -and $parsed.Build -lt ($patchFloor + 10)) {
+            $matches += [PSCustomObject]@{ Name = [string]$tag; Version = $parsed }
+        }
+    }
+    $latest = @($matches | Sort-Object Version -Descending | Select-Object -First 1)
+    if ($latest.Count -gt 0) { return [string]$latest[0].Name }
+    return $null
+}
+
+function Test-StableTagMatchesSr {
+    param(
+        [string]$Tag,
+        [string]$SrBranch
+    )
+
+    [version]$tagVersion = $null
+    if (-not [version]::TryParse($Tag, [ref]$tagVersion)) { return $false }
+    $match = [regex]::Match($SrBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
+    if (-not $match.Success) { return $false }
+    $patchFloor = [int]$match.Groups[3].Value * 10
+    return $tagVersion.Major -eq [int]$match.Groups[1].Value -and
+        $tagVersion.Minor -eq [int]$match.Groups[2].Value -and
+        $tagVersion.Build -ge $patchFloor -and $tagVersion.Build -lt ($patchFloor + 10)
+}
+
 function Get-PreviousStableTag {
-    param([string]$Version)
+    param(
+        [string]$Version,
+        [string[]]$PublishedTags
+    )
 
     [version]$current = $null
     if (-not [version]::TryParse($Version, [ref]$current)) { return $null }
     $parsedTags = @()
-    foreach ($tag in @(Invoke-Git 'tag --list')) {
+    foreach ($tag in @($PublishedTags)) {
         if ($tag -notmatch '^\d+\.\d+\.\d+$') { continue }
         [version]$parsedTag = $null
         if (-not [version]::TryParse([string]$tag, [ref]$parsedTag)) { continue }
@@ -633,12 +699,25 @@ function Get-PreviousStableTag {
 }
 
 function Resolve-ShippedContentsRefs {
-    param([string]$Version)
+    param(
+        [string]$Version,
+        [string]$Repo = 'dotnet/maui',
+        [string[]]$PublishedTags
+    )
 
     if (-not (Test-GitRefResolves -Ref $Version)) {
         throw "Stable tag '$Version' is published but does not resolve locally. Rerun without -NoFetch (or fetch refs/tags/$Version) before generating a shipped tracker."
     }
-    $previousTag = Get-PreviousStableTag -Version $Version
+    if ($null -eq $PublishedTags) {
+        $PublishedTags = Get-PublishedStableTags -Repo $Repo
+    }
+    if ($null -eq $PublishedTags -or @($PublishedTags).Count -eq 0) {
+        throw "Cannot query published stable tags to bound shipped contents for '$Version'."
+    }
+    if (@($PublishedTags) -notcontains $Version) {
+        throw "Stable tag '$Version' is not present in the published GitHub Releases set."
+    }
+    $previousTag = Get-PreviousStableTag -Version $Version -PublishedTags $PublishedTags
     if (-not $previousTag -or -not (Test-GitRefResolves -Ref $previousTag)) {
         throw "Cannot resolve a prior stable tag to bound shipped contents for '$Version'. Fetch stable tags before generating a shipped tracker."
     }
@@ -1077,6 +1156,16 @@ function Get-ReleaseShipChecks {
         $checks += New-ReadinessCheck -Area $bugArea -Status 'CLEANUP' `
             -Details "No entry matching ``$major.$minor.[$expectedPatchPrefix..$($expectedPatchPrefix + 9)]`` found in version-with-bug dropdown on ``$templateRef``. Top entries: $sample." `
             -NextAction "Add the SR$targetSr version (e.g. ``$major.$minor.$expectedPatchPrefix``) to .github/ISSUE_TEMPLATE/bug-report.yml — can land before or shortly after ship."
+    }
+
+    if ($isShipped) {
+        $liveVersion = [string](Get-MetadataValue -Container $Ctx -Name 'liveBranchVersion')
+        $publishedVersion = [string](Get-MetadataValue -Container $Ctx -Name 'shippedTagVersion')
+        if ($liveVersion -and $publishedVersion -and $liveVersion -ne $publishedVersion) {
+            $checks += New-ReadinessCheck -Area "Unpublished hotfix branch state" -Status 'WATCH' `
+                -Details "The live SR branch reports ``$liveVersion``, while the latest published tag for this SR cycle is ``$publishedVersion``. The shipped tracker remains anchored to the published tag until a newer stable tag exists." `
+                -NextAction "Treat ``$liveVersion`` as an in-progress hotfix candidate. Complete build/sign/validation and publish its stable tag before advancing the shipped-content anchor."
+        }
     }
 
     return $checks
@@ -2168,12 +2257,13 @@ function Test-IsLineageReferenceNegated {
     $lead = '(?:was|is|were|are|did|should|must|will|would|can|could)'
     $contraction = "(?:wasn't|isn't|weren't|aren't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't)"
     $effect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied)|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
-    $negatedEffect = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:(?:$lead\s+(?:\w+\s+){0,3}?(?:not|never))|(?:$contraction))(?:\s+\w+){0,3}?\s+(?:be\s+)?$effect\b"
-    $directNegatedEffect = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:not|never)\s+(?:\w+\s+){0,3}?$effect\b"
-    $rollback = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:$lead\s+)?(?:\w+\s+){0,3}?revert(?:s|ed|ing)?\b"
-    $omitted = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:$lead\s+)?(?:\w+\s+){0,3}?(?:omit(?:ted)?|exclude(?:d)?)\b"
-    $noLongerEffect = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:$lead\s+)?no\s+longer\s+$effect\b"
-    $rolledBack = "(?i)^\s*[\(\[]?\s*(?:(?:which|that)\s+)?(?:has|had|was|is)?\s*(?:been\s+)?rolled\s+back\b"
+    $prefix = '\s*(?:[,\-–—.!?;]\s*)*[\(\[]?\s*(?:(?:which|that|this|it|though|but|although|yet|however)\s*[,;:]?\s+){0,3}'
+    $negatedEffect = "(?i)^$prefix(?:(?:$lead\s+(?:\w+\s+){0,3}?(?:not|never))|(?:$contraction))(?:\s+\w+){0,3}?\s+(?:be\s+)?$effect\b"
+    $directNegatedEffect = "(?i)^$prefix(?:not|never)\s+(?:\w+\s+){0,3}?$effect\b"
+    $rollback = "(?i)^$prefix(?:\w+\s+){0,8}?revert(?:s|ed|ing)?\b"
+    $omitted = "(?i)^$prefix(?:\w+\s+){0,8}?(?:omit(?:ted)?|exclude(?:d)?)\b"
+    $noLongerEffect = "(?i)^$prefix(?:\w+\s+){0,3}?no\s+longer\s+$effect\b"
+    $rolledBack = "(?i)^$prefix(?:\w+\s+){0,8}?rolled\s+back\b"
     return ($suffix -match $negatedEffect) -or ($suffix -match $directNegatedEffect) -or
         ($suffix -match $rollback) -or ($suffix -match $omitted) -or
         ($suffix -match $noLongerEffect) -or ($suffix -match $rolledBack)
@@ -2196,8 +2286,12 @@ function Get-ExplicitBackportSourceNumbers {
     # binding to an earlier lineage verb.
     $clauses = @([regex]::Split($Text, '(?:[!?;](?:\s+|$)|\.(?=\s|$)(?:\s+|$)|\r?\n+)'))
     $processedVerbs = 0
+    $searchOffset = 0
     foreach ($clause in $clauses) {
         if ([string]::IsNullOrWhiteSpace($clause)) { continue }
+        $clauseOffset = $Text.IndexOf($clause, $searchOffset, [System.StringComparison]::Ordinal)
+        if ($clauseOffset -lt 0) { $clauseOffset = $searchOffset }
+        $searchOffset = $clauseOffset + $clause.Length
         $verbs = [regex]::Matches(
             $clause,
             '(?im)\b(?:backport(?:s|ed|ing)?|cherry[-\s]pick(?:ed|ing)?(?:\s+from)?)\b')
@@ -2225,8 +2319,24 @@ function Get-ExplicitBackportSourceNumbers {
                 if (Test-IsLineageVerbNegated -Prefix $prefix -Between $between) {
                     continue
                 }
-                $suffixStart = $reference.Index + $reference.Length
-                $suffix = $window.Substring($suffixStart)
+                $absoluteReferenceEnd = $clauseOffset + $clauseStart + $reference.Index + $reference.Length
+                $suffixLength = [Math]::Min(320, $Text.Length - $absoluteReferenceEnd)
+                $suffix = $Text.Substring($absoluteReferenceEnd, $suffixLength)
+                # Negation after a later PR reference belongs to that later
+                # list item, not the current one.
+                while ($true) {
+                    $nextReference = [regex]::Match($suffix, '(?i)(?:pull/|#)(?<number>\d+)(?![\p{L}\p{N}_])')
+                    if (-not $nextReference.Success) { break }
+                    $nextNumber = ConvertTo-PrNumber -Value $nextReference.Groups['number'].Value
+                    if ($nextNumber -eq $number) {
+                        # A repeated mention of the same PR often introduces its
+                        # non-inclusion reason ("#N, but #N was not included").
+                        $suffix = $suffix.Substring($nextReference.Index + $nextReference.Length)
+                        continue
+                    }
+                    $suffix = $suffix.Substring(0, $nextReference.Index)
+                    break
+                }
                 if (Test-IsLineageReferenceNegated -Suffix $suffix) { continue }
 
                 if ($i -eq 0) {
@@ -5882,10 +5992,10 @@ function Invoke-Main {
     # Shipped mode: prefer the GitHub Release publication time for the report's
     # "shipped on" date. If release metadata is unavailable, use the stable tag's
     # content date as an explicitly labeled conservative display anchor.
-    # The stable tag is Versions.props FullVersion at the current branch tip (including
-    # hotfix patches). Fail-open: no usable date keeps every item as a follow-up.
+    # Use an explicit immutable tag override when supplied; otherwise select
+    # the latest published stable tag in this SR's patch range.
     if ($ctx.mode -eq 'shipped') {
-        $shippedInfo = @{ version = $null; srNumber = 0; major = 0; tagDate = $null; dateSource = $null; tagFound = $false }
+        $shippedInfo = @{ version = $null; liveVersion = $null; srNumber = 0; major = 0; tagDate = $null; dateSource = $null; tagFound = $false }
         $srMatchShip = [regex]::Match($ctx.srBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
         if ($srMatchShip.Success) {
             $shippedInfo.major    = [int]$srMatchShip.Groups[1].Value
@@ -5893,30 +6003,40 @@ function Invoke-Main {
         }
         $vpShipped = Get-VersionsPropsState -Ref $ctx.srRef
         if ($vpShipped) {
-            $shippedInfo.version = $vpShipped.FullVersion
+            $shippedInfo.liveVersion = $vpShipped.FullVersion
+            $ctx['liveBranchVersion'] = $vpShipped.FullVersion
             if (-not $shippedInfo.major) { $shippedInfo.major = [int]$vpShipped.Major }
-            $tagInfo = Get-StableTagInfo -Version $vpShipped.FullVersion -Repo $ctx.repo
-            if ($tagInfo) {
-                $shippedInfo.tagDate = $tagInfo.Date.ToString('o')
-                $shippedInfo.dateSource = $tagInfo.DateSource
-                $shippedInfo.tagFound = $true
-                # The shipped report's release contents are immutable at this
-                # tag. Keep operational/CI checks on the live SR branch, but use
-                # the tag for commit inventory and fix ancestry so post-tag
-                # branch changes cannot make the shipped release look cleaner.
-                $shippedRefs = Resolve-ShippedContentsRefs -Version $vpShipped.FullVersion
-                $ctx['contentsRef'] = $shippedRefs.ContentsRef
-                # Never subtract mutable main from immutable shipped contents.
-                # Compare stable tag-to-tag so the inventory cannot shrink after
-                # release when SR commits flow forward to main.
-                $ctx['excludeBranches'] = @($shippedRefs.ExcludeRefs)
-                $ctx['previousStableTag'] = $shippedRefs.PreviousTag
-                $shippedInfo.previousTag = $shippedRefs.PreviousTag
+        }
+        $publishedTags = Get-PublishedStableTags -Repo $ctx.repo
+        if ($null -eq $publishedTags -or @($publishedTags).Count -eq 0) {
+            throw "Cannot query published stable tags for shipped branch '$($ctx.srBranch)'."
+        }
+        $anchorTag = if ($ShippedTag) {
+            if (-not (Test-StableTagMatchesSr -Tag $ShippedTag -SrBranch $ctx.srBranch)) {
+                throw "Explicit shipped tag '$ShippedTag' does not belong to SR branch '$($ctx.srBranch)'."
             }
+            $ShippedTag
+        } else {
+            Select-LatestPublishedTagForSr -SrBranch $ctx.srBranch -PublishedTags $publishedTags
         }
-        if (-not $shippedInfo.tagFound) {
-            throw "Cannot resolve the immutable stable tag for shipped branch '$($ctx.srBranch)'. Rerun with tag access before generating a shipped tracker."
+        if (-not $anchorTag) {
+            throw "No published stable tag was found for shipped branch '$($ctx.srBranch)'."
         }
+        $shippedInfo.version = $anchorTag
+        $ctx['shippedTagVersion'] = $anchorTag
+        $tagInfo = Get-StableTagInfo -Version $anchorTag -Repo $ctx.repo
+        if (-not $tagInfo) {
+            throw "Cannot resolve release metadata for immutable shipped tag '$anchorTag'."
+        }
+        $shippedInfo.tagDate = $tagInfo.Date.ToString('o')
+        $shippedInfo.dateSource = $tagInfo.DateSource
+        $shippedInfo.tagFound = $true
+        $shippedRefs = Resolve-ShippedContentsRefs -Version $anchorTag -Repo $ctx.repo -PublishedTags $publishedTags
+        $ctx['contentsRef'] = $shippedRefs.ContentsRef
+        $ctx['excludeBranches'] = @($shippedRefs.ExcludeRefs)
+        $ctx['previousStableTag'] = $shippedRefs.PreviousTag
+        $shippedInfo.previousTag = $shippedRefs.PreviousTag
+        $shippedInfo.hotfixInProgress = [bool]($shippedInfo.liveVersion -and $shippedInfo.liveVersion -ne $anchorTag)
         $data['shippedInfo'] = $shippedInfo
     }
 

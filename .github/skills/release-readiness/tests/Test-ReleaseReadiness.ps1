@@ -1328,26 +1328,62 @@ try {
         -ExcludeBranches @('origin/main') `
         -Shipped `
         -NoFetch
-    $resolvedShippedRefs = Resolve-ShippedContentsRefs -Version '10.0.90'
+    $publishedFixtureTags = @('0.0.1', '9.0.500', '10.0.0', '10.0.80', '10.0.90', '10.0.999999999999999999')
+    Assert-Eq -Label "shipped tag override: matching SR patch range is accepted" -Expected $true `
+        -Actual (Test-StableTagMatchesSr -Tag '10.0.80' -SrBranch 'release/10.0.1xx-sr8')
+    Assert-Eq -Label "shipped tag override: another SR cycle is rejected" -Expected $false `
+        -Actual (Test-StableTagMatchesSr -Tag '10.0.90' -SrBranch 'release/10.0.1xx-sr8')
+    Assert-Eq -Label "shipped anchor: latest published hotfix in SR range is selected" -Expected '10.0.91' `
+        -Actual (Select-LatestPublishedTagForSr -SrBranch 'release/10.0.1xx-sr9' `
+            -PublishedTags @('10.0.80', '10.0.90', '10.0.91', '10.0.100'))
+    $resolvedShippedRefs = Resolve-ShippedContentsRefs -Version '10.0.90' -PublishedTags $publishedFixtureTags
     Assert-Eq -Label "shipped contents: stable tag resolves locally" -Expected '10.0.90' -Actual $resolvedShippedRefs.ContentsRef
     Assert-Eq -Label "shipped contents: prior immutable stable tag is selected" -Expected '10.0.80' -Actual $resolvedShippedRefs.PreviousTag
-    $firstBandRefs = Resolve-ShippedContentsRefs -Version '10.0.0'
+    $firstBandRefs = Resolve-ShippedContentsRefs -Version '10.0.0' -PublishedTags $publishedFixtureTags
     Assert-Eq -Label "shipped contents: first stable tag in a band uses prior major's latest stable tag" `
         -Expected '9.0.500' -Actual $firstBandRefs.PreviousTag
     $noPriorTagThrew = $false
     try {
-        Resolve-ShippedContentsRefs -Version '0.0.1' | Out-Null
+        Resolve-ShippedContentsRefs -Version '0.0.1' -PublishedTags $publishedFixtureTags | Out-Null
     } catch {
         $noPriorTagThrew = $true
     }
     Assert-Eq -Label "shipped contents: no prior stable floor fails explicitly" -Expected $true -Actual $noPriorTagThrew
     $missingTagThrew = $false
     try {
-        Resolve-ShippedContentsRefs -Version '10.0.999' | Out-Null
+        Resolve-ShippedContentsRefs -Version '10.0.999' -PublishedTags @($publishedFixtureTags + '10.0.999') | Out-Null
     } catch {
         $missingTagThrew = $true
     }
     Assert-Eq -Label "shipped contents: remotely-known but locally-missing tag fails explicitly" -Expected $true -Actual $missingTagThrew
+    $missingPredecessorThrew = $false
+    try {
+        Resolve-ShippedContentsRefs -Version '10.0.80' `
+            -PublishedTags @('10.0.70', '10.0.71', '10.0.80') | Out-Null
+    } catch {
+        $missingPredecessorThrew = $true
+    }
+    Assert-Eq -Label "shipped contents: missing authoritative immediate predecessor fails explicitly" `
+        -Expected $true -Actual $missingPredecessorThrew
+
+    $originalPublishedTagInvokeGh = (Get-Item function:Invoke-Gh).ScriptBlock
+    $script:PublishedTagArgs = @()
+    try {
+        function Invoke-Gh {
+            param([string[]]$GhArgs, [switch]$Quiet)
+            $script:PublishedTagArgs = @($GhArgs)
+            return @('10.0.80', '10.0.90')
+        }
+        $publishedTagProbe = @(Get-PublishedStableTags -Repo 'dotnet/maui')
+        Assert-Eq -Label "published tag query excludes draft/unpublished releases" -Expected $true `
+            -Actual (($script:PublishedTagArgs -join ' ') -match 'draft == false' -and
+                ($script:PublishedTagArgs -join ' ') -match 'published_at != null')
+        Assert-Eq -Label "published tag query returns filtered stable tag names" -Expected '10.0.80,10.0.90' `
+            -Actual ($publishedTagProbe -join ',')
+    } finally {
+        Set-Item function:Invoke-Gh $originalPublishedTagInvokeGh
+        Remove-Variable -Name PublishedTagArgs -Scope Script -ErrorAction SilentlyContinue
+    }
     $shippedTagCtx['contentsRef'] = $resolvedShippedRefs.ContentsRef
     $shippedTagCtx['excludeBranches'] = @($resolvedShippedRefs.ExcludeRefs)
     $shippedTagContents = Get-SrCommits -Ctx $shippedTagCtx
@@ -1780,7 +1816,16 @@ try {
         'Backport of #32537 was omitted',
         'Backport of #32537 was excluded',
         'Backport of #32537 is no longer included',
-        'Backport of #32537 has been rolled back'
+        'Backport of #32537 has been rolled back',
+        'Backport of #32537. This was later reverted due to test failures.',
+        'Backport of #32537, though it got reverted the next day.',
+        'Cherry-picked from #32537, later found to be broken and rolled back.',
+        'Backport of #32537 -- since reverted, see #5678',
+        'Backport #32537, but it was not included',
+        'Backport #32537, although it was not included',
+        'Backport #32537, yet it was not included',
+        'Backport #32537, however it was not included',
+        'Backport #32537. However, this was later reverted.'
     )) {
         Assert-Eq -Label "backport lineage: post-reference non-inclusion is rejected — $postNegatedBody" -Expected $false `
             -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
@@ -1788,6 +1833,13 @@ try {
                 headRefName = 'manual/backport'
             }) -SourcePrNumber 32537)
     }
+    $partiallyExcludedList = [pscustomobject]@{
+        body = 'Backport of PR #12345 and PR #23456, but #23456 was not included'
+        headRefName = 'manual/backport'
+    }
+    Assert-Eq -Label "backport lineage: post-list negation removes only the excluded source" `
+        -Expected $true -Actual ((Test-IsExplicitBackportForSource -Pr $partiallyExcludedList -SourcePrNumber 12345) -and
+            -not (Test-IsExplicitBackportForSource -Pr $partiallyExcludedList -SourcePrNumber 23456))
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -5663,6 +5715,8 @@ $shippedContentChecks = Get-ReleaseShipChecks -Ctx @{
     srRef = 'origin/release/10.0.1xx-sr8'
     contentsRef = '10.0.80'
     previousStableTag = '10.0.71'
+    liveBranchVersion = '10.0.81'
+    shippedTagVersion = '10.0.80'
     mainBranch = 'main'
     mode = 'shipped'
 }
@@ -5676,6 +5730,10 @@ Assert-Eq -Label "shipped servicing check recommends hotfix/rebuild investigatio
     -Actual ($shippedFlipCheck.NextAction -match 'hotfix/rebuild')
 Assert-Eq -Label "shipped servicing check does not prescribe a pre-ship branch PR" -Expected $false `
     -Actual ($shippedFlipCheck.NextAction -match 'focused PR targeting')
+$hotfixInProgressCheck = Get-CheckByAreaPrefix -Checks $shippedContentChecks -Prefix 'Unpublished hotfix branch state'
+Assert-Eq -Label "shipped branch-ahead hotfix is surfaced as WATCH" -Expected 'WATCH' -Actual $hotfixInProgressCheck.Status
+Assert-Eq -Label "shipped branch-ahead hotfix keeps published anchor explicit" -Expected $true `
+    -Actual ($hotfixInProgressCheck.Details -match '10\.0\.81' -and $hotfixInProgressCheck.Details -match '10\.0\.80')
 
 Set-Item function:Get-FileFromRef $script:OrigGetFileFromRefForShipChecks
 $script:GetFileFromRefStub = $null

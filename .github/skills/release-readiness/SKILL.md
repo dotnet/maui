@@ -48,6 +48,7 @@ The trackers detector is grounded in **tag existence as the source of truth for 
 **Post-ship lifecycle (`shipped` mode).** Most shipped SRs are retired the moment their tag exists. The **one exception** is the *most-recently-shipped* SR (highest shipped patch), which keeps emitting as `mode='shipped'` so its tracker issue stays useful through post-ship follow-up — adding the new build to the GitHub issue version dropdown, publishing release notes, closing out the milestone. Shipped reports never retroactively return `Not Ready`: unresolved work is split into urgent hotfix-vs-next-SR follow-ups and structured carry-forward items. The workflow treats `shipped` as **refresh-only**: it updates the tracker issue while it stays open, but **never (re)creates it**. Once a human closes the tracker, it stays closed and is not resurrected on the next scheduled run. This implements "keep updating until closed manually" without spamming a fresh issue after sign-off. Older shipped SRs are still retired.
 
 Shipped commit inventory and fix ancestry are evaluated against the immutable stable tag and the prior stable tag, never against the mutable SR branch or current `main`. If the published tag does not resolve locally, generation fails with an explicit fetch instruction rather than emitting a falsely empty/clean tracker.
+If the live SR branch has already bumped toward a not-yet-published hotfix, the tracker remains anchored to the latest published tag in that SR patch range and emits a WATCH follow-up for the newer branch version.
 
 ## Quick Start
 
@@ -181,6 +182,8 @@ the inferred signal, report it conversationally and leave the tracker to the CI 
 |-----------|----------|---------|-------------|
 | `-SrBranch` | Yes | — | SR branch name (e.g. `release/10.0.1xx-sr8`). In `-Candidate` mode, pass the **prior** SR — it's the exclude baseline for "what's new". |
 | `-Candidate` | No | off | Pre-flight mode — survey `main` (with `-SrBranch` as the prior-SR baseline) to show what WOULD ship in the next SR. |
+| `-Shipped` | No | off | Post-ship mode for the most recently published SR. Uses immutable published-tag contents while keeping operational checks live. |
+| `-ShippedTag` | No | latest published tag in the SR patch range | Explicit immutable shipped-anchor override for deterministic/manual runs. |
 | `-InheritFromPriorSr` | No | off | In `-Candidate` mode, model the workflow where the prior SR is merged into the new branch after cut. Candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits. |
 | `-RegressionLabels` | One of these | — | Comma-separated `regressed-in-*` labels. |
 | `-InferRegressionLabels` | One of these | off | Auto-infer from `-SrBranch`. Agent should confirm before relying on this for automation. |
