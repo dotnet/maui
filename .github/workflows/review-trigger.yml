@@ -38,7 +38,6 @@ jobs:
     timeout-minutes: 2
     outputs:
       matched: ${{ steps.check.outputs.matched }}
-      command: ${{ steps.check.outputs.command }}
     steps:
       - name: Match /review command
         id: check
@@ -47,18 +46,16 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
-            echo "command=review" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          if [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+rerun$ ]]; then
-            echo "matched=true" >> "$GITHUB_OUTPUT"
-            echo "command=rerun" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+rerun([[:space:]]|$) ]]; then
+          # `/review rerun` is not a supported command. Reject it explicitly so
+          # it cannot fall through to the generic `/review` matcher below. `sed`
+          # strips leading whitespace per line, so a leading BLANK line survives in
+          # TRIMMED_BODY; tolerate leading whitespace/newlines here (consistent with
+          # the generic matcher) so a pasted `\n/review rerun` can't evade the guard.
+          if [[ "${TRIMMED_BODY}" =~ ^[[:space:]]*/review[[:space:]]+rerun([[:space:]]|$) ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
-            echo "command=none" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           # Match `/review` as the first non-whitespace token, optionally followed by args.
@@ -68,105 +65,13 @@ jobs:
             echo "matched=false" >> "$GITHUB_OUTPUT"
           elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
-            echo "command=review" >> "$GITHUB_OUTPUT"
           else
             echo "matched=false" >> "$GITHUB_OUTPUT"
-            echo "command=none" >> "$GITHUB_OUTPUT"
-          fi
-
-  mark-rerun-ready:
-    needs: match
-    if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'rerun'
-    runs-on: ubuntu-latest
-    concurrency:
-      group: review-trigger-${{ github.event.issue.number }}
-      cancel-in-progress: false
-    timeout-minutes: 5
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
-    steps:
-      - name: Check actor permission
-        id: auth
-        env:
-          GH_TOKEN: ${{ github.token }}
-          ACTOR: ${{ github.actor }}
-          PR_NUMBER: ${{ github.event.issue.number }}
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          PERMISSION=$(gh api "repos/${REPOSITORY}/collaborators/${ACTOR}/permission" --jq '.permission')
-          PR_AUTHOR=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" --jq '.user.login')
-          PR_AUTHOR_ASSOCIATION=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" --jq '.author_association')
-          echo "User ${ACTOR} has permission: ${PERMISSION}"
-          echo "PR #${PR_NUMBER} author: ${PR_AUTHOR} (${PR_AUTHOR_ASSOCIATION})"
-          # /review rerun can queue privileged review infrastructure. Maintainers
-          # can rerun any PR; non-first-time PR authors can rerun only their own
-          # PR after the deterministic eligibility check confirms new activity.
-          if [[ "${PERMISSION}" == "admin" || "${PERMISSION}" == "maintain" || "${PERMISSION}" == "write" ]]; then
-            exit 0
-          fi
-          if [[ "${ACTOR}" == "${PR_AUTHOR}" && "${PR_AUTHOR_ASSOCIATION}" != "FIRST_TIMER" && "${PR_AUTHOR_ASSOCIATION}" != "FIRST_TIME_CONTRIBUTOR" && "${PR_AUTHOR_ASSOCIATION}" != "NONE" ]]; then
-            echo "User ${ACTOR} is a non-first-time PR author; allowing /review rerun."
-            exit 0
-          fi
-
-          echo "::error::User ${ACTOR} does not have sufficient access. Only write/maintain/admin users or non-first-time PR authors can trigger /review rerun."
-          exit 1
-
-      - name: Checkout repository scripts
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Determine rerun eligibility and apply label
-        id: rerun
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: pwsh
-        run: |
-          .github/scripts/Resolve-RerunEligibility.ps1 `
-            -Owner '${{ github.repository_owner }}' `
-            -Repo '${{ github.event.repository.name }}' `
-            -PRNumber ${{ github.event.issue.number }} `
-            -CurrentCommentId ${{ github.event.comment.id }} `
-            -ApplyLabel
-
-      - name: Summarize rerun decision
-        shell: pwsh
-        run: |
-          "### /review rerun" >> $env:GITHUB_STEP_SUMMARY
-          "Eligible: ${{ steps.rerun.outputs.eligible }}" >> $env:GITHUB_STEP_SUMMARY
-          "Reason: ${{ steps.rerun.outputs.reason }}" >> $env:GITHUB_STEP_SUMMARY
-          "Label: ${{ steps.rerun.outputs.label }}" >> $env:GITHUB_STEP_SUMMARY
-
-      - name: Hide the /review rerun command comment as resolved
-        if: ${{ !cancelled() && github.event_name == 'issue_comment' && steps.auth.outcome == 'success' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
-        run: |
-          # Always collapse the /review rerun command comment once we reach this step: the
-          # actor is authorized (the permission gate above already passed) and the command was
-          # recognized, so the comment is hidden regardless of the eligibility outcome
-          # (eligible OR ineligible) to keep the conversation decluttered no matter the result.
-          #
-          # We MINIMIZE (hide as resolved) rather than delete: the rerun scanner replays the
-          # PR's REST comment history to reconstruct rerun state (Resolve-RerunEligibility.ps1 /
-          # Query-RerunReadyPRs.ps1 / Get-LatestRerunCommentBefore). It keys on comment id, body
-          # and created_at — never on isMinimized — and minimized comments are still returned by
-          # the REST list endpoint, so collapsing them is transparent to the scanner. Deleting
-          # would erase that durable checkpoint and re-qualify unchanged commits. A failed hide
-          # must never fail the job.
-          if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
-            echo "Hid /review rerun command comment ${COMMENT_NODE_ID} as resolved"
-          else
-            echo "::warning::Could not hide /review rerun command comment ${COMMENT_NODE_ID}"
           fi
 
   trigger-review:
     needs: match
-    if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'review'
+    if: needs.match.outputs.matched == 'true'
     runs-on: ubuntu-latest
     concurrency:
       group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}

@@ -129,6 +129,60 @@ Describe 'Resolve-MergedAfterCutoff' {
     }
 }
 
+Describe 'Get-PrNumbersFromGitLog — terminal squash PR suffix' {
+    It 'parses an ordinary terminal PR suffix' {
+        $result = @(Get-PrNumbersFromGitLog @('abc1234 Fix a layout regression (#35031)'))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 35031
+    }
+
+    It 'returns only the terminal PR when an issue reference appears earlier' {
+        $result = @(Get-PrNumbersFromGitLog @(
+            'abc1234 Fix Shell.Items.Clear() memory leak (#34898) (#35031)'
+        ))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 35031
+    }
+
+    It 'returns only the terminal PR after multiple earlier parenthesized references' {
+        $result = @(Get-PrNumbersFromGitLog @(
+            'abc1234 Reconcile reports (#100) and (#200) before the fix (#34719)'
+        ))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 34719
+    }
+
+    It 'ignores a subject with no terminal PR suffix' {
+        @(Get-PrNumbersFromGitLog @(
+            'abc1234 Follow up on (#35031) without a squash suffix'
+        )).Count | Should -Be 0
+    }
+
+    It 'ignores malformed or non-numeric terminal references "<Reference>"' -ForEach @(
+        @{ Reference = '(#)' }
+        @{ Reference = '(#abc)' }
+        @{ Reference = '(#12x)' }
+        @{ Reference = '(#999999999999999999999999999999)' }
+    ) {
+        @(Get-PrNumbersFromGitLog @("abc1234 Malformed reference $Reference")).Count | Should -Be 0
+    }
+
+    It 'tolerates trailing whitespace after the terminal PR suffix' {
+        $result = @(Get-PrNumbersFromGitLog @('abc1234 Fix a layout regression (#35031)   '))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 35031
+    }
+
+    It 'deduplicates repeated PR subjects and sorts the result' {
+        $result = @(Get-PrNumbersFromGitLog @(
+            'abc1234 First appearance (#35031)',
+            'def5678 Another PR (#34719)',
+            'fed9876 Cherry-pick the first PR (#35031)'
+        ))
+        ($result -join ',') | Should -Be '34719,35031'
+    }
+}
+
 Describe 'Get-PrInfo — merged-after cutoff enforcement' {
     BeforeAll {
         # Build a GitHub-pulls-API-shaped object (ConvertFrom-Json style) for the mock.
@@ -1228,6 +1282,74 @@ Describe 'Invoke-AnalyzeSinglePr — validation context seeding' {
     }
 }
 
+Describe 'Invoke-AnalyzeSinglePr — milestone-not-found skip report shape' {
+    BeforeEach {
+        # Same start-to-finish scaffolding as the validation-context seeding tests, but here we
+        # force Find-MatchingMilestone to return $null so we exercise the graceful-skip path taken
+        # when the expected milestone (e.g. ".NET 11.0-preview7") has not been created in GitHub yet.
+        Mock Initialize-MilestoneValidationContext { }
+        Mock Get-PrInfo {
+            return @{
+                Number         = 42
+                Title          = 'Test PR'
+                Url            = 'u'
+                Milestone      = ''
+                BaseRef        = 'net11.0'
+                MergedAt       = '2025-01-01T00:00:00Z'
+                MergeCommitSha = 'abc123'
+                Body           = ''
+            }
+        }
+        Mock Get-AllTags { return @('10.0.60', '10.0.70', '11.0.0-preview.3') }
+        Mock Get-VersionFromGitRef { return @{ Tag = '11.0.0'; PreLabel = 'preview'; PreIter = 7 } }
+        Mock Find-ReleaseBranchForCommit { return @{ Branch = 'release/11.0.1xx-preview7'; Milestone = '.NET 11.0-preview7' } }
+        Mock ConvertBranchToMilestone { return '.NET 11.0-preview7' }
+        Mock Get-MainBranchForVersion { return 'net11.0' }
+        Mock Get-CurrentMajorVersion { return 11 }
+        # The milestone does not exist yet: Get-AllMilestones has no match and Find-MatchingMilestone
+        # returns $null, driving Invoke-AnalyzeSinglePr into the early-return skip report.
+        Mock Get-AllMilestones { return @(@{ Number = 99; Title = '.NET 11.0-preview6' }) }
+        Mock Find-MatchingMilestone { return $null }
+        Mock Test-PrBelongsToVersion { return $true }
+        Mock Get-LinkedIssues { return @() }
+        Mock Test-AndRecordCorrection { }
+    }
+
+    It 'includes ResolvedMilestone/ResolvedMsNumber keys (set to $null) so downstream writers do not crash under StrictMode' {
+        $report = Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.'
+
+        # The skip report MUST carry the same key shape as the success-path report. Write-Report
+        # (line ~1326) and Save-ReportJson (line ~1381) read $Report.ResolvedMilestone WITHOUT a
+        # ContainsKey guard; under StrictMode a missing key throws PropertyNotFound -> exit 1.
+        $report.ContainsKey('ResolvedMilestone') | Should -BeTrue
+        $report.ContainsKey('ResolvedMsNumber')  | Should -BeTrue
+        $report.ResolvedMilestone | Should -BeNullOrEmpty
+        $report.ResolvedMsNumber  | Should -BeNullOrEmpty
+        # And the report is genuinely a no-op skip: no corrections to apply.
+        $report.Corrections.Count | Should -Be 0
+    }
+
+    It 'does not crash Write-Report/Save-ReportJson under StrictMode Latest (faithful CI reproduction)' {
+        # StrictMode is intentionally NOT enabled when the script is dot-sourced for Pester (see the
+        # $MyInvocation.InvocationName -ne '.' guard in Fix-MilestoneDrift.ps1). So we must re-create
+        # the exact production condition here: the workflow runs with Set-StrictMode -Version Latest,
+        # under which reading a missing hashtable key throws. Without the fix, this test throws
+        # PropertyNotFound and fails; with the fix it passes.
+        $report = Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.'
+
+        $tempPath = Join-Path ([System.IO.Path]::GetTempPath()) "milestone-skip-report-$([guid]::NewGuid()).json"
+        try {
+            {
+                Set-StrictMode -Version Latest
+                Write-Report $report
+                Save-ReportJson $report $tempPath
+            } | Should -Not -Throw
+        } finally {
+            Remove-Item $tempPath -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 Describe 'Get-TagsForMilestone — cross-major filter' {
     BeforeEach {
         # Seed validation context as a live workflow run would: target major = 11.
@@ -1545,6 +1667,46 @@ Describe 'Get-OnBranchShaFromLog — grep fallback subject precision' {
 
     It 'returns null for empty input' {
         Get-OnBranchShaFromLog @() 42 | Should -BeNullOrEmpty
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Git-log PR parsing integration block (no mocks, no GitHub).
+# ---------------------------------------------------------------------------
+Describe 'Git-log PR parsing paths (unmocked)' -Skip:(-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    BeforeAll {
+        $script:prLogTmp = Join-Path ([IO.Path]::GetTempPath()) "prlogtest-$(New-Guid)"
+        New-Item -ItemType Directory -Path $script:prLogTmp -Force | Out-Null
+
+        git -C $script:prLogTmp init -q
+        git -C $script:prLogTmp config user.email 'milestone-test@example.invalid'
+        git -C $script:prLogTmp config user.name 'Milestone Test'
+        git -C $script:prLogTmp config commit.gpgsign false
+
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Base change (#100)'
+        git -C $script:prLogTmp tag 'from'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Fix Shell.Items.Clear() memory leak (#34898) (#35031)'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Fix VisualStateGroups (#50) (#34716) (#34719)'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Subject mentions (#99999) but has no terminal PR suffix'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Malformed suffix (#not-a-pr)'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Duplicate cherry-pick (#35031)'
+        git -C $script:prLogTmp tag 'to'
+    }
+
+    AfterAll {
+        if ($script:prLogTmp -and (Test-Path $script:prLogTmp)) {
+            Remove-Item -Recurse -Force $script:prLogTmp -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'Get-PrNumbersBetweenTags returns only terminal PR suffixes and deduplicates them' {
+        $result = @(Get-PrNumbersBetweenTags 'from' 'to' $script:prLogTmp)
+        ($result -join ',') | Should -Be '34719,35031'
+    }
+
+    It 'Get-PrNumbersReachableFromTag uses the same terminal-suffix behavior' {
+        $result = @(Get-PrNumbersReachableFromTag 'to' $script:prLogTmp)
+        ($result -join ',') | Should -Be '100,34719,35031'
     }
 }
 

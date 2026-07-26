@@ -12,7 +12,7 @@
     - Windows: android, windows
 
 .PARAMETER Project
-    The device test project to run. Valid values: Controls, Core, Essentials, Graphics, BlazorWebView, AI
+    The device test project to run. Valid values: Controls, Core, Essentials, Graphics, BlazorWebView
 
 .PARAMETER Platform
     Target platform. Valid values depend on OS:
@@ -65,7 +65,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true, Position = 0)]
-    [ValidateSet("Controls", "Core", "Essentials", "Graphics", "BlazorWebView", "AI")]
+    [ValidateSet("Controls", "Core", "Essentials", "Graphics", "BlazorWebView")]
     [string]$Project,
 
     [Parameter(Mandatory = $false)]
@@ -128,7 +128,6 @@ $ProjectPaths = @{
     "Essentials"    = "src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj"
     "Graphics"      = "src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj"
     "BlazorWebView" = "src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj"
-    "AI"            = "src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj"
 }
 
 $AppNames = @{
@@ -137,7 +136,6 @@ $AppNames = @{
     "Essentials"    = "Microsoft.Maui.Essentials.DeviceTests"
     "Graphics"      = "Microsoft.Maui.Graphics.DeviceTests"
     "BlazorWebView" = "Microsoft.Maui.MauiBlazorWebView.DeviceTests"
-    "AI"            = "Microsoft.Maui.Essentials.AI.DeviceTests"
 }
 
 $WindowsDeviceTestPackageIds = @{
@@ -146,7 +144,6 @@ $WindowsDeviceTestPackageIds = @{
     "Essentials"    = "Microsoft.Maui.Essentials.DeviceTests"
     "Graphics"      = "Microsoft.Maui.Graphics.DeviceTests"
     "BlazorWebView" = "Microsoft.Maui.MauiBlazorWebView.DeviceTests"
-    "AI"            = "Microsoft.Maui.Essentials.AI.DeviceTests"
 }
 
 function Get-CategoryFiltersFromTestFilter {
@@ -365,7 +362,6 @@ $AndroidPackageNames = @{
     "Essentials"    = "com.microsoft.maui.essentials.devicetests"
     "Graphics"      = "com.microsoft.maui.graphics.devicetests"
     "BlazorWebView" = "com.microsoft.maui.mauiblazorwebview.devicetests"
-    "AI"            = "com.microsoft.maui.ai.devicetests"
 }
 
 # Platform-specific configurations
@@ -467,7 +463,7 @@ try {
 
     $projectPath = $ProjectPaths[$Project]
     $appName = $AppNames[$Project]
-    # Derive artifact folder name from the project file name (e.g., "Essentials.AI.DeviceTests" from the .csproj)
+    # Derive artifact folder name from the project file name.
     $artifactName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
     
     Write-Host ""

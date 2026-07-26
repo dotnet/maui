@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
 		CancellationTokenSource _scrollDebounce;
+		NSObject _orientationObserver;
 
 		// We need to keep track of the old views to update the visual states
 		// if this is null we are not attached to the window
@@ -69,8 +70,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			InitializeCarouselViewLoopManager();
 			base.ViewDidLoad();
-			// Subscribe to orientation change notifications
-			NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, DeviceOrientationChanged);
 		}
 
 		void DeviceOrientationChanged(NSNotification notification)
@@ -204,8 +203,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			InitialPositionSet = false;
 
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
-			// Clean up orientation notification observer
-			NSNotificationCenter.DefaultCenter.RemoveObserver(this, UIDevice.OrientationDidChangeNotification, null);
+			// Remove the block-based observer using the stored token (RemoveObserver(this,...) does not remove block observers).
+			if (_orientationObserver is not null)
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+				_orientationObserver = null;
+			}
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
@@ -226,6 +229,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_oldViews = new List<View>();
 
 			SubscribeCollectionItemsSourceChanged(ItemsSource);
+
+			// Re-register on every attach for proper Setup/TearDown symmetry.
+			// ViewDidLoad is called only once, but TearDown removes the observer on every detach.
+			_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, DeviceOrientationChanged);
 		}
 
 		internal void UpdateIsScrolling(bool isScrolling)
@@ -443,6 +450,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void UpdateLoop()
 		{
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -455,9 +467,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				LoopItemsSource.Loop = carousel.Loop;
 			}
 
-			// CollectionView.ReloadData();
+			UpdateScrollBarVisibility();
+			CollectionView.ReloadData();
 
-			// ScrollToPosition(carouselPosition, carouselPosition, false, true);
+			ScrollToPosition(carouselPosition, carouselPosition, false, true);
+		}
+
+		void UpdateScrollBarVisibility()
+		{
+			if (ItemsView is CarouselView carousel)
+			{
+				// Mirror the legacy iOS controller and Android behavior: hide the scrollbars
+				// when Loop is enabled, otherwise honor the user's ScrollBarVisibility settings.
+				var horizontalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.HorizontalScrollBarVisibility;
+				var verticalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.VerticalScrollBarVisibility;
+				CollectionView.UpdateHorizontalScrollBarVisibility(horizontalVisibility);
+				CollectionView.UpdateVerticalScrollBarVisibility(verticalVisibility);
+			}
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
@@ -793,6 +819,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (disposing)
 			{
+				if (_orientationObserver is not null)
+				{
+					NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+					_orientationObserver = null;
+				}
 				_scrollDebounce?.Cancel();
 				_scrollDebounce?.Dispose();
 				_scrollDebounce = null;

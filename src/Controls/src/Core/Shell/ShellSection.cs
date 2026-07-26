@@ -972,7 +972,6 @@ namespace Microsoft.Maui.Controls
 				PresentedPageAppearing();
 
 			RemovePage(page);
-			page?.DisconnectHandlers();
 			var args = new NavigationRequestedEventArgs(page, false)
 			{
 				RequestType = NavigationRequestType.Remove
@@ -1062,6 +1061,7 @@ namespace Microsoft.Maui.Controls
 		void RemovePage(Page page)
 		{
 			RemoveLogicalChild(page);
+			page?.DisconnectHandlers();
 		}
 
 		void SendAppearanceChanged() => ((IShellController)Parent?.Parent)?.AppearanceChanged(this, false);

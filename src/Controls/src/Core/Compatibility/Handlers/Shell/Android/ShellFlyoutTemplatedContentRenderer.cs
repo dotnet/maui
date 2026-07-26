@@ -20,6 +20,7 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Layouts;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -607,8 +608,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (Brush.IsNullOrEmpty(brush))
 			{
 				var color = _shellContext.Shell.FlyoutBackgroundColor;
-				if (_defaultBackgroundColor == null)
-					_defaultBackgroundColor = _rootView.Background;
+				if (_defaultBackgroundColor is null)
+				{
+					if (RuntimeFeature.IsMaterial3Enabled)
+					{
+						var colorSurface = ContextExtensions.GetThemeAttrColor(_shellContext.AndroidContext, Resource.Attribute.colorSurface);
+						_defaultBackgroundColor = new ColorDrawable(new AColor(colorSurface));
+					}
+					else
+					{
+						_defaultBackgroundColor = _rootView.Background;
+					}
+				}
 
 				_rootView.Background = color == null ? _defaultBackgroundColor : new ColorDrawable(color.ToPlatform());
 			}

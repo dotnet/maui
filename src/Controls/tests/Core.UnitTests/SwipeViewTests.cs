@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -565,6 +567,95 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Reattach to a different ScrollView (virtualization re-use)
 			var scrollView2 = new ScrollView { Content = contentView };
 			Assert.Equal(scrollView2, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/35481
+		// A SwipeItems instance that is cached (e.g. in a static dictionary) and shared
+		// across multiple SwipeViews must not keep prior SwipeView instances alive.
+		[Fact]
+		public void CachedSwipeItemsDoesNotKeepSwipeViewAlive()
+		{
+			// Simulate the repro: one long-lived SwipeItems cache shared across many SwipeViews.
+			var cachedSwipeItems = new SwipeItems { new SwipeItem { Text = "Delete" } };
+
+			// Allocate the SwipeViews in a non-inlined helper so the locals do not remain
+			// rooted on the test method's stack frame in Debug builds.
+			var swipeViewRefs = CreateSwipeViewsSharingCachedItems(cachedSwipeItems, 20);
+
+			// Mutate the cached SwipeItems after the SwipeViews are no longer referenced.
+			// Before the fix, the CollectionChanged/PropertyChanged subscriptions on
+			// SwipeItems held a strong reference back to every SwipeView that had ever
+			// used this cache, so this mutation would keep them all alive.
+			cachedSwipeItems.Add(new SwipeItem { Text = "Archive" });
+
+			ForceFullGC();
+
+			GC.KeepAlive(cachedSwipeItems);
+
+			Assert.All(swipeViewRefs, r => Assert.False(r.IsAlive,
+				"SwipeView was kept alive by the cached SwipeItems — issue #35481 regression."));
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static List<WeakReference> CreateSwipeViewsSharingCachedItems(SwipeItems shared, int count)
+		{
+			var refs = new List<WeakReference>(count);
+			for (int i = 0; i < count; i++)
+			{
+				var sv = new SwipeView { RightItems = shared };
+				// Simulate a CollectionView recycling the row: the SwipeView reassigns its
+				// RightItems before going out of scope, releasing the Parent back-reference
+				// from the cached SwipeItems. Before the fix, the closure-based
+				// CollectionChanged/PropertyChanged subscriptions on the cached SwipeItems
+				// still held this SwipeView alive even after this reassignment.
+				sv.RightItems = new SwipeItems();
+				refs.Add(new WeakReference(sv));
+			}
+			return refs;
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/35481
+		// Replacing RightItems with a new SwipeItems instance must release any back-reference
+		// from the previous (cached) SwipeItems to the SwipeView. Without the fix, the cached
+		// SwipeItems' CollectionChanged/PropertyChanged delegates kept the SwipeView alive
+		// even after it was logically unhooked.
+		[Fact]
+		public void ReplacingCachedSwipeItemsReleasesPreviousOwnerReference()
+		{
+			// Cache: held by external code (the user's static dictionary in the repro).
+			var cachedRightItems = new SwipeItems { new SwipeItem { Text = "Done" } };
+
+			var swipeViewRef = CreateSwipeViewAssignThenReplace(cachedRightItems);
+
+			// Mutate the cached SwipeItems after the SwipeView is unhooked, just like the repro.
+			cachedRightItems.Add(new SwipeItem { Text = "Archive" });
+
+			ForceFullGC();
+
+			GC.KeepAlive(cachedRightItems);
+
+			Assert.False(swipeViewRef.IsAlive,
+				"Replaced SwipeView was kept alive by its previously-assigned cached SwipeItems — issue #35481 regression.");
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static WeakReference CreateSwipeViewAssignThenReplace(SwipeItems cachedRightItems)
+		{
+			var sv = new SwipeView { RightItems = cachedRightItems };
+			// Replace the assignment — the previous (cached) SwipeItems is now logically
+			// unhooked but kept alive by the caller. It must not retain the SwipeView.
+			sv.RightItems = new SwipeItems { new SwipeItem { Text = "Replaced" } };
+			return new WeakReference(sv);
+		}
+
+		static void ForceFullGC()
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+				GC.WaitForPendingFinalizers();
+				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+			}
 		}
 	}
 }

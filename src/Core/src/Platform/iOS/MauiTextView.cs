@@ -93,6 +93,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		/// <summary>
+		/// When true, the Editor is allowed to grow beyond its current frame to fit content
+		/// (AutoSize=TextChanges mode). When false, GetDesiredSize may cap the height to
+		/// preserve scrollability.
+		/// </summary>
+		internal bool AllowAutoGrowth { get; set; }
+
 		public override string? Text
 		{
 			get => base.Text;
