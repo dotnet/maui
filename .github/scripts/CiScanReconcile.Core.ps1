@@ -69,8 +69,12 @@ $script:CiScanFixPrTitlePrefixes = @('[ci-fix]', '[ci-fix-net11]')
 # Labels whose presence means a human has taken ownership of the issue.
 $script:CiScanHumanLabelPatterns = @('s/*', 'area-*', 'partner/*', 'p/*', 'legacy-area-*')
 
-# Reconciler-owned labels. No other actor is expected to apply these; a human REMOVING
-# 'ci-scan-stale-candidate' is the documented veto gesture.
+# Reconciler-owned labels. No other actor is expected to apply these.
+#
+# NOTE: removing 'ci-scan-stale-candidate' is NOT a veto. `Get-CiScanProposedActions`
+# re-adds it (and re-notifies) on the next run while the issue still qualifies. The
+# enforced veto signals are the ones in `Test-CiScanHumanTouched`: assignee, milestone,
+# a human label pattern, or any non-bot comment.
 $script:CiScanOwnedLabels = @('ci-scan-stale-candidate', 'ci-fix-landed', 'auto-closed-stale')
 
 $script:CiScanDefaults = @{
@@ -696,13 +700,22 @@ function Get-CiScanIssueVerdict {
     .DESCRIPTION
         Decisions, in evaluation order (first match wins):
 
-          needs-human            Structural problem a human must resolve. NEVER auto-acted.
-          watching               An open PR references the issue; hands off.
+          needs-human            Structural problem, or a human ownership signal, that a
+                                 human must resolve. NEVER auto-acted.
+          active                 An open pull request references the issue; hands off.
           awaiting-canonical-data No canonical fingerprint and/or no observation state.
                                  This is every issue in today's backlog. Never closable.
-          active                 Observations exist but the absence threshold is not met.
+          needs-human            (again) canonical data present but unusable: unknown
+                                 pipeline, unresolvable legs, or max-wait exceeded.
+          watching               Every structural gate passed, but at least one threshold
+                                 (age, quiet days, verified absences) is not met yet.
           candidate              Every gate passed. The ORCHESTRATOR may close this in
                                  'enforce' mode — this function never says "close".
+
+        'active' means "something is actively being worked", not "actively failing";
+        'watching' means "still accumulating evidence". Do not swap them — the
+        orchestrator's closable set is keyed on the exact string 'candidate', and the
+        report groups on these values.
 
     .PARAMETER Coverage
         Result of the orchestrator's independent AzDO re-derivation:
@@ -922,23 +935,35 @@ function Get-CiScanProposedActions {
           label:ci-fix-landed             comment mode and above
           comment:candidate-notice        comment mode and above, once per issue
           close                           enforce mode only
+
+        Label actions are suppressed when the label is already on the issue. `gh issue
+        edit --add-label` is server-side idempotent, so a re-add changes nothing — but it
+        still consumes a slot from the per-run `MaxLabelOps` budget, which is shared
+        across every issue. Without this check a handful of long-lived `ci-fix-landed`
+        issues would re-spend the budget on no-ops every run and starve issues that
+        genuinely need a first-time label.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]$Verdict,
-        [switch]$AlreadyLabelledCandidate
+        [switch]$AlreadyLabelledCandidate,
+        [string[]]$ExistingLabels = @()
     )
+
+    $existing = @($ExistingLabels)
+    $hasCandidateLabel = $AlreadyLabelledCandidate.IsPresent -or ($existing -ccontains 'ci-scan-stale-candidate')
 
     $actions = @()
 
     # A landed fix is worth recording on the issue regardless of what happens next; it
     # is documentation, not a closure signal.
-    if ((Get-CiScanCount $Verdict.MergedFixPrs) -gt 0 -and $Verdict.Decision -ne 'needs-human') {
+    if ((Get-CiScanCount $Verdict.MergedFixPrs) -gt 0 -and $Verdict.Decision -ne 'needs-human' -and
+        $existing -cnotcontains 'ci-fix-landed') {
         $actions += 'label:ci-fix-landed'
     }
 
     if ($Verdict.Decision -eq 'candidate') {
-        if (-not $AlreadyLabelledCandidate) {
+        if (-not $hasCandidateLabel) {
             $actions += 'label:ci-scan-stale-candidate'
             $actions += 'comment:candidate-notice'
         }

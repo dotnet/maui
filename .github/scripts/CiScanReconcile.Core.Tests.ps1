@@ -569,6 +569,72 @@ Describe 'Get-CiScanProposedActions' {
             -Config $script:Net11 -Now $script:Now -Coverage (New-Coverage -Verified (1..20))
         foreach ($a in (Get-CiScanProposedActions -Verdict $v)) { $allowed | Should -Contain $a }
     }
+
+    <#
+        `gh issue edit --add-label` is server-side idempotent, so a redundant add is
+        harmless in isolation — but it still spends a slot from the per-RUN MaxLabelOps
+        budget that is shared across every issue. A handful of long-lived `ci-fix-landed`
+        issues re-spending it every run would starve issues needing a first-time label.
+    #>
+    It 'does not re-add ci-fix-landed when the issue already carries it' {
+        $v = [pscustomobject]@{ Decision = 'watching'; MergedFixPrs = @(1, 2) }
+
+        (Get-CiScanProposedActions -Verdict $v) |
+            Should -Contain 'label:ci-fix-landed' -Because 'the label is absent'
+
+        (Get-CiScanProposedActions -Verdict $v -ExistingLabels @('ci-scan-net11', 'ci-fix-landed')) |
+            Should -Not -Contain 'label:ci-fix-landed' -Because 'the label is already present'
+    }
+
+    It 'treats ExistingLabels as a candidate-label signal too' {
+        $v = Get-CiScanIssueVerdict -Issue (New-TestIssue -Body (New-CanonicalBody -StateJson (New-StateJson -Absent (1..20)))) `
+            -Config $script:Net11 -Now $script:Now -Coverage (New-Coverage -Verified (1..20))
+        $a = Get-CiScanProposedActions -Verdict $v -ExistingLabels @('ci-scan-stale-candidate')
+        $a | Should -Not -Contain 'comment:candidate-notice'
+        $a | Should -Not -Contain 'label:ci-scan-stale-candidate'
+        $a | Should -Contain 'close'
+    }
+
+    It 'matches labels case-sensitively so a near-miss is not mistaken for a match' {
+        $v = [pscustomobject]@{ Decision = 'watching'; MergedFixPrs = @(1) }
+        (Get-CiScanProposedActions -Verdict $v -ExistingLabels @('CI-Fix-Landed')) |
+            Should -Contain 'label:ci-fix-landed'
+    }
+}
+
+<#
+    The decision vocabulary is a contract: the orchestrator's closable set is keyed on
+    the exact string 'candidate', the summary groups on these values, and the doc block
+    on Get-CiScanIssueVerdict is what a maintainer reads before trusting a run. The doc
+    block previously described 'watching' and 'active' with each other's meanings, so
+    these tests pin the real semantics against regression in either direction.
+#>
+Describe 'Decision vocabulary matches its documented meaning' {
+    It "returns 'active' — not 'watching' — when an open PR references the issue" {
+        $v = Get-CiScanIssueVerdict -Issue (New-TestIssue -Body (New-CanonicalBody -StateJson (New-StateJson -Absent (1..20)))) `
+            -Config $script:Net11 -Now $script:Now -Coverage (New-Coverage -Verified (1..20)) `
+            -FixPrStatus ([ordered]@{
+                Blocked = $true; BlockingPrs = @([pscustomobject]@{ Number = 999 })
+                MergedFixPrs = @(); LatestMergedAt = $null; HasMergedFix = $false
+            })
+        $v.Decision | Should -Be 'active'
+    }
+
+    It "returns 'watching' — not 'active' — when a threshold is simply not met yet" {
+        $v = Get-CiScanIssueVerdict -Issue (New-TestIssue -Body (New-CanonicalBody -StateJson (New-StateJson -Absent (1..2)))) `
+            -Config $script:Net11 -Now $script:Now -Coverage (New-Coverage -Verified (1..2))
+        $v.Decision | Should -Be 'watching'
+    }
+
+    It 'documents exactly the decisions it can emit' {
+        $doc = (Get-Command Get-CiScanIssueVerdict).Definition
+        foreach ($d in @('needs-human', 'active', 'awaiting-canonical-data', 'watching', 'candidate')) {
+            $doc | Should -BeLike "*$d*"
+        }
+        # The two easily-transposed entries must be described by their real triggers.
+        $doc | Should -Match '(?s)active\s+An open pull request'
+        $doc | Should -Match '(?s)watching\s+Every structural gate passed'
+    }
 }
 
 Describe 'Get-CiScanReopenVerdict' {

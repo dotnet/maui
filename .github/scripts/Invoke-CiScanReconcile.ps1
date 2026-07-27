@@ -224,29 +224,48 @@ function Invoke-GhWrite {
 function Get-CiScanOpenIssues {
     <#
     .SYNOPSIS
-        Lists open tracking issues for a twin.
+        Lists open tracking issues for a twin, oldest first.
     .DESCRIPTION
         This listing is the ONLY origin of issue numbers in the whole reconciler. It is
         constrained server-side by repo + state + exact label, and each result is
         re-validated client-side by `Test-CiScanIssueProvenance`.
+
+        ORDERING IS LOAD-BEARING. `Max` bounds the batch, so whichever end of the
+        eligible set the API returns first is the end that gets surveyed. GitHub's
+        default issue order is newest-first, which would permanently strand the OLDEST
+        issues once the open backlog exceeded `Max` — and the oldest issues are exactly
+        the ones a staleness reconciler exists to evaluate (anything younger than
+        `MinIssueAgeDays` cannot become a candidate anyway). `sort=created` +
+        `direction=asc` inverts that so the bound drops the youngest, never the oldest.
+
+        The same stranding bug class was fixed in the CI-fixer twins; see the
+        `sort=created&direction=asc` prefetch in `ci-status-fix*.md`.
+
+        `Truncated` reports whether the bound actually elided anything, so a bounded
+        batch can never be misread as "these are all the open tracking issues".
     #>
     [CmdletBinding()]
     param([string]$Owner, [string]$Repo, [string]$Label, [int]$Max)
 
     $issues = @()
     $page = 1
+    $truncated = $false
     while ($issues.Count -lt $Max -and $page -le 10) {
         $perPage = [math]::Min(100, $Max - $issues.Count)
-        $path = "repos/$Owner/$Repo/issues?state=open&labels=$([uri]::EscapeDataString($Label))&per_page=$perPage&page=$page"
+        $path = "repos/$Owner/$Repo/issues?state=open&labels=$([uri]::EscapeDataString($Label))" +
+                "&sort=created&direction=asc&per_page=$perPage&page=$page"
         $batch = Invoke-GhRead -GhArgs @('api', $path)
         if ($null -eq $batch) { break }
         $batch = @($batch)
         if ($batch.Count -eq 0) { break }
         $issues += $batch
+        # A full page that exactly consumed the remaining budget means the server may
+        # still be holding more; anything short of a full page proves it is not.
         if ($batch.Count -lt $perPage) { break }
+        if ($issues.Count -ge $Max) { $truncated = $true; break }
         $page++
     }
-    return @($issues)
+    return @{ Issues = @($issues); Truncated = $truncated }
 }
 
 function Get-CiScanPullRequestIndex {
@@ -286,20 +305,42 @@ function Get-CiScanPullRequestIndex {
 function Get-CiScanHumanCommenters {
     <#
     .SYNOPSIS
-        Returns non-bot commenter logins for an issue (empty when the fetch fails).
+        Returns non-bot commenter logins for an issue, or Ok = $false when the comment
+        history could not be read in full.
     .DESCRIPTION
-        A fetch failure returns an empty list, which is the LESS conservative direction —
-        so the caller records a read error and the run-level fail-closed check suppresses
-        mutations for the whole run rather than acting on partial data.
+        A human comment is a veto signal, so this function's job is to prove the ABSENCE
+        of human comments. A single unpaginated page could only ever prove that about the
+        first 100 comments — on a busier issue a later human comment would be invisible
+        and the reconciler would act MORE aggressively than intended. So the history is
+        paginated to exhaustion.
+
+        Any outcome that leaves the history incomplete — a failed page, or more comments
+        than the page ceiling allows — returns `Ok = $false` with an empty login set. The
+        caller records a read error and the run-level fail-closed check suppresses
+        mutations for the entire run rather than acting on a partial history.
     #>
     [CmdletBinding()]
     param([string]$Owner, [string]$Repo, [int]$Number)
 
-    $comments = Invoke-GhRead -GhArgs @('api', "repos/$Owner/$Repo/issues/$Number/comments?per_page=100")
-    if ($null -eq $comments) { return @{ Logins = @(); Ok = $false } }
+    $incomplete = @{ Logins = @(); Ok = $false }
+    $perPage = 100
+    $maxPages = 20   # 2,000 comments; no ci-scan tracking issue is remotely near this.
+
+    $comments = @()
+    $complete = $false
+    for ($page = 1; $page -le $maxPages; $page++) {
+        $batch = Invoke-GhRead -GhArgs @('api',
+            "repos/$Owner/$Repo/issues/$Number/comments?per_page=$perPage&page=$page")
+        if ($null -eq $batch) { return $incomplete }
+        $batch = @($batch)
+        $comments += $batch
+        # A short (or empty) page is the only proof that no further comments exist.
+        if ($batch.Count -lt $perPage) { $complete = $true; break }
+    }
+    if (-not $complete) { return $incomplete }
 
     $logins = @()
-    foreach ($c in @($comments)) {
+    foreach ($c in $comments) {
         if ($null -eq $c -or $null -eq $c.user) { continue }
         $login = [string]$c.user.login
         $type = if ($c.user.PSObject.Properties.Name -contains 'type') { [string]$c.user.type } else { '' }
@@ -423,6 +464,12 @@ function New-CiScanCandidateNotice {
         (integers, thresholds, the twin's own configured names). No text originating from
         an agent, an issue body, a PR body, or a CI log is echoed, so the comment cannot
         become a relay for injected content.
+
+        The veto gestures listed in the body MUST stay in sync with the signals
+        `Test-CiScanHumanTouched` actually enforces. Removing the
+        `ci-scan-stale-candidate` label is deliberately NOT offered: it is not a veto,
+        because `Get-CiScanProposedActions` simply re-adds the label and re-notifies on
+        the next run while the issue still qualifies as a candidate.
     #>
     [CmdletBinding()]
     param([Parameter(Mandatory)]$Verdict, [Parameter(Mandatory)][hashtable]$Config)
@@ -433,7 +480,14 @@ function New-CiScanCandidateNotice {
 
 The failure signature tracked by this issue has not been observed in the last **$($Verdict.VerifiedAbsences)** independently verified complete builds of ``$($Verdict.Pipeline)`` on ``$($Config.Branch)`` (threshold for this signature: **$($Verdict.RequiredAbsences)**).
 
-If nothing changes, this issue becomes eligible for automatic closure. To veto that permanently, remove the ``ci-scan-stale-candidate`` label or assign the issue to yourself.
+If nothing changes, this issue becomes eligible for automatic closure.
+
+**To stop that, do any one of these** — each is a signal the reconciler treats as human ownership and will not auto-act on:
+
+- assign the issue to someone,
+- set a milestone,
+- add an area, priority, status, or partner label (``area-*``, ``p/*``, ``s/*``, ``partner/*``, ``legacy-area-*``), or
+- just leave a comment here.
 
 <sub>Posted by the ``ci-scan-reconcile`` workflow. Thresholds: min age $($d.MinIssueAgeDays)d, min quiet $($d.MinQuietDays)d, max wait $($d.MaxWaitDays)d.</sub>
 "@
@@ -492,6 +546,7 @@ function Format-CiScanSummary {
     $null = $sb.AppendLine("| Read errors | $($Report.Counters.ReadErrors) |")
     $null = $sb.AppendLine("| Fail-closed | $(if ($Report.FailClosed) { "**yes — $($Report.FailClosedReason)**" } else { 'no' }) |")
     $null = $sb.AppendLine("| Issues evaluated | $($Report.IssueCount) |")
+    $null = $sb.AppendLine("| Survey complete | $(if ($Report.IssuesTruncated) { '**no — issue listing was truncated by `-MaxIssues`; oldest issues shown**' } else { 'yes' }) |")
     $null = $sb.AppendLine("| Generated | $($Report.GeneratedAt) |")
     $null = $sb.AppendLine()
 
@@ -597,8 +652,13 @@ function Invoke-CiScanReconcile {
     Write-Host "ci-scan reconciler | label=$Label branch=$($config.Branch) requested-mode=$RequestedMode effective-mode=$($script:EffectiveMode)"
     if (-not $script:MutationsAllowed) { Write-Host 'REPORT MODE: no GitHub mutations will be attempted.' }
 
-    $issues = Get-CiScanOpenIssues -Owner $Owner -Repo $Repo -Label $Label -Max $MaxIssues
-    Write-Host "Fetched $(@($issues).Count) open issue(s) labelled '$Label'."
+    $issueIndex = Get-CiScanOpenIssues -Owner $Owner -Repo $Repo -Label $Label -Max $MaxIssues
+    $issues = @($issueIndex.Issues)
+    Write-Host "Fetched $($issues.Count) open issue(s) labelled '$Label' (oldest first); truncated=$($issueIndex.Truncated)."
+    if ($issueIndex.Truncated) {
+        Write-Warning ("Issue listing hit the -MaxIssues bound of $MaxIssues; this run surveyed only the " +
+            "$($issues.Count) oldest open '$Label' issue(s). The report is NOT an exhaustive survey.")
+    }
 
     $prIndex = Get-CiScanPullRequestIndex -Owner $Owner -Repo $Repo -Max $MaxPullRequests
     Write-Host "Fetched $(@($prIndex.PullRequests).Count) pull request(s); complete=$($prIndex.Complete)."
@@ -645,6 +705,7 @@ function Invoke-CiScanReconcile {
         $labelNames = Get-CiScanIssueLabelNames -Issue $issue
         $verdict | Add-Member -NotePropertyName HasCandidateLabel `
             -NotePropertyValue ($labelNames -ccontains 'ci-scan-stale-candidate') -Force
+        $verdict | Add-Member -NotePropertyName ExistingLabels -NotePropertyValue @($labelNames) -Force
         $verdicts += $verdict
     }
 
@@ -659,7 +720,8 @@ function Invoke-CiScanReconcile {
     $budgets = @{ close = $defaults.MaxCloses; comment = $defaults.MaxComments; label = $defaults.MaxLabelOps }
 
     foreach ($v in ($verdicts | Sort-Object -Property @{ Expression = 'VerifiedAbsences'; Descending = $true }, Number)) {
-        $desired = Get-CiScanProposedActions -Verdict $v -AlreadyLabelledCandidate:($v.HasCandidateLabel)
+        $desired = Get-CiScanProposedActions -Verdict $v `
+            -AlreadyLabelledCandidate:($v.HasCandidateLabel) -ExistingLabels @($v.ExistingLabels)
 
         if ((Get-CiScanCount $desired) -eq 0) { $v.ProposedActions = @(); $v.CapDecision = 'n/a'; continue }
         if ($failClosed) { $v.ProposedActions = @(); $v.CapDecision = 'suppressed-fail-closed'; continue }
@@ -748,6 +810,7 @@ function Invoke-CiScanReconcile {
         FailClosed        = $failClosed
         FailClosedReason  = $failReason
         IssueCount        = @($issues).Count
+        IssuesTruncated   = [bool]$issueIndex.Truncated
         PullRequestCount  = @($prIndex.PullRequests).Count
         Counters          = $script:Counters
         Thresholds        = $defaults

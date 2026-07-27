@@ -518,6 +518,182 @@ Describe 'CI scan reconciler' {
         }
     }
 
+    <#
+        The listing is bounded by -MaxIssues, so whichever end of the backlog the API
+        returns first is the end that gets surveyed. GitHub's default is newest-first,
+        which would permanently strand the OLDEST issues — the only ones a staleness
+        reconciler can ever act on. These tests pin the ordering and the truncation
+        signal so that regression cannot return silently.
+    #>
+    Describe 'Issue listing is ordered oldest-first and reports truncation' {
+        It 'asks the API for oldest-first ordering' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+            $script:SeenIssuePaths = @()
+            Mock Invoke-GhRead {
+                $joined = ($GhArgs -join ' ')
+                if ($joined -like '*issues?state=open*') {
+                    $script:SeenIssuePaths += $joined
+                    return , @($script:Issues)
+                }
+                if ($joined -like '*/comments*') { return , @() }
+                if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+                return $null
+            }
+
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            @($script:SeenIssuePaths).Count | Should -BeGreaterThan 0
+            foreach ($p in $script:SeenIssuePaths) {
+                $p | Should -BeLike '*sort=created*'
+                $p | Should -BeLike '*direction=asc*'
+            }
+        }
+
+        It 'reports Truncated when the -MaxIssues bound elides part of the backlog' {
+            # Exactly Max issues come back on a full page, so the server may hold more.
+            $many = 1..100 | ForEach-Object { New-CandidateIssue -Number $_ }
+            Initialize-ReconcileMocks -Issues $many
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 100 -MaxPullRequests 50 -RequestedMode 'report'
+
+            $r.IssuesTruncated | Should -BeTrue
+            (Format-CiScanSummary -Report $r) | Should -BeLike '*truncated*'
+        }
+
+        It 'reports Truncated = false when a short page proves the backlog is exhausted' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 100 -MaxPullRequests 50 -RequestedMode 'report'
+
+            $r.IssuesTruncated | Should -BeFalse
+        }
+    }
+
+    <#
+        A single missed human comment makes the reconciler act MORE aggressively (it is
+        the strongest veto signal), so the comment history must be complete or the run
+        must fail closed. Unpaginated `?per_page=100` silently dropped comment 101+.
+    #>
+    Describe 'Human comment history is fetched completely or not trusted' {
+        It 'paginates past the first 100 comments and still sees the human' {
+            $page1 = 1..100 | ForEach-Object {
+                [pscustomobject]@{ user = [pscustomobject]@{ login = 'github-actions'; type = 'Bot' } }
+            }
+            $page2 = @([pscustomobject]@{ user = [pscustomobject]@{ login = 'PureWeen'; type = 'User' } })
+
+            Mock Invoke-GhRead {
+                $joined = ($GhArgs -join ' ')
+                if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+                if ($joined -like '*/comments*') {
+                    # NOTE: `per_page=100` contains the substring `page=100`, so a
+                    # wildcard like '*page=1*' matches EVERY page. Anchor on the end.
+                    if ($joined -match '&page=1$') { return , @($page1) }
+                    if ($joined -match '&page=2$') { return , @($page2) }
+                    return , @()
+                }
+                if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+                return $null
+            }
+
+            $c = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+            $c.Ok | Should -BeTrue
+            $c.Logins | Should -Contain 'PureWeen'
+        }
+
+        It 'fails closed when a comment page cannot be read' {
+            Mock Invoke-GhRead {
+                if (($GhArgs -join ' ') -like '*/comments*') { return $null }
+                return , @()
+            }
+
+            $c = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+            $c.Ok | Should -BeFalse
+            @($c.Logins).Count | Should -Be 0
+        }
+
+        It 'fails closed rather than truncating when the page ceiling is hit' {
+            # Every page is full, so exhaustion is never proven.
+            $full = 1..100 | ForEach-Object {
+                [pscustomobject]@{ user = [pscustomobject]@{ login = 'github-actions'; type = 'Bot' } }
+            }
+            Mock Invoke-GhRead {
+                if (($GhArgs -join ' ') -like '*/comments*') { return , @($full) }
+                return , @()
+            }
+
+            $c = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+            $c.Ok | Should -BeFalse
+        }
+
+        It 'suppresses all mutations when the comment history is incomplete' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+            Mock Invoke-GhRead {
+                $joined = ($GhArgs -join ' ')
+                if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+                if ($joined -like '*/comments*') { return $null }
+                if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+                return $null
+            }
+
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+            Should -Invoke Invoke-GhWrite -Times 0 -Exactly
+        }
+    }
+
+    <#
+        The notice tells a maintainer how to stop an automatic close. If it names a
+        gesture the code does not honour, a maintainer performs it, the reconciler
+        re-labels and re-notifies on the next run, and the issue still closes.
+    #>
+    Describe 'Candidate notice names only vetoes the code actually honours' {
+        BeforeAll {
+            $script:Notice = New-CiScanCandidateNotice -Verdict ([pscustomobject]@{
+                    Number = 100; Decision = 'candidate'; VerifiedAbsences = 10
+                    RequiredAbsences = 10; Pipeline = 'maui-pr-uitests'
+                    QuietDays = 40; AgeDays = 90; MergedFixPrs = @()
+                }) -Config (Get-CiScanTwinConfig -Label 'ci-scan-net11')
+        }
+
+        It 'does not claim that removing the candidate label is a veto' {
+            # Get-CiScanProposedActions re-adds the label on the very next run.
+            $script:Notice | Should -Not -BeLike '*remove*ci-scan-stale-candidate*'
+        }
+
+        It 'lists every signal Test-CiScanHumanTouched enforces' {
+            $script:Notice | Should -BeLike '*assign*'
+            $script:Notice | Should -BeLike '*milestone*'
+            $script:Notice | Should -BeLike '*comment*'
+            foreach ($p in @('area-', 'p/', 's/', 'partner/', 'legacy-area-')) {
+                $script:Notice | Should -BeLike "*$p*"
+            }
+        }
+
+        It 'honours each advertised veto for real' {
+            $labelled = New-CandidateIssue -Number 101 -Labels @('ci-scan-net11', 'area-controls')
+            (Test-CiScanHumanTouched -Issue $labelled).Touched |
+                Should -BeTrue -Because 'an area-* label is advertised as a veto'
+
+            $milestoned = New-ApiIssue -Number 102 -Body (New-CanonicalBody)
+            $milestoned.milestone = [pscustomobject]@{ title = '10.0-sr7' }
+            (Test-CiScanHumanTouched -Issue $milestoned).Touched |
+                Should -BeTrue -Because 'a milestone is advertised as a veto'
+
+            $assigned = New-ApiIssue -Number 103 -Body (New-CanonicalBody)
+            $assigned.assignees = @([pscustomobject]@{ login = 'PureWeen' })
+            (Test-CiScanHumanTouched -Issue $assigned).Touched |
+                Should -BeTrue -Because 'an assignee is advertised as a veto'
+
+            (Test-CiScanHumanTouched -Issue (New-CandidateIssue -Number 104) `
+                -HumanCommenters @('PureWeen')).Touched |
+                Should -BeTrue -Because 'any human comment is advertised as a veto'
+        }
+    }
+
     Describe 'Run summary is useful for human review' {
         It 'renders every field a maintainer needs to judge a proposed close' {
             Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
