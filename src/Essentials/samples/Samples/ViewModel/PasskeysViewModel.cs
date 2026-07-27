@@ -33,8 +33,6 @@ namespace Samples.ViewModel
 
 		public ObservableCollection<PasskeyItem> Passkeys { get; } = new();
 
-		public ObservableCollection<ExternalProviderItem> ExternalProviders { get; } = new();
-
 		public PasskeysViewModel()
 		{
 			SignUpCommand = new Command(async () => await SignUpAsync());
@@ -42,10 +40,7 @@ namespace Samples.ViewModel
 			SignOutCommand = new Command(async () => await SignOutAsync());
 			RegisterCommand = new Command(async () => await RegisterAsync());
 			LoginCommand = new Command(async () => await LoginAsync());
-			GetExternalProfileCommand = new Command(async () => await GetExternalProfileAsync());
 			EditServerUrlCommand = new Command(async () => await EditServerUrlAsync());
-
-			_ = LoadProvidersAsync();
 		}
 
 		public bool IsSupported => PasskeysApi.IsSupported;
@@ -127,13 +122,7 @@ namespace Samples.ViewModel
 
 		public ICommand LoginCommand { get; }
 
-		public ICommand GetExternalProfileCommand { get; }
-
 		public ICommand EditServerUrlCommand { get; }
-
-		public bool HasExternalProviders => ExternalProviders.Count > 0;
-
-		public bool NoExternalProviders => ExternalProviders.Count == 0;
 
 		async Task SignUpAsync()
 		{
@@ -389,136 +378,6 @@ namespace Samples.ViewModel
 			Passkeys.Clear();
 		}
 
-		// Loads the external providers the server has configured, so the UI shows a button per provider —
-		// no provider is hard-coded here. Called at startup and whenever the server URL changes.
-		async Task LoadProvidersAsync()
-		{
-			try
-			{
-				var client = GetClient();
-				using var httpResponse = await client.GetAsync("/native-auth/external/providers");
-				if (!httpResponse.IsSuccessStatusCode)
-					return;
-
-				var body = await httpResponse.Content.ReadAsStringAsync();
-				using var doc = JsonDocument.Parse(body);
-
-				MainThread.BeginInvokeOnMainThread(() =>
-				{
-					ExternalProviders.Clear();
-					foreach (var element in doc.RootElement.EnumerateArray())
-					{
-						var name = element.TryGetProperty("name", out var n) ? n.GetString() : null;
-						if (string.IsNullOrEmpty(name))
-							continue;
-						var displayName = element.TryGetProperty("displayName", out var d) ? d.GetString() : name;
-						var provider = name;
-						ExternalProviders.Add(new ExternalProviderItem
-						{
-							Name = name,
-							DisplayName = displayName,
-							SignInCommand = new Command(async () => await ExternalSignInAsync(provider)),
-						});
-					}
-					OnPropertyChanged(nameof(HasExternalProviders));
-					OnPropertyChanged(nameof(NoExternalProviders));
-				});
-			}
-			catch
-			{
-				// Best-effort: if the server is unreachable, just show no external providers.
-			}
-		}
-
-		async Task ExternalSignInAsync(string provider)
-		{
-			try
-			{
-				IsBusy = true;
-				Log($"Opening {provider} sign-in in the browser…");
-
-				// The server runs the OAuth exchange, creates/links a local account, and redirects to our
-				// custom scheme with a one-time code. The app never handles the provider's token.
-				var callback = new Uri("xamarinessentials://");
-				var startUrl = new Uri($"{NormalizeBaseUrl()}native-auth/external/start?provider={Uri.EscapeDataString(provider)}&returnUri={Uri.EscapeDataString(callback.ToString())}");
-
-				var result = await WebAuthenticator.AuthenticateAsync(startUrl, callback);
-
-				if (result.Properties.TryGetValue("error", out var error) && !string.IsNullOrEmpty(error))
-				{
-					Log($"❌ External sign-in failed: {error}");
-					return;
-				}
-
-				if (!result.Properties.TryGetValue("code", out var code) || string.IsNullOrEmpty(code))
-				{
-					Log("❌ The server did not return a sign-in code.");
-					return;
-				}
-
-				// Exchange the code over our HttpClient so the session cookie lands in our CookieContainer
-				// (the browser's cookies are a separate jar). Now signed in like password/passkey.
-				Log("Exchanging the code for a session…");
-				await PostJsonAsync("/native-auth/external/exchange", new { code });
-
-				await RefreshAndOfferPasskeyAsync();
-			}
-			catch (Exception ex)
-			{
-				HandleError(ex);
-			}
-			finally
-			{
-				IsBusy = false;
-			}
-		}
-
-		async Task GetExternalProfileAsync()
-		{
-			try
-			{
-				IsBusy = true;
-				Log("Asking the server for your external profile…");
-
-				// We never hold the provider token — we ask our own API, which uses its stored token to fetch
-				// the profile and relay it back.
-				var client = GetClient();
-				using var httpResponse = await client.GetAsync("/me/external");
-				var body = await httpResponse.Content.ReadAsStringAsync();
-				if (!httpResponse.IsSuccessStatusCode)
-					throw new InvalidOperationException($"Server returned {(int)httpResponse.StatusCode}: {ExtractServerMessage(body)}");
-
-				using var doc = JsonDocument.Parse(body);
-				var root = doc.RootElement;
-
-				if (root.TryGetProperty("message", out var message))
-				{
-					Log(message.GetString());
-					return;
-				}
-
-				var provider = root.TryGetProperty("provider", out var p) ? p.GetString() : "?";
-				var details = body;
-				if (root.TryGetProperty("profile", out var profile))
-				{
-					var name = profile.TryGetProperty("name", out var n) ? n.GetString() : string.Empty;
-					var email = profile.TryGetProperty("email", out var e) ? e.GetString() : string.Empty;
-					details = $"Provider: {provider}{Environment.NewLine}Name: {name}{Environment.NewLine}Email: {email}";
-				}
-
-				await DisplayAlertAsync($"Fetched by the server on your behalf:{Environment.NewLine}{Environment.NewLine}{details}");
-				Log($"✅ Server relayed your {provider} profile (you never saw the provider token).");
-			}
-			catch (Exception ex)
-			{
-				HandleError(ex);
-			}
-			finally
-			{
-				IsBusy = false;
-			}
-		}
-
 		async Task EditServerUrlAsync()
 		{
 			var url = await DisplayPromptAsync(
@@ -533,7 +392,6 @@ namespace Samples.ViewModel
 			// A new server means a fresh HttpClient with an empty cookie jar, i.e. a new session.
 			SetSignedOutState();
 			Log($"Server set to {ServerBaseUrl}");
-			await LoadProvidersAsync();
 		}
 
 		bool EnsureSupported()
@@ -660,17 +518,5 @@ namespace Samples.ViewModel
 		public string CreatedAtText => string.IsNullOrEmpty(CreatedAt) ? string.Empty : $"Added {CreatedAt}";
 
 		public ICommand DeleteCommand { get; set; }
-	}
-
-	// One external OAuth provider the server has configured (e.g. Google, Microsoft, Apple, Facebook).
-	public class ExternalProviderItem
-	{
-		public string Name { get; set; }
-
-		public string DisplayName { get; set; }
-
-		public string ButtonText => $"Sign in with {DisplayName}";
-
-		public ICommand SignInCommand { get; set; }
 	}
 }
