@@ -287,11 +287,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Destroy();
 			base.OnDestroy();
 		}
-		
+
 		public override void OnHiddenChanged(bool hidden)
 		{
 			base.OnHiddenChanged(hidden);
-			
+
 			if (!hidden && _shellToolbar?.Handler != null)
 			{
 				_shellToolbar.Handler.UpdateValue(nameof(Toolbar.TitleView));
