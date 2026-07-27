@@ -765,6 +765,44 @@ Describe 'Set-CiScanReconcileMode — the host-enforced gate' {
 }
 
 
+Describe 'Get-CiScanOpenIssues — the bound is honest at any size' {
+    <#
+        `Truncated` is the only thing standing between a bounded batch and a reader who
+        believes the report is an exhaustive survey. A page ceiling fixed at a constant
+        broke that: once `-MaxIssues` exceeded ceiling x 100 the loop ran out of pages,
+        exited WITHOUT setting Truncated, and the run summary claimed "Survey complete".
+    #>
+    BeforeEach {
+        $script:RequestedIssuePages = @()
+        Mock Invoke-GhRead {
+            $joined = ($GhArgs -join ' ')
+            $script:RequestedIssuePages += $joined
+            if ($joined -notmatch 'per_page=(\d+)&page=(\d+)$') { return $null }
+            # A server holding more issues than any bound asks for: every page is full.
+            $perPage = [int]$Matches[1]
+            return , @(1..$perPage | ForEach-Object { [pscustomobject]@{ number = $_ } })
+        }
+    }
+
+    It 'surveys the whole bound and reports truncation when the bound needs over ten pages' {
+        $r = Get-CiScanOpenIssues -Owner 'dotnet' -Repo 'maui' -Label 'ci-scan-net11' -Max 1500
+
+        # With a constant ten-page ceiling this returned 1,000 issues and Truncated = $false.
+        @($r.Issues).Count | Should -Be 1500
+        $r.Truncated | Should -BeTrue
+        @($script:RequestedIssuePages).Count | Should -Be 15
+    }
+
+    It 'asks for no more pages than the bound needs' {
+        $r = Get-CiScanOpenIssues -Owner 'dotnet' -Repo 'maui' -Label 'ci-scan-net11' -Max 40
+
+        @($r.Issues).Count | Should -Be 40
+        $r.Truncated | Should -BeTrue
+        @($script:RequestedIssuePages).Count | Should -Be 1
+        $script:RequestedIssuePages[0] | Should -BeLike '*per_page=40&page=1'
+    }
+}
+
 Describe 'Invoke-GhRead — read-only by construction' {
     It 'refuses a mutating gh subcommand' -ForEach @(
         @{ GhArgv = @('issue', 'close', '1') }
@@ -776,13 +814,47 @@ Describe 'Invoke-GhRead — read-only by construction' {
         { Invoke-GhRead -GhArgs $GhArgv } | Should -Throw -ExpectedMessage '*non-read invocation*'
     }
 
+    <#
+        `gh api` documents that ANY request parameter switches the method to POST, so
+        `-f`/`--raw-field` is the same write class as `-F`/`--field`. `pflag` also accepts
+        the value attached to the flag, so an exact-string list misses `--method=POST`,
+        `-XPOST` and friends. Both gaps are pinned here.
+    #>
     It 'refuses a request-shaping flag that would turn gh api into a write' -ForEach @(
         @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '-X', 'PATCH') }
         @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '--method', 'DELETE') }
         @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '-F', 'state=closed') }
         @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '--field', 'state=closed') }
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '-f', 'state=closed') }
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '--raw-field', 'state=closed') }
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '--input', 'body.json') }
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '--method=DELETE') }
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '--raw-field=state=closed') }
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '--input=body.json') }
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '-XPATCH') }
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '-fstate=closed') }
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '-Fstate=closed') }
     ) {
         { Invoke-GhRead -GhArgs $GhArgv } | Should -Throw -ExpectedMessage '*request-shaping flag*'
+    }
+
+    <#
+        The guard must not over-reject: a false positive here takes out a read the
+        reconciler depends on, which fails the run rather than failing closed on a write.
+    #>
+    It 'accepts the read-shaped arguments the reconciler actually uses' -ForEach @(
+        @{ Argument = 'repos/dotnet/maui/issues?state=open&per_page=100&page=1' }
+        @{ Argument = '--paginate' }
+        @{ Argument = '--jq' }
+        @{ Argument = '--json' }
+        @{ Argument = '--state' }
+        @{ Argument = '--limit' }
+        @{ Argument = '--repo' }
+        @{ Argument = '--search' }
+        @{ Argument = '-q.foo' }
+        @{ Argument = '-x' }
+    ) {
+        Test-CiScanRequestShapingArg -Argument $Argument | Should -BeFalse
     }
 }
 

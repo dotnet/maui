@@ -109,6 +109,41 @@ Reset-CiScanCounters
 
 #region I/O primitives --------------------------------------------------------
 
+function Test-CiScanRequestShapingArg {
+    <#
+    .SYNOPSIS
+        True if a `gh` argument could turn a default-GET request into a write.
+    .DESCRIPTION
+        `gh api` documents two independent ways to leave GET:
+
+          * an explicit method flag (`-X` / `--method`), and
+          * ANY request parameter — "adding request parameters will automatically switch
+            the request method to POST". That covers `-F`/`--field`, `-f`/`--raw-field`
+            and `--input` alike, so `-f`/`--raw-field` is the same class as `-F`/`--field`
+            and must be refused too.
+
+        Matching is done on the flag's syntactic forms rather than on exact strings,
+        because `pflag` accepts a value attached to the flag (`--method=POST`, `-XPOST`,
+        `-fstate=closed`), and an exact-string list silently misses every attached form.
+
+        Shorthand matching is deliberately anchored at `^-[XFf]` rather than scanning the
+        whole cluster: `pflag` treats everything after a value-taking shorthand as that
+        shorthand's value, so a scan would falsely reject innocuous arguments such as
+        `-q.foo` (the `f` there is jq syntax, not a flag). Every shaping shorthand takes a
+        value, so it can only ever appear first in a cluster.
+
+        Case-sensitive on purpose: `-F` and `-f` are distinct gh flags, and both are
+        refused here, but `-X` must not be conflated with an unrelated `-x`.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][AllowEmptyString()][string]$Argument)
+
+    if ($Argument -cmatch '^--([^=]+)') {
+        return ($Matches[1] -cin @('method', 'field', 'raw-field', 'input'))
+    }
+    return ($Argument -cmatch '^-[XFf]')
+}
+
 function Invoke-GhRead {
     <#
     .SYNOPSIS
@@ -124,13 +159,13 @@ function Invoke-GhRead {
     # Defence in depth: this function shells out to `gh` with a caller-supplied argument
     # vector, so on its own it would be a second, unguarded mutation path. Constrain it to
     # the read shapes the reconciler actually uses. `gh api` defaults to GET, so the only
-    # way to make it write is an explicit method flag.
+    # way to make it write is a method flag or a request parameter.
     $verb = ($GhArgs | Select-Object -First 2) -join ' '
     if ($verb -cne 'api' -and $verb -cne 'pr list' -and $GhArgs[0] -cne 'api') {
         throw "BUG: Invoke-GhRead refuses non-read invocation 'gh $($GhArgs -join ' ')'."
     }
     foreach ($a in $GhArgs) {
-        if ($a -cmatch '^(-X|--method|-F|--field|--input)$') {
+        if (Test-CiScanRequestShapingArg -Argument $a) {
             throw "BUG: Invoke-GhRead refuses request-shaping flag '$a'."
         }
     }
@@ -242,7 +277,15 @@ function Get-CiScanOpenIssues {
         `sort=created&direction=asc` prefetch in `ci-status-fix*.md`.
 
         `Truncated` reports whether the bound actually elided anything, so a bounded
-        batch can never be misread as "these are all the open tracking issues".
+        batch can never be misread as "these are all the open tracking issues". That
+        signal is only trustworthy if EVERY early exit is accounted for, so the page
+        ceiling is derived from `Max` instead of being a constant: a constant ceiling
+        silently caps the survey once `Max` exceeds ceiling x 100 and reports
+        `Truncated` = $false while doing it. Hitting the ceiling is therefore reported
+        as truncation, never as exhaustion.
+
+        Only a SHORT page is treated as proof of exhaustion — that is GitHub's documented
+        pagination contract (fewer items than `per_page` means the last page).
     #>
     [CmdletBinding()]
     param([string]$Owner, [string]$Repo, [string]$Label, [int]$Max)
@@ -250,7 +293,9 @@ function Get-CiScanOpenIssues {
     $issues = @()
     $page = 1
     $truncated = $false
-    while ($issues.Count -lt $Max -and $page -le 10) {
+    $maxPages = [math]::Max(1, [int][math]::Ceiling($Max / 100.0))
+    while ($issues.Count -lt $Max) {
+        if ($page -gt $maxPages) { $truncated = $true; break }
         $perPage = [math]::Min(100, $Max - $issues.Count)
         $path = "repos/$Owner/$Repo/issues?state=open&labels=$([uri]::EscapeDataString($Label))" +
                 "&sort=created&direction=asc&per_page=$perPage&page=$page"
