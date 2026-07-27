@@ -5172,6 +5172,58 @@ if ($null -ne $m22bStale) {
 $m22bSlipped = Get-MilestoneCheckByPrefix -Checks $m22b -Prefix 'Next-cycle milestone past due'
 Assert-Eq -Label "M22b: missing next-cycle rc1 + stale rc2 → no next-cycle-past-due row" -Expected $true -Actual ($null -eq $m22bSlipped)
 
+# ── Scenario M22e: rendered stale ordering is deterministic on tied due_on ──
+# Nothing pinned the ORDER of the rendered milestone list, so a reversed or permuted
+# sort survived every other scenario. This locks it, and specifically guards the
+# `-Stable` switch on Get-PastDueOpenMilestones' Sort-Object.
+#
+# Why the fixture is padded: PowerShell's default Sort-Object is NOT stable (ties are
+# only kept in received order with -Top/-Bottom/-Stable), but .NET falls back to a
+# stable insertion sort below ~16 elements — so a small fixture cannot detect an
+# unstable sort. Since sorting now happens on the whole past-due set BEFORE each
+# check's discriminator, the set that must cross that threshold is the PADDING plus
+# the real ones. The 18 `.NET 10.0-preview*` entries are past due and open (so they
+# land in $pastDueOpen) but belong to a different major, so $cycleFilter drops them
+# from $staleMs. All entries share ONE due_on, making every comparison a tie: with
+# -Stable the four .NET 11 entries render in input order; without it they permute.
+$m22eData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1'      -Number 301 -DueOn $daysAhead30)
+)
+$m22eData += 1..18 | ForEach-Object {
+    New-MockMilestone -Title ".NET 10.0-preview$_" -State 'open' -Number (400 + $_) -OpenIssues 1 -DueOn $daysAgo60
+}
+$m22eExpectedOrder = @('.NET 11.0-preview2', '.NET 11.0-preview4', '.NET 11.0-preview1', '.NET 11.0-preview3')
+$m22eData += $m22eExpectedOrder | ForEach-Object {
+    New-MockMilestone -Title $_ -State 'open' -Number (500 + $m22eExpectedOrder.IndexOf($_)) -OpenIssues 1 -DueOn $daysAgo60
+}
+$m22e = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22eData
+$m22eStale = Get-MilestoneCheckByPrefix -Checks $m22e -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22e: cross-major padding is filtered out; only the 4 same-major stale ones surface" `
+          -Expected 'Stale open milestones (4)' -Actual $m22eStale.Area
+# Extract the titles in rendered order and compare as a single string.
+$m22eRendered = @([regex]::Matches($m22eStale.Details, '\[(\.NET [^\]]+)\]') | ForEach-Object { $_.Groups[1].Value }) -join ','
+Assert-Eq -Label "M22e: tied due_on preserves input order (guards Sort-Object -Stable)" `
+          -Expected ($m22eExpectedOrder -join ',') -Actual $m22eRendered
+
+# M22f: sort DIRECTION — oldest-first. M22e's entries are all tied, so it cannot
+# distinguish ascending from descending (a `-Descending` mutant survives it). Here
+# the three due dates are distinct and deliberately supplied out of order, so the
+# rendered sequence pins "oldest debt first", which is the order the NextAction's
+# triage advice assumes.
+$m22fData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1'      -Number 301 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-preview1' -State 'open' -Number 601 -OpenIssues 1 -DueOn $daysAgo30)
+    (New-MockMilestone -Title '.NET 11.0-preview2' -State 'open' -Number 602 -OpenIssues 1 -DueOn $daysAgo60)
+    (New-MockMilestone -Title '.NET 11.0-preview3' -State 'open' -Number 603 -OpenIssues 1 -DueOn $daysAgo10)
+)
+$m22f = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22fData
+$m22fStale = Get-MilestoneCheckByPrefix -Checks $m22f -Prefix 'Stale open milestones'
+$m22fRendered = @([regex]::Matches($m22fStale.Details, '\[(\.NET [^\]]+)\]') | ForEach-Object { $_.Groups[1].Value }) -join ','
+Assert-Eq -Label "M22f: distinct due_on renders oldest-first (guards sort direction)" `
+          -Expected '.NET 11.0-preview2,.NET 11.0-preview1,.NET 11.0-preview3' -Actual $m22fRendered
+
 # M22c: a slipped next-cycle rc1 is NOT "already-shipped debt" — but it is NOT silently
 # dropped either. Check 3b re-classifies it into a distinct "Next-cycle milestone past due"
 # row (findings 1-2, round-2), preserving the signal without the misleading wording.

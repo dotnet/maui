@@ -1234,10 +1234,21 @@ function Get-PastDueOpenMilestones {
         bug class Check 3b was added to fix. Keeping the test here makes that
         agreement structural rather than a copy-paste invariant nothing enforces.
 
-        Sorting here (rather than in each caller) is order-equivalent: filtering a
-        sorted list preserves relative order, and Sort-Object is stable.
+        `-Stable` is required, not cosmetic. PowerShell's default `Sort-Object` is
+        NOT stable — per the cmdlet docs, equal-key inputs are only delivered in
+        received order when `-Top`, `-Bottom`, or `-Stable` is used. In practice the
+        default stays ordered below .NET's ~16-element insertion-sort threshold and
+        starts permuting ties above it, so a bug here would stay invisible in small
+        fixtures and only appear on a repo with many past-due milestones. Because
+        sorting now happens BEFORE each caller's discriminator instead of after,
+        a stable sort is what makes the two orderings equivalent: filtering a stably
+        sorted list preserves relative order, so each caller sees the same sequence
+        it would have produced by filtering first. It also makes tie order
+        deterministic, which the previous filter-then-sort code did not guarantee
+        either.
     #>
     param(
+        [Parameter(Mandatory)]
         [AllowEmptyCollection()]
         [array] $Milestones,
 
@@ -1249,7 +1260,7 @@ function Get-PastDueOpenMilestones {
         $_.state -eq 'open' -and
         $_.due_on -and
         ([datetime]$_.due_on).ToUniversalTime() -lt $Cutoff
-    } | Sort-Object { [datetime]$_.due_on })
+    } | Sort-Object -Stable { [datetime]$_.due_on })
 }
 
 function Get-MilestoneHygieneChecks {
