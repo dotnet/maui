@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
@@ -124,6 +125,18 @@ namespace Microsoft.Maui.Controls.Handlers
                 return accept;
             };
 
+            // ShouldSelectViewController only fires *before* UIKit assigns the new selection,
+            // and only sets CurrentItem for taps on one of the visible tab bar buttons. Tapping a
+            // row inside the native "More" list doesn't go through that same synchronous
+            // set-before-assign path in a way we can rely on, so CurrentItem would never update
+            // for sections aggregated into "More". ViewControllerSelected (didSelectViewController)
+            // fires *after* the selection has actually changed, for every selection path
+            // (visible tab buttons, "More" list rows, and the "More" button itself), so it's the
+            // reliable single place to keep CurrentItem in sync — mirroring how the legacy
+            // ShellItemRenderer caught every selection change via its SelectedViewController
+            // property setter override.
+            _tabBarController.ViewControllerSelected += OnNativeViewControllerSelected;
+
             // Create section renderers for all tabs
             CreateTabRenderers();
         }
@@ -131,6 +144,8 @@ namespace Microsoft.Maui.Controls.Handlers
         protected override void DisconnectHandler(UIView platformView)
         {
             ((IDisconnectable)this).Disconnect();
+
+            _tabBarController.ViewControllerSelected -= OnNativeViewControllerSelected;
 
             foreach (var kvp in _sectionRenderers.ToList())
             {
@@ -276,6 +291,31 @@ namespace Microsoft.Maui.Controls.Handlers
             UpdateMoreCellsEnabled();
         }
 
+        /// <summary>
+        /// Handles UITabBarControllerDelegate.DidSelectViewController (fired *after* UIKit has
+        /// already updated the selection), for every native selection path: tapping a visible tab
+        /// bar button, tapping the "More" button itself, and tapping a row inside the "More"
+        /// list. This is the equivalent of the legacy ShellItemRenderer's override of the
+        /// SelectedViewController property setter, which our plain (non-subclassed)
+        /// UITabBarController has no way to override directly.
+        /// </summary>
+        void OnNativeViewControllerSelected(object? sender, UITabBarSelectionEventArgs e)
+        {
+            var renderer = RendererForViewController(e.ViewController);
+            if (renderer is not null)
+            {
+                VirtualView.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
+                CurrentRenderer = renderer;
+            }
+
+            if (ReferenceEquals(e.ViewController, _tabBarController.MoreNavigationController))
+            {
+                _tabBarController.MoreNavigationController.WeakDelegate = _moreNavigationDelegate ??= new MoreNavigationDelegate(this);
+            }
+
+            UpdateMoreCellsEnabled();
+        }
+
         MoreNavigationDelegate? _moreNavigationDelegate;
         bool _isHandlingNativeTabSelection;
 
@@ -333,7 +373,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     var index = Array.IndexOf(_tabBarController.ViewControllers, renderer.ViewController);
                     if (index >= 0 && _tabBarController.TabBar?.Items is not null && index < _tabBarController.TabBar.Items.Length)
                     {
-                        _tabBarController.TabBar.Items[index].Enabled = shellSection.IsEnabled;
+                        UpdateTabBarItemEnabled(_tabBarController.TabBar.Items[index], shellSection.IsEnabled);
                     }
                 }
             }
@@ -652,6 +692,44 @@ namespace Microsoft.Maui.Controls.Handlers
             return null;
         }
 
+        // The global UITabBarItem.Appearance disabled-state title color (set once in
+        // ShellTabBarAppearanceTracker) doesn't reliably re-render once a specific item's
+        // Enabled flips back to true - the item's title label can keep showing the disabled
+        // color until something forces per-item text attributes to be reassigned. Explicitly
+        // clearing/re-setting the per-item title attributes (and re-tinting the icon, since
+        // UITabBarAppearance.Disabled.IconColor doesn't work either) on every enable/disable
+        // change works around this, matching the legacy ShellItemRenderer's
+        // UpdateTabBarItemEnabled behavior.
+        void UpdateTabBarItemEnabled(UITabBarItem tabBarItem, bool isEnabled)
+        {
+            tabBarItem.Enabled = isEnabled;
+
+            var disabledColor = _shellContext?.Shell is null ? null : Shell.GetTabBarDisabledColor(_shellContext.Shell)?.ToPlatform();
+            if (disabledColor is null)
+                return;
+
+            var textAttributes = isEnabled ? null : new UIStringAttributes { ForegroundColor = disabledColor };
+            tabBarItem.SetTitleTextAttributes(textAttributes!, UIControlState.Disabled);
+
+            if (tabBarItem.Image is not null)
+            {
+                tabBarItem.Image = isEnabled
+                    ? tabBarItem.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+                    : CreateTintedImage(tabBarItem.Image, disabledColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+            }
+        }
+
+        static UIImage CreateTintedImage(UIImage image, UIColor color)
+        {
+            var renderer = new UIGraphicsImageRenderer(image.Size, new UIGraphicsImageRendererFormat { Opaque = false, Scale = image.CurrentScale });
+            return renderer.CreateImage(ctx =>
+            {
+                image.Draw(new CGRect(CGPoint.Empty, image.Size));
+                color.SetFill();
+                ctx.FillRect(new CGRect(CGPoint.Empty, image.Size), CGBlendMode.SourceIn);
+            });
+        }
+
         void SetTabItemsEnabledState()
         {
             if (_tabBarController.TabBar?.Items is null)
@@ -670,7 +748,7 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
                 {
-                    _tabBarController.TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
+                    UpdateTabBarItemEnabled(_tabBarController.TabBar.Items[tabIndex], items[tabIndex].IsEnabled);
                     UpdateTabBarItemBadge(_tabBarController.TabBar.Items[tabIndex], items[tabIndex]);
                 }
             }

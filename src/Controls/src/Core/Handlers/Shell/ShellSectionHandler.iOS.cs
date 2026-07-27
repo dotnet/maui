@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 renderer.Value.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
                 renderer.Value.ViewController?.RemoveFromParentViewController();
-                renderer.Value.DisconnectHandler();
+                (renderer.Value.VirtualView as IView)?.DisconnectHandlers();
             }
             _contentRenderers.Clear();
 
@@ -211,9 +211,54 @@ namespace Microsoft.Maui.Controls.Handlers
         void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
         {
             if (appearance is null)
+            {
                 _appearanceTracker?.ResetAppearance(_navigationController);
+                ApplyAppearanceToMoreNavigationController(null);
+            }
             else
+            {
                 _appearanceTracker?.SetAppearance(_navigationController, appearance);
+                ApplyAppearanceToMoreNavigationController(appearance);
+            }
+        }
+
+        // When there are more than 5 tabs, iOS collapses the overflow tabs into its own
+        // "More" list, backed by a separate UINavigationController (UITabBarController.
+        // MoreNavigationController) that isn't one of our own _navigationController
+        // instances. Without this, that nav bar never receives our Shell nav bar
+        // appearance (e.g. Shell.SetBackgroundColor), so the "More" page renders with
+        // the default (white) nav bar instead of the Shell-defined color.
+        void ApplyAppearanceToMoreNavigationController(ShellAppearance? appearance)
+        {
+            var moreNavigationController = _navigationController?.TabBarController?.MoreNavigationController;
+
+            if (moreNavigationController is null)
+            {
+                // OnAppearanceChanged fires as soon as this section connects (from
+                // AddAppearanceObserver), which happens *before* ShellItemHandler attaches
+                // this section's _navigationController to the shared UITabBarController
+                // (that assignment happens once, after every section has been created).
+                // TabBarController is therefore still null at this point. Defer to the next
+                // run loop turn, by which time the tab bar wiring will be complete and
+                // MoreNavigationController resolvable.
+                _navigationController?.BeginInvokeOnMainThread(() =>
+                {
+                    var deferredMoreNavigationController = _navigationController?.TabBarController?.MoreNavigationController;
+                    if (deferredMoreNavigationController is not null)
+                        SetOrResetMoreNavigationControllerAppearance(deferredMoreNavigationController, appearance);
+                });
+                return;
+            }
+
+            SetOrResetMoreNavigationControllerAppearance(moreNavigationController, appearance);
+        }
+
+        void SetOrResetMoreNavigationControllerAppearance(UINavigationController moreNavigationController, ShellAppearance? appearance)
+        {
+            if (appearance is null)
+                _appearanceTracker?.ResetAppearance(moreNavigationController);
+            else
+                _appearanceTracker?.SetAppearance(moreNavigationController, appearance);
         }
 
         #endregion
@@ -494,7 +539,7 @@ namespace Microsoft.Maui.Controls.Handlers
                         if (r.Value.PlatformView is not null)
                         {
                             r.Value.ViewController?.RemoveFromParentViewController();
-                            r.Value.DisconnectHandler();
+                            (r.Value.VirtualView as IView)?.DisconnectHandlers();
                         }
                     }
                 }
@@ -533,7 +578,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     _contentRenderers.Remove(oldItem);
                     oldRenderer.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
                     oldRenderer.ViewController?.RemoveFromParentViewController();
-                    oldRenderer.DisconnectHandler();
+                    (oldRenderer.VirtualView as IView)?.DisconnectHandlers();
                 }
             }
 
