@@ -94,6 +94,41 @@ Assertion failed
             )
         }
     }
+
+    function New-ExpectedBuilds {
+        param(
+            [Int64]$MainBuildId = 123456,
+            [string]$MainResult = 'failed',
+            [Int64]$MainFailedRecordCount = 1
+        )
+
+        @(
+            [pscustomobject]@{
+                name                = 'maui-pr'
+                definition_id       = 302
+                status              = 'scanned'
+                build_id            = $MainBuildId
+                result              = $MainResult
+                failed_record_count = $MainFailedRecordCount
+            }
+            [pscustomobject]@{
+                name                = 'maui-pr-devicetests'
+                definition_id       = 314
+                status              = 'scanned'
+                build_id            = 123457
+                result              = 'succeeded'
+                failed_record_count = 0
+            }
+            [pscustomobject]@{
+                name                = 'maui-pr-uitests'
+                definition_id       = 313
+                status              = 'scanned'
+                build_id            = 123458
+                result              = 'succeeded'
+                failed_record_count = 0
+            }
+        )
+    }
 }
 
 Describe 'CI scanner pipeline coverage gate' {
@@ -120,6 +155,31 @@ Describe 'CI scanner pipeline coverage gate' {
         $plan.pipelines.Count | Should -Be 3
         $plan.filed_count | Should -Be 1
         $plan.has_cap_skip | Should -BeFalse
+    }
+
+    It 'rejects fabricated all-clean coverage with untrusted build IDs' {
+        $manifest = New-CompleteManifest
+
+        { Test-CiScanManifest -Manifest $manifest -ExpectedBuilds (New-ExpectedBuilds -MainBuildId 999999) } |
+            Should -Throw '*build_id must match the trusted latest completed build*'
+    }
+
+    It 'rejects empty coverage when the trusted build contains failed records' {
+        $manifest = New-CompleteManifest
+
+        { Test-CiScanManifest -Manifest $manifest -ExpectedBuilds (New-ExpectedBuilds) } |
+            Should -Throw '*must record at least one signature because the trusted build has failed records*'
+    }
+
+    It 'accepts empty coverage for a trusted successful build' {
+        $manifest = New-CompleteManifest
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds -MainResult 'succeeded' -MainFailedRecordCount 0)
+
+        $plan.pipelines[0].build_result | Should -Be 'succeeded'
+        $plan.pipelines[0].failed_records | Should -Be 0
     }
 
     It 'accepts actual cap exhaustion with explicit remaining-pipeline skips' {
@@ -203,6 +263,46 @@ Describe 'CI scanner pipeline coverage gate' {
 }
 
 Describe 'CI scanner issue payload gate' {
+    It 'rejects unsafe characters in a fingerprint' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample "test"|assertion failed|windows'
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*non-normalized or unsafe characters*'
+    }
+
+    It 'rejects a fingerprint for another scanner' {
+        $fingerprint = 'ci-scan-main|main|maui-pr|sample test|assertion failed|windows'
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*does not match the net11 scanner*'
+    }
+
+    It 'rejects a fingerprint for another pipeline' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr-uitests|sample test|assertion failed|windows'
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*does not match the net11 scanner*'
+    }
+
+    It 'rejects a fingerprint with the wrong field count' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed'
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*exactly six non-empty pipe-delimited fields*'
+    }
+
     It 'rejects the literal truncation placeholder in a title' {
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Title 'Sample failure [Content truncated due to length]')
@@ -266,6 +366,20 @@ Describe 'CI scanner issue payload gate' {
         $plan.issues.Count | Should -Be 1
         $plan.issues[0].Title | Should -Be '[ci-scan-net11] Sample test fails on Windows'
         $plan.issues[0].MatchCount | Should -Be 2
+    }
+
+    It 'neutralizes user and team mentions in the validated issue body' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nOwner: @octocat and @dotnet/maui."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        $plan = Test-CiScanManifest -Manifest $manifest
+
+        $plan.issues[0].Body | Should -Not -Match '@octocat|@dotnet/maui'
+        $plan.issues[0].Body | Should -Match "@$([char]0x200B)octocat"
+        $plan.issues[0].Body | Should -Match "@$([char]0x200B)dotnet/maui"
     }
 
     It 'rejects a Build ID marker that differs from the pipeline build' {

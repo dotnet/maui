@@ -42,7 +42,7 @@ engine:
 
 concurrency:
   group: "ci-failure-scan-net11"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 tools:
   github:
@@ -69,17 +69,92 @@ safe-outputs:
         DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
         CI_SCAN_PLAN_PATH: ${{ runner.temp }}/ci-scan-net11/plan.json
         CI_SCAN_RESULTS_PATH: ${{ runner.temp }}/ci-scan-net11/results.json
+        CI_SCAN_EXPECTED_BUILDS_PATH: ${{ runner.temp }}/ci-scan-net11/expected-builds.json
       inputs:
         manifest:
           description: "JSON object with a pipelines array in configured order. Each pipeline records status and every discovered signature disposition."
           required: true
           type: string
       steps:
+        - name: Require successful threat detection
+          if: needs.detection.result != 'success' || needs.detection.outputs.detection_success != 'true'
+          run: |
+            echo "::error::Threat detection did not pass; refusing to publish scanner issues."
+            exit 1
         - name: Checkout trusted scanner publisher
           uses: actions/checkout@v7.0.1
           with:
             ref: main
             persist-credentials: false
+        - name: Resolve trusted latest pipeline builds
+          uses: actions/github-script@v9.0.0
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            script: |
+              const fs = require('fs');
+              const path = require('path');
+              const inventoryPath = process.env.CI_SCAN_EXPECTED_BUILDS_PATH;
+              const definitions = [
+                { name: 'maui-pr', definition_id: 302 },
+                { name: 'maui-pr-devicetests', definition_id: 314 },
+                { name: 'maui-pr-uitests', definition_id: 313 },
+              ];
+              const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
+              const fetchJson = async url => {
+                const response = await fetch(url, {
+                  headers: { Accept: 'application/json' },
+                  signal: AbortSignal.timeout(30000),
+                });
+                if (!response.ok) {
+                  throw new Error(`AzDO request failed with HTTP ${response.status}.`);
+                }
+                return response.json();
+              };
+
+              const pipelines = [];
+              for (const definition of definitions) {
+                const query = new URLSearchParams({
+                  definitions: String(definition.definition_id),
+                  branchName: 'refs/heads/net11.0',
+                  statusFilter: 'completed',
+                  resultFilter: 'succeeded,failed,partiallySucceeded',
+                  queryOrder: 'finishTimeDescending',
+                  '$top': '1',
+                  'api-version': '7.1',
+                });
+                const buildsUrl = `https://dev.azure.com/dnceng-public/public/_apis/build/builds?${query}`;
+                const builds = await fetchJson(buildsUrl);
+                const build = Array.isArray(builds.value) ? builds.value[0] : undefined;
+                if (!build || !build.finishTime || Date.parse(build.finishTime) < cutoff) {
+                  pipelines.push({
+                    ...definition,
+                    status: 'skipped-no-recent-build',
+                  });
+                  continue;
+                }
+                if (Number(build.definition?.id) !== definition.definition_id ||
+                    build.sourceBranch !== 'refs/heads/net11.0' ||
+                    build.status !== 'completed') {
+                  throw new Error(`AzDO returned an invalid latest build for ${definition.name}.`);
+                }
+
+                const timelineUrl =
+                  `https://dev.azure.com/dnceng-public/public/_apis/build/builds/${Number(build.id)}/timeline?api-version=7.1`;
+                const timeline = await fetchJson(timelineUrl);
+                const failedRecordCount = Array.isArray(timeline.records)
+                  ? timeline.records.filter(record => record.result === 'failed').length
+                  : 0;
+                pipelines.push({
+                  ...definition,
+                  status: 'scanned',
+                  build_id: Number(build.id),
+                  result: String(build.result || '').toLowerCase(),
+                  failed_record_count: failedRecordCount,
+                });
+              }
+
+              fs.mkdirSync(path.dirname(inventoryPath), { recursive: true });
+              fs.writeFileSync(inventoryPath, JSON.stringify({ schema_version: 1, pipelines }, null, 2));
         - name: Validate complete scanner coverage and issue payloads
           shell: pwsh
           run: .github/scripts/Validate-CiScanManifest.ps1
@@ -159,11 +234,20 @@ safe-outputs:
                 }
               }
 
+              const openTrackingIssues = await github.paginate(github.rest.issues.listForRepo, {
+                owner,
+                repo,
+                state: 'open',
+                labels: expectedLabel,
+                per_page: 100,
+              });
               for (const issue of plan.issues) {
-                const query = `repo:${owner}/${repo} is:issue is:open label:${expectedLabel} in:body "${issue.Fingerprint}"`;
-                const matches = await github.rest.search.issuesAndPullRequests({ q: query, per_page: 10 });
-                if (matches.data.items.length > 0) {
-                  throw new Error(`Fingerprint ${issue.Fingerprint} already exists in open issue #${matches.data.items[0].number}; manifest must record it as existing.`);
+                const exactMarker = `<!-- ci-scan-fingerprint: ${issue.Fingerprint} -->`;
+                const match = openTrackingIssues.find(candidate =>
+                  !candidate.pull_request &&
+                  String(candidate.body || '').split(/\r?\n/).includes(exactMarker));
+                if (match) {
+                  throw new Error(`Fingerprint ${issue.Fingerprint} already exists in open issue #${match.number}; manifest must record it as existing.`);
                 }
               }
 
@@ -238,10 +322,6 @@ post-steps:
     run: |
       set -euo pipefail
       output='/tmp/gh-aw/agent_output.json'
-      if [ ! -f "$output" ]; then
-        echo "::error::Agent produced no safe-output manifest."
-        exit 1
-      fi
       submit_count=$(jq '[.items[]? | select(.type == "submit_ci_scan")] | length' "$output")
       other_count=$(jq '[.items[]? | select(.type != "submit_ci_scan")] | length' "$output")
       if [ "$submit_count" -ne 1 ] || [ "$other_count" -ne 0 ]; then

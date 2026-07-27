@@ -6,8 +6,8 @@
 .DESCRIPTION
     This script is the fail-closed boundary between the scanner agent and GitHub
     issue writes. It does not call GitHub or interpret CI logs. It validates the
-    single batched safe-output payload and writes a normalized plan for the
-    downstream GitHub API step.
+    single batched safe-output payload against a trusted build inventory and
+    writes a normalized plan for the downstream GitHub API step.
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -81,6 +81,27 @@ function ConvertTo-PositiveInteger {
     return [Int64]$text
 }
 
+function ConvertTo-NonNegativeInteger {
+    param(
+        [AllowNull()][object]$Value,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    $text = ConvertTo-TrimmedString $Value
+    if ($text -notmatch '^\d+$') {
+        throw "$Context must be a non-negative integer."
+    }
+
+    return [Int64]$text
+}
+
+function ConvertTo-SafeIssueBody {
+    param([Parameter(Mandatory = $true)][string]$Body)
+
+    $zeroWidthSpace = [char]0x200B
+    return [regex]::Replace($Body, '@(?=[A-Za-z0-9])', "@$zeroWidthSpace")
+}
+
 function Get-ScannerManifestFromAgentOutput {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -106,6 +127,22 @@ function Get-ScannerManifestFromAgentOutput {
     }
 
     return $rawManifest
+}
+
+function Get-CiScanExpectedBuilds {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "Trusted build inventory '$Path' does not exist."
+    }
+
+    $rawInventory = Get-Content -Raw -LiteralPath $Path
+    if ([string]::IsNullOrWhiteSpace($rawInventory) -or $rawInventory.Length -gt 100000) {
+        throw 'Trusted build inventory is empty or exceeds the 100000 character limit.'
+    }
+
+    $inventory = $rawInventory | ConvertFrom-Json
+    return @(Get-RequiredProperty -Object $inventory -Name 'pipelines' -Context 'trusted build inventory')
 }
 
 function Assert-ValidFingerprint {
@@ -192,17 +229,28 @@ function Assert-ValidIssuePayload {
     return [pscustomobject]@{
         Title      = $title
         FinalTitle = "[ci-scan-net11] $title"
-        Body       = $body
+        Body       = ConvertTo-SafeIssueBody -Body $body
         MatchCount = [Int64]$matchMarkers[0].Groups[1].Value
     }
 }
 
 function Test-CiScanManifest {
-    param([Parameter(Mandatory = $true)][object]$Manifest)
+    param(
+        [Parameter(Mandatory = $true)][object]$Manifest,
+        [AllowNull()][object]$ExpectedBuilds = $null
+    )
 
     $pipelines = @(Get-RequiredProperty -Object $Manifest -Name 'pipelines' -Context 'manifest')
     if ($pipelines.Count -ne $script:ConfiguredPipelines.Count) {
         throw "Manifest must contain exactly $($script:ConfiguredPipelines.Count) pipelines."
+    }
+
+    $trustedPipelines = $null
+    if ($null -ne $ExpectedBuilds) {
+        $trustedPipelines = @($ExpectedBuilds)
+        if ($trustedPipelines.Count -ne $script:ConfiguredPipelines.Count) {
+            throw "Trusted build inventory must contain exactly $($script:ConfiguredPipelines.Count) pipelines."
+        }
     }
 
     $normalizedPipelines = [System.Collections.Generic.List[object]]::new()
@@ -233,14 +281,65 @@ function Test-CiScanManifest {
             throw "$context must be skipped-cap-reached because the issue cap was already reached."
         }
 
+        $trustedStatus = $null
+        $trustedBuildId = $null
+        $trustedBuildResult = $null
+        $trustedFailedRecordCount = $null
+        if ($null -ne $trustedPipelines) {
+            $trustedPipeline = $trustedPipelines[$pipelineIndex]
+            $trustedName = ConvertTo-TrimmedString (
+                Get-RequiredProperty -Object $trustedPipeline -Name 'name' -Context "trusted $context"
+            )
+            $trustedDefinitionId = ConvertTo-PositiveInteger `
+                -Value (Get-RequiredProperty -Object $trustedPipeline -Name 'definition_id' -Context "trusted $context") `
+                -Context "trusted $context definition_id"
+            if ($trustedName -ne $expected.Name -or $trustedDefinitionId -ne $expected.DefinitionId) {
+                throw "Trusted $context must be $($expected.Name) definition $($expected.DefinitionId) in configured order."
+            }
+
+            $trustedStatus = (ConvertTo-TrimmedString (
+                Get-RequiredProperty -Object $trustedPipeline -Name 'status' -Context "trusted $context"
+            )).ToLowerInvariant()
+            if ($trustedStatus -notin @('scanned', 'skipped-no-recent-build')) {
+                throw "Trusted $context has invalid status '$trustedStatus'."
+            }
+            if ($trustedStatus -eq 'scanned') {
+                $trustedBuildId = ConvertTo-PositiveInteger `
+                    -Value (Get-RequiredProperty -Object $trustedPipeline -Name 'build_id' -Context "trusted $context") `
+                    -Context "trusted $context build_id"
+                $trustedBuildResult = (ConvertTo-TrimmedString (
+                    Get-RequiredProperty -Object $trustedPipeline -Name 'result' -Context "trusted $context"
+                )).ToLowerInvariant()
+                if ($trustedBuildResult -notin @('succeeded', 'failed', 'partiallysucceeded')) {
+                    throw "Trusted $context has invalid result '$trustedBuildResult'."
+                }
+                $trustedFailedRecordCount = ConvertTo-NonNegativeInteger `
+                    -Value (Get-RequiredProperty -Object $trustedPipeline -Name 'failed_record_count' -Context "trusted $context") `
+                    -Context "trusted $context failed_record_count"
+            }
+        }
+
         $buildId = $null
         if ($status -eq 'scanned') {
             $buildId = ConvertTo-PositiveInteger `
                 -Value (Get-RequiredProperty -Object $pipeline -Name 'build_id' -Context $context) `
                 -Context "$context build_id"
+            if ($null -ne $trustedPipelines) {
+                if ($trustedStatus -ne 'scanned' -or $buildId -ne $trustedBuildId) {
+                    throw "$context build_id must match the trusted latest completed build."
+                }
+                if ($trustedFailedRecordCount -gt 0 -and $signatures.Count -eq 0) {
+                    throw "$context must record at least one signature because the trusted build has failed records."
+                }
+            }
         } else {
             if ($signatures.Count -ne 0) {
                 throw "$context with status '$status' must have an empty signatures array."
+            }
+            if ($status -eq 'skipped-no-recent-build' -and
+                $null -ne $trustedPipelines -and
+                $trustedStatus -ne 'skipped-no-recent-build') {
+                throw "$context cannot be skipped-no-recent-build because a trusted recent build exists."
             }
             if ($status -eq 'skipped-cap-reached') {
                 if ($filedCount -ne $script:IssueCap) {
@@ -336,7 +435,9 @@ function Test-CiScanManifest {
                 definition_id = $definitionId
                 status        = $status
                 build_id      = $buildId
-                signatures    = $normalizedSignatures.ToArray()
+                build_result   = $trustedBuildResult
+                failed_records = $trustedFailedRecordCount
+                signatures     = $normalizedSignatures.ToArray()
             })
     }
 
@@ -382,10 +483,14 @@ if (-not $env:GH_AW_AGENT_OUTPUT) {
 if (-not $env:CI_SCAN_PLAN_PATH) {
     throw 'CI_SCAN_PLAN_PATH is required.'
 }
+if (-not $env:CI_SCAN_EXPECTED_BUILDS_PATH) {
+    throw 'CI_SCAN_EXPECTED_BUILDS_PATH is required.'
+}
 
 try {
     $manifest = Get-ScannerManifestFromAgentOutput -Path $env:GH_AW_AGENT_OUTPUT
-    $plan = Test-CiScanManifest -Manifest $manifest
+    $expectedBuilds = Get-CiScanExpectedBuilds -Path $env:CI_SCAN_EXPECTED_BUILDS_PATH
+    $plan = Test-CiScanManifest -Manifest $manifest -ExpectedBuilds $expectedBuilds
     Write-CiScanPlan -Plan $plan -Path $env:CI_SCAN_PLAN_PATH
     Write-Host "Validated complete coverage for $($plan.pipelines.Count) pipelines and $($plan.filed_count) issue payload(s)."
 } catch {
