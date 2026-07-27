@@ -162,6 +162,27 @@ inferred ✅ but the sub points at the wrong channel, or inferred ⚠️/❌ con
 real gap with the missing source repos named. When the local check simply agrees with
 the inferred signal, report it conversationally and leave the tracker to the CI body.
 
+### Preview action ordering (newly cut branch)
+
+When the preview branch exists but its plumbing is incomplete, present the remediation
+as a dependency-ordered sequence. Do **not** sort unrelated `BLOCKED`/`WATCH` rows ahead
+of these prerequisites:
+
+1. Add the Preview N default-channel mapping.
+2. Add the baseline Android, macOS/iOS, and VMR subscriptions and wait for the
+   `maestro-configuration` PR to merge into `production`.
+3. Reconcile MAUI's SDK/VMR pin with the official Preview N build through the newly
+   active component-flow path (typically the VMR subscription/update).
+4. Build branch HEAD and promote the resulting MAUI build to the Preview N channel.
+5. Clear current-preview CI/device/UI failures and finish release validation.
+
+Only after that current-preview sequence, list next-preview/inflight work such as the
+`netN.0` Preview N+1 bump, `main → netN.0` merge-ups, the next milestone, and other
+housekeeping. Keep those items in a separate **Preview N+1 / inflight follow-up**
+group unless there is explicit evidence that one is required for the current Preview N
+candidate. This is an output-ordering rule: it does not hide evidence or rewrite the
+deterministic status of any check.
+
 ## Parameters
 
 ### `Find-ReleaseReadinessTrackers.ps1`

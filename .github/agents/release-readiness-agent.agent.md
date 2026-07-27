@@ -202,6 +202,23 @@ Lead with a 1-2 sentence overall verdict (Ready 🟢 / Conditionally Ready 🟡 
 - Surface fresh ci-scan WATCH signals if the scanner just flagged something
 - For preview candidates, frame as "what would ship if we cut today," not "is this ready"
 
+**Preview action-plan ordering (mandatory).** For a newly cut preview branch with
+missing or incomplete flow plumbing, the prioritized action list MUST start with this
+dependency order, even when other report rows are marked `BLOCKED`:
+
+1. Add the Preview N default-channel mapping.
+2. Add the Android, macOS/iOS, and VMR subscriptions; note that they are inert until
+   the `maestro-configuration` PR merges into `production`.
+3. Reconcile MAUI's SDK/VMR pin with the official Preview N build through the newly
+   active component-flow path (normally the VMR subscription/update).
+
+Then list the current-preview build/promotion and CI validation work. Put `netN.0`
+Preview N+1 bumps, `main → netN.0` merge-ups, the next milestone, and bug-template
+housekeeping in a separate **Preview N+1 / inflight follow-up** group after the
+current-preview sequence. Do not allow a generic status sort to move those inflight
+items above the mapping → subscriptions → pin prerequisites. Preserve all evidence and
+statuses; this rule controls presentation and execution order, not classification.
+
 **Portfolio roll-up (cross-release path from §0a).** When answering a portfolio question, lead with a one-screen table — one row per active release — then a prioritized next-actions list:
 
 | Release | Lane | Mode | Verdict | Top blocker(s) | Captain-note action items | Last refreshed |
