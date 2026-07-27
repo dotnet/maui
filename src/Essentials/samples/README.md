@@ -15,7 +15,7 @@ The rest of this page is the **testing guide**: run the RP server and exercise i
 
 | Sample page | Endpoints | Local http port |
 | --- | --- | --- |
-| **Passkeys** | `/passkeys/*` (Blazor + ASP.NET Core Identity / WebAuthn) | 5177 |
+| **Passkeys** | `/passkeys/*` (ASP.NET Core Identity / WebAuthn) | 5177 |
 
 **Flow:** set up the [**server**](#1-server-shared-by-all-platforms) once (it's shared by every
 platform), then do the platform setup for what you're testing —
