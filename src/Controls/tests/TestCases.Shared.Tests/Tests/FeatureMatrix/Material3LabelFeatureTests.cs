@@ -475,7 +475,6 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("MainLabel");
-		App.Tap("MainLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -687,7 +686,6 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("MainLabel");
-		App.Tap("MainLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
