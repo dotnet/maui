@@ -107,10 +107,19 @@ if ($patchBytes -lt 1 -or $patchBytes -gt $MaxPatchBytes) {
 }
 
 $registerScript = Join-Path $PSScriptRoot 'Register-CiFixSafeOutputExpectation.ps1'
-& $registerScript `
-    -Type $ExpectedOutputType `
-    -PullRequestNumber $PullRequestNumber `
-    -OutputDirectory $ExpectationDirectory | Out-Null
+# Only bind -PullRequestNumber when there actually is one. `create_pull_request` has no
+# PR yet, and the registrar declares [ValidateRange(1, ...)] on that parameter, so
+# explicitly passing the unset default of 0 makes parameter binding fail before the
+# registrar's own "non-PR types don't need a number" logic can run — which broke every
+# FRESH create-PR transport.
+$registerArgs = @{
+    Type            = $ExpectedOutputType
+    OutputDirectory = $ExpectationDirectory
+}
+if ($PullRequestNumber -gt 0) {
+    $registerArgs['PullRequestNumber'] = $PullRequestNumber
+}
+& $registerScript @registerArgs | Out-Null
 
 [ordered]@{
     baseRef = $BaseRef

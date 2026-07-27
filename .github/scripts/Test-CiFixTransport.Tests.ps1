@@ -38,8 +38,32 @@ Describe 'Test-CiFixTransport' {
         Test-Path -LiteralPath $script:expectations | Should -BeFalse
     }
 
-    It 'accepts a small append-only allowed diff and registers the expected output' {
-        'fix' | Set-Content -LiteralPath 'src/Essentials/Test.cs'
+    It 'accepts a FRESH create_pull_request transport that has no PR number yet' {
+        # The FRESH path (opening a new [ci-fix] PR) passes no -PullRequestNumber, since
+        # the PR does not exist yet. Registration must not reject the unset default. No
+        # test previously exercised a SUCCESSFUL create_pull_request, so a hard parameter
+        # binding failure on this path shipped undetected.
+        'fix' | Set-Content -LiteralPath 'src/Essentials/Fresh.cs'
+        git add .
+        git commit --quiet -m fresh
+
+        $result = & $script:scriptPath `
+            -BaseRef $script:base `
+            -ExpectedOutputType create_pull_request `
+            -ExpectationDirectory $script:expectations | ConvertFrom-Json
+
+        $result.expectedOutputType | Should -Be 'create_pull_request'
+        $result.pullRequestNumber | Should -BeNullOrEmpty
+        $result.changedFiles | Should -Be @('src/Essentials/Fresh.cs')
+
+        $registered = Get-ChildItem -LiteralPath $script:expectations -Filter '*.json'
+        @($registered).Count | Should -Be 1
+        $expectation = Get-Content -LiteralPath $registered[0].FullName -Raw | ConvertFrom-Json
+        $expectation.type | Should -Be 'create_pull_request'
+        $expectation.pullRequestNumber | Should -BeNullOrEmpty
+    }
+
+    It 'accepts a small append-only allowed diff and registers the expected output' {        'fix' | Set-Content -LiteralPath 'src/Essentials/Test.cs'
         git add .
         git commit --quiet -m fix
 
