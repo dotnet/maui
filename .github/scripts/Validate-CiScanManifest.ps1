@@ -225,6 +225,13 @@ function Assert-ValidIssuePayload {
     }
 
     $rawBody = [string](Get-RequiredProperty -Object $Signature -Name 'body' -Context "filed signature '$Fingerprint'")
+    $zeroWidthSpace = [char]0x200B
+    # No legitimate CI log line carries a zero-width space, and rejecting them up front is
+    # what makes the published-body evidence check below sound: every zero-width space in
+    # the published body then provably came from our own notification neutralization.
+    if ($rawBody.IndexOf($zeroWidthSpace) -ge 0) {
+        throw "Body for '$Fingerprint' must not contain zero-width spaces."
+    }
     $body = ConvertTo-SafeIssueBody -Body $rawBody
     if ($body.Length -lt 20 -or $body.Length -gt 60000) {
         throw "Body for '$Fingerprint' must be 20-60000 characters."
@@ -257,7 +264,18 @@ function Assert-ValidIssuePayload {
     if ($matchPattern.Length -lt 8 -or $matchPattern.Length -gt 500 -or $matchPattern -match '[\r\n]') {
         throw "match_pattern for '$Fingerprint' must be one line of 8-500 characters."
     }
-    if (-not $rawBody.Contains($matchPattern, [System.StringComparison]::Ordinal)) {
+    if ($matchPattern.IndexOf($zeroWidthSpace) -ge 0) {
+        throw "match_pattern for '$Fingerprint' must not contain zero-width spaces."
+    }
+    # Assert the invariant against the body that is actually PUBLISHED ($body), not the
+    # agent-supplied $rawBody. ConvertTo-SafeIssueBody rewrites the body it returns -
+    # a crash-backtrace evidence line like "#0 0x00007fff..." trips the #ref rule and a
+    # frame like "@0x1234" trips the @mention rule - so a $rawBody check can pass while
+    # the published body never carries the counted line. Neutralization only ever
+    # INSERTS zero-width spaces, so stripping them must restore the line verbatim;
+    # anything else (a drop, truncation, or an "@" -> "(at)" style rewrite) fails here.
+    $publishedEvidence = $body.Replace([string]$zeroWidthSpace, '')
+    if (-not $publishedEvidence.Contains($matchPattern, [System.StringComparison]::Ordinal)) {
         throw "Body for '$Fingerprint' must contain match_pattern exactly."
     }
     $markerMatchCount = [Int64]$matchMarkers[0].Groups[1].Value

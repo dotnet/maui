@@ -500,6 +500,58 @@ Describe 'CI scanner issue payload gate' {
             Should -Throw '*must contain match_pattern exactly*'
     }
 
+    It 'keeps the counted evidence line in a published body that neutralization rewrote' {
+        # Regression: the evidence invariant used to be asserted against the raw
+        # agent-supplied body, but the body that is actually filed is the neutralized
+        # one. A native crash backtrace is the common real case - "#0 0x..." trips the
+        # #ref rule - so the published body never carries the counted line verbatim.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $pattern = '#0 0x00007fff9c3d1abc in maui_crash'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$pattern"
+        $evidenceRoot = Join-Path $TestDrive 'zwsp-evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @("$pattern (a)", "$pattern (b)")
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body -MatchPattern $pattern)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $published = $plan.issues[0].Body
+        $zeroWidthSpace = [string][char]0x200B
+        # Contract: neutralization DID rewrite the evidence line ...
+        $published.Contains($pattern, [System.StringComparison]::Ordinal) | Should -BeFalse
+        $published | Should -Match "#$([char]0x200B)0 0x00007fff9c3d1abc"
+        # ... and it did so only by inserting zero-width spaces, so the line survives.
+        $published.Replace($zeroWidthSpace, '').Contains($pattern, [System.StringComparison]::Ordinal) |
+            Should -BeTrue
+        $plan.issues[0].MatchCount | Should -Be 2
+    }
+
+    It 'rejects a match pattern that smuggles in a zero-width space' {
+        # The body itself is clean, so this exercises the match_pattern guard rather
+        # than the body guard.
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern "Assertion$([char]0x200B) failed")
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*match_pattern*must not contain zero-width spaces*'
+    }
+
+    It 'rejects a body that smuggles in a zero-width space' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nSmuggled:$([char]0x200B) Assertion failed"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*Body*must not contain zero-width spaces*'
+    }
+
     It 'neutralizes user and team mentions in the validated issue body' {
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
         $body = "$(New-TestBody -Fingerprint $fingerprint)`nOwner: @octocat and @dotnet/maui."
