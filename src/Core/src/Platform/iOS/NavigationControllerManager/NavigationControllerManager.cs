@@ -120,12 +120,10 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         public void InsertViewController(int index, UIViewController viewController)
         {
-            _pendingViewControllers ??= _navigationController.ViewControllers;
-            if (_pendingViewControllers is not null)
-            {
-                _pendingViewControllers = _pendingViewControllers.Insert(index, viewController);
-                _navigationController.ViewControllers = _pendingViewControllers;
-            }
+            var vcs = new List<UIViewController>(_pendingViewControllers ?? _navigationController.ViewControllers ?? Array.Empty<UIViewController>());
+            vcs.Insert(index, viewController);
+            _pendingViewControllers = vcs.ToArray();
+            _navigationController.ViewControllers = _pendingViewControllers;
         }
 
         /// <summary>
@@ -133,13 +131,10 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         public void RemoveViewController(UIViewController viewController)
         {
-            _pendingViewControllers ??= _navigationController.ViewControllers;
-            if (_pendingViewControllers is not null && _pendingViewControllers.Contains(viewController))
+            var vcs = new List<UIViewController>(_pendingViewControllers ?? _navigationController.ViewControllers ?? Array.Empty<UIViewController>());
+            if (vcs.Remove(viewController))
             {
-                _pendingViewControllers = _pendingViewControllers.Remove(viewController);
-            }
-            if (_pendingViewControllers is not null)
-            {
+                _pendingViewControllers = vcs.ToArray();
                 _navigationController.ViewControllers = _pendingViewControllers;
             }
         }
