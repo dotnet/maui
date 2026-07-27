@@ -54,6 +54,8 @@ checkout:
   fetch-depth: 1
 
 safe-outputs:
+  # gh-aw v0.82.14 does not propagate staged mode into custom safe-output jobs.
+  # Keep this expression identical to GH_AW_SAFE_OUTPUTS_STAGED below; tests enforce it.
   staged: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
   report-failure-as-issue: false
   noop:
@@ -67,7 +69,7 @@ safe-outputs:
         contents: read
         issues: write
       env:
-        DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+        GH_AW_SAFE_OUTPUTS_STAGED: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
         CI_SCAN_PLAN_PATH: ${{ runner.temp }}/ci-scan-net11/plan.json
         CI_SCAN_RESULTS_PATH: ${{ runner.temp }}/ci-scan-net11/results.json
         CI_SCAN_EXPECTED_BUILDS_PATH: ${{ runner.temp }}/ci-scan-net11/expected-builds.json
@@ -78,6 +80,11 @@ safe-outputs:
           required: true
           type: string
       steps:
+        - name: Require successful agent submission gate
+          if: needs.agent.result != 'success'
+          run: |
+            echo "::error::Agent submission gate did not pass; refusing to publish scanner issues."
+            exit 1
         - name: Require successful threat detection
           if: needs.detection.result != 'success' || needs.detection.outputs.detection_success != 'true'
           run: |
@@ -104,7 +111,7 @@ safe-outputs:
               const fs = require('fs');
               const planPath = process.env.CI_SCAN_PLAN_PATH;
               const resultsPath = process.env.CI_SCAN_RESULTS_PATH;
-              const dryRun = process.env.DRY_RUN === 'true';
+              const dryRun = process.env.GH_AW_SAFE_OUTPUTS_STAGED === 'true';
               const { owner, repo } = context.repo;
               const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
               const results = {
@@ -162,13 +169,12 @@ safe-outputs:
                   entry.coverage_proof = 'canonical-fingerprint';
                 } else {
                   // Legacy scanner issues predate reliable marker preservation.
-                  // Require identity, pipeline, and error/platform evidence so an
+                  // Require identity, pipeline, and primary-error evidence so an
                   // unrelated labeled issue cannot claim coverage.
                   const fingerprintParts = entry.fingerprint.split('|');
                   const identity = fingerprintParts[3];
                   const secondaryEvidence = fingerprintParts.slice(4, 6)
-                    .map(value => value.toLowerCase().replace(/\s+/g, ' '))
-                    .filter(value => value.length >= 3);
+                    .map(value => value.toLowerCase().replace(/\s+/g, ' '));
                   const searchable = `${response.data.title || ''}\n${body}`
                     .toLowerCase()
                     .replace(/\s+/g, ' ');
@@ -181,13 +187,15 @@ safe-outputs:
                   };
                   const normalizedIdentity = identity.toLowerCase().replace(/\s+/g, ' ');
                   const pipelineLine = `- **Pipeline**: ${entry.pipeline}`;
+                  const primaryErrorEvidence = secondaryEvidence[0];
                   if (normalizedIdentity.length < 5 ||
+                      !primaryErrorEvidence || primaryErrorEvidence.length < 3 ||
                       !searchable.includes(normalizedIdentity) ||
-                      !secondaryEvidence.some(containsEvidence) ||
+                      !containsEvidence(primaryErrorEvidence) ||
                       !body.split(/\r?\n/).includes(pipelineLine)) {
                     throw new Error(`Legacy issue #${entry.issue_number} does not contain deterministic identity evidence for ${entry.fingerprint}.`);
                   }
-                  entry.coverage_proof = 'legacy-identity-pipeline-and-secondary';
+                  entry.coverage_proof = 'legacy-identity-pipeline-and-primary-error';
                 }
               });
 
@@ -199,14 +207,30 @@ safe-outputs:
                 per_page: 100,
                 request: requestOptions(),
               });
+              const issuesToCreate = [];
               for (const issue of plan.issues) {
                 const exactMarker = `<!-- ci-scan-fingerprint: ${issue.Fingerprint} -->`;
                 const match = openTrackingIssues.find(candidate =>
                   !candidate.pull_request &&
                   String(candidate.body || '').split(/\r?\n/).includes(exactMarker));
                 if (match) {
-                  throw new Error(`Fingerprint ${issue.Fingerprint} already exists in open issue #${match.number}; manifest must record it as existing.`);
+                  if (match.title !== issue.Title ||
+                      normalizeBody(match.body) !== normalizeBody(issue.Body)) {
+                    throw new Error(`Fingerprint ${issue.Fingerprint} already exists in open issue #${match.number} with different validated metadata.`);
+                  }
+                  results.issues.push({
+                    pipeline: issue.Pipeline,
+                    fingerprint: issue.Fingerprint,
+                    disposition: 'filed',
+                    issue_number: match.number,
+                    issue_url: match.html_url,
+                    metadata_preserved: true,
+                    retry_reused: true,
+                  });
+                  persistResults();
+                  continue;
                 }
+                issuesToCreate.push(issue);
               }
 
               for (const entry of existingEntries) {
@@ -220,7 +244,7 @@ safe-outputs:
                 persistResults();
               }
 
-              for (const issue of plan.issues) {
+              for (const issue of issuesToCreate) {
                 if (dryRun) {
                   core.info(`[dry-run] Would create: ${issue.Title}`);
                   results.issues.push({
@@ -274,6 +298,7 @@ safe-outputs:
             path: ${{ runner.temp }}/ci-scan-net11
             if-no-files-found: warn
             retention-days: 14
+            overwrite: true
 
 post-steps:
   - name: Require exactly one complete scanner submission
@@ -511,7 +536,7 @@ Process pipelines in this order. For each, fetch recent completed builds on `net
 The pipeline names, definition IDs (`maui-pr` 302, `maui-pr-devicetests` 314, `maui-pr-uitests` 313), org/project, and investigation priority order are defined canonically in `.github/docs/maui-ci-facts.md` — read it first (see below) and use those values; do not maintain a second copy here.
 
 The trusted pre-agent step has frozen the latest-build and source-log evidence in
-`/tmp/gh-aw/agent/expected-builds.json`. Read that file first. Use its exact
+`/tmp/gh-aw/agent/trusted/expected-builds.json`. Read that file first. Use its exact
 pipeline status and `build_id`; do not re-select a newer build that finishes
 during this run. Fetch and classify every `required_log_ids` entry. The trusted
 publisher validates your manifest against an immutable artifact uploaded before

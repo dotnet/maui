@@ -257,8 +257,9 @@ function Assert-ValidIssuePayload {
     if ($matchPattern.Length -lt 8 -or $matchPattern.Length -gt 500 -or $matchPattern -match '[\r\n]') {
         throw "match_pattern for '$Fingerprint' must be one line of 8-500 characters."
     }
-    if (-not $rawBody.Contains($matchPattern, [System.StringComparison]::Ordinal)) {
-        throw "Body for '$Fingerprint' must contain match_pattern exactly."
+    $safeMatchPattern = ConvertTo-SafeIssueBody -Body $matchPattern
+    if (-not $body.Contains($safeMatchPattern, [System.StringComparison]::Ordinal)) {
+        throw "Body for '$Fingerprint' must contain the safely rendered match_pattern."
     }
     $markerMatchCount = [Int64]$matchMarkers[0].Groups[1].Value
     if ($TrustedEvidencePath) {

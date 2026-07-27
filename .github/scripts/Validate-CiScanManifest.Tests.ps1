@@ -497,7 +497,21 @@ Describe 'CI scanner issue payload gate' {
         )
 
         { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*must contain match_pattern exactly*'
+            Should -Throw '*must contain the safely rendered match_pattern*'
+    }
+
+    It 'requires the safely rendered match pattern in the published body' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $pattern = 'Failure for user@example'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$pattern"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -MatchPattern $pattern -Body $body)
+        )
+
+        $plan = Test-CiScanManifest -Manifest $manifest
+
+        $plan.issues[0].Body | Should -Not -Match 'user@example'
+        $plan.issues[0].Body | Should -Match "user@$([char]0x200B)example"
     }
 
     It 'neutralizes user and team mentions in the validated issue body' {
@@ -612,5 +626,31 @@ Describe 'CI scanner agent output gate' {
 
         { Get-ScannerManifestFromAgentOutput -Path $path } |
             Should -Throw '*exactly one item of type submit_ci_scan and no alternate outputs*'
+    }
+}
+
+Describe 'CI scanner workflow source invariants' {
+    BeforeAll {
+        $workflowPath = Join-Path (Split-Path $PSScriptRoot -Parent) 'workflows/ci-status-net11.md'
+        $workflowSource = Get-Content -LiteralPath $workflowPath -Raw
+    }
+
+    It 'keeps custom publisher staging identical to framework staging' {
+        $framework = [regex]::Match($workflowSource, '(?m)^  staged: (.+)$')
+        $publisher = [regex]::Match($workflowSource, '(?m)^        GH_AW_SAFE_OUTPUTS_STAGED: (.+)$')
+
+        $framework.Success | Should -BeTrue
+        $publisher.Success | Should -BeTrue
+        $publisher.Groups[1].Value | Should -BeExactly $framework.Groups[1].Value
+    }
+
+    It 'keeps retry adoption and artifact overwrite enabled' {
+        $workflowSource | Should -Match 'retry_reused: true'
+        [regex]::Matches($workflowSource, '(?m)^\s+overwrite: true$').Count | Should -Be 2
+    }
+
+    It 'points the agent at the actual trusted inventory path' {
+        $workflowSource | Should -Match '/tmp/gh-aw/agent/trusted/expected-builds\.json'
+        $workflowSource | Should -Not -Match '/tmp/gh-aw/agent/expected-builds\.json'
     }
 }
