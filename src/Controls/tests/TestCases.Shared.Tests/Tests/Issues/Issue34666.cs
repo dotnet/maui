@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,4 +22,3 @@ public class Issue34666 : _IssuesUITest
 		App.WaitForElement("Baboon");
 	}
 }
-#endif
