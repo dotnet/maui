@@ -1141,8 +1141,10 @@ if (-not $SkipE2E) {
             -Expected 'shipped' -Actual $syntheticHotfixShipped9.mode
         Assert-Eq -Label "synthetic unpublished SR9 hotfix carries explicit workflow signal" `
             -Expected $true -Actual $syntheticHotfixShipped9.hotfixInProgress
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix carries version-specific identity" `
+            -Expected '10.0.91' -Actual $syntheticHotfixShipped9.hotfixVersion
         Assert-Eq -Label "synthetic unpublished SR9 hotfix title is actionable" `
-            -Expected $true -Actual ([bool]($syntheticHotfixShipped9.issueTitle -match 'hotfix in progress'))
+            -Expected $true -Actual ([bool]($syntheticHotfixShipped9.issueTitle -match 'hotfix 10\.0\.91 in progress'))
         Assert-Eq -Label "synthetic unpublished SR9 hotfix anchor remains tagged 10.0.90" `
             -Expected '10.0.90' -Actual $syntheticHotfixShipped9.expectedTag
         Assert-Eq -Label "synthetic unpublished SR9 hotfix does not emit in-flight SR9" `
@@ -1296,10 +1298,16 @@ if (-not $SkipE2E) {
     $releaseWorkflowText = Get-Content $releaseWorkflowPath -Raw
     Assert-Eq -Label "workflow matrix carries hotfixInProgress signal" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixInProgress:\s*\(\.hotfixInProgress // false\)'))
+    Assert-Eq -Label "workflow matrix carries version-specific hotfix identity" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixVersion:\s*\(\.hotfixVersion // ""\)'))
     Assert-Eq -Label "workflow shipped refresh-only guard exempts active hotfix" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$MODE.*shipped.*\$HOTFIX_IN_PROGRESS.*!=.*true.*\$EXISTING'))
     Assert-Eq -Label "workflow activity gate exempts active hotfix" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$RECENT_COMMIT_COUNT.*-eq 0.*\$HOTFIX_IN_PROGRESS.*!=.*true.*\$EXISTING'))
+    Assert-Eq -Label "workflow closed-hotfix guard searches version-specific marker" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'release-readiness-hotfix: \$\{HOTFIX_VERSION\}'))
+    Assert-Eq -Label "workflow closed-hotfix guard suppresses recreation" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'Hotfix tracker.*was closed.*not recreating'))
 
     # Fail-closed: bad repo path should exit non-zero
     Write-Host "`n[E2E] Detection fails closed on invalid repo" -ForegroundColor Cyan
@@ -4077,6 +4085,21 @@ $hShippedNewAnchor = Get-ReportSemanticHash -Data $dataShippedNewAnchorHash -Ver
 Assert-Eq -Label "hash: shipped version/date anchor change refreshes tracker" `
     -Expected $false -Actual ($hShippedFollowUp -eq $hShippedNewAnchor)
 
+$dataShippedPublicationPending = $dataShippedFollowUpHash.Clone()
+$dataShippedPublicationPending['shippedInfo'] = @{
+    version = '10.0.90'; tagDate = '2026-07-10T15:21:27Z'; dateSource = 'tagged-commit'
+    publicationState = 'pending'; srNumber = 9; major = 10
+}
+$dataShippedPublicationUnknown = $dataShippedFollowUpHash.Clone()
+$dataShippedPublicationUnknown['shippedInfo'] = @{
+    version = '10.0.90'; tagDate = '2026-07-10T15:21:27Z'; dateSource = 'tagged-commit'
+    publicationState = 'unknown'; srNumber = 9; major = 10
+}
+$hShippedPublicationPending = Get-ReportSemanticHash -Data $dataShippedPublicationPending -Verdict @{ symbol = '🟡' }
+$hShippedPublicationUnknown = Get-ReportSemanticHash -Data $dataShippedPublicationUnknown -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: publication pending-to-unknown wording refreshes shipped tracker" `
+    -Expected $false -Actual ($hShippedPublicationPending -eq $hShippedPublicationUnknown)
+
 $dataCandidateStatusReady = @{
     metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'candidate'; mainBranch = 'main'; fetchedAt = '2026-07-19T00:00:00Z' }
     ci = @{ overall = 'green' }
@@ -4408,6 +4431,27 @@ $mdData = @{
 
 $md = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
                             -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "ordinary report omits active-hotfix marker" -Expected $false `
+    -Actual ($md -match 'release-readiness-hotfix:')
+$hotfixMdData = $mdData.Clone()
+$hotfixMdData['metadata'] = $mdData.metadata.Clone()
+$hotfixMdData.metadata.mode = 'shipped'
+$hotfixMdData['shippedInfo'] = @{
+    version = '10.0.90'; liveVersion = '10.0.91'; srNumber = 9; major = 10
+    tagDate = '2026-07-22T00:00:00Z'; dateSource = 'github-release'
+    hotfixInProgress = $true
+}
+$hotfixMdData['shipChecks'] = @(
+    @{ Area = 'Unpublished hotfix branch state'; Status = 'WATCH'; Details = 'x'; NextAction = 'y' }
+)
+$hotfixMd = Format-MarkdownReport -Data $hotfixMdData -RepoUrl 'https://github.com/dotnet/maui' `
+    -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "active hotfix report emits version-specific hidden marker" -Expected $true `
+    -Actual ($hotfixMd -match '<!-- release-readiness-hotfix: 10\.0\.91 -->')
+Assert-Eq -Label "active hotfix report renders operational follow-up section" -Expected $true `
+    -Actual ($hotfixMd -match '(?s)Post-ship operational follow-ups.*Unpublished hotfix branch state')
+Assert-Eq -Label "active hotfix report does not claim no urgent follow-ups" -Expected $false `
+    -Actual ($hotfixMd -match 'No urgent post-ship follow-ups')
 $mdTopPscoData = $mdData | ConvertTo-Json -Depth 20 | ConvertFrom-Json
 $mdTopPscoThrew = $false; $mdTopPsco = $null
 try {

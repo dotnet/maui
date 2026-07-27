@@ -4783,6 +4783,9 @@ function Get-ReportSemanticHash {
     $shipDateSourceForHash = if ($shippedInfoForHash) {
         [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'dateSource')
     } else { '' }
+    $shipPublicationStateForHash = if ($shippedInfoForHash) {
+        [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'publicationState' -Default 'unknown')
+    } else { '' }
     $shipSrForHash = if ($shippedInfoForHash) {
         [int](Get-MetadataValue -Container $shippedInfoForHash -Name 'srNumber' -Default 0)
     } else { 0 }
@@ -4810,7 +4813,7 @@ function Get-ReportSemanticHash {
         mode = $modeForHash
         shippedAnchor = if ($shippedInfoForHash) {
             $shipDateToken = if ($shipDateForHash) { $shipDateForHash.ToString('o') } else { '' }
-            "$shipVersionForHash|$shipDateToken|$shipDateSourceForHash"
+            "$shipVersionForHash|$shipDateToken|$shipDateSourceForHash|$shipPublicationStateForHash"
         } else { '' }
         regressionScan = if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
             $failedLabels = @(@(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels')) | Sort-Object)
@@ -5038,6 +5041,13 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine("<!-- release-readiness-tracker: $TrackerKey -->")
     }
     [void]$sb.AppendLine("<!-- release-readiness-hash: sha=$semanticHash -->")
+    $hotfixMarkerInfo = Get-MetadataValue -Container $Data -Name 'shippedInfo'
+    if ([bool](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'hotfixInProgress' -Default $false)) {
+        $hotfixMarkerVersion = [string](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'liveVersion')
+        if ($hotfixMarkerVersion) {
+            [void]$sb.AppendLine("<!-- release-readiness-hotfix: $hotfixMarkerVersion -->")
+        }
+    }
 
     # $mode / $inherits, read shape-safe via the shared accessor for the SAME
     # reason as $mainBranchName above (metadata may be a hashtable during a survey
@@ -5213,7 +5223,10 @@ function Format-MarkdownReport {
     $regressionScanIncompleteRender = [bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
         foreach ($sc in $Data['shipChecks']) {
-            if ($sc.Status -eq 'BLOCKED') {
+            $isHotfixWatch = $isShippedRender -and
+                $sc.Status -eq 'WATCH' -and
+                $sc.Area -eq 'Unpublished hotfix branch state'
+            if ($sc.Status -eq 'BLOCKED' -or $isHotfixWatch) {
                 $shipCheckItem = @{
                     area = "🛠️ $($sc.Area)"
                     details = $sc.Details
@@ -6074,6 +6087,13 @@ function Invoke-Main {
         }
         $stableTagsForBounds = @((@($publishedTags) + @($localStableTags)) | Sort-Object -Unique)
         $anchorIsPublished = @($publishedTags) -contains $anchorTag
+        $shippedInfo['publicationState'] = if ($publicationQueryFailed) {
+            'unknown'
+        } elseif ($anchorIsPublished) {
+            'published'
+        } else {
+            'pending'
+        }
         if ($publicationQueryFailed) {
             Write-ShippedPublicationStatusUnknownWarning -Tag $anchorTag
         } elseif (-not $anchorIsPublished) {
