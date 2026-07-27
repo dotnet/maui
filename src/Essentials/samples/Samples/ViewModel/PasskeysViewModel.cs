@@ -699,7 +699,7 @@ namespace Samples.ViewModel
 
 		public string DisplayName { get; set; }
 
-		public string ButtonText => $"Continue with {DisplayName}";
+		public string ButtonText => $"Sign in with {DisplayName}";
 
 		public ICommand SignInCommand { get; set; }
 	}

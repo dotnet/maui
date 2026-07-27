@@ -56,7 +56,9 @@ internal static class ExternalProviders
         }
 
         var apple = auth.GetSection("Apple");
-        if (!string.IsNullOrEmpty(apple["ClientId"]))
+        // Apple can only work with a private key (used to generate its client secret). Require the key so a
+        // partial Apple config can't break authentication for every request — including the other providers.
+        if (!string.IsNullOrEmpty(apple["ClientId"]) && !string.IsNullOrEmpty(apple["PrivateKeyPath"]))
         {
             builder.AddApple(options =>
             {
@@ -64,10 +66,7 @@ internal static class ExternalProviders
                 options.KeyId = apple["KeyId"]!;
                 options.TeamId = apple["TeamId"]!;
                 options.SaveTokens = true;
-
-                var privateKeyPath = apple["PrivateKeyPath"];
-                if (!string.IsNullOrEmpty(privateKeyPath))
-                    options.UsePrivateKey(_ => environment.ContentRootFileProvider.GetFileInfo(privateKeyPath));
+                options.UsePrivateKey(_ => environment.ContentRootFileProvider.GetFileInfo(apple["PrivateKeyPath"]!));
             });
         }
 
