@@ -872,9 +872,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
         internal void UpdateTabBarItem()
         {
-            // Set title on both the navigation controller and the root view controller so that
-            // UITabBarController shows the correct tab label for this section.
-            _rootViewController?.Title = _navigationController.Title = VirtualView.Title;
+            // Title drives the UITabBarController tab label.
+            // Only set it on the nav controller — not on _rootViewController, as UIKit would
+            // then use it as a nav bar title fallback, shifting the flyout icon.
+            _navigationController.Title = VirtualView.Title;
 
             VirtualView.Icon.LoadImage(VirtualView.FindMauiContext()!, icon =>
             {

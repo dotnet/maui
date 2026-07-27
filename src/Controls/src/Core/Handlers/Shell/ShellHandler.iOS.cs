@@ -97,6 +97,17 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             var container = new ShellContainerView();
             container.SetHandler(this);
+
+            // Without a ViewController, ToUIViewController() falls back to
+            // ContainerViewController, which only adds Shell's content as a plain subview —
+            // never as a child view controller. That breaks the parentViewController chain
+            // UIKit's nav-bar layout relies on for bar-button-item positioning (hamburger icon,
+            // toolbar items). Hosting a real UIViewController here, like the legacy ShellRenderer
+            // did, restores proper containment.
+            var hostVC = new UIViewController();
+            hostVC.View = container;
+            ViewController = hostVC;
+
             return container;
         }
 
@@ -154,6 +165,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Dispose current item renderer
             (_currentShellItemRenderer as IDisconnectable)?.Disconnect();
+            if (_currentShellItemRenderer is not null)
+            {
+                // Unparent the current renderer's view controller before disposal, symmetric
+                // with the AddChildViewController/DidMoveToParentViewController pairing done in
+                // SetCurrentShellItemRendererAsync.
+                _currentShellItemRenderer.ViewController.WillMoveToParentViewController(null);
+                _currentShellItemRenderer.ViewController.View?.RemoveFromSuperview();
+                _currentShellItemRenderer.ViewController.RemoveFromParentViewController();
+            }
             _currentShellItemRenderer?.Dispose();
             _currentShellItemRenderer = null;
 
@@ -163,6 +183,10 @@ namespace Microsoft.Maui.Controls.Handlers
                 disposable.Dispose();
             }
             _flyoutContentRenderer = null;
+
+            // Release the host UIViewController created in CreatePlatformView so it doesn't
+            // outlive the handler.
+            ViewController = null;
 
             base.DisconnectHandler(platformView);
         }
@@ -455,9 +479,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (newView is not null)
             {
+                // Formally announce parent-child view controller containment before adding the
+                // child view, so UIKit's private nav-bar layout pass sees a real
+                // parentViewController chain for the ShellItem's tab bar controller.
+                ViewController?.AddChildViewController(newRenderer.ViewController);
+
                 newView.Frame = _detailView.Bounds;
                 newView.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
                 _detailView.AddSubview(newView);
+
+                if (ViewController is not null)
+                    newRenderer.ViewController.DidMoveToParentViewController(ViewController);
             }
 
             if (oldRenderer is not null)
@@ -466,7 +498,10 @@ namespace Microsoft.Maui.Controls.Handlers
                 _activeTransition = transition.Transition(oldRenderer, newRenderer);
                 await _activeTransition;
 
+                // Symmetrically remove the old child view controller from its parent.
+                oldRenderer.ViewController.WillMoveToParentViewController(null);
                 oldRenderer.ViewController.View?.RemoveFromSuperview();
+                oldRenderer.ViewController.RemoveFromParentViewController();
                 oldRenderer.Dispose();
             }
 
@@ -822,21 +857,36 @@ namespace Microsoft.Maui.Controls.Handlers
             nfloat openPixels = openLimit * openPercent;
 
             if (_flyoutBehavior == FlyoutBehavior.Locked)
+                // Matches the legacy ShellRenderer (SlideFlyoutTransition.LayoutViews), which uses
+                // this same formula for both LTR and RTL. In RTL the locked flyout is anchored to
+                // the trailing (right) edge and, on phone-sized flyout widths, ends up overlapping
+                // this detail frame entirely - that is expected/baseline-matching renderer behavior,
+                // not something to special-case here.
                 _detailView.Frame = new CGRect(bounds.X + flyoutWidth, bounds.Y, bounds.Width - flyoutWidth, flyoutHeight);
             else
                 _detailView.Frame = bounds;
 
-            var detailWidth = _detailView.Frame.Width;
-
             if (IsRTL)
             {
-                var positionX = detailWidth - openPixels;
+                // Use the full bounds width here (not _detailView.Frame.Width, which is reduced
+                // in Locked mode) so the flyout still lands flush against the right edge instead
+                // of being shifted left by an extra flyoutWidth.
+                var positionX = bounds.Width - openPixels;
                 _flyoutView.Frame = new CGRect(positionX, 0, flyoutWidth, flyoutHeight);
             }
             else
             {
                 _flyoutView.Frame = new CGRect(-openLimit + openPixels, 0, flyoutWidth, flyoutHeight);
             }
+
+            // The tapoff/backdrop view's frame is only set once at creation time (AddTapoffView),
+            // so without this it stays at whatever size the container was when the flyout was first
+            // opened - e.g. it doesn't grow to cover a device rotation, leaving part of the detail
+            // view exposed. Keep it in sync with the container's current bounds on every layout pass
+            // (mirrors the legacy ShellFlyoutRenderer.ViewWillTransitionToSize, which explicitly
+            // resizes TapoffView.Frame on rotation).
+            if (_tapoffView is not null)
+                _tapoffView.Frame = bounds;
         }
 
         nfloat GetFlyoutWidth()

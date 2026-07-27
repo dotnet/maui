@@ -102,7 +102,22 @@ namespace Microsoft.Maui.Controls.Handlers
                     accept = ((IShellItemController)VirtualView).ProposeSection(renderer.ShellSection, false);
                     if (accept)
                     {
-                        VirtualView.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
+                        // UIKit hasn't switched _tabBarController.SelectedViewController to this tab
+                        // yet at this point — that happens right after this delegate returns true.
+                        // Setting CurrentItem here re-enters GoTo()/SetSelectedViewController()
+                        // synchronously, which must not assign SelectedViewController itself:
+                        // if it did, UIKit would see the tab it's about to select as already
+                        // selected and treat it as a repeat tap on the active tab, automatically
+                        // popping that tab's navigation stack to its root view controller.
+                        _isHandlingNativeTabSelection = true;
+                        try
+                        {
+                            VirtualView.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
+                        }
+                        finally
+                        {
+                            _isHandlingNativeTabSelection = false;
+                        }
                     }
                 }
 
@@ -179,6 +194,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
         #region Tab Renderers
 
+        void UpdateTabBarFlowDirection()
+        {
+            if (_shellContext?.Shell is { } shell)
+                _tabBarController.TabBar.UpdateFlowDirection(shell);
+        }
+
         void CreateTabRenderers()
         {
             if (VirtualView.CurrentItem is null)
@@ -208,6 +229,12 @@ namespace Microsoft.Maui.Controls.Handlers
             _tabBarController.ViewControllers = viewControllers;
             _tabBarController.CustomizableViewControllers = Array.Empty<UIViewController>();
 
+            // Each section's FlowDirection mapper runs during AddRenderer above, before this tab bar
+            // is attached to the shared UITabBarController, so its attempt to mirror the tab bar for
+            // RTL (ShellSectionHandler.UpdateFlowDirectionForControls) is a no-op at that point. Apply
+            // it here now that the tab bar actually exists.
+            UpdateTabBarFlowDirection();
+
             // Apply initial IsEnabled state for newly added tab items
             SetTabItemsEnabledState();
 
@@ -224,7 +251,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void SetSelectedViewController(UIViewController? value)
         {
-            _tabBarController.SelectedViewController = value;
+            // When invoked re-entrantly from ShouldSelectViewController (native tab tap in
+            // progress), UIKit is about to assign _tabBarController.SelectedViewController itself
+            // right after the delegate returns. Skip our own assignment here so UIKit doesn't
+            // observe the destination tab as already selected — which would make it treat this as
+            // a repeat tap and auto pop-to-root the tab's navigation stack.
+            if (!_isHandlingNativeTabSelection)
+            {
+                _tabBarController.SelectedViewController = value;
+            }
 
             var renderer = value is not null ? RendererForViewController(value) : null;
             if (renderer is not null)
@@ -242,6 +277,7 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         MoreNavigationDelegate? _moreNavigationDelegate;
+        bool _isHandlingNativeTabSelection;
 
         /// <summary>
         /// Delegate for MoreNavigationController to handle DidShowViewController.
@@ -345,6 +381,23 @@ namespace Microsoft.Maui.Controls.Handlers
                         RemoveRenderer(renderer);
                     }
                 }
+
+                // Removing a tab can shift the remaining tabs across the 5-tab "More" threshold
+                // (e.g. a section that used to be tab #6 can become tab #4). Recompute IsInMoreTab
+                // for the surviving renderers so pushes route to the correct navigation stack —
+                // otherwise a renderer can keep stale IsInMoreTab=true and push onto the hidden
+                // MoreNavigationController instead of its now-regular tab.
+                var remainingItems = ShellItemController.GetItems();
+                var remainingCount = remainingItems.Count;
+                var stillUsesMore = remainingCount > 5;
+                for (int j = 0; j < remainingCount; j++)
+                {
+                    var renderer = RendererForShellContent(remainingItems[j]);
+                    if (renderer is not null)
+                    {
+                        renderer.IsInMoreTab = stillUsesMore && j >= 4;
+                    }
+                }
             }
 
             if (e.NewItems is not null && e.NewItems.Count > 0)
@@ -378,6 +431,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 _tabBarController.ViewControllers = viewControllers;
                 _tabBarController.CustomizableViewControllers = Array.Empty<UIViewController>();
+
+                // See CreateTabRenderers for why this needs to run again after (re)attaching the tab bar.
+                UpdateTabBarFlowDirection();
 
                 // Apply initial IsEnabled state for each tab item
                 SetTabItemsEnabledState();
