@@ -635,10 +635,25 @@ function Get-PublishedStableTags {
     return @($values | Sort-Object -Unique)
 }
 
-function Select-LatestPublishedTagForSr {
+function Get-LocalStableTags {
+    $raw = Invoke-Git "tag --list"
+    if ($null -eq $raw) { return $null }
+
+    $values = @()
+    foreach ($item in @($raw)) {
+        $tag = ([string]$item).Trim()
+        if ($tag -notmatch '^\d+\.\d+\.\d+$') { continue }
+        [version]$parsed = $null
+        if (-not [version]::TryParse($tag, [ref]$parsed)) { continue }
+        $values += [PSCustomObject]@{ Name = $tag; Version = $parsed }
+    }
+    return @($values | Sort-Object Version | Select-Object -ExpandProperty Name -Unique)
+}
+
+function Select-LatestStableTagForSr {
     param(
         [string]$SrBranch,
-        [string[]]$PublishedTags
+        [string[]]$StableTags
     )
 
     $match = [regex]::Match($SrBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
@@ -647,7 +662,7 @@ function Select-LatestPublishedTagForSr {
     $minor = [int]$match.Groups[2].Value
     $patchFloor = [int]$match.Groups[3].Value * 10
     $matches = @()
-    foreach ($tag in @($PublishedTags)) {
+    foreach ($tag in @($StableTags)) {
         [version]$parsed = $null
         if (-not [version]::TryParse([string]$tag, [ref]$parsed)) { continue }
         if ($parsed.Major -eq $major -and $parsed.Minor -eq $minor -and
@@ -658,6 +673,14 @@ function Select-LatestPublishedTagForSr {
     $latest = @($matches | Sort-Object Version -Descending | Select-Object -First 1)
     if ($latest.Count -gt 0) { return [string]$latest[0].Name }
     return $null
+}
+
+function Select-LatestPublishedTagForSr {
+    param(
+        [string]$SrBranch,
+        [string[]]$PublishedTags
+    )
+    return Select-LatestStableTagForSr -SrBranch $SrBranch -StableTags $PublishedTags
 }
 
 function Test-StableTagMatchesSr {
@@ -706,16 +729,16 @@ function Resolve-ShippedContentsRefs {
     )
 
     if (-not (Test-GitRefResolves -Ref $Version)) {
-        throw "Stable tag '$Version' is published but does not resolve locally. Rerun without -NoFetch (or fetch refs/tags/$Version) before generating a shipped tracker."
+        throw "Stable tag '$Version' does not resolve locally. Rerun without -NoFetch (or fetch refs/tags/$Version) before generating a shipped tracker."
     }
     if ($null -eq $PublishedTags) {
         $PublishedTags = Get-PublishedStableTags -Repo $Repo
     }
     if ($null -eq $PublishedTags -or @($PublishedTags).Count -eq 0) {
-        throw "Cannot query published stable tags to bound shipped contents for '$Version'."
+        throw "Cannot query stable-tag evidence to bound shipped contents for '$Version'."
     }
     if (@($PublishedTags) -notcontains $Version) {
-        throw "Stable tag '$Version' is not present in the published GitHub Releases set."
+        throw "Stable tag '$Version' is not present in the supplied stable-tag evidence set."
     }
     $previousTag = Get-PreviousStableTag -Version $Version -PublishedTags $PublishedTags
     if (-not $previousTag -or -not (Test-GitRefResolves -Ref $previousTag)) {
@@ -6012,8 +6035,12 @@ function Invoke-Main {
             if (-not $shippedInfo.major) { $shippedInfo.major = [int]$vpShipped.Major }
         }
         $publishedTags = Get-PublishedStableTags -Repo $ctx.repo
-        if ($null -eq $publishedTags -or @($publishedTags).Count -eq 0) {
+        if ($null -eq $publishedTags) {
             throw "Cannot query published stable tags for shipped branch '$($ctx.srBranch)'."
+        }
+        $localStableTags = Get-LocalStableTags
+        if ($null -eq $localStableTags -or @($localStableTags).Count -eq 0) {
+            throw "Cannot query local stable tags for shipped branch '$($ctx.srBranch)'. Fetch tags before generating the tracker."
         }
         $anchorTag = if ($ShippedTag) {
             if (-not (Test-StableTagMatchesSr -Tag $ShippedTag -SrBranch $ctx.srBranch)) {
@@ -6021,10 +6048,15 @@ function Invoke-Main {
             }
             $ShippedTag
         } else {
-            Select-LatestPublishedTagForSr -SrBranch $ctx.srBranch -PublishedTags $publishedTags
+            Select-LatestStableTagForSr -SrBranch $ctx.srBranch -StableTags $localStableTags
         }
         if (-not $anchorTag) {
-            throw "No published stable tag was found for shipped branch '$($ctx.srBranch)'."
+            throw "No stable tag was found for shipped branch '$($ctx.srBranch)'."
+        }
+        $stableTagsForBounds = @((@($publishedTags) + @($localStableTags)) | Sort-Object -Unique)
+        $anchorIsPublished = @($publishedTags) -contains $anchorTag
+        if (-not $anchorIsPublished) {
+            $data.warnings += "Stable tag '$anchorTag' exists, but its GitHub Release is not published yet. Shipped contents are anchored to the immutable tag and the displayed date uses tagged-commit evidence until publication metadata is available."
         }
         $shippedInfo.version = $anchorTag
         $ctx['shippedTagVersion'] = $anchorTag
@@ -6035,7 +6067,7 @@ function Invoke-Main {
         $shippedInfo.tagDate = $tagInfo.Date.ToString('o')
         $shippedInfo.dateSource = $tagInfo.DateSource
         $shippedInfo.tagFound = $true
-        $shippedRefs = Resolve-ShippedContentsRefs -Version $anchorTag -Repo $ctx.repo -PublishedTags $publishedTags
+        $shippedRefs = Resolve-ShippedContentsRefs -Version $anchorTag -Repo $ctx.repo -PublishedTags $stableTagsForBounds
         $ctx['contentsRef'] = $shippedRefs.ContentsRef
         $ctx['excludeBranches'] = @($shippedRefs.ExcludeRefs)
         $ctx['previousStableTag'] = $shippedRefs.PreviousTag

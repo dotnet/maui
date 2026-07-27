@@ -290,6 +290,32 @@ function Test-IsBranchInFlight {
     return -not $ShippedPatches.Contains($BranchPatch)
 }
 
+function Test-IsUnpublishedHotfixOnLatestShippedSr {
+    <#
+    .SYNOPSIS
+        True when the most-recently-shipped SR branch has advanced within its
+        patch decade to an untagged hotfix candidate.
+    .DESCRIPTION
+        The tracker for the latest shipped SR remains post-ship/refresh-only
+        until a newer stable tag is published. Without this distinction, a live
+        branch bump such as SR9 10.0.90 -> 10.0.91 is misclassified as a brand-new
+        in-flight SR and bypasses shipped lifecycle semantics.
+    #>
+    param(
+        [Parameter(Mandatory)][int]$SrNumber,
+        [Parameter(Mandatory)][int]$BranchPatch,
+        [Parameter(Mandatory)][int]$HighestShippedPatch
+    )
+
+    if ($HighestShippedPatch -le 0) { return $false }
+    $highestShippedSr = [int][math]::Floor($HighestShippedPatch / 10)
+    $patchFloor = $SrNumber * 10
+    return $SrNumber -eq $highestShippedSr -and
+        $BranchPatch -gt $HighestShippedPatch -and
+        $BranchPatch -ge $patchFloor -and
+        $BranchPatch -lt ($patchFloor + 10)
+}
+
 function Test-IsStaleSrBranch {
     <#
     .SYNOPSIS
@@ -714,7 +740,19 @@ function Invoke-DetectionForMajor {
         $branchPatch = [int]$Matches[2]
         $expectedTag = $versionInfo.Tag
 
-        if (Test-IsBranchInFlight -BranchPatch $branchPatch -ShippedPatches $shippedPatches) {
+        $isUnpublishedLatestSrHotfix = Test-IsUnpublishedHotfixOnLatestShippedSr `
+            -SrNumber $sr -BranchPatch $branchPatch -HighestShippedPatch $highestShippedPatch
+
+        if ($isUnpublishedLatestSrHotfix) {
+            $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
+            $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode 'shipped' `
+                -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
+                -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
+                -ExpectedPatch $highestShippedPatch -ExpectedTag $highestShippedTag `
+                -HasRecentActivityCount $recent
+            $trackers.Add($tracker)
+            Write-Host "  -> shipped SR tracker with unpublished hotfix: SR$sr (published=$highestShippedTag, live=$expectedTag, recent=$recent)" -ForegroundColor Yellow
+        } elseif (Test-IsBranchInFlight -BranchPatch $branchPatch -ShippedPatches $shippedPatches) {
             $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
 
             # Staleness guard: a tag-absent branch below the shipped watermark

@@ -234,6 +234,41 @@ if (-not $SkipE2E) {
                   -Expected $true -Actual $hasInherited
     }
     if (Test-Path $candOut) { Remove-Item -Recurse -Force $candOut }
+
+    # ─────────── Preview driver E2E: exercise real CLI/mode/output wiring ───────────
+    Write-Host "`n[E2E] Preview 7 in-flight driver and public-safe outputs" -ForegroundColor Cyan
+    $previewScriptPath = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
+    $previewOut = Join-Path ([System.IO.Path]::GetTempPath()) "preview-readiness-test-$([guid]::NewGuid().ToString('N'))"
+    try {
+        & pwsh -NoProfile -File $previewScriptPath `
+            -Branch 'release/11.0.1xx-preview7' `
+            -Mode in-flight `
+            -OutputDir $previewOut `
+            -OutputFormat both 2>&1 | Out-Null
+        Assert-Eq -Label "Preview driver exits successfully" -Expected 0 -Actual $LASTEXITCODE
+
+        $previewJsonPath = Join-Path $previewOut 'preview-readiness.json'
+        $previewMdPath = Join-Path $previewOut 'preview-readiness.md'
+        Assert-Eq -Label "Preview driver writes JSON output" -Expected $true -Actual (Test-Path $previewJsonPath)
+        Assert-Eq -Label "Preview driver writes Markdown output" -Expected $true -Actual (Test-Path $previewMdPath)
+
+        if ((Test-Path $previewJsonPath) -and (Test-Path $previewMdPath)) {
+            $previewJsonText = Get-Content $previewJsonPath -Raw
+            $previewReport = $previewJsonText | ConvertFrom-Json
+            $previewMarkdown = Get-Content $previewMdPath -Raw
+            Assert-Eq -Label "Preview driver binds in-flight mode" -Expected 'in-flight' -Actual $previewReport.Mode
+            Assert-Eq -Label "Preview driver binds release branch survey ref" `
+                -Expected 'release/11.0.1xx-preview7' -Actual $previewReport.SurveyRef
+            Assert-Eq -Label "Preview driver wires cut-preview VMR to local reconciliation" `
+                -Expected $true -Actual ([bool]($previewMarkdown -match 'local official-build reconciliation.+no Maestro subscription by design'))
+            Assert-Eq -Label "Preview driver distinguishes no scanner from zero scanner issues" `
+                -Expected $true -Actual ([bool]($previewMarkdown -match 'No CI Failure Scanner runs against'))
+            Assert-Eq -Label "Preview driver applies PublicSafe to Markdown and JSON" `
+                -Expected $false -Actual ([bool](("$previewMarkdown`n$previewJsonText") -match 'dnceng/internal|\.NET Release Tracker|dotnet-release-tracker|api://'))
+        }
+    } finally {
+        if (Test-Path $previewOut) { Remove-Item -Recurse -Force $previewOut }
+    }
 }
 
 # ─────────── Tracker detection algorithm (Find-ReleaseReadinessTrackers.ps1) ───────────
@@ -405,6 +440,18 @@ if (-not (Test-Path $detectScriptPath)) {
     Assert-Eq -Label "hotfix: SR2 patch 22 still in-flight when latest shipped is 70" `
               -Expected $true  -Actual (Test-IsBranchInFlight -BranchPatch 22 -ShippedPatches $hotfix)
     Assert-Eq -Label "hotfix: SR2 patch 20 is the already-shipped baseline"  -Expected $false -Actual (Test-IsBranchInFlight -BranchPatch 20 -ShippedPatches $hotfix)
+
+    Write-Host "`n[Unit] Latest shipped SR stays shipped during an unpublished hotfix" -ForegroundColor Cyan
+    Assert-Eq -Label "SR9 live patch 91 over shipped 90 remains shipped-mode hotfix" `
+              -Expected $true -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 91 -HighestShippedPatch 90)
+    Assert-Eq -Label "SR9 live patch 92 over shipped hotfix 91 remains shipped-mode hotfix" `
+              -Expected $true -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 92 -HighestShippedPatch 91)
+    Assert-Eq -Label "older SR8 patch 81 is not latest-shipped SR9 hotfix" `
+              -Expected $false -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 8 -BranchPatch 81 -HighestShippedPatch 90)
+    Assert-Eq -Label "next SR decade patch 100 is not an SR9 hotfix" `
+              -Expected $false -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 100 -HighestShippedPatch 90)
+    Assert-Eq -Label "already-tagged patch equality is not an unpublished hotfix" `
+              -Expected $false -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 90 -HighestShippedPatch 90)
 
     # Empty ship set: every branch must be in-flight.
     Assert-Eq -Label "no shipped tags yet: patch 0 (GA) in-flight"  -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 0  -ShippedPatches $emptySet)
@@ -1036,6 +1083,7 @@ if (-not $SkipE2E) {
     $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
     $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
     try {
+        $script:SyntheticSrBranchTag = '10.0.90'
         function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'main' }
         function Get-StableTagsForMajor { param([int]$Major) ,@('10.0.0', '10.0.90') }
         function Get-PreviewTagsForMajor { param([int]$Major) ,@() }
@@ -1047,7 +1095,7 @@ if (-not $SkipE2E) {
         function Get-VersionFromGitRef {
             param([string]$GitRef, [string]$Repo)
             if ($GitRef -eq 'origin/release/10.0.1xx-sr9') {
-                return [pscustomobject]@{ Tag = '10.0.90'; PreLabel = ''; PreIter = 0 }
+                return [pscustomobject]@{ Tag = $script:SyntheticSrBranchTag; PreLabel = ''; PreIter = 0 }
             }
             [pscustomobject]@{ Tag = '10.0.100'; PreLabel = 'ci.main'; PreIter = 0 }
         }
@@ -1078,6 +1126,20 @@ if (-not $SkipE2E) {
                   -Expected ([int]$syntheticShipped9.srNumber + 1) -Actual ([int]$syntheticCandidate10.srNumber)
         Assert-Eq -Label "synthetic candidate priorSrBranch = shipped anchor branch" `
                   -Expected $syntheticShipped9.branchName -Actual $syntheticCandidate10.priorSrBranch
+
+        $script:SyntheticSrBranchTag = '10.0.91'
+        $syntheticHotfix = Invoke-DetectionForMajor -Major 10
+        $syntheticHotfixSrTrackers = @($syntheticHotfix.trackers | Where-Object branchType -eq 'sr')
+        $syntheticHotfixShipped9 = $syntheticHotfixSrTrackers |
+            Where-Object { [int]$_.srNumber -eq 9 } | Select-Object -First 1
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix retains shipped tracker" `
+            -Expected $true -Actual ($null -ne $syntheticHotfixShipped9)
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix mode remains shipped" `
+            -Expected 'shipped' -Actual $syntheticHotfixShipped9.mode
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix anchor remains tagged 10.0.90" `
+            -Expected '10.0.90' -Actual $syntheticHotfixShipped9.expectedTag
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix does not emit in-flight SR9" `
+            -Expected 0 -Actual @($syntheticHotfixSrTrackers | Where-Object mode -eq 'in-flight').Count
     } finally {
         Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
         Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
@@ -1087,6 +1149,7 @@ if (-not $SkipE2E) {
         Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
         Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
         Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
+        Remove-Variable -Name SyntheticSrBranchTag -Scope Script -ErrorAction SilentlyContinue
     }
 
     # Synthetic dual-tracker window: shipped preview N has a tag, preview N+1
@@ -1316,6 +1379,7 @@ try {
     git -C $revertFixtureRepo add -A 2>&1 | Out-Null
     git -C $revertFixtureRepo commit -q -m 'Post-tag branch fix (#36000)' -m 'Backport of #36000' 2>&1 | Out-Null
     $postTagFixSha = (& git -C $revertFixtureRepo rev-parse HEAD).Trim()
+    git -C $revertFixtureRepo tag 10.0.91 $postTagFixSha 2>&1 | Out-Null
     git -C $revertFixtureRepo update-ref refs/remotes/origin/release/10.0.1xx-sr9 $postTagFixSha 2>&1 | Out-Null
     # Model the shipped SR flowing forward to main. A mutable `tag ^main`
     # inventory would now collapse, while stable tag-to-tag contents must not.
@@ -1336,6 +1400,21 @@ try {
     Assert-Eq -Label "shipped anchor: latest published hotfix in SR range is selected" -Expected '10.0.91' `
         -Actual (Select-LatestPublishedTagForSr -SrBranch 'release/10.0.1xx-sr9' `
             -PublishedTags @('10.0.80', '10.0.90', '10.0.91', '10.0.100'))
+    $localStableTags = @(Get-LocalStableTags)
+    Assert-Eq -Label "shipped anchor: local stable-tag scan includes tag-before-Release anchor" `
+        -Expected $true -Actual ($localStableTags -contains '10.0.91')
+    Assert-Eq -Label "shipped anchor: malformed overflow tag is excluded from local stable tags" `
+        -Expected $false -Actual ($localStableTags -contains '10.0.999999999999999999')
+    Assert-Eq -Label "shipped anchor: latest local tag wins before GitHub Release publication" `
+        -Expected '10.0.91' -Actual (Select-LatestStableTagForSr `
+            -SrBranch 'release/10.0.1xx-sr9' -StableTags $localStableTags)
+    $tagBeforeReleaseEvidence = @(($publishedFixtureTags + $localStableTags) | Sort-Object -Unique)
+    $tagBeforeReleaseRefs = Resolve-ShippedContentsRefs -Version '10.0.91' `
+        -PublishedTags $tagBeforeReleaseEvidence
+    Assert-Eq -Label "tag-before-Release: immutable contents anchor to local 10.0.91 tag" `
+        -Expected '10.0.91' -Actual $tagBeforeReleaseRefs.ContentsRef
+    Assert-Eq -Label "tag-before-Release: immediate predecessor remains 10.0.90" `
+        -Expected '10.0.90' -Actual $tagBeforeReleaseRefs.PreviousTag
     $resolvedShippedRefs = Resolve-ShippedContentsRefs -Version '10.0.90' -PublishedTags $publishedFixtureTags
     Assert-Eq -Label "shipped contents: stable tag resolves locally" -Expected '10.0.90' -Actual $resolvedShippedRefs.ContentsRef
     Assert-Eq -Label "shipped contents: prior immutable stable tag is selected" -Expected '10.0.80' -Actual $resolvedShippedRefs.PreviousTag
@@ -7848,6 +7927,10 @@ $wrongStageMacCell = Format-PreviewComponentSourceCell -Repo 'dotnet/macios' `
     -Version '26.5.11717-net11-p5' -Major 11 -Preview 6 -Drift $drAhead
 Assert-Eq -Label "component source: old macOS/iOS stage warns even when branch is ahead" `
     -Expected $true -Actual ([bool]($wrongStageMacCell -match '^⚠️.*off-band.*-net11-p6'))
+$wrongStageNoShaMacCell = Format-PreviewComponentSourceCell -Repo 'dotnet/macios' `
+    -Version '26.5.11717-net11-p5' -Major 11 -Preview 6 -Drift $drNoSha
+Assert-Eq -Label "component source: old macOS/iOS stage warns even when SHA is missing" `
+    -Expected $true -Actual ([bool]($wrongStageNoShaMacCell -match '^⚠️.*off-band.*-net11-p6'))
 $correctStageMacCell = Format-PreviewComponentSourceCell -Repo 'dotnet/macios' `
     -Version '26.5.11717-net11-p6' -Major 11 -Preview 6 -Drift $drAhead
 Assert-Eq -Label "component source: correct macOS/iOS stage preserves ahead FYI" `

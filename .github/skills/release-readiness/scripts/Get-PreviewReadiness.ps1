@@ -2747,14 +2747,13 @@ if ($componentPins) {
         }
 
         # Upstream drift (public compare API) — has the component's same-named
-        # branch advanced past the SHA we pin? Needs the pin SHA; soft-fails to '—'.
-        $driftCell = '—'
-        if (-not [string]::IsNullOrWhiteSpace($pin.Sha)) {
-            $drift = Get-UpstreamDriftSignal -Repo $r.Repo -Sha $pin.Sha -BranchName $SurveyRef
-            $driftCell = Format-PreviewComponentSourceCell -Repo $r.Repo `
-                -Version $pin.Version -Major $majorVersion -Preview $previewNumber `
-                -Drift $drift -Vmr:$r.Vmr
-        }
+        # branch advanced past the SHA we pin? Get-UpstreamDriftSignal degrades a
+        # blank SHA to `unknown`, while the formatter still validates version-only
+        # stage evidence (for example, a stale macOS/iOS -netN-pM stamp).
+        $drift = Get-UpstreamDriftSignal -Repo $r.Repo -Sha $pin.Sha -BranchName $SurveyRef
+        $driftCell = Format-PreviewComponentSourceCell -Repo $r.Repo `
+            -Version $pin.Version -Major $majorVersion -Preview $previewNumber `
+            -Drift $drift -Vmr:$r.Vmr
 
         $commitCell = '—'
         if (-not [string]::IsNullOrWhiteSpace($pin.Sha)) {
@@ -2841,17 +2840,22 @@ if ($cleanupChecks.Count -gt 0) {
 #     readiness checklist / PR tables) ===
 [void]$md.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
 [void]$md.AppendLine("")
-$ciScanBlurb = "_Filtered to issues whose ``**Branch**: <name>`` body marker matches ``$SurveyRef`` (auto-filed by the CI Failure Scanner workflow every 12h). Fresh issues (<24h) are flagged 🆕._"
-if ($ciScanFilteredOut -gt 0) {
-    $ciScanBlurb += " _$ciScanFilteredOut other-branch issue(s) were excluded as not relevant to this release._"
-}
-[void]$md.AppendLine($ciScanBlurb)
-[void]$md.AppendLine("")
-if ($ciScanIssues.Count -eq 0) {
-    [void]$md.AppendLine("_No ci-scan issues target ``$SurveyRef``._")
+if (-not $ciScanLabel) {
+    [void]$md.AppendLine("_No CI Failure Scanner runs against ``$SurveyRef``. This section has no continuous-scan evidence for the cut preview branch._")
     [void]$md.AppendLine("")
 } else {
-    Add-CiScanTable -Builder $md -Issues $ciScanIssues
+    $ciScanBlurb = "_Filtered to issues whose ``**Branch**: <name>`` body marker matches ``$SurveyRef`` (auto-filed by the CI Failure Scanner workflow every 12h). Fresh issues (<24h) are flagged 🆕._"
+    if ($ciScanFilteredOut -gt 0) {
+        $ciScanBlurb += " _$ciScanFilteredOut other-branch issue(s) were excluded as not relevant to this release._"
+    }
+    [void]$md.AppendLine($ciScanBlurb)
+    [void]$md.AppendLine("")
+    if ($ciScanIssues.Count -eq 0) {
+        [void]$md.AppendLine("_The configured scanner has no open ci-scan issues for ``$SurveyRef``._")
+        [void]$md.AppendLine("")
+    } else {
+        Add-CiScanTable -Builder $md -Issues $ciScanIssues
+    }
 }
 
 # Report freshness banner — DERIVED-AT-RENDER note of how long ago this report was generated,
