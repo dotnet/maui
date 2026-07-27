@@ -7,16 +7,22 @@
 .DESCRIPTION
     Passkeys are bound to a domain (the RP ID), so `localhost` will not work from a
     real device. This script provisions a dev tunnel with a *persistent* tunnel id — so the public
-    domain stays the same every time — and writes the resulting configuration into the SERVER's
-    user-secrets (the MAUI app itself reads no secrets; you type the URL into its UI):
+    domain stays the same every time — and writes all developer-specific values into files that are
+    NEVER committed: the SERVER's user-secrets, and the MAUI app's git-ignored Passkeys.Local.props
+    (imported by the app csproj). No committed file is edited.
 
+    Into the server user-secrets:
       - the passkeys relying-party domain + web origin,
       - the Android package name (read from the sample app's project) plus the debug-signing-key
         SHA-256 fingerprint and `android:apk-key-hash:` origin (so Digital Asset Links validate), and
-      - (optionally, with -AppleTeamId) the Apple app-id `<TeamID>.<BundleID>` for the App Site
-        Association, plus the `webcredentials:<domain>` associated-domains entitlement in the sample
-        app's iOS Entitlements.plist. See README.md (Apple section) for the remaining Apple steps
-        (App ID registration + signing) that only you can do in your Apple Developer account.
+      - (with -AppleTeamId) the Apple app-id `<TeamID>.<BundleID>` for the App Site Association.
+
+    Into the git-ignored Samples/Passkeys.Local.props (and, for Apple, Samples/Platforms/iOS/
+    Entitlements.Local.plist):
+      - the default relying-party server URL (baked into the app via AssemblyMetadata), and
+      - (with -AppleTeamId) the associated-domains entitlement plus the auto-detected Mac Catalyst
+        signing identity + provisioning profile. See README.md (Apple section) for the App ID
+        registration + profile steps that only you can do in your Apple Developer account.
 
     It does NOT run the web server — that is a separate `dotnet run` (see the printed next steps).
 
@@ -130,27 +136,28 @@ function Get-AndroidKeyInfo($keystore) {
     return [pscustomobject]@{ Hex = $hex; Origin = "android:apk-key-hash:$b64url" }
 }
 
-# Adds (or replaces) the webcredentials associated-domains entitlement in the sample app's iOS
-# Entitlements.plist so Apple passkeys bind to the relying-party domain. This is a LOCAL edit to a
-# committed file (like the server URL you type into the app) — do not commit it. Uses PlistBuddy on
-# macOS (the only OS that can build/sign Apple apps) and falls back to editing the XML directly.
-function Set-AppleAssociatedDomain($entitlementsPath, $domain) {
-    if (-not (Test-Path $entitlementsPath)) {
-        Write-Warning "Entitlements file not found at '$entitlementsPath'. Skipping Apple associated-domains."
+# Generates a git-ignored Entitlements.Local.plist next to the committed Entitlements.plist: a copy of
+# the base entitlements plus the webcredentials associated-domains entry for the relying-party domain.
+# The committed Entitlements.plist is never modified. Uses PlistBuddy on macOS (the only OS that can
+# build/sign Apple apps) and falls back to editing the XML directly.
+function New-LocalEntitlements($basePlist, $outPlist, $domain) {
+    if (-not (Test-Path $basePlist)) {
+        Write-Warning "Base entitlements not found at '$basePlist'. Skipping Apple entitlements."
         return $false
     }
+    Copy-Item -Path $basePlist -Destination $outPlist -Force
     $entry = "webcredentials:$domain"
     $plistBuddy = '/usr/libexec/PlistBuddy'
     if (Test-Path $plistBuddy) {
-        & $plistBuddy -c "Delete :com.apple.developer.associated-domains" $entitlementsPath 2>$null | Out-Null
-        & $plistBuddy -c "Add :com.apple.developer.associated-domains array" $entitlementsPath | Out-Null
-        & $plistBuddy -c "Add :com.apple.developer.associated-domains:0 string $entry" $entitlementsPath | Out-Null
+        & $plistBuddy -c "Delete :com.apple.developer.associated-domains" $outPlist 2>$null | Out-Null
+        & $plistBuddy -c "Add :com.apple.developer.associated-domains array" $outPlist | Out-Null
+        & $plistBuddy -c "Add :com.apple.developer.associated-domains:0 string $entry" $outPlist | Out-Null
         return $true
     }
     try {
         $xml = New-Object System.Xml.XmlDocument
         $xml.XmlResolver = $null
-        $xml.Load($entitlementsPath)
+        $xml.Load($outPlist)
         $dict = $xml.plist.dict
         $existing = $dict.SelectNodes('key') | Where-Object { $_.InnerText -eq 'com.apple.developer.associated-domains' } | Select-Object -First 1
         if ($existing) {
@@ -162,11 +169,11 @@ function Set-AppleAssociatedDomain($entitlementsPath, $domain) {
             $arr = $xml.CreateElement('array'); [void]$dict.AppendChild($arr)
         }
         $s = $xml.CreateElement('string'); $s.InnerText = $entry; [void]$arr.AppendChild($s)
-        $xml.Save($entitlementsPath)
+        $xml.Save($outPlist)
         return $true
     }
     catch {
-        Write-Warning "Could not update associated-domains in '$entitlementsPath': $($_.Exception.Message)"
+        Write-Warning "Could not write local entitlements '$outPlist': $($_.Exception.Message)"
         return $false
     }
 }
@@ -180,7 +187,7 @@ function Require-Command($name, $hint) {
 # --- Apple signing auto-detection (macOS only) ------------------------------------------------
 # These make Configure a one-stop shop: they find the Apple Development identity in the keychain and
 # the provisioning profile that already matches this app-id + associated-domains, so you don't have to
-# copy names by hand. Everything is written to a LOCAL, git-ignored Signing.local.props (never committed).
+# copy names by hand. Everything is written to a LOCAL, git-ignored Passkeys.Local.props (never committed).
 
 # Returns the first "Apple Development" codesigning identity name, or $null.
 function Get-AppleSigningIdentity {
@@ -217,26 +224,42 @@ function Find-AppleProvisioningProfile($appId) {
     return $null
 }
 
-# Writes the git-ignored Samples/Signing.local.props that the app csproj imports. Scoped to Mac
-# Catalyst (which needs an explicit provisioning profile for the associated-domains entitlement and
-# fails to launch under the default linker with this sample's runtime XAML, hence MtouchLink=None).
-function Write-AppleSigningProps($appDir, $identity, $profileName) {
-    $path = Join-Path $appDir 'Signing.local.props'
-    $entitlements = 'Platforms/iOS/Entitlements.plist'
-    $props = @"
-<!-- AUTO-GENERATED by Configure.ps1 for local Apple passkey testing. DO NOT COMMIT (git-ignored).
-     Re-run Configure.ps1 to refresh. Delete this file to build unsigned again. -->
-<Project>
-  <PropertyGroup Condition="`$([MSBuild]::GetTargetPlatformIdentifier('`$(TargetFramework)')) == 'maccatalyst'">
-    <CodesignEntitlements>$entitlements</CodesignEntitlements>
-    <CodesignKey>$identity</CodesignKey>
-    <CodesignProvision>$profileName</CodesignProvision>
-    <!-- This sample uses runtime XAML inflation; the default Mac Catalyst linker trims types it needs. -->
-    <MtouchLink>None</MtouchLink>
-  </PropertyGroup>
-</Project>
-"@
-    Set-Content -Path $path -Value $props -Encoding UTF8
+# Writes the git-ignored Samples/Passkeys.Local.props that the app csproj imports. Always carries the
+# default server URL (baked into the app via AssemblyMetadata, all platforms). When Apple is set up it
+# also points CodesignEntitlements at the generated local entitlements (iOS + Mac Catalyst) and, when a
+# signing identity + profile were resolved, sets the Mac Catalyst signing (with MtouchLink=None, since
+# this sample's runtime XAML inflation trips the default Mac Catalyst linker).
+function Write-PasskeysLocalProps($appDir, $serverUrl, $entitlementsRel, $identity, $profileName) {
+    $path = Join-Path $appDir 'Passkeys.Local.props'
+    $lines = New-Object System.Collections.Generic.List[string]
+    [void]$lines.Add('<!-- AUTO-GENERATED by Configure.ps1 for local passkey testing. DO NOT COMMIT (git-ignored).')
+    [void]$lines.Add('     Re-run Configure.ps1 to refresh, or copy Passkeys.Local.in.props and fill it in by hand. -->')
+    [void]$lines.Add('<Project>')
+    [void]$lines.Add('')
+    [void]$lines.Add('  <!-- Default relying-party server URL, baked into the app via AssemblyMetadata (all platforms). -->')
+    [void]$lines.Add('  <PropertyGroup>')
+    [void]$lines.Add('    <PasskeysServerUrl>' + $serverUrl + '</PasskeysServerUrl>')
+    [void]$lines.Add('  </PropertyGroup>')
+    if ($entitlementsRel) {
+        [void]$lines.Add('')
+        [void]$lines.Add('  <!-- Apple associated-domains entitlement (iOS + Mac Catalyst) with the webcredentials domain. -->')
+        [void]$lines.Add('  <PropertyGroup Condition="$(TargetFramework.Contains(''-ios'')) or $(TargetFramework.Contains(''-maccatalyst''))">')
+        [void]$lines.Add('    <CodesignEntitlements>' + $entitlementsRel + '</CodesignEntitlements>')
+        [void]$lines.Add('  </PropertyGroup>')
+    }
+    if ($identity -and $profileName) {
+        [void]$lines.Add('')
+        [void]$lines.Add('  <!-- Mac Catalyst signing: a real signed app needs the explicit provisioning profile, and')
+        [void]$lines.Add('       MtouchLink=None because this sample uses runtime XAML the default linker would trim. -->')
+        [void]$lines.Add('  <PropertyGroup Condition="$(TargetFramework.Contains(''-maccatalyst''))">')
+        [void]$lines.Add('    <CodesignKey>' + $identity + '</CodesignKey>')
+        [void]$lines.Add('    <CodesignProvision>' + $profileName + '</CodesignProvision>')
+        [void]$lines.Add('    <MtouchLink>None</MtouchLink>')
+        [void]$lines.Add('  </PropertyGroup>')
+    }
+    [void]$lines.Add('')
+    [void]$lines.Add('</Project>')
+    Set-Content -Path $path -Value ($lines -join "`n") -Encoding UTF8
     return $path
 }
 # ---------------------------------------------------------------------------------------------
@@ -334,29 +357,35 @@ else {
         Write-Host "      SHA-256 : $($android.Hex)" -ForegroundColor DarkGray
         Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
     }
-    # Apple: write the App Site Association app-id and add the associated-domains entitlement.
-    # The remaining Apple steps (App ID registration + signing) are in README.md (Apple section).
+    # Compose the git-ignored Passkeys.Local.props for the MAUI app: the default server URL always, plus
+    # the Apple entitlements/signing when -AppleTeamId is supplied. The committed files are never edited.
+    $appDir = Join-Path $here 'Samples'
+    $entitlementsRel = $null
+    $resolvedIdentity = $null
+    $resolvedProfile = $null
+
     if ($AppleTeamId) {
         if (-not $AppleBundleId) { $AppleBundleId = $AndroidPackage }
         $appleAppId = "$AppleTeamId.$AppleBundleId"
         dotnet user-secrets --project $project set 'Passkeys:Apple:AppIds:0' $appleAppId | Out-Null
-        $entPath = Join-Path $here 'Samples' 'Platforms' 'iOS' 'Entitlements.plist'
-        $ok = Set-AppleAssociatedDomain $entPath $domain
         Write-Host "    Apple configured: app-id '$appleAppId'" -ForegroundColor Green
-        if ($ok) {
-            Write-Host "      entitlement: webcredentials:$domain  (Entitlements.plist — LOCAL edit, do not commit)" -ForegroundColor DarkGray
+
+        # Generate the git-ignored local entitlements (the committed Entitlements.plist is never touched).
+        $baseEnt = Join-Path $appDir 'Platforms' 'iOS' 'Entitlements.plist'
+        $localEnt = Join-Path $appDir 'Platforms' 'iOS' 'Entitlements.Local.plist'
+        if (New-LocalEntitlements $baseEnt $localEnt $domain) {
+            $entitlementsRel = 'Platforms/iOS/Entitlements.Local.plist'
+            Write-Host "      entitlement: webcredentials:$domain  (Entitlements.Local.plist — git-ignored)" -ForegroundColor DarkGray
         }
 
         # Resolve the signing identity and provisioning profile (params win; otherwise auto-detect).
-        $appDir = Join-Path $here 'Samples'
         if (-not $AppleSigningIdentity) { $AppleSigningIdentity = Get-AppleSigningIdentity }
         if (-not $AppleProvisioningProfile) { $AppleProvisioningProfile = Find-AppleProvisioningProfile $appleAppId }
-
         if ($AppleSigningIdentity -and $AppleProvisioningProfile) {
-            $propsPath = Write-AppleSigningProps $appDir $AppleSigningIdentity $AppleProvisioningProfile
+            $resolvedIdentity = $AppleSigningIdentity
+            $resolvedProfile = $AppleProvisioningProfile
             Write-Host "      signing identity : $AppleSigningIdentity" -ForegroundColor DarkGray
             Write-Host "      provisioning     : $AppleProvisioningProfile" -ForegroundColor DarkGray
-            Write-Host "      wrote $([IO.Path]::GetFileName($propsPath)) (git-ignored) — Mac Catalyst is ready to build/run." -ForegroundColor Green
         }
         else {
             if (-not $AppleSigningIdentity) {
@@ -365,19 +394,22 @@ else {
             if (-not $AppleProvisioningProfile) {
                 Write-Host "      No installed provisioning profile matches '$appleAppId' with Associated Domains." -ForegroundColor Yellow
             }
-            Write-Host "      iOS Simulator still works unsigned. For Mac Catalyst / iOS device, create the profile and" -ForegroundColor DarkGray
-            Write-Host "      re-run with -AppleSigningIdentity / -AppleProvisioningProfile — see README.md (Apple section)." -ForegroundColor DarkGray
+            Write-Host "      iOS Simulator still works. For Mac Catalyst / iOS device, create the profile and re-run" -ForegroundColor DarkGray
+            Write-Host "      (or pass -AppleSigningIdentity / -AppleProvisioningProfile) — see README.md (Apple section)." -ForegroundColor DarkGray
         }
     }
     else {
         Write-Host "    (Apple: pass -AppleTeamId <TEAMID> to set up iOS/Mac Catalyst — see README.md (Apple section).)" -ForegroundColor DarkGray
     }
 
+    $propsPath = Write-PasskeysLocalProps $appDir $uri $entitlementsRel $resolvedIdentity $resolvedProfile
+    Write-Host "    Wrote $([IO.Path]::GetFileName($propsPath)) (git-ignored): the app defaults to $uri." -ForegroundColor Green
+
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Yellow
     Write-Host "  1) In THIS terminal, host the tunnel:   devtunnel host $TunnelId"
     Write-Host "  2) In ANOTHER terminal, run the server: dotnet run --project `"$project`" --launch-profile http"
-    Write-Host "  3) In the MAUI Essentials sample, set BOTH the Passkeys and Web Authenticator server URLs to: $uri"
+    Write-Host "  3) Build/run the sample — its Passkeys page now defaults to $uri (editable via the Server button)."
 }
 
 if ($StartHost) {

@@ -117,15 +117,29 @@ devtunnel port create maui-essentials -p 5177 --protocol http
 devtunnel host maui-essentials
 ```
 
-Note the printed `https://<id>-5177.<region>.devtunnels.ms` URL. The host (no scheme) is your passkeys
-**RP ID** / `ServerDomain`; set it via user-secrets:
+Then build/run the MAUI sample — its **Passkeys** page defaults to the full `https://…devtunnels.ms`
+URL (baked in by `Configure.ps1`; editable at runtime via the Server toolbar button).
+
+## Passkeys configuration keys
+
+The `Passkeys` section of `appsettings.json` ships as **empty safe defaults** (so a bare `dotnet run`
+works on localhost with ASP.NET Core Identity's default RP settings). The real per-developer values are
+provided via **user-secrets** (written for you by `Configure.ps1`, never committed):
+
+| Key | Meaning |
+| --- | --- |
+| `Passkeys:ServerDomain` | The RP ID = the public host, no scheme/port (e.g. `abcd1234-5177.usw3.devtunnels.ms`). Empty ⇒ Identity's localhost defaults. |
+| `Passkeys:AllowedOrigins:<n>` | Extra accepted WebAuthn origins. `https://<ServerDomain>` is always allowed; add each Android `android:apk-key-hash:<hash>` origin. |
+| `Passkeys:Android:PackageName` | The Android app id, served in `/.well-known/assetlinks.json`. |
+| `Passkeys:Android:Sha256CertFingerprints:<n>` | The app's signing-cert SHA-256 fingerprint(s) for Digital Asset Links. |
+| `Passkeys:Apple:AppIds:<n>` | `<TeamID>.<BundleID>` entries served in `/.well-known/apple-app-site-association`. |
+
+Set one by hand like:
 
 ```bash
 dotnet user-secrets --project src/Essentials/samples/Samples.WebServer \
   set "Passkeys:ServerDomain" "<id>-5177.<region>.devtunnels.ms"
 ```
-
-Then in the MAUI sample, set the **Passkeys** page server URL to the full `https://…devtunnels.ms` URL.
 
 ## The native API
 

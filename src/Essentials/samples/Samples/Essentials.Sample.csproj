@@ -24,6 +24,16 @@
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
+  <!-- Default relying-party server URL for the Passkeys sample, baked into the app via AssemblyMetadata
+       and read by PasskeysViewModel. Overridden by the git-ignored Passkeys.Local.props that
+       ../Configure.ps1 writes; the committed placeholder is edited in the app's Server toolbar button. -->
+  <PropertyGroup>
+    <PasskeysServerUrl Condition="'$(PasskeysServerUrl)' == ''">https://your-tunnel-5177.devtunnels.ms</PasskeysServerUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="PasskeysServerUrl" Value="$(PasskeysServerUrl)" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!--
       Uncomment the below to enabled unpackaged apps and change the
@@ -57,8 +67,8 @@
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
-  <!-- Local, git-ignored Apple signing for passkey testing, written by ../Configure.ps1 -AppleTeamId.
-       Absent by default (unsigned builds / CI unaffected). See ../README.md (Apple section). -->
-  <Import Project="Signing.local.props" Condition="Exists('$(MSBuildThisFileDirectory)Signing.local.props')" />
+  <!-- Local, git-ignored passkey test config written by ../Configure.ps1 (server URL, Apple signing +
+       entitlements). Absent by default (unsigned builds / CI unaffected). See ../README.md. -->
+  <Import Project="Passkeys.Local.props" Condition="Exists('$(MSBuildThisFileDirectory)Passkeys.Local.props')" />
 
 </Project>
