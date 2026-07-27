@@ -91,10 +91,10 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
 
    > **Heads up — an explicit App ID is globally unique to one team.** The sample's default
    > `com.microsoft.maui.essentials` is owned by the MAUI team, so **you can't register it under your
-   > own team**. Use your own reverse-DNS id (e.g. `com.yourname.mauiessentials`) — pass it to
-   > `Configure.ps1 -AppleBundleId` below and set the same value in `<ApplicationId>` in
-   > `Samples/Essentials.Sample.csproj` (a local edit, don't commit). Wildcard App IDs can't carry
-   > Associated Domains, so it must be explicit.
+   > own team**. Use your own reverse-DNS id (e.g. `com.yourname.mauiessentials`): set it once in
+   > `<ApplicationId>` in `Samples/Essentials.Sample.csproj` (a local edit, don't commit) — it's the
+   > single app id shared by every platform, and `Configure.ps1` reads it from there. Wildcard App IDs
+   > can't carry Associated Domains, so it must be explicit.
 
 2. **Register this Mac as a device** and create a **macOS App Development** provisioning profile for that
    App ID (your Development certificate + this Mac). Install it (double-click, or drop it in
@@ -104,7 +104,7 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
 
 3. Configure the server + app (from `src/Essentials/samples`):
    ```bash
-   pwsh ./Configure.ps1 -AppleTeamId <TEAMID>          # add -AppleBundleId <id> if you overrode it
+   pwsh ./Configure.ps1 -AppleTeamId <TEAMID>          # reads the app id from <ApplicationId>
    ```
    This is the one-stop setup, and it writes **only git-ignored files** (no committed file is edited):
    - `Passkeys:Apple:AppIds:0 = <TeamID>.<BundleID>` into the server user-secrets (served in the AASA);
@@ -135,7 +135,7 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
 | `… is not associated with domain …` | AASA not reachable as JSON, its app-id ≠ your signed `<TeamID>.<BundleID>`, or the entitlement domain ≠ the server's `Passkeys:ServerDomain`. Verify with the step-4 `curl`. |
 | AASA `curl` returns HTML | The dev tunnel's anti-phishing interstitial is answering; create a tunnel access token / disable anti-phishing for the port so raw JSON is served. |
 | `Could not resolve host …devtunnels.ms` on the device | Local-network DNS won't resolve `*.devtunnels.ms`. Point the device at a public resolver (iOS Wi-Fi → Configure DNS → Manual → `8.8.8.8`) or restart the router. Apple's CDN resolves it fine over the public internet. |
-| `no profiles for '<bundle id>' were found` | The App ID belongs to another team — use `-AppleBundleId` + a matching `<ApplicationId>`. |
+| `no profiles for '<bundle id>' were found` | The App ID belongs to another team — set your own reverse-DNS `<ApplicationId>` in `Essentials.Sample.csproj` and register it under your team. |
 | Browser: *"relying party ID is not a registrable domain suffix of … the current domain"* | You opened the web UI on `localhost` (e.g. `http://localhost:5177`). Passkeys are domain-bound — browse to the **tunnel URL** `https://<your-domain>` instead (click through the dev-tunnel warning), so the page origin matches the RP ID. |
 | Build error `MT7139: … requests the entitlement 'com.apple.developer.associated-domains', but no provisioning profile has been specified` | A **device** or **Mac Catalyst** build needs an explicit provisioning profile with Associated Domains. Generate one for your Team (IDE automatic provisioning or Xcode) and set `CodesignProvision` to its name. The iOS **Simulator** doesn't need this. |
 

@@ -38,8 +38,10 @@
     The local HTTP port the server listens on. Defaults to 5177 (matches the project's
     launchSettings.json "http" profile).
 
-.PARAMETER AndroidPackage
-    The Android application id. Defaults to the sample app's <ApplicationId> read from its project.
+.PARAMETER ApplicationId
+    The app's application id (bundle id) shared by all platforms. Defaults to the sample app's
+    <ApplicationId> read from its project. It's used for the Android package (assetlinks) and, with
+    -AppleTeamId, the Apple app-id `<TeamID>.<ApplicationId>`.
 
 .PARAMETER DebugKeystore
     Path to the Android debug keystore. Defaults to the keystore .NET for Android actually signs debug
@@ -49,14 +51,9 @@
 
 .PARAMETER AppleTeamId
     Your 10-character Apple Developer Team ID (developer.apple.com -> Membership). When supplied, the
-    script writes the Apple app-id `<TeamID>.<BundleID>` into the server's App Site Association config
-    and adds the `webcredentials:<domain>` associated-domains entitlement to the sample app's iOS
-    Entitlements.plist. Omit to skip Apple setup.
-
-.PARAMETER AppleBundleId
-    The Apple bundle identifier of the sample app. Defaults to the app's <ApplicationId>. Override if
-    that identifier is registered to another team and you need to use your own (also change the app's
-    <ApplicationId> to match).
+    script writes the Apple app-id `<TeamID>.<ApplicationId>` into the server's App Site Association
+    config and generates the git-ignored Apple entitlements/signing for the sample app. Omit to skip
+    Apple setup.
 
 .PARAMETER StartHost
     If set, starts hosting the tunnel (blocking) at the end. Otherwise prints the host command.
@@ -77,10 +74,9 @@
 param(
     [string]$TunnelId = 'maui-essentials',
     [int]$Port = 5177,
-    [string]$AndroidPackage,
+    [string]$ApplicationId,
     [string]$DebugKeystore,
     [string]$AppleTeamId,
-    [string]$AppleBundleId,
     [string]$AppleSigningIdentity,
     [string]$AppleProvisioningProfile,
     [switch]$StartHost
@@ -90,14 +86,16 @@ $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $project = Join-Path $here 'Samples.WebServer' 'Essentials.Samples.WebServer.csproj'
 
-# Default the Android package to the sample app's <ApplicationId> so the two never drift.
-if (-not $AndroidPackage) {
+# Default the application id to the sample app's <ApplicationId> so the two never drift.
+if (-not $ApplicationId) {
     $appCsproj = Join-Path $here 'Samples' 'Essentials.Sample.csproj'
     if (Test-Path $appCsproj) {
         $m = [regex]::Match((Get-Content -Raw $appCsproj), '<ApplicationId>\s*([^<]+?)\s*</ApplicationId>')
-        if ($m.Success) { $AndroidPackage = $m.Groups[1].Value.Trim() }
+        if ($m.Success) { $ApplicationId = $m.Groups[1].Value.Trim() }
     }
-    if (-not $AndroidPackage) { $AndroidPackage = 'com.microsoft.maui.essentials' }
+    if (-not $ApplicationId) {
+        Write-Error "Could not read <ApplicationId> from '$appCsproj'. Pass -ApplicationId explicitly, or ensure the sample project defines <ApplicationId>."
+    }
 }
 
 # Default to the .NET for Android debug keystore — the key the build actually signs the APK with.
@@ -138,26 +136,20 @@ function Get-AndroidKeyInfo($keystore) {
 
 # Generates a git-ignored Entitlements.Local.plist next to the committed Entitlements.plist: a copy of
 # the base entitlements plus the webcredentials associated-domains entry for the relying-party domain.
-# The committed Entitlements.plist is never modified. Uses PlistBuddy on macOS (the only OS that can
-# build/sign Apple apps) and falls back to editing the XML directly.
+# The committed Entitlements.plist is never modified. Pure XmlDocument (cross-platform, no external
+# tools): XmlResolver is nulled so the plist DTD is never fetched, and the output is written with a
+# fixed Apple-style header so it stays byte-clean (no empty-DOCTYPE-subset artifact).
 function New-LocalEntitlements($basePlist, $outPlist, $domain) {
     if (-not (Test-Path $basePlist)) {
         Write-Warning "Base entitlements not found at '$basePlist'. Skipping Apple entitlements."
         return $false
     }
-    Copy-Item -Path $basePlist -Destination $outPlist -Force
     $entry = "webcredentials:$domain"
-    $plistBuddy = '/usr/libexec/PlistBuddy'
-    if (Test-Path $plistBuddy) {
-        & $plistBuddy -c "Delete :com.apple.developer.associated-domains" $outPlist 2>$null | Out-Null
-        & $plistBuddy -c "Add :com.apple.developer.associated-domains array" $outPlist | Out-Null
-        & $plistBuddy -c "Add :com.apple.developer.associated-domains:0 string $entry" $outPlist | Out-Null
-        return $true
-    }
     try {
         $xml = New-Object System.Xml.XmlDocument
         $xml.XmlResolver = $null
-        $xml.Load($outPlist)
+        $xml.Load($basePlist)
+
         $dict = $xml.plist.dict
         $existing = $dict.SelectNodes('key') | Where-Object { $_.InnerText -eq 'com.apple.developer.associated-domains' } | Select-Object -First 1
         if ($existing) {
@@ -169,7 +161,21 @@ function New-LocalEntitlements($basePlist, $outPlist, $domain) {
             $arr = $xml.CreateElement('array'); [void]$dict.AppendChild($arr)
         }
         $s = $xml.CreateElement('string'); $s.InnerText = $entry; [void]$arr.AppendChild($s)
-        $xml.Save($outPlist)
+
+        # Serialize just the <plist> element (skipping the DOCTYPE node) with tab indentation, then
+        # prepend the canonical Apple header, so the file matches the committed plist's format exactly.
+        $settings = New-Object System.Xml.XmlWriterSettings
+        $settings.Indent = $true
+        $settings.IndentChars = "`t"
+        $settings.OmitXmlDeclaration = $true
+        $settings.NewLineChars = "`n"
+        $sb = New-Object System.Text.StringBuilder
+        $sw = New-Object System.IO.StringWriter($sb)
+        $writer = [System.Xml.XmlWriter]::Create($sw, $settings)
+        try { $xml.DocumentElement.WriteTo($writer) } finally { $writer.Dispose() }
+
+        $header = "<?xml version=`"1.0`" encoding=`"UTF-8`"?>`n<!DOCTYPE plist PUBLIC `"-//Apple//DTD PLIST 1.0//EN`" `"http://www.apple.com/DTDs/PropertyList-1.0.dtd`">`n"
+        [System.IO.File]::WriteAllText($outPlist, $header + $sb.ToString() + "`n", (New-Object System.Text.UTF8Encoding($false)))
         return $true
     }
     catch {
@@ -224,42 +230,64 @@ function Find-AppleProvisioningProfile($appId) {
     return $null
 }
 
-# Writes the git-ignored Samples/Passkeys.Local.props that the app csproj imports. Always carries the
-# default server URL (baked into the app via AssemblyMetadata, all platforms). When Apple is set up it
-# also points CodesignEntitlements at the generated local entitlements (iOS + Mac Catalyst) and, when a
-# signing identity + profile were resolved, sets the Mac Catalyst signing (with MtouchLink=None, since
-# this sample's runtime XAML inflation trips the default Mac Catalyst linker).
+# Writes the git-ignored Samples/Passkeys.Local.props by loading the committed Passkeys.Local.in.props
+# template and filling in the values via XML — so the template is the single source of truth for the
+# file's shape and comments (tweak the .in file, not this script). Always sets the default server URL
+# (baked into the app via AssemblyMetadata). When Apple signing was resolved it also fills the entitlements
+# path and Mac Catalyst signing; otherwise it strips the Apple-only PropertyGroups.
 function Write-PasskeysLocalProps($appDir, $serverUrl, $entitlementsRel, $identity, $profileName) {
+    $template = Join-Path $appDir 'Passkeys.Local.in.props'
     $path = Join-Path $appDir 'Passkeys.Local.props'
-    $lines = New-Object System.Collections.Generic.List[string]
-    [void]$lines.Add('<!-- AUTO-GENERATED by Configure.ps1 for local passkey testing. DO NOT COMMIT (git-ignored).')
-    [void]$lines.Add('     Re-run Configure.ps1 to refresh, or copy Passkeys.Local.in.props and fill it in by hand. -->')
-    [void]$lines.Add('<Project>')
-    [void]$lines.Add('')
-    [void]$lines.Add('  <!-- Default relying-party server URL, baked into the app via AssemblyMetadata (all platforms). -->')
-    [void]$lines.Add('  <PropertyGroup>')
-    [void]$lines.Add('    <PasskeysServerUrl>' + $serverUrl + '</PasskeysServerUrl>')
-    [void]$lines.Add('  </PropertyGroup>')
-    if ($entitlementsRel) {
-        [void]$lines.Add('')
-        [void]$lines.Add('  <!-- Apple associated-domains entitlement (iOS + Mac Catalyst) with the webcredentials domain. -->')
-        [void]$lines.Add('  <PropertyGroup Condition="$(TargetFramework.Contains(''-ios'')) or $(TargetFramework.Contains(''-maccatalyst''))">')
-        [void]$lines.Add('    <CodesignEntitlements>' + $entitlementsRel + '</CodesignEntitlements>')
-        [void]$lines.Add('  </PropertyGroup>')
+    if (-not (Test-Path $template)) {
+        Write-Error "Template not found at '$template'. It should be committed alongside the app project."
     }
-    if ($identity -and $profileName) {
-        [void]$lines.Add('')
-        [void]$lines.Add('  <!-- Mac Catalyst signing: a real signed app needs the explicit provisioning profile, and')
-        [void]$lines.Add('       MtouchLink=None because this sample uses runtime XAML the default linker would trim. -->')
-        [void]$lines.Add('  <PropertyGroup Condition="$(TargetFramework.Contains(''-maccatalyst''))">')
-        [void]$lines.Add('    <CodesignKey>' + $identity + '</CodesignKey>')
-        [void]$lines.Add('    <CodesignProvision>' + $profileName + '</CodesignProvision>')
-        [void]$lines.Add('    <MtouchLink>None</MtouchLink>')
-        [void]$lines.Add('  </PropertyGroup>')
+
+    $xml = New-Object System.Xml.XmlDocument
+    $xml.PreserveWhitespace = $false
+    $xml.Load($template)
+    $project = $xml.DocumentElement
+
+    # Replace the template's top-of-file comment(s) with a generated-file banner.
+    foreach ($node in @($xml.ChildNodes)) {
+        if ($node.NodeType -eq [System.Xml.XmlNodeType]::Comment) { [void]$xml.RemoveChild($node) }
     }
-    [void]$lines.Add('')
-    [void]$lines.Add('</Project>')
-    Set-Content -Path $path -Value ($lines -join "`n") -Encoding UTF8
+    $banner = $xml.CreateComment(" AUTO-GENERATED by Configure.ps1 from Passkeys.Local.in.props. DO NOT COMMIT (git-ignored).`n     Re-run Configure.ps1 to refresh; edit Passkeys.Local.in.props to change the file's shape. ")
+    [void]$xml.InsertBefore($banner, $project)
+
+    # Server URL (all platforms) always.
+    foreach ($n in @($project.GetElementsByTagName('PasskeysServerUrl'))) { $n.InnerText = $serverUrl }
+
+    $apple = $entitlementsRel -and $identity -and $profileName
+    if ($apple) {
+        foreach ($n in @($project.GetElementsByTagName('CodesignEntitlements'))) { $n.InnerText = $entitlementsRel }
+        foreach ($n in @($project.GetElementsByTagName('CodesignKey'))) { $n.InnerText = $identity }
+        foreach ($n in @($project.GetElementsByTagName('CodesignProvision'))) { $n.InnerText = $profileName }
+    }
+    else {
+        # No Apple signing: drop the Apple-only property groups (each with its preceding comment).
+        $appleProps = @('CodesignEntitlements', 'CodesignKey', 'CodesignProvision', 'MtouchLink')
+        foreach ($pg in @($project.GetElementsByTagName('PropertyGroup'))) {
+            $isApple = $false
+            foreach ($child in $pg.ChildNodes) {
+                if ($child.NodeType -eq [System.Xml.XmlNodeType]::Element -and $appleProps -contains $child.Name) { $isApple = $true; break }
+            }
+            if ($isApple) {
+                $prev = $pg.PreviousSibling
+                [void]$project.RemoveChild($pg)
+                if ($prev -and $prev.NodeType -eq [System.Xml.XmlNodeType]::Comment) { [void]$project.RemoveChild($prev) }
+            }
+        }
+    }
+
+    $settings = New-Object System.Xml.XmlWriterSettings
+    $settings.Indent = $true
+    $settings.IndentChars = '  '
+    $settings.OmitXmlDeclaration = $true
+    $settings.NewLineChars = "`n"
+    $sw = New-Object System.IO.StringWriter
+    $writer = [System.Xml.XmlWriter]::Create($sw, $settings)
+    try { $xml.Save($writer) } finally { $writer.Dispose() }
+    [System.IO.File]::WriteAllText($path, $sw.ToString() + "`n", (New-Object System.Text.UTF8Encoding($false)))
     return $path
 }
 # ---------------------------------------------------------------------------------------------
@@ -335,7 +363,16 @@ if (-not $uri) {
 }
 
 if (-not $uri) {
-    Write-Warning "Could not auto-detect the tunnel URL. Run 'devtunnel host $TunnelId' once, note the 'Connect via browser' URL, then re-run this script."
+    Write-Error @"
+Could not resolve the public dev tunnel URL for '$TunnelId'.
+
+A public HTTPS domain is REQUIRED — there is no localhost fallback. Passkeys are bound to a domain: the
+native authenticators need the relying party's well-known files (Android assetlinks.json, Apple AASA)
+served over public HTTPS, so 'localhost' cannot work on Android, iOS, or Mac Catalyst.
+
+Host the tunnel once to materialize its URL, then re-run this script:
+    devtunnel host $TunnelId
+"@
 }
 else {
     $domain = ([Uri]$uri).Host
@@ -350,10 +387,10 @@ else {
     # Android: compute + write the debug-key fingerprint (assetlinks) and apk-key-hash origin.
     $android = Get-AndroidKeyInfo $DebugKeystore
     if ($android) {
-        dotnet user-secrets --project $project set 'Passkeys:Android:PackageName' $AndroidPackage | Out-Null
+        dotnet user-secrets --project $project set 'Passkeys:Android:PackageName' $ApplicationId | Out-Null
         dotnet user-secrets --project $project set 'Passkeys:Android:Sha256CertFingerprints:0' $android.Hex | Out-Null
         dotnet user-secrets --project $project set 'Passkeys:AllowedOrigins:1' $android.Origin | Out-Null
-        Write-Host "    Android configured: package '$AndroidPackage'" -ForegroundColor Green
+        Write-Host "    Android configured: package '$ApplicationId'" -ForegroundColor Green
         Write-Host "      SHA-256 : $($android.Hex)" -ForegroundColor DarkGray
         Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
     }
@@ -365,8 +402,7 @@ else {
     $resolvedProfile = $null
 
     if ($AppleTeamId) {
-        if (-not $AppleBundleId) { $AppleBundleId = $AndroidPackage }
-        $appleAppId = "$AppleTeamId.$AppleBundleId"
+        $appleAppId = "$AppleTeamId.$ApplicationId"
         dotnet user-secrets --project $project set 'Passkeys:Apple:AppIds:0' $appleAppId | Out-Null
         Write-Host "    Apple configured: app-id '$appleAppId'" -ForegroundColor Green
 
