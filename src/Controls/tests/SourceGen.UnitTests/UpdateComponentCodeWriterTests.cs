@@ -49,7 +49,8 @@ public class UpdateComponentCodeWriterTests
 		newRoot.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
 
 		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot);
-		if (diff == null) return null; // structural change
+		if (diff == null)
+			return null; // structural change
 
 		if (rootType == null)
 		{
@@ -77,7 +78,8 @@ public class UpdateComponentCodeWriterTests
 			toVersion,
 			compilation,
 			xmlnsCache,
-			typeCache);
+			typeCache,
+			GeneratorHelpers.StableContentHash(xamlV2));
 	}
 
 	[Fact]
@@ -159,14 +161,18 @@ $"""
 	}
 
 	[Fact]
-	public void SinglePropertyChange_ContainsVersionBump()
+	public void SinglePropertyChange_StampsContentIdentity()
 	{
 		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
 		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
 
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
-		Assert.Contains("__version = 2;", result, System.StringComparison.Ordinal);
+		// UC stamps __version with the deterministic content hash of the current XAML (not a monotonic
+		// counter), so a live instance and a freshly-created one report the same identity for identical
+		// content — and a revert restores the earlier identity.
+		var expected = $"__version = {GeneratorHelpers.StableContentHash(v2)};";
+		Assert.Contains(expected, result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]

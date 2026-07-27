@@ -519,7 +519,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	// -----------------------------------------------------------------------
 
 	[Fact]
-	public void FirstRun_NoUCEmitted()
+	public void FirstRun_EmitsEmptyUC()
 	{
 		// Arrange
 		XamlHotReloadState.Reset();
@@ -530,12 +530,19 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(
 			compilation, file, assertNoCompilationErrors: false);
 
-		// Assert: IC source must exist, no UC source
+		// Assert: IC source must exist. UpdateComponent() is ALWAYS emitted — even on the very first
+		// compile, before any edit — so the method is present from the first generation and never
+		// appears/disappears across generations (Roslyn EnC member-stability requirement; a UC that
+		// materializes on the first edit looks like a method-add delta and destabilizes EnC tracking).
+		// With no edit yet, the UC carries no patch — only the deterministic content-identity stamp.
 		var icSource = FindSourceByHintSuffix(result, ".xsg.cs");
 		Assert.NotNull(icSource);
 
 		var ucSource = FindUCSource(result, "uc.xsg");
-		Assert.Null(ucSource);
+		Assert.NotNull(ucSource);
+		Assert.Contains("internal void UpdateComponent()", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("__version =", ucSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("XamlComponentRegistry", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -923,15 +930,19 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
-	public void SecondRun_IdenticalXaml_NoUCEmitted()
+	public void SecondRun_IdenticalXaml_EmitsEmptyUC()
 	{
 		// Arrange
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV1); // no change
 
-		// Assert: no UC for identical XAML
+		// Assert: UC is still emitted for identical XAML (present-but-empty), so the method never
+		// disappears between generations. Because the content is unchanged, the body carries no
+		// patch — only the content-identity stamp (which is identical to the first run: deterministic).
 		var ucSource = FindUCSource(run2, "uc.xsg");
-		Assert.Null(ucSource);
+		Assert.NotNull(ucSource);
+		Assert.Contains("internal void UpdateComponent()", ucSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("XamlComponentRegistry", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -1462,7 +1473,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("Resources", uc, StringComparison.Ordinal);
 		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
 		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -1507,7 +1518,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("Remove", uc, StringComparison.Ordinal);
 		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
 		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -1548,7 +1559,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.NotNull(uc);
 		Assert.Contains("Resources", uc, StringComparison.Ordinal);
 		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 	}
 
 
@@ -1591,7 +1602,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
 		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
 		// The registered keys should only contain the color keys
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -1642,7 +1653,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 		// UC must add the converter resource to the dictionary
 		Assert.Contains("StatusConverter", uc, StringComparison.Ordinal);
 		Assert.Contains("new global::TestApp.StatusColorConverter()", uc, StringComparison.Ordinal);
@@ -1695,7 +1706,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 		// UC must remove the converter from the dictionary
 		Assert.Contains("Resources.Remove", uc, StringComparison.Ordinal);
 		// The converter key should no longer be registered
@@ -1768,7 +1779,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 		// UC must emit a full-walk StaticResource lookup (parent chain → app → system) to set
 		// the converter on the BindingExtension. M8 fix replaced this.Resources[key] (page-only)
 		// with the dedicated XamlComponentRegistry.FindStaticResource helper.
@@ -2001,7 +2012,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 		// UC must reference the Style property in some form
 		Assert.Contains("Style", uc, StringComparison.Ordinal);
 	}
@@ -2083,7 +2094,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 		Assert.Contains("Trigger", uc, StringComparison.Ordinal);
 	}
 
@@ -2131,7 +2142,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 		Assert.Contains("Trigger", uc, StringComparison.Ordinal);
 	}
 
@@ -2197,7 +2208,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 		Assert.Contains("VisualState", uc, StringComparison.Ordinal);
 	}
 
@@ -2248,7 +2259,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("__version =", uc, StringComparison.Ordinal);
 		// Behavior is a complex property — UC should mention it (even as skipped comment)
 		Assert.Contains("Behavior", uc, StringComparison.Ordinal);
 	}

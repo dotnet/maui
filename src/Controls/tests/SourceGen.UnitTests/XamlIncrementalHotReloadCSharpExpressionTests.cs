@@ -308,7 +308,7 @@ public partial class TestPage : ContentPage
 	}
 
 	[Fact]
-	public void CSharpExpression_IdenticalXaml_NoUCGenerated()
+	public void CSharpExpression_IdenticalXaml_EmitsEmptyUC()
 	{
 		var xaml =
 """
@@ -324,8 +324,11 @@ public partial class TestPage : ContentPage
 		RunGenerator(xaml, ViewModelCode, enableIncrementalHotReload: true);
 		var (result, _) = RunGenerator(xaml, ViewModelCode, enableIncrementalHotReload: true);
 
+		// UC is always emitted (present-but-empty for unchanged XAML) so the method never disappears.
 		var ucSource = GetUCSource(result);
-		Assert.Null(ucSource);
+		Assert.NotNull(ucSource);
+		Assert.Contains("internal void UpdateComponent()", ucSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("XamlComponentRegistry", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]
