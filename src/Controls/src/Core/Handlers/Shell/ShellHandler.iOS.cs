@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_panGestureRecognizer is not null)
             {
-                PlatformView.RemoveGestureRecognizer(_panGestureRecognizer);
+                platformView.RemoveGestureRecognizer(_panGestureRecognizer);
                 _panGestureRecognizer = null;
             }
 
