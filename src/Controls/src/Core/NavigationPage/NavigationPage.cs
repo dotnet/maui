@@ -122,7 +122,16 @@ namespace Microsoft.Maui.Controls
 			if (!_setForMaui)
 			{
 				_setForMaui = true;
+
+				// Preserve the old proxy's Inner — it was wired by OnParentSet
+				// when the Window connected. Without this, the new proxy starts
+				// with Inner=null and modal navigation silently fails.
+				var oldInner = NavigationProxy?.Inner;
 				Navigation = new MauiNavigationImpl(this);
+				if (oldInner is not null)
+				{
+					NavigationProxy.Inner = oldInner;
+				}
 			}
 		}
 

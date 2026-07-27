@@ -113,6 +113,10 @@ namespace Microsoft.Maui.Controls
         public override UIViewController ChildViewControllerForStatusBarHidden() =>
             (Child?.Handler as IPlatformViewHandler)?.ViewController ?? this;
 
+        public override UIStatusBarAnimation PreferredStatusBarUpdateAnimation =>
+            (Child?.Handler as IPlatformViewHandler)?.ViewController?.PreferredStatusBarUpdateAnimation
+            ?? base.PreferredStatusBarUpdateAnimation;
+
         public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations()
         {
             if (Child?.Handler is IPlatformViewHandler ivh)
@@ -258,6 +262,26 @@ namespace Microsoft.Maui.Controls
             {
                 ClearTitleViewContainer();
                 CleanToolbarItems();
+
+                // Dispose the final set of native bar button items to prevent
+                // native peer accumulation (they're not disposed by CleanToolbarItems).
+                if (NavigationItem.RightBarButtonItems is UIBarButtonItem[] rightItems)
+                {
+                    NavigationItem.RightBarButtonItems = null;
+                    foreach (var item in rightItems)
+                    {
+                        item.Dispose();
+                    }
+                }
+
+                if (ToolbarItems is UIBarButtonItem[] toolbarItems)
+                {
+                    ToolbarItems = null;
+                    foreach (var item in toolbarItems)
+                    {
+                        item.Dispose();
+                    }
+                }
 
                 // Properly detach child view controllers added via AddChildViewController
                 // in CreateForPage. The renderer's ParentingViewController.Disconnect
@@ -647,6 +671,14 @@ namespace Microsoft.Maui.Controls
             navBar.TintColor = iconColor is null || statusBarMode == Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.StatusBarTextColorMode.DoNotAdjust
                 ? UINavigationBar.Appearance.TintColor
                 : iconColor.ToPlatform();
+
+            // iOS 26+: TintColor is ignored for the back button on Liquid Glass.
+            // Update BackButtonAppearance using this VC's Child page directly.
+            if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+            {
+                var useCustomColor = iconColor is not null && statusBarMode != Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.StatusBarTextColorMode.DoNotAdjust;
+                NavigationPage.ApplyBackButtonAppearanceForColor(navBar, iconColor, useCustomColor);
+            }
         }
 
         void UpdateTitleArea()

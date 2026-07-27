@@ -221,6 +221,22 @@ namespace Microsoft.Maui.Platform
                 return true;
             }
 
+            public override UIViewController ChildViewControllerForStatusBarHidden()
+            {
+                // Delegate status bar queries to the child page's VC (PageViewController),
+                // matching the renderer's pattern. Without this, UIKit reads from the
+                // ParentingVC which doesn't have the page-specific status bar preferences.
+                if (TopViewController?.ChildViewControllers is { Length: > 0 } children)
+                {
+                    return children[0];
+                }
+
+                return TopViewController ?? this;
+            }
+
+            public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
+                ChildViewControllerForStatusBarHidden();
+
             public override void ViewDidAppear(bool animated)
             {
                 base.ViewDidAppear(animated);

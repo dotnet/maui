@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls
 			navBar.StandardAppearance = navigationBarAppearance;
 			navBar.ScrollEdgeAppearance = navigationBarAppearance;
 
-			MapHideNavigationBarSeparator(handler, navigationPage);
+			handler.UpdateValue(PlatformConfiguration.iOSSpecific.NavigationPage.HideNavigationBarSeparatorProperty.PropertyName);
 		}
 
 		void OnBarBackgroundBrushInvalidated(object sender, EventArgs e)
@@ -298,80 +298,7 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				if (useCustomColor)
-				{
-					var backColor = effectiveColor!.ToPlatform();
-					var colorAttributes = Foundation.NSDictionary<Foundation.NSString, Foundation.NSObject>.FromObjectsAndKeys(
-						new Foundation.NSObject[] { backColor }, new Foundation.NSString[] { UIStringAttributeKey.ForegroundColor });
-					var btnAppearance = new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
-					btnAppearance.Normal.TitleTextAttributes = colorAttributes;
-					btnAppearance.Highlighted.TitleTextAttributes = colorAttributes;
-
-					UIImage tintedImage = null;
-					var backImage = UIImage.GetSystemImage("chevron.backward");
-
-					if (backImage is not null)
-					{
-						tintedImage = backImage.ApplyTintColor(backColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
-						navBar.BackIndicatorImage = tintedImage;
-						navBar.BackIndicatorTransitionMaskImage = tintedImage;
-					}
-
-					// Set BackButtonAppearance and back indicator on each appearance object,
-					// then reassign to the nav bar to force UIKit to process the changes.
-					// In-place mutation alone is not detected by UIKit on iOS 26 Liquid Glass.
-					var compactAppearance = navBar.CompactAppearance;
-					compactAppearance.BackButtonAppearance = btnAppearance;
-					if (tintedImage is not null)
-					{
-						compactAppearance.SetBackIndicatorImage(tintedImage, tintedImage);
-					}
-					navBar.CompactAppearance = compactAppearance;
-
-					var standardAppearance = navBar.StandardAppearance;
-					standardAppearance.BackButtonAppearance = btnAppearance;
-
-					if (tintedImage is not null)
-					{
-						standardAppearance.SetBackIndicatorImage(tintedImage, tintedImage);
-					}
-
-					navBar.StandardAppearance = standardAppearance;
-
-					var scrollEdgeAppearance = navBar.ScrollEdgeAppearance;
-					scrollEdgeAppearance.BackButtonAppearance = btnAppearance;
-
-					if (tintedImage is not null)
-					{
-						scrollEdgeAppearance.SetBackIndicatorImage(tintedImage, tintedImage);
-					}
-
-					navBar.ScrollEdgeAppearance = scrollEdgeAppearance;
-				}
-				else
-				{
-					// Reset to default/global back button appearance when color is cleared.
-					var defaultBtnAppearance = UINavigationBar.Appearance.CompactAppearance?.BackButtonAppearance
-						?? new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
-
-					navBar.BackIndicatorImage = UINavigationBar.Appearance.BackIndicatorImage;
-					navBar.BackIndicatorTransitionMaskImage = UINavigationBar.Appearance.BackIndicatorTransitionMaskImage;
-
-					var compactAppearance = navBar.CompactAppearance;
-					compactAppearance.BackButtonAppearance = defaultBtnAppearance;
-					compactAppearance.SetBackIndicatorImage(navBar.BackIndicatorImage, navBar.BackIndicatorTransitionMaskImage);
-					navBar.CompactAppearance = compactAppearance;
-
-					var standardAppearance = navBar.StandardAppearance;
-					standardAppearance.BackButtonAppearance = defaultBtnAppearance;
-					standardAppearance.SetBackIndicatorImage(navBar.BackIndicatorImage, navBar.BackIndicatorTransitionMaskImage);
-					navBar.StandardAppearance = standardAppearance;
-
-					var scrollEdgeAppearance = navBar.ScrollEdgeAppearance;
-					scrollEdgeAppearance.BackButtonAppearance = defaultBtnAppearance;
-					scrollEdgeAppearance.SetBackIndicatorImage(navBar.BackIndicatorImage, navBar.BackIndicatorTransitionMaskImage);
-					navBar.ScrollEdgeAppearance = scrollEdgeAppearance;
-				}
+				ApplyBackButtonAppearanceForColor(navBar, effectiveColor, useCustomColor);
 			}
 
 			SetStatusBarStyle(navigationPage);
@@ -384,11 +311,18 @@ namespace Microsoft.Maui.Controls
 			// Matches renderer: StatusBarTextColorMode gates IconColor/TintColor in
 			// MapBarTextColor. Toggling the mode must also refresh bar text appearance,
 			// otherwise the tint stays stale from the previous mode.
-			MapBarTextColor(handler, navigationPage);
+			handler.UpdateValue(nameof(NavigationPage.BarTextColor));
 		}
 
 		static void SetStatusBarStyle(NavigationPage navigationPage)
 		{
+			// Skip if the nav controller's view isn't in the window yet (off-screen tab).
+			if (navigationPage.Handler is NavigationViewHandler nvh
+				&& nvh.NavigationController?.View?.Window is null)
+			{
+				return;
+			}
+
 			var barTextColor = navigationPage.BarTextColor;
 			var statusBarColorMode = iOSSpecificNavigationPage.GetStatusBarTextColorMode(navigationPage);
 
@@ -421,6 +355,23 @@ namespace Microsoft.Maui.Controls
 
 		static void MapPrefersStatusBarHidden(NavigationViewHandler handler, NavigationPage navigationPage)
 		{
+			if (handler is IPlatformViewHandler pvh && pvh.ViewController is UINavigationController navController)
+			{
+				navController.SetNeedsStatusBarAppearanceUpdate();
+			}
+		}
+
+		static void MapPreferredStatusBarUpdateAnimation(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			var animation = PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimation(
+				navigationPage.OnThisPlatform());
+
+			if (navigationPage.CurrentPage is Page current)
+			{
+				PlatformConfiguration.iOSSpecific.Page.SetPreferredStatusBarUpdateAnimation(
+					current.OnThisPlatform(), animation);
+			}
+
 			if (handler is IPlatformViewHandler pvh && pvh.ViewController is UINavigationController navController)
 			{
 				navController.SetNeedsStatusBarAppearanceUpdate();
@@ -487,6 +438,104 @@ namespace Microsoft.Maui.Controls
 			var backIndicatorMask = navBar.BackIndicatorTransitionMaskImage;
 
 			appearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorMask);
+		}
+
+		/// <summary>
+		/// iOS 26+ Liquid Glass: applies or resets BackButtonAppearance and BackIndicatorImage
+		/// on all nav bar appearance states. Shared by MapBarTextColor and UpdateTintColorForPage.
+		/// </summary>
+		internal static void ApplyBackButtonAppearanceForColor(UINavigationBar navBar, Graphics.Color effectiveColor, bool useCustomColor)
+		{
+			if (useCustomColor)
+			{
+				var backColor = effectiveColor!.ToPlatform();
+				var colorAttributes = Foundation.NSDictionary<Foundation.NSString, Foundation.NSObject>.FromObjectsAndKeys(
+					new Foundation.NSObject[] { backColor }, new Foundation.NSString[] { UIStringAttributeKey.ForegroundColor });
+				var btnAppearance = new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
+				btnAppearance.Normal.TitleTextAttributes = colorAttributes;
+				btnAppearance.Highlighted.TitleTextAttributes = colorAttributes;
+
+				UIImage tintedImage = null;
+				var backImage = UIImage.GetSystemImage("chevron.backward");
+
+				if (backImage is not null)
+				{
+					tintedImage = backImage.ApplyTintColor(backColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+					navBar.BackIndicatorImage = tintedImage;
+					navBar.BackIndicatorTransitionMaskImage = tintedImage;
+				}
+
+				var compactAppearance = navBar.CompactAppearance;
+				if (compactAppearance is not null)
+				{
+					compactAppearance.BackButtonAppearance = btnAppearance;
+
+					if (tintedImage is not null)
+					{
+						compactAppearance.SetBackIndicatorImage(tintedImage, tintedImage);
+					}
+					navBar.CompactAppearance = compactAppearance;
+				}
+
+				var standardAppearance = navBar.StandardAppearance;
+				if (standardAppearance is not null)
+				{
+					standardAppearance.BackButtonAppearance = btnAppearance;
+
+					if (tintedImage is not null)
+					{
+						standardAppearance.SetBackIndicatorImage(tintedImage, tintedImage);
+					}
+					navBar.StandardAppearance = standardAppearance;
+				}
+
+				var scrollEdgeAppearance = navBar.ScrollEdgeAppearance;
+				if (scrollEdgeAppearance is not null)
+				{
+					scrollEdgeAppearance.BackButtonAppearance = btnAppearance;
+
+					if (tintedImage is not null)
+					{
+						scrollEdgeAppearance.SetBackIndicatorImage(tintedImage, tintedImage);
+					}
+					navBar.ScrollEdgeAppearance = scrollEdgeAppearance;
+				}
+			}
+			else
+			{
+				navBar.BackIndicatorImage = UINavigationBar.Appearance.BackIndicatorImage;
+				navBar.BackIndicatorTransitionMaskImage = UINavigationBar.Appearance.BackIndicatorTransitionMaskImage;
+
+				var globalBackIndicator = navBar.BackIndicatorImage;
+				var globalBackMask = navBar.BackIndicatorTransitionMaskImage;
+
+				var compactAppearance = navBar.CompactAppearance;
+				if (compactAppearance is not null)
+				{
+					compactAppearance.BackButtonAppearance = UINavigationBar.Appearance.CompactAppearance?.BackButtonAppearance
+						?? new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
+					compactAppearance.SetBackIndicatorImage(globalBackIndicator, globalBackMask);
+					navBar.CompactAppearance = compactAppearance;
+				}
+
+				var standardAppearance = navBar.StandardAppearance;
+				if (standardAppearance is not null)
+				{
+					standardAppearance.BackButtonAppearance = UINavigationBar.Appearance.StandardAppearance?.BackButtonAppearance
+						?? new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
+					standardAppearance.SetBackIndicatorImage(globalBackIndicator, globalBackMask);
+					navBar.StandardAppearance = standardAppearance;
+				}
+
+				var scrollEdgeAppearance = navBar.ScrollEdgeAppearance;
+				if (scrollEdgeAppearance is not null)
+				{
+					scrollEdgeAppearance.BackButtonAppearance = UINavigationBar.Appearance.ScrollEdgeAppearance?.BackButtonAppearance
+						?? new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
+					scrollEdgeAppearance.SetBackIndicatorImage(globalBackIndicator, globalBackMask);
+					navBar.ScrollEdgeAppearance = scrollEdgeAppearance;
+				}
+			}
 		}
 	}
 }

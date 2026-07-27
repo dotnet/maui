@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls
 			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.StatusBarTextColorModeProperty.PropertyName, MapStatusBarTextColorMode);
 			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHidden);
 			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersStatusBarHidden);
+			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName, MapPreferredStatusBarUpdateAnimation);
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName, MapIsNavigationBarTranslucent);
@@ -70,7 +71,13 @@ namespace Microsoft.Maui.Controls
 					// Fire deferred NavigatedTo if it was skipped in OnHandlerChangedCore
 					// because NavigationProxy.Inner wasn't wired yet at handler init time.
 					// By ViewDidAppear, the Window has parented the page and Inner is set.
-					(navigationView as NavigationPage)?.FireDeferredNavigatedTo();
+					// Also set status bar style when the nav controller appears (ViewDidAppear),
+					// matching renderer's ViewWillAppear -> SetStatusBarStyle() pattern.
+					if (navigationView is NavigationPage navPage)
+					{
+						navPage.FireDeferredNavigatedTo();
+						SetStatusBarStyle(navPage);
+					}
 				},
 				OnControllerDisappeared = (navigationView) =>
 				{
