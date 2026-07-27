@@ -13,11 +13,7 @@
 #      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
 #      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
 #    env:
-#      Token: $(InternalFeedToken)
-#
-# Note: This logic is abstracted into enable-internal-sources.yml, which uses
-# NuGetAuthenticate or a WIF-backed service connection. Prefer that template
-# over calling this script directly.
+#      Token: $(dn-bot-dnceng-artifact-feeds-rw)
 #
 # Note that the NuGetAuthenticate task should be called after SetupNugetSources.
 # This ensures that:
