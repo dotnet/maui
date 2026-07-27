@@ -523,6 +523,17 @@ cat /tmp/ios_crash.log | grep -A 20 -B 5 "Exception"
 5. **Check for platform-specific issues** - iOS version compatibility, permissions, etc.
 6. If you can't determine the fix, **ask for guidance** with the full exception details
 
+### Dangerous System Commands (Never Run)
+
+**🚨 NEVER run these commands — they cause destructive system-wide side effects:**
+
+- **`tccutil reset`** — Wipes ALL macOS permissions (Accessibility, Camera, etc.) system-wide. This breaks Appium/WebDriverAgent, Xcode, and other tools. Once reset, permissions must be manually re-granted through System Settings.
+- **`csrutil disable`** — Disables System Integrity Protection
+- **`networksetup`** — Modifies network configuration
+- **`defaults delete`** on system domains — Resets system preferences
+
+**General rule:** Do not run commands that modify macOS system-level privacy, security, or permission settings. If you need to check permissions, read them — never reset or modify them.
+
 ## Before Committing
 
 Verify the following checklist before committing UI tests:
@@ -720,3 +731,45 @@ grep -r "UITestEntry\|UITestEditor\|UITestSearchBar" src/Controls/tests/TestCase
 - Common helper methods
 - Platform-specific workarounds
 - UITest optimized control usage
+
+### Safe Area Testing (iOS/MacCatalyst)
+
+**⚠️ CRITICAL for macCatalyst safe area tests:**
+
+Safe area behavior differs significantly between macOS versions. Tests must account for this variability.
+
+| macOS Version | Title Bar Safe Area | CI Environment |
+|---------------|---------------------|----------------|
+| **macOS 14/15** | ~28px top inset | ✅ Used by CI |
+| **macOS 26 (Liquid Glass)** | ~0px top inset | ❌ Local dev only |
+
+**Rules for safe area tests:**
+
+1. **Use tolerances for safe area measurements** - Exact pixel values vary by macOS version
+2. **Test behavior, not exact values** - Verify content is NOT obscured, rather than checking exact padding pixels
+3. **Use `GetRect()` for child content position** - Measure where content actually appears, not parent size
+4. **Never hardcode safe area expectations** - Tests should pass on macOS 14/15 AND macOS 26
+
+**Example patterns:**
+
+```csharp
+// ❌ BAD: Hardcoded safe area value (breaks across macOS versions)
+var safeArea = element.GetRect();
+Assert.That(safeArea.Y, Is.EqualTo(28)); // Fails on macOS 26
+
+// ✅ GOOD: Test that content is not obscured by title bar
+var contentRect = App.WaitForElement("MyContent").GetRect();
+var titleBarRect = App.WaitForElement("TitleBar").GetRect();
+Assert.That(contentRect.Y, Is.GreaterThanOrEqualTo(titleBarRect.Height), 
+    "Content should not be obscured by title bar");
+
+// ✅ GOOD: Use tolerance for safe area (accounts for OS differences)
+Assert.That(contentRect.Y, Is.GreaterThan(0).And.LessThan(50), 
+    "Content should have some top padding but not excessive");
+```
+
+**Test category**: Use `UITestCategories.SafeAreaEdges` for safe area tests.
+
+**Platform scope**: Safe area tests should typically run on iOS and MacCatalyst (not just one).
+
+**See also**: `.github/instructions/safe-area-debugging.instructions.md` for investigation guidelines

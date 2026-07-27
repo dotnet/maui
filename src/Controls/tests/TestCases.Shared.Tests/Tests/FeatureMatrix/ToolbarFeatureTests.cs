@@ -185,7 +185,7 @@ public class ToolbarFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/30675
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// On iOS 26, the image differs on each CI run, so disabled the test for iOS. Issue Link: https://github.com/dotnet/maui/issues/30675
 	[Test, Order(13)]
 	[Category(UITestCategories.ToolbarItem)]
 	public void VerifySecondaryToolBar_IconAppearance()

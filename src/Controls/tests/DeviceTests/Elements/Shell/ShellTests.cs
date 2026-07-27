@@ -32,13 +32,22 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		void SetupBuilder(Type shellHandlerType = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
+#if IOS || MACCATALYST
+				builder.ConfigureImageSources(services =>
+				{
+					services.AddService<IDelayedImageSource, DelayedImageSourceService>();
+				});
+#endif
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					SetupShellHandlers(handlers);
+					if (shellHandlerType != null)
+						handlers.AddHandler(typeof(Shell), shellHandlerType);
+
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
@@ -1138,6 +1147,23 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(count, appearanceObservers.Count); // Count doesn't increase
 			});
 		}
+
+#if !ANDROID // On Android, the exception causes the app to terminate, resulting in a device test failure.
+		[Fact(DisplayName = "Initialize Empty Shell Throws InvalidOperationException")]
+		public async Task InitializeEmptyShellThrowsInvalidOperationException()
+		{
+			SetupBuilder();
+			var shell = new Shell();
+
+			await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+			{
+				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+				{
+					return Task.CompletedTask;
+				});
+			});
+		}
+#endif
 
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>

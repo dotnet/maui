@@ -14,9 +14,7 @@ namespace Maui.Controls.Sample.Issues
 
 	public class Issue25598ViewModel : ViewModel
 	{
-		int _lastItemIndex = 3;
-
-		private ObservableCollection<string> _items = new() { "Item1", "Item2", "Item3" };
+		private ObservableCollection<string> _items = new() { "Item", "Item", "Item" };
 
 		public ObservableCollection<string> Items
 		{
@@ -31,7 +29,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public Command AddRandomItemCommand => new(() => Items.Add($"Item{++_lastItemIndex}"));
+		public Command AddRandomItemCommand => new(() => Items.Add($"Item"));
 
 		public Command RemoveCurrentItemCommand => new Command<int>(index =>
 		{

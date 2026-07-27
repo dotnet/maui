@@ -509,6 +509,52 @@ public partial class TwoWayNoWarningPage : ContentPage
 	}
 
 	[Fact]
+	public void GetOnlyStructIntermediate_OnTwoWayProperty_ReportsMAUIX2018AndOmitsSetter()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.ReadOnlyStructIntermediatePage"
+             x:DataType="local:ReadOnlyStructViewModel">
+    <Entry Text="{ReadOnlyMargin.Top}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class ReadOnlyStructViewModel
+{
+	public Microsoft.Maui.Thickness ReadOnlyMargin { get; } = new Microsoft.Maui.Thickness(1, 2, 3, 4);
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class ReadOnlyStructIntermediatePage : ContentPage
+{
+	public ReadOnlyStructIntermediatePage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		var diagnostic = Assert.Single(result.Diagnostics.Where(d => d.Id == "MAUIX2018"));
+		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+		Assert.Contains("ReadOnlyMargin.Top", diagnostic.GetMessage(), StringComparison.Ordinal);
+
+		Assert.NotNull(output);
+		Assert.Contains("TypedBinding<global::TestApp.ReadOnlyStructViewModel, double>", output, StringComparison.Ordinal);
+		Assert.Matches(@"__source\s*=>\s*\(__source\.ReadOnlyMargin\.Top,\s*true\),\s*null,", output);
+		Assert.DoesNotContain("__source.ReadOnlyMargin.Top = __value", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void NullConditionalAccess_OnTwoWayProperty_IsSettable()
 	{
 		// Null-conditional access (?.) IS settable in C# 14+ (guaranteed on .NET 10+)
@@ -1042,5 +1088,268 @@ public partial class ParenthesizedStaticMemberPage : ContentPage
 
 		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
 		Assert.Contains("(Math.PI).ToString()", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void InterpolatedString_NonExistentMember_ShouldReportDiagnostic()
+	{
+		// When an interpolated string references a member that doesn't exist,
+		// the source generator should report MAUIX2009 instead of letting it
+		// fall through to a C# compilation error.
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.InterpolatedNotFoundPage"
+             x:DataType="local:InterpolatedNotFoundViewModel">
+    <Label Text="{$'Hello, {Name1}!'}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class InterpolatedNotFoundViewModel : INotifyPropertyChanged
+{
+	public string Name { get; set; } = "World";
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class InterpolatedNotFoundPage : ContentPage
+{
+	public InterpolatedNotFoundPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		// Currently: Name1 doesn't exist on either the page or the ViewModel.
+		// The source gen emits $"Hello, {__source.Name1}!" which fails at C# compilation.
+		// Ideally, MAUIX2009 should be reported at source generation time.
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2009");
+	}
+
+	[Fact]
+	public void InterpolatedString_StaticTypeReferences_ShouldNotReportMemberNotFound()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.StaticTypeInterpolationPage"
+             x:DataType="local:StaticTypeInterpolationViewModel">
+    <VerticalStackLayout>
+        <Label Text="{$'{DateTime.Now}'}" />
+        <Label Text="{$'{Math.Max(X, Y)}'}" />
+        <Label Text="{$'{System.DateTime.Now}'}" />
+        <Label Text="{$'{LocalStatic.Format(X)}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+global using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class StaticTypeInterpolationViewModel : INotifyPropertyChanged
+{
+	public int X { get; set; } = 3;
+	public int Y { get; set; } = 5;
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+public static class LocalStatic
+{
+	public static string Format(int value) => value.ToString();
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class StaticTypeInterpolationPage : ContentPage
+{
+	public StaticTypeInterpolationPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind);
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2009");
+	}
+
+	[Fact]
+	public void InterpolatedString_BinaryAndConditionalHoles_ShouldNotReportMemberNotFound()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.InterpolatedComplexHolesPage"
+             x:DataType="local:InterpolatedComplexHolesViewModel">
+    <Label Text="{$'{X + Y} {(UseX ? X : Y)}'}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class InterpolatedComplexHolesViewModel : INotifyPropertyChanged
+{
+	public int X { get; set; } = 3;
+	public int Y { get; set; } = 5;
+	public bool UseX { get; set; } = true;
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class InterpolatedComplexHolesPage : ContentPage
+{
+	public InterpolatedComplexHolesPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind);
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2009");
+	}
+
+	[Fact]
+	public void InterpolatedString_BinaryHoleWithMissingMember_ShouldReportDiagnostic()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.InterpolatedBinaryMissingPage"
+             x:DataType="local:InterpolatedBinaryMissingViewModel">
+    <Label Text="{$'{X + MissingValue}'}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class InterpolatedBinaryMissingViewModel : INotifyPropertyChanged
+{
+	public int X { get; set; } = 3;
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class InterpolatedBinaryMissingPage : ContentPage
+{
+	public InterpolatedBinaryMissingPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2009");
+	}
+
+	[Fact]
+	public void LambdaEventHandler_MethodGroupWithoutInvocation_ShouldReportDiagnostic()
+	{
+		// When a lambda event handler references a method without calling it (missing parentheses),
+		// the source generator should detect this and report a diagnostic instead of
+		// letting it fall through to a C# compilation error.
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.MethodGroupLambdaPage">
+    <Button Clicked="{(s, e) => this.OnCounterClicked}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class MethodGroupLambdaPage : ContentPage
+{
+	public int ClickCount { get; set; }
+	public void OnCounterClicked(object? sender, EventArgs e) => ClickCount++;
+	public MethodGroupLambdaPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		// The source gen should detect the method group reference and emit MAUIX2017.
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2017");
+		var diagnostic = result.Diagnostics.First(d => d.Id == "MAUIX2017");
+		Assert.Contains("Did you mean 'this.OnCounterClicked(s, e)'", diagnostic.GetMessage(), StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void LambdaEventHandler_MethodGroupWithDiscardParameters_ShouldOmitSuggestion()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.DiscardMethodGroupLambdaPage">
+    <Button Clicked="{(_, _) => this.OnCounterClicked}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class DiscardMethodGroupLambdaPage : ContentPage
+{
+	public int ClickCount { get; set; }
+	public void OnCounterClicked(object? sender, EventArgs e) => ClickCount++;
+	public DiscardMethodGroupLambdaPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2017");
+		var diagnostic = result.Diagnostics.First(d => d.Id == "MAUIX2017");
+		Assert.DoesNotContain("Did you mean", diagnostic.GetMessage(), StringComparison.Ordinal);
+		Assert.DoesNotContain("(_, _)", diagnostic.GetMessage(), StringComparison.Ordinal);
 	}
 }

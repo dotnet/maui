@@ -1,0 +1,100 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
+namespace Maui.Controls.Sample.Issues;
+
+[Issue(IssueTracker.Github, 35216, "SwipeItem IsVisible should properly refresh native swipe items when binding value changes dynamically", PlatformAffected.UWP)]
+public class Issue35216 : ContentPage
+{
+	readonly Issue35216ViewModel _viewModel = new() { IsDeleteVisible = false };
+	SwipeView _swipeView;
+
+	public Issue35216()
+	{
+		BindingContext = _viewModel;
+
+		SwipeItem deleteSwipeItem = new SwipeItem
+		{
+			Text = "Delete",
+			BackgroundColor = Colors.Green,
+			AutomationId = "DeleteSwipeItem"
+		};
+		deleteSwipeItem.SetBinding(SwipeItem.IsVisibleProperty, new Binding(nameof(Issue35216ViewModel.IsDeleteVisible)));
+
+		SwipeItem archiveSwipeItem = new SwipeItem
+		{
+			Text = "Archive",
+			BackgroundColor = Colors.Blue,
+			AutomationId = "ArchiveSwipeItem"
+		};
+
+		_swipeView = new SwipeView
+		{
+			HeightRequest = 60,
+			LeftItems = new SwipeItems { deleteSwipeItem, archiveSwipeItem },
+			Content = new Grid
+			{
+				BackgroundColor = Colors.LightGray,
+				Children =
+				{
+					new Label
+					{
+						AutomationId = "SwipeContent",
+						Text = "Swipe right to reveal items",
+						HorizontalOptions = LayoutOptions.Center,
+						VerticalOptions = LayoutOptions.Center
+					}
+				}
+			}
+		};
+
+		Button toggleButton = new Button
+		{
+			Text = "Toggle Delete Visibility",
+			AutomationId = "ToggleVisibilityButton"
+		};
+		toggleButton.Clicked += (s, e) => _viewModel.IsDeleteVisible = !_viewModel.IsDeleteVisible;
+
+		Button resetButton = new Button
+		{
+			Text = "Reset",
+			AutomationId = "ResetButton"
+		};
+		resetButton.Clicked += (s, e) => _viewModel.IsDeleteVisible = false;
+
+		Content = new VerticalStackLayout
+		{
+			Padding = new Thickness(20),
+			Spacing = 20,
+			Children =
+			{
+				_swipeView,
+				toggleButton,
+				resetButton,
+			}
+		};
+	}
+}
+
+public class Issue35216ViewModel : INotifyPropertyChanged
+{
+	bool _isDeleteVisible;
+
+	public bool IsDeleteVisible
+	{
+		get => _isDeleteVisible;
+		set
+		{
+			if (_isDeleteVisible != value)
+			{
+				_isDeleteVisible = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	protected void OnPropertyChanged([CallerMemberName] string name = null) =>
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+}

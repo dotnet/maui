@@ -86,10 +86,29 @@ namespace Microsoft.Maui.ApplicationModel
 #endif
 			intent.SetFlags(flags);
 
-			if (!PlatformUtils.IsIntentSupported(intent))
-				throw new FeatureNotSupportedException();
-
-			Application.Context.StartActivity(intent);
+			// Do not pre-check via Intent.ResolveActivity / PackageManager.QueryIntent*.
+			// Those calls are filtered by the caller's <queries> package visibility
+			// (Android 11+, API 30+), so they return null whenever the only handler
+			// of the URL is a package that is invisible to us — typically a verified
+			// App Link owner like Instagram, Facebook, Spotify, etc., whose VIEW
+			// filter is host-bound and therefore not covered by the automatic
+			// web-handler visibility exception (see Android docs:
+			// https://developer.android.com/training/package-visibility/automatic#web-intents).
+			//
+			// Application.Context.StartActivity itself is dispatched by the system
+			// intent resolver and is NOT subject to caller-side visibility — it can
+			// launch invisible activities; the caller just cannot query about them
+			// ahead of time. ActivityNotFoundException is the only authoritative
+			// signal that no activity can actually handle the intent.
+			try
+			{
+				Application.Context.StartActivity(intent);
+			}
+			catch (ActivityNotFoundException ex)
+			{
+				throw new FeatureNotSupportedException(
+					"No activity found to handle URI: " + nativeUri, ex);
+			}
 		}
 	}
 }

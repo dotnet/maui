@@ -22,13 +22,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static PropertyMapper<CarouselView, CarouselViewHandler2> Mapper = new(ItemsViewMapper)
 		{
-
+			[Controls.VisualElement.IsEnabledProperty.PropertyName] = MapIsEnabled,
 			[Controls.CarouselView.IsSwipeEnabledProperty.PropertyName] = MapIsSwipeEnabled,
 			[Controls.CarouselView.PeekAreaInsetsProperty.PropertyName] = MapPeekAreaInsets,
 			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem,
 			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
+			[Controls.CarouselView.LoopProperty.PropertyName] = MapLoop,
 		};
 	}
 
@@ -47,9 +48,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			if (Controller is not CarouselViewController2 carouselViewController2)
+			{
+				return;
+			}
+
 			if (VirtualView?.Loop == true)
 			{
-				var goToIndexPath = (Controller as CarouselViewController2).GetScrollToIndexPath(args.Index);
+				var goToIndexPath = carouselViewController2.GetScrollToIndexPath(args.Index);
 
 				if (!IsIndexPathValid(goToIndexPath))
 				{
@@ -58,10 +64,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				bool IsHorizontal = VirtualView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
 				UICollectionViewScrollDirection scrollDirection = IsHorizontal ? UICollectionViewScrollDirection.Horizontal : UICollectionViewScrollDirection.Vertical;
+				var loopScrollPosition = args.ScrollToPosition.ToCollectionViewScrollPosition(scrollDirection);
+
+				// This looping path bypasses the base ScrollToRequested, so it must clear/arm
+				// the MacCatalyst pending restore itself; otherwise this scroll is not protected from
+				// the silent contentOffset clamp.
+#if MACCATALYST
+				if (Controller?.CollectionView is MauiCollectionView mauiCV)
+				{
+					mauiCV.ClearPendingScrollRestore();
+				}
+#endif
 
 				Controller.CollectionView.ScrollToItem(goToIndexPath,
-					args.ScrollToPosition.ToCollectionViewScrollPosition(scrollDirection), // TODO: Fix _layout.ScrollDirection),
+					loopScrollPosition,
 					args.IsAnimated);
+
+#if MACCATALYST
+				if (!args.IsAnimated && Controller?.CollectionView is MauiCollectionView mauiCVAfter)
+				{
+					mauiCVAfter.SetPendingScrollRestore((int)goToIndexPath.Section, (int)goToIndexPath.Item, loopScrollPosition);
+				}
+#endif
 			}
 			else
 			{
@@ -69,14 +93,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+		// TODO: Change the modifier to public in .NET 11.
+		internal static void MapIsEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
+		{
+			handler.Controller?.CollectionView?.UpdateIsEnabled(carouselView);
+		}
+
 		public static void MapIsSwipeEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
-			handler.Controller.CollectionView.ScrollEnabled = carouselView.IsSwipeEnabled;
+			if (handler.Controller.CollectionView is MauiCollectionView mauiCV)
+			{
+				mauiCV.SetSwipeEnabled(carouselView.IsSwipeEnabled);
+			}
 		}
 
 		public static void MapIsBounceEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
-			handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
+			if (handler.Controller.CollectionView is MauiCollectionView mauiCV)
+			{
+				mauiCV.SetBounceEnabled(carouselView.IsBounceEnabled);
+			}
 		}
 
 		// TODO: Change the modifier to public in .NET 10.

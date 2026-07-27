@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections;
 using System.Collections.Specialized;
 
@@ -9,6 +10,11 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static object Create(IEnumerable itemsSource, DataTemplate itemTemplate, BindableObject container,
 			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null)
 		{
+			if (itemsSource is null)
+			{
+				return Array.Empty<object>();
+			}
+
 			switch (itemsSource)
 			{
 				case IList observable when itemsSource is INotifyCollectionChanged:

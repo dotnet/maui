@@ -15,6 +15,7 @@ public class Issue892 : _IssuesUITest
 	const string InitialPage = "Initial Page";
 	const string Page5 = "Page 5";
 #endif
+	bool iOS26OrHigher => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp);
 	public Issue892(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -49,12 +50,26 @@ public class Issue892 : _IssuesUITest
 		App.WaitForElement("You are at the end of the line");
 		App.Tap("Check back one");
 		App.WaitForElement("Pop one");
-		App.TapBackArrow(OnePushed);
+		if (iOS26OrHigher)
+		{
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
+		}
+		else
+		{
+			App.TapBackArrow(OnePushed);
+		}
 		App.WaitForElementTillPageNavigationSettled("Check back two");
 		App.Tap("Check back two");
 		App.WaitForElement("Pop two");
 		App.WaitForElementTillPageNavigationSettled("Check back two");
-		App.TapBackArrow(BackButtonId);
+		if (iOS26OrHigher)
+		{
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
+		}
+		else
+		{
+			App.TapBackArrow(BackButtonId);
+		}
 		App.WaitForElementTillPageNavigationSettled("Check back three");
 		App.Tap("Check back three");
 		App.WaitForElement("At root");

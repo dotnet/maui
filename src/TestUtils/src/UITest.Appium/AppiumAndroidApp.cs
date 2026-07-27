@@ -122,6 +122,12 @@ namespace UITest.Appium
 			// The animation scale will be restored automatically after the instrumentation process ends.
 			options.AddAdditionalAppiumOption("appium:disableWindowAnimation", true);
 
+			// On some emulator images (e.g. API 30 on hosted CI agents), the
+			// settings service may not fully support hidden_api_policy commands.
+			// This causes UiAutomator2 to throw "Can't find service: settings".
+			// Ignoring this non-critical error allows tests to proceed normally.
+			options.AddAdditionalAppiumOption("appium:ignoreHiddenApiPolicyError", true);
+
 			return options;
 		}
 	}

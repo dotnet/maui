@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -21,14 +22,37 @@ namespace Microsoft.Maui.Platform
 
 		public static readonly DependencyProperty IsReadOnlyProperty = DependencyProperty.RegisterAttached(
 			"IsReadOnly", typeof(bool), typeof(MauiTextBox),
-			new PropertyMetadata(true, OnIsReadOnlyPropertyChanged));
+			new PropertyMetadata(false, OnIsReadOnlyPropertyChanged));
 
 		static void OnIsReadOnlyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e = null)
 		{
 			var element = d as FrameworkElement;
-			var textBox = element?.GetDescendantByName<TextBox>("TextBox");
-			if (textBox != null)
-				textBox.IsReadOnly = true;
+
+			if (element is null)
+			{
+				return;
+			}
+
+			bool isReadOnly = e?.NewValue is bool val ? val : GetIsReadOnly(d);
+
+			Action applyIsReadOnly = () =>
+			{
+				var textBox = element.GetDescendantByName<TextBox>("TextBox");
+
+				if (textBox is not null)
+				{
+					textBox.IsReadOnly = isReadOnly;
+				}
+			};
+
+			if (element.IsLoaded)
+			{
+				applyIsReadOnly();
+			}
+			else
+			{
+				element.OnLoaded(applyIsReadOnly);
+			}
 		}
 	}
 }

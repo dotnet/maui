@@ -115,17 +115,6 @@ public partial class ImageButtonOptionsPage : ContentPage
 		_viewModel.IsEnabled = rb.Content?.ToString() == "True";
 	}
 
-	private void PaddingSlider_ValueChanged(object sender, ValueChangedEventArgs e)
-	{
-		_viewModel.Padding = new Thickness(e.NewValue);
-	}
-
-	private void PaddingEntry_TextChanged(object sender, TextChangedEventArgs e)
-	{
-		if (double.TryParse(e.NewTextValue, out double padding))
-			_viewModel.Padding = new Thickness(padding);
-	}
-
 	private void OnPaddingChanged(object sender, TextChangedEventArgs e)
 	{
 		if (string.IsNullOrWhiteSpace(PaddingEntry?.Text))
@@ -177,22 +166,49 @@ public partial class ImageButtonOptionsPage : ContentPage
 	{
 		if (string.IsNullOrWhiteSpace(CornerRadiusEntry?.Text))
 			return;
-		try
+		if (int.TryParse(CornerRadiusEntry.Text, out int radius))
+			_viewModel.CornerRadius = radius;
+	}
+
+	private void BackgroundColorRadio_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is RadioButton rb) || !rb.IsChecked)
+			return;
+		switch (rb.Content?.ToString())
 		{
-			string[] parts = CornerRadiusEntry.Text.Split(',');
-			if (parts.Length == 4 &&
-				int.TryParse(parts[0], out int topLeft) &&
-				int.TryParse(parts[1], out int topRight) &&
-				int.TryParse(parts[2], out int bottomLeft) &&
-				int.TryParse(parts[3], out int bottomRight))
-			{
-				_viewModel.CornerRadius = topLeft;
-			}
-			else if (parts.Length == 1 && int.TryParse(parts[0], out int uniform))
-			{
-				_viewModel.CornerRadius = uniform;
-			}
+			case "None":
+				_viewModel.BackgroundColor = null;
+				break;
+			case "Yellow":
+				_viewModel.BackgroundColor = Colors.Yellow;
+				break;
 		}
-		catch { }
+	}
+
+	private void OpacityRadio_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is RadioButton rb) || !rb.IsChecked)
+			return;
+		if (double.TryParse(rb.Content?.ToString(), out double opacity))
+			_viewModel.ImageButtonOpacity = opacity;
+	}
+
+	private void InputTransparentRadio_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is RadioButton rb) || !rb.IsChecked)
+			return;
+		_viewModel.InputTransparent = rb.Content?.ToString() == "True";
+	}
+
+	private void RotationEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double rotation))
+			_viewModel.ImageButtonRotation = rotation;
+	}
+
+	private void ScaleEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double scale))
+			_viewModel.ImageButtonScale = scale;
 	}
 }

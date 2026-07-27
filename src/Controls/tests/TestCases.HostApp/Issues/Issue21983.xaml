@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21983"
+             Title="Issue21983">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <LinearGradientBrush x:Key="LinearGradient">
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="Red" />
+                    <GradientStop Offset="0.5" Color="Blue" />
+                    <GradientStop Offset="0.9" Color="Purple" />
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+
+            <RadialGradientBrush x:Key="RadialGradient">
+                <RadialGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="Red" />
+                    <GradientStop Offset="0.5" Color="Blue" />
+                    <GradientStop Offset="0.9" Color="Purple" />
+                </RadialGradientBrush.GradientStops>
+            </RadialGradientBrush>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Margin="30,0" Spacing="35">
+        <Path
+            AutomationId="path"
+            Fill="Red"
+            Stroke="{StaticResource LinearGradient}"
+            StrokeThickness="20">
+            <Path.Data>
+                <PathGeometry>
+                    <PathFigureCollection>
+                        <PathFigure StartPoint="0,0">
+                            <ArcSegment
+                                IsLargeArc="False"
+                                Point="120,140"
+                                Size="100,100"
+                                SweepDirection="Clockwise" />
+                        </PathFigure>
+                    </PathFigureCollection>
+                </PathGeometry>
+            </Path.Data>
+        </Path>
+
+        <Ellipse
+            Fill="Red"
+            HeightRequest="50"
+            Stroke="{StaticResource RadialGradient}"
+            StrokeThickness="10"
+            WidthRequest="50" />
+
+        <Ellipse
+            Fill="{StaticResource RadialGradient}"
+            HeightRequest="50"
+            Stroke="Red"
+            StrokeThickness="10"
+            WidthRequest="50" />
+    </VerticalStackLayout>
+</ContentPage>

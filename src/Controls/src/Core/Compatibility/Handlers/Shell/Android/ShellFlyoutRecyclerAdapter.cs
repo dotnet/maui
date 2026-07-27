@@ -139,6 +139,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var container = new ContainerView(parent.Context, content, MauiContext);
 			container.MatchWidth = true;
+
+			// In Auto or Disabled scroll modes, RecyclerView passes an EXACTLY heightMeasureSpec,
+			// causing items to be measured to the full RecyclerView height.
+			// Setting MeasureHeight = true forces UNSPECIFIED mode, allowing items to use their natural height (~48dp).
+			// This enables RecyclerView to detect when scrolling is needed and to create all required view holders.
+			if (_shellContext.Shell.FlyoutVerticalScrollMode != ScrollMode.Enabled)
+			{
+				container.MeasureHeight = true;
+			}
+
 			container.LayoutParameters = new LP(LP.MatchParent, LP.WrapContent);
 			linearLayout.AddView(container);
 
@@ -264,16 +274,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				set
 				{
 					if (_element == value)
+					{
 						return;
+					}
 
-					if (View.Parent is BaseShellItem bsi)
-						bsi.RemoveLogicalChild(View);
+					if (View.Parent is BaseShellItem bsiParent)
+						bsiParent.RemoveLogicalChild(View);
 					else
 						_shell.RemoveLogicalChild(View);
 
-					if (_element != null && _element is BaseShellItem)
+					if (_element != null)
 					{
 						_element.PropertyChanged -= OnElementPropertyChanged;
+						((IElementDefinition)View)?.RemoveResourcesChangedListener(OnElementResourcesChanged);
 					}
 
 					_element = value;
@@ -289,6 +302,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							_shell.AddLogicalChild(View);
 
 						_element.PropertyChanged += OnElementPropertyChanged;
+						((IElementDefinition)View)?.AddResourcesChangedListener(OnElementResourcesChanged);
 						UpdateVisualState();
 					}
 				}
@@ -296,12 +310,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			void UpdateVisualState()
 			{
-				if (Element is BaseShellItem baseShellItem && baseShellItem != null)
+				if (Element is BaseShellItem baseShellItem)
 				{
-					if (baseShellItem.IsChecked)
-						VisualStateManager.GoToState(View, "Selected");
-					else
-						VisualStateManager.GoToState(View, "Normal");
+					VisualStateManager.GoToState(View, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
 				}
 			}
 
@@ -309,6 +320,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (e.PropertyName == BaseShellItem.IsCheckedProperty.PropertyName)
 					UpdateVisualState();
+			}
+
+			void OnElementResourcesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				UpdateVisualState();
 			}
 
 			void OnClicked(object sender, EventArgs e)

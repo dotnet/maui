@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Controls
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty), MapPrefersHomeIndicatorAutoHiddenProperty);
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty), MapPrefersPrefersStatusBarHiddenProperty);
 #endif
+#if WINDOWS
+			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapseStyleProperty), MapCollapseStyle);
+			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapsedPaneWidthProperty), MapCollapsedPaneWidth);
+#endif
 		}
 
 		internal static void MapFlyoutLayoutBehavior(IFlyoutViewHandler handler, IFlyoutView view)
@@ -30,6 +34,40 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.UpdateValue(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty));
 		}
+#endif
+
+#if WINDOWS
+		internal static void MapCollapseStyle(IFlyoutViewHandler handler, IFlyoutView view)
+		{
+			var flyoutLayoutBehavior = (view as FlyoutPage)?.FlyoutLayoutBehavior;
+
+			if (view is BindableObject bindable && handler.PlatformView is Microsoft.Maui.Platform.RootNavigationView navigationView && flyoutLayoutBehavior is FlyoutLayoutBehavior.Popover)
+			{
+				var collapseStyle = PlatformConfiguration.WindowsSpecific.FlyoutPage.GetCollapseStyle(bindable);
+				switch (collapseStyle)
+				{
+					case PlatformConfiguration.WindowsSpecific.CollapseStyle.Partial:
+						navigationView.FlyoutPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftCompact;
+						navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftCompact;
+						break;
+					case PlatformConfiguration.WindowsSpecific.CollapseStyle.Full:
+					default:
+						navigationView.FlyoutPaneDisplayMode = null;
+						navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+						break;
+				}
+			}
+		}
+
+		internal static void MapCollapsedPaneWidth(IFlyoutViewHandler handler, IFlyoutView view)
+		{
+			if (view is BindableObject bindable && handler.PlatformView is Microsoft.Maui.Platform.RootNavigationView navigationView)
+			{
+				var collapsedPaneWidth = PlatformConfiguration.WindowsSpecific.FlyoutPage.GetCollapsedPaneWidth(bindable);
+				navigationView.CompactPaneLength = collapsedPaneWidth;
+			}
+		}
+
 #endif
 	}
 }

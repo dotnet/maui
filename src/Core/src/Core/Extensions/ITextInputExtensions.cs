@@ -50,6 +50,14 @@ namespace Microsoft.Maui
 
 			return shouldChange;
 		}
+
+		internal static void UpdateCursorPosition(this ITextInput textInput, int cursorPosition)
+		{
+			if (textInput.CursorPosition != cursorPosition)
+			{
+				textInput.CursorPosition = cursorPosition;
+			}
+		}
 #endif
 
 #if ANDROID

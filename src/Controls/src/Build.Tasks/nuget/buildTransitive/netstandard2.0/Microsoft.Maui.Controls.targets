@@ -358,6 +358,20 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Workaround for Android SDK bug: Microsoft.Android.Sdk.ILLink.targets uses %(RootMode) without
+    fully qualifying it as %(TrimmerRootAssembly.RootMode), which causes MSB4096 when user-defined
+    TrimmerRootAssembly items don't have the RootMode metadata.
+    See: https://github.com/dotnet/android/issues/10758
+  -->
+  <Target Name="_MauiFixTrimmerRootAssemblyMetadata"
+          BeforeTargets="PrepareForILLink"
+          Condition="'$(UsingAndroidNETSdk)' == 'true'">
+    <ItemGroup>
+      <TrimmerRootAssembly Update="@(TrimmerRootAssembly)" Condition="'%(TrimmerRootAssembly.RootMode)' == ''" RootMode="All" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="_MauiSetWinUIDefaultsForPublishAot" BeforeTargets="PrepareForBuild" Condition="'$(PublishAot)' == 'true' and '$(_MauiTargetPlatformIsWindows)' == 'True'">
     <PropertyGroup>
       <DebugSymbols Condition="'$(DebugSymbols)' == ''">false</DebugSymbols>

@@ -31,6 +31,7 @@
         <!-- These categories run as individual work items; skipped from the "Other" work item -->
         <ControlsTestCategoriesToSkipForRestOfTests>CollectionView;Shell;HybridWebView</ControlsTestCategoriesToSkipForRestOfTests>
     </PropertyGroup>
+
     <ItemGroup Condition="'$(TargetOS)' == 'ios'">
         <ControlsTestCategoriesToRunIndividually Include="$(ControlsTestCategoriesToSkipForRestOfTests)" />
     </ItemGroup>
@@ -119,6 +120,7 @@
             <WindowsPackageId>Microsoft.Maui.MauiBlazorWebView.DeviceTests</WindowsPackageId>
             <WindowsProjectPath>src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj</WindowsProjectPath>
         </MAUIScenario>
+
     </ItemGroup>
 
     <!-- Process each test scenario individually using direct path construction -->
@@ -175,7 +177,7 @@
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
-        <!-- MacCatalyst and Android: Use the original MAUIScenario approach (no category splitting) -->
+        <!-- MacCatalyst: Use the original MAUIScenario approach -->
         <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>maccatalyst</TestTarget>
@@ -209,8 +211,7 @@
             </HelixWorkItem>
         </ItemGroup>
         
-        <!-- TODO: Unpackaged tests disabled - crash with 0xC000027B (Windows App SDK Bootstrap failure)
-             on Helix. Investigating root cause. See PR #33328 for context.
+        <!-- Windows Unpackaged tests -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
             <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-unpackaged">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
@@ -218,7 +219,6 @@
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
         </ItemGroup>
-        -->
 
         <Message Text="Created @(XHarnessAppBundleToTest->Count()) iOS work items" Importance="high" Condition="'$(TargetOS)' == 'ios'" />
         <Message Text="Created @(HelixWorkItem->Count()) Windows work items" Importance="high" Condition="'$(TargetOS)' == 'windows'" />

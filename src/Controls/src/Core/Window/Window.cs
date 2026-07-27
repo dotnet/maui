@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Xml.Schema;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
-		static readonly BindablePropertyKey IsActivatedPropertyKey = 
+		static readonly BindablePropertyKey IsActivatedPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(IsActivated), typeof(bool), typeof(Window), false, propertyChanged: OnIsActivatedPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="IsActivated"/>.</summary>
@@ -44,11 +45,13 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
-			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset,
+			propertyChanged: OnSizePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
-			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset,
+			propertyChanged: OnSizePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="MaximumWidth"/>.</summary>
 		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
@@ -228,6 +231,16 @@ namespace Microsoft.Maui.Controls
 
 		int _batchFrameUpdate = 0;
 
+		static void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var window = (Window)bindable;
+			// Only trigger SizeChanged if not being updated from platform (FrameChanged)
+			if (window._batchFrameUpdate == 0)
+			{
+				window.SizeChanged?.Invoke(window, EventArgs.Empty);
+			}
+		}
+
 		void IWindow.FrameChanged(Rect frame)
 		{
 			if (new Rect(X, Y, Width, Height) == frame)
@@ -328,7 +341,9 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		internal AlertManager AlertManager { get; }
+		internal IAlertManager AlertManager { get; private set; }
+
+		bool _alertManagerResolved;
 
 		internal ModalNavigationManager ModalNavigationManager { get; }
 
@@ -452,6 +467,10 @@ namespace Microsoft.Maui.Controls
 			ModalPopped?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
 
+			// Refresh the predictive back callback — programmatic PopModalAsync doesn't go through
+			// BackButtonClicked, so we update here to keep Enabled in sync with the modal stack.
+			NotifyNavigationStateChanged();
+
 #if WINDOWS
 			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
 			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
@@ -472,6 +491,10 @@ namespace Microsoft.Maui.Controls
 			var args = new ModalPushedEventArgs(modalPage);
 			ModalPushed?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
+
+			// Refresh the predictive back callback — programmatic PushModalAsync doesn't go through
+			// BackButtonClicked, so we update here to keep Enabled in sync with the modal stack.
+			NotifyNavigationStateChanged();
 
 #if WINDOWS
 			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
@@ -631,8 +654,38 @@ namespace Microsoft.Maui.Controls
 		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is Page oldPage)
+			{
+#if ANDROID
+				// Release any DrawerLayout system-back callbacks in the outgoing page tree
+				// before the page is torn down, so they cannot shadow the incoming page's
+				// back handlers on Android 16 (API 36+).
+				// This must happen before SendDisappearing so all callbacks are gone before
+				// the framework begins dismantling the outgoing page tree.
+				ReleaseFlyoutDrawerCallbacks(oldPage);
+#endif
 				oldPage.SendDisappearing();
+			}
 		}
+
+#if ANDROID
+		// Walks the outgoing page tree and releases the DrawerLayout system-back callback
+		// on every FlyoutViewHandler found. Handles both the direct case (Window.Page IS
+		// the FlyoutPage) and the nested case (e.g. NavigationPage wrapping a FlyoutPage).
+		static void ReleaseFlyoutDrawerCallbacks(Page page)
+		{
+			if (page.Handler is FlyoutViewHandler flyoutHandler)
+			{
+				flyoutHandler.ReleaseDrawerCallbackBeforePageChange();
+				return;
+			}
+
+			// Recurse into page containers: NavigationPage, TabbedPage, Shell, etc.
+			if (page is IPageContainer<Page> container && container.CurrentPage is Page child)
+			{
+				ReleaseFlyoutDrawerCallbacks(child);
+			}
+		}
+#endif
 
 		static void OnIsActivatedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -652,6 +705,7 @@ namespace Microsoft.Maui.Controls
 				RemoveLogicalChild(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
+				AlertManager.Unsubscribe();
 			}
 
 			if (oldPage is Shell shell)
@@ -698,12 +752,33 @@ namespace Microsoft.Maui.Controls
 		void OnPageHandlerChanged(object? sender, EventArgs e)
 		{
 			ModalNavigationManager.PageAttachedHandler();
+			TryResolveAlertManager();
 			AlertManager.Subscribe();
 		}
 
 		void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
 			AlertManager.Unsubscribe();
+		}
+
+		void TryResolveAlertManager()
+		{
+			if (_alertManagerResolved)
+				return;
+
+			if (AlertManager is not Platform.AlertManager)
+			{
+				_alertManagerResolved = true;
+				return;
+			}
+
+			var customManager = Handler?.MauiContext?.Services?.GetService<IAlertManager>();
+			if (customManager is not null)
+			{
+				AlertManager.Unsubscribe(); // defensive: no-op if not yet subscribed
+				AlertManager = customManager;
+			}
+			_alertManagerResolved = true;
 		}
 
 		void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -714,12 +789,83 @@ namespace Microsoft.Maui.Controls
 
 		bool IWindow.BackButtonClicked()
 		{
+			bool handled;
+
 			if (Navigation.ModalStack.Count > 0)
 			{
-				return Navigation.ModalStack[Navigation.ModalStack.Count - 1].SendBackButtonPressed();
+				handled = Navigation.ModalStack[Navigation.ModalStack.Count - 1].SendBackButtonPressed();
+			}
+			else
+			{
+				handled = this.Page?.SendBackButtonPressed() ?? false;
 			}
 
-			return this.Page?.SendBackButtonPressed() ?? false;
+			// Refresh Enabled on the predictive back callback after a back press changes the navigation state.
+			NotifyNavigationStateChanged();
+			return handled;
+		}
+
+		// Notifies that navigation state has changed so the Android predictive back callback can be updated.
+		// Dispatches to the main thread when called post-await on a thread-pool thread.
+		// No-op on non-Android platforms.
+		internal void NotifyNavigationStateChanged()
+		{
+#if ANDROID
+			if (MainThread.IsMainThread)
+				RefreshPredictiveBackRegistration();
+			else
+				MainThread.BeginInvokeOnMainThread(RefreshPredictiveBackRegistration);
+#endif
+		}
+
+		// Returns true when there is in-app back navigation to consume, so the system should not
+		// play the back-to-home animation. Kept in the shared file so it can be unit-tested
+		// without a device (the Android-specific entry point in Window.Android.cs calls this).
+		internal static bool CanConsumeBackNavigation(Page? page)
+		{
+			if (page is null)
+				return false;
+
+			switch (page)
+			{
+				case Shell shell:
+					if (CanConsumeBackNavigation(shell.CurrentPage))
+						return true;
+
+					// Only consume back to close the flyout when it is user-dismissible.
+					// Locked and Disabled both mean the flyout is not user-controllable via back.
+					var flyoutBehavior = shell.GetEffectiveFlyoutBehavior();
+					if (shell.FlyoutIsPresented && flyoutBehavior == FlyoutBehavior.Flyout)
+					{
+						return true;
+					}
+
+					// Shell section nav stack depth (non-NavigationPage modern Shell shape).
+					return shell.CurrentItem?.CurrentItem?.Stack.Count > 1;
+
+				case NavigationPage navigationPage:
+					if (CanConsumeBackNavigation(navigationPage.CurrentPage))
+						return true;
+
+					return navigationPage.Navigation.NavigationStack.Count > 1;
+
+				case FlyoutPage flyoutPage:
+					// In split-mode (tablets), CanChangeIsPresented=false and IsPresented is locked true;
+					// back should NOT be consumed in that state — only consume when the flyout can close.
+					if (flyoutPage.IsPresented && ((IFlyoutPageController)flyoutPage).CanChangeIsPresented)
+						return true;
+
+					return CanConsumeBackNavigation(flyoutPage.Detail);
+
+				case MultiPage<Page> multiPage:
+					return CanConsumeBackNavigation(multiPage.CurrentPage);
+
+				default:
+					// Conservative default: return false for unknown page types.
+					// We cannot know whether a custom container's OnBackButtonPressed() returns true,
+					// so we avoid suppressing the back-to-home animation speculatively.
+					return false;
+			}
 		}
 
 		static double ValidatePositive(double value, [CallerMemberName] string? name = null) =>

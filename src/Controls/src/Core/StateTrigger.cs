@@ -1,4 +1,5 @@
 #nullable disable
+using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
@@ -12,12 +13,12 @@ namespace Microsoft.Maui.Controls
 		public new bool IsActive
 		{
 			get => (bool)GetValue(IsActiveProperty);
-			set => SetValue(IsActiveProperty, value);
+			set => SetValue(IsActiveProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Bindable property for <see cref="IsActive"/>.</summary>
 		public static readonly BindableProperty IsActiveProperty =
-			BindableProperty.Create(nameof(IsActive), typeof(bool), typeof(StateTrigger), default(bool),
+			BindableProperty.Create(nameof(IsActive), typeof(bool), typeof(StateTrigger), BooleanBoxes.FalseBox,
 				propertyChanged: OnIsActiveChanged);
 
 		static void OnIsActiveChanged(BindableObject bindable, object oldvalue, object newvalue)

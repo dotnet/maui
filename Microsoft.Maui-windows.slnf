@@ -2,11 +2,6 @@
   "solution": {
     "path": "Microsoft.Maui-dev.sln",
     "projects": [
-      "src\\AI\\samples\\Essentials.AI.Sample\\Essentials.AI.Sample.csproj",
-      "src\\AI\\src\\Essentials.AI\\Essentials.AI.csproj",
-      "src\\AI\\tests\\Essentials.AI.Benchmarks\\Essentials.AI.Benchmarks.csproj",
-      "src\\AI\\tests\\Essentials.AI.DeviceTests\\Essentials.AI.DeviceTests.csproj",
-      "src\\AI\\tests\\Essentials.AI.UnitTests\\Essentials.AI.UnitTests.csproj",
       "src\\BlazorWebView\\samples\\BlazorWinFormsApp\\BlazorWinFormsApp.csproj",
       "src\\BlazorWebView\\samples\\BlazorWpfApp\\BlazorWpfApp.csproj",
       "src\\BlazorWebView\\samples\\MauiRazorClassLibrarySample\\MauiRazorClassLibrarySample.csproj",
@@ -15,6 +10,7 @@
       "src\\BlazorWebView\\src\\WindowsForms\\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
       "src\\BlazorWebView\\src\\Wpf\\Microsoft.AspNetCore.Components.WebView.Wpf.csproj",
       "src\\BlazorWebView\\tests\\DeviceTests\\MauiBlazorWebView.DeviceTests.csproj",
+      "src\\BlazorWebView\\tests\\MauiBlazorWebView.UnitTests\\MauiBlazorWebView.UnitTests.csproj",
       "src\\Controls\\Foldable\\src\\Controls.Foldable.csproj",
       "src\\Controls\\Maps\\src\\Controls.Maps.csproj",
       "src\\Controls\\samples\\Controls.Sample.Profiling\\Maui.Controls.Sample.Profiling.csproj",

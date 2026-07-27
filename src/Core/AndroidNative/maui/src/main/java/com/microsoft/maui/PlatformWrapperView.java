@@ -15,7 +15,9 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Shader;
 
+
 import android.view.View;
+import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 
@@ -47,84 +49,140 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     private Shader shadowShader;
     private boolean shadowInvalidated = true;
     private boolean hasClip = false;
+    private boolean hasShadow = false;
 
-    private int paintType = PlatformPaintType.NONE;
     private float offsetX = 0;
     private float offsetY = 0;
     private float radius = 0;
-    private int[] colors = new int[0];
-    private float[] positions = new float[0];
-    private float[] bounds = new float[0];
+
+    private PlatformDrawableStyle shadowStyle = new PlatformDrawableStyle();
 
     @Override
     protected void setHasClip(boolean hasClip) {
         super.setHasClip(hasClip);
         this.hasClip = hasClip;
-        shadowInvalidated = true;
+        this.shadowInvalidated = true;
     }
 
-    protected final void updateShadow(int paintType, float radius, float offsetX, float offsetY, int[] colors, float[] positions, float[] bounds) {
-        this.paintType = paintType;
+    protected final void setLinearGradientShadow(float radius, float offsetX, float offsetY, float x1, float y1, float x2, float y2, int[] colors, float[] positions) {
         this.radius = radius;
         this.offsetX = offsetX;
         this.offsetY = offsetY;
-        this.colors = colors;
-        this.positions = positions;
-        this.bounds = bounds;
+        float[] bounds = { x1, y1, x2, y2 };
+        this.shadowStyle.setStyle(PlatformPaintType.LINEAR, 0, colors, positions, bounds);
+        onShadowStyleChanged();
+    }
+    
+    protected final void setRadialGradientShadow(float radius, float offsetX, float offsetY, float x, float y, float gradientRadius, int[] colors, float[] positions) {
+        this.radius = radius;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        float[] bounds = { x, y, gradientRadius };
+        this.shadowStyle.setStyle(PlatformPaintType.RADIAL, 0, colors, positions, bounds);
+        onShadowStyleChanged();
+    }
+    
+    protected final void setSolidShadow(float radius, float offsetX, float offsetY, int solidColor) {
+        this.radius = radius;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        this.shadowStyle.setStyle(PlatformPaintType.SOLID, solidColor, null, null, null);
+        onShadowStyleChanged();
+    }
 
-        if (paintType == PlatformPaintType.NONE) {
-            shadowPaint = null;
-            shadowCanvas = null;
-            if (shadowBitmap != null) {
-                bitmapPool.put(shadowBitmap);
-                shadowBitmap = null;
+    protected final void setNoShadow() {
+        this.radius = 0;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.shadowStyle.setStyle(PlatformPaintType.NONE, 0, null, null, null);
+        onShadowStyleChanged();
+    }
+
+    private void onShadowStyleChanged() {
+        this.hasShadow = (this.shadowStyle.getPaintType() != PlatformPaintType.NONE);
+        if (!this.hasShadow) {
+            this.shadowPaint = null;
+            this.shadowCanvas = null;
+            if (this.shadowBitmap != null) {
+                this.bitmapPool.put(this.shadowBitmap);
+                this.shadowBitmap = null;
             }
         } else {
-            shadowCanvas = new Canvas();
-            shadowPaint = new Paint();
-            shadowPaint.setAntiAlias(true);
-            shadowPaint.setDither(true);
-            shadowPaint.setFilterBitmap(true);
-            shadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            this.shadowCanvas = new Canvas();
+            this.shadowPaint = new Paint();
+            this.shadowPaint.setAntiAlias(true);
+            this.shadowPaint.setDither(true);
+            this.shadowPaint.setFilterBitmap(true);
+            this.shadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-            if (radius > 0) {
-                shadowPaint.setMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL));
-            }
-
-            if (paintType == PlatformPaintType.SOLID) {
-                shadowPaint.setColor(colors.length > 0 ? colors[0] : android.graphics.Color.BLACK);
+            if (this.radius > 0) {
+                this.shadowPaint.setMaskFilter(new BlurMaskFilter(this.radius, BlurMaskFilter.Blur.NORMAL));
             }
         }
 
-        shadowInvalidated = true;
+        this.shadowInvalidated = true;
         invalidate();
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        shadowInvalidated = true;
-        if (shadowBitmap != null) {
-            bitmapPool.put(shadowBitmap);
-            shadowBitmap = null;
+        this.shadowInvalidated = true;
+        if (this.shadowBitmap != null) {
+            this.bitmapPool.put(this.shadowBitmap);
+            this.shadowBitmap = null;
         }
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        shadowInvalidated = true;
+        this.shadowInvalidated = true;
     }
 
     @Override
     public void requestLayout() {
         super.requestLayout();
-        shadowInvalidated = true;
+        this.shadowInvalidated = true;
     }
 
     @Override
     public void invalidate() {
         super.invalidate();
-        shadowInvalidated = true;
+        this.shadowInvalidated = true;
+    }
+
+    @Override
+    public void onDescendantInvalidated(@NonNull View child, @NonNull View target) {
+        // API 26+: On modern Android, when a hardware-accelerated child view calls invalidate()
+        // (e.g., SwitchCompat animating its thumb), the framework calls onDescendantInvalidated()
+        // on the parent instead of invalidateChildInParent().
+        //
+        // CRITICAL: In hardware-accelerated mode, each view has its own RenderNode display list.
+        // When a child invalidates, only the CHILD's RenderNode is re-recorded — the parent's
+        // display list is replayed from cache (including the stale shadow draw call baked in).
+        //
+        // Without invalidate(): SwitchCompat redraws (thumb moves) but PlatformWrapperView's
+        // display list is replayed unchanged → shadow stays at its original OFF/ON position.
+        // With invalidate(): PlatformWrapperView's display list is marked dirty → dispatchDraw()
+        // is re-invoked next frame → shadow is redrawn at the correct current thumb position.
+        //
+        // Guard: only force re-invalidation when this wrapper has an active shadow — avoids
+        // unnecessary redraws for clip/border-only wrappers.
+        super.onDescendantInvalidated(child, target);
+        if (this.hasShadow) {
+            invalidate();
+        }
+    }
+
+    // API 25 and below: invalidateChildInParent() is the legacy path called when a
+    // descendant calls invalidate() in software or pre-26 hardware-accelerated mode.
+    // Same shadow-stale problem applies — force wrapper redraw when shadow is active.
+    @Override
+    public ViewParent invalidateChildInParent(int[] location, Rect dirty) {
+        if (this.hasShadow) {
+            invalidate();
+        }
+        return super.invalidateChildInParent(location, dirty);
     }
 
     @Override
@@ -142,9 +200,9 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        if (paintType != PlatformPaintType.NONE) {
-            int viewWidth = viewBounds.width();
-            int viewHeight = viewBounds.height();
+        if (this.shadowStyle.getPaintType() != PlatformPaintType.NONE) {
+            int viewWidth = this.viewBounds.width();
+            int viewHeight = this.viewBounds.height();
             if (getChildCount() > 0)
             {
                 View child = getChildAt(0);
@@ -190,20 +248,20 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
         int bitmapWidth = viewWidth + radiusSafeSpace;
         int bitmapHeight = viewHeight + radiusSafeSpace;
 
-        // Apply shader if needed
-        updateShadowShader(bitmapWidth, bitmapHeight);
+        // Apply shadow style
+        this.shadowStyle.applyStyle(this.shadowPaint, bitmapWidth, bitmapHeight, null);
 
-        Path clipPath = hasClip ? getClipPath(viewWidth, viewHeight) : null;
+        Path clipPath = this.hasClip ? getClipPath(viewWidth, viewHeight) : null;
 
         canvas.save();
-        canvas.translate(offsetX, offsetY);
-        drawable.drawShadow(canvas, shadowPaint, clipPath);
+        canvas.translate(this.offsetX, this.offsetY);
+        drawable.drawShadow(canvas, this.shadowPaint, clipPath);
         canvas.restore();
     }
 
     private void drawShadowViaDispatchDraw(@NonNull Canvas canvas, int viewWidth, int viewHeight) {
-        if (shadowInvalidated) {
-            shadowInvalidated = false;
+        if (this.shadowInvalidated) {
+            this.shadowInvalidated = false;
 
             int radiusSafeSpace = getRadiusSafeSpace();
             int bitmapWidth = normalizeForPool(viewWidth + radiusSafeSpace);
@@ -211,76 +269,50 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
             int drawOriginX = (bitmapWidth - viewWidth) / 2;
             int drawOriginY = (bitmapHeight - viewHeight) / 2;
 
-            if (shadowBitmap != null) {
-                if (shadowBitmap.getWidth() == bitmapWidth && shadowBitmap.getHeight() == bitmapHeight) {
-                    shadowBitmap.eraseColor(Color.TRANSPARENT);
+            if (this.shadowBitmap != null) {
+                if (this.shadowBitmap.getWidth() == bitmapWidth && this.shadowBitmap.getHeight() == bitmapHeight) {
+                    this.shadowBitmap.eraseColor(Color.TRANSPARENT);
                 } else {
-                    bitmapPool.put(shadowBitmap);
-                    shadowBitmap = bitmapPool.get(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
+                    this.bitmapPool.put(this.shadowBitmap);
+                    this.shadowBitmap = this.bitmapPool.get(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
                 }
             } else {
-                shadowBitmap = bitmapPool.get(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
+                this.shadowBitmap = this.bitmapPool.get(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
             }
 
-            shadowCanvas.setBitmap(shadowBitmap);
+            this.shadowCanvas.setBitmap(this.shadowBitmap);
 
             // Create the local copy of all content to draw bitmap as a bottom layer of natural canvas.
-            Bitmap extractAlpha = bitmapPool.get(normalizeForPool(viewWidth), normalizeForPool(viewHeight), Bitmap.Config.ALPHA_8);
+            Bitmap extractAlpha = this.bitmapPool.get(normalizeForPool(viewWidth), normalizeForPool(viewHeight), Bitmap.Config.ALPHA_8);
             Canvas alphaCanvas = new Canvas(extractAlpha);
             super.dispatchDraw(alphaCanvas);
 
-            // Apply shader if needed
-            updateShadowShader(bitmapWidth, bitmapHeight);
+            // Apply shadow style
+            this.shadowStyle.applyStyle(this.shadowPaint, bitmapWidth, bitmapHeight, null);
 
             // Why don't we simply draw the alpha bitmap directly on the view canvas?
             // Reason: setMaskFilter (used by shadowPaint) is *not* supported in hardware accelerated mode
             // https://developer.android.com/develop/ui/views/graphics/hardware-accel
             // If we use `SOFTWARE` layer, than we fall into a view-clipped `Canvas` where we can't draw the outer shadow.
-            shadowCanvas.drawBitmap(extractAlpha, drawOriginX, drawOriginY, shadowPaint);
+            this.shadowCanvas.drawBitmap(extractAlpha, drawOriginX, drawOriginY, this.shadowPaint);
 
-            bitmapPool.put(extractAlpha);
+            this.bitmapPool.put(extractAlpha);
 
-            shadowBitmapX = offsetX - drawOriginX;
-            shadowBitmapY = offsetY - drawOriginY;
+            this.shadowBitmapX = this.offsetX - drawOriginX;
+            this.shadowBitmapY = this.offsetY - drawOriginY;
         }
     
         // Draw shadow rectangle
-        canvas.drawBitmap(shadowBitmap, shadowBitmapX, shadowBitmapY, null);
+        canvas.drawBitmap(this.shadowBitmap, this.shadowBitmapX, this.shadowBitmapY, null);
     }
 
     private int getRadiusSafeSpace() {
         // Account for potentially different blurring algorithms
-        return (int)(radius * 3);
+        return (int)(this.radius * 3);
     }
 
     private static int normalizeForPool(int pixels) {
         // We want to reuse memory as much as possible so let's normalize bitmaps to the nearest 48px grid.
         return (int)(Math.ceil(((double)pixels) / 48.0) * 48.0);
-    }
-
-    private void updateShadowShader(int bitmapWidth, int bitmapHeight) {
-        Shader shader = null;
-
-        if (paintType == PlatformPaintType.LINEAR) {
-            shader = new android.graphics.LinearGradient(
-                bounds[0] * bitmapWidth, bounds[1] * bitmapHeight,  // Start point
-                bounds[2] * bitmapWidth, bounds[3] * bitmapHeight,  // End point
-                colors,
-                positions,
-                android.graphics.Shader.TileMode.CLAMP
-            );
-        } else if (paintType == PlatformPaintType.RADIAL) {
-            shader = new android.graphics.RadialGradient(
-                bounds[0] * bitmapWidth, bounds[1] * bitmapHeight,  // Center point
-                bounds[2] * Math.max(bitmapWidth, bitmapHeight),   // Radius
-                colors,
-                positions,
-                android.graphics.Shader.TileMode.CLAMP
-            );
-        }
-
-        if (shader != null) {
-            shadowPaint.setShader(shader);
-        }
     }
 }

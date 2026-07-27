@@ -68,9 +68,13 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _safeAreaInvalidated = true;
 
+		// Cached result of whether a parent MauiView is already applying safe area adjustments.
+		// Null means not yet determined. Invalidated when view hierarchy changes.
+		bool? _parentHandlesSafeArea;
+
 		/// <summary>
 		/// Flag indicating whether this scroll view should apply safe area adjustments to its content.
-		/// Only true when not nested in another scroll view and safe area is not empty.
+		/// Only true when not nested in another scroll view, no parent MauiView handles it, and safe area is not empty.
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
 
@@ -123,6 +127,20 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
+		/// Checks if any ancestor MauiView is already applying safe area adjustments.
+		/// When a parent already handles safe area, this scroll view should not double-apply insets,
+		/// which would otherwise cause infinite layout cycles (#33595).
+		/// </summary>
+		bool IsParentHandlingSafeArea()
+		{
+			if (_parentHandlesSafeArea.HasValue)
+				return _parentHandlesSafeArea.Value;
+
+			_parentHandlesSafeArea = this.FindParent(x => x is MauiView mv && mv.AppliesSafeAreaAdjustments) is not null;
+			return _parentHandlesSafeArea.Value;
+		}
+
+		/// <summary>
 		/// Called by iOS when the adjusted content inset changes (e.g., when safe area changes).
 		/// This method invalidates the safe area and triggers a layout update if needed.
 		/// </summary>
@@ -148,8 +166,28 @@ namespace Microsoft.Maui.Platform
 		{
 			// Note: UIKit invokes LayoutSubviews right after this method
 			base.SafeAreaInsetsDidChange();
-
+			_parentHandlesSafeArea = null;
 			_safeAreaInvalidated = true;
+
+			// When CIAB = Never, UIKit does NOT automatically trigger a layout pass on rotation.
+			// We must explicitly invalidate the measure so the new safe-area insets are consumed
+			// by MAUI's layout engine (fix for rotation re-layout freeze).
+			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never
+				&& View is IScrollView { Orientation: ScrollOrientation.Vertical })
+			{
+				((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
+				this.InvalidateAncestorsMeasures();
+			}
+		}
+
+		/// <summary>
+		/// Directly invalidates this view's safe area, forcing re-evaluation on next layout pass.
+		/// </summary>
+		internal void InvalidateSafeArea()
+		{
+			_parentHandlesSafeArea = null;
+			_safeAreaInvalidated = true;
+			SetNeedsLayout();
 		}
 
 		/// <summary>
@@ -169,11 +207,12 @@ namespace Microsoft.Maui.Platform
 			{
 				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
 			}
-			
+
 			return SafeAreaRegions.None; // Default: edge-to-edge content
 		}
 
 		SafeAreaEdges? _previousEdges;
+		ScrollOrientation? _previousScrollOrientation;
 
 		UIEdgeInsets GetInset()
 		{
@@ -203,11 +242,15 @@ namespace Microsoft.Maui.Platform
 			var bottomRegion = GetSafeAreaRegionForEdge(3);
 
 			SafeAreaEdges safeAreaEdges = new SafeAreaEdges(leftRegion, topRegion, rightRegion, bottomRegion);
+			var scrollOrientation = View is IScrollView scrollView ? scrollView.Orientation : (ScrollOrientation?)null;
 
-			if (_previousEdges is not null && _previousEdges.Equals(safeAreaEdges))
+			// Also check orientation: changing from Vertical↔Horizontal changes which CIAB is needed
+			// even if SafeAreaEdges are unchanged (stale-cache fix).
+			if (_previousEdges is not null && _previousEdges.Equals(safeAreaEdges) && _previousScrollOrientation == scrollOrientation)
 				return false;
 
 			_previousEdges = safeAreaEdges;
+			_previousScrollOrientation = scrollOrientation;
 
 			// Check if all edges have the same SafeAreaRegions value
 			if (leftRegion == topRegion && topRegion == rightRegion && rightRegion == bottomRegion)
@@ -215,9 +258,12 @@ namespace Microsoft.Maui.Platform
 				// All edges have the same value, use built-in iOS behavior
 				// Cache the region value to avoid redundant comparisons
 				var region = leftRegion;
-				
+
 				ContentInsetAdjustmentBehavior = region switch
 				{
+					// Vertical scroll under Default: MAUI owns all edges (Never) so we can apply
+					// device insets directly and force re-layout on rotation via SafeAreaInsetsDidChange.
+					SafeAreaRegions.Default when scrollOrientation == ScrollOrientation.Vertical => UIScrollViewContentInsetAdjustmentBehavior.Never,
 					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Default behavior
 					SafeAreaRegions.None => UIScrollViewContentInsetAdjustmentBehavior.Never, // Edge-to-edge content
 					SafeAreaRegions.All => UIScrollViewContentInsetAdjustmentBehavior.Never, // We calculate insets ourselves and include keyboard
@@ -290,13 +336,14 @@ namespace Microsoft.Maui.Platform
 					var orientation = scrollView.Orientation;
 
 					// Clamp width if horizontal scrolling is disabled and content is larger than frame
-					if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither && contentSize.Width > frameSize.Width)
+					if (orientation is ScrollOrientation.Vertical && contentSize.Width > frameSize.Width)
 					{
 						contentSize = new CGSize(frameSize.Width, contentSize.Height);
 					}
 
-					// Clamp height if vertical scrolling is disabled and content is larger than frame
-					if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither && contentSize.Height > frameSize.Height)
+					// Clamp height when vertical scrolling is disabled but horizontal scrolling is enabled (Horizontal only)
+					// and the content is larger than the frame
+					if (orientation is ScrollOrientation.Horizontal && contentSize.Height > frameSize.Height)
 					{
 						contentSize = new CGSize(contentSize.Width, frameSize.Height);
 					}
@@ -311,6 +358,13 @@ namespace Microsoft.Maui.Platform
 					// but when the content size changes, we need to invalidate the ancestors
 					// in case the ScrollView is configured to grow/shrink with its content.
 					this.InvalidateAncestorsMeasures();
+				}
+
+				// Now that layout is complete and ContentSize is set, process any pending scroll request
+				// that was deferred because ContentSize was empty when the request arrived.
+				if (ContentSize != CGSize.Empty && CrossPlatformLayout is ScrollViewHandler scrollViewHandler)
+				{
+					scrollViewHandler.ProcessPendingScrollRequest();
 				}
 			}
 
@@ -328,8 +382,9 @@ namespace Microsoft.Maui.Platform
 			//UpdateKeyboardSubscription();
 			// If nothing changed, we don't need to do anything
 
-			if (!UpdateContentInsetAdjustmentBehavior())
+			if (UpdateContentInsetAdjustmentBehavior())
 			{
+				// Edges changed - invalidate and force re-evaluation
 				InvalidateConstraintsCache();
 				_safeAreaInvalidated = true;
 			}
@@ -340,7 +395,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Mark the safe area as validated given that we're about to check it
-			_safeAreaInvalidated = true;
+			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
 
@@ -350,13 +405,25 @@ namespace Microsoft.Maui.Platform
 			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
-				_safeArea = GetInset().ToSafeAreaInsets();
-			else
-				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
+			//
+			// Safe area source is chosen per-edge based on who owns each edge:
+			//
+			//   Never / SACI=Zero : MAUI fully manages all edges → read SafeAreaInsets via GetInset().
+			//
+			//   Automatic (default for vertical scroll views):
+			//     UIKit adds top+bottom to AdjustedContentInset but does NOT add left+right for
+			//     non-horizontal scroll views. In landscape-left, SACI.Left=0 even though
+			//     SafeAreaInsets.Left=44, causing content to render under the notch (#35410).
+			//     Fix: use GetInset() for L/R (MAUI-owned), SACI for T/B (UIKit-owned).
+			//
+			//   Always : UIKit manages ALL edges in AdjustedContentInset → use SACI for all edges
+			//     to avoid double-applying horizontal safe area that UIKit already handles.
+			var aci = SystemAdjustedContentInset;
+			var isHorizontalScrollInValidate = View is IScrollView { Orientation: ScrollOrientation.Horizontal or ScrollOrientation.Both };
+			_safeArea = ComputeSafeArea(aci, ContentInsetAdjustmentBehavior, GetInset(), isHorizontalScrollInValidate);
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
-			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
+			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
 
 			if (_systemAdjustedContentInset != SystemAdjustedContentInset)
 			{
@@ -370,9 +437,11 @@ namespace Microsoft.Maui.Platform
 				InvalidateConstraintsCache();
 			}
 
-			// Return whether the way safe area interacts with our view has changed
+			// Return whether the way safe area interacts with our view has changed.
+			// Compare at device-pixel resolution to filter sub-pixel noise from animations
+			// that would otherwise trigger infinite layout invalidation cycles (#32586, #33934).
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-				   (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
+				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
 		}
 
 		UIEdgeInsets SystemAdjustedContentInset
@@ -392,6 +461,61 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
+		/// Chooses the correct safe-area source for each edge based on who owns it.
+		/// </summary>
+		/// <param name="aci">SystemAdjustedContentInset (AdjustedContentInset minus developer ContentInset).</param>
+		/// <param name="ciab">The scroll view's ContentInsetAdjustmentBehavior.</param>
+		/// <param name="deviceInset">Raw SafeAreaInsets from GetInset() — the actual device notch/home-indicator insets.</param>
+		/// <param name="isHorizontalScroll">
+		/// True when the scroll view scrolls horizontally (Horizontal or Both orientation).
+		/// UIKit's Automatic mode includes L/R in ACI for horizontal scroll views, but only T/B for vertical ones.
+		/// </param>
+		/// <returns>The safe-area padding to apply to the MAUI layout.</returns>
+		internal static SafeAreaPadding ComputeSafeArea(
+			UIEdgeInsets aci,
+			UIScrollViewContentInsetAdjustmentBehavior ciab,
+			UIEdgeInsets deviceInset,
+			bool isHorizontalScroll = false)
+		{
+			if (ciab == UIScrollViewContentInsetAdjustmentBehavior.Never
+				|| aci == UIEdgeInsets.Zero)
+			{
+				// MAUI-managed, or UIKit hasn't applied ACI yet: use SafeAreaInsets for all edges.
+				return deviceInset.ToSafeAreaInsets();
+			}
+
+			if (ciab == UIScrollViewContentInsetAdjustmentBehavior.Always)
+			{
+				// UIKit manages ALL edges in ACI — use SACI to stay in sync with UIKit's model.
+				return aci.ToSafeAreaInsets();
+			}
+
+			// Automatic: UIKit ownership depends on scroll orientation.
+			// Normalize both sources via ToSafeAreaInsets() to suppress sub-pixel UIKit floating-point noise
+			// (e.g. 3.5e-15), consistent with the Never/Always branches above.
+			var normDevice = deviceInset.ToSafeAreaInsets();
+			var normAci = aci.ToSafeAreaInsets();
+
+			if (isHorizontalScroll)
+			{
+				// Horizontal scroll: UIKit includes L/R in ACI; MAUI must supply T/B from device insets.
+				return new SafeAreaPadding(
+					Left:   normAci.Left,
+					Right:  normAci.Right,
+					Top:    normDevice.Top,
+					Bottom: normDevice.Bottom);
+			}
+
+			// Default (vertical): UIKit includes T/B in ACI but NOT L/R (landscape notch fix #35410).
+			// MAUI must supply L/R from device insets; UIKit owns T/B via contentOffset.
+			return new SafeAreaPadding(
+				Left:   normDevice.Left,
+				Right:  normDevice.Right,
+				Top:    normAci.Top,
+				Bottom: normAci.Bottom);
+		}
+
+		/// <summary>
 		/// Arranges the cross-platform content within the specified bounds, accounting for safe area adjustments.
 		/// This method applies safe area insets to the bounds before arranging the content.
 		/// </summary>
@@ -406,21 +530,39 @@ namespace Microsoft.Maui.Platform
 				bounds = _safeArea.InsetRect(bounds);
 			}
 
+			// For horizontal scroll views, UIKit manages Left/Right in AdjustedContentInset
+			// under Automatic CIAB — exactly as it manages Top/Bottom for vertical scroll views.
+			// We must NOT additionally offset content horizontally; UIKit's ACI.Left/Right
+			// handles the visual positioning. Using arrangeX=bounds.X here would double-apply
+			// the offset (arrangeX=44 + ACI.Left=44 → 88pt leading gap instead of 44pt).
+			var isHorizontalScroll = View is IScrollView { Orientation: ScrollOrientation.Horizontal or ScrollOrientation.Both };
+
 			Size contentSize;
 
 
 			double width;
 			double height;
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+			if (SystemAdjustedContentInset != UIEdgeInsets.Zero
+				&& ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
-				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+				// arrangeX = 0 when UIKit owns the horizontal edges via ACI:
+				//   - CIAB.Always: UIKit manages ALL edges
+				//   - CIAB.Automatic + horizontal scroll: UIKit manages Left/Right for horizontal scroll views
+				// arrangeX = bounds.X when MAUI owns the horizontal edges:
+				//   - CIAB.Automatic + vertical scroll: UIKit does NOT add L/R to ACI → MAUI must
+				//     position content past the landscape notch manually (fix for #35410)
+				var arrangeX = (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Always || isHorizontalScroll)
+					? 0
+					: bounds.X;
+				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(arrangeX, 0, bounds.Width, bounds.Height)) ?? Size.Zero;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
 			}
 			else
 			{
-				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+				// Never CIAB (or zero ACI): MAUI fully controls safe area — apply full inset bounds.
+				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
@@ -443,15 +585,29 @@ namespace Microsoft.Maui.Platform
 			// This avoids inset flip-flopping and keeps layout behavior stable and predictable.
 			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic)
 			{
-				// We do this to keep the content scrollable
-				// if we don't do this the ContentAdjustedInset + contentSize will cause the content to go off the screen and not be scrollable
-				// So the bottom content will just go off the screen until the contentsize triggers the scrollable area
+				// UIKit flip-flop prevention: when content is just barely smaller than the frame but
+				// would exceed it once the horizontal safe area is included, force ContentSize large
+				// enough that UIKit keeps the scroll view in "scrollable" mode and doesn't push safe
+				// area insets down into child views (which would create a layout loop).
 				if (width <= Bounds.Width &&
 					(_safeArea.HorizontalThickness + width) > Bounds.Width)
 				{
 					width += Bounds.Width + 1;
 				}
-
+				else if (_appliesSafeAreaAdjustments && !isHorizontalScroll)
+				{
+					// Content is arranged at x = _safeArea.Left (via arrangeX = bounds.X) for vertical scroll.
+					// CrossPlatformArrange returns the content's own width without that x-offset,
+					// so ContentSize.Width would fall short by _safeArea.Left, making the trailing
+					// portion of content unreachable by scrolling.
+					// We add only _safeArea.Left (not HorizontalThickness) because content starts
+					// at x=Left — its physical end is Left+contentWidth. Adding Right would create
+					// an extra Right-sized trailing empty gap (visible as "double padding" on
+					// symmetric devices like iPhone X where Left=Right=44).
+					// For horizontal scroll this branch is skipped — UIKit's ACI.Left/Right
+					// manages horizontal offsets (arrangeX=0), so ContentSize needs no adjustment.
+					width += _safeArea.Left;
+				}
 				if (height <= Bounds.Height &&
 					(_safeArea.VerticalThickness + height) > Bounds.Height)
 				{
@@ -466,49 +622,40 @@ namespace Microsoft.Maui.Platform
 
 			contentSize = new Size(width, height);
 
-			// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
-			// to ensure the content is correctly aligned and scrolled. This involves a second layout
-			// arrangement with an adjusted starting point and recalculating the content offset.
-			if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
+			bool isDirectionChange = _previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection;
+
+			// For Right-To-Left (RTL) layouts, iOS natively handles visual mirroring via
+			// SemanticContentAttribute.ForceRightToLeft. Content should remain at normal (0,0) coordinates.
+			// We only set ContentOffset to position the scroll at the RTL "start" (maximum horizontal offset).
+			// Content at negative X coordinates would be outside the scrollable range and unreachable.
+			if (isDirectionChange)
 			{
-				// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators
-				// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
-				if (OperatingSystem.IsMacCatalyst() && _previousEffectiveUserInterfaceLayoutDirection is not null)
-				{
-					bool showsVertical = ShowsVerticalScrollIndicator;
-					bool showsHorizontal = ShowsHorizontalScrollIndicator;
-
-					ShowsVerticalScrollIndicator = false;
-					ShowsHorizontalScrollIndicator = false;
-
-					ShowsVerticalScrollIndicator = showsVertical;
-					ShowsHorizontalScrollIndicator = showsHorizontal;
-				}
-
 				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 				{
-					var horizontalOffset = contentSize.Width - bounds.Width;
-					
-					if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+					// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators.
+					// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
+					if (OperatingSystem.IsMacCatalyst() && _previousEffectiveUserInterfaceLayoutDirection is not null)
 					{
-						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
-					}
-					else
-					{
-						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
-					}
-					
-					ContentOffset = new CGPoint(horizontalOffset, 0);
+						bool showsVertical = ShowsVerticalScrollIndicator;
+						bool showsHorizontal = ShowsHorizontalScrollIndicator;
 
+						ShowsVerticalScrollIndicator = false;
+						ShowsHorizontalScrollIndicator = false;
+
+						ShowsVerticalScrollIndicator = showsVertical;
+						ShowsHorizontalScrollIndicator = showsHorizontal;
+					}
+
+					var horizontalOffset = contentSize.Width - bounds.Width;
+					ContentOffset = new CGPoint(horizontalOffset, 0);
 				}
-				else if(_previousEffectiveUserInterfaceLayoutDirection is not null)
+				else if (_previousEffectiveUserInterfaceLayoutDirection is not null)
 				{
 					ContentOffset = new CGPoint(0, ContentOffset.Y);
 				}
 			}
 
-			// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
-			// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
+			// Track the current direction so we can detect future changes.
 			_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 			return contentSize;
@@ -548,7 +695,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="size">The available size constraints.</param>
 		/// <returns>The size that fits within the constraints.</returns>
-		
+
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (CrossPlatformLayout is null)
@@ -587,7 +734,20 @@ namespace Microsoft.Maui.Platform
 			SetNeedsLayout();
 			InvalidateConstraintsCache();
 
-			return !isPropagating;
+			return true;
+		}
+
+		/// <summary>
+	    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
+	    /// </summary>
+
+		internal void OnOrientationChanged()
+		{
+			// Reset the previous layout direction to force re-evaluation of RTL layout
+			if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				_previousEffectiveUserInterfaceLayoutDirection = null;
+			}
 		}
 
 		/// <summary>
@@ -671,6 +831,7 @@ namespace Microsoft.Maui.Platform
 
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
+			_parentHandlesSafeArea = null;
 
 			// Mark safe area as invalidated since moving to a new window may change safe area
 			_safeAreaInvalidated = true;

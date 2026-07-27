@@ -109,6 +109,74 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SourceChangeDoesNotTriggerResizeWhenWidthAndHeightExplicit()
+		{
+			var image = new Image
+			{
+				Source = "File0.png",
+				WidthRequest = 20,
+				HeightRequest = 20
+			};
+
+			int preferredSizeChanged = 0;
+			image.MeasureInvalidated += (sender, args) => preferredSizeChanged++;
+
+			image.Source = "File1.png";
+
+			Assert.Equal("File1.png", ((FileImageSource)image.Source).File);
+			Assert.Equal(0, preferredSizeChanged);
+		}
+
+		[Theory]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public void SourceChangeTriggersResizeWhenExplicitButLayoutAlignmentIsNotFill(bool setHorizontalCenter, bool setVerticalCenter)
+		{
+			var image = new Image
+			{
+				Source = "File0.png",
+				WidthRequest = 20,
+				HeightRequest = 20
+			};
+
+			if (setHorizontalCenter)
+				image.HorizontalOptions = LayoutOptions.Center;
+
+			if (setVerticalCenter)
+				image.VerticalOptions = LayoutOptions.Center;
+
+			int preferredSizeChanged = 0;
+			image.MeasureInvalidated += (sender, args) => preferredSizeChanged++;
+
+			image.Source = "File1.png";
+
+			Assert.Equal("File1.png", ((FileImageSource)image.Source).File);
+			Assert.Equal(1, preferredSizeChanged);
+		}
+
+		[Theory]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public void SourceChangeTriggersResizeWhenWidthOrHeightIsImplicit(bool setWidth, bool setHeight)
+		{
+			var image = new Image { Source = "File0.png" };
+
+			if (setWidth)
+				image.WidthRequest = 20;
+
+			if (setHeight)
+				image.HeightRequest = 20;
+
+			int preferredSizeChanged = 0;
+			image.MeasureInvalidated += (sender, args) => preferredSizeChanged++;
+
+			image.Source = "File1.png";
+
+			Assert.Equal("File1.png", ((FileImageSource)image.Source).File);
+			Assert.Equal(1, preferredSizeChanged);
+		}
+
+		[Fact]
 		public void TestSource()
 		{
 			var image = new Image();
@@ -177,6 +245,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void FileImageSourcePropertiesChangedDoesNotTriggerResizeWhenWidthAndHeightExplicit()
+		{
+			var source = new FileImageSource();
+			var image = new Image
+			{
+				Source = source,
+				WidthRequest = 20,
+				HeightRequest = 20
+			};
+			bool fired = false;
+			image.MeasureInvalidated += (sender, e) => fired = true;
+
+			Assert.Null(source.File);
+			source.File = "foo.png";
+
+			Assert.NotNull(source.File);
+			Assert.False(fired);
+		}
+
+		[Fact]
 		public void TestStreamImageSourcePropertiesChangedTriggerResize()
 		{
 			var source = new StreamImageSource();
@@ -187,6 +275,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			source.Stream = token => Task.FromResult<Stream>(null);
 			Assert.NotNull(source.Stream);
 			Assert.True(fired);
+		}
+
+		[Fact]
+		public void StreamImageSourcePropertiesChangedDoesNotTriggerResizeWhenWidthAndHeightExplicit()
+		{
+			var source = new StreamImageSource();
+			var image = new Image
+			{
+				Source = source,
+				WidthRequest = 20,
+				HeightRequest = 20
+			};
+			bool fired = false;
+			image.MeasureInvalidated += (sender, e) => fired = true;
+
+			Assert.Null(source.Stream);
+			source.Stream = token => Task.FromResult<Stream>(null);
+
+			Assert.NotNull(source.Stream);
+			Assert.False(fired);
 		}
 
 		[Fact]

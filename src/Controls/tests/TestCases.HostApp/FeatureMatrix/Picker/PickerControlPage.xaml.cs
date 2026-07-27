@@ -7,9 +7,6 @@ public class PickerControlPage : NavigationPage
 	public PickerControlPage()
 	{
 		_viewModel = new PickerViewModel();
-#if ANDROID
-		BarTextColor = Colors.White;
-#endif
 		PushAsync(new PickerControlMainPage(_viewModel));
 	}
 }

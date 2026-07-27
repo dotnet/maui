@@ -20,6 +20,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             App.WaitForElement("Picker6");
 			App.Tap("Picker6");
             VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Picker6");
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				var rect = App.WaitForElement("ScrollViewId").GetRect();
+				App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() - 60);
+			}
             App.Tap("Entry7");
             VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Entry7", cropBottom: 1000);
         }

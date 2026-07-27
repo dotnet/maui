@@ -144,8 +144,6 @@ namespace Microsoft.Maui.Handlers
 			if (sender is not RefreshContainer refreshControl)
 				return;
 
-			refreshControl.Loaded -= OnLoaded;
-
 			// If the virtual view requested a refresh, we need to trigger it now that the control
 			// is loaded. This needs to be done on a dispatch as the control may need to be laid
 			// out or the template applied first.

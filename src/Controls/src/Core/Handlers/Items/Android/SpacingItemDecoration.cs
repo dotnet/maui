@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public int VerticalOffset { get; }
 
+		ItemsLayoutOrientation _orientation;
+
 		public SpacingItemDecoration(Context context, IItemsLayout itemsLayout)
 		{
 			// The original "SpacingItemDecoration" applied spacing based on an item's current span index.
@@ -35,6 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case GridItemsLayout gridItemsLayout:
 					horizontalOffset = gridItemsLayout.HorizontalItemSpacing / 2.0;
 					verticalOffset = gridItemsLayout.VerticalItemSpacing / 2.0;
+					_orientation = gridItemsLayout.Orientation;
 					break;
 				case LinearItemsLayout listItemsLayout:
 					if (listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
@@ -47,10 +50,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						horizontalOffset = 0;
 						verticalOffset = listItemsLayout.ItemSpacing / 2.0;
 					}
+					_orientation = listItemsLayout.Orientation;
 					break;
 				default:
 					horizontalOffset = 0;
 					verticalOffset = 0;
+					_orientation = ItemsLayoutOrientation.Vertical;
 					break;
 			}
 
@@ -62,10 +67,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.GetItemOffsets(outRect, view, parent, state);
 
+			int position = parent.GetChildAdapterPosition(view);
+			if (position == RecyclerView.NoPosition)
+				return;
+
+			int itemCount = state.ItemCount;
+			if (itemCount <= 0)
+				return;
+
 			outRect.Left = HorizontalOffset;
 			outRect.Right = HorizontalOffset;
 			outRect.Bottom = VerticalOffset;
 			outRect.Top = VerticalOffset;
+
+			// Remove spacing on the outer edges so spacing only appears between items.
+			int rowCol;
+			int lastRowCol;
+
+			if (parent.GetLayoutManager() is GridLayoutManager gridLayoutManager)
+			{
+				// Use SpanSizeLookup instead of position/spanCount so full-span items
+				// (group headers, footers, etc.) are accounted for when determining rows.
+				var spanSizeLookup = gridLayoutManager.GetSpanSizeLookup();
+				int spanCount = gridLayoutManager.SpanCount;
+				rowCol = spanSizeLookup.GetSpanGroupIndex(position, spanCount);
+				lastRowCol = spanSizeLookup.GetSpanGroupIndex(itemCount - 1, spanCount);
+			}
+			else
+			{
+				// Linear layout: each item occupies exactly one row/column.
+				rowCol = position;
+				lastRowCol = itemCount - 1;
+			}
+
+			if (_orientation == ItemsLayoutOrientation.Vertical)
+			{
+				if (rowCol == 0)
+					outRect.Top = 0;
+				if (rowCol == lastRowCol)
+					outRect.Bottom = 0;
+			}
+			else
+			{
+				if (rowCol == 0)
+					outRect.Left = 0;
+				if (rowCol == lastRowCol)
+					outRect.Right = 0;
+			}
 		}
 	}
 }

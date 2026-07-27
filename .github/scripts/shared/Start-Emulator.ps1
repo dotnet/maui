@@ -6,7 +6,7 @@
 .DESCRIPTION
     Handles device detection and startup for both Android and iOS platforms.
     - Android: Automatically selects and starts emulator with priority: API 30 Nexus > API 30 > Nexus > First available
-    - iOS: Automatically selects iPhone Xs with iOS 18.5 by default
+    - iOS: Automatically selects iPhone Xs with iOS 18.x (or iPhone 11 Pro with iOS 26.x) to match CI
 
 .PARAMETER Platform
     Target platform: "android" or "ios"
@@ -32,7 +32,10 @@ param(
     [string]$Platform,
     
     [Parameter(Mandatory=$false)]
-    [string]$DeviceUdid
+    [string]$DeviceUdid,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Headless
 )
 
 # Import shared utilities
@@ -65,7 +68,8 @@ if ($Platform -eq "android") {
     # Check if DeviceUdid is an AVD name (not an emulator-XXXX format)
     if ($DeviceUdid -and $DeviceUdid -notmatch "^emulator-\d+$") {
         # DeviceUdid is likely an AVD name - check if it's in the AVD list
-        $avdList = emulator -list-avds 2>$null
+        # Force array output - single AVD returns a string which breaks -contains
+        [string[]]$avdList = @(emulator -list-avds 2>$null)
         if ($avdList -contains $DeviceUdid) {
             Write-Info "DeviceUdid '$DeviceUdid' is an AVD name. Will boot this emulator..."
             $selectedAvd = $DeviceUdid
@@ -103,7 +107,8 @@ if ($Platform -eq "android") {
             
             # Get list of available AVDs (if not already set from parameter)
             if (-not $selectedAvd) {
-                $avdList = emulator -list-avds 2>$null
+                # Force array output - single AVD returns a string which breaks indexing
+                [string[]]$avdList = @(emulator -list-avds 2>$null)
                 
                 if (-not $avdList -or $avdList.Count -eq 0) {
                     Write-Error "No Android emulators found. Please create an Android Virtual Device (AVD) using Android Studio."
@@ -119,7 +124,7 @@ if ($Platform -eq "android") {
                 # Selection priority:
                 # 1. API 34 device (matches CI provisioning)
                 # 2. API 30 Nexus device
-                # 3. Any API 30 device
+                # 3. Any API 30 device (matches names like "Emulator_30", "API_30_xxx", etc.)
                 # 4. Any Nexus device
                 # 5. First available device
                 
@@ -132,16 +137,16 @@ if ($Platform -eq "android") {
                 
                 # Try to find API 30 Nexus device
                 if (-not $selectedAvd) {
-                    $api30Nexus = $avdList | Where-Object { $_ -match "API.*30" -and $_ -match "Nexus" } | Select-Object -First 1
+                    $api30Nexus = $avdList | Where-Object { $_ -match "30" -and $_ -match "Nexus" } | Select-Object -First 1
                     if ($api30Nexus) {
                         $selectedAvd = $api30Nexus
                         Write-Info "Selected API 30 Nexus device: $selectedAvd"
                     }
                 }
                 
-                # Try to find any API 30 device
+                # Try to find any API 30 device (match "30" anywhere in name)
                 if (-not $selectedAvd) {
-                    $api30Device = $avdList | Where-Object { $_ -match "API.*30" } | Select-Object -First 1
+                    $api30Device = $avdList | Where-Object { $_ -match "30" } | Select-Object -First 1
                     if ($api30Device) {
                         $selectedAvd = $api30Device
                         Write-Info "Selected API 30 device: $selectedAvd"
@@ -192,17 +197,26 @@ if ($Platform -eq "android") {
             # Redirect output to a log file for debugging
             $emulatorLog = Join-Path ([System.IO.Path]::GetTempPath()) "emulator-$selectedAvd.log"
             
+            # Use -no-window only when explicitly headless or running in CI
+            $useHeadless = $Headless -or $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS
+            
             if ($IsWindows) {
-                Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle Hidden
+                $windowStyle = if ($useHeadless) { "Hidden" } else { "Normal" }
+                Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle $windowStyle
             }
             else {
                 # macOS/Linux: Use nohup to detach from terminal
                 # Use -no-snapshot (not -no-snapshot-load) to ensure clean emulator state for CI/testing.
                 # This disables both snapshot load and save, so each boot is a cold boot.
                 # Trade-off: slower boots, but guarantees no stale state between test runs.
-                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
+                $windowFlag = if ($useHeadless) { "-no-window" } else { "" }
+                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' $windowFlag -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
                 bash -c $startScript
-                Write-Info "Emulator started in background. Log file: $emulatorLog"
+                if ($useHeadless) {
+                    Write-Info "Emulator started headless (no window). Log file: $emulatorLog"
+                } else {
+                    Write-Info "Emulator started with window. Log file: $emulatorLog"
+                }
             }
             
             # Give the emulator process time to start
@@ -339,15 +353,30 @@ if ($Platform -eq "android") {
         exit 1
     }
     
-    # Get device UDID if not provided
+    # Get device UDID if not provided - check env var first
+    if (-not $DeviceUdid -and $env:DEVICE_UDID) {
+        Write-Info "Using DEVICE_UDID from environment: $($env:DEVICE_UDID)"
+        $DeviceUdid = $env:DEVICE_UDID
+    }
+
     if (-not $DeviceUdid) {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
-        # Preferred devices in order of priority
-        $preferredDevices = @("iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro", "iPhone Xs")
-        # Preferred iOS versions in order (stable preferred, beta fallback)
-        $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
+        # Preferred iOS versions in order — match main CI ui-tests pipeline (defaultiOSVersion: '26.0')
+        # iOS 26 snapshots live in src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26
+        # and UITest.cs selects ios-26 environment when platformVersion starts with "26."
+        $preferredVersions = @("iOS-26", "iOS-18", "iOS-17")
+        # Preferred devices per iOS version to match CI configuration:
+        #   iOS 26.x → iPhone Xs / iPhone 16 Pro (snapshots in /ios-26 baseline are device-agnostic per UITest.cs:367)
+        #   iOS 18.x → iPhone Xs (matches /ios baseline default)
+        #   iOS 17.x → iPhone Xs (fallback)
+        $preferredDevicesPerVersion = @{
+            # iPhone 11 Pro first for iOS-26: baselines captured at 1124x1126 resolution
+            "iOS-26" = @("iPhone 11 Pro", "iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro")
+            "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-17" = @("iPhone Xs", "iPhone 15 Pro", "iPhone 14 Pro")
+        }
         
         $selectedDevice = $null
         $selectedVersion = $null
@@ -356,13 +385,19 @@ if ($Platform -eq "android") {
         foreach ($version in $preferredVersions) {
             if ($selectedDevice) { break }
             
-            # Get all runtimes matching this version prefix
+            # Get all runtimes matching this version prefix.
+            # Sort descending so the HIGHEST minor version wins (e.g. iOS-26-4
+            # over iOS-26-0). AcesShared agents ship iOS 26.4 pre-installed and
+            # PR #35061 resaved ios-26 baselines for 26.4 — using an older
+            # runtime (26.0) causes pixel-diff failures on every visual test.
             $matchingRuntimes = $simList.devices.PSObject.Properties | 
-                Where-Object { $_.Name -match $version }
+                Where-Object { $_.Name -match $version } |
+                Sort-Object { $_.Name } -Descending
             
             if ($matchingRuntimes) {
-                # Try each preferred device
-                foreach ($deviceName in $preferredDevices) {
+                # Try each preferred device for this version
+                $devicesForVersion = if ($preferredDevicesPerVersion.ContainsKey($version)) { $preferredDevicesPerVersion[$version] } else { @("iPhone Xs", "iPhone 16 Pro") }
+                foreach ($deviceName in $devicesForVersion) {
                     $device = $null
                     $deviceRuntime = $null
                     foreach ($rt in $matchingRuntimes) {
@@ -382,7 +417,56 @@ if ($Platform -eq "android") {
                     }
                 }
                 
-                # If no preferred device found, take first available iPhone
+                # If no preferred device found, attempt to CREATE the right-size
+                # device for visual snapshot tests instead of falling back to a
+                # random iPhone (which would have wrong screen dimensions and
+                # cause every visual test to fail with "size differs").
+                #
+                # Resolution mapping (must match snapshots/<env>/ baselines):
+                #   iOS-26 baselines: 1124x1126 → iPhone 11 Pro / iPhone Xs (1125x2436 device)
+                #   iOS-18 baselines: matches iPhone Xs default
+                #   iOS-17 baselines: matches iPhone Xs
+                if (-not $selectedDevice) {
+                    $createDevice = $null
+                    $createDeviceTypeId = $null
+                    if ($version -eq "iOS-26") {
+                        $createDevice = "iPhone 11 Pro"
+                        $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"
+                    }
+                    elseif ($version -eq "iOS-18" -or $version -eq "iOS-17") {
+                        $createDevice = "iPhone Xs"
+                        $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-Xs"
+                    }
+
+                    if ($createDevice -and $matchingRuntimes) {
+                        $createRuntime = $matchingRuntimes[0].Name
+                        Write-Info "No preferred device pre-installed for $version; creating $createDevice on $createRuntime to match snapshot baselines..."
+                        $createOutput = & xcrun simctl create $createDevice $createDeviceTypeId $createRuntime 2>&1
+                        if ($LASTEXITCODE -eq 0 -and $createOutput -match '^[0-9A-F-]{36}$') {
+                            $newUdid = $createOutput.Trim()
+                            Write-Info "Created $createDevice : $newUdid"
+                            # Re-query so we have the full device object
+                            $simList = xcrun simctl list devices available --json | ConvertFrom-Json
+                            $found = $null
+                            foreach ($rtProp in $simList.devices.PSObject.Properties) {
+                                if ($rtProp.Name -eq $createRuntime) {
+                                    $found = $rtProp.Value | Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
+                                    if ($found) {
+                                        $selectedDevice = $found
+                                        $selectedVersion = $rtProp.Name
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            Write-Info "Failed to create $createDevice on $createRuntime`: $createOutput"
+                        }
+                    }
+                }
+
+                # Last-resort: take first available iPhone (visual tests will likely
+                # report 'size differs' but at least non-visual tests can run)
                 if (-not $selectedDevice) {
                     $anyiPhone = $null
                     $iphoneRuntime = $null
@@ -398,7 +482,7 @@ if ($Platform -eq "android") {
                     if ($anyiPhone) {
                         $selectedDevice = $anyiPhone
                         $selectedVersion = $iphoneRuntime
-                        Write-Info "Using available iPhone: $($anyiPhone.name) on $selectedVersion"
+                        Write-Info "Using available iPhone (resolution may not match snapshot baselines): $($anyiPhone.name) on $selectedVersion"
                     }
                 }
             }
@@ -444,6 +528,19 @@ if ($Platform -eq "android") {
     
     Write-Success "iOS simulator: $deviceName ($DeviceUdid)"
     
+    # Shutdown any OTHER booted simulators to avoid Appium connecting to the wrong device
+    $bootedSims = xcrun simctl list devices --json | ConvertFrom-Json
+    $otherBooted = $bootedSims.devices.PSObject.Properties.Value |
+        ForEach-Object { $_ } |
+        Where-Object { $_.state -eq "Booted" -and $_.udid -ne $DeviceUdid }
+    
+    if ($otherBooted) {
+        foreach ($sim in $otherBooted) {
+            Write-Info "Shutting down other booted simulator: $($sim.name) ($($sim.udid))"
+            xcrun simctl shutdown $sim.udid 2>$null
+        }
+    }
+
     # Boot simulator if not already booted
     Write-Info "Booting simulator (if not already running)..."
     xcrun simctl boot $DeviceUdid 2>$null
@@ -460,7 +557,7 @@ if ($Platform -eq "android") {
         exit 1
     }
     
-    Write-Success "Simulator is booted and ready"
+    Write-Success "Simulator is booted and ready: $deviceName"
     
     #endregion
 }
@@ -468,6 +565,9 @@ if ($Platform -eq "android") {
 # Export device UDID as environment variable
 $env:DEVICE_UDID = $DeviceUdid
 Write-Success "DEVICE_UDID environment variable set: $DeviceUdid"
+
+# Ensure clean exit code (adb commands above may leave $LASTEXITCODE non-zero)
+$global:LASTEXITCODE = 0
 
 # Return UDID for callers
 return $DeviceUdid

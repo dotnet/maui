@@ -374,5 +374,48 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expectedAlignment, nativeAlignment);
 		}
+
+		[Fact]
+		public async Task IsPasswordTogglePreservesText()
+		{
+			// https://github.com/dotnet/maui/issues/30085
+			var entry = new Entry
+			{
+				Text = "secret123",
+				IsPassword = false,
+			};
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				var platformControl = GetPlatformControl(handler);
+
+				// Simulate the field being focused (first responder)
+				platformControl.BecomeFirstResponder();
+
+				// Toggle IsPassword on — iOS internally clears SecureTextEntry text
+				entry.IsPassword = true;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				var platformText = platformControl.Text;
+				Assert.Equal("secret123", platformText);
+				Assert.Equal("secret123", entry.Text);
+
+				// Toggle IsPassword off and back on again
+				entry.IsPassword = false;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				entry.IsPassword = true;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				platformText = platformControl.Text;
+				Assert.Equal("secret123", platformText);
+				Assert.Equal("secret123", entry.Text);
+
+				platformControl.ResignFirstResponder();
+			});
+		}
 	}
 }

@@ -4,16 +4,16 @@
              x:Class="Maui.Controls.Sample.CollectionViewDynamicOptionsPage"
               xmlns:local="clr-namespace:Maui.Controls.Sample"
              Title="CollectionViewDynamicOptionsPage">
- <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Apply"
-                     Clicked="ApplyButton_Clicked"
-                     AutomationId="Apply"/>
-    </ContentPage.ToolbarItems>
     <ScrollView>
         <Grid Padding="1"
               RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
             <StackLayout Grid.Row="1"
                          Padding="1">
+                <!-- Apply Button -->
+                <Button Text="Apply"
+                        Clicked="ApplyButton_Clicked"
+                        HorizontalOptions="Center"
+                        AutomationId="Apply"/>
                 <!-- Empty View -->
                 <Label Text="EmptyView:"
                        FontSize="12"

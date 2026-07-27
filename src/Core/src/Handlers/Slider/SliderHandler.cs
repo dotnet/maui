@@ -24,6 +24,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISlider.ThumbColor)] = MapThumbColor,
 			[nameof(ISlider.ThumbImageSource)] = MapThumbImageSource,
 			[nameof(ISlider.Value)] = MapValue,
+#if WINDOWS
+			[nameof(ISlider.Background)] = MapBackgroundColor
+#endif
 		};
 
 		public static CommandMapper<ISlider, ISliderHandler> CommandMapper = new(ViewCommandMapper)

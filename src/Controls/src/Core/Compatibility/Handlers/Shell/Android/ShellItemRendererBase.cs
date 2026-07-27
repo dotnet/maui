@@ -167,6 +167,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (ChildFragmentManager.Contains(removeFragment.Fragment) && !isForCurrentTab && removeFragment != _currentFragment)
 							RemoveFragment(removeFragment.Fragment);
 						_fragmentMap.Remove(page);
+
+						if (removeFragment is ShellContentFragment shellFragment)
+						{
+							shellFragment.DisposePage();
+						}
 					}
 
 					if (!isForCurrentTab && removeFragment != _currentFragment)

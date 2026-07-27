@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var navigationPage =
 				new TestNavigationPage(useMaui, previousPage)
 					.AddToTestWindow();
-
+			await navigationPage.NavigatingTask;
 			await navigationPage.PushAsync(lcPage);
 
 			Assert.NotNull(previousPage.NavigatingFromArgs);

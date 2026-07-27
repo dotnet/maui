@@ -180,7 +180,12 @@ namespace Microsoft.Maui.ApplicationModel
 			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
-				EnsureDeclared();
+				// For packaged apps, ensure manifest declaration is present
+				if (AppInfoUtils.IsPackagedApp)
+				{
+					EnsureDeclared();
+				}
+
 				return Task.FromResult(CheckStatus() switch
 				{
 					DeviceAccessStatus.Allowed => PermissionStatus.Granted,
@@ -193,13 +198,22 @@ namespace Microsoft.Maui.ApplicationModel
 			/// <inheritdoc/>
 			public override async Task<PermissionStatus> RequestAsync()
 			{
-				EnsureDeclared();
-
-				// If already explicitly allowed, return that
+				// Check status first - if already allowed, return early
 				var status = CheckStatus();
 				if (status == DeviceAccessStatus.Allowed)
 					return PermissionStatus.Granted;
 
+				// For packaged apps, ensure manifest declaration is present
+				if (AppInfoUtils.IsPackagedApp)
+				{
+					EnsureDeclared();
+				}
+
+				return await TryRequestPermissionAsync();
+			}
+
+			async Task<PermissionStatus> TryRequestPermissionAsync()
+			{
 				try
 				{
 					var settings = new MediaCaptureInitializationSettings

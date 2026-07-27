@@ -24,6 +24,7 @@
                        Minimum="0"
                        Increment="200"
                        ValueChanged="OnTallModeHeightChanged"
+                       HorizontalOptions="Start"
                        AutomationId="TallModeStepper"/>
               <Label x:Name="TallModeHeightValue"
                      Text="500px"
@@ -37,6 +38,7 @@
                        Minimum="0"
                        Increment="200"
                        ValueChanged="OnWideModeWidthChanged"
+                       HorizontalOptions="Start"
                        AutomationId="WideModeStepper"/>
               <Label x:Name="WideModeWidthValue"
                      Text="700px"/>
@@ -50,6 +52,7 @@
                        Minimum="0.5"
                        Increment="0.5"
                        ValueChanged="OnPane1LengthChanged"
+                       HorizontalOptions="Start"
                        AutomationId="Pane1LengthStepper"/>
               <Label x:Name="Pane1LengthValue"
                      Text="1"
@@ -64,6 +67,7 @@
                        Minimum="0.5"
                        Increment="0.5"
                        ValueChanged="OnPane2LengthChanged"
+                       HorizontalOptions="Start"
                        AutomationId="Pane2LengthStepper"/>
               <Label x:Name="Pane2LengthValue"
                      Text="1"

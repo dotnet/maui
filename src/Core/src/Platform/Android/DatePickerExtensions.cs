@@ -77,5 +77,34 @@ namespace Microsoft.Maui.Platform
 		{
 			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
 		}
+
+		// TODO: material3 - make it public in .net 11
+		internal static void UpdateDate(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			platformDatePicker.SetText(datePicker);
+		}
+
+		internal static void UpdateFormat(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			platformDatePicker.SetText(datePicker);
+		}
+
+		internal static void UpdateTextColor(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			var textColor = datePicker.TextColor;
+
+			if (textColor is not null)
+			{
+				if (PlatformInterop.CreateEditTextColorStateList(platformDatePicker.TextColors, textColor.ToPlatform()) is ColorStateList c)
+				{
+					platformDatePicker.SetTextColor(c);
+				}
+			}
+		}
+
+		internal static void SetText(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
+		}
 	}
 }

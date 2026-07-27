@@ -11,7 +11,11 @@ public class StepperViewModel : INotifyPropertyChanged
 	private double _value = 0;
 	private bool _isEnabled = true;
 	private bool _isVisible = true;
+	private double _oldValue;
+	private double _newValue;
+
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+
 
 	public double Minimum
 	{
@@ -37,6 +41,13 @@ public class StepperViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _value, value);
 	}
 
+	private string _valueChangedText = "Not Raised";
+	public string ValueChangedText
+	{
+		get => _valueChangedText;
+		set => SetProperty(ref _valueChangedText, value);
+	}
+
 	public bool IsEnabled
 	{
 		get => _isEnabled;
@@ -54,6 +65,19 @@ public class StepperViewModel : INotifyPropertyChanged
 		get => _flowDirection;
 		set => SetProperty(ref _flowDirection, value);
 	}
+
+	public double OldValue
+	{
+		get => _oldValue;
+		set => SetProperty(ref _oldValue, value);
+	}
+
+	public double NewValue
+	{
+		get => _newValue;
+		set => SetProperty(ref _newValue, value);
+	}
+
 
 	public event PropertyChangedEventHandler PropertyChanged;
 

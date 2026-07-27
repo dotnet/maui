@@ -1,7 +1,5 @@
 # .NET Multi-platform App UI (.NET MAUI)
 
-[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fmaui%2Fmaui-pr?branchName=main&label=Public)](https://dev.azure.com/dnceng-public/public/_build?definitionId=302) [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main&label=Private)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main)
-
 [.NET Multi-platform App UI (.NET MAUI)](https://dotnet.microsoft.com/en-us/apps/maui) is a cross-platform framework for creating mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
 ## Getting Started ##
@@ -12,6 +10,8 @@
 * [Development Guide](./.github/DEVELOPMENT.md)
 
 Create a new app with `dotnet new maui -n NewApp` or a [sample app](https://github.com/dotnet/maui-samples/tree/main/10.0/Apps/DeveloperBalance#developer-balance) with `dotnet new maui -n NewApp -sc` that includes the [open-source Syncfusion Toolkit for .NET MAUI](https://www.syncfusion.com/net-maui-toolkit?utm_source=msftdotnet&utm_medium=banner&utm_campaign=mauipremium_sep25) with over 30 additional controls, the [.NET MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui) with tons of helpers and views, and [MVVM Toolkit](https://github.com/CommunityToolkit/dotnet). 
+
+**Note:** If the `maui` template is not available, first install the .NET MAUI workload with `dotnet workload install maui`.
 
 ## Overview
 

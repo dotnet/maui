@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IShapeView, IShapeViewHandler> Mapper = new PropertyMapper<IShapeView, IShapeViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IShapeView.Background)] = MapBackground,
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
 			[nameof(IShapeView.Shape)] = MapShape,
 			[nameof(IShapeView.Aspect)] = MapAspect,
 			[nameof(IShapeView.Fill)] = MapFill,
@@ -68,6 +69,13 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.InvalidateShape(shapeView);
 			}
 		}
+
+		// TODO: make it public in .net 11
+		internal static void MapFlowDirection(IShapeViewHandler handler, IShapeView shapeView)
+  		{
+			handler.PlatformView?.UpdateFlowDirection(shapeView);
+   			handler.PlatformView?.InvalidateShape(shapeView);
+  		}
 #endif
 	}
 }

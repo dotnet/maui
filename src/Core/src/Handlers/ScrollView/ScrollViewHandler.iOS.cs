@@ -48,8 +48,21 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(platformView);
 
-			PendingScrollToRequest = null;
+			if (PendingScrollToRequest is not null)
+			{
+				VirtualView?.ScrollFinished();
+				PendingScrollToRequest = null;
+			}
 			_eventProxy.Disconnect(platformView);
+		}
+
+		internal void ProcessPendingScrollRequest()
+		{
+			if (PendingScrollToRequest is { } pending)
+			{
+				MapRequestScrollTo(this, VirtualView, pending);
+				PendingScrollToRequest = null;
+			}
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -91,6 +104,12 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			platformView.UpdateIsEnabled(scrollView);
+			
+			// Notify MauiScrollView of orientation change to handle RTL layout
+			if (platformView is MauiScrollView mauiScrollView)
+			{
+				mauiScrollView.OnOrientationChanged();
+			}
 			platformView.InvalidateMeasure(scrollView);
 		}
 
@@ -112,9 +131,15 @@ namespace Microsoft.Maui.Handlers
 				var availableScrollWidth = Math.Max(uiScrollView.ContentSize.Width - uiScrollView.Frame.Width, 0);
 				var minScrollHorizontal = Math.Clamp(request.HorizontalOffset, 0, availableScrollWidth);
 				var minScrollVertical = Math.Clamp(request.VerticalOffset, 0, availableScrollHeight);
-				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
+				
+				bool alreadyAtTarget = uiScrollView.ContentOffset.Y == minScrollVertical && uiScrollView.ContentOffset.X == minScrollHorizontal;
 
-				if (request.Instant)
+				if (!alreadyAtTarget)
+				{
+    				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
+				}
+
+				if (request.Instant || alreadyAtTarget)
 				{
 					scrollView.ScrollFinished();
 				}

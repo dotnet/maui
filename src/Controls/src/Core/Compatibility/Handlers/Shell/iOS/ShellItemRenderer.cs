@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
@@ -14,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver, IUINavigationControllerDelegate, IDisconnectable
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "This is a shared static Array.Empty cache and is not renderer-owned NSObject state.")]
 		readonly static UITableViewCell[] EmptyUITableViewCellArray = Array.Empty<UITableViewCell>();
 
 		#region IShellItemRenderer
@@ -46,8 +49,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion IAppearanceObserver
 
-		readonly IShellContext _context;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The shell context is retained for the tab renderer lifetime and released in Dispose after observers are removed.")]
+		IShellContext _context;
 		readonly Dictionary<UIViewController, IShellSectionRenderer> _sectionRenderers = new Dictionary<UIViewController, IShellSectionRenderer>();
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The appearance tracker is owned by this renderer and disposed in Dispose.")]
 		IShellTabBarAppearanceTracker _appearanceTracker;
 		ShellSection _currentSection;
 		Page _displayedPage;
@@ -55,6 +60,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellItem _shellItem;
 		static UIColor _defaultMoreTextLabelTextColor;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The current section renderer is tracked while selected and cleared in Dispose or when removed.")]
 		internal IShellSectionRenderer CurrentRenderer { get; private set; }
 
 		public ShellItemRenderer(IShellContext context)
@@ -142,6 +148,66 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			};
 		}
 
+		public override void ViewDidAppear(bool animated)
+		{
+			base.ViewDidAppear(animated);
+			ApplyInitialDisabledState();
+		}
+
+		void ApplyInitialDisabledState()
+		{
+			if (TabBar.Items is null)
+				return;
+
+			var items = ShellItemController?.GetItems();
+			if (items is null)
+				return;
+
+			// When there are more tabs than iOS can display (> 5), iOS creates a "More" tab.
+			// Only iterate visible tab items, excluding the system "More" tab.
+			int visibleTabs = Math.Min(items.Count, TabBar.Items.Length);
+			if (items.Count > TabBar.Items.Length)
+				visibleTabs = TabBar.Items.Length - 1;
+
+			for (int i = 0; i < visibleTabs; i++)
+			{
+				if (!items[i].IsEnabled)
+					UpdateTabBarItemEnabled(TabBar.Items[i], false);
+			}
+		}
+
+		void UpdateTabBarItemEnabled(UITabBarItem tabBarItem, bool isEnabled)
+		{
+			tabBarItem.Enabled = isEnabled;
+
+			var disabledColor = Shell.GetTabBarDisabledColor(_context.Shell)?.ToPlatform();
+			if (disabledColor is null)
+				return;
+
+			// Per-item text attributes needed for dynamic enable/disable changes
+			var textAttributes = isEnabled ? null : new UIStringAttributes { ForegroundColor = disabledColor };
+			tabBarItem.SetTitleTextAttributes(textAttributes, UIControlState.Disabled);
+
+			// Tint icon image since UITabBarAppearance.Disabled.IconColor doesn't work
+			if (tabBarItem.Image is not null)
+			{
+				tabBarItem.Image = isEnabled
+					? tabBarItem.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+					: CreateTintedImage(tabBarItem.Image, disabledColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			}
+		}
+
+		UIImage CreateTintedImage(UIImage image, UIColor color)
+		{
+			var renderer = new UIGraphicsImageRenderer(image.Size, new UIGraphicsImageRendererFormat { Opaque = false, Scale = image.CurrentScale });
+			return renderer.CreateImage(ctx =>
+			{
+				image.Draw(new CGRect(CGPoint.Empty, image.Size));
+				color.SetFill();
+				ctx.FillRect(new CGRect(CGPoint.Empty, image.Size), CGBlendMode.SourceIn);
+			});
+		}
+
 		void IDisconnectable.Disconnect()
 		{
 			if (_sectionRenderers != null)
@@ -190,6 +256,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				_sectionRenderers.Clear();
 				CurrentRenderer = null;
+				_appearanceTracker?.Dispose();
+				_appearanceTracker = null;
+				_context = null;
 				_shellItem = null;
 				_currentSection = null;
 				_displayedPage = null;
@@ -198,6 +267,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.Dispose(disposing);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellItem.PropertyChanged subscription is removed in Disconnect before the shell item is released.")]
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == ShellItem.CurrentItemProperty.PropertyName)
@@ -206,6 +276,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellItemController.ItemsCollectionChanged subscription is removed in Disconnect before the shell item is released.")]
 		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.OldItems != null)
@@ -220,6 +291,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						RemoveRenderer(renderer);
 					}
 				}
+
+				// Recalculate IsInMoreTab for remaining renderers since tab positions shifted after removal.
+				UpdateIsInMoreTabForRenderers();
 			}
 
 			if (e.NewItems != null && e.NewItems.Count > 0)
@@ -273,6 +347,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Each ShellSection.PropertyChanged subscription is removed in Disconnect and RemoveRenderer.")]
 		protected virtual void OnShellSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == BaseShellItem.IsEnabledProperty.PropertyName)
@@ -280,9 +355,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var shellSection = (ShellSection)sender;
 				var renderer = RendererForShellContent(shellSection);
 				var index = ViewControllers.ToList().IndexOf(renderer.ViewController);
-				TabBar.Items[index].Enabled = shellSection.IsEnabled;
+				if (TabBar.Items is not null && index >= 0 && index < TabBar.Items.Length)
+					UpdateTabBarItemEnabled(TabBar.Items[index], shellSection.IsEnabled);
 			}
 		}
+
 
 		protected virtual void UpdateShellAppearance(ShellAppearance appearance)
 		{
@@ -321,6 +398,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
 				}
+			}
+		}
+
+		void UpdateIsInMoreTabForRenderers()
+		{
+			const int maxTabs = 5;
+			var currentViewControllers = ViewControllers;
+			if (currentViewControllers == null)
+				return;
+
+			bool willUseMore = currentViewControllers.Length > maxTabs;
+			for (int i = 0; i < currentViewControllers.Length; i++)
+			{
+				var renderer = RendererForViewController(currentViewControllers[i]);
+				if (renderer != null)
+					renderer.IsInMoreTab = willUseMore && i >= maxTabs - 1;
 			}
 		}
 
@@ -442,6 +535,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The displayed page PropertyChanged subscription is removed in Disconnect and when the displayed page changes.")]
 		void OnDisplayedPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
@@ -455,11 +549,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (page is null || !OperatingSystem.IsIOSVersionAtLeast(11))
 				return;
 
+			// Shell doesn't have the property PrefersLargeTitles, so we should not update the large titles
+			// if users doen't explicitly set the LargeTitleDisplay property on the Page.
+			// todo net 11: Add PrefersLargeTitles to Shell and use that here.
+			if (!page.IsSet(PlatformConfiguration.iOSSpecific.Page.LargeTitleDisplayProperty))
+			{
+				return;
+			}
+
 			var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
 
 			if (SelectedViewController is UINavigationController navigationController)
 			{
-				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode == LargeTitleDisplayMode.Always;
+				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode != LargeTitleDisplayMode.Never;
 				var top = navigationController.TopViewController;
 				if (top is not null)
 				{

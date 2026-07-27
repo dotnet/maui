@@ -209,6 +209,99 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
+
+		[Fact]
+		[Description("BottomNavigationView should extend to screen bottom in Edge-to-Edge mode (Issue 33344)")]
+		public async Task BottomNavigationViewExtendsToScreenBottom()
+		{
+			SetupBuilder();
+
+			var tabbedPage = new TabbedPage
+			{
+				Children =
+				{
+					new ContentPage() { Title = "Page1" },
+					new ContentPage() { Title = "Page2" }
+				},
+				BarBackgroundColor = Colors.Orange
+			};
+
+			Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage
+				.SetToolbarPlacement(tabbedPage, Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Bottom);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNavView = GetBottomNavigationView(handler);
+				Assert.NotNull(bottomNavView);
+
+				// Wait for layout to complete
+				await AssertEventually(() => bottomNavView.Height > 0);
+
+				var location = new int[2];
+				bottomNavView.GetLocationOnScreen(location);
+				var bottomNavBottom = location[1] + bottomNavView.Height;
+
+				var decorView = MauiContext.Context.GetActivity()?.Window?.DecorView;
+				Assert.NotNull(decorView);
+
+				decorView.GetLocationOnScreen(location);
+				var screenHeight = location[1] + decorView.Height;
+
+				Assert.True(Math.Abs(screenHeight - bottomNavBottom) < 2,
+					$"BottomNavigationView should extend to screen bottom. Expected bottom at {screenHeight}px, but was at {bottomNavBottom}px (gap of {screenHeight - bottomNavBottom}px)");
+			});
+		}
+
+		[Theory(DisplayName = "Back-to-back PushAsync does not leak tabs (Issue 35331)")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task BackToBackPushAsyncDoesNotLeakTabs(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[]
+			{
+				new ContentPage() { Title = "Tab 1" },
+				new ContentPage() { Title = "Tab 2" }
+			});
+
+			var navPage = new NavigationPage(tabbedPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+
+				// Push two pages back-to-back. The first push triggers
+				// TabbedPage.Disappearing → RemoveTabs(). The second push
+				// must not break state even though _tabLayoutFragment is
+				// already null after the first RemoveTabs().
+				var page1 = new ContentPage { Title = "Detail 1" };
+				await navPage.PushAsync(page1);
+				await OnNavigatedToAsync(page1);
+
+				var page2 = new ContentPage { Title = "Detail 2" };
+				await navPage.PushAsync(page2);
+				await OnNavigatedToAsync(page2);
+
+				// Pop back to the first detail page
+				await navPage.PopAsync();
+				await OnNavigatedToAsync(page1);
+
+				// Pop back to the TabbedPage — tabs should be restored
+				await navPage.PopAsync();
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+
+				// Verify tabs are visible again
+				if (bottomTabs)
+				{
+					var bottomNav = GetBottomNavigationView(tabbedPage.Handler as IPlatformViewHandler);
+					Assert.NotNull(bottomNav);
+					Assert.True(bottomNav.Visibility == global::Android.Views.ViewStates.Visible,
+						"BottomNavigationView should be visible after popping back to TabbedPage");
+				}
+			});
+		}
+
 		BottomNavigationView GetBottomNavigationView(IPlatformViewHandler tabViewHandler)
 		{
 			var layout = tabViewHandler.PlatformView.FindParent((view) => view is CoordinatorLayout)

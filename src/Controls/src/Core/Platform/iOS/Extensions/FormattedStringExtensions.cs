@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls.Platform
 				label.HorizontalTextAlignment,
 				label.ToFont(),
 				label.TextColor,
-				label.TextTransform);
+				label.TextTransform,
+				label.LineBreakMode,
+				label.CharacterSpacing);
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -38,19 +40,35 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
+
+		internal static NSAttributedString ToNSAttributedString(
+			this FormattedString formattedString,
+			IFontManager fontManager,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			LineBreakMode lineBreakMode,
+			double defaultCharacterSpacing = 0d)
 		{
 			if (formattedString == null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var attributed = new NSMutableAttributedString();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
 				if (span.Text == null)
+				{
 					continue;
+				}
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment,
-					defaultFont, defaultColor, defaultTextTransform));
+					defaultFont, defaultColor, defaultTextTransform, lineBreakMode, defaultCharacterSpacing));
 			}
 
 			return attributed;
@@ -64,6 +82,18 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
+
+		internal static NSAttributedString ToNSAttributedString(
+			this Span span,
+			IFontManager fontManager,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			LineBreakMode lineBreakMode,
+			double defaultCharacterSpacing = 0d)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -71,7 +101,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var text = TextTransformUtilities.GetTransformedText(span.Text, transform);
 			if (text is null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var style = new NSMutableParagraphStyle();
 			var lineHeight = span.LineHeight >= 0
@@ -91,10 +123,18 @@ namespace Microsoft.Maui.Controls.Platform
 				_ => UITextAlignment.Left
 			};
 
-			var font = span.ToFont(defaultFontSize);
-			if (font.IsDefault && defaultFont.HasValue)
-				font = defaultFont.Value;
+			style.LineBreakMode = lineBreakMode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => UILineBreakMode.WordWrap
+			};
 
+			var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 			var hasUnderline = false;
 			var hasStrikethrough = false;
 			if (span.IsSet(Span.TextDecorationsProperty))
@@ -106,6 +146,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
 
+			// CharacterSpacing with validation
+			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
+				? span.CharacterSpacing 
+				: defaultCharacterSpacing;
+			characterSpacing = Math.Max(0, characterSpacing);
+
 #if !MACOS
 			var attrString = new NSAttributedString(
 				text,
@@ -115,7 +161,7 @@ namespace Microsoft.Maui.Controls.Platform
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,
-				kerning: (float)span.CharacterSpacing);
+				kerning: (float)characterSpacing);
 #else
 			var attrString = new NSAttributedString(
 				text,
@@ -125,7 +171,7 @@ namespace Microsoft.Maui.Controls.Platform
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,
-				kerningAdjustment: (float)span.CharacterSpacing);
+				kerningAdjustment: (float)characterSpacing);
 #endif
 
 			return attrString;
@@ -174,14 +220,30 @@ namespace Microsoft.Maui.Controls.Platform
 			nint NSMaxRange(NSRange range) => range.Location + range.Length;
 
 			using var textStorage = new NSTextStorage();
-			using var layoutManager = new NSLayoutManager();
+			// On iOS 16+, NSLayoutManager's default UsesFontLeading=true causes it to include
+			// font leading (extra line spacing) from the OS/2 typographic metrics that CoreText
+			// uses when a font has an OpenType STAT table. This makes the layout manager compute
+			// line heights that don't match what CoreText uses to draw the glyphs, resulting in
+			// span tap hitboxes being vertically offset from the rendered text.
+			// Disabling UsesFontLeading on iOS 16+ makes NSLayoutManager match CoreText's metrics
+			// so the calculated span rects align with the actual rendered text positions.
+			// See: https://github.com/dotnet/maui/issues/36505
+			using var layoutManager = new NSLayoutManager
+			{
+				UsesFontLeading = !OperatingSystem.IsIOSVersionAtLeast(16)
+			};
 			using var textContainer = new NSTextContainer { LineFragmentPadding = 0 };
 
 			textStorage.AddLayoutManager(layoutManager);
 			layoutManager.AddTextContainer(textContainer);
 
-			textContainer.Size = new(control.Bounds.Width,
-				control.Lines == 0 ? nfloat.MaxValue : control.Bounds.Height);
+			// Always prefer finalSize from MAUI's layout system — it is the authoritative
+			// size for this arrange pass. On Mac Catalyst (and iOS 26+ with NavigationPage),
+			// control.Bounds may be stale or {0,0,0,0} during ArrangeOverride because UIKit
+			// frame updates can lag behind MAUI's layout.
+			var containerWidth = (nfloat)finalSize.Width > 0 ? (nfloat)finalSize.Width : control.Bounds.Width;
+			var containerHeight = (nfloat)finalSize.Height > 0 ? (nfloat)finalSize.Height : control.Bounds.Height;
+			textContainer.Size = new(containerWidth, control.Lines == 0 ? nfloat.MaxValue : containerHeight);
 
 			textStorage.SetString(attributedText);
 			layoutManager.EnsureLayoutForTextContainer(textContainer);

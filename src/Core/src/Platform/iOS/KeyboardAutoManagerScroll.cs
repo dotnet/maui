@@ -27,6 +27,7 @@ public static class KeyboardAutoManagerScroll
 	internal static CGRect KeyboardFrame = CGRect.Empty;
 	static CGPoint TopViewBeginOrigin = new(nfloat.MaxValue, nfloat.MaxValue);
 	static readonly CGPoint InvalidPoint = new(nfloat.MaxValue, nfloat.MaxValue);
+	static CGSize TopViewBeginContainerSize = CGSize.Empty;
 	static double AnimationDuration = 0.25;
 	static UIView? View;
 	static UIView? ContainerView;
@@ -348,6 +349,7 @@ public static class KeyboardAutoManagerScroll
 		if (TopViewBeginOrigin == InvalidPoint)
 		{
 			TopViewBeginOrigin = new CGPoint(ContainerView.Frame.X, ContainerView.Frame.Y);
+			TopViewBeginContainerSize = ContainerView.Frame.Size;
 		}
 
 		var rootViewOrigin = new CGPoint(ContainerView.Frame.GetMinX(), ContainerView.Frame.GetMinY());
@@ -933,11 +935,25 @@ public static class KeyboardAutoManagerScroll
 			&& (ContainerView.Frame.X != TopViewBeginOrigin.X || ContainerView.Frame.Y != TopViewBeginOrigin.Y)
 			&& TopViewBeginOrigin != InvalidPoint)
 		{
-			var rect = ContainerView.Frame;
-			rect.X = TopViewBeginOrigin.X;
-			rect.Y = TopViewBeginOrigin.Y;
+			// if the container size changed since the keyboard appeared, the device was rotated while
+			// the keyboard was visible. the stored origin belongs to the previous orientation, so skip
+			// the restore and let the view settle naturally in the new orientation.
+			var currentSize = ContainerView.Frame.Size;
+			// use a 1pt tolerance to guard against sub-pixel floating-point drift in CGSize;
+			// a real orientation change produces a delta of hundreds of points
+			const float SizeChangeTolerance = 1.0f;
+			var sizeChanged = TopViewBeginContainerSize != CGSize.Empty
+				&& (Math.Abs(currentSize.Width - TopViewBeginContainerSize.Width) > SizeChangeTolerance
+					|| Math.Abs(currentSize.Height - TopViewBeginContainerSize.Height) > SizeChangeTolerance);
 
-			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
+			if (!sizeChanged)
+			{
+				var rect = ContainerView.Frame;
+				rect.X = TopViewBeginOrigin.X;
+				rect.Y = TopViewBeginOrigin.Y;
+
+				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
+			}
 		}
 
 		if (ScrolledView is not null && ScrolledView.ContentInset != UIEdgeInsets.Zero)
@@ -954,6 +970,7 @@ public static class KeyboardAutoManagerScroll
 		View = null;
 		ContainerView = null;
 		TopViewBeginOrigin = InvalidPoint;
+		TopViewBeginContainerSize = CGSize.Empty;
 		CursorRect = null;
 		ShouldIgnoreSafeAreaAdjustment = false;
 		ShouldScrollAgain = false;

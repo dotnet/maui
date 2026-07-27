@@ -60,5 +60,22 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.InvalidateShape(shapeView);
 		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			if (double.IsNaN(VirtualView.Width))
+			{
+				result.Width = 0;
+			}
+
+			if (double.IsNaN(VirtualView.Height))
+			{
+				result.Height = 0;
+			}
+
+			return result;
+		}
 	}
 }

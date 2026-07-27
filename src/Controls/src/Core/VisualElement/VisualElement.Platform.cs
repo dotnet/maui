@@ -47,6 +47,33 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
+			// This VisualElement has a handler with MauiContext but no MAUI Window.
+			// This happens when the view is hosted inside a native container via ToPlatform().
+			// We still need to fire Loaded/Unloaded based on the platform view's attach state.
+			else if (Window is null &&
+				Handler?.MauiContext is not null &&
+				Handler?.PlatformView is PlatformView nativeHostedView)
+			{
+				if (nativeHostedView.IsLoaded())
+				{
+					SendLoaded(false);
+
+					// If SendLoaded caused the unloaded tokens to wire up
+					_loadedUnloadedToken?.Dispose();
+					_loadedUnloadedToken = null;
+					_loadedUnloadedToken = this.OnUnloaded(SendUnloaded);
+				}
+				else
+				{
+					// Not yet attached to a native parent; wait for the platform loaded event
+					_loadedUnloadedToken?.Dispose();
+					_loadedUnloadedToken = null;
+					if (Handler is not null)
+					{
+						_loadedUnloadedToken = this.OnLoaded(SendLoaded);
+					}
+				}
+			}
 			else
 			{
 				// My handler is still set but the window handler isn't set.

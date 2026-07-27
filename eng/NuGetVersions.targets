@@ -89,14 +89,6 @@
          Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.Extensions.AI"
-        Version="$(MicrosoftExtensionsAIVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.Extensions.AI.Abstractions"
-        Version="$(MicrosoftExtensionsAIAbstractionsVersion)"
-    />
-    <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(MicrosoftExtensionsConfigurationVersion)"
     />
@@ -293,6 +285,14 @@
     />
     <PackageReference
         Update="Svg.Model"
+        Version="$(SvgSkiaPackageVersion)"
+    />
+    <PackageReference
+        Update="Svg.SceneGraph"
+        Version="$(SvgSkiaPackageVersion)"
+    />
+    <PackageReference
+        Update="Svg.Animation"
         Version="$(SvgSkiaPackageVersion)"
     />
     <PackageReference

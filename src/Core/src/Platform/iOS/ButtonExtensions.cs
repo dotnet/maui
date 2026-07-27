@@ -1,4 +1,6 @@
 using System;
+using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -31,15 +33,67 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button)
 		{
 			if (button.TextColor is null)
+			{
+				// Only clear explicit overrides when attached to a window.
+				// Skipping during initial render prevents clearing Appearance-proxy colors.
+				if (platformButton.Window is UIWindow window)
+				{
+					platformButton.SetTitleColor(null, UIControlState.Normal);
+					platformButton.SetTitleColor(null, UIControlState.Highlighted);
+					platformButton.SetTitleColor(null, UIControlState.Disabled);
+					platformButton.TintColor = window.TintColor;
+				}
+
+				UpdateAttributedTitleColor(platformButton, null);
 				return;
+			}
 
 			var color = button.TextColor.ToPlatform();
 
 			platformButton.SetTitleColor(color, UIControlState.Normal);
 			platformButton.SetTitleColor(color, UIControlState.Highlighted);
 			platformButton.SetTitleColor(color, UIControlState.Disabled);
-
 			platformButton.TintColor = color;
+
+			UpdateAttributedTitleColor(platformButton, color);
+		}
+
+		static void UpdateAttributedTitleColor(UIButton platformButton, UIKit.UIColor? color)
+		{
+			var attributedTitle = platformButton.GetAttributedTitle(UIControlState.Normal);
+			if (attributedTitle is null || attributedTitle.Length == 0)
+				return;
+
+			var mutable = new NSMutableAttributedString(attributedTitle);
+
+			if (color is null)
+			{
+				mutable.RemoveAttribute(UIStringAttributeKey.ForegroundColor, new NSRange(0, mutable.Length));
+			}
+			else
+			{
+				mutable.AddAttribute(UIStringAttributeKey.ForegroundColor, color, new NSRange(0, mutable.Length));
+			}
+
+			platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
+		}
+
+		// TODO: Make this public in .NET 11
+		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
+		{
+			// Remove previous background gradient layer if any
+			platformButton.RemoveBackgroundLayer();
+
+			if (paint.IsNullOrEmpty())
+			{
+				// Reset to clear background for buttons when paint is null.
+				// UIColor.Clear ensures proper transparency when VisualState setters are unapplied.
+				platformButton.BackgroundColor = UIColor.Clear;
+				return;
+			}
+
+			// Delegate to the standard view background update
+			ViewExtensions.UpdateBackground(platformButton, paint);
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)

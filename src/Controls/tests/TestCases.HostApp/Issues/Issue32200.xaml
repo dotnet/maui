@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue32200">
+  <NavigationPage.TitleView>
+    <HorizontalStackLayout
+      BackgroundColor="Blue"
+      HorizontalOptions="Fill"
+      VerticalOptions="Fill"
+      Margin="-20,0,0,0">
+      <Label Text="1234567890abcdefghij"/>
+    </HorizontalStackLayout>
+  </NavigationPage.TitleView>
+  <Label Text="Hello, Issue 32200"
+         VerticalOptions="Center"
+         AutomationId="Label"
+         HorizontalOptions="Center"/>
+</ContentPage> 

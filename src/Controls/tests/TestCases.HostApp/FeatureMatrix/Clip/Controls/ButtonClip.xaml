@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ButtonClip"
+             Title="ButtonClip">
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Options"
+                 Clicked="NavigateToOptionsPage_Clicked"
+                 AutomationId="Options"/>
+  </ContentPage.ToolbarItems>
+
+  <Grid RowDefinitions="*,Auto"
+        RowSpacing="15">
+    <Button BackgroundColor="Orange"
+            FontSize="20"
+            ImageSource="{Binding ImageSource}"
+            Shadow="{Binding Shadow}"
+            Text="{Binding Text}"
+            WidthRequest="300"
+            HeightRequest="300"
+            Rotation="{Binding ControlRotation}"
+            ScaleX="{Binding ControlScaleX}"
+            ScaleY="{Binding ControlScaleY}"
+            AutomationId="ButtonControl"
+            Clip="{Binding Clip}"/>
+  </Grid>
+</ContentPage>

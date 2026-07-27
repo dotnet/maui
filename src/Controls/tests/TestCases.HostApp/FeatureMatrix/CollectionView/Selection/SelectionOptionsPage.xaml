@@ -129,6 +129,115 @@
                                                 CheckedChanged="OnItemsSourceChanged"
                                                 AutomationId="ItemsSourceGroupedList"/>
                             </HorizontalStackLayout>
+
+                            <!-- FlowDirection -->
+                            <Label Text="FlowDirection:"
+                                   FontSize="12"
+                                   FontAttributes="Bold"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="FlowDirectionLeftToRight"
+                                                Content="LeftToRight"
+                                                GroupName="FlowDirectionOptions"
+                                                IsChecked="True"
+                                                CheckedChanged="OnFlowDirectionChanged"
+                                                FontSize="11"
+                                                AutomationId="FlowDirectionLeftToRight"/>
+                                   <RadioButton x:Name="FlowDirectionRightToLeft"
+                                                Content="RightToLeft"
+                                                GroupName="FlowDirectionOptions"
+                                                CheckedChanged="OnFlowDirectionChanged"
+                                                FontSize="11"
+                                                AutomationId="FlowDirectionRightToLeft"/>
+                            </StackLayout>
+
+                            <!-- Header-->
+                            <Label Text="Header:"
+                                   FontSize="12"
+                                   FontAttributes="Bold"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="HeaderNone"
+                                                Content="None"
+                                                GroupName="HeaderOptions"
+                                                IsChecked="True"
+                                                CheckedChanged="OnHeaderChanged"
+                                                FontSize="11"
+                                                AutomationId="HeaderNone"/>
+                                   <RadioButton x:Name="HeaderString"
+                                                Content="String"
+                                                GroupName="HeaderOptions"
+                                                CheckedChanged="OnHeaderChanged"
+                                                FontSize="11"
+                                                AutomationId="HeaderString"/>
+                                   <RadioButton x:Name="HeaderGrid"
+                                                Content="View"
+                                                GroupName="HeaderOptions"
+                                                CheckedChanged="OnHeaderChanged"
+                                                FontSize="11"
+                                                AutomationId="HeaderGrid"/>
+                            </StackLayout>
+                            <!-- Footer-->
+                            <Label Text="Footer:"
+                                   FontSize="12"
+                                   FontAttributes="Bold"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="FooterNone"
+                                                Content="None"
+                                                IsChecked="True"
+                                                GroupName="FooterOptions"
+                                                CheckedChanged="OnFooterChanged"
+                                                FontSize="11"
+                                                AutomationId="FooterNone"/>
+                                   <RadioButton x:Name="FooterString"
+                                                Content="String"
+                                                GroupName="FooterOptions"
+                                                CheckedChanged="OnFooterChanged"
+                                                FontSize="11"
+                                                AutomationId="FooterString"/>
+                                   <RadioButton x:Name="FooterGrid"
+                                                Content="View"
+                                                GroupName="FooterOptions"
+                                                CheckedChanged="OnFooterChanged"
+                                                FontSize="11"
+                                                AutomationId="FooterGrid"/>
+                            </StackLayout>
+                            <!-- HeaderTemplate -->
+                            <Label Text="HeaderTemplate:"
+                                   FontAttributes="Bold"
+                                   FontSize="12"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="HeaderTemplateNone"
+                                                Content="None"
+                                                FontSize="11"
+                                                IsChecked="True"
+                                                GroupName="HeaderTemplateGroup"
+                                                CheckedChanged="OnHeaderTemplateChanged"
+                                                AutomationId="HeaderTemplateNone"/>
+                                   <RadioButton x:Name="HeaderTemplateGrid"
+                                                Content="View"
+                                                FontSize="11"
+                                                GroupName="HeaderTemplateGroup"
+                                                CheckedChanged="OnHeaderTemplateChanged"
+                                                AutomationId="HeaderTemplateGrid"/>
+                            </StackLayout>
+                            <!-- FooterTemplate -->
+                            <Label Text="FooterTemplate:"
+                                   FontAttributes="Bold"
+                                   FontSize="12"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="FooterTemplateNone"
+                                                Content="None"
+                                                FontSize="11"
+                                                IsChecked="True"
+                                                GroupName="FooterTemplateGroup"
+                                                CheckedChanged="OnFooterTemplateChanged"
+                                                AutomationId="FooterTemplateNone"/>
+                                   <RadioButton x:Name="FooterTemplateGrid"
+                                                Content="View"
+                                                FontSize="11"
+                                                GroupName="FooterTemplateGroup"
+                                                CheckedChanged="OnFooterTemplateChanged"
+                                                AutomationId="FooterTemplateGrid"/>
+                            </StackLayout>
                      </StackLayout>
               </Grid>
        </ScrollView>

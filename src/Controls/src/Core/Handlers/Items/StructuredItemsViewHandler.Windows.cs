@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_currentHeader != null)
 			{
 				Element.RemoveLogicalChild(_currentHeader);
+				_currentHeader.Cleanup();
 				_currentHeader = null;
 			}
 
@@ -158,6 +159,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_currentFooter != null)
 			{
 				Element.RemoveLogicalChild(_currentFooter);
+				_currentFooter.Cleanup();
 				_currentFooter = null;
 			}
 
@@ -257,6 +259,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
 			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
+			style.Setters.Add(new WSetter(Control.VerticalContentAlignmentProperty, VerticalAlignment.Stretch));
 
 			return style;
 		}
@@ -325,7 +328,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				switch (ListViewBase)
 				{
 					case FormsListView formsListView:
-						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
+						// Set the ItemContainerStyle based on the orientation
+						formsListView.ItemContainerStyle = (linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+							? GetHorizontalItemContainerStyle(linearItemsLayout)
+							: GetVerticalItemContainerStyle(linearItemsLayout);
 						break;
 					case WListView listView:
 						listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);

@@ -42,7 +42,10 @@ namespace Microsoft.Maui.Platform
 
 		protected override void Dispose(bool disposing)
 		{
-			_autosizeToSuperLayerBehavior.Detach();
+			if (disposing)
+			{
+				_autosizeToSuperLayerBehavior.Detach();
+			}
 			base.Dispose(disposing);
 		}
 
@@ -246,6 +249,10 @@ namespace Microsoft.Maui.Platform
 					dashArray[i] = new nfloat(thickness * array[i]);
 
 				_strokeDash = dashArray;
+			}
+			else if (borderDashArray is null || borderDashArray.Length == 0)
+			{
+				_strokeDash = null;
 			}
 
 			SetNeedsDisplay();
