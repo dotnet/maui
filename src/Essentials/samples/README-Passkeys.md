@@ -46,24 +46,21 @@ then **Sign in with a passkey**.
 
 ## 1. Server (shared by all platforms)
 
-From `src/Essentials/samples`, provision the tunnel and write the server config into user-secrets:
+From `src/Essentials/samples`, configure and host the tunnel — one command that writes the server
+config into user-secrets and then holds the tunnel open (blocking):
 
 ```bash
 pwsh ./Configure-Passkeys.ps1
 ```
 
-`Configure-Passkeys.ps1` provisions a persistent dev tunnel and writes the RP domain + web origin (and the
-**Android** origins — see section 3) into the SERVER's user-secrets. It prints the public
-`https://…devtunnels.ms` URL — keep it, you type it into the app. Re-run it with the platform flags
-below to add Apple/Android trust.
+It provisions a persistent dev tunnel, writes the RP domain + web origin (and the **Android** origins —
+see section 3) into the SERVER's user-secrets, prints the public `https://…devtunnels.ms` URL (keep it —
+you type it into the app), and then **hosts the tunnel**. Re-run it with the platform flags below to add
+Apple/Android trust. Pass `-NoStartHost` to just (re)configure without hosting.
 
-Then, in two terminals, host the tunnel and run the server:
+Then, in another terminal, run the server:
 
 ```bash
-# 1) hold the tunnel open
-devtunnel host maui-essentials-passkeys
-
-# 2) run the server
 dotnet run --project Samples.Server.Passkeys --launch-profile http
 ```
 

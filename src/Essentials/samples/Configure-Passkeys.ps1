@@ -55,20 +55,21 @@
     config and generates the git-ignored Apple entitlements/signing for the sample app. Omit to skip
     Apple setup.
 
-.PARAMETER StartHost
-    If set, starts hosting the tunnel (blocking) at the end. Otherwise prints the host command.
+.PARAMETER NoStartHost
+    Skip hosting the tunnel. By default the script hosts the tunnel (blocking) at the end; pass this to
+    just (re)configure and print the host command instead.
 
 .EXAMPLE
     ./Configure-Passkeys.ps1
-    # Provisions the tunnel, writes the server config into user-secrets, prints next steps.
+    # Provisions the tunnel, writes the server config into user-secrets, and hosts the tunnel (blocking).
 
 .EXAMPLE
     ./Configure-Passkeys.ps1 -AppleTeamId 42GDTGK33W
     # Also writes the Apple App Site Association app-id and the associated-domains entitlement.
 
 .EXAMPLE
-    ./Configure-Passkeys.ps1 -StartHost
-    # Provisions the tunnel and starts hosting it.
+    ./Configure-Passkeys.ps1 -NoStartHost
+    # Configures without starting the blocking tunnel host (prints the host command instead).
 #>
 [CmdletBinding()]
 param(
@@ -79,7 +80,7 @@ param(
     [string]$AppleTeamId,
     [string]$AppleSigningIdentity,
     [string]$AppleProvisioningProfile,
-    [switch]$StartHost
+    [switch]$NoStartHost
 )
 
 $ErrorActionPreference = 'Stop'
@@ -443,12 +444,18 @@ else {
 
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Yellow
-    Write-Host "  1) In THIS terminal, host the tunnel:   devtunnel host $TunnelId"
-    Write-Host "  2) In ANOTHER terminal, run the server: dotnet run --project `"$project`" --launch-profile http"
-    Write-Host "  3) Build/run the sample — its Passkeys page now defaults to $uri (editable via the Server button)."
+    if ($NoStartHost) {
+        Write-Host "  1) In THIS terminal, host the tunnel:   devtunnel host $TunnelId"
+        Write-Host "  2) In ANOTHER terminal, run the server: dotnet run --project `"$project`" --launch-profile http"
+    }
+    else {
+        Write-Host "  In ANOTHER terminal, run the server: dotnet run --project `"$project`" --launch-profile http"
+        Write-Host "  (this terminal is about to host the tunnel — pass -NoStartHost to skip that)"
+    }
+    Write-Host "  Then build/run the sample — its Passkeys page now defaults to $uri (editable via the Server button)."
 }
 
-if ($StartHost) {
+if (-not $NoStartHost) {
     Write-Host ""
     Write-Host "==> Hosting tunnel '$TunnelId' (Ctrl+C to stop). Run the server in another terminal." -ForegroundColor Cyan
     devtunnel host $TunnelId
