@@ -7,48 +7,24 @@ using Essentials.Samples.WebServer.Components.Account;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
-/// Native-app-facing passkey ceremony endpoints used by the .NET MAUI Essentials sample.
-///
-/// Unlike the browser flow in the Blazor template (which relies on antiforgery tokens and an
-/// authenticated cookie session), these endpoints are designed to be driven by a native
-/// <c>HttpClient</c>. The WebAuthn challenge state is round-tripped through the ASP.NET Core
-/// Identity authentication cookie, so the native client MUST use a <c>CookieContainer</c> and send
-/// the cookie from the <c>/begin</c> response back on the matching <c>/finish</c> request.
-///
-/// Registration enrolls a passkey for the currently signed-in user (the "add a passkey after you log
-/// in" flow), so the caller must authenticate first. This is a developer-facing reference server; do
-/// not treat its relaxed conveniences (no email confirmation, cookie-based session) as production
-/// guidance — it exists purely so the cross-platform Passkeys Essentials API can be exercised end to
-/// end against a spec-conformant relying party.
+/// Passkey ceremony endpoints for the native app. Driven by a native <c>HttpClient</c> (not browser forms):
+/// the WebAuthn challenge state is round-tripped through the auth cookie, so the client must use a
+/// <c>CookieContainer</c> and send the cookie from <c>/begin</c> back on the matching <c>/finish</c>.
+/// Registration enrolls a passkey for the signed-in user, so the caller must be authenticated first.
 /// </summary>
 internal static class PasskeyApiEndpoints
 {
 	public static IEndpointRouteBuilder MapNativePasskeyApi(this IEndpointRouteBuilder endpoints)
 	{
-		// These are native JSON APIs driven by an HttpClient, not browser <form> posts, so the
-		// antiforgery middleware (app.UseAntiforgery()) does not apply — a native client has no
-		// antiforgery token to send. Disable it explicitly on the whole group so every endpoint
-		// behaves consistently; otherwise the middleware rejects some of them (the ones that inject
-		// HttpContext) with an opaque 400 "The request has an incorrect Content-type." before the
-		// handler ever runs. (CSRF is not a concern here: a WebAuthn attestation/assertion is signed
-		// over challenge+origin+rpId and cannot be forged or replayed — see README "Authentication & CSRF".)
+		// Native JSON APIs, not browser form posts, so antiforgery doesn't apply — disable it on the whole
+		// group. (WebAuthn payloads are signed over challenge+origin+rpId and can't be forged or replayed.)
 		var group = endpoints.MapGroup("/passkeys").DisableAntiforgery();
 
-		// 0) Account state — after signing in, a native client can learn whether the current user already
-		// has a passkey (so the sample can offer to enroll one). WebAuthn deliberately offers no way to
-		// check this for an arbitrary username BEFORE login (that would be account enumeration), so this is
-		// a post-authentication probe scoped to the signed-in user.
-		//
-		// Guarded declaratively with .RequireAuthorization(): the Identity session cookie is carried by the
-		// native HttpClient's CookieContainer on every request — including this GET — so an authenticated
-		// client passes and an anonymous one is challenged. That challenge is turned into a clean 401
-		// (instead of an HTML login redirect) for /passkeys/* by ConfigureApplicationCookie in Program.cs.
+		// Reports the signed-in user's passkeys so the app can list them and offer to enroll one.
 		group.MapGet("/list", async (
 			HttpContext context,
 			UserManager<ApplicationUser> userManager) =>
 		{
-			// RequireAuthorization guarantees an authenticated principal; this null-guard only covers the
-			// edge case where the account was deleted after the cookie was issued.
 			var user = await userManager.GetUserAsync(context.User);
 			if (user is null)
 				return Results.Json(new { error = "Not signed in." }, statusCode: StatusCodes.Status401Unauthorized);
@@ -58,9 +34,7 @@ internal static class PasskeyApiEndpoints
 			{
 				username = user.UserName,
 				passkeyCount = passkeys.Count,
-				// CredentialId is the stable per-passkey handle; Base64Url-encode it so the native client
-				// can round-trip it back on /delete. Name uses the template's display rules (explicit name,
-				// else AAGUID-inferred authenticator, else "Unnamed passkey").
+				// Base64Url-encode the credential id so the client can round-trip it back on /delete.
 				passkeys = passkeys.Select(pk => new
 				{
 					id = Base64Url.EncodeToString(pk.CredentialId),
@@ -70,20 +44,12 @@ internal static class PasskeyApiEndpoints
 			});
 		}).RequireAuthorization();
 
-		// 1) Registration — begin: returns PublicKeyCredentialCreationOptions JSON (WebAuthn).
-		//
-		// Enrolls a passkey for the currently signed-in user — the honest "add a passkey for faster
-		// sign-in after you've logged in" flow. Guarded with .RequireAuthorization() (same cookie→401
-		// translation as /list), so an anonymous request is rejected with a clean 401: a relying party
-		// must never mint an account just because someone asked to register a passkey for an arbitrary
-		// username.
+		// Registration begin: returns the WebAuthn creation options for the signed-in user.
 		group.MapPost("/register/begin", async (
 			HttpContext context,
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager) =>
 		{
-			// RequireAuthorization guarantees an authenticated principal; this null-guard only covers the
-			// edge case where the account was deleted after the cookie was issued.
 			var user = await userManager.GetUserAsync(context.User);
 			if (user is null)
 				return Results.Json(new { error = "Sign in first (POST /account/login?useCookies=true) — a passkey is enrolled for the signed-in user." }, statusCode: StatusCodes.Status401Unauthorized);
@@ -100,10 +66,8 @@ internal static class PasskeyApiEndpoints
 			return Results.Content(optionsJson, "application/json");
 		}).RequireAuthorization();
 
-		// 2) Registration — finish: validates the attestation response and stores the passkey.
-		// The WebAuthn credential JSON is bound straight from the request body by the framework; an
-		// optional ?name= query gives the passkey a friendly label (mirrors the template's "name your
-		// passkey" step). If omitted, we fall back to the AAGUID-inferred authenticator name.
+		// Registration finish: validates the attestation and stores the passkey. An optional ?name= labels
+		// it; if omitted, the AAGUID-inferred authenticator name is used.
 		group.MapPost("/register/finish", async (
 			JsonElement credential,
 			string? name,
@@ -117,9 +81,7 @@ internal static class PasskeyApiEndpoints
 			}
 			catch (InvalidOperationException ex)
 			{
-				// Thrown when there is no attestation ceremony in progress (e.g. /finish was called
-				// without a preceding /begin, or the challenge cookie was lost). Return a clean 400
-				// instead of surfacing an unhandled 500.
+				// No attestation ceremony in progress (no preceding /begin, or the challenge cookie was lost).
 				return Results.BadRequest($"No passkey registration is in progress. Call /passkeys/register/begin first (and send its cookie). {ex.Message}");
 			}
 
@@ -131,9 +93,6 @@ internal static class PasskeyApiEndpoints
 			if (user is null)
 				return Results.BadRequest("Unable to resolve the user for this passkey.");
 
-			// Give the passkey a name so it isn't "Unnamed": prefer the caller-supplied label, otherwise
-			// infer it from the authenticator's AAGUID (e.g. "Google Password Manager"), same as the
-			// browser template's AddPasskey flow.
 			if (!string.IsNullOrWhiteSpace(name))
 				attestation.Passkey.Name = name.Trim();
 			else if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestation.Passkey, out var inferred))
@@ -146,8 +105,7 @@ internal static class PasskeyApiEndpoints
 			return Results.Ok(new { registered = true, username = user.UserName, name = attestation.Passkey.Name });
 		});
 
-		// 2b) Delete a passkey the signed-in user owns. credentialId is the Base64Url id returned by
-		// /list. Guarded with .RequireAuthorization() so only the owner can remove their own passkeys.
+		// Removes a passkey the signed-in user owns. credentialId is the Base64Url id from /list.
 		group.MapDelete("/delete", async (
 			string? credentialId,
 			HttpContext context,
@@ -177,8 +135,7 @@ internal static class PasskeyApiEndpoints
 			return Results.Ok(new { removed = true });
 		}).RequireAuthorization();
 
-		// 3) Authentication — begin: returns PublicKeyCredentialRequestOptions JSON (WebAuthn).
-		// Omit 'username' for username-less / discoverable-credential sign-in.
+		// Sign-in begin: returns the WebAuthn request options. Omit 'username' for username-less sign-in.
 		group.MapPost("/login/begin", async (
 			string? username,
 			UserManager<ApplicationUser> userManager,
@@ -191,8 +148,7 @@ internal static class PasskeyApiEndpoints
 			return Results.Content(optionsJson, "application/json");
 		});
 
-		// 4) Authentication — finish: validates the assertion and reports the signed-in user.
-		// The WebAuthn credential JSON is bound straight from the request body by the framework.
+		// Sign-in finish: validates the assertion and signs the user in.
 		group.MapPost("/login/finish", async (
 			JsonElement credential,
 			UserManager<ApplicationUser> userManager,
@@ -205,17 +161,12 @@ internal static class PasskeyApiEndpoints
 			}
 			catch (InvalidOperationException ex)
 			{
-				// Thrown when there is no assertion ceremony in progress (e.g. /finish was called
-				// without a preceding /begin, or the challenge cookie was lost). Return a clean 400
-				// instead of surfacing an unhandled 500.
+				// No assertion ceremony in progress (no preceding /begin, or the challenge cookie was lost).
 				return Results.BadRequest($"No passkey sign-in is in progress. Call /passkeys/login/begin first (and send its cookie). {ex.Message}");
 			}
 
 			if (!assertion.Succeeded || assertion.User is null)
 			{
-				// e.g. "The provided credential does not belong to the specified user." — happens when
-				// login/begin specified a username but the picked passkey belongs to a different account.
-				// Prefer the username-less flow (omit username on login/begin) so any passkey is accepted.
 				return Results.Json(
 					new { error = $"Sign-in failed: {assertion.Failure?.Message ?? "the passkey could not be verified."}" },
 					statusCode: StatusCodes.Status401Unauthorized);
@@ -224,8 +175,7 @@ internal static class PasskeyApiEndpoints
 			// The sign counter / backup flags may have changed; persist the updated passkey.
 			await userManager.AddOrUpdatePasskeyAsync(assertion.User, assertion.Passkey!);
 
-			// Establish a durable session so a passkey sign-in yields a real authenticated cookie,
-			// exactly like the password bootstrap does. Subsequent authenticated calls now work.
+			// Sign in so the passkey sign-in yields an authenticated cookie for subsequent calls.
 			await signInManager.SignInAsync(assertion.User, isPersistent: true);
 
 			return Results.Ok(new { authenticated = true, username = assertion.User.UserName });

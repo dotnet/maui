@@ -45,7 +45,7 @@
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>
-                    <Label Text="Server-brokered (BFF): the server runs the OAuth exchange and creates a local account — your app only ever gets the server's session, never the provider's token."
+                    <Label Text="The server runs the OAuth exchange and creates a local account — your app only ever gets the server's session, never the provider's token."
                            FontSize="12" TextColor="Gray" IsVisible="{Binding HasExternalProviders}" />
                     <Label Text="No external sign-in providers are configured on the server. Add Google/Microsoft/Apple/Facebook credentials in the server's user-secrets to enable them."
                            FontSize="12" TextColor="Gray" IsVisible="{Binding NoExternalProviders}" />
