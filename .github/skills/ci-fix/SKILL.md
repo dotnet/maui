@@ -64,7 +64,8 @@ Before a fresh attempt:
 ## Bound autonomous work
 
 Advance only the existing CI-fix PR and respect the caller's effective attempt
-counter. When the cap is reached, defer rather than opening a replacement.
+counter. When the cap is reached, return `Decision: Skip` and defer rather than
+advancing the existing PR or opening a replacement.
 Never claim the target test is fixed from a category-level result or an unrelated
 green leg; require evidence for the specific test on the CI-fix PR's current
 head.

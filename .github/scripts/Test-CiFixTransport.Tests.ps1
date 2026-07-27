@@ -121,24 +121,45 @@ Describe 'Test-CiFixTransport' {
 }
 
 Describe 'CI-fixer push handler base configuration' {
-    It 'pins <Workflow> handler transport to <BaseBranch> through the supported workflow environment' -ForEach @(
+    It 'pins <Workflow> capture and apply transport to <BaseBranch>' -ForEach @(
         @{ Workflow = 'ci-status-fix.md'; BaseBranch = 'main' }
         @{ Workflow = 'ci-status-fix-net11.md'; BaseBranch = 'net11.0' }
     ) {
         $workflowPath = Join-Path (Split-Path $PSScriptRoot) "workflows/$Workflow"
+        $lockPath = $workflowPath -replace '\.md$', '.lock.yml'
         $source = Get-Content -Raw -LiteralPath $workflowPath
-        $workflowEnvironment = [regex]::Match(
+        $lock = Get-Content -Raw -LiteralPath $lockPath
+        $engineEnvironment = [regex]::Match(
             $source,
-            '(?ms)^env:\r?\n(?<config>.*?)(?=^[a-z][a-z-]*:\r?$)')
+            '(?ms)^engine:\r?\n.*?^  env:\r?\n(?<config>.*?)(?=^[a-z][a-z-]*:\r?$)')
+        $preAgentSteps = [regex]::Match(
+            $source,
+            '(?ms)^pre-agent-steps:\r?\n(?<config>.*?)(?=^[a-z][a-z-]*:\r?$)')
+        $safeOutputsEnvironment = [regex]::Match(
+            $source,
+            '(?ms)^safe-outputs:\r?\n.*?^  env:\r?\n(?<config>.*?)(?=^  [a-z][a-z-]+:\r?$)')
         $pushConfig = [regex]::Match(
             $source,
             '(?ms)^  push-to-pull-request-branch:\r?\n(?<config>.*?)(?=^  [a-z][a-z-]+:\r?$)')
 
-        $workflowEnvironment.Success | Should -BeTrue
-        $environmentPattern = '(?m)^  GH_AW_CUSTOM_BASE_BRANCH: {0}$' -f [regex]::Escape($BaseBranch)
-        $workflowEnvironment.Groups['config'].Value | Should -Match $environmentPattern
+        $engineEnvironment.Success | Should -BeTrue
+        $enginePattern = '(?m)^    DEFAULT_BRANCH: {0}$' -f [regex]::Escape($BaseBranch)
+        $engineEnvironment.Groups['config'].Value | Should -Match $enginePattern
+
+        $preAgentSteps.Success | Should -BeTrue
+        $capturePattern = '(?m)^    run: echo "DEFAULT_BRANCH={0}" >> "\$GITHUB_ENV"$' -f [regex]::Escape($BaseBranch)
+        $preAgentSteps.Groups['config'].Value | Should -Match $capturePattern
+
+        $safeOutputsEnvironment.Success | Should -BeTrue
+        $environmentPattern = '(?m)^    DEFAULT_BRANCH: {0}$' -f [regex]::Escape($BaseBranch)
+        $safeOutputsEnvironment.Groups['config'].Value | Should -Match $environmentPattern
 
         $pushConfig.Success | Should -BeTrue
         $pushConfig.Groups['config'].Value | Should -Not -Match '(?m)^    base-branch:'
+
+        $compiledPin = $lock.IndexOf('- name: Pin safe-output capture base', [StringComparison]::Ordinal)
+        $compiledGateway = $lock.IndexOf('- name: Start MCP Gateway', [StringComparison]::Ordinal)
+        $compiledPin | Should -BeGreaterOrEqual 0
+        $compiledGateway | Should -BeGreaterThan $compiledPin
     }
 }

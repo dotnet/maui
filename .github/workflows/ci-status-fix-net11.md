@@ -36,12 +36,6 @@ imports:
 
 environment: copilot-pat-pool
 
-# gh-aw v0.82.14's push handler supports this workflow-level base contract even
-# though its schema does not expose the equivalent per-output field. This keeps
-# capture-time allowed-files checks and apply-time transport on net11.0.
-env:
-  GH_AW_CUSTOM_BASE_BRANCH: net11.0
-
 permissions:
   contents: read
   issues: read
@@ -138,6 +132,18 @@ engine:
   id: copilot
   env:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
+    # Keep the sandboxed engine process on the same base as the capture and apply
+    # handlers.
+    DEFAULT_BRANCH: net11.0
+
+pre-agent-steps:
+  # gh-aw v0.82.14 initializes the agent job's DEFAULT_BRANCH from the repository
+  # default (main) before starting the MCP gateway. Pin net11.0 through GITHUB_ENV
+  # so the subsequently launched capture-time safe-output backend never compares
+  # an existing net11.0 PR branch against main.
+  - name: Pin safe-output capture base
+    shell: bash
+    run: echo "DEFAULT_BRANCH=net11.0" >> "$GITHUB_ENV"
 
 # AI-credit budget: DISABLED for this workflow via the -1 sentinel. Token cost is not
 # a constraint here, and the default daily cap (5000 AIC) was throttling the
@@ -173,6 +179,11 @@ checkout:
     - "net11.0"
 
 safe-outputs:
+  # The pre-agent step overrides the repository default for capture-time
+  # validation. This supported safe-output environment pins the separately
+  # generated apply-time jobs.
+  env:
+    DEFAULT_BRANCH: net11.0
   # LIVE: safe-outputs execute for real — create-PR, push-to-branch, comment and
   # update-PR actually mutate the target [ci-fix-net11] PR so the loop can apply a
   # fix and let CI re-run against it. To return to preview mode for validation, add
@@ -236,10 +247,10 @@ safe-outputs:
     # even at 3 it can only ever push to THIS workflow's own ci-fix-net11 PRs.
     max: 3
     max-patch-size: 256
-    # GH_AW_CUSTOM_BASE_BRANCH prevents gh-aw's full-branch allowed-files check
-    # from inheriting repository-default main, which made run 30269934433 include
-    # the 3,377-file main/net11.0 divergence. checkout.fetch above guarantees
-    # origin/net11.0 is present; max-patch-size remains defense-in-depth.
+    # Prevent gh-aw's full-branch allowed-files check from inheriting
+    # repository-default main, which made run 30269934433 include the 3,377-file
+    # main/net11.0 divergence. checkout.fetch above guarantees origin/net11.0 is
+    # present; max-patch-size remains defense-in-depth.
     # Hard constraint (defense-in-depth): only advance PRs that are unmistakably
     # THIS workflow's own — [ci-fix-net11] title prefix AND agentic-workflows label. A
     # prompt-injected agent therefore cannot push code to an arbitrary PR.
@@ -451,10 +462,11 @@ where they are more specific.
 1. **This workflow is net11.0-only.** Process ONLY issues labelled `ci-scan-net11`. Every
    PR targets `net11.0`. If an issue is somehow not a `net11.0`-branch issue (e.g. it
    carries `ci-scan`), record `skipped: not an in-scope ci-scan-net11
-   issue` and stop — it belongs to the main workflow. gh-aw's capture and apply
-   handlers are pinned to `net11.0` by `GH_AW_CUSTOM_BASE_BRANCH`, and
-   `create-pull-request.base-branch` pins newly opened PRs; do NOT emit a `base`
-   field. Every PR body MUST still carry `Target branch: net11.0`.
+   issue` and stop — it belongs to the main workflow. The pre-agent `GITHUB_ENV`
+   pin and safe-output runtime environment keep gh-aw's capture and apply handlers
+   on `net11.0`, and `create-pull-request.base-branch` pins newly opened PRs; do
+   NOT emit a `base` field. Every PR body MUST still carry
+   `Target branch: net11.0`.
 2. **Visual-regression skip.** Skip every issue matching the Step 2.3
    screenshot filter. Silent skip (no comment, no label, just the run-log line).
 3. **10-attempt cap, ONE PR.** At most ONE open `[ci-fix-net11]` PR per tracking issue,
@@ -2005,10 +2017,10 @@ At end of run, print this table to the agent log:
 This workflow targets `net11.0` exclusively. The base-branch invariant is enforced
 at these layers:
 
-1. **Handler base pin (gh-aw):** workflow-level
-   `GH_AW_CUSTOM_BASE_BRANCH: net11.0` makes capture-time allowed-files checks
-   and apply-time safe-output handlers resolve `net11.0`, including
-   `push-to-pull-request-branch`.
+1. **Handler base pin (gh-aw):** the pre-agent `GITHUB_ENV` write runs before
+   MCP startup, so capture-time allowed-files checks resolve `net11.0`.
+   `safe-outputs.env.DEFAULT_BRANCH: net11.0` independently pins the apply-time
+   safe-output handlers, including `push-to-pull-request-branch`.
 2. **Create-PR config pin (gh-aw):**
    `safe-outputs.create-pull-request.base-branch: net11.0`
    makes gh-aw generate the transport patch relative to `net11.0` and open every PR

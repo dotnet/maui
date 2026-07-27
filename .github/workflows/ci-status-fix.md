@@ -36,12 +36,6 @@ imports:
 
 environment: copilot-pat-pool
 
-# gh-aw v0.82.14 resolves safe-output handler bases from this supported
-# workflow-level environment contract. Keep it explicit so capture-time
-# allowed-files checks and apply-time transport both use main.
-env:
-  GH_AW_CUSTOM_BASE_BRANCH: main
-
 permissions:
   contents: read
   issues: read
@@ -138,6 +132,18 @@ engine:
   id: copilot
   env:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
+    # Keep the sandboxed engine process on the same base as the capture and apply
+    # handlers.
+    DEFAULT_BRANCH: main
+
+pre-agent-steps:
+  # gh-aw v0.82.14 initializes the agent job's DEFAULT_BRANCH from the repository
+  # default before starting the MCP gateway. Pin it explicitly through GITHUB_ENV
+  # so the subsequently launched capture-time safe-output backend sees this
+  # workflow's intended base.
+  - name: Pin safe-output capture base
+    shell: bash
+    run: echo "DEFAULT_BRANCH=main" >> "$GITHUB_ENV"
 
 # AI-credit budget: DISABLED for this workflow via the -1 sentinel. Token cost is not
 # a constraint here, and the default daily cap (5000 AIC) was throttling the
@@ -167,6 +173,10 @@ checkout:
   fetch-depth: 200
 
 safe-outputs:
+  # The pre-agent step pins capture-time validation. This supported safe-output
+  # environment pins the separately generated apply-time jobs.
+  env:
+    DEFAULT_BRANCH: main
   # LIVE: safe-outputs execute for real — create-PR, push-to-branch, comment and
   # update-PR actually mutate the target [ci-fix] PR so the loop can apply a fix
   # and let CI re-run against it. To return to preview mode for validation, add
@@ -226,8 +236,8 @@ safe-outputs:
     # even at 3 it can only ever push to THIS workflow's own ci-fix PRs.
     max: 3
     max-patch-size: 256
-    # GH_AW_CUSTOM_BASE_BRANCH pins gh-aw's full-branch allowed-files check to
-    # main. max-patch-size remains defense-in-depth around the intended delta.
+    # DEFAULT_BRANCH pins capture-time full-history validation to main.
+    # max-patch-size remains defense-in-depth around the intended delta.
     # Hard constraint (defense-in-depth): only advance PRs that are unmistakably
     # THIS workflow's own — [ci-fix] title prefix AND agentic-workflows label. A
     # prompt-injected agent therefore cannot push code to an arbitrary PR.
@@ -439,8 +449,9 @@ where they are more specific.
 1. **This workflow is main-only.** Process ONLY issues labelled `ci-scan`. Every
    PR targets `main`. If an issue is somehow not a `main`-branch issue (e.g. it
    carries `ci-scan-net11`), record `skipped: not an in-scope ci-scan (main)
-   issue` and stop — it belongs to the net11.0 workflow. gh-aw's capture and
-   apply handlers are pinned to `main` by `GH_AW_CUSTOM_BASE_BRANCH`, and
+   issue` and stop — it belongs to the net11.0 workflow. The pre-agent
+   `GITHUB_ENV` pin and safe-output runtime environment keep gh-aw's capture and
+   apply handlers on `main`, and
    `create-pull-request.base-branch` pins newly opened PRs; do NOT emit a `base`
    field. Every PR body MUST still carry `Target branch: main`.
 2. **Visual-regression skip.** Skip every issue matching the Step 2.3
@@ -1991,10 +2002,10 @@ At end of run, print this table to the agent log:
 This workflow targets `main` exclusively. The base-branch invariant is enforced
 at these layers:
 
-1. **Handler base pin (gh-aw):** workflow-level
-   `GH_AW_CUSTOM_BASE_BRANCH: main` makes capture-time allowed-files checks and
-   apply-time safe-output handlers resolve `main`, including
-   `push-to-pull-request-branch`.
+1. **Handler base pin (gh-aw):** the pre-agent `GITHUB_ENV` write runs before
+   MCP startup, so capture-time allowed-files checks resolve `main`.
+   `safe-outputs.env.DEFAULT_BRANCH: main` independently pins the apply-time
+   safe-output handlers, including `push-to-pull-request-branch`.
 2. **Create-PR config pin (gh-aw):**
    `safe-outputs.create-pull-request.base-branch: main`
    makes gh-aw generate the transport patch relative to `main` and open every PR
