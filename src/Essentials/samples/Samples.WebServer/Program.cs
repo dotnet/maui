@@ -28,17 +28,13 @@ authBuilder.AddIdentityCookies();
 // Bearer token services are required by MapIdentityApi even though the app uses the cookie variant.
 authBuilder.AddBearerToken(IdentityConstants.BearerScheme);
 
-// Registers the external OAuth providers that have credentials configured.
-authBuilder.AddConfiguredExternalProviders(builder.Configuration, builder.Environment);
-
 // The application cookie answers an unauthenticated [Authorize] request with a 302 to the HTML login page,
 // which is useless to the native client. Return a clean 401 for the native API paths instead.
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Events.OnRedirectToLogin = context =>
     {
-        if (context.Request.Path.StartsWithSegments("/passkeys", StringComparison.Ordinal) ||
-            context.Request.Path.StartsWithSegments("/me", StringComparison.Ordinal))
+        if (context.Request.Path.StartsWithSegments("/passkeys", StringComparison.Ordinal))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return Task.CompletedTask;
@@ -67,9 +63,6 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-
-// Used by /me/external to call the provider's userinfo endpoint.
-builder.Services.AddHttpClient();
 
 // Passkey relying-party config. ServerDomain is the RP ID (the public host the apps use).
 // ValidateOrigin must also accept each platform's native origin (Android's apk-key-hash, Apple's web origin).
@@ -143,9 +136,6 @@ app.MapPost("/account/logout", async (SignInManager<ApplicationUser> signInManag
 
 // Passkey ceremony endpoints.
 app.MapNativePasskeyApi();
-
-// External OAuth sign-in endpoints.
-app.MapExternalAuthApi();
 
 // Platform domain-association documents (Android assetlinks.json / Apple AASA).
 app.MapDomainAssociation(app.Configuration);
