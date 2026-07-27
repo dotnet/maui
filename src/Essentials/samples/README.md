@@ -5,17 +5,28 @@ pages talk to. Each scenario has its own setup + testing guide — start there.
 
 ## Scenarios
 
-| Scenario | Guide | Reference server | What it demonstrates |
-| --- | --- | --- | --- |
-| **Passkeys (WebAuthn / FIDO2)** | [**README-Passkeys.md**](README-Passkeys.md) | [`Samples.Server.Passkeys/`](Samples.Server.Passkeys) | Creating and using passkeys with the platform authenticator (Face ID / Touch ID / Windows Hello / Android), verified by a minimal ASP.NET Core Identity relying-party server. Set up with [`Configure-Passkeys.ps1`](Configure-Passkeys.ps1). |
-| **WebAuthenticator** | _(guide coming — being reworked)_ | [`Sample.Server.WebAuthenticator/`](Sample.Server.WebAuthenticator) | Browser-based OAuth sign-in via `WebAuthenticator`, brokered by a small reference server. |
+### Passkeys (WebAuthn / FIDO2)
+
+Creating and using passkeys with the platform authenticator (Face ID / Touch ID / Windows Hello /
+Android), verified by a minimal ASP.NET Core Identity relying-party server.
+
+- **Guide:** [README-Passkeys.md](README-Passkeys.md)
+- **Reference server:** [`Samples.Server.Passkeys/`](Samples.Server.Passkeys)
+- **Setup:** [`Configure-Passkeys.ps1`](Configure-Passkeys.ps1)
+
+### WebAuthenticator
+
+Browser-based OAuth sign-in via `WebAuthenticator`, brokered by a small reference server.
+
+- **Guide:** _coming — being reworked_
+- **Reference server:** [`Sample.Server.WebAuthenticator/`](Sample.Server.WebAuthenticator)
 
 ## Projects
 
 - **[`Samples/`](Samples)** — the **Essentials.Sample** MAUI app (all the Essentials demo pages,
   including the **Passkeys** page).
-- **[`Samples.Server.Passkeys/`](Samples.Server.Passkeys)** — the passkeys relying-party (RP) server.
-  See its [README](Samples.Server.Passkeys/README.md).
+- **[`Samples.Server.Passkeys/`](Samples.Server.Passkeys)** — the passkeys relying-party (RP) server
+  (small and commented — read the code for endpoint/auth details).
 - **[`Sample.Server.WebAuthenticator/`](Sample.Server.WebAuthenticator)** — the WebAuthenticator
   reference server.
 

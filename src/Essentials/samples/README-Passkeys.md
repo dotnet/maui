@@ -4,9 +4,9 @@ This folder contains the **Passkeys** Essentials sample and everything needed to
 
 - **[`Samples/`](Samples)** — the .NET MAUI **Essentials.Sample** app; the **Passkeys** page is the
   passkeys demo.
-- **[`Samples.Server.Passkeys/`](Samples.Server.Passkeys)** — the reference relying-party (RP) server (ASP.NET
-  Core Identity + WebAuthn) that does the server half. See its
-  [`README.md`](Samples.Server.Passkeys/README.md) for detail.
+- **[`Samples.Server.Passkeys/`](Samples.Server.Passkeys)** — the reference relying-party (RP) server
+  (ASP.NET Core Identity + WebAuthn) that does the server half. It's small and commented — read the code
+  for the endpoint and auth details.
 - **[`Configure-Passkeys.ps1`](Configure-Passkeys.ps1)** — provisions a dev tunnel and writes the RP trust config into
   the server's user-secrets (and, with `-AppleTeamId`, the Apple bits).
 
@@ -60,8 +60,11 @@ below to add Apple/Android trust.
 Then, in two terminals, host the tunnel and run the server:
 
 ```bash
-devtunnel host maui-essentials                                # 1) hold the tunnel open
-dotnet run --project Samples.Server.Passkeys --launch-profile http   # 2) run the server
+# 1) hold the tunnel open
+devtunnel host maui-essentials-passkeys
+
+# 2) run the server
+dotnet run --project Samples.Server.Passkeys --launch-profile http
 ```
 
 Now pick your platform.

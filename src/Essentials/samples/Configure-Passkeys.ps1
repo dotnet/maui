@@ -31,7 +31,7 @@
     Cross-platform: run with PowerShell 7+ (`pwsh`) on macOS, Windows, or Linux.
 
 .PARAMETER TunnelId
-    The dev tunnel id/name to create or reuse. Defaults to 'maui-essentials'. Keep it constant to
+    The dev tunnel id/name to create or reuse. Defaults to 'maui-essentials-passkeys'. Keep it constant to
     keep the same public domain.
 
 .PARAMETER Port
@@ -72,7 +72,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$TunnelId = 'maui-essentials',
+    [string]$TunnelId = 'maui-essentials-passkeys',
     [int]$Port = 5177,
     [string]$ApplicationId,
     [string]$DebugKeystore,
