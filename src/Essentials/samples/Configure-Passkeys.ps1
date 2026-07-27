@@ -422,6 +422,7 @@ Host the tunnel once to materialize its URL, then re-run this script:
     devtunnel host $TunnelId
 "@
 }
+
 $domain = ([Uri]$uri).Host
 Write-Host "    Public URL : $uri" -ForegroundColor Green
 Write-Host "    RP ID/host : $domain" -ForegroundColor Green
