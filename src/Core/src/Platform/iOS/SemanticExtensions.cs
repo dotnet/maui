@@ -198,8 +198,21 @@ namespace Microsoft.Maui.Platform
 
 				if (platformView is MauiView containerMauiView)
 				{
+					var labelChanged = containerMauiView.AccessibilityContainerLabel != semantics.Description;
+					var hintChanged = containerMauiView.AccessibilityContainerHint != semantics.Hint;
+
 					containerMauiView.AccessibilityContainerLabel = semantics.Description;
 					containerMauiView.AccessibilityContainerHint = semantics.Hint;
+
+					// When the phantom element's label/hint change at runtime (e.g. via a binding
+					// update) VoiceOver's accessibility tree cache needs to be invalidated, otherwise
+					// the updated text is only picked up on the next re-focus. Only post when the
+					// view is actually in a window — posting off-screen is a no-op that also
+					// suppresses redundant notifications during initial handler setup.
+					if ((labelChanged || hintChanged) && platformView.Window is not null)
+					{
+						UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, null);
+					}
 				}
 
 				UpdateSemanticsHeading(platformView, semantics);
