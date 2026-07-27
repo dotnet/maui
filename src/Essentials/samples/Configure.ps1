@@ -10,9 +10,13 @@
     domain stays the same every time — and writes the resulting configuration into the SERVER's
     user-secrets (the MAUI app itself reads no secrets; you type the URL into its UI):
 
-      - the passkeys relying-party domain + web origin, and
+      - the passkeys relying-party domain + web origin,
       - the Android package name (read from the sample app's project) plus the debug-signing-key
-        SHA-256 fingerprint and `android:apk-key-hash:` origin (so Digital Asset Links validate).
+        SHA-256 fingerprint and `android:apk-key-hash:` origin (so Digital Asset Links validate), and
+      - (optionally, with -AppleTeamId) the Apple app-id `<TeamID>.<BundleID>` for the App Site
+        Association, plus the `webcredentials:<domain>` associated-domains entitlement in the sample
+        app's iOS Entitlements.plist. See README.md (Apple section) for the remaining Apple steps
+        (App ID registration + signing) that only you can do in your Apple Developer account.
 
     It does NOT run the web server — that is a separate `dotnet run` (see the printed next steps).
 
@@ -37,12 +41,27 @@
     ~/Library/Application Support/Xamarin/Mono for Android/debug.keystore). This is NOT
     ~/.android/debug.keystore.
 
+.PARAMETER AppleTeamId
+    Your 10-character Apple Developer Team ID (developer.apple.com -> Membership). When supplied, the
+    script writes the Apple app-id `<TeamID>.<BundleID>` into the server's App Site Association config
+    and adds the `webcredentials:<domain>` associated-domains entitlement to the sample app's iOS
+    Entitlements.plist. Omit to skip Apple setup.
+
+.PARAMETER AppleBundleId
+    The Apple bundle identifier of the sample app. Defaults to the app's <ApplicationId>. Override if
+    that identifier is registered to another team and you need to use your own (also change the app's
+    <ApplicationId> to match).
+
 .PARAMETER StartHost
     If set, starts hosting the tunnel (blocking) at the end. Otherwise prints the host command.
 
 .EXAMPLE
     ./Configure.ps1
     # Provisions the tunnel, writes the server config into user-secrets, prints next steps.
+
+.EXAMPLE
+    ./Configure.ps1 -AppleTeamId 42GDTGK33W
+    # Also writes the Apple App Site Association app-id and the associated-domains entitlement.
 
 .EXAMPLE
     ./Configure.ps1 -StartHost
@@ -54,6 +73,8 @@ param(
     [int]$Port = 5177,
     [string]$AndroidPackage,
     [string]$DebugKeystore,
+    [string]$AppleTeamId,
+    [string]$AppleBundleId,
     [switch]$StartHost
 )
 
@@ -107,12 +128,52 @@ function Get-AndroidKeyInfo($keystore) {
     return [pscustomobject]@{ Hex = $hex; Origin = "android:apk-key-hash:$b64url" }
 }
 
+# Adds (or replaces) the webcredentials associated-domains entitlement in the sample app's iOS
+# Entitlements.plist so Apple passkeys bind to the relying-party domain. This is a LOCAL edit to a
+# committed file (like the server URL you type into the app) — do not commit it. Uses PlistBuddy on
+# macOS (the only OS that can build/sign Apple apps) and falls back to editing the XML directly.
+function Set-AppleAssociatedDomain($entitlementsPath, $domain) {
+    if (-not (Test-Path $entitlementsPath)) {
+        Write-Warning "Entitlements file not found at '$entitlementsPath'. Skipping Apple associated-domains."
+        return $false
+    }
+    $entry = "webcredentials:$domain"
+    $plistBuddy = '/usr/libexec/PlistBuddy'
+    if (Test-Path $plistBuddy) {
+        & $plistBuddy -c "Delete :com.apple.developer.associated-domains" $entitlementsPath 2>$null | Out-Null
+        & $plistBuddy -c "Add :com.apple.developer.associated-domains array" $entitlementsPath | Out-Null
+        & $plistBuddy -c "Add :com.apple.developer.associated-domains:0 string $entry" $entitlementsPath | Out-Null
+        return $true
+    }
+    try {
+        $xml = New-Object System.Xml.XmlDocument
+        $xml.XmlResolver = $null
+        $xml.Load($entitlementsPath)
+        $dict = $xml.plist.dict
+        $existing = $dict.SelectNodes('key') | Where-Object { $_.InnerText -eq 'com.apple.developer.associated-domains' } | Select-Object -First 1
+        if ($existing) {
+            $arr = $existing.NextSibling
+            [void]$arr.RemoveAll()
+        }
+        else {
+            $k = $xml.CreateElement('key'); $k.InnerText = 'com.apple.developer.associated-domains'; [void]$dict.AppendChild($k)
+            $arr = $xml.CreateElement('array'); [void]$dict.AppendChild($arr)
+        }
+        $s = $xml.CreateElement('string'); $s.InnerText = $entry; [void]$arr.AppendChild($s)
+        $xml.Save($entitlementsPath)
+        return $true
+    }
+    catch {
+        Write-Warning "Could not update associated-domains in '$entitlementsPath': $($_.Exception.Message)"
+        return $false
+    }
+}
+
 function Require-Command($name, $hint) {
     if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
         Write-Error "'$name' is not installed. $hint"
     }
 }
-
 Require-Command 'devtunnel' @'
 Install the dev tunnels CLI:
   macOS:   brew install --cask devtunnel
@@ -194,7 +255,23 @@ else {
         Write-Host "      SHA-256 : $($android.Hex)" -ForegroundColor DarkGray
         Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
     }
-    Write-Host "    (Apple app-ids are added separately — see README.md.)" -ForegroundColor DarkGray
+    # Apple: write the App Site Association app-id and add the associated-domains entitlement.
+    # The remaining Apple steps (App ID registration + signing) are in README.md (Apple section).
+    if ($AppleTeamId) {
+        if (-not $AppleBundleId) { $AppleBundleId = $AndroidPackage }
+        $appleAppId = "$AppleTeamId.$AppleBundleId"
+        dotnet user-secrets --project $project set 'Passkeys:Apple:AppIds:0' $appleAppId | Out-Null
+        $entPath = Join-Path $here 'Samples' 'Platforms' 'iOS' 'Entitlements.plist'
+        $ok = Set-AppleAssociatedDomain $entPath $domain
+        Write-Host "    Apple configured: app-id '$appleAppId'" -ForegroundColor Green
+        if ($ok) {
+            Write-Host "      entitlement: webcredentials:$domain  (Entitlements.plist — LOCAL edit, do not commit)" -ForegroundColor DarkGray
+        }
+        Write-Host "      Finish App ID registration + signing per README.md (Apple section)." -ForegroundColor DarkGray
+    }
+    else {
+        Write-Host "    (Apple: pass -AppleTeamId <TEAMID> to set up iOS/Mac Catalyst — see README.md (Apple section).)" -ForegroundColor DarkGray
+    }
 
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Yellow

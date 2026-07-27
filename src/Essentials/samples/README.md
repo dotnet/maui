@@ -1,0 +1,180 @@
+# .NET MAUI Essentials — Passkeys sample
+
+This folder contains the **Passkeys** Essentials sample and everything needed to run it end to end:
+
+- **[`Samples/`](Samples)** — the .NET MAUI **Essentials.Sample** app; the **Passkeys** page is the
+  passkeys demo.
+- **[`Samples.WebServer/`](Samples.WebServer)** — the reference relying-party (RP) server (ASP.NET
+  Core Identity + WebAuthn) that does the server half. See its
+  [`README.md`](Samples.WebServer/README.md) for detail.
+- **[`Configure.ps1`](Configure.ps1)** — provisions a dev tunnel and writes the RP trust config into
+  the server's user-secrets (and, with `-AppleTeamId`, the Apple bits).
+
+The rest of this page is the **testing guide**: run the RP server and exercise it from the app's
+**Passkeys** page on each platform.
+
+| Sample page | Endpoints | Local http port |
+| --- | --- | --- |
+| **Passkeys** | `/passkeys/*` (Blazor + ASP.NET Core Identity / WebAuthn) | 5177 |
+
+**Flow:** set up the [**server**](#1-server-shared-by-all-platforms) once (it's shared by every
+platform), then do the platform setup for what you're testing —
+[**Apple**](#2-apple-ios--ipados--mac-catalyst), [**Android**](#3-android-emulator), or
+[**Windows**](#4-windows-windows-11) — then exercise the app.
+
+## Prerequisites
+
+- **.NET SDK** (per `global.json`) and the ability to build the solution. `Samples.WebServer` is part
+  of the solution and also runs locally with `dotnet run`.
+- **Dev tunnels CLI** — passkeys are bound to a domain (the RP ID), so `localhost` won't work from a
+  real device; the server is exposed on a public `https://…devtunnels.ms` host:
+  - macOS: `brew install --cask devtunnel`
+  - Windows: `winget install Microsoft.devtunnel`
+  - Linux: <https://aka.ms/devtunnels/download>
+- Platform-specific prerequisites are listed under each platform below.
+
+## Using the app
+
+On every platform the in-app steps are the same: open the **Passkeys** page, set the **server URL** to
+your `https://<tunnel-host>`, sign up (or sign in) with a username + password, tap **Create a passkey**
+(approve the device prompt), then **Sign in with a passkey**.
+
+## 1. Server (shared by all platforms)
+
+From `src/Essentials/samples`, provision the tunnel and write the server config into user-secrets:
+
+```bash
+pwsh ./Configure.ps1
+```
+
+`Configure.ps1` provisions a persistent dev tunnel and writes the RP domain + web origin (and the
+**Android** origins — see section 3) into the SERVER's user-secrets. It prints the public
+`https://…devtunnels.ms` URL — keep it, you type it into the app. Re-run it with the platform flags
+below to add Apple/Android trust.
+
+Then, in two terminals, host the tunnel and run the server:
+
+```bash
+devtunnel host maui-essentials                                # 1) hold the tunnel open
+dotnet run --project Samples.WebServer --launch-profile http   # 2) run the server
+```
+
+Now pick your platform.
+
+## 2. Apple (iOS / iPadOS / Mac Catalyst)
+
+Apple only does passkeys when the app is set up like a **real, shipping app** — there is no localhost
+shortcut. Three things must line up:
+
+1. **Associated Domains entitlement** — the app declares `webcredentials:<your-domain>`.
+2. **App Site Association (AASA)** — `https://<your-domain>/.well-known/apple-app-site-association`
+   lists your `<TeamID>.<BundleID>`; Apple fetches and caches it over the public internet.
+3. **Signing** — signed by your Apple Developer **Team** with a profile that includes the Associated
+   Domains capability.
+
+At runtime the OS matches the app's entitlement against the AASA it fetched for that domain; only then
+will Face ID / Touch ID create or use a passkey.
+
+**Prerequisites:** a **paid Apple Developer account** (free/personal teams can't provision Associated
+Domains), your 10-character **Team ID**, **macOS + Xcode** (Apple apps build only on a Mac), and a
+target on **iOS 16+** or **Mac Catalyst 16+**.
+
+**Steps:**
+
+1. Configure the server + app with your Team ID (from `src/Essentials/samples`):
+   ```bash
+   pwsh ./Configure.ps1 -AppleTeamId <TEAMID>
+   ```
+   This writes `Passkeys:Apple:AppIds:0 = <TeamID>.<BundleID>` into user-secrets (served in the AASA)
+   and adds `com.apple.developer.associated-domains` → `webcredentials:<domain>` to
+   `Samples/Platforms/iOS/Entitlements.plist` — a **local** edit, don't commit it. If your bundle id
+   (`<ApplicationId>`, default `com.microsoft.maui.essentials`) is registered to another team, add
+   `-AppleBundleId com.yourname.mauiessentials` and set the same value in `<ApplicationId>`.
+2. On developer.apple.com → **Identifiers**, select your bundle id and enable the **Associated
+   Domains** capability. (IDE automatic signing can do this for you.)
+3. Sign locally (don't commit): set the project's **Team** + automatic provisioning and **Custom
+   Entitlements** → `Platforms/iOS/Entitlements.plist`, via the IDE's iOS *Bundle Signing* settings, or
+   a local csproj `<PropertyGroup>`:
+   ```xml
+   <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+     <CodesignEntitlements>Platforms/iOS/Entitlements.plist</CodesignEntitlements>
+     <CodesignProvision>Automatic</CodesignProvision>
+     <CodesignKey>Apple Development</CodesignKey>
+   </PropertyGroup>
+   ```
+   The Simulator applies the entitlement without enforcing a profile; a **real device** needs the
+   profile with the Associated Domains capability.
+4. With the server running (section 1), verify the AASA is reachable **from the public internet** and
+   is JSON (not an HTML page):
+   ```bash
+   curl -sS https://<your-domain>/.well-known/apple-app-site-association
+   # {"webcredentials":{"apps":["ABCDE12345.com.microsoft.maui.essentials"]}}
+   ```
+5. Build + install the **signed** app (a real iOS 16+ device is the truest test; Simulator or Mac
+   Catalyst also work), then follow [**Using the app**](#using-the-app). Mac Catalyst runs on this Mac:
+   ```bash
+   dotnet build Samples/Essentials.Sample.csproj -t:Run -f net11.0-maccatalyst
+   ```
+
+**Apple troubleshooting:**
+
+| Symptom | Cause / fix |
+| --- | --- |
+| `… is not associated with domain …` | AASA not reachable as JSON, its app-id ≠ your signed `<TeamID>.<BundleID>`, or the entitlement domain ≠ the server's `Passkeys:ServerDomain`. Verify with the step-4 `curl`. |
+| AASA `curl` returns HTML | The dev tunnel's anti-phishing interstitial is answering; create a tunnel access token / disable anti-phishing for the port so raw JSON is served. |
+| `Could not resolve host …devtunnels.ms` on the device | Local-network DNS won't resolve `*.devtunnels.ms`. Point the device at a public resolver (iOS Wi-Fi → Configure DNS → Manual → `8.8.8.8`) or restart the router. Apple's CDN resolves it fine over the public internet. |
+| `no profiles for '<bundle id>' were found` | The App ID belongs to another team — use `-AppleBundleId` + a matching `<ApplicationId>`. |
+
+## 3. Android (emulator)
+
+No paid account and **no app manifest changes** are needed (Digital Asset Links live on the server;
+intent-filters are only for App Links, a different feature). You do need the right emulator.
+
+**Prerequisites** (one-time):
+- An **API 34+** AVD on a **Google Play** system image (not AOSP) so Google Password Manager is present.
+- The emulator signed into a **Google account** (Settings → Passwords, passkeys & accounts).
+- A **secure screen lock** (PIN/pattern) — passkeys require device authentication.
+
+**Steps:**
+
+1. Configure the server (from `src/Essentials/samples`):
+   ```bash
+   pwsh ./Configure.ps1
+   ```
+   Beyond the RP domain, this writes the Android package (`com.microsoft.maui.essentials`), your debug
+   keystore SHA-256, and the `android:apk-key-hash:` origin. It reads the keystore .NET for Android
+   signs debug builds with — `<LocalApplicationData>/Xamarin/Mono for Android/debug.keystore`, **not**
+   `~/.android/debug.keystore`; build the Android app once first if it doesn't exist yet.
+2. Host the tunnel + run the server (section 1). Verify Google can see the asset links: open
+   `https://<tunnel-host>/.well-known/assetlinks.json` — it should list your package + fingerprint.
+3. Run the sample on the emulator:
+   ```bash
+   dotnet build Samples/Essentials.Sample.csproj -t:Run -f net11.0-android
+   ```
+4. Follow [**Using the app**](#using-the-app).
+
+If registration fails with a "no create options" / provider error, re-check the three emulator
+prerequisites above — that's the usual cause.
+
+## 4. Windows (Windows 11)
+
+Nothing extra: the Windows platform trusts the `https` origin directly (no domain-association file).
+Passkeys require **Windows 11 with Windows Hello** configured. With the server running (section 1),
+deploy the Windows head from your IDE (or `dotnet build Samples/Essentials.Sample.csproj -t:Run -f
+net11.0-windows10.0.<version>` matching the project's Windows TFM), then follow
+[**Using the app**](#using-the-app).
+
+## Local-only smoke test
+
+A dev tunnel is the supported path. To only check the app ↔ server round-trip (this will **not**
+complete a real passkey ceremony — the platform won't trust a non-public host), point the page at
+localhost temporarily:
+
+- iOS simulator / Mac / Windows → `https://localhost:7235`
+- Android emulator → `http://10.0.2.2:5177`
+
+## Don't commit
+
+The setup makes developer-specific edits — keep them out of commits: the associated-domains entry in
+`Platforms/iOS/Entitlements.plist`, any Team/signing you add to `Essentials.Sample.csproj`, and any
+`<ApplicationId>` change. (Server user-secrets already live outside the repo.)
