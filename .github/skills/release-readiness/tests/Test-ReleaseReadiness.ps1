@@ -1136,6 +1136,79 @@ if (-not $SkipE2E) {
         Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
     }
 
+    # Synthetic rc window: the pre-release train continues past the final preview
+    # into rc1/rc2, so the survey ref eventually reads label=rc rather than an
+    # eighth preview. Lane 4 only emits preview trackers, and this case used to
+    # fall into the same DarkGray "No active preview cycle" line that a major
+    # legitimately in SR phase prints — so the missing rc tracker was completely
+    # silent. Pin the warning, and pin that it does NOT fire for a genuinely
+    # inactive cycle (otherwise "always warn" would satisfy the first assertion).
+    Write-Host "`n[Unit] Tracker detection synthetic rc window" -ForegroundColor Cyan
+    $origGetMainBranchForVersion = (Get-Item function:Get-MainBranchForVersion).ScriptBlock
+    $origGetStableTagsForMajor = (Get-Item function:Get-StableTagsForMajor).ScriptBlock
+    $origGetPreviewTagsForMajor = (Get-Item function:Get-PreviewTagsForMajor).ScriptBlock
+    $origGetRemoteSrBranchesForMajor = (Get-Item function:Get-RemoteSrBranchesForMajor).ScriptBlock
+    $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
+    $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
+    $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
+    $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
+    $origWriteWarning = (Get-Item function:Write-Warning -ErrorAction SilentlyContinue)
+    $script:rcWarnings = New-Object System.Collections.Generic.List[string]
+    try {
+        function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'net11.0' }
+        function Get-StableTagsForMajor { param([int]$Major) ,@() }
+        # preview7 has shipped — the final preview of the major.
+        function Get-PreviewTagsForMajor { param([int]$Major) ,@('11.0.0-preview.7.26000.1') }
+        function Get-RemoteSrBranchesForMajor { param([int]$Major) ,@() }
+        function Get-RemotePreviewBranchesForMajor {
+            param([int]$Major)
+            ,@([pscustomobject]@{ branch = 'release/11.0.1xx-preview7'; previewNumber = 7 })
+        }
+        function Get-RecentCommitCount { param([string]$Ref, [int]$Days) 1 }
+        function Invoke-GitOrFail {
+            param([string[]]$ArgList, [string]$FailureMessage)
+            if (($ArgList -join ' ') -match 'ls-remote --heads origin net11\.0') {
+                return @('0123456789abcdef0123456789abcdef01234567	refs/heads/net11.0')
+            }
+            return @()
+        }
+        function Write-Warning { param([Parameter(ValueFromPipeline)][string]$Message) $script:rcWarnings.Add($Message) }
+
+        # net11.0 has been bumped past preview7 → rc1.
+        function Get-VersionFromGitRef {
+            param([string]$GitRef, [string]$Repo)
+            [pscustomobject]@{ Tag = '11.0.0'; PreLabel = 'rc'; PreIter = 1 }
+        }
+        $rcSynthetic = Invoke-DetectionForMajor -Major 11
+        $rcCandidates = @($rcSynthetic.trackers | Where-Object { $_.branchType -eq 'preview' -and $_.mode -eq 'candidate' })
+
+        Assert-Eq -Label "rc window emits no preview candidate tracker" -Expected 0 -Actual $rcCandidates.Count
+        Assert-Eq -Label "rc window warns instead of silently skipping" `
+                  -Expected $true -Actual ($script:rcWarnings.Count -gt 0)
+        Assert-Eq -Label "rc window warning names the missing rc tracker" `
+                  -Expected $true -Actual ([bool](@($script:rcWarnings) -match 'rc1'))
+
+        # Negative control: an inactive pre-release cycle (SR phase) must stay quiet.
+        $script:rcWarnings.Clear()
+        function Get-VersionFromGitRef {
+            param([string]$GitRef, [string]$Repo)
+            [pscustomobject]@{ Tag = '11.0.100'; PreLabel = 'ci.main'; PreIter = 0 }
+        }
+        $null = Invoke-DetectionForMajor -Major 11
+        Assert-Eq -Label "inactive cycle does not emit the rc warning" -Expected 0 -Actual $script:rcWarnings.Count
+    } finally {
+        Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
+        Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
+        Set-Item function:Get-PreviewTagsForMajor $origGetPreviewTagsForMajor
+        Set-Item function:Get-RemoteSrBranchesForMajor $origGetRemoteSrBranchesForMajor
+        Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
+        Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
+        Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
+        Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
+        if ($origWriteWarning) { Set-Item function:Write-Warning $origWriteWarning.ScriptBlock }
+        else { Remove-Item function:Write-Warning -ErrorAction SilentlyContinue }
+    }
+
     # Fail-closed: bad repo path should exit non-zero
     Write-Host "`n[E2E] Detection fails closed on invalid repo" -ForegroundColor Cyan
     $badRepoOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-badrepo-$(Get-Date -Format 'HHmmss').json"
