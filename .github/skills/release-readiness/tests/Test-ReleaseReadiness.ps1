@@ -1092,7 +1092,10 @@ if (-not $SkipE2E) {
         function Get-PreviewTagsForMajor { param([int]$Major) ,@() }
         function Get-RemoteSrBranchesForMajor {
             param([int]$Major)
-            ,@([pscustomobject]@{ branch = 'release/10.0.1xx-sr9'; srNumber = 9 })
+            ,@([pscustomobject]@{
+                branch = 'release/10.0.1xx-sr9'; srNumber = 9
+                sha = '0123456789abcdef0123456789abcdef01234567'
+            })
         }
         function Get-RemotePreviewBranchesForMajor { param([int]$Major) ,@() }
         function Get-VersionFromGitRef {
@@ -1143,6 +1146,8 @@ if (-not $SkipE2E) {
             -Expected $true -Actual $syntheticHotfixShipped9.hotfixInProgress
         Assert-Eq -Label "synthetic unpublished SR9 hotfix carries version-specific identity" `
             -Expected '10.0.91' -Actual $syntheticHotfixShipped9.hotfixVersion
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix carries branch generation" `
+            -Expected '0123456789abcdef0123456789abcdef01234567' -Actual $syntheticHotfixShipped9.hotfixCommit
         Assert-Eq -Label "synthetic unpublished SR9 hotfix title is actionable" `
             -Expected $true -Actual ([bool]($syntheticHotfixShipped9.issueTitle -match 'hotfix 10\.0\.91 in progress'))
         Assert-Eq -Label "synthetic unpublished SR9 hotfix anchor remains tagged 10.0.90" `
@@ -1300,12 +1305,14 @@ if (-not $SkipE2E) {
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixInProgress:\s*\(\.hotfixInProgress // false\)'))
     Assert-Eq -Label "workflow matrix carries version-specific hotfix identity" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixVersion:\s*\(\.hotfixVersion // ""\)'))
+    Assert-Eq -Label "workflow matrix carries hotfix branch generation" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixCommit:\s*\(\.hotfixCommit // ""\)'))
     Assert-Eq -Label "workflow shipped refresh-only guard exempts active hotfix" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$MODE.*shipped.*\$HOTFIX_IN_PROGRESS.*!=.*true.*\$EXISTING'))
     Assert-Eq -Label "workflow activity gate exempts active hotfix" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$RECENT_COMMIT_COUNT.*-eq 0.*\$HOTFIX_IN_PROGRESS.*!=.*true.*\$EXISTING'))
     Assert-Eq -Label "workflow closed-hotfix guard searches version-specific marker" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'release-readiness-hotfix: \$\{HOTFIX_VERSION\}'))
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'release-readiness-hotfix: \$\{HOTFIX_VERSION\}@\$\{HOTFIX_COMMIT\}'))
     Assert-Eq -Label "workflow closed-hotfix guard suppresses recreation" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'Hotfix tracker.*was closed.*not recreating'))
 
@@ -1440,6 +1447,18 @@ try {
         -Expected '10.0.91' -Actual $tagBeforeReleaseRefs.ContentsRef
     Assert-Eq -Label "tag-before-Release: immediate predecessor remains 10.0.90" `
         -Expected '10.0.90' -Actual $tagBeforeReleaseRefs.PreviousTag
+    Assert-Eq -Label "publication state: per-tag release proof overrides failed list query" `
+        -Expected 'published' -Actual (Resolve-ShippedPublicationState `
+            -ListQueryFailed $true -AnchorInPublishedList $false -TagDateSource 'github-release')
+    Assert-Eq -Label "publication state: failed list plus tagged-commit fallback remains unknown" `
+        -Expected 'unknown' -Actual (Resolve-ShippedPublicationState `
+            -ListQueryFailed $true -AnchorInPublishedList $false -TagDateSource 'tagged-commit')
+    Assert-Eq -Label "publication state: successful list missing anchor is pending" `
+        -Expected 'pending' -Actual (Resolve-ShippedPublicationState `
+            -ListQueryFailed $false -AnchorInPublishedList $false -TagDateSource 'tagged-commit')
+    Assert-Eq -Label "publication state: published list evidence remains authoritative" `
+        -Expected 'published' -Actual (Resolve-ShippedPublicationState `
+            -ListQueryFailed $false -AnchorInPublishedList $true -TagDateSource 'tagged-commit')
     $savedWarnings = $Script:Warnings
     try {
         $Script:Warnings = [System.Collections.Generic.List[string]]::new()
@@ -4447,7 +4466,7 @@ $hotfixMdData['shipChecks'] = @(
 $hotfixMd = Format-MarkdownReport -Data $hotfixMdData -RepoUrl 'https://github.com/dotnet/maui' `
     -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
 Assert-Eq -Label "active hotfix report emits version-specific hidden marker" -Expected $true `
-    -Actual ($hotfixMd -match '<!-- release-readiness-hotfix: 10\.0\.91 -->')
+    -Actual ($hotfixMd -match '<!-- release-readiness-hotfix: 10\.0\.91@aaaaaaaa1111bbbbbbbb2222cccccccc -->')
 Assert-Eq -Label "active hotfix report renders operational follow-up section" -Expected $true `
     -Actual ($hotfixMd -match '(?s)Post-ship operational follow-ups.*Unpublished hotfix branch state')
 Assert-Eq -Label "active hotfix report does not claim no urgent follow-ups" -Expected $false `

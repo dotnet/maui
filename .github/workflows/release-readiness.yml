@@ -231,6 +231,7 @@ jobs:
                   mode:         .mode,
                   hotfixInProgress: (.hotfixInProgress // false),
                   hotfixVersion: (.hotfixVersion // ""),
+                  hotfixCommit: (.hotfixCommit // ""),
                   majorVersion: .majorVersion,
                   issueTitle:   .issueTitle,
                   milestoneName: .milestoneName,
@@ -411,6 +412,7 @@ jobs:
           MODE:               ${{ matrix.mode }}
           HOTFIX_IN_PROGRESS: ${{ matrix.hotfixInProgress }}
           HOTFIX_VERSION:     ${{ matrix.hotfixVersion }}
+          HOTFIX_COMMIT:      ${{ matrix.hotfixCommit }}
         shell: bash
         run: |
           set -euo pipefail
@@ -440,10 +442,10 @@ jobs:
 
           # An active hotfix is create-capable even if the ordinary shipped
           # tracker was closed. But once a human closes THIS hotfix version's
-          # tracker, do not recreate it every day. A later hotfix version gets a
-          # distinct marker and can create its own tracker.
+          # tracker, do not recreate it every day. A later commit or hotfix
+          # version gets a distinct marker and can create its own tracker.
           if [ "$HOTFIX_IN_PROGRESS" = "true" ] && [ -z "$EXISTING" ]; then
-            HOTFIX_MARKER="<!-- release-readiness-hotfix: ${HOTFIX_VERSION} -->"
+            HOTFIX_MARKER="<!-- release-readiness-hotfix: ${HOTFIX_VERSION}@${HOTFIX_COMMIT} -->"
             CLOSED_HOTFIX=$(gh issue list \
               --repo "${{ github.repository }}" \
               --state closed \
@@ -453,7 +455,7 @@ jobs:
               jq -r --arg marker "$HOTFIX_MARKER" \
                 '[.[] | select(.body | contains($marker))] | sort_by(.closedAt) | last | .number // empty')
             if [ -n "$CLOSED_HOTFIX" ]; then
-              echo "Hotfix tracker ${TRACKER_KEY} ${HOTFIX_VERSION} was closed as #${CLOSED_HOTFIX} — not recreating."
+              echo "Hotfix tracker ${TRACKER_KEY} ${HOTFIX_VERSION}@${HOTFIX_COMMIT} was closed as #${CLOSED_HOTFIX} — not recreating."
               exit 0
             fi
           fi

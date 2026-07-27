@@ -416,7 +416,7 @@ function Get-RemoteSrBranchesForMajor {
         origin matching the strict SR pattern for the given major version.
         Throws on git failure.
     .OUTPUTS
-        @(@{ branch = 'release/10.0.1xx-sr7'; srNumber = 7 }, ...)
+        @(@{ branch = 'release/10.0.1xx-sr7'; srNumber = 7; sha = '<commit>' }, ...)
         Sorted by srNumber ascending.
     #>
     param([int]$Major)
@@ -429,8 +429,9 @@ function Get-RemoteSrBranchesForMajor {
     foreach ($line in $lines) {
         if (-not $line) { continue }
         # Format: "<sha>\trefs/heads/<branchName>"
-        if ($line -match '^[0-9a-f]{40}\s+refs/heads/(.+)$') {
-            $branch = $Matches[1]
+        if ($line -match '^([0-9a-f]{40})\s+refs/heads/(.+)$') {
+            $sha = $Matches[1]
+            $branch = $Matches[2]
             if ($branch -match $Script:StrictSrBranchRegex) {
                 $branchMajor = [int]$Matches[1]
                 $sr          = [int]$Matches[2]
@@ -438,6 +439,7 @@ function Get-RemoteSrBranchesForMajor {
                     $branches += [pscustomobject]@{
                         branch   = $branch
                         srNumber = $sr
+                        sha      = $sha
                     }
                 }
             } else {
@@ -581,7 +583,8 @@ function New-Tracker {
         [string]$ExpectedTag,
         [int]$HasRecentActivityCount,
         [bool]$HotfixInProgress = $false,
-        [string]$HotfixVersion
+        [string]$HotfixVersion,
+        [string]$HotfixCommit
     )
     $canonical = "net$Major-sr$SrNumber"
     $milestone = ".NET $Major SR$SrNumber"
@@ -624,6 +627,7 @@ function New-Tracker {
         priorShippedTag      = $PriorShippedTag
         hotfixInProgress     = $HotfixInProgress
         hotfixVersion        = $HotfixVersion
+        hotfixCommit         = $HotfixCommit
     }
 }
 
@@ -758,7 +762,7 @@ function Invoke-DetectionForMajor {
                 -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
                 -ExpectedPatch $highestShippedPatch -ExpectedTag $highestShippedTag `
                 -HasRecentActivityCount $recent -HotfixInProgress $true `
-                -HotfixVersion $versionInfo.Tag
+                -HotfixVersion $versionInfo.Tag -HotfixCommit $entry.sha
             $trackers.Add($tracker)
             Write-Host "  -> shipped SR tracker with unpublished hotfix: SR$sr (published=$highestShippedTag, live=$expectedTag, recent=$recent)" -ForegroundColor Yellow
         } elseif (Test-IsBranchInFlight -BranchPatch $branchPatch -ShippedPatches $shippedPatches) {

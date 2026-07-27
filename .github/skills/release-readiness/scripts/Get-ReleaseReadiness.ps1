@@ -662,6 +662,22 @@ function Write-ShippedPublicationStatusUnknownWarning {
     Write-Warn "Could not query GitHub Release publication metadata for stable tag '$Tag'. Shipped contents remain anchored to the immutable local tag, publication status is unknown, and the displayed date uses tagged-commit evidence."
 }
 
+function Resolve-ShippedPublicationState {
+    param(
+        [bool]$ListQueryFailed,
+        [bool]$AnchorInPublishedList,
+        [string]$TagDateSource
+    )
+
+    # A successful per-tag published_at lookup is definitive even when the
+    # paginated list request failed independently.
+    if ($TagDateSource -eq 'github-release' -or $AnchorInPublishedList) {
+        return 'published'
+    }
+    if ($ListQueryFailed) { return 'unknown' }
+    return 'pending'
+}
+
 function Select-LatestStableTagForSr {
     param(
         [string]$SrBranch,
@@ -5044,8 +5060,9 @@ function Format-MarkdownReport {
     $hotfixMarkerInfo = Get-MetadataValue -Container $Data -Name 'shippedInfo'
     if ([bool](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'hotfixInProgress' -Default $false)) {
         $hotfixMarkerVersion = [string](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'liveVersion')
-        if ($hotfixMarkerVersion) {
-            [void]$sb.AppendLine("<!-- release-readiness-hotfix: $hotfixMarkerVersion -->")
+        $hotfixMarkerCommit = [string](Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha')
+        if ($hotfixMarkerVersion -and $hotfixMarkerCommit) {
+            [void]$sb.AppendLine("<!-- release-readiness-hotfix: $hotfixMarkerVersion@$hotfixMarkerCommit -->")
         }
     }
 
@@ -6087,18 +6104,6 @@ function Invoke-Main {
         }
         $stableTagsForBounds = @((@($publishedTags) + @($localStableTags)) | Sort-Object -Unique)
         $anchorIsPublished = @($publishedTags) -contains $anchorTag
-        $shippedInfo['publicationState'] = if ($publicationQueryFailed) {
-            'unknown'
-        } elseif ($anchorIsPublished) {
-            'published'
-        } else {
-            'pending'
-        }
-        if ($publicationQueryFailed) {
-            Write-ShippedPublicationStatusUnknownWarning -Tag $anchorTag
-        } elseif (-not $anchorIsPublished) {
-            Write-ShippedPublicationPendingWarning -Tag $anchorTag
-        }
         $shippedInfo.version = $anchorTag
         $ctx['shippedTagVersion'] = $anchorTag
         $tagInfo = Get-StableTagInfo -Version $anchorTag -Repo $ctx.repo
@@ -6107,6 +6112,15 @@ function Invoke-Main {
         }
         $shippedInfo.tagDate = $tagInfo.Date.ToString('o')
         $shippedInfo.dateSource = $tagInfo.DateSource
+        $shippedInfo['publicationState'] = Resolve-ShippedPublicationState `
+            -ListQueryFailed $publicationQueryFailed `
+            -AnchorInPublishedList $anchorIsPublished `
+            -TagDateSource $tagInfo.DateSource
+        if ($shippedInfo.publicationState -eq 'unknown') {
+            Write-ShippedPublicationStatusUnknownWarning -Tag $anchorTag
+        } elseif ($shippedInfo.publicationState -eq 'pending') {
+            Write-ShippedPublicationPendingWarning -Tag $anchorTag
+        }
         $shippedInfo.tagFound = $true
         $shippedRefs = Resolve-ShippedContentsRefs -Version $anchorTag -Repo $ctx.repo -PublishedTags $stableTagsForBounds
         $ctx['contentsRef'] = $shippedRefs.ContentsRef
