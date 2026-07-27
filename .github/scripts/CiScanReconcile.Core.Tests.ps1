@@ -248,6 +248,26 @@ x').Count | Should -Be 0
     It 'stops collecting at the next heading' {
         @(Get-CiScanAffectedLegs -Body "## Affected Legs`n- one`n`n## Error Message`n- not-a-leg").Count | Should -Be 1
     }
+    <#
+        `Get-CiScanBuildCoverage` matches the pre-em-dash segment of each leg against AzDO
+        timeline record names with a plain substring compare, and a record name never
+        contains a backtick. So one stray backtick silently fails the leg-coverage gate and
+        blocks a legitimate close. These bodies are LLM-authored, so the inline-code span
+        lands somewhere different in nearly every real issue — all the shapes below are
+        taken from open `ci-scan-net11` issues or from the reviewed report.
+    #>
+    It 'strips inline-code backticks wherever they appear in the leg' -ForEach @(
+        @{ Line = '`Build Windows (Release)` — flaky since Tuesday'; Key = 'Build Windows (Release)' }
+        @{ Line = 'Blazor macOS — `Run Integration Tests - Blazor`'; Key = 'Blazor macOS' }
+        @{ Line = 'Samples macOS — `Run Integration Tests - Samples` (macOS agent)'; Key = 'Samples macOS' }
+        @{ Line = 'Build macOS (Debug)'; Key = 'Build macOS (Debug)' }
+    ) {
+        $legs = @(Get-CiScanAffectedLegs -Body "## Affected Legs`n- $Line")
+        $legs.Count | Should -Be 1
+        $legs[0] | Should -Not -Match '`'
+        # The coverage gate's actual key derivation, reproduced verbatim.
+        ($legs[0] -split '—')[0].Trim() | Should -BeExactly $Key
+    }
     It 'reads a configured pipeline name and rejects unconfigured ones' {
         Get-CiScanPipelineFromBody -Body '- **Pipeline**: maui-pr-devicetests (ID 314)' -Config $script:Net11 | Should -Be 'maui-pr-devicetests'
         Get-CiScanPipelineFromBody -Body '- **Pipeline**: totally-made-up' -Config $script:Net11 | Should -BeNullOrEmpty

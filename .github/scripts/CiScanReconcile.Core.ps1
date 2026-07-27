@@ -334,6 +334,21 @@ function Get-CiScanAffectedLegs {
         An issue with no resolvable legs can never satisfy the leg-coverage gate, so it
         is escalated to a human rather than auto-closed. Returns an empty array when the
         section is missing or empty.
+
+        Backticks are stripped from ANYWHERE in the line, not just from the two ends.
+        These bodies are LLM-authored against a loose template, so the inline-code span
+        lands in a different place in nearly every issue:
+
+            - Build macOS (Debug)
+            - Blazor macOS — `Run Integration Tests - Blazor`
+            - `Build Windows (Release)` — flaky since Tuesday
+
+        `Get-CiScanBuildCoverage` matches the pre-`—` segment against AzDO timeline
+        record names with a substring compare, and a record name never contains a
+        backtick — so a single stray one silently fails the leg-coverage gate. An
+        end-anchored strip could not handle the third shape at all, and on the second it
+        removed the CLOSING backtick of a span that opened mid-line, leaving the text
+        unbalanced.
     #>
     [CmdletBinding()]
     param([AllowNull()][AllowEmptyString()][string]$Body)
@@ -349,7 +364,7 @@ function Get-CiScanAffectedLegs {
         }
         if (-not $inSection) { continue }
         if ($line -match '^\s*[-*]\s+(?<leg>\S.*?)\s*$') {
-            $legs += ($Matches['leg'] -replace '^`|`$', '').Trim()
+            $legs += ($Matches['leg'] -replace '`', '').Trim()
         }
     }
     return @($legs | Where-Object { $_ } | Select-Object -Unique)

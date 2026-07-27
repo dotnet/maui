@@ -1014,6 +1014,37 @@ Describe 'AzDO coverage re-derivation' {
         { Invoke-HttpGetJson -Url 'https://dev.azure.com/other-org/public/_apis/build/builds/1' } |
             Should -Throw -ExpectedMessage '*non-allowlisted*'
     }
+
+    <#
+        End-to-end proof for the backtick strip: a leg lifted verbatim from a real issue
+        body, through Get-CiScanAffectedLegs, into the timeline substring match. AzDO
+        record names never contain a backtick, so leaving one in the key silently fails
+        the coverage gate and blocks a close that every other gate has already approved.
+    #>
+    It 'matches a timeline record for a leg written as inline code in the issue body' {
+        $legs = @(Get-CiScanAffectedLegs -Body ("## Affected Legs`n" +
+                '- `Build Windows (Release)` — flaky since Tuesday'))
+
+        Mock Invoke-HttpGetJson {
+            if ($Url -like '*/timeline*') {
+                return [pscustomobject]@{ records = @(
+                        [pscustomobject]@{ name = 'Build Windows (Release)'; result = 'succeeded' }) }
+            }
+            return [pscustomobject]@{
+                definition   = [pscustomobject]@{ id = 314 }
+                sourceBranch = 'refs/heads/net11.0'
+                status       = 'completed'
+                result       = 'succeeded'
+            }
+        }
+
+        $config = Get-CiScanTwinConfig -Label 'ci-scan-net11'
+        $pipeline = @($config.Pipelines | Where-Object { $_.DefinitionId -eq 314 })[0].Name
+        $c = Get-CiScanBuildCoverage -Config $config -Pipeline $pipeline -Legs $legs -ClaimedBuildIds @(42)
+
+        $c.Unverifiable | Should -BeFalse
+        $c.VerifiedAbsentBuilds | Should -Contain 42
+    }
 }
 
 
