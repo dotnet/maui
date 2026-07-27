@@ -35,14 +35,9 @@ platform), then do the platform setup for what you're testing —
 
 ## Using the app
 
-On every platform the in-app steps are the same: open the **Passkeys** page (its **server URL** already
-defaults to your tunnel — `Configure-Passkeys.ps1` bakes it in; edit it via the Server toolbar button if needed),
-sign up (or sign in) with a username + password, tap **Create a passkey** (approve the device prompt),
-then **Sign in with a passkey**.
-
-> **Testing the web UI in a browser?** Load it via the **tunnel URL** (`https://<tunnel-host>`, clicking
-> through the dev-tunnel warning), not `http://localhost:5177`. Passkeys are bound to the RP ID domain,
-> so a `localhost` origin fails with *"relying party ID is not a registrable domain suffix…"*.
+On every platform the in-app steps are the same: open the **Passkeys** page (its **server URL** is baked
+in by `Configure-Passkeys.ps1`), sign up (or sign in) with a username + password, tap **Create a passkey**
+(approve the device prompt), then **Sign in with a passkey**.
 
 ## 1. Server (shared by all platforms)
 
@@ -146,7 +141,6 @@ only on a Mac), and a target on **iOS 16+** or **Mac Catalyst 16+**.
 | AASA `curl` returns HTML | The dev tunnel's anti-phishing interstitial is answering; create a tunnel access token / disable anti-phishing for the port so raw JSON is served. |
 | `Could not resolve host …devtunnels.ms` on the device | Local-network DNS won't resolve `*.devtunnels.ms`. Point the device at a public resolver (iOS Wi-Fi → Configure DNS → Manual → `8.8.8.8`) or restart the router. Apple's CDN resolves it fine over the public internet. |
 | `no profiles for '<bundle id>' were found` | The App ID belongs to another team — set your own reverse-DNS `<ApplicationId>` in `Essentials.Sample.csproj` and register it under your team. |
-| Browser: *"relying party ID is not a registrable domain suffix of … the current domain"* | You opened the web UI on `localhost` (e.g. `http://localhost:5177`). Passkeys are domain-bound — browse to the **tunnel URL** `https://<your-domain>` instead (click through the dev-tunnel warning), so the page origin matches the RP ID. |
 | Build error `MT7139: … requests the entitlement 'com.apple.developer.associated-domains', but no provisioning profile has been specified` | A **device** or **Mac Catalyst** build needs an explicit provisioning profile with Associated Domains. Generate one for your Team (IDE automatic provisioning or Xcode) and set `CodesignProvision` to its name. The iOS **Simulator** doesn't need this. |
 
 ## 3. Android (emulator)

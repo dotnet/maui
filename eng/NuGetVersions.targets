@@ -203,24 +203,12 @@
         Version="$(MicrosoftJSInteropPackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore"
-        Version="$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion)"
-    />
-    <PackageReference
         Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore"
         Version="$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)"
     />
     <PackageReference
         Update="Microsoft.EntityFrameworkCore.Sqlite"
         Version="$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.EntityFrameworkCore.Design"
-        Version="$(MicrosoftEntityFrameworkCoreDesignPackageVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.EntityFrameworkCore.Tools"
-        Version="$(MicrosoftEntityFrameworkCoreToolsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authorization"

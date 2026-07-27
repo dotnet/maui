@@ -21,8 +21,7 @@ namespace Samples.ViewModel
 		// The relying-party server (Samples.Server.Passkeys). Passkeys are bound to a domain, so it must be a
 		// public HTTPS host reachable from the device. Run `pwsh ./Configure-Passkeys.ps1` in src/Essentials/samples
 		// to provision a dev tunnel; it bakes the URL in via AssemblyMetadata (see Essentials.Sample.csproj).
-		// The default is also editable at runtime from the Server toolbar button.
-		string serverBaseUrl = GetConfiguredServerUrl();
+		readonly string serverBaseUrl = GetConfiguredServerUrl();
 
 		static string GetConfiguredServerUrl()
 		{
@@ -53,7 +52,6 @@ namespace Samples.ViewModel
 			SignOutCommand = new Command(SignOut);
 			RegisterCommand = new Command(async () => await RegisterAsync());
 			LoginCommand = new Command(async () => await LoginAsync());
-			EditServerUrlCommand = new Command(async () => await EditServerUrlAsync());
 		}
 
 		public bool IsSupported => PasskeysApi.IsSupported;
@@ -62,11 +60,7 @@ namespace Samples.ViewModel
 			? "Passkeys are supported on this device."
 			: "Passkeys are NOT supported on this device/OS version.";
 
-		public string ServerBaseUrl
-		{
-			get => serverBaseUrl;
-			set => SetProperty(ref serverBaseUrl, value);
-		}
+		public string ServerBaseUrl => serverBaseUrl;
 
 		public string Username
 		{
@@ -135,8 +129,6 @@ namespace Samples.ViewModel
 
 		public ICommand LoginCommand { get; }
 
-		public ICommand EditServerUrlCommand { get; }
-
 		async Task SignUpAsync()
 		{
 			try
@@ -151,7 +143,7 @@ namespace Samples.ViewModel
 				Log("Account created. Signing in…");
 				await PostJsonAsync("/account/login?useCookies=true", new { email = Username, password = Password });
 
-				await RefreshAndOfferPasskeyAsync();
+				await RefreshAfterSignInAsync();
 			}
 			catch (Exception ex)
 			{
@@ -173,7 +165,7 @@ namespace Samples.ViewModel
 				// POST /account/login?useCookies=true sets the auth cookie on our CookieContainer.
 				await PostJsonAsync("/account/login?useCookies=true", new { email = Username, password = Password });
 
-				await RefreshAndOfferPasskeyAsync();
+				await RefreshAfterSignInAsync();
 			}
 			catch (Exception ex)
 			{
@@ -280,25 +272,11 @@ namespace Samples.ViewModel
 		}
 
 		// After sign-in, offer to set up a passkey if the account doesn't have one yet.
-		async Task RefreshAndOfferPasskeyAsync()
+		async Task RefreshAfterSignInAsync()
 		{
 			await RefreshAccountStateAsync();
-			if (!IsSignedIn)
-				return;
-
-			Log($"✅ Signed in as {CurrentUsername}.");
-
-			if (!HasPasskey && PasskeysApi.IsSupported)
-			{
-				var wantsPasskey = await DisplayConfirmAsync(
-					"Set up a passkey?",
-					"Sign in faster next time using your fingerprint, face, or device PIN - no password needed. Create a passkey now?",
-					"Set up",
-					"Not now");
-
-				if (wantsPasskey)
-					await RegisterAsync();
-			}
+			if (IsSignedIn)
+				Log($"✅ Signed in as {CurrentUsername}.");
 		}
 
 		// Refreshes signed-in state and the passkey list from GET /passkeys/list (401 when signed out).
@@ -347,22 +325,6 @@ namespace Samples.ViewModel
 			CurrentUsername = null;
 			PasskeyCount = 0;
 			Passkeys.Clear();
-		}
-
-		async Task EditServerUrlAsync()
-		{
-			var url = await DisplayPromptAsync(
-				"Server URL",
-				"Base URL of the relying-party server (a public HTTPS dev-tunnel domain). See the server README.",
-				ServerBaseUrl);
-
-			if (string.IsNullOrWhiteSpace(url))
-				return;
-
-			ServerBaseUrl = url.Trim();
-			// A new server means a fresh HttpClient with an empty cookie jar, i.e. a new session.
-			SetSignedOutState();
-			Log($"Server set to {ServerBaseUrl}");
 		}
 
 		bool EnsureSupported()

@@ -8,10 +8,6 @@
         <viewmodels:PasskeysViewModel />
     </views:BasePage.BindingContext>
 
-    <views:BasePage.ToolbarItems>
-        <ToolbarItem Text="Server" Command="{Binding EditServerUrlCommand}" IsEnabled="{Binding IsNotBusy}" />
-    </views:BasePage.ToolbarItems>
-
     <Grid RowDefinitions="*,Auto" Padding="12" RowSpacing="8">
 
         <ScrollView Grid.Row="0">
