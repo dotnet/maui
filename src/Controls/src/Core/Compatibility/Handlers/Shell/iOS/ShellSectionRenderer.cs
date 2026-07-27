@@ -617,7 +617,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			Title = ShellSection.Title;
 			var registrationGeneration = ++_tabRegistrationGeneration;
-			_nativeTabRegistrations.Clear();
 			var shellSection = ShellSection;
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
@@ -628,6 +627,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					return;
 				}
+
+				_nativeTabRegistrations.Clear();
 
 				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
 				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);

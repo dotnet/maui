@@ -567,7 +567,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var registrationGeneration = ++_leftToolbarRegistrationGeneration;
-			_nativeLeftToolbarRegistrations.Clear();
 			var trackedNavigationItem = NavigationItem;
 			var trackedViewController = ViewController;
 			var isRootPage = IsRootPage;
@@ -604,6 +603,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					return;
 				}
+
+				_nativeLeftToolbarRegistrations.Clear();
 
 				UIImage? icon = null;
 
