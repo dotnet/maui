@@ -886,6 +886,45 @@ Describe 'Static source invariants' {
         $script:WorkflowCode | Should -BeLike '*-Mode report*'
     }
 
+    <#
+        The "report mode cannot mutate" guarantee is enforced by this suite and nothing
+        re-checks it at run time. `workflow_dispatch` lets the operator select ANY ref,
+        so PR-time gating does not cover a dispatch from an unmerged branch — the safety
+        suite has to gate the job that actually holds `issues: write`.
+    #>
+    It 'gates the mutating job on the safety suite' {
+        $yaml = $script:WorkflowText
+
+        $yaml | Should -Match '(?m)^  test:' -Because 'the safety-test job must exist'
+        $yaml | Should -Match 'Invoke-Pester' -Because 'the gate must actually run the suite'
+
+        # Both test files must be in the gate; gating on only one would leave the other
+        # free to regress.
+        foreach ($f in @('CiScanReconcile.Core.Tests.ps1', 'Invoke-CiScanReconcile.Tests.ps1')) {
+            $yaml | Should -BeLike "*$f*" -Because "$f must be part of the gate"
+        }
+
+        # The job holding `issues: write` must depend on the gate directly, so the
+        # dependency cannot be dropped by editing a different job's `needs`.
+        $mutateJob = ($script:WorkflowCode -split '(?m)^  mutate:')[1]
+        $mutateJob | Should -Not -BeNullOrEmpty
+        $mutateJob | Should -Match 'needs:\s*\[[^\]]*\btest\b'
+        $mutateJob | Should -BeLike '*issues: write*'
+    }
+
+    It 'keeps the safety gate free of any GitHub token' {
+        $testJob = (($script:WorkflowCode -split '(?m)^  test:')[1] -split '(?m)^  report:')[0]
+        $testJob | Should -Not -BeLike '*GH_TOKEN*'
+        $testJob | Should -Not -BeLike '*issues: write*'
+    }
+
+    It 'does not set StrictMode in the safety gate' {
+        # Pester dot-sources test files into the host session, so a host-level
+        # `Set-StrictMode` leaks into every test body and fails tests that pass locally.
+        $testJob = (($script:WorkflowCode -split '(?m)^  test:')[1] -split '(?m)^  report:')[0]
+        $testJob | Should -Not -BeLike '*Set-StrictMode*'
+    }
+
     It 'does not wire workflow inputs into the report job mode argument' {
         $reportJob = ($script:WorkflowCode -split '(?m)^  mutate:')[0]
         $reportJob | Should -Not -BeLike '*-Mode ${{*'

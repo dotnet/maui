@@ -77,10 +77,71 @@ concurrency:
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────────
+  # SAFETY TESTS — gate for everything below. Runs with no token of any kind.
+  #
+  # The claim "report mode cannot mutate" is enforced by the Pester suite, not by
+  # inspection. Nothing else in this workflow re-checks it at run time, and
+  # `workflow_dispatch` lets the operator pick ANY ref — so without this job an
+  # unreviewed branch could reach the `mutate` job's `issues: write` token. PR-time
+  # gating (`powershell-script-tests.yml`) does not cover that path, because a dispatch
+  # does not have to run from a merged commit.
+  #
+  # The suite is fully offline: no network, no `gh`, no AzDO. It is deliberately given
+  # `contents: read` and no `GH_TOKEN`, so a regression that tried to reach GitHub would
+  # fail here rather than mutate anything.
+  # ─────────────────────────────────────────────────────────────────────────────────
+  test:
+    name: Safety tests
+    if: github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run reconciler safety tests
+        shell: pwsh
+        run: |
+          # NOTE: do NOT add `Set-StrictMode` here. Pester dot-sources each test file
+          # into this session, so a strict mode set at the host level leaks into every
+          # test body and fails tests that pass everywhere else.
+          $ErrorActionPreference = 'Stop'
+
+          Install-Module Pester -RequiredVersion 5.9.0 -Force -Scope CurrentUser -SkipPublisherCheck
+          Import-Module Pester -RequiredVersion 5.9.0
+
+          $config = New-PesterConfiguration
+          $config.Run.Path = @(
+            './.github/scripts/CiScanReconcile.Core.Tests.ps1'
+            './.github/scripts/Invoke-CiScanReconcile.Tests.ps1'
+          )
+          $config.Run.PassThru = $true
+          $config.Output.Verbosity = 'Detailed'
+
+          $result = Invoke-Pester -Configuration $config
+
+          foreach ($t in $result.Failed) {
+            Write-Output "::error::Reconciler safety test failed: $($t.ExpandedPath)"
+          }
+          if ($result.FailedCount -gt 0) {
+            throw "$($result.FailedCount) reconciler safety test(s) failed; refusing to run the reconciler."
+          }
+          # Anti-vacuous: a discovery failure reports zero failures, which would otherwise
+          # look like a pass and open the gate.
+          if ($result.TotalCount -lt 150) {
+            throw "Only $($result.TotalCount) test(s) ran; the suite did not load correctly."
+          }
+          Write-Output "Reconciler safety suite: $($result.PassedCount)/$($result.TotalCount) passed."
+
+  # ─────────────────────────────────────────────────────────────────────────────────
   # REPORT — always runs, for every trigger, with a read-only token.
   # ─────────────────────────────────────────────────────────────────────────────────
   report:
     name: Report (read-only)
+    needs: test
     if: github.repository == 'dotnet/maui'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -129,7 +190,10 @@ jobs:
   # ─────────────────────────────────────────────────────────────────────────────────
   mutate:
     name: Apply (${{ inputs.mode }})
-    needs: report
+    # `test` is listed explicitly even though `report` already depends on it: this is the
+    # only job that holds `issues: write`, and its gate must not be removable by an edit
+    # to a different job's `needs`.
+    needs: [test, report]
     if: >-
       github.repository == 'dotnet/maui' &&
       github.event_name == 'workflow_dispatch' &&
