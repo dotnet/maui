@@ -20,6 +20,10 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
 
+/// <summary>
+/// End-to-end generator harness that owns <see cref="XamlHotReloadState"/> lifecycle so each
+/// scenario starts clean and also leaves no cached state behind for the next test.
+/// </summary>
 internal sealed class XamlHotReloadTestHarness : IDisposable
 {
 	static readonly Regex GeneratedCodeAttributeRegex = new(
