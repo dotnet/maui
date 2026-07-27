@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Platform
 		const double AccessoryHeight = 44;
 		const double GlassButtonBottomSpacing = 4;
 		const string DoneAccessoryIdentifier = "DoneAccessory";
+		internal const string UseLegacyDoneAccessorySwitch = "Microsoft.Maui.Platform.iOS.UseLegacyDoneAccessory";
 
 		// UIKit's localized "Done" label, matching UIBarButtonSystemItem.Done so VoiceOver keeps reading
 		// the affordance in the user's language on the iOS 26+ glass button path.
@@ -20,12 +21,16 @@ namespace Microsoft.Maui.Platform
 		// iOS 26 gives bars a translucent Liquid Glass background, so a full-width accessory looks empty
 		// and appears to let taps through to the field behind it (dotnet/maui#36412). On those versions
 		// we replace the bar with a floating, pass-through close button. Earlier iOS keeps the original
-		// full-width touch-blocking Done toolbar, so the accessory already blocks taps behind it.
-		static bool UseGlassButton => OperatingSystem.IsIOSVersionAtLeast(26);
+		// full-width touch-blocking Done toolbar. Apps can temporarily restore that toolbar on iOS 26+
+		// by setting the UseLegacyDoneAccessory AppContext switch to true before creating controls.
+		static bool UseGlassButton =>
+			OperatingSystem.IsIOSVersionAtLeast(26) &&
+			!(AppContext.TryGetSwitch(UseLegacyDoneAccessorySwitch, out var useLegacyDoneAccessory) && useLegacyDoneAccessory);
 
 		readonly BarButtonItemProxy _proxy;
+		readonly bool _useGlassButton;
 
-		// Cache the discovered button so hit-testing (iOS 26+) doesn't walk the subview tree on every
+		// Cache the discovered button so glass-path hit-testing doesn't walk the subview tree on every
 		// touch. It's held weakly because the button is already retained by the native Subviews array,
 		// so a strong managed field here would trip the MEM0002 memory-leak analyzer for NSObject
 		// subclasses. The weak reference effectively always resolves while the button is a subview.
@@ -34,12 +39,14 @@ namespace Microsoft.Maui.Platform
 		public MauiDoneAccessoryView() : base(InitialFrame())
 		{
 			_proxy = new BarButtonItemProxy();
+			_useGlassButton = UseGlassButton;
 			Initialize(_proxy.OnDataClicked);
 		}
 
 		public MauiDoneAccessoryView(Action doneClicked) : base(InitialFrame())
 		{
 			_proxy = new BarButtonItemProxy(doneClicked);
+			_useGlassButton = UseGlassButton;
 			Initialize(_proxy.OnClicked);
 		}
 
@@ -62,7 +69,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void SendDoneClicked()
 		{
-			if (UseGlassButton && DoneButton is UIButton button)
+			if (_useGlassButton && DoneButton is UIButton button)
 				button.SendActionForControlEvents(UIControlEvent.TouchUpInside);
 			else
 				_proxy.Invoke();
@@ -72,11 +79,11 @@ namespace Microsoft.Maui.Platform
 		{
 			var hitView = base.HitTest(point, uievent);
 
-			// The classic toolbar (iOS < 26) keeps its original full-width touch-blocking behavior.
-			if (!UseGlassButton)
+			// The classic toolbar keeps its original full-width touch-blocking behavior.
+			if (!_useGlassButton)
 				return hitView;
 
-			// The floating glass button (iOS 26+) lets taps pass through everywhere except the button
+			// The floating glass button lets taps pass through everywhere except the button
 			// itself, so the field showing behind the accessory stays tappable.
 			if (hitView is null || Equals(hitView))
 				return null;
@@ -94,14 +101,14 @@ namespace Microsoft.Maui.Platform
 		{
 			AccessibilityIdentifier = DoneAccessoryIdentifier;
 
-			if (UseGlassButton)
+			if (_useGlassButton)
 				InitializeGlassButton(doneClicked);
 			else
 				InitializeToolbar(doneClicked);
 		}
 
-		// iOS < 26: the original translucent toolbar with the system Done item. It sizes itself and is
-		// already localized, so there are no hard-coded metrics here.
+		// Legacy path: the original translucent toolbar with the system Done item. It sizes itself and
+		// is already localized, so there are no hard-coded metrics here.
 		void InitializeToolbar(EventHandler doneClicked)
 		{
 			var toolbar = new UIToolbar(Bounds)
@@ -118,9 +125,9 @@ namespace Microsoft.Maui.Platform
 			AddSubview(toolbar);
 		}
 
-		// iOS 26+: a floating Liquid Glass close button pinned to the trailing layout margin and lifted
-		// above the keyboard. Keep the original accessory height so UIKit continues scrolling focused
-		// input above the keyboard.
+		// Default iOS 26+ path: a floating Liquid Glass close button pinned to the trailing layout margin
+		// and lifted above the keyboard. Keep the original accessory height so UIKit continues scrolling
+		// focused input above the keyboard.
 		void InitializeGlassButton(EventHandler doneClicked)
 		{
 			ClipsToBounds = false;
