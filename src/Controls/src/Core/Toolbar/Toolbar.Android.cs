@@ -245,6 +245,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapTitle(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateTitle(arg2);
+			arg2.UpdateMenu();
 		}
 
 		public static void MapIconColor(IToolbarHandler arg1, Toolbar arg2)
@@ -255,6 +256,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapTitleView(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg2.UpdateTitleView();
+			arg2.UpdateMenu();
 		}
 
 		public static void MapTitleIcon(IToolbarHandler arg1, Toolbar arg2)

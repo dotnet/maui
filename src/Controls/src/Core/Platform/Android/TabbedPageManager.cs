@@ -636,9 +636,6 @@ public class TabbedPageManager
 
 		_registeredMenuItems.Clear();
 		_registeredMenuItems.AddRange(menuItems);
-		foreach (var child in Element.Children)
-			_nativeTabRegistrations.UnregisterOwner(child, NativeElementDiscriminators.RealizedView);
-		_nativeTabRegistrations.UnregisterOwner(Element, NativeElementDiscriminators.RealizedView);
 
 		foreach (var menuItem in menuItems)
 		{
@@ -654,27 +651,34 @@ public class TabbedPageManager
 		var registrationGeneration = ++_tabRegistrationGeneration;
 		_bottomNavigationView.Post(() =>
 		{
-			if (registrationGeneration != _tabRegistrationGeneration ||
-				_bottomNavigationView?.GetChildAt(0) is not ViewGroup menuView)
-			{
+			if (registrationGeneration != _tabRegistrationGeneration)
 				return;
-			}
 
-			var count = Math.Min(menuView.ChildCount, menuItems.Count);
-			for (int index = 0; index < count; index++)
+			var retainedElements = new List<object> { _bottomNavigationView };
+			foreach (var menuItem in menuItems)
+				retainedElements.Add(menuItem);
+
+			if (_bottomNavigationView?.GetChildAt(0) is ViewGroup menuView)
 			{
-				var menuItem = menuItems[index];
-				var isMoreItem = menuItem.ItemId == BottomNavigationViewUtils.MoreTabId;
-				object owner = isMoreItem ? Element : Element.Children[menuItem.ItemId];
-				if (menuView.GetChildAt(index) is AView itemView)
+				var count = Math.Min(menuView.ChildCount, menuItems.Count);
+				for (int index = 0; index < count; index++)
 				{
-					_nativeTabRegistrations.RegisterExclusive(
-						owner,
-						itemView,
-						isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
-						NativeElementDiscriminators.RealizedView);
+					var menuItem = menuItems[index];
+					var isMoreItem = menuItem.ItemId == BottomNavigationViewUtils.MoreTabId;
+					object owner = isMoreItem ? Element : Element.Children[menuItem.ItemId];
+					if (menuView.GetChildAt(index) is AView itemView)
+					{
+						retainedElements.Add(itemView);
+						_nativeTabRegistrations.RegisterExclusive(
+							owner,
+							itemView,
+							isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+							NativeElementDiscriminators.RealizedView);
+					}
 				}
 			}
+
+			_nativeTabRegistrations.Retain(retainedElements);
 		});
 	}
 

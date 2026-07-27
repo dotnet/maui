@@ -587,13 +587,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_registeredMenuItems.Clear();
 			_registeredMenuItems.AddRange(menuItems);
-			var retainedElements = new List<object> { _bottomView };
-			retainedElements.AddRange(menuItems.Cast<object>());
-			_nativeTabRegistrations.Retain(retainedElements);
-
-			foreach (var shellSection in shellSections)
-				_nativeTabRegistrations.UnregisterOwner(shellSection, NativeElementDiscriminators.RealizedView);
-			_nativeTabRegistrations.UnregisterOwner(ShellItem, NativeElementDiscriminators.RealizedView);
 
 			foreach (var menuItem in menuItems)
 			{
@@ -611,29 +604,34 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var registrationGeneration = ++_tabRegistrationGeneration;
 			_bottomView.Post(() =>
 			{
-				if (registrationGeneration != _tabRegistrationGeneration ||
-					_bottomView?.GetChildAt(0) is not ViewGroup menuView)
-				{
+				if (registrationGeneration != _tabRegistrationGeneration)
 					return;
-				}
 
-				var count = Math.Min(menuView.ChildCount, menuItems.Count);
-				for (int index = 0; index < count; index++)
+				var retainedElements = new List<object> { _bottomView };
+				retainedElements.AddRange(menuItems.Cast<object>());
+				if (_bottomView?.GetChildAt(0) is ViewGroup menuView)
 				{
-					var menuItem = menuItems[index];
-					var isMoreItem = menuItem.ItemId == MoreTabId;
-					object owner = isMoreItem
-						? ShellItem
-						: shellSections[menuItem.ItemId];
-					if (menuView.GetChildAt(index) is AView itemView)
+					var count = Math.Min(menuView.ChildCount, menuItems.Count);
+					for (int index = 0; index < count; index++)
 					{
-						_nativeTabRegistrations.RegisterExclusive(
-							owner,
-							itemView,
-							isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
-							NativeElementDiscriminators.RealizedView);
+						var menuItem = menuItems[index];
+						var isMoreItem = menuItem.ItemId == MoreTabId;
+						object owner = isMoreItem
+							? ShellItem
+							: shellSections[menuItem.ItemId];
+						if (menuView.GetChildAt(index) is AView itemView)
+						{
+							retainedElements.Add(itemView);
+							_nativeTabRegistrations.RegisterExclusive(
+								owner,
+								itemView,
+								isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+								NativeElementDiscriminators.RealizedView);
+						}
 					}
 				}
+
+				_nativeTabRegistrations.Retain(retainedElements);
 			});
 		}
 

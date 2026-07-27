@@ -515,6 +515,9 @@ namespace Microsoft.Maui.Controls.Platform
 					NativeElementRoles.Toolbar,
 					NativeElementDiscriminators.ToolbarContainer);
 
+				if (toolbar.HasExpandedActionView)
+					return;
+
 				global::Android.Widget.TextView? titleView = null;
 				for (var index = 0; index < toolbar.ChildCount; index++)
 				{

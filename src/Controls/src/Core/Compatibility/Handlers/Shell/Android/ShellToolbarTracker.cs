@@ -202,9 +202,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (_searchView != null)
 				{
-					_searchView.View.RemoveFromParent();
 					_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
+					_searchView.View.ViewDetachedFromWindow -= OnSearchViewDetachedFromWindow;
 					_searchView.SearchConfirmed -= OnSearchConfirmed;
+					_searchView.View.RemoveFromParent();
 					_searchView.Dispose();
 				}
 
@@ -367,6 +368,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnSearchConfirmed(object sender, EventArgs e)
 		{
 			_platformToolbar.CollapseActionView();
+			_platformToolbar.Post(RefreshNativeToolbarRegistrations);
 		}
 
 		protected virtual void OnSearchHandlerChanged(SearchHandler oldValue, SearchHandler newValue)
@@ -574,6 +576,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 				}
 
+				if (toolbar.HasExpandedActionView)
+					return;
+
 				for (int index = 0; index < toolbar.ChildCount; index++)
 				{
 					if (toolbar.GetChildAt(index) is not AppCompatImageButton button ||
@@ -749,6 +754,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					_searchView.LoadView();
 					_searchView.View.ViewAttachedToWindow += OnSearchViewAttachedToWindow;
+					_searchView.View.ViewDetachedFromWindow += OnSearchViewDetachedFromWindow;
 
 					_searchView.View.LayoutParameters = new LP(LP.MatchParent, LP.MatchParent);
 					_searchView.SearchConfirmed += OnSearchConfirmed;
@@ -759,6 +765,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else if (_searchView.SearchHandler != SearchHandler)
 				{
 					menu.FindItem(_placeholderMenuItemId)?.CollapseActionView();
+					_platformToolbar.Post(RefreshNativeToolbarRegistrations);
 					ClearSearchViewState(_searchView.View);
 					_searchView.SearchHandler = SearchHandler;
 					_searchView.LoadView();
@@ -811,9 +818,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_nativeSearchRegistrations.Clear();
 				if (_searchView is not null)
 				{
-					_searchView.View.RemoveFromParent();
 					_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
+					_searchView.View.ViewDetachedFromWindow -= OnSearchViewDetachedFromWindow;
 					_searchView.SearchConfirmed -= OnSearchConfirmed;
+					_searchView.View.RemoveFromParent();
 					_searchView.Dispose();
 					_searchView = null;
 				}
@@ -863,6 +871,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					button.Dispose();
 				}
 			}
+		}
+
+		void OnSearchViewDetachedFromWindow(object sender, AView.ViewDetachedFromWindowEventArgs e)
+		{
+			if (SearchHandler?.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
+				_platformToolbar.Post(RefreshNativeToolbarRegistrations);
+		}
+
+		void RefreshNativeToolbarRegistrations()
+		{
+			if (_disposed)
+				return;
+
+			UpdateLeftBarButtonItem();
+			_toolbar?.Handler?.UpdateValue(nameof(Toolbar.Title));
 		}
 
 		void UpdateLeftBarButtonItem()
