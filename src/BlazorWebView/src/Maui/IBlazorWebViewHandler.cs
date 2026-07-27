@@ -8,6 +8,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// Defines the operations required by a handler for <see cref="IBlazorWebView"/>.
 	/// </summary>
+	/// <remarks>
+	/// On Windows, an implementation that owns a <c>WebView2</c> must either expose it directly as
+	/// its <c>PlatformView</c> so the framework can close it when the window is destroyed,
+	/// or close the wrapped control from its own disconnect logic. This preserves the built-in workaround
+	/// for microsoft-ui-xaml issue 6872.
+	/// </remarks>
 	public interface IBlazorWebViewHandler : IViewHandler
 	{
 		/// <summary>
