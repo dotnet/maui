@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Issues;
 // colors set by a custom UIButton subclass returned from CreatePlatformView().
 [Issue(IssueTracker.Github, 36749,
     "ButtonHandler clears native platform-view styling set by custom handlers when Background/TextColor are null",
-    PlatformAffected.iOS)]
+    PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue36749 : ContentPage
 {
     public const string ResultLabelId = "Issue36749Result";
@@ -59,6 +59,12 @@ public class Issue36749 : ContentPage
 			// UIColor.Cyan = R:0, G:1, B:1, A:1
 			bool isCyan = r < 0.01 && g > 0.99 && b > 0.99 && a > 0.99;
 			_resultLabel.Text = isCyan ? "PASS" : "FAIL";
+		}
+		else
+		{
+			// Handler or platform view unavailable — mark as FAIL so the test fails
+			// immediately rather than timing out on "Checking...".
+			_resultLabel.Text = "FAIL";
 		}
 #endif
     }
