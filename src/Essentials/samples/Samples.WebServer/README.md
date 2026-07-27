@@ -193,4 +193,4 @@ base64url-encode the raw 32 bytes and prefix `android:apk-key-hash:`.
 Delete `Data/app.db*` to wipe all registered users/passkeys, or just restart — the schema is re-created
 on startup.
 
-See [`../TESTING.md`](../TESTING.md) for the condensed end-to-end steps.
+See [`../README.md`](../README.md) for the condensed end-to-end steps.
