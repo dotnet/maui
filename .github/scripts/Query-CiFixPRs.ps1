@@ -1,15 +1,24 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Builds bounded context for open ci-fix PRs watched by the ci-status-fix gh-aw workflow.
+    Builds bounded exact-label issue evidence and open-PR watch context for the CI-fixer.
 #>
 
 param(
     [int]$MaxPRs = 20,
+    [ValidateRange(1, 50)]
+    [int]$MaxIssues = 20,
     [string]$Owner = 'dotnet',
     [string]$Repo = 'maui',
     [string]$OutputPath = "CustomAgentLogsTmp/CiFixScanner/candidates.json",
     [string]$TitlePrefix = '[ci-fix]',
+    [string]$IssueLabel = 'ci-scan',
+    [AllowEmptyString()]
+    [string]$IssueNumber = '',
+    [ValidateRange(64, 1024)]
+    [int]$MaxIssueTitleChars = 256,
+    [ValidateRange(256, 16384)]
+    [int]$MaxIssueBodyChars = 12000,
     # The base branch this workflow instance owns. Each ci-status-fix twin watches ONLY
     # PRs targeting its own base (main -> 'main', net11 -> 'net11.0'). See the baseRefName
     # guard in the candidate loop for why this is load-bearing, not cosmetic.
@@ -164,6 +173,188 @@ function ConvertFrom-JsonLines {
     }
 
     return @($items)
+}
+
+function Resolve-IssueScopeNumber {
+    param([AllowEmptyString()][string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return $null
+    }
+
+    $parsed = [int]0
+    if (-not [int]::TryParse($Value, [ref]$parsed) -or $parsed -le 0) {
+        throw "IssueNumber must be empty or a positive Int32 issue number."
+    }
+
+    return $parsed
+}
+
+function ConvertTo-BoundedUntrustedText {
+    param(
+        [AllowNull()][string]$Value,
+        [Parameter(Mandatory = $true)][int]$MaxChars
+    )
+
+    $original = if ($null -eq $Value) { '' } else { [string]$Value }
+    $sanitized = $original.Replace("`r`n", "`n").Replace("`r", "`n")
+    $sanitized = [regex]::Replace(
+        $sanitized,
+        "[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]",
+        ' '
+    )
+
+    $truncated = $sanitized.Length -gt $MaxChars
+    if ($truncated) {
+        $length = $MaxChars
+        if ($length -gt 0 -and [char]::IsHighSurrogate($sanitized[$length - 1])) {
+            $length--
+        }
+        $sanitized = $sanitized.Substring(0, $length)
+    }
+
+    return [pscustomobject]@{
+        text           = $sanitized
+        truncated      = [bool]$truncated
+        originalLength = [int]$original.Length
+    }
+}
+
+function Test-IssueHasExactLabel {
+    param(
+        [AllowNull()][object[]]$Labels,
+        [Parameter(Mandatory = $true)][string]$ExactLabel
+    )
+
+    foreach ($label in @($Labels)) {
+        $name = if ($label -is [string]) { [string]$label } elseif ($label.name) { [string]$label.name } else { '' }
+        if ($name.Equals($ExactLabel, [StringComparison]::OrdinalIgnoreCase)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function ConvertTo-CiFixIssueEvidence {
+    param(
+        [AllowNull()][object[]]$Issues,
+        [Parameter(Mandatory = $true)][string]$ExactLabel,
+        [Parameter(Mandatory = $true)][int]$Limit,
+        [Parameter(Mandatory = $true)][int]$TitleMaxChars,
+        [Parameter(Mandatory = $true)][int]$BodyMaxChars
+    )
+
+    $evidence = @()
+    $seenIssueNumbers = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($issue in @($Issues)) {
+        if ($evidence.Count -ge $Limit) {
+            break
+        }
+        if ($null -eq $issue -or
+            ([string]$issue.state).ToLowerInvariant() -ne 'open' -or
+            $issue.pull_request -or
+            -not (Test-IssueHasExactLabel -Labels @($issue.labels) -ExactLabel $ExactLabel)) {
+            continue
+        }
+
+        $number = [int]0
+        if (-not [int]::TryParse([string]$issue.number, [ref]$number) -or $number -le 0) {
+            continue
+        }
+        if (-not $seenIssueNumbers.Add($number)) {
+            continue
+        }
+
+        $title = ConvertTo-BoundedUntrustedText -Value ([string]$issue.title) -MaxChars $TitleMaxChars
+        $body = ConvertTo-BoundedUntrustedText -Value ([string]$issue.body -as [string]) -MaxChars $BodyMaxChars
+        $evidence += [pscustomobject]@{
+            issueNumber       = $number
+            url               = [string]$issue.html_url
+            state             = 'open'
+            exactLabel        = $ExactLabel
+            title             = $title.text
+            body              = $body.text
+            titleTruncated    = [bool]$title.truncated
+            bodyTruncated     = [bool]$body.truncated
+            titleOriginalChars = [int]$title.originalLength
+            bodyOriginalChars = [int]$body.originalLength
+            createdAt         = [string]$issue.created_at
+            updatedAt         = [string]$issue.updated_at
+            untrusted         = $true
+        }
+    }
+
+    return @($evidence)
+}
+
+function Get-CiFixIssueEvidence {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryOwner,
+        [Parameter(Mandatory = $true)][string]$RepositoryName,
+        [Parameter(Mandatory = $true)][string]$ExactLabel,
+        [AllowNull()][Nullable[int]]$ScopedIssueNumber,
+        [AllowNull()][object[]]$PriorityIssueNumbers,
+        [Parameter(Mandatory = $true)][int]$Limit,
+        [Parameter(Mandatory = $true)][int]$TitleMaxChars,
+        [Parameter(Mandatory = $true)][int]$BodyMaxChars
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExactLabel) -or
+        $ExactLabel.Length -gt 100 -or
+        $ExactLabel -notmatch '^[A-Za-z0-9][A-Za-z0-9 ._:/+()-]*$') {
+        throw "IssueLabel must be a non-empty GitHub label name of at most 100 safe characters."
+    }
+
+    if ($null -ne $ScopedIssueNumber) {
+        $issueJson = Invoke-GhCommand `
+            -Arguments @('api', "repos/$RepositoryOwner/$RepositoryName/issues/$ScopedIssueNumber") `
+            -Description "read scoped issue #$ScopedIssueNumber"
+        $issues = if ([string]::IsNullOrWhiteSpace($issueJson)) { @() } else { @(ConvertFrom-Json $issueJson) }
+    }
+    else {
+        $issues = @()
+        $seenPriorityNumbers = [System.Collections.Generic.HashSet[int]]::new()
+        foreach ($candidateNumber in @($PriorityIssueNumbers)) {
+            $number = [int]0
+            if (-not [int]::TryParse([string]$candidateNumber, [ref]$number) -or
+                $number -le 0 -or
+                -not $seenPriorityNumbers.Add($number) -or
+                $seenPriorityNumbers.Count -gt $Limit) {
+                continue
+            }
+
+            $priorityJson = Invoke-GhCommand `
+                -Arguments @('api', "repos/$RepositoryOwner/$RepositoryName/issues/$number") `
+                -Description "read priority watch issue #$number" `
+                -AllowFailure
+            if (-not [string]::IsNullOrWhiteSpace($priorityJson)) {
+                $issues += ConvertFrom-Json $priorityJson
+            }
+        }
+
+        $issueLines = Invoke-GhCommand `
+            -Arguments @(
+                'api', '--method', 'GET', "repos/$RepositoryOwner/$RepositoryName/issues",
+                '-f', 'state=open',
+                '-f', "labels=$ExactLabel",
+                '-f', 'sort=updated',
+                '-f', 'direction=desc',
+                '-f', "per_page=$Limit",
+                '--jq', '.[]'
+            ) `
+            -Description "list open issues with exact label '$ExactLabel'"
+        $issues += @(ConvertFrom-JsonLines -JsonLines $issueLines)
+    }
+
+    return @(
+        ConvertTo-CiFixIssueEvidence `
+            -Issues $issues `
+            -ExactLabel $ExactLabel `
+            -Limit $Limit `
+            -TitleMaxChars $TitleMaxChars `
+            -BodyMaxChars $BodyMaxChars
+    )
 }
 
 function Test-IsHumanLogin {
@@ -489,9 +680,10 @@ foreach ($pr in @($searchResult)) {
     # "[ci-fix]" prefix (renamed to "[ci-fix-net11]" in this change), so open legacy net11
     # PRs still carry "[ci-fix]" + base net11.0. Without this guard the main twin's
     # "[ci-fix]" search would ADOPT those net11.0-based PRs and push main-based fix commits
-    # onto them. Scoping to $BaseBranch mirrors the create-PR `base-branch` /
-    # `allowed-base-branches` pin onto the watch/advance path so the two twins never
-    # cross-drive each other's PRs. An empty/unexpected base fails closed (skipped).
+    # onto them. Scoping to $BaseBranch mirrors the workflow handler-base contract
+    # and create-PR `allowed-base-branches` pin onto the watch/advance path so the
+    # two twins never cross-drive each other's PRs. An empty/unexpected base fails
+    # closed (skipped).
     if (-not $baseRefName.Equals($BaseBranch, [StringComparison]::OrdinalIgnoreCase)) {
         continue
     }
@@ -551,6 +743,18 @@ foreach ($pr in @($searchResult)) {
 }
 
 $anyActionable = @($candidates | Where-Object { $_.actionable }).Count -gt 0
+$scopedIssueNumber = Resolve-IssueScopeNumber -Value $IssueNumber
+$issueEvidenceItems = @(
+    Get-CiFixIssueEvidence `
+        -RepositoryOwner $Owner `
+        -RepositoryName $Repo `
+        -ExactLabel $IssueLabel `
+        -ScopedIssueNumber $scopedIssueNumber `
+        -PriorityIssueNumbers @($candidates | ForEach-Object { $_.refsIssue }) `
+        -Limit $MaxIssues `
+        -TitleMaxChars $MaxIssueTitleChars `
+        -BodyMaxChars $MaxIssueBodyChars
+)
 
 $outputDir = Split-Path -Parent $OutputPath
 if ($outputDir) {
@@ -558,11 +762,23 @@ if ($outputDir) {
 }
 
 $json = [ordered]@{
-    generatedAt   = (Get-Date).ToUniversalTime().ToString('o')
+    schemaVersion = 2
+    generatedAt = (Get-Date).ToUniversalTime().ToString('o')
+    repository = "$Owner/$Repo"
+    issueEvidence = [ordered]@{
+        authoritative = $true
+        exactLabel = $IssueLabel
+        scopedIssueNumber = $scopedIssueNumber
+        maxIssues = $MaxIssues
+        titleMaxChars = $MaxIssueTitleChars
+        bodyMaxChars = $MaxIssueBodyChars
+        count = $issueEvidenceItems.Count
+        issues = @($issueEvidenceItems)
+    }
     anyActionable = [bool]$anyActionable
-    candidates    = @($candidates)
+    candidates = @($candidates)
 } | ConvertTo-Json -Depth 20
 $json | Set-Content -LiteralPath $OutputPath -Encoding UTF8
 
-Write-Host "Wrote $($candidates.Count) ci-fix candidate(s) (anyActionable=$anyActionable) to $OutputPath"
+Write-Host "Wrote $($candidates.Count) ci-fix candidate(s) and $($issueEvidenceItems.Count) exact-label issue(s) (anyActionable=$anyActionable) to $OutputPath"
 Write-Output $json
