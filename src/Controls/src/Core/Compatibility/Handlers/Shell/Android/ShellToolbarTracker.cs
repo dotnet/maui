@@ -898,13 +898,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var behavior = Shell.GetEffectiveBackButtonBehavior(page);
 				var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
-				var registrationGeneration = ++_navigationRegistrationGeneration;
-				_nativeNavigationRegistrations.AdvanceLifecycle();
 				RegisterNavigationButton(
 					_platformToolbar,
 					page,
 					command is not null || CanNavigateBack,
-					registrationGeneration);
+					_navigationRegistrationGeneration);
 			}
 
 			_toolbar?.Handler?.UpdateValue(nameof(Toolbar.Title));
