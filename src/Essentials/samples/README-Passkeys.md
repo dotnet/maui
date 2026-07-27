@@ -7,8 +7,8 @@ This folder contains the **Passkeys** Essentials sample and everything needed to
 - **[`Samples.Server.Passkeys/`](Samples.Server.Passkeys)** — the reference relying-party (RP) server
   (ASP.NET Core Identity + WebAuthn) that does the server half. It's small and commented — read the code
   for the endpoint and auth details.
-- **[`Configure-Passkeys.ps1`](Configure-Passkeys.ps1)** — provisions a dev tunnel and writes the RP trust config into
-  the server's user-secrets (and, with `-Apple`, the Apple bits).
+- **[`Configure-Passkeys.ps1`](Configure-Passkeys.ps1)** — provisions a dev tunnel and writes the RP trust
+  config into the server's user-secrets (Android + Apple by default; `-NoApple` / `-NoAndroid` to skip).
 
 The rest of this page is the **testing guide**: run the RP server and exercise it from the app's
 **Passkeys** page on each platform.
@@ -53,10 +53,15 @@ config into user-secrets and then holds the tunnel open (blocking):
 pwsh ./Configure-Passkeys.ps1
 ```
 
-It provisions a persistent dev tunnel, writes the RP domain + web origin (and the **Android** origins —
-see section 3) into the SERVER's user-secrets, prints the public `https://…devtunnels.ms` URL (keep it —
-you type it into the app), and then **hosts the tunnel**. Re-run it with the platform flags below to add
-Apple/Android trust. Pass `-NoStartHost` to just (re)configure without hosting.
+It provisions a persistent dev tunnel, writes the RP domain + web origin into the SERVER's user-secrets,
+and — **by default sets up both Android and Apple trust** (auto-detecting the Android debug-key
+fingerprint and, on a Mac, your Apple Team ID + signing identity + provisioning profile). It prints the
+public `https://…devtunnels.ms` URL (keep it — you type it into the app), then **hosts the tunnel**.
+
+> It **fails fast** if a platform it's meant to configure can't be — e.g. the Android debug keystore
+> doesn't exist yet (build the Android app once), or there's no Apple signing certificate. Pass
+> **`-NoAndroid`** and/or **`-NoApple`** to skip a platform you aren't testing, and `-NoStartHost` to just
+> (re)configure without hosting.
 
 Then, in another terminal, run the server:
 
@@ -103,11 +108,13 @@ only on a Mac), and a target on **iOS 16+** or **Mac Catalyst 16+**.
    Kit, Rider) or Xcode can generate + install it for you; find this Mac's provisioning UDID with
    `system_profiler SPHardwareDataType | grep "Provisioning UDID"`.
 
-3. Configure the server + app (from `src/Essentials/samples`):
+3. Configure the server + app (from `src/Essentials/samples`). The **same command from
+   [section 1](#1-server-shared-by-all-platforms)** sets up Apple by default — once you've done steps 1–2
+   above (App ID + provisioning profile), just re-run it (your Team ID is auto-detected from the signing
+   certificate):
    ```bash
-   # -Apple auto-detects your Team ID (from the signing cert) + signing identity + provisioning profile;
-   # add -AppleTeamId <TEAMID> only to override the detected Team ID.
-   pwsh ./Configure-Passkeys.ps1 -Apple
+   pwsh ./Configure-Passkeys.ps1
+   # add -AppleTeamId <TEAMID> only to override the auto-detected Team ID.
    ```
    This is the one-stop setup, and it writes **only git-ignored files** (no committed file is edited):
    - `Passkeys:Apple:AppIds:0 = <TeamID>.<BundleID>` into the server user-secrets (served in the AASA);

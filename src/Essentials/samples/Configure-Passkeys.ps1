@@ -15,12 +15,12 @@
       - the passkeys relying-party domain + web origin,
       - the Android package name (read from the sample app's project) plus the debug-signing-key
         SHA-256 fingerprint and `android:apk-key-hash:` origin (so Digital Asset Links validate), and
-      - (with -Apple) the Apple app-id `<TeamID>.<BundleID>` for the App Site Association.
+      - (unless -NoApple) the Apple app-id `<TeamID>.<BundleID>` for the App Site Association.
 
     Into the git-ignored Samples/Passkeys.Local.props (and, for Apple, Samples/Platforms/iOS/
     Entitlements.Local.plist):
       - the default relying-party server URL (baked into the app via AssemblyMetadata), and
-      - (with -Apple) the associated-domains entitlement plus the auto-detected Mac Catalyst
+      - (unless -NoApple) the associated-domains entitlement plus the auto-detected Mac Catalyst
         signing identity + provisioning profile. See README-Passkeys.md (Apple section) for the App ID
         registration + profile steps that only you can do in your Apple Developer account.
 
@@ -40,8 +40,8 @@
 
 .PARAMETER ApplicationId
     The app's application id (bundle id) shared by all platforms. Defaults to the sample app's
-    <ApplicationId> read from its project. It's used for the Android package (assetlinks) and, with
-    -Apple, the Apple app-id `<TeamID>.<ApplicationId>`.
+    <ApplicationId> read from its project. It's used for the Android package (assetlinks) and, unless
+    -NoApple, the Apple app-id `<TeamID>.<ApplicationId>`.
 
 .PARAMETER DebugKeystore
     Path to the Android debug keystore. Defaults to the keystore .NET for Android actually signs debug
@@ -49,16 +49,22 @@
     ~/Library/Application Support/Xamarin/Mono for Android/debug.keystore). This is NOT
     ~/.android/debug.keystore.
 
-.PARAMETER Apple
-    Set up Apple (iOS / iPadOS / Mac Catalyst) too. Auto-detects your Apple Developer Team ID from your
-    "Apple Development" signing certificate (its OU), along with the signing identity and a matching
-    provisioning profile.
+.PARAMETER NoApple
+    Skip Apple (iOS / iPadOS / Mac Catalyst) setup. By default the script configures Apple too, auto-
+    detecting your Team ID (from the "Apple Development" signing certificate), signing identity, and
+    provisioning profile. If Apple is not skipped but the Team ID can't be determined (no signing
+    certificate), the script FAILS rather than writing a half-configured app — pass -NoApple to opt out.
+
+.PARAMETER NoAndroid
+    Skip Android setup. By default the script writes the Android debug-key SHA-256 fingerprint +
+    apk-key-hash origin. If Android is not skipped but the debug key can't be read, the script FAILS —
+    pass -NoAndroid to opt out.
 
 .PARAMETER AppleTeamId
-    Your 10-character Apple Developer Team ID (developer.apple.com -> Membership). Optional: with -Apple
-    it is auto-detected from your signing certificate — pass this only to override it. Supplying it
-    implies -Apple. When set, the script writes the Apple app-id `<TeamID>.<ApplicationId>` into the
-    server's App Site Association config and generates the git-ignored Apple entitlements/signing.
+    Your 10-character Apple Developer Team ID (developer.apple.com -> Membership). Optional — it is
+    auto-detected from your "Apple Development" signing certificate; pass this only to override the
+    detected value. The Apple app-id `<TeamID>.<ApplicationId>` is written into the server's App Site
+    Association config, and the git-ignored Apple entitlements/signing are generated.
 
 .PARAMETER NoStartHost
     Skip hosting the tunnel. By default the script hosts the tunnel (blocking) at the end; pass this to
@@ -66,15 +72,15 @@
 
 .EXAMPLE
     ./Configure-Passkeys.ps1
-    # Provisions the tunnel, writes the server config into user-secrets, and hosts the tunnel (blocking).
+    # Configures Apple + Android (whatever this machine supports), writes user-secrets, hosts the tunnel.
 
 .EXAMPLE
-    ./Configure-Passkeys.ps1 -Apple
-    # Also sets up Apple (iOS/Mac Catalyst) — the Team ID is auto-detected from your signing cert.
+    ./Configure-Passkeys.ps1 -NoApple
+    # Android-only: skip Apple setup (e.g. on a machine with no Apple signing certificate).
 
 .EXAMPLE
     ./Configure-Passkeys.ps1 -AppleTeamId 42GDTGK33W
-    # Same, but overriding the auto-detected Team ID with an explicit one.
+    # Override the auto-detected Apple Team ID with an explicit one.
 
 .EXAMPLE
     ./Configure-Passkeys.ps1 -NoStartHost
@@ -86,10 +92,11 @@ param(
     [int]$Port = 5177,
     [string]$ApplicationId,
     [string]$DebugKeystore,
-    [switch]$Apple,
     [string]$AppleTeamId,
     [string]$AppleSigningIdentity,
     [string]$AppleProvisioningProfile,
+    [switch]$NoApple,
+    [switch]$NoAndroid,
     [switch]$NoStartHost
 )
 
@@ -248,8 +255,10 @@ function Get-AppleTeamId {
 # and that carries the associated-domains entitlement. Returns the profile Name, or $null.
 function Find-AppleProvisioningProfile($appId) {
     if (-not (Get-Command 'security' -ErrorAction SilentlyContinue)) { return $null }
+
     $dir = Join-Path $HOME 'Library' 'MobileDevice' 'Provisioning Profiles'
     if (-not (Test-Path $dir)) { return $null }
+
     $files = Get-ChildItem -Path (Join-Path $dir '*') -Include '*.provisionprofile', '*.mobileprovision' -File -ErrorAction SilentlyContinue
     foreach ($f in $files) {
         $xml = (& security cms -D -i $f.FullName 2>$null) -join "`n"
@@ -422,9 +431,16 @@ else {
     dotnet user-secrets --project $project set 'Passkeys:AllowedOrigins:0' $uri | Out-Null
     Write-Host "    Done. The passkeys RP ID is '$domain'." -ForegroundColor Green
 
-    # Android: compute + write the debug-key fingerprint (assetlinks) and apk-key-hash origin.
-    $android = Get-AndroidKeyInfo $DebugKeystore
-    if ($android) {
+    # Android: compute + write the debug-key fingerprint (assetlinks) and apk-key-hash origin. Configured
+    # by default; fails if the debug key can't be read (pass -NoAndroid to skip Android instead).
+    if ($NoAndroid) {
+        Write-Host "    Android: skipped (-NoAndroid)." -ForegroundColor DarkGray
+    }
+    else {
+        $android = Get-AndroidKeyInfo $DebugKeystore
+        if (-not $android) {
+            throw "Could not read the Android debug-signing key (needed for the Digital Asset Links fingerprint). Build the Android app once to generate the debug keystore, pass -DebugKeystore <path>, or pass -NoAndroid to skip Android."
+        }
         dotnet user-secrets --project $project set 'Passkeys:Android:PackageName' $ApplicationId | Out-Null
         dotnet user-secrets --project $project set 'Passkeys:Android:Sha256CertFingerprints:0' $android.Hex | Out-Null
         dotnet user-secrets --project $project set 'Passkeys:AllowedOrigins:1' $android.Origin | Out-Null
@@ -433,21 +449,27 @@ else {
         Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
     }
     # Compose the git-ignored Passkeys.Local.props for the MAUI app: the default server URL always, plus
-    # the Apple entitlements/signing when -Apple is requested (Team ID auto-detected) or -AppleTeamId is
-    # supplied. The committed files are never edited.
+    # the Apple entitlements/signing (configured by default; skipped with -NoApple). The committed files
+    # are never edited.
     $appDir = Join-Path $here 'Samples'
     $entitlementsRel = $null
     $resolvedIdentity = $null
     $resolvedProfile = $null
 
-    if (($Apple -or $AppleTeamId) -and -not $AppleTeamId) {
+    if (-not $NoApple -and -not $AppleTeamId) {
         $AppleTeamId = Get-AppleTeamId
         if ($AppleTeamId) {
             Write-Host "    Apple Team ID auto-detected from your signing cert: $AppleTeamId" -ForegroundColor DarkGray
         }
     }
 
-    if ($AppleTeamId) {
+    if ($NoApple) {
+        Write-Host "    Apple: skipped (-NoApple)." -ForegroundColor DarkGray
+    }
+    elseif (-not $AppleTeamId) {
+        throw "Could not determine your Apple Team ID: no 'Apple Development' signing certificate found. Install one (Xcode -> Settings -> Accounts -> Manage Certificates), pass -AppleTeamId <TEAMID>, or pass -NoApple to skip Apple."
+    }
+    else {
         $appleAppId = "$AppleTeamId.$ApplicationId"
         dotnet user-secrets --project $project set 'Passkeys:Apple:AppIds:0' $appleAppId | Out-Null
         Write-Host "    Apple configured: app-id '$appleAppId'" -ForegroundColor Green
@@ -479,12 +501,6 @@ else {
             Write-Host "      iOS Simulator still works. For Mac Catalyst / iOS device, create the profile and re-run" -ForegroundColor DarkGray
             Write-Host "      (or pass -AppleSigningIdentity / -AppleProvisioningProfile) — see README-Passkeys.md (Apple section)." -ForegroundColor DarkGray
         }
-    }
-    elseif ($Apple) {
-        Write-Host "    (Apple: couldn't auto-detect your Team ID — install an 'Apple Development' signing cert, or pass -AppleTeamId <TEAMID>. See README-Passkeys.md.)" -ForegroundColor Yellow
-    }
-    else {
-        Write-Host "    (Apple: pass -Apple to set up iOS/Mac Catalyst — the Team ID is auto-detected from your signing cert. See README-Passkeys.md.)" -ForegroundColor DarkGray
     }
 
     $propsPath = Write-PasskeysLocalProps $appDir $uri $entitlementsRel $resolvedIdentity $resolvedProfile
