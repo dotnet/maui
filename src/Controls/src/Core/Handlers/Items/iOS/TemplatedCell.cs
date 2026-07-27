@@ -85,19 +85,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 
-			// Detach the bound view from the ItemsView's logical children. Unbind() is only
-			// ever invoked from PrepareForReuse, ItemsViewController cell recycling, or the
-			// deterministic disposing path of Dispose(bool) - never from the finalizer - so
-			// touching the managed object graph here is safe.
+			// Detach the bound view from the ItemsView's logical children and remove the
+			// native platform view from ContentView. Only invoked on the deterministic
+			// disposing path, so touching the managed object graph here is safe.
+			//
+			// CarouselView Loop mode may call this speculatively on a cell about to be
+			// redisplayed with the same content, so PlatformHandler/CurrentTemplate are
+			// intentionally preserved here for cheap reattachment in Bind().
 			DetachFromItemsView();
+			ClearSubviews();
+		}
 
-			if (PlatformHandler?.VirtualView is View view)
-			{
-				// Also detach the native platform view from the cell's ContentView, since a
-				// strong subview reference here can keep the platform view (and therefore the
-				// bound VirtualView) reachable even after logical-child bookkeeping is cleared.
-				ClearSubviews();
-			}
+		// Permanent teardown for cells that are discarded outright and never reused/rebound
+		// (e.g. ItemsViewController's measurement-cell cache). Unlike Unbind(), this also
+		// disconnects the handler tree to prevent the last bound view from leaking.
+		internal void UnbindAndDisconnect()
+		{
+			var view = PlatformHandler?.VirtualView as View;
+			Unbind();
+			view?.DisconnectHandlers();
+			PlatformHandler = null;
+			CurrentTemplate = null;
 		}
 
 		// Managed-only cleanup: clears the bound view's BindingContext and removes it from the
@@ -134,6 +142,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UICollectionViewLayoutAttributes layoutAttributes)
 		{
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
+
+			// Skip measuring cells that aren't currently bound (e.g. between Unbind() and a
+			// pending Bind() during rapid section restructuring). Measure() unconditionally
+			// dereferences PlatformHandler.VirtualView and would otherwise throw an NRE.
+			if (!_bound || PlatformHandler?.VirtualView is null)
+			{
+				return preferredAttributes;
+			}
 
 			if (_measureInvalidated ||
 				!AttributesConsistentWithConstrainedDimension(preferredAttributes) ||
@@ -226,8 +242,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					itemsView.RemoveLogicalChild(oldElement);
 					ClearSubviews();
 
-					// Template change discards oldElement's renderer for good, so its handler tree
-					// must be disconnected explicitly here to avoid a leak.
+					// A template change discards oldElement's renderer for good, so its
+					// handler tree must be explicitly disconnected here to avoid leaking.
 					oldElement.DisconnectHandlers();
 				}
 
@@ -270,6 +286,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (oldElement is not null && oldElement.Parent is null)
 				{
 					itemsView.AddLogicalChild(oldElement);
+				}
+
+				// Reattach the native view if it was detached by a prior speculative Unbind()
+				// (e.g. CarouselView Loop mode); otherwise the cell would render blank.
+				var platformView = PlatformHandler?.ToPlatform();
+				if (platformView is not null && platformView.Superview is null)
+				{
+					SetupPlatformView(platformView);
+					ContentView.MarkAsCrossPlatformLayoutBacking();
 				}
 			}
 

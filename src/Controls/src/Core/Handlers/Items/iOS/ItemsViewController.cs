@@ -596,16 +596,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			foreach (var measurementCell in _measurementCells.Values)
 			{
 				measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
-				measurementCell.Unbind();
-
-				// Discarded measurement cells are never reused and have no other strong references,
-				// so they can be GC'd before Disconnect() runs, leaking their handler if not
-				// disconnected here.
-				if (measurementCell.PlatformHandler?.VirtualView is View measurementView)
-				{
-					measurementCell.DetachFromItemsView();
-					measurementView.DisconnectHandlers();
-				}
+				measurementCell.UnbindAndDisconnect();
 			}
 
 			_measurementCells.Clear();
