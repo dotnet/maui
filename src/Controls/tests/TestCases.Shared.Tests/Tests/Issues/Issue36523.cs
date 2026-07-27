@@ -38,18 +38,20 @@ public class Issue36523 : _IssuesUITest
 		App.WaitForElement("RotationActivityStatusLabel");
 
 		App.Tap("RotationActivityPickButton");
-		Task.Delay(2000).Wait();
+		Task.Delay(4000).Wait();
 
 		// Rotate while picker is open — triggers activity destroy/recreate
 		App.SetOrientationLandscape();
-		Task.Delay(2000).Wait();
+		Task.Delay(4000).Wait();
 
 		// Cancel the picker
 		App.Back();
 
 		// With fix: task completes → "PASS". Without fix: task hangs → "FAIL".
-		var returned = App.WaitForTextToBePresentInElement("RotationActivityStatusLabel", "PASS",
-			timeout: TimeSpan.FromSeconds(30));
+		Assert.That(
+			App.WaitForTextToBePresentInElement("RotationActivityStatusLabel", "PASS",
+				timeout: TimeSpan.FromSeconds(30)),
+			Is.True, "Timed out waiting for PASS — picker task likely hung after rotation.");
 
 		var resultText = App.FindElement("RotationActivityStatusLabel").GetText();
 
