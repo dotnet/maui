@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls
 		const string GetResourcePathUriScheme = "maui://";
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 		readonly Dictionary<string, object> _innerDictionary = new(StringComparer.Ordinal);
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		ResourceDictionary _mergedInstance;
 		Uri _source;
 
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Controls
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					ValuesChanged?.Invoke(this, ResourcesChangedEventArgs.StyleSheets);
+					_weakEventManager.HandleEvent(this, ResourcesChangedEventArgs.StyleSheets, nameof(ValuesChanged));
 					break;
 			}
 		}
@@ -408,7 +409,7 @@ namespace Microsoft.Maui.Controls
 		{
 			StyleSheets = StyleSheets ?? new List<StyleSheets.StyleSheet>(2);
 			StyleSheets.Add(styleSheet);
-			ValuesChanged?.Invoke(this, ResourcesChangedEventArgs.StyleSheets);
+			_weakEventManager.HandleEvent(this, ResourcesChangedEventArgs.StyleSheets, nameof(ValuesChanged));
 		}
 
 		void OnValueChanged(string key, object value)
@@ -420,7 +421,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (values == null || values.Length == 0)
 				return;
-			ValuesChanged?.Invoke(this, new ResourcesChangedEventArgs(values));
+			_weakEventManager.HandleEvent(this, new ResourcesChangedEventArgs(values), nameof(ValuesChanged));
 		}
 
 		internal void Reload()
@@ -429,7 +430,11 @@ namespace Microsoft.Maui.Controls
 				OnValuesChanged(mr);
 		}
 
-		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
+		event EventHandler<ResourcesChangedEventArgs> ValuesChanged
+		{
+			add { _weakEventManager.AddEventHandler(value); }
+			remove { _weakEventManager.RemoveEventHandler(value); }
+		}
 
 		//only used for unit testing
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
