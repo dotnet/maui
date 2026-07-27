@@ -1220,6 +1220,38 @@ function Get-PreviewTrainMilestoneTitle {
     return $null
 }
 
+function Get-PastDueOpenMilestones {
+    <#
+    .SYNOPSIS
+        Open milestones whose `due_on` lapsed before $Cutoff, oldest first.
+    .DESCRIPTION
+        The single definition of "past due" shared by Check 3 (already-shipped
+        debt) and Check 3b (slipped next-cycle target). Those two checks partition
+        the same milestone set on the next-cycle title — one excludes it, the other
+        selects it — so they MUST agree on what "past due" means. If the state /
+        due_on / cutoff test drifted between them, a milestone could either
+        double-report or fall through both checks unreported, which is exactly the
+        bug class Check 3b was added to fix. Keeping the test here makes that
+        agreement structural rather than a copy-paste invariant nothing enforces.
+
+        Sorting here (rather than in each caller) is order-equivalent: filtering a
+        sorted list preserves relative order, and Sort-Object is stable.
+    #>
+    param(
+        [AllowEmptyCollection()]
+        [array] $Milestones,
+
+        [Parameter(Mandatory)]
+        [datetime] $Cutoff
+    )
+
+    return @($Milestones | Where-Object {
+        $_.state -eq 'open' -and
+        $_.due_on -and
+        ([datetime]$_.due_on).ToUniversalTime() -lt $Cutoff
+    } | Sort-Object { [datetime]$_.due_on })
+}
+
 function Get-MilestoneHygieneChecks {
     <#
     .SYNOPSIS
@@ -1373,14 +1405,14 @@ function Get-MilestoneHygieneChecks {
         # is the same class of housekeeping debt as a stale preview6 one.
         "^\.NET\s+$major\.0-(preview|rc)\d+$"
     }
-    $staleMs = @($allMs | Where-Object {
-        $_.state -eq 'open' -and
-        $_.due_on -and
-        ([datetime]$_.due_on).ToUniversalTime() -lt $graceCutoff -and
+    # Shared "past due" set — Check 3 and Check 3b select disjoint halves of it.
+    $pastDueOpen = Get-PastDueOpenMilestones -Milestones $allMs -Cutoff $graceCutoff
+
+    $staleMs = @($pastDueOpen | Where-Object {
         ($expectedTitlesCurrent -notcontains $_.title) -and
         ($expectedTitlesNext -notcontains $_.title) -and
         ($_.title -match $cycleFilter)
-    } | Sort-Object { [datetime]$_.due_on })
+    })
 
     if ($staleMs.Count -gt 0) {
         $list = ($staleMs | ForEach-Object {
@@ -1406,12 +1438,9 @@ function Get-MilestoneHygieneChecks {
     # misleading "already shipped" framing. Lane-agnostic — fires for an SR next-cycle
     # milestone (e.g. a long-overdue SR9 while surveying SR8) exactly as for a slipped
     # preview/rc one, which is the SR-lane signal the bare Check-3 exclusion had dropped.
-    $slippedNext = @($allMs | Where-Object {
-        $_.state -eq 'open' -and
-        $_.due_on -and
-        ([datetime]$_.due_on).ToUniversalTime() -lt $graceCutoff -and
-        ($expectedTitlesNext -contains $_.title)
-    } | Sort-Object { [datetime]$_.due_on })
+    $slippedNext = @($pastDueOpen | Where-Object {
+        $expectedTitlesNext -contains $_.title
+    })
 
     if ($slippedNext.Count -gt 0) {
         $slippedList = ($slippedNext | ForEach-Object {

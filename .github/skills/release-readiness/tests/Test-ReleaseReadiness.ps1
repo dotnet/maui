@@ -5143,6 +5143,13 @@ $m22Data = @(
 $m22 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22Data
 $m22Stale = Get-MilestoneCheckByPrefix -Checks $m22 -Prefix 'Stale open milestones'
 Assert-Eq -Label "M22: stale preview5 flagged when surveying preview7" -Expected 'CLEANUP' -Actual $m22Stale.Status
+# Negative half of Check 3b: it must select ONLY the next-cycle title. Here rc1 IS
+# the next-cycle target but is not past due, and preview5 is past due but is not the
+# next-cycle target — so Check 3b must stay silent. Without this, widening 3b's
+# membership predicate (e.g. to `$true`) would mislabel already-shipped preview5 as
+# "the target open issues roll forward to" and no assertion would notice.
+$m22Slipped = Get-MilestoneCheckByPrefix -Checks $m22 -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22: on-time next-cycle rc1 + stale preview5 → no next-cycle-past-due row" -Expected $true -Actual ($null -eq $m22Slipped)
 
 # M22b: an rc-shaped title IS caught by the widened `(preview|rc)` stale filter.
 # Use rc2 (not rc1): when surveying preview7 the next-cycle target is rc1, which
@@ -5159,6 +5166,11 @@ Assert-Eq -Label "M22b: stale rc2 check present" -Expected $true -Actual ($null 
 if ($null -ne $m22bStale) {
     Assert-Eq -Label "M22b: stale rc2 (neither current nor next) flagged on the preview train" -Expected 'CLEANUP' -Actual $m22bStale.Status
 }
+# Second negative for Check 3b, with the next-cycle milestone ABSENT rather than
+# on time: rc1 doesn't exist (Check 2 asks for it), and the only past-due milestone
+# is rc2, which is not the roll-forward target. Check 3b must stay silent.
+$m22bSlipped = Get-MilestoneCheckByPrefix -Checks $m22b -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22b: missing next-cycle rc1 + stale rc2 → no next-cycle-past-due row" -Expected $true -Actual ($null -eq $m22bSlipped)
 
 # M22c: a slipped next-cycle rc1 is NOT "already-shipped debt" — but it is NOT silently
 # dropped either. Check 3b re-classifies it into a distinct "Next-cycle milestone past due"
