@@ -628,6 +628,51 @@ Describe 'CI scan reconciler' {
             $c.Ok | Should -BeFalse
         }
 
+        <#
+            A failed page counts a read error for free, inside Invoke-GhRead. Exhausting
+            the page ceiling does not — yet it leaves the run in the same state, unable to
+            prove the absence of a human comment. Without an explicit count, the per-issue
+            downgrade fires but every OTHER issue in the run stays free to mutate.
+        #>
+        It 'counts a read error when the ceiling is hit, so the whole run fails closed' {
+            $full = 1..100 | ForEach-Object {
+                [pscustomobject]@{ user = [pscustomobject]@{ login = 'github-actions'; type = 'Bot' } }
+            }
+            Mock Invoke-GhRead {
+                if (($GhArgs -join ' ') -like '*/comments*') { return , @($full) }
+                return , @()
+            }
+
+            Reset-CiScanCounters
+            $null = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100 `
+                -WarningAction SilentlyContinue
+
+            $script:Counters.ReadErrors | Should -BeGreaterThan 0
+        }
+
+        It 'suppresses mutations on OTHER issues when one issue exhausts the ceiling' {
+            # The candidate is #200; #100 is the issue whose history cannot be surveyed.
+            Initialize-ReconcileMocks -Issues @(
+                (New-CandidateIssue -Number 100), (New-CandidateIssue -Number 200))
+            $full = 1..100 | ForEach-Object {
+                [pscustomobject]@{ user = [pscustomobject]@{ login = 'github-actions'; type = 'Bot' } }
+            }
+            Mock Invoke-GhRead {
+                $joined = ($GhArgs -join ' ')
+                if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+                if ($joined -like '*/issues/100/comments*') { return , @($full) }
+                if ($joined -like '*/comments*') { return , @() }
+                if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+                return $null
+            }
+
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce' `
+                -WarningAction SilentlyContinue
+
+            Should -Invoke Invoke-GhWrite -Times 0 -Exactly
+        }
+
         It 'suppresses all mutations when the comment history is incomplete' {
             Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
             Mock Invoke-GhRead {

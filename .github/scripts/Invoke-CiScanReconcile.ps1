@@ -360,9 +360,15 @@ function Get-CiScanHumanCommenters {
         paginated to exhaustion.
 
         Any outcome that leaves the history incomplete — a failed page, or more comments
-        than the page ceiling allows — returns `Ok = $false` with an empty login set. The
-        caller records a read error and the run-level fail-closed check suppresses
-        mutations for the entire run rather than acting on a partial history.
+        than the page ceiling allows — returns `Ok = $false` with an empty login set AND
+        counts a read error, so the run-level fail-closed check suppresses mutations for
+        the ENTIRE run rather than acting on a partial history.
+
+        Both incomplete outcomes must count a read error, not just the failed page. A
+        failed page gets one for free (`Invoke-GhRead` records it), but exhausting the
+        page ceiling is the same epistemic state — the absence of a human comment is
+        unproven — and it would otherwise be downgraded per-issue while leaving every
+        OTHER issue in the run free to mutate.
     #>
     [CmdletBinding()]
     param([string]$Owner, [string]$Repo, [int]$Number)
@@ -382,7 +388,13 @@ function Get-CiScanHumanCommenters {
         # A short (or empty) page is the only proof that no further comments exist.
         if ($batch.Count -lt $perPage) { $complete = $true; break }
     }
-    if (-not $complete) { return $incomplete }
+    if (-not $complete) {
+        # Ceiling exhausted. Invoke-GhRead never failed, so nothing has counted this yet.
+        $script:Counters.ReadErrors++
+        Write-Warning ("Comment history for #$Number exceeded the $maxPages-page ceiling; " +
+            'treating the run as unable to prove the absence of human comments.')
+        return $incomplete
+    }
 
     $logins = @()
     foreach ($c in $comments) {
