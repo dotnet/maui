@@ -1693,6 +1693,11 @@ try {
         'This reverts the backport of #32537',
         'Backport should not include #32537',
         'We do not plan to backport #32537',
+        'Do not re-backport #32537',
+        'We decided not, after a final review, to backport #32537',
+        'We are not going to backport #32537',
+        'We are against backporting #32537',
+        'Avoid backporting #32537',
         "We don’t plan to backport #32537",
         'We should not ever backport #32537',
         "We can't safely backport #32537",
@@ -1746,11 +1751,19 @@ try {
         'Backport of the change in #32610',
         'Backport of this PR: #32610',
         'Backport of the following: #32610',
+        "Backport of`n#32610",
+        "Cherry picked from PR`n#32610",
         'Cannot reproduce on release, so backport #32610',
         'Tests never fail, so backport #32610',
         'The revert queue is empty and this backports #32610',
         "This isn't the prettiest fix, but it backports #32610 correctly",
-        'Backport (this has never failed CI) of #32610'
+        'Backport (this has never failed CI) of #32610',
+        'This PR is not only intended to backport #32610, but also adds tests',
+        'This change is not a big deal but we do want to backport #32610',
+        'This is not the cleanest fix, but the team agreed to backport #32610',
+        'There was not much discussion needed, everyone agreed to backport #32610',
+        'It is not unusual for teams to backport #32610 when the fix is critical',
+        'Not everyone was around, but Jane went ahead to backport #32610'
     )) {
         Assert-Eq -Label "backport lineage: incidental negative vocabulary stays positive — $positiveBody" -Expected $true `
             -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
@@ -1816,6 +1829,11 @@ try {
         'Backport of #32537 was omitted',
         'Backport of #32537 was excluded',
         'Backport of #32537 is no longer included',
+        'Backport of #32537 no longer applies',
+        'Backport of #32537 is no longer applicable',
+        'Backport of #32537 is no longer relevant',
+        'Backport of #32537 is no longer needed',
+        'Backport of #32537 does not apply',
         'Backport of #32537 has been rolled back',
         'Backport of #32537. This was later reverted due to test failures.',
         'Backport of #32537, though it got reverted the next day.',
@@ -5377,6 +5395,7 @@ function Invoke-ShipChecksWithMockedVersions {
     # Get-BugTemplateVersions read from these in-memory blobs.
     $srRef   = "origin/$SrBranch"
     $mainRef = "origin/$MainBranch"
+    $shippedContentsRef = "$($SrVersion.Major).$($SrVersion.Minor).$($SrVersion.Patch)"
     $srXml   = Build-VersionsPropsXml @SrVersion
     $mainXml = if ($MainVersion) { Build-VersionsPropsXml @MainVersion } else { $null }
 
@@ -5384,6 +5403,7 @@ function Invoke-ShipChecksWithMockedVersions {
         param([string]$Path, [string]$Ref)
         if ($Path -eq 'eng/Versions.props') {
             if ($Ref -eq $script:_mockSrRef)   { return $script:_mockSrXml }
+            if ($Ref -eq $script:_mockContentsRef) { return $script:_mockSrXml }
             if ($Ref -eq $script:_mockMainRef) { return $script:_mockMainXml }
             return $null
         }
@@ -5394,6 +5414,7 @@ function Invoke-ShipChecksWithMockedVersions {
     }
     $script:_mockSrRef    = $srRef
     $script:_mockMainRef  = $mainRef
+    $script:_mockContentsRef = $shippedContentsRef
     $script:_mockSrXml    = $srXml
     $script:_mockMainXml  = $mainXml
     $script:_mockBugYaml  = $bugYamlAllowsAll
@@ -5402,7 +5423,7 @@ function Invoke-ShipChecksWithMockedVersions {
         $ctx = @{
             srBranch   = if ($Candidate) { $MainBranch } else { $SrBranch }
             srRef      = if ($Candidate) { "origin/$MainBranch" } else { "origin/$SrBranch" }
-            contentsRef = if ($Shipped) { $srRef } else { $null }
+            contentsRef = if ($Shipped) { $shippedContentsRef } else { $null }
             previousStableTag = if ($Shipped) { '10.0.71' } else { $null }
             mainBranch = $MainBranch
             mode       = if ($Candidate) { 'candidate' } elseif ($Shipped) { 'shipped' } else { 'in-flight' }
@@ -7372,7 +7393,8 @@ $previewTablePrs = @(
 )
 $previewTablePrs += @(1..19 | ForEach-Object {
     [pscustomobject]@{
-        number = 80000 + $_; title = "Ordinary release PR $_"; author = [pscustomobject]@{ login = "user$_" }
+        number = 80000 + $_; title = "Ordinary release PR $_"
+        author = if ($_ -eq 19) { $null } else { [pscustomobject]@{ login = "user$_" } }
         url = "https://example.invalid/pull/$([int](80000 + $_))"; baseRefName = 'net11.0'; headRefName = "feature/$_"
         createdAt = '2026-07-01T00:00:00Z'; updatedAt = "2026-07-$('{0:D2}' -f ([Math]::Min($_, 19)))T00:00:00Z"
         isDraft = $false; reviewDecision = $null; mergeStateStatus = 'CLEAN'; labels = @()
@@ -7388,6 +7410,8 @@ Assert-Eq -Label "preview PR table: blocked PR is ordered first despite oldest u
     -Actual ($previewTableMarkdown.IndexOf('[#79999]') -lt $previewTableMarkdown.IndexOf('[#80019]'))
 Assert-Eq -Label "preview PR table: omitted count and full-list link rendered" -Expected $true `
     -Actual ($previewTableMarkdown -match '\[5 omitted\]\(https://example\.invalid/all-prs\)')
+Assert-Eq -Label "preview PR table: null/deleted author renders fallback without throwing" -Expected $true `
+    -Actual ($previewTableMarkdown -match '\| unknown \|')
 
 $p0Pr        = [PSCustomObject]@{ number = 34758; labels = @([PSCustomObject]@{ name = 'p/0' }, [PSCustomObject]@{ name = 'area-xaml' }) }
 $nonP0Pr     = [PSCustomObject]@{ number = 99999; labels = @([PSCustomObject]@{ name = 'area-xaml' }, [PSCustomObject]@{ name = 'p/1' }) }

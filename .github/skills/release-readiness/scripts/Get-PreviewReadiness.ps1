@@ -1780,7 +1780,17 @@ function Add-PRTable {
 
     foreach ($row in @($rows | Select-Object -First $MaxRows)) {
         $pr = $row.PR
-        $author = Format-GitHubHandle -Login $pr.author.login
+        $authorObject = if ($pr -is [System.Collections.IDictionary]) {
+            if ($pr.Contains('author')) { $pr['author'] } else { $null }
+        } elseif ($pr.PSObject.Properties['author']) {
+            $pr.author
+        } else { $null }
+        $authorLogin = if ($authorObject -is [System.Collections.IDictionary]) {
+            if ($authorObject.Contains('login')) { $authorObject['login'] } else { $null }
+        } elseif ($authorObject -and $authorObject.PSObject.Properties['login']) {
+            $authorObject.login
+        } else { $null }
+        $author = Format-GitHubHandle -Login $authorLogin
         [void]$Builder.AppendLine("| [#$($pr.number)]($($pr.url)) | $(Format-MarkdownCell $pr.title) | $author | ``$($pr.baseRefName)`` | **$($row.Action.Status)** | $($row.Action.Age)d | $(Format-MarkdownCell $row.Action.Action) |")
     }
     if ($PRs.Count -gt $MaxRows) {
