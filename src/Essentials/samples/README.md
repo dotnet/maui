@@ -35,9 +35,10 @@ platform), then do the platform setup for what you're testing —
 
 ## Using the app
 
-On every platform the in-app steps are the same: open the **Passkeys** page, set the **server URL** to
-your `https://<tunnel-host>`, sign up (or sign in) with a username + password, tap **Create a passkey**
-(approve the device prompt), then **Sign in with a passkey**.
+On every platform the in-app steps are the same: open the **Passkeys** page (its **server URL** already
+defaults to your tunnel — `Configure.ps1` bakes it in; edit it via the Server toolbar button if needed),
+sign up (or sign in) with a username + password, tap **Create a passkey** (approve the device prompt),
+then **Sign in with a passkey**.
 
 > **Testing the web UI in a browser?** Load it via the **tunnel URL** (`https://<tunnel-host>`, clicking
 > through the dev-tunnel warning), not `http://localhost:5177`. Passkeys are bound to the RP ID domain,
@@ -105,17 +106,17 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
    ```bash
    pwsh ./Configure.ps1 -AppleTeamId <TEAMID>          # add -AppleBundleId <id> if you overrode it
    ```
-   This is the one-stop setup. It:
-   - writes `Passkeys:Apple:AppIds:0 = <TeamID>.<BundleID>` into user-secrets (served in the AASA);
-   - adds `com.apple.developer.associated-domains` → `webcredentials:<domain>` to
-     `Samples/Platforms/iOS/Entitlements.plist` (a **local** edit, don't commit); and
-   - **auto-detects** your Apple Development signing identity and the matching provisioning profile from
-     step 2, and writes them to `Samples/Signing.local.props` (git-ignored). The app's csproj imports
-     that file, so **Mac Catalyst is then ready to build and run** with no extra flags. (If auto-detect
-     can't find them, pass `-AppleSigningIdentity` / `-AppleProvisioningProfile` explicitly.)
+   This is the one-stop setup, and it writes **only git-ignored files** (no committed file is edited):
+   - `Passkeys:Apple:AppIds:0 = <TeamID>.<BundleID>` into the server user-secrets (served in the AASA);
+   - a git-ignored `Samples/Platforms/iOS/Entitlements.Local.plist` (a copy of the committed base plus
+     `com.apple.developer.associated-domains` → `webcredentials:<domain>`); and
+   - a git-ignored `Samples/Passkeys.Local.props` (imported by the app csproj) carrying the default
+     server URL and — **auto-detected** from step 2 — your Apple Development signing identity and the
+     matching provisioning profile. So **Mac Catalyst is then ready to build and run** with no extra
+     flags. (If auto-detect can't find them, pass `-AppleSigningIdentity` / `-AppleProvisioningProfile`;
+     or copy `Passkeys.Local.in.props` → `Passkeys.Local.props` and fill it in by hand.)
 
-   The iOS **Simulator** doesn't need any of the signing bits — the entitlement alone is applied and it
-   just runs.
+   The iOS **Simulator** doesn't need the signing bits — the entitlement alone is applied and it runs.
 4. With the server running (section 1), verify the AASA is reachable **from the public internet** and
    is JSON (not an HTML page):
    ```bash
@@ -188,7 +189,7 @@ localhost temporarily:
 
 ## Don't commit
 
-The setup makes developer-specific edits — keep them out of commits: the associated-domains entry in
-`Platforms/iOS/Entitlements.plist` and any `<ApplicationId>` change in `Essentials.Sample.csproj`. The
-generated `Samples/Signing.local.props` is already git-ignored. (Server user-secrets live outside the
-repo.)
+`Configure.ps1` writes only git-ignored files (`Samples/Passkeys.Local.props`,
+`Samples/Platforms/iOS/Entitlements.Local.plist`) and the server user-secrets — nothing committed. The
+one manual exception is if you override the bundle id: your `<ApplicationId>` change in
+`Essentials.Sample.csproj` is a local edit — keep it out of commits.

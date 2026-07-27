@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -18,9 +19,21 @@ namespace Samples.ViewModel
 	public class PasskeysViewModel : BaseViewModel
 	{
 		// The relying-party server (Samples.WebServer). Passkeys are bound to a domain, so it must be a
-		// public HTTPS host reachable from the device: run `pwsh ./Configure.ps1` in src/Essentials/samples
-		// to provision a dev tunnel (it writes the server's user-secrets) and put its URL here.
-		string serverBaseUrl = "https://your-tunnel-5177.devtunnels.ms";
+		// public HTTPS host reachable from the device. Run `pwsh ./Configure.ps1` in src/Essentials/samples
+		// to provision a dev tunnel; it bakes the URL in via AssemblyMetadata (see Essentials.Sample.csproj).
+		// The default is also editable at runtime from the Server toolbar button.
+		string serverBaseUrl = GetConfiguredServerUrl();
+
+		static string GetConfiguredServerUrl()
+		{
+			foreach (var attribute in typeof(PasskeysViewModel).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+			{
+				if (attribute.Key == "PasskeysServerUrl" && !string.IsNullOrWhiteSpace(attribute.Value))
+					return attribute.Value;
+			}
+
+			return "https://your-tunnel-5177.devtunnels.ms";
+		}
 
 		string username = string.Empty;
 		string password = string.Empty;
