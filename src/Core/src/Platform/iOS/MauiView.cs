@@ -1039,6 +1039,20 @@ namespace Microsoft.Maui.Platform
 					return null;
 				}
 
+				// Guard 2 (lazy): if native gesture recognizers are now attached, this container is
+				// itself the actionable unit (a tap gesture was wired up by GesturePlatformManager).
+				// Evaluating this at getter time — mirroring the SynthesizeAccessibilityLabelFromChildren
+				// synthesis pattern above — avoids the chicken-and-egg problem where SemanticExtensions'
+				// Guard 2 runs during the initial MapSemantics pass, before Controls has attached the
+				// native UIGestureRecognizers. Skipping the phantom here lets UIKit fall back to default
+				// behavior (Button trait + AccessibilityLabel/Hint on the container itself, as set by
+				// SemanticExtensions), which is the correct actionable-leaf presentation.
+				if (GestureRecognizers is { Length: > 0 })
+				{
+					ClearAccessibilityContainerElement();
+					return null;
+				}
+
 				// UIKit recurses into each entry's own accessibility rules, so children stay reachable.
 				// Reuse the same instance across calls so VoiceOver/Accessibility Inspector retain
 				// identity continuity on whichever element they're currently focused on/inspecting.
