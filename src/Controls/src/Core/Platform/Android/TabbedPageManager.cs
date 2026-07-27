@@ -936,15 +936,6 @@ public class TabbedPageManager
 	protected virtual void OnMoreSheetDismissed(object sender, EventArgs e)
 	{
 		ClearMoreRegistrations();
-		var index = Element.Children.IndexOf(Element.CurrentPage);
-		using (var menu = _bottomNavigationView.Menu)
-		{
-			index = Math.Min(index, menu.Size() - 1);
-			if (index < 0)
-				return;
-			using (var menuItem = menu.GetItem(index))
-				menuItem.SetChecked(true);
-		}
 
 		if (sender is BottomSheetDialog bsd)
 		{
@@ -952,6 +943,17 @@ public class TabbedPageManager
 			if (ReferenceEquals(_moreDialog, bsd))
 				_moreDialog = null;
 			bsd.Dispose();
+		}
+
+		var index = Element.Children.IndexOf(Element.CurrentPage);
+		using (var menu = _bottomNavigationView.Menu)
+		{
+			index = Math.Min(index, menu.Size() - 1);
+			if (index >= 0)
+			{
+				using var menuItem = menu.GetItem(index);
+				menuItem.SetChecked(true);
+			}
 		}
 	}
 
@@ -972,7 +974,7 @@ public class TabbedPageManager
 	{
 		if (pageIndex < 0 || pageIndex >= Element.Children.Count)
 		{
-			view.Dispose();
+			DisposeMoreItemView(view);
 			return;
 		}
 
@@ -1000,8 +1002,15 @@ public class TabbedPageManager
 	{
 		_nativeMoreRegistrations.Clear();
 		foreach (var view in _moreItemViews)
-			view.Dispose();
+			DisposeMoreItemView(view);
 		_moreItemViews.Clear();
+	}
+
+	static void DisposeMoreItemView(AView view)
+	{
+		if (view.Parent is ViewGroup parent)
+			parent.RemoveView(view);
+		view.Dispose();
 	}
 
 	void CloseMoreDialog()
