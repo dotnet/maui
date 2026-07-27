@@ -132,7 +132,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ShellController.FlyoutItemsChanged -= OnFlyoutItemsChanged;
 
 				if (_source != null)
+				{
 					_source.ScrolledEvent -= OnScrolled;
+					if (IsViewLoaded)
+						TableView.Source = null;
+					_source.Disconnect();
+					_source.Dispose();
+				}
 
 				ShellFlyoutContentManager.TearDown();
 				_onElementSelected = null;

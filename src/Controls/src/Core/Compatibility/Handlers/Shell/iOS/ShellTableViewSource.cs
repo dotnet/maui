@@ -101,6 +101,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		internal void Disconnect()
+		{
+			if (_cells is not null)
+			{
+				foreach (var cell in _cells.Values)
+					cell.Disconnect(_context.Shell);
+				_cells.Clear();
+			}
+
+			_groups = null;
+		}
+
 		public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
 		{
 			int section = indexPath.Section;
