@@ -552,6 +552,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			foreach (var item in rightItems)
 			{
 				item.TintColor = platformColor;
+				if (item.CustomView is UIView customView)
+					customView.TintColor = platformColor;
 			}
 		}
 
