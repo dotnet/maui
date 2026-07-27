@@ -198,6 +198,22 @@ function Assert-ValidFingerprint {
     if ($parts[0] -ne 'ci-scan-net11' -or $parts[1] -ne 'net11.0' -or $parts[2] -ne $PipelineName) {
         throw "Fingerprint does not match the net11 scanner and pipeline '$PipelineName'."
     }
+
+    # The fingerprint is embedded verbatim in the canonical
+    # `<!-- ci-scan-fingerprint: ... -->` marker, but the marker is matched against the
+    # body AFTER `ConvertTo-SafeIssueBody` has neutralized it. A fingerprint that
+    # neutralization rewrites is therefore unmatchable, and the run dies with
+    # "must contain exactly one canonical fingerprint marker" — an error that blames the
+    # body when the real cause is the fingerprint. Today only the issue/PR-URL rule is
+    # reachable (`@` and `#` are already outside the allowed charset), but asserting the
+    # round-trip rather than enumerating URL shapes keeps this check correct for free if
+    # a neutralization rule is ever added or widened.
+    if (-not [string]::Equals((ConvertTo-SafeIssueBody -Body $Fingerprint), $Fingerprint,
+            [System.StringComparison]::Ordinal)) {
+        throw ('Fingerprint would be rewritten by notification neutralization ' +
+            '(it contains a GitHub issue/PR URL, @mention, or #reference). ' +
+            'Normalize it in the scanner before filing.')
+    }
 }
 
 function Get-ValidatedMatchPattern {

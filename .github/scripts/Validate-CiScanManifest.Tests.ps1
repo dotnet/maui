@@ -340,6 +340,42 @@ Describe 'CI scanner issue payload gate' {
             Should -Throw '*non-normalized or unsafe characters*'
     }
 
+    <#
+        A fingerprint is embedded verbatim in the canonical marker, but the marker is
+        matched AFTER ConvertTo-SafeIssueBody neutralizes the body. A GitHub issue/PR URL
+        passes the character-class check (every character is in the allowed set), so
+        without this gate the URL gets a zero-width space injected, the marker becomes
+        unmatchable, and the run dies blaming the BODY for a defect in the FINGERPRINT.
+        CI logs referencing a tracking issue by URL make this reachable in practice.
+    #>
+    It 'rejects a fingerprint containing a GitHub issue URL, naming the real cause' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|see https://github.com/dotnet/maui/issues/12345|assertion failed|windows'
+
+        # Guard the premise: this really does survive the character-class check.
+        $fingerprint | Should -CMatch '^[a-z0-9][a-z0-9 ._:/+()\-|]*$'
+
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*rewritten by notification neutralization*'
+    }
+
+    It 'rejects any fingerprint neutralization would rewrite, not just URL shapes' {
+        # Asserts the round-trip invariant itself, so a future neutralization rule is
+        # covered without editing Assert-ValidFingerprint.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|see https://github.com/dotnet/maui/pull/999|assertion failed|windows'
+        { Assert-ValidFingerprint -Fingerprint $fingerprint -PipelineName 'maui-pr' } |
+            Should -Throw '*rewritten by notification neutralization*'
+    }
+
+    It 'accepts a fingerprint that neutralization leaves untouched' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|see github.com/dotnet/maui issue 12345|assertion failed|windows'
+        { Assert-ValidFingerprint -Fingerprint $fingerprint -PipelineName 'maui-pr' } |
+            Should -Not -Throw
+    }
+
     It 'rejects a fingerprint for another scanner' {
         $fingerprint = 'ci-scan-main|main|maui-pr|sample test|assertion failed|windows'
         $manifest = New-CompleteManifest -MainSignatures @(
