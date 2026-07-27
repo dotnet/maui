@@ -85,48 +85,47 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
 
 **Steps:**
 
-1. Configure the server + app with your Team ID (from `src/Essentials/samples`):
-   ```bash
-   pwsh ./Configure.ps1 -AppleTeamId <TEAMID>
-   ```
-   This writes `Passkeys:Apple:AppIds:0 = <TeamID>.<BundleID>` into user-secrets (served in the AASA)
-   and adds `com.apple.developer.associated-domains` → `webcredentials:<domain>` to
-   `Samples/Platforms/iOS/Entitlements.plist` — a **local** edit, don't commit it. If your bundle id
-   (`<ApplicationId>`, default `com.microsoft.maui.essentials`) is registered to another team, add
-   `-AppleBundleId com.yourname.mauiessentials` and set the same value in `<ApplicationId>`.
-2. On developer.apple.com → **Identifiers**, select your bundle id and enable the **Associated
-   Domains** capability. (IDE automatic signing can do this for you.)
-3. **Signing.** The .NET iOS SDK applies `Platforms/iOS/Entitlements.plist` automatically (it's the
-   convention-based default — no csproj change needed). Whether a provisioning profile is required
-   depends on the target:
-   - **iOS Simulator** — no provisioning profile is enforced; the entitlement is applied. Just build
-     and run.
-   - **Real iOS device** and **Mac Catalyst** — both run as real signed apps, so the
-     `com.apple.developer.associated-domains` entitlement must be authorized by an **explicit**
-     provisioning profile (a wildcard team profile won't do — it can't carry Associated Domains).
-     Without one the build fails with `MT7139: The app requests the entitlement
-     'com.apple.developer.associated-domains', but no provisioning profile has been specified`.
+1. On developer.apple.com → **Identifiers**, register your app's bundle id as an **explicit App ID** and
+   enable the **Associated Domains** capability on it.
 
-     Generate the profile with your **Team** by enabling **Associated Domains** on the App ID and
-     letting an IDE with automatic provisioning create it (VS Code C# Dev Kit, Rider), or Xcode. Then
-     point the build at it (local, don't commit):
-     ```xml
-     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
-       <CodesignKey>Apple Development</CodesignKey>
-       <CodesignProvision>YOUR PROFILE NAME</CodesignProvision>
-     </PropertyGroup>
-     ```
+   > **Heads up — an explicit App ID is globally unique to one team.** The sample's default
+   > `com.microsoft.maui.essentials` is owned by the MAUI team, so **you can't register it under your
+   > own team**. Use your own reverse-DNS id (e.g. `com.yourname.mauiessentials`) — pass it to
+   > `Configure.ps1 -AppleBundleId` below and set the same value in `<ApplicationId>` in
+   > `Samples/Essentials.Sample.csproj` (a local edit, don't commit). Wildcard App IDs can't carry
+   > Associated Domains, so it must be explicit.
+
+2. **Register this Mac as a device** and create a **macOS App Development** provisioning profile for that
+   App ID (your Development certificate + this Mac). Install it (double-click, or drop it in
+   `~/Library/MobileDevice/Provisioning Profiles`). An IDE with automatic provisioning (VS Code C# Dev
+   Kit, Rider) or Xcode can generate + install it for you; find this Mac's provisioning UDID with
+   `system_profiler SPHardwareDataType | grep "Provisioning UDID"`.
+
+3. Configure the server + app (from `src/Essentials/samples`):
+   ```bash
+   pwsh ./Configure.ps1 -AppleTeamId <TEAMID>          # add -AppleBundleId <id> if you overrode it
+   ```
+   This is the one-stop setup. It:
+   - writes `Passkeys:Apple:AppIds:0 = <TeamID>.<BundleID>` into user-secrets (served in the AASA);
+   - adds `com.apple.developer.associated-domains` → `webcredentials:<domain>` to
+     `Samples/Platforms/iOS/Entitlements.plist` (a **local** edit, don't commit); and
+   - **auto-detects** your Apple Development signing identity and the matching provisioning profile from
+     step 2, and writes them to `Samples/Signing.local.props` (git-ignored). The app's csproj imports
+     that file, so **Mac Catalyst is then ready to build and run** with no extra flags. (If auto-detect
+     can't find them, pass `-AppleSigningIdentity` / `-AppleProvisioningProfile` explicitly.)
+
+   The iOS **Simulator** doesn't need any of the signing bits — the entitlement alone is applied and it
+   just runs.
 4. With the server running (section 1), verify the AASA is reachable **from the public internet** and
    is JSON (not an HTML page):
    ```bash
    curl -sS https://<your-domain>/.well-known/apple-app-site-association
    # {"webcredentials":{"apps":["ABCDE12345.com.microsoft.maui.essentials"]}}
    ```
-5. Build + install the **signed** app (a real iOS 16+ device is the truest test; Simulator or Mac
-   Catalyst also work), then follow [**Using the app**](#using-the-app). Mac Catalyst runs on this Mac:
-   ```bash
-   dotnet build Samples/Essentials.Sample.csproj -t:Run -f net11.0-maccatalyst
-   ```
+5. Build + run, then follow [**Using the app**](#using-the-app):
+   - **iOS Simulator** (unsigned): `dotnet build Samples/Essentials.Sample.csproj -f net11.0-ios -p:RuntimeIdentifier=iossimulator-arm64`, then `xcrun simctl install booted <app>` + `xcrun simctl launch booted <bundle-id>`.
+   - **Mac Catalyst** (signed via `Signing.local.props`): `dotnet build Samples/Essentials.Sample.csproj -f net11.0-maccatalyst -p:RuntimeIdentifier=maccatalyst-arm64`, then `open` the built `.app`.
+   - **Real iOS device**: signed the same way, deploy from your IDE.
 
 **Apple troubleshooting:**
 
@@ -190,5 +189,6 @@ localhost temporarily:
 ## Don't commit
 
 The setup makes developer-specific edits — keep them out of commits: the associated-domains entry in
-`Platforms/iOS/Entitlements.plist`, any Team/signing you add to `Essentials.Sample.csproj`, and any
-`<ApplicationId>` change. (Server user-secrets already live outside the repo.)
+`Platforms/iOS/Entitlements.plist` and any `<ApplicationId>` change in `Essentials.Sample.csproj`. The
+generated `Samples/Signing.local.props` is already git-ignored. (Server user-secrets live outside the
+repo.)
