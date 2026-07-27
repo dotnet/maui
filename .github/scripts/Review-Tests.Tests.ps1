@@ -534,6 +534,50 @@ Evidence TWO.
         $report | Should -Not -Match 'Evidence ONE'
     }
 
+    It 'accepts the rebalancing-commingle fixture as a single over-captured report (documented tradeoff)' {
+        # Pins the KNOWINGLY-ACCEPTED tradeoff from round 6/7. This fixture — an earlier report
+        # whose <details> is rebalanced to depth 0 by a TRAILING unmatched </details>, with a
+        # full report in between — is byte-identical (OPEN → anchor@depth1 → OPEN → CLOSE →
+        # CLOSE) to a legitimate report that self-quotes its marker then opens nested evidence.
+        # No purely-structural per-<details>-open gate can separate them, so extraction captures
+        # both under the first anchor (a superset — over-capture, not new data loss). The removed
+        # round-5 test was the only one exercising this shape; without this pin, a future balance-
+        # loop change or a re-added round-5 gate would silently alter the accepted behavior.
+        $content = @'
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Report ONE (rebalanced by a trailing close)</summary>
+Evidence ONE.
+
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+<details>
+<summary>Report TWO (well-formed)</summary>
+Evidence TWO.
+</details>
+
+Some trailing prose:
+</details>
+
+FINAL CONTENT after the outer close.
+'@
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Not -BeNullOrEmpty
+        # Over-capture: both reports are pulled under the first anchor (the accepted superset).
+        $report | Should -Match 'Evidence ONE'
+        $report | Should -Match 'Evidence TWO'
+        # Content after the outer </details> is excluded (true on both parent and head — no new
+        # trailing-content loss is introduced by the accepted tradeoff).
+        $report | Should -Not -Match 'FINAL CONTENT'
+    }
+
     It 'recognizes a standalone marker indented up to three spaces' {
         # Column-0-only anchoring missed markers re-indented by list nesting / wrapping.
         # 0-3 spaces is still a paragraph-level standalone line, so it must anchor.

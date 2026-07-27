@@ -310,8 +310,16 @@ function Get-EmbeddedTestFailureReportCandidate {
         # is a genuine sibling report and bounds this candidate. At depth > 0 the anchor is the
         # report quoting the marker inside its own block (which the production template's nested
         # evidence <details> is structurally indistinguishable from), so it is ignored rather
-        # than truncating the report. A genuinely unclosed earlier report can't borrow a later
-        # one either: its details never rebalance to 0, so the balance loop rejects it.
+        # than truncating the report.
+        #
+        # Borrow protection here is deliberately PARTIAL. A *truly*-unclosed earlier report (its
+        # <details> never rebalances to depth 0) is rejected by the balance loop below, so
+        # extraction falls through to the next report. But an earlier report that IS rebalanced
+        # to 0 by a trailing unmatched </details> is byte-identical, under the accepted grammar,
+        # to a legitimate report that self-quotes its marker and then opens nested evidence — so
+        # it is KNOWINGLY accepted as over-capture (a superset of the real report) rather than
+        # rejected: no per-<details>-open gate can separate the two without dropping the common
+        # self-quote case (see round-5→6). The "…-commingle over-capture…" test pins this.
         if ($openDetailsDepth -eq 0 -and $AnchorIndices.Count -gt 0) {
             $lineStart = $startIndex + $lineMatch.Index
             $lineEnd = $lineStart + $lineMatch.Value.Length
