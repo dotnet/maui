@@ -1,7 +1,8 @@
 using Essentials.Samples.WebServer;
-using Essentials.Samples.WebServer.Data;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,23 +41,29 @@ builder.Services.ConfigureApplicationCookie(options =>
 	};
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-	options.UseSqlite(connectionString));
+// In-memory SQLite: the real relational engine, but nothing on disk. A named shared-cache
+// in-memory database exists only while a connection to it is open, so keep one open for the
+// app's lifetime. Everything is wiped when the server stops — fine for this throwaway dev tool.
+const string inMemoryConnectionString = "Data Source=PasskeysSample;Mode=Memory;Cache=Shared";
+var keepAliveConnection = new SqliteConnection(inMemoryConnectionString);
+keepAliveConnection.Open();
+builder.Services.AddSingleton(keepAliveConnection);
+builder.Services.AddDbContext<IdentityDbContext>(options =>
+	options.UseSqlite(inMemoryConnectionString));
 
-builder.Services.AddIdentityCore<ApplicationUser>(options =>
+builder.Services.AddIdentityCore<IdentityUser>(options =>
 	{
 		// Dev-only test server: skip email confirmation so you can register and immediately sign in
 		// (there is no real email sender). Do not copy this into production.
 		options.SignIn.RequireConfirmedAccount = false;
 		options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
 	})
-	.AddEntityFrameworkStores<ApplicationDbContext>()
+	.AddEntityFrameworkStores<IdentityDbContext>()
 	.AddSignInManager()
 	.AddApiEndpoints()
 	.AddDefaultTokenProviders();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+builder.Services.AddSingleton<IEmailSender<IdentityUser>, IdentityNoOpEmailSender>();
 
 // Passkey relying-party config. ServerDomain is the RP ID (the public host the apps use).
 // ValidateOrigin must also accept each platform's native origin (Android's apk-key-hash, Apple's web origin).
@@ -86,11 +93,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
-// Ensure the SQLite schema exists so the server runs without a manual "ef database update".
+// Create the schema in the in-memory database at startup (no migrations needed).
 using (var scope = app.Services.CreateScope())
 {
-	var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-	db.Database.Migrate();
+	var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+	db.Database.EnsureCreated();
 }
 
 app.UseForwardedHeaders();
@@ -99,10 +106,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Username/password auth: /account/register, /account/login (?useCookies=true sets the auth cookie), etc.
-app.MapGroup("/account").MapIdentityApi<ApplicationUser>();
+app.MapGroup("/account").MapIdentityApi<IdentityUser>();
 
 // MapIdentityApi has no logout endpoint; add one that clears the auth cookie.
-app.MapPost("/account/logout", async (SignInManager<ApplicationUser> signInManager) =>
+app.MapPost("/account/logout", async (SignInManager<IdentityUser> signInManager) =>
 {
 	await signInManager.SignOutAsync();
 	return Results.Ok(new { signedOut = true });

@@ -1,5 +1,0 @@
-# Local SQLite database — created by EF Core migrations on first run. It is per-checkout
-# runtime data (and can accumulate real credentials), so it is not committed.
-Data/*.db
-Data/*.db-shm
-Data/*.db-wal

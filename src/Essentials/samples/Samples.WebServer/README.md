@@ -19,13 +19,15 @@ as an interop conformance check across Apple, Android, and Windows.
 
 | File | Purpose |
 | --- | --- |
-| `Program.cs` | The whole app: SQLite + Identity, cookie/bearer auth, `MapIdentityApi` under `/account`, and the passkey + well-known endpoints. |
+| `Program.cs` | The whole app: an in-memory SQLite database + Identity, cookie/bearer auth, `MapIdentityApi` under `/account`, and the passkey + well-known endpoints. |
 | `PasskeyApiEndpoints.cs` | Native-app-facing passkey ceremony API — `GET /passkeys/list`, `POST /passkeys/register/begin` · `/register/finish` · `/login/begin` · `/login/finish`, `DELETE /passkeys/delete`. JSON in / JSON out, cookie-correlated, no antiforgery. |
-| `PasskeyAuthenticators.cs` | Maps a passkey's AAGUID to a friendly authenticator name (Google Password Manager, iCloud Keychain, Windows Hello, …). |
-| `IdentityNoOpEmailSender.cs` | A no-op `IEmailSender<ApplicationUser>` — Identity's registration flow requires one, but this server never sends email. |
+| `IdentityNoOpEmailSender.cs` | A no-op `IEmailSender<IdentityUser>` — Identity's registration flow requires one, but this server never sends email. |
 | `WellKnownEndpoints.cs` | Serves `/.well-known/assetlinks.json` (Android Digital Asset Links) and `/.well-known/apple-app-site-association` (Apple) from config, so real devices trust this domain as the credential provider. |
-| `Data/` | The Identity `DbContext`, `ApplicationUser`, and the EF Core migration for the SQLite schema. |
-| `appsettings.json` → `Passkeys` | RP ID / origins / Android + Apple association values (real per-developer values live in user-secrets). |
+
+There is no `DbContext` or `ApplicationUser` type — it uses the framework's `IdentityDbContext` and
+`IdentityUser` directly, with the schema created in-memory at startup (no migrations). All passkey
+relying-party config (RP ID / origins / Android + Apple association values) comes from **user-secrets**;
+nothing sensitive lives in `appsettings.json`.
 
 Username/password auth (`/account/register`, `/account/login?useCookies=true`, plus the rest of
 `MapIdentityApi`) and `/account/logout` come from `Program.cs` directly.
@@ -37,8 +39,9 @@ dotnet run --project src/Essentials/samples/Samples.WebServer --launch-profile h
 # listens on http://localhost:5177  (https://localhost:7235 with the "https" profile)
 ```
 
-The SQLite database (`Data/app.db`) is created automatically on first run. There is no web UI — point the
-MAUI **Passkeys** sample page at the base URL, or drive the endpoints with `curl`.
+The database is **in-memory** (real SQLite, held in RAM — no file on disk) and is created empty at
+startup. There is no web UI — point the MAUI **Passkeys** sample page at the base URL, or drive the
+endpoints with `curl`.
 
 Local URLs only exercise the round-trip; a **real** on-device passkey ceremony needs a public HTTPS
 domain — see the next section.
@@ -82,9 +85,9 @@ URL (baked in by `Configure.ps1`; editable at runtime via the Server toolbar but
 
 ## Passkeys configuration keys
 
-The `Passkeys` section of `appsettings.json` ships as **empty safe defaults** (so a bare `dotnet run`
-works on localhost with ASP.NET Core Identity's default RP settings). The real per-developer values are
-provided via **user-secrets** (written for you by `Configure.ps1`, never committed):
+All passkey relying-party config is provided via **user-secrets** (written for you by `Configure.ps1`,
+never committed) — nothing sensitive is in `appsettings.json`. With none set, a bare `dotnet run` works
+on localhost with ASP.NET Core Identity's default RP settings. The keys:
 
 | Key | Meaning |
 | --- | --- |
@@ -170,7 +173,7 @@ SHA-256 fingerprint, base64url-encode the raw 32 bytes and prefix `android:apk-k
 
 ## Reset
 
-Delete `Data/app.db*` to wipe all registered users/passkeys, or just restart — the schema is re-created
-on startup.
+The database is in-memory, so just restart the server — all registered users and passkeys are wiped and
+the schema is re-created empty on every launch.
 
 See [`../README.md`](../README.md) for the condensed end-to-end steps.

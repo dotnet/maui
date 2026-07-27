@@ -1,6 +1,5 @@
 using System.Buffers.Text;
 using System.Text.Json;
-using Essentials.Samples.WebServer.Data;
 using Microsoft.AspNetCore.Identity;
 
 namespace Essentials.Samples.WebServer;
@@ -22,7 +21,7 @@ internal static class PasskeyApiEndpoints
 		// Reports the signed-in user's passkeys so the app can list them and offer to enroll one.
 		group.MapGet("/list", async (
 			HttpContext context,
-			UserManager<ApplicationUser> userManager) =>
+			UserManager<IdentityUser> userManager) =>
 		{
 			var user = await userManager.GetUserAsync(context.User);
 			if (user is null)
@@ -37,7 +36,7 @@ internal static class PasskeyApiEndpoints
 				passkeys = passkeys.Select(pk => new
 				{
 					id = Base64Url.EncodeToString(pk.CredentialId),
-					name = PasskeyAuthenticators.GetDisplayName(pk),
+					name = pk.Name,
 					createdAt = pk.CreatedAt,
 				}),
 			});
@@ -46,8 +45,8 @@ internal static class PasskeyApiEndpoints
 		// Registration begin: returns the WebAuthn creation options for the signed-in user.
 		group.MapPost("/register/begin", async (
 			HttpContext context,
-			UserManager<ApplicationUser> userManager,
-			SignInManager<ApplicationUser> signInManager) =>
+			UserManager<IdentityUser> userManager,
+			SignInManager<IdentityUser> signInManager) =>
 		{
 			var user = await userManager.GetUserAsync(context.User);
 			if (user is null)
@@ -65,13 +64,12 @@ internal static class PasskeyApiEndpoints
 			return Results.Content(optionsJson, "application/json");
 		}).RequireAuthorization();
 
-		// Registration finish: validates the attestation and stores the passkey. An optional ?name= labels
-		// it; if omitted, the AAGUID-inferred authenticator name is used.
+		// Registration finish: validates the attestation and stores the passkey. An optional ?name= labels it.
 		group.MapPost("/register/finish", async (
 			JsonElement credential,
 			string? name,
-			UserManager<ApplicationUser> userManager,
-			SignInManager<ApplicationUser> signInManager) =>
+			UserManager<IdentityUser> userManager,
+			SignInManager<IdentityUser> signInManager) =>
 		{
 			PasskeyAttestationResult attestation;
 			try
@@ -94,8 +92,6 @@ internal static class PasskeyApiEndpoints
 
 			if (!string.IsNullOrWhiteSpace(name))
 				attestation.Passkey.Name = name.Trim();
-			else if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestation.Passkey, out var inferred))
-				attestation.Passkey.Name = inferred;
 
 			var stored = await userManager.AddOrUpdatePasskeyAsync(user, attestation.Passkey);
 			if (!stored.Succeeded)
@@ -108,7 +104,7 @@ internal static class PasskeyApiEndpoints
 		group.MapDelete("/delete", async (
 			string? credentialId,
 			HttpContext context,
-			UserManager<ApplicationUser> userManager) =>
+			UserManager<IdentityUser> userManager) =>
 		{
 			var user = await userManager.GetUserAsync(context.User);
 			if (user is null)
@@ -137,8 +133,8 @@ internal static class PasskeyApiEndpoints
 		// Sign-in begin: returns the WebAuthn request options. Omit 'username' for username-less sign-in.
 		group.MapPost("/login/begin", async (
 			string? username,
-			UserManager<ApplicationUser> userManager,
-			SignInManager<ApplicationUser> signInManager) =>
+			UserManager<IdentityUser> userManager,
+			SignInManager<IdentityUser> signInManager) =>
 		{
 			var user = string.IsNullOrWhiteSpace(username)
 				? null
@@ -150,10 +146,10 @@ internal static class PasskeyApiEndpoints
 		// Sign-in finish: validates the assertion and signs the user in.
 		group.MapPost("/login/finish", async (
 			JsonElement credential,
-			UserManager<ApplicationUser> userManager,
-			SignInManager<ApplicationUser> signInManager) =>
+			UserManager<IdentityUser> userManager,
+			SignInManager<IdentityUser> signInManager) =>
 		{
-			PasskeyAssertionResult<ApplicationUser> assertion;
+			PasskeyAssertionResult<IdentityUser> assertion;
 			try
 			{
 				assertion = await signInManager.PerformPasskeyAssertionAsync(credential.GetRawText());
