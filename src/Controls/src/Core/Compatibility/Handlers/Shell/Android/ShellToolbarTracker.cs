@@ -16,7 +16,6 @@ using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
@@ -70,9 +69,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		DrawerArrowDrawable _drawerArrowDrawable;
 		FlyoutIconDrawerDrawable _flyoutIconDrawerDrawable;
 		IToolbar _toolbar;
-		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
-		readonly NativeElementRegistrationSet _nativeSearchRegistrations = new NativeElementRegistrationSet();
-		int _navigationRegistrationGeneration;
 		protected IMauiContext MauiContext => _shell.Handler.MauiContext;
 
 		Toolbar _shellRootToolBar;
@@ -186,9 +182,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				_navigationRegistrationGeneration++;
-				_nativeNavigationRegistrations.Clear();
-				_nativeSearchRegistrations.Clear();
 				_globalLayoutListener.Invalidate();
 
 				if (_backButtonBehavior != null)
@@ -258,9 +251,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnPageChanged(Page oldPage, Page newPage)
 		{
-			_navigationRegistrationGeneration++;
-			_nativeNavigationRegistrations.Clear();
-
 			if (oldPage != null)
 			{
 				if (_backButtonBehavior != null)
@@ -371,8 +361,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnSearchHandlerChanged(SearchHandler oldValue, SearchHandler newValue)
 		{
-			_nativeSearchRegistrations.Clear();
-
 			if (oldValue != null)
 			{
 				oldValue.PropertyChanged -= OnSearchHandlerPropertyChanged;
@@ -415,9 +403,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void UpdateLeftBarButtonItem(Context context, AToolbar toolbar, DrawerLayout drawerLayout, Page page)
 		{
-			var registrationGeneration = ++_navigationRegistrationGeneration;
-			_nativeNavigationRegistrations.Clear();
-
 			if (_drawerToggle == null)
 			{
 				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, Resource.String.nav_app_bar_open_drawer_description, R.String.Ok)
@@ -552,44 +537,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			//this needs to be set after SyncState
 			UpdateToolbarIconAccessibilityText(toolbar, _shell);
 			_toolbar?.Handler?.UpdateValue(nameof(Toolbar.IconColor));
-			RegisterNavigationButton(
-				toolbar,
-				page,
-				command != null || CanNavigateBack,
-				registrationGeneration);
-		}
-
-		void RegisterNavigationButton(
-			AToolbar toolbar,
-			Page page,
-			bool isBackButton,
-			int registrationGeneration)
-		{
-			toolbar.Post(() =>
-			{
-				if (_disposed ||
-					registrationGeneration != _navigationRegistrationGeneration ||
-					!ReferenceEquals(Page, page))
-				{
-					return;
-				}
-
-				for (int index = 0; index < toolbar.ChildCount; index++)
-				{
-					if (toolbar.GetChildAt(index) is not AppCompatImageButton button ||
-						button.Drawable is null)
-					{
-						continue;
-					}
-
-					_nativeNavigationRegistrations.RegisterExclusive(
-						isBackButton ? page : _shell,
-						button,
-						isBackButton ? NativeElementRoles.BackButton : NativeElementRoles.ShellFlyoutToggle,
-						NativeElementDiscriminators.RealizedView);
-					return;
-				}
-			});
 		}
 
 
@@ -761,12 +708,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_searchView.LoadView();
 				}
 
-				_nativeSearchRegistrations.RegisterExclusive(
-					SearchHandler,
-					_searchView.View,
-					NativeElementRoles.SearchHandler,
-					NativeElementDiscriminators.RealizedView);
-
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
 					menu.RemoveItem(_placeholderMenuItemId);
@@ -805,7 +746,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
-				_nativeSearchRegistrations.Clear();
 				if (_searchView is not null)
 				{
 					_searchView.View.RemoveFromParent();
