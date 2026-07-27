@@ -14,6 +14,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ALabelVisibilityMode = Google.Android.Material.BottomNavigation.LabelVisibilityMode;
+using AView = Android.Views.View;
 using ColorStateList = Android.Content.Res.ColorStateList;
 using IMenu = Android.Views.IMenu;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -81,7 +82,8 @@ namespace Microsoft.Maui.Controls.Platform
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
 			int currentIndex,
 			BottomNavigationView bottomView,
-			IMauiContext mauiContext)
+			IMauiContext mauiContext,
+			Action<IReadOnlyList<IMenuItem>> menuItemsUpdated = null)
 		{
 			Context context = mauiContext.Context;
 
@@ -122,20 +124,30 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var menuSize = menu.Size();
-			if (showMore && menu.GetItem(menuSize - 1).ItemId != MoreTabId)
+			if (showMore)
 			{
-				var moreString = context.Resources.GetText(Resource.String.overflow_tab_title);
-				if (menuSize == maxBottomItems)
-					menu.RemoveItem(menu.GetItem(menuSize - 1).ItemId);
-				var menuItem = menu.Add(0, MoreTabId, 0, moreString);
-				menuItems.Add(menuItem);
+				IMenuItem menuItem;
+				if (menuSize == 0 || menu.GetItem(menuSize - 1).ItemId != MoreTabId)
+				{
+					var moreString = context.Resources.GetText(Resource.String.overflow_tab_title);
+					if (menuSize == maxBottomItems)
+						menu.RemoveItem(menu.GetItem(menuSize - 1).ItemId);
+					menuItem = menu.Add(0, MoreTabId, 0, moreString);
 
-				menuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
-				if (currentIndex >= maxBottomItems - 1)
-					menuItem.SetChecked(true);
+					menuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
+					if (currentIndex >= maxBottomItems - 1)
+						menuItem.SetChecked(true);
+				}
+				else
+				{
+					menuItem = menu.GetItem(menuSize - 1);
+				}
+
+				menuItems.Add(menuItem);
 			}
 
 			bottomView.SetShiftMode(false, false);
+			menuItemsUpdated?.Invoke(menuItems);
 
 			if (loadTasks.Count > 0)
 				await Task.WhenAll(loadTasks);
@@ -181,7 +193,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Action<int, BottomSheetDialog> selectCallback,
 			IMauiContext mauiContext,
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
-			int maxItemCount)
+			int maxItemCount,
+			Action<int, AView> rowCreated = null)
 		{
 			var context = mauiContext.Context;
 			var bottomSheetDialog = new BottomSheetDialog(context);
@@ -196,7 +209,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var i_local = i;
 				var shellContent = items[i];
 
-				using (var innerLayout = new LinearLayout(context))
+				var innerLayout = new LinearLayout(context);
 				{
 					innerLayout.ClipToOutline = true;
 					innerLayout.SetBackground(CreateItemBackgroundDrawable(context));
@@ -259,6 +272,10 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					bottomSheetLayout.AddView(innerLayout);
+					if (rowCreated is not null)
+						rowCreated(i, innerLayout);
+					else
+						innerLayout.Dispose();
 				}
 			}
 

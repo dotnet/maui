@@ -20,6 +20,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
@@ -63,6 +64,12 @@ public class TabbedPageManager
 	bool _tabItemStyleLoaded;
 	TabLayoutMediator _tabLayoutMediator;
 	IDisposable _pendingFragment;
+	readonly NativeElementRegistrationSet _nativeTabRegistrations = new NativeElementRegistrationSet();
+	readonly NativeElementRegistrationSet _nativeMoreRegistrations = new NativeElementRegistrationSet();
+	readonly List<IMenuItem> _registeredMenuItems = new List<IMenuItem>();
+	readonly List<AView> _moreItemViews = new List<AView>();
+	BottomSheetDialog _moreDialog;
+	int _tabRegistrationGeneration;
 
 	protected NavigationRootManager NavigationRootManager { get; }
 	public static bool IsDarkTheme => (Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme) == AppTheme.Dark;
@@ -120,13 +127,17 @@ public class TabbedPageManager
 
 		if (Element is not null)
 		{
+			_tabRegistrationGeneration++;
+			_nativeTabRegistrations.Clear();
+			CloseMoreDialog();
+			_registeredMenuItems.Clear();
 			Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
 			Element.Disappearing -= OnTabbedPageDisappearing;
 
 			RemoveTabs();
-			
+
 			_viewPager.LayoutChange -= OnLayoutChanged;
 			_viewPager.Adapter = null;
 
@@ -142,7 +153,7 @@ public class TabbedPageManager
 		}
 
 		Element = tabbedPage;
-		
+
 		if (Element is not null)
 		{
 			_viewPager.LayoutChange += OnLayoutChanged;
@@ -160,6 +171,11 @@ public class TabbedPageManager
 						Gravity = (int)GravityFlags.Bottom
 					}
 				};
+				_nativeTabRegistrations.Register(
+					Element,
+					_bottomNavigationView,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
 			}
 			else
 			{
@@ -173,6 +189,11 @@ public class TabbedPageManager
 						LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 					};
 				}
+				_nativeTabRegistrations.Register(
+					Element,
+					_tabLayout,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
 			}
 
 			OnChildrenCollectionChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -355,6 +376,30 @@ public class TabbedPageManager
 
 	protected virtual void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{
+		_tabRegistrationGeneration++;
+		CloseMoreDialog();
+		if (e.Action == NotifyCollectionChangedAction.Reset)
+		{
+			_nativeTabRegistrations.Clear();
+			_registeredMenuItems.Clear();
+			if (IsBottomTabPlacement && _bottomNavigationView is not null)
+			{
+				_nativeTabRegistrations.Register(
+					Element,
+					_bottomNavigationView,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
+			}
+			else if (_tabLayout is not null)
+			{
+				_nativeTabRegistrations.Register(
+					Element,
+					_tabLayout,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
+			}
+		}
+
 		e.Apply((o, i, c) => SetupPage((Page)o), (o, i) => TeardownPage((Page)o), Reset);
 
 		ViewPager2 pager = _viewPager;
@@ -373,6 +418,8 @@ public class TabbedPageManager
 			if (Element.Children.Count == 0)
 			{
 				bottomNavigationView.Menu.Clear();
+				_registeredMenuItems.Clear();
+				_nativeTabRegistrations.Retain(new object[] { bottomNavigationView });
 			}
 			else
 			{
@@ -390,6 +437,7 @@ public class TabbedPageManager
 			if (Element.Children.Count == 0)
 			{
 				tabs.RemoveAllTabs();
+				_nativeTabRegistrations.Retain(new object[] { tabs });
 				tabs.SetupWithViewPager(null);
 				_tabLayoutMediator?.Detach();
 				_tabLayoutMediator = null;
@@ -442,6 +490,7 @@ public class TabbedPageManager
 
 	void TeardownPage(Page page)
 	{
+		_nativeTabRegistrations.UnregisterOwner(page);
 		page.PropertyChanged -= OnPagePropertyChanged;
 	}
 
@@ -560,10 +609,85 @@ public class TabbedPageManager
 			items,
 			currentIndex,
 			_bottomNavigationView,
-			Element.FindMauiContext());
+			Element.FindMauiContext(),
+			RegisterBottomMenuItems);
 
 		if (Element.CurrentPage == null && Element.Children.Count > 0)
 			Element.CurrentPage = Element.Children[0];
+	}
+
+	void RegisterBottomMenuItems(IReadOnlyList<IMenuItem> menuItems)
+	{
+		foreach (var previousMenuItem in _registeredMenuItems)
+		{
+			var retained = false;
+			foreach (var currentMenuItem in menuItems)
+			{
+				if (ReferenceEquals(currentMenuItem, previousMenuItem))
+				{
+					retained = true;
+					break;
+				}
+			}
+
+			if (!retained)
+				_nativeTabRegistrations.Unregister(previousMenuItem);
+		}
+
+		_registeredMenuItems.Clear();
+		_registeredMenuItems.AddRange(menuItems);
+		foreach (var child in Element.Children)
+			_nativeTabRegistrations.UnregisterOwner(child, NativeElementDiscriminators.RealizedView);
+		_nativeTabRegistrations.UnregisterOwner(Element, NativeElementDiscriminators.RealizedView);
+
+		foreach (var menuItem in menuItems)
+		{
+			var isMoreItem = menuItem.ItemId == BottomNavigationViewUtils.MoreTabId;
+			object owner = isMoreItem ? Element : Element.Children[menuItem.ItemId];
+			_nativeTabRegistrations.Register(
+				owner,
+				menuItem,
+				isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+				NativeElementDiscriminators.LogicalModel);
+		}
+
+		var registrationGeneration = ++_tabRegistrationGeneration;
+		_bottomNavigationView.Post(() =>
+		{
+			if (registrationGeneration != _tabRegistrationGeneration ||
+				_bottomNavigationView?.GetChildAt(0) is not ViewGroup menuView)
+			{
+				return;
+			}
+
+			var count = Math.Min(menuView.ChildCount, menuItems.Count);
+			for (int index = 0; index < count; index++)
+			{
+				var menuItem = menuItems[index];
+				var isMoreItem = menuItem.ItemId == BottomNavigationViewUtils.MoreTabId;
+				object owner = isMoreItem ? Element : Element.Children[menuItem.ItemId];
+				if (menuView.GetChildAt(index) is AView itemView)
+				{
+					_nativeTabRegistrations.RegisterExclusive(
+						owner,
+						itemView,
+						isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+						NativeElementDiscriminators.RealizedView);
+				}
+			}
+		});
+	}
+
+	void RegisterTopTab(TabLayout.Tab tab, int position)
+	{
+		if (position < 0 || position >= Element.Children.Count || tab.View is not AView tabView)
+			return;
+
+		_nativeTabRegistrations.RegisterExclusive(
+			Element.Children[position],
+			tabView,
+			NativeElementRoles.ShellTab,
+			NativeElementDiscriminators.RealizedView);
 	}
 
 	protected virtual void UpdateTabIcons()
@@ -811,6 +935,7 @@ public class TabbedPageManager
 
 	protected virtual void OnMoreSheetDismissed(object sender, EventArgs e)
 	{
+		ClearMoreRegistrations();
 		var index = Element.Children.IndexOf(Element.CurrentPage);
 		using (var menu = _bottomNavigationView.Menu)
 		{
@@ -822,7 +947,12 @@ public class TabbedPageManager
 		}
 
 		if (sender is BottomSheetDialog bsd)
+		{
 			bsd.DismissEvent -= OnMoreSheetDismissed;
+			if (ReferenceEquals(_moreDialog, bsd))
+				_moreDialog = null;
+			bsd.Dispose();
+		}
 	}
 
 	protected virtual void OnMoreItemSelected(int selectedIndex, BottomSheetDialog dialog)
@@ -830,8 +960,61 @@ public class TabbedPageManager
 		if (selectedIndex >= 0 && _bottomNavigationView.SelectedItemId != selectedIndex && Element.Children.Count > selectedIndex)
 			Element.CurrentPage = Element.Children[selectedIndex];
 
-		dialog.Dismiss();
+		CloseMoreDialog();
+	}
+
+	void PrepareMoreRegistrations()
+	{
+		ClearMoreRegistrations();
+	}
+
+	void RegisterMoreRow(int pageIndex, AView view)
+	{
+		if (pageIndex < 0 || pageIndex >= Element.Children.Count)
+		{
+			view.Dispose();
+			return;
+		}
+
+		_moreItemViews.Add(view);
+		_nativeMoreRegistrations.Register(
+			Element.Children[pageIndex],
+			view,
+			NativeElementRoles.ShellTabOverflow,
+			NativeElementDiscriminators.OverflowRow);
+	}
+
+	void RegisterMoreDialog(BottomSheetDialog dialog)
+	{
+		if (dialog.Window?.DecorView is AView dialogView)
+		{
+			_nativeMoreRegistrations.Register(
+				Element,
+				dialogView,
+				NativeElementRoles.ShellTabOverflow,
+				NativeElementDiscriminators.RealizedView);
+		}
+	}
+
+	void ClearMoreRegistrations()
+	{
+		_nativeMoreRegistrations.Clear();
+		foreach (var view in _moreItemViews)
+			view.Dispose();
+		_moreItemViews.Clear();
+	}
+
+	void CloseMoreDialog()
+	{
+		var dialog = _moreDialog;
+		_moreDialog = null;
+		ClearMoreRegistrations();
+		if (dialog is null)
+			return;
+
 		dialog.DismissEvent -= OnMoreSheetDismissed;
+		if (dialog.IsShowing)
+			dialog.Dismiss();
 		dialog.Dispose();
 	}
 
@@ -1078,6 +1261,7 @@ public class TabbedPageManager
 		void TabLayoutMediator.ITabConfigurationStrategy.OnConfigureTab(TabLayout.Tab p0, int p1)
 		{
 			p0.SetText(_tabbedPageManager.Element.Children[p1].Title);
+			_tabbedPageManager.RegisterTopTab(p0, p1);
 		}
 
 		bool NavigationBarView.IOnItemSelectedListener.OnNavigationItemSelected(IMenuItem item)
@@ -1088,10 +1272,19 @@ public class TabbedPageManager
 			var id = item.ItemId;
 			if (id == BottomNavigationViewUtils.MoreTabId)
 			{
+				_tabbedPageManager.CloseMoreDialog();
+				_tabbedPageManager.PrepareMoreRegistrations();
 				var items = _tabbedPageManager.CreateTabList();
-				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(_tabbedPageManager.OnMoreItemSelected, _tabbedPageManager.Element.FindMauiContext(), items, _tabbedPageManager._bottomNavigationView.MaxItemCount);
+				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
+					_tabbedPageManager.OnMoreItemSelected,
+					_tabbedPageManager.Element.FindMauiContext(),
+					items,
+					_tabbedPageManager._bottomNavigationView.MaxItemCount,
+					_tabbedPageManager.RegisterMoreRow);
+				_tabbedPageManager._moreDialog = bottomSheetDialog;
 				bottomSheetDialog.DismissEvent += _tabbedPageManager.OnMoreSheetDismissed;
 				bottomSheetDialog.Show();
+				_tabbedPageManager.RegisterMoreDialog(bottomSheetDialog);
 			}
 			else
 			{

@@ -5,6 +5,7 @@ using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls
 		Container? _platformTitleView;
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
+		readonly NativeElementRegistrationSet _nativeMenuRegistrations = new NativeElementRegistrationSet();
 
 		Brush? _currentBarBackground;
 		private int? _defaultStartInset;
@@ -29,10 +31,14 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnHandlerChanging(IElementHandler oldHandler, IElementHandler newHandler)
 		{
+			if (!ReferenceEquals(oldHandler?.PlatformView, newHandler?.PlatformView))
+			{
+				_nativeMenuRegistrations.Clear();
+			}
+
 			if (newHandler == null)
 			{
-				if (_platformTitleView != null)
-					_platformTitleView.Child = null;
+				_platformTitleView?.Child = null;
 
 				if (_currentBarBackground is GradientBrush currentGradientBrush)
 				{
@@ -65,7 +71,18 @@ namespace Microsoft.Maui.Controls
 				newToolBarItems.AddRange(toolbarItems);
 
 			if (sender is ToolbarItem ti)
-				PlatformView.OnToolbarItemPropertyChanged(e, ti, newToolBarItems, MauiContext!, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+				PlatformView.OnToolbarItemPropertyChanged(
+					e,
+					ti,
+					newToolBarItems,
+					MauiContext!,
+					BarTextColor,
+					OnToolbarItemPropertyChanged,
+					_currentMenuItems,
+					_currentToolbarItems,
+					updateMenuItemIcon: UpdateMenuItemIcon,
+					nativeElementRegistrations: _nativeMenuRegistrations,
+					nativeToolbarOwner: Parent);
 		}
 
 		void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
@@ -81,7 +98,16 @@ namespace Microsoft.Maui.Controls
 			if (_currentMenuItems == null)
 				return;
 
-			PlatformView.UpdateMenuItems(ToolbarItems, MauiContext, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			PlatformView.UpdateMenuItems(
+				ToolbarItems,
+				MauiContext,
+				BarTextColor,
+				OnToolbarItemPropertyChanged,
+				_currentMenuItems,
+				_currentToolbarItems,
+				updateMenuItemIcon: UpdateMenuItemIcon,
+				nativeElementRegistrations: _nativeMenuRegistrations,
+				nativeToolbarOwner: Parent);
 		}
 
 		void UpdateTitleView()
