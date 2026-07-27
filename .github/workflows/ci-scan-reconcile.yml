@@ -1,0 +1,171 @@
+# ci-scan tracking-issue reconciler.
+#
+# This is DELIBERATELY a plain GitHub Actions workflow, not a gh-aw agentic workflow.
+# Deciding which tracking issues are stale is a deterministic set-difference over build
+# IDs; there is nothing for a language model to add, and a prompt-driven agent with
+# `issues: write` would be an injection target reachable from any CI log the scanner
+# reads. See `.github/instructions/ci-copilot-pipeline-security.instructions.md`.
+#
+# ─── SAFETY MODEL ────────────────────────────────────────────────────────────────────
+#
+# 1. DEFAULT IS READ-ONLY, AND IT IS ENFORCED BY THE TOKEN, NOT BY THE SCRIPT.
+#    The `report` job is granted `issues: read` only. Even a compromised or buggy script
+#    cannot close, reopen, label, or comment on anything from that job — the credential
+#    it holds does not permit it. It also passes `-Mode report` as a hard-coded literal,
+#    so the workflow input cannot steer it.
+#
+# 2. MUTATION REQUIRES ALL OF:
+#      * `workflow_dispatch` (a scheduled run can never reach the mutating job),
+#      * an explicit `mode` input of exactly `comment` or `enforce`,
+#      * the `ci-scan-reconcile` deployment environment, and
+#      * the `CI_SCAN_RECONCILE_DISABLED` repository variable not being set to `true`.
+#
+# 3. REQUIRED REVIEWERS ARE A REPOSITORY CONFIGURATION PREREQUISITE.
+#    GitHub Actions cannot declare an environment's protection rules in YAML. Naming the
+#    environment here is necessary but NOT sufficient: until a maintainer configures
+#    required reviewers on the `ci-scan-reconcile` environment in
+#    Settings → Environments, the human approval gate does not exist and `enforce` must
+#    not be used. Treat an unconfigured environment as "enforcement is unavailable".
+#
+# 4. KILL SWITCH / ROLLBACK.
+#    Immediate:  set repository variable `CI_SCAN_RECONCILE_DISABLED=true` (no PR needed).
+#    Permanent:  the checked-in default is `report`; reverting to it is a one-line change.
+#    Nuclear:    disable the workflow in the Actions UI.
+#
+# 5. NO UNTRUSTED CODE EXECUTION.
+#    No PR-ref checkout, no `pull_request_target`, no execution of repository content
+#    authored by a pull request. The checkout is the default branch with
+#    `persist-credentials: false`.
+#
+# 6. THE TWO MODE CHECKS ARE DELIBERATELY DIFFERENT.
+#    GitHub Actions expression `==` is CASE-INSENSITIVE, so the `if:` below would accept
+#    `ENFORCE`. `Set-CiScanReconcileMode` in the script is case-SENSITIVE and accepts only
+#    the exact lowercase strings. A value that slips past the `if:` therefore still runs
+#    the job in report mode and performs zero writes. Neither check is load-bearing alone.
+
+name: ci-scan reconcile
+
+on:
+  schedule:
+    # Daily. Scheduled runs are report-only by construction (see the `mutate` job's `if`).
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      label:
+        description: 'Scanner twin to reconcile'
+        type: choice
+        required: true
+        default: 'ci-scan-net11'
+        options:
+          - ci-scan
+          - ci-scan-net11
+      mode:
+        description: 'report = read-only (default) · comment = labels+notice · enforce = also close'
+        type: choice
+        required: true
+        default: 'report'
+        options:
+          - report
+          - comment
+          - enforce
+
+permissions: {}
+
+concurrency:
+  group: ci-scan-reconcile-${{ github.event.inputs.label || 'all' }}
+  cancel-in-progress: false
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────────
+  # REPORT — always runs, for every trigger, with a read-only token.
+  # ─────────────────────────────────────────────────────────────────────────────────
+  report:
+    name: Report (read-only)
+    if: github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    strategy:
+      fail-fast: false
+      matrix:
+        # Deliberately a constant. Nothing about this job — not the mode, not the twin —
+        # is derived from a workflow input, so no dispatch input can steer it.
+        label: [ci-scan, ci-scan-net11]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Reconcile (report only)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # The markdown table is appended to $GITHUB_STEP_SUMMARY automatically, so the
+          # dry-run result is readable on the run page without downloading the artifact.
+          # NOTE: -Mode is the literal string 'report'. It is intentionally NOT wired to
+          # `inputs.mode`; this job must be incapable of mutation regardless of input.
+          CI_SCAN_LABEL: ${{ matrix.label }}
+        shell: pwsh
+        run: |
+          ./.github/scripts/Invoke-CiScanReconcile.ps1 `
+            -Mode report `
+            -Label $env:CI_SCAN_LABEL `
+            -OutputPath "ci-scan-reconcile-$env:CI_SCAN_LABEL.json"
+
+      - name: Upload report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-scan-reconcile-${{ matrix.label }}
+          path: ci-scan-reconcile-*.json
+          # Long enough to cover the 14-day report-only review phase plus slack.
+          retention-days: 90
+          if-no-files-found: error
+
+  # ─────────────────────────────────────────────────────────────────────────────────
+  # MUTATE — unreachable on a schedule, on a default dispatch, or with any mode value
+  # other than the two exact strings below.
+  # ─────────────────────────────────────────────────────────────────────────────────
+  mutate:
+    name: Apply (${{ inputs.mode }})
+    needs: report
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      github.event_name == 'workflow_dispatch' &&
+      (inputs.mode == 'comment' || inputs.mode == 'enforce') &&
+      vars.CI_SCAN_RECONCILE_DISABLED != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Repository-configured protection rules (required reviewers) are the human gate.
+    # See note 3 in the header — naming the environment does not create those rules.
+    environment: ci-scan-reconcile
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Reconcile (${{ inputs.mode }})
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_SCAN_LABEL: ${{ inputs.label }}
+          CI_SCAN_MODE: ${{ inputs.mode }}
+        shell: pwsh
+        run: |
+          ./.github/scripts/Invoke-CiScanReconcile.ps1 `
+            -Mode $env:CI_SCAN_MODE `
+            -Label $env:CI_SCAN_LABEL `
+            -OutputPath "ci-scan-reconcile-$env:CI_SCAN_LABEL-applied.json"
+
+      - name: Upload applied report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-scan-reconcile-applied-${{ inputs.label }}
+          path: ci-scan-reconcile-*.json
+          retention-days: 90
+          if-no-files-found: warn
