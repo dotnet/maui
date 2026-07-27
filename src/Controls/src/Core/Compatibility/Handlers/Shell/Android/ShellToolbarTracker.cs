@@ -416,7 +416,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual async void UpdateLeftBarButtonItem(Context context, AToolbar toolbar, DrawerLayout drawerLayout, Page page)
 		{
 			var registrationGeneration = ++_navigationRegistrationGeneration;
-			_nativeNavigationRegistrations.Clear();
+			_nativeNavigationRegistrations.AdvanceLifecycle();
 
 			if (_drawerToggle == null)
 			{
@@ -587,8 +587,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						button,
 						isBackButton ? NativeElementRoles.BackButton : NativeElementRoles.ShellFlyoutToggle,
 						NativeElementDiscriminators.RealizedView);
+					_nativeNavigationRegistrations.Retain(new[] { button });
 					return;
 				}
+
+				_nativeNavigationRegistrations.Clear();
 			});
 		}
 

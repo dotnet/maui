@@ -308,8 +308,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				index = Math.Min(index, menu.Size() - 1);
 				if (index < 0)
 					return;
-				using (var menuItem = menu.GetItem(index))
+				if (index < _registeredMenuItems.Count)
+					_registeredMenuItems[index].SetChecked(true);
+				else
+				{
+					using var menuItem = menu.GetItem(index);
 					menuItem.SetChecked(true);
+				}
 			}
 		}
 

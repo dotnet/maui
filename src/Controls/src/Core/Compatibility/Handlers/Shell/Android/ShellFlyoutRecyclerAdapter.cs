@@ -110,7 +110,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var item = _listItems[position];
 			var elementHolder = (ElementViewHolder)holder;
 
-			elementHolder.UnregisterNativeElement();
 			elementHolder.Bar.Visibility = item.DrawTopLine ? ViewStates.Visible : ViewStates.Gone;
 			elementHolder.Element = item.Element;
 			elementHolder.RegisterNativeElement(item.Element);

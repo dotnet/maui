@@ -265,9 +265,16 @@ namespace Microsoft.Maui.Controls.Platform
 			if (previousMenuItems == null)
 				return;
 
-			nativeElementRegistrations?.Clear();
-			if (nativeElementRegistrations is not null && nativeToolbarOwner is not null)
-				RegisterToolbarChrome(toolbar, nativeToolbarOwner, nativeElementRegistrations);
+			if (nativeElementRegistrations is not null)
+			{
+				if (nativeToolbarOwner is null)
+					nativeElementRegistrations.Clear();
+				else
+				{
+					nativeElementRegistrations.AdvanceLifecycle();
+					RegisterToolbarChrome(toolbar, nativeToolbarOwner, nativeElementRegistrations);
+				}
+			}
 
 			var currentToolbarItems = sortedToolbarItems?.ToList() ?? new List<ToolbarItem>();
 			foreach (var previousToolbarItem in previousToolBarItems)

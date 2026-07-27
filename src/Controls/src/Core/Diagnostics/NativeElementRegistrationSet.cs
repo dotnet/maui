@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Controls.Diagnostics
 
 		public bool IsCurrent(long lifecycleEpoch) => LifecycleEpoch == lifecycleEpoch;
 
+		public long AdvanceLifecycle() => Interlocked.Increment(ref _lifecycleEpoch);
+
 		public void Register(
 			object owner,
 			object nativeElement,
@@ -128,7 +130,7 @@ namespace Microsoft.Maui.Controls.Diagnostics
 
 		public void Clear()
 		{
-			Interlocked.Increment(ref _lifecycleEpoch);
+			AdvanceLifecycle();
 			foreach (var registration in _registrations.Values)
 				registration.Token.Dispose();
 

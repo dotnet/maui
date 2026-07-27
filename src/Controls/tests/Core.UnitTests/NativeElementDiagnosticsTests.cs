@@ -147,6 +147,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(registrations.IsCurrent(lifecycleEpoch));
 		}
 
+		[Fact]
+		public void RegistrationSetAdvanceLifecyclePreservesRegistrations()
+		{
+			var owner = new object();
+			var nativeElement = new object();
+			var events = new List<KeyValuePair<string, object>>();
+			using var subscription = NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(events));
+			using var registrations = new NativeElementRegistrationSet();
+			registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
+			var lifecycleEpoch = registrations.LifecycleEpoch;
+
+			registrations.AdvanceLifecycle();
+
+			Assert.False(registrations.IsCurrent(lifecycleEpoch));
+			Assert.Single(events);
+
+			registrations.Clear();
+
+			Assert.Equal(2, events.Count);
+			Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, events[1].Key);
+		}
+
 		sealed class RecordingObserver : IObserver<KeyValuePair<string, object>>
 		{
 			readonly List<KeyValuePair<string, object>> _events;

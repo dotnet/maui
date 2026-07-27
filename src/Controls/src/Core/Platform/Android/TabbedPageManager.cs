@@ -951,8 +951,13 @@ public class TabbedPageManager
 			index = Math.Min(index, menu.Size() - 1);
 			if (index >= 0)
 			{
-				using var menuItem = menu.GetItem(index);
-				menuItem.SetChecked(true);
+				if (index < _registeredMenuItems.Count)
+					_registeredMenuItems[index].SetChecked(true);
+				else
+				{
+					using var menuItem = menu.GetItem(index);
+					menuItem.SetChecked(true);
+				}
 			}
 		}
 	}
