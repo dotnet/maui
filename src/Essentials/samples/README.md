@@ -97,16 +97,23 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
 2. On developer.apple.com → **Identifiers**, select your bundle id and enable the **Associated
    Domains** capability. (IDE automatic signing can do this for you.)
 3. **Signing.** The .NET iOS SDK applies `Platforms/iOS/Entitlements.plist` automatically (it's the
-   convention-based default — no csproj change needed). So:
-   - **iOS Simulator / Mac Catalyst** — nothing extra; the entitlement is applied and no provisioning
-     profile is enforced. Just build and run.
-   - **Real iOS device** — set the project's **Team** + automatic provisioning (via the IDE's iOS
-     *Bundle Signing* settings, or locally in the csproj — don't commit) so the profile includes the
-     Associated Domains capability:
+   convention-based default — no csproj change needed). Whether a provisioning profile is required
+   depends on the target:
+   - **iOS Simulator** — no provisioning profile is enforced; the entitlement is applied. Just build
+     and run.
+   - **Real iOS device** and **Mac Catalyst** — both run as real signed apps, so the
+     `com.apple.developer.associated-domains` entitlement must be authorized by an **explicit**
+     provisioning profile (a wildcard team profile won't do — it can't carry Associated Domains).
+     Without one the build fails with `MT7139: The app requests the entitlement
+     'com.apple.developer.associated-domains', but no provisioning profile has been specified`.
+
+     Generate the profile with your **Team** by enabling **Associated Domains** on the App ID and
+     letting an IDE with automatic provisioning create it (VS Code C# Dev Kit, Rider), or Xcode. Then
+     point the build at it (local, don't commit):
      ```xml
-     <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
-       <CodesignProvision>Automatic</CodesignProvision>
+     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
        <CodesignKey>Apple Development</CodesignKey>
+       <CodesignProvision>YOUR PROFILE NAME</CodesignProvision>
      </PropertyGroup>
      ```
 4. With the server running (section 1), verify the AASA is reachable **from the public internet** and
@@ -130,6 +137,7 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
 | `Could not resolve host …devtunnels.ms` on the device | Local-network DNS won't resolve `*.devtunnels.ms`. Point the device at a public resolver (iOS Wi-Fi → Configure DNS → Manual → `8.8.8.8`) or restart the router. Apple's CDN resolves it fine over the public internet. |
 | `no profiles for '<bundle id>' were found` | The App ID belongs to another team — use `-AppleBundleId` + a matching `<ApplicationId>`. |
 | Browser: *"relying party ID is not a registrable domain suffix of … the current domain"* | You opened the web UI on `localhost` (e.g. `http://localhost:5177`). Passkeys are domain-bound — browse to the **tunnel URL** `https://<your-domain>` instead (click through the dev-tunnel warning), so the page origin matches the RP ID. |
+| Build error `MT7139: … requests the entitlement 'com.apple.developer.associated-domains', but no provisioning profile has been specified` | A **device** or **Mac Catalyst** build needs an explicit provisioning profile with Associated Domains. Generate one for your Team (IDE automatic provisioning or Xcode) and set `CodesignProvision` to its name. The iOS **Simulator** doesn't need this. |
 
 ## 3. Android (emulator)
 
