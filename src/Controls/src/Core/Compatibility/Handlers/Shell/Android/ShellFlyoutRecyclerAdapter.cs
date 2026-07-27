@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (holder is ElementViewHolder evh)
 			{
 				evh.UnregisterNativeElement();
+				_viewHolders.Remove(evh);
 
 				// only clear out the Element if the item has been removed
 				bool found = false;
@@ -110,6 +111,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var item = _listItems[position];
 			var elementHolder = (ElementViewHolder)holder;
 
+			_viewHolders.Add(elementHolder);
 			elementHolder.Bar.Visibility = item.DrawTopLine ? ViewStates.Visible : ViewStates.Gone;
 			elementHolder.Element = item.Element;
 			elementHolder.RegisterNativeElement(item.Element);
@@ -164,7 +166,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_selectedCallback,
 				_shellContext.Shell,
 				OnViewHolderDisposed);
-			_viewHolders.Add(holder);
 			return holder;
 		}
 

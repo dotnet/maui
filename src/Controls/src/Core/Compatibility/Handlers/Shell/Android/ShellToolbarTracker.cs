@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _disposed;
 		DrawerLayout _drawerLayout;
 		ActionBarDrawerToggle _drawerToggle;
+		Task _drawerToggleInitializationTask;
 		FlyoutBehavior _flyoutBehavior = FlyoutBehavior.Flyout;
 		Page _page;
 		SearchHandler _searchHandler;
@@ -426,22 +427,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					ToolbarNavigationClickListener = this,
 				};
+				_drawerToggleInitializationTask = InitializeDrawerToggleAsync(context, drawerLayout);
+			}
 
-				// TODO: Obsolete and Remove `UpdateDrawerArrowFromFlyoutIcon`
-				// Its original purpose was to set the icon from the FlyoutIcon which is now handled by GetFlyoutIcon below.
-				// See: https://github.com/xamarin/Xamarin.Forms/pull/6762
-				await UpdateDrawerArrowFromFlyoutIcon(context, _drawerToggle);
+			if (_drawerToggleInitializationTask is not null)
+				await _drawerToggleInitializationTask;
 
-				// Fragment might have been disposed while we were awaiting
-				if (_disposed ||
-					registrationGeneration != _navigationRegistrationGeneration ||
-					!ReferenceEquals(Page, page))
-				{
-					return;
-				}
-
-				_drawerToggle.DrawerSlideAnimationEnabled = false;
-				drawerLayout.AddDrawerListener(_drawerToggle);
+			// Fragment or page might have changed while we were awaiting initialization.
+			if (_disposed ||
+				registrationGeneration != _navigationRegistrationGeneration ||
+				!ReferenceEquals(Page, page))
+			{
+				return;
 			}
 
 			var backButtonHandler = Shell.GetEffectiveBackButtonBehavior(page);
@@ -563,6 +560,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				page,
 				command != null || CanNavigateBack,
 				registrationGeneration);
+		}
+
+		async Task InitializeDrawerToggleAsync(Context context, DrawerLayout drawerLayout)
+		{
+			// TODO: Obsolete and Remove `UpdateDrawerArrowFromFlyoutIcon`
+			// Its original purpose was to set the icon from the FlyoutIcon which is now handled by GetFlyoutIcon below.
+			// See: https://github.com/xamarin/Xamarin.Forms/pull/6762
+			await UpdateDrawerArrowFromFlyoutIcon(context, _drawerToggle);
+
+			if (_disposed)
+				return;
+
+			_drawerToggle.DrawerSlideAnimationEnabled = false;
+			drawerLayout.AddDrawerListener(_drawerToggle);
 		}
 
 		void RegisterNavigationButton(
