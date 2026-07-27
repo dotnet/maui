@@ -61,6 +61,7 @@ Assertion failed
             $signature.body = $Body
             $signature.match_pattern = $MatchPattern
         } elseif ($Disposition -eq 'existing') {
+            $signature.match_pattern = $MatchPattern
             $signature.issue_number = $IssueNumber
         } elseif ($Disposition -eq 'skipped') {
             $signature.skip_reason = $SkipReason
@@ -464,6 +465,21 @@ Describe 'CI scanner issue payload gate' {
             Should -Throw '*must equal the trusted evidence count (1)*'
     }
 
+    It 'rejects a source log that does not contain the filed match pattern' {
+        $evidenceRoot = Join-Path $TestDrive 'multi-log-evidence'
+        New-TestEvidence -Root $evidenceRoot -LogId 1001
+        New-TestEvidence -Root $evidenceRoot -LogId 1002 -Lines @('Different failure')
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -SourceLogIds @(1001, 1002))
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds -MainRequiredLogIds @(1001, 1002)) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*must occur in trusted source log 1002*'
+    }
+
     It 'rejects a match pattern absent from frozen trusted evidence' {
         $evidenceRoot = Join-Path $TestDrive 'evidence'
         New-TestEvidence -Root $evidenceRoot -Lines @('Different failure')
@@ -475,7 +491,7 @@ Describe 'CI scanner issue payload gate' {
                 -Manifest $manifest `
                 -ExpectedBuilds (New-ExpectedBuilds) `
                 -TrustedEvidencePath $evidenceRoot } |
-            Should -Throw '*trusted evidence count (0)*'
+            Should -Throw '*must occur in trusted source log 1001*'
     }
 
     It 'rejects a missing frozen evidence file' {
@@ -629,6 +645,36 @@ Describe 'CI scanner terminal dispositions' {
         $plan.pipelines[0].signatures[0].issue_number | Should -Be 36827
     }
 
+    It 'accepts an existing issue only when its pattern occurs in frozen evidence' {
+        $evidenceRoot = Join-Path $TestDrive 'existing-evidence'
+        New-TestEvidence -Root $evidenceRoot
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Disposition 'existing' -IssueNumber 36827)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.pipelines[0].signatures[0].match_pattern | Should -Be 'Assertion failed'
+        $plan.pipelines[0].signatures[0].match_count | Should -Be 2
+    }
+
+    It 'rejects an existing issue pattern absent from frozen evidence' {
+        $evidenceRoot = Join-Path $TestDrive 'existing-mismatch'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Different failure')
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Disposition 'existing' -IssueNumber 36827)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*must occur in trusted source log 1001*'
+    }
+
     It 'rejects a non-positive existing issue reference' {
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Disposition 'existing' -IssueNumber 0)
@@ -704,5 +750,18 @@ Describe 'CI scanner workflow source invariants' {
     It 'points the agent at the actual trusted inventory path' {
         $workflowSource | Should -Match '/tmp/gh-aw/agent/trusted/expected-builds\.json'
         $workflowSource | Should -Not -Match '/tmp/gh-aw/agent/expected-builds\.json'
+    }
+
+    It 'freezes a trusted publisher SHA before the agent and checks it out exactly' {
+        $workflowSource | Should -Match 'trusted_publisher_ref: trustedPublisherRef'
+        $workflowSource | Should -Match 'ref: \$\{\{ steps\.trusted_publisher_ref\.outputs\.ref \}\}'
+        $workflowSource | Should -Not -Match '(?m)^\s+ref: main$'
+    }
+
+    It 'fails closed on incomplete Helix work-item evidence' {
+        $workflowSource | Should -Match 'workItems\.length === 0'
+        $workflowSource | Should -Match "state !== 'finished' && state !== 'failed'"
+        $workflowSource | Should -Match 'workItem\.ExitCode !== null'
+        $workflowSource | Should -Match 'Failed Helix work item .* has no console output'
     }
 }

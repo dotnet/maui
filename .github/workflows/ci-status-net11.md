@@ -90,16 +90,23 @@ safe-outputs:
           run: |
             echo "::error::Threat detection did not pass; refusing to publish scanner issues."
             exit 1
-        - name: Checkout trusted scanner publisher
-          uses: actions/checkout@v7.0.1
-          with:
-            ref: main
-            persist-credentials: false
         - name: Download frozen scanner build evidence
           uses: actions/download-artifact@v8.0.1
           with:
             name: ci-scan-net11-trusted-builds-${{ github.run_id }}
             path: ${{ runner.temp }}/ci-scan-net11
+        - name: Resolve frozen trusted publisher ref
+          id: trusted_publisher_ref
+          shell: bash
+          run: |
+            set -euo pipefail
+            ref=$(jq -er '.trusted_publisher_ref | select(type == "string" and test("^[0-9a-f]{40}$"))' "$CI_SCAN_EXPECTED_BUILDS_PATH")
+            printf 'ref=%s\n' "$ref" >> "$GITHUB_OUTPUT"
+        - name: Checkout trusted scanner publisher
+          uses: actions/checkout@v7.0.1
+          with:
+            ref: ${{ steps.trusted_publisher_ref.outputs.ref }}
+            persist-credentials: false
         - name: Validate complete scanner coverage and issue payloads
           shell: pwsh
           run: .github/scripts/Validate-CiScanManifest.ps1
@@ -159,6 +166,10 @@ safe-outputs:
                 }
 
                 const body = response.data.body || '';
+                const publishedEvidence = body.replace(/\u200B/g, '');
+                if (!publishedEvidence.includes(entry.match_pattern)) {
+                  throw new Error(`Existing issue #${entry.issue_number} does not contain the current trusted match pattern.`);
+                }
                 const exactMarker = `<!-- ci-scan-fingerprint: ${entry.fingerprint} -->`;
                 const markerPrefix = '<!-- ci-scan-fingerprint:';
                 const markerCount = body.split(markerPrefix).length - 1;
@@ -341,6 +352,14 @@ steps:
           { name: 'maui-pr-devicetests', definition_id: 314 },
           { name: 'maui-pr-uitests', definition_id: 313 },
         ];
+        const trustedPublisherReference = await github.rest.git.getRef({
+          ...context.repo,
+          ref: 'heads/main',
+        });
+        const trustedPublisherRef = String(trustedPublisherReference.data.object?.sha || '');
+        if (!/^[0-9a-f]{40}$/.test(trustedPublisherRef)) {
+          throw new Error('GitHub returned an invalid trusted publisher ref for main.');
+        }
         const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
         const fetchJson = async url => {
           const response = await fetch(url, {
@@ -450,9 +469,28 @@ steps:
                 if (!Array.isArray(workItems)) {
                   throw new Error(`Helix returned invalid work-item evidence for job ${jobId}.`);
                 }
+                if (workItems.length === 0) {
+                  throw new Error(`Helix returned no work-item evidence for job ${jobId}.`);
+                }
                 for (const workItem of workItems) {
-                  if (Number(workItem.ExitCode) === 0 || !workItem.ConsoleOutputUri) {
+                  const state = String(workItem.State || '').toLowerCase();
+                  const hasExitCode =
+                    workItem.ExitCode !== null &&
+                    workItem.ExitCode !== undefined &&
+                    workItem.ExitCode !== '' &&
+                    Number.isSafeInteger(Number(workItem.ExitCode));
+                  if (state !== 'finished' && state !== 'failed') {
+                    throw new Error(`Helix work item ${String(workItem.Name || 'unknown')} in job ${jobId} is not terminal.`);
+                  }
+                  if (state !== 'failed' && !hasExitCode) {
+                    throw new Error(`Helix work item ${String(workItem.Name || 'unknown')} in job ${jobId} has no terminal exit code.`);
+                  }
+                  const isFailure = state === 'failed' || Number(workItem.ExitCode) !== 0;
+                  if (!isFailure) {
                     continue;
+                  }
+                  if (!workItem.ConsoleOutputUri) {
+                    throw new Error(`Failed Helix work item ${String(workItem.Name || 'unknown')} in job ${jobId} has no console output.`);
                   }
                   const consoleUrl = new URL(workItem.ConsoleOutputUri);
                   if (consoleUrl.protocol !== 'https:' ||
@@ -483,7 +521,11 @@ steps:
           });
         }
 
-        const inventory = JSON.stringify({ schema_version: 1, pipelines }, null, 2);
+        const inventory = JSON.stringify({
+          schema_version: 1,
+          trusted_publisher_ref: trustedPublisherRef,
+          pipelines,
+        }, null, 2);
         for (const outputPath of [artifactPath, agentPath]) {
           fs.mkdirSync(path.dirname(outputPath), { recursive: true });
           fs.writeFileSync(outputPath, inventory);
@@ -672,7 +714,10 @@ Pipeline status must be one of:
 
 Every signature has `fingerprint`, `disposition`, and a non-empty
 `source_log_ids` array of positive AzDO timeline `log.id` values from the latest
-build. A deduplicated signature may list multiple source logs. Every failed-leaf
+build. Filed and existing signatures also have `match_pattern`: one stable
+8-500 character line that occurs in every listed source log. A deduplicated
+signature may list multiple source logs only when that exact pattern occurs in
+each one. Every failed-leaf
 log, plus every non-skipped `DeviceTests... (Unix|Windows)` Helix submission log
 in `maui-pr-devicetests` (including green AzDO jobs), must appear in at least one
 signature. The authoritative set is `required_log_ids` in the frozen evidence
@@ -681,8 +726,10 @@ deterministic skipped entry for that task/log with
 `signature-not-in-fetched-log`; never omit the source log from coverage.
 
 Disposition-specific fields:
-- `filed` — also include `title`, the complete `body`, and `match_pattern`.
-- `existing` — also include the positive integer `issue_number`.
+- `filed` — also include `title` and the complete `body`.
+- `existing` — also include the positive integer `issue_number`. Select a
+  `match_pattern` that occurs in both the current frozen evidence and the
+  referenced issue body, proving the current failure recurs there.
 - `skipped` — also include exactly one `skip_reason`:
   `not-recurring`, `not-actionable`, `infrastructure-noise`,
   `signature-not-in-fetched-log`, or `cap-reached`.
@@ -752,14 +799,20 @@ Concretely:
    <GHAW_SIG_RANDOM_DELIMITER>
    # -F = fixed string (no regex); -f = read pattern from file (no interpolation).
    match_count=0
-   # Repeat this for each trusted evidence file named by source_log_ids and sum
-   # the matching-line counts. The file paths are trusted numeric IDs.
+   # Repeat this for each trusted evidence file named by source_log_ids. Require
+   # each individual count to be positive, then sum them. The file paths are
+   # trusted numeric IDs.
    count=$(grep -F -f /tmp/gh-aw/agent/sig.txt -c "/tmp/gh-aw/agent/trusted/evidence/<pipeline>/<build_id>-<log_id>.log")
+   if [ "$count" -lt 1 ]; then
+     # Do not use this source_log_id for the signature.
+     exit 1
+   fi
    match_count=$((match_count + count))
    ```
-4. Require `match_count >= 1`. If 0, do NOT file — the signature is
-   speculative and likely a misread of the timeline; record disposition
-   `skipped` with `skip_reason: signature-not-in-fetched-log`.
+4. Require every per-log count and the aggregate `match_count` to be at least 1.
+   If a source log has 0 matches, do not attach it to that signature. Classify
+   the log's actual signature separately, or record disposition `skipped` with
+   `skip_reason: signature-not-in-fetched-log`.
 5. Embed the count as a second hidden marker in the issue body, on its own
    line, exactly:
    `<!-- ci-scan-match-count: <N> hits in failure.log -->`
@@ -798,6 +851,7 @@ shape:
           "fingerprint": "ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows",
           "disposition": "existing",
           "source_log_ids": [42, 57],
+          "match_pattern": "Assertion failed",
           "issue_number": 12345
         }
       ]

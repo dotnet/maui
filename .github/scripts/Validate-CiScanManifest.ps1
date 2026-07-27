@@ -200,6 +200,58 @@ function Assert-ValidFingerprint {
     }
 }
 
+function Get-ValidatedMatchPattern {
+    param(
+        [Parameter(Mandatory = $true)][object]$Signature,
+        [Parameter(Mandatory = $true)][string]$Fingerprint
+    )
+
+    $matchPattern = ConvertTo-TrimmedString (
+        Get-RequiredProperty -Object $Signature -Name 'match_pattern' -Context "signature '$Fingerprint'"
+    )
+    if ($matchPattern.Length -lt 8 -or $matchPattern.Length -gt 500 -or $matchPattern -match '[\r\n]') {
+        throw "match_pattern for '$Fingerprint' must be one line of 8-500 characters."
+    }
+    if ($matchPattern.IndexOf([char]0x200B) -ge 0) {
+        throw "match_pattern for '$Fingerprint' must not contain zero-width spaces."
+    }
+
+    return $matchPattern
+}
+
+function Get-TrustedEvidenceMatchCount {
+    param(
+        [Parameter(Mandatory = $true)][string]$MatchPattern,
+        [Parameter(Mandatory = $true)][string]$PipelineName,
+        [Parameter(Mandatory = $true)][Int64]$BuildId,
+        [Parameter(Mandatory = $true)][string]$Fingerprint,
+        [Parameter(Mandatory = $true)][Int64[]]$SourceLogIds,
+        [Parameter(Mandatory = $true)][string]$TrustedEvidencePath
+    )
+
+    $trustedMatchCount = [Int64]0
+    foreach ($sourceLogId in $SourceLogIds) {
+        $sourceMatchCount = [Int64]0
+        $evidenceFile = Join-Path `
+            $TrustedEvidencePath `
+            "$PipelineName/$BuildId-$sourceLogId.log"
+        if (-not (Test-Path -LiteralPath $evidenceFile -PathType Leaf)) {
+            throw "Trusted evidence file is missing for '$Fingerprint' source log $sourceLogId."
+        }
+        foreach ($line in [System.IO.File]::ReadLines($evidenceFile)) {
+            if ($line.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
+                $sourceMatchCount++
+                $trustedMatchCount++
+            }
+        }
+        if ($sourceMatchCount -lt 1) {
+            throw "match_pattern for '$Fingerprint' must occur in trusted source log $sourceLogId."
+        }
+    }
+
+    return $trustedMatchCount
+}
+
 function Assert-ValidIssuePayload {
     param(
         [Parameter(Mandatory = $true)][object]$Signature,
@@ -258,15 +310,7 @@ function Assert-ValidIssuePayload {
     if ($matchPrefixCount -ne 1 -or $matchMarkers.Count -ne 1) {
         throw "Body for '$Fingerprint' must contain exactly one canonical positive match-count marker."
     }
-    $matchPattern = ConvertTo-TrimmedString (
-        Get-RequiredProperty -Object $Signature -Name 'match_pattern' -Context "filed signature '$Fingerprint'"
-    )
-    if ($matchPattern.Length -lt 8 -or $matchPattern.Length -gt 500 -or $matchPattern -match '[\r\n]') {
-        throw "match_pattern for '$Fingerprint' must be one line of 8-500 characters."
-    }
-    if ($matchPattern.IndexOf($zeroWidthSpace) -ge 0) {
-        throw "match_pattern for '$Fingerprint' must not contain zero-width spaces."
-    }
+    $matchPattern = Get-ValidatedMatchPattern -Signature $Signature -Fingerprint $Fingerprint
     # Assert the invariant against the body that is actually PUBLISHED ($body), not the
     # agent-supplied $rawBody. ConvertTo-SafeIssueBody rewrites the body it returns -
     # a crash-backtrace evidence line like "#0 0x00007fff..." trips the #ref rule and a
@@ -280,21 +324,14 @@ function Assert-ValidIssuePayload {
     }
     $markerMatchCount = [Int64]$matchMarkers[0].Groups[1].Value
     if ($TrustedEvidencePath) {
-        $trustedMatchCount = [Int64]0
-        foreach ($sourceLogId in $SourceLogIds) {
-            $evidenceFile = Join-Path `
-                $TrustedEvidencePath `
-                "$PipelineName/$BuildId-$sourceLogId.log"
-            if (-not (Test-Path -LiteralPath $evidenceFile -PathType Leaf)) {
-                throw "Trusted evidence file is missing for '$Fingerprint' source log $sourceLogId."
-            }
-            foreach ($line in [System.IO.File]::ReadLines($evidenceFile)) {
-                if ($line.Contains($matchPattern, [System.StringComparison]::Ordinal)) {
-                    $trustedMatchCount++
-                }
-            }
-        }
-        if ($trustedMatchCount -lt 1 -or $markerMatchCount -ne $trustedMatchCount) {
+        $trustedMatchCount = Get-TrustedEvidenceMatchCount `
+            -MatchPattern $matchPattern `
+            -PipelineName $PipelineName `
+            -BuildId $BuildId `
+            -Fingerprint $Fingerprint `
+            -SourceLogIds $SourceLogIds `
+            -TrustedEvidencePath $TrustedEvidencePath
+        if ($markerMatchCount -ne $trustedMatchCount) {
             throw "Match count for '$Fingerprint' must equal the trusted evidence count ($trustedMatchCount)."
         }
     }
@@ -507,9 +544,23 @@ function Test-CiScanManifest {
                         })
                 }
                 'existing' {
+                    $matchPattern = Get-ValidatedMatchPattern `
+                        -Signature $signature `
+                        -Fingerprint $fingerprint
+                    if ($TrustedEvidencePath) {
+                        $trustedMatchCount = Get-TrustedEvidenceMatchCount `
+                            -MatchPattern $matchPattern `
+                            -PipelineName $name `
+                            -BuildId $buildId `
+                            -Fingerprint $fingerprint `
+                            -SourceLogIds $sourceLogIds `
+                            -TrustedEvidencePath $TrustedEvidencePath
+                        $normalized.match_count = $trustedMatchCount
+                    }
                     $issueNumber = ConvertTo-PositiveInteger `
                         -Value (Get-RequiredProperty -Object $signature -Name 'issue_number' -Context $signatureContext) `
                         -Context "$signatureContext issue_number"
+                    $normalized.match_pattern = $matchPattern
                     $normalized.issue_number = $issueNumber
                 }
                 'skipped' {
