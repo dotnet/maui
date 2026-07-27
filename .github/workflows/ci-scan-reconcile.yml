@@ -77,7 +77,8 @@ concurrency:
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────────
-  # SAFETY TESTS — gate for everything below. Runs with no token of any kind.
+  # SAFETY TESTS — gate for everything below. The most privileged thing this job can
+  # do is read the repository.
   #
   # The claim "report mode cannot mutate" is enforced by the Pester suite, not by
   # inspection. Nothing else in this workflow re-checks it at run time, and
@@ -86,9 +87,19 @@ jobs:
   # gating (`powershell-script-tests.yml`) does not cover that path, because a dispatch
   # does not have to run from a merged commit.
   #
-  # The suite is fully offline: no network, no `gh`, no AzDO. It is deliberately given
-  # `contents: read` and no `GH_TOKEN`, so a regression that tried to reach GitHub would
-  # fail here rather than mutate anything.
+  # The test SUITE is offline — it reaches neither `gh` nor AzDO. The JOB is not: it
+  # checks out the repo and installs Pester from PSGallery. So the guarantee here is
+  # scoped by permission, not by connectivity:
+  #
+  #   * `permissions: contents: read` — the job-level `GITHUB_TOKEN` that
+  #     `actions/checkout` consumes cannot write anything, on this repo or any other;
+  #   * no `GH_TOKEN`/`GITHUB_TOKEN` is exported into the run step, so `gh` inside the
+  #     suite is unauthenticated;
+  #   * `persist-credentials: false`, so the checkout token is not left in `.git/config`
+  #     for the suite to pick up.
+  #
+  # A regression that tried to mutate GitHub therefore fails here rather than mutating
+  # anything.
   # ─────────────────────────────────────────────────────────────────────────────────
   test:
     name: Safety tests

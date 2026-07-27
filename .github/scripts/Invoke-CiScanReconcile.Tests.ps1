@@ -984,10 +984,23 @@ Describe 'Static source invariants' {
         $mutateJob | Should -BeLike '*issues: write*'
     }
 
+    <#
+        The gate's guarantee is scoped by PERMISSION, not by connectivity — the job does
+        reach the network to check out the repo and install Pester. These assertions pin
+        the three things that actually make a regression inside the suite unable to
+        mutate anything, so the header comment above the job cannot drift into
+        overclaiming ("runs with no token of any kind", "fully offline").
+    #>
     It 'keeps the safety gate free of any GitHub token' {
         $testJob = (($script:WorkflowCode -split '(?m)^  test:')[1] -split '(?m)^  report:')[0]
         $testJob | Should -Not -BeLike '*GH_TOKEN*'
         $testJob | Should -Not -BeLike '*issues: write*'
+
+        # The job-level token that `actions/checkout` consumes must be read-only, and it
+        # must not be left behind in `.git/config` where the suite could reach it.
+        $testJob | Should -BeLike '*contents: read*'
+        $testJob | Should -BeLike '*persist-credentials: false*'
+        $testJob | Should -Not -BeLike '*contents: write*'
     }
 
     It 'does not set StrictMode in the safety gate' {
