@@ -42,7 +42,7 @@ engine:
 
 concurrency:
   group: "ci-failure-scan-net11"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 tools:
   github:
@@ -86,145 +86,11 @@ safe-outputs:
           with:
             ref: main
             persist-credentials: false
-        - name: Resolve trusted scanner build evidence
-          uses: actions/github-script@v9.0.0
+        - name: Download frozen scanner build evidence
+          uses: actions/download-artifact@v8.0.1
           with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
-            script: |
-              const fs = require('fs');
-              const path = require('path');
-              const inventoryPath = process.env.CI_SCAN_EXPECTED_BUILDS_PATH;
-              const agentOutputPath = process.env.GH_AW_AGENT_OUTPUT;
-              const definitions = [
-                { name: 'maui-pr', definition_id: 302 },
-                { name: 'maui-pr-devicetests', definition_id: 314 },
-                { name: 'maui-pr-uitests', definition_id: 313 },
-              ];
-              const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
-              const fetchJson = async url => {
-                const response = await fetch(url, {
-                  headers: { Accept: 'application/json' },
-                  signal: AbortSignal.timeout(30000),
-                });
-                if (!response.ok) {
-                  throw new Error(`AzDO request failed with HTTP ${response.status}.`);
-                }
-                return response.json();
-              };
-              const output = JSON.parse(fs.readFileSync(agentOutputPath, 'utf8'));
-              const items = Array.isArray(output.items) ? output.items : [];
-              if (items.length !== 1 || items[0]?.type !== 'submit_ci_scan') {
-                throw new Error('Agent output must contain exactly one submit_ci_scan item.');
-              }
-              const manifest = typeof items[0].manifest === 'string'
-                ? JSON.parse(items[0].manifest)
-                : items[0].manifest;
-              const claimedPipelines = Array.isArray(manifest?.pipelines) ? manifest.pipelines : [];
-              if (claimedPipelines.length !== definitions.length) {
-                throw new Error('Scanner manifest must contain all configured pipelines.');
-              }
-
-              const pipelines = [];
-              for (let index = 0; index < definitions.length; index++) {
-                const definition = definitions[index];
-                const claimed = claimedPipelines[index] || {};
-                const status = String(claimed.status || '').trim().toLowerCase();
-                if (status === 'skipped-cap-reached') {
-                  pipelines.push({
-                    ...definition,
-                    status,
-                  });
-                  continue;
-                }
-
-                if (status === 'skipped-no-recent-build') {
-                  const query = new URLSearchParams({
-                    definitions: String(definition.definition_id),
-                    branchName: 'refs/heads/net11.0',
-                    statusFilter: 'completed',
-                    resultFilter: 'succeeded,failed,partiallySucceeded',
-                    queryOrder: 'finishTimeDescending',
-                    '$top': '1',
-                    'api-version': '7.1',
-                  });
-                  const builds = await fetchJson(
-                    `https://dev.azure.com/dnceng-public/public/_apis/build/builds?${query}`);
-                  const recent = Array.isArray(builds.value) ? builds.value[0] : undefined;
-                  if (recent?.finishTime && Date.parse(recent.finishTime) >= cutoff) {
-                    throw new Error(`A recent completed build exists for ${definition.name}.`);
-                  }
-                  pipelines.push({ ...definition, status });
-                  continue;
-                }
-
-                const buildId = Number(claimed.build_id);
-                if (status !== 'scanned' || !Number.isSafeInteger(buildId) || buildId <= 0) {
-                  throw new Error(`Scanner manifest has invalid build evidence for ${definition.name}.`);
-                }
-                const build = await fetchJson(
-                  `https://dev.azure.com/dnceng-public/public/_apis/build/builds/${buildId}?api-version=7.1`);
-                if (Number(build.definition?.id) !== definition.definition_id ||
-                    build.sourceBranch !== 'refs/heads/net11.0' ||
-                    build.status !== 'completed' ||
-                    !build.finishTime ||
-                    Date.parse(build.finishTime) < cutoff) {
-                  throw new Error(`AzDO did not confirm the claimed recent build for ${definition.name}.`);
-                }
-
-                const timelineUrl =
-                  `https://dev.azure.com/dnceng-public/public/_apis/build/builds/${buildId}/timeline?api-version=7.1`;
-                const timeline = await fetchJson(timelineUrl);
-                const records = Array.isArray(timeline.records) ? timeline.records : [];
-                const byId = new Map(records.map(record => [record.id, record]));
-                const children = new Map();
-                for (const record of records) {
-                  if (!children.has(record.parentId)) {
-                    children.set(record.parentId, []);
-                  }
-                  children.get(record.parentId).push(record);
-                }
-                const hasFailedJobAncestor = record => {
-                  let current = record;
-                  while (current?.parentId) {
-                    current = byId.get(current.parentId);
-                    if (current?.type === 'Job' && current.result === 'failed') {
-                      return true;
-                    }
-                  }
-                  return false;
-                };
-                const requiredLogIds = new Set();
-                for (const record of records) {
-                  const logId = Number(record.log?.id);
-                  if (!Number.isSafeInteger(logId) || logId <= 0) {
-                    continue;
-                  }
-                  const hasFailedChild = (children.get(record.id) || [])
-                    .some(child => child.result === 'failed');
-                  if ((record.result === 'failed' && !hasFailedChild) ||
-                      (record.type === 'Task' &&
-                       String(record.name || '').toLowerCase().includes('send to helix') &&
-                       hasFailedJobAncestor(record))) {
-                    requiredLogIds.add(logId);
-                  }
-                }
-                const failedRecordCount = records.filter(record => record.result === 'failed').length;
-                if (String(build.result || '').toLowerCase() !== 'succeeded' &&
-                    requiredLogIds.size === 0) {
-                  throw new Error(`No inspectable failure logs were found for ${definition.name}.`);
-                }
-                pipelines.push({
-                  ...definition,
-                  status: 'scanned',
-                  build_id: buildId,
-                  result: String(build.result || '').toLowerCase(),
-                  failed_record_count: failedRecordCount,
-                  required_log_ids: [...requiredLogIds].sort((a, b) => a - b),
-                });
-              }
-
-              fs.mkdirSync(path.dirname(inventoryPath), { recursive: true });
-              fs.writeFileSync(inventoryPath, JSON.stringify({ schema_version: 1, pipelines }, null, 2));
+            name: ci-scan-net11-trusted-builds-${{ github.run_id }}-${{ github.run_attempt }}
+            path: ${{ runner.temp }}/ci-scan-net11
         - name: Validate complete scanner coverage and issue payloads
           shell: pwsh
           run: .github/scripts/Validate-CiScanManifest.ps1
@@ -251,6 +117,12 @@ safe-outputs:
                 fs.writeFileSync(resultsPath, JSON.stringify(results, null, 2));
               const normalizeBody = value =>
                 String(value ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+              const requestOptions = { timeout: 30000 };
+              const forEachBatch = async (items, size, callback) => {
+                for (let index = 0; index < items.length; index += size) {
+                  await Promise.all(items.slice(index, index + size).map(callback));
+                }
+              };
               persistResults();
 
               const expectedLabel = 'ci-scan-net11';
@@ -262,11 +134,12 @@ safe-outputs:
               // Preflight every referenced issue and every would-be fingerprint before
               // any write. This prevents one invalid late entry from producing a
               // partially trusted batch.
-              for (const entry of existingEntries) {
+              await forEachBatch(existingEntries, 10, async entry => {
                 const response = await github.rest.issues.get({
                   owner,
                   repo,
                   issue_number: Number(entry.issue_number),
+                  request: requestOptions,
                 });
                 const labels = response.data.labels.map(l => typeof l === 'string' ? l : l.name);
                 const pullRequestKey = 'pull' + '_request';
@@ -287,9 +160,13 @@ safe-outputs:
                   entry.coverage_proof = 'canonical-fingerprint';
                 } else {
                   // Legacy scanner issues predate reliable marker preservation.
-                  // Require both the normalized test/task identity and exact pipeline
-                  // field so an unrelated labeled issue cannot claim coverage.
-                  const identity = entry.fingerprint.split('|')[3];
+                  // Require identity, pipeline, and error/platform evidence so an
+                  // unrelated labeled issue cannot claim coverage.
+                  const fingerprintParts = entry.fingerprint.split('|');
+                  const identity = fingerprintParts[3];
+                  const secondaryEvidence = fingerprintParts.slice(4, 6)
+                    .map(value => value.toLowerCase().replace(/\s+/g, ' '))
+                    .filter(value => value.length >= 5);
                   const searchable = `${response.data.title || ''}\n${body}`
                     .toLowerCase()
                     .replace(/\s+/g, ' ');
@@ -297,12 +174,13 @@ safe-outputs:
                   const pipelineLine = `- **Pipeline**: ${entry.pipeline}`;
                   if (normalizedIdentity.length < 5 ||
                       !searchable.includes(normalizedIdentity) ||
+                      !secondaryEvidence.some(value => searchable.includes(value)) ||
                       !body.split(/\r?\n/).includes(pipelineLine)) {
                     throw new Error(`Legacy issue #${entry.issue_number} does not contain deterministic identity evidence for ${entry.fingerprint}.`);
                   }
-                  entry.coverage_proof = 'legacy-identity-and-pipeline';
+                  entry.coverage_proof = 'legacy-identity-pipeline-and-secondary';
                 }
-              }
+              });
 
               const openTrackingIssues = await github.paginate(github.rest.issues.listForRepo, {
                 owner,
@@ -310,6 +188,7 @@ safe-outputs:
                 state: 'open',
                 labels: expectedLabel,
                 per_page: 100,
+                request: requestOptions,
               });
               for (const issue of plan.issues) {
                 const exactMarker = `<!-- ci-scan-fingerprint: ${issue.Fingerprint} -->`;
@@ -352,6 +231,7 @@ safe-outputs:
                   title: issue.Title,
                   body: issue.Body,
                   labels: [expectedLabel],
+                  request: requestOptions,
                 });
                 const result = {
                   pipeline: issue.Pipeline,
@@ -411,6 +291,114 @@ network:
     - "*.blob.core.windows.net"
 
 steps:
+  - name: Freeze trusted scanner build evidence
+    uses: actions/github-script@v9.0.0
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      script: |
+        const fs = require('fs');
+        const path = require('path');
+        const artifactPath = `${process.env.RUNNER_TEMP}/ci-scan-net11/expected-builds.json`;
+        const agentPath = '/tmp/gh-aw/agent/expected-builds.json';
+        const definitions = [
+          { name: 'maui-pr', definition_id: 302 },
+          { name: 'maui-pr-devicetests', definition_id: 314 },
+          { name: 'maui-pr-uitests', definition_id: 313 },
+        ];
+        const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const fetchJson = async url => {
+          const response = await fetch(url, {
+            headers: { Accept: 'application/json' },
+            signal: AbortSignal.timeout(30000),
+          });
+          if (!response.ok) {
+            throw new Error(`AzDO request failed with HTTP ${response.status}.`);
+          }
+          return response.json();
+        };
+
+        const pipelines = [];
+        for (const definition of definitions) {
+          const query = new URLSearchParams({
+            definitions: String(definition.definition_id),
+            branchName: 'refs/heads/net11.0',
+            statusFilter: 'completed',
+            resultFilter: 'succeeded,failed,partiallySucceeded',
+            queryOrder: 'finishTimeDescending',
+            '$top': '1',
+            'api-version': '7.1',
+          });
+          const builds = await fetchJson(
+            `https://dev.azure.com/dnceng-public/public/_apis/build/builds?${query}`);
+          const build = Array.isArray(builds.value) ? builds.value[0] : undefined;
+          if (!build || !build.finishTime || Date.parse(build.finishTime) < cutoff) {
+            pipelines.push({
+              ...definition,
+              status: 'skipped-no-recent-build',
+            });
+            continue;
+          }
+          if (Number(build.definition?.id) !== definition.definition_id ||
+              build.sourceBranch !== 'refs/heads/net11.0' ||
+              build.status !== 'completed') {
+            throw new Error(`AzDO returned invalid build evidence for ${definition.name}.`);
+          }
+
+          const buildId = Number(build.id);
+          const timeline = await fetchJson(
+            `https://dev.azure.com/dnceng-public/public/_apis/build/builds/${buildId}/timeline?api-version=7.1`);
+          const records = Array.isArray(timeline.records) ? timeline.records : [];
+          const children = new Map();
+          for (const record of records) {
+            if (!children.has(record.parentId)) {
+              children.set(record.parentId, []);
+            }
+            children.get(record.parentId).push(record);
+          }
+          const requiredLogIds = new Set();
+          for (const record of records) {
+            const logId = Number(record.log?.id);
+            if (!Number.isSafeInteger(logId) || logId <= 0) {
+              continue;
+            }
+            const hasFailedChild = (children.get(record.id) || [])
+              .some(child => child.result === 'failed');
+            const isDeviceHelixSubmission =
+              definition.definition_id === 314 &&
+              record.type === 'Task' &&
+              /^DeviceTests.+ \((?:Unix|Windows)\)$/.test(String(record.name || '')) &&
+              record.result !== 'skipped';
+            if ((record.result === 'failed' && !hasFailedChild) || isDeviceHelixSubmission) {
+              requiredLogIds.add(logId);
+            }
+          }
+          const result = String(build.result || '').toLowerCase();
+          const failedRecordCount = records.filter(record => record.result === 'failed').length;
+          if (result !== 'succeeded' && requiredLogIds.size === 0) {
+            throw new Error(`No inspectable failure logs were found for ${definition.name}.`);
+          }
+          pipelines.push({
+            ...definition,
+            status: 'scanned',
+            build_id: buildId,
+            result,
+            failed_record_count: failedRecordCount,
+            required_log_ids: [...requiredLogIds].sort((a, b) => a - b),
+          });
+        }
+
+        const inventory = JSON.stringify({ schema_version: 1, pipelines }, null, 2);
+        for (const outputPath of [artifactPath, agentPath]) {
+          fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+          fs.writeFileSync(outputPath, inventory);
+        }
+  - name: Upload trusted scanner build evidence
+    uses: actions/upload-artifact@v7.0.1
+    with:
+      name: ci-scan-net11-trusted-builds-${{ github.run_id }}-${{ github.run_attempt }}
+      path: ${{ runner.temp }}/ci-scan-net11/expected-builds.json
+      if-no-files-found: error
+      retention-days: 1
   - name: Verify connectivity to AzDO and Helix
     run: |
       set -euo pipefail
@@ -449,6 +437,13 @@ Periodic scan of MAUI CI pipelines on `net11.0`. Every actionable failure become
 Process pipelines in this order. For each, fetch recent completed builds on `net11.0`, pick the latest, and look back through ~10 prior completed builds for occurrence counts.
 
 The pipeline names, definition IDs (`maui-pr` 302, `maui-pr-devicetests` 314, `maui-pr-uitests` 313), org/project, and investigation priority order are defined canonically in `.github/docs/maui-ci-facts.md` — read it first (see below) and use those values; do not maintain a second copy here.
+
+The trusted pre-agent step has frozen the latest-build and source-log evidence in
+`/tmp/gh-aw/agent/expected-builds.json`. Read that file first. Use its exact
+pipeline status and `build_id`; do not re-select a newer build that finishes
+during this run. Fetch and classify every `required_log_ids` entry. The trusted
+publisher validates your manifest against an immutable artifact uploaded before
+the agent started.
 
 If a pipeline has no completed build in the last 7 days, skip it silently.
 
@@ -581,9 +576,11 @@ Pipeline status must be one of:
 Every signature has `fingerprint`, `disposition`, and a non-empty
 `source_log_ids` array of positive AzDO timeline `log.id` values from the latest
 build. A deduplicated signature may list multiple source logs. Every failed-leaf
-log, plus every `Send to Helix` task log beneath a failed job, must appear in at
-least one signature. When an inspected source log yields no failure signature,
-record a deterministic skipped entry for that task/log with
+log, plus every non-skipped `DeviceTests... (Unix|Windows)` Helix submission log
+in `maui-pr-devicetests` (including green AzDO jobs), must appear in at least one
+signature. The authoritative set is `required_log_ids` in the frozen evidence
+file. When an inspected source log yields no failure signature, record a
+deterministic skipped entry for that task/log with
 `signature-not-in-fetched-log`; never omit the source log from coverage.
 
 Disposition-specific fields:

@@ -191,6 +191,22 @@ Describe 'CI scanner pipeline coverage gate' {
         $plan.pipelines[0].failed_records | Should -Be 0
     }
 
+    It 'accepts hidden failure coverage from a trusted successful build' {
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Disposition 'skipped' -SkipReason 'not-recurring')
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds `
+                -MainResult 'succeeded' `
+                -MainFailedRecordCount 0 `
+                -MainRequiredLogIds @(1001))
+
+        $plan.pipelines[0].required_log_ids | Should -Be @(1001)
+        $plan.pipelines[0].signatures[0].source_log_ids | Should -Be @(1001)
+    }
+
     It 'rejects partial coverage of the trusted candidate logs' {
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -SourceLogIds @(1001))
