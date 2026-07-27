@@ -156,6 +156,7 @@ namespace Microsoft.Maui.Handlers
 				// versions or when the nav controller is off-screen. Consume synchronously.
 				if (!animated)
 				{
+					navManager.CompletePushImmediately(vc);
 					CompleteNonAnimatedNavigation(oldStack);
 				}
 
@@ -188,6 +189,7 @@ namespace Microsoft.Maui.Handlers
 						// OnNavigationComplete never runs. Consume pending stack directly.
 						if (!animated)
 						{
+							navManager.CompletePopImmediately();
 							CompleteNonAnimatedNavigation(oldStack);
 						}
 
@@ -203,6 +205,7 @@ namespace Microsoft.Maui.Handlers
 						// For non-animated pops, consume synchronously (matching PopToRoot pattern).
 						if (!animated)
 						{
+							navManager.CompletePopImmediately();
 							CompleteNonAnimatedNavigation(oldStack);
 						}
 
