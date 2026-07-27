@@ -19,6 +19,7 @@ public class Issue13323 : _IssuesUITest
 		App.WaitForElement("CarouselView13323", timeout: TimeSpan.FromSeconds(30));
 		App.WaitForElement("PositionLabel", timeout: TimeSpan.FromSeconds(15));
 
+		App.WaitForElement("GoToItem2", timeout: TimeSpan.FromSeconds(10));
 		App.Tap("GoToItem2");
 		App.WaitForElement("CenterEntry_2", timeout: TimeSpan.FromSeconds(10));
 
@@ -43,6 +44,7 @@ public class Issue13323 : _IssuesUITest
 		App.WaitForElement("LoopCarouselView13323", timeout: TimeSpan.FromSeconds(30));
 		App.WaitForElement("LoopPositionLabel", timeout: TimeSpan.FromSeconds(15));
 
+		App.WaitForElement("LoopGoToItem2", timeout: TimeSpan.FromSeconds(10));
 		App.Tap("LoopGoToItem2");
 		App.WaitForElement("LoopCenterEntry_2", timeout: TimeSpan.FromSeconds(10));
 
