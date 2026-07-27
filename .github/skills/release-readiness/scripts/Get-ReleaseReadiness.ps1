@@ -650,6 +650,18 @@ function Get-LocalStableTags {
     return @($values | Sort-Object Version | Select-Object -ExpandProperty Name -Unique)
 }
 
+function Write-ShippedPublicationPendingWarning {
+    param([Parameter(Mandatory)][string]$Tag)
+
+    Write-Warn "Stable tag '$Tag' exists, but its GitHub Release is not published yet. Shipped contents are anchored to the immutable tag and the displayed date uses tagged-commit evidence until publication metadata is available."
+}
+
+function Write-ShippedPublicationStatusUnknownWarning {
+    param([Parameter(Mandatory)][string]$Tag)
+
+    Write-Warn "Could not query GitHub Release publication metadata for stable tag '$Tag'. Shipped contents remain anchored to the immutable local tag, publication status is unknown, and the displayed date uses tagged-commit evidence."
+}
+
 function Select-LatestStableTagForSr {
     param(
         [string]$SrBranch,
@@ -4345,6 +4357,12 @@ function Get-ShippedVerdict {
         $shippedSr    = [int](Get-MetadataValue -Container $si -Name 'srNumber' -Default 0)
         $shippedMajor = [int](Get-MetadataValue -Container $si -Name 'major' -Default 0)
         $shippedSubPatch = Get-SrSubPatchFromVersion -Version (Get-MetadataValue -Container $si -Name 'version')
+        if ([bool](Get-MetadataValue -Container $si -Name 'hotfixInProgress' -Default $false)) {
+            $followUp = $true
+            $liveHotfixVersion = [string](Get-MetadataValue -Container $si -Name 'liveVersion')
+            $hotfixSuffix = if ($liveHotfixVersion) { " (``$liveHotfixVersion``)" } else { '' }
+            $reasons.Add("[Follow-up] An unpublished hotfix$hotfixSuffix is in progress on the shipped SR branch.") | Out-Null
+        }
     }
 
     $shippedRegressions = Get-MetadataValue -Container $Data -Name 'regressions'
@@ -6034,13 +6052,14 @@ function Invoke-Main {
             $ctx['liveBranchVersion'] = $vpShipped.FullVersion
             if (-not $shippedInfo.major) { $shippedInfo.major = [int]$vpShipped.Major }
         }
-        $publishedTags = Get-PublishedStableTags -Repo $ctx.repo
-        if ($null -eq $publishedTags) {
-            throw "Cannot query published stable tags for shipped branch '$($ctx.srBranch)'."
-        }
         $localStableTags = Get-LocalStableTags
         if ($null -eq $localStableTags -or @($localStableTags).Count -eq 0) {
             throw "Cannot query local stable tags for shipped branch '$($ctx.srBranch)'. Fetch tags before generating the tracker."
+        }
+        $publishedTags = Get-PublishedStableTags -Repo $ctx.repo
+        $publicationQueryFailed = $null -eq $publishedTags
+        if ($publicationQueryFailed) {
+            $publishedTags = @()
         }
         $anchorTag = if ($ShippedTag) {
             if (-not (Test-StableTagMatchesSr -Tag $ShippedTag -SrBranch $ctx.srBranch)) {
@@ -6055,8 +6074,10 @@ function Invoke-Main {
         }
         $stableTagsForBounds = @((@($publishedTags) + @($localStableTags)) | Sort-Object -Unique)
         $anchorIsPublished = @($publishedTags) -contains $anchorTag
-        if (-not $anchorIsPublished) {
-            $data.warnings += "Stable tag '$anchorTag' exists, but its GitHub Release is not published yet. Shipped contents are anchored to the immutable tag and the displayed date uses tagged-commit evidence until publication metadata is available."
+        if ($publicationQueryFailed) {
+            Write-ShippedPublicationStatusUnknownWarning -Tag $anchorTag
+        } elseif (-not $anchorIsPublished) {
+            Write-ShippedPublicationPendingWarning -Tag $anchorTag
         }
         $shippedInfo.version = $anchorTag
         $ctx['shippedTagVersion'] = $anchorTag

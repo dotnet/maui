@@ -229,6 +229,7 @@ jobs:
                   branchExists: .branchExists,
                   surveyRef:    .surveyRef,
                   mode:         .mode,
+                  hotfixInProgress: (.hotfixInProgress // false),
                   majorVersion: .majorVersion,
                   issueTitle:   .issueTitle,
                   milestoneName: .milestoneName,
@@ -407,6 +408,7 @@ jobs:
           BODY_FILE:          ${{ steps.report.outputs.body-file }}
           RECENT_COMMIT_COUNT: ${{ matrix.recentCommitCount }}
           MODE:               ${{ matrix.mode }}
+          HOTFIX_IN_PROGRESS: ${{ matrix.hotfixInProgress }}
         shell: bash
         run: |
           set -euo pipefail
@@ -429,14 +431,16 @@ jobs:
           # issue stays OPEN, but we never (re)create it. Once a human closes the
           # tracker, it stays closed — "update until closed manually" without
           # resurrecting a closed issue on the next scheduled run.
-          if [ "$MODE" = "shipped" ] && [ -z "$EXISTING" ]; then
+          if [ "$MODE" = "shipped" ] && [ "$HOTFIX_IN_PROGRESS" != "true" ] && [ -z "$EXISTING" ]; then
             echo "Shipped tracker ${TRACKER_KEY}: no open issue (closed or never created) — refresh-only, nothing to do."
             exit 0
           fi
 
           # Activity gate: when there is no recent activity AND no open tracker issue,
-          # skip new-issue creation. (If an existing issue is open, we still refresh it.)
-          if [ "$RECENT_COMMIT_COUNT" -eq 0 ] && [ -z "$EXISTING" ]; then
+          # skip new-issue creation. Active hotfixes are exempt: the live version
+          # mismatch is itself actionable even when the bump is older than the
+          # recent-commit window. (If an existing issue is open, we still refresh it.)
+          if [ "$RECENT_COMMIT_COUNT" -eq 0 ] && [ "$HOTFIX_IN_PROGRESS" != "true" ] && [ -z "$EXISTING" ]; then
             echo "Skipping ${TRACKER_KEY}: no recent commits and no open tracker issue."
             exit 0
           fi

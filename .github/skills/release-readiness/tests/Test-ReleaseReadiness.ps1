@@ -243,6 +243,7 @@ if (-not $SkipE2E) {
         & pwsh -NoProfile -File $previewScriptPath `
             -Branch 'release/11.0.1xx-preview7' `
             -Mode in-flight `
+            -TrackerKey 'dnceng/internal/_git/public-safe-sentinel' `
             -OutputDir $previewOut `
             -OutputFormat both 2>&1 | Out-Null
         Assert-Eq -Label "Preview driver exits successfully" -Expected 0 -Actual $LASTEXITCODE
@@ -265,6 +266,8 @@ if (-not $SkipE2E) {
                 -Expected $true -Actual ([bool]($previewMarkdown -match 'No CI Failure Scanner runs against'))
             Assert-Eq -Label "Preview driver applies PublicSafe to Markdown and JSON" `
                 -Expected $false -Actual ([bool](("$previewMarkdown`n$previewJsonText") -match 'dnceng/internal|\.NET Release Tracker|dotnet-release-tracker|api://'))
+            Assert-Eq -Label "Preview driver PublicSafe assertion is discriminating in Markdown and JSON" `
+                -Expected $true -Actual ([bool]($previewMarkdown -match 'internal source' -and $previewJsonText -match 'internal source'))
         }
     } finally {
         if (Test-Path $previewOut) { Remove-Item -Recurse -Force $previewOut }
@@ -1136,6 +1139,10 @@ if (-not $SkipE2E) {
             -Expected $true -Actual ($null -ne $syntheticHotfixShipped9)
         Assert-Eq -Label "synthetic unpublished SR9 hotfix mode remains shipped" `
             -Expected 'shipped' -Actual $syntheticHotfixShipped9.mode
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix carries explicit workflow signal" `
+            -Expected $true -Actual $syntheticHotfixShipped9.hotfixInProgress
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix title is actionable" `
+            -Expected $true -Actual ([bool]($syntheticHotfixShipped9.issueTitle -match 'hotfix in progress'))
         Assert-Eq -Label "synthetic unpublished SR9 hotfix anchor remains tagged 10.0.90" `
             -Expected '10.0.90' -Actual $syntheticHotfixShipped9.expectedTag
         Assert-Eq -Label "synthetic unpublished SR9 hotfix does not emit in-flight SR9" `
@@ -1284,6 +1291,16 @@ if (-not $SkipE2E) {
         else { Remove-Item function:Write-Warning -ErrorAction SilentlyContinue }
     }
 
+    Write-Host "`n[Unit] Workflow preserves active hotfix tracker creation" -ForegroundColor Cyan
+    $releaseWorkflowPath = Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml'
+    $releaseWorkflowText = Get-Content $releaseWorkflowPath -Raw
+    Assert-Eq -Label "workflow matrix carries hotfixInProgress signal" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixInProgress:\s*\(\.hotfixInProgress // false\)'))
+    Assert-Eq -Label "workflow shipped refresh-only guard exempts active hotfix" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$MODE.*shipped.*\$HOTFIX_IN_PROGRESS.*!=.*true.*\$EXISTING'))
+    Assert-Eq -Label "workflow activity gate exempts active hotfix" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$RECENT_COMMIT_COUNT.*-eq 0.*\$HOTFIX_IN_PROGRESS.*!=.*true.*\$EXISTING'))
+
     # Fail-closed: bad repo path should exit non-zero
     Write-Host "`n[E2E] Detection fails closed on invalid repo" -ForegroundColor Cyan
     $badRepoOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-badrepo-$(Get-Date -Format 'HHmmss').json"
@@ -1415,6 +1432,23 @@ try {
         -Expected '10.0.91' -Actual $tagBeforeReleaseRefs.ContentsRef
     Assert-Eq -Label "tag-before-Release: immediate predecessor remains 10.0.90" `
         -Expected '10.0.90' -Actual $tagBeforeReleaseRefs.PreviousTag
+    $savedWarnings = $Script:Warnings
+    try {
+        $Script:Warnings = [System.Collections.Generic.List[string]]::new()
+        Write-ShippedPublicationPendingWarning -Tag '10.0.91'
+        Assert-Eq -Label "tag-before-Release: publication-pending warning reaches shared warning collection" `
+            -Expected 1 -Actual $Script:Warnings.Count
+        Assert-Eq -Label "tag-before-Release: warning names immutable anchor and tagged-commit evidence" `
+            -Expected $true -Actual ([bool]($Script:Warnings[0] -match "10\.0\.91.*not published yet.*tagged-commit evidence"))
+        $Script:Warnings = [System.Collections.Generic.List[string]]::new()
+        Write-ShippedPublicationStatusUnknownWarning -Tag '10.0.91'
+        Assert-Eq -Label "release API outage: warning reaches shared warning collection" `
+            -Expected 1 -Actual $Script:Warnings.Count
+        Assert-Eq -Label "release API outage: warning preserves local tag while marking publication unknown" `
+            -Expected $true -Actual ([bool]($Script:Warnings[0] -match "10\.0\.91.*publication status is unknown.*tagged-commit evidence"))
+    } finally {
+        $Script:Warnings = $savedWarnings
+    }
     $resolvedShippedRefs = Resolve-ShippedContentsRefs -Version '10.0.90' -PublishedTags $publishedFixtureTags
     Assert-Eq -Label "shipped contents: stable tag resolves locally" -Expected '10.0.90' -Actual $resolvedShippedRefs.ContentsRef
     Assert-Eq -Label "shipped contents: prior immutable stable tag is selected" -Expected '10.0.80' -Actual $resolvedShippedRefs.PreviousTag
@@ -3784,6 +3818,18 @@ $shippedBlockedCheck = Get-OverallVerdict -Data @{
     shipChecks = @([pscustomobject]@{ Area = 'post-ship housekeeping'; Status = 'BLOCKED'; Details = 'x'; NextAction = 'y' })
 }
 Assert-Eq -Label "shipped BLOCKED check becomes yellow follow-up, never Not Ready" -Expected '🟡' -Actual $shippedBlockedCheck.symbol
+
+$shippedHotfixVerdict = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    shippedInfo = @{ version = '10.0.90'; liveVersion = '10.0.91'; srNumber = 9; major = 10; hotfixInProgress = $true }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @([pscustomobject]@{ Area = 'Unpublished hotfix branch state'; Status = 'WATCH'; Details = 'x'; NextAction = 'y' })
+}
+Assert-Eq -Label "shipped unpublished hotfix forces yellow follow-up verdict" `
+    -Expected '🟡' -Actual $shippedHotfixVerdict.symbol
+Assert-Eq -Label "shipped unpublished hotfix verdict names live version" `
+    -Expected $true -Actual ([bool](@($shippedHotfixVerdict.reasons) -match '10\.0\.91'))
 
 $shippedPscoData = [pscustomobject]@{
     metadata = [pscustomobject]@{ mode = 'shipped' }

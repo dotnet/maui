@@ -579,7 +579,8 @@ function New-Tracker {
         [string]$PriorShippedTag,
         [int]$ExpectedPatch,
         [string]$ExpectedTag,
-        [int]$HasRecentActivityCount
+        [int]$HasRecentActivityCount,
+        [bool]$HotfixInProgress = $false
     )
     $canonical = "net$Major-sr$SrNumber"
     $milestone = ".NET $Major SR$SrNumber"
@@ -595,7 +596,11 @@ function New-Tracker {
         $title = "[Release Readiness] .NET $Major SR$SrNumber — candidate from $SurveyRef"
     }
     elseif ($Mode -eq 'shipped') {
-        $title = "[Release Readiness] .NET $Major SR$SrNumber — shipped ($branchDisplay)"
+        $title = if ($HotfixInProgress) {
+            "[Release Readiness] .NET $Major SR$SrNumber — hotfix in progress ($branchDisplay)"
+        } else {
+            "[Release Readiness] .NET $Major SR$SrNumber — shipped ($branchDisplay)"
+        }
     }
     return [pscustomobject]@{
         branchType           = 'sr'
@@ -616,6 +621,7 @@ function New-Tracker {
         recentCommitCount    = $HasRecentActivityCount
         priorShippedPatch    = $PriorShippedPatch
         priorShippedTag      = $PriorShippedTag
+        hotfixInProgress     = $HotfixInProgress
     }
 }
 
@@ -749,7 +755,7 @@ function Invoke-DetectionForMajor {
                 -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
                 -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
                 -ExpectedPatch $highestShippedPatch -ExpectedTag $highestShippedTag `
-                -HasRecentActivityCount $recent
+                -HasRecentActivityCount $recent -HotfixInProgress $true
             $trackers.Add($tracker)
             Write-Host "  -> shipped SR tracker with unpublished hotfix: SR$sr (published=$highestShippedTag, live=$expectedTag, recent=$recent)" -ForegroundColor Yellow
         } elseif (Test-IsBranchInFlight -BranchPatch $branchPatch -ShippedPatches $shippedPatches) {
