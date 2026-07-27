@@ -63,7 +63,8 @@ Describe 'Test-CiFixTransport' {
         $expectation.pullRequestNumber | Should -BeNullOrEmpty
     }
 
-    It 'accepts a small append-only allowed diff and registers the expected output' {        'fix' | Set-Content -LiteralPath 'src/Essentials/Test.cs'
+    It 'accepts a small append-only allowed diff and registers the expected output' {
+        'fix' | Set-Content -LiteralPath 'src/Essentials/Test.cs'
         git add .
         git commit --quiet -m fix
 
