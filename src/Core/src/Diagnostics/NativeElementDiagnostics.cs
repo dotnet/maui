@@ -67,9 +67,9 @@ namespace Microsoft.Maui.Diagnostics
 			try
 			{
 				if (s_listener.IsEnabled(UnregisteredEventName))
-				s_listener.Write(
-					UnregisteredEventName,
-					new object?[] { ContractVersion, nativeElement });
+					s_listener.Write(
+						UnregisteredEventName,
+						new object?[] { ContractVersion, nativeElement });
 			}
 			catch (Exception ex)
 			{
