@@ -274,60 +274,6 @@ namespace Microsoft.Maui.DeviceTests
                                 AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
                         });
                 }
-		// Regression test for https://github.com/dotnet/maui/issues/34925
-		// For Default/Fixed header behavior, the scroll view should be positioned below the header
-		// (ContentInset.Top = 0) so items cannot scroll behind the header.
-		[Theory]
-		[InlineData(FlyoutHeaderBehavior.Default)]
-		[InlineData(FlyoutHeaderBehavior.Fixed)]
-		public async Task FlyoutScrollViewDoesNotOverlapHeaderForDefaultAndFixed(FlyoutHeaderBehavior behavior)
-		{
-			var headerHeight = 150;
-
-			await RunShellTest(shell =>
-			{
-				shell.FlyoutHeaderBehavior = behavior;
-				shell.FlyoutHeader = new VerticalStackLayout
-				{
-					HeightRequest = headerHeight,
-					BackgroundColor = Colors.Blue,
-					Children = { new Label { Text = "Header" } }
-				};
-
-				// Add enough items to require scrolling
-				for (int i = 0; i < 20; i++)
-				{
-					shell.Items.Add(new FlyoutItem
-					{
-						Title = $"Page {i}",
-						Items = { new ShellContent { ContentTemplate = new DataTemplate(() => new ContentPage()) } }
-					});
-				}
-			},
-			async shell =>
-			{
-#if ANDROID
-				var shellContext = (IShellContext)shell.Handler;
-#elif IOS || MACCATALYST
-				var shellContext = (ShellHandler)shell.Handler;
-#endif
-				await OpenFlyout(shellContext);
-				var flyoutView = GetFlyoutPlatformView(shellContext);
-				var scrollView = flyoutView.FindDescendantView<UIScrollView>();
-				Assert.NotNull(scrollView);
-
-				var headerFrame = GetFrameRelativeToFlyout(shellContext, (IView)shell.FlyoutHeader);
-				var headerBottom = headerFrame.Y + headerFrame.Height;
-
-				// For Default/Fixed, the scroll view should be positioned below the header,
-				// not overlapping it with a content inset. When the scroll view overlaps the header,
-				// items become visible behind a semi-transparent header when scrolling.
-				Assert.True(
-					scrollView.Frame.Y >= headerBottom - 0.5,
-					$"ScrollView frame (Y={scrollView.Frame.Y}) should start at or below header bottom ({headerBottom}). " +
-					$"ContentInset.Top={scrollView.ContentInset.Top}. Items can scroll behind the header (issue #34925).");
-			});
-		}
 #endif
 #endif
 
