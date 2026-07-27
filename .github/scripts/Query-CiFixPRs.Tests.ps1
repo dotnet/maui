@@ -273,6 +273,35 @@ Describe 'ConvertTo-CiFixIssueEvidence' {
         $evidence.truncated | Should -BeFalse
     }
 
+    It 'keeps dual-labelled issues for the net11 twin, which owns them' {
+        # Ownership is ASYMMETRIC: main excludes `ci-scan-net11`, net11 excludes
+        # NOTHING. If net11 also excluded `ci-scan`, a dual-labelled issue would be
+        # dropped by both twins and stranded forever. This test pins that asymmetry.
+        $dualLabelled = $script:validIssue.PSObject.Copy()
+        $dualLabelled.number = 40005
+        $dualLabelled.labels = @(
+            [pscustomobject]@{ name = 'ci-scan' },
+            [pscustomobject]@{ name = 'ci-scan-net11' }
+        )
+        $net11Only = $script:validIssue.PSObject.Copy()
+        $net11Only.number = 40006
+        $net11Only.labels = @([pscustomobject]@{ name = 'ci-scan-net11' })
+
+        $evidence = ConvertTo-CiFixIssueEvidence `
+            -Issues @($script:validIssue, $dualLabelled, $net11Only) `
+            -ExactLabel 'ci-scan-net11' `
+            -ExcludeLabel '' `
+            -Limit 20 `
+            -TitleMaxChars 256 `
+            -BodyMaxChars 12000
+
+        # 40005 (dual) and 40006 (net11-only) are in scope; 40001 (ci-scan only) is
+        # dropped by the exact-label filter, which is net11's whole skip rule.
+        @($evidence.items.issueNumber) | Should -Be @(40005, 40006)
+        @($evidence.excludedDualLabelled).Count | Should -Be 0
+        $evidence.totalMatched | Should -Be 2
+    }
+
     It 'reports the full backlog total and truncation when the batch is capped' {
         $second = $script:validIssue.PSObject.Copy()
         $second.number = 40002
@@ -384,5 +413,32 @@ exit 1
         finally {
             Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
         }
+    }
+}
+
+Describe 'CI-fixer twin dual-label ownership wiring' {
+    # A unit test cannot catch a WIRING mistake in the workflow sources, and that is
+    # exactly how symmetric exclusion once shipped: both twins excluded the other's
+    # label, so an issue carrying BOTH labels was processed by NEITHER twin and was
+    # stranded permanently. These assertions pin the asymmetry at the call site.
+    BeforeAll {
+        $script:workflowRoot = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) '.github/workflows'
+        $script:mainWorkflow = Get-Content -Raw -LiteralPath (Join-Path $script:workflowRoot 'ci-status-fix.md')
+        $script:net11Workflow = Get-Content -Raw -LiteralPath (Join-Path $script:workflowRoot 'ci-status-fix-net11.md')
+        # Match only real PowerShell argument lines (`  -ExcludeIssueLabel '...' \``),
+        # never prose or comments that merely mention the parameter name.
+        $script:argLinePattern = "(?m)^\s*-ExcludeIssueLabel\s+'"
+    }
+
+    It 'has the main twin exclude the net11 label' {
+        $script:mainWorkflow | Should -Match "(?m)^\s*-IssueLabel 'ci-scan'"
+        $script:mainWorkflow | Should -Match "(?m)^\s*-ExcludeIssueLabel 'ci-scan-net11'"
+    }
+
+    It 'has the net11 twin exclude nothing so it retains the dual-labelled issues it owns' {
+        $script:net11Workflow | Should -Match "(?m)^\s*-IssueLabel 'ci-scan-net11'"
+        # Must NOT exclude `ci-scan`: the exact-label filter already drops
+        # ci-scan-only issues, so excluding here would only drop dual-labelled ones.
+        [regex]::IsMatch($script:net11Workflow, $script:argLinePattern) | Should -BeFalse
     }
 }

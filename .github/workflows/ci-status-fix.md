@@ -96,6 +96,11 @@ on:
         ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
       run: |
         $output = "CustomAgentLogsTmp/CiFixScanner/candidates.json"
+        # Dual-label ownership is ASYMMETRIC and this twin is NOT the owner: an
+        # issue carrying BOTH `ci-scan` and `ci-scan-net11` belongs to the net11.0
+        # twin, so exclude it here. The net11 twin deliberately passes no
+        # -ExcludeIssueLabel; if it also excluded, dual-labelled issues would be
+        # dropped by both twins and stranded permanently.
         .github/scripts/Query-CiFixPRs.ps1 `
           -Owner $env:REPO_OWNER `
           -Repo $env:REPO_NAME `

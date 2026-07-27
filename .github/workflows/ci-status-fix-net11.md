@@ -96,6 +96,14 @@ on:
         ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
       run: |
         $output = "CustomAgentLogsTmp/CiFixScanner/candidates.json"
+        # Dual-label ownership is ASYMMETRIC and this twin is the owner: an issue
+        # carrying BOTH `ci-scan` and `ci-scan-net11` belongs to net11.0 (see the
+        # main twin, which excludes `ci-scan-net11` for exactly this reason). So
+        # NO -ExcludeIssueLabel here. The `-IssueLabel 'ci-scan-net11'` exact
+        # filter already drops `ci-scan`-only issues, which is the whole of this
+        # twin's documented "skip ci-scan but NOT ci-scan-net11" rule. Excluding
+        # `ci-scan` here would make BOTH twins drop dual-labelled issues and
+        # strand them permanently.
         .github/scripts/Query-CiFixPRs.ps1 `
           -Owner $env:REPO_OWNER `
           -Repo $env:REPO_NAME `
@@ -103,7 +111,6 @@ on:
           -MaxIssues 20 `
           -TitlePrefix '[ci-fix-net11]' `
           -IssueLabel 'ci-scan-net11' `
-          -ExcludeIssueLabel 'ci-scan' `
           -IssueNumber $env:ISSUE_NUMBER `
           -BaseBranch 'net11.0' `
           -OutputPath $output | Out-Null
