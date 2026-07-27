@@ -1982,6 +1982,7 @@ static class UpdateComponentCodeWriter
 		Action<Diagnostic>? diagnosticReporter = null)
 	{
 		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+		diagnosticReporter ??= sourceProductionContext.ReportDiagnostic;
 		return new SourceGenContext(
 			writer ?? new IndentedTextWriter(new StringWriter()),
 			compilation, sourceProductionContext,

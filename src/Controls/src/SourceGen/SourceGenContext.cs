@@ -9,8 +9,9 @@ using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem, Action<Diagnostic>? diagnosticReporter = null)
+class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem, Action<Diagnostic> diagnosticReporter)
 {
+	static readonly Action<Diagnostic> s_noOpDiagnosticReporter = static _ => { };
 	List<Diagnostic>? _bufferedDiagnostics;
 
 	internal static SourceGenContext CreateNewForTests(Action<Diagnostic>? diagnosticReporter = null) => new SourceGenContext(
@@ -22,7 +23,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 		null!,
 		null,
 		null!,
-		diagnosticReporter);
+		diagnosticReporter ?? s_noOpDiagnosticReporter);
 
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
@@ -94,12 +95,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	internal void DiscardBufferedDiagnostics() => _bufferedDiagnostics = null;
 
 	void ReportDiagnosticCore(Diagnostic diagnostic)
-	{
-		if (diagnosticReporter is not null)
-			diagnosticReporter(diagnostic);
-		else
-			sourceProductionContext.ReportDiagnostic(diagnostic);
-	}
+		=> diagnosticReporter(diagnostic);
 
 	public IDictionary<INode, ILocalValue> ServiceProviders { get; } = new Dictionary<INode, ILocalValue>();
 	public IDictionary<INode, (ILocalValue namescope, IDictionary<string, ILocalValue> namesInScope)> Scopes = new Dictionary<INode, (ILocalValue, IDictionary<string, ILocalValue>)>();
